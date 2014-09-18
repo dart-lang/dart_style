@@ -89,7 +89,7 @@ class SourceWriter {
   String toString() {
     var source = new StringBuffer(buffer.toString());
     if (!currentLine.isWhitespace()) {
-      source.write(currentLine);
+      source.write(linePrinter.printLine(currentLine));
     }
     return source.toString();
   }

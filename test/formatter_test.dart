@@ -6,12 +6,14 @@ library dart_style.test.formatter_test;
 
 import 'dart:io';
 
+import 'package:analyzer/src/generated/scanner.dart';
+import 'package:analyzer/src/services/writer.dart';
 import 'package:path/path.dart' as p;
 import 'package:unittest/unittest.dart';
 
-import 'package:analyzer/src/generated/scanner.dart';
-import 'package:analyzer/src/services/formatter_impl.dart';
-import 'package:analyzer/src/services/writer.dart';
+import 'package:dart_style/formatter.dart';
+
+import 'token_stream_comparator.dart';
 
 // Test data location.
 final testDataDir = p.join(p.dirname(p.fromUri(Platform.script)), 'data');
@@ -31,12 +33,62 @@ main() {
     if (entry.path.endsWith(".stmt")) {
       // NOTE: statement tests are run with transforms enabled.
       runTests(p.basename(entry.path), (input, expectedOutput) {
-        expect(formatStatement(input,
-            options: new FormatterOptions(codeTransforms: true)) + '\n',
-            equals(expectedOutput));
+        expect(formatStatement(input) + '\n', equals(expectedOutput));
       });
     }
   }
+
+  // TODO(rnystrom): These tests are from when the formatter would make
+  // non-whitespace changes. Eventually, when style linting is supported, these
+  // should become linting errors.
+  /*
+>>> DO use ; instead of {} for empty constructor bodies
+class Point {
+  int x, y;
+  Point(this.x, this.y) {}
+}
+<<<
+class Point {
+  int x, y;
+  Point(this.x, this.y);
+}
+>>> DO use curly braces for all flow control structures.
+flow() {
+  if (true) print('sanity');
+  else
+    print('opposite day!');
+}
+<<<
+flow() {
+  if (true) {
+    print('sanity');
+  } else {
+    print('opposite day!');
+  }
+}
+
+    test('CU (empty ctor bodies)', () {
+      expectCUFormatsTo(
+          'class A {\n'
+          '  A() {\n'
+          '  }\n'
+          '}\n',
+          'class A {\n'
+          '  A();\n'
+          '}\n'
+      );
+      expectCUFormatsTo(
+          'class A {\n'
+          '  A() {\n'
+          '  }\n'
+          '}\n',
+          'class A {\n'
+          '  A();\n'
+          '}\n'
+      );
+    });
+
+   */
 
   /// Formatter tests
   group('formatter', () {
@@ -60,30 +112,6 @@ main() {
       expectCUFormatsTo(
           original,
           original
-        );
-      expectIndentFormatsTo(3, false,
-          original,
-          'class A {\n'
-          '   var z;\n'
-          '   inc(int x) => ++x;\n'
-          '   foo(int x) {\n'
-          '      if (x == 0) {\n'
-          '         return true;\n'
-          '      }\n'
-          '   }\n'
-          '}\n'
-        );
-      expectIndentFormatsTo(1, true,
-          original,
-          'class A {\n'
-          '\tvar z;\n'
-          '\tinc(int x) => ++x;\n'
-          '\tfoo(int x) {\n'
-          '\t\tif (x == 0) {\n'
-          '\t\t\treturn true;\n'
-          '\t\t}\n'
-          '\t}\n'
-          '}\n'
         );
     });
 
@@ -752,30 +780,6 @@ main() {
       );
     });
 
-    test('CU (empty cons bodies)', () {
-      expectCUFormatsTo(
-          'class A {\n'
-          '  A() {\n'
-          '  }\n'
-          '}\n',
-          'class A {\n'
-          '  A();\n'
-          '}\n',
-          transforms: true
-      );
-      expectCUFormatsTo(
-          'class A {\n'
-          '  A() {\n'
-          '  }\n'
-          '}\n',
-          'class A {\n'
-          '  A() {\n'
-          '  }\n'
-          '}\n',
-          transforms: false
-      );
-    });
-
     test('stmt', () {
       expectStmtFormatsTo(
          'if (true){\n'
@@ -984,15 +988,9 @@ main() {
                           'if (true) {\n'
                           '  print("true!");\n'
                           '}');
+      // TODO(rnystrom): How should this be handled? Newline before else?
       expectStmtFormatsTo('if (true) print("true!"); else print("false!");',
-                          'if (true) {\n'
-                          '  print("true!");\n'
-                          '} else {\n'
-                          '  print("false!");\n'
-                          '}');
-      expectStmtFormatsTo('if (true) print("true!"); else print("false!");',
-                          'if (true) print("true!"); else print("false!");',
-                          transforms: false);
+                          'if (true) print("true!"); else print("false!");');
     });
 
     test('String - multiline - short - same line', () {
@@ -1541,12 +1539,12 @@ Token chain(List<Token> tokens) {
   return tokens[0];
 }
 
-FormattedSource formatCU(src, {options: const FormatterOptions(), selection}) =>
-    new CodeFormatter(options).format(
+FormattedSource formatCU(src, {selection}) =>
+    new CodeFormatter().format(
         CodeKind.COMPILATION_UNIT, src, selection: selection);
 
-String formatStatement(src, {options: const FormatterOptions()}) =>
-    new CodeFormatter(options).format(CodeKind.STATEMENT, src).source;
+String formatStatement(src) =>
+    new CodeFormatter().format(CodeKind.STATEMENT, src).source;
 
 Token tokenize(String str) {
   var reader = new CharSequenceReader(str);
@@ -1576,21 +1574,14 @@ expectStreamsNotEqual(Token t1, Token t2) =>
     expect(() => new TokenStreamComparator(null, t1, t2).verifyEquals(),
     throwsA(new isInstanceOf<FormatterException>()));
 
-expectCUFormatsTo(src, expected, {transforms: true}) =>
-    expect(formatCU(src, options: new FormatterOptions(
-        codeTransforms: transforms)).source, equals(expected));
+expectCUFormatsTo(src, expected) =>
+    expect(formatCU(src).source, equals(expected));
 
-expectIndentFormatsTo(spacesPerIndent, tabsForIndent, src, expected) =>
-    expect(
-      formatCU(src, options: new FormatterOptions(
-          spacesPerIndent: spacesPerIndent,
-          tabsForIndent: tabsForIndent
-        )).source,
-      equals(expected));
+expectIndentFormatsTo(src, expected) =>
+    expect(formatCU(src).source, equals(expected));
 
-expectStmtFormatsTo(src, expected, {transforms: true}) =>
-    expect(formatStatement(src, options:
-      new FormatterOptions(codeTransforms: transforms)), equals(expected));
+expectStmtFormatsTo(src, expected) =>
+    expect(formatStatement(src), equals(expected));
 
 
 runTests(testFileName, expectClause(String input, String output)) {

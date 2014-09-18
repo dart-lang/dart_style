@@ -1,13 +1,3 @@
->>> DO use ; instead of {} for empty constructor bodies
-class Point {
-  int x, y;
-  Point(this.x, this.y) {}
-}
-<<<
-class Point {
-  int x, y;
-  Point(this.x, this.y);
-}
 >>> DO indent block bodies two spaces.
 hi() {
 if (condition) { print('hi'); }
@@ -46,20 +36,6 @@ class Foo {
     } else {
       print('false');
     }
-  }
-}
->>> DO use curly braces for all flow control structures.
-flow() {
-  if (true) print('sanity');
-  else
-    print('opposite day!');
-}
-<<<
-flow() {
-  if (true) {
-    print('sanity');
-  } else {
-    print('opposite day!');
   }
 }
 >>> ... short if statements with no else may omit the braces ...

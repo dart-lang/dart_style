@@ -16,9 +16,9 @@ for (var a = 0; a < 100; ++a) {
 >>>
 for(
 var a=0;
-a<100; 
+a<100;
 ++a)
-{ 
+{
 print(a);
 }
 <<<
@@ -149,13 +149,15 @@ var x = 2, y;
 <<<
 var x = 2,
     y;
->>> dartbug.com/16810 [Note: transforms are enabled]
+>>> dartbug.com/16810
 void f() {
   var a;;;
 }
 <<<
 void f() {
   var a;
+  ;
+  ;
 }
 >>>
 while (true);
