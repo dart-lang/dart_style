@@ -164,6 +164,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
+    // The "async" or "sync" keyword.
+    if (node.keyword != null) {
+      token(node.keyword);
+      space();
+    }
+
     visit(node.block);
   }
 
@@ -427,8 +433,15 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExpressionFunctionBody(ExpressionFunctionBody node) {
+    // The "async" or "sync" keyword.
+    if (node.keyword != null) {
+      token(node.keyword);
+      space();
+    }
+
     int weight = lastSpaceWeight++;
     token(node.functionDefinition);
+
     levelSpace(weight);
     visit(node.expression);
     token(node.semicolon);

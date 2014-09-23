@@ -30,19 +30,34 @@ class FormatterException implements Exception {
   final String message;
 
   /// Creates a new FormatterException with an optional error [message].
-  const FormatterException([this.message = 'FormatterException']);
+  const FormatterException(this.message);
 
-  FormatterException.forError(List<AnalysisError> errors, [LineInfo line]) :
-    message = _createMessage(errors);
+  factory FormatterException.forErrors(List<AnalysisError> errors,
+      [LineInfo lines]) {
+    var buffer = new StringBuffer();
 
-  static String _createMessage(errors) {
-    // TODO(pquitslund): consider a verbosity flag to add/suppress details.
-    var errorCode = errors[0].errorCode;
-    var phase = errorCode is ParserErrorCode ? 'parsing' : 'scanning';
-    return 'An error occured while ${phase} (${errorCode.name}).';
+    for (var error in errors) {
+      // Show position information if we have it.
+      var pos;
+      if (lines != null) {
+        var start = lines.getLocation(error.offset);
+        var end = lines.getLocation(error.offset + error.length);
+        pos = "${start.lineNumber}:${start.columnNumber}-";
+        if (start.lineNumber == end.lineNumber) {
+          pos += "${end.columnNumber}";
+        } else {
+          pos += "${end.lineNumber}:${end.columnNumber}";
+        }
+      } else {
+        pos = "${error.offset}...${error.offset + error.length}";
+      }
+      buffer.writeln("$pos: ${error.message}");
+    }
+
+    return new FormatterException(buffer.toString());
   }
 
-  String toString() => '$message';
+  String toString() => message;
 }
 
 /// Specifies the kind of code snippet to format.
@@ -118,7 +133,7 @@ class CodeFormatter implements AnalysisErrorListener {
   /// Throws a [FormatterException] if any errors have been reported.
   void _checkForErrors() {
     if (errors.length > 0) {
-      throw new FormatterException.forError(errors);
+      throw new FormatterException.forErrors(errors, lineInfo);
     }
   }
 
@@ -132,6 +147,8 @@ class CodeFormatter implements AnalysisErrorListener {
 
   AstNode _parse(CodeKind kind, Token start) {
     var parser = new Parser(null, this);
+
+    parser.parseAsync = true;
 
     switch (kind) {
       case CodeKind.COMPILATION_UNIT:

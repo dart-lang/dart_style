@@ -767,7 +767,8 @@ flow() {
     });
 
     test('CU (cons inits)', () {
-      expectCUFormatsTo('class X {\n'
+      expectCUFormatsTo(
+          'class X {\n'
           '  var x, y;\n'
           '  X() : x = 1, y = 2;\n'
           '}\n',
@@ -776,6 +777,24 @@ flow() {
           '  X()\n'
           '      : x = 1,\n'
           '        y = 2;\n'
+          '}\n'
+      );
+    });
+
+    test('CU async', () {
+      expectCUFormatsTo(
+          'main()\n'
+          '    async  {\n'
+          '  var x = ()   async=> 1;\n'
+          '  y()async  {}\n'
+          '  var z = ()\n'
+          ' async\n'
+          '     {};\n'
+          '}\n',
+          'main() async {\n'
+          '  var x = () async => 1;\n'
+          '  y() async {}\n'
+          '  var z = () async {};\n'
           '}\n'
       );
     });
