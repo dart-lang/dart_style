@@ -38,10 +38,6 @@ class SourceVisitor implements AstVisitor {
   /// A counter for spaces that should be emitted preceding the next token.
   int leadingSpaces = 0;
 
-  /// A flag to specify whether line-leading spaces should be preserved (and
-  /// addded to the indent level).
-  bool allowLineLeadingSpaces;
-
   /// A flag to specify whether zero-length spaces should be emmitted.
   bool emitEmptySpaces = false;
 
@@ -333,18 +329,32 @@ class SourceVisitor implements AstVisitor {
       preserveLeadingNewlines();
       levelSpace(lastSpaceWeight++);
     }
+
     indent(2);
     token(node.separator /* : */);
     space();
+
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
-        // preceding comma
+        // Preceding comma.
         token(node.initializers[i].beginToken.previous);
         newlines();
-        space(n: 2, allowLineLeading: true);
       }
+
+      // Indent subsequent fields one more so they line up with the first
+      // field following the ":":
+      //
+      // Foo()
+      //   : first,
+      //     second;
+      if (i == 1) indent();
+
       node.initializers[i].accept(this);
     }
+
+    // If there were multiple fields, discard their extra indentation.
+    if (node.initializers.length > 1) unindent();
+
     unindent(2);
   }
 
@@ -1247,11 +1257,11 @@ class SourceVisitor implements AstVisitor {
 
   emitSpaces() {
     if (leadingSpaces > 0 || emitEmptySpaces) {
-      if (allowLineLeadingSpaces || !writer.currentLine.isWhitespace()) {
+      if (!writer.currentLine.isWhitespace()) {
         writer.spaces(leadingSpaces, breakWeight: currentBreakWeight);
       }
+
       leadingSpaces = 0;
-      allowLineLeadingSpaces = false;
       emitEmptySpaces = false;
       currentBreakWeight = DEFAULT_SPACE_WEIGHT;
     }
@@ -1288,13 +1298,10 @@ class SourceVisitor implements AstVisitor {
     space(breakWeight: UNBREAKABLE_SPACE_WEIGHT);
   }
 
-  /// Emit a space. If [allowLineLeading] is specified, spaces
-  /// will be preserved at the start of a line (in addition to the
-  /// indent-level), otherwise line-leading spaces will be ignored.
-  space({n: 1, allowLineLeading: false, breakWeight: DEFAULT_SPACE_WEIGHT}) {
+  /// Emit [n] spaces.
+  space({n: 1, breakWeight: DEFAULT_SPACE_WEIGHT}) {
     // TODO(pquitslund): replace with a proper space token.
     leadingSpaces += n;
-    allowLineLeadingSpaces = allowLineLeading;
     currentBreakWeight = breakWeight;
   }
 
