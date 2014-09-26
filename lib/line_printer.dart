@@ -88,7 +88,8 @@ class LineBreaker extends LinePrinter {
               var length = 0;
               for (var i = 0; i < tokens.length; i++) {
                 var token = tokens[i];
-                if (token is SpaceToken && token.breakWeight == weight &&
+                if (token is SpaceToken &&
+                    token.breakWeight == weight &&
                     i < tokens.length - 1) {
                   var nextToken = tokens[i + 1];
                   if (length + token.length + nextToken.length > maxLength) {
