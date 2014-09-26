@@ -63,10 +63,11 @@ class SourceVisitor implements AstVisitor {
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
-    this.preSelection)
-      : writer = new SourceWriter(indentCount: options.initialIndentationLevel,
-                                lineSeparator: options.lineSeparator,
-                                maxLineLength: options.pageWidth);
+      this.preSelection)
+      : writer = new SourceWriter(
+          indentCount: options.initialIndentationLevel,
+          lineSeparator: options.lineSeparator,
+          maxLineLength: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings, separatedBy: space);
@@ -1108,12 +1109,10 @@ class SourceVisitor implements AstVisitor {
 
   /// Visit member metadata
   visitMemberMetadata(NodeList<Annotation> metadata) {
-    visitNodes(metadata,
-      separatedBy: () {
-        space();
-        preserveLeadingNewlines();
-      },
-      followedBy: space);
+    visitNodes(metadata, separatedBy: () {
+      space();
+      preserveLeadingNewlines();
+    }, followedBy: space);
     if (metadata != null && metadata.length > 0) {
       preserveLeadingNewlines();
     }
@@ -1135,8 +1134,8 @@ class SourceVisitor implements AstVisitor {
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded
   /// and followed by the given functions.
-  visitNodes(NodeList<AstNode> nodes, {precededBy(): null,
-      separatedBy() : null, followedBy(): null}) {
+  visitNodes(NodeList<AstNode> nodes, {precededBy(): null, separatedBy(): null,
+      followedBy(): null}) {
     if (nodes != null) {
       var size = nodes.length;
       if (size > 0) {
@@ -1346,8 +1345,8 @@ class SourceVisitor implements AstVisitor {
       emitNewlines(lines);
     }
 
-    previousToken = currentToken.previous != null ? currentToken.previous :
-        token.previous;
+    previousToken =
+        currentToken.previous != null ? currentToken.previous : token.previous;
 
     while (comment != null) {
       emitComment(comment, previousToken);
@@ -1390,8 +1389,9 @@ class SourceVisitor implements AstVisitor {
 
   /// Test if this [comment] is at the end of a line.
   bool isAtEOL(Token comment) =>
-      comment != null && comment.toString().trim().startsWith(twoSlashes) &&
-      sameLine(comment, previousToken);
+      comment != null &&
+          comment.toString().trim().startsWith(twoSlashes) &&
+          sameLine(comment, previousToken);
 
   /// Emit this [comment], inserting leading whitespace if appropriate.
   emitComment(Token comment, Token previousToken) {
@@ -1412,8 +1412,10 @@ class SourceVisitor implements AstVisitor {
   /// Count spaces between [last] and [current].
   ///
   /// Tokens on different lines return 0.
-  int countSpacesBetween(Token last, Token current) => isEOF(last) ||
-      countNewlinesBetween(last, current) > 0 ? 0 : current.offset - last.end;
+  int countSpacesBetween(Token last, Token current) =>
+      isEOF(last) || countNewlinesBetween(last, current) > 0 ?
+          0 :
+          current.offset - last.end;
 
   /// Count the blank lines between [lastNode] and [currentNode].
   int countBlankLinesBetween(AstNode lastNode, AstNode currentNode) =>
@@ -1424,8 +1426,8 @@ class SourceVisitor implements AstVisitor {
       countNewlinesBetween(node.beginToken.previous, node.beginToken);
 
   /// Count newlines succeeding this [node].
-  int countSucceedingNewlines(AstNode node) => node == null ? 0 :
-      countNewlinesBetween(node.endToken, node.endToken.next);
+  int countSucceedingNewlines(AstNode node) =>
+      node == null ? 0 : countNewlinesBetween(node.endToken, node.endToken.next);
 
   /// Count the blanks between these two tokens.
   int countNewlinesBetween(Token last, Token current) {
@@ -1470,10 +1472,8 @@ class SourceVisitor implements AstVisitor {
 
   /// Count the lines between two offsets.
   int linesBetween(int lastOffset, int currentOffset) {
-    var lastLine =
-        lineInfo.getLocation(lastOffset).lineNumber;
-    var currentLine =
-        lineInfo.getLocation(currentOffset).lineNumber;
+    var lastLine = lineInfo.getLocation(lastOffset).lineNumber;
+    var currentLine = lineInfo.getLocation(currentOffset).lineNumber;
     return currentLine - lastLine;
   }
 

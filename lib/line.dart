@@ -78,8 +78,8 @@ class Chunk {
   }
 
   bool hasInitializerSpace() {
-    return tokens.any((token) => token is SpaceToken &&
-        token.breakWeight == SINGLE_SPACE_WEIGHT);
+    return tokens.any(
+        (token) => token is SpaceToken && token.breakWeight == SINGLE_SPACE_WEIGHT);
   }
 
   bool hasAnySpace() => tokens.any((token) => token is SpaceToken);
@@ -118,8 +118,8 @@ class LineToken {
 class SpaceToken extends LineToken {
   final int breakWeight;
 
-  SpaceToken(int n, {this.breakWeight: DEFAULT_SPACE_WEIGHT}) :
-      super(_getSpaces(n));
+  SpaceToken(int n, {this.breakWeight: DEFAULT_SPACE_WEIGHT})
+      : super(_getSpaces(n));
 }
 
 class NewlineToken extends LineToken {
@@ -129,24 +129,23 @@ class NewlineToken extends LineToken {
 /// Returns a string of [n] spaces.
 String _getSpaces(int n) {
   const SPACES = const [
-    '',
-    ' ',
-    '  ',
-    '   ',
-    '    ',
-    '     ',
-    '      ',
-    '       ',
-    '        ',
-    '         ',
-    '          ',
-    '           ',
-    '            ',
-    '             ',
-    '              ',
-    '               ',
-    '                ',
-  ];
+      '',
+      ' ',
+      '  ',
+      '   ',
+      '    ',
+      '     ',
+      '      ',
+      '       ',
+      '        ',
+      '         ',
+      '          ',
+      '           ',
+      '            ',
+      '             ',
+      '              ',
+      '               ',
+      '                ',];
 
   if (n < SPACES.length) return SPACES[n];
   return " " * n;

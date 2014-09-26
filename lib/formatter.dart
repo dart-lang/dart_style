@@ -15,9 +15,8 @@ import 'source_visitor.dart';
 class FormatterOptions {
   /// Create formatter options with defaults derived (where defined) from
   /// the style guide: <http://www.dartlang.org/articles/style-guide/>.
-  const FormatterOptions({this.initialIndentationLevel: 0,
-                 this.lineSeparator: "\n",
-                 this.pageWidth: 80});
+  const FormatterOptions({this.initialIndentationLevel: 0, this.lineSeparator:
+      "\n", this.pageWidth: 80});
 
   final String lineSeparator;
   final int initialIndentationLevel;
