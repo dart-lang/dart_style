@@ -3,3 +3,4 @@ dependencies:
   analyzer: any # TODO: constraint
 dev_dependencies:
   unittest: any # TODO: constraint
+  browser: any

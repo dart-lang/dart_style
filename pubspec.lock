@@ -9,6 +9,10 @@ packages:
     description: args
     source: hosted
     version: "0.12.0+2"
+  browser:
+    description: browser
+    source: hosted
+    version: "0.10.0+2"
   collection:
     description: collection
     source: hosted
