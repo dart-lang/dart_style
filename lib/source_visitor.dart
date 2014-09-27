@@ -42,7 +42,7 @@ class SourceVisitor implements AstVisitor {
   bool emitEmptySpaces = false;
 
   /// A weight for potential breakpoints.
-  int currentBreakWeight = DEFAULT_SPACE_WEIGHT;
+  int currentWeight = Weight.normal;
 
   /// The last issued space weight.
   int lastSpaceWeight = 0;
@@ -109,7 +109,7 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.operator);
     allowContinuedLines(() {
-      levelSpace(SINGLE_SPACE_WEIGHT);
+      levelSpace(Weight.single);
       visit(node.rightHandSide);
     });
   }
@@ -1029,7 +1029,7 @@ class SourceVisitor implements AstVisitor {
         });
       } else {
         allowContinuedLines(() {
-          levelSpace(SINGLE_SPACE_WEIGHT);
+          levelSpace(Weight.single);
           visit(initializer);
         });
       }
@@ -1251,12 +1251,12 @@ class SourceVisitor implements AstVisitor {
   emitSpaces() {
     if (leadingSpaces > 0 || emitEmptySpaces) {
       if (!writer.currentLine.isWhitespace()) {
-        writer.spaces(leadingSpaces, breakWeight: currentBreakWeight);
+        writer.spaces(leadingSpaces, weight: currentWeight);
       }
 
       leadingSpaces = 0;
       emitEmptySpaces = false;
-      currentBreakWeight = DEFAULT_SPACE_WEIGHT;
+      currentWeight = Weight.normal;
     }
   }
 
@@ -1274,28 +1274,22 @@ class SourceVisitor implements AstVisitor {
     }
   }
 
-  /// Emit a breakable 'non' (zero-length) space
-  breakableNonSpace() {
-    space(n: 0);
-    emitEmptySpaces = true;
-  }
-
   /// Emit level spaces, even if empty (works as a break point).
   levelSpace(int weight, [int n = 1]) {
-    space(n: n, breakWeight: weight);
+    space(n: n, weight: weight);
     emitEmptySpaces = true;
   }
 
   /// Emit a non-breakable space.
   nonBreakingSpace() {
-    space(breakWeight: UNBREAKABLE_SPACE_WEIGHT);
+    space(weight: Weight.nonbreaking);
   }
 
   /// Emit [n] spaces.
-  space({n: 1, breakWeight: DEFAULT_SPACE_WEIGHT}) {
+  space({n: 1, weight: Weight.normal}) {
     // TODO(pquitslund): replace with a proper space token.
     leadingSpaces += n;
-    currentBreakWeight = breakWeight;
+    currentWeight = weight;
   }
 
   /// Append the given [string] to the source writer if it's non-null.

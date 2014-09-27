@@ -50,7 +50,7 @@ class LineBreaker extends LinePrinter {
         for (var i = 0; i < tokens.length; i++) {
           var token = tokens[i];
           if (token is! SpaceToken) continue;
-          if (token.breakWeight != SINGLE_SPACE_WEIGHT) continue;
+          if (token.weight != Weight.single) continue;
 
           var beforeChunk = chunk.subChunk(chunk.indent, 0, i);
           var restChunk = chunk.subChunk(chunk.indent + 2, i + 1);
@@ -61,7 +61,7 @@ class LineBreaker extends LinePrinter {
           }
 
           // Check if `var v = method(` in `var v = method(args)` fits.
-          var weight = chunk.findMinSpaceWeight();
+          var weight = chunk.minSpaceWeight;
           if (chunk.getLengthToSpaceWithWeight(weight) > maxLength) {
             chunks = [beforeChunk, restChunk];
           }
@@ -80,15 +80,15 @@ class LineBreaker extends LinePrinter {
       for (var chunk in chunks) {
         tokens = chunk.tokens;
         if (chunk.length > maxLength) {
-          if (chunk.hasAnySpace()) {
-            var weight = chunk.findMinSpaceWeight();
+          if (chunk.hasAnySpace) {
+            var weight = chunk.minSpaceWeight;
             var newIndent = chunk.indent;
-            if (weight == DEFAULT_SPACE_WEIGHT) {
+            if (weight == Weight.normal) {
               var start = 0;
               var length = 0;
               for (var i = 0; i < tokens.length; i++) {
                 var token = tokens[i];
-                if (token is SpaceToken && token.breakWeight == weight &&
+                if (token is SpaceToken && token.weight == weight &&
                     i < tokens.length - 1) {
                   var nextToken = tokens[i + 1];
                   if (length + token.length + nextToken.length > maxLength) {
@@ -109,7 +109,7 @@ class LineBreaker extends LinePrinter {
               var start = 0;
               for (var i = 0; i < tokens.length; i++) {
                 var token = tokens[i];
-                if (token is SpaceToken && token.breakWeight == weight) {
+                if (token is SpaceToken && token.weight == weight) {
                   newChunks.add(chunk.subChunk(newIndent, start, i));
                   newIndent = chunk.indent + 2;
                   start = i + 1;
@@ -147,8 +147,7 @@ class LineBreaker extends LinePrinter {
 
     for (var token in tok) {
       // Split on breakable space tokens.
-      if (token is SpaceToken &&
-          token.breakWeight != UNBREAKABLE_SPACE_WEIGHT) {
+      if (token is SpaceToken && token.weight != Weight.nonbreaking) {
         // The current token is done being accumulated.
         if (current != null) {
           tokens.add(current);

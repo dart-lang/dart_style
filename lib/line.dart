@@ -23,8 +23,8 @@ class Line {
     addSpaces(1);
   }
 
-  void addSpaces(int n, {breakWeight: DEFAULT_SPACE_WEIGHT}) {
-    tokens.add(new SpaceToken(n, breakWeight: breakWeight));
+  void addSpaces(int n, {weight: Weight.normal}) {
+    tokens.add(new SpaceToken(n, weight: weight));
   }
 
   void addToken(LineToken token) {
@@ -44,10 +44,14 @@ class Line {
   }
 }
 
-const DEFAULT_SPACE_WEIGHT = UNBREAKABLE_SPACE_WEIGHT - 1;
-/// The weight of a space after '=' in variable declaration or assignment
-const SINGLE_SPACE_WEIGHT = UNBREAKABLE_SPACE_WEIGHT - 2;
-const UNBREAKABLE_SPACE_WEIGHT = 100000000;
+class Weight {
+  static const normal = nonbreaking - 1;
+
+  /// The weight of a space after '=' in variable declaration or assignment.
+  static const single = nonbreaking - 2;
+
+  static const nonbreaking = 100000000;
+}
 
 /// A working piece of text used in calculating line breaks.
 class Chunk {
@@ -58,14 +62,24 @@ class Chunk {
     this.tokens.addAll(tokens);
   }
 
-  int get length {
-    return tokens.fold(0, (len, token) => len + token.length);
+  /// The combined length of all tokens in this chunk.
+  int get length => tokens.fold(0, (len, token) => len + token.length);
+
+  /// Whether this chunk contains any spaces.
+  bool get hasAnySpace => tokens.any((token) => token is SpaceToken);
+
+  /// Gets the minimum weight of any space in this chunk.
+  int get minSpaceWeight {
+    return tokens.fold(Weight.nonbreaking, (weight, token) {
+      if (token is! SpaceToken) return weight;
+      return math.min(weight, token.weight);
+    });
   }
 
   int getLengthToSpaceWithWeight(int weight) {
     var length = 0;
     for (LineToken token in tokens) {
-      if (token is SpaceToken && token.breakWeight == weight) {
+      if (token is SpaceToken && token.weight == weight) {
         break;
       }
       length += token.length;
@@ -75,23 +89,6 @@ class Chunk {
 
   void add(LineToken token) {
     tokens.add(token);
-  }
-
-  bool hasInitializerSpace() {
-    return tokens.any((token) => token is SpaceToken &&
-        token.breakWeight == SINGLE_SPACE_WEIGHT);
-  }
-
-  bool hasAnySpace() => tokens.any((token) => token is SpaceToken);
-
-  int findMinSpaceWeight() {
-    var minWeight = UNBREAKABLE_SPACE_WEIGHT;
-    for (var token in tokens) {
-      if (token is SpaceToken) {
-        minWeight = math.min(minWeight, token.breakWeight);
-      }
-    }
-    return minWeight;
   }
 
   Chunk subChunk(int indentLevel, int start, [int end]) {
@@ -116,9 +113,12 @@ class LineToken {
 }
 
 class SpaceToken extends LineToken {
-  final int breakWeight;
+  /// The "weight" of the space token.
+  ///
+  /// Heavier spaces resist line breaks more than lighter ones.
+  final int weight;
 
-  SpaceToken(int n, {this.breakWeight: DEFAULT_SPACE_WEIGHT}) :
+  SpaceToken(int n, {this.weight: Weight.normal}) :
       super(_getSpaces(n));
 }
 

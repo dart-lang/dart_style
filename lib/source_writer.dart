@@ -72,16 +72,15 @@ class SourceWriter {
     spaces(1);
   }
 
-  void spaces(n, {breakWeight: DEFAULT_SPACE_WEIGHT}) {
-    currentLine.addSpaces(n, breakWeight: breakWeight);
+  void spaces(n, {weight: Weight.normal}) {
+    currentLine.addSpaces(n, weight: weight);
   }
 
   void unindent() {
     --indentCount;
-    // Rather than fiddle with deletions/insertions just start fresh
-    if (currentLine.isWhitespace()) {
-      currentLine = newLine();
-    }
+
+    // Rather than fiddle with deletions/insertions just start fresh.
+    if (currentLine.isWhitespace()) currentLine = newLine();
   }
 
   Line newLine() => new Line(indentLevel: indentCount);
