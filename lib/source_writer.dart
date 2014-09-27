@@ -67,7 +67,7 @@ class SourceWriter {
     var lines = string.split(lineSeparator);
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
-      currentLine.addToken(new LineToken(line));
+      currentLine.add(new LineToken(line));
       if (i != lines.length - 1) {
         newline();
 
@@ -76,14 +76,6 @@ class SourceWriter {
         _currentLine = new Line(indent: 0);
       }
     }
-  }
-
-  void space() {
-    spaces(1);
-  }
-
-  void spaces(n, {weight: Weight.normal}) {
-    currentLine.addSpaces(n, weight: weight);
   }
 
   String toString() {

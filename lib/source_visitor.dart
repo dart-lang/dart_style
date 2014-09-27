@@ -35,14 +35,11 @@ class SourceVisitor implements AstVisitor {
   /// the next token.
   bool preserveNewlines = false;
 
-  /// A counter for spaces that should be emitted preceding the next token.
-  int leadingSpaces = 0;
-
-  /// A flag to specify whether zero-length spaces should be emmitted.
-  bool emitEmptySpaces = false;
-
-  /// A weight for potential breakpoints.
-  int currentWeight = Weight.normal;
+  /// The pending [SpaceToken] that will be emitted before the next non-space
+  /// token.
+  ///
+  /// This is added lazily so that we don't emit trailing whitespace.
+  SpaceToken _nextSpace;
 
   /// The last issued space weight.
   int lastSpaceWeight = 0;
@@ -80,10 +77,10 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
     if (node.arguments.isNotEmpty) {
       int weight = lastSpaceWeight++;
-      levelSpace(weight, 0);
+      zeroSpace(weight);
       visitCommaSeparatedNodes(
           node.arguments,
-          followedBy: () => levelSpace(weight));
+          followedBy: () => space(weight));
     }
     token(node.rightParenthesis);
   }
@@ -109,7 +106,7 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.operator);
     allowContinuedLines(() {
-      levelSpace(Weight.single);
+      space(Weight.single);
       visit(node.rightHandSide);
     });
   }
@@ -141,7 +138,7 @@ class SourceVisitor implements AstVisitor {
       if (i != 0) {
         space();
         token(operator);
-        levelSpace(weight);
+        space(weight);
       }
       visit(operands[i]);
     }
@@ -286,11 +283,11 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.question);
     allowContinuedLines(() {
-      levelSpace(weight);
+      space(weight);
       visit(node.thenExpression);
       space();
       token(node.colon);
-      levelSpace(weight);
+      space(weight);
       visit(node.elseExpression);
     });
   }
@@ -323,7 +320,7 @@ class SourceVisitor implements AstVisitor {
       newlines();
     } else {
       preserveLeadingNewlines();
-      levelSpace(lastSpaceWeight++);
+      space(lastSpaceWeight++);
     }
 
     indent(2);
@@ -445,7 +442,7 @@ class SourceVisitor implements AstVisitor {
     int weight = lastSpaceWeight++;
     token(node.functionDefinition);
 
-    levelSpace(weight);
+    space(weight);
     visit(node.expression);
     token(node.semicolon);
   }
@@ -720,10 +717,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.typeArguments);
     token(node.leftBracket);
     indent();
-    levelSpace(weight, 0);
-    visitCommaSeparatedNodes(
-        node.elements,
-        followedBy: () => levelSpace(weight));
+    zeroSpace(weight);
+    visitCommaSeparatedNodes(node.elements,  followedBy: () => space(weight));
     optionalTrailingComma(node.rightBracket);
     token(node.rightBracket, precededBy: unindent);
   }
@@ -1024,12 +1019,12 @@ class SourceVisitor implements AstVisitor {
         visit(initializer);
       } else if (initializer is BinaryExpression) {
         allowContinuedLines(() {
-          levelSpace(lastSpaceWeight);
+          space(lastSpaceWeight);
           visit(initializer);
         });
       } else {
         allowContinuedLines(() {
-          levelSpace(Weight.single);
+          space(Weight.single);
           visit(initializer);
         });
       }
@@ -1248,57 +1243,53 @@ class SourceVisitor implements AstVisitor {
     previousToken = token;
   }
 
-  emitSpaces() {
-    if (leadingSpaces > 0 || emitEmptySpaces) {
-      if (!writer.currentLine.isEmpty) {
-        // TODO(rnystrom): Remove support for leadingSpaces > 1.
-        writer.spaces(leadingSpaces, weight: currentWeight);
-      }
-
-      leadingSpaces = 0;
-      emitEmptySpaces = false;
-      currentWeight = Weight.normal;
-    }
-  }
-
   checkForSelectionUpdate(Token token) {
-    // Cache the first token on or AFTER the selection offset
+    // Cache the first token on or AFTER the selection offset.
     if (preSelection != null && selection == null) {
-      // Check for overshots
+      // Check for overshots.
       var overshot = token.offset - preSelection.offset;
       if (overshot >= 0) {
-        //TODO(pquitslund): update length (may need truncating)
+        // TODO(pquitslund): update length (may need truncating).
+        var space = _nextSpace == null ? 0 : _nextSpace.length;
         selection = new Selection(
-            writer.toString().length + leadingSpaces - overshot,
+            writer.toString().length + space - overshot,
             preSelection.length);
       }
     }
   }
 
-  /// Emit level spaces, even if empty (works as a break point).
-  levelSpace(int weight, [int n = 1]) {
-    space(n: n, weight: weight);
-    emitEmptySpaces = true;
+  /// Emit a non-zero-width space with [weight].
+  void space([int weight = Weight.normal]) {
+    assert(_nextSpace == null); // Should not already have a pending space.
+    _nextSpace = new SpaceToken(weight: weight);
   }
 
-  /// Emit a non-breakable space.
-  nonBreakingSpace() {
-    space(weight: Weight.nonbreaking);
+  /// Emits a zero-width separate that can be used to break a line.
+  void zeroSpace(int weight) {
+    assert(_nextSpace == null); // Should not already have a pending space.
+    _nextSpace = new SpaceToken(zeroWidth: true, weight: weight);
   }
 
-  /// Emit [n] spaces.
-  space({n: 1, weight: Weight.normal}) {
-    // TODO(pquitslund): replace with a proper space token.
-    leadingSpaces += n;
-    currentWeight = weight;
-  }
+  /// Emit a non-breaking space.
+  void nonBreakingSpace() => space(Weight.nonbreaking);
 
   /// Append the given [string] to the source writer if it's non-null.
-  append(String string) {
+  void append(String string) {
     if (string == null || string.isEmpty) return;
 
-    emitSpaces();
+    _emitPendingSpace();
     writer.write(string);
+  }
+
+  /// Outputs the next pending space token, if any.
+  void _emitPendingSpace() {
+    if (_nextSpace == null) return;
+
+    if (!writer.currentLine.isEmpty) {
+      writer.currentLine.add(_nextSpace);
+    }
+
+    _nextSpace = null;
   }
 
   /// Increase indentation by [n] levels.
@@ -1378,7 +1369,7 @@ class SourceVisitor implements AstVisitor {
     if (!writer.currentLine.isEmpty && previousToken != null) {
       var spaces = _countSpacesBetween(previousToken, comment);
       // Preserve one space but no more.
-      if (spaces > 0 && leadingSpaces == 0) space();
+      if (spaces > 0 && _nextSpace == null) space();
     }
 
     // If the line comment is at the beginning of a line, meaning the user has

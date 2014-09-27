@@ -33,7 +33,7 @@ class LineBreaker extends LinePrinter {
       if (i > 0) buffer.writeln();
 
       if (chunk.tokens.isNotEmpty) {
-        buffer.write(getIndentString(chunk.indent));
+        buffer.write(chunk.indentString);
       }
 
       buffer.write(chunk);

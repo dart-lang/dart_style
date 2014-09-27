@@ -9,8 +9,6 @@ import 'dart:math' as math;
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
 
-String getIndentString(int indentWidth) => _getSpaces(indentWidth * 2);
-
 class Line {
   final List<LineToken> tokens = <LineToken>[];
   int indent;
@@ -20,15 +18,11 @@ class Line {
 
   Line({this.indent: 0});
 
-  void addSpace() {
-    addSpaces(1);
-  }
+  /// Add [token] to the end of this line.
+  void add(LineToken token) {
+    // Should not add leading whitespace.
+    assert(tokens.isNotEmpty || token is! SpaceToken);
 
-  void addSpaces(int n, {weight: Weight.normal}) {
-    tokens.add(new SpaceToken(n, weight: weight));
-  }
-
-  void addToken(LineToken token) {
     tokens.add(token);
   }
 
@@ -52,6 +46,34 @@ class Weight {
 class Chunk {
   final int indent;
   final List<LineToken> tokens = <LineToken>[];
+
+  /// Gets the indentation before this chunk as a string of whitespace.
+  String get indentString {
+    var spaces = indent * SPACES_PER_INDENT;
+    // TODO(rnystrom): Profile and see if this optimization is worth it.
+    const SPACES = const [
+      '',
+      ' ',
+      '  ',
+      '   ',
+      '    ',
+      '     ',
+      '      ',
+      '       ',
+      '        ',
+      '         ',
+      '          ',
+      '           ',
+      '            ',
+      '             ',
+      '              ',
+      '               ',
+      '                ',
+    ];
+
+    if (spaces < SPACES.length) return SPACES[spaces];
+    return " " * spaces;
+  }
 
   Chunk(this.indent, [List<LineToken> tokens]) {
     this.tokens.addAll(tokens);
@@ -112,33 +134,6 @@ class SpaceToken extends LineToken {
   /// Heavier spaces resist line breaks more than lighter ones.
   final int weight;
 
-  // TODO(rnystrom): Get rid of n. Should always be one or zero.
-  SpaceToken(int n, {this.weight: Weight.normal}) :
-      super(_getSpaces(n));
-}
-
-/// Returns a string of [n] spaces.
-String _getSpaces(int n) {
-  const SPACES = const [
-    '',
-    ' ',
-    '  ',
-    '   ',
-    '    ',
-    '     ',
-    '      ',
-    '       ',
-    '        ',
-    '         ',
-    '          ',
-    '           ',
-    '            ',
-    '             ',
-    '              ',
-    '               ',
-    '                ',
-  ];
-
-  if (n < SPACES.length) return SPACES[n];
-  return " " * n;
+  SpaceToken({bool zeroWidth: false, this.weight: Weight.normal}) :
+      super(zeroWidth ? "" : " ");
 }
