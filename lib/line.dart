@@ -7,17 +7,18 @@ library dart_style.writer;
 import 'dart:math' as math;
 
 /// The number of spaces in a single level of indentation.
-const _SPACES_PER_INDENT = 2;
+const SPACES_PER_INDENT = 2;
 
 String getIndentString(int indentWidth) => _getSpaces(indentWidth * 2);
 
 class Line {
   final List<LineToken> tokens = <LineToken>[];
-  final int indentLevel;
+  int indent;
 
-  Line({this.indentLevel: 0}) {
-    if (indentLevel > 0) indent(indentLevel);
-  }
+  /// Returns `true` if the line contains no visible text.
+  bool get isEmpty => tokens.isEmpty;
+
+  Line({this.indent: 0});
 
   void addSpace() {
     addSpaces(1);
@@ -31,16 +32,10 @@ class Line {
     tokens.add(token);
   }
 
-  void clear() {
-    tokens.clear();
-  }
+  void clearIndentation() {
+    assert(tokens.isEmpty);
 
-  bool isEmpty() => tokens.isEmpty;
-
-  bool isWhitespace() => tokens.every((tok) => tok is SpaceToken);
-
-  void indent(int n) {
-    tokens.insert(0, new SpaceToken(n * _SPACES_PER_INDENT));
+    indent = 0;
   }
 }
 
@@ -63,7 +58,8 @@ class Chunk {
   }
 
   /// The combined length of all tokens in this chunk.
-  int get length => tokens.fold(0, (len, token) => len + token.length);
+  int get length => tokens.fold(indent * SPACES_PER_INDENT,
+      (len, token) => len + token.length);
 
   /// Whether this chunk contains any spaces.
   bool get hasAnySpace => tokens.any((token) => token is SpaceToken);
@@ -102,14 +98,12 @@ class Chunk {
 class LineToken {
   final String value;
 
+  /// The number of characters in the token's [value].
+  int get length => value.length;
+
   LineToken(this.value);
 
   String toString() => value;
-
-  int get length => lengthLessNewlines(value);
-
-  int lengthLessNewlines(String str) =>
-      str.endsWith('\n') ? str.length - 1 : str.length;
 }
 
 class SpaceToken extends LineToken {
@@ -118,12 +112,9 @@ class SpaceToken extends LineToken {
   /// Heavier spaces resist line breaks more than lighter ones.
   final int weight;
 
+  // TODO(rnystrom): Get rid of n. Should always be one or zero.
   SpaceToken(int n, {this.weight: Weight.normal}) :
       super(_getSpaces(n));
-}
-
-class NewlineToken extends LineToken {
-  NewlineToken(String value) : super(value);
 }
 
 /// Returns a string of [n] spaces.

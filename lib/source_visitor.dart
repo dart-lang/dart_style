@@ -60,9 +60,9 @@ class SourceVisitor implements AstVisitor {
   /// the visited nodes to the given [writer].
   SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
     this.preSelection)
-      : writer = new SourceWriter(indentCount: options.initialIndentationLevel,
+      : writer = new SourceWriter(indent: options.initialIndentationLevel,
                                 lineSeparator: options.lineSeparator,
-                                maxLineLength: options.pageWidth);
+                                pageWidth: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings, separatedBy: space);
@@ -277,7 +277,7 @@ class SourceVisitor implements AstVisitor {
     token(node.endToken /* EOF */);
 
     // Be a good citizen, end with a newline.
-    ensureTrailingNewline();
+    if (!writer.currentLine.isEmpty) writer.newline();
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -1250,7 +1250,8 @@ class SourceVisitor implements AstVisitor {
 
   emitSpaces() {
     if (leadingSpaces > 0 || emitEmptySpaces) {
-      if (!writer.currentLine.isWhitespace()) {
+      if (!writer.currentLine.isEmpty) {
+        // TODO(rnystrom): Remove support for leadingSpaces > 1.
         writer.spaces(leadingSpaces, weight: currentWeight);
       }
 
@@ -1300,18 +1301,14 @@ class SourceVisitor implements AstVisitor {
     writer.write(string);
   }
 
-  /// Indent.
+  /// Increase indentation by [n] levels.
   indent([n = 1]) {
-    while (n-- > 0) {
-      writer.indent();
-    }
+    writer.indent += n;
   }
 
-  /// Unindent
+  /// Decrease indentation by [n] levels.
   unindent([n = 1]) {
-    while (n-- > 0) {
-      writer.unindent();
-    }
+    writer.indent -= n;
   }
 
   /// Emit any detected comments and newlines or a minimum as specified
@@ -1321,8 +1318,8 @@ class SourceVisitor implements AstVisitor {
     var currentToken = comment != null ? comment : token;
 
     // Handle EOLs before newlines.
-    if (isAtEOL(comment)) {
-      emitComment(comment, previousToken);
+    if (_isAtEOL(comment)) {
+      _emitComment(comment, previousToken);
       comment = comment.next;
       currentToken = comment != null ? comment : token;
 
@@ -1334,7 +1331,7 @@ class SourceVisitor implements AstVisitor {
     if (needsNewline || preserveNewlines) {
       if (needsNewline) lines = 1;
 
-      lines = max(lines, countNewlinesBetween(previousToken, currentToken));
+      lines = max(lines, _countNewlinesBetween(previousToken, currentToken));
       preserveNewlines = false;
 
       emitNewlines(lines);
@@ -1344,16 +1341,16 @@ class SourceVisitor implements AstVisitor {
         token.previous;
 
     while (comment != null) {
-      emitComment(comment, previousToken);
+      _emitComment(comment, previousToken);
 
       var nextToken = comment.next != null ? comment.next : token;
-      var newlines = calculateNewlinesBetweenComments(comment, nextToken);
+      var newlines = _calculateNewlinesBetweenComments(comment, nextToken);
       if (newlines > 0) {
         emitNewlines(newlines);
         lines += newlines;
       } else {
         // Collapse spaces after a comment to a single space.
-        var spaces = countSpacesBetween(comment, nextToken);
+        var spaces = _countSpacesBetween(comment, nextToken);
         if (spaces > 0) space();
       }
 
@@ -1371,33 +1368,24 @@ class SourceVisitor implements AstVisitor {
     writer.newlines(count);
   }
 
-  /// Writes a newline to the output if haven't just done so.
-  void ensureTrailingNewline() {
-    if (writer.lastToken is! NewlineToken) {
-      writer.newline();
-    }
-  }
-
-  /// Test if this EOL [comment] is at the beginning of a line.
-  bool isAtBOL(Token comment) =>
-      lineInfo.getLocation(comment.offset).columnNumber == 1;
-
   /// Test if this [comment] is at the end of a line.
-  bool isAtEOL(Token comment) =>
+  bool _isAtEOL(Token comment) =>
       comment != null && comment.toString().trim().startsWith(twoSlashes) &&
-      sameLine(comment, previousToken);
+      _sameLine(comment, previousToken);
 
   /// Emit this [comment], inserting leading whitespace if appropriate.
-  emitComment(Token comment, Token previousToken) {
-    if (!writer.currentLine.isWhitespace() && previousToken != null) {
-      var spaces = countSpacesBetween(previousToken, comment);
+  void _emitComment(Token comment, Token previousToken) {
+    if (!writer.currentLine.isEmpty && previousToken != null) {
+      var spaces = _countSpacesBetween(previousToken, comment);
       // Preserve one space but no more.
       if (spaces > 0 && leadingSpaces == 0) space();
     }
 
-    // Don't indent commented-out lines.
-    if (isAtBOL(comment)) {
-      writer.currentLine.clear();
+    // If the line comment is at the beginning of a line, meaning the user has
+    // commented out the entire line, then don't indent it.
+    // TODO(rnystrom): Is this the behavior we want?
+    if (lineInfo.getLocation(comment.offset).columnNumber == 1) {
+      writer.currentLine.clearIndentation();
     }
 
     append(comment.toString().trim());
@@ -1406,73 +1394,57 @@ class SourceVisitor implements AstVisitor {
   /// Count spaces between [last] and [current].
   ///
   /// Tokens on different lines return 0.
-  int countSpacesBetween(Token last, Token current) => isEOF(last) ||
-      countNewlinesBetween(last, current) > 0 ? 0 : current.offset - last.end;
+  int _countSpacesBetween(Token last, Token current) {
+    if (last == null || last.type == TokenType.EOF) return 0;
 
-  /// Count the blank lines between [lastNode] and [currentNode].
-  int countBlankLinesBetween(AstNode lastNode, AstNode currentNode) =>
-      countNewlinesBetween(lastNode.endToken, currentNode.beginToken);
+    if (_countNewlinesBetween(last, current) > 0) return 0;
 
-  /// Count newlines preceeding this [node].
-  int countPrecedingNewlines(AstNode node) =>
-      countNewlinesBetween(node.beginToken.previous, node.beginToken);
-
-  /// Count newlines succeeding this [node].
-  int countSucceedingNewlines(AstNode node) => node == null ? 0 :
-      countNewlinesBetween(node.endToken, node.endToken.next);
+    return current.offset - last.end;
+  }
 
   /// Count the blanks between these two tokens.
-  int countNewlinesBetween(Token last, Token current) {
+  int _countNewlinesBetween(Token last, Token current) {
     if (last == null || current == null) return 0;
 
-    return linesBetween(last.end - 1, current.offset);
+    return _linesBetween(last.end - 1, current.offset);
   }
 
   /// Calculate the newlines that should separate these comments.
-  int calculateNewlinesBetweenComments(Token last, Token current) {
+  int _calculateNewlinesBetweenComments(Token last, Token current) {
     // Insist on a newline after doc comments or single line comments
     // (NOTE that EOL comments have already been processed).
-    if (isOldSingleLineDocComment(last) || isSingleLineComment(last)) {
-      return max(1, countNewlinesBetween(last, current));
+    if (_isOldSingleLineDocComment(last) || _isSingleLineComment(last)) {
+      return max(1, _countNewlinesBetween(last, current));
     } else {
-      return countNewlinesBetween(last, current);
+      return _countNewlinesBetween(last, current);
     }
   }
 
   /// Single line multi-line comments (e.g., '/** like this */').
-  bool isOldSingleLineDocComment(Token comment) =>
-      comment.lexeme.startsWith(r'/**') && singleLine(comment);
+  bool _isOldSingleLineDocComment(Token comment) =>
+      comment.lexeme.startsWith(r'/**') && _singleLine(comment);
 
   /// Test if this [token] spans just one line.
-  bool singleLine(Token token) => linesBetween(token.offset, token.end) < 1;
+  bool _singleLine(Token token) => _linesBetween(token.offset, token.end) < 1;
 
   /// Test if token [first] is on the same line as [second].
-  bool sameLine(Token first, Token second) =>
-      countNewlinesBetween(first, second) == 0;
+  bool _sameLine(Token first, Token second) =>
+      _countNewlinesBetween(first, second) == 0;
 
   /// Test if this is a multi-line [comment] (e.g., '/* ...' or '/** ...')
-  bool isMultiLineComment(Token comment) =>
+  bool _isMultiLineComment(Token comment) =>
       comment.type == TokenType.MULTI_LINE_COMMENT;
 
   /// Test if this is a single-line [comment] (e.g., '// ...')
-  bool isSingleLineComment(Token comment) =>
+  bool _isSingleLineComment(Token comment) =>
       comment.type == TokenType.SINGLE_LINE_COMMENT;
 
-  /// Test if this [comment] is a block comment (e.g., '/* like this */')..
-  bool isBlock(Token comment) =>
-      isMultiLineComment(comment) && singleLine(comment);
-
   /// Count the lines between two offsets.
-  int linesBetween(int lastOffset, int currentOffset) {
-    var lastLine =
-        lineInfo.getLocation(lastOffset).lineNumber;
-    var currentLine =
-        lineInfo.getLocation(currentOffset).lineNumber;
+  int _linesBetween(int lastOffset, int currentOffset) {
+    var lastLine = lineInfo.getLocation(lastOffset).lineNumber;
+    var currentLine = lineInfo.getLocation(currentOffset).lineNumber;
     return currentLine - lastLine;
   }
-
-  /// Test if this token is an EOF token.
-  bool isEOF(Token token) => token != null && token.type == TokenType.EOF;
 
   String toString() => writer.toString();
 

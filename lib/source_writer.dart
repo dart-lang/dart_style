@@ -9,61 +9,71 @@ import 'line_printer.dart';
 
 class SourceWriter {
   final StringBuffer buffer = new StringBuffer();
-  Line currentLine;
 
   final String lineSeparator;
-  int indentCount = 0;
 
-  LinePrinter linePrinter;
-  LineToken _lastToken;
+  /// The current indentation level.
+  ///
+  /// Subsequent lines will be created with this much leading indentation.
+  int indent = 0;
 
-  SourceWriter({this.indentCount: 0, this.lineSeparator: "\n",
-      int maxLineLength: 80}) {
-    if (maxLineLength > 0) {
-      linePrinter = new LineBreaker(maxLineLength);
-    } else {
-      linePrinter = new LinePrinter();
+  final LinePrinter printer;
+
+  Line _currentLine;
+
+  /// Gets the current [Line] being written.
+  Line get currentLine {
+    // Lazy initialize. This was we use the most up-to-date indentation when
+    // creating the line.
+    if (_currentLine == null) {
+      _currentLine = new Line(indent: indent);
     }
-    currentLine = newLine();
+
+    return _currentLine;
   }
 
-  LineToken get lastToken => _lastToken;
+  SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
+      : printer = (pageWidth > 0) ? new LineBreaker(pageWidth)
+                                  : new LinePrinter();
 
-  void indent() {
-    indentCount++;
-
-    // Rather than fiddle with deletions/insertions just start fresh.
-    if (currentLine.isWhitespace()) {
-      currentLine = newLine();
-    }
-  }
-
+  /// Prints the current line and completes it.
+  ///
+  /// If no tokens have been written since the last line was ended, this still
+  /// prints an empty line.
   void newline() {
-    if (currentLine.isWhitespace()) {
-      currentLine.tokens.clear();
+    if (_currentLine != null) {
+      buffer.writeln(printer.printLine(_currentLine));
+    } else {
+      buffer.writeln();
     }
-    _addToken(new NewlineToken(this.lineSeparator));
 
-    buffer.write(linePrinter.printLine(currentLine));
-    currentLine = newLine();
+    _currentLine = null;
   }
 
+  // TODO(rnystrom): Get rid of this, or at least limit it. We don't want to
+  // preserve all of the user's newlines.
   void newlines(int count) {
     while (count-- > 0) {
       newline();
     }
   }
 
+  /// Writes [string], the text for a single token, to the output.
+  ///
+  /// In most cases, this just appends it to the current line. However, if
+  /// [string] is for a multi-line string, it will span multiple lines. In that
+  /// case, this splits it into lines and handles each line separately.
   void write(String string) {
     var lines = string.split(lineSeparator);
-    var length = lines.length;
-    for (var i = 0; i < length; i++) {
+    for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
-      _addToken(new LineToken(line));
-      if (i != length - 1) {
+      currentLine.addToken(new LineToken(line));
+      if (i != lines.length - 1) {
         newline();
-        // No indentation for multi-line strings.
-        currentLine.clear();
+
+        // Do not indent multi-line strings since we are inside the middle of
+        // the string literal itself.
+        _currentLine = new Line(indent: 0);
       }
     }
   }
@@ -76,25 +86,17 @@ class SourceWriter {
     currentLine.addSpaces(n, weight: weight);
   }
 
-  void unindent() {
-    --indentCount;
-
-    // Rather than fiddle with deletions/insertions just start fresh.
-    if (currentLine.isWhitespace()) currentLine = newLine();
-  }
-
-  Line newLine() => new Line(indentLevel: indentCount);
-
   String toString() {
     var source = new StringBuffer(buffer.toString());
-    if (!currentLine.isWhitespace()) {
-      source.write(linePrinter.printLine(currentLine));
+
+    if (_currentLine != null) {
+      source.write(printer.printLine(_currentLine));
     }
+
     return source.toString();
   }
 
-  void _addToken(LineToken token) {
-    _lastToken = token;
-    currentLine.addToken(token);
+  void _startLine() {
+    _currentLine = new Line(indent: indent);
   }
 }

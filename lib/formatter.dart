@@ -95,7 +95,7 @@ class FormattedSource {
   final String source;
 
   /// Create a formatted [source] result, with optional [selection] information.
-  FormattedSource(this.source, [this.selection = null]);
+  FormattedSource(this.source, [this.selection]);
 }
 
 /// Dart source code formatter.
@@ -111,7 +111,7 @@ class CodeFormatter implements AnalysisErrorListener {
   /// Format the specified portion (from [offset] with [length]) of the given
   /// [source] string, optionally providing an [indentationLevel].
   FormattedSource format(CodeKind kind, String source, {int offset, int end,
-      int indentationLevel: 0, Selection selection: null}) {
+      int indentationLevel: 0, Selection selection}) {
     var startToken = _tokenize(source);
     _checkForErrors();
 

@@ -4,3 +4,4 @@ dependencies:
 dev_dependencies:
   unittest: any # TODO: constraint
   browser: any
+  path: ">=1.0.0 <2.0.0"
