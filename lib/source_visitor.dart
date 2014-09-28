@@ -105,10 +105,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    allowContinuedLines(() {
-      space(Weight.single);
-      visit(node.rightHandSide);
-    });
+    space(Weight.single);
+    visit(node.rightHandSide);
   }
 
   @override
@@ -216,14 +214,12 @@ class SourceVisitor implements AstVisitor {
     token(node.classKeyword);
     space();
     visit(node.name);
-    allowContinuedLines(() {
-      visit(node.typeParameters);
-      visitNode(node.extendsClause, precededBy: space);
-      visitNode(node.withClause, precededBy: space);
-      visitNode(node.implementsClause, precededBy: space);
-      visitNode(node.nativeClause, precededBy: space);
-      space();
-    });
+    visit(node.typeParameters);
+    visitNode(node.extendsClause, precededBy: space);
+    visitNode(node.withClause, precededBy: space);
+    visitNode(node.implementsClause, precededBy: space);
+    visitNode(node.nativeClause, precededBy: space);
+    space();
     token(node.leftBracket);
     indent();
     if (!node.members.isEmpty) {
@@ -285,14 +281,12 @@ class SourceVisitor implements AstVisitor {
     visit(node.condition);
     space();
     token(node.question);
-    allowContinuedLines(() {
-      space(weight);
-      visit(node.thenExpression);
-      space();
-      token(node.colon);
-      space(weight);
-      visit(node.elseExpression);
-    });
+    space(weight);
+    visit(node.thenExpression);
+    space();
+    token(node.colon);
+    space(weight);
+    visit(node.elseExpression);
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {
@@ -408,10 +402,8 @@ class SourceVisitor implements AstVisitor {
     token(node.whileKeyword);
     space();
     token(node.leftParenthesis);
-    allowContinuedLines(() {
-      visit(node.condition);
-      token(node.rightParenthesis);
-    });
+    visit(node.condition);
+    token(node.rightParenthesis);
     token(node.semicolon);
   }
 
@@ -432,9 +424,7 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     visit(node.uri);
-    allowContinuedLines(() {
-      visitNodes(node.combinators, precededBy: space, separatedBy: space);
-    });
+    visitNodes(node.combinators, precededBy: space, separatedBy: space);
     token(node.semicolon);
   }
 
@@ -604,12 +594,10 @@ class SourceVisitor implements AstVisitor {
   visitIfStatement(IfStatement node) {
     var hasElse = node.elseStatement != null;
     token(node.ifKeyword);
-    allowContinuedLines(() {
-      space();
-      token(node.leftParenthesis);
-      visit(node.condition);
-      token(node.rightParenthesis);
-    });
+    space();
+    token(node.leftParenthesis);
+    visit(node.condition);
+    token(node.rightParenthesis);
     space();
     if (hasElse) {
       visit(node.thenStatement);
@@ -639,10 +627,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.uri);
     token(node.deferredToken, precededBy: space);
     token(node.asToken, precededBy: space, followedBy: space);
-    allowContinuedLines(() {
-      visit(node.prefix);
-      visitNodes(node.combinators, precededBy: space, separatedBy: space);
-    });
+    visit(node.prefix);
+    visitNodes(node.combinators, precededBy: space, separatedBy: space);
     token(node.semicolon);
   }
 
@@ -857,11 +843,9 @@ class SourceVisitor implements AstVisitor {
       token(node.semicolon);
     } else {
       token(node.keyword);
-      allowContinuedLines(() {
-        space();
-        expression.accept(this);
-        token(node.semicolon);
-      });
+      space();
+      expression.accept(this);
+      token(node.semicolon);
     }
   }
 
@@ -1021,15 +1005,11 @@ class SourceVisitor implements AstVisitor {
         space();
         visit(initializer);
       } else if (initializer is BinaryExpression) {
-        allowContinuedLines(() {
-          space(lastSpaceWeight);
-          visit(initializer);
-        });
+        space(lastSpaceWeight);
+        visit(initializer);
       } else {
-        allowContinuedLines(() {
-          space(Weight.single);
-          visit(initializer);
-        });
+        space(Weight.single);
+        visit(initializer);
       }
     }
   }
@@ -1075,10 +1055,8 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     token(node.leftParenthesis);
-    allowContinuedLines(() {
-      visit(node.condition);
-      token(node.rightParenthesis);
-    });
+    visit(node.condition);
+    token(node.rightParenthesis);
     if (node.body is! EmptyStatement) {
       space();
     }
@@ -1193,13 +1171,6 @@ class SourceVisitor implements AstVisitor {
         followedBy();
       }
     }
-  }
-
-  /// Allow [code] to be continued across lines.
-  allowContinuedLines(code()) {
-    //TODO(pquitslund): add before
-    code();
-    //TODO(pquitslund): add after
   }
 
   /// Emit the given [modifier] if it's non null, followed by non-breaking
