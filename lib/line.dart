@@ -11,6 +11,8 @@ const SPACES_PER_INDENT = 2;
 
 class Line {
   final List<LineToken> tokens = <LineToken>[];
+
+  /// The number of levels of indentation at the beginning of this line.
   int indent;
 
   /// Returns `true` if the line contains no visible text.
@@ -18,12 +20,26 @@ class Line {
 
   Line({this.indent: 0});
 
-  /// Add [token] to the end of this line.
-  void add(LineToken token) {
+  void addSpace(SpaceToken space) {
     // Should not add leading whitespace.
-    assert(tokens.isNotEmpty || token is! SpaceToken);
+    assert(tokens.isNotEmpty);
 
-    tokens.add(token);
+    // Should not have back-to-back spaces.
+    assert(tokens.isEmpty || tokens.last is! SpaceToken);
+
+    tokens.add(space);
+  }
+
+  /// Add [text] to the end of the current line.
+  ///
+  /// This will append to the end of the last token if the last token is also
+  /// text. Otherwise, it creates a new token.
+  void write(String text) {
+    if (tokens.isEmpty || tokens.last is SpaceToken) {
+      tokens.add(new LineToken(text));
+    } else {
+      tokens[tokens.length - 1] = new LineToken(tokens.last.value + text);
+    }
   }
 
   void clearIndentation() {

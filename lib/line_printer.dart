@@ -41,7 +41,7 @@ class LineBreaker extends LinePrinter {
   }
 
   List<Chunk> breakLine(Line line) {
-    var tokens = _mergeTokens(line.tokens);
+    var tokens = line.tokens;
     var chunks = <Chunk>[new Chunk(line.indent, tokens)];
 
     // Try SINGLE_SPACE_WEIGHT.
@@ -136,41 +136,5 @@ class LineBreaker extends LinePrinter {
     }
 
     return chunks;
-  }
-
-  /// Merges tokens that don't affect line breaking.
-  ///
-  /// Since most tokens aren't places where line breaks can occur, we don't
-  /// need to treat them individually when finding break points. This takes
-  /// contiguous spans of non-breaking tokens and merges them.
-  List<LineToken> _mergeTokens(List<LineToken> tok) {
-    var tokens = <LineToken>[];
-    var current;
-
-    for (var token in tok) {
-      // Split on breakable space tokens.
-      if (token is SpaceToken) {
-        // The current token is done being accumulated.
-        if (current != null) {
-          tokens.add(current);
-          current = null;
-        }
-
-        // This space is its own token.
-        tokens.add(token);
-      } else {
-        // Any other token can't affect line breaking, so we can combine it
-        // with the previous one.
-        if (current == null) {
-          current = token;
-        } else {
-          current = new LineToken(current.value + token.value);
-        }
-      }
-    }
-
-    if (current != null) tokens.add(current);
-
-    return tokens;
   }
 }

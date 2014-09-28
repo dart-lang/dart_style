@@ -67,7 +67,7 @@ class SourceWriter {
     var lines = string.split(lineSeparator);
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
-      currentLine.add(new LineToken(line));
+      currentLine.write(line);
       if (i != lines.length - 1) {
         newline();
 

@@ -1289,7 +1289,7 @@ class SourceVisitor implements AstVisitor {
     if (_nextSpace == null) return;
 
     if (!writer.currentLine.isEmpty) {
-      writer.currentLine.add(_nextSpace);
+      writer.currentLine.addSpace(_nextSpace);
     }
 
     _nextSpace = null;
