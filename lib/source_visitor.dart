@@ -119,25 +119,28 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
-    Token operator = node.operator;
-    TokenType operatorType = operator.type;
-    int addOperands(List<Expression> operands, Expression e, int i) {
-      if (e is BinaryExpression && e.operator.type == operatorType) {
-        i = addOperands(operands, e.leftOperand, i);
-        i = addOperands(operands, e.rightOperand, i);
+    var operands = [];
+
+    // Flatten out a tree/chain of the same operator type and give them all the
+    // same space weight. If we break on this operator, we will break all of
+    // them.
+    addOperands(Expression e) {
+      if (e is BinaryExpression && e.operator.type == node.operator.type) {
+        addOperands(e.leftOperand);
+        addOperands(e.rightOperand);
       } else {
-        operands.insert(i++, e);
+        operands.add(e);
       }
-      return i;
     }
-    List<Expression> operands = [];
-    addOperands(operands, node.leftOperand, 0);
-    addOperands(operands, node.rightOperand, operands.length);
-    int weight = lastSpaceWeight++;
-    for (int i = 0; i < operands.length; i++) {
+
+    addOperands(node.leftOperand);
+    addOperands(node.rightOperand);
+    var weight = lastSpaceWeight++;
+
+    for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
         space();
-        token(operator);
+        token(node.operator);
         space(weight);
       }
       visit(operands[i]);

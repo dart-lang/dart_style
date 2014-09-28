@@ -118,12 +118,12 @@ class CodeFormatter implements AnalysisErrorListener {
     var node = _parse(kind, startToken);
     _checkForErrors();
 
-    var formatter = new SourceVisitor(options, lineInfo, source, selection);
-    node.accept(formatter);
+    var visitor = new SourceVisitor(options, lineInfo, source, selection);
+    node.accept(visitor);
 
-    var formattedSource = formatter.writer.toString();
+    var formattedSource = visitor.writer.toString();
 
-    return new FormattedSource(formattedSource, formatter.selection);
+    return new FormattedSource(formattedSource, visitor.selection);
   }
 
   void onError(AnalysisError error) {
