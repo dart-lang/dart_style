@@ -41,9 +41,6 @@ class SourceVisitor implements AstVisitor {
   /// This is added lazily so that we don't emit trailing whitespace.
   SpaceToken _nextSpace;
 
-  /// The last issued space weight.
-  int lastSpaceWeight = 0;
-
   /// Original pre-format selection information (may be null).
   final Selection preSelection;
 
@@ -76,11 +73,8 @@ class SourceVisitor implements AstVisitor {
   visitArgumentList(ArgumentList node) {
     token(node.leftParenthesis);
     if (node.arguments.isNotEmpty) {
-      int weight = lastSpaceWeight++;
-      zeroSpace(weight);
-      visitCommaSeparatedNodes(
-          node.arguments,
-          followedBy: () => space(weight));
+      zeroSpace();
+      visitCommaSeparatedNodes(node.arguments, followedBy: space);
     }
     token(node.rightParenthesis);
   }
@@ -105,7 +99,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    space(Weight.single);
+    space();
     visit(node.rightHandSide);
   }
 
@@ -133,13 +127,12 @@ class SourceVisitor implements AstVisitor {
 
     addOperands(node.leftOperand);
     addOperands(node.rightOperand);
-    var weight = lastSpaceWeight++;
 
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
         space();
         token(node.operator);
-        space(weight);
+        space();
       }
       visit(operands[i]);
     }
@@ -277,15 +270,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConditionalExpression(ConditionalExpression node) {
-    int weight = lastSpaceWeight++;
     visit(node.condition);
     space();
     token(node.question);
-    space(weight);
+    space();
     visit(node.thenExpression);
     space();
     token(node.colon);
-    space(weight);
+    space();
     visit(node.elseExpression);
   }
 
@@ -317,7 +309,7 @@ class SourceVisitor implements AstVisitor {
       newlines();
     } else {
       preserveLeadingNewlines();
-      space(lastSpaceWeight++);
+      space();
     }
 
     indent(2);
@@ -432,10 +424,9 @@ class SourceVisitor implements AstVisitor {
     // The "async" or "sync" keyword.
     token(node.keyword, followedBy: space);
 
-    int weight = lastSpaceWeight++;
     token(node.functionDefinition);
 
-    space(weight);
+    space();
     visit(node.expression);
     token(node.semicolon);
   }
@@ -623,7 +614,7 @@ class SourceVisitor implements AstVisitor {
   visitImportDirective(ImportDirective node) {
     visitDirectiveMetadata(node.metadata);
     token(node.keyword);
-    nonBreakingSpace();
+    space();
     visit(node.uri);
     token(node.deferredToken, precededBy: space);
     token(node.asToken, precededBy: space, followedBy: space);
@@ -645,7 +636,7 @@ class SourceVisitor implements AstVisitor {
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {
     token(node.keyword);
-    nonBreakingSpace();
+    space();
     visit(node.constructorName);
     visit(node.argumentList);
   }
@@ -701,13 +692,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitListLiteral(ListLiteral node) {
-    int weight = lastSpaceWeight++;
     modifier(node.constKeyword);
     visit(node.typeArguments);
     token(node.leftBracket);
     indent();
-    zeroSpace(weight);
-    visitCommaSeparatedNodes(node.elements,  followedBy: () => space(weight));
+    zeroSpace();
+    visitCommaSeparatedNodes(node.elements,  followedBy: space);
     optionalTrailingComma(node.rightBracket);
     token(node.rightBracket, precededBy: unindent);
   }
@@ -745,7 +735,7 @@ class SourceVisitor implements AstVisitor {
     if (!node.isGetter) {
       visit(node.parameters);
     }
-    visitPrefixedBody(nonBreakingSpace, node.body);
+    visitPrefixedBody(space, node.body);
   }
 
   visitMethodInvocation(MethodInvocation node) {
@@ -862,7 +852,7 @@ class SourceVisitor implements AstVisitor {
   visitSimpleFormalParameter(SimpleFormalParameter node) {
     visitMemberMetadata(node.metadata);
     modifier(node.keyword);
-    visitNode(node.type, followedBy: nonBreakingSpace);
+    visitNode(node.type, followedBy: space);
     visit(node.identifier);
   }
 
@@ -1005,10 +995,10 @@ class SourceVisitor implements AstVisitor {
         space();
         visit(initializer);
       } else if (initializer is BinaryExpression) {
-        space(lastSpaceWeight);
+        space();
         visit(initializer);
       } else {
-        space(Weight.single);
+        space();
         visit(initializer);
       }
     }
@@ -1232,23 +1222,20 @@ class SourceVisitor implements AstVisitor {
     }
   }
 
-  /// Emit a non-zero-width space with [weight].
-  void space([int weight = Weight.normal]) {
-    assert(_nextSpace == null); // Should not already have a pending space.
-    _nextSpace = new SpaceToken(weight: weight);
-  }
-
-  /// Emits a zero-width separate that can be used to break a line.
-  void zeroSpace(int weight) {
-    assert(_nextSpace == null); // Should not already have a pending space.
-    _nextSpace = new SpaceToken(zeroWidth: true, weight: weight);
-  }
-
   /// Emit a non-breaking space.
   ///
   /// Since these, by definition, cannot affect line breaking, they are treated
   /// like regular non-space text.
-  void nonBreakingSpace() => writer.write(" ");
+  void space() {
+    assert(_nextSpace == null); // Should not already have a pending space.
+    _nextSpace = new SpaceToken();
+  }
+
+  /// Emits a zero-width separator that can be used to break a line.
+  void zeroSpace() {
+    assert(_nextSpace == null); // Should not already have a pending space.
+    _nextSpace = new SpaceToken(zeroWidth: true);
+  }
 
   /// Append the given [string] to the source writer if it's non-null.
   void append(String string) {

@@ -33,8 +33,7 @@ class SourceWriter {
   }
 
   SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
-      : printer = (pageWidth > 0) ? new LineBreaker(pageWidth)
-                                  : new LinePrinter();
+      : printer = new LinePrinter(pageWidth: pageWidth);
 
   /// Prints the current line and completes it.
   ///

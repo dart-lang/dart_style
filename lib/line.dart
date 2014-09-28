@@ -4,8 +4,6 @@
 
 library dart_style.writer;
 
-import 'dart:math' as math;
-
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
 
@@ -48,17 +46,6 @@ class Line {
   }
 }
 
-class Weight {
-  static const normal = none - 1;
-
-  /// The weight of a space after '=' in variable declaration or assignment.
-  static const single = none - 2;
-
-  // TODO(rnystrom): Hackish. Get rid of this.
-  /// This means there are no breaking spaces in the text.
-  static const none = 100000000;
-}
-
 /// A working piece of text used in calculating line breaks.
 class Chunk {
   final int indent;
@@ -77,25 +64,6 @@ class Chunk {
 
   /// Whether this chunk contains any spaces.
   bool get hasAnySpace => tokens.any((token) => token is SpaceToken);
-
-  /// Gets the minimum weight of any space in this chunk.
-  int get minSpaceWeight {
-    return tokens.fold(Weight.none, (weight, token) {
-      if (token is! SpaceToken) return weight;
-      return math.min(weight, token.weight);
-    });
-  }
-
-  int getLengthToSpaceWithWeight(int weight) {
-    var length = 0;
-    for (LineToken token in tokens) {
-      if (token is SpaceToken && token.weight == weight) {
-        break;
-      }
-      length += token.length;
-    }
-    return length;
-  }
 
   void add(LineToken token) {
     tokens.add(token);
@@ -121,11 +89,5 @@ class LineToken {
 }
 
 class SpaceToken extends LineToken {
-  /// The "weight" of the space token.
-  ///
-  /// Heavier spaces resist line breaks more than lighter ones.
-  final int weight;
-
-  SpaceToken({bool zeroWidth: false, this.weight: Weight.normal}) :
-      super(zeroWidth ? "" : " ");
+  SpaceToken({bool zeroWidth: false}) : super(zeroWidth ? "" : " ");
 }
