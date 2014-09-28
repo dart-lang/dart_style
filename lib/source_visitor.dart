@@ -35,11 +35,10 @@ class SourceVisitor implements AstVisitor {
   /// the next token.
   bool preserveNewlines = false;
 
-  /// The pending [SpaceToken] that will be emitted before the next non-space
-  /// token.
+  /// True if a space should be emitted before the next non-space text.
   ///
   /// This is added lazily so that we don't emit trailing whitespace.
-  SpaceToken _nextSpace;
+  bool _pendingSpace = false;
 
   /// Original pre-format selection information (may be null).
   final Selection preSelection;
@@ -1214,7 +1213,7 @@ class SourceVisitor implements AstVisitor {
       var overshot = token.offset - preSelection.offset;
       if (overshot >= 0) {
         // TODO(pquitslund): update length (may need truncating).
-        var space = _nextSpace == null ? 0 : _nextSpace.length;
+        var space = _pendingSpace ? 1 : 0;
         selection = new Selection(
             writer.toString().length + space - overshot,
             preSelection.length);
@@ -1227,14 +1226,14 @@ class SourceVisitor implements AstVisitor {
   /// Since these, by definition, cannot affect line breaking, they are treated
   /// like regular non-space text.
   void space() {
-    assert(_nextSpace == null); // Should not already have a pending space.
-    _nextSpace = new SpaceToken();
+    assert(!_pendingSpace); // Should not already have a pending space.
+    _pendingSpace = true;
   }
 
   /// Emits a zero-width separator that can be used to break a line.
   void zeroSpace() {
-    assert(_nextSpace == null); // Should not already have a pending space.
-    _nextSpace = new SpaceToken(zeroWidth: true);
+    // TODO(rnystrom): Does nothing now that line wrapping is (temporarily)
+    // removed. Preserved so I can remember where these should go.
   }
 
   /// Append the given [string] to the source writer if it's non-null.
@@ -1247,13 +1246,13 @@ class SourceVisitor implements AstVisitor {
 
   /// Outputs the next pending space token, if any.
   void _emitPendingSpace() {
-    if (_nextSpace == null) return;
+    if (!_pendingSpace) return;
 
     if (!writer.currentLine.isEmpty) {
-      writer.currentLine.addSpace(_nextSpace);
+      writer.currentLine.write(" ");
     }
 
-    _nextSpace = null;
+    _pendingSpace = false;
   }
 
   /// Increase indentation by [n] levels.
@@ -1333,7 +1332,7 @@ class SourceVisitor implements AstVisitor {
     if (!writer.currentLine.isEmpty && previousToken != null) {
       var spaces = _countSpacesBetween(previousToken, comment);
       // Preserve one space but no more.
-      if (spaces > 0 && _nextSpace == null) space();
+      if (spaces > 0 && !_pendingSpace) space();
     }
 
     // If the line comment is at the beginning of a line, meaning the user has
