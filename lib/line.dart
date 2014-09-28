@@ -44,7 +44,6 @@ class Line {
 
   void clearIndentation() {
     assert(tokens.isEmpty);
-
     indent = 0;
   }
 }
