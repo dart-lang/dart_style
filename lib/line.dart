@@ -48,32 +48,7 @@ class Chunk {
   final List<LineToken> tokens = <LineToken>[];
 
   /// Gets the indentation before this chunk as a string of whitespace.
-  String get indentString {
-    var spaces = indent * SPACES_PER_INDENT;
-    // TODO(rnystrom): Profile and see if this optimization is worth it.
-    const SPACES = const [
-      '',
-      ' ',
-      '  ',
-      '   ',
-      '    ',
-      '     ',
-      '      ',
-      '       ',
-      '        ',
-      '         ',
-      '          ',
-      '           ',
-      '            ',
-      '             ',
-      '              ',
-      '               ',
-      '                ',
-    ];
-
-    if (spaces < SPACES.length) return SPACES[spaces];
-    return " " * spaces;
-  }
+  String get indentString => " " * (indent * SPACES_PER_INDENT);
 
   Chunk(this.indent, [List<LineToken> tokens]) {
     this.tokens.addAll(tokens);

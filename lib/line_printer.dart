@@ -23,8 +23,6 @@ class LineBreaker extends LinePrinter {
   /// Creates a new breaker that tries to fit lines within [pageWidth].
   LineBreaker(this.pageWidth);
 
-  // TODO(rnystrom): Pass in StringBuffer instead of creating new one every
-  // time.
   String printLine(Line line) {
     var buffer = new StringBuffer();
     var chunks = breakLine(line);
