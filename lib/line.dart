@@ -34,12 +34,14 @@ class Line {
 }
 
 class Weight {
-  static const normal = nonbreaking - 1;
+  static const normal = none - 1;
 
   /// The weight of a space after '=' in variable declaration or assignment.
-  static const single = nonbreaking - 2;
+  static const single = none - 2;
 
-  static const nonbreaking = 100000000;
+  // TODO(rnystrom): Hackish. Get rid of this.
+  /// This means there are no breaking spaces in the text.
+  static const none = 100000000;
 }
 
 /// A working piece of text used in calculating line breaks.
@@ -63,7 +65,7 @@ class Chunk {
 
   /// Gets the minimum weight of any space in this chunk.
   int get minSpaceWeight {
-    return tokens.fold(Weight.nonbreaking, (weight, token) {
+    return tokens.fold(Weight.none, (weight, token) {
       if (token is! SpaceToken) return weight;
       return math.min(weight, token.weight);
     });

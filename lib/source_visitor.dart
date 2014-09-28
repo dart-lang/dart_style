@@ -1271,7 +1271,10 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Emit a non-breaking space.
-  void nonBreakingSpace() => space(Weight.nonbreaking);
+  ///
+  /// Since these, by definition, cannot affect line breaking, they are treated
+  /// like regular non-space text.
+  void nonBreakingSpace() => writer.write(" ");
 
   /// Append the given [string] to the source writer if it's non-null.
   void append(String string) {

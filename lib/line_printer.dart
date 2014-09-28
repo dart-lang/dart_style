@@ -149,7 +149,7 @@ class LineBreaker extends LinePrinter {
 
     for (var token in tok) {
       // Split on breakable space tokens.
-      if (token is SpaceToken && token.weight != Weight.nonbreaking) {
+      if (token is SpaceToken) {
         // The current token is done being accumulated.
         if (current != null) {
           tokens.add(current);
