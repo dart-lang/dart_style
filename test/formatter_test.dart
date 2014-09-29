@@ -8,6 +8,7 @@ import 'dart:io';
 
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:path/path.dart' as p;
+import 'package:unittest/compact_vm_config.dart';
 import 'package:unittest/unittest.dart';
 
 import 'package:dart_style/dart_style.dart';
@@ -18,6 +19,11 @@ import 'token_stream_comparator.dart';
 final testDataDir = p.join(p.dirname(p.fromUri(Platform.script)), 'data');
 
 main() {
+  // Tidy up the unittest output.
+  filterStacks = true;
+  formatStacks = true;
+  useCompactVMConfiguration();
+
   testDirectory("splitting");
 
   // TODO(rnystrom): Eventually move all of these to using testDirectory().
@@ -1317,7 +1323,7 @@ void testDirectory(String name) {
       lines = lines.skip(1).toList();
 
       for (var i = 1; i < lines.length; i++) {
-        var startLine = i;
+        var startLine = i + 1;
 
         var input = "";
         while (!lines[i].startsWith("<<<")) {

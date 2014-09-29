@@ -147,4 +147,26 @@ class LinePrinter {
 
     return lines;
   }
+
+  /// Prints [line] to stdout with split chunks made visible.
+  ///
+  /// This is just for debugging.
+  void _dumpLine(Line line) {
+    var buffer = new StringBuffer();
+    for (var chunk in line.chunks) {
+      if (chunk is TextChunk) {
+        buffer.write(chunk);
+      } else {
+        var split = chunk as SplitChunk;
+        buffer
+            ..write("‹")
+            ..write(split.isNewline ? "↵" : "")
+            ..write("→" * split.indent)
+            ..write(split.text)
+            ..write("›");
+      }
+    }
+
+    print(buffer);
+  }
 }

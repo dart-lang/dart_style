@@ -75,11 +75,11 @@ class SourceVisitor implements AstVisitor {
     if (node.arguments.isNotEmpty) {
       zeroSpace();
       var splitter = new Splitter();
-      indentSplit(splitter, 2);
+      split(splitter, indent: 2);
       visitCommaSeparatedNodes(node.arguments, followedBy: () {
-        spaceSplit(splitter);
+        split(splitter, text: " ");
       });
-      unindentSplit(splitter, 2);
+      split(splitter, indent: -2, isNewline: false);
     }
     token(node.rightParenthesis);
   }
@@ -702,13 +702,13 @@ class SourceVisitor implements AstVisitor {
     token(node.leftBracket);
 
     var splitter = new ListSplitter();
-    indentSplit(splitter);
+    split(splitter, indent: 1);
     indent();
     zeroSpace();
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
-      spaceSplit(splitter);
+      split(splitter, text: " ");
     });
-    unindentSplit(splitter);
+    split(splitter, indent: -1);
     optionalTrailingComma(node.rightBracket);
     token(node.rightBracket, precededBy: unindent);
   }
@@ -998,20 +998,17 @@ class SourceVisitor implements AstVisitor {
 
   visitVariableDeclaration(VariableDeclaration node) {
     visit(node.name);
+
     if (node.initializer != null) {
       space();
       token(node.equals);
-      var initializer = node.initializer;
-      if (initializer is ListLiteral || initializer is MapLiteral) {
-        space();
-        visit(initializer);
-      } else if (initializer is BinaryExpression) {
-        space();
-        visit(initializer);
-      } else {
-        space();
-        visit(initializer);
-      }
+
+      var splitter = new Splitter();
+      split(splitter, text: " ", indent: 2);
+
+      visit(node.initializer);
+
+      split(splitter, indent: -2, isNewline: false);
     }
   }
 
@@ -1020,31 +1017,32 @@ class SourceVisitor implements AstVisitor {
     modifier(node.keyword);
     visitNode(node.type, followedBy: space);
 
-    var variables = node.variables;
-    // Decls with initializers get their own lines (dartbug.com/16849)
-    if (variables.any((v) => (v.initializer != null))) {
-      var size = variables.length;
-      if (size > 0) {
-        var variable;
-        for (var i = 0; i < size; i++) {
-          variable = variables[i];
-          if (i > 0) {
-            var comma = variable.beginToken.previous;
-            token(comma);
-            newlines();
-          }
-          if (i == 1) {
-            indent(2);
-          }
-          variable.accept(this);
-        }
-        if (size > 1) {
-          unindent(2);
-        }
+    // If there are multiple declarations and any of them have initializers,
+    // put them all on their own lines.
+    if (node.variables.length > 1 &&
+        node.variables.any((variable) => variable.initializer != null)) {
+      visit(node.variables.first);
+
+      // Indent variables after the first one to line up past "var".
+      indent(2);
+
+      for (var variable in node.variables.skip(1)) {
+        token(variable.beginToken.previous); // Comma.
+        newlines();
+
+        visit(variable);
       }
-    } else {
-      visitCommaSeparatedNodes(node.variables);
+
+      unindent(2);
+      return;
     }
+
+    var splitter = new Splitter();
+    split(splitter, indent: 2, isNewline: false);
+    visitCommaSeparatedNodes(node.variables, followedBy: () {
+      split(splitter, text: " ");
+    });
+    split(splitter, indent: -2, isNewline: false);
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {
@@ -1138,6 +1136,9 @@ class SourceVisitor implements AstVisitor {
 
   /// Visit a comma-separated list of [nodes] if not null.
   visitCommaSeparatedNodes(NodeList<AstNode> nodes, {followedBy(): null}) {
+    // TODO(rnystrom): As I move stuff over to the new split architecture, more
+    // calls to this are passing in a followedBy to handle splitting. If they
+    // eventually all do that, move that into here.
     if (nodes == null || nodes.isEmpty) return;
 
     if (followedBy == null) followedBy = space;
@@ -1258,17 +1259,11 @@ class SourceVisitor implements AstVisitor {
     _pendingSpace = false;
   }
 
-  void indentSplit(Splitter splitter, [int indent = 1]) {
-    writer.currentLine.split(new SplitChunk(splitter, "", indent));
-  }
-
-  void unindentSplit(Splitter splitter, [int unindent = 1]) {
-    writer.currentLine.split(new SplitChunk(splitter, "", -unindent));
-  }
-
-  void spaceSplit(Splitter splitter) {
-    // TODO(rnystrom): What about pending/leading comments and spaces?
-    writer.currentLine.split(new SplitChunk(splitter, " ", 0));
+  /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
+  void split(Splitter splitter,
+      {String text: "", int indent: 0, bool isNewline: true}) {
+     writer.currentLine.split(new SplitChunk(splitter, text: text,
+        indent: indent, isNewline: isNewline));
   }
 
   /// Increase indentation by [n] levels.

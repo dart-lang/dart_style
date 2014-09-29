@@ -28,46 +28,6 @@ main() {
           a0123456789012345 * b0123456789012345,
           c0123456789012345 * d0123456789012345);
 }
->>> variable declaration - initializer doesn't fit one line, wrap inside, keep name
-main() {
-  var result = myFunction(a0123456789012345 * b0123456789012345, c0123456789012345 * d0123456789012345);
-}
-<<<
-main() {
-  var result = myFunction(
-      a0123456789012345 * b0123456789012345,
-      c0123456789012345 * d0123456789012345);
-}
->>> variable declaration - initializer fits one line
-main() {
-  var variableLoooooooooooooooong = functionLoooooooooooooooooooooooooooooooooooong(1, 2, 3, 4);
-}
-<<<
-main() {
-  var variableLoooooooooooooooong =
-      functionLoooooooooooooooooooooooooooooooooooong(1, 2, 3, 4);
-}
->>> variable declaration - initializer doesn't fit one line, name too long
-main() {
-  var variableLoooooooooooooooong = functionLoooooooooooooooooooooooooooooooooooong(a0123456789012345 * b0123456789012345, c0123456789012345 * d0123456789012345);
-}
-<<<
-main() {
-  var variableLoooooooooooooooong =
-      functionLoooooooooooooooooooooooooooooooooooong(
-          a0123456789012345 * b0123456789012345,
-          c0123456789012345 * d0123456789012345);
-}
->>> variable declaration - with binary expression
-main() {
-  int result = a01234567890123456789 * b01234567890123456789 + c01234567890123456789 * d01234567890123456789;
-}
-<<<
-main() {
-  int result =
-      a01234567890123456789 * b01234567890123456789 +
-      c01234567890123456789 * d01234567890123456789;
-}
 >>> arguments
 main() {
   myFunction(a0123456789012345 * b0123456789012345, c0123456789012345 * d0123456789012345);
