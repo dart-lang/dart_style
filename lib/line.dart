@@ -2,36 +2,91 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.writer;
+// TODO(rnystrom): Rename and move into src.
+library dart_style.line;
 
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
 
 class Line {
-  final List<String> tokens = [];
+  final chunks = <Chunk>[];
+  final splitters = new Set<Splitter>();
 
   /// The number of levels of indentation at the beginning of this line.
   int indent;
 
   /// Returns `true` if the line contains no visible text.
-  bool get isEmpty => tokens.isEmpty;
+  bool get isEmpty => chunks.isEmpty;
+
+  /// Gets the length of the line if no splits are taken into account.
+  int get unsplitLength {
+    var length = SPACES_PER_INDENT * indent;
+    for (var chunk in chunks) {
+      length += chunk.text.length;
+    }
+
+    return length;
+  }
 
   Line({this.indent: 0});
 
   /// Add [text] to the end of the current line.
   ///
-  /// This will append to the end of the last token if the last token is also
-  /// text. Otherwise, it creates a new token.
+  /// This will append to the end of the last chunk if the last chunk is also
+  /// text. Otherwise, it creates a new chunk.
   void write(String text) {
-    if (tokens.isEmpty) {
-      tokens.add(text);
+    if (chunks.isEmpty || chunks.last is! TextChunk) {
+      chunks.add(new TextChunk(text));
     } else {
-      tokens[tokens.length - 1] = tokens.last + text;
+      var last = (chunks.last as TextChunk).text;
+      chunks[chunks.length - 1] = new TextChunk(last + text);
     }
   }
 
+  void split(SplitChunk split) {
+    chunks.add(split);
+    splitters.add(split.splitter);
+  }
+
   void clearIndentation() {
-    assert(tokens.isEmpty);
+    assert(chunks.isEmpty);
     indent = 0;
   }
+}
+
+abstract class Chunk {
+  String get text;
+}
+
+class TextChunk implements Chunk {
+  final String text;
+
+  TextChunk(this.text);
+
+  String toString() => text;
+}
+
+/// A split chunk may expand to a newline (with some leading indentation) or
+/// some other inline string based on the length of the line.
+///
+/// Each split chunk is owned by splitter that determines when it is and is
+/// not in effect.
+class SplitChunk implements Chunk {
+  final Splitter splitter;
+
+  /// The text for this chunk when it's not split into a newline.
+  final String text;
+
+  /// The amount of indentation this split increases or decreases subsequent
+  /// lines.
+  final int indent;
+
+  SplitChunk(this.splitter, this.text, this.indent);
+
+  // TODO(rnystrom): Handle indentation.
+  String toString() => splitter.isSplit ? "\n" : text;
+}
+
+class Splitter {
+  bool isSplit = false;
 }

@@ -8,7 +8,7 @@ import 'line.dart';
 import 'line_printer.dart';
 
 class SourceWriter {
-  final StringBuffer buffer = new StringBuffer();
+  final buffer = new StringBuffer();
 
   final String lineSeparator;
 

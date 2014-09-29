@@ -694,11 +694,30 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visit(node.typeArguments);
     token(node.leftBracket);
+
+    var splitter = new Splitter();
+    indentSplit(splitter);
     indent();
     zeroSpace();
-    visitCommaSeparatedNodes(node.elements,  followedBy: space);
+    visitCommaSeparatedNodes(node.elements,  followedBy: () {
+      spaceSplit(splitter);
+    });
+    unindentSplit(splitter);
     optionalTrailingComma(node.rightBracket);
     token(node.rightBracket, precededBy: unindent);
+  }
+
+  void indentSplit(Splitter splitter) {
+    writer.currentLine.split(new SplitChunk(splitter, "", 1));
+  }
+
+  void unindentSplit(Splitter splitter) {
+    writer.currentLine.split(new SplitChunk(splitter, "", -1));
+  }
+
+  void spaceSplit(Splitter splitter) {
+    // TODO(rnystrom): What about pending/leading comments and spaces?
+    writer.currentLine.split(new SplitChunk(splitter, " ", 0));
   }
 
   visitMapLiteral(MapLiteral node) {
@@ -1126,24 +1145,16 @@ class SourceVisitor implements AstVisitor {
 
   /// Visit a comma-separated list of [nodes] if not null.
   visitCommaSeparatedNodes(NodeList<AstNode> nodes, {followedBy(): null}) {
-    //TODO(pquitslund): handle this more neatly
-    if (followedBy == null) {
-      followedBy = space;
-    }
-    if (nodes != null) {
-      var size = nodes.length;
-      if (size > 0) {
-        var node;
-        for (var i = 0; i < size; i++) {
-          node = nodes[i];
-          if (i > 0) {
-            var comma = node.beginToken.previous;
-            token(comma);
-            followedBy();
-          }
-          node.accept(this);
-        }
-      }
+    if (nodes == null || nodes.isEmpty) return;
+
+    if (followedBy == null) followedBy = space;
+
+    visit(nodes.first);
+
+    for (var node in nodes.skip(1)) {
+      token(node.beginToken.previous); // Comma.
+      followedBy();
+      visit(node);
     }
   }
 

@@ -16,8 +16,41 @@ class LinePrinter {
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
     var buffer = new StringBuffer();
-    buffer.write(" " * (line.indent * SPACES_PER_INDENT));
-    buffer.writeAll(line.tokens);
+
+    var length = line.unsplitLength;
+    if (length <= pageWidth) {
+      // No splitting needed.
+      buffer.write(" " * (line.indent * SPACES_PER_INDENT));
+      buffer.writeAll(line.chunks);
+    } else {
+      // Determine how to split the lines.
+      // TODO(rnystrom): Do real logic here. Right now, it just splits
+      // everything.
+      for (var splitter in line.splitters) splitter.isSplit = true;
+
+      var indent = line.indent;
+
+      writeIndent() {
+        buffer.write(" " * (indent * SPACES_PER_INDENT));
+      }
+
+      writeIndent();
+      for (var chunk in line.chunks) {
+        if (chunk is TextChunk) {
+          buffer.write(chunk.text);
+        } else {
+          var split = chunk as SplitChunk;
+          if (split.splitter.isSplit) {
+            buffer.write("\n");
+            indent += split.indent;
+            writeIndent();
+          } else {
+            buffer.write(chunk.text);
+          }
+        }
+      }
+    }
+
     return buffer.toString();
   }
 }
