@@ -2,8 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO(rnystrom): Rename and move into src.
-library dart_style.line;
+library dart_style.src.line;
+
+import 'splitter.dart';
 
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
@@ -90,45 +91,4 @@ class SplitChunk implements Chunk {
   SplitChunk(this.splitter, this.text, this.indent);
 
   String toString() => splitter.isSplit ? "\n" : text;
-}
-
-class Splitter {
-  /// Whether or not this splitter is currently in effect.
-  ///
-  /// If `false`, then the splitter is not trying to do any line splitting. If
-  /// `true`, it is.
-  bool isSplit = false;
-
-  /// Returns `true` if this splitter is allowed to be split given that its
-  /// splits mapped to [splitLines].
-  ///
-  /// This lets a splitter do validation *after* all other splits have been
-  /// applied it. It allows things like list literals to base their splitting
-  /// on how their contents ended up being split.
-  bool isValidSplit(List<int> splitLines) => true;
-
-  /// Returns `true` if this splitter is allowed to be unsplit given that its
-  /// splits mapped to [splitLines].
-  ///
-  /// This lets a splitter do validation *after* all other splits have been
-  /// applied it. It allows things like list literals to base their splitting
-  /// on how their contents ended up being split.
-  bool isValidUnsplit(List<int> splitLines) => true;
-}
-
-/// A [Splitter] for list literals.
-class ListSplitter extends Splitter {
-  bool isValidUnsplit(List<int> splitLines) {
-    // TODO(rnystrom): Do we want to allow single-element lists to remain
-    // unsplit if their contents split, like:
-    //
-    //     [[
-    //       first,
-    //       second
-    //     ]]
-
-    // It must split if the elements span multiple lines.
-    var line = splitLines.first;
-    return splitLines.every((other) => other == line);
-  }
 }

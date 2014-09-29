@@ -10,7 +10,7 @@ import 'package:analyzer/src/generated/scanner.dart';
 import 'package:path/path.dart' as p;
 import 'package:unittest/unittest.dart';
 
-import 'package:dart_style/formatter.dart';
+import 'package:dart_style/dart_style.dart';
 
 import 'token_stream_comparator.dart';
 

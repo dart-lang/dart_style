@@ -4,7 +4,7 @@
 
 library dart_style.test.token_stream_comparator;
 
-import 'package:dart_style/formatter.dart';
+import 'package:dart_style/dart_style.dart';
 
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';

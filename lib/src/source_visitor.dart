@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.source_visitor;
+library dart_style.src.source_visitor;
 
 import 'dart:math';
 
@@ -10,9 +10,10 @@ import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
 
-import 'formatter.dart';
-import 'source_writer.dart';
+import '../dart_style.dart';
 import 'line.dart';
+import 'source_writer.dart';
+import 'splitter.dart';
 
 /// Used for matching EOL comments
 final twoSlashes = new RegExp(r'//[^/]');

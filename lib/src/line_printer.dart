@@ -2,11 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.line_breaker;
+library dart_style.src.line_printer;
 
 import 'line.dart';
+import 'splitter.dart';
 
-/// Converts a [Line] to a single flattened [String].
+/// Converts a [Line] to a single flattened [String] (which may span multiple
+/// physical lines), applying any [Splitter]s needed to keep the output lines
+/// within the page width.
 class LinePrinter {
   final int pageWidth;
 
