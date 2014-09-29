@@ -1,0 +1,20 @@
+40 columns                              |
+>>> empty collection
+[];
+<<<
+[];
+>>> exactly 40 characters
+[first, second, third, fourth, seventh];
+<<<
+[first, second, third, fourth, seventh];
+>>>
+[first, second, third, fourth, fifth, sixth];
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth
+];

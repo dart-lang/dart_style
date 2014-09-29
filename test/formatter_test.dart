@@ -18,6 +18,9 @@ import 'token_stream_comparator.dart';
 final testDataDir = p.join(p.dirname(p.fromUri(Platform.script)), 'data');
 
 main() {
+  testDirectory("splitting");
+
+  // TODO(rnystrom): Eventually move all of these to using testDirectory().
   // Data-driven compilation unit tests.
   for (var entry in new Directory(testDataDir).listSync()) {
     if (entry.path.endsWith(".unit")) {
@@ -1320,7 +1323,6 @@ expectIndentFormatsTo(src, expected) =>
 expectStmtFormatsTo(src, expected) =>
     expect(formatStatement(src), equals(expected));
 
-
 runTests(testFileName, expectClause(String input, String output)) {
   group(testFileName, () {
     var testFile = new File(p.join(testDataDir, testFileName));
@@ -1344,4 +1346,41 @@ runTests(testFileName, expectClause(String input, String output)) {
       });
     }
   });
+}
+
+void testDirectory(String name) {
+  var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
+  for (var entry in new Directory(dir).listSync()) {
+    if (!entry.path.endsWith(".stmt")) continue;
+
+    group("$name ${p.basenameWithoutExtension(entry.path)}", () {
+      var lines = (entry as File).readAsLinesSync();
+
+      // The first line, has a "|" to indicate the page width.
+      var pageWidth = lines[0].indexOf("|");
+      var options = new FormatterOptions(pageWidth: pageWidth);
+      lines = lines.skip(1).toList();
+
+      for (var i = 1; i < lines.length; i++) {
+        var startLine = i;
+
+        var input = "";
+        while (!lines[i].startsWith("<<<")) {
+          input += lines[i++] + "\n";
+        }
+
+        var expectedOutput = "";
+        while (++i < lines.length && !lines[i].startsWith(">>>")) {
+          expectedOutput += lines[i] + "\n";
+        }
+
+        test("line $startLine", () {
+          var formatter = new CodeFormatter(options);
+          var result = formatter.format(CodeKind.STATEMENT, input).source;
+
+          expect(result + "\n", equals(expectedOutput));
+        });
+      }
+    });
+  }
 }
