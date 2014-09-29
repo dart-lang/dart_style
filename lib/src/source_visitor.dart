@@ -482,30 +482,43 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFormalParameterList(FormalParameterList node) {
-    var groupEnd = null;
     token(node.leftParenthesis);
-    var parameters = node.parameters;
-    var size = parameters.length;
-    for (var i = 0; i < size; i++) {
-      var parameter = parameters[i];
-      if (i > 0) {
-        append(',');
-        space();
-      }
-      if (groupEnd == null && parameter is DefaultFormalParameter) {
-        if (identical(parameter.kind, ParameterKind.NAMED)) {
-          groupEnd = '}';
-          append('{');
-        } else {
-          groupEnd = ']';
-          append('[');
+
+    if (node.parameters.isNotEmpty) {
+      var groupEnd;
+
+      // If any of the parameters get wrapped, the whole list needs to be
+      // indented.
+      var indentSplit = new AnySplitState();
+      split(indentSplit, indent: 2, isNewline: false);
+
+      for (var i = 0; i < node.parameters.length; i++) {
+        var parameter = node.parameters[i];
+        if (i > 0) {
+          append(',');
+          var splitter = new Splitter();
+          indentSplit.states.add(splitter);
+          split(splitter, text: " ");
         }
+
+        if (groupEnd == null && parameter is DefaultFormalParameter) {
+          if (parameter.kind == ParameterKind.NAMED) {
+            groupEnd = '}';
+            append('{');
+          } else {
+            groupEnd = ']';
+            append('[');
+          }
+        }
+
+        visit(parameter);
       }
-      parameter.accept(this);
+
+      if (groupEnd != null) append(groupEnd);
+
+      split(indentSplit, indent: -2, isNewline: false);
     }
-    if (groupEnd != null) {
-      append(groupEnd);
-    }
+
     token(node.rightParenthesis);
   }
 
@@ -1260,7 +1273,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
-  void split(Splitter splitter,
+  void split(SplitState splitter,
       {String text: "", int indent: 0, bool isNewline: true}) {
      writer.currentLine.split(new SplitChunk(splitter, text: text,
         indent: indent, isNewline: isNewline));

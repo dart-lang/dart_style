@@ -1,6 +1,6 @@
 import 'dart:html';
 
-import 'package:dart_style/formatter.dart';
+import 'package:dart_style/dart_style.dart';
 
 TextAreaElement before;
 TextAreaElement after;

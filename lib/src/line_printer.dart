@@ -47,10 +47,9 @@ class LinePrinter {
   ///
   /// Returns the best set of split lines.
   List<String> _chooseSplits(Line fullLine) {
+    // Note that higher scores are *worse*. Code golf!
     var bestScore;
     var best;
-
-    var bestSplits;
 
     // Try every combination of splitters being enabled or disabled.
     // TODO(rnystrom): Is there a faster way we can search this space?
@@ -83,11 +82,17 @@ class LinePrinter {
       if (!satisfiedSplitters) continue;
 
       // Splitting into fewer lines is better.
-      var score = -lines.length;
-      if (bestScore == null || score > bestScore) {
+      var score = 0;
+
+      // Try to keep characters near the top: fewer lines and weighted towards
+      // the first lines.
+      for (var j = 0; j < lines.length; j++) {
+        score += lines[j].length * (j + 1);
+      }
+
+      if (bestScore == null || score < bestScore) {
         best = lines;
         bestScore = score;
-        bestSplits = splitLines;
       }
     }
 
@@ -102,7 +107,7 @@ class LinePrinter {
   /// populated such that each splitter in the line is mapped to a list of the
   /// (zero-based) line indexes that each split for that splitter was output
   /// to.
-  List<String> _applySplits(Line line, Map<Splitter, List<int>> splitLines) {
+  List<String> _applySplits(Line line, Map<SplitState, List<int>> splitLines) {
     for (var splitter in line.splitters) {
       splitLines[splitter] = [];
     }
@@ -125,9 +130,11 @@ class LinePrinter {
         buffer.write(chunk.text);
       } else if (chunk is SplitChunk) {
         // Keep track of this line this split ended up on.
-        splitLines[chunk.splitter].add(lines.length);
+        if (chunk.state is Splitter) {
+          splitLines[chunk.state].add(lines.length);
+        }
 
-        if (chunk.splitter.isSplit) {
+        if (chunk.state.isSplit) {
           indent += chunk.indent;
           if (chunk.isNewline) {
             lines.add(buffer.toString());
@@ -160,8 +167,8 @@ class LinePrinter {
         var split = chunk as SplitChunk;
         buffer
             ..write("‹")
-            ..write(split.isNewline ? "↵" : "")
-            ..write("→" * split.indent)
+            ..write(split.isNewline ? "n" : "")
+            ..write("t" * split.indent)
             ..write(split.text)
             ..write("›");
       }

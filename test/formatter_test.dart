@@ -1312,9 +1312,12 @@ runTests(testFileName, expectClause(String input, String output)) {
 void testDirectory(String name) {
   var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
   for (var entry in new Directory(dir).listSync()) {
-    if (!entry.path.endsWith(".stmt")) continue;
+    if (!entry.path.endsWith(".stmt") &&
+        !entry.path.endsWith(".unit")) {
+      continue;
+    }
 
-    group("$name ${p.basenameWithoutExtension(entry.path)}", () {
+    group("$name ${p.basename(entry.path)}", () {
       var lines = (entry as File).readAsLinesSync();
 
       // The first line, has a "|" to indicate the page width.
@@ -1337,9 +1340,15 @@ void testDirectory(String name) {
 
         test("line $startLine", () {
           var formatter = new CodeFormatter(options);
-          var result = formatter.format(CodeKind.STATEMENT, input).source;
 
-          expect(result + "\n", equals(expectedOutput));
+          var result;
+          if (p.extension(entry.path) == ".stmt") {
+            result = formatter.format(CodeKind.STATEMENT, input).source + "\n";
+          } else {
+            result = formatter.format(CodeKind.COMPILATION_UNIT, input).source;
+          }
+
+          expect(result, equals(expectedOutput));
         });
       }
     });

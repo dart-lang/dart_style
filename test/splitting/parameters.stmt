@@ -1,0 +1,32 @@
+40 columns                              |
+>>> parameters fit but ) does not
+method(int firstArgument, int argumentTo) {
+  print('42');
+}
+<<<
+method(int firstArgument,
+    int argumentTo) {
+  print('42');
+}
+>>> parameters fit but } does not
+method(int firstArgument, int argument) {
+  print('42');
+}
+<<<
+method(int firstArgument,
+    int argument) {
+  print('42');
+}
+>>> many parameters
+method(int first, int second, int third, int fourth, int fifth, int sixth,
+    int seventh, int eighth, int ninth, int tenth, int eleventh, int twelfth) {
+  print('42');
+}
+<<<
+method(int first, int second, int third,
+    int fourth, int fifth, int sixth,
+    int seventh, int eighth, int ninth,
+    int tenth, int eleventh,
+    int twelfth) {
+  print('42');
+}
