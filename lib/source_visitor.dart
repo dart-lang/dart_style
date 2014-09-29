@@ -73,7 +73,12 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
     if (node.arguments.isNotEmpty) {
       zeroSpace();
-      visitCommaSeparatedNodes(node.arguments, followedBy: space);
+      var splitter = new Splitter();
+      indentSplit(splitter, 2);
+      visitCommaSeparatedNodes(node.arguments, followedBy: () {
+        spaceSplit(splitter);
+      });
+      unindentSplit(splitter, 2);
     }
     token(node.rightParenthesis);
   }
@@ -695,7 +700,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.typeArguments);
     token(node.leftBracket);
 
-    var splitter = new Splitter();
+    var splitter = new ListSplitter();
     indentSplit(splitter);
     indent();
     zeroSpace();
@@ -705,19 +710,6 @@ class SourceVisitor implements AstVisitor {
     unindentSplit(splitter);
     optionalTrailingComma(node.rightBracket);
     token(node.rightBracket, precededBy: unindent);
-  }
-
-  void indentSplit(Splitter splitter) {
-    writer.currentLine.split(new SplitChunk(splitter, "", 1));
-  }
-
-  void unindentSplit(Splitter splitter) {
-    writer.currentLine.split(new SplitChunk(splitter, "", -1));
-  }
-
-  void spaceSplit(Splitter splitter) {
-    // TODO(rnystrom): What about pending/leading comments and spaces?
-    writer.currentLine.split(new SplitChunk(splitter, " ", 0));
   }
 
   visitMapLiteral(MapLiteral node) {
@@ -1158,7 +1150,6 @@ class SourceVisitor implements AstVisitor {
     }
   }
 
-
   /// Visit a [node], and if not null, optionally preceded or followed by the
   /// specified functions.
   visitNode(AstNode node, {precededBy(): null, followedBy(): null}) {
@@ -1264,6 +1255,19 @@ class SourceVisitor implements AstVisitor {
     }
 
     _pendingSpace = false;
+  }
+
+  void indentSplit(Splitter splitter, [int indent = 1]) {
+    writer.currentLine.split(new SplitChunk(splitter, "", indent));
+  }
+
+  void unindentSplit(Splitter splitter, [int unindent = 1]) {
+    writer.currentLine.split(new SplitChunk(splitter, "", -unindent));
+  }
+
+  void spaceSplit(Splitter splitter) {
+    // TODO(rnystrom): What about pending/leading comments and spaces?
+    writer.currentLine.split(new SplitChunk(splitter, " ", 0));
   }
 
   /// Increase indentation by [n] levels.

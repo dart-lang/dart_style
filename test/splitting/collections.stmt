@@ -18,3 +18,25 @@
   fifth,
   sixth
 ];
+>>> nested unsplit list
+[[first], [], [
+    second,third, fourth]  ];
+<<<
+[[first], [], [second, third, fourth]];
+>>> nested split list
+[first, [second, third, fourth], fifth, [sixth, seventh, eighth, nine, tenth,
+    eleventh]];
+<<<
+[
+  first,
+  [second, third, fourth],
+  fifth,
+  [
+    sixth,
+    seventh,
+    eighth,
+    nine,
+    tenth,
+    eleventh
+  ]
+];

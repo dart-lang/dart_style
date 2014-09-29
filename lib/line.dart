@@ -81,12 +81,54 @@ class SplitChunk implements Chunk {
   /// lines.
   final int indent;
 
+  /// If this split should become a newline when applied.
+  ///
+  /// Line continuations that are double-indented (like a normal wrapped
+  /// expression) have a hanging unindent with no closing text after them.
+  bool get isNewline => indent != -2;
+
   SplitChunk(this.splitter, this.text, this.indent);
 
-  // TODO(rnystrom): Handle indentation.
   String toString() => splitter.isSplit ? "\n" : text;
 }
 
 class Splitter {
+  /// Whether or not this splitter is currently in effect.
+  ///
+  /// If `false`, then the splitter is not trying to do any line splitting. If
+  /// `true`, it is.
   bool isSplit = false;
+
+  /// Returns `true` if this splitter is allowed to be split given that its
+  /// splits mapped to [splitLines].
+  ///
+  /// This lets a splitter do validation *after* all other splits have been
+  /// applied it. It allows things like list literals to base their splitting
+  /// on how their contents ended up being split.
+  bool isValidSplit(List<int> splitLines) => true;
+
+  /// Returns `true` if this splitter is allowed to be unsplit given that its
+  /// splits mapped to [splitLines].
+  ///
+  /// This lets a splitter do validation *after* all other splits have been
+  /// applied it. It allows things like list literals to base their splitting
+  /// on how their contents ended up being split.
+  bool isValidUnsplit(List<int> splitLines) => true;
+}
+
+/// A [Splitter] for list literals.
+class ListSplitter extends Splitter {
+  bool isValidUnsplit(List<int> splitLines) {
+    // TODO(rnystrom): Do we want to allow single-element lists to remain
+    // unsplit if their contents split, like:
+    //
+    //     [[
+    //       first,
+    //       second
+    //     ]]
+
+    // It must split if the elements span multiple lines.
+    var line = splitLines.first;
+    return splitLines.every((other) => other == line);
+  }
 }
