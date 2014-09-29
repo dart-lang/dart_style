@@ -18,22 +18,19 @@ class LinePrinter {
 
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
-
-    // TODO(rnystrom): Test long line that cannot be split.
-    var length = line.unsplitLength;
-    if (length <= pageWidth) {
-      // No splitting needed.
+    if (line.splitters.isEmpty || line.unsplitLength <= pageWidth) {
+      // No splitting needed or possible.
       return _printUnsplit(line);
-    } else {
-      var lines = _chooseSplits(line);
-      if (lines == null) {
-        // Could not split it.
-        return _printUnsplit(line);
-      }
-
-      // TODO(rnystrom): Use configured line separator.
-      return lines.join("\n");
     }
+
+    var lines = _chooseSplits(line);
+    if (lines == null) {
+      // Could not split it.
+      return _printUnsplit(line);
+    }
+
+    // TODO(rnystrom): Use configured line separator.
+    return lines.join("\n");
   }
 
   /// Prints [line] without any splitting.

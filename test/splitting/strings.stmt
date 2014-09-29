@@ -1,0 +1,29 @@
+40 columns                              |
+>>> long single-line
+"this string is longer than forty characters";
+<<<
+"this string is longer than forty characters";
+>>> short one line multi-line
+"""not too long""";
+<<<
+"""not too long""";
+>>> multi-line with short lines
+"""
+not too long
+or this one
+""";
+<<<
+"""
+not too long
+or this one
+""";
+>>> multi-line with long lines
+"""
+this string is longer than forty characters
+this one is also is longer than forty characters
+""";
+<<<
+"""
+this string is longer than forty characters
+this one is also is longer than forty characters
+""";
