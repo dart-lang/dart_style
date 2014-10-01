@@ -49,3 +49,8 @@ var x = 2,
 var x, y, z;
 <<<
 var x, y, z;
+>>> dartbug.com/16379
+var x = new XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
+<<<
+var x =
+    new XXXXXXXXXXXXXXXXXXXXXXXXXXXXXX();

@@ -18,7 +18,7 @@ class LinePrinter {
 
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
-    if (line.splitters.isEmpty || line.unsplitLength <= pageWidth) {
+    if (line.params.isEmpty || line.unsplitLength <= pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit(line);
     }
@@ -53,14 +53,14 @@ class LinePrinter {
 
     // Try every combination of splitters being enabled or disabled.
     // TODO(rnystrom): Is there a faster way we can search this space?
-    var splitters = fullLine.splitters.toList();
-    for (var i = 0; i < (1 << splitters.length); i++) {
+    var params = fullLine.params.toList();
+    for (var i = 0; i < (1 << params.length); i++) {
       var s = "";
 
-      // Set a combination of splitters.
-      for (var j = 0; j < splitters.length; j++) {
-        splitters[j].isSplit = i & (1 << j) != 0;
-        s += splitters[j].isSplit ? "1" : "0";
+      // Set a combination of params.
+      for (var j = 0; j < params.length; j++) {
+        params[j].isSplit = i & (1 << j) != 0;
+        s += params[j].isSplit ? "1" : "0";
       }
 
       // Try it out and score it.
@@ -71,24 +71,39 @@ class LinePrinter {
       if (lines.any((line) => line.length > pageWidth)) continue;
 
       // Make sure the splitters allow the combination.
-      var satisfiedSplitters = splitters.every((splitter) {
-        if (splitter.isSplit) {
-          return splitter.isValidSplit(splitLines[splitter]);
-        } else {
-          return splitter.isValidUnsplit(splitLines[splitter]);
-        }
+      var satisfiedSplitters = fullLine.splitters.every((splitter) {
+        return splitter.isValid(splitLines[splitter]);
       });
 
       if (!satisfiedSplitters) continue;
 
-      // Splitting into fewer lines is better.
+      // Rate this set of lines.
       var score = 0;
+      var scoreString = "";
 
       // Try to keep characters near the top: fewer lines and weighted towards
       // the first lines.
-      for (var j = 0; j < lines.length; j++) {
-        score += lines[j].length * (j + 1);
+      for (var j = 1; j < lines.length; j++) {
+        score += lines[j].length * (j + 2);
+        scoreString += " $j:${lines[j].length * (j + 2)}";
       }
+
+      /*
+      // Some splits are better than others.
+      for (var splitter in splitters) {
+        // TODO(rnystrom): Is tuning this by the page width what we want?
+        if (splitter.isSplit) {
+          score += splitter.score * pageWidth;
+          scoreString += " ${splitter.score * pageWidth}${splitter.name}";
+        }
+      }
+      */
+
+      /*
+      print("--- $score                                $scoreString\n${lines.map((line) {
+        return line + " " * (pageWidth - line.length) + "|";
+      }).join('\n')}");
+      */
 
       if (bestScore == null || score < bestScore) {
         best = lines;
@@ -107,7 +122,7 @@ class LinePrinter {
   /// populated such that each splitter in the line is mapped to a list of the
   /// (zero-based) line indexes that each split for that splitter was output
   /// to.
-  List<String> _applySplits(Line line, Map<SplitState, List<int>> splitLines) {
+  List<String> _applySplits(Line line, Map<Splitter, List<int>> splitLines) {
     for (var splitter in line.splitters) {
       splitLines[splitter] = [];
     }
@@ -130,9 +145,7 @@ class LinePrinter {
         buffer.write(chunk.text);
       } else if (chunk is SplitChunk) {
         // Keep track of this line this split ended up on.
-        if (chunk.state is Splitter) {
-          splitLines[chunk.state].add(lines.length);
-        }
+        splitLines[chunk.splitter].add(lines.length);
 
         if (chunk.state.isSplit) {
           indent += chunk.indent;

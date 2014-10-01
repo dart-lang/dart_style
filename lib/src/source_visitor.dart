@@ -73,13 +73,23 @@ class SourceVisitor implements AstVisitor {
   visitArgumentList(ArgumentList node) {
     token(node.leftParenthesis);
     if (node.arguments.isNotEmpty) {
-      zeroSpace();
-      var splitter = new Splitter();
-      split(splitter, indent: 2);
+      // If any of the arguments get wrapped, the whole list needs to be
+      // indented.
+      var indentSplit = new AnySplitState();
+      split(indentSplit, indent: 2, isNewline: false);
+
+      // Allow splitting after "(".
+      var splitter = new Splitter(SplitScore.firstArgument, "(arg");
+      indentSplit.states.add(splitter);
+      split(splitter);
+
       visitCommaSeparatedNodes(node.arguments, followedBy: () {
+        var splitter = new Splitter(SplitScore.call, "arg,");
+        indentSplit.states.add(splitter);
         split(splitter, text: " ");
       });
-      split(splitter, indent: -2, isNewline: false);
+
+      split(indentSplit, indent: -2, isNewline: false);
     }
     token(node.rightParenthesis);
   }
@@ -104,8 +114,10 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    space();
+    var splitter = new AssignmentSplitter();
+    split(splitter.begin);
     visit(node.rightHandSide);
+    split(splitter.end);
   }
 
   @override
@@ -492,11 +504,18 @@ class SourceVisitor implements AstVisitor {
       var indentSplit = new AnySplitState();
       split(indentSplit, indent: 2, isNewline: false);
 
+      // TODO(rnystrom): Test.
+      // Allow splitting after "(".
+      var splitter = new Splitter(SplitScore.firstArgument, "param(");
+      indentSplit.states.add(splitter);
+      split(splitter);
+
       for (var i = 0; i < node.parameters.length; i++) {
         var parameter = node.parameters[i];
         if (i > 0) {
           append(',');
-          var splitter = new Splitter();
+          // TODO(rnystrom): Lower score before the first default param.
+          var splitter = new Splitter(SplitScore.call, "param,");
           indentSplit.states.add(splitter);
           split(splitter, text: " ");
         }
@@ -715,15 +734,15 @@ class SourceVisitor implements AstVisitor {
     token(node.leftBracket);
 
     var splitter = new ListSplitter();
-    split(splitter, indent: 1);
-    indent();
-    zeroSpace();
+    split(splitter.openBracket);
+
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
-      split(splitter, text: " ");
+      split(splitter.afterElement);
     });
-    split(splitter, indent: -1);
+
     optionalTrailingComma(node.rightBracket);
-    token(node.rightBracket, precededBy: unindent);
+    split(splitter.closeBracket);
+    token(node.rightBracket);
   }
 
   visitMapLiteral(MapLiteral node) {
@@ -1016,12 +1035,12 @@ class SourceVisitor implements AstVisitor {
       space();
       token(node.equals);
 
-      var splitter = new Splitter();
-      split(splitter, text: " ", indent: 2);
+      var splitter = new AssignmentSplitter();
+      split(splitter.begin);
 
       visit(node.initializer);
 
-      split(splitter, indent: -2, isNewline: false);
+      split(splitter.end);
     }
   }
 
@@ -1030,10 +1049,14 @@ class SourceVisitor implements AstVisitor {
     modifier(node.keyword);
     visitNode(node.type, followedBy: space);
 
+    if (node.variables.length == 1) {
+      visit(node.variables.single);
+      return;
+    }
+
     // If there are multiple declarations and any of them have initializers,
     // put them all on their own lines.
-    if (node.variables.length > 1 &&
-        node.variables.any((variable) => variable.initializer != null)) {
+    if (node.variables.any((variable) => variable.initializer != null)) {
       visit(node.variables.first);
 
       // Indent variables after the first one to line up past "var".
@@ -1050,12 +1073,14 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var splitter = new Splitter();
-    split(splitter, indent: 2, isNewline: false);
+    var splitter = new DeclarationListSplitter();
+    split(splitter.begin);
+
     visitCommaSeparatedNodes(node.variables, followedBy: () {
-      split(splitter, text: " ");
+      split(splitter.afterVariable);
     });
-    split(splitter, indent: -2, isNewline: false);
+
+    split(splitter.end);
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {
@@ -1272,11 +1297,18 @@ class SourceVisitor implements AstVisitor {
     _pendingSpace = false;
   }
 
+  /*
   /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
   void split(SplitState splitter,
       {String text: "", int indent: 0, bool isNewline: true}) {
      writer.currentLine.split(new SplitChunk(splitter, text: text,
         indent: indent, isNewline: isNewline));
+  }
+  */
+
+  /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
+  void split(SplitChunk chunk) {
+     writer.currentLine.split(chunk);
   }
 
   /// Increase indentation by [n] levels.

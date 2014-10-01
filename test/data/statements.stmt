@@ -102,11 +102,6 @@ main() {
 main() {
   //foo
 }
->>> dartbug.com/16379
-var x = new XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
-<<<
-var x =
-    new XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
 >>>
 main() {
   throw new FormatException("This is a long exception message that puts this over 80 columns.");

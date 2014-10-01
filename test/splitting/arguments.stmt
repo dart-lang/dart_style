@@ -1,0 +1,17 @@
+40 columns                              |
+>>> many arguments
+method(first, second, third, fourth, fifth, sixth, seventh, eighth, ninth,
+    tenth, eleventh, twelfth) {
+  print('42');
+}
+<<<
+method(first, second, third, fourth,
+    fifth, sixth, seventh, eighth,
+    ninth, tenth, eleventh, twelfth) {
+  print('42');
+}
+>>> wrap before first argument
+longFunctionIsLoooooooooooooong(argument, argument);
+<<<
+longFunctionIsLoooooooooooooong(
+    argument, argument);

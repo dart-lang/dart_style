@@ -4,6 +4,8 @@
 
 library dart_style.src.splitter;
 
+import 'line.dart';
+
 /// A wrapper around a bit of state -- whether or not a set of [SplitChunks]
 /// are active of not.
 ///
@@ -21,14 +23,42 @@ abstract class SplitState {
 /// An actively configurable [SplitState].
 ///
 /// When [LinePrinter] tries to split a line to fit within its page width, it
-/// does so by trying different combinations of splitters to see which set of
+/// does so by trying different combinations of parameters to see which set of
 /// active ones yields the best result.
 ///
 /// Unlike [SplitState] which exposes only a read-only view of the current
 /// state, this lets outside code (the line printer) actively modify the split
 /// state.
-class Splitter implements SplitState {
+class SplitParam implements SplitState {
   bool isSplit = false;
+}
+
+/// A [SplitState] whose state depends on others.
+///
+/// Unlike [SplitParam]s, which can be manually configured, the state of this is
+/// implicit. It maintains references to other splits states. If any of them
+/// are split, then this one is too.
+///
+/// This is used, for example, in a parameter list to ensure that if any of
+/// the parameters are wrapped then the whole list is indented.
+class AnySplitState implements SplitState {
+  final states = <SplitState>[];
+
+  bool get isSplit => states.any((splitter) => splitter.isSplit);
+}
+
+/// A strategy for splitting a line into one more separate lines.
+///
+/// Each instance of this controls one or more [SplitChunk]s in the [Line] and
+/// exposes one or parameters that can be used to determine if they split or
+/// not.
+///
+/// A splitter is also responsible for influencing how "good" a given set of
+/// split states is. The line printer weighs the influences of all of the
+/// splitters on the line to see how good a given set of choices is.
+abstract class Splitter {
+  /// The set of parameters that can be toggled to control this splitter.
+  Iterable<SplitParam> get params;
 
   /// Returns `true` if this splitter is allowed to be split given that its
   /// splits mapped to [splitLines].
@@ -49,9 +79,25 @@ class Splitter implements SplitState {
 
 /// A [Splitter] for list literals.
 class ListSplitter extends Splitter {
+  final _param = new SplitParam();
+
+  Iterable<SplitParam> get params => [_param];
+
+  /// The split used after the "[".
+  SplitChunk get openBracket => new SplitChunk(_param, this, indent: 1);
+
+  /// The split used after the "," after each list item.
+  SplitChunk get afterElement => new SplitChunk(_param, this, text: " ");
+
+  /// The split used before the "]".
+  SplitChunk get closeBracket => new SplitChunk(_param, this, indent: -1);
+
   // Ensures the list is always split into its multi-line form if its elements
   // do not all fit on one line.
-  bool isValidUnsplit(List<int> splitLines) {
+  bool isValid(List<int> splitLines) {
+    // Splitting is always allowed.
+    if (_param.isSplit) return true;
+
     // TODO(rnystrom): Do we want to allow single-element lists to remain
     // unsplit if their contents split, like:
     //
@@ -65,16 +111,33 @@ class ListSplitter extends Splitter {
   }
 }
 
-/// A [SplitState] whose state depends on others.
-///
-/// Unlike [Splitter], which can be manually configured, the state of this is
-/// implicit. It maintains references to other splits states. If any of them
-/// are split, then this one is too.
-///
-/// This is used, for example, in a parameter list to ensure that if any of
-/// the parameters are wrapped then the whole list is indented.
-class AnySplitState implements SplitState {
-  final states = <SplitState>[];
+/// A splitter for variable declaration initializers and assignments.
+class AssignmentSplitter extends Splitter {
+  final _param = new SplitParam();
 
-  bool get isSplit => states.any((splitter) => splitter.isSplit);
+  Iterable<SplitParam> get params => [_param];
+
+  /// The split used after the "=".
+  SplitChunk get begin => new SplitChunk(_param, this, text: " ", indent: 2);
+
+  /// The split used after the RHS expression.
+  SplitChunk get end => new SplitChunk(_param, this, indent: -2, isNewline: false);
+}
+
+/// A splitter for a list of variable declarations.
+class DeclarationListSplitter extends Splitter {
+  final _param = new SplitParam();
+
+  Iterable<SplitParam> get params => [_param];
+
+  /// The split used after the first variable.
+  SplitChunk get begin =>
+      new SplitChunk(_param, this, indent: 2, isNewline: false);
+
+  /// The split used after the "," after each variable.
+  SplitChunk get afterVariable => new SplitChunk(_param, this, text: " ");
+
+  /// The split used after the last variable.
+  SplitChunk get end =>
+      new SplitChunk(_param, this, indent: -2, isNewline: false);
 }

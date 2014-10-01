@@ -1222,24 +1222,6 @@ Token openSqBracket() => new BeginToken(TokenType.OPEN_SQUARE_BRACKET, 0);
 
 Token string(String lexeme) => new StringToken(TokenType.STRING, lexeme, 0);
 
-Token classKeyword(int offset) => new KeywordToken(Keyword.CLASS, offset);
-
-Token identifier(String value, int offset) =>
-    new StringToken(TokenType.IDENTIFIER, value, offset);
-
-Token openParen(int offset) =>
-    new StringToken(TokenType.OPEN_PAREN, '{', offset);
-
-Token closeParen(int offset) =>
-    new StringToken(TokenType.CLOSE_PAREN, '}', offset);
-
-Token chain(List<Token> tokens) {
-  for (var i = 0; i < tokens.length - 1; ++i) {
-    tokens[i].setNext(tokens[i + 1]);
-  }
-  return tokens[0];
-}
-
 FormattedSource formatCU(src, {selection}) =>
     new CodeFormatter().format(
         CodeKind.COMPILATION_UNIT, src, selection: selection);
@@ -1276,9 +1258,6 @@ expectStreamsNotEqual(Token t1, Token t2) =>
     throwsA(new isInstanceOf<FormatterException>()));
 
 expectCUFormatsTo(src, expected) =>
-    expect(formatCU(src).source, equals(expected));
-
-expectIndentFormatsTo(src, expected) =>
     expect(formatCU(src).source, equals(expected));
 
 expectStmtFormatsTo(src, expected) =>

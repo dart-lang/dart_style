@@ -12,11 +12,10 @@ const SPACES_PER_INDENT = 2;
 class Line {
   final chunks = <Chunk>[];
 
-  /// The [ChoiceSplitter]s in this line that we can turn on and of to try to
-  /// find a good set of line splits.
-  ///
-  /// All other [Splitter]s in the line are determined implicitly from the
-  /// state of these ones.
+  /// The [SplitParam]s in this line that we can turn on and of to try to find
+  /// a good set of line splits.
+  final params = new Set<SplitParam>();
+
   final splitters = new Set<Splitter>();
 
   /// The number of levels of indentation at the beginning of this line.
@@ -52,9 +51,10 @@ class Line {
 
   void split(SplitChunk split) {
     chunks.add(split);
+    splitters.add(split.splitter);
 
-    // If the line printer can turn it on and off, keep track of it.
-    if (split.state is Splitter) splitters.add(split.state);
+    // Keep track of the splitter's parameters.
+    params.addAll(split.splitter.params);
   }
 
   void clearIndentation() {
@@ -85,6 +85,9 @@ class SplitChunk extends Chunk {
   /// or not.
   final SplitState state;
 
+  /// The [Splitter] that owns this chunk.
+  final Splitter splitter;
+
   /// The text for this chunk when it's not split into a newline.
   final String text;
 
@@ -95,6 +98,6 @@ class SplitChunk extends Chunk {
   /// If this split should become a newline when applied.
   final bool isNewline;
 
-  SplitChunk(this.state,
+  SplitChunk(this.state, this.splitter,
       {this.text: "", this.indent: 0, this.isNewline: true});
 }
