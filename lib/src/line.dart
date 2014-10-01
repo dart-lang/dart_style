@@ -12,11 +12,29 @@ const SPACES_PER_INDENT = 2;
 class Line {
   final chunks = <Chunk>[];
 
+  bool get hasSplits => chunks.any((chunk) => chunk is SplitChunk);
+
   /// The [SplitParam]s in this line that we can turn on and of to try to find
   /// a good set of line splits.
-  final params = new Set<SplitParam>();
+  Set<SplitParam> get params {
+    var params = new Set<SplitParam>();
+    for (var chunk in chunks) {
+      if (chunk is! SplitChunk) continue;
+      params.addAll(chunk.splitter.params);
+    }
 
-  final splitters = new Set<Splitter>();
+    return params;
+  }
+
+  Set<Splitter> get splitters {
+    var splitters = new Set<Splitter>();
+    for (var chunk in chunks) {
+      if (chunk is! SplitChunk) continue;
+      splitters.add(chunk.splitter);
+    }
+
+    return splitters;
+  }
 
   /// The number of levels of indentation at the beginning of this line.
   int indent;
@@ -51,10 +69,6 @@ class Line {
 
   void split(SplitChunk split) {
     chunks.add(split);
-    splitters.add(split.splitter);
-
-    // Keep track of the splitter's parameters.
-    params.addAll(split.splitter.params);
   }
 
   void clearIndentation() {

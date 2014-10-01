@@ -40,3 +40,14 @@
     eleventh
   ]
 ];
+>>> force multi-line because of contained block
+[first, () {"fn";},third,fourth];
+<<<
+[
+  first,
+  () {
+    "fn";
+  },
+  third,
+  fourth
+];

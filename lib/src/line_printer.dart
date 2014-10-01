@@ -18,7 +18,7 @@ class LinePrinter {
 
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
-    if (line.params.isEmpty || line.unsplitLength <= pageWidth) {
+    if (!line.hasSplits && line.unsplitLength <= pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit(line);
     }
@@ -53,7 +53,7 @@ class LinePrinter {
 
     // Try every combination of splitters being enabled or disabled.
     // TODO(rnystrom): Is there a faster way we can search this space?
-    var params = fullLine.params.toList();
+    var params = fullLine.params.where((param) => !param.isForced).toList();
     for (var i = 0; i < (1 << params.length); i++) {
       var s = "";
 
@@ -172,18 +172,38 @@ class LinePrinter {
   ///
   /// This is just for debugging.
   void _dumpLine(Line line) {
-    var buffer = new StringBuffer();
+    var cyan = '\u001b[36m';
+    var gray = '\u001b[1;30m';
+    var green = '\u001b[32m';
+    var red = '\u001b[31m';
+    var magenta = '\u001b[35m';
+    var none = '\u001b[0m';
+
+    var buffer = new StringBuffer()
+        ..write(gray)
+        ..write("| " * line.indent)
+        ..write(none);
+
     for (var chunk in line.chunks) {
       if (chunk is TextChunk) {
         buffer.write(chunk);
       } else {
         var split = chunk as SplitChunk;
+
+        var color = split.state.isSplit ? green : gray;
+        if (split.state is SplitParam) {
+          var param = split.state as SplitParam;
+          if (param.isForced) {
+            color = magenta;
+          }
+        }
+
         buffer
-            ..write("‹")
+            ..write("$color‹")
             ..write(split.isNewline ? "n" : "")
             ..write("t" * split.indent)
             ..write(split.text)
-            ..write("›");
+            ..write("›$none");
       }
     }
 

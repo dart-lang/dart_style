@@ -25,3 +25,10 @@ printNumbers(000000000000000000000, 111);
 <<<
 printNumbers(
     000000000000000000000, 111);
+>>> force multi-line because of contained block
+method(first,() {"fn";},third,fourth, fifth, sixth, seventh, eighth);
+<<<
+method(first, () {
+  "fn";
+}, third, fourth, fifth, sixth, seventh,
+    eighth);

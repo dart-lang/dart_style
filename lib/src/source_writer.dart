@@ -25,9 +25,7 @@ class SourceWriter {
   Line get currentLine {
     // Lazy initialize. This was we use the most up-to-date indentation when
     // creating the line.
-    if (_currentLine == null) {
-      _currentLine = new Line(indent: indent);
-    }
+    if (_currentLine == null) _startLine();
 
     return _currentLine;
   }
@@ -47,14 +45,6 @@ class SourceWriter {
     }
 
     _currentLine = null;
-  }
-
-  // TODO(rnystrom): Get rid of this, or at least limit it. We don't want to
-  // preserve all of the user's newlines.
-  void newlines(int count) {
-    while (count-- > 0) {
-      newline();
-    }
   }
 
   /// Writes [string], the text for a single token, to the output.

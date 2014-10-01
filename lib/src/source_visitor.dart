@@ -50,6 +50,27 @@ class SourceVisitor implements AstVisitor {
   /// Post format selection information.
   Selection selection;
 
+  /// Keep track of which collection literals are currently being written
+  ///
+  /// A collection can either be single line:
+  ///
+  ///    [all, on, one, line];
+  ///
+  /// or multi-line:
+  ///
+  ///    [
+  ///      one,
+  ///      item,
+  ///      per,
+  ///      line
+  ///    ]
+  ///
+  /// Collections can also contain function expressions, which have blocks which
+  /// in turn force a newline in the middle of the collection. When that
+  /// happens, we need to force all surrounding collections to be multi-line.
+  /// This tracks them so we can do that.
+  final _collections = <CollectionSplitter>[];
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
@@ -72,6 +93,7 @@ class SourceVisitor implements AstVisitor {
 
   visitArgumentList(ArgumentList node) {
     token(node.leftParenthesis);
+
     if (node.arguments.isNotEmpty) {
       var splitter = new ParameterListSplitter();
       split(splitter.indent);
@@ -85,6 +107,7 @@ class SourceVisitor implements AstVisitor {
 
       split(splitter.unindent);
     }
+
     token(node.rightParenthesis);
   }
 
@@ -277,7 +300,7 @@ class SourceVisitor implements AstVisitor {
     token(node.endToken /* EOF */);
 
     // Be a good citizen, end with a newline.
-    if (!writer.currentLine.isEmpty) writer.newline();
+    if (!writer.currentLine.isEmpty) emitNewlines(1);
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -720,12 +743,13 @@ class SourceVisitor implements AstVisitor {
     visit(node.typeArguments);
     token(node.leftBracket);
 
-    var splitter = new ListSplitter();
-    split(splitter.openBracket);
+    // TODO(rnystrom): Test this by ensuring never splits on [].
+    if (node.elements.isEmpty) {
+      token(node.rightBracket);
+      return;
+    }
 
-    // Track indentation in case the list contains a function expression with
-    // a block body that splits to a new line.
-    indent();
+    var splitter = startCollection();
 
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
       split(splitter.afterElement);
@@ -733,8 +757,8 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(node.rightBracket);
 
-    unindent();
-    split(splitter.closeBracket);
+    endCollection(splitter);
+
     token(node.rightBracket);
   }
 
@@ -1023,18 +1047,17 @@ class SourceVisitor implements AstVisitor {
 
   visitVariableDeclaration(VariableDeclaration node) {
     visit(node.name);
+    if (node.initializer == null) return;
 
-    if (node.initializer != null) {
-      space();
-      token(node.equals);
+    space();
+    token(node.equals);
 
-      var splitter = new AssignmentSplitter();
-      split(splitter.equals);
+    var splitter = new AssignmentSplitter();
+    split(splitter.equals);
 
-      visit(node.initializer);
+    visit(node.initializer);
 
-      split(splitter.unindent);
-    }
+    split(splitter.unindent);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1290,18 +1313,31 @@ class SourceVisitor implements AstVisitor {
     _pendingSpace = false;
   }
 
-  /*
-  /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
-  void split(SplitState splitter,
-      {String text: "", int indent: 0, bool isNewline: true}) {
-     writer.currentLine.split(new SplitChunk(splitter, text: text,
-        indent: indent, isNewline: isNewline));
-  }
-  */
-
   /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
   void split(SplitChunk chunk) {
      writer.currentLine.split(chunk);
+  }
+
+  /// Begin a new collection literal.
+  CollectionSplitter startCollection() {
+    var splitter = new CollectionSplitter();
+    _collections.add(splitter);
+
+    split(splitter.openBracket);
+
+    // Track indentation in case the list contains a function expression with
+    // a block body that splits to a new line.
+    indent();
+
+    return splitter;
+  }
+
+  /// End a collection literal.
+  void endCollection(CollectionSplitter splitter) {
+    unindent();
+    split(splitter.closeBracket);
+
+    _collections.removeLast();
   }
 
   /// Increase indentation by [n] levels.
@@ -1368,7 +1404,17 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes [count] newlines to the output.
   void emitNewlines(int count) {
-    writer.newlines(count);
+    // If we are in the middle of collections that might need splitting, we
+    // know they are definitely going to be multi-line now.
+    for (var collection in _collections) {
+      collection.param.force();
+    }
+
+    // TODO(rnystrom): Count should never be > 2 here. We don't want to allow
+    // extra newlines. Ensure this.
+    for (var i = 0; i < count; i++) {
+      writer.newline();
+    }
   }
 
   /// Test if this [comment] is at the end of a line.

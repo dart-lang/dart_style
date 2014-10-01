@@ -30,7 +30,32 @@ abstract class SplitState {
 /// state, this lets outside code (the line printer) actively modify the split
 /// state.
 class SplitParam implements SplitState {
-  bool isSplit = false;
+  /// Whether this param is currently split or forced.
+  bool get isSplit => _isForced || _isSplit;
+
+  /// Sets the split state.
+  ///
+  /// If the split is already forced, this has no effect.
+  set isSplit(bool value) => _isSplit = value;
+
+  bool _isSplit = false;
+
+  /// Whether this param has been "forced" to be in its split state.
+  ///
+  /// This means the line-splits algorithm no longer has the opportunity to try
+  /// toggling this on and off to find a good set of splits.
+  ///
+  /// This happens when a param explicitly spans multiple lines, usually from
+  /// an expression containing a function expression with a block body. Once the
+  /// block body forces a line break, the surrounding expression must go into
+  /// its multi-line state.
+  bool get isForced => _isForced;
+  bool _isForced = false;
+
+  /// Forcibly splits this param.
+  void force() {
+    _isForced = true;
+  }
 }
 
 /// A [SplitState] whose state depends on others.
@@ -69,26 +94,31 @@ abstract class Splitter {
   bool isValid(List<int> splitLines) => true;
 }
 
-/// A [Splitter] for list literals.
-class ListSplitter extends Splitter {
-  final _param = new SplitParam();
+/// A [Splitter] for list and map literals.
+class CollectionSplitter extends Splitter {
+  /// The [SplitParam] for the collection.
+  ///
+  /// Since a collection will either be all on one line, or fully split into
+  /// separate lines for each item and the brackets, only a single parameter
+  /// is needed.
+  final param = new SplitParam();
 
-  Iterable<SplitParam> get params => [_param];
+  Iterable<SplitParam> get params => [param];
 
   /// The split used after the "[".
-  SplitChunk get openBracket => new SplitChunk(_param, this, indent: 1);
+  SplitChunk get openBracket => new SplitChunk(param, this, indent: 1);
 
   /// The split used after the "," after each list item.
-  SplitChunk get afterElement => new SplitChunk(_param, this, text: " ");
+  SplitChunk get afterElement => new SplitChunk(param, this, text: " ");
 
   /// The split used before the "]".
-  SplitChunk get closeBracket => new SplitChunk(_param, this, indent: -1);
+  SplitChunk get closeBracket => new SplitChunk(param, this, indent: -1);
 
   // Ensures the list is always split into its multi-line form if its elements
   // do not all fit on one line.
   bool isValid(List<int> splitLines) {
     // Splitting is always allowed.
-    if (_param.isSplit) return true;
+    if (param.isSplit) return true;
 
     // TODO(rnystrom): Do we want to allow single-element lists to remain
     // unsplit if their contents split, like:
