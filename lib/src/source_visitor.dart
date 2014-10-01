@@ -73,23 +73,17 @@ class SourceVisitor implements AstVisitor {
   visitArgumentList(ArgumentList node) {
     token(node.leftParenthesis);
     if (node.arguments.isNotEmpty) {
-      // If any of the arguments get wrapped, the whole list needs to be
-      // indented.
-      var indentSplit = new AnySplitState();
-      split(indentSplit, indent: 2, isNewline: false);
+      var splitter = new ParameterListSplitter();
+      split(splitter.indent);
 
       // Allow splitting after "(".
-      var splitter = new Splitter(SplitScore.firstArgument, "(arg");
-      indentSplit.states.add(splitter);
-      split(splitter);
+      split(splitter.beforeFirst);
 
       visitCommaSeparatedNodes(node.arguments, followedBy: () {
-        var splitter = new Splitter(SplitScore.call, "arg,");
-        indentSplit.states.add(splitter);
-        split(splitter, text: " ");
+        split(splitter.parameter());
       });
 
-      split(indentSplit, indent: -2, isNewline: false);
+      split(splitter.unindent);
     }
     token(node.rightParenthesis);
   }
@@ -115,9 +109,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.operator);
     var splitter = new AssignmentSplitter();
-    split(splitter.begin);
+    split(splitter.equals);
     visit(node.rightHandSide);
-    split(splitter.end);
+    split(splitter.unindent);
   }
 
   @override
@@ -499,25 +493,18 @@ class SourceVisitor implements AstVisitor {
     if (node.parameters.isNotEmpty) {
       var groupEnd;
 
-      // If any of the parameters get wrapped, the whole list needs to be
-      // indented.
-      var indentSplit = new AnySplitState();
-      split(indentSplit, indent: 2, isNewline: false);
+      var splitter = new ParameterListSplitter();
+      split(splitter.indent);
 
       // TODO(rnystrom): Test.
-      // Allow splitting after "(".
-      var splitter = new Splitter(SplitScore.firstArgument, "param(");
-      indentSplit.states.add(splitter);
-      split(splitter);
+      // Allow splitting after the "(".
+      split(splitter.beforeFirst);
 
       for (var i = 0; i < node.parameters.length; i++) {
         var parameter = node.parameters[i];
         if (i > 0) {
           append(',');
-          // TODO(rnystrom): Lower score before the first default param.
-          var splitter = new Splitter(SplitScore.call, "param,");
-          indentSplit.states.add(splitter);
-          split(splitter, text: " ");
+          split(splitter.parameter());
         }
 
         if (groupEnd == null && parameter is DefaultFormalParameter) {
@@ -535,7 +522,7 @@ class SourceVisitor implements AstVisitor {
 
       if (groupEnd != null) append(groupEnd);
 
-      split(indentSplit, indent: -2, isNewline: false);
+      split(splitter.unindent);
     }
 
     token(node.rightParenthesis);
@@ -736,11 +723,17 @@ class SourceVisitor implements AstVisitor {
     var splitter = new ListSplitter();
     split(splitter.openBracket);
 
+    // Track indentation in case the list contains a function expression with
+    // a block body that splits to a new line.
+    indent();
+
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
       split(splitter.afterElement);
     });
 
     optionalTrailingComma(node.rightBracket);
+
+    unindent();
     split(splitter.closeBracket);
     token(node.rightBracket);
   }
@@ -1036,11 +1029,11 @@ class SourceVisitor implements AstVisitor {
       token(node.equals);
 
       var splitter = new AssignmentSplitter();
-      split(splitter.begin);
+      split(splitter.equals);
 
       visit(node.initializer);
 
-      split(splitter.end);
+      split(splitter.unindent);
     }
   }
 
@@ -1074,13 +1067,13 @@ class SourceVisitor implements AstVisitor {
     }
 
     var splitter = new DeclarationListSplitter();
-    split(splitter.begin);
+    split(splitter.indent);
 
     visitCommaSeparatedNodes(node.variables, followedBy: () {
       split(splitter.afterVariable);
     });
 
-    split(splitter.end);
+    split(splitter.unindent);
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {

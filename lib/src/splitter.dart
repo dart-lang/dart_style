@@ -60,21 +60,13 @@ abstract class Splitter {
   /// The set of parameters that can be toggled to control this splitter.
   Iterable<SplitParam> get params;
 
-  /// Returns `true` if this splitter is allowed to be split given that its
-  /// splits mapped to [splitLines].
+  /// Returns `true` if this splitter's current parameters are valid given that
+  /// its splits mapped to [splitLines].
   ///
   /// This lets a splitter do validation *after* all other splits have been
-  /// applied it. It allows things like list literals to base their splitting
-  /// on how their contents ended up being split.
-  bool isValidSplit(List<int> splitLines) => true;
-
-  /// Returns `true` if this splitter is allowed to be unsplit given that its
-  /// splits mapped to [splitLines].
-  ///
-  /// This lets a splitter do validation *after* all other splits have been
-  /// applied it. It allows things like list literals to base their splitting
-  /// on how their contents ended up being split.
-  bool isValidUnsplit(List<int> splitLines) => true;
+  /// applied. It allows things like list literals to base their splitting on
+  /// how their contents ended up being split.
+  bool isValid(List<int> splitLines) => true;
 }
 
 /// A [Splitter] for list literals.
@@ -118,10 +110,11 @@ class AssignmentSplitter extends Splitter {
   Iterable<SplitParam> get params => [_param];
 
   /// The split used after the "=".
-  SplitChunk get begin => new SplitChunk(_param, this, text: " ", indent: 2);
+  SplitChunk get equals => new SplitChunk(_param, this, text: " ", indent: 2);
 
   /// The split used after the RHS expression.
-  SplitChunk get end => new SplitChunk(_param, this, indent: -2, isNewline: false);
+  SplitChunk get unindent => new SplitChunk(_param, this, indent: -2,
+      isNewline: false);
 }
 
 /// A splitter for a list of variable declarations.
@@ -131,13 +124,53 @@ class DeclarationListSplitter extends Splitter {
   Iterable<SplitParam> get params => [_param];
 
   /// The split used after the first variable.
-  SplitChunk get begin =>
+  SplitChunk get indent =>
       new SplitChunk(_param, this, indent: 2, isNewline: false);
 
   /// The split used after the "," after each variable.
   SplitChunk get afterVariable => new SplitChunk(_param, this, text: " ");
 
   /// The split used after the last variable.
-  SplitChunk get end =>
+  SplitChunk get unindent =>
       new SplitChunk(_param, this, indent: -2, isNewline: false);
+}
+
+/// A splitter for a list of formal parameters or arguments.
+class ParameterListSplitter extends Splitter {
+  final params = <SplitParam>[];
+
+  /// If any of the parameters get wrapped, the whole list needs to be
+  /// indented.
+  final _indentSplit = new AnySplitState();
+
+  /// The split used to indent the parameter list if needed.
+  SplitChunk get indent =>
+      new SplitChunk(_indentSplit, this, indent: 2, isNewline: false);
+
+  /// The split used after the "(" before the first parameter.
+  /// a new [SplitParam] for it each time this is accessed.
+  SplitChunk get beforeFirst => _beforeFirst;
+  SplitChunk _beforeFirst;
+
+  /// The split used after the last parameter.
+  SplitChunk get unindent =>
+      new SplitChunk(_indentSplit, this, indent: -2, isNewline: false);
+
+  ParameterListSplitter() {
+    var param = new SplitParam();
+    params.add(param);
+    _indentSplit.states.add(param);
+    _beforeFirst = new SplitChunk(param, this);
+  }
+
+  /// A split used after the "(" or "," between parameters.
+  ///
+  /// Each variable can be split independently, so this creates a new one and
+  /// a new [SplitParam] for it each time this is accessed.
+  SplitChunk parameter() {
+    var param = new SplitParam();
+    params.add(param);
+    _indentSplit.states.add(param);
+    return new SplitChunk(param, this, text: " ");
+  }
 }

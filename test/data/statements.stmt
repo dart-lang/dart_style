@@ -34,15 +34,6 @@ for (x in xs) {
   print(x);
 }
 >>>
-blah() {
-  print('blah blah blah blah blah blah blah blah blah blah blah blah blah blah $foo');
-}
-<<<<
-blah() {
-  print(
-      'blah blah blah blah blah blah blah blah blah blah blah blah blah blah $foo');
-}
->>>
 assert(false);
 <<<
 assert(false);
@@ -172,12 +163,8 @@ main() {
 >>>
 main() {
   printNumbers(a, b) {}
-  printNumbers(00000000000000000000000000000000000000000000000000000000000, 111);
 }
 <<<
 main() {
   printNumbers(a, b) {}
-  printNumbers(
-      00000000000000000000000000000000000000000000000000000000000,
-      111);
 }

@@ -15,3 +15,13 @@ longFunctionIsLoooooooooooooong(argument, argument);
 <<<
 longFunctionIsLoooooooooooooong(
     argument, argument);
+>>> wrap with just one argument
+print('a very very long string literal');
+<<<<
+print(
+    'a very very long string literal');
+>>>
+printNumbers(000000000000000000000, 111);
+<<<
+printNumbers(
+    000000000000000000000, 111);
