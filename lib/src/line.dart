@@ -14,28 +14,6 @@ class Line {
 
   bool get hasSplits => chunks.any((chunk) => chunk is SplitChunk);
 
-  /// The [SplitParam]s in this line that we can turn on and of to try to find
-  /// a good set of line splits.
-  Set<SplitParam> get params {
-    var params = new Set<SplitParam>();
-    for (var chunk in chunks) {
-      if (chunk is! SplitChunk) continue;
-      params.addAll(chunk.splitter.params);
-    }
-
-    return params;
-  }
-
-  Set<Splitter> get splitters {
-    var splitters = new Set<Splitter>();
-    for (var chunk in chunks) {
-      if (chunk is! SplitChunk) continue;
-      splitters.add(chunk.splitter);
-    }
-
-    return splitters;
-  }
-
   /// The number of levels of indentation at the beginning of this line.
   int indent;
 
@@ -95,23 +73,28 @@ class TextChunk extends Chunk {
 /// Each split chunk is owned by splitter that determines when it is and is
 /// not in effect.
 class SplitChunk extends Chunk {
-  /// The [SplitState] that determines if this chunk is being used as a split
+  /// The [SplitParam] that determines if this chunk is being used as a split
   /// or not.
-  final SplitState state;
+  final SplitParam param;
 
-  /// The [Splitter] that owns this chunk.
-  final Splitter splitter;
+  /// The [SplitRule] that is applied to this chunk, if any.
+  ///
+  /// May be `null`.
+  final SplitRule rule;
 
   /// The text for this chunk when it's not split into a newline.
   final String text;
 
-  /// The amount of indentation this split increases or decreases subsequent
-  /// lines.
+  /// The indentation level of lines after this split.
+  ///
+  /// Note that this is not a relative indentation *offset*. It's the full
+  /// indentation.
   final int indent;
 
-  /// If this split should become a newline when applied.
-  final bool isNewline;
+  SplitChunk(this.indent, {SplitParam param, this.text: ""})
+      : param = param != null ? param : new SplitParam(),
+        rule = null;
 
-  SplitChunk(this.state, this.splitter,
-      {this.text: "", this.indent: 0, this.isNewline: true});
+  SplitChunk.forRule(this.rule, this.indent, {SplitParam param, this.text: ""})
+      : param = param != null ? param : new SplitParam();
 }

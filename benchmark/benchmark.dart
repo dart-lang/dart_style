@@ -4,7 +4,7 @@
 
 library dart_style.benchmark.benchmark;
 
-import 'package:dart_style/formatter.dart';
+import 'package:dart_style/dart_style.dart';
 
 void main(List<String> args) {
   // Run the benchmark several times. This ensures the VM is warmed up and lets
@@ -32,7 +32,7 @@ void main(List<String> args) {
 }
 
 void printResult(String label, int time) {
-  print("$label: ${padLeft(time, 4)}ms ${'=' * (time ~/ 5)}");
+  print("$label: ${padLeft(time, 4)}ms ${'=' * (time ~/ 10)}");
 }
 
 String padLeft(input, int length) {
@@ -50,7 +50,7 @@ void formatSource() {
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.source.length != 29822) throw "Incorrect output.";
+  if (result.source.length != 29404) throw "Incorrect output.";
 }
 
 const source = r"""

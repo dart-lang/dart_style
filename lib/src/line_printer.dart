@@ -18,6 +18,8 @@ class LinePrinter {
 
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
+    //_dumpLine(line);
+
     if (!line.hasSplits && line.unsplitLength <= pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit(line);
@@ -51,9 +53,28 @@ class LinePrinter {
     var bestScore;
     var best;
 
-    // Try every combination of splitters being enabled or disabled.
-    // TODO(rnystrom): Is there a faster way we can search this space?
-    var params = fullLine.params.where((param) => !param.isForced).toList();
+    var rules = new Set<SplitRule>();
+    for (var chunk in fullLine.chunks) {
+      if (chunk is! SplitChunk) continue;
+      if (chunk.rule == null) continue;
+      rules.add(chunk.rule);
+    }
+
+    // See which parameters we can toggle for the line.
+    var params = new Set<SplitParam>();
+    for (var chunk in fullLine.chunks) {
+      if (chunk is! SplitChunk) continue;
+
+      // TODO(rnystrom): Split into sublines at forced parameters and split each
+      // one separately.
+      if (chunk.param.isForced) continue;
+      params.add(chunk.param);
+    }
+
+    params = params.toList();
+
+    // Try every combination of params being enabled or disabled.
+    // TODO(rnystrom): Search this space more efficiently!
     for (var i = 0; i < (1 << params.length); i++) {
       var s = "";
 
@@ -65,17 +86,13 @@ class LinePrinter {
 
       // Try it out and score it.
       var splitLines = {};
-      var lines = _applySplits(fullLine, splitLines);
+      var lines = _applySplits(fullLine, rules, splitLines);
 
       // If we didn't keep it within the page, definitely fail.
       if (lines.any((line) => line.length > pageWidth)) continue;
 
-      // Make sure the splitters allow the combination.
-      var satisfiedSplitters = fullLine.splitters.every((splitter) {
-        return splitter.isValid(splitLines[splitter]);
-      });
-
-      if (!satisfiedSplitters) continue;
+      // Make sure the rules allow the combination.
+      if (!rules.every((rule) => rule.isValid(splitLines[rule]))) continue;
 
       // Rate this set of lines.
       var score = 0;
@@ -122,9 +139,10 @@ class LinePrinter {
   /// populated such that each splitter in the line is mapped to a list of the
   /// (zero-based) line indexes that each split for that splitter was output
   /// to.
-  List<String> _applySplits(Line line, Map<Splitter, List<int>> splitLines) {
-    for (var splitter in line.splitters) {
-      splitLines[splitter] = [];
+  List<String> _applySplits(Line line, Set<SplitRule> rules,
+      Map<SplitRule, List<int>> splitLines) {
+    for (var rule in rules) {
+      splitLines[rule] = [];
     }
 
     var indent = line.indent;
@@ -145,15 +163,16 @@ class LinePrinter {
         buffer.write(chunk.text);
       } else if (chunk is SplitChunk) {
         // Keep track of this line this split ended up on.
-        splitLines[chunk.splitter].add(lines.length);
+        if (chunk.rule != null) {
+          splitLines[chunk.rule].add(lines.length);
+        }
 
-        if (chunk.state.isSplit) {
-          indent += chunk.indent;
-          if (chunk.isNewline) {
-            lines.add(buffer.toString());
-            buffer.clear();
-            writeIndent();
-          }
+        if (chunk.param.isSplit) {
+          lines.add(buffer.toString());
+          buffer.clear();
+
+          indent = chunk.indent;
+          writeIndent();
         } else {
           buffer.write(chunk.text);
         }
@@ -190,9 +209,9 @@ class LinePrinter {
       } else {
         var split = chunk as SplitChunk;
 
-        var color = split.state.isSplit ? green : gray;
-        if (split.state is SplitParam) {
-          var param = split.state as SplitParam;
+        var color = split.param.isSplit ? green : gray;
+        if (split.param is SplitParam) {
+          var param = split.param as SplitParam;
           if (param.isForced) {
             color = magenta;
           }
@@ -200,7 +219,6 @@ class LinePrinter {
 
         buffer
             ..write("$color‹")
-            ..write(split.isNewline ? "n" : "")
             ..write("t" * split.indent)
             ..write(split.text)
             ..write("›$none");

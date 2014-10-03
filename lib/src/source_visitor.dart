@@ -69,7 +69,7 @@ class SourceVisitor implements AstVisitor {
   /// in turn force a newline in the middle of the collection. When that
   /// happens, we need to force all surrounding collections to be multi-line.
   /// This tracks them so we can do that.
-  final _collections = <CollectionSplitter>[];
+  final _collections = <CollectionSplitRule>[];
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -95,17 +95,10 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     if (node.arguments.isNotEmpty) {
-      var splitter = new ParameterListSplitter();
-      split(splitter.indent);
-
       // Allow splitting after "(".
-      split(splitter.beforeFirst);
+      zeroSplit();
 
-      visitCommaSeparatedNodes(node.arguments, followedBy: () {
-        split(splitter.parameter());
-      });
-
-      split(splitter.unindent);
+      visitCommaSeparatedNodes(node.arguments, followedBy: split);
     }
 
     token(node.rightParenthesis);
@@ -131,10 +124,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    var splitter = new AssignmentSplitter();
-    split(splitter.equals);
+    split();
     visit(node.rightHandSide);
-    split(splitter.unindent);
   }
 
   @override
@@ -516,18 +507,15 @@ class SourceVisitor implements AstVisitor {
     if (node.parameters.isNotEmpty) {
       var groupEnd;
 
-      var splitter = new ParameterListSplitter();
-      split(splitter.indent);
-
       // TODO(rnystrom): Test.
       // Allow splitting after the "(".
-      split(splitter.beforeFirst);
+      zeroSplit();
 
       for (var i = 0; i < node.parameters.length; i++) {
         var parameter = node.parameters[i];
         if (i > 0) {
           append(',');
-          split(splitter.parameter());
+          split();
         }
 
         if (groupEnd == null && parameter is DefaultFormalParameter) {
@@ -544,8 +532,6 @@ class SourceVisitor implements AstVisitor {
       }
 
       if (groupEnd != null) append(groupEnd);
-
-      split(splitter.unindent);
     }
 
     token(node.rightParenthesis);
@@ -749,15 +735,29 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var splitter = startCollection();
+    var rule = new CollectionSplitRule();
+    _collections.add(rule);
+
+    // Track indentation in case the list contains a function expression with
+    // a block body that splits to a new line.
+    indent();
+
+    var chunk = new SplitChunk.forRule(rule, writer.indent, param: rule.param);
+    split(chunk);
 
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
-      split(splitter.afterElement);
+      split(new SplitChunk.forRule(rule, writer.indent, param: rule.param,
+          text: " "));
     });
 
     optionalTrailingComma(node.rightBracket);
 
-    endCollection(splitter);
+    unindent();
+
+    chunk = new SplitChunk.forRule(rule, writer.indent, param: rule.param);
+    split(chunk);
+
+    _collections.removeLast();
 
     token(node.rightBracket);
   }
@@ -1051,13 +1051,8 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-
-    var splitter = new AssignmentSplitter();
-    split(splitter.equals);
-
+    split();
     visit(node.initializer);
-
-    split(splitter.unindent);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1089,14 +1084,12 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var splitter = new DeclarationListSplitter();
-    split(splitter.indent);
+    // TODO(bob): Doc.
+    var param = new SplitParam();
 
     visitCommaSeparatedNodes(node.variables, followedBy: () {
-      split(splitter.afterVariable);
+      split(new SplitChunk(writer.indent + 2, param: param, text: " "));
     });
-
-    split(splitter.unindent);
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {
@@ -1314,30 +1307,15 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
-  void split(SplitChunk chunk) {
-     writer.currentLine.split(chunk);
+  void split([SplitChunk chunk]) {
+    if (chunk == null) chunk = new SplitChunk(writer.indent + 2, text: " ");
+    writer.currentLine.split(chunk);
   }
 
-  /// Begin a new collection literal.
-  CollectionSplitter startCollection() {
-    var splitter = new CollectionSplitter();
-    _collections.add(splitter);
-
-    split(splitter.openBracket);
-
-    // Track indentation in case the list contains a function expression with
-    // a block body that splits to a new line.
-    indent();
-
-    return splitter;
-  }
-
-  /// End a collection literal.
-  void endCollection(CollectionSplitter splitter) {
-    unindent();
-    split(splitter.closeBracket);
-
-    _collections.removeLast();
+  /// Outputs a [SplitChunk] that is the empty string when unsplit and indents
+  /// two levels (i.e. a wrapped statement) when split.
+  void zeroSplit() {
+    writer.currentLine.split(new SplitChunk(writer.indent + 2));
   }
 
   /// Increase indentation by [n] levels.
