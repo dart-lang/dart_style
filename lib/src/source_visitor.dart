@@ -438,9 +438,8 @@ class SourceVisitor implements AstVisitor {
     // The "async" or "sync" keyword.
     token(node.keyword, followedBy: space);
 
-    token(node.functionDefinition);
-
-    space();
+    token(node.functionDefinition); // "=>".
+    split(cost: SplitCost.ARROW);
     visit(node.expression);
     token(node.semicolon);
   }
@@ -639,7 +638,7 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.uri);
     token(node.deferredToken, precededBy: space);
-    token(node.asToken, precededBy: space, followedBy: space);
+    token(node.asToken, precededBy: split, followedBy: space);
     visit(node.prefix);
     visitNodes(node.combinators, precededBy: space, separatedBy: space);
     token(node.semicolon);

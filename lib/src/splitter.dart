@@ -61,20 +61,23 @@ class SplitCost {
   /// The best cost, meaning the rule has been fully satisfied.
   static const FREE = 0;
 
+  /// The cost of splitting after a "=>".
+  static const ARROW = 1000;
+
   /// The cost of splitting after a "=".
-  static const ASSIGNMENT = 1000;
+  static const ASSIGNMENT = 2000;
 
   /// Keeps all argument or parameters in a list together on one line by
   /// splitting before the leading "(".
-  static const ARGUMENTS_TOGETHER = 2000;
+  static const ARGUMENTS_TOGETHER = 3000;
 
   /// Split arguments across multiple lines but keep at least one on the first
   /// line after the "(".
-  static const WRAP_REMAINING_ARGUMENTS = 3000;
+  static const WRAP_REMAINING_ARGUMENTS = 4000;
 
   /// Split arguments across multiple lines including wrapping after the
   /// leading "(".
-  static const WRAP_FIRST_ARGUMENT = 4000;
+  static const WRAP_FIRST_ARGUMENT = 5000;
 
   /// The cost of a single character weighted by the line it appears on.
   ///
@@ -84,6 +87,9 @@ class SplitCost {
   /// ways to split an argument list over the same number of lines. This helps
   /// avoid those all having the same cost.
   static const CHAR = 1;
+
+  /// The cost of a single character that goes past the page limit.
+  static const OVERFLOW_CHAR = 100000;
 }
 
 /// A heuristic for evaluating how desirable a set of splits is.

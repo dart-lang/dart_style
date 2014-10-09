@@ -80,20 +80,14 @@ class LinePrinter {
     // Try every combination of params being enabled or disabled.
     // TODO(rnystrom): Search this space more efficiently!
     for (var i = 0; i < (1 << params.length); i++) {
-      var s = "";
-
       // Set a combination of params.
       for (var j = 0; j < params.length; j++) {
         params[j].isSplit = i & (1 << j) != 0;
-        s += params[j].isSplit ? "1" : "0";
       }
 
       // Try it out and see how much it costs.
       var splitLines = {};
       var lines = _applySplits(fullLine, rules, splitLines);
-
-      // If we didn't keep it within the page, definitely fail.
-      if (lines.any((line) => line.length > pageWidth)) continue;
 
       // Rate this set of lines.
       var cost = 0;
@@ -118,6 +112,15 @@ class LinePrinter {
       // Try to keep characters near the top.
       for (var j = 1; j < lines.length; j++) {
         cost += lines[j].length * j * SplitCost.CHAR;
+      }
+
+      // Punish lines that went over the length. We don't rule these out
+      // completely because it may be that the only solution still goes over
+      // (for example with long string literals).
+      for (var line in lines) {
+        if (line.length > pageWidth) {
+          cost += (line.length - pageWidth) * SplitCost.OVERFLOW_CHAR;
+        }
       }
 
       if (debug) {

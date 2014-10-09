@@ -8,17 +8,29 @@ import 'package:dart_style/src/line_printer.dart';
 main(List<String> args) {
   // This script is just for testing right now.
 
-  //      1234567890123456789012345678901234567890
-  format("var result = myFunction(argument * argument,argument * argument);");
+  //          1234567890123456789012345678901234567890
+  formatStmt("var variableName = thisIsReallyQuiteAVeryLongVariableName;");
 
   //reformatPub();
 }
 
-void format(String source) {
+void formatStmt(String source) {
   LinePrinter.debug = true;
 
   var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
   var result = formatter.format(CodeKind.STATEMENT, source);
+
+  print("before:                                 |");
+  print(source);
+  print("after:                                  |");
+  print(result.source);
+}
+
+void formatUnit(String source) {
+  LinePrinter.debug = true;
+
+  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
+  var result = formatter.format(CodeKind.COMPILATION_UNIT, source);
 
   print("before:                                 |");
   print(source);

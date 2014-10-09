@@ -17,7 +17,8 @@ var variableName =
 >>> initializer doesn't fit one line, cannot be split
 var variableName = thisIsReallyQuiteAVeryLongVariableName;
 <<<
-var variableName = thisIsReallyQuiteAVeryLongVariableName;
+var variableName =
+    thisIsReallyQuiteAVeryLongVariableName;
 >>> long function call initializer
 var variableName = functionName(first, second);
 <<<
