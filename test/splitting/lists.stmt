@@ -1,5 +1,5 @@
 40 columns                              |
->>> empty collection
+>>> empty list
 [];
 <<<
 [];
@@ -50,4 +50,23 @@
   },
   third,
   fourth
+];
+>>> spaces between items
+[1,2,3,4];
+<<<
+[1, 2, 3, 4];
+>>> dangling comma
+[1 , ];
+<<<
+[1,];
+>>> dangling comma multiline
+[first, second, third, fourth, fifth, sixth  , ];
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
 ];

@@ -689,16 +689,6 @@ flow() {
       );
     });
 
-    test('CU - comments (11)', () {
-      expectCUFormatsTo(
-          'var m = {1: 2 /* bang */, 3: 4};\n',
-          'var m = {\n'
-          '  1: 2 /* bang */,\n'
-          '  3: 4\n'
-          '};\n'
-      );
-    });
-
     test('CU - EOF nl', () {
       expectCUFormatsTo(
           'var x = 1;',
@@ -884,54 +874,6 @@ flow() {
       expectStmtFormatsTo(
         'var numbers = <int>[1, 2, (3 + 4)];',
         'var numbers = <int>[1, 2, (3 + 4)];'
-      );
-    });
-
-    test('stmt (lists)', () {
-      expectStmtFormatsTo(
-        'var l = [1,2,3,4];',
-        'var l = [1, 2, 3, 4];'
-      );
-      expectStmtFormatsTo(
-        'var l = [\n'
-        '1,\n'
-        '2,\n'
-        '];',
-        'var l = [1, 2,];'
-      );
-      //Dangling ','
-      expectStmtFormatsTo(
-        'var l = [1,];',
-        'var l = [1,];'
-      );
-    });
-
-    test('stmt (maps)', () {
-      expectStmtFormatsTo(
-        'var map = const {"foo": "bar", "fuz": null};',
-        'var map = const {\n'
-        '  "foo": "bar",\n'
-        '  "fuz": null\n'
-        '};'
-      );
-
-      expectStmtFormatsTo(
-          'var map = {\n'
-          '"foo": "bar",\n'
-          '"bar": "baz"\n'
-          '};',
-          'var map = {\n'
-          '  "foo": "bar",\n'
-          '  "bar": "baz"\n'
-          '};'
-      );
-
-      //Dangling ','
-      expectStmtFormatsTo(
-        'var map = {"foo": "bar",};',
-        'var map = {\n'
-        '  "foo": "bar",\n'
-        '};'
       );
     });
 

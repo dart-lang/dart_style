@@ -732,7 +732,7 @@ class SourceVisitor implements AstVisitor {
 
     split(chunk: new SplitChunk(writer.indent, param: rule.param));
 
-    visitCommaSeparatedNodes(node.elements,  followedBy: () {
+    visitCommaSeparatedNodes(node.elements, followedBy: () {
       split(chunk: new SplitChunk(writer.indent, param: rule.param, text: " "));
     });
 
@@ -751,15 +751,31 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.typeArguments);
     token(node.leftBracket);
 
-    // TODO(rnystrom): Handle splitting like for lists.
-    if (!node.entries.isEmpty) {
-      newlines();
-      indent();
-      visitCommaSeparatedNodes(node.entries, followedBy: newlines);
-      optionalTrailingComma(node.rightBracket);
-      unindent();
-      newlines();
+    if (node.entries.isEmpty) {
+      token(node.rightBracket);
+      return;
     }
+
+    var rule = new CollectionSplitRule();
+    writer.startRule(rule);
+
+    // Track indentation in case the map contains a function expression with
+    // a block body that splits to a new line.
+    indent();
+
+    split(chunk: new SplitChunk(writer.indent, param: rule.param));
+
+    visitCommaSeparatedNodes(node.entries, followedBy: () {
+      split(chunk: new SplitChunk(writer.indent, param: rule.param, text: " "));
+    });
+
+    optionalTrailingComma(node.rightBracket);
+
+    unindent();
+
+    split(chunk: new SplitChunk(writer.indent, param: rule.param));
+    writer.endRule();
+
     token(node.rightBracket);
   }
 
