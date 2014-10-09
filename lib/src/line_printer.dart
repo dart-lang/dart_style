@@ -49,13 +49,14 @@ class LinePrinter {
   ///
   /// Returns the best set of split lines.
   List<String> _chooseSplits(Line fullLine) {
-    // Note that higher scores are *worse*. Code golf!
-    var bestScore;
+    var lowestCost;
+
+    // The set of lines whose splits have the lowest total cost so far.
     var best;
 
     var rules = new Set<SplitRule>();
     for (var chunk in fullLine.chunks) {
-      if (chunk is! SplitChunk) continue;
+      if (chunk is! RuleChunk) continue;
       if (chunk.rule == null) continue;
       rules.add(chunk.rule);
     }
@@ -84,47 +85,51 @@ class LinePrinter {
         s += params[j].isSplit ? "1" : "0";
       }
 
-      // Try it out and score it.
+      // Try it out and see how much it costs.
       var splitLines = {};
       var lines = _applySplits(fullLine, rules, splitLines);
 
       // If we didn't keep it within the page, definitely fail.
       if (lines.any((line) => line.length > pageWidth)) continue;
 
-      // Make sure the rules allow the combination.
-      if (!rules.every((rule) => rule.isValid(splitLines[rule]))) continue;
-
       // Rate this set of lines.
-      var score = 0;
-      var scoreString = "";
+      var cost = 0;
+      var costString = "";
+
+      for (var rule in rules) {
+        var ruleCost = rule.getCost(splitLines[rule]);
+
+        // If a hard constraint failed, abandon this set of splits.
+        if (ruleCost == SplitCost.DISALLOW) {
+          cost = -1;
+          break;
+        }
+
+        cost += ruleCost;
+      }
+
+      // TODO(rnystrom): Add cost for number of lines.
+
+      if (cost == -1) continue;
 
       // Try to keep characters near the top: fewer lines and weighted towards
       // the first lines.
-      for (var j = 1; j < lines.length; j++) {
-        score += lines[j].length * (j + 2);
-        scoreString += " $j:${lines[j].length * (j + 2)}";
-      }
-
       /*
-      // Some splits are better than others.
-      for (var splitter in splitters) {
-        // TODO(rnystrom): Is tuning this by the page width what we want?
-        if (splitter.isSplit) {
-          score += splitter.score * pageWidth;
-          scoreString += " ${splitter.score * pageWidth}${splitter.name}";
-        }
+      for (var j = 1; j < lines.length; j++) {
+        cost += lines[j].length * (j + 2);
+        costString += " $j:${lines[j].length * (j + 2)}";
       }
       */
 
       /*
-      print("--- $score                                $scoreString\n${lines.map((line) {
+      print("--- $cost                                $costString\n${lines.map((line) {
         return line + " " * (pageWidth - line.length) + "|";
       }).join('\n')}");
       */
 
-      if (bestScore == null || score < bestScore) {
+      if (lowestCost == null || cost < lowestCost) {
         best = lines;
-        bestScore = score;
+        lowestCost = cost;
       }
     }
 
@@ -159,25 +164,16 @@ class LinePrinter {
 
     // Write each chunk in the line.
     for (var chunk in line.chunks) {
-      if (chunk is TextChunk) {
-        buffer.write(chunk.text);
-      } else if (chunk is SplitChunk) {
-        // Keep track of this line this split ended up on.
-        if (chunk.rule != null) {
-          splitLines[chunk.rule].add(lines.length);
-        }
-
-        if (chunk.param.isSplit) {
-          lines.add(buffer.toString());
-          buffer.clear();
-
-          indent = chunk.indent;
-          writeIndent();
-        } else {
-          buffer.write(chunk.text);
-        }
+      if (chunk is RuleChunk && chunk.rule != null) {
+        // Keep track of this line this chunk ended up on.
+        splitLines[chunk.rule].add(lines.length);
+      } else if (chunk is SplitChunk && chunk.param.isSplit) {
+        lines.add(buffer.toString());
+        buffer.clear();
+        indent = chunk.indent;
+        writeIndent();
       } else {
-        throw "Unknown Chunk type.";
+        buffer.write(chunk.text);
       }
     }
 
@@ -219,7 +215,7 @@ class LinePrinter {
 
         buffer
             ..write("$color‹")
-            ..write("t" * split.indent)
+            ..write(split.indent)
             ..write(split.text)
             ..write("›$none");
       }

@@ -15,8 +15,10 @@ main(List<String> args) {
   //format("longFunctionIsLoooooooooooooong(argument, argument);");
 
   //format("[first,() {function.body;},third,fourth];");
-  format("method(first,second,third,fourth,fifth,() {fn;},third,fourth, fifth, sixth, seventh, eighth);");
+  //format("method(first,second,third,fourth,fifth,() {fn;},third,fourth, fifth, sixth, seventh, eighth);");
   //format("longFunctionIsLoooooooooooooong(argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument);");
+
+  format("printNumbers(000000000000000000000, 111);");
 
   //reformatPub();
 }

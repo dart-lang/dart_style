@@ -50,7 +50,7 @@ void formatSource() {
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.source.length != 29404) throw "Incorrect output.";
+  if (result.source.length != 29411) throw "Incorrect output.";
 }
 
 const source = r"""

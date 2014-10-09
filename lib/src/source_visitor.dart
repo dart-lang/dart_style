@@ -50,27 +50,6 @@ class SourceVisitor implements AstVisitor {
   /// Post format selection information.
   Selection selection;
 
-  /// Keep track of which collection literals are currently being written
-  ///
-  /// A collection can either be single line:
-  ///
-  ///    [all, on, one, line];
-  ///
-  /// or multi-line:
-  ///
-  ///    [
-  ///      one,
-  ///      item,
-  ///      per,
-  ///      line
-  ///    ]
-  ///
-  /// Collections can also contain function expressions, which have blocks which
-  /// in turn force a newline in the middle of the collection. When that
-  /// happens, we need to force all surrounding collections to be multi-line.
-  /// This tracks them so we can do that.
-  final _collections = <CollectionSplitRule>[];
-
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
@@ -95,10 +74,20 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     if (node.arguments.isNotEmpty) {
+      // Track what line the "(" is on.
+      writer.startRule(new ArgumentListSplitRule());
+
       // Allow splitting after "(".
-      zeroSplit();
+      split(new SplitChunk(writer.indent + 2));
+
+      // The rule checks if we split after the first "(".
+      writer.ruleMark();
 
       visitCommaSeparatedNodes(node.arguments, followedBy: split);
+
+      // Mark after the last argument so we can see if they all ended up on the
+      // same line.
+      writer.endRule();
     }
 
     token(node.rightParenthesis);
@@ -736,28 +725,24 @@ class SourceVisitor implements AstVisitor {
     }
 
     var rule = new CollectionSplitRule();
-    _collections.add(rule);
+    writer.startRule(rule);
 
     // Track indentation in case the list contains a function expression with
     // a block body that splits to a new line.
     indent();
 
-    var chunk = new SplitChunk.forRule(rule, writer.indent, param: rule.param);
-    split(chunk);
+    split(new SplitChunk(writer.indent, param: rule.param));
 
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
-      split(new SplitChunk.forRule(rule, writer.indent, param: rule.param,
-          text: " "));
+      split(new SplitChunk(writer.indent, param: rule.param, text: " "));
     });
 
     optionalTrailingComma(node.rightBracket);
 
     unindent();
 
-    chunk = new SplitChunk.forRule(rule, writer.indent, param: rule.param);
-    split(chunk);
-
-    _collections.removeLast();
+    split(new SplitChunk(writer.indent, param: rule.param));
+    writer.endRule();
 
     token(node.rightBracket);
   }
@@ -766,6 +751,8 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visitNode(node.typeArguments);
     token(node.leftBracket);
+
+    // TODO(rnystrom): Handle splitting like for lists.
     if (!node.entries.isEmpty) {
       newlines();
       indent();
@@ -1084,7 +1071,10 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // TODO(bob): Doc.
+    // Use a single param for all of the splits. If there are multiple
+    // declarations, we will try to keep them all on one line. If that isn't
+    // possible, we split after *every* declaration so that each is on its own
+    // line.
     var param = new SplitParam();
 
     visitCommaSeparatedNodes(node.variables, followedBy: () {
@@ -1306,7 +1296,10 @@ class SourceVisitor implements AstVisitor {
     _pendingSpace = false;
   }
 
-  /// Outputs a [SplitChunk] bound to [splitter] with the given properties.
+  /// Outputs a split for [chunk], if given.
+  ///
+  /// If omitted, defaults to a statement line-break split: one that indents
+  /// by two and expands to a space if not split.
   void split([SplitChunk chunk]) {
     if (chunk == null) chunk = new SplitChunk(writer.indent + 2, text: " ");
     writer.currentLine.split(chunk);
@@ -1382,12 +1375,6 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes [count] newlines to the output.
   void emitNewlines(int count) {
-    // If we are in the middle of collections that might need splitting, we
-    // know they are definitely going to be multi-line now.
-    for (var collection in _collections) {
-      collection.param.force();
-    }
-
     // TODO(rnystrom): Count should never be > 2 here. We don't want to allow
     // extra newlines. Ensure this.
     for (var i = 0; i < count; i++) {

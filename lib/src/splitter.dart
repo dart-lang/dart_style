@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// TODO(rnystrom): Rename library.
 library dart_style.src.splitter;
 
 import 'line.dart';
@@ -40,26 +41,50 @@ class SplitParam {
   }
 }
 
-/// A strategy for splitting a line into one more separate lines.
-///
-/// Each instance of this controls one or more [SplitChunk]s in the [Line] and
-/// exposes one or parameters that can be used to determine if they split or
-/// not.
-///
-/// A splitter is also responsible for influencing how "good" a given set of
-/// split states is. The line printer weighs the influences of all of the
-/// splitters on the line to see how good a given set of choices is.
-abstract class SplitRule {
-  /// Returns `true` if this splitter's current parameters are valid given that
-  /// its splits mapped to [splitLines].
+class SplitCost {
+  /// The cost used to represent a hard constraint that has been violated.
   ///
-  /// This lets a splitter do validation *after* all other splits have been
-  /// applied. It allows things like list literals to base their splitting on
-  /// how their contents ended up being split.
-  bool isValid(List<int> splitLines) => true;
+  /// When a rule returns this, the set of splits is not allowed to be used at
+  /// all.
+  static const DISALLOW = -1;
+
+  /// The best cost, meaning the rule has been fully satisfied.
+  static const FREE = 0;
+
+  /// Keeps all argument or parameters in a list together on one line by
+  /// splitting before the leading "(".
+  static const ARGUMENTS_TOGETHER = 1;
+
+  /// Split arguments across multiple lines but keep at least one on the first
+  /// line after the "(".
+  static const WRAP_REMAINING_ARGUMENTS = 2;
+
+  /// Split arguments across multiple lines including wrapping after the
+  /// leading "(".
+  static const WRAP_FIRST_ARGUMENT = 3;
 }
 
-/// A [Splitter] for list and map literals.
+/// A heuristic for evaluating how desirable a set of splits is.
+///
+/// Each instance of this inserts two or more [RuleChunk]s in the [Line]. When
+/// a set of split is chosen, the line splitter determines which lines those
+/// marks ended up in and tells the rule by calling [getCost()]. The rule then
+/// determines how desirable that set of splits is.
+abstract class SplitRule {
+  /// Given that this rule's marks have ended up on [splitLines] after taking
+  /// the current set of splits into effect, return this rule's "cost" -- how
+  /// much it penalizes the resulting line splits.
+  ///
+  /// Returning a lower number here means that this rule is more satisfied and
+  /// the resulting line is more likely to be a winner.
+  int getCost(List<int> splitLines) => SplitCost.FREE;
+
+  /// This is called if a hard line break occurs while the rule is still in
+  /// effect. Override this to determine how that affects the rule.
+  void forceSplit() {}
+}
+
+/// A [SplitRule] for list and map literals.
 class CollectionSplitRule extends SplitRule {
   /// The [SplitParam] for the collection.
   ///
@@ -70,9 +95,9 @@ class CollectionSplitRule extends SplitRule {
 
   // Ensures the list is always split into its multi-line form if its elements
   // do not all fit on one line.
-  bool isValid(List<int> splitLines) {
+  int getCost(List<int> splitLines) {
     // Splitting is always allowed.
-    if (param.isSplit) return true;
+    if (param.isSplit) return SplitCost.FREE;
 
     // TODO(rnystrom): Do we want to allow single-element lists to remain
     // unsplit if their contents split, like:
@@ -83,6 +108,37 @@ class CollectionSplitRule extends SplitRule {
     //     ]]
 
     var line = splitLines.first;
-    return splitLines.every((other) => other == line);
+    return splitLines.every((other) => other == line)
+        ? SplitCost.FREE : SplitCost.DISALLOW;
+  }
+
+  void forceSplit() {
+    param.force();
+  }
+}
+
+/// A [SplitRule] for argument and parameter lists.
+class ArgumentListSplitRule extends SplitRule {
+  int getCost(List<int> splitLines) {
+    // If the line was force-split, we won't have all three marks. In that case,
+    // the cost is that we have wrapped.
+    // TODO(rnystrom): Do something better here. We should still be able to
+    // distinguish wrapping after the "(" or not.
+    if (splitLines.length != 3) return SplitCost.WRAP_REMAINING_ARGUMENTS;
+
+    var parenLine = splitLines[0];
+    var firstArgLine = splitLines[1];
+    var lastArgLine = splitLines[2];
+
+    // The best is everything on one line.
+    if (parenLine == lastArgLine) return SplitCost.FREE;
+
+    // Next is keeping the args together by splitting after "(".
+    if (firstArgLine == lastArgLine) return SplitCost.ARGUMENTS_TOGETHER;
+
+    // If we can't do that, try to keep at least one argument on the "(" line.
+    if (parenLine == firstArgLine) return SplitCost.WRAP_REMAINING_ARGUMENTS;
+
+    return SplitCost.WRAP_FIRST_ARGUMENT;
   }
 }

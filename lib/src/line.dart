@@ -67,6 +67,19 @@ class TextChunk extends Chunk {
   TextChunk(this.text);
 }
 
+class RuleChunk implements Chunk {
+  String get text => "";
+
+  /// The [SplitRule] that is applied to this chunk, if any.
+  ///
+  /// May be `null`.
+  final SplitRule rule;
+
+  String toString() => "";
+
+  RuleChunk(this.rule);
+}
+
 /// A split chunk may expand to a newline (with some leading indentation) or
 /// some other inline string based on the length of the line.
 ///
@@ -76,11 +89,6 @@ class SplitChunk extends Chunk {
   /// The [SplitParam] that determines if this chunk is being used as a split
   /// or not.
   final SplitParam param;
-
-  /// The [SplitRule] that is applied to this chunk, if any.
-  ///
-  /// May be `null`.
-  final SplitRule rule;
 
   /// The text for this chunk when it's not split into a newline.
   final String text;
@@ -92,9 +100,5 @@ class SplitChunk extends Chunk {
   final int indent;
 
   SplitChunk(this.indent, {SplitParam param, this.text: ""})
-      : param = param != null ? param : new SplitParam(),
-        rule = null;
-
-  SplitChunk.forRule(this.rule, this.indent, {SplitParam param, this.text: ""})
       : param = param != null ? param : new SplitParam();
 }
