@@ -78,7 +78,7 @@ class SourceVisitor implements AstVisitor {
       writer.startRule(new ArgumentListSplitRule());
 
       // Allow splitting after "(".
-      split(new SplitChunk(writer.indent + 2));
+      zeroSplit();
 
       // The rule checks if we split after the first "(".
       writer.ruleMark();
@@ -113,7 +113,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split();
+    split(cost: SplitCost.ASSIGNMENT);
     visit(node.rightHandSide);
   }
 
@@ -731,17 +731,17 @@ class SourceVisitor implements AstVisitor {
     // a block body that splits to a new line.
     indent();
 
-    split(new SplitChunk(writer.indent, param: rule.param));
+    split(chunk: new SplitChunk(writer.indent, param: rule.param));
 
     visitCommaSeparatedNodes(node.elements,  followedBy: () {
-      split(new SplitChunk(writer.indent, param: rule.param, text: " "));
+      split(chunk: new SplitChunk(writer.indent, param: rule.param, text: " "));
     });
 
     optionalTrailingComma(node.rightBracket);
 
     unindent();
 
-    split(new SplitChunk(writer.indent, param: rule.param));
+    split(chunk: new SplitChunk(writer.indent, param: rule.param));
     writer.endRule();
 
     token(node.rightBracket);
@@ -1038,7 +1038,7 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    split();
+    split(cost: SplitCost.ASSIGNMENT);
     visit(node.initializer);
   }
 
@@ -1078,7 +1078,7 @@ class SourceVisitor implements AstVisitor {
     var param = new SplitParam();
 
     visitCommaSeparatedNodes(node.variables, followedBy: () {
-      split(new SplitChunk(writer.indent + 2, param: param, text: " "));
+      split(chunk: new SplitChunk(writer.indent + 2, param: param, text: " "));
     });
   }
 
@@ -1299,9 +1299,15 @@ class SourceVisitor implements AstVisitor {
   /// Outputs a split for [chunk], if given.
   ///
   /// If omitted, defaults to a statement line-break split: one that indents
-  /// by two and expands to a space if not split.
-  void split([SplitChunk chunk]) {
-    if (chunk == null) chunk = new SplitChunk(writer.indent + 2, text: " ");
+  /// by two and expands to a space if not split. The param for the split will
+  /// have [cost] if given.
+  void split({SplitChunk chunk, int cost}) {
+    if (chunk == null) {
+      if (cost == null) cost = SplitCost.FREE;
+      var param = new SplitParam(cost);
+      chunk = new SplitChunk(writer.indent + 2, param: param, text: " ");
+    }
+
     writer.currentLine.split(chunk);
   }
 

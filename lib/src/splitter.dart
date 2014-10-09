@@ -35,6 +35,16 @@ class SplitParam {
   bool get isForced => _isForced;
   bool _isForced = false;
 
+  /// The cost of applying this param.
+  ///
+  /// This will be [SplitCost.FREE] if the param is managed by some rule
+  /// instead. It always returns [SplitCost.FREE] if the param is not currently
+  /// split.
+  int get cost => isSplit ? _cost : SplitCost.FREE;
+  final int _cost;
+
+  SplitParam([this._cost = 0]);
+
   /// Forcibly splits this param.
   void force() {
     _isForced = true;
@@ -51,17 +61,29 @@ class SplitCost {
   /// The best cost, meaning the rule has been fully satisfied.
   static const FREE = 0;
 
+  /// The cost of splitting after a "=".
+  static const ASSIGNMENT = 1000;
+
   /// Keeps all argument or parameters in a list together on one line by
   /// splitting before the leading "(".
-  static const ARGUMENTS_TOGETHER = 1;
+  static const ARGUMENTS_TOGETHER = 2000;
 
   /// Split arguments across multiple lines but keep at least one on the first
   /// line after the "(".
-  static const WRAP_REMAINING_ARGUMENTS = 2;
+  static const WRAP_REMAINING_ARGUMENTS = 3000;
 
   /// Split arguments across multiple lines including wrapping after the
   /// leading "(".
-  static const WRAP_FIRST_ARGUMENT = 3;
+  static const WRAP_FIRST_ARGUMENT = 4000;
+
+  /// The cost of a single character weighted by the line it appears on.
+  ///
+  /// Each character of output is increasingly costly the lower down it appears.
+  /// This encourages statements to have few lines and be "top-heavy". In
+  /// particular, it handles the fact that there are often a number of different
+  /// ways to split an argument list over the same number of lines. This helps
+  /// avoid those all having the same cost.
+  static const CHAR = 1;
 }
 
 /// A heuristic for evaluating how desirable a set of splits is.
@@ -120,11 +142,10 @@ class CollectionSplitRule extends SplitRule {
 /// A [SplitRule] for argument and parameter lists.
 class ArgumentListSplitRule extends SplitRule {
   int getCost(List<int> splitLines) {
-    // If the line was force-split, we won't have all three marks. In that case,
-    // the cost is that we have wrapped.
-    // TODO(rnystrom): Do something better here. We should still be able to
-    // distinguish wrapping after the "(" or not.
-    if (splitLines.length != 3) return SplitCost.WRAP_REMAINING_ARGUMENTS;
+    // If the line was force-split, we won't have all three marks so we can't
+    // really evaluate this rule.
+    // TODO(rnystrom): Do something better here?
+    if (splitLines.length != 3) return SplitCost.FREE;
 
     var parenLine = splitLines[0];
     var firstArgLine = splitLines[1];

@@ -11,6 +11,9 @@ import 'splitter.dart';
 /// physical lines), applying any [Splitter]s needed to keep the output lines
 /// within the page width.
 class LinePrinter {
+  // TODO(rnystrom): Remove or expose in a more coherent way.
+  static bool debug = false;
+
   final int pageWidth;
 
   /// Creates a new breaker that tries to fit lines within [pageWidth].
@@ -18,7 +21,7 @@ class LinePrinter {
 
   /// Convert this [line] to a [String] representation.
   String printLine(Line line) {
-    //_dumpLine(line);
+    if (debug) _dumpLine(line);
 
     if (!line.hasSplits && line.unsplitLength <= pageWidth) {
       // No splitting needed or possible.
@@ -94,7 +97,6 @@ class LinePrinter {
 
       // Rate this set of lines.
       var cost = 0;
-      var costString = "";
 
       for (var rule in rules) {
         var ruleCost = rule.getCost(splitLines[rule]);
@@ -108,24 +110,21 @@ class LinePrinter {
         cost += ruleCost;
       }
 
-      // TODO(rnystrom): Add cost for number of lines.
-
       if (cost == -1) continue;
 
-      // Try to keep characters near the top: fewer lines and weighted towards
-      // the first lines.
-      /*
-      for (var j = 1; j < lines.length; j++) {
-        cost += lines[j].length * (j + 2);
-        costString += " $j:${lines[j].length * (j + 2)}";
-      }
-      */
+      // Apply any param costs.
+      for (var param in params) cost += param.cost;
 
-      /*
-      print("--- $cost                                $costString\n${lines.map((line) {
-        return line + " " * (pageWidth - line.length) + "|";
-      }).join('\n')}");
-      */
+      // Try to keep characters near the top.
+      for (var j = 1; j < lines.length; j++) {
+        cost += lines[j].length * j * SplitCost.CHAR;
+      }
+
+      if (debug) {
+        print("--- $cost\n${lines.map((line) {
+          return line + " " * (pageWidth - line.length) + "|";
+        }).join('\n')}");
+      }
 
       if (lowestCost == null || cost < lowestCost) {
         best = lines;
@@ -199,9 +198,14 @@ class LinePrinter {
         ..write("| " * line.indent)
         ..write(none);
 
+    var rules = new Map<SplitRule, int>();
+
     for (var chunk in line.chunks) {
       if (chunk is TextChunk) {
         buffer.write(chunk);
+      } else if (chunk is RuleChunk) {
+        var rule = rules.putIfAbsent(chunk.rule, () => rules.length);
+        buffer.write("$cyan‹$rule›$none");
       } else {
         var split = chunk as SplitChunk;
 
@@ -214,10 +218,10 @@ class LinePrinter {
         }
 
         buffer
-            ..write("$color‹")
-            ..write(split.indent)
-            ..write(split.text)
-            ..write("›$none");
+          ..write("$color‹")
+          ..write(split.indent)
+          ..write(split.text)
+          ..write("›$none");
       }
     }
 

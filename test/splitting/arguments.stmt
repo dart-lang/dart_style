@@ -32,3 +32,8 @@ method(first, () {
   "fn";
 }, third, fourth, fifth, sixth, seventh,
     eighth);
+>>>
+function(firstArg * second, third * fourthAndLongest);
+<<<
+function(firstArg * second,
+    third * fourthAndLongest);

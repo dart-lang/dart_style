@@ -3,27 +3,20 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/line_printer.dart';
 
 main(List<String> args) {
   // This script is just for testing right now.
 
   //      1234567890123456789012345678901234567890
-  // format("variable = longFunctionIsLoooooong(argument);\n");
-  //format("var result = myFunction(argument * argument, argument * argument);");
-  //format("var variableName =functionName(first, second);");
-  //format("[first, [second, third, fourth], fifth, [sixth, seventh, eighth, nine, tenth, eleventh]];");
-  //format("longFunctionIsLoooooooooooooong(argument, argument);");
-
-  //format("[first,() {function.body;},third,fourth];");
-  //format("method(first,second,third,fourth,fifth,() {fn;},third,fourth, fifth, sixth, seventh, eighth);");
-  //format("longFunctionIsLoooooooooooooong(argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument, argument);");
-
-  format("printNumbers(000000000000000000000, 111);");
+  format("var result = myFunction(argument * argument,argument * argument);");
 
   //reformatPub();
 }
 
 void format(String source) {
+  LinePrinter.debug = true;
+
   var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
   var result = formatter.format(CodeKind.STATEMENT, source);
 
