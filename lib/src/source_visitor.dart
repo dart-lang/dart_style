@@ -495,9 +495,8 @@ class SourceVisitor implements AstVisitor {
     if (node.parameters.isNotEmpty) {
       var groupEnd;
 
-      // TODO(rnystrom): Test.
-      // Allow splitting after the "(".
-      zeroSplit();
+      // Allow splitting after the "(" but not for lambdas.
+      if (node.parent is! FunctionExpression) zeroSplit();
 
       for (var i = 0; i < node.parameters.length; i++) {
         var parameter = node.parameters[i];
