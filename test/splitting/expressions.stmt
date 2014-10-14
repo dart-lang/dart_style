@@ -4,3 +4,20 @@ var name = new Symbol("the first string" "the second string");
 <<<
 var name = new Symbol("the first string"
     "the second string");
+>>> conditions, same operator
+if (identifier || identifier || identifier || identifier) {
+}
+<<<
+if (identifier ||
+    identifier ||
+    identifier ||
+    identifier) {
+}
+>>> conditions, different operators
+if (identifier && identifier || identifier
+                && identifier) {
+}
+<<<
+if (identifier && identifier ||
+    identifier && identifier) {
+}

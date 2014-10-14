@@ -82,6 +82,9 @@ class SplitCost {
   /// leading "(".
   static const WRAP_FIRST_ARGUMENT = 6000;
 
+  // TODO(bob): Doc. Different operators.
+  static const BINARY_OPERATOR = 7000;
+
   /// The cost of a single character weighted by the line it appears on.
   ///
   /// Each character of output is increasingly costly the lower down it appears.
@@ -115,8 +118,17 @@ abstract class SplitRule {
   void forceSplit() {}
 }
 
-/// A [SplitRule] for list and map literals.
-class CollectionSplitRule extends SplitRule {
+/// A [SplitRule] for a series of [SplitChunks] that all either split or don't
+/// split together.
+///
+/// This is used for list and map literals, and for a series of the same binary
+/// operator. In all of these, either the entire expression will be a single
+/// line, or it will be fully split into multiple lines, with not intermediate
+/// states allowed.
+class AllSplitRule extends SplitRule {
+  /// The cost of this rule when the split is in effect.
+  final int cost;
+
   /// The [SplitParam] for the collection.
   ///
   /// Since a collection will either be all on one line, or fully split into
@@ -124,11 +136,13 @@ class CollectionSplitRule extends SplitRule {
   /// is needed.
   final param = new SplitParam();
 
+  AllSplitRule([this.cost = SplitCost.FREE]);
+
   // Ensures the list is always split into its multi-line form if its elements
   // do not all fit on one line.
   int getCost(List<int> splitLines) {
     // Splitting is always allowed.
-    if (param.isSplit) return SplitCost.FREE;
+    if (param.isSplit) return cost;
 
     // TODO(rnystrom): Do we want to allow single-element lists to remain
     // unsplit if their contents split, like:

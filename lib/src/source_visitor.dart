@@ -128,9 +128,8 @@ class SourceVisitor implements AstVisitor {
   visitBinaryExpression(BinaryExpression node) {
     var operands = [];
 
-    // Flatten out a tree/chain of the same operator type and give them all the
-    // same space weight. If we break on this operator, we will break all of
-    // them.
+    // Flatten out a tree/chain of the same operator type. If we split on this
+    // operator, we will break all of them.
     addOperands(Expression e) {
       if (e is BinaryExpression && e.operator.type == node.operator.type) {
         addOperands(e.leftOperand);
@@ -143,14 +142,21 @@ class SourceVisitor implements AstVisitor {
     addOperands(node.leftOperand);
     addOperands(node.rightOperand);
 
+    // TODO(rnystrom: Use different costs for different operator precedences.
+    var rule = new AllSplitRule(SplitCost.BINARY_OPERATOR);
+    writer.startRule(rule);
+
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
         space();
         token(node.operator);
-        space();
+        split(chunk: new SplitChunk(writer.indent + 2, param: rule.param,
+            text: " "));
       }
       visit(operands[i]);
     }
+
+    writer.endRule();
   }
 
   visitBlock(Block node) {
@@ -723,7 +729,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var rule = new CollectionSplitRule();
+    var rule = new AllSplitRule();
     writer.startRule(rule);
 
     // Track indentation in case the list contains a function expression with
@@ -756,7 +762,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var rule = new CollectionSplitRule();
+    var rule = new AllSplitRule();
     writer.startRule(rule);
 
     // Track indentation in case the map contains a function expression with
