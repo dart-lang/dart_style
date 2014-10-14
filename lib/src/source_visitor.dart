@@ -59,7 +59,8 @@ class SourceVisitor implements AstVisitor {
                                 pageWidth: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
-    visitNodes(node.strings, separatedBy: space);
+    visitNodes(node.strings,
+        separatedBy: () => split(cost: SplitCost.ADJACENT_STRINGS));
   }
 
   visitAnnotation(Annotation node) {
