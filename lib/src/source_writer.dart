@@ -18,7 +18,7 @@ class SourceWriter {
   /// Subsequent lines will be created with this much leading indentation.
   int indent = 0;
 
-  final LinePrinter printer;
+  final int _pageWidth;
 
   Line _currentLine;
 
@@ -58,7 +58,7 @@ class SourceWriter {
   final _rules = <SplitRule>[];
 
   SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
-      : printer = new LinePrinter(pageWidth: pageWidth);
+      : _pageWidth = pageWidth;
 
   /// Prints the current line and completes it.
   ///
@@ -74,7 +74,7 @@ class SourceWriter {
         rules.forceSplit();
       }
 
-      buffer.writeln(printer.printLine(_currentLine));
+      buffer.writeln(new LineSplitter(_pageWidth, _currentLine).apply());
     } else {
       buffer.writeln();
     }
@@ -129,7 +129,7 @@ class SourceWriter {
     var source = new StringBuffer(buffer.toString());
 
     if (_currentLine != null) {
-      source.write(printer.printLine(_currentLine));
+      source.write(new LineSplitter(_pageWidth, _currentLine).apply());
     }
 
     return source.toString();

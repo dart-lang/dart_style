@@ -21,6 +21,8 @@ class SplitParam {
   /// If the split is already forced, this has no effect.
   set isSplit(bool value) => _isSplit = value;
 
+  // TODO(bob): Making these mutable makes the line splitting code hard to
+  // reason about.
   bool _isSplit = false;
 
   /// Whether this param has been "forced" to be in its split state.
@@ -57,6 +59,7 @@ class SplitCost {
   /// When a rule returns this, the set of splits is not allowed to be used at
   /// all.
   static const DISALLOW = -1;
+  // TODO(bob): Handle this better.
 
   /// The best cost, meaning the rule has been fully satisfied.
   static const FREE = 0;
@@ -95,7 +98,7 @@ class SplitCost {
   static const CHAR = 1;
 
   /// The cost of a single character that goes past the page limit.
-  static const OVERFLOW_CHAR = 100000;
+  static const OVERFLOW_CHAR = 1000000;
 }
 
 /// A heuristic for evaluating how desirable a set of splits is.
