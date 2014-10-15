@@ -21,3 +21,9 @@ if (identifier && identifier || identifier
 if (identifier && identifier ||
     identifier && identifier) {
 }
+>>> conditional expression SKIP
+var kind = element != null ? arg : arg;
+<<<
+var kind = element != null ?
+    arg :
+    arg;

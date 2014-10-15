@@ -329,8 +329,7 @@ class SourceVisitor implements AstVisitor {
     if (node.initializers.length > 1) {
       newlines();
     } else {
-      preserveLeadingNewlines();
-      space();
+      split();
     }
 
     indent(2);
@@ -348,8 +347,8 @@ class SourceVisitor implements AstVisitor {
       // field following the ":":
       //
       // Foo()
-      //   : first,
-      //     second;
+      //     : first,
+      //       second;
       if (i == 1) indent();
 
       node.initializers[i].accept(this);

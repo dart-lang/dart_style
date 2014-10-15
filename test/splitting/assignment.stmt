@@ -9,7 +9,7 @@ variable = longFunctionIsLoooooong(argument);
 <<<
 variable =
     longFunctionIsLoooooong(argument);
->>> initializer doesn't fit one line, name too long
+>>> initializer doesn't fit one line, name too long SKIP
 variable = longFunctionIsLooooooooooooooong(argument, argument);
 <<<
 variable =

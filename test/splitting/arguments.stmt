@@ -37,3 +37,21 @@ function(firstArg * second, third * fourthAndLongest);
 <<<
 function(firstArg * second,
     third * fourthAndLongest);
+>>> arguments, nested SKIP
+someFunctionOne(someArgument,
+someFunctionTwo(argument, argument, argument),
+someFunctionTwo(argument, argument, argument),
+someArgument, someArgument);
+<<<
+someFunctionOne(
+    someArgument,
+    someFunctionTwo(
+        argument,
+        argument,
+        argument),
+    someFunctionTwo(
+        argument,
+        argument,
+        argument),
+    someArgument,
+    someArgument);

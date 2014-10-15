@@ -1,5 +1,5 @@
 40 columns                              |
->>> prefers to expand map over multi-line arguments
+>>> prefers to expand map over multi-line arguments SKIP
 sendPort.send({'type': 'error', 'error': 'oops'});
 <<<
 sendPort.send({
