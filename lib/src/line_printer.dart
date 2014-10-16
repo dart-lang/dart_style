@@ -24,10 +24,6 @@ class LineSplitter {
 
   final _params = new List<SplitParam>();
 
-  /// The sets of enabled [SplitParams] that have been tried already when
-  /// looking for a solution.
-  final _paramSets = new List<ParamSet>();
-
   /// Creates a new breaker that tries to fit lines within [pageWidth].
   LineSplitter(this._pageWidth, this._line);
 
@@ -39,42 +35,9 @@ class LineSplitter {
   String apply() {
     if (debug) _dumpLine(_line);
 
-    if (!_line.hasSplits || _line.unsplitLength <= _pageWidth) {
-      // TODO(bob): Hack temp. Have to still apply splits to handle forced
-      // splits when an AllSplit is forced by containing a block.
-      // Find all of the rules applied to the line.
-      var indent = _line.indent;
-      var buffer = new StringBuffer();
-
-      writeIndent() {
-        buffer.write(" " * (indent * SPACES_PER_INDENT));
-      }
-
-      // Indent the first line.
-      writeIndent();
-
-      // Write each chunk in the line.
-      var needLine = false;
-      for (var chunk in _line.chunks) {
-        if (chunk is SplitChunk && chunk.param.isForced) {
-          needLine = true;
-          indent = chunk.indent;
-        } else {
-          if (needLine) {
-            buffer.writeln();
-            writeIndent();
-            needLine = false;
-          }
-          buffer.write(chunk.text);
-        }
-      }
-
-      return buffer.toString();
-
-      /*
+    if (!_line.hasSplits) {
       // No splitting needed or possible.
       return _printUnsplit();
-      */
     }
 
     // Find all of the rules applied to the line.
@@ -98,6 +61,7 @@ class LineSplitter {
     _params.addAll(params);
 
     var lines = _chooseSplits();
+
     if (lines == null) {
       // Could not split it.
       return _printUnsplit();
@@ -116,10 +80,11 @@ class LineSplitter {
     return buffer.toString();
   }
 
-  /*
   /// Chooses which set of splits to apply to get the most appealing result.
   ///
-  /// Returns the best set of split lines.
+  /// Tries every possible combination of splits and returns the best set. This
+  /// is fast when the total number of combinations is relatively slow but gets
+  /// slow quickly (it's exponential in the number of params).
   List<String> _chooseSplits() {
     var lowestCost;
 
@@ -127,7 +92,6 @@ class LineSplitter {
     var best;
 
     // Try every combination of params being enabled or disabled.
-    // TODO(rnystrom): Search this space more efficiently!
     for (var i = 0; i < (1 << _params.length); i++) {
       // Set a combination of params.
       for (var j = 0; j < _params.length; j++) {
@@ -137,6 +101,8 @@ class LineSplitter {
       // Try it out and see how much it costs.
       var ruleLines = {};
       var lines = _applySplits(ruleLines);
+      // TODO(rnystrom): Don't need to fully generate the split lines just to
+      // evaluate them. Consider optimizing by not doing that.
       var cost = _evaluateCost(lines, ruleLines);
       if (cost == SplitCost.DISALLOW) continue;
 
@@ -148,115 +114,6 @@ class LineSplitter {
 
     return best;
   }
-  */
-
-  /// Chooses which set of splits to apply to get the most appealing result.
-  ///
-  /// Returns the best set of split lines.
-  List<String> _chooseSplits() {
-    // TODO(bob): Seed with empty param set. Can't be solution since we
-    // handled case already.
-    _paramSets.add(new ParamSet(new Set()));
-    // TODO(bob): Is this right?
-    _paramSets.last.cost = -1;
-
-    var bestOverhang;
-    var bestOverhangCost;
-
-    while (_nextParamSet()) {
-      // Try it out and see how much it costs.
-      _paramSets.last.apply(_params);
-      var ruleLines = {};
-      var lines = _applySplits(ruleLines);
-      var cost = _evaluateCost(lines, ruleLines, true);
-      if (cost == SplitCost.DISALLOW) continue;
-
-      // TODO(bob): Hack! Do something cleaner!
-      // If the solution doesn' fit, keep trying.
-      if (cost >= SplitCost.OVERFLOW_CHAR) {
-        // Keep track of the best set of lines that do overhang. If we couldn't
-        // find a solution that fits in the page width, we'll fall back to this.
-        if (bestOverhangCost == null || cost < bestOverhangCost) {
-          bestOverhang = lines;
-          bestOverhangCost = cost;
-        }
-
-        continue;
-      }
-
-      // If we got here it's valid and has the lowest cost.
-      return lines;
-    }
-
-    // If we got here, we couldn't find an appropriate set of splits that fit
-    // in the page width.
-    return bestOverhang;
-  }
-
-  // TODO(bob): Doc.
-  bool _nextParamSet() {
-    var worstCost = _paramSets.last.cost;
-
-    var bestParamSet;
-
-    // Each new solution -- set of params -- will always be one of the
-    // previously tried sets with one additional param set.
-    for (var previousSet in _paramSets) {
-      // Try adding each parameter (by itself) to this existing subset.
-      for (var i = 0; i < _params.length; i++) {
-        // Skip subsets that already contain this number.
-        // TODO(rnystrom): Doing .contains here is slow. Use full-size list?
-        if (previousSet.params.contains(_params[i])) continue;
-
-        var paramSet = previousSet.refine(_params[i]);
-        paramSet.cost = _calculateCost(paramSet);
-
-        // If this param set isn't as bad as the last set we tried, then we
-        // must have already tried it before.
-        if (paramSet.cost < worstCost) continue;
-
-        // If this param is worse than the best candidate so far, ignore it.
-        if (bestParamSet != null && paramSet.cost > bestParamSet.cost) continue;
-
-        // We may still have tried it before if it has the exact same cost as
-        // the worst set we've already tried. Check for that.
-        var exists = false;
-        for (var j = _paramSets.length - 1; j >= 0; j--) {
-          // We can stop once we reach subsets with lower costs since we're only
-          // worried about ones with the same cost.
-          if (_paramSets[j].cost < worstCost) break;
-
-          // TODO(bob): Optimize.
-          if (_paramSets[j] == paramSet) {
-            exists = true;
-            break;
-          }
-        }
-
-        if (exists) continue;
-
-        bestParamSet = paramSet;
-      }
-    }
-
-    // TODO(bob): Return false?
-    if (bestParamSet == null) return false;
-
-    _paramSets.add(bestParamSet);
-    return true;
-  }
-
-  int _calculateCost(ParamSet params) {
-    params.apply(_params);
-
-    // Try it out and see how much it costs.
-    var ruleLines = {};
-    var lines = _applySplits(ruleLines);
-    var cost = _evaluateCost(lines, ruleLines, false);
-    // TODO(bob): Handle DISALLOW better.
-    if (cost == SplitCost.DISALLOW) return 0;
-    return cost;
-  }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines with the [RuleChunk]s distributed into
@@ -265,8 +122,7 @@ class LineSplitter {
   /// Returns [SplitCost.DISALLOW] if [lines] is not an allowed solution because
   /// the set of chosen splits violates the guidelines. Otherwise, returns a
   /// non-negative number where higher values indicate less preferred solutions.
-  int _evaluateCost(List<String> lines, Map<SplitRule, List<int>> ruleLines,
-      bool countOverhang) {
+  int _evaluateCost(List<String> lines, Map<SplitRule, List<int>> ruleLines) {
     // Rate this set of lines.
     var cost = 0;
 
@@ -282,24 +138,19 @@ class LineSplitter {
     // Apply any param costs.
     for (var param in _params) cost += param.cost;
 
-    // Try to keep characters near the top.
-    for (var j = 1; j < lines.length; j++) {
-      cost += lines[j].length * j * SplitCost.CHAR;
-    }
-
     // Punish lines that went over the length. We don't rule these out
     // completely because it may be that the only solution still goes over
     // (for example with long string literals).
-    if (countOverhang) {
-      for (var line in lines) {
-        if (line.length > _pageWidth) {
-          cost += (line.length - _pageWidth) * SplitCost.OVERFLOW_CHAR;
-        }
+    for (var line in lines) {
+      if (line.length > _pageWidth) {
+        cost += (line.length - _pageWidth) * SplitCost.OVERFLOW_CHAR;
       }
     }
 
     if (debug) {
-      print("--- $cost\n${lines.map((line) {
+      var params = _params.map(
+          (param) => param.isSplit ? param.cost : "_").join(" ");
+      print("--- $params: $cost\n${lines.map((line) {
         return line + " " * (_pageWidth - line.length) + "|";
       }).join('\n')}");
     }
@@ -400,41 +251,5 @@ class LineSplitter {
     }
 
     print(buffer);
-  }
-}
-
-class ParamSet {
-  final Set<SplitParam> params;
-
-  // TODO(bob): Make immutable.
-  int cost;
-
-  ParamSet(this.params);
-
-  void apply(List<SplitParam> allParams) {
-    for (var param in allParams) {
-      param.isSplit = params.contains(param);
-    }
-  }
-
-  /// Returns a new [ParamSet] that contains all of the params of this one
-  /// along with [param].
-  ParamSet refine(SplitParam param) => new ParamSet(params.toSet()..add(param));
-
-  bool operator ==(ParamSet other) {
-    if (params.length != other.params.length) return false;
-
-    for (var param in params) if (!other.params.contains(param)) return false;
-    return true;
-  }
-
-  String toString() {
-    var buffer = new StringBuffer();
-    buffer.write("(");
-    buffer.writeAll(params, ", ");
-    buffer.write(" : ");
-    buffer.write(cost);
-    buffer.write(")");
-    return buffer.toString();
   }
 }

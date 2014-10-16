@@ -84,7 +84,10 @@ class SourceVisitor implements AstVisitor {
       // The rule checks if we split after the first "(".
       writer.ruleMark();
 
-      visitCommaSeparatedNodes(node.arguments, followedBy: split);
+      // Prefer splitting later arguments over earlier ones.
+      var cost = node.arguments.length;
+      visitCommaSeparatedNodes(node.arguments,
+          followedBy: () => split(cost: cost--));
 
       // Mark after the last argument so we can see if they all ended up on the
       // same line.
@@ -508,7 +511,8 @@ class SourceVisitor implements AstVisitor {
         var parameter = node.parameters[i];
         if (i > 0) {
           append(',');
-          split();
+          // Prefer splitting later parameters over earlier ones.
+          split(cost: node.parameters.length - i);
         }
 
         if (groupEnd == null && parameter is DefaultFormalParameter) {

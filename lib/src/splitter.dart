@@ -21,7 +21,7 @@ class SplitParam {
   /// If the split is already forced, this has no effect.
   set isSplit(bool value) => _isSplit = value;
 
-  // TODO(bob): Making these mutable makes the line splitting code hard to
+  // TODO(rnystrom): Making these mutable makes the line splitting code hard to
   // reason about.
   bool _isSplit = false;
 
@@ -88,15 +88,6 @@ class SplitCost {
   // TODO(bob): Doc. Different operators.
   static const BINARY_OPERATOR = 7000;
 
-  /// The cost of a single character weighted by the line it appears on.
-  ///
-  /// Each character of output is increasingly costly the lower down it appears.
-  /// This encourages statements to have few lines and be "top-heavy". In
-  /// particular, it handles the fact that there are often a number of different
-  /// ways to split an argument list over the same number of lines. This helps
-  /// avoid those all having the same cost.
-  static const CHAR = 1;
-
   /// The cost of a single character that goes past the page limit.
   static const OVERFLOW_CHAR = 1000000;
 }
@@ -129,23 +120,21 @@ abstract class SplitRule {
 /// line, or it will be fully split into multiple lines, with not intermediate
 /// states allowed.
 class AllSplitRule extends SplitRule {
-  /// The cost of this rule when the split is in effect.
-  final int cost;
-
   /// The [SplitParam] for the collection.
   ///
   /// Since a collection will either be all on one line, or fully split into
   /// separate lines for each item and the brackets, only a single parameter
   /// is needed.
-  final param = new SplitParam();
+  final SplitParam param;
 
-  AllSplitRule([this.cost = SplitCost.FREE]);
+  AllSplitRule([int cost = SplitCost.FREE])
+    : param = new SplitParam(cost);
 
   // Ensures the list is always split into its multi-line form if its elements
   // do not all fit on one line.
   int getCost(List<int> splitLines) {
     // Splitting is always allowed.
-    if (param.isSplit) return cost;
+    if (param.isSplit) return param.cost;
 
     // TODO(rnystrom): Do we want to allow single-element lists to remain
     // unsplit if their contents split, like:
@@ -155,9 +144,8 @@ class AllSplitRule extends SplitRule {
     //       second
     //     ]]
 
-    var line = splitLines.first;
-    return splitLines.every((other) => other == line)
-        ? SplitCost.FREE : SplitCost.DISALLOW;
+    return splitLines.first == splitLines.last ?
+        SplitCost.FREE : SplitCost.DISALLOW;
   }
 
   void forceSplit() {
