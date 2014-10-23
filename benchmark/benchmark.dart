@@ -58,37 +58,6 @@ const source = r"""
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// A back-tracking depth-first solver.
-///
-/// Attempts to find the best solution for a root package's transitive
-/// dependency graph, where a "solution" is a set of concrete package versions.
-/// A valid solution will select concrete versions for every package reached
-/// from the root package's dependency graph, and each of those packages will
-/// fit the version constraints placed on it.
-///
-/// The solver builds up a solution incrementally by traversing the dependency
-/// graph starting at the root package. When it reaches a new package, it gets
-/// the set of versions that meet the current constraint placed on it. It
-/// *speculatively* selects one version from that set and adds it to the
-/// current solution and then proceeds. If it fully traverses the dependency
-/// graph, the solution is valid and it stops.
-///
-/// If it reaches an error because:
-///
-/// - A new dependency is placed on a package that's already been selected in
-///   the solution and the selected version doesn't match the new constraint.
-///
-/// - There are no versions available that meet the constraint placed on a
-///   package.
-///
-/// - etc.
-///
-/// then the current solution is invalid. It will then backtrack to the most
-/// recent speculative version choice and try the next one. That becomes the
-/// new in-progress solution and it tries to proceed from there. It will keep
-/// doing this, traversing and then backtracking when it meets a failure until
-/// a valid solution has been found or until all possible options for all
-/// speculative choices have been exhausted.
 library pub.solver.backtracking_solver;
 
 import 'dart:async';
@@ -844,6 +813,41 @@ class Traverser {
     }
 
     return package;
+  }
+
+  /// Run the dart2js compiler.
+  Future _doCompilation(Transform transform) {
+    var provider = new _BarbackCompilerProvider(_environment, transform,
+        generateSourceMaps: _generateSourceMaps);
+
+    // Create a "path" to the entrypoint script. The entrypoint may not actually
+    // be on disk, but this gives dart2js a root to resolve relative paths
+    // against.
+    var id = transform.primaryInput.id;
+
+    var entrypoint = _environment.graph.packages[id.package].path(id.path);
+
+    // TODO(rnystrom): Should have more sophisticated error-handling here. Need
+    // to report compile errors to the user in an easily visible way. Need to
+    // make sure paths in errors are mapped to the original source path so they
+    // can understand them.
+    return dart.compile(
+        entrypoint, provider,
+        commandLineOptions: _configCommandLineOptions,
+        csp: _configBool('csp'),
+        checked: _configBool('checked'),
+        minify: _configBool(
+            'minify', defaultsTo: _settings.mode == BarbackMode.RELEASE),
+        verbose: _configBool('verbose'),
+        environment: _configEnvironment,
+        packageRoot: _environment.rootPackage.path("packages"),
+        analyzeAll: _configBool('analyzeAll'),
+        suppressWarnings: _configBool('suppressWarnings'),
+        suppressHints: _configBool('suppressHints'),
+        suppressPackageWarnings: _configBool(
+            'suppressPackageWarnings', defaultsTo: true),
+        terse: _configBool('terse'),
+        includeSourceMapUrls: _settings.mode != BarbackMode.RELEASE);
   }
 }
 

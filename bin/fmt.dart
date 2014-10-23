@@ -21,11 +21,57 @@ main(List<String> args) {
   // This code is just for testing right now.
 
   //          1234567890123456789012345678901234567890
-  //formatStmt("var variableName = thisIsReallyQuiteAVeryLongVariableName;");
+  //formatUnit("class MyClass {MyClass(parameter, parameter): super(parameter, parameter);}");
+  //formatUnit("class Foo extends Bar {Foo(int a, this.b): super(a);}");
+  //formatStmt("printNumbers(000000000000000000000, 111);");
+
+  /*
+  formatStmt('var result = myFunction(\n'
+    '    argument * argument,\n'
+    '    argument * argument);');
+  */
+  /*
+  formatStmt('method(first, () {\n'
+    '  "fn";\n'
+    '}, third, fourth, fifth, sixth, seventh,\n'
+    '    eighth);');
+  */
+
+  /*
+  formatStmt('method(int first, int second, int third,\n'
+    '    int fourth, int fifth, int sixth,\n'
+    '    int seventh, int eighth, int ninth,\n'
+    '    int tenth, int eleventh,\n'
+    '    int twelfth) {\n'
+    '  print(\'42\');\n'
+    '}');
+    */
+
+  formatStmt("""
+d.dir(appPath, [
+  d.dir('build', [
+    d.dir('benchmark', [
+      d.file('file.txt', 'benchmark')
+    ]),
+    d.dir('bin', [
+      d.file('file.txt', 'bin')
+    ]),
+    d.dir('example', [
+      d.file('file.txt', 'example')
+    ]),
+    d.dir('test', [
+      d.file('file.txt', 'test')
+    ]),
+    d.dir('web', [
+      d.file('file.txt', 'web')
+    ]),
+    d.nothing('unknown')
+  ])
+]).validate();""");
 }
 
 void formatStmt(String source) {
-  LinePrinter.debug = true;
+  LineSplitter.debug = true;
 
   var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
   var result = formatter.format(CodeKind.STATEMENT, source);
@@ -37,7 +83,7 @@ void formatStmt(String source) {
 }
 
 void formatUnit(String source) {
-  LinePrinter.debug = true;
+  LineSplitter.debug = true;
 
   var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
   var result = formatter.format(CodeKind.COMPILATION_UNIT, source);
