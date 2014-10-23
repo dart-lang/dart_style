@@ -5,7 +5,6 @@
 library dart_style.src.line_printer;
 
 import 'line.dart';
-import 'splitter.dart';
 
 // TODO(rnystrom): Rename and clean up.
 /// Takes a single [Line] which may contain multiple [SplitParam]s and

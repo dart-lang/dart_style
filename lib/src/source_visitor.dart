@@ -13,7 +13,6 @@ import 'package:analyzer/src/generated/source.dart';
 import '../dart_style.dart';
 import 'line.dart';
 import 'source_writer.dart';
-import 'splitter.dart';
 
 /// Used for matching EOL comments
 final twoSlashes = new RegExp(r'//[^/]');
@@ -76,13 +75,14 @@ class SourceVisitor implements AstVisitor {
 
     if (node.arguments.isNotEmpty) {
       // Track what line the "(" is on.
-      writer.startRule(new ArgumentListSplitRule());
+      var rule = new ArgumentListSplitRule();
+      writer.ruleMark(rule);
 
       // Allow splitting after "(".
       zeroSplit();
 
       // The rule checks if we split after the first "(".
-      writer.ruleMark();
+      writer.ruleMark(rule);
 
       // Prefer splitting later arguments over earlier ones.
       var cost = node.arguments.length;
@@ -91,7 +91,7 @@ class SourceVisitor implements AstVisitor {
 
       // Mark after the last argument so we can see if they all ended up on the
       // same line.
-      writer.endRule();
+      writer.ruleMark(rule);
     }
 
     token(node.rightParenthesis);
@@ -146,20 +146,18 @@ class SourceVisitor implements AstVisitor {
     addOperands(node.rightOperand);
 
     // TODO(rnystrom: Use different costs for different operator precedences.
-    var rule = new AllSplitRule(SplitCost.BINARY_OPERATOR);
-    writer.startRule(rule);
+    writer.startMultisplit(SplitCost.BINARY_OPERATOR);
 
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
         space();
         token(node.operator);
-        split(chunk: new SplitChunk(writer.indent + 2, param: rule.param,
-            text: " "));
+        writer.multisplit(indent: 2, text: " ");
       }
       visit(operands[i]);
     }
 
-    writer.endRule();
+    writer.endMultisplit();
   }
 
   visitBlock(Block node) {
@@ -290,7 +288,7 @@ class SourceVisitor implements AstVisitor {
     token(node.endToken /* EOF */);
 
     // Be a good citizen, end with a newline.
-    if (!writer.currentLine.isEmpty) emitNewlines(1);
+    if (!writer.isCurrentLineEmpty) emitNewlines(1);
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -732,25 +730,24 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var rule = new AllSplitRule();
-    writer.startRule(rule);
+    writer.startMultisplit();
 
     // Track indentation in case the list contains a function expression with
     // a block body that splits to a new line.
     indent();
 
-    split(chunk: new SplitChunk(writer.indent, param: rule.param));
+    writer.multisplit();
 
     visitCommaSeparatedNodes(node.elements, followedBy: () {
-      split(chunk: new SplitChunk(writer.indent, param: rule.param, text: " "));
+      writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
     unindent();
 
-    split(chunk: new SplitChunk(writer.indent, param: rule.param));
-    writer.endRule();
+    writer.multisplit();
+    writer.endMultisplit();
 
     token(node.rightBracket);
   }
@@ -765,25 +762,24 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var rule = new AllSplitRule();
-    writer.startRule(rule);
+    writer.startMultisplit();
 
     // Track indentation in case the map contains a function expression with
     // a block body that splits to a new line.
     indent();
 
-    split(chunk: new SplitChunk(writer.indent, param: rule.param));
+    writer.multisplit();
 
     visitCommaSeparatedNodes(node.entries, followedBy: () {
-      split(chunk: new SplitChunk(writer.indent, param: rule.param, text: " "));
+      writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
     unindent();
 
-    split(chunk: new SplitChunk(writer.indent, param: rule.param));
-    writer.endRule();
+    writer.multisplit();
+    writer.endMultisplit();
 
     token(node.rightBracket);
   }
@@ -1313,9 +1309,7 @@ class SourceVisitor implements AstVisitor {
   void _emitPendingSpace() {
     if (!_pendingSpace) return;
 
-    if (!writer.currentLine.isEmpty) {
-      writer.currentLine.write(" ");
-    }
+    if (!writer.isCurrentLineEmpty) writer.write(" ");
 
     _pendingSpace = false;
   }
@@ -1332,13 +1326,13 @@ class SourceVisitor implements AstVisitor {
       chunk = new SplitChunk(writer.indent + 2, param: param, text: " ");
     }
 
-    writer.currentLine.split(chunk);
+    writer.split(chunk);
   }
 
   /// Outputs a [SplitChunk] that is the empty string when unsplit and indents
   /// two levels (i.e. a wrapped statement) when split.
   void zeroSplit() {
-    writer.currentLine.split(new SplitChunk(writer.indent + 2));
+    writer.split(new SplitChunk(writer.indent + 2));
   }
 
   /// Increase indentation by [n] levels.
@@ -1419,7 +1413,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit this [comment], inserting leading whitespace if appropriate.
   void _emitComment(Token comment, Token previousToken) {
-    if (!writer.currentLine.isEmpty && previousToken != null) {
+    if (!writer.isCurrentLineEmpty && previousToken != null) {
       var spaces = _countSpacesBetween(previousToken, comment);
       // Preserve one space but no more.
       if (spaces > 0 && !_pendingSpace) space();
@@ -1429,7 +1423,7 @@ class SourceVisitor implements AstVisitor {
     // commented out the entire line, then don't indent it.
     // TODO(rnystrom): Is this the behavior we want?
     if (lineInfo.getLocation(comment.offset).columnNumber == 1) {
-      writer.currentLine.clearIndentation();
+      writer.clearIndentation();
     }
 
     append(comment.toString().trim());
