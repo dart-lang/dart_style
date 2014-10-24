@@ -34,7 +34,7 @@ class LineSplitter {
   String apply() {
     if (debug) _dumpLine(_line);
 
-    if (!_line.hasSplits) {
+    if (!_line.hasSplits || _line.unsplitLength <= _pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit();
     }
@@ -92,6 +92,46 @@ class LineSplitter {
       for (var j = 0; j < _params.length; j++) {
         _params[j].isSplit = i & (1 << j) != 0;
       }
+
+      // TODO(rnystrom): Is there a cleaner or faster way of determining this?
+      // Make sure any unsplit multisplits don't get split across multiple
+      // lines. For example, we need to ensure this is not allowed:
+      //
+      //     [[
+      //         element,
+      //         element,
+      //         element,
+      //         element,
+      //         element
+      //     ]]
+      //
+      // Here, the inner list is correctly split, but the outer is not even
+      // though its contents span multiple lines (because the inner list split).
+      // To check this, we'll see if any SplitChunks refer to an unsplit param
+      // that was previously seen on a different line.
+      var allowed = true;
+      var previousParams = new Set();
+      var thisLineParams = new Set();
+      for (var chunk in _line.chunks) {
+        if (chunk is! SplitChunk) continue;
+
+        if (chunk.param.isSplit) {
+          // Splitting here, so every param we've seen so far is now on a
+          // previous line.
+          previousParams.addAll(thisLineParams);
+          thisLineParams.clear();
+        } else {
+          if (previousParams.contains(chunk.param)) {
+            allowed = false;
+            break;
+          }
+
+          thisLineParams.add(chunk.param);
+        }
+        var param = chunk.param;
+      }
+
+      if (!allowed) continue;
 
       // Try it out and see how much it costs.
       var ruleLines = {};
@@ -222,14 +262,7 @@ class LineSplitter {
         buffer.write("$cyan‹$rule›$none");
       } else {
         var split = chunk as SplitChunk;
-
         var color = split.param.isSplit ? green : gray;
-        if (split.param is SplitParam) {
-          var param = split.param as SplitParam;
-          if (param.isForced) {
-            color = magenta;
-          }
-        }
 
         buffer
           ..write("$color‹")

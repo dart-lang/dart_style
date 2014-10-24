@@ -68,28 +68,9 @@ class SourceWriter {
 
     // If we are in the middle of any all splits, they will definitely split
     // now.
-    var splitParams = new Set();
-    for (var multisplit in _multisplits) {
-      multisplit.isSplit = true;
-      splitParams.add(multisplit.param);
-    }
+    _splitMultisplits();
 
-    // TODO(rnystrom): Can optimize this to avoid the copying if there are no
-    // rules in effect.
-    // Take any existing split points for the current multisplits and hard split
-    // them into separate lines now that we know that those splits must apply.
-    var line = new Line(indent: _currentLine.indent);
-    for (var chunk in _currentLine.chunks) {
-      if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
-        var split = chunk as SplitChunk;
-        buffer.writeln(new LineSplitter(_pageWidth, line).apply());
-        line = new Line(indent: split.indent);
-      } else {
-        line.chunks.add(chunk);
-      }
-    }
-
-    buffer.writeln(new LineSplitter(_pageWidth, line).apply());
+    buffer.writeln(new LineSplitter(_pageWidth, _currentLine).apply());
 
     _currentLine = null;
   }
@@ -158,6 +139,26 @@ class SourceWriter {
   }
 
   void endMultisplit() {
+    // Check to see if the body of the multisplit is longer than a line. If so,
+    // we know it will definitely split and we can do this pre-emptively here
+    // instead of having the line splitter try it. This is much faster than
+    // having the line splitter try combinations of this param along with
+    // others.
+    if (!_multisplits.last.isSplit) {
+      var started = false;
+      var length = 0;
+      for (var chunk in _currentLine.chunks) {
+        if (!started && chunk is SplitChunk &&
+            chunk.param == _multisplits.last.param) {
+          started = true;
+        } else if (started) {
+          length += chunk.text.length;
+        }
+      }
+
+      if (length > _pageWidth) _splitMultisplits();
+    }
+
     _multisplits.removeLast();
   }
 
@@ -175,5 +176,33 @@ class SourceWriter {
   void _ensureLine() {
     if (_currentLine != null) return;
     _currentLine = new Line(indent: indent);
+  }
+
+  /// Forces all multisplits in the current line to be split and breaks the
+  /// line into multiple independent [Line] objects, each of which is printed
+  /// separately (except for the last one, which is still in-progress).
+  void _splitMultisplits() {
+    var splitParams = new Set();
+    for (var multisplit in _multisplits) {
+      multisplit.isSplit = true;
+      splitParams.add(multisplit.param);
+    }
+
+    // TODO(rnystrom): Can optimize this to avoid the copying if there are no
+    // rules in effect.
+    // Take any existing split points for the current multisplits and hard split
+    // them into separate lines now that we know that those splits must apply.
+    var line = new Line(indent: _currentLine.indent);
+    for (var chunk in _currentLine.chunks) {
+      if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
+        var split = chunk as SplitChunk;
+        buffer.writeln(new LineSplitter(_pageWidth, line).apply());
+        line = new Line(indent: split.indent);
+      } else {
+        line.chunks.add(chunk);
+      }
+    }
+
+    _currentLine = line;
   }
 }

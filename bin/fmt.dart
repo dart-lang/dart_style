@@ -37,7 +37,6 @@ main(List<String> args) {
     '    eighth);');
   */
 
-  /*
   formatStmt('method(int first, int second, int third,\n'
     '    int fourth, int fifth, int sixth,\n'
     '    int seventh, int eighth, int ninth,\n'
@@ -45,8 +44,8 @@ main(List<String> args) {
     '    int twelfth) {\n'
     '  print(\'42\');\n'
     '}');
-    */
 
+  /*
   formatStmt("""
 d.dir(appPath, [
   d.dir('build', [
@@ -68,6 +67,7 @@ d.dir(appPath, [
     d.nothing('unknown')
   ])
 ]).validate();""");
+  */
 }
 
 void formatStmt(String source) {
