@@ -1,0 +1,22 @@
+40 columns                              |
+>>>
+class SomeClass extends BaseClass implements Interface {}
+<<<
+class SomeClass extends BaseClass
+    implements Interface {}
+>>>
+class AVeryLongSomeClass extends BaseClass implements I {}
+<<<
+class AVeryLongSomeClass
+    extends BaseClass implements I {}
+>>>
+class AVeryLongSomeClass extends BaseClass implements Interface {}
+<<<
+class AVeryLongSomeClass
+    extends BaseClass
+    implements Interface {}
+>>>
+class SomeClass extends BaseClass with Mixin {}
+<<<
+class SomeClass extends BaseClass
+    with Mixin {}

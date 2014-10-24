@@ -230,9 +230,9 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.name);
     visit(node.typeParameters);
-    visitNode(node.extendsClause, precededBy: space);
-    visitNode(node.withClause, precededBy: space);
-    visitNode(node.implementsClause, precededBy: space);
+    visitNode(node.extendsClause);
+    visitNode(node.withClause);
+    visitNode(node.implementsClause);
     visitNode(node.nativeClause, precededBy: space);
     space();
     token(node.leftBracket);
@@ -258,8 +258,8 @@ class SourceVisitor implements AstVisitor {
     token(node.equals);
     space();
     visit(node.superclass);
-    visitNode(node.withClause, precededBy: space);
-    visitNode(node.implementsClause, precededBy: space);
+    visitNode(node.withClause);
+    visitNode(node.implementsClause);
     token(node.semicolon);
   }
 
@@ -457,6 +457,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExtendsClause(ExtendsClause node) {
+    split(cost: SplitCost.BEFORE_EXTENDS);
     token(node.keyword);
     space();
     visit(node.superclass);
@@ -634,6 +635,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImplementsClause(ImplementsClause node) {
+    split(cost: SplitCost.BEFORE_IMPLEMENTS);
     token(node.keyword);
     space();
     visitCommaSeparatedNodes(node.interfaces);
@@ -1120,6 +1122,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitWithClause(WithClause node) {
+    split(cost: SplitCost.BEFORE_WITH);
     token(node.withKeyword);
     space();
     visitCommaSeparatedNodes(node.mixinTypes);
