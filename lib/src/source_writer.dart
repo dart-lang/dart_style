@@ -68,8 +68,10 @@ class SourceWriter {
 
     // If we are in the middle of any all splits, they will definitely split
     // now.
+    var splitParams = new Set();
     for (var multisplit in _multisplits) {
-      multisplit.param.force();
+      multisplit.isSplit = true;
+      splitParams.add(multisplit.param);
     }
 
     // TODO(rnystrom): Can optimize this to avoid the copying if there are no
@@ -78,7 +80,7 @@ class SourceWriter {
     // them into separate lines now that we know that those splits must apply.
     var line = new Line(indent: _currentLine.indent);
     for (var chunk in _currentLine.chunks) {
-      if (chunk is SplitChunk && chunk.param.isForced) {
+      if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
         var split = chunk as SplitChunk;
         buffer.writeln(new LineSplitter(_pageWidth, line).apply());
         line = new Line(indent: split.indent);
@@ -115,8 +117,17 @@ class SourceWriter {
   }
 
   void split(SplitChunk split) {
-    // If this split is already forced, treat it line a hard newline.
-    if (split.param.isForced) {
+    // If this split is associated with a multisplit that's already been split,
+    // treat it like a hard newline.
+    var isSplit = false;
+    for (var multisplit in _multisplits) {
+      if (multisplit.isSplit && multisplit.param == split.param) {
+        isSplit = true;
+        break;
+      }
+    }
+
+    if (isSplit) {
       // The line up to the split is complete now.
       if (_currentLine != null) {
         buffer.writeln(new LineSplitter(_pageWidth, _currentLine).apply());

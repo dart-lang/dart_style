@@ -50,10 +50,6 @@ class LineSplitter {
     var params = new Set<SplitParam>();
     for (var chunk in _line.chunks) {
       if (chunk is! SplitChunk) continue;
-
-      // TODO(rnystrom): Split into sublines at forced parameters and split each
-      // one separately.
-      if (chunk.param.isForced) continue;
       params.add(chunk.param);
     }
 
@@ -103,7 +99,6 @@ class LineSplitter {
       // TODO(rnystrom): Don't need to fully generate the split lines just to
       // evaluate them. Consider optimizing by not doing that.
       var cost = _evaluateCost(lines, ruleLines);
-      if (cost == SplitCost.DISALLOW) continue;
 
       if (lowestCost == null || cost < lowestCost) {
         best = lines;
@@ -126,12 +121,7 @@ class LineSplitter {
     var cost = 0;
 
     for (var rule in _rules) {
-      var ruleCost = rule.getCost(ruleLines[rule]);
-
-      // If a hard constraint failed, abandon this set of splits.
-      if (ruleCost == SplitCost.DISALLOW) return SplitCost.DISALLOW;
-
-      cost += ruleCost;
+      cost += rule.getCost(ruleLines[rule]);
     }
 
     // Apply any param costs.

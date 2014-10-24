@@ -100,29 +100,8 @@ class SplitChunk extends Chunk {
 /// does so by trying different combinations of parameters to see which set of
 /// active ones yields the best result.
 class SplitParam {
-  /// Whether this param is currently split or forced.
-  bool get isSplit => _isForced || _isSplit;
-
-  /// Sets the split state.
-  ///
-  /// If the split is already forced, this has no effect.
-  set isSplit(bool value) => _isSplit = value;
-
-  // TODO(rnystrom): Making these mutable makes the line splitting code hard to
-  // reason about.
-  bool _isSplit = false;
-
-  /// Whether this param has been "forced" to be in its split state.
-  ///
-  /// This means the line-splits algorithm no longer has the opportunity to try
-  /// toggling this on and off to find a good set of splits.
-  ///
-  /// This happens when a param explicitly spans multiple lines, usually from
-  /// an expression containing a function expression with a block body. Once the
-  /// block body forces a line break, the surrounding expression must go into
-  /// its multi-line state.
-  bool get isForced => _isForced;
-  bool _isForced = false;
+  /// Whether this param is currently split or not.
+  bool isSplit = false;
 
   /// The cost of applying this param.
   ///
@@ -133,21 +112,9 @@ class SplitParam {
   final int _cost;
 
   SplitParam([this._cost = 0]);
-
-  /// Forcibly splits this param.
-  void force() {
-    _isForced = true;
-  }
 }
 
 class SplitCost {
-  /// The cost used to represent a hard constraint that has been violated.
-  ///
-  /// When a rule returns this, the set of splits is not allowed to be used at
-  /// all.
-  static const DISALLOW = -1;
-  // TODO(bob): Handle this better.
-
   /// The best cost, meaning the rule has been fully satisfied.
   static const FREE = 0;
 
@@ -205,6 +172,11 @@ abstract class SplitRule {
 class Multisplit {
   /// The [SplitParam] that controls all of the split chunks.
   final SplitParam param;
+
+  /// `true` if a hard newline has forced this multisplit to be split.
+  ///
+  /// Initially `false`.
+  bool isSplit = false;
 
   Multisplit(int cost)
     : param = new SplitParam(cost);
