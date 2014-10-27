@@ -25,11 +25,9 @@ main(List<String> args) {
   //formatUnit("class Foo extends Bar {Foo(int a, this.b): super(a);}");
   //formatStmt("printNumbers(000000000000000000000, 111);");
 
-  /*
-  formatStmt('var result = myFunction(\n'
-    '    argument * argument,\n'
-    '    argument * argument);');
-  */
+  //formatStmt('var result = myFunction(argument * argument,argument * argument);');
+
+  //formatStmt('variable = longFunctionIsLoooooong(argument);');
   /*
   formatStmt('method(first, () {\n'
     '  "fn";\n'
@@ -37,6 +35,7 @@ main(List<String> args) {
     '    eighth);');
   */
 
+  /*
   formatStmt('method(int first, int second, int third,\n'
     '    int fourth, int fifth, int sixth,\n'
     '    int seventh, int eighth, int ninth,\n'
@@ -44,6 +43,7 @@ main(List<String> args) {
     '    int twelfth) {\n'
     '  print(\'42\');\n'
     '}');
+  */
 
   /*
   formatStmt("""
@@ -68,6 +68,8 @@ d.dir(appPath, [
   ])
 ]).validate();""");
   */
+
+  formatStmt('foo(argument, argument, argument, argument, () { fn; }, argument, argument, argument, argument);');
 }
 
 void formatStmt(String source) {

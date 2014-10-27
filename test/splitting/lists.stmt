@@ -70,3 +70,16 @@
   fifth,
   sixth,
 ];
+>>> nested lists are force split
+[[[argument, argument, argument, argument]]];
+<<<
+[
+  [
+    [
+      argument,
+      argument,
+      argument,
+      argument
+    ]
+  ]
+];

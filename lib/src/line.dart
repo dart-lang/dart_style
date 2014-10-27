@@ -46,9 +46,8 @@ class Line {
   }
 }
 
-abstract class Chunk {
-  String get text;
-
+class Chunk {
+  String get text => "";
   String toString() => text;
 }
 
@@ -58,17 +57,28 @@ class TextChunk extends Chunk {
   TextChunk(this.text);
 }
 
-class RuleChunk implements Chunk {
-  String get text => "";
+/// The first of a pair of chunks used to delimit a range of chunks that must
+/// end up on the same line to avoid paying a cost.
+///
+/// If a start and its paired end chunk end up split onto different lines, then
+/// a cost penalty (in addition to the costs of the splits themselves) is added.
+/// This is used to penalize splitting arguments onto multiple lines so that it
+/// prefers to keep arguments together even if it means moving them all to the
+/// next line when possible.
+class SpanStartChunk extends Chunk {}
 
-  /// The [SplitRule] that is applied to this chunk, if any.
-  ///
-  /// May be `null`.
-  final SplitRule rule;
+/// The second of a pair of chunks used to delimit a range of chunks that must
+/// end up on the same line to avoid paying a cost.
+///
+/// See [SpanStartChunk] for details.
+class SpanEndChunk extends Chunk {
+  /// The [SpanStartChunk] that marks the beginning of this span.
+  final SpanStartChunk start;
 
-  String toString() => "";
+  /// The cost applied when the span is split across multiple lines.
+  final int cost;
 
-  RuleChunk(this.rule);
+  SpanEndChunk(this.start, this.cost);
 }
 
 /// A split chunk may expand to a newline (with some leading indentation) or
@@ -103,15 +113,10 @@ class SplitParam {
   /// Whether this param is currently split or not.
   bool isSplit = false;
 
-  /// The cost of applying this param.
-  ///
-  /// This will be [SplitCost.FREE] if the param is managed by some rule
-  /// instead. It always returns [SplitCost.FREE] if the param is not currently
-  /// split.
-  int get cost => isSplit ? _cost : SplitCost.FREE;
-  final int _cost;
+  /// The cost of this param when split.
+  final int cost;
 
-  SplitParam([this._cost = 0]);
+  SplitParam([this.cost = 0]);
 }
 
 class SplitCost {
@@ -131,39 +136,24 @@ class SplitCost {
   /// After a "=" both for assignment and initialization.
   static const ASSIGNMENT = 30;
 
-  /// Keeps all argument or parameters in a list together on one line by
-  /// splitting before the leading "(".
-  static const ARGUMENTS_TOGETHER = 40;
+  /// The cost of splitting before any argument (including the first) in an
+  /// argument list.
+  ///
+  /// Successive arguments decrement from here so that it prefers to split over
+  /// later arguments.
+  static const BEFORE_ARGUMENT = 20;
 
-  /// Split arguments across multiple lines but keep at least one on the first
-  /// line after the "(".
-  static const WRAP_REMAINING_ARGUMENTS = 50;
+  /// The cost of failing to keep all arguments on one line.
+  ///
+  /// This is in addition to the cost of splitting after any specific argument.
+  static const SPLIT_ARGUMENTS = 20;
 
-  /// Split arguments across multiple lines including wrapping after the
-  /// leading "(".
-  static const WRAP_FIRST_ARGUMENT = 60;
-
-  // TODO(bob): Doc. Different operators.
-  static const BINARY_OPERATOR = 70;
+  // TODO(rnystrom): Different costs for different operators.
+  /// The cost of splitting after a binary operator.
+  static const BINARY_OPERATOR = 80;
 
   /// The cost of a single character that goes past the page limit.
   static const OVERFLOW_CHAR = 10000;
-}
-
-/// A heuristic for evaluating how desirable a set of splits is.
-///
-/// Each instance of this inserts two or more [RuleChunk]s in the [Line]. When
-/// a set of split is chosen, the line splitter determines which lines those
-/// marks ended up in and tells the rule by calling [getCost()]. The rule then
-/// determines how desirable that set of splits is.
-abstract class SplitRule {
-  /// Given that this rule's marks have ended up on [splitLines] after taking
-  /// the current set of splits into effect, return this rule's "cost" -- how
-  /// much it penalizes the resulting line splits.
-  ///
-  /// Returning a lower number here means that this rule is more satisfied and
-  /// the resulting line is more likely to be a winner.
-  int getCost(List<int> splitLines) => SplitCost.FREE;
 }
 
 /// Handles a series of [SplitChunks] that all either split or don't split
@@ -184,29 +174,4 @@ class Multisplit {
 
   Multisplit(int cost)
     : param = new SplitParam(cost);
-}
-
-/// A [SplitRule] for argument and parameter lists.
-class ArgumentListSplitRule extends SplitRule {
-  int getCost(List<int> splitLines) {
-    // If the line was force-split, we won't have all three marks so we can't
-    // really evaluate this rule.
-    // TODO(rnystrom): Do something better here?
-    if (splitLines.length != 3) return SplitCost.FREE;
-
-    var parenLine = splitLines[0];
-    var firstArgLine = splitLines[1];
-    var lastArgLine = splitLines[2];
-
-    // The best is everything on one line.
-    if (parenLine == lastArgLine) return SplitCost.FREE;
-
-    // Next is keeping the args together by splitting after "(".
-    if (firstArgLine == lastArgLine) return SplitCost.ARGUMENTS_TOGETHER;
-
-    // If we can't do that, try to keep at least one argument on the "(" line.
-    if (parenLine == firstArgLine) return SplitCost.WRAP_REMAINING_ARGUMENTS;
-
-    return SplitCost.WRAP_FIRST_ARGUMENT;
-  }
 }

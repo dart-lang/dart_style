@@ -74,24 +74,18 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     if (node.arguments.isNotEmpty) {
-      // Track what line the "(" is on.
-      var rule = new ArgumentListSplitRule();
-      writer.ruleMark(rule);
+      // See if we kept all of the arguments on the same line.
+      writer.startSpan();
 
       // Allow splitting after "(".
-      zeroSplit();
-
-      // The rule checks if we split after the first "(".
-      writer.ruleMark(rule);
+      zeroSplit(SplitCost.BEFORE_ARGUMENT);
 
       // Prefer splitting later arguments over earlier ones.
-      var cost = node.arguments.length;
+      var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
       visitCommaSeparatedNodes(node.arguments,
           followedBy: () => split(cost: cost--));
 
-      // Mark after the last argument so we can see if they all ended up on the
-      // same line.
-      writer.ruleMark(rule);
+      writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
     }
 
     token(node.rightParenthesis);
@@ -1334,8 +1328,9 @@ class SourceVisitor implements AstVisitor {
 
   /// Outputs a [SplitChunk] that is the empty string when unsplit and indents
   /// two levels (i.e. a wrapped statement) when split.
-  void zeroSplit() {
-    writer.split(new SplitChunk(writer.indent + 2));
+  void zeroSplit([int cost = SplitCost.FREE]) {
+    var param = new SplitParam(cost);
+    writer.split(new SplitChunk(writer.indent + 2, param: param));
   }
 
   /// Increase indentation by [n] levels.

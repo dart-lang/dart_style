@@ -25,7 +25,7 @@ class SourceWriter {
   /// not been started yet.
   Line _currentLine;
 
-  /// Keep track of which multisplits are currently being written.
+  /// The nested stack of multisplits that are currently being written.
   ///
   /// If a hard newline appears in the middle of a multisplit, then the
   /// multisplit itself must be split. For example, a collection can either be
@@ -47,6 +47,9 @@ class SourceWriter {
   /// happens, we need to force all surrounding collections to be multi-line.
   /// This tracks them so we can do that.
   final _multisplits = <Multisplit>[];
+
+  /// The nested stack of spans that are currently being written.
+  final _spans = <SpanStartChunk>[];
 
   SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
       : _pageWidth = pageWidth;
@@ -123,10 +126,15 @@ class SourceWriter {
     _currentLine.chunks.add(split);
   }
 
-  /// Add a mark at the current position in the current line for the [rule].
-  void ruleMark(SplitRule rule) {
+  void startSpan() {
     _ensureLine();
-    _currentLine.chunks.add(new RuleChunk(rule));
+    _spans.add(new SpanStartChunk());
+    _currentLine.chunks.add(_spans.last);
+  }
+
+  void endSpan(int cost) {
+    _ensureLine();
+    _currentLine.chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
   }
 
   void startMultisplit([int cost = SplitCost.FREE]) {

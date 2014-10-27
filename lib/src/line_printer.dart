@@ -19,8 +19,6 @@ class LineSplitter {
   final Line _line;
 
   // TODO(rnystrom): Document.
-  final _rules = new Set<SplitRule>();
-
   final _params = new List<SplitParam>();
 
   /// Creates a new breaker that tries to fit lines within [pageWidth].
@@ -37,13 +35,6 @@ class LineSplitter {
     if (!_line.hasSplits || _line.unsplitLength <= _pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit();
-    }
-
-    // Find all of the rules applied to the line.
-    for (var chunk in _line.chunks) {
-      if (chunk is! RuleChunk) continue;
-      if (chunk.rule == null) continue;
-      _rules.add(chunk.rule);
     }
 
     // See which parameters we can toggle for the line.
@@ -93,55 +84,11 @@ class LineSplitter {
         _params[j].isSplit = i & (1 << j) != 0;
       }
 
-      // TODO(rnystrom): Is there a cleaner or faster way of determining this?
-      // Make sure any unsplit multisplits don't get split across multiple
-      // lines. For example, we need to ensure this is not allowed:
-      //
-      //     [[
-      //         element,
-      //         element,
-      //         element,
-      //         element,
-      //         element
-      //     ]]
-      //
-      // Here, the inner list is correctly split, but the outer is not even
-      // though its contents span multiple lines (because the inner list split).
-      // To check this, we'll see if any SplitChunks refer to an unsplit param
-      // that was previously seen on a different line.
-      var allowed = true;
-      var previousParams = new Set();
-      var thisLineParams = new Set();
-      for (var chunk in _line.chunks) {
-        if (chunk is! SplitChunk) continue;
-
-        if (chunk.param.isSplit) {
-          // Splitting here, so every param we've seen so far is now on a
-          // previous line.
-          previousParams.addAll(thisLineParams);
-          thisLineParams.clear();
-        } else {
-          if (previousParams.contains(chunk.param)) {
-            allowed = false;
-            break;
-          }
-
-          thisLineParams.add(chunk.param);
-        }
-        var param = chunk.param;
-      }
-
-      if (!allowed) continue;
-
-      // Try it out and see how much it costs.
-      var ruleLines = {};
-      var lines = _applySplits(ruleLines);
-      // TODO(rnystrom): Don't need to fully generate the split lines just to
-      // evaluate them. Consider optimizing by not doing that.
-      var cost = _evaluateCost(lines, ruleLines);
+      var cost = _evaluateCost();
+      if (cost == null) continue;
 
       if (lowestCost == null || cost < lowestCost) {
-        best = lines;
+        best = _applySplits();
         lowestCost = cost;
       }
     }
@@ -150,38 +97,100 @@ class LineSplitter {
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
-  /// into [lines] physical lines with the [RuleChunk]s distributed into
-  /// [ruleLines].
+  /// into [lines] physical lines based on the current set of params.
   ///
-  /// Returns [SplitCost.DISALLOW] if [lines] is not an allowed solution because
-  /// the set of chosen splits violates the guidelines. Otherwise, returns a
-  /// non-negative number where higher values indicate less preferred solutions.
-  int _evaluateCost(List<String> lines, Map<SplitRule, List<int>> ruleLines) {
+  /// Returns the cost where a higher number is a worse set of splits or `null`
+  /// if the set of splits is completely invalid.
+  int _evaluateCost() {
     // Rate this set of lines.
     var cost = 0;
 
-    for (var rule in _rules) {
-      cost += rule.getCost(ruleLines[rule]);
+    // Apply any param costs.
+    for (var param in _params) {
+      if (param.isSplit) cost += param.cost;
     }
 
-    // Apply any param costs.
-    for (var param in _params) cost += param.cost;
+    // Calculate the length of each line and apply the cost of any spans that
+    // get split.
+    var line = 0;
+    var length = _line.indent * SPACES_PER_INDENT;
 
-    // Punish lines that went over the length. We don't rule these out
-    // completely because it may be that the only solution still goes over
-    // (for example with long string literals).
-    for (var line in lines) {
-      if (line.length > _pageWidth) {
-        cost += (line.length - _pageWidth) * SplitCost.OVERFLOW_CHAR;
+    // Determine which spans got split. Note that the line may not always
+    // contain matched start/end pairs. If a hard newline appears in the middle
+    // of a span, the line may contain only the beginning or end of a span. In
+    // that case, they will effectively do nothing, which is what we want.
+    var spanStarts = {};
+
+    // TODO(rnystrom): Is there a cleaner or faster way of determining this?
+    // Make sure any unsplit multisplits don't get split across multiple
+    // lines. For example, we need to ensure this is not allowed:
+    //
+    //     [[
+    //         element,
+    //         element,
+    //         element,
+    //         element,
+    //         element
+    //     ]]
+    //
+    // Here, the inner list is correctly split, but the outer is not even
+    // though its contents span multiple lines (because the inner list split).
+    // To check this, we'll see if any SplitChunks refer to an unsplit param
+    // that was previously seen on a different line.
+    var previousParams = new Set();
+    var thisLineParams = new Set();
+
+    endLine() {
+      // Punish lines that went over the length. We don't rule these out
+      // completely because it may be that the only solution still goes over
+      // (for example with long string literals).
+      if (length > _pageWidth) {
+        cost += (length - _pageWidth) * SplitCost.OVERFLOW_CHAR;
+      }
+
+      // Splitting here, so every param we've seen so far is now on a
+      // previous line.
+      previousParams.addAll(thisLineParams);
+      thisLineParams.clear();
+
+      line++;
+    }
+
+    for (var chunk in _line.chunks) {
+      if (chunk is SpanStartChunk) {
+        spanStarts[chunk] = line;
+      } else if (chunk is SpanEndChunk) {
+        // If the end span is on a different line from the start, pay for it.
+        if (spanStarts[chunk.start] != line) cost += chunk.cost;
+      } else if (chunk is SplitChunk) {
+        if (chunk.param.isSplit) {
+          endLine();
+
+          // Start the new line.
+          length = chunk.indent * SPACES_PER_INDENT;
+        } else {
+          // If we've seen the same param on a previous line, the unsplit
+          // multisplit got split, so this isn't valid.
+          if (previousParams.contains(chunk.param)) return null;
+          thisLineParams.add(chunk.param);
+
+          length += chunk.text.length;
+        }
+      } else {
+        length += chunk.text.length;
       }
     }
+
+    // Finish the last line.
+    endLine();
 
     if (debug) {
       var params = _params.map(
           (param) => param.isSplit ? param.cost : "_").join(" ");
-      print("--- $params: $cost\n${lines.map((line) {
-        return line + " " * (_pageWidth - line.length) + "|";
-      }).join('\n')}");
+      var lines = _applySplits()
+          .map((line) => line + " " * (_pageWidth - line.length) + "|")
+          .join('\n');
+      print("--- $params: $cost\n$lines");
     }
 
     return cost;
@@ -190,41 +199,18 @@ class LineSplitter {
   /// Applies the current set of splits to [line] and breaks it into a series
   /// of individual lines.
   ///
-  /// Returns the resulting split lines. [ruleLines] is an output parameter.
-  /// It should be passed as an empty map. When this returns, it will be
-  /// populated such that each [SplitRule] in the line is mapped to a list of
-  /// the (zero-based) line indexes that each [RuleChunk] for that splitter was
-  /// output to.
-  List<String> _applySplits(Map<SplitRule, List<int>> ruleLines) {
-    for (var rule in _rules) {
-      ruleLines[rule] = [];
-    }
-
-    var indent = _line.indent;
-
-    // TODO(rnystrom): We can optimize this by calculating the cost without
-    // actually building up the complete strings for each line. All we really
-    // need is line lengths and rule lines.
+  /// Returns the resulting split lines.
+  List<String> _applySplits() {
     var lines = [];
     var buffer = new StringBuffer();
-
-    writeIndent() {
-      buffer.write(" " * (indent * SPACES_PER_INDENT));
-    }
-
-    // Indent the first line.
-    writeIndent();
+    buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
 
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
-      if (chunk is RuleChunk && chunk.rule != null) {
-        // Keep track of this line this chunk ended up on.
-        ruleLines[chunk.rule].add(lines.length);
-      } else if (chunk is SplitChunk && chunk.param.isSplit) {
+      if (chunk is SplitChunk && chunk.param.isSplit) {
         lines.add(buffer.toString());
         buffer.clear();
-        indent = chunk.indent;
-        writeIndent();
+        buffer.write(" " * (chunk.indent * SPACES_PER_INDENT));
       } else {
         buffer.write(chunk.text);
       }
@@ -252,23 +238,21 @@ class LineSplitter {
         ..write("| " * line.indent)
         ..write(none);
 
-    var rules = new Map<SplitRule, int>();
-
     for (var chunk in line.chunks) {
-      if (chunk is TextChunk) {
+      if (chunk is SpanStartChunk) {
+        buffer.write("$cyan‹$none");
+      } else if (chunk is SpanEndChunk) {
+        buffer.write("$cyan›(${chunk.cost})$none");
+      } else if (chunk is TextChunk) {
         buffer.write(chunk);
-      } else if (chunk is RuleChunk) {
-        var rule = rules.putIfAbsent(chunk.rule, () => rules.length);
-        buffer.write("$cyan‹$rule›$none");
       } else {
         var split = chunk as SplitChunk;
         var color = split.param.isSplit ? green : gray;
 
         buffer
-          ..write("$color‹")
-          ..write(split.indent)
-          ..write(split.text)
-          ..write("›$none");
+            ..write("$color‹")
+            ..write(split.param.cost)
+            ..write("›$none");
       }
     }
 

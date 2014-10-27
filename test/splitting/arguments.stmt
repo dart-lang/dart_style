@@ -55,3 +55,12 @@ someFunctionOne(
         argument),
     someArgument,
     someArgument);
+>>> hard split inside argument list
+foo(argument, argument, argument, argument, () { fn; }, argument, argument,
+    argument, argument);
+<<<
+foo(argument, argument, argument,
+    argument, () {
+  fn;
+}, argument, argument, argument,
+    argument);
