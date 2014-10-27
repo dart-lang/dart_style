@@ -142,8 +142,7 @@ class SourceWriter {
   }
 
   void multisplit({int indent: 0, String text: ""}) {
-    split(new SplitChunk(this.indent + indent, param: _multisplits.last.param,
-        text: text));
+    split(new SplitChunk(this.indent + indent, _multisplits.last.param, text));
   }
 
   void endMultisplit() {

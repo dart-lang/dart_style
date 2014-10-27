@@ -100,8 +100,7 @@ class SplitChunk extends Chunk {
   /// indentation.
   final int indent;
 
-  SplitChunk(this.indent, {SplitParam param, this.text: ""})
-      : param = param != null ? param : new SplitParam();
+  SplitChunk(this.indent, this.param, [this.text = ""]);
 }
 
 /// A toggle for enabling one or more [SplitChunk]s in a [Line].
@@ -116,7 +115,10 @@ class SplitParam {
   /// The cost of this param when split.
   final int cost;
 
-  SplitParam([this.cost = 0]);
+  /// Creates a new [SplitParam].
+  ///
+  /// This should not be called directly from outside of [SourceWriter].
+  SplitParam([this.cost = SplitCost.FREE]);
 }
 
 class SplitCost {
@@ -126,6 +128,9 @@ class SplitCost {
   static const BEFORE_EXTENDS = 3;
   static const BEFORE_IMPLEMENTS = 2;
   static const BEFORE_WITH = 1;
+
+  /// After each variable in a variable declaration list.
+  static const DECLARATION = 1;
 
   /// Between adjacent string literals.
   static const ADJACENT_STRINGS = 10;
@@ -173,5 +178,5 @@ class Multisplit {
   bool isSplit = false;
 
   Multisplit(int cost)
-    : param = new SplitParam(cost);
+      : param = new SplitParam(cost);
 }

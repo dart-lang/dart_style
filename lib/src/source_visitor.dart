@@ -1091,10 +1091,10 @@ class SourceVisitor implements AstVisitor {
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    var param = new SplitParam();
+    var param = new SplitParam(SplitCost.DECLARATION);
 
     visitCommaSeparatedNodes(node.variables, followedBy: () {
-      split(chunk: new SplitChunk(writer.indent + 2, param: param, text: " "));
+      split(chunk: new SplitChunk(writer.indent + 2, param, " "));
     });
   }
 
@@ -1319,8 +1319,9 @@ class SourceVisitor implements AstVisitor {
   void split({SplitChunk chunk, int cost}) {
     if (chunk == null) {
       if (cost == null) cost = SplitCost.FREE;
+
       var param = new SplitParam(cost);
-      chunk = new SplitChunk(writer.indent + 2, param: param, text: " ");
+      chunk = new SplitChunk(writer.indent + 2, param, " ");
     }
 
     writer.split(chunk);
@@ -1330,7 +1331,7 @@ class SourceVisitor implements AstVisitor {
   /// two levels (i.e. a wrapped statement) when split.
   void zeroSplit([int cost = SplitCost.FREE]) {
     var param = new SplitParam(cost);
-    writer.split(new SplitChunk(writer.indent + 2, param: param));
+    writer.split(new SplitChunk(writer.indent + 2, param));
   }
 
   /// Increase indentation by [n] levels.
