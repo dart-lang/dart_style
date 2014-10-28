@@ -1,0 +1,267 @@
+40 columns                              |
+>>>
+//comment one
+
+//comment two
+
+<<<
+//comment one
+
+//comment two
+
+>>>
+library foo;
+
+//comment one
+
+class C {
+}
+<<<
+library foo;
+
+//comment one
+
+class C {
+}
+>>>
+library foo;
+
+//comment one
+
+//comment two
+
+class C {
+}
+<<<
+library foo;
+
+//comment one
+
+//comment two
+
+class C {
+}
+>>> line comments at the start of the line in a function
+main() {
+//  print(1);
+//  print(2);
+  print(3);
+}
+<<<
+main() {
+//  print(1);
+//  print(2);
+  print(3);
+}
+>>> lines comments at the start of the line in a class body
+class A {
+//  int a;
+//  int b;
+  int c;
+}
+<<<
+class A {
+//  int a;
+//  int b;
+  int c;
+}
+>>> class declaration comment
+import "foo";
+
+//Killer class
+class A {
+}
+<<<
+import "foo";
+
+//Killer class
+class A {
+}
+>>> block comment
+/** Old school class comment */
+class C {
+  /** Foo! */ int foo() => 42;
+}
+<<<
+/** Old school class comment */
+class C {
+  /** Foo! */
+  int foo() => 42;
+}
+>>> block comment
+library foo;
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+<<<
+library foo;
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+>>> block comment
+library foo;
+/* A long
+ * Comment
+*/
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+<<<
+library foo;
+/* A long
+ * Comment
+*/
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+>>> block comment
+library foo;
+/* A long
+ * Comment
+*/
+
+/* And
+ * another...
+*/
+
+// Mixing it up
+
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+<<<
+library foo;
+/* A long
+ * Comment
+*/
+
+/* And
+ * another...
+*/
+
+// Mixing it up
+
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+>>> mixed doc and line comments
+/// Copyright info
+
+library foo;
+/// Class comment
+//TODO: implement
+class C {
+}
+<<<
+/// Copyright info
+
+library foo;
+/// Class comment
+//TODO: implement
+class C {
+}
+>>> mixed comments
+library foo;
+
+
+/* Comment 1 */
+
+// Comment 2
+
+/* Comment 3 */
+<<<
+library foo;
+
+
+/* Comment 1 */
+
+// Comment 2
+
+/* Comment 3 */
+>>>
+library foo; //zamm
+
+class A {
+}
+<<<
+library foo; //zamm
+
+class A {
+}
+>>>
+/* foo */ /* bar */
+<<<
+/* foo */ /* bar */
+>>>
+/** foo */ /** bar */
+<<<
+/** foo */
+/** bar */
+>>>
+var x;   //x
+<<<
+var x; //x
+>>>
+class X { //X!
+}
+<<<
+class X { //X!
+}
+>>>
+//comment one
+
+//comment two
+
+<<<
+//comment one
+
+//comment two
+
+>>>
+var /* int */ x; //x
+<<<
+var /* int */ x; //x
+>>>
+library foo;
+
+/// Docs
+/// spanning
+/// lines.
+class A {
+}
+
+/// ... and
+
+/// Dangling ones too
+int x;
+<<<
+library foo;
+
+/// Docs
+/// spanning
+/// lines.
+class A {
+}
+
+/// ... and
+
+/// Dangling ones too
+int x;
+>>>
+var x /* X */, y;
+<<<
+var x /* X */, y;
+>>>
+main() {
+  foo(1 /* bang */, 2);
+}
+foo(x, y) => null;
+<<<
+main() {
+  foo(1 /* bang */, 2);
+}
+foo(x, y) => null;
+>>>
+var l = [1 /* bang */, 2];
+<<<
+var l = [1 /* bang */, 2];
