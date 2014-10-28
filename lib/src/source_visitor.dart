@@ -805,8 +805,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    visit(node.target);
-    token(node.period);
+    // Make sure it has an explicit receiver.
+    if (node.period != null) {
+      visit(node.target);
+      zeroSplit(SplitCost.BEFORE_PERIOD);
+      token(node.period);
+    }
+
     visit(node.methodName);
     visit(node.argumentList);
   }

@@ -19,26 +19,15 @@ main(List<String> args) {
 
   // This code is just for testing right now.
 
-  //          1234567890123456789012345678901234567890
-  formatStmt('''
-    return dart.compile(
-        entrypoint, provider,
-        commandLineOptions: _configCommandLineOptions,
-        csp: _configBool('csp'),
-        checked: _configBool('checked'),
-        minify: _configBool(
-            'minify', defaultsTo: _settings.mode == BarbackMode.RELEASE),
-        verbose: _configBool('verbose'),
-        environment: _configEnvironment,
-        packageRoot: _environment.rootPackage.path("packages"),
-        analyzeAll: _configBool('analyzeAll'),
-        suppressWarnings: _configBool('suppressWarnings'),
-        suppressHints: _configBool('suppressHints'),
-        suppressPackageWarnings: _configBool(
-            'suppressPackageWarnings', defaultsTo: true),
-        terse: _configBool('terse'),
-        includeSourceMapUrls: _settings.mode != BarbackMode.RELEASE);
-    ''', 80);
+  /*
+1234567890123456789012345678901234567890
+            */
+  formatUnit('''
+class Foo {
+  Stream methodName(AssetId id) =>
+      methodBodyHereItIs;
+}
+    ''', 40);
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

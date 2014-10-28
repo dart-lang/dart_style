@@ -134,23 +134,26 @@ class SplitCost {
   /// Between adjacent string literals.
   static const ADJACENT_STRINGS = 10;
 
+  /// Splitting before "." in a method call.
+  static const BEFORE_PERIOD = 20;
+
   /// After a "=>".
   static const ARROW = 20;
 
-  /// After a "=" both for assignment and initialization.
-  static const ASSIGNMENT = 30;
+  /// The cost of failing to keep all arguments on one line.
+  ///
+  /// This is in addition to the cost of splitting after any specific argument.
+  static const SPLIT_ARGUMENTS = 20;
 
   /// The cost of splitting before any argument (including the first) in an
   /// argument list.
   ///
   /// Successive arguments decrement from here so that it prefers to split over
   /// later arguments.
-  static const BEFORE_ARGUMENT = 20;
+  static const BEFORE_ARGUMENT = 30;
 
-  /// The cost of failing to keep all arguments on one line.
-  ///
-  /// This is in addition to the cost of splitting after any specific argument.
-  static const SPLIT_ARGUMENTS = 20;
+  /// After a "=" both for assignment and initialization.
+  static const ASSIGNMENT = 40;
 
   // TODO(rnystrom): Different costs for different operators.
   /// The cost of splitting after a binary operator.

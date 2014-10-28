@@ -6,3 +6,15 @@ sendPort.send({
   'type': 'error',
   'error': 'oops'
 });
+>>> prefers to wrap before "."
+new Future.sync(() => callback('msg')).then(
+    (result) => replyTo.send()).catchError((error) {});
+<<<
+new Future.sync(() => callback('msg'))
+    .then((result) => replyTo.send())
+    .catchError((error) {});
+>>>
+Stream readInput(AssetId id) => future((input) => input.read());
+<<<
+Stream readInput(AssetId id) =>
+    future((input) => input.read());
