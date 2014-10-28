@@ -4,19 +4,27 @@
 
 library dart_style.benchmark.benchmark;
 
+import 'dart:io';
+
 import 'package:dart_style/dart_style.dart';
 
+const NUM_TRIALS = 100;
+const FORMATS_PER_TRIAL = 30;
+
 void main(List<String> args) {
+  var best = 99999999.0;
+
   // Run the benchmark several times. This ensures the VM is warmed up and lets
   // us see how much variance there is.
-  var best = 99999999;
-  for (var i = 0; i <= 100; i++) {
+  for (var i = 0; i <= NUM_TRIALS; i++) {
     var start = new DateTime.now();
-    for (var j = 0; j < 30; j++) {
+
+    // For a single benchmark, format the source multiple times.
+    for (var j = 0; j < FORMATS_PER_TRIAL; j++) {
       formatSource();
     }
 
-    var elapsed = new DateTime.now().difference(start).inMilliseconds;
+    var elapsed = new DateTime.now().difference(start).inMilliseconds / FORMATS_PER_TRIAL;
 
     // Keep track of the best run so far.
     if (elapsed >= best) continue;
@@ -31,8 +39,9 @@ void main(List<String> args) {
   printResult("Best   ", best);
 }
 
-void printResult(String label, int time) {
-  print("$label: ${padLeft(time, 4)}ms ${'=' * (time ~/ 10)}");
+void printResult(String label, double time) {
+  print("$label: ${padLeft(time.toStringAsFixed(2), 4)}ms "
+      "${'=' * ((time * 5).toInt())}");
 }
 
 String padLeft(input, int length) {
@@ -50,7 +59,11 @@ void formatSource() {
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.source.length != 29411) throw "Incorrect output.";
+  if (result.source.length != 29409) {
+    print("Incorrect output (length ${result.source.length}):\n" +
+        result.source);
+    exit(1);
+  }
 }
 
 const source = r"""

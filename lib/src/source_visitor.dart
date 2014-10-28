@@ -498,14 +498,17 @@ class SourceVisitor implements AstVisitor {
       var groupEnd;
 
       // Allow splitting after the "(" but not for lambdas.
-      if (node.parent is! FunctionExpression) zeroSplit();
+      if (node.parent is! FunctionExpression) {
+        zeroSplit(SplitCost.BEFORE_ARGUMENT);
+      }
 
       for (var i = 0; i < node.parameters.length; i++) {
         var parameter = node.parameters[i];
         if (i > 0) {
           append(',');
           // Prefer splitting later parameters over earlier ones.
-          split(cost: node.parameters.length - i);
+          split(cost: SplitCost.BEFORE_ARGUMENT +
+              node.parameters.length + 1 - i);
         }
 
         if (groupEnd == null && parameter is DefaultFormalParameter) {

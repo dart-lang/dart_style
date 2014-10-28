@@ -109,9 +109,6 @@ class SplitChunk extends Chunk {
 /// does so by trying different combinations of parameters to see which set of
 /// active ones yields the best result.
 class SplitParam {
-  /// Whether this param is currently split or not.
-  bool isSplit = false;
-
   /// The cost of this param when split.
   final int cost;
 
@@ -119,6 +116,8 @@ class SplitParam {
   ///
   /// This should not be called directly from outside of [SourceWriter].
   SplitParam([this.cost = SplitCost.FREE]);
+
+  String toString() => "$cost";
 }
 
 class SplitCost {

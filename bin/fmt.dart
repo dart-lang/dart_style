@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/line_printer.dart';
 
 main(List<String> args) {
   if (args.length == 1) {
@@ -21,79 +20,50 @@ main(List<String> args) {
   // This code is just for testing right now.
 
   //          1234567890123456789012345678901234567890
-  //formatUnit("class MyClass {MyClass(parameter, parameter): super(parameter, parameter);}");
-  //formatUnit("class Foo extends Bar {Foo(int a, this.b): super(a);}");
-  //formatStmt("printNumbers(000000000000000000000, 111);");
-
-  //formatStmt('var result = myFunction(argument * argument,argument * argument);');
-
-  //formatStmt('variable = longFunctionIsLoooooong(argument);');
-  /*
-  formatStmt('method(first, () {\n'
-    '  "fn";\n'
-    '}, third, fourth, fifth, sixth, seventh,\n'
-    '    eighth);');
-  */
-
-  /*
-  formatStmt('method(int first, int second, int third,\n'
-    '    int fourth, int fifth, int sixth,\n'
-    '    int seventh, int eighth, int ninth,\n'
-    '    int tenth, int eleventh,\n'
-    '    int twelfth) {\n'
-    '  print(\'42\');\n'
-    '}');
-  */
-
-  /*
-  formatStmt("""
-d.dir(appPath, [
-  d.dir('build', [
-    d.dir('benchmark', [
-      d.file('file.txt', 'benchmark')
-    ]),
-    d.dir('bin', [
-      d.file('file.txt', 'bin')
-    ]),
-    d.dir('example', [
-      d.file('file.txt', 'example')
-    ]),
-    d.dir('test', [
-      d.file('file.txt', 'test')
-    ]),
-    d.dir('web', [
-      d.file('file.txt', 'web')
-    ]),
-    d.nothing('unknown')
-  ])
-]).validate();""");
-  */
-
-  formatStmt('foo(argument, argument, argument, argument, () { fn; }, argument, argument, argument, argument);');
+  formatStmt('''
+    return dart.compile(
+        entrypoint, provider,
+        commandLineOptions: _configCommandLineOptions,
+        csp: _configBool('csp'),
+        checked: _configBool('checked'),
+        minify: _configBool(
+            'minify', defaultsTo: _settings.mode == BarbackMode.RELEASE),
+        verbose: _configBool('verbose'),
+        environment: _configEnvironment,
+        packageRoot: _environment.rootPackage.path("packages"),
+        analyzeAll: _configBool('analyzeAll'),
+        suppressWarnings: _configBool('suppressWarnings'),
+        suppressHints: _configBool('suppressHints'),
+        suppressPackageWarnings: _configBool(
+            'suppressPackageWarnings', defaultsTo: true),
+        terse: _configBool('terse'),
+        includeSourceMapUrls: _settings.mode != BarbackMode.RELEASE);
+    ''', 80);
 }
 
-void formatStmt(String source) {
-  LineSplitter.debug = true;
-
-  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
+void formatStmt(String source, [int pageWidth = 40]) {
+  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: pageWidth));
   var result = formatter.format(CodeKind.STATEMENT, source);
 
-  print("before:                                 |");
+  drawRuler("before", pageWidth);
   print(source);
-  print("after:                                  |");
+  drawRuler("after", pageWidth);
   print(result.source);
 }
 
-void formatUnit(String source) {
-  LineSplitter.debug = true;
-
-  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: 40));
+void formatUnit(String source, [int pageWidth = 40]) {
+  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: pageWidth));
   var result = formatter.format(CodeKind.COMPILATION_UNIT, source);
 
-  print("before:                                 |");
+  drawRuler("before", pageWidth);
   print(source);
-  print("after:                                  |");
+  drawRuler("after", pageWidth);
   print(result.source);
+}
+
+void drawRuler(String label, int width) {
+  var padding = " " * (width - label.length + 2);
+  print("$label:$padding|");
 }
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),

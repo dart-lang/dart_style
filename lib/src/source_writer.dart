@@ -5,7 +5,7 @@
 library dart_style.src.source_writer;
 
 import 'line.dart';
-import 'line_printer.dart';
+import 'line_splitter.dart';
 
 class SourceWriter {
   final buffer = new StringBuffer();
