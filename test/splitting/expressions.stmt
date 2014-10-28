@@ -21,9 +21,13 @@ if (identifier && identifier || identifier
 if (identifier && identifier ||
     identifier && identifier) {
 }
->>> conditional expression SKIP
-var kind = element != null ? arg : arg;
+>>> split conditional after "?"
+var kind = element != null ? longArgument : arg;
 <<<
 var kind = element != null ?
-    arg :
+    longArgument : arg;
+>>> split conditional after ":"
+var kind = element != null ? argument : arg;
+<<<
+var kind = element != null ? argument :
     arg;

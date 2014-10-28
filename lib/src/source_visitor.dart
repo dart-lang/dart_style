@@ -289,11 +289,11 @@ class SourceVisitor implements AstVisitor {
     visit(node.condition);
     space();
     token(node.question);
-    space();
+    split(cost: SplitCost.AFTER_CONDITION);
     visit(node.thenExpression);
     space();
     token(node.colon);
-    space();
+    split(cost: SplitCost.AFTER_COLON);
     visit(node.elseExpression);
   }
 

@@ -145,12 +145,18 @@ class SplitCost {
   /// This is in addition to the cost of splitting after any specific argument.
   static const SPLIT_ARGUMENTS = 20;
 
+  /// After the ":" in a conditional expression.
+  static const AFTER_COLON = 20;
+
   /// The cost of splitting before any argument (including the first) in an
   /// argument list.
   ///
   /// Successive arguments decrement from here so that it prefers to split over
   /// later arguments.
   static const BEFORE_ARGUMENT = 30;
+
+  /// After the "?" in a conditional expression.
+  static const AFTER_CONDITION = 30;
 
   /// After a "=" both for assignment and initialization.
   static const ASSIGNMENT = 40;
