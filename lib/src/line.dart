@@ -28,16 +28,8 @@ class Line {
   Line({this.indent: 0});
 
   /// Add [text] to the end of the current line.
-  ///
-  /// This will append to the end of the last chunk if the last chunk is also
-  /// text. Otherwise, it creates a new chunk.
   void write(String text) {
-    if (chunks.isEmpty || chunks.last is! TextChunk) {
-      chunks.add(new TextChunk(text));
-    } else {
-      var last = (chunks.last as TextChunk).text;
-      chunks[chunks.length - 1] = new TextChunk(last + text);
-    }
+    chunks.add(new TextChunk(text));
   }
 }
 

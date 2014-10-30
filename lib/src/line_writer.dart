@@ -129,10 +129,6 @@ class LineWriter {
   }
 
   /// Writes [string], the text for a single token, to the output.
-  ///
-  /// In most cases, this just appends it to the current line. However, if
-  /// [string] is for a multi-line string, it will span multiple lines. In that
-  /// case, this splits it into lines and handles each line separately.
   void write(String string) {
     // Output any pending whitespace first now that we know it won't be
     // trailing.
@@ -158,20 +154,8 @@ class LineWriter {
 
     _pendingWhitespace = null;
 
-    var lines = string.split(separator);
-    for (var i = 0; i < lines.length; i++) {
-      var line = lines[i];
-      _ensureLine();
-      _currentLine.write(line);
-
-      if (i != lines.length - 1) {
-        _newline();
-
-        // Do not indent multi-line strings since we are inside the middle of
-        // the string literal itself.
-        clearIndentation();
-      }
-    }
+    _ensureLine();
+    _currentLine.write(string);
   }
 
   /// Sets [whitespace] to be emitted before the next non-whitespace token.
