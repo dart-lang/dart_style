@@ -10,59 +10,15 @@ import 'package:analyzer/src/generated/source.dart';
 
 import '../dart_style.dart';
 import 'line.dart';
-import 'source_writer.dart';
-
-/// Used for matching EOL comments
-final twoSlashes = new RegExp(r'//[^/]');
-
-// TODO(rnystrom): Move elsewhere?
-/// The kind of pending whitespace that has been "written", but not actually
-/// physically output yet.
-///
-/// We defer actually writing whitespace until a non-whitespace token is
-/// encountered to avoid trailing whitespace.
-class Whitespace {
-  /// A single non-breaking space.
-  static const SPACE = const Whitespace._("SPACE");
-
-  /// A single newline.
-  static const NEWLINE = const Whitespace._("NEWLINE");
-
-  /// Two newlines, a single blank line of separation.
-  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
-
-  /// A space or newline should be output based on whether the current token is
-  /// on the same line as the previous one or not.
-  ///
-  /// In general, we like to avoid using this because it makes the formatter
-  /// less prescriptive over the user's whitespace.
-  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
-
-  /// One or two newlines should be output based on how many newlines are
-  /// present between the next token and the previous one.
-  ///
-  /// In general, we like to avoid using this because it makes the formatter
-  /// less prescriptive over the user's whitespace.
-  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
-
-  final String name;
-
-  const Whitespace._(this.name);
-
-  String toString() => name;
-}
+import 'line_writer.dart';
 
 /// An AST visitor that drives formatting heuristics.
 class SourceVisitor implements AstVisitor {
-  /// The writer to which the source is to be written.
-  final SourceWriter writer;
+  /// The writer to which the output lines are written.
+  final LineWriter writer;
 
   /// Cached line info for calculating blank lines.
   LineInfo lineInfo;
-
-  /// The whitespace that should be written before the next non-whitespace token
-  /// or `null` if no whitespace is pending.
-  Whitespace _pending;
 
   /// The source being formatted (used in interpolation handling)
   final String source;
@@ -70,8 +26,8 @@ class SourceVisitor implements AstVisitor {
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(FormatterOptions options, this.lineInfo, this.source)
-      : writer = new SourceWriter(indent: options.initialIndentationLevel,
-                                lineSeparator: options.lineSeparator,
+      : writer = new LineWriter(indent: options.initialIndentationLevel,
+                                separator: options.lineSeparator,
                                 pageWidth: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
@@ -286,7 +242,7 @@ class SourceVisitor implements AstVisitor {
     token(node.endToken); // EOF.
 
     // Be a good citizen, end with a newline.
-    if (!writer.isCurrentLineEmpty) writer.newline();
+    writer.ensureNewline();
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -733,7 +689,6 @@ class SourceVisitor implements AstVisitor {
     visit(node.typeArguments);
     token(node.leftBracket);
 
-    // TODO(rnystrom): Test this by ensuring never splits on [].
     if (node.elements.isEmpty) {
       token(node.rightBracket);
       return;
@@ -949,7 +904,7 @@ class SourceVisitor implements AstVisitor {
   visitStringInterpolation(StringInterpolation node) {
     // Ensure that interpolated strings don't get broken up by manually
     // outputting them as an unformatted substring of the source.
-    _writePrecedingCommentsAndNewlines(node.beginToken);
+    writePrecedingCommentsAndNewlines(node.beginToken);
     append(source.substring(node.beginToken.offset, node.endToken.end));
   }
 
@@ -1123,9 +1078,7 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
-    if (node.body is! EmptyStatement) {
-      space();
-    }
+    if (node.body is! EmptyStatement) space();
     visit(node.body);
   }
 
@@ -1248,31 +1201,31 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    _pending = Whitespace.SPACE;
+    writer.writeWhitespace(Whitespace.SPACE);
   }
 
   /// Emit a single mandatory newline.
   void newline() {
-    _pending = Whitespace.NEWLINE;
+    writer.writeWhitespace(Whitespace.NEWLINE);
   }
 
   /// Emit a two mandatory newlines.
   void twoNewlines() {
-    _pending = Whitespace.TWO_NEWLINES;
+    writer.writeWhitespace(Whitespace.TWO_NEWLINES);
   }
 
   /// Allow either a single space or newline to be emitted before the next
   /// non-whitespace token based on whether a newline exists in the source
   /// between the last token and the next one.
   void spaceOrNewline() {
-    _pending = Whitespace.SPACE_OR_NEWLINE;
+    writer.writeWhitespace(Whitespace.SPACE_OR_NEWLINE);
   }
 
   /// Allow either one or two newlines to be emitted before the next
   /// non-whitespace token based on whether more than one newline exists in the
   /// source between the last token and the next one.
   void oneOrTwoNewlines() {
-    _pending = Whitespace.ONE_OR_TWO_NEWLINES;
+    writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
   }
 
   /// Outputs a split for [chunk], if given.
@@ -1299,12 +1252,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Increase indentation by [n] levels.
-  indent([n = 1]) {
+  void indent([n = 1]) {
     writer.indent += n;
   }
 
   /// Decrease indentation by [n] levels.
-  unindent([n = 1]) {
+  void unindent([n = 1]) {
     writer.indent -= n;
   }
 
@@ -1317,7 +1270,7 @@ class SourceVisitor implements AstVisitor {
   void token(Token token, {before(), after()}) {
     if (token == null) return;
 
-    _writePrecedingCommentsAndNewlines(token);
+    writePrecedingCommentsAndNewlines(token);
 
     if (before != null) before();
 
@@ -1327,30 +1280,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes any formatted whitespace and comments that appear before [token].
-  void _writePrecedingCommentsAndNewlines(Token token) {
+  void writePrecedingCommentsAndNewlines(Token token) {
     // Get the line number of the end of the previous token.
     var previousLine = endLine(token.previous);
     var tokenLine = startLine(token);
 
-    // If we didn't know how many newlines the user authored between the last
-    // token and this one, now we do.
-    switch (_pending) {
-      case Whitespace.SPACE_OR_NEWLINE:
-        if (tokenLine - previousLine > 0) {
-          _pending = Whitespace.NEWLINE;
-        } else {
-          _pending = Whitespace.SPACE;
-        }
-        break;
-
-      case Whitespace.ONE_OR_TWO_NEWLINES:
-        if (tokenLine - previousLine > 1) {
-          _pending = Whitespace.TWO_NEWLINES;
-        } else {
-          _pending = Whitespace.NEWLINE;
-        }
-        break;
-    }
+    // Update the pending whitespace now that we know how far down the next
+    // token is.
+    writer.suggestWhitespace(tokenLine - previousLine);
 
     var comment = token.precedingComments;
     if (comment == null) return;
@@ -1418,30 +1355,6 @@ class SourceVisitor implements AstVisitor {
   /// Append the given [string] to the source writer if it's non-null.
   void append(String string) {
     if (string == null || string.isEmpty) return;
-
-    // Output any pending whitespace first now that we know it won't be
-    // trailing.
-    switch (_pending) {
-      case Whitespace.SPACE:
-        writer.write(" ");
-        break;
-
-      case Whitespace.NEWLINE:
-        writer.newline();
-        break;
-
-      case Whitespace.TWO_NEWLINES:
-        writer.newline();
-        writer.newline();
-        break;
-
-      case Whitespace.SPACE_OR_NEWLINE:
-      case Whitespace.ONE_OR_TWO_NEWLINES:
-        // We should have pinned these down before getting here.
-        assert(false);
-    }
-
-    _pending = null;
 
     writer.write(string);
   }

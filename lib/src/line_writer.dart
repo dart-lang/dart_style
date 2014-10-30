@@ -7,19 +7,65 @@ library dart_style.src.source_writer;
 import 'line.dart';
 import 'line_splitter.dart';
 
-class SourceWriter {
+/// The kind of pending whitespace that has been "written", but not actually
+/// physically output yet.
+///
+/// We defer actually writing whitespace until a non-whitespace token is
+/// encountered to avoid trailing whitespace.
+class Whitespace {
+  /// A single non-breaking space.
+  static const SPACE = const Whitespace._("SPACE");
+
+  /// A single newline.
+  static const NEWLINE = const Whitespace._("NEWLINE");
+
+  /// Two newlines, a single blank line of separation.
+  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
+
+  /// A space or newline should be output based on whether the current token is
+  /// on the same line as the previous one or not.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
+
+  /// One or two newlines should be output based on how many newlines are
+  /// present between the next token and the previous one.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
+
+  final String name;
+
+  const Whitespace._(this.name);
+
+  String toString() => name;
+}
+
+/// The "middle" of the formatting pipeline for taking in text, newlines, and
+/// chunks and emitting a series of logical (but unsplit) [Line]s.
+///
+/// This is written to by [SourceVisitor]. As each [Line] is completed, it gets
+/// fed to a [LineSplitter], which ensures the resulting line stays with the
+/// page boundary.
+class LineWriter {
   final buffer = new StringBuffer();
 
-  final String lineSeparator;
+  // TODO(rnystrom): Does this need to be configurable?
+  /// The separator used to separate lines in the source code.
+  final String separator;
 
   /// The current indentation level.
   ///
   /// Subsequent lines will be created with this much leading indentation.
   int indent = 0;
 
-  bool get isCurrentLineEmpty => _currentLine == null;
-
   final int _pageWidth;
+
+  /// The whitespace that should be written before the next non-whitespace token
+  /// or `null` if no whitespace is pending.
+  Whitespace _pendingWhitespace;
 
   /// `true` if the next line should have its indentation cleared instead of
   /// using [indent].
@@ -55,7 +101,7 @@ class SourceWriter {
   /// The nested stack of spans that are currently being written.
   final _spans = <SpanStartChunk>[];
 
-  SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
+  LineWriter({this.indent: 0, this.separator: "\n", int pageWidth: 80})
       : _pageWidth = pageWidth;
 
   /// Forces the next line written to have no leading indentation.
@@ -67,7 +113,7 @@ class SourceWriter {
   ///
   /// If no tokens have been written since the last line was ended, this still
   /// prints an empty line.
-  void newline() {
+  void _newline() {
     if (_currentLine == null) {
       buffer.writeln();
       return;
@@ -88,18 +134,72 @@ class SourceWriter {
   /// [string] is for a multi-line string, it will span multiple lines. In that
   /// case, this splits it into lines and handles each line separately.
   void write(String string) {
-    var lines = string.split(lineSeparator);
+    // Output any pending whitespace first now that we know it won't be
+    // trailing.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE:
+        if (_currentLine != null) _currentLine.write(" ");
+        break;
+
+      case Whitespace.NEWLINE:
+        _newline();
+        break;
+
+      case Whitespace.TWO_NEWLINES:
+        _newline();
+        _newline();
+        break;
+
+      case Whitespace.SPACE_OR_NEWLINE:
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        // We should have pinned these down before getting here.
+        assert(false);
+    }
+
+    _pendingWhitespace = null;
+
+    var lines = string.split(separator);
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
       _ensureLine();
       _currentLine.write(line);
+
       if (i != lines.length - 1) {
-        newline();
+        _newline();
 
         // Do not indent multi-line strings since we are inside the middle of
         // the string literal itself.
         clearIndentation();
       }
+    }
+  }
+
+  /// Sets [whitespace] to be emitted before the next non-whitespace token.
+  void writeWhitespace(Whitespace whitespace) {
+    _pendingWhitespace = whitespace;
+  }
+
+  /// Updates the pending whitespace to a more precise amount given that the
+  /// next token is [numLines] farther down from the previous token.
+  void suggestWhitespace(int numLines) {
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (numLines > 0) {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        } else {
+          _pendingWhitespace = Whitespace.SPACE;
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (numLines > 1) {
+          _pendingWhitespace = Whitespace.TWO_NEWLINES;
+        } else {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        }
+        break;
     }
   }
 
@@ -151,7 +251,7 @@ class SourceWriter {
   void endMultisplit() {
     // Check to see if the body of the multisplit is longer than a line. If so,
     // we know it will definitely split and we can do this pre-emptively here
-    // instead of having the line splitter try it. This is much faster than
+    // instead of having the line splitter try it. This is faster than
     // having the line splitter try combinations of this param along with
     // others.
     if (!_multisplits.last.isSplit) {
@@ -170,6 +270,16 @@ class SourceWriter {
     }
 
     _multisplits.removeLast();
+  }
+
+  /// Makes sure we have written one last trailing newline at the end of a
+  /// compilation unit.
+  void ensureNewline() {
+    // If we already completed a line and haven't started a new one, there is
+    // a trailing newline.
+    if (_currentLine == null) return;
+
+    _newline();
   }
 
   String toString() {
