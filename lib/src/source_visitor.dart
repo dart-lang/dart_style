@@ -4,8 +4,6 @@
 
 library dart_style.src.source_visitor;
 
-import 'dart:math';
-
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
@@ -17,6 +15,43 @@ import 'source_writer.dart';
 /// Used for matching EOL comments
 final twoSlashes = new RegExp(r'//[^/]');
 
+// TODO(rnystrom): Move elsewhere?
+/// The kind of pending whitespace that has been "written", but not actually
+/// physically output yet.
+///
+/// We defer actually writing whitespace until a non-whitespace token is
+/// encountered to avoid trailing whitespace.
+class Whitespace {
+  /// A single non-breaking space.
+  static const SPACE = const Whitespace._("SPACE");
+
+  /// A single newline.
+  static const NEWLINE = const Whitespace._("NEWLINE");
+
+  /// Two newlines, a single blank line of separation.
+  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
+
+  /// A space or newline should be output based on whether the current token is
+  /// on the same line as the previous one or not.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
+
+  /// One or two newlines should be output based on how many newlines are
+  /// present between the next token and the previous one.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
+
+  final String name;
+
+  const Whitespace._(this.name);
+
+  String toString() => name;
+}
+
 /// An AST visitor that drives formatting heuristics.
 class SourceVisitor implements AstVisitor {
   /// The writer to which the source is to be written.
@@ -25,41 +60,23 @@ class SourceVisitor implements AstVisitor {
   /// Cached line info for calculating blank lines.
   LineInfo lineInfo;
 
-  /// Cached previous token for calculating preceding whitespace.
-  Token previousToken;
-
-  /// A flag to indicate that a newline should be emitted before the next token.
-  bool needsNewline = false;
-
-  /// A flag to indicate that user introduced newlines should be emitted before
-  /// the next token.
-  bool preserveNewlines = false;
-
-  /// True if a space should be emitted before the next non-space text.
-  ///
-  /// This is added lazily so that we don't emit trailing whitespace.
-  bool _pendingSpace = false;
-
-  /// Original pre-format selection information (may be null).
-  final Selection preSelection;
+  /// The whitespace that should be written before the next non-whitespace token
+  /// or `null` if no whitespace is pending.
+  Whitespace _pending;
 
   /// The source being formatted (used in interpolation handling)
   final String source;
 
-  /// Post format selection information.
-  Selection selection;
-
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
-    this.preSelection)
+  SourceVisitor(FormatterOptions options, this.lineInfo, this.source)
       : writer = new SourceWriter(indent: options.initialIndentationLevel,
                                 lineSeparator: options.lineSeparator,
                                 pageWidth: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings,
-        separatedBy: () => split(cost: SplitCost.ADJACENT_STRINGS));
+        between: () => split(cost: SplitCost.ADJACENT_STRINGS));
   }
 
   visitAnnotation(Annotation node) {
@@ -83,7 +100,7 @@ class SourceVisitor implements AstVisitor {
       // Prefer splitting later arguments over earlier ones.
       var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
       visitCommaSeparatedNodes(node.arguments,
-          followedBy: () => split(cost: cost--));
+          after: () => split(cost: cost--));
 
       writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
     }
@@ -115,7 +132,6 @@ class SourceVisitor implements AstVisitor {
     visit(node.rightHandSide);
   }
 
-  @override
   visitAwaitExpression(AwaitExpression node) {
     token(node.awaitKeyword);
     space();
@@ -158,17 +174,16 @@ class SourceVisitor implements AstVisitor {
     token(node.leftBracket);
     indent();
     if (!node.statements.isEmpty) {
-      visitNodes(node.statements, precededBy: newlines, separatedBy: newlines);
-      newlines();
-    } else {
-      preserveLeadingNewlines();
+      newline();
+      visitNodes(node.statements, between: oneOrTwoNewlines);
+      newline();
     }
-    token(node.rightBracket, precededBy: unindent);
+    token(node.rightBracket, before: unindent);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
     // The "async" or "sync" keyword.
-    token(node.keyword, followedBy: space);
+    token(node.keyword, after: space);
 
     visit(node.block);
   }
@@ -179,7 +194,7 @@ class SourceVisitor implements AstVisitor {
 
   visitBreakStatement(BreakStatement node) {
     token(node.keyword);
-    visitNode(node.label, precededBy: space);
+    visitNode(node.label, before: space);
     token(node.semicolon);
   }
 
@@ -188,14 +203,14 @@ class SourceVisitor implements AstVisitor {
     indent(2);
     // Single cascades do not force a linebreak (dartbug.com/16384)
     if (node.cascadeSections.length > 1) {
-      newlines();
+      newline();
     }
-    visitNodes(node.cascadeSections, separatedBy: newlines);
+    visitNodes(node.cascadeSections, between: newline);
     unindent(2);
   }
 
   visitCatchClause(CatchClause node) {
-    token(node.onKeyword, followedBy: space);
+    token(node.onKeyword, after: space);
     visit(node.exceptionType);
 
     if (node.catchKeyword != null) {
@@ -206,7 +221,7 @@ class SourceVisitor implements AstVisitor {
       space();
       token(node.leftParenthesis);
       visit(node.exceptionParameter);
-      token(node.comma, followedBy: space);
+      token(node.comma, after: space);
       visit(node.stackTraceParameter);
       token(node.rightParenthesis);
       space();
@@ -217,8 +232,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitClassDeclaration(ClassDeclaration node) {
-    preserveLeadingNewlines();
-    visitMemberMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     modifier(node.abstractKeyword);
     token(node.classKeyword);
     space();
@@ -227,22 +241,20 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.extendsClause);
     visitNode(node.withClause);
     visitNode(node.implementsClause);
-    visitNode(node.nativeClause, precededBy: space);
+    visitNode(node.nativeClause, before: space);
     space();
     token(node.leftBracket);
     indent();
     if (!node.members.isEmpty) {
-      visitNodes(node.members, precededBy: newlines, separatedBy: newlines);
-      newlines();
-    } else {
-      preserveLeadingNewlines();
+      visitNodes(node.members, before: newline,
+          between: oneOrTwoNewlines);
+      newline();
     }
-    token(node.rightBracket, precededBy: unindent);
+    token(node.rightBracket, before: unindent);
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
-    preserveLeadingNewlines();
-    visitMemberMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     modifier(node.abstractKeyword);
     token(node.keyword);
     space();
@@ -262,27 +274,19 @@ class SourceVisitor implements AstVisitor {
   visitCommentReference(CommentReference node) => null;
 
   visitCompilationUnit(CompilationUnit node) {
-    // Cache EOF for leading whitespace calculation.
-    var start = node.beginToken.previous;
-    if (start != null && start.type is TokenType_EOF) {
-      previousToken = start;
-    }
-
     var scriptTag = node.scriptTag;
     var directives = node.directives;
     visit(scriptTag);
 
-    visitNodes(directives, separatedBy: newlines, followedBy: newlines);
+    visitNodes(directives, between: oneOrTwoNewlines, after: twoNewlines);
 
-    visitNodes(node.declarations, separatedBy: newlines);
+    visitNodes(node.declarations, between: oneOrTwoNewlines);
 
-    preserveLeadingNewlines();
-
-    // Handle trailing whitespace.
-    token(node.endToken /* EOF */);
+    // Output trailing comments.
+    token(node.endToken); // EOF.
 
     // Be a good citizen, end with a newline.
-    if (!writer.isCurrentLineEmpty) emitNewlines(1);
+    if (!writer.isCurrentLineEmpty) writer.newline();
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -316,13 +320,12 @@ class SourceVisitor implements AstVisitor {
       }
     }
 
-    var body = node.body;
-    visitPrefixedBody(space, body);
+    visitBody(node.body);
   }
 
   visitConstructorInitializers(ConstructorDeclaration node) {
     if (node.initializers.length > 1) {
-      newlines();
+      newline();
     } else {
       split();
     }
@@ -335,7 +338,7 @@ class SourceVisitor implements AstVisitor {
       if (i > 0) {
         // Preceding comma.
         token(node.initializers[i].beginToken.previous);
-        newlines();
+        newline();
       }
 
       // Indent subsequent fields one more so they line up with the first
@@ -356,7 +359,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorRedirects(ConstructorDeclaration node) {
-    token(node.separator /* = */, precededBy: space, followedBy: space);
+    token(node.separator /* = */, before: space, after: space);
     visitCommaSeparatedNodes(node.initializers);
     visit(node.redirectedConstructor);
   }
@@ -379,13 +382,13 @@ class SourceVisitor implements AstVisitor {
 
   visitContinueStatement(ContinueStatement node) {
     token(node.keyword);
-    visitNode(node.label, precededBy: space);
+    visitNode(node.label, before: space);
     token(node.semicolon);
   }
 
   visitDeclaredIdentifier(DeclaredIdentifier node) {
     modifier(node.keyword);
-    visitNode(node.type, followedBy: space);
+    visitNode(node.type, after: space);
     visit(node.identifier);
   }
 
@@ -397,7 +400,7 @@ class SourceVisitor implements AstVisitor {
         space();
       }
       token(node.separator);
-      visitNode(node.defaultValue, precededBy: space);
+      visitNode(node.defaultValue, before: space);
     }
   }
 
@@ -427,17 +430,17 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExportDirective(ExportDirective node) {
-    visitDirectiveMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     token(node.keyword);
     space();
     visit(node.uri);
-    visitNodes(node.combinators, precededBy: space, separatedBy: space);
+    visitNodes(node.combinators, before: space, between: space);
     token(node.semicolon);
   }
 
   visitExpressionFunctionBody(ExpressionFunctionBody node) {
     // The "async" or "sync" keyword.
-    token(node.keyword, followedBy: space);
+    token(node.keyword, after: space);
 
     token(node.functionDefinition); // "=>".
     split(cost: SplitCost.ARROW);
@@ -465,8 +468,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFieldFormalParameter(FieldFormalParameter node) {
-    token(node.keyword, followedBy: space);
-    visitNode(node.type, followedBy: space);
+    token(node.keyword, after: space);
+    visitNode(node.type, after: space);
     token(node.thisToken);
     token(node.period);
     visit(node.identifier);
@@ -489,6 +492,14 @@ class SourceVisitor implements AstVisitor {
     token(node.rightParenthesis);
     space();
     visit(node.body);
+  }
+
+  visitEnumConstantDeclaration(EnumConstantDeclaration node) {
+    throw new UnimplementedError("Enum formatting is not implemented yet.");
+  }
+
+  visitEnumDeclaration(EnumDeclaration node) {
+    throw new UnimplementedError("Enum formatting is not implemented yet.");
   }
 
   visitFormalParameterList(FormalParameterList node) {
@@ -559,10 +570,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionDeclaration(FunctionDeclaration node) {
-    preserveLeadingNewlines();
     visitMemberMetadata(node.metadata);
     modifier(node.externalKeyword);
-    visitNode(node.returnType, followedBy: space);
+    visitNode(node.returnType, after: space);
     modifier(node.propertyKeyword);
     visit(node.name);
     visit(node.functionExpression);
@@ -586,10 +596,10 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionTypeAlias(FunctionTypeAlias node) {
-    visitMemberMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     token(node.keyword);
     space();
-    visitNode(node.returnType, followedBy: space);
+    visitNode(node.returnType, after: space);
     visit(node.name);
     visit(node.typeParameters);
     visit(node.parameters);
@@ -597,7 +607,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    visitNode(node.returnType, followedBy: space);
+    visitNode(node.returnType, after: space);
     visit(node.identifier);
     visit(node.parameters);
   }
@@ -639,14 +649,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImportDirective(ImportDirective node) {
-    visitDirectiveMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     token(node.keyword);
     space();
     visit(node.uri);
-    token(node.deferredToken, precededBy: space);
-    token(node.asToken, precededBy: split, followedBy: space);
+    token(node.deferredToken, before: space);
+    token(node.asToken, before: split, after: space);
     visit(node.prefix);
-    visitNodes(node.combinators, precededBy: space, separatedBy: space);
+    visitNodes(node.combinators, before: space, between: space);
     token(node.semicolon);
   }
 
@@ -702,12 +712,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitLabeledStatement(LabeledStatement node) {
-    visitNodes(node.labels, separatedBy: space, followedBy: space);
+    visitNodes(node.labels, between: space, after: space);
     visit(node.statement);
   }
 
   visitLibraryDirective(LibraryDirective node) {
-    visitDirectiveMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     token(node.keyword);
     space();
     visit(node.name);
@@ -737,7 +747,7 @@ class SourceVisitor implements AstVisitor {
 
     writer.multisplit();
 
-    visitCommaSeparatedNodes(node.elements, followedBy: () {
+    visitCommaSeparatedNodes(node.elements, after: () {
       writer.multisplit(text: " ");
     });
 
@@ -769,7 +779,7 @@ class SourceVisitor implements AstVisitor {
 
     writer.multisplit();
 
-    visitCommaSeparatedNodes(node.entries, followedBy: () {
+    visitCommaSeparatedNodes(node.entries, after: () {
       writer.multisplit(text: " ");
     });
 
@@ -794,14 +804,15 @@ class SourceVisitor implements AstVisitor {
     visitMemberMetadata(node.metadata);
     modifier(node.externalKeyword);
     modifier(node.modifierKeyword);
-    visitNode(node.returnType, followedBy: space);
+    visitNode(node.returnType, after: space);
     modifier(node.propertyKeyword);
     modifier(node.operatorKeyword);
     visit(node.name);
     if (!node.isGetter) {
       visit(node.parameters);
     }
-    visitPrefixedBody(space, node.body);
+
+    visitBody(node.body);
   }
 
   visitMethodInvocation(MethodInvocation node) {
@@ -818,7 +829,7 @@ class SourceVisitor implements AstVisitor {
 
   visitNamedExpression(NamedExpression node) {
     visit(node.name);
-    visitNode(node.expression, precededBy: space);
+    visitNode(node.expression, before: space);
   }
 
   visitNativeClause(NativeClause node) {
@@ -921,9 +932,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
-    visitMemberMetadata(node.metadata);
+    visitParameterMetadata(node.metadata);
     modifier(node.keyword);
-    visitNode(node.type, followedBy: space);
+    visitNode(node.type, after: space);
     visit(node.identifier);
   }
 
@@ -936,15 +947,10 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitStringInterpolation(StringInterpolation node) {
-    // Ensure that interpolated strings don't get broken up by treating them as
-    // a single String token
-    // Process token (for comments etc. but don't print the lexeme)
-    token(node.beginToken, printToken: (tok) => null);
-    var start = node.beginToken.offset;
-    var end = node.endToken.end;
-    String string = source.substring(start, end);
-    append(string);
-    //visitNodes(node.elements);
+    // Ensure that interpolated strings don't get broken up by manually
+    // outputting them as an unformatted substring of the source.
+    _writePrecedingCommentsAndNewlines(node.beginToken);
+    append(source.substring(node.beginToken.offset, node.endToken.end));
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -959,24 +965,24 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSwitchCase(SwitchCase node) {
-    visitNodes(node.labels, separatedBy: space, followedBy: space);
+    visitNodes(node.labels, between: space, after: space);
     token(node.keyword);
     space();
     visit(node.expression);
     token(node.colon);
-    newlines();
+    newline();
     indent();
-    visitNodes(node.statements, separatedBy: newlines);
+    visitNodes(node.statements, between: oneOrTwoNewlines);
     unindent();
   }
 
   visitSwitchDefault(SwitchDefault node) {
-    visitNodes(node.labels, separatedBy: space, followedBy: space);
+    visitNodes(node.labels, between: space, after: space);
     token(node.keyword);
     token(node.colon);
-    newlines();
+    newline();
     indent();
-    visitNodes(node.statements, separatedBy: newlines);
+    visitNodes(node.statements, between: oneOrTwoNewlines);
     unindent();
   }
 
@@ -989,9 +995,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.leftBracket);
     indent();
-    newlines();
-    visitNodes(node.members, separatedBy: newlines, followedBy: newlines);
-    token(node.rightBracket, precededBy: unindent);
+    newline();
+    visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
+    token(node.rightBracket, before: unindent);
 
   }
 
@@ -1027,8 +1033,8 @@ class SourceVisitor implements AstVisitor {
     token(node.tryKeyword);
     space();
     visit(node.body);
-    visitNodes(node.catchClauses, precededBy: space, separatedBy: space);
-    token(node.finallyKeyword, precededBy: space, followedBy: space);
+    visitNodes(node.catchClauses, before: space, between: space);
+    token(node.finallyKeyword, before: space, after: space);
     visit(node.finallyBlock);
   }
 
@@ -1044,9 +1050,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTypeParameter(TypeParameter node) {
-    visitMemberMetadata(node.metadata);
+    visitParameterMetadata(node.metadata);
     visit(node.name);
-    token(node.keyword /* extends */, precededBy: space, followedBy: space);
+    token(node.keyword /* extends */, before: space, after: space);
     visit(node.bound);
   }
 
@@ -1067,9 +1073,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
-    visitMemberMetadata(node.metadata);
+    visitDeclarationMetadata(node.metadata);
     modifier(node.keyword);
-    visitNode(node.type, followedBy: space);
+    visitNode(node.type, after: space);
 
     if (node.variables.length == 1) {
       visit(node.variables.single);
@@ -1086,7 +1092,7 @@ class SourceVisitor implements AstVisitor {
 
       for (var variable in node.variables.skip(1)) {
         token(variable.beginToken.previous); // Comma.
-        newlines();
+        newline();
 
         visit(variable);
       }
@@ -1101,7 +1107,7 @@ class SourceVisitor implements AstVisitor {
     // line.
     var param = new SplitParam(SplitCost.DECLARATION);
 
-    visitCommaSeparatedNodes(node.variables, followedBy: () {
+    visitCommaSeparatedNodes(node.variables, after: () {
       split(chunk: new SplitChunk(writer.indent + 2, param, " "));
     });
   }
@@ -1130,7 +1136,6 @@ class SourceVisitor implements AstVisitor {
     visitCommaSeparatedNodes(node.mixinTypes);
   }
 
-  @override
   visitYieldStatement(YieldStatement node) {
     token(node.yieldKeyword);
     token(node.star);
@@ -1140,183 +1145,134 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Safely visit the given [node].
-  visit(AstNode node) {
+  void visit(AstNode node) {
     if (node != null) {
       node.accept(this);
     }
   }
 
-  /// Visit member metadata
-  visitMemberMetadata(NodeList<Annotation> metadata) {
-    visitNodes(metadata,
-      separatedBy: () {
-        space();
-        preserveLeadingNewlines();
-      },
-      followedBy: space);
-    if (metadata != null && metadata.length > 0) {
-      preserveLeadingNewlines();
+  /// Visit metadata annotations on directives and declarations.
+  ///
+  /// These always force the annotations to be on the previous line.
+  void visitDeclarationMetadata(NodeList<Annotation> metadata) {
+    // If there are multiple annotations, they are always on their own lines,
+    // even the last.
+    if (metadata.length > 1) {
+      visitNodes(metadata, between: newline, after: newline);
+    } else {
+      visitNodes(metadata, between: space, after: newline);
     }
   }
 
-  /// Visit member metadata
-  visitDirectiveMetadata(NodeList<Annotation> metadata) {
-    visitNodes(metadata, separatedBy: newlines, followedBy: newlines);
+  /// Visit metadata annotations on members.
+  ///
+  /// These may be on the same line as the member, or on the previous.
+  void visitMemberMetadata(NodeList<Annotation> metadata) {
+    // If there are multiple annotations, they are always on their own lines,
+    // even the last.
+    if (metadata.length > 1) {
+      visitNodes(metadata, between: newline, after: newline);
+    } else {
+      visitNodes(metadata, between: space, after: spaceOrNewline);
+    }
   }
 
-  /// Visit the given function [body], printing the [prefix] before if given
-  /// body is not empty.
-  visitPrefixedBody(prefix(), FunctionBody body) {
-    if (body is! EmptyFunctionBody) {
-      prefix();
-    }
+  /// Visit metadata annotations on parameters and type parameters.
+  ///
+  /// These are always on the same line as the parameter.
+  void visitParameterMetadata(NodeList<Annotation> metadata) {
+    // TODO(rnystrom): Allow splitting after annotations?
+    visitNodes(metadata, between: space, after: space);
+  }
+
+  /// Visit the given function [body], printing a space before it if it's not
+  /// empty.
+  void visitBody(FunctionBody body) {
+    if (body is! EmptyFunctionBody) space();
     visit(body);
   }
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded
   /// and followed by the given functions.
-  visitNodes(NodeList<AstNode> nodes, {precededBy(): null,
-      separatedBy() : null, followedBy(): null}) {
-    if (nodes != null) {
-      var size = nodes.length;
-      if (size > 0) {
-        if (precededBy != null) {
-          precededBy();
-        }
-        for (var i = 0; i < size; i++) {
-          if (i > 0 && separatedBy != null) {
-            separatedBy();
-          }
-          nodes[i].accept(this);
-        }
-        if (followedBy != null) {
-          followedBy();
-        }
-      }
+  void visitNodes(NodeList<AstNode> nodes, {before(), between(), after()}) {
+    if (nodes == null || nodes.isEmpty) return;
+
+    if (before != null) before();
+
+    visit(nodes.first);
+    for (var node in nodes.skip(1)) {
+      between();
+      visit(node);
     }
+
+    if (after != null) after();
   }
 
   /// Visit a comma-separated list of [nodes] if not null.
-  visitCommaSeparatedNodes(NodeList<AstNode> nodes, {followedBy(): null}) {
-    // TODO(rnystrom): As I move stuff over to the new split architecture, more
-    // calls to this are passing in a followedBy to handle splitting. If they
-    // eventually all do that, move that into here.
+  void visitCommaSeparatedNodes(NodeList<AstNode> nodes, {after()}) {
     if (nodes == null || nodes.isEmpty) return;
 
-    if (followedBy == null) followedBy = space;
+    if (after == null) after = space;
 
     visit(nodes.first);
 
     for (var node in nodes.skip(1)) {
       token(node.beginToken.previous); // Comma.
-      followedBy();
+      after();
       visit(node);
     }
   }
 
   /// Visit a [node], and if not null, optionally preceded or followed by the
   /// specified functions.
-  visitNode(AstNode node, {precededBy(): null, followedBy(): null}) {
-    if (node != null) {
-      if (precededBy != null) {
-        precededBy();
-      }
-      node.accept(this);
-      if (followedBy != null) {
-        followedBy();
-      }
-    }
+  void visitNode(AstNode node, {before(), after()}) {
+    if (node == null) return;
+
+    if (before != null) before();
+    node.accept(this);
+    if (after != null) after();
   }
 
   /// Emit the given [modifier] if it's non null, followed by non-breaking
   /// whitespace.
-  modifier(Token modifier) {
-    token(modifier, followedBy: space);
-  }
-
-  /// Indicate that at least one newline should be emitted and possibly more
-  /// if the source has them.
-  newlines() {
-    needsNewline = true;
+  void modifier(Token modifier) {
+    token(modifier, after: space);
   }
 
   /// Optionally emit a trailing comma.
-  optionalTrailingComma(Token rightBracket) {
+  void optionalTrailingComma(Token rightBracket) {
     if (rightBracket.previous.lexeme == ',') {
       token(rightBracket.previous);
     }
   }
 
-  /// Indicate that user introduced newlines should be emitted before the next
-  /// token.
-  preserveLeadingNewlines() {
-    preserveNewlines = true;
-  }
-
-  token(Token token, {precededBy(), followedBy(), printToken(Token tok)}) {
-    if (token == null) return;
-
-    emitPrecedingCommentsAndNewlines(token);
-
-    if (precededBy != null) precededBy();
-
-    checkForSelectionUpdate(token);
-    if (printToken == null) {
-      append(token.lexeme);
-    } else {
-      printToken(token);
-    }
-
-    if (followedBy != null) followedBy();
-
-    previousToken = token;
-  }
-
-  checkForSelectionUpdate(Token token) {
-    // Cache the first token on or AFTER the selection offset.
-    if (preSelection != null && selection == null) {
-      // Check for overshots.
-      var overshot = token.offset - preSelection.offset;
-      if (overshot >= 0) {
-        // TODO(pquitslund): update length (may need truncating).
-        var space = _pendingSpace ? 1 : 0;
-        selection = new Selection(
-            writer.toString().length + space - overshot,
-            preSelection.length);
-      }
-    }
-  }
-
   /// Emit a non-breaking space.
-  ///
-  /// Since these, by definition, cannot affect line breaking, they are treated
-  /// like regular non-space text.
   void space() {
-    assert(!_pendingSpace); // Should not already have a pending space.
-    _pendingSpace = true;
+    _pending = Whitespace.SPACE;
   }
 
-  /// Emits a zero-width separator that can be used to break a line.
-  void zeroSpace() {
-    // TODO(rnystrom): Does nothing now that line wrapping is (temporarily)
-    // removed. Preserved so I can remember where these should go.
+  /// Emit a single mandatory newline.
+  void newline() {
+    _pending = Whitespace.NEWLINE;
   }
 
-  /// Append the given [string] to the source writer if it's non-null.
-  void append(String string) {
-    if (string == null || string.isEmpty) return;
-
-    _emitPendingSpace();
-    writer.write(string);
+  /// Emit a two mandatory newlines.
+  void twoNewlines() {
+    _pending = Whitespace.TWO_NEWLINES;
   }
 
-  /// Outputs the next pending space token, if any.
-  void _emitPendingSpace() {
-    if (!_pendingSpace) return;
+  /// Allow either a single space or newline to be emitted before the next
+  /// non-whitespace token based on whether a newline exists in the source
+  /// between the last token and the next one.
+  void spaceOrNewline() {
+    _pending = Whitespace.SPACE_OR_NEWLINE;
+  }
 
-    if (!writer.isCurrentLineEmpty) writer.write(" ");
-
-    _pendingSpace = false;
+  /// Allow either one or two newlines to be emitted before the next
+  /// non-whitespace token based on whether more than one newline exists in the
+  /// source between the last token and the next one.
+  void oneOrTwoNewlines() {
+    _pending = Whitespace.ONE_OR_TWO_NEWLINES;
   }
 
   /// Outputs a split for [chunk], if given.
@@ -1352,154 +1308,149 @@ class SourceVisitor implements AstVisitor {
     writer.indent -= n;
   }
 
-  /// Emit any detected comments and newlines or a minimum as specified
-  /// by [min].
-  void emitPrecedingCommentsAndNewlines(Token token) {
+  /// Emit [token], along with any comments and formatted whitespace that comes
+  /// before it.
+  ///
+  /// Does nothing if [token] is `null`. If [before] is given, it will be
+  /// executed before the token is outout. Likewise, [after] will be called
+  /// after the token is output.
+  void token(Token token, {before(), after()}) {
+    if (token == null) return;
+
+    _writePrecedingCommentsAndNewlines(token);
+
+    if (before != null) before();
+
+    append(token.lexeme);
+
+    if (after != null) after();
+  }
+
+  /// Writes any formatted whitespace and comments that appear before [token].
+  void _writePrecedingCommentsAndNewlines(Token token) {
+    // Get the line number of the end of the previous token.
+    var previousLine = endLine(token.previous);
+    var tokenLine = startLine(token);
+
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pending) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (tokenLine - previousLine > 0) {
+          _pending = Whitespace.NEWLINE;
+        } else {
+          _pending = Whitespace.SPACE;
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (tokenLine - previousLine > 1) {
+          _pending = Whitespace.TWO_NEWLINES;
+        } else {
+          _pending = Whitespace.NEWLINE;
+        }
+        break;
+    }
+
     var comment = token.precedingComments;
-    var currentToken = comment != null ? comment : token;
+    if (comment == null) return;
 
-    // Handle EOLs before newlines.
-    if (_isAtEOL(comment)) {
-      _emitComment(comment, previousToken);
-      comment = comment.next;
-      currentToken = comment != null ? comment : token;
+    // Write newlines before the first comment unless it's at the start of the
+    // file.
+    var allowNewlines = token.previous.type != TokenType.EOF;
 
-      // Ensure EOL comments force a linebreak.
-      needsNewline = true;
-    }
-
-    var lines = 0;
-    if (needsNewline || preserveNewlines) {
-      if (needsNewline) lines = 1;
-
-      lines = max(lines, _countNewlinesBetween(previousToken, currentToken));
-      preserveNewlines = false;
-
-      emitNewlines(lines);
-    }
-
-    previousToken = currentToken.previous != null ? currentToken.previous :
-        token.previous;
-
-    while (comment != null) {
-      _emitComment(comment, previousToken);
-
-      var nextToken = comment.next != null ? comment.next : token;
-      var newlines = _calculateNewlinesBetweenComments(comment, nextToken);
-      if (newlines > 0) {
-        emitNewlines(newlines);
-        lines += newlines;
-      } else {
-        // Collapse spaces after a comment to a single space.
-        var spaces = _countSpacesBetween(comment, nextToken);
-        if (spaces > 0) space();
+    while (true) {
+      // Write the whitespace before each comment.
+      if (allowNewlines) {
+        preserveNewlines(startLine(comment) - previousLine);
       }
 
-      previousToken = comment;
+      // If the comment is at the very beginning of the line, meaning it's
+      // likely a chunk of commented out code, then do not re-indent it.
+      if (lineInfo.getLocation(comment.offset).columnNumber == 1) {
+        writer.clearIndentation();
+      }
+
+      append(comment.toString().trim());
+
+      // After the first comment, we definitely aren't at the start of the
+      // file.
+      allowNewlines = true;
+
+      previousLine = endLine(comment);
+      if (comment.next == null) break;
       comment = comment.next;
     }
 
-    if (lines > 0) needsNewline = false;
-
-    previousToken = token;
+    // Only include a space after the last comment (assuming it's on the same
+    // line as the next token) if there was already a space there.
+    preserveNewlines(tokenLine - endLine(comment),
+        allowSpace: comment.end < token.offset);
   }
 
-  /// Writes [count] newlines to the output.
-  void emitNewlines(int count) {
-    // TODO(rnystrom): Count should never be > 2 here. We don't want to allow
-    // extra newlines. Ensure this.
-    for (var i = 0; i < count; i++) {
-      writer.newline();
-    }
-  }
-
-  /// Test if this [comment] is at the end of a line.
-  bool _isAtEOL(Token comment) =>
-      comment != null && comment.toString().trim().startsWith(twoSlashes) &&
-      _sameLine(comment, previousToken);
-
-  /// Emit this [comment], inserting leading whitespace if appropriate.
-  void _emitComment(Token comment, Token previousToken) {
-    if (!writer.isCurrentLineEmpty && previousToken != null) {
-      var spaces = _countSpacesBetween(previousToken, comment);
-      // Preserve one space but no more.
-      if (spaces > 0 && !_pendingSpace) space();
-    }
-
-    // If the line comment is at the beginning of a line, meaning the user has
-    // commented out the entire line, then don't indent it.
-    // TODO(rnystrom): Is this the behavior we want?
-    if (lineInfo.getLocation(comment.offset).columnNumber == 1) {
-      writer.clearIndentation();
-    }
-
-    append(comment.toString().trim());
-  }
-
-  /// Count spaces between [last] and [current].
+  /// Preserves *some* of the [numNewlines] that exist between the last text
+  /// emitted and the text about to be emitted.
   ///
-  /// Tokens on different lines return 0.
-  int _countSpacesBetween(Token last, Token current) {
-    if (last == null || last.type == TokenType.EOF) return 0;
-
-    if (_countNewlinesBetween(last, current) > 0) return 0;
-
-    return current.offset - last.end;
-  }
-
-  /// Count the blanks between these two tokens.
-  int _countNewlinesBetween(Token last, Token current) {
-    if (last == null || current == null) return 0;
-
-    return _linesBetween(last.end - 1, current.offset);
-  }
-
-  /// Calculate the newlines that should separate these comments.
-  int _calculateNewlinesBetweenComments(Token last, Token current) {
-    // Insist on a newline after doc comments or single line comments
-    // (NOTE that EOL comments have already been processed).
-    if (_isOldSingleLineDocComment(last) || _isSingleLineComment(last)) {
-      return max(1, _countNewlinesBetween(last, current));
+  /// In most cases, the source code's whitespace is completely ignored.
+  /// However, in some cases, the user may add bit of discretionary whitespace.
+  /// For example, an extra blank line is allowed between statements, but not
+  /// required.
+  ///
+  /// Only one extra newline may be kept. If there are no newlines between the
+  /// last text and the new text, this inserts a space if [allowSpace] is `true`
+  /// or otherwise emits nothing.
+  void preserveNewlines(int numNewlines, {bool allowSpace: true}) {
+    if (numNewlines == 0) {
+      // If there are no newlines between the elements, put a single space.
+      // This pads a space between items on the same line, like:
+      // Put a space after a token and the following comment, as in:
+      //
+      //     token, /* comment */ /* comment */ token
+      //           ^             ^             ^
+      if (allowSpace) space();
+    } else if (numNewlines == 1) {
+      newline();
     } else {
-      return _countNewlinesBetween(last, current);
+      twoNewlines();
     }
   }
 
-  /// Single line multi-line comments (e.g., '/** like this */').
-  bool _isOldSingleLineDocComment(Token comment) =>
-      comment.lexeme.startsWith(r'/**') && _singleLine(comment);
+  /// Append the given [string] to the source writer if it's non-null.
+  void append(String string) {
+    if (string == null || string.isEmpty) return;
 
-  /// Test if this [token] spans just one line.
-  bool _singleLine(Token token) => _linesBetween(token.offset, token.end) < 1;
+    // Output any pending whitespace first now that we know it won't be
+    // trailing.
+    switch (_pending) {
+      case Whitespace.SPACE:
+        writer.write(" ");
+        break;
 
-  /// Test if token [first] is on the same line as [second].
-  bool _sameLine(Token first, Token second) =>
-      _countNewlinesBetween(first, second) == 0;
+      case Whitespace.NEWLINE:
+        writer.newline();
+        break;
 
-  /// Test if this is a multi-line [comment] (e.g., '/* ...' or '/** ...')
-  bool _isMultiLineComment(Token comment) =>
-      comment.type == TokenType.MULTI_LINE_COMMENT;
+      case Whitespace.TWO_NEWLINES:
+        writer.newline();
+        writer.newline();
+        break;
 
-  /// Test if this is a single-line [comment] (e.g., '// ...')
-  bool _isSingleLineComment(Token comment) =>
-      comment.type == TokenType.SINGLE_LINE_COMMENT;
+      case Whitespace.SPACE_OR_NEWLINE:
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        // We should have pinned these down before getting here.
+        assert(false);
+    }
 
-  /// Count the lines between two offsets.
-  int _linesBetween(int lastOffset, int currentOffset) {
-    var lastLine = lineInfo.getLocation(lastOffset).lineNumber;
-    var currentLine = lineInfo.getLocation(currentOffset).lineNumber;
-    return currentLine - lastLine;
+    _pending = null;
+
+    writer.write(string);
   }
+
+  /// Gets the 1-based line number that the beginning of [token] lies on.
+  int startLine(Token token) => lineInfo.getLocation(token.offset).lineNumber;
+
+  /// Gets the 1-based line number that the end of [token] lies on.
+  int endLine(Token token) => lineInfo.getLocation(token.end).lineNumber;
 
   String toString() => writer.toString();
-
-  @override
-  visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    // TODO: implement visitEnumConstantDeclaration
-  }
-
-  @override
-  visitEnumDeclaration(EnumDeclaration node) {
-    // TODO: implement visitEnumDeclaration
-  }
 }

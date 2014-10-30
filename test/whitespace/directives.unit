@@ -1,0 +1,40 @@
+40 columns                              |
+>>> require at least one newline between directives
+import 'a.dart';import 'b.dart';export 'c.dart';
+<<<
+import 'a.dart';
+import 'b.dart';
+export 'c.dart';
+>>> allow an extra newline between directives
+import 'a.dart';
+
+import 'b.dart';
+export 'c.dart';
+<<<
+import 'a.dart';
+
+import 'b.dart';
+export 'c.dart';
+>>> collapse any other newlines
+import 'a.dart';
+
+
+import 'b.dart';
+
+
+
+
+export 'c.dart';
+<<<
+import 'a.dart';
+
+import 'b.dart';
+
+export 'c.dart';
+>>> deferred
+import 'a.dart'
+deferred
+as
+a;
+<<<
+import 'a.dart' deferred as a;

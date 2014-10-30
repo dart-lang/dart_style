@@ -1,0 +1,7 @@
+40 columns                              |
+>>> external
+ external
+void
+printToConsole(line);
+<<<
+external void printToConsole(line);

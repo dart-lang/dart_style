@@ -11,16 +11,14 @@ if (identifier || identifier || identifier || identifier) {
 if (identifier ||
     identifier ||
     identifier ||
-    identifier) {
-}
+    identifier) {}
 >>> conditions, different operators
 if (identifier && identifier || identifier
                 && identifier) {
 }
 <<<
 if (identifier && identifier ||
-    identifier && identifier) {
-}
+    identifier && identifier) {}
 >>> split conditional after "?"
 var kind = element != null ? longArgument : arg;
 <<<

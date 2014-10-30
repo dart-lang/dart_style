@@ -32,7 +32,7 @@ main() {
   for (var entry in new Directory(testDataDir).listSync()) {
     if (entry.path.endsWith(".unit")) {
       runTests(p.basename(entry.path), (input, expectedOutput) {
-        expectCUFormatsTo(input, expectedOutput);
+        expectUnitFormatsTo(input, expectedOutput);
       });
     }
   }
@@ -42,7 +42,8 @@ main() {
     if (entry.path.endsWith(".stmt")) {
       // NOTE: statement tests are run with transforms enabled.
       runTests(p.basename(entry.path), (input, expectedOutput) {
-        expect(formatStatement(input) + '\n', equals(expectedOutput));
+        expect(new CodeFormatter().format(CodeKind.STATEMENT, input) + '\n',
+            equals(expectedOutput));
       });
     }
   }
@@ -108,59 +109,19 @@ flow() {
     });
 
     test('CU - nested functions', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'x() {\n'
           '  y() {\n'
           '  }\n'
           '}\n',
           'x() {\n'
-          '  y() {\n'
-          '  }\n'
+          '  y() {}\n'
           '}\n'
         );
     });
 
-    test('CU - top level', () {
-      expectCUFormatsTo(
-          '\n\n'
-          'foo() {\n'
-          '}\n'
-          'bar() {\n'
-          '}\n',
-          '\n\n'
-          'foo() {\n'
-          '}\n'
-          'bar() {\n'
-          '}\n'
-      );
-      expectCUFormatsTo(
-          'const A = 42;\n'
-          'final foo = 32;\n',
-          'const A = 42;\n'
-          'final foo = 32;\n'
-      );
-    });
-
-    test('CU - imports', () {
-      expectCUFormatsTo(
-          'import "dart:io";\n\n'
-          'import "package:unittest/unittest.dart";\n'
-          'foo() {\n'
-          '}\n',
-          'import "dart:io";\n\n'
-          'import "package:unittest/unittest.dart";\n'
-          'foo() {\n'
-          '}\n'
-      );
-      expectCUFormatsTo(
-          'library a; class B { }',
-          'library a;\n'
-          'class B {}\n'
-      );
-    });
-
     test('CU - method invocations', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  foo() {\n'
           '    bar();\n'
@@ -181,7 +142,7 @@ flow() {
     });
 
     test('CU (method body)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  foo(path) {\n'
           '    var buffer = new StringBuffer();\n'
@@ -197,7 +158,7 @@ flow() {
           '  }\n'
           '}\n'
       );
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  foo(files) {\n'
           '    for (var  file in files) {\n'
@@ -216,20 +177,19 @@ flow() {
     });
 
     test('CU (method indent)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           'void x(){\n'
           '}\n'
           '}\n',
           'class A {\n'
-          '  void x() {\n'
-          '  }\n'
+          '  void x() {}\n'
           '}\n'
       );
     });
 
     test('CU (method indent - 2)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           ' static  bool x(){\n'
           'return true; }\n'
@@ -243,7 +203,7 @@ flow() {
     });
 
     test('CU (method indent - 3)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           ' int x() =>   42   + 3 ;  \n'
           '   }\n',
@@ -254,7 +214,7 @@ flow() {
     });
 
     test('CU (method indent - 4)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           ' int x() { \n'
           'if (true) {\n'
@@ -275,52 +235,22 @@ flow() {
         );
     });
 
-    test('CU (multiple members)', () {
-      expectCUFormatsTo(
-          'class A {\n'
-          '}\n'
-          'class B {\n'
-          '}\n',
-          'class A {\n'
-          '}\n'
-          'class B {\n'
-          '}\n'
-        );
-    });
-
-    test('CU (multiple members w/blanks)', () {
-      expectCUFormatsTo(
-          'class A {\n'
-          '}\n\n'
-          'class B {\n\n\n'
-          '  int b() => 42;\n\n'
-          '  int c() => b();\n\n'
-          '}\n',
-          'class A {\n'
-          '}\n\n'
-          'class B {\n\n\n'
-          '  int b() => 42;\n\n'
-          '  int c() => b();\n\n'
-          '}\n'
-      );
-    });
-
     test('CU - comments (EOF)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'library foo; //zamm',
           'library foo; //zamm\n' //<-- note extra NEWLINE
         );
     });
 
     test('CU - EOF nl', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'var x = 1;',
           'var x = 1;\n'
       );
     });
 
     test('CU - constructor', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  const _a;\n'
           '  A();\n'
@@ -335,7 +265,7 @@ flow() {
     });
 
     test('CU - method decl w/ named params', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  int a(var x, {optional: null}) => null;\n'
           '}\n',
@@ -346,7 +276,7 @@ flow() {
     });
 
     test('CU - method decl w/ optional params', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  int a(var x, [optional = null]) => null;\n'
           '}\n',
@@ -357,7 +287,7 @@ flow() {
     });
 
     test('CU - factory constructor redirects', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  const factory A() = B;\n'
           '}\n',
@@ -368,7 +298,7 @@ flow() {
     });
 
     test('CU - constructor auto field inits', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class A {\n'
           '  int _a;\n'
           '  A(this._a);\n'
@@ -381,14 +311,14 @@ flow() {
     });
 
     test('CU - parts', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
         'part of foo;',
         'part of foo;\n'
       );
     });
 
     test('CU (cons inits)', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'class X {\n'
           '  var x, y;\n'
           '  X() : x = 1, y = 2;\n'
@@ -403,7 +333,7 @@ flow() {
     });
 
     test('CU async', () {
-      expectCUFormatsTo(
+      expectUnitFormatsTo(
           'main()\n'
           '    async  {\n'
           '  var x = ()   async=> 1;\n'
@@ -588,17 +518,8 @@ flow() {
     test('initialIndent', () {
       var formatter = new CodeFormatter(
           new FormatterOptions(initialIndentationLevel: 2));
-      var formattedSource =
-          formatter.format(CodeKind.STATEMENT, 'var x;').source;
+      var formattedSource = formatter.format(CodeKind.STATEMENT, 'var x;');
       expect(formattedSource, startsWith('    '));
-    });
-
-    test('selections', () {
-      expectSelectedPostFormat('class X {}', '}');
-      expectSelectedPostFormat('class X{}', '{');
-      expectSelectedPostFormat('class X{int y;}', ';');
-      expectSelectedPostFormat('class X{int y;}', '}');
-      expectSelectedPostFormat('class X {}', ' {');
     });
   });
 
@@ -659,25 +580,9 @@ Token openSqBracket() => new BeginToken(TokenType.OPEN_SQUARE_BRACKET, 0);
 
 Token string(String lexeme) => new StringToken(TokenType.STRING, lexeme, 0);
 
-FormattedSource formatCU(src, {selection}) =>
-    new CodeFormatter().format(
-        CodeKind.COMPILATION_UNIT, src, selection: selection);
-
-String formatStatement(src) =>
-    new CodeFormatter().format(CodeKind.STATEMENT, src).source;
-
 Token tokenize(String str) {
   var reader = new CharSequenceReader(str);
   return new Scanner(null, reader, null).tokenize();
-}
-
-expectSelectedPostFormat(src, token) {
-  var preOffset = src.indexOf(token);
-  var length = token.length;
-  var formatted = formatCU(src, selection: new Selection(preOffset, length));
-  var postOffset = formatted.selection.offset;
-  expect(formatted.source.substring(postOffset, postOffset + length),
-      equals(src.substring(preOffset, preOffset + length)));
 }
 
 expectTokenizedEqual(String s1, String s2) =>
@@ -694,11 +599,15 @@ expectStreamsNotEqual(Token t1, Token t2) =>
     expect(() => new TokenStreamComparator(null, t1, t2).verifyEquals(),
     throwsA(new isInstanceOf<FormatterException>()));
 
-expectCUFormatsTo(src, expected) =>
-    expect(formatCU(src).source, equals(expected));
+expectUnitFormatsTo(String source, expected) {
+  expect(new CodeFormatter().format(CodeKind.COMPILATION_UNIT, source),
+      equals(expected));
+}
 
-expectStmtFormatsTo(src, expected) =>
-    expect(formatStatement(src), equals(expected));
+expectStmtFormatsTo(source, expected) {
+  expect(new CodeFormatter().format(CodeKind.STATEMENT, source),
+      equals(expected));
+}
 
 runTests(testFileName, expectClause(String input, String output)) {
   group(testFileName, () {
@@ -725,6 +634,7 @@ runTests(testFileName, expectClause(String input, String output)) {
   });
 }
 
+/// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
 void testDirectory(String name) {
   var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
   for (var entry in new Directory(dir).listSync()) {
@@ -771,9 +681,9 @@ void testDirectory(String name) {
 
           var result;
           if (p.extension(entry.path) == ".stmt") {
-            result = formatter.format(CodeKind.STATEMENT, input).source + "\n";
+            result = formatter.format(CodeKind.STATEMENT, input) + "\n";
           } else {
-            result = formatter.format(CodeKind.COMPILATION_UNIT, input).source;
+            result = formatter.format(CodeKind.COMPILATION_UNIT, input);
           }
 
           expect(result, equals(expectedOutput));

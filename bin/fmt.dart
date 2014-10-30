@@ -22,12 +22,7 @@ main(List<String> args) {
   /*
 1234567890123456789012345678901234567890
             */
-  formatUnit('''
-class Foo {
-  Stream methodName(AssetId id) =>
-      methodBodyHereItIs;
-}
-    ''', 40);
+  formatUnit("foo() {\n//comment\n}");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
@@ -37,7 +32,7 @@ void formatStmt(String source, [int pageWidth = 40]) {
   drawRuler("before", pageWidth);
   print(source);
   drawRuler("after", pageWidth);
-  print(result.source);
+  print(result);
 }
 
 void formatUnit(String source, [int pageWidth = 40]) {
@@ -47,7 +42,7 @@ void formatUnit(String source, [int pageWidth = 40]) {
   drawRuler("before", pageWidth);
   print(source);
   drawRuler("after", pageWidth);
-  print(result.source);
+  print(result);
 }
 
 void drawRuler(String label, int width) {
@@ -68,7 +63,7 @@ void reformatDirectory(String path) {
     try {
       var file = entry as File;
       var source = file.readAsStringSync();
-      var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source).source;
+      var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source);
       file.writeAsStringSync(formatted);
       print("$relative: done");
     } on FormatterException catch(err) {
@@ -82,7 +77,7 @@ void reformatFile(String path) {
   try {
     var file = new File(path);
     var source = file.readAsStringSync();
-    var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source).source;
+    var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source);
     file.writeAsStringSync(formatted);
     print("$path: done");
   } on FormatterException catch(err) {

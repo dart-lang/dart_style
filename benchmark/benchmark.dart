@@ -59,9 +59,8 @@ void formatSource() {
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.source.length != 29409) {
-    print("Incorrect output (length ${result.source.length}):\n" +
-        result.source);
+  if (result.length != 29425) {
+    print("Incorrect output (length ${result.length}):\n$result");
     exit(1);
   }
 }

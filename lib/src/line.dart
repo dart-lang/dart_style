@@ -39,11 +39,6 @@ class Line {
       chunks[chunks.length - 1] = new TextChunk(last + text);
     }
   }
-
-  void clearIndentation() {
-    assert(chunks.isEmpty);
-    indent = 0;
-  }
 }
 
 class Chunk {

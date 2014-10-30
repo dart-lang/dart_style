@@ -21,14 +21,12 @@ class A {
 class A {
   }
 <<<
-class A {
-}
+class A {}
 >>> leading space before "class"
   class A {
 }
 <<<
-class A {
-}
+class A {}
 >>>
 class A  { int meaningOfLife() => 42; }
 <<<
@@ -39,8 +37,7 @@ class A {
 class      A  {
   }
 <<<
-class A {
-}
+class A {}
 >>>
 class A{var z;inc(int x) => ++x;}
 <<<
@@ -57,3 +54,10 @@ class
 A{}
 <<<
 abstract class A {}
+>>> native class
+class A extends B
+native
+"Zapp" {
+}
+<<<
+class A extends B native "Zapp" {}

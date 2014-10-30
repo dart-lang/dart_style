@@ -86,18 +86,6 @@ class Selection {
   String toString() => 'Selection (offset: $offset, length: $length)';
 }
 
-/// Formatted source.
-class FormattedSource {
-  /// Selection state or null if unspecified.
-  Selection selection;
-
-  /// Formatted source string.
-  final String source;
-
-  /// Create a formatted [source] result, with optional [selection] information.
-  FormattedSource(this.source, [this.selection]);
-}
-
 /// Dart source code formatter.
 class CodeFormatter implements AnalysisErrorListener {
   final FormatterOptions options;
@@ -110,20 +98,18 @@ class CodeFormatter implements AnalysisErrorListener {
 
   /// Format the specified portion (from [offset] with [length]) of the given
   /// [source] string, optionally providing an [indentationLevel].
-  FormattedSource format(CodeKind kind, String source, {int offset, int end,
-      int indentationLevel: 0, Selection selection}) {
+  String format(CodeKind kind, String source, {int offset, int end,
+      int indentationLevel: 0}) {
     var startToken = _tokenize(source);
     _checkForErrors();
 
     var node = _parse(kind, startToken);
     _checkForErrors();
 
-    var visitor = new SourceVisitor(options, lineInfo, source, selection);
+    var visitor = new SourceVisitor(options, lineInfo, source);
     node.accept(visitor);
 
-    var formattedSource = visitor.writer.toString();
-
-    return new FormattedSource(formattedSource, visitor.selection);
+    return visitor.writer.toString();
   }
 
   void onError(AnalysisError error) {

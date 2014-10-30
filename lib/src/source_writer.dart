@@ -21,6 +21,10 @@ class SourceWriter {
 
   final int _pageWidth;
 
+  /// `true` if the next line should have its indentation cleared instead of
+  /// using [indent].
+  bool _clearNextIndent = false;
+
   /// The line currently being written to, or `null` if a non-empty line has
   /// not been started yet.
   Line _currentLine;
@@ -54,9 +58,9 @@ class SourceWriter {
   SourceWriter({this.indent: 0, this.lineSeparator: "\n", int pageWidth: 80})
       : _pageWidth = pageWidth;
 
+  /// Forces the next line written to have no leading indentation.
   void clearIndentation() {
-    _ensureLine();
-    _currentLine.clearIndentation();
+    _clearNextIndent = true;
   }
 
   /// Prints the current line and completes it.
@@ -84,11 +88,10 @@ class SourceWriter {
   /// [string] is for a multi-line string, it will span multiple lines. In that
   /// case, this splits it into lines and handles each line separately.
   void write(String string) {
-    _ensureLine();
-
     var lines = string.split(lineSeparator);
     for (var i = 0; i < lines.length; i++) {
       var line = lines[i];
+      _ensureLine();
       _currentLine.write(line);
       if (i != lines.length - 1) {
         newline();
@@ -182,7 +185,8 @@ class SourceWriter {
   /// Lazily initializes [_currentLine] if not already created.
   void _ensureLine() {
     if (_currentLine != null) return;
-    _currentLine = new Line(indent: indent);
+    _currentLine = new Line(indent: _clearNextIndent ? 0 : indent);
+    _clearNextIndent = false;
   }
 
   /// Forces all multisplits in the current line to be split and breaks the

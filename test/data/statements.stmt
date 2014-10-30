@@ -55,36 +55,6 @@ var m = {};
 var m = {};
 <<<
 var m = {};
->>> Indent cases two spaces and case bodies four spaces (dartbug.com/16406)
-switches() {
-  switch (fruit) {
-    case 'apple':
-    print('delish');
-    break;
-
-    case 'durian':
-    print('stinky');
-    break;
-    default:
-  print('nevermind');
-  break;
-  }
-}
-<<<
-switches() {
-  switch (fruit) {
-    case 'apple':
-      print('delish');
-      break;
-
-    case 'durian':
-      print('stinky');
-      break;
-    default:
-      print('nevermind');
-      break;
-  }
-}
 >>> dartbug.com/16383
 main() {
   //foo
@@ -102,7 +72,7 @@ main() {
   throw new FormatException(
       "This is a long exception message that puts this over 80 columns.");
 }
->>> Empty method bodies may be on a single line (or more)
+>>> empty method bodies are a single line
 void main() { }
 <<<
 void main() {}
@@ -111,9 +81,7 @@ void main() {
 
 }
 <<<
-void main() {
-
-}
+void main() {}
 >>> dartbug.com/16810
 void f() {
   var a;;;
@@ -168,3 +136,11 @@ main() {
 main() {
   printNumbers(a, b) {}
 }
+>>>
+var x = #foo;
+<<<
+var x = #foo;
+>>>
+var y=#foo.bar.baz;
+<<<
+var y = #foo.bar.baz;
