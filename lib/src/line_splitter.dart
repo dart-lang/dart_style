@@ -60,29 +60,19 @@ class LineSplitter {
   ///
   /// It will determine how best to split it into multiple lines of output and
   /// return a single string that may contain one or more newline characters.
-  String apply() {
+  void apply(StringBuffer buffer) {
     if (!_line.hasSplits || _line.unsplitLength <= _pageWidth) {
       // No splitting needed or possible.
-      return _printUnsplit();
+      return _printUnsplit(buffer);
     }
 
-    var lines = _applySplits(_findBestSplits(0, _line.indent));
-    if (lines == null) {
-      // Could not split it.
-      return _printUnsplit();
-    }
-
-    // TODO(rnystrom): Use configured line separator.
-    return lines.join("\n");
+    _applySplits(_findBestSplits(0, _line.indent), buffer);
   }
 
   /// Prints [line] without any splitting.
-  String _printUnsplit() {
-    var buffer = new StringBuffer();
+  void _printUnsplit(StringBuffer buffer) {
     buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
     buffer.writeAll(_line.chunks);
-
-    return buffer.toString();
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
@@ -249,26 +239,18 @@ class LineSplitter {
   /// of individual lines.
   ///
   /// Returns the resulting split lines.
-  List<String> _applySplits(Set<SplitParam> splits) {
-    var lines = [];
-    var buffer = new StringBuffer();
+  void _applySplits(Set<SplitParam> splits, StringBuffer buffer) {
     buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
 
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
       if (chunk is SplitChunk && splits.contains(chunk.param)) {
-        lines.add(buffer.toString());
-        buffer.clear();
+        buffer.writeln();
         buffer.write(" " * (chunk.indent * SPACES_PER_INDENT));
       } else {
         buffer.write(chunk.text);
       }
     }
-
-    // Finish the last line.
-    if (!buffer.isEmpty) lines.add(buffer.toString());
-
-    return lines;
   }
 
   /// Prints [line] to stdout with split chunks made visible.

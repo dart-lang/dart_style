@@ -50,7 +50,7 @@ class Whitespace {
 /// fed to a [LineSplitter], which ensures the resulting line stays with the
 /// page boundary.
 class LineWriter {
-  final buffer = new StringBuffer();
+  final StringBuffer buffer;
 
   // TODO(rnystrom): Does this need to be configurable?
   /// The separator used to separate lines in the source code.
@@ -101,7 +101,8 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _spans = <SpanStartChunk>[];
 
-  LineWriter({this.indent: 0, this.separator: "\n", int pageWidth: 80})
+  LineWriter(this.buffer,
+        {this.indent: 0, this.separator: "\n", int pageWidth: 80})
       : _pageWidth = pageWidth;
 
   /// Forces the next line written to have no leading indentation.
@@ -123,7 +124,8 @@ class LineWriter {
     // now.
     _splitMultisplits();
 
-    buffer.writeln(new LineSplitter(_pageWidth, _currentLine).apply());
+    _finishLine(_currentLine);
+    buffer.writeln();
 
     _currentLine = null;
   }
@@ -201,7 +203,8 @@ class LineWriter {
     if (isSplit) {
       // The line up to the split is complete now.
       if (_currentLine != null) {
-        buffer.writeln(new LineSplitter(_pageWidth, _currentLine).apply());
+        _finishLine(_currentLine);
+        buffer.writeln();
       }
 
       // Use the split's indent for the next line.
@@ -266,14 +269,9 @@ class LineWriter {
     _newline();
   }
 
-  String toString() {
-    var source = new StringBuffer(buffer.toString());
-
-    if (_currentLine != null) {
-      source.write(new LineSplitter(_pageWidth, _currentLine).apply());
-    }
-
-    return source.toString();
+  /// Finish writing the last line.
+  void end() {
+    if (_currentLine != null) _finishLine(_currentLine);
   }
 
   /// Lazily initializes [_currentLine] if not already created.
@@ -301,7 +299,8 @@ class LineWriter {
     for (var chunk in _currentLine.chunks) {
       if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
         var split = chunk as SplitChunk;
-        buffer.writeln(new LineSplitter(_pageWidth, line).apply());
+        _finishLine(line);
+        buffer.writeln();
         line = new Line(indent: split.indent);
       } else {
         line.chunks.add(chunk);
@@ -309,5 +308,9 @@ class LineWriter {
     }
 
     _currentLine = line;
+  }
+
+  void _finishLine(Line line) {
+    new LineSplitter(_pageWidth, line).apply(buffer);
   }
 }

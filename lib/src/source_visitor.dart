@@ -25,10 +25,12 @@ class SourceVisitor implements AstVisitor {
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(FormatterOptions options, this.lineInfo, this.source)
-      : writer = new LineWriter(indent: options.initialIndentationLevel,
-                                separator: options.lineSeparator,
-                                pageWidth: options.pageWidth);
+  SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
+      StringBuffer outputBuffer)
+      : writer = new LineWriter(outputBuffer,
+          indent: options.initialIndentationLevel,
+          separator: options.lineSeparator,
+          pageWidth: options.pageWidth);
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings,

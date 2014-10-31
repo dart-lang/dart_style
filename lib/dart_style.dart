@@ -106,10 +106,14 @@ class CodeFormatter implements AnalysisErrorListener {
     var node = _parse(kind, startToken);
     _checkForErrors();
 
-    var visitor = new SourceVisitor(options, lineInfo, source);
+    var buffer = new StringBuffer();
+    var visitor = new SourceVisitor(options, lineInfo, source, buffer);
     node.accept(visitor);
 
-    return visitor.writer.toString();
+    // Finish off the last line.
+    visitor.writer.end();
+
+    return buffer.toString();
   }
 
   void onError(AnalysisError error) {
