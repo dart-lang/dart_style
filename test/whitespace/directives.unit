@@ -38,3 +38,11 @@ as
 a;
 <<<
 import 'a.dart' deferred as a;
+>>> part of
+part of foo;
+<<<
+part of foo;
+>>> long part of does not wrap
+part of some_very_long_library_name_that_wraps;
+<<<
+part of some_very_long_library_name_that_wraps;

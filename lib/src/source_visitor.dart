@@ -25,12 +25,9 @@ class SourceVisitor implements AstVisitor {
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(FormatterOptions options, this.lineInfo, this.source,
+  SourceVisitor(DartFormatter formatter, this.lineInfo, this.source,
       StringBuffer outputBuffer)
-      : writer = new LineWriter(outputBuffer,
-          indent: options.initialIndentationLevel,
-          separator: options.lineSeparator,
-          pageWidth: options.pageWidth);
+      : writer = new LineWriter(formatter, outputBuffer);
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings,
@@ -697,11 +694,9 @@ class SourceVisitor implements AstVisitor {
     }
 
     writer.startMultisplit();
-
-    // Track indentation in case the list contains a function expression with
-    // a block body that splits to a new line.
     indent();
 
+    // Split after the "[".
     writer.multisplit();
 
     visitCommaSeparatedNodes(node.elements, after: () {
@@ -712,6 +707,7 @@ class SourceVisitor implements AstVisitor {
 
     unindent();
 
+    // Split before the "]".
     writer.multisplit();
     writer.endMultisplit();
 
@@ -729,11 +725,9 @@ class SourceVisitor implements AstVisitor {
     }
 
     writer.startMultisplit();
-
-    // Track indentation in case the map contains a function expression with
-    // a block body that splits to a new line.
     indent();
 
+    // Split after the "{".
     writer.multisplit();
 
     visitCommaSeparatedNodes(node.entries, after: () {
@@ -744,6 +738,7 @@ class SourceVisitor implements AstVisitor {
 
     unindent();
 
+    // Split before the "}".
     writer.multisplit();
     writer.endMultisplit();
 

@@ -22,12 +22,11 @@ main(List<String> args) {
   /*
 1234567890123456789012345678901234567890
             */
-  formatUnit("foo() {\n//comment\n}");
+  formatStmt("sendPort.send({'type': 'error', 'error': 'oops'});");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
-  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: pageWidth));
-  var result = formatter.format(CodeKind.STATEMENT, source);
+  var result = new DartFormatter(pageWidth: pageWidth).formatStatement(source);
 
   drawRuler("before", pageWidth);
   print(source);
@@ -36,8 +35,7 @@ void formatStmt(String source, [int pageWidth = 40]) {
 }
 
 void formatUnit(String source, [int pageWidth = 40]) {
-  var formatter = new CodeFormatter(new FormatterOptions(pageWidth: pageWidth));
-  var result = formatter.format(CodeKind.COMPILATION_UNIT, source);
+  var result = new DartFormatter(pageWidth: pageWidth).format(source);
 
   drawRuler("before", pageWidth);
   print(source);
@@ -59,11 +57,11 @@ void reformatDirectory(String path) {
     var relative = p.relative(entry.path, from: path);
     print(relative);
 
-    var formatter = new CodeFormatter();
+    var formatter = new DartFormatter();
     try {
       var file = entry as File;
       var source = file.readAsStringSync();
-      var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source);
+      var formatted = formatter.format(source);
       file.writeAsStringSync(formatted);
       print("$relative: done");
     } on FormatterException catch(err) {
@@ -73,11 +71,11 @@ void reformatDirectory(String path) {
 }
 
 void reformatFile(String path) {
-  var formatter = new CodeFormatter();
+  var formatter = new DartFormatter();
   try {
     var file = new File(path);
     var source = file.readAsStringSync();
-    var formatted = formatter.format(CodeKind.COMPILATION_UNIT, source);
+    var formatted = formatter.format(source);
     file.writeAsStringSync(formatted);
     print("$path: done");
   } on FormatterException catch(err) {

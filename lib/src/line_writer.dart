@@ -4,6 +4,7 @@
 
 library dart_style.src.source_writer;
 
+import 'dart_formatter.dart';
 import 'line.dart';
 import 'line_splitter.dart';
 
@@ -52,16 +53,12 @@ class Whitespace {
 class LineWriter {
   final StringBuffer buffer;
 
-  // TODO(rnystrom): Does this need to be configurable?
-  /// The separator used to separate lines in the source code.
-  final String separator;
-
   /// The current indentation level.
   ///
   /// Subsequent lines will be created with this much leading indentation.
   int indent = 0;
 
-  final int _pageWidth;
+  final DartFormatter _formatter;
 
   /// The whitespace that should be written before the next non-whitespace token
   /// or `null` if no whitespace is pending.
@@ -101,9 +98,9 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _spans = <SpanStartChunk>[];
 
-  LineWriter(this.buffer,
-        {this.indent: 0, this.separator: "\n", int pageWidth: 80})
-      : _pageWidth = pageWidth;
+  LineWriter(this._formatter, this.buffer) {
+    indent = _formatter.indent;
+  }
 
   /// Forces the next line written to have no leading indentation.
   void clearIndentation() {
@@ -253,7 +250,7 @@ class LineWriter {
         }
       }
 
-      if (length > _pageWidth) _splitMultisplits();
+      if (length > _formatter.pageWidth) _splitMultisplits();
     }
 
     _multisplits.removeLast();
@@ -311,6 +308,6 @@ class LineWriter {
   }
 
   void _finishLine(Line line) {
-    new LineSplitter(_pageWidth, line).apply(buffer);
+    new LineSplitter(_formatter.pageWidth, line).apply(buffer);
   }
 }

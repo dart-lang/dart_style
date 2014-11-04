@@ -55,7 +55,6 @@ class LineSplitter {
   /// Creates a new breaker that tries to fit lines within [pageWidth].
   LineSplitter(this._pageWidth, this._line);
 
-  // TODO(rnystrom): Pass StringBuffer into this?
   /// Convert the line to a [String] representation.
   ///
   /// It will determine how best to split it into multiple lines of output and

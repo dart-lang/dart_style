@@ -238,3 +238,11 @@ foo(x, y) => null;
 var l = [1 /* bang */, 2];
 <<<
 var l = [1 /* bang */, 2];
+>>> indented line comment (dartbug.com/16383)
+main() {
+  //foo
+}
+<<<
+main() {
+  //foo
+}

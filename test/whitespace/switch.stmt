@@ -147,3 +147,21 @@ switch (foo) {
   case 2:
     body();
 }
+>>> indentation
+switch (fruit) {
+case "apple":
+print("delish");
+break;
+case "fig":
+print("bleh");
+break;
+}
+<<<
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  case "fig":
+    print("bleh");
+    break;
+}

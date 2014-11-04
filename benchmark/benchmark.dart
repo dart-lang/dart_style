@@ -839,7 +839,7 @@ class Traverser {
 
     var entrypoint = _environment.graph.packages[id.package].path(id.path);
 
-    // TODO(rnystrom): Should have more sophisticated error-handling here. Need
+    // Should have more sophisticated error-handling here. Need
     // to report compile errors to the user in an easily visible way. Need to
     // make sure paths in errors are mapped to the original source path so they
     // can understand them.
