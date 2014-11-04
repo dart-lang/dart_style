@@ -61,13 +61,18 @@ void main() {
         equals("var i = 1;%"));
     });
 
-    test('infers \\r\\n if the source contains any', () {
+    test('infers \\r\\n if the first newline uses that', () {
       expect(new DartFormatter().format("var\r\ni\n=\n1;\n"),
         equals("var i = 1;\r\n"));
     });
 
-    test('otherwise infers \\n', () {
-      expect(new DartFormatter().format("var\ni\n=\n1;\n"),
+    test('infers \\n if the first newline uses that', () {
+      expect(new DartFormatter().format("var\ni\r\n=\r\n1;\r\n"),
+        equals("var i = 1;\n"));
+    });
+
+    test('defaults to \\n if there are no newlines', () {
+      expect(new DartFormatter().format("var i =1;"),
         equals("var i = 1;\n"));
     });
   });

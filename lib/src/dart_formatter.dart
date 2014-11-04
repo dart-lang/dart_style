@@ -53,9 +53,9 @@ class FormatterException implements Exception {
 class DartFormatter implements AnalysisErrorListener {
   /// The string that newlines should use.
   ///
-  /// If not explicitly provided, this is inferred from the source text. If
-  /// the source contains any `\r\n` (Windows), it will use that. Otherwise,
-  /// it uses Unix-style line endings (`\n`).
+  /// If not explicitly provided, this is inferred from the source text. If the
+  /// first newline is `\r\n` (Windows), it will use that. Otherwise, it uses
+  /// Unix-style line endings (`\n`).
   String lineEnding;
 
   /// The number of characters allowed in a single line.
@@ -94,17 +94,6 @@ class DartFormatter implements AnalysisErrorListener {
   }
 
   String _format(String source, parseFn(Parser parser, Token start)) {
-    // TODO(rnystrom): Can possibly optimize this by using the line starts in
-    // _tokenize.
-    // Infer the line ending if not given one.
-    if (lineEnding == null) {
-      if (source.contains("\r\n")) {
-        lineEnding = "\r\n";
-      } else {
-        lineEnding = "\n";
-      }
-    }
-
     var startToken = _tokenize(source);
     _checkForErrors();
 
@@ -140,6 +129,20 @@ class DartFormatter implements AnalysisErrorListener {
     var scanner = new Scanner(null, reader, this);
     var token = scanner.tokenize();
     lineInfo = new LineInfo(scanner.lineStarts);
+
+    // Infer the line ending if not given one. Do it here since now we know
+    // where the lines start.
+    if (lineEnding == null) {
+      // If the first newline is "\r\n", use that. Otherwise, use "\n".
+      if (scanner.lineStarts.length > 1 &&
+          scanner.lineStarts[1] >= 2 &&
+          source[scanner.lineStarts[1] - 2] == '\r') {
+        lineEnding = "\r\n";
+      } else {
+        lineEnding = "\n";
+      }
+    }
+
     return token;
   }
 }
