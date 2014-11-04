@@ -54,6 +54,23 @@ void main() {
         '      bar;\n'
         '    }'));
   });
+
+  group('line endings', () {
+    test('uses given line ending', () {
+      expect(new DartFormatter(lineEnding: "%").format("var i = 1;"),
+        equals("var i = 1;%"));
+    });
+
+    test('infers \\r\\n if the source contains any', () {
+      expect(new DartFormatter().format("var\r\ni\n=\n1;\n"),
+        equals("var i = 1;\r\n"));
+    });
+
+    test('otherwise infers \\n', () {
+      expect(new DartFormatter().format("var\ni\n=\n1;\n"),
+        equals("var i = 1;\n"));
+    });
+  });
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].

@@ -54,12 +54,12 @@ String padLeft(input, int length) {
 }
 
 void formatSource() {
-  var formatter = new CodeFormatter();
-  var result = formatter.format(CodeKind.COMPILATION_UNIT, source);
+  var formatter = new DartFormatter();
+  var result = formatter.format(source);
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.length != 29425) {
+  if (result.length != 29409) {
     print("Incorrect output (length ${result.length}):\n$result");
     exit(1);
   }

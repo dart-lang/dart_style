@@ -37,6 +37,9 @@ import 'line.dart';
 /// splits for some suffix, we memoize it. When later recursive calls descend
 /// to that suffix again, we can reuse it.
 class LineSplitter {
+  /// The string used for newlines.
+  final String _lineEnding;
+
   /// The number of characters allowed in a single line.
   final int _pageWidth;
 
@@ -52,8 +55,8 @@ class LineSplitter {
   /// indentation of that previous split.
   final _bestSplits = <int, Set<SplitParam>>{};
 
-  /// Creates a new breaker that tries to fit lines within [pageWidth].
-  LineSplitter(this._pageWidth, this._line);
+  /// Creates a new splitter that tries to fit lines within [pageWidth].
+  LineSplitter(this._lineEnding, this._pageWidth, this._line);
 
   /// Convert the line to a [String] representation.
   ///
@@ -244,7 +247,7 @@ class LineSplitter {
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
       if (chunk is SplitChunk && splits.contains(chunk.param)) {
-        buffer.writeln();
+        buffer.write(_lineEnding);
         buffer.write(" " * (chunk.indent * SPACES_PER_INDENT));
       } else {
         buffer.write(chunk.text);

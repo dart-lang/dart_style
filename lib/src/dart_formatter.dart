@@ -47,10 +47,16 @@ class FormatterException implements Exception {
   String toString() => message;
 }
 
+// TODO(rnystrom): We may not want to export this class publicly. At the very
+// least, making things like lineInfo public are weird.
 /// Dart source code formatter.
 class DartFormatter implements AnalysisErrorListener {
-  /// The newline separator string.
-  final String lineSeparator;
+  /// The string that newlines should use.
+  ///
+  /// If not explicitly provided, this is inferred from the source text. If
+  /// the source contains any `\r\n` (Windows), it will use that. Otherwise,
+  /// it uses Unix-style line endings (`\n`).
+  String lineEnding;
 
   /// The number of characters allowed in a single line.
   final int pageWidth;
@@ -59,11 +65,18 @@ class DartFormatter implements AnalysisErrorListener {
   final int indent;
 
   final errors = <AnalysisError>[];
-  final whitespace = new RegExp(r'[\s]+');
 
   LineInfo lineInfo;
 
-  DartFormatter({this.lineSeparator: "\n", this.pageWidth: 80, this.indent: 0});
+  /// Creates a new formatter for Dart code.
+  ///
+  /// If [lineEnding] is given, that will be used for any newlines in the
+  /// output. Otherwise, the line separator will be inferred from the line
+  /// endings in the source file.
+  ///
+  /// If [indent] is given, that many levels of indentation will be prefixed
+  /// before each resulting line in the output.
+  DartFormatter({this.lineEnding, this.pageWidth: 80, this.indent: 0});
 
   /// Format the given [source] string containing an entire Dart compilation
   /// unit.
@@ -76,14 +89,22 @@ class DartFormatter implements AnalysisErrorListener {
   }
 
   /// Format the given [source] string containing a single Dart statement.
-  ///
-  /// If [indent] is given, that many levels of indentation will be prefixed
-  /// before each resulting line in the output.
-  String formatStatement(String source, {int indent: 0}) {
+  String formatStatement(String source) {
     return _format(source, (parser, start) => parser.parseStatement(start));
   }
 
   String _format(String source, parseFn(Parser parser, Token start)) {
+    // TODO(rnystrom): Can possibly optimize this by using the line starts in
+    // _tokenize.
+    // Infer the line ending if not given one.
+    if (lineEnding == null) {
+      if (source.contains("\r\n")) {
+        lineEnding = "\r\n";
+      } else {
+        lineEnding = "\n";
+      }
+    }
+
     var startToken = _tokenize(source);
     _checkForErrors();
 

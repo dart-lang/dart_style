@@ -113,7 +113,7 @@ class LineWriter {
   /// prints an empty line.
   void _newline() {
     if (_currentLine == null) {
-      buffer.writeln();
+      buffer.write(_formatter.lineEnding);
       return;
     }
 
@@ -122,7 +122,7 @@ class LineWriter {
     _splitMultisplits();
 
     _finishLine(_currentLine);
-    buffer.writeln();
+    buffer.write(_formatter.lineEnding);
 
     _currentLine = null;
   }
@@ -201,7 +201,7 @@ class LineWriter {
       // The line up to the split is complete now.
       if (_currentLine != null) {
         _finishLine(_currentLine);
-        buffer.writeln();
+        buffer.write(_formatter.lineEnding);
       }
 
       // Use the split's indent for the next line.
@@ -297,7 +297,7 @@ class LineWriter {
       if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
         var split = chunk as SplitChunk;
         _finishLine(line);
-        buffer.writeln();
+        buffer.write(_formatter.lineEnding);
         line = new Line(indent: split.indent);
       } else {
         line.chunks.add(chunk);
@@ -308,6 +308,8 @@ class LineWriter {
   }
 
   void _finishLine(Line line) {
-    new LineSplitter(_formatter.pageWidth, line).apply(buffer);
+    var splitter = new LineSplitter(_formatter.lineEnding,
+        _formatter.pageWidth, line);
+    splitter.apply(buffer);
   }
 }
