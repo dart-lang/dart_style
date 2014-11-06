@@ -15,19 +15,31 @@ import 'line_writer.dart';
 /// An AST visitor that drives formatting heuristics.
 class SourceVisitor implements AstVisitor {
   /// The writer to which the output lines are written.
-  final LineWriter writer;
+  final LineWriter _writer;
 
   /// Cached line info for calculating blank lines.
-  LineInfo lineInfo;
+  LineInfo _lineInfo;
 
   /// The source being formatted (used in interpolation handling)
-  final String source;
+  final String _source;
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(DartFormatter formatter, this.lineInfo, this.source,
+  SourceVisitor(DartFormatter formatter, this._lineInfo, this._source,
       StringBuffer outputBuffer)
-      : writer = new LineWriter(formatter, outputBuffer);
+      : _writer = new LineWriter(formatter, outputBuffer);
+
+  /// Run the visitor on [node], writing all of the formatted output to the
+  /// output buffer.
+  ///
+  /// This is the only method that should be called externally. Everything else
+  /// is effectively private.
+  void run(AstNode node) {
+    node.accept(this);
+
+    // Finish off the last line.
+    _writer.end();
+  }
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings,
@@ -47,7 +59,7 @@ class SourceVisitor implements AstVisitor {
 
     if (node.arguments.isNotEmpty) {
       // See if we kept all of the arguments on the same line.
-      writer.startSpan();
+      _writer.startSpan();
 
       // Allow splitting after "(".
       zeroSplit(SplitCost.BEFORE_ARGUMENT);
@@ -57,7 +69,7 @@ class SourceVisitor implements AstVisitor {
       visitCommaSeparatedNodes(node.arguments,
           after: () => split(cost: cost--));
 
-      writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
+      _writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
     }
 
     token(node.rightParenthesis);
@@ -111,29 +123,29 @@ class SourceVisitor implements AstVisitor {
     addOperands(node.rightOperand);
 
     // TODO(rnystrom: Use different costs for different operator precedences.
-    writer.startMultisplit(SplitCost.BINARY_OPERATOR);
+    _writer.startMultisplit(SplitCost.BINARY_OPERATOR);
 
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
         space();
         token(node.operator);
-        writer.multisplit(indent: 2, text: " ");
+        _writer.multisplit(indent: 2, text: " ");
       }
       visit(operands[i]);
     }
 
-    writer.endMultisplit();
+    _writer.endMultisplit();
   }
 
   visitBlock(Block node) {
     token(node.leftBracket);
-    indent();
+    _writer.indent();
     if (!node.statements.isEmpty) {
       newline();
       visitNodes(node.statements, between: oneOrTwoNewlines);
       newline();
     }
-    token(node.rightBracket, before: unindent);
+    token(node.rightBracket, before: _writer.unindent);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -155,13 +167,13 @@ class SourceVisitor implements AstVisitor {
 
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
-    indent(2);
+    _writer.indent(2);
     // Single cascades do not force a linebreak (dartbug.com/16384)
     if (node.cascadeSections.length > 1) {
       newline();
     }
     visitNodes(node.cascadeSections, between: newline);
-    unindent(2);
+    _writer.unindent(2);
   }
 
   visitCatchClause(CatchClause node) {
@@ -199,13 +211,13 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.nativeClause, before: space);
     space();
     token(node.leftBracket);
-    indent();
+    _writer.indent();
     if (!node.members.isEmpty) {
       visitNodes(node.members, before: newline,
           between: oneOrTwoNewlines);
       newline();
     }
-    token(node.rightBracket, before: unindent);
+    token(node.rightBracket, before: _writer.unindent);
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
@@ -241,7 +253,7 @@ class SourceVisitor implements AstVisitor {
     token(node.endToken); // EOF.
 
     // Be a good citizen, end with a newline.
-    writer.ensureNewline();
+    _writer.ensureNewline();
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -285,7 +297,7 @@ class SourceVisitor implements AstVisitor {
       split();
     }
 
-    indent(2);
+    _writer.indent(2);
     token(node.separator /* : */);
     space();
 
@@ -302,15 +314,15 @@ class SourceVisitor implements AstVisitor {
       // Foo()
       //     : first,
       //       second;
-      if (i == 1) indent();
+      if (i == 1) _writer.indent();
 
       node.initializers[i].accept(this);
     }
 
     // If there were multiple fields, discard their extra indentation.
-    if (node.initializers.length > 1) unindent();
+    if (node.initializers.length > 1) _writer.unindent();
 
-    unindent(2);
+    _writer.unindent(2);
   }
 
   visitConstructorRedirects(ConstructorDeclaration node) {
@@ -696,23 +708,23 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    writer.startMultisplit();
-    indent();
+    _writer.startMultisplit();
+    _writer.indent();
 
     // Split after the "[".
-    writer.multisplit();
+    _writer.multisplit();
 
     visitCommaSeparatedNodes(node.elements, after: () {
-      writer.multisplit(text: " ");
+      _writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
-    unindent();
+    _writer.unindent();
 
     // Split before the "]".
-    writer.multisplit();
-    writer.endMultisplit();
+    _writer.multisplit();
+    _writer.endMultisplit();
 
     token(node.rightBracket);
   }
@@ -727,23 +739,23 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    writer.startMultisplit();
-    indent();
+    _writer.startMultisplit();
+    _writer.indent();
 
     // Split after the "{".
-    writer.multisplit();
+    _writer.multisplit();
 
     visitCommaSeparatedNodes(node.entries, after: () {
-      writer.multisplit(text: " ");
+      _writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
-    unindent();
+    _writer.unindent();
 
     // Split before the "}".
-    writer.multisplit();
-    writer.endMultisplit();
+    _writer.multisplit();
+    _writer.endMultisplit();
 
     token(node.rightBracket);
   }
@@ -905,7 +917,7 @@ class SourceVisitor implements AstVisitor {
     // Ensure that interpolated strings don't get broken up by manually
     // outputting them as an unformatted substring of the source.
     writePrecedingCommentsAndNewlines(node.beginToken);
-    append(source.substring(node.beginToken.offset, node.endToken.end));
+    append(_source.substring(node.beginToken.offset, node.endToken.end));
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -926,9 +938,9 @@ class SourceVisitor implements AstVisitor {
     visit(node.expression);
     token(node.colon);
     newline();
-    indent();
+    _writer.indent();
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    unindent();
+    _writer.unindent();
   }
 
   visitSwitchDefault(SwitchDefault node) {
@@ -936,9 +948,9 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     token(node.colon);
     newline();
-    indent();
+    _writer.indent();
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    unindent();
+    _writer.unindent();
   }
 
   visitSwitchStatement(SwitchStatement node) {
@@ -949,10 +961,10 @@ class SourceVisitor implements AstVisitor {
     token(node.rightParenthesis);
     space();
     token(node.leftBracket);
-    indent();
+    _writer.indent();
     newline();
     visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
-    token(node.rightBracket, before: unindent);
+    token(node.rightBracket, before: _writer.unindent);
 
   }
 
@@ -1043,7 +1055,7 @@ class SourceVisitor implements AstVisitor {
       visit(node.variables.first);
 
       // Indent variables after the first one to line up past "var".
-      indent(2);
+      _writer.indent(2);
 
       for (var variable in node.variables.skip(1)) {
         token(variable.beginToken.previous); // Comma.
@@ -1052,7 +1064,7 @@ class SourceVisitor implements AstVisitor {
         visit(variable);
       }
 
-      unindent(2);
+      _writer.unindent(2);
       return;
     }
 
@@ -1201,31 +1213,31 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    writer.writeWhitespace(Whitespace.SPACE);
+    _writer.writeWhitespace(Whitespace.SPACE);
   }
 
   /// Emit a single mandatory newline.
   void newline() {
-    writer.writeWhitespace(Whitespace.NEWLINE);
+    _writer.writeWhitespace(Whitespace.NEWLINE);
   }
 
   /// Emit a two mandatory newlines.
   void twoNewlines() {
-    writer.writeWhitespace(Whitespace.TWO_NEWLINES);
+    _writer.writeWhitespace(Whitespace.TWO_NEWLINES);
   }
 
   /// Allow either a single space or newline to be emitted before the next
   /// non-whitespace token based on whether a newline exists in the source
   /// between the last token and the next one.
   void spaceOrNewline() {
-    writer.writeWhitespace(Whitespace.SPACE_OR_NEWLINE);
+    _writer.writeWhitespace(Whitespace.SPACE_OR_NEWLINE);
   }
 
   /// Allow either one or two newlines to be emitted before the next
   /// non-whitespace token based on whether more than one newline exists in the
   /// source between the last token and the next one.
   void oneOrTwoNewlines() {
-    writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
+    _writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
   }
 
   /// Writes a single-space split with the given [cost] or [param].
@@ -1233,22 +1245,12 @@ class SourceVisitor implements AstVisitor {
   /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
   /// omitted, defaults to [SplitCost.FREE].
   void split({int cost, SplitParam param}) {
-    writer.split(cost: cost, param: param, text: " ");
+    _writer.split(cost: cost, param: param, text: " ");
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.
   void zeroSplit([int cost = SplitCost.FREE]) {
-    writer.split(cost: cost);
-  }
-
-  /// Increase indentation by [n] levels.
-  void indent([n = 1]) {
-    writer.indent += n;
-  }
-
-  /// Decrease indentation by [n] levels.
-  void unindent([n = 1]) {
-    writer.indent -= n;
+    _writer.split(cost: cost);
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
@@ -1277,7 +1279,7 @@ class SourceVisitor implements AstVisitor {
 
     // Update the pending whitespace now that we know how far down the next
     // token is.
-    writer.suggestWhitespace(tokenLine - previousLine);
+    _writer.suggestWhitespace(tokenLine - previousLine);
 
     var comment = token.precedingComments;
     if (comment == null) return;
@@ -1294,8 +1296,8 @@ class SourceVisitor implements AstVisitor {
 
       // If the comment is at the very beginning of the line, meaning it's
       // likely a chunk of commented out code, then do not re-indent it.
-      if (lineInfo.getLocation(comment.offset).columnNumber == 1) {
-        writer.clearIndentation();
+      if (_lineInfo.getLocation(comment.offset).columnNumber == 1) {
+        _writer.clearIndentation();
       }
 
       append(comment.toString().trim());
@@ -1346,14 +1348,14 @@ class SourceVisitor implements AstVisitor {
   void append(String string) {
     if (string == null || string.isEmpty) return;
 
-    writer.write(string);
+    _writer.write(string);
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.
-  int startLine(Token token) => lineInfo.getLocation(token.offset).lineNumber;
+  int startLine(Token token) => _lineInfo.getLocation(token.offset).lineNumber;
 
   /// Gets the 1-based line number that the end of [token] lies on.
-  int endLine(Token token) => lineInfo.getLocation(token.end).lineNumber;
+  int endLine(Token token) => _lineInfo.getLocation(token.end).lineNumber;
 
-  String toString() => writer.toString();
+  String toString() => _writer.toString();
 }

@@ -56,7 +56,7 @@ class LineWriter {
   /// The current indentation level.
   ///
   /// Subsequent lines will be created with this much leading indentation.
-  int indent = 0;
+  int _indent = 0;
 
   final DartFormatter _formatter;
 
@@ -103,7 +103,17 @@ class LineWriter {
   int _expressionNesting = 0;
 
   LineWriter(this._formatter, this.buffer) {
-    indent = _formatter.indent;
+    _indent = _formatter.indent;
+  }
+
+  /// Increase indentation by [n] levels.
+  void indent([n = 1]) {
+    _indent += n;
+  }
+
+  /// Decrease indentation by [n] levels.
+  void unindent([n = 1]) {
+    _indent -= n;
   }
 
   /// Forces the next line written to have no leading indentation.
@@ -195,7 +205,7 @@ class LineWriter {
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
-    _writeSplit(new SplitChunk(param, indent, _expressionNesting, text));
+    _writeSplit(new SplitChunk(param, _indent, _expressionNesting, text));
   }
 
   void startSpan() {
@@ -223,7 +233,7 @@ class LineWriter {
 
   void multisplit({int indent: 0, String text: ""}) {
     _writeSplit(new SplitChunk(
-        _multisplits.last.param, this.indent + indent, -1, text));
+        _multisplits.last.param, _indent + indent, -1, text));
   }
 
   void endMultisplit() {
@@ -295,7 +305,7 @@ class LineWriter {
   /// Lazily initializes [_currentLine] if not already created.
   void _ensureLine() {
     if (_currentLine != null) return;
-    _currentLine = new Line(indent: _clearNextIndent ? 0 : indent);
+    _currentLine = new Line(indent: _clearNextIndent ? 0 : _indent);
     _clearNextIndent = false;
   }
 

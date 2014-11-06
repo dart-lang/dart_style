@@ -105,10 +105,8 @@ class DartFormatter implements AnalysisErrorListener {
 
     var buffer = new StringBuffer();
     var visitor = new SourceVisitor(this, lineInfo, source, buffer);
-    node.accept(visitor);
 
-    // Finish off the last line.
-    visitor.writer.end();
+    visitor.run(node);
 
     return buffer.toString();
   }
