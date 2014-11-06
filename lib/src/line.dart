@@ -87,7 +87,19 @@ class SplitChunk extends Chunk {
   /// indentation.
   final int indent;
 
-  SplitChunk(this.indent, this.param, [this.text = ""]);
+  /// The number of levels of expression nesting that this split occurs within.
+  ///
+  /// This is used to determine how much to increase the indentation when this
+  /// split comes into effect. A single statement may be indented multiple
+  /// times if the splits occur in more deeply nested expressions, for example:
+  ///
+  ///     // 40 columns                           |
+  ///     someFunctionName(argument, argument,
+  ///         argument, anotherFunction(argument,
+  ///             argument));
+  final int nesting;
+
+  SplitChunk(this.param, this.indent, this.nesting, [this.text = ""]);
 }
 
 /// A toggle for enabling one or more [SplitChunk]s in a [Line].

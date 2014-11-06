@@ -460,6 +460,9 @@ class SourceVisitor implements AstVisitor {
   visitFormalParameterList(FormalParameterList node) {
     token(node.leftParenthesis);
 
+    // TODO(rnystrom): Put a span here similar to ArgumentList to try to keep
+    // parameters together.
+
     if (node.parameters.isNotEmpty) {
       var groupEnd;
 
@@ -1060,7 +1063,7 @@ class SourceVisitor implements AstVisitor {
     var param = new SplitParam(SplitCost.DECLARATION);
 
     visitCommaSeparatedNodes(node.variables, after: () {
-      split(chunk: new SplitChunk(writer.indent + 2, param, " "));
+      split(param: param);
     });
   }
 
@@ -1225,27 +1228,17 @@ class SourceVisitor implements AstVisitor {
     writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
   }
 
-  /// Outputs a split for [chunk], if given.
+  /// Writes a single-space split with the given [cost] or [param].
   ///
-  /// If omitted, defaults to a statement line-break split: one that indents
-  /// by two and expands to a space if not split. The param for the split will
-  /// have [cost] if given.
-  void split({SplitChunk chunk, int cost}) {
-    if (chunk == null) {
-      if (cost == null) cost = SplitCost.FREE;
-
-      var param = new SplitParam(cost);
-      chunk = new SplitChunk(writer.indent + 2, param, " ");
-    }
-
-    writer.split(chunk);
+  /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
+  /// omitted, defaults to [SplitCost.FREE].
+  void split({int cost, SplitParam param}) {
+    writer.split(cost: cost, param: param, text: " ");
   }
 
-  /// Outputs a [SplitChunk] that is the empty string when unsplit and indents
-  /// two levels (i.e. a wrapped statement) when split.
+  /// Writes a split with [cost] that is the empty string when unsplit.
   void zeroSplit([int cost = SplitCost.FREE]) {
-    var param = new SplitParam(cost);
-    writer.split(new SplitChunk(writer.indent + 2, param));
+    writer.split(cost: cost);
   }
 
   /// Increase indentation by [n] levels.

@@ -20,8 +20,7 @@ void reformat() {
   var source = before.value;
 
   try {
-    var formatter = new CodeFormatter();
-    after.value = formatter.format(CodeKind.STATEMENT, source).source;
+    after.value = new DartFormatter().format(source);
     return;
   } on FormatterException catch(err) {
     // Do nothing.
@@ -29,10 +28,8 @@ void reformat() {
 
   // Maybe it's a statement.
   try {
-    var formatter = new CodeFormatter();
-    after.value = formatter.format(CodeKind.COMPILATION_UNIT, source).source;
+    after.value = new DartFormatter().formatStatement(source);
   } on FormatterException catch(err) {
-    // Maybe it's a statement.
     after.value = "Format failed:\n$err";
   }
 }

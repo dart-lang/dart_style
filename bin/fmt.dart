@@ -44,7 +44,7 @@ void formatUnit(String source, [int pageWidth = 40]) {
 }
 
 void drawRuler(String label, int width) {
-  var padding = " " * (width - label.length + 2);
+  var padding = " " * (width - label.length - 1);
   print("$label:$padding|");
 }
 

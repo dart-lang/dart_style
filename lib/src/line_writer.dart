@@ -98,6 +98,10 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _spans = <SpanStartChunk>[];
 
+  /// The number of levels of expression nesting surrounding the chunks
+  /// currently being written.
+  int _expressionNesting = 0;
+
   LineWriter(this._formatter, this.buffer) {
     indent = _formatter.indent;
   }
@@ -186,42 +190,31 @@ class LineWriter {
     }
   }
 
-  void split(SplitChunk split) {
-    // If this split is associated with a multisplit that's already been split,
-    // treat it like a hard newline.
-    var isSplit = false;
-    for (var multisplit in _multisplits) {
-      if (multisplit.isSplit && multisplit.param == split.param) {
-        isSplit = true;
-        break;
-      }
-    }
+  void split({int cost, SplitParam param, String text}) {
+    if (cost == null) cost = SplitCost.FREE;
+    if (param == null) param = new SplitParam(cost);
+    if (text == null) text = "";
 
-    if (isSplit) {
-      // The line up to the split is complete now.
-      if (_currentLine != null) {
-        _finishLine(_currentLine);
-        buffer.write(_formatter.lineEnding);
-      }
-
-      // Use the split's indent for the next line.
-      _currentLine = new Line(indent: split.indent);
-      return;
-    }
-
-    _ensureLine();
-    _currentLine.chunks.add(split);
+    _writeSplit(new SplitChunk(param, indent, _expressionNesting, text));
   }
 
   void startSpan() {
     _ensureLine();
     _spans.add(new SpanStartChunk());
     _currentLine.chunks.add(_spans.last);
+
+    // Spans are used for argument lists which increase expression nesting for
+    // indentation.
+    _expressionNesting++;
   }
 
   void endSpan(int cost) {
     _ensureLine();
     _currentLine.chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
+
+    // Spans are used for argument lists which increase expression nesting for
+    // indentation.
+    _expressionNesting--;
   }
 
   void startMultisplit([int cost = SplitCost.FREE]) {
@@ -229,7 +222,8 @@ class LineWriter {
   }
 
   void multisplit({int indent: 0, String text: ""}) {
-    split(new SplitChunk(this.indent + indent, _multisplits.last.param, text));
+    _writeSplit(new SplitChunk(
+        _multisplits.last.param, this.indent + indent, -1, text));
   }
 
   void endMultisplit() {
@@ -269,6 +263,33 @@ class LineWriter {
   /// Finish writing the last line.
   void end() {
     if (_currentLine != null) _finishLine(_currentLine);
+  }
+
+  void _writeSplit(SplitChunk split) {
+    // If this split is associated with a multisplit that's already been split,
+    // treat it like a hard newline.
+    var isSplit = false;
+    for (var multisplit in _multisplits) {
+      if (multisplit.isSplit && multisplit.param == split.param) {
+        isSplit = true;
+        break;
+      }
+    }
+
+    if (isSplit) {
+      // The line up to the split is complete now.
+      if (_currentLine != null) {
+        _finishLine(_currentLine);
+        buffer.write(_formatter.lineEnding);
+      }
+
+      // Use the split's indent for the next line.
+      _currentLine = new Line(indent: split.indent);
+      return;
+    }
+
+    _ensureLine();
+    _currentLine.chunks.add(split);
   }
 
   /// Lazily initializes [_currentLine] if not already created.

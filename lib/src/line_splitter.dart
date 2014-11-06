@@ -6,18 +6,16 @@ library dart_style.src.line_printer;
 
 import 'line.dart';
 
+const _INVALID_SPLITS = -1;
+
 /// Takes a single [Line] which may contain multiple [SplitParam]s and
 /// [SplitRule]s and determines the best way to split it into multiple physical
 /// lines of output that fit within the page width (if possible).
 ///
-/// Finding the best solution to this problem is exponential in the number of
-/// splits (which can be large for method calls with a large number of
-/// parameters) so a naïve brute force solution won't work here. We also can't
-/// do something like path-finding since we don't know what the best solution
-/// will be ahead of time.
-///
-/// Instead, this uses dynamic programming to avoid recalculating partial
-/// results. The basic algorithm works like so:
+/// Trying all possible combinations is exponential in the number of splits
+/// (which can be large for method calls with a large number of parameters) so
+/// a brute force solution won't work. Instead, this uses dynamic programming
+/// to avoid recalculating partial results. The basic algorithm works like so:
 ///
 /// Given a suffix of the entire line, we walk over the tokens keeping track
 /// of any splits we find until we fill the page width (or run out of line).
@@ -31,11 +29,26 @@ import 'line.dart';
 /// that's the best solution.
 ///
 /// The fact that this recurses while only removing a small prefix from the
-/// line (the chunks before the first split), this is exponential. Thankfully,
-/// though, the best set of splits for a suffix of the line are independent of
-/// anything that comes before it. So, whenever we calculate an ideal set of
-/// splits for some suffix, we memoize it. When later recursive calls descend
-/// to that suffix again, we can reuse it.
+/// line (the chunks before the first split), means this is exponential.
+/// Thankfully, though, the best set of splits for a suffix of the line depends
+/// only on:
+///
+///  -   The starting position of the suffix.
+///  -   The set of expression nesting levels currently being split up to that
+///      point.
+///
+///      For example, consider the following:
+///
+///          outer(inner(argument1, argument2, argument3));
+///
+///      If the suffix we are considering is "argument2, ..." then we need to
+///      know if we previously split after "outer(", "inner(", or both. The
+///      answer determines how much leading indentation "argument2, ..." will
+///      have.
+///
+/// Thus, whenever we calculate an ideal set of splits for some suffix, we
+/// memoize it. When later recursive calls descend to that suffix again, we can
+/// reuse it.
 class LineSplitter {
   /// The string used for newlines.
   final String _lineEnding;
@@ -47,13 +60,8 @@ class LineSplitter {
   final Line _line;
 
   /// Memoization table for the best set of splits for the remainder of the
-  /// line starting at a given chunk index.
-  ///
-  /// Keys are chunk indices, and values are the best set of split params to
-  /// split the line starting at that chunk. The key will always be a chunk
-  /// immediately following a split chunk, and the memoized set assumes the
-  /// indentation of that previous split.
-  final _bestSplits = <int, Set<SplitParam>>{};
+  /// line following a given prefix.
+  final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
   /// Creates a new splitter that tries to fit lines within [pageWidth].
   LineSplitter(this._lineEnding, this._pageWidth, this._line);
@@ -68,7 +76,7 @@ class LineSplitter {
       return _printUnsplit(buffer);
     }
 
-    _applySplits(_findBestSplits(0, _line.indent), buffer);
+    _applySplits(_findBestSplits(new LinePrefix()), buffer);
   }
 
   /// Prints [line] without any splitting.
@@ -78,16 +86,18 @@ class LineSplitter {
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
-  /// starting at [startChunk] with initial indentation [indent].
-  Set<SplitParam> _findBestSplits(int startChunk, int indent) {
-    var memoized = _bestSplits[startChunk];
+  /// following [prefix].
+  Set<SplitParam> _findBestSplits(LinePrefix prefix) {
+    var memoized = _bestSplits[prefix];
     if (memoized != null) return memoized;
+
+    var indent = prefix.getNextLineIndent(_line);
 
     // Find the set of splits within the first line. At least one of them must
     // be split if the end result is going to fit within the page width.
     var length = indent * SPACES_PER_INDENT;
     var firstLineSplitIndices = [];
-    for (var i = startChunk; i < _line.chunks.length; i++) {
+    for (var i = prefix.length; i < _line.chunks.length; i++) {
       var chunk = _line.chunks[i];
       if (chunk is SplitChunk) firstLineSplitIndices.add(i);
 
@@ -110,7 +120,19 @@ class LineSplitter {
 
     for (var i in firstLineSplitIndices) {
       var split = _line.chunks[i] as SplitChunk;
-      var remaining = _findBestSplits(i + 1, split.indent);
+
+      var longerPrefix = prefix.expand(_line, i + 1);
+
+      // If we can't split at this chunk without breaking the nesting stack,
+      // then ignore this possible solution.
+      if (longerPrefix == null) continue;
+
+      var remaining = _findBestSplits(longerPrefix);
+
+      // If there were no valid solutions for this suffix (which usually means
+      // the prefix has a nesting stack that doesn't work with later lines),
+      // then this prefix can't be used.
+      if (remaining == null) continue;
 
       // TODO(rnystrom): Consider a specialized persistent set type for the
       // param sets. We create new sets by appending a single item to an
@@ -120,15 +142,11 @@ class LineSplitter {
       var splits = remaining.toSet();
       splits.add(split.param);
 
-      // TODO(rnystrom): Instead of recalculating the cost from scratch,
-      // consider memoizing these too.
-      var cost = _evaluateCost(startChunk, indent, splits);
+      var cost = _evaluateCost(prefix, indent, splits);
 
-      // TODO(rnystrom): We can remove this check if we have a better way of
-      // checking for splits inside multisplits.
       // If the set of splits is invalid (usually meaning an unsplit collection
-      // containing a split, then ignore it.
-      if (cost == null) continue;
+      // containing a split), then ignore it.
+      if (cost == _INVALID_SPLITS) continue;
 
       if (lowestCost == null || cost < lowestCost) {
         lowestCost = cost;
@@ -136,7 +154,7 @@ class LineSplitter {
       }
     }
 
-    _bestSplits[startChunk] = bestSplits;
+    _bestSplits[prefix] = bestSplits;
 
     return bestSplits;
   }
@@ -144,9 +162,9 @@ class LineSplitter {
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of params.
   ///
-  /// Returns the cost where a higher number is a worse set of splits or `null`
-  /// if the set of splits is completely invalid.
-  int _evaluateCost(int startChunk, int indent, Set<SplitParam> splits) {
+  /// Returns the cost where a higher number is a worse set of splits or
+  /// [_INVALID_SPLITS] if the set of splits is completely invalid.
+  int _evaluateCost(LinePrefix prefix, int indent, Set<SplitParam> splits) {
     // Rate this set of lines.
     var cost = 0;
 
@@ -204,7 +222,9 @@ class LineSplitter {
       line++;
     }
 
-    for (var i = startChunk; i < _line.chunks.length; i++) {
+    var indenter = new Indenter(prefix._nesting);
+
+    for (var i = prefix.length; i < _line.chunks.length; i++) {
       var chunk = _line.chunks[i];
 
       if (chunk is SpanStartChunk) {
@@ -217,11 +237,14 @@ class LineSplitter {
           endLine();
 
           // Start the new line.
-          length = chunk.indent * SPACES_PER_INDENT;
+          indent = indenter.handleSplit(chunk);
+          if (indent == _INVALID_SPLITS) return _INVALID_SPLITS;
+
+          length = indent * SPACES_PER_INDENT;
         } else {
           // If we've seen the same param on a previous line, the unsplit
           // multisplit got split, so this isn't valid.
-          if (previousParams.contains(chunk.param)) return null;
+          if (previousParams.contains(chunk.param)) return _INVALID_SPLITS;
           thisLineParams.add(chunk.param);
 
           length += chunk.text.length;
@@ -244,11 +267,13 @@ class LineSplitter {
   void _applySplits(Set<SplitParam> splits, StringBuffer buffer) {
     buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
 
+    var indenter = new Indenter(new NestingStack());
+
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
       if (chunk is SplitChunk && splits.contains(chunk.param)) {
         buffer.write(_lineEnding);
-        buffer.write(" " * (chunk.indent * SPACES_PER_INDENT));
+        buffer.write(" " * (indenter.handleSplit(chunk) * SPACES_PER_INDENT));
       } else {
         buffer.write(chunk.text);
       }
@@ -258,7 +283,7 @@ class LineSplitter {
   /// Prints [line] to stdout with split chunks made visible.
   ///
   /// This is just for debugging.
-  void _dumpLine(Line line, Set<SplitParam> splits) {
+  void _dumpLine(Set<SplitParam> splits) {
     var cyan = '\u001b[36m';
     var gray = '\u001b[1;30m';
     var green = '\u001b[32m';
@@ -268,10 +293,10 @@ class LineSplitter {
 
     var buffer = new StringBuffer()
         ..write(gray)
-        ..write("| " * line.indent)
+        ..write("| " * _line.indent)
         ..write(none);
 
-    for (var chunk in line.chunks) {
+    for (var chunk in _line.chunks) {
       if (chunk is SpanStartChunk) {
         buffer.write("$cyan‹$none");
       } else if (chunk is SpanEndChunk) {
@@ -282,13 +307,227 @@ class LineSplitter {
         var split = chunk as SplitChunk;
         var color = splits.contains(split.param) ? green : gray;
 
-        buffer
-            ..write("$color‹")
-            ..write(split.param.cost)
-            ..write("›$none");
+        buffer.write("$color‹${split.param.cost}");
+        if (split.nesting != -1) {
+          buffer.write(":${split.nesting}");
+        }
+        buffer.write("›$none");
       }
     }
 
     print(buffer);
+  }
+}
+
+/// Keeps track of indentation caused by wrapped expressions within a line.
+class Indenter {
+  /// The current nesting stack.
+  NestingStack _nesting;
+
+  Indenter(this._nesting);
+
+  /// Updates the indentation state with [split], which should be an enabled
+  /// split.
+  ///
+  /// Returns the number of levels of indentation the next line should have.
+  /// Returns [_INVALID_SPLITS] if the split is not allowed for the current
+  /// indentation stack.
+  int handleSplit(SplitChunk split) {
+    var indent = split.indent;
+
+    // If this split does not indent (for example, in a multi-line collection),
+    // do not include any nesting indentation.
+    if (split.nesting != -1) {
+      _nesting = _nesting.modify(split.nesting);
+      if (_nesting == null) return _INVALID_SPLITS;
+
+      // Add four spaces of indentation (two levels) for each level of nesting
+      // (except for the sentinel -1 at the beginning.
+      indent += _nesting.indent;
+    }
+
+    return indent;
+  }
+}
+
+/// A prefix of a [Line], which in turn can be considered a key to describe
+/// the suffix of the remaining line that follows it.
+///
+/// This is used by the splitter to memoize suffixes whose best splits have
+/// previously been calculated. For each unique [LinePrefix], there will be a
+/// single set of best splits for the remainder of the line following it.
+class LinePrefix {
+  /// The number of chunks in the prefix.
+  ///
+  /// The remainder of the line will the chunks that start at index [length].
+  final int length;
+
+  /// The nested expressions in the prefix that are still open at the beginning
+  /// of the suffix.
+  ///
+  /// For example, if the line is `outer(inner(argument))`, and the prefix is
+  /// `outer(inner(`, the nesting stack will be two levels deep.
+  final NestingStack _nesting;
+
+  /// Creates a new zero-length prefix whose suffix is the entire line.
+  LinePrefix() : this._(0, new NestingStack());
+
+  LinePrefix._(this.length, this._nesting) {
+    if (_nesting == null) throw "!";
+  }
+
+  bool operator ==(other) {
+    if (other is! LinePrefix) return false;
+
+    return length == other.length && _nesting == other._nesting;
+  }
+
+  int get hashCode => length.hashCode ^ _nesting.hashCode;
+
+  /// Create a new [LinePrefix] containing the same nesting stack as this one
+  /// but expanded to [length].
+  ///
+  /// [length] is assumed to point to a chunk immediately after a [SplitChunk].
+  /// The nesting of that chunk modifies the new prefix's nesting stack.
+  ///
+  /// Returns `null` if the new split chunk results in an invalid prefix. See
+  /// [NestingStack.modify] for details.
+  LinePrefix expand(Line line, int length) {
+    var split = line.chunks[length - 1] as SplitChunk;
+    var nesting = _nesting.modify(split.nesting);
+    if (nesting == null) return null;
+
+    return new LinePrefix._(length, nesting);
+  }
+
+  /// Gets the leading indentation of the newline that immediately follows
+  /// this prefix.
+  ///
+  /// Takes into account the indentation of the previous split and any
+  /// additional indentation from wrapped nested expressions.
+  int getNextLineIndent(Line line) {
+    // TODO(rnystrom): This could be cached at construction time, which may be
+    // faster.
+    // Get the initial indentation of the line immediately after the prefix,
+    // ignoring any extra indentation caused by nested expressions.
+    var indent;
+    if (length == 0) {
+      indent = line.indent;
+    } else {
+      indent = (line.chunks[length - 1] as SplitChunk).indent;
+    }
+
+    indent += _nesting.indent;
+
+    return indent;
+  }
+}
+
+/// Maintains a stack of nested expressions that have currently been split.
+///
+/// A single statement may have multiple different levels of indentation based
+/// on the expression nesting level at the point where the line is broken. For
+/// example:
+///
+///     someFunction(argument, argument,
+///         innerFunction(argument,
+///             innermost), argument);
+///
+/// This means that when splitting a line, we need to keep track of the nesting
+/// level of the previous line(s) to determine how far the next line must be
+/// indented.
+///
+/// This class is a persistent collection. Each instance is immutable and
+/// methods to modify it return a new collection.
+class NestingStack {
+  /// The number of indentation levels for the current nesting.
+  final int indent;
+
+  final NestingStack _parent;
+  final int _depth;
+
+  NestingStack() : this._(null, -1, 0);
+
+  NestingStack._(this._parent, this._depth, this.indent);
+
+  /// LinePrefixes implement their own value equality to ensure that two
+  /// prefixes with the same nesting stack are considered equal even if the
+  /// nesting occurred from different splits.
+  ///
+  /// For example, consider these two prefixes with `^` marking where splits
+  /// have been applied:
+  ///
+  ///     fn( first, second, ...
+  ///        ^
+  ///     fn( first, second, ...
+  ///               ^
+  ///
+  /// These are equivalent from the view of the suffix because they have the
+  /// same nesting stack, even though the nesting came from different tokens.
+  /// This lets us reuse memoized suffixes more frequently when solving.
+  bool operator ==(other) {
+    if (other is! NestingStack) return false;
+
+    var self = this;
+    while (self != null) {
+      if (self._depth != other._depth) return false;
+      self = self._parent;
+      other = other._parent;
+
+      // They should be the same length.
+      if ((self == null) != (other == null)) return false;
+    }
+
+    return true;
+  }
+
+  int get hashCode {
+    // TODO(rnystrom): Is it worth iterating throught the stack?
+    return indent.hashCode ^ _depth.hashCode;
+  }
+
+  /// Modifies the nesting stack by taking into account a split that occurs at
+  /// [depth].
+  ///
+  /// If [depth] is -1, that indicates a split that does not affect nesting --
+  /// this is primarily multi-line collections.
+  ///
+  /// Returns a new nesting stack (which may the same as `this` if no change
+  /// was needed). Returns `null` if the split is not allowed for the current
+  /// indentation stack. This can happen if a level of nesting is skipped on a
+  /// previous line but then needed on a later line. For example:
+  ///
+  ///     // 40 columns                           |
+  ///     callSomeMethod(innerFunction(argument,
+  ///         argument, argument), argument, ...
+  ///
+  /// Here, the second line is indented one level even though it is two levels
+  /// of nesting deep (the `(` after `callSomeMethod` and `innerFunction`).
+  /// When trying to indent the third line, we are no only one level in, but
+  /// there is no level of indentation on the stack that corresponds to that.
+  /// When that happens, we just consider this an invalid solution and discard
+  /// it.
+  NestingStack modify(int depth) {
+    if (depth == -1) return this;
+
+    if (_depth == depth) return this;
+
+    if (_depth < depth) {
+      // This expression is deeper than the last split, so add it to the
+      // stack.
+      return new NestingStack._(this, depth, indent + 2);
+    }
+
+    // Pop items off the stack until we find the level we are now at.
+    var stack = this;
+    while (stack != null) {
+      if (stack._depth == depth) return stack;
+
+      stack = stack._parent;
+    }
+
+    // If we got here, the level wasn't found. That means there is no correct
+    // stack level to pop to, since the stack skips past our indentation level.
+    return null;
   }
 }

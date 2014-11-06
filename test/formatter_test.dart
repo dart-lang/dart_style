@@ -112,12 +112,6 @@ void testDirectory(String name) {
           expectedOutput += lines[i] + "\n";
         }
 
-        // TODO(rnystrom): Temporary until I have all the tests passing.
-        if (description.contains("SKIP")) {
-          print("SKIPPING $name ${p.basename(entry.path)} $description");
-          continue;
-        }
-
         test(description, () {
           var formatter = new DartFormatter(pageWidth: pageWidth);
 

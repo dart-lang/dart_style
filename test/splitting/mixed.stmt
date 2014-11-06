@@ -18,3 +18,24 @@ Stream readInput(AssetId id) => future((input) => input.read());
 <<<
 Stream readInput(AssetId id) =>
     future((input) => input.read());
+>>> nested expression indentation
+someFunctionName(argument, argument, argument,
+    someOtherFunction(argument, argument, arg));
+<<<
+someFunctionName(argument, argument,
+    argument, someOtherFunction(
+        argument, argument, arg));
+>>> does not extra indent when multiple levels of nesting happen on one line
+someFunctionName(argument, argument, argument,
+    some(other(function(argument, argument, arg))));
+<<<
+someFunctionName(argument, argument,
+    argument, some(other(function(
+        argument, argument, arg))));
+>>> forces extra indent and lines, if later line needs it
+callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
+<<<
+callSomeMethod(
+    innerFunction(
+        argument, argument, argument),
+    argument, argument, argument);
