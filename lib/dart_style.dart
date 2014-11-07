@@ -5,3 +5,4 @@
 library dart_style;
 
 export 'src/dart_formatter.dart';
+export 'src/formatter_exception.dart';
