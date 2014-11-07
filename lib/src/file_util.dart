@@ -15,12 +15,21 @@ const DEFAULT_OVERWRITE = false;
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
-void processDirectory(Directory directory, {bool overwrite, int lineLength}) {
+void processDirectory(Directory directory,
+    {bool overwrite, int lineLength, bool followLinks: false}) {
   print("Formatting directory ${directory.path}:");
-  for (var entry in directory.listSync(recursive: true)) {
-    if (!entry.path.endsWith(".dart")) continue;
+  for (var entry in
+      directory.listSync(recursive: true, followLinks: followLinks)) {
 
     var relative = p.relative(entry.path, from: directory.path);
+
+    if (entry is Link) {
+      print('Skipping link: $relative');
+      continue;
+    }
+
+    if (!entry.path.endsWith(".dart")) continue;
+
     processFile(
         entry, label: relative, overwrite: overwrite, lineLength: lineLength);
   }

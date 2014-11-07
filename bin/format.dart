@@ -13,6 +13,9 @@ void main(List<String> args) {
   parser.addFlag("overwrite", abbr: "w", negatable: false,
       help: "Overwrite input files with formatted output.\n"
             "If unset, prints results to standard output.");
+  parser.addFlag("follow-links", abbr: 'f', negatable: false,
+      help: "Follow links to files and directories.\n"
+            "If unset, links will be ignored.");
 
   var options = parser.parse(args);
 
@@ -22,6 +25,7 @@ void main(List<String> args) {
   }
 
   var overwrite = options["overwrite"];
+  var followLinks = options["follow-links"];
 
   int lineLength;
 
@@ -44,7 +48,8 @@ void main(List<String> args) {
   for (var path in options.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      processDirectory(directory, overwrite: overwrite, lineLength: lineLength);
+      processDirectory(directory, overwrite: overwrite, lineLength: lineLength,
+          followLinks: followLinks);
       continue;
     }
 
