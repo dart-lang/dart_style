@@ -4,7 +4,6 @@
 
 library dart_style.src.code_formatter;
 
-import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/parser.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
