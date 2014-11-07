@@ -1,12 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:path/path.dart' as p;
-
-import 'package:dart_style/dart_style.dart';
-
-bool overwrite = false;
-int lineLength = 80;
+import 'package:dart_style/src/file_util.dart';
 
 void main(List<String> args) {
   var parser = new ArgParser();
@@ -26,7 +21,9 @@ void main(List<String> args) {
     return;
   }
 
-  overwrite = options["overwrite"];
+  var overwrite = options["overwrite"];
+
+  int lineLength;
 
   try {
     lineLength = int.parse(options["line-length"]);
@@ -47,13 +44,13 @@ void main(List<String> args) {
   for (var path in options.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      processDirectory(directory);
+      processDirectory(directory, overwrite: overwrite, lineLength: lineLength);
       continue;
     }
 
     var file = new File(path);
     if (file.existsSync()) {
-      processFile(file);
+      processFile(file, overwrite: overwrite, lineLength: lineLength);
     } else {
       stderr.writeln('No file or directory found at "$path".');
     }
@@ -75,34 +72,4 @@ Usage: dartfmt [-l <line length>] <files or directories...>
 
 ${parser.usage}
 """);
-}
-
-/// Runs the formatter on every .dart file in [path] (and its subdirectories),
-/// and replaces them with their formatted output.
-void processDirectory(Directory directory) {
-  print("Formatting directory ${directory.path}:");
-  for (var entry in directory.listSync(recursive: true)) {
-    if (!entry.path.endsWith(".dart")) continue;
-
-    var relative = p.relative(entry.path, from: directory.path);
-    processFile(entry, relative);
-  }
-}
-
-/// Runs the formatter on [file].
-void processFile(File file, [String label]) {
-  if (label == null) label = file.path;
-
-  var formatter = new DartFormatter(pageWidth: lineLength);
-  try {
-    var output = formatter.format(file.readAsStringSync());
-    if (overwrite) {
-      file.writeAsStringSync(output);
-      print("Formatted $label");
-    } else {
-      print(output);
-    }
-  } on FormatterException catch (err) {
-    stderr.writeln("Failed $label:\n$err");
-  }
 }

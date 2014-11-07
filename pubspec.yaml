@@ -1,15 +1,14 @@
 name: dart_style
 version: 0.1.0-dev
+author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
-author: "Dart Team <misc@dartlang.org>"
 homepage: https://github.com/dart-lang/dart_style
 dependencies:
-  analyzer: ">=0.22.0 <0.23.0"
-  args: ">=0.12.1 <0.13.0"
-  path: ">=1.0.0 <2.0.0"
+  analyzer: '>=0.22.0 <0.23.0'
+  args: '>=0.12.1 <0.13.0'
+  path: '>=1.0.0 <2.0.0'
 dev_dependencies:
-  browser: ">=0.10.0 <0.11.0"
-  unittest: ">=0.11.0 <0.12.0"
+  browser: '>=0.10.0 <0.11.0'
+  unittest: '>=0.11.0 <0.12.0'
 executables:
   dartfmt: format
-  
