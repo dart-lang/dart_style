@@ -28,7 +28,7 @@ void processDirectory(Directory directory,
       continue;
     }
 
-    if (!entry.path.endsWith(".dart")) continue;
+    if (entry is! File || !entry.path.endsWith(".dart")) continue;
 
     processFile(
         entry, label: relative, overwrite: overwrite, lineLength: lineLength);

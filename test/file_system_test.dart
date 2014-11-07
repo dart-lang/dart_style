@@ -36,6 +36,21 @@ void main() {
           'formatter.');
   });
 
+  test('Directories ending in ".dart" are valid', () {
+    d.dir('code.dart', [
+      d.file('a.dart', _UNFORMATTED_CODE),
+    ]).create();
+
+    schedule(() {
+      var dir = new Directory(p.join(d.defaultRoot));
+      processDirectory(dir, overwrite: true);
+    }, 'Run formatter.');
+
+    d.dir('code.dart', [
+      d.file('a.dart', _FORMATTED_CODE)
+    ]).validate();
+  });
+
   test("Don't format contents of sym links by default", () {
     d.dir('code', [
       d.file('a.dart', _UNFORMATTED_CODE),
