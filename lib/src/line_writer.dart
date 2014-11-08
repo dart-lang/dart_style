@@ -227,8 +227,8 @@ class LineWriter {
     _expressionNesting--;
   }
 
-  void startMultisplit([int cost = SplitCost.FREE]) {
-    _multisplits.add(new Multisplit(cost));
+  void startMultisplit({int cost: SplitCost.FREE, bool separable}) {
+    _multisplits.add(new Multisplit(cost, separable: separable));
   }
 
   void multisplit({int indent: 0, String text: ""}) {
@@ -315,8 +315,8 @@ class LineWriter {
   void _splitMultisplits() {
     var splitParams = new Set();
     for (var multisplit in _multisplits) {
-      multisplit.isSplit = true;
-      splitParams.add(multisplit.param);
+      multisplit.split();
+      if (multisplit.isSplit) splitParams.add(multisplit.param);
     }
 
     // TODO(rnystrom): Can optimize this to avoid the copying if there are no

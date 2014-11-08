@@ -171,19 +171,67 @@ class SplitCost {
 /// Handles a series of [SplitChunks] that all either split or don't split
 /// together.
 ///
-/// This is used for list and map literals, and for a series of the same binary
-/// operator. In all of these, either the entire expression will be a single
-/// line, or it will be fully split into multiple lines, with no intermediate
-/// states allowed.
+/// This is used for:
+///
+/// * Map and list literals.
+/// * A series of the same binary operator.
+/// * A series of chained method calls.
+///
+/// In all of these, either the entire expression will be a single line, or it
+/// will be fully split into multiple lines, with no intermediate states
+/// allowed.
+///
+/// There is still the question of how a multisplit handles an explicit newline
+/// (usually from a function literal subexpression) contained within the
+/// multisplit. There are two variations: separable and inseparable. Most are
+/// the latter.
+///
+/// An inseparable multisplit treats a hard newline as forcing the entire
+/// multisplit to split, like so:
+///
+///     [
+///       () {
+///         // This forces the list to be split.
+///       }
+///     ]
+///
+/// A separable one breaks the multisplit into two independent multisplits, each
+/// of which may or may not be split based on its own range. For example:
+///
+///     compiler
+///         .somethingLong()
+///         .somethingLong()
+///         .somethingLong((_) {
+///       // The calls above this split because they are long.
+///     }).a().b();
+///     The trailing calls are short enough to not split.
 class Multisplit {
   /// The [SplitParam] that controls all of the split chunks.
-  final SplitParam param;
+  SplitParam get param => _param;
+  SplitParam _param;
 
   /// `true` if a hard newline has forced this multisplit to be split.
   ///
   /// Initially `false`.
-  bool isSplit = false;
+  bool get isSplit => _isSplit;
+  bool _isSplit = false;
 
-  Multisplit(int cost)
-      : param = new SplitParam(cost);
+  final bool _separable;
+
+  Multisplit(int cost, {bool separable})
+      : _param = new SplitParam(cost),
+        _separable = separable != null ? separable : false;
+
+  /// Handles a newline occurring in the middle of this multisplit.
+  ///
+  /// If the multisplit is separable, this creates a new param so the previous
+  /// split chunks can vary independently of later ones. Otherwise, it just
+  /// marks this multisplit as being split.
+  void split() {
+    if (_separable) {
+      _param = new SplitParam(param.cost);
+    } else {
+      _isSplit = true;
+    }
+  }
 }

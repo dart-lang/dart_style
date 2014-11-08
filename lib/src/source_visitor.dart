@@ -123,7 +123,7 @@ class SourceVisitor implements AstVisitor {
     addOperands(node.rightOperand);
 
     // TODO(rnystrom: Use different costs for different operator precedences.
-    _writer.startMultisplit(SplitCost.BINARY_OPERATOR);
+    _writer.startMultisplit(cost: SplitCost.BINARY_OPERATOR);
 
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
@@ -783,15 +783,64 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    // Make sure it has an explicit receiver.
-    if (node.period != null) {
-      visit(node.target);
-      zeroSplit(SplitCost.BEFORE_PERIOD);
-      token(node.period);
+    // TODO(rnystrom): Do we need to handle cascdes here?
+
+    // If we have a single method call, allow it to split at "." but don't
+    // require it to if the whole expression is multiline. For example:
+    //
+    //     receiver.method(
+    //         some, very, long, argument, list);
+    if (node.target is! MethodInvocation) {
+      if (node.period != null) {
+        visit(node.target);
+        zeroSplit(SplitCost.BEFORE_PERIOD);
+        token(node.period);
+      }
+
+      visit(node.methodName);
+      visit(node.argumentList);
+      return;
     }
 
-    visit(node.methodName);
-    visit(node.argumentList);
+    // With a chain of method calls like `foo.bar.baz.bang`, they either all
+    // split or none of them do.
+    _writer.startMultisplit(cost: SplitCost.BEFORE_PERIOD, separable: true);
+
+    // Recursively walk the chain of method calls.
+    var depth = 0;
+    visitInvocation(invocation) {
+      depth++;
+      var hasTarget = true;
+
+      if (invocation.target is MethodInvocation) {
+        visitInvocation(invocation.target);
+      } else if (invocation.period != null) {
+        visit(invocation.target);
+      } else {
+        hasTarget = false;
+      }
+
+      if (hasTarget) {
+        // TODO(rnystrom): Probably need to handle expression nesting
+        // differently here. multisplit() creates a -1 nested split.
+        _writer.multisplit(indent: 2);
+        token(invocation.period);
+      }
+
+      // End the multisplit right at the last ".". This allows the last
+      // argument list to be multi-line without forcing the multisplit, as in:
+      //
+      //     some.chained.call(() {
+      //       ...
+      //     });
+      depth--;
+      if (depth == 0) _writer.endMultisplit();
+
+      visit(invocation.methodName);
+      visit(invocation.argumentList);
+    }
+
+    visitInvocation(node);
   }
 
   visitNamedExpression(NamedExpression node) {

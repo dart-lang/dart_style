@@ -39,3 +39,15 @@ callSomeMethod(
     innerFunction(
         argument, argument, argument),
     argument, argument, argument);
+>>> function inside a collection
+[item, obj.method(argument).method(argument).method(() {body;}).another().another()];
+<<<
+[
+  item,
+  obj
+      .method(argument)
+      .method(argument)
+      .method(() {
+    body;
+  }).another().another()
+];
