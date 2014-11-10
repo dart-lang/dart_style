@@ -1,12 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:path/path.dart' as p;
-
-import 'package:dart_style/dart_style.dart';
-
-bool overwrite = false;
-int lineLength = 80;
+import 'package:dart_style/src/io.dart';
 
 void main(List<String> args) {
   var parser = new ArgParser();
@@ -18,6 +13,9 @@ void main(List<String> args) {
   parser.addFlag("overwrite", abbr: "w", negatable: false,
       help: "Overwrite input files with formatted output.\n"
             "If unset, prints results to standard output.");
+  parser.addFlag("follow-links", negatable: false,
+      help: "Follow links to files and directories.\n"
+            "If unset, links will be ignored.");
 
   var options = parser.parse(args);
 
@@ -26,10 +24,13 @@ void main(List<String> args) {
     return;
   }
 
-  overwrite = options["overwrite"];
+  var overwrite = options["overwrite"];
+  var followLinks = options["follow-links"];
+
+  int pageWidth;
 
   try {
-    lineLength = int.parse(options["line-length"]);
+    pageWidth = int.parse(options["line-length"]);
   } on FormatException catch (_) {
     printUsage(parser, '--line-length must be an integer, was '
                        '"${options['line-length']}".');
@@ -47,13 +48,14 @@ void main(List<String> args) {
   for (var path in options.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      processDirectory(directory);
+      processDirectory(directory, overwrite: overwrite, pageWidth: pageWidth,
+          followLinks: followLinks);
       continue;
     }
 
     var file = new File(path);
     if (file.existsSync()) {
-      processFile(file);
+      processFile(file, overwrite: overwrite, pageWidth: pageWidth);
     } else {
       stderr.writeln('No file or directory found at "$path".');
     }
@@ -75,34 +77,4 @@ Usage: dartfmt [-l <line length>] <files or directories...>
 
 ${parser.usage}
 """);
-}
-
-/// Runs the formatter on every .dart file in [path] (and its subdirectories),
-/// and replaces them with their formatted output.
-void processDirectory(Directory directory) {
-  print("Formatting directory ${directory.path}:");
-  for (var entry in directory.listSync(recursive: true)) {
-    if (!entry.path.endsWith(".dart")) continue;
-
-    var relative = p.relative(entry.path, from: directory.path);
-    processFile(entry, relative);
-  }
-}
-
-/// Runs the formatter on [file].
-void processFile(File file, [String label]) {
-  if (label == null) label = file.path;
-
-  var formatter = new DartFormatter(pageWidth: lineLength);
-  try {
-    var output = formatter.format(file.readAsStringSync());
-    if (overwrite) {
-      file.writeAsStringSync(output);
-      print("Formatted $label");
-    } else {
-      print(output);
-    }
-  } on FormatterException catch (err) {
-    stderr.writeln("Failed $label:\n$err");
-  }
 }
