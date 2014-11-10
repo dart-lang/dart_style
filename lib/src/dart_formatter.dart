@@ -34,7 +34,8 @@ class DartFormatter {
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  DartFormatter({this.lineEnding, this.pageWidth: 80, this.indent: 0});
+  DartFormatter({this.lineEnding, int pageWidth, this.indent: 0})
+      : this.pageWidth = (pageWidth == null) ? 80 : pageWidth;
 
   /// Format the given [source] string containing an entire Dart compilation
   /// unit.

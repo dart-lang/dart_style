@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.file_util;
+library dart_style.src.io;
 
 import 'dart:io';
 
@@ -10,13 +10,10 @@ import 'package:path/path.dart' as p;
 
 import 'package:dart_style/dart_style.dart';
 
-const DEFAULT_LINE_LENGTH = 80;
-const DEFAULT_OVERWRITE = false;
-
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
 void processDirectory(Directory directory,
-    {bool overwrite, int lineLength, bool followLinks: false}) {
+    {bool overwrite, int pageWidth, bool followLinks: false}) {
   print("Formatting directory ${directory.path}:");
   for (var entry in
       directory.listSync(recursive: true, followLinks: followLinks)) {
@@ -31,17 +28,16 @@ void processDirectory(Directory directory,
     if (entry is! File || !entry.path.endsWith(".dart")) continue;
 
     processFile(
-        entry, label: relative, overwrite: overwrite, lineLength: lineLength);
+        entry, label: relative, overwrite: overwrite, pageWidth: pageWidth);
   }
 }
 
 /// Runs the formatter on [file].
-void processFile(File file, {String label, bool overwrite, int lineLength}) {
+void processFile(File file, {String label, bool overwrite, int pageWidth}) {
   if (label == null) label = file.path;
-  if (overwrite == null) overwrite = DEFAULT_OVERWRITE;
-  if (lineLength == null) lineLength = DEFAULT_LINE_LENGTH;
+  if (overwrite == null) overwrite = false;
 
-  var formatter = new DartFormatter(pageWidth: lineLength);
+  var formatter = new DartFormatter(pageWidth: pageWidth);
   try {
     var output = formatter.format(file.readAsStringSync());
     if (overwrite) {

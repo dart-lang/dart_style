@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_style/src/file_util.dart';
+import 'package:dart_style/src/io.dart';
 
 void main(List<String> args) {
   var parser = new ArgParser();
@@ -13,7 +13,7 @@ void main(List<String> args) {
   parser.addFlag("overwrite", abbr: "w", negatable: false,
       help: "Overwrite input files with formatted output.\n"
             "If unset, prints results to standard output.");
-  parser.addFlag("follow-links", abbr: 'f', negatable: false,
+  parser.addFlag("follow-links", negatable: false,
       help: "Follow links to files and directories.\n"
             "If unset, links will be ignored.");
 
@@ -27,10 +27,10 @@ void main(List<String> args) {
   var overwrite = options["overwrite"];
   var followLinks = options["follow-links"];
 
-  int lineLength;
+  int pageWidth;
 
   try {
-    lineLength = int.parse(options["line-length"]);
+    pageWidth = int.parse(options["line-length"]);
   } on FormatException catch (_) {
     printUsage(parser, '--line-length must be an integer, was '
                        '"${options['line-length']}".');
@@ -48,14 +48,14 @@ void main(List<String> args) {
   for (var path in options.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      processDirectory(directory, overwrite: overwrite, lineLength: lineLength,
+      processDirectory(directory, overwrite: overwrite, pageWidth: pageWidth,
           followLinks: followLinks);
       continue;
     }
 
     var file = new File(path);
     if (file.existsSync()) {
-      processFile(file, overwrite: overwrite, lineLength: lineLength);
+      processFile(file, overwrite: overwrite, pageWidth: pageWidth);
     } else {
       stderr.writeln('No file or directory found at "$path".');
     }
