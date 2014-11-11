@@ -127,6 +127,11 @@ class SplitCost {
   static const BEFORE_IMPLEMENTS = 2;
   static const BEFORE_WITH = 1;
 
+  // TODO(rnystrom): Is this correct? Should it be greater for longer
+  // collections?
+  /// Splitting a list or map literal.
+  static const COLLECTION_LITERAL = 1;
+
   /// After each variable in a variable declaration list.
   static const DECLARATION = 1;
 

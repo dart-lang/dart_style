@@ -246,3 +246,12 @@ main() {
 main() {
   //foo
 }
+>>> inside map literal
+var map = {
+  // comment
+  'foo': 1};
+<<<
+var map = {
+  // comment
+  'foo': 1
+};

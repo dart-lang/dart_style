@@ -121,26 +121,6 @@ class LineWriter {
     _clearNextIndent = true;
   }
 
-  /// Prints the current line and completes it.
-  ///
-  /// If no tokens have been written since the last line was ended, this still
-  /// prints an empty line.
-  void _newline() {
-    if (_currentLine == null) {
-      buffer.write(_formatter.lineEnding);
-      return;
-    }
-
-    // If we are in the middle of any all splits, they will definitely split
-    // now.
-    _splitMultisplits();
-
-    _finishLine(_currentLine);
-    buffer.write(_formatter.lineEnding);
-
-    _currentLine = null;
-  }
-
   /// Writes [string], the text for a single token, to the output.
   void write(String string) {
     // Output any pending whitespace first now that we know it won't be
@@ -237,26 +217,6 @@ class LineWriter {
   }
 
   void endMultisplit() {
-    // Check to see if the body of the multisplit is longer than a line. If so,
-    // we know it will definitely split and we can do this pre-emptively here
-    // instead of having the line splitter try it. This is faster than
-    // having the line splitter try combinations of this param along with
-    // others.
-    if (!_multisplits.last.isSplit) {
-      var started = false;
-      var length = 0;
-      for (var chunk in _currentLine.chunks) {
-        if (!started && chunk is SplitChunk &&
-            chunk.param == _multisplits.last.param) {
-          started = true;
-        } else if (started) {
-          length += chunk.text.length;
-        }
-      }
-
-      if (length > _formatter.pageWidth) _splitMultisplits();
-    }
-
     _multisplits.removeLast();
   }
 
@@ -272,7 +232,28 @@ class LineWriter {
 
   /// Finish writing the last line.
   void end() {
-    if (_currentLine != null) _finishLine(_currentLine);
+    if (_currentLine != null) _finishLine();
+  }
+
+  /// Prints the current line and completes it.
+  ///
+  /// If no tokens have been written since the last line was ended, this still
+  /// prints an empty line.
+  void _newline() {
+    if (_currentLine == null) {
+      buffer.write(_formatter.lineEnding);
+      return;
+    }
+
+    // If we are in the middle of any all splits, they will definitely split
+    // now.
+    if (!_splitMultisplits()) {
+      // The multisplits didn't leave a trailing newline, so add it now.
+      _finishLine();
+      buffer.write(_formatter.lineEnding);
+    }
+
+    _currentLine = null;
   }
 
   void _writeSplit(SplitChunk split) {
@@ -289,7 +270,7 @@ class LineWriter {
     if (isSplit) {
       // The line up to the split is complete now.
       if (_currentLine != null) {
-        _finishLine(_currentLine);
+        _finishLine();
         buffer.write(_formatter.lineEnding);
       }
 
@@ -312,40 +293,53 @@ class LineWriter {
   /// Forces all multisplits in the current line to be split and breaks the
   /// line into multiple independent [Line] objects, each of which is printed
   /// separately (except for the last one, which is still in-progress).
-  void _splitMultisplits() {
+  ///
+  /// Returns `true` if the result of this left a trailing newline. This occurs
+  /// when a multisplit chunk is the last chunk written before this is called.
+  bool _splitMultisplits() {
+    if (_multisplits.isEmpty) return false;
+
     var splitParams = new Set();
     for (var multisplit in _multisplits) {
       multisplit.split();
       if (multisplit.isSplit) splitParams.add(multisplit.param);
     }
 
-    // TODO(rnystrom): Can optimize this to avoid the copying if there are no
-    // rules in effect.
+    if (splitParams.isEmpty) return false;
+
     // Take any existing split points for the current multisplits and hard split
     // them into separate lines now that we know that those splits must apply.
-    var line = new Line(indent: _currentLine.indent);
-    for (var chunk in _currentLine.chunks) {
+    var chunks = _currentLine.chunks;
+    _currentLine = new Line(indent: _currentLine.indent);
+    var hasTrailingNewline = false;
+
+    for (var chunk in chunks) {
       if (chunk is SplitChunk && splitParams.contains(chunk.param)) {
         var split = chunk as SplitChunk;
-        _finishLine(line);
+        _finishLine();
         buffer.write(_formatter.lineEnding);
-        line = new Line(indent: split.indent);
+        _currentLine = new Line(indent: split.indent);
+        hasTrailingNewline = true;
       } else {
-        line.chunks.add(chunk);
+        _currentLine.chunks.add(chunk);
+        hasTrailingNewline = false;
       }
     }
 
-    _currentLine = line;
+    return hasTrailingNewline;
   }
 
-  void _finishLine(Line line) {
+  void _finishLine() {
     // If the line has a trailing split, discard it since it will end up not
     // being split and becoming trailing whitespace. This can happen if a
     // comment appears immediately after a split.
-    if (line.chunks.last is SplitChunk) line.chunks.removeLast();
+    if (_currentLine.chunks.isNotEmpty &&
+        _currentLine.chunks.last is SplitChunk) {
+      _currentLine.chunks.removeLast();
+    }
 
     var splitter = new LineSplitter(_formatter.lineEnding,
-        _formatter.pageWidth, line);
+        _formatter.pageWidth, _currentLine);
     splitter.apply(buffer);
   }
 }

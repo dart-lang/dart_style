@@ -15,10 +15,8 @@ return
      call({'type': type, 'id': id})
     .then(deserializeAsset);
 <<<
-return call({
-  'type': type,
-  'id': id
-}).then(deserializeAsset);
+return call({'type': type, 'id': id})
+    .then(deserializeAsset);
 >>> allows chained calls on one line with multi-line last argument list
 compiler
     .run(script)

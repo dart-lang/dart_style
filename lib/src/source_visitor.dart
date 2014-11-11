@@ -711,7 +711,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    _writer.startMultisplit();
+    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
     _writer.indent();
 
     // Split after the "[".
@@ -742,7 +742,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    _writer.startMultisplit();
+    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
     _writer.indent();
 
     // Split after the "{".

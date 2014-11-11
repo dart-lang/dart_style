@@ -20,6 +20,7 @@ void main() {
 
   testDirectory("whitespace");
   testDirectory("splitting");
+  testDirectory("regression");
 
   test("throws a FormatterException on failed parse", () {
     var formatter = new DartFormatter();
@@ -89,9 +90,12 @@ void testDirectory(String name) {
     group("$name ${p.basename(entry.path)}", () {
       var lines = (entry as File).readAsLinesSync();
 
-      // The first line has a "|" to indicate the page width.
-      var pageWidth = lines[0].indexOf("|");
-      lines = lines.skip(1).toList();
+      // The first line may have a "|" to indicate the page width.
+      var pageWidth;
+      if (lines[0].endsWith("|")) {
+        pageWidth = lines[0].indexOf("|");
+        lines = lines.skip(1).toList();
+      }
 
       var i = 0;
       while (i < lines.length) {
