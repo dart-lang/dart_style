@@ -339,6 +339,11 @@ class LineWriter {
   }
 
   void _finishLine(Line line) {
+    // If the line has a trailing split, discard it since it will end up not
+    // being split and becoming trailing whitespace. This can happen if a
+    // comment appears immediately after a split.
+    if (line.chunks.last is SplitChunk) line.chunks.removeLast();
+
     var splitter = new LineSplitter(_formatter.lineEnding,
         _formatter.pageWidth, line);
     splitter.apply(buffer);

@@ -61,3 +61,28 @@ native
 }
 <<<
 class A extends B native "Zapp" {}
+>>> no trailing whitespace before initializer comment (regression for #13)
+class A {
+  A()
+      // comment
+      : field = value;
+}
+<<<
+class A {
+  A()
+      // comment
+      : field = value;
+}
+>>> no trailing whitespace before initializer comment (regression for #13)
+class A {
+  A(some, very, long, parameter, list, that, wraps)
+      // comment
+      : field = value;
+}
+<<<
+class A {
+  A(some, very, long, parameter, list,
+      that, wraps)
+      // comment
+      : field = value;
+}
