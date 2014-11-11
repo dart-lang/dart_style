@@ -589,25 +589,28 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitIfStatement(IfStatement node) {
-    var hasElse = node.elseStatement != null;
     token(node.ifKeyword);
     space();
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
+
     space();
-    if (hasElse) {
-      visit(node.thenStatement);
-      space();
+    visit(node.thenStatement);
+
+    if (node.elseStatement != null) {
+      if (node.thenStatement is Block) {
+        space();
+      } else {
+        // Corner case where an else follows a single-statement then clause.
+        // This is against the style guide, but we still need to handle it. If
+        // it happens, put the else on the next line.
+        newline();
+      }
+
       token(node.elseKeyword);
       space();
-      if (node.elseStatement is IfStatement) {
-        visit(node.elseStatement);
-      } else {
-        visit(node.elseStatement);
-      }
-    } else {
-      visit(node.thenStatement);
+      visit(node.elseStatement);
     }
   }
 

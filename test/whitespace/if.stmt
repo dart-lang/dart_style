@@ -41,10 +41,11 @@ if(true){print("true!");}
 if (true) {
   print("true!");
 }
->>> single-expression else body TODO(rnystrom): Is this what we want?
+>>> single-expression else body
 if(true)print(1);else print(0);
 <<<
-if (true) print(1); else print(0);
+if (true) print(1);
+else print(0);
 >>> chained else if
 if (0 == 0) {
   zero = 0;
