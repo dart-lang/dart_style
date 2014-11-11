@@ -15,13 +15,12 @@ import 'package:dart_style/dart_style.dart';
 void processDirectory(Directory directory,
     {bool overwrite, int pageWidth, bool followLinks: false}) {
   print("Formatting directory ${directory.path}:");
-  for (var entry in
-      directory.listSync(recursive: true, followLinks: followLinks)) {
-
+  for (var entry in directory.listSync(
+      recursive: true, followLinks: followLinks)) {
     var relative = p.relative(entry.path, from: directory.path);
 
     if (entry is Link) {
-      print('Skipping link: $relative');
+      print("Skipping link $relative");
       continue;
     }
 

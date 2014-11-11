@@ -27,7 +27,7 @@ void main(List<String> args) {
   var overwrite = options["overwrite"];
   var followLinks = options["follow-links"];
 
-  int pageWidth;
+  var pageWidth;
 
   try {
     pageWidth = int.parse(options["line-length"]);
