@@ -129,7 +129,7 @@ class SourceVisitor implements AstVisitor {
       if (i != 0) {
         space();
         token(node.operator);
-        _writer.multisplit(indent: 2, text: " ");
+        _writer.multisplit(text: " ", nest: true);
       }
       visit(operands[i]);
     }
@@ -807,6 +807,7 @@ class SourceVisitor implements AstVisitor {
 
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
     // split or none of them do.
+    _writer.nestExpression();
     _writer.startMultisplit(cost: SplitCost.BEFORE_PERIOD, separable: true);
 
     // Recursively walk the chain of method calls.
@@ -824,9 +825,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       if (hasTarget) {
-        // TODO(rnystrom): Probably need to handle expression nesting
-        // differently here. multisplit() creates a -1 nested split.
-        _writer.multisplit(indent: 2);
+        _writer.multisplit(nest: true);
         token(invocation.period);
       }
 
@@ -844,6 +843,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     visitInvocation(node);
+    _writer.unnest();
   }
 
   visitNamedExpression(NamedExpression node) {

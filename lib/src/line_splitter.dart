@@ -283,7 +283,10 @@ class LineSplitter {
   /// Prints [line] to stdout with split chunks made visible.
   ///
   /// This is just for debugging.
-  void _dumpLine(Set<SplitParam> splits) {
+  void _dumpLine([LinePrefix prefix, Set<SplitParam> splits]) {
+    if (prefix == null) prefix = new LinePrefix();
+    if (splits == null) splits = new Set();
+
     var cyan = '\u001b[36m';
     var gray = '\u001b[1;30m';
     var green = '\u001b[32m';
@@ -293,10 +296,12 @@ class LineSplitter {
 
     var buffer = new StringBuffer()
         ..write(gray)
-        ..write("| " * _line.indent)
+        ..write("| " * prefix.getNextLineIndent(_line))
         ..write(none);
 
-    for (var chunk in _line.chunks) {
+    for (var i = prefix.length; i < _line.chunks.length; i++) {
+      var chunk = _line.chunks[i];
+
       if (chunk is SpanStartChunk) {
         buffer.write("$cyan‹$none");
       } else if (chunk is SpanEndChunk) {
@@ -421,6 +426,8 @@ class LinePrefix {
 
     return indent;
   }
+
+  String toString() => "LinePrefix(length: $length, nesting $_nesting)";
 }
 
 /// Maintains a stack of nested expressions that have currently been split.
@@ -522,12 +529,22 @@ class NestingStack {
     var stack = this;
     while (stack != null) {
       if (stack._depth == depth) return stack;
-
       stack = stack._parent;
     }
 
     // If we got here, the level wasn't found. That means there is no correct
     // stack level to pop to, since the stack skips past our indentation level.
     return null;
+  }
+
+  String toString() {
+    var nesting = this;
+    var levels = [];
+    while (nesting != null) {
+      levels.add("${nesting._depth}:${nesting.indent}");
+      nesting = nesting._parent;
+    }
+
+    return levels.join(" ");
   }
 }

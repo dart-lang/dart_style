@@ -195,7 +195,7 @@ class LineWriter {
 
     // Spans are used for argument lists which increase expression nesting for
     // indentation.
-    _expressionNesting++;
+    nestExpression();
   }
 
   void endSpan(int cost) {
@@ -204,20 +204,42 @@ class LineWriter {
 
     // Spans are used for argument lists which increase expression nesting for
     // indentation.
-    _expressionNesting--;
+    unnest();
   }
 
   void startMultisplit({int cost: SplitCost.FREE, bool separable}) {
     _multisplits.add(new Multisplit(cost, separable: separable));
   }
 
-  void multisplit({int indent: 0, String text: ""}) {
-    _writeSplit(new SplitChunk(
-        _multisplits.last.param, _indent + indent, -1, text));
+  /// Adds a new split point for the current innermost [Multisplit].
+  ///
+  /// If [text] is given, that will be the text of the unsplit chunk. If [nest]
+  /// is `true`, then this split will take into account expression nesting.
+  /// Otherwise, it will not. Collections do not follow expression nesting,
+  /// while other uses of multisplits generally do.
+  void multisplit({String text: "", bool nest: false}) {
+    _writeSplit(new SplitChunk(_multisplits.last.param, _indent,
+        nest ? _expressionNesting : -1, text));
   }
 
   void endMultisplit() {
     _multisplits.removeLast();
+  }
+
+  /// Increases the level of expression nesting.
+  ///
+  /// Expressions that are more nested will get increased indentation when split
+  /// if the previous line has a lower level of nesting.
+  void nestExpression() {
+    _expressionNesting++;
+  }
+
+  /// Decreases the level of expression nesting.
+  ///
+  /// Expressions that are more nested will get increased indentation when split
+  /// if the previous line has a lower level of nesting.
+  void unnest() {
+    _expressionNesting--;
   }
 
   /// Makes sure we have written one last trailing newline at the end of a

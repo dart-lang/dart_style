@@ -51,3 +51,10 @@ callSomeMethod(
     body;
   }).another().another()
 ];
+>>> wrap at nested binary operator
+receiver.firstMethod().next((link) => longIdentifier == veryLongIdentifier);
+<<<
+receiver
+    .firstMethod()
+    .next((link) => longIdentifier ==
+        veryLongIdentifier);
