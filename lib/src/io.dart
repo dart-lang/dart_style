@@ -47,5 +47,10 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
     }
   } on FormatterException catch (err, stack) {
     stderr.writeln("Failed $label:\n$err");
+  } catch (err, stack) {
+    stderr.writeln('''Hit a bug in the formatter when formatting $label
+  Please report at: github.com/dart-lang/dart_style/issues
+$err
+$stack''');
   }
 }
