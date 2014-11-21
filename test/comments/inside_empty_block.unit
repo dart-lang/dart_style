@@ -1,0 +1,58 @@
+>>> indented line comment (dartbug.com/16383)
+main() {
+  // comment
+}
+<<<
+main() {
+  // comment
+}
+>>> line comment on opening line
+main() { // comment
+}
+<<<
+main() {
+  // comment
+}
+>>> indented block comment
+main() {
+  /* comment */
+}
+<<<
+main() {
+  /* comment */
+}
+>>> block comment with trailing newline
+main() {/* comment */
+}
+<<<
+main() {
+  /* comment */
+}
+>>> block comment with leading newline
+main() {
+  /* comment */}
+<<<
+main() {
+  /* comment */
+}
+>>> inline block comment
+main() {  /* comment */  }
+<<<
+main() {/* comment */}
+>>> multiple comments on opening line
+main() { /* first */ // second
+}
+<<<
+main() {
+  /* first */ // second
+}
+>>> multiple inline block comments
+main() {  /* 1 */   /* 2 */   /* 3 */  }
+<<<
+main() {/* 1 */ /* 2 */ /* 3 */}
+>>> multiline trailing block comment
+main() {  /* comment
+*/  }
+<<<
+main() {/* comment
+*/}

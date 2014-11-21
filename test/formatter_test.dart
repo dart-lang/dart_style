@@ -14,10 +14,13 @@ import 'package:dart_style/dart_style.dart';
 
 void main() {
   // Tidy up the unittest output.
-  filterStacks = true;
-  formatStacks = true;
-  useCompactVMConfiguration();
+  //filterStacks = true;
+  //formatStacks = true;
+  //useCompactVMConfiguration();
 
+  testDirectory("comments");
+
+  // TODO(bob): Move comments tests.
   testDirectory("whitespace");
   testDirectory("splitting");
   testDirectory("regression");
@@ -114,6 +117,11 @@ void testDirectory(String name) {
         var expectedOutput = "";
         while (++i < lines.length && !lines[i].startsWith(">>>")) {
           expectedOutput += lines[i] + "\n";
+        }
+
+        if (description.contains("SKIP")) {
+          print("SKIP: $description");
+          continue;
         }
 
         test(description, () {

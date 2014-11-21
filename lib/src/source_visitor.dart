@@ -55,6 +55,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitArgumentList(ArgumentList node) {
+    // Nest around the parentheses in case there are comments before or after
+    // them.
+    _writer.nestExpression();
     token(node.leftParenthesis);
 
     if (node.arguments.isNotEmpty) {
@@ -62,10 +65,10 @@ class SourceVisitor implements AstVisitor {
       _writer.startSpan();
 
       // Allow splitting after "(".
-      zeroSplit(SplitCost.BEFORE_ARGUMENT);
+      var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
+      zeroSplit(cost--);
 
       // Prefer splitting later arguments over earlier ones.
-      var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
       visitCommaSeparatedNodes(node.arguments,
           after: () => split(cost: cost--));
 
@@ -73,6 +76,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     token(node.rightParenthesis);
+    _writer.unnest();
   }
 
   visitAsExpression(AsExpression node) {
@@ -138,13 +142,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
+    // TODO(bob): Do same for other indented bodies. Tests too.
+
     token(node.leftBracket);
     _writer.indent();
-    if (!node.statements.isEmpty) {
-      newline();
-      visitNodes(node.statements, between: oneOrTwoNewlines);
-      newline();
-    }
+    visitNodes(node.statements, between: oneOrTwoNewlines);
     token(node.rightBracket, before: _writer.unindent);
   }
 
@@ -167,13 +169,32 @@ class SourceVisitor implements AstVisitor {
 
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
-    _writer.indent(2);
+    // TODO(bob): Need to decide if this should indent or nest:
+    //
+    //     object
+    //         ..method(() {
+    //           ...
+    //         })
+    //         ..method(() {
+    //           ...
+    //         });
+    //
+    // or:
+    //
+    //     object
+    //         ..method(() {
+    //       ...
+    //     })
+    //         ..method(() {
+    //       ...
+    //     });
+    _writer.indent_old(2);
     // Single cascades do not force a linebreak (dartbug.com/16384)
     if (node.cascadeSections.length > 1) {
       newline();
     }
     visitNodes(node.cascadeSections, between: newline);
-    _writer.unindent(2);
+    _writer.unindent_old(2);
   }
 
   visitCatchClause(CatchClause node) {
@@ -213,9 +234,7 @@ class SourceVisitor implements AstVisitor {
     token(node.leftBracket);
     _writer.indent();
     if (!node.members.isEmpty) {
-      visitNodes(node.members, before: newline,
-          between: oneOrTwoNewlines);
-      newline();
+      visitNodes(node.members, between: oneOrTwoNewlines);
     }
     token(node.rightBracket, before: _writer.unindent);
   }
@@ -251,9 +270,6 @@ class SourceVisitor implements AstVisitor {
 
     // Output trailing comments.
     token(node.endToken); // EOF.
-
-    // Be a good citizen, end with a newline.
-    _writer.ensureNewline();
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -291,13 +307,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorInitializers(ConstructorDeclaration node) {
+    _writer.indent_old(2);
+
     if (node.initializers.length > 1) {
       newline();
     } else {
       split();
     }
 
-    _writer.indent(2);
     token(node.separator /* : */);
     space();
 
@@ -305,24 +322,25 @@ class SourceVisitor implements AstVisitor {
       if (i > 0) {
         // Preceding comma.
         token(node.initializers[i].beginToken.previous);
+
+        // Indent subsequent fields one more so they line up with the first
+        // field following the ":":
+        //
+        // Foo()
+        //     : first,
+        //       second;
+        if (i == 1) _writer.indent_old();
+
         newline();
       }
-
-      // Indent subsequent fields one more so they line up with the first
-      // field following the ":":
-      //
-      // Foo()
-      //     : first,
-      //       second;
-      if (i == 1) _writer.indent();
 
       node.initializers[i].accept(this);
     }
 
     // If there were multiple fields, discard their extra indentation.
-    if (node.initializers.length > 1) _writer.unindent();
+    if (node.initializers.length > 1) _writer.unindent_old();
 
-    _writer.unindent(2);
+    _writer.unindent_old(2);
   }
 
   visitConstructorRedirects(ConstructorDeclaration node) {
@@ -712,7 +730,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.indent();
+    _writer.indent_old();
 
     // Split after the "[".
     _writer.multisplit();
@@ -723,7 +741,7 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.unindent();
+    _writer.unindent_old();
 
     // Split before the "]".
     _writer.multisplit();
@@ -743,7 +761,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.indent();
+    _writer.indent_old();
 
     // Split after the "{".
     _writer.multisplit();
@@ -754,7 +772,7 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.unindent();
+    _writer.unindent_old();
 
     // Split before the "}".
     _writer.multisplit();
@@ -989,20 +1007,18 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.expression);
     token(node.colon);
-    newline();
     _writer.indent();
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    _writer.unindent();
+    _writer.unindent(newline: false);
   }
 
   visitSwitchDefault(SwitchDefault node) {
     visitNodes(node.labels, between: space, after: space);
     token(node.keyword);
     token(node.colon);
-    newline();
     _writer.indent();
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    _writer.unindent();
+    _writer.unindent(newline: false);
   }
 
   visitSwitchStatement(SwitchStatement node) {
@@ -1014,10 +1030,8 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.leftBracket);
     _writer.indent();
-    newline();
     visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
     token(node.rightBracket, before: _writer.unindent);
-
   }
 
   visitSymbolLiteral(SymbolLiteral node) {
@@ -1107,7 +1121,7 @@ class SourceVisitor implements AstVisitor {
       visit(node.variables.first);
 
       // Indent variables after the first one to line up past "var".
-      _writer.indent(2);
+      _writer.indent_old(2);
 
       for (var variable in node.variables.skip(1)) {
         token(variable.beginToken.previous); // Comma.
@@ -1116,7 +1130,7 @@ class SourceVisitor implements AstVisitor {
         visit(variable);
       }
 
-      _writer.unindent(2);
+      _writer.unindent_old(2);
       return;
     }
 
@@ -1265,7 +1279,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    _writer.writeWhitespace(Whitespace.SPACE);
+    _writer.writeSpace();
   }
 
   /// Emit a single mandatory newline.
@@ -1297,12 +1311,12 @@ class SourceVisitor implements AstVisitor {
   /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
   /// omitted, defaults to [SplitCost.FREE].
   void split({int cost, SplitParam param}) {
-    _writer.split(cost: cost, param: param, text: " ");
+    _writer.writeSplit(cost: cost, param: param, text: " ");
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.
   void zeroSplit([int cost = SplitCost.FREE]) {
-    _writer.split(cost: cost);
+    _writer.writeSplit(cost: cost);
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
@@ -1325,75 +1339,36 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes any formatted whitespace and comments that appear before [token].
   void writePrecedingCommentsAndNewlines(Token token) {
-    // Get the line number of the end of the previous token.
     var previousLine = endLine(token.previous);
     var tokenLine = startLine(token);
 
-    // Update the pending whitespace now that we know how far down the next
-    // token is.
-    _writer.suggestWhitespace(tokenLine - previousLine);
-
     var comment = token.precedingComments;
-    if (comment == null) return;
+    while (comment != null) {
+      var commentLine = startLine(comment);
+      var commentEndLine = endLine(comment);
 
-    // Write newlines before the first comment unless it's at the start of the
-    // file.
-    var allowNewlines = token.previous.type != TokenType.EOF;
+      _writer.preserveNewlines(commentLine - previousLine);
 
-    while (true) {
-      // Write the whitespace before each comment.
-      if (allowNewlines) {
-        preserveNewlines(startLine(comment) - previousLine);
+      var nextLine;
+      if (comment.next != null) {
+        nextLine = startLine(comment.next);
+      } else {
+        nextLine = tokenLine;
       }
 
-      // If the comment is at the very beginning of the line, meaning it's
-      // likely a chunk of commented out code, then do not re-indent it.
-      if (_lineInfo.getLocation(comment.offset).columnNumber == 1) {
-        _writer.clearIndentation();
-      }
+      _writer.writeComment(comment.toString().trim(),
+          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
+          isTrailing: commentLine == previousLine,
+          isLeading: commentEndLine == nextLine);
 
-      append(comment.toString().trim());
-
-      // After the first comment, we definitely aren't at the start of the
-      // file.
-      allowNewlines = true;
-
-      previousLine = endLine(comment);
-      if (comment.next == null) break;
       comment = comment.next;
+      previousLine = commentEndLine;
     }
 
-    // Only include a space after the last comment (assuming it's on the same
-    // line as the next token) if there was already a space there.
-    preserveNewlines(tokenLine - endLine(comment),
-        allowSpace: comment.end < token.offset);
-  }
-
-  /// Preserves *some* of the [numNewlines] that exist between the last text
-  /// emitted and the text about to be emitted.
-  ///
-  /// In most cases, the source code's whitespace is completely ignored.
-  /// However, in some cases, the user may add bit of discretionary whitespace.
-  /// For example, an extra blank line is allowed between statements, but not
-  /// required.
-  ///
-  /// Only one extra newline may be kept. If there are no newlines between the
-  /// last text and the new text, this inserts a space if [allowSpace] is `true`
-  /// or otherwise emits nothing.
-  void preserveNewlines(int numNewlines, {bool allowSpace: true}) {
-    if (numNewlines == 0) {
-      // If there are no newlines between the elements, put a single space.
-      // This pads a space between items on the same line, like:
-      // Put a space after a token and the following comment, as in:
-      //
-      //     token, /* comment */ /* comment */ token
-      //           ^             ^             ^
-      if (allowSpace) space();
-    } else if (numNewlines == 1) {
-      newline();
-    } else {
-      twoNewlines();
-    }
+    // If the last whitespace written can preserve some of the source's
+    // newlines, handle that now that we know how many newlines there are
+    // between this token and the last.
+    _writer.preserveNewlines(startLine(token) - previousLine);
   }
 
   /// Append the given [string] to the source writer if it's non-null.

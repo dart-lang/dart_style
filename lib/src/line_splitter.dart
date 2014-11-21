@@ -4,9 +4,12 @@
 
 library dart_style.src.line_printer;
 
+import 'debug.dart';
 import 'line.dart';
 
 const _INVALID_SPLITS = -1;
+
+// TODO(bob): Adjust docs now that this may take a multi-line "line".
 
 /// Takes a single [Line] which may contain multiple [SplitParam]s and
 /// [SplitRule]s and determines the best way to split it into multiple physical
@@ -64,25 +67,33 @@ class LineSplitter {
   final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
   /// Creates a new splitter that tries to fit lines within [pageWidth].
-  LineSplitter(this._lineEnding, this._pageWidth, this._line);
+  LineSplitter(this._lineEnding, this._pageWidth, this._line) {
+    assert(_line.chunks.isNotEmpty);
+  }
 
   /// Convert the line to a [String] representation.
   ///
   /// It will determine how best to split it into multiple lines of output and
   /// return a single string that may contain one or more newline characters.
   void apply(StringBuffer buffer) {
+    /*
     if (!_line.hasSplits || _line.unsplitLength <= _pageWidth) {
       // No splitting needed or possible.
       return _printUnsplit(buffer);
     }
+    */
 
+    if (debugFormatter) _dumpLine();
     _applySplits(_findBestSplits(new LinePrefix()), buffer);
   }
 
   /// Prints [line] without any splitting.
   void _printUnsplit(StringBuffer buffer) {
     buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
-    buffer.writeAll(_line.chunks);
+
+    for (var chunk in _line.chunks) {
+      buffer.write(chunk.text);
+    }
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
@@ -93,15 +104,22 @@ class LineSplitter {
 
     var indent = prefix.getNextLineIndent(_line);
 
+    // TODO(bob): Clarify "firstLine" in presence of newlines.
     // Find the set of splits within the first line. At least one of them must
     // be split if the end result is going to fit within the page width.
     var length = indent * SPACES_PER_INDENT;
     var firstLineSplitIndices = [];
     for (var i = prefix.length; i < _line.chunks.length; i++) {
       var chunk = _line.chunks[i];
-      if (chunk is SplitChunk) firstLineSplitIndices.add(i);
+      if (chunk is SoftSplitChunk) firstLineSplitIndices.add(i);
 
-      length += chunk.text.length;
+      if (chunk is HardSplitChunk) {
+        length = chunk.indent * SPACES_PER_INDENT;
+      } else {
+        // TODO(bob): Clean up.
+        assert(chunk is TextChunk || chunk is SoftSplitChunk || chunk is SpanStartChunk || chunk is SpanEndChunk);
+        length += chunk.text.length;
+      }
 
       // Once we reach the end of the page, if we have found any splits, we
       // know we'll need to use one of them. We keep going if we haven't found
@@ -119,7 +137,7 @@ class LineSplitter {
     var bestSplits;
 
     for (var i in firstLineSplitIndices) {
-      var split = _line.chunks[i] as SplitChunk;
+      var split = _line.chunks[i] as SoftSplitChunk;
 
       var longerPrefix = prefix.expand(_line, i + 1);
 
@@ -233,7 +251,8 @@ class LineSplitter {
         // If the end span is on a different line from the start, pay for it.
         if (spanStarts[chunk.start] != line) cost += chunk.cost;
       } else if (chunk is SplitChunk) {
-        if (splits.contains(chunk.param)) {
+        // TODO(bob): Cleaner?
+        if (chunk is HardSplitChunk || splits.contains(chunk.param)) {
           endLine();
 
           // Start the new line.
@@ -241,7 +260,7 @@ class LineSplitter {
           if (indent == _INVALID_SPLITS) return _INVALID_SPLITS;
 
           length = indent * SPACES_PER_INDENT;
-        } else {
+        } else if (chunk is SoftSplitChunk) {
           // If we've seen the same param on a previous line, the unsplit
           // multisplit got split, so this isn't valid.
           if (previousParams.contains(chunk.param)) return _INVALID_SPLITS;
@@ -271,7 +290,9 @@ class LineSplitter {
 
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
-      if (chunk is SplitChunk && splits.contains(chunk.param)) {
+      // TODO(bob): Shared base class for newline and split.
+      if (chunk is HardSplitChunk ||
+          (chunk is SoftSplitChunk && splits.contains(chunk.param))) {
         buffer.write(_lineEnding);
         buffer.write(" " * (indenter.handleSplit(chunk) * SPACES_PER_INDENT));
       } else {
@@ -287,36 +308,34 @@ class LineSplitter {
     if (prefix == null) prefix = new LinePrefix();
     if (splits == null) splits = new Set();
 
-    var cyan = '\u001b[36m';
-    var gray = '\u001b[1;30m';
-    var green = '\u001b[32m';
-    var red = '\u001b[31m';
-    var magenta = '\u001b[35m';
-    var none = '\u001b[0m';
-
     var buffer = new StringBuffer()
-        ..write(gray)
+        ..write(Color.gray)
         ..write("| " * prefix.getNextLineIndent(_line))
-        ..write(none);
+        ..write(Color.none);
 
     for (var i = prefix.length; i < _line.chunks.length; i++) {
       var chunk = _line.chunks[i];
 
       if (chunk is SpanStartChunk) {
-        buffer.write("$cyan‹$none");
+        buffer.write("${Color.cyan}‹${Color.none}");
       } else if (chunk is SpanEndChunk) {
-        buffer.write("$cyan›(${chunk.cost})$none");
+        buffer.write("${Color.cyan}›(${chunk.cost})${Color.none}");
       } else if (chunk is TextChunk) {
-        buffer.write(chunk);
-      } else {
-        var split = chunk as SplitChunk;
-        var color = splits.contains(split.param) ? green : gray;
+        buffer.write(chunk.text);
+      } else if (chunk is SoftSplitChunk) {
+        var split = chunk as SoftSplitChunk;
+        var color = splits.contains(split.param) ? Color.green : Color.gray;
 
-        buffer.write("$color‹${split.param.cost}");
+        buffer.write("$color§${split.param.cost}");
         if (split.nesting != -1) {
           buffer.write(":${split.nesting}");
         }
-        buffer.write("›$none");
+        buffer.write("${Color.none}");
+      } else if (chunk is HardSplitChunk) {
+        buffer.write("${Color.magenta}\\n${Color.none}");
+      } else {
+        // Unexpected chunk type.
+        buffer.write("${Color.red}‹$chunk›${Color.none}");
       }
     }
 
@@ -340,14 +359,12 @@ class Indenter {
   int handleSplit(SplitChunk split) {
     var indent = split.indent;
 
-    // If this split does not indent (for example, in a multi-line collection),
-    // do not include any nesting indentation.
+    // If this split ignores expression depth (for example, in a multi-line
+    // collection), do not include any nesting indentation.
     if (split.nesting != -1) {
       _nesting = _nesting.modify(split.nesting);
       if (_nesting == null) return _INVALID_SPLITS;
 
-      // Add four spaces of indentation (two levels) for each level of nesting
-      // (except for the sentinel -1 at the beginning.
       indent += _nesting.indent;
     }
 
@@ -398,7 +415,7 @@ class LinePrefix {
   /// Returns `null` if the new split chunk results in an invalid prefix. See
   /// [NestingStack.modify] for details.
   LinePrefix expand(Line line, int length) {
-    var split = line.chunks[length - 1] as SplitChunk;
+    var split = line.chunks[length - 1] as SoftSplitChunk;
     var nesting = _nesting.modify(split.nesting);
     if (nesting == null) return null;
 
@@ -419,7 +436,7 @@ class LinePrefix {
     if (length == 0) {
       indent = line.indent;
     } else {
-      indent = (line.chunks[length - 1] as SplitChunk).indent;
+      indent = (line.chunks[length - 1] as SoftSplitChunk).indent;
     }
 
     indent += _nesting.indent;
@@ -453,7 +470,7 @@ class NestingStack {
   final NestingStack _parent;
   final int _depth;
 
-  NestingStack() : this._(null, -1, 0);
+  NestingStack() : this._(null, 0, 0);
 
   NestingStack._(this._parent, this._depth, this.indent);
 

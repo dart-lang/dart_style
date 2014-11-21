@@ -14,36 +14,6 @@
 //comment one
 
 //comment two
->>>
-library foo;
-
-//comment one
-
-class C {
-}
-<<<
-library foo;
-
-//comment one
-
-class C {}
->>>
-library foo;
-
-//comment one
-
-//comment two
-
-class C {
-}
-<<<
-library foo;
-
-//comment one
-
-//comment two
-
-class C {}
 >>> line comments at the start of the line in a function
 main() {
 //  print(1);
@@ -68,27 +38,16 @@ class A {
 //  int b;
   int c;
 }
->>> class declaration comment
-import "foo";
-
-// Killer class
-class A {
-}
-<<<
-import "foo";
-
-// Killer class
-class A {}
 >>> block comment
 library foo;
-class C /* is cool */ {
-  /* int */ foo() => 42;
+class C/* is cool */{
+  /* int */ foo(/* comment */) => 42;
 }
 <<<
 library foo;
 
 class C /* is cool */ {
-  /* int */ foo() => 42;
+  /* int */ foo(/* comment */) => 42;
 }
 >>> block comment
 library foo;
@@ -100,6 +59,7 @@ class C /* is cool */ {
 }
 <<<
 library foo;
+
 /* A long
  * Comment
 */
@@ -148,6 +108,7 @@ class C {
 /// Copyright info
 
 library foo;
+
 /// Class comment
 //TODO: implement
 class C {}
@@ -234,18 +195,26 @@ main() {
   foo(1 /* bang */, 2);
 }
 foo(x, y) => null;
->>>
-var l = [1 /* bang */, 2];
+>>> no space between "[" and "]" and block comment
+var list = [   /* */  ];
 <<<
-var l = [1 /* bang */, 2];
->>> indented line comment (dartbug.com/16383)
-main() {
-  //foo
-}
+var list = [/* */];
+>>> no space between "(" and ")" and block comment
+foo(   /* */  ) {}
 <<<
-main() {
-  //foo
-}
+foo(/* */) {}
+>>> no space between "{" and block comment
+var map = {   /* */   };
+<<<
+var map = {/* */};
+>>> space on left between block comment and ","
+var l = [1,/* a */ 2 /* b */  , 3];
+<<<
+var l = [1, /* a */ 2 /* b */, 3];
+>>> space between block comment and other tokens
+var/**/a/**/=/**/1/**/+/**/2;
+<<<
+var /**/ a /**/ = /**/ 1 /**/ + /**/ 2;
 >>> inside map literal
 var map = {
   // comment

@@ -43,16 +43,15 @@ class DartFormatter {
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
   String format(String source) {
-    return _format(source,
-        (parser, start) => parser.parseCompilationUnit(start));
+    return _format(source, isCompilationUnit: true);
   }
 
   /// Format the given [source] string containing a single Dart statement.
   String formatStatement(String source) {
-    return _format(source, (parser, start) => parser.parseStatement(start));
+    return _format(source, isCompilationUnit: false);
   }
 
-  String _format(String source, parseFn(Parser parser, Token start)) {
+  String _format(String source, {bool isCompilationUnit}) {
     var errorListener = new ErrorListener();
     var startToken = _tokenize(source, errorListener);
     errorListener.throwIfErrors();
@@ -60,7 +59,13 @@ class DartFormatter {
     var parser = new Parser(null, errorListener);
     parser.parseAsync = true;
 
-    var node = parseFn(parser, startToken);
+    var node;
+    if (isCompilationUnit) {
+      node = parser.parseCompilationUnit(startToken);
+    } else {
+      node = parser.parseStatement(startToken);
+    }
+
     errorListener.throwIfErrors();
 
     var buffer = new StringBuffer();
@@ -68,6 +73,9 @@ class DartFormatter {
         buffer);
 
     visitor.run(node);
+
+    // Be a good citizen, end with a newline.
+    if (isCompilationUnit) buffer.write(lineEnding);
 
     return buffer.toString();
   }

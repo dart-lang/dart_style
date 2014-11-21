@@ -19,12 +19,6 @@ var d = obj is! SomeType;
 < int  >[1,2,(3+4)];
 <<<
 <int>[1, 2, (3 + 4)];
->>> cascades
-"foo"..toString()..toString();
-<<<
-"foo"
-    ..toString()
-    ..toString();
 >>>
 x &&
     y;

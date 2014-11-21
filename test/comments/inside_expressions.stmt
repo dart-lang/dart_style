@@ -1,0 +1,22 @@
+40 columns                              |
+>>> trailing line comment after split
+someMethod(argument1, argument2, // comment
+argument3);
+<<<
+someMethod(argument1,
+    argument2, // comment
+    argument3);
+>>> trailing line comment after non-split
+someMethod(argument1, argument2 // comment
+);
+<<<
+someMethod(argument1,
+    argument2 // comment
+    );
+>>> inside list literal
+['item' // comment
+];
+<<<
+[
+  'item' // comment
+];

@@ -5,45 +5,565 @@
 library dart_style.src.source_writer;
 
 import 'dart_formatter.dart';
+import 'debug.dart';
 import 'line.dart';
 import 'line_splitter.dart';
 
-/// The kind of pending whitespace that has been "written", but not actually
-/// physically output yet.
-///
-/// We defer actually writing whitespace until a non-whitespace token is
-/// encountered to avoid trailing whitespace.
-class Whitespace {
-  /// A single non-breaking space.
-  static const SPACE = const Whitespace._("SPACE");
+class LineWriter {
+  final DartFormatter _formatter;
 
-  /// A single newline.
-  static const NEWLINE = const Whitespace._("NEWLINE");
+  // TODO(bob): Private?
+  final StringBuffer buffer;
 
-  /// Two newlines, a single blank line of separation.
-  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
+  // TODO(bob): Make linked list?
+  final _chunks = <Chunk>[];
 
-  /// A space or newline should be output based on whether the current token is
-  /// on the same line as the previous one or not.
+  /// The current indentation level.
   ///
-  /// In general, we like to avoid using this because it makes the formatter
-  /// less prescriptive over the user's whitespace.
-  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
+  /// Subsequent lines will be created with this much leading indentation.
+  int _indent = 0;
 
-  /// One or two newlines should be output based on how many newlines are
-  /// present between the next token and the previous one.
+  /// The number of levels of expression nesting surrounding the chunks
+  /// currently being written.
+  int _nesting = 0;
+
+  LineWriter(this._formatter, this.buffer) {
+    _indent = _formatter.indent;
+  }
+
+  /// Writes [string], the text for a single token, to the output.
+  void write(String string) {
+    _chunks.add(new TextChunk(string));
+  }
+
+  void writeSpace() {
+    _chunks.add(new SpaceChunk());
+  }
+
+  // TODO(bob): Doc.
+  void writeWhitespace(Whitespace type) {
+    _chunks.add(new WhitespaceChunk(type, _indent, _nesting));
+  }
+
+  void writeComment(String text,
+      {bool isLineComment, bool isTrailing, bool isLeading}) {
+    _chunks.add(new CommentChunk(text, _indent, _nesting,
+        isLineComment: isLineComment,
+        isTrailing: isTrailing,
+        isLeading: isLeading));
+
+    // Make sure there is at least one newline after a line comment and allow
+    // one after a block comment that has nothing after it.
+    if (!isLeading) {
+      _chunks.add(new WhitespaceChunk(
+          Whitespace.ONE_OR_TWO_NEWLINES, _indent, _nesting));
+    }
+  }
+
+  void writeSplit({int cost, SplitParam param, String text}) {
+    if (cost == null) cost = SplitCost.FREE;
+    if (param == null) param = new SplitParam(cost);
+    if (text == null) text = "";
+
+    _chunks.add(new SoftSplitChunk(_indent, _nesting, param, text));
+  }
+
+  void preserveNewlines(int numLines) {
+    // Don't preserve any whitespace at the beginning of the file.
+    if (_chunks.isEmpty) return;
+
+    // TODO(bob): Skip past trailing spans.
+    var before = _chunks.last;
+    if (before is! WhitespaceChunk) return;
+
+    // TODO(bob): Do something cleaner.
+    before.actual = numLines;
+
+    switch (before.type) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (numLines > 0) {
+          before.type = Whitespace.NEWLINE;
+        } else {
+          _chunks[_chunks.length - 1] = new SpaceChunk();
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (numLines > 1) {
+          before.type = Whitespace.TWO_NEWLINES;
+        } else {
+          before.type = Whitespace.NEWLINE;
+        }
+        break;
+    }
+  }
+
+  // TODO(bob): Delete.
+  /// Increase indentation by [levels].
+  void indent_old([int levels = 1]) {
+    _indent += levels;
+  }
+
+  /// Decrease indentation by [levels].
+  void unindent_old([int levels = 1]) {
+    _indent -= levels;
+
+    // If we adjust the indentation after writing a newline but before writing
+    // anything else, it applies to that line.
+    // TODO(bob): Is this the best way we can do this?
+    if (_chunks.last is WhitespaceChunk) {
+      _chunks.last.indent = _indent;
+    }
+  }
+
+  // TODO(bob): Doc.
+  void indent() {
+    _indent++;
+    _chunks.add(new IndentChunk(_indent, _nesting));
+  }
+
+  void unindent({bool newline: true}) {
+    _indent--;
+    _chunks.add(new UnindentChunk(_indent, _nesting, newline: newline));
+  }
+
+  void startSpan() {
+  }
+
+  void endSpan(int cost) {
+  }
+
+  void startMultisplit({int cost: SplitCost.FREE, bool separable}) {
+  }
+
+  /// Adds a new split point for the current innermost [Multisplit].
   ///
-  /// In general, we like to avoid using this because it makes the formatter
-  /// less prescriptive over the user's whitespace.
-  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
+  /// If [text] is given, that will be the text of the unsplit chunk. If [nest]
+  /// is `true`, then this split will take into account expression nesting.
+  /// Otherwise, it will not. Collections do not follow expression nesting,
+  /// while other uses of multisplits generally do.
+  void multisplit({String text: "", bool nest: false}) {
+    _chunks.add(new SoftSplitChunk(_indent, _nesting, new SplitParam(), text));
+  }
 
-  final String name;
+  void endMultisplit() {
+  }
 
-  const Whitespace._(this.name);
+  /// Increases the level of expression nesting.
+  ///
+  /// Expressions that are more nested will get increased indentation when split
+  /// if the previous line has a lower level of nesting.
+  void nestExpression() {
+    _nesting++;
+  }
 
-  String toString() => name;
+  /// Decreases the level of expression nesting.
+  ///
+  /// Expressions that are more nested will get increased indentation when split
+  /// if the previous line has a lower level of nesting.
+  void unnest() {
+    _nesting--;
+  }
+
+  /// Makes sure we have written one last trailing newline at the end of a
+  /// compilation unit.
+  void ensureNewline() {
+  }
+
+  /// Finish writing the last line.
+  void end() {
+    if (debugFormatter) _dumpChunks("before processing");
+
+    // TODO(bob): Clean up.
+    _processIndents();
+    if (debugFormatter) _dumpChunks("after processing indentation");
+
+    _processCommentLines();
+    _processComments();
+
+    if (debugFormatter) _dumpChunks("after processing comments");
+
+    _processWhitespace();
+
+    if (debugFormatter) _dumpChunks("after processing whitespace");
+
+    // Break the chunks into unrelated lines that can be wrapped separately.
+    var indent = _formatter.indent;
+    var start = 0;
+    var end;
+
+    splitLine() {
+      // TODO(bob): Lots of list copying. Linked list would be good here.
+      var chunks = _chunks.getRange(start, end).toList();
+      if (debugFormatter) _dumpChunks("top-level line", chunks);
+
+      // Write newlines between each line.
+      if (start > 0) buffer.write(_formatter.lineEnding);
+
+      // Only write non-empty lines so we don't get trailing whitespace for
+      // indentation.
+      if (chunks.isNotEmpty) {
+        var line = new Line(indent: indent);
+        line.chunks.addAll(chunks);
+
+        var splitter = new LineSplitter(_formatter.lineEnding,
+            _formatter.pageWidth, line);
+
+        splitter.apply(buffer);
+      }
+
+      start = end + 1;
+    }
+
+    for (end = 0; end < _chunks.length; end++) {
+      var chunk = _chunks[end];
+
+      if (chunk is HardSplitChunk && chunk.nesting == 0) {
+        splitLine();
+        indent = _chunks[end].indent;
+      }
+    }
+
+    // Handle the last line.
+    if (start < end) splitLine();
+  }
+
+  void _processIndents() {
+    // Discard any indents that have no contents except for inline comments.
+    for (var i = 0; i < _chunks.length - 1; i++) {
+      // Find an indent.
+      if (_chunks[i] is! IndentChunk) continue;
+
+      // Look for an unindent "immediately" following it, where "immediately"
+      // ignores inline comments.
+      for (var j = i + 1; j < _chunks.length; j++) {
+        var chunk = _chunks[j];
+
+        // If we made it to the unindent without exiting the loop, it means
+        // the indentation is not needed.
+        if (chunk is UnindentChunk) {
+          _chunks.removeAt(j);
+          _chunks.removeAt(i);
+          break;
+        }
+
+        // We can include comments that are completely inline, like:
+        //
+        //     main() {/* comment */ /* another */}
+        if (chunk is CommentChunk && chunk.isTrailing && chunk.isLeading) {
+          continue;
+        }
+
+        // Any other kind of chunk means the indented region is non-empty.
+        break;
+      }
+    }
+
+    // Corner case: comments on the same line as a token that begins
+    // indentation but not on the same line as the end of the indentation
+    // should get moved down to the next line.
+    //
+    //     main() { /* 1 */ // 2
+    //     }
+    //
+    // becomes:
+    //
+    //     main() {
+    //       /* 1 */ // 2
+    //     }
+    for (var i = 0; i < _chunks.length - 1; i++) {
+      if (_chunks[i] is! IndentChunk) continue;
+      if (_chunks[i + 1] is! CommentChunk) continue;
+
+      // Skip over any fully inline comments.
+      var j;
+      for (j = i + 1; j < _chunks.length - 1; j++) {
+        if (_chunks[j] is! CommentChunk || !_chunks[j].isInline) break;
+      }
+
+      if (j == _chunks.length) continue;
+
+      // If those are followed by a trailing comment, then don't treat the
+      // first comment like a trailing one. That will cause it to get moved to
+      // the next line in a later pass.
+      if (_chunks[j] is CommentChunk &&
+          _chunks[j].isTrailing &&
+          !_chunks[j].isLeading) {
+        _chunks[i + 1].isTrailing = false;
+      }
+    }
+
+    // Turn remaining indentation into newlines.
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      if (chunk is! IndentChunk && chunk is! UnindentChunk) continue;
+
+      // If the unindent doesn't require a newline, just delete it.
+      if (chunk is UnindentChunk && !chunk.newline) {
+        _chunks.removeAt(i--);
+        continue;
+      }
+
+      // Changing indentation always happens on a newline.
+      _chunks[i] = new WhitespaceChunk(Whitespace.NEWLINE,
+          chunk.indent, chunk.nesting);
+
+      // If converting the [un]indent to a newline causes redundancy, discard
+      // the earlier one.
+      if (i > 0 && _chunks[i - 1] is WhitespaceChunk) {
+        _chunks.removeAt(i - 1);
+        i--;
+      }
+    }
+  }
+
+  /// Fixes places where a double newline before a comment is unneeded and not
+  /// what the user authored.
+  ///
+  /// There are a few places in the style that require two newlines, for
+  /// example, between top-level definitions. Sometimes a comment appears in
+  /// the source *before* the required newlines. In that case, we don't need to
+  /// also add two newlines before the comment. For example, given source like:
+  ///
+  ///     import 'a.dart';
+  ///     // import 'b.dart';
+  ///
+  ///     class C {}
+  ///
+  /// This generates roughly chunks like:
+  ///
+  ///     Text "import 'a.dart';"
+  ///     TwoNewlines                 // required double newline
+  ///     Comment "import 'b.dart';"
+  ///     TwoNewlines                 // the newlines authored after the comment
+  ///     Text "class C {}"
+  ///
+  /// Since the later TwoNewlines provides the required separation, we can and
+  /// want to turn the first one into a single newline to preserve the original
+  /// correct structure.
+  ///
+  /// This does that. It looks for TwoNewlines that corresponded to a single
+  /// newline in the source preceding a comment. When it finds one, it looks
+  /// for another TwoNewlines after the comment. If found, it turns the first
+  /// into a single newline.
+  void _processCommentLines() {
+    for (var i = 0; i < _chunks.length - 1; i++) {
+      var chunk = _chunks[i];
+
+      // Look for double newlines that were just a single newline in the source.
+      if (chunk is WhitespaceChunk &&
+          chunk.type == Whitespace.TWO_NEWLINES &&
+          chunk.actual == 1 &&
+          _chunks[i + 1] is CommentChunk) {
+
+        // Look for another double newline in the subsequent chunks, ignoring
+        // comments.
+        for (var j = i + 1; j < _chunks.length; j++) {
+          var next = _chunks[j];
+          if (next is CommentChunk) {
+            // Do nothing.
+          } else if (next is WhitespaceChunk) {
+            if (next.type == Whitespace.TWO_NEWLINES) {
+              chunk.type = Whitespace.NEWLINE;
+              i = j + 1;
+              break;
+            }
+          } else {
+            // If we hit anything else, we didn't find the double newline.
+            break;
+          }
+        }
+      }
+    }
+  }
+
+  // TODO(bob): Doc and better name.
+  void _processComments() {
+    for (var i = 0; i < _chunks.length; i++) {
+      if (_chunks[i] is CommentChunk) {
+        i = _processComment(i);
+      }
+    }
+  }
+
+  int _processComment(int index) {
+    var comment = _chunks[index] as CommentChunk;
+
+    // TODO(bob): Probably need to do this in separate pass to handle sequential
+    // comments. (Or just make CommentChunk extend TextChunk and leave alone).
+    // Place the text of the comment.
+    _chunks[index] = new TextChunk(comment.text);
+
+    if (index > 0) {
+      var before = _chunks[index - 1];
+
+      if (before is WhitespaceChunk) {
+        index = _processWhitespaceBeforeComment(before, comment, index);
+      } else {
+        if (comment.isBlockComment) {
+          // TODO(bob): Need tests for multi-line block comments with and
+          // without text following them, especially inside expressions where
+          // nesting comes into play, like:
+          //
+          //     someMethod(argument, /*
+          //     comment */ anotherArgument, ...);
+
+          index = _processBeforeBlockComment(before, comment, index);
+        } else {
+          index = _processBeforeLineComment(before, comment, index);
+        }
+      }
+    }
+
+    // Add proper whitespace after it.
+    if (comment.isBlockComment && _needsSpaceAfterBlockComment(index)) {
+      _chunks.insert(++index, new SpaceChunk());
+    }
+
+    return index;
+  }
+
+  // TODO(bob): Doc.
+  int _processBeforeBlockComment(
+      Chunk before, CommentChunk comment, int index) {
+    // Don't put spaces between grouping characters and block comments.
+    if (before is TextChunk) {
+      var needsSpace = true;
+
+      // TODO(bob): Test.
+      // Always put a space between line comments and other text.
+      if (comment.isBlockComment) {
+        if (before.text == "(" || before.text == "[" || before.text == "{") {
+          needsSpace = false;
+        }
+      }
+
+      if (needsSpace) {
+        _chunks.insert(index++, new SpaceChunk());
+      }
+
+      return index;
+    }
+
+    // TODO(bob): Can delete this after sure all before cases handled.
+    // The split takes care of any needed space.
+    if (before is SoftSplitChunk) return index;
+    if (before is SpaceChunk) return index;
+
+    throw "TODO(bob): $before chunk before block comment not impl";
+  }
+
+  int _processBeforeLineComment(Chunk before, CommentChunk comment, int index) {
+    // Don't split between a line comment and the text that precedes it.
+    if (before is SoftSplitChunk) {
+      // TODO(bob): Should not do this if source had newline before comment.
+      // Replace the split with a space.
+      _chunks[index - 1] = new SpaceChunk();
+      return index;
+    }
+
+    if (before is TextChunk) {
+      // Insert a space between the text and the comment.
+      _chunks.insert(index++, new SpaceChunk());
+      return index;
+    }
+
+    throw "TODO(bob): $before before line comment not impl";
+  }
+
+  int _processWhitespaceBeforeComment(WhitespaceChunk whitespace,
+      CommentChunk comment, int index) {
+    switch (whitespace.type) {
+      case Whitespace.NEWLINE:
+      case Whitespace.TWO_NEWLINES:
+        // If the line comment is on the same line as the previous token,
+        // push the whitespace after the comment and put a space before the
+        // comment. Otherwise, leave the whitespace where it is so the comment
+        // stays with the following token.
+        if (comment.isTrailing) {
+          _chunks[index - 1] = new SpaceChunk();
+
+          // Move the existing newline after the comment with this one. If it's
+          // a line comment, there is already one there, so we can replace that
+          // one. Otherwise, we need to insert.
+          if (comment.isBlockComment) _chunks.insert(index + 1, null);
+          _chunks[index + 1] = whitespace;
+        }
+        break;
+
+      default:
+        throw "TODO(bob): ${whitespace.type} before comment not impl";
+    }
+
+    return index;
+  }
+
+  bool _needsSpaceAfterBlockComment(int index) {
+    // Don't need a space after a trailing comment.
+    if (index == _chunks.length - 1) return false;
+
+    var after = _chunks[index + 1];
+
+    if (after is TextChunk) {
+      // Don't put spaces between grouping characters and block comments.
+      if (after.text == ")" || after.text == "]" || after.text == "}" ||
+          after.text == ",") {
+        return false;
+      }
+
+      return true;
+    }
+
+    // TODO(bob): Is this correct in all cases?
+    return false;
+  }
+
+  // TODO(bob): Doc. Must call after process comments.
+  void _processWhitespace() {
+    // TODO(bob): Can this ever cause redundant newlines/splits/whitespace?
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      if (chunk is WhitespaceChunk) {
+        switch (chunk.type) {
+          case Whitespace.NEWLINE:
+            _chunks[i] = new HardSplitChunk(chunk.indent, chunk.nesting);
+            break;
+
+          case Whitespace.TWO_NEWLINES:
+            _chunks[i] = new HardSplitChunk(chunk.indent, chunk.nesting);
+            _chunks.insert(++i,
+                new HardSplitChunk(chunk.indent, chunk.nesting));
+            break;
+
+          default:
+            throw "other whitespace ${chunk.type} not impl";
+        }
+      } else if (chunk is SpaceChunk) {
+        _chunks[i] = new TextChunk(" ");
+      }
+    }
+
+    // TODO(bob): Cleaner way of doing this?
+    // Remove any trailing newlines.
+    while (_chunks.last is HardSplitChunk) _chunks.removeLast();
+  }
+
+  // TODO(bob): Need tests for line-splitting before and after block comments.
+
+  void _dumpChunks(String label, [List<Chunk> chunks]) {
+    if (chunks == null) chunks = _chunks;
+
+    print("\n$label:");
+
+    var i = 0;
+    for (var chunk in chunks) {
+      print("$i: $chunk");
+      i++;
+    }
+  }
 }
 
+/*
 /// The "middle" of the formatting pipeline for taking in text, newlines, and
 /// chunks and emitting a series of logical (but unsplit) [Line]s.
 ///
@@ -365,3 +885,4 @@ class LineWriter {
     splitter.apply(buffer);
   }
 }
+*/

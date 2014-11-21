@@ -4,26 +4,16 @@
 
 library dart_style.src.line;
 
+import 'debug.dart';
+
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
 
 class Line {
   final chunks = <Chunk>[];
 
-  bool get hasSplits => chunks.any((chunk) => chunk is SplitChunk);
-
   /// The number of levels of indentation at the beginning of this line.
   int indent;
-
-  /// Gets the length of the line if no splits are taken into account.
-  int get unsplitLength {
-    var length = SPACES_PER_INDENT * indent;
-    for (var chunk in chunks) {
-      length += chunk.text.length;
-    }
-
-    return length;
-  }
 
   Line({this.indent: 0});
 
@@ -34,14 +24,129 @@ class Line {
 }
 
 class Chunk {
-  String get text => "";
-  String toString() => text;
+  // TODO(bob): This should only exist on chunks that make it to splitting.
+  String get text => throw "should not get here!";
 }
+
+// TODO(bob): Separate out chunk types that should make it to the line splitter
+// from those that should be processed by the writer beforehand?
 
 class TextChunk extends Chunk {
   final String text;
 
   TextChunk(this.text);
+
+  String toString() {
+    var visibleWhitespace = text.replaceAll(
+        " ", "${Color.gray}·${Color.noColor}");
+    return "${Color.bold}$visibleWhitespace${Color.none}";
+  }
+}
+
+class SpaceChunk extends Chunk {
+  String get text => " ";
+
+  String toString() => "${Color.gray}(space)${Color.none}";
+}
+
+/// The kind of pending whitespace that has been "written", but not actually
+/// physically output yet.
+///
+/// We defer actually writing whitespace until a non-whitespace token is
+/// encountered to avoid trailing whitespace.
+class Whitespace {
+  /// A single newline.
+  static const NEWLINE = const Whitespace._("NEWLINE");
+
+  /// Two newlines, a single blank line of separation.
+  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
+
+  /// A space or newline should be output based on whether the current token is
+  /// on the same line as the previous one or not.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
+
+  /// One or two newlines should be output based on how many newlines are
+  /// present between the next token and the previous one.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
+
+  final String name;
+
+  const Whitespace._(this.name);
+
+  String toString() => name;
+}
+
+// TODO(bob): Extend LineChunk?
+class WhitespaceChunk extends Chunk {
+  // TODO(bob): Make final?
+  Whitespace type;
+
+  // TODO(bob): Make final?
+  int indent;
+
+  // TODO(bob): Do something better.
+  int actual = 0;
+
+  final int nesting;
+
+  WhitespaceChunk(this.type, this.indent, this.nesting);
+
+  String toString() {
+    var result = type.toString().toLowerCase();
+    if (indent != 0) result += " indent $indent";
+    if (nesting != 0) result += " nest $nesting";
+    if (actual != 0) result += " actual $actual";
+    return result;
+  }
+}
+
+// TODO(bob): Doc.
+// TODO(bob): Extend LineChunk?
+class CommentChunk extends Chunk {
+  final String text;
+
+  /// The indentation level of lines after this line comment.
+  final int indent;
+
+  /// The number of levels of expression nesting that this comment occurs
+  /// within.
+  final int nesting;
+
+  final bool isLineComment;
+  bool get isBlockComment => !isLineComment;
+
+  /// `true` if there is non-whitespace source text on the same line before this
+  /// comment. For example:
+  ///
+  ///     someTextBefore; // a comment
+  bool isTrailing;
+
+  /// `true` if there is non-whitespace source text on the same line after this
+  /// comment. For example:
+  ///
+  ///     /* a comment */ someTextAfter;
+  final bool isLeading;
+
+  /// `true` if this comment has non-whitespace text both before and after it.
+  bool get isInline => isTrailing && isLeading;
+
+  CommentChunk(this.text, this.indent, this.nesting,
+      {this.isLineComment, this.isTrailing, this.isLeading});
+
+  String toString() {
+    var result = "${Color.gray}$text${Color.none}";
+    if (indent != 0) result += " indent $indent";
+    if (nesting != 0) result += " nest $nesting";
+    if (isTrailing) result += " trailing";
+    if (isLeading) result += " leading";
+    return result;
+  }
 }
 
 /// The first of a pair of chunks used to delimit a range of chunks that must
@@ -68,26 +173,52 @@ class SpanEndChunk extends Chunk {
   SpanEndChunk(this.start, this.cost);
 }
 
-/// A split chunk may expand to a newline (with some leading indentation) or
-/// some other inline string based on the length of the line.
-///
-/// Each split chunk is owned by splitter that determines when it is and is
-/// not in effect.
-class SplitChunk extends Chunk {
-  /// The [SplitParam] that determines if this chunk is being used as a split
-  /// or not.
-  final SplitParam param;
+// TODO(bob): Doc.
+class IndentChunk extends Chunk {
+  // TODO(bob): Yet more copy/paste indent/nesting.
+  final int indent;
+  final int nesting;
 
-  /// The text for this chunk when it's not split into a newline.
-  final String text;
+  IndentChunk(this.indent, this.nesting);
 
-  /// The indentation level of lines after this split.
+  String toString() {
+    var result = "${Color.cyan}->${Color.none}";
+    if (indent != 0) result += " indent $indent";
+    if (nesting != 0) result += " nest $nesting";
+    return result;
+  }
+}
+
+class UnindentChunk extends Chunk {
+  // TODO(bob): Yet more copy/paste indent/nesting.
+  final int indent;
+  final int nesting;
+
+  // TODO(bob): Can we do something cleaner here? Seems like unindent shouldn't
+  // care about this.
+  /// Whether this unindent starts a newline.
+  final bool newline;
+
+  UnindentChunk(this.indent, this.nesting, {this.newline});
+
+  String toString() {
+    var result = "${Color.cyan}<-${Color.none}";
+    if (indent != 0) result += " indent $indent";
+    if (nesting != 0) result += " nest $nesting";
+    return result;
+  }
+}
+
+// TODO(bob): Update other docs that refer to old SplitChunk.
+// TODO(bob): Doc.
+abstract class SplitChunk extends Chunk {
+  /// The indentation level of the next line after this one.
   ///
   /// Note that this is not a relative indentation *offset*. It's the full
   /// indentation.
   final int indent;
 
-  /// The number of levels of expression nesting that this split occurs within.
+  /// The number of levels of expression nesting at the end of this line.
   ///
   /// This is used to determine how much to increase the indentation when this
   /// split comes into effect. A single statement may be indented multiple
@@ -99,7 +230,31 @@ class SplitChunk extends Chunk {
   ///             argument));
   final int nesting;
 
-  SplitChunk(this.param, this.indent, this.nesting, [this.text = ""]);
+  SplitChunk(this.indent, this.nesting);
+}
+
+// TODO(bob): Doc.
+class HardSplitChunk extends SplitChunk {
+  HardSplitChunk(int indent, int nesting) : super(indent, nesting);
+
+  String toString() => "HardSplit indent $indent nest $nesting";
+}
+
+/// A split chunk that may expand to a newline (with some leading indentation)
+/// or some other inline string based on the length of the line.
+class SoftSplitChunk extends SplitChunk {
+  /// The [SplitParam] that determines if this chunk is being used as a split
+  /// or not.
+  final SplitParam param;
+
+  /// The text for this chunk when it's not split into a newline.
+  final String text;
+
+  SoftSplitChunk(int indent, int nesting, this.param, [this.text = ""])
+      : super(indent, nesting);
+
+  String toString() =>
+      "SoftSplit \$$param indent $indent nest $nesting '$text'";
 }
 
 /// A toggle for enabling one or more [SplitChunk]s in a [Line].
@@ -173,7 +328,7 @@ class SplitCost {
   static const OVERFLOW_CHAR = 10000;
 }
 
-/// Handles a series of [SplitChunks] that all either split or don't split
+/// Handles a series of [SoftSplitChunks] that all either split or don't split
 /// together.
 ///
 /// This is used for:

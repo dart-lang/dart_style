@@ -1,12 +1,25 @@
 import 'package:dart_style/dart_style.dart';
 
+import 'package:dart_style/src/debug.dart';
+
 void main(List<String> args) {
-  formatStmt("sendPort.send({'type': 'error', 'error': 'oops'});");
-  formatUnit("class Foo{}");
+  debugFormatter = true;
+  useAnsiColors = true;
+
+  formatUnit("""
+library foo;
+
+//comment one
+
+class C {
+}
+  """);
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
   var result = new DartFormatter(pageWidth: pageWidth).formatStatement(source);
+
+  //result = result.split("\n").map((line) => "|$line|").join("\n");
 
   drawRuler("before", pageWidth);
   print(source);
@@ -16,6 +29,8 @@ void formatStmt(String source, [int pageWidth = 40]) {
 
 void formatUnit(String source, [int pageWidth = 40]) {
   var result = new DartFormatter(pageWidth: pageWidth).format(source);
+
+  //result = result.split("\n").map((line) => "|$line|").join("\n");
 
   drawRuler("before", pageWidth);
   print(source);
