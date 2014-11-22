@@ -6,13 +6,8 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatUnit("""
-library foo;
-
-//comment one
-
-class C {
-}
+  formatStmt("""
+a____________(b___________(c_____________(d_______________,() {body;}, e_______________________,f___________), g_____________,h_____________));
   """);
 }
 

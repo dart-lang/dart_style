@@ -1,3 +1,4 @@
+40 columns                              |
 >>> indented line comment (dartbug.com/16383)
 var map = {
   // comment

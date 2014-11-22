@@ -1359,7 +1359,7 @@ class SourceVisitor implements AstVisitor {
       _writer.writeComment(comment.toString().trim(),
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
           isTrailing: commentLine == previousLine,
-          isLeading: commentEndLine == nextLine);
+          isLeading: token.type != TokenType.EOF && commentEndLine == nextLine);
 
       comment = comment.next;
       previousLine = commentEndLine;

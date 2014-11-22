@@ -15,20 +15,42 @@ class LineWriter {
   // TODO(bob): Private?
   final StringBuffer buffer;
 
-  // TODO(bob): Make linked list?
+  // TODO(bob): Make linked list for faster insert/remove.
   final _chunks = <Chunk>[];
 
-  /// The current indentation level.
+  /// The current indentation and nesting levels.
   ///
-  /// Subsequent lines will be created with this much leading indentation.
-  int _indent = 0;
+  /// This is tracked as a stack of numbers. Each element in the stack
+  /// represents a level of statement indentation. The number of the element is
+  /// the current expression nesting depth for that statement.
+  ///
+  /// It's stored as a stack because expressions may contain statements which
+  /// in turn contain other expressions. The nesting level of the inner
+  /// expressions are unrelated to the surrounding ones. For example:
+  ///
+  ///     outer(invocation(() {
+  ///       inner(lambda());
+  ///     }));
+  ///
+  /// When writing `inner(lambda())`, we need to track its nesting level. At
+  /// the same time, when the lambda is done, we need to return to the nesting
+  /// level of `outer(invocation(...`.
+  ///
+  /// Start with an implicit entry so that top-level definitions and directives
+  /// can be split.
+  var _indentStack = [0];
 
-  /// The number of levels of expression nesting surrounding the chunks
-  /// currently being written.
-  int _nesting = 0;
+  /// The current indentation, not including expression nesting.
+  int get _indent => _indentStack.length - 1;
+
+  /// The nesting depth of the current inner-most block.
+  int get _nesting => _indentStack.last;
+  void set _nesting(int value) {
+    _indentStack[_indentStack.length - 1] = value;
+  }
 
   LineWriter(this._formatter, this.buffer) {
-    _indent = _formatter.indent;
+    indent_old(_formatter.indent);
   }
 
   /// Writes [string], the text for a single token, to the output.
@@ -36,15 +58,17 @@ class LineWriter {
     _chunks.add(new TextChunk(string));
   }
 
+  /// Writes a single non-breaking space.
   void writeSpace() {
     _chunks.add(new SpaceChunk());
   }
 
-  // TODO(bob): Doc.
+  /// Writes a [WhitespaceChunk] of [type].
   void writeWhitespace(Whitespace type) {
-    _chunks.add(new WhitespaceChunk(type, _indent, _nesting));
+    _chunks.add(new WhitespaceChunk(type, _indent, -1));
   }
 
+  /// Writes a comment with [text] (including the "//" or "/* */" syntax).
   void writeComment(String text,
       {bool isLineComment, bool isTrailing, bool isLeading}) {
     _chunks.add(new CommentChunk(text, _indent, _nesting,
@@ -60,6 +84,11 @@ class LineWriter {
     }
   }
 
+  /// Write a soft split with [cost], [param] and unsplit [text].
+  ///
+  /// If [cost] is omitted, defaults to [SplitCost.FREE]. If [param] is omitted,
+  /// one will be created. If a param is provided, [cost] is ignored. If
+  /// omitted, [text] defaults to an empty string.
   void writeSplit({int cost, SplitParam param, String text}) {
     if (cost == null) cost = SplitCost.FREE;
     if (param == null) param = new SplitParam(cost);
@@ -101,12 +130,12 @@ class LineWriter {
   // TODO(bob): Delete.
   /// Increase indentation by [levels].
   void indent_old([int levels = 1]) {
-    _indent += levels;
+    while (levels-- > 0) _indentStack.add(0);
   }
 
   /// Decrease indentation by [levels].
   void unindent_old([int levels = 1]) {
-    _indent -= levels;
+    while (levels-- > 0) _indentStack.removeLast();
 
     // If we adjust the indentation after writing a newline but before writing
     // anything else, it applies to that line.
@@ -118,13 +147,13 @@ class LineWriter {
 
   // TODO(bob): Doc.
   void indent() {
-    _indent++;
+    indent_old();
     _chunks.add(new IndentChunk(_indent, _nesting));
   }
 
   void unindent({bool newline: true}) {
-    _indent--;
-    _chunks.add(new UnindentChunk(_indent, _nesting, newline: newline));
+    unindent_old();
+    _chunks.add(new UnindentChunk(_indent, newline: newline));
   }
 
   void startSpan() {
@@ -218,7 +247,7 @@ class LineWriter {
     for (end = 0; end < _chunks.length; end++) {
       var chunk = _chunks[end];
 
-      if (chunk is HardSplitChunk && chunk.nesting == 0) {
+      if (chunk is HardSplitChunk && chunk.indent == 0 && chunk.nesting == 0) {
         splitLine();
         indent = _chunks[end].indent;
       }
@@ -293,7 +322,20 @@ class LineWriter {
       }
     }
 
-    // Turn remaining indentation into newlines.
+    convertToNewline(index, indent) {
+      _chunks[index] = new WhitespaceChunk(Whitespace.NEWLINE, indent, -1);
+
+      // If converting the [un]indent to a newline causes redundancy, discard
+      // the earlier one.
+      if (index > 0 && _chunks[index - 1] is WhitespaceChunk) {
+        _chunks.removeAt(index - 1);
+        index--;
+      }
+
+      return index;
+    }
+
+    // Turn remaining indents into newlines.
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
       if (chunk is! IndentChunk && chunk is! UnindentChunk) continue;
@@ -304,9 +346,8 @@ class LineWriter {
         continue;
       }
 
-      // Changing indentation always happens on a newline.
-      _chunks[i] = new WhitespaceChunk(Whitespace.NEWLINE,
-          chunk.indent, chunk.nesting);
+      // Indent chunks never occur in expression context, so ignore nesting.
+      _chunks[i] = new WhitespaceChunk(Whitespace.NEWLINE, chunk.indent, -1);
 
       // If converting the [un]indent to a newline causes redundancy, discard
       // the earlier one.
@@ -377,7 +418,7 @@ class LineWriter {
     }
   }
 
-  // TODO(bob): Doc and better name.
+  /// Massages whitespace surrounding comment chunks.
   void _processComments() {
     for (var i = 0; i < _chunks.length; i++) {
       if (_chunks[i] is CommentChunk) {
@@ -518,7 +559,11 @@ class LineWriter {
     return false;
   }
 
-  // TODO(bob): Doc. Must call after process comments.
+  /// Goes through the line and turns any [WhitespaceChunk]s into more specific
+  /// [HardSplitChunk]s.
+  ///
+  /// This must be called after [_processComments] since that will often create
+  /// [WhitespaceChunk]s.
   void _processWhitespace() {
     // TODO(bob): Can this ever cause redundant newlines/splits/whitespace?
     for (var i = 0; i < _chunks.length; i++) {

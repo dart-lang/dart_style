@@ -9,6 +9,9 @@ import 'debug.dart';
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
 
+/// The number of indentation levels in a single level of expression nesting.
+const INDENTS_PER_NEST = 2;
+
 class Line {
   final chunks = <Chunk>[];
 
@@ -190,21 +193,19 @@ class IndentChunk extends Chunk {
 }
 
 class UnindentChunk extends Chunk {
-  // TODO(bob): Yet more copy/paste indent/nesting.
+  // TODO(bob): Yet more copy/paste indent.
   final int indent;
-  final int nesting;
 
   // TODO(bob): Can we do something cleaner here? Seems like unindent shouldn't
   // care about this.
   /// Whether this unindent starts a newline.
   final bool newline;
 
-  UnindentChunk(this.indent, this.nesting, {this.newline});
+  UnindentChunk(this.indent, {this.newline});
 
   String toString() {
     var result = "${Color.cyan}<-${Color.none}";
     if (indent != 0) result += " indent $indent";
-    if (nesting != 0) result += " nest $nesting";
     return result;
   }
 }
@@ -229,6 +230,14 @@ abstract class SplitChunk extends Chunk {
   ///         argument, anotherFunction(argument,
   ///             argument));
   final int nesting;
+
+  /// Whether or not the split occurs inside an expression.
+  ///
+  /// Splits within expressions must take into account how deeply nested they
+  /// are to determine the indentation of subsequent lines. "Statement level"
+  /// splits that occur between statements or in the top-level of a unit only
+  /// take the main indent level into account.
+  bool get isInExpression => nesting != -1;
 
   SplitChunk(this.indent, this.nesting);
 }
