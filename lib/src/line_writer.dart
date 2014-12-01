@@ -206,11 +206,6 @@ class LineWriter {
     _nesting--;
   }
 
-  /// Makes sure we have written one last trailing newline at the end of a
-  /// compilation unit.
-  void ensureNewline() {
-  }
-
   /// Finish writing the last line.
   void end() {
     if (debugFormatter) _dumpChunks("before processing");
