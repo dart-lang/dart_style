@@ -50,7 +50,7 @@ class LineWriter {
   }
 
   LineWriter(this._formatter, this.buffer) {
-    indent_old(_formatter.indent);
+    increaseIndent(_formatter.indent);
   }
 
   /// Writes [string], the text for a single token, to the output.
@@ -127,14 +127,37 @@ class LineWriter {
     }
   }
 
-  // TODO(bob): Delete.
-  /// Increase indentation by [levels].
-  void indent_old([int levels = 1]) {
+  /// Outputs an [IndentChunk] that emits a newline and increases indentation by
+  /// [levels].
+  void indent({int levels: 1}) {
+    increaseIndent(levels);
+    _chunks.add(new IndentChunk(_indent, _nesting));
+  }
+
+  /// Outputs [UnindentChunk] that decreases indentation by [levels].
+  ///
+  /// If [newline] is `false`, does not add a newline. Otherwise, it does.
+  void unindent({int levels: 1, bool newline: true}) {
+    decreaseIndent(levels);
+    _chunks.add(new UnindentChunk(_indent, newline: newline));
+  }
+
+  /// Increase indentation of the next line by [levels].
+  ///
+  /// Unlike [indent], this does not insert an [IndentChunk] or a newline. It's
+  /// used to explicitly control indentation within an expression or statement,
+  /// for example, indentating subsequent variables in a variable declaration.
+  void increaseIndent([int levels = 1]) {
     while (levels-- > 0) _indentStack.add(0);
   }
 
-  /// Decrease indentation by [levels].
-  void unindent_old([int levels = 1]) {
+  /// Decreases indentation of the next line by [levels].
+  ///
+  /// Unlike [unindent], this does not insert an [UnindentChunk] or a newline.
+  /// It's used to explicitly control indentation within an expression or
+  /// statement, for example, indentating subsequent variables in a variable
+  /// declaration.
+  void decreaseIndent([int levels = 1]) {
     while (levels-- > 0) _indentStack.removeLast();
 
     // If we adjust the indentation after writing a newline but before writing
@@ -143,17 +166,6 @@ class LineWriter {
     if (_chunks.last is WhitespaceChunk) {
       _chunks.last.indent = _indent;
     }
-  }
-
-  // TODO(bob): Doc.
-  void indent() {
-    indent_old();
-    _chunks.add(new IndentChunk(_indent, _nesting));
-  }
-
-  void unindent({bool newline: true}) {
-    unindent_old();
-    _chunks.add(new UnindentChunk(_indent, newline: newline));
   }
 
   void startSpan() {

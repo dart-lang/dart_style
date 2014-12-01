@@ -188,13 +188,13 @@ class SourceVisitor implements AstVisitor {
     //         ..method(() {
     //       ...
     //     });
-    _writer.indent_old(2);
+    _writer.increaseIndent(2);
     // Single cascades do not force a linebreak (dartbug.com/16384)
     if (node.cascadeSections.length > 1) {
       newline();
     }
     visitNodes(node.cascadeSections, between: newline);
-    _writer.unindent_old(2);
+    _writer.decreaseIndent(2);
   }
 
   visitCatchClause(CatchClause node) {
@@ -307,7 +307,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorInitializers(ConstructorDeclaration node) {
-    _writer.indent_old(2);
+    _writer.increaseIndent(2);
 
     if (node.initializers.length > 1) {
       newline();
@@ -315,7 +315,7 @@ class SourceVisitor implements AstVisitor {
       split();
     }
 
-    token(node.separator /* : */);
+    token(node.separator); // ":".
     space();
 
     for (var i = 0; i < node.initializers.length; i++) {
@@ -329,8 +329,7 @@ class SourceVisitor implements AstVisitor {
         // Foo()
         //     : first,
         //       second;
-        if (i == 1) _writer.indent_old();
-
+        if (i == 1) _writer.increaseIndent();
         newline();
       }
 
@@ -338,9 +337,9 @@ class SourceVisitor implements AstVisitor {
     }
 
     // If there were multiple fields, discard their extra indentation.
-    if (node.initializers.length > 1) _writer.unindent_old();
+    if (node.initializers.length > 1) _writer.decreaseIndent();
 
-    _writer.unindent_old(2);
+    _writer.decreaseIndent(2);
   }
 
   visitConstructorRedirects(ConstructorDeclaration node) {
@@ -730,7 +729,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.indent_old();
+    _writer.increaseIndent();
 
     // Split after the "[".
     _writer.multisplit();
@@ -741,7 +740,7 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.unindent_old();
+    _writer.decreaseIndent();
 
     // Split before the "]".
     _writer.multisplit();
@@ -761,7 +760,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.indent_old();
+    _writer.increaseIndent();
 
     // Split after the "{".
     _writer.multisplit();
@@ -772,7 +771,7 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.unindent_old();
+    _writer.decreaseIndent();
 
     // Split before the "}".
     _writer.multisplit();
@@ -1121,7 +1120,7 @@ class SourceVisitor implements AstVisitor {
       visit(node.variables.first);
 
       // Indent variables after the first one to line up past "var".
-      _writer.indent_old(2);
+      _writer.increaseIndent(2);
 
       for (var variable in node.variables.skip(1)) {
         token(variable.beginToken.previous); // Comma.
@@ -1130,7 +1129,7 @@ class SourceVisitor implements AstVisitor {
         visit(variable);
       }
 
-      _writer.unindent_old(2);
+      _writer.decreaseIndent(2);
       return;
     }
 

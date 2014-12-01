@@ -160,7 +160,11 @@ class CommentChunk extends Chunk {
 /// This is used to penalize splitting arguments onto multiple lines so that it
 /// prefers to keep arguments together even if it means moving them all to the
 /// next line when possible.
-class SpanStartChunk extends Chunk {}
+class SpanStartChunk extends Chunk {
+  String get text => "";
+
+  String toString() => "${Color.cyan}‹${Color.none}";
+}
 
 /// The second of a pair of chunks used to delimit a range of chunks that must
 /// end up on the same line to avoid paying a cost.
@@ -173,7 +177,11 @@ class SpanEndChunk extends Chunk {
   /// The cost applied when the span is split across multiple lines.
   final int cost;
 
+  String get text => "";
+
   SpanEndChunk(this.start, this.cost);
+
+  String toString() => "${Color.cyan}›$cost${Color.none}";
 }
 
 // TODO(bob): Doc.
