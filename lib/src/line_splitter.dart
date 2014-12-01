@@ -76,7 +76,25 @@ class LineSplitter {
   void apply(StringBuffer buffer) {
     if (debugFormatter) _dumpLine();
 
-    _applySplits(_findBestSplits(new LinePrefix()), buffer);
+    var splits = _findBestSplits(new LinePrefix());
+
+    var indent = _line.indent;
+    var nester = new Nester(_line.indent, new NestingStack());
+
+    // Write each chunk in the line.
+    for (var chunk in _line.chunks) {
+      // TODO(bob): Shared base class for newline and split.
+      if (chunk is HardSplitChunk ||
+          (chunk is SoftSplitChunk && splits.contains(chunk.param))) {
+        buffer.write(_lineEnding);
+        indent = nester.handleSplit(chunk);
+      } else {
+        // Now that we know the line isn't empty, write the leading indentation.
+        if (indent != 0) buffer.write(" " * (indent * SPACES_PER_INDENT));
+        buffer.write(chunk.text);
+        indent = 0;
+      }
+    }
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
@@ -269,28 +287,6 @@ class LineSplitter {
     return cost;
   }
 
-  /// Applies the current set of splits to [line] and breaks it into a series
-  /// of individual lines.
-  ///
-  /// Returns the resulting split lines.
-  void _applySplits(Set<SplitParam> splits, StringBuffer buffer) {
-    buffer.write(" " * (_line.indent * SPACES_PER_INDENT));
-
-    var nester = new Nester(_line.indent, new NestingStack());
-
-    // Write each chunk in the line.
-    for (var chunk in _line.chunks) {
-      // TODO(bob): Shared base class for newline and split.
-      if (chunk is HardSplitChunk ||
-          (chunk is SoftSplitChunk && splits.contains(chunk.param))) {
-        buffer.write(_lineEnding);
-        buffer.write(" " * (nester.handleSplit(chunk) * SPACES_PER_INDENT));
-      } else {
-        buffer.write(chunk.text);
-      }
-    }
-  }
-
   /// Prints [line] to stdout with split chunks made visible.
   ///
   /// This is just for debugging.
@@ -322,7 +318,7 @@ class LineSplitter {
         }
         buffer.write("${Color.none}");
       } else if (chunk is HardSplitChunk) {
-        buffer.write("${Color.magenta}\\n${Color.none}");
+        buffer.write("${Color.magenta}\\n${"->" * chunk.indent}${Color.none}");
       } else {
         // Unexpected chunk type.
         buffer.write("${Color.red}‹$chunk›${Color.none}");
