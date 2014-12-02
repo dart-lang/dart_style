@@ -46,18 +46,15 @@ class TextChunk extends Chunk {
   }
 }
 
-class SpaceChunk extends Chunk {
-  String get text => " ";
-
-  String toString() => "${Color.gray}(space)${Color.none}";
-}
-
 /// The kind of pending whitespace that has been "written", but not actually
 /// physically output yet.
 ///
 /// We defer actually writing whitespace until a non-whitespace token is
 /// encountered to avoid trailing whitespace.
 class Whitespace {
+  /// A single non-breaking space.
+  static const SPACE = const Whitespace._("SPACE");
+
   /// A single newline.
   static const NEWLINE = const Whitespace._("NEWLINE");
 
@@ -109,49 +106,6 @@ class WhitespaceChunk extends Chunk {
   }
 }
 
-// TODO(bob): Doc.
-// TODO(bob): Extend LineChunk?
-class CommentChunk extends Chunk {
-  final String text;
-
-  /// The indentation level of lines after this line comment.
-  final int indent;
-
-  /// The number of levels of expression nesting that this comment occurs
-  /// within.
-  final int nesting;
-
-  final bool isLineComment;
-  bool get isBlockComment => !isLineComment;
-
-  /// `true` if there is non-whitespace source text on the same line before this
-  /// comment. For example:
-  ///
-  ///     someTextBefore; // a comment
-  bool isTrailing;
-
-  /// `true` if there is non-whitespace source text on the same line after this
-  /// comment. For example:
-  ///
-  ///     /* a comment */ someTextAfter;
-  final bool isLeading;
-
-  /// `true` if this comment has non-whitespace text both before and after it.
-  bool get isInline => isTrailing && isLeading;
-
-  CommentChunk(this.text, this.indent, this.nesting,
-      {this.isLineComment, this.isTrailing, this.isLeading});
-
-  String toString() {
-    var result = "${Color.gray}$text${Color.none}";
-    if (indent != 0) result += " indent $indent";
-    if (nesting != 0) result += " nest $nesting";
-    if (isTrailing) result += " trailing";
-    if (isLeading) result += " leading";
-    return result;
-  }
-}
-
 /// The first of a pair of chunks used to delimit a range of chunks that must
 /// end up on the same line to avoid paying a cost.
 ///
@@ -182,40 +136,6 @@ class SpanEndChunk extends Chunk {
   SpanEndChunk(this.start, this.cost);
 
   String toString() => "${Color.cyan}›$cost${Color.none}";
-}
-
-// TODO(bob): Doc.
-class IndentChunk extends Chunk {
-  // TODO(bob): Yet more copy/paste indent/nesting.
-  final int indent;
-  final int nesting;
-
-  IndentChunk(this.indent, this.nesting);
-
-  String toString() {
-    var result = "${Color.cyan}->${Color.none}";
-    if (indent != 0) result += " indent $indent";
-    if (nesting != 0) result += " nest $nesting";
-    return result;
-  }
-}
-
-class UnindentChunk extends Chunk {
-  // TODO(bob): Yet more copy/paste indent.
-  final int indent;
-
-  // TODO(bob): Can we do something cleaner here? Seems like unindent shouldn't
-  // care about this.
-  /// Whether this unindent starts a newline.
-  final bool newline;
-
-  UnindentChunk(this.indent, {this.newline});
-
-  String toString() {
-    var result = "${Color.cyan}<-${Color.none}";
-    if (indent != 0) result += " indent $indent";
-    return result;
-  }
 }
 
 // TODO(bob): Update other docs that refer to old SplitChunk.
@@ -252,7 +172,7 @@ abstract class SplitChunk extends Chunk {
 
 // TODO(bob): Doc.
 class HardSplitChunk extends SplitChunk {
-  HardSplitChunk(int indent, int nesting) : super(indent, nesting);
+  HardSplitChunk(int indent, [int nesting = -1]) : super(indent, nesting);
 
   String toString() => "HardSplit indent $indent nest $nesting";
 }
@@ -345,6 +265,7 @@ class SplitCost {
   static const OVERFLOW_CHAR = 10000;
 }
 
+// TODO(bob): Move. Private to LineWriter. Sublibrary?
 /// Handles a series of [SoftSplitChunks] that all either split or don't split
 /// together.
 ///
@@ -383,32 +304,19 @@ class SplitCost {
 ///     }).a().b();
 ///     The trailing calls are short enough to not split.
 class Multisplit {
+  /// The index of the first chunk contained by the multisplit.
+  ///
+  /// This is used to determine which chunk range needs to be scanned to look
+  /// for hard newlines to see if the multisplit gets forced.
+  final int startChunk;
+
   /// The [SplitParam] that controls all of the split chunks.
   SplitParam get param => _param;
   SplitParam _param;
 
-  /// `true` if a hard newline has forced this multisplit to be split.
-  ///
-  /// Initially `false`.
-  bool get isSplit => _isSplit;
-  bool _isSplit = false;
-
   final bool _separable;
 
-  Multisplit(int cost, {bool separable})
+  Multisplit(this.startChunk, int cost, {bool separable})
       : _param = new SplitParam(cost),
         _separable = separable != null ? separable : false;
-
-  /// Handles a newline occurring in the middle of this multisplit.
-  ///
-  /// If the multisplit is separable, this creates a new param so the previous
-  /// split chunks can vary independently of later ones. Otherwise, it just
-  /// marks this multisplit as being split.
-  void split() {
-    if (_separable) {
-      _param = new SplitParam(param.cost);
-    } else {
-      _isSplit = true;
-    }
-  }
 }

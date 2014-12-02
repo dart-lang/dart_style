@@ -6,11 +6,8 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatStmt('{\n'
-    '  a();\n'
-    '\n'
-    '  b();\n'
-    '  c();\n'
+  formatUnit('class A {\n'
+    '  void x() {}\n'
     '}\n');
 }
 

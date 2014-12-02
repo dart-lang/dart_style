@@ -61,12 +61,12 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     if (node.arguments.isNotEmpty) {
-      // See if we kept all of the arguments on the same line.
-      _writer.startSpan();
-
       // Allow splitting after "(".
       var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
       zeroSplit(cost--);
+
+      // See if we kept all of the arguments on the same line.
+      _writer.startSpan();
 
       // Prefer splitting later arguments over earlier ones.
       visitCommaSeparatedNodes(node.arguments,
@@ -142,12 +142,25 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
-    // TODO(bob): Do same for other indented bodies. Tests too.
-
     token(node.leftBracket);
-    _writer.indent();
-    visitNodes(node.statements, between: oneOrTwoNewlines);
-    token(node.rightBracket, before: _writer.unindent);
+
+    // TODO(bob): Helper fn for these?
+    _writer.increaseIndent();
+    _writer.startMultisplit();
+    _writer.multisplit();
+
+    for (var statement in node.statements) {
+      visit(statement);
+      // TODO(bob): Don't allow extra newline after last statement.
+      oneOrTwoNewlines();
+    }
+
+    token(node.rightBracket, before: () {
+      // TODO(bob): Move these out of before?
+      _writer.decreaseIndent();
+      _writer.multisplit();
+      _writer.endMultisplit();
+    });
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -232,11 +245,22 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.nativeClause, before: space);
     space();
     token(node.leftBracket);
-    _writer.indent();
-    if (!node.members.isEmpty) {
-      visitNodes(node.members, between: oneOrTwoNewlines);
+    _writer.increaseIndent();
+    _writer.startMultisplit();
+    _writer.multisplit();
+
+    for (var member in node.members) {
+      visit(member);
+      // TODO(bob): Don't allow extra newline after last statement.
+      oneOrTwoNewlines();
     }
-    token(node.rightBracket, before: _writer.unindent);
+
+    token(node.rightBracket, before: () {
+      // TODO(bob): Move these out of before?
+      _writer.decreaseIndent();
+      _writer.multisplit();
+      _writer.endMultisplit();
+    });
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
@@ -1278,7 +1302,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    _writer.writeSpace();
+    _writer.writeWhitespace(Whitespace.SPACE);
   }
 
   /// Emit a single mandatory newline.
@@ -1331,7 +1355,7 @@ class SourceVisitor implements AstVisitor {
 
     if (before != null) before();
 
-    append(token.lexeme);
+    _writer.write(token.lexeme);
 
     if (after != null) after();
   }

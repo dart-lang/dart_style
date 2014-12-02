@@ -18,6 +18,36 @@ class LineWriter {
   // TODO(bob): Make linked list for faster insert/remove.
   final _chunks = <Chunk>[];
 
+  /// The whitespace that should be written before the next non-whitespace token
+  /// or `null` if no whitespace is pending.
+  Whitespace _pendingWhitespace;
+
+  /// The nested stack of multisplits that are currently being written.
+  ///
+  /// If a hard newline appears in the middle of a multisplit, then the
+  /// multisplit itself must be split. For example, a collection can either be
+  /// single line:
+  ///
+  ///    [all, on, one, line];
+  ///
+  /// or multi-line:
+  ///
+  ///    [
+  ///      one,
+  ///      item,
+  ///      per,
+  ///      line
+  ///    ]
+  ///
+  /// Collections can also contain function expressions, which have blocks which
+  /// in turn force a newline in the middle of the collection. When that
+  /// happens, we need to force all surrounding collections to be multi-line.
+  /// This tracks them so we can do that.
+  final _multisplits = <Multisplit>[];
+
+  /// The nested stack of spans that are currently being written.
+  final _spans = <SpanStartChunk>[];
+
   /// The current indentation and nesting levels.
   ///
   /// This is tracked as a stack of numbers. Each element in the stack
@@ -55,33 +85,13 @@ class LineWriter {
 
   /// Writes [string], the text for a single token, to the output.
   void write(String string) {
+    _emitPendingWhitespace();
     _chunks.add(new TextChunk(string));
-  }
-
-  /// Writes a single non-breaking space.
-  void writeSpace() {
-    _chunks.add(new SpaceChunk());
   }
 
   /// Writes a [WhitespaceChunk] of [type].
   void writeWhitespace(Whitespace type) {
-    _chunks.add(new WhitespaceChunk(type, _indent, -1));
-  }
-
-  /// Writes a comment with [text] (including the "//" or "/* */" syntax).
-  void writeComment(String text,
-      {bool isLineComment, bool isTrailing, bool isLeading}) {
-    _chunks.add(new CommentChunk(text, _indent, _nesting,
-        isLineComment: isLineComment,
-        isTrailing: isTrailing,
-        isLeading: isLeading));
-
-    // Make sure there is at least one newline after a line comment and allow
-    // one after a block comment that has nothing after it.
-    if (!isLeading) {
-      _chunks.add(new WhitespaceChunk(
-          Whitespace.ONE_OR_TWO_NEWLINES, _indent, _nesting));
-    }
+    _pendingWhitespace = type;
   }
 
   /// Write a soft split with [cost], [param] and unsplit [text].
@@ -94,44 +104,61 @@ class LineWriter {
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
-    _chunks.add(new SoftSplitChunk(_indent, _nesting, param, text));
+    _addSplit(new SoftSplitChunk(_indent, _nesting, param, text));
   }
 
   void preserveNewlines(int numLines) {
-    // Don't preserve any whitespace at the beginning of the file.
-    if (_chunks.isEmpty) return;
-
-    // TODO(bob): Skip past trailing spans.
-    var before = _chunks.last;
-    if (before is! WhitespaceChunk) return;
-
-    // TODO(bob): Do something cleaner.
-    before.actual = numLines;
-
-    switch (before.type) {
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pendingWhitespace) {
       case Whitespace.SPACE_OR_NEWLINE:
         if (numLines > 0) {
-          before.type = Whitespace.NEWLINE;
+          _pendingWhitespace = Whitespace.NEWLINE;
         } else {
-          _chunks[_chunks.length - 1] = new SpaceChunk();
+          _pendingWhitespace = Whitespace.SPACE;
         }
         break;
 
       case Whitespace.ONE_OR_TWO_NEWLINES:
         if (numLines > 1) {
-          before.type = Whitespace.TWO_NEWLINES;
+          _pendingWhitespace = Whitespace.TWO_NEWLINES;
         } else {
-          before.type = Whitespace.NEWLINE;
+          _pendingWhitespace = Whitespace.NEWLINE;
         }
         break;
     }
   }
 
+  /// Writes a comment with [text] (including the "//" or "/* */" syntax).
+  void writeComment(String text,
+      {bool isLineComment, bool isTrailing, bool isLeading}) {
+    write(text);
+
+    // TODO(bob): Probably want ONE_OR_TWO_NEWLINES.
+    if (isLineComment) _addHardSplit(nest: true);
+
+    /*
+    _chunks.add(new CommentChunk(text, _indent, _nesting,
+        isLineComment: isLineComment,
+        isTrailing: isTrailing,
+        isLeading: isLeading));
+
+    // Make sure there is at least one newline after a line comment and allow
+    // one after a block comment that has nothing after it.
+    if (!isLeading) {
+      _chunks.add(new WhitespaceChunk(
+          Whitespace.ONE_OR_TWO_NEWLINES, _indent, _nesting));
+    }
+    */
+  }
+
+  // TODO(bob): Lose these and just do explicit newlines()?
   /// Outputs an [IndentChunk] that emits a newline and increases indentation by
   /// [levels].
   void indent({int levels: 1}) {
     increaseIndent(levels);
-    _chunks.add(new IndentChunk(_indent, _nesting));
+
+    _addHardSplit();
   }
 
   /// Outputs [UnindentChunk] that decreases indentation by [levels].
@@ -139,14 +166,15 @@ class LineWriter {
   /// If [newline] is `false`, does not add a newline. Otherwise, it does.
   void unindent({int levels: 1, bool newline: true}) {
     decreaseIndent(levels);
-    _chunks.add(new UnindentChunk(_indent, newline: newline));
+
+    if (newline) _addHardSplit();
   }
 
   /// Increase indentation of the next line by [levels].
   ///
   /// Unlike [indent], this does not insert an [IndentChunk] or a newline. It's
   /// used to explicitly control indentation within an expression or statement,
-  /// for example, indentating subsequent variables in a variable declaration.
+  /// for example, indenting subsequent variables in a variable declaration.
   void increaseIndent([int levels = 1]) {
     while (levels-- > 0) _indentStack.add(0);
   }
@@ -155,26 +183,26 @@ class LineWriter {
   ///
   /// Unlike [unindent], this does not insert an [UnindentChunk] or a newline.
   /// It's used to explicitly control indentation within an expression or
-  /// statement, for example, indentating subsequent variables in a variable
+  /// statement, for example, indenting subsequent variables in a variable
   /// declaration.
   void decreaseIndent([int levels = 1]) {
     while (levels-- > 0) _indentStack.removeLast();
-
-    // If we adjust the indentation after writing a newline but before writing
-    // anything else, it applies to that line.
-    // TODO(bob): Is this the best way we can do this?
-    if (_chunks.last is WhitespaceChunk) {
-      _chunks.last.indent = _indent;
-    }
   }
 
   void startSpan() {
+    _spans.add(new SpanStartChunk());
+    // TODO(bob): What about pending whitespace?
+    _chunks.add(_spans.last);
   }
 
   void endSpan(int cost) {
+    // TODO(bob): What about pending whitespace?
+    _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
   }
 
   void startMultisplit({int cost: SplitCost.FREE, bool separable}) {
+    _multisplits.add(new Multisplit(
+        _chunks.length, cost, separable: separable));
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
@@ -184,10 +212,32 @@ class LineWriter {
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
   void multisplit({String text: "", bool nest: false}) {
-    _chunks.add(new SoftSplitChunk(_indent, _nesting, new SplitParam(), text));
+    _addSplit(new SoftSplitChunk(
+        _indent, nest ? _nesting : -1, _multisplits.last.param, text));
   }
 
   void endMultisplit() {
+    var multisplit = _multisplits.removeLast();
+
+    // See if it contains any hard splits that force it in turn to split.
+    var forced = false;
+    for (var i = multisplit.startChunk; i < _chunks.length; i++) {
+      if (_chunks[i] is HardSplitChunk) {
+        forced = true;
+        break;
+      }
+    }
+
+    if (!forced) return;
+
+    // Turn all of this multis soft splits into hard.
+    for (var i = multisplit.startChunk; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      if (chunk is SoftSplitChunk && chunk.param == multisplit.param) {
+        // TODO(bob): Unify hard/soft classes?
+        _chunks[i] = new HardSplitChunk(chunk.indent, chunk.nesting);
+      }
+    }
   }
 
   /// Increases the level of expression nesting.
@@ -208,20 +258,7 @@ class LineWriter {
 
   /// Finish writing the last line.
   void end() {
-    if (debugFormatter) _dumpChunks("before processing");
-
-    // TODO(bob): Clean up.
-    _processIndents();
-    if (debugFormatter) _dumpChunks("after processing indentation");
-
-    _processCommentLines();
-    _processComments();
-
-    if (debugFormatter) _dumpChunks("after processing comments");
-
-    _processWhitespace();
-
-    if (debugFormatter) _dumpChunks("after processing whitespace");
+    if (debugFormatter) _dumpChunks("all chunks");
 
     // Break the chunks into unrelated lines that can be wrapped separately.
     var indent = _formatter.indent;
@@ -254,6 +291,8 @@ class LineWriter {
     for (end = 0; end < _chunks.length; end++) {
       var chunk = _chunks[end];
 
+      // TODO(bob): Do this while chunks are being written instead of all at
+      // the end.
       if (chunk is HardSplitChunk && chunk.indent == 0 && chunk.nesting == 0) {
         splitLine();
         indent = _chunks[end].indent;
@@ -264,6 +303,76 @@ class LineWriter {
     if (start < end) splitLine();
   }
 
+  /// Writes the current pending [Whitespace] to the output, if any.
+  ///
+  /// This should only be called after source lines have been preserved to turn
+  /// any ambiguous whitespace into a concrete choice.
+  void _emitPendingWhitespace() {
+    if (_pendingWhitespace == null) return;
+    // Output any pending whitespace first now that we know it won't be
+    // trailing.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE:
+        _chunks.add(new TextChunk(" "));
+        break;
+
+      case Whitespace.NEWLINE:
+        _addHardSplit();
+        break;
+
+      case Whitespace.TWO_NEWLINES:
+        _addHardSplit();
+
+        // We don't want to collapse this one, so add it explicitly.
+        _chunks.add(new HardSplitChunk(_indent));
+        break;
+
+      case Whitespace.SPACE_OR_NEWLINE:
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        // We should have pinned these down before getting here.
+        assert(false);
+        break;
+    }
+
+    _pendingWhitespace = null;
+  }
+
+  void _addSplit(SoftSplitChunk split) {
+    // TODO(bob): What if pending is space?
+    _emitPendingWhitespace();
+
+    // TODO(bob): Do this cleaner and unify with _addHardSplit.
+    // Collapse duplicate splits.
+    if (_chunks.isNotEmpty && _chunks.last is HardSplitChunk) {
+      // Turn the soft split into a hard one.
+      var hardSplit = _chunks.removeLast() as HardSplitChunk;
+      _chunks.add(new HardSplitChunk(split.indent, split.nesting));
+      return;
+    }
+
+    // Last soft split wins.
+    if (_chunks.isNotEmpty && _chunks.last is SoftSplitChunk) {
+      _chunks.removeLast();
+    }
+
+    _chunks.add(split);
+  }
+
+  void _addHardSplit({bool nest: false}) {
+    // This overrides any other whitespace.
+    _pendingWhitespace = null;
+
+    // Collapse duplicate splits. Last one wins.
+    if (_chunks.isNotEmpty &&
+        (_chunks.last is HardSplitChunk || _chunks.last is SoftSplitChunk)) {
+      _chunks.removeLast();
+    }
+
+    var split = new HardSplitChunk(_indent, nest ? _nesting : -1);
+    _chunks.add(split);
+  }
+
+  /*
   void _processIndents() {
     // Discard any indents that have no contents except for inline comments.
     for (var i = 0; i < _chunks.length - 1; i++) {
@@ -327,19 +436,6 @@ class LineWriter {
           !_chunks[j].isLeading) {
         _chunks[i + 1].isTrailing = false;
       }
-    }
-
-    convertToNewline(index, indent) {
-      _chunks[index] = new WhitespaceChunk(Whitespace.NEWLINE, indent, -1);
-
-      // If converting the [un]indent to a newline causes redundancy, discard
-      // the earlier one.
-      if (index > 0 && _chunks[index - 1] is WhitespaceChunk) {
-        _chunks.removeAt(index - 1);
-        index--;
-      }
-
-      return index;
     }
 
     // Turn remaining indents into newlines.
@@ -599,6 +695,7 @@ class LineWriter {
     // Remove any trailing newlines.
     while (_chunks.last is HardSplitChunk) _chunks.removeLast();
   }
+  */
 
   // TODO(bob): Need tests for line-splitting before and after block comments.
 
