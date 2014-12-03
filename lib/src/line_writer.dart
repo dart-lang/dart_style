@@ -107,7 +107,7 @@ class LineWriter {
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
-    _addSplit(new SplitChunk(_indent, _nesting, param, text));
+    _addSplit(new SplitChunk(_indent, _nesting, param: param, text: text));
   }
 
   void preserveNewlines(int numLines) {
@@ -141,23 +141,9 @@ class LineWriter {
       // If we're sitting on a soft split, move the comment before it to adhere
       // it to the preceding text.
       var split;
-      // TODO(bob): Need to not do this on splits where we don't want to allow
-      // a comment on that line:
-      //
-      // [// comment
-      //   item
-      // ]
-      //
-      // class Foo { // comment
-      // }
-      //
-      // { // comment
-      //   'key': 'value'
-      // }
-      //
-      // main() { // comment
-      // }
-      if (_chunks.isNotEmpty && _chunks.last is SplitChunk) {
+      if (_chunks.isNotEmpty &&
+          _chunks.last is SplitChunk &&
+          _chunks.last.allowTrailingCommentBefore) {
         split = _chunks.removeLast();
       }
 
@@ -240,9 +226,12 @@ class LineWriter {
   /// is `true`, then this split will take into account expression nesting.
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
-  void multisplit({String text: "", bool nest: false}) {
-    _addSplit(new SplitChunk(
-        _indent, nest ? _nesting : -1, _multisplits.last.param, text));
+  void multisplit({String text: "", bool nest: false,
+      bool allowTrailingCommentBefore: true}) {
+    _addSplit(new SplitChunk(_indent, nest ? _nesting : -1,
+        param: _multisplits.last.param,
+        text: text,
+        allowTrailingCommentBefore: allowTrailingCommentBefore));
   }
 
   void endMultisplit() {

@@ -154,12 +154,24 @@ class SplitChunk extends Chunk {
   /// take the main indent level into account.
   bool get isInExpression => _nesting != -1;
 
+  /// `true` if a trailing comment is allowed to appear at the end of the line
+  /// before this split.
+  ///
+  /// This is `true` for most splits, but `false` for splits before a block or
+  /// collection literal in order to forbid constructs like:
+  ///
+  ///     main() { // comment
+  ///     }
+  final bool allowTrailingCommentBefore;
+
   /// Creates a new [SplitChunk] where the following line will have [_indent]
   /// and [_nesting].
   ///
   /// If [_param] is non-`null`, creates a soft split. Otherwise, creates a
   /// hard split. When non-split, a soft split expands to [text].
-  SplitChunk(this._indent, this._nesting, [this._param, this.text = ""]);
+  SplitChunk(this._indent, this._nesting, {SplitParam param, this.text: "",
+      this.allowTrailingCommentBefore: true})
+      : _param = param;
 
   bool get isHardSplit => _param == null;
   bool get isSoftSplit => _param != null;

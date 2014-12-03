@@ -7,8 +7,7 @@ void main(List<String> args) {
   useAnsiColors = true;
 
   formatStmt("""
-someMethod(argument1, argument2, // comment
-argument3);
+someMethod(argument1, argument2 /* comment */);
 """);
 }
 

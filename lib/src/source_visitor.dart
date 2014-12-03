@@ -60,22 +60,22 @@ class SourceVisitor implements AstVisitor {
     _writer.nestExpression();
     token(node.leftParenthesis);
 
-    if (node.arguments.isNotEmpty) {
-      // Allow splitting after "(".
-      var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
-      zeroSplit(cost--);
+    // Allow splitting after "(".
+    var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
+    zeroSplit(cost--);
 
-      // See if we kept all of the arguments on the same line.
-      _writer.startSpan();
+    // See if we kept all of the arguments on the same line.
+    _writer.startSpan();
 
-      // Prefer splitting later arguments over earlier ones.
-      visitCommaSeparatedNodes(node.arguments,
-          between: () => split(cost: cost--));
-
-      _writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
-    }
+    // Prefer splitting later arguments over earlier ones.
+    visitCommaSeparatedNodes(node.arguments,
+        between: () => split(cost: cost--));
 
     token(node.rightParenthesis);
+
+    // End the span after the ")". That ensures inline block comments after the
+    // last argument are part of the span.
+    _writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
     _writer.unnest();
   }
 
@@ -147,7 +147,7 @@ class SourceVisitor implements AstVisitor {
     // TODO(bob): Helper fn for these?
     _writer.increaseIndent();
     _writer.startMultisplit();
-    _writer.multisplit();
+    _writer.multisplit(allowTrailingCommentBefore: false);
 
     for (var statement in node.statements) {
       visit(statement);
@@ -247,7 +247,7 @@ class SourceVisitor implements AstVisitor {
     token(node.leftBracket);
     _writer.increaseIndent();
     _writer.startMultisplit();
-    _writer.multisplit();
+    _writer.multisplit(allowTrailingCommentBefore: false);
 
     for (var member in node.members) {
       visit(member);
@@ -752,7 +752,7 @@ class SourceVisitor implements AstVisitor {
     _writer.increaseIndent();
 
     // Split after the "[".
-    _writer.multisplit();
+    _writer.multisplit(allowTrailingCommentBefore: false);
 
     visitCommaSeparatedNodes(node.elements, between: () {
       _writer.multisplit(text: " ");
@@ -777,7 +777,7 @@ class SourceVisitor implements AstVisitor {
     _writer.increaseIndent();
 
     // Split after the "{".
-    _writer.multisplit();
+    _writer.multisplit(allowTrailingCommentBefore: false);
 
     visitCommaSeparatedNodes(node.entries, between: () {
       _writer.multisplit(text: " ");
