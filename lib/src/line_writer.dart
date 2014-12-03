@@ -107,7 +107,7 @@ class LineWriter {
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
-    _addSplit(new SoftSplitChunk(_indent, _nesting, param, text));
+    _addSplit(new SplitChunk(_indent, _nesting, param, text));
   }
 
   void preserveNewlines(int numLines) {
@@ -241,7 +241,7 @@ class LineWriter {
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
   void multisplit({String text: "", bool nest: false}) {
-    _addSplit(new SoftSplitChunk(
+    _addSplit(new SplitChunk(
         _indent, nest ? _nesting : -1, _multisplits.last.param, text));
   }
 
@@ -251,7 +251,7 @@ class LineWriter {
     // See if it contains any hard splits that force it in turn to split.
     var forced = false;
     for (var i = multisplit.startChunk; i < _chunks.length; i++) {
-      if (_chunks[i] is HardSplitChunk) {
+      if (_chunks[i].isHardSplit) {
         forced = true;
         break;
       }
@@ -265,10 +265,7 @@ class LineWriter {
     // Turn all of this multis soft splits into hard.
     for (var i = multisplit.startChunk; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (chunk is SoftSplitChunk && chunk.param == multisplit.param) {
-        // TODO(bob): Unify hard/soft classes?
-        _chunks[i] = new HardSplitChunk(chunk.indent, chunk.nesting);
-      }
+      if (chunk.isSoftSplit && chunk.param == multisplit.param) chunk.harden();
     }
   }
 
@@ -287,7 +284,7 @@ class LineWriter {
 
     // TODO(bob): Call this after members, directives, and top-level
     // definitions.
-    
+
     _nesting = -1;
   }
 
@@ -344,7 +341,7 @@ class LineWriter {
 
       // TODO(bob): Do this while chunks are being written instead of all at
       // the end.
-      if (chunk is HardSplitChunk && chunk.indent == 0 && chunk.nesting == 0) {
+      if (chunk.isHardSplit && chunk.indent == 0 && chunk.nesting == 0) {
         splitLine();
         indent = _chunks[end].indent;
       }
@@ -373,9 +370,7 @@ class LineWriter {
 
       case Whitespace.TWO_NEWLINES:
         _addHardSplit();
-
-        // We don't want to collapse this one, so add it explicitly.
-        _chunks.add(new HardSplitChunk(_indent));
+        _addHardSplit(collapse: false);
         break;
 
       case Whitespace.SPACE_OR_NEWLINE:
@@ -425,39 +420,30 @@ class LineWriter {
     return text != "(" && text != "[" && text != "{";
   }
 
-  void _addSplit(SoftSplitChunk split) {
+  /// Appends a hard split with the current indentation and nesting (the latter
+  /// only if [nest] is `true`).
+  void _addHardSplit({bool nest: false, bool collapse: true}) {
+    // A hard split overrides any other whitespace.
+    _pendingWhitespace = null;
+
+    _addSplit(new SplitChunk(_indent, nest ? _nesting : -1),
+        collapse: collapse);
+  }
+
+  /// Appends [split] to the output.
+  ///
+  /// If [collapse] is `false`, always appends. Otherwise, this merges [split]
+  /// with the last chunk if the last chunk is also a split.
+  void _addSplit(SplitChunk split, {bool collapse: true}) {
     // TODO(bob): What if pending is space?
     _emitPendingWhitespace();
 
-    // TODO(bob): Do this cleaner and unify with _addHardSplit.
     // Collapse duplicate splits.
-    if (_chunks.isNotEmpty && _chunks.last is HardSplitChunk) {
-      // Turn the soft split into a hard one.
-      var hardSplit = _chunks.removeLast() as HardSplitChunk;
-      _chunks.add(new HardSplitChunk(split.indent, split.nesting));
-      return;
+    if (collapse && _chunks.isNotEmpty && _chunks.last is SplitChunk) {
+      _chunks.last.mergeSplit(split);
+    } else {
+      _chunks.add(split);
     }
-
-    // Last soft split wins.
-    if (_chunks.isNotEmpty && _chunks.last is SoftSplitChunk) {
-      _chunks.removeLast();
-    }
-
-    _chunks.add(split);
-  }
-
-  void _addHardSplit({bool nest: false}) {
-    // This overrides any other whitespace.
-    _pendingWhitespace = null;
-
-    // Collapse duplicate splits. Last one wins.
-    if (_chunks.isNotEmpty &&
-        (_chunks.last is HardSplitChunk || _chunks.last is SoftSplitChunk)) {
-      _chunks.removeLast();
-    }
-
-    var split = new HardSplitChunk(_indent, nest ? _nesting : -1);
-    _chunks.add(split);
   }
 
   /*

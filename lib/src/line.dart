@@ -26,13 +26,12 @@ class Line {
   }
 }
 
-class Chunk {
-  // TODO(bob): This should only exist on chunks that make it to splitting.
-  String get text => throw "should not get here!";
-}
+abstract class Chunk {
+  String get text;
 
-// TODO(bob): Separate out chunk types that should make it to the line splitter
-// from those that should be processed by the writer beforehand?
+  bool get isHardSplit => false;
+  bool get isSoftSplit => false;
+}
 
 class TextChunk extends Chunk {
   final String text;
@@ -116,12 +115,23 @@ class SpanEndChunk extends Chunk {
 
 // TODO(bob): Update other docs that refer to old SplitChunk.
 // TODO(bob): Doc.
-abstract class SplitChunk extends Chunk {
+class SplitChunk extends Chunk {
+  /// The text for this chunk when it's not split into a newline.
+  final String text;
+
+  /// The [SplitParam] that determines if this chunk is being used as a split
+  /// or not.
+  ///
+  /// This will be `null` for hard splits.
+  SplitParam get param => _param;
+  SplitParam _param;
+
   /// The indentation level of the next line after this one.
   ///
   /// Note that this is not a relative indentation *offset*. It's the full
   /// indentation.
-  final int indent;
+  int get indent => _indent;
+  int _indent;
 
   /// The number of levels of expression nesting at the end of this line.
   ///
@@ -133,7 +143,8 @@ abstract class SplitChunk extends Chunk {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  final int nesting;
+  int get nesting => _nesting;
+  int _nesting;
 
   /// Whether or not the split occurs inside an expression.
   ///
@@ -141,33 +152,67 @@ abstract class SplitChunk extends Chunk {
   /// are to determine the indentation of subsequent lines. "Statement level"
   /// splits that occur between statements or in the top-level of a unit only
   /// take the main indent level into account.
-  bool get isInExpression => nesting != -1;
+  bool get isInExpression => _nesting != -1;
 
-  SplitChunk(this.indent, this.nesting);
-}
+  /// Creates a new [SplitChunk] where the following line will have [_indent]
+  /// and [_nesting].
+  ///
+  /// If [_param] is non-`null`, creates a soft split. Otherwise, creates a
+  /// hard split. When non-split, a soft split expands to [text].
+  SplitChunk(this._indent, this._nesting, [this._param, this.text = ""]);
 
-// TODO(bob): Doc.
-class HardSplitChunk extends SplitChunk {
-  HardSplitChunk(int indent, [int nesting = -1]) : super(indent, nesting);
+  bool get isHardSplit => _param == null;
+  bool get isSoftSplit => _param != null;
 
-  String toString() => "HardSplit indent $indent nest $nesting";
-}
+  /// Returns `true` if this split is active, given that [splits] are all in
+  /// effect.
+  bool shouldSplit(Set<SplitParam> splits) =>
+      _param == null || splits.contains(_param);
 
-/// A split chunk that may expand to a newline (with some leading indentation)
-/// or some other inline string based on the length of the line.
-class SoftSplitChunk extends SplitChunk {
-  /// The [SplitParam] that determines if this chunk is being used as a split
-  /// or not.
-  final SplitParam param;
+  /// Merges [later] onto this split.
+  ///
+  /// This is called when redundant splits are written to the output. This is
+  /// called on the first splitting, passing in the latter. It modifies this
+  /// one to be a split containing the important properties of both.
+  void mergeSplit(SplitChunk later) {
+    // A hard split always wins.
+    if (isHardSplit || later.isHardSplit) {
+      _param = null;
+    }
 
-  /// The text for this chunk when it's not split into a newline.
-  final String text;
+    // Last newline settings win.
+    _indent = later._indent;
+    _nesting = later._nesting;
 
-  SoftSplitChunk(int indent, int nesting, this.param, [this.text = ""])
-      : super(indent, nesting);
+    // Text should either be irrelevant, or the same. We don't expect to merge
+    // sequential soft splits with different text.
+    assert(isHardSplit || text == later.text);
+  }
 
-  String toString() =>
-      "SoftSplit \$$param indent $indent nest $nesting '$text'";
+  /// Forces this soft split to become a hard split.
+  ///
+  /// This is called on the soft splits of a [Multisplit] when it ends up
+  /// containing some other hard split.
+  void harden() {
+    assert(_param != null);
+    _param = null;
+  }
+
+  String toString() {
+    var buffer = new StringBuffer();
+    buffer.write("Split");
+    if (_param != null) {
+      buffer.write(" $_param");
+    } else {
+      buffer.write(" hard");
+    }
+
+    if (_indent != 0) buffer.write(" indent $_indent");
+    if (_nesting != -1) buffer.write(" nest $_nesting");
+    if (text != "") buffer.write(" '$text'");
+
+    return buffer.toString();
+  }
 }
 
 /// A toggle for enabling one or more [SplitChunk]s in a [Line].

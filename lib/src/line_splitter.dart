@@ -83,9 +83,7 @@ class LineSplitter {
 
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
-      // TODO(bob): Shared base class for newline and split.
-      if (chunk is HardSplitChunk ||
-          (chunk is SoftSplitChunk && splits.contains(chunk.param))) {
+      if (chunk is SplitChunk && chunk.shouldSplit(splits)) {
         buffer.write(_lineEnding);
         indent = nester.handleSplit(chunk);
       } else {
@@ -113,9 +111,9 @@ class LineSplitter {
     var firstLineSplitIndices = [];
     for (var i = prefix.length; i < _line.chunks.length; i++) {
       var chunk = _line.chunks[i];
-      if (chunk is SoftSplitChunk) firstLineSplitIndices.add(i);
+      if (chunk.isSoftSplit) firstLineSplitIndices.add(i);
 
-      if (chunk is HardSplitChunk) {
+      if (chunk.isHardSplit) {
         // Reset the length since we know we'll start a newline. Do not discard
         // any previously found splits. Even though they fit on their own line,
         // they may still need to be split in order to satisfy a later line's
@@ -123,7 +121,7 @@ class LineSplitter {
         length = chunk.indent * SPACES_PER_INDENT;
       } else {
         // TODO(bob): Clean up.
-        assert(chunk is TextChunk || chunk is SoftSplitChunk || chunk is SpanStartChunk || chunk is SpanEndChunk);
+        assert(chunk is TextChunk || chunk.isSoftSplit || chunk is SpanStartChunk || chunk is SpanEndChunk);
         length += chunk.text.length;
       }
 
@@ -143,7 +141,7 @@ class LineSplitter {
     var bestSplits;
 
     for (var i in firstLineSplitIndices) {
-      var split = _line.chunks[i] as SoftSplitChunk;
+      var split = _line.chunks[i] as SplitChunk;
 
       var longerPrefix = prefix.expand(_line, i + 1);
 
@@ -259,8 +257,7 @@ class LineSplitter {
         // If the end span is on a different line from the start, pay for it.
         if (spanStarts[chunk.start] != line) cost += chunk.cost;
       } else if (chunk is SplitChunk) {
-        // TODO(bob): Cleaner?
-        if (chunk is HardSplitChunk || splits.contains(chunk.param)) {
+        if (chunk.shouldSplit(splits)) {
           endLine();
 
           // Start the new line.
@@ -268,7 +265,7 @@ class LineSplitter {
           if (indent == _INVALID_SPLITS) return _INVALID_SPLITS;
 
           length = indent * SPACES_PER_INDENT;
-        } else if (chunk is SoftSplitChunk) {
+        } else if (chunk.isSoftSplit) {
           // If we've seen the same param on a previous line, the unsplit
           // multisplit got split, so this isn't valid.
           if (previousParams.contains(chunk.param)) return _INVALID_SPLITS;
@@ -308,8 +305,8 @@ class LineSplitter {
         buffer.write("${Color.cyan}›(${chunk.cost})${Color.none}");
       } else if (chunk is TextChunk) {
         buffer.write(chunk.text);
-      } else if (chunk is SoftSplitChunk) {
-        var split = chunk as SoftSplitChunk;
+      } else if (chunk.isSoftSplit) {
+        var split = chunk as SplitChunk;
         var color = splits.contains(split.param) ? Color.green : Color.gray;
 
         buffer.write("$color§${split.param.cost}");
@@ -317,7 +314,7 @@ class LineSplitter {
           buffer.write(":${split.nesting}");
         }
         buffer.write("${Color.none}");
-      } else if (chunk is HardSplitChunk) {
+      } else if (chunk.isHardSplit) {
         buffer.write("${Color.magenta}\\n${"->" * chunk.indent}${Color.none}");
       } else {
         // Unexpected chunk type.
@@ -372,7 +369,7 @@ class LinePrefix {
   /// Returns `null` if the new split chunk results in an invalid prefix. See
   /// [NestingStack.modify] for details.
   LinePrefix expand(Line line, int length) {
-    var split = line.chunks[length - 1] as SoftSplitChunk;
+    var split = line.chunks[length - 1] as SplitChunk;
     var nesting = _nesting.modify(split);
     if (nesting == null) return null;
 
@@ -393,7 +390,7 @@ class LinePrefix {
     if (length == 0) {
       indent = line.indent;
     } else {
-      indent = (line.chunks[length - 1] as SoftSplitChunk).indent;
+      indent = (line.chunks[length - 1] as SplitChunk).indent;
     }
 
     if (includeNesting) indent += _nesting.indent;
