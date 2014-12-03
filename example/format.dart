@@ -6,9 +6,10 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatUnit('class A {\n'
-    '  void x() {}\n'
-    '}\n');
+  formatStmt("""
+someMethod(argument1, argument2, // comment
+argument3);
+""");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

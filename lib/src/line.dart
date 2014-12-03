@@ -82,30 +82,6 @@ class Whitespace {
   String toString() => name;
 }
 
-// TODO(bob): Extend LineChunk?
-class WhitespaceChunk extends Chunk {
-  // TODO(bob): Make final?
-  Whitespace type;
-
-  // TODO(bob): Make final?
-  int indent;
-
-  // TODO(bob): Do something better.
-  int actual = 0;
-
-  final int nesting;
-
-  WhitespaceChunk(this.type, this.indent, this.nesting);
-
-  String toString() {
-    var result = type.toString().toLowerCase();
-    if (indent != 0) result += " indent $indent";
-    if (nesting != 0) result += " nest $nesting";
-    if (actual != 0) result += " actual $actual";
-    return result;
-  }
-}
-
 /// The first of a pair of chunks used to delimit a range of chunks that must
 /// end up on the same line to avoid paying a cost.
 ///

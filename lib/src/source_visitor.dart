@@ -70,7 +70,7 @@ class SourceVisitor implements AstVisitor {
 
       // Prefer splitting later arguments over earlier ones.
       visitCommaSeparatedNodes(node.arguments,
-          after: () => split(cost: cost--));
+          between: () => split(cost: cost--));
 
       _writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
     }
@@ -153,10 +153,10 @@ class SourceVisitor implements AstVisitor {
       visit(statement);
       // TODO(bob): Don't allow extra newline after last statement.
       oneOrTwoNewlines();
+      _writer.resetNesting();
     }
 
     token(node.rightBracket, before: () {
-      // TODO(bob): Move these out of before?
       _writer.decreaseIndent();
       _writer.multisplit();
       _writer.endMultisplit();
@@ -292,8 +292,9 @@ class SourceVisitor implements AstVisitor {
 
     visitNodes(node.declarations, between: oneOrTwoNewlines);
 
-    // Output trailing comments.
-    token(node.endToken); // EOF.
+    // TODO(bob): What about trailing comments when formatting a statement?
+    // Output trailing comments before the EOF.
+    writePrecedingCommentsAndNewlines(node.endToken);
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -747,30 +748,24 @@ class SourceVisitor implements AstVisitor {
     visit(node.typeArguments);
     token(node.leftBracket);
 
-    if (node.elements.isEmpty) {
-      token(node.rightBracket);
-      return;
-    }
-
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
     _writer.increaseIndent();
 
     // Split after the "[".
     _writer.multisplit();
 
-    visitCommaSeparatedNodes(node.elements, after: () {
+    visitCommaSeparatedNodes(node.elements, between: () {
       _writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.decreaseIndent();
-
-    // Split before the "]".
-    _writer.multisplit();
-    _writer.endMultisplit();
-
-    token(node.rightBracket);
+    token(node.rightBracket, before: () {
+      // Split before the "]".
+      _writer.decreaseIndent();
+      _writer.multisplit();
+      _writer.endMultisplit();
+    });
   }
 
   visitMapLiteral(MapLiteral node) {
@@ -778,30 +773,24 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.typeArguments);
     token(node.leftBracket);
 
-    if (node.entries.isEmpty) {
-      token(node.rightBracket);
-      return;
-    }
-
     _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
     _writer.increaseIndent();
 
     // Split after the "{".
     _writer.multisplit();
 
-    visitCommaSeparatedNodes(node.entries, after: () {
+    visitCommaSeparatedNodes(node.entries, between: () {
       _writer.multisplit(text: " ");
     });
 
     optionalTrailingComma(node.rightBracket);
 
-    _writer.decreaseIndent();
-
-    // Split before the "}".
-    _writer.multisplit();
-    _writer.endMultisplit();
-
-    token(node.rightBracket);
+    token(node.rightBracket, before: () {
+      // Split before the "}".
+      _writer.decreaseIndent();
+      _writer.multisplit();
+      _writer.endMultisplit();
+    });
   }
 
   visitMapLiteralEntry(MapLiteralEntry node) {
@@ -1163,7 +1152,7 @@ class SourceVisitor implements AstVisitor {
     // line.
     var param = new SplitParam(SplitCost.DECLARATION);
 
-    visitCommaSeparatedNodes(node.variables, after: () {
+    visitCommaSeparatedNodes(node.variables, between: () {
       split(param: param);
     });
   }
@@ -1263,16 +1252,16 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Visit a comma-separated list of [nodes] if not null.
-  void visitCommaSeparatedNodes(NodeList<AstNode> nodes, {after()}) {
+  void visitCommaSeparatedNodes(NodeList<AstNode> nodes, {between()}) {
     if (nodes == null || nodes.isEmpty) return;
 
-    if (after == null) after = space;
+    if (between == null) between = space;
 
     visit(nodes.first);
 
     for (var node in nodes.skip(1)) {
       token(node.beginToken.previous); // Comma.
-      after();
+      between();
       visit(node);
     }
   }

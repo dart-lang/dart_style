@@ -68,7 +68,7 @@ class LineWriter {
   ///
   /// Start with an implicit entry so that top-level definitions and directives
   /// can be split.
-  var _indentStack = [0];
+  var _indentStack = [-1];
 
   /// The current indentation, not including expression nesting.
   int get _indent => _indentStack.length - 1;
@@ -87,6 +87,9 @@ class LineWriter {
   void write(String string) {
     _emitPendingWhitespace();
     _chunks.add(new TextChunk(string));
+
+    // If we hadn't started a wrappable line yet, we have now, so start nesting.
+    if (_nesting == -1) _nesting = 0;
   }
 
   /// Writes a [WhitespaceChunk] of [type].
@@ -132,24 +135,50 @@ class LineWriter {
   /// Writes a comment with [text] (including the "//" or "/* */" syntax).
   void writeComment(String text,
       {bool isLineComment, bool isTrailing, bool isLeading}) {
-    write(text);
+    // TODO(bob): What about _pendingWhitespace?
 
-    // TODO(bob): Probably want ONE_OR_TWO_NEWLINES.
-    if (isLineComment) _addHardSplit(nest: true);
+    if (isTrailing) {
+      // If we're sitting on a soft split, move the comment before it to adhere
+      // it to the preceding text.
+      var split;
+      // TODO(bob): Need to not do this on splits where we don't want to allow
+      // a comment on that line:
+      //
+      // [// comment
+      //   item
+      // ]
+      //
+      // class Foo { // comment
+      // }
+      //
+      // { // comment
+      //   'key': 'value'
+      // }
+      //
+      // main() { // comment
+      // }
+      if (_chunks.isNotEmpty && _chunks.last is SplitChunk) {
+        split = _chunks.removeLast();
+      }
 
-    /*
-    _chunks.add(new CommentChunk(text, _indent, _nesting,
-        isLineComment: isLineComment,
-        isTrailing: isTrailing,
-        isLeading: isLeading));
+      // The comment follows other text, so we need to decide if it gets a space
+      // before it or not.
+      if (_needsSpaceBeforeComment(isLineComment: isLineComment)) {
+        _chunks.add(new TextChunk(" "));
+      }
+
+      write(text);
+
+      if (split != null) _chunks.add(split);
+    } else {
+      // The comment starts a line, so make sure it stays on its own line.
+      _addHardSplit(nest: true);
+      write(text);
+    }
 
     // Make sure there is at least one newline after a line comment and allow
     // one after a block comment that has nothing after it.
-    if (!isLeading) {
-      _chunks.add(new WhitespaceChunk(
-          Whitespace.ONE_OR_TWO_NEWLINES, _indent, _nesting));
-    }
-    */
+    if (!isLeading) _addHardSplit(nest: true);
   }
 
   // TODO(bob): Lose these and just do explicit newlines()?
@@ -176,7 +205,7 @@ class LineWriter {
   /// used to explicitly control indentation within an expression or statement,
   /// for example, indenting subsequent variables in a variable declaration.
   void increaseIndent([int levels = 1]) {
-    while (levels-- > 0) _indentStack.add(0);
+    while (levels-- > 0) _indentStack.add(-1);
   }
 
   /// Decreases indentation of the next line by [levels].
@@ -228,6 +257,9 @@ class LineWriter {
       }
     }
 
+    // TODO(bob): If last chunk is split for this multi, discard it? I think
+    // that will completely eliminate the chunks for an empty block/collection.
+
     if (!forced) return;
 
     // Turn all of this multis soft splits into hard.
@@ -238,6 +270,25 @@ class LineWriter {
         _chunks[i] = new HardSplitChunk(chunk.indent, chunk.nesting);
       }
     }
+  }
+
+  /// Resets the expression nesting back to the "top-level" unnested state.
+  ///
+  /// One level of nesting is implicitly created after the first piece of text
+  /// written to a line. This is done automatically so we don't have to add tons
+  /// of [nestExpression] calls throughout the visitor.
+  ///
+  /// Once we reach the end of a wrappable "line" (a statement, top-level
+  /// variable, directive, etc.), this implicit nesting needs to be discarded.
+  ///
+  void resetNesting() {
+    // All other explicit nesting should have been discarded by now.
+    assert(_nesting == 0);
+
+    // TODO(bob): Call this after members, directives, and top-level
+    // definitions.
+    
+    _nesting = -1;
   }
 
   /// Increases the level of expression nesting.
@@ -335,6 +386,43 @@ class LineWriter {
     }
 
     _pendingWhitespace = null;
+  }
+
+  /// Returns `true` if a space should be output between the end of the current
+  /// output and the subsequent comment which is about to be written.
+  ///
+  /// This is only called if the comment is trailing text in the unformatted
+  /// source. In most cases, a space will be output to separate the comment
+  /// from what precedes it. This returns false if:
+  ///
+  /// *   This comment does begin the line in the output even if it didn't in
+  ///     the source.
+  /// *   The comment is a block comment immediately following a grouping
+  ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
+  ///     et. al.
+  bool _needsSpaceBeforeComment({bool isLineComment}) {
+    // Find the preceding visible (non-span) chunk, if any.
+    var chunk = _chunks.lastWhere(
+        (chunk) => chunk is SplitChunk || chunk is TextChunk,
+        orElse: () => null);
+
+    // Don't need a space before a file-leading comment.
+    if (chunk == null) return false;
+
+    // Don't need a space if the comment isn't a trailing comment in the output.
+    if (chunk is SplitChunk) return false;
+
+    assert(chunk is TextChunk);
+    var text = (chunk as TextChunk).text;
+
+    // TODO(bob): Do we need to handle this case?
+    assert(text != " ");
+
+    // Always put a space before line comments.
+    if (isLineComment) return true;
+
+    // Block comments do not get a space if following a grouping character.
+    return text != "(" && text != "[" && text != "{";
   }
 
   void _addSplit(SoftSplitChunk split) {
