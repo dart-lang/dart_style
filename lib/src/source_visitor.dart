@@ -297,13 +297,9 @@ class SourceVisitor implements AstVisitor {
 
   visitCompilationUnit(CompilationUnit node) {
     visit(node.scriptTag);
-
+    // TODO(bob): twoNewlines() here? Test.
     visitNodes(node.directives, between: oneOrTwoNewlines);
-
-    if (node.directives.isNotEmpty && node.declarations.isNotEmpty) {
-      twoNewlines();
-    }
-
+    twoNewlines();
     visitNodes(node.declarations, between: oneOrTwoNewlines);
 
     // TODO(bob): What about trailing comments when formatting a statement?
@@ -1371,12 +1367,12 @@ class SourceVisitor implements AstVisitor {
     // list if there are none if that helps perf.
     var comments = [];
 
-    var previousLine = endLine(token.previous);
-    var tokenLine = startLine(token);
+    var previousLine = _endLine(token.previous);
+    var tokenLine = _startLine(token);
 
     var comment = token.precedingComments;
     while (comment != null) {
-      var commentLine = startLine(comment);
+      var commentLine = _startLine(comment);
 
       // Don't preserve newlines at the top of the file.
       if (comment == token.precedingComments &&
@@ -1386,20 +1382,21 @@ class SourceVisitor implements AstVisitor {
 
       var nextLine;
       if (comment.next != null) {
-        nextLine = startLine(comment.next);
+        nextLine = _startLine(comment.next);
       } else {
         nextLine = tokenLine;
       }
 
       comments.add(new SourceComment(comment.toString().trim(),
           commentLine - previousLine,
-          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT));
+          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
+          isStartOfLine: _startColumn(comment) == 1));
 
-      previousLine = endLine(comment);
+      previousLine = _endLine(comment);
       comment = comment.next;
     }
 
-    _writer.writeComments(comments, startLine(token) - previousLine,
+    _writer.writeComments(comments, _startLine(token) - previousLine,
         token.lexeme);
   }
 
@@ -1411,10 +1408,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.
-  int startLine(Token token) => _lineInfo.getLocation(token.offset).lineNumber;
+  int _startLine(Token token) => _lineInfo.getLocation(token.offset).lineNumber;
 
   /// Gets the 1-based line number that the end of [token] lies on.
-  int endLine(Token token) => _lineInfo.getLocation(token.end).lineNumber;
+  int _endLine(Token token) => _lineInfo.getLocation(token.end).lineNumber;
+
+  /// Gets the 1-based column number that the beginning of [token] lies on.
+  int _startColumn(Token token) =>
+      _lineInfo.getLocation(token.offset).columnNumber;
 
   String toString() => _writer.toString();
 }

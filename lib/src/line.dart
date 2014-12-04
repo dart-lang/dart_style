@@ -29,7 +29,14 @@ class Line {
 abstract class Chunk {
   String get text;
 
+  /// Whether this chunk is a [SplitChunk].
+  bool get isSplit => false;
+
+  /// Whether this chunk is a [SplitChunk] that must cause a newline.
   bool get isHardSplit => false;
+
+  /// Whether this chunk is a [SplitChunk] that *may* cause a newline depending
+  /// on how line-splitting goes.
   bool get isSoftSplit => false;
 }
 
@@ -178,6 +185,7 @@ class SplitChunk extends Chunk {
       : _param = param,
         _isDouble = double;
 
+  bool get isSplit => true;
   bool get isHardSplit => _param == null;
   bool get isSoftSplit => _param != null;
 

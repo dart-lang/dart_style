@@ -7,10 +7,11 @@ void main(List<String> args) {
   //useAnsiColors = true;
 
   formatUnit("""
-import 'a.dart';
-// a comment
-
-class Foo {}
+main() {
+//  print(1);
+//  print(2);
+  print(3);
+}
 """);
 }
 

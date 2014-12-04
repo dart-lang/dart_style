@@ -83,7 +83,7 @@ class LineSplitter {
 
     // Write each chunk in the line.
     for (var chunk in _line.chunks) {
-      if (chunk is SplitChunk && chunk.shouldSplit(splits)) {
+      if (chunk.isSplit && chunk.shouldSplit(splits)) {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
@@ -258,7 +258,7 @@ class LineSplitter {
       } else if (chunk is SpanEndChunk) {
         // If the end span is on a different line from the start, pay for it.
         if (spanStarts[chunk.start] != line) cost += chunk.cost;
-      } else if (chunk is SplitChunk) {
+      } else if (chunk.isSplit) {
         if (chunk.shouldSplit(splits)) {
           endLine();
 
