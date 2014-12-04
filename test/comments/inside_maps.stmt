@@ -57,3 +57,29 @@ var map = {  /* comment
 <<<
 var map = {/* comment
 */};
+>>> line comment between items
+var map = {'a': 'b', // comment
+  'c': 'd'};
+<<<
+var map = {
+  'a': 'b', // comment
+  'c': 'd'
+};
+>>> line comments after last item
+var map = {'a': 'b' // 1
+  // 2
+};
+<<<
+var map = {
+  'a': 'b' // 1
+  // 2
+};
+>>> line comments after trailing comma
+var map = {'a': 'b', // 1
+  // 2
+};
+<<<
+var map = {
+  'a': 'b', // 1
+  // 2
+};

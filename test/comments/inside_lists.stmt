@@ -57,3 +57,29 @@ var list = [  /* comment
 <<<
 var list = [/* comment
 */];
+>>> line comment between items
+var list = ['a', // comment
+  'b'];
+<<<
+var list = [
+  'a', // comment
+  'b'
+];
+>>> line comments after last item
+var list = ['a' // 1
+  // 2
+];
+<<<
+var list = [
+  'a' // 1
+  // 2
+];
+>>> line comments after trailing comma
+var list = ['a', // 1
+  // 2
+];
+<<<
+var list = [
+  'a', // 1
+  // 2
+];

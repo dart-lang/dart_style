@@ -754,53 +754,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitListLiteral(ListLiteral node) {
-    modifier(node.constKeyword);
-    visit(node.typeArguments);
-    token(node.leftBracket);
-
-    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.increaseIndent();
-
-    // Split after the "[".
-    _writer.multisplit(allowTrailingCommentBefore: false);
-
-    visitCommaSeparatedNodes(node.elements, between: () {
-      _writer.multisplit(text: " ");
-    });
-
-    optionalTrailingComma(node.rightBracket);
-
-    token(node.rightBracket, before: () {
-      // Split before the "]".
-      _writer.decreaseIndent();
-      _writer.multisplit();
-      _writer.endMultisplit();
-    });
+    _visitCollectionLiteral(
+        node, node.leftBracket, node.elements, node.rightBracket);
   }
 
   visitMapLiteral(MapLiteral node) {
-    modifier(node.constKeyword);
-    visitNode(node.typeArguments);
-    token(node.leftBracket);
-
-    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
-    _writer.increaseIndent();
-
-    // Split after the "{".
-    _writer.multisplit(allowTrailingCommentBefore: false);
-
-    visitCommaSeparatedNodes(node.entries, between: () {
-      _writer.multisplit(text: " ");
-    });
-
-    optionalTrailingComma(node.rightBracket);
-
-    token(node.rightBracket, before: () {
-      // Split before the "}".
-      _writer.decreaseIndent();
-      _writer.multisplit();
-      _writer.endMultisplit();
-    });
+    _visitCollectionLiteral(
+        node, node.leftBracket, node.entries, node.rightBracket);
   }
 
   visitMapLiteralEntry(MapLiteralEntry node) {
@@ -1286,6 +1246,36 @@ class SourceVisitor implements AstVisitor {
     if (before != null) before();
     node.accept(this);
     if (after != null) after();
+  }
+
+  /// Visits the collection literal [node] whose body starts with [leftBracket],
+  /// ends with [rightBracket] and contains [elements].
+  void _visitCollectionLiteral(TypedLiteral node, Token leftBracket,
+      Iterable<AstNode> elements, Token rightBracket) {
+    modifier(node.constKeyword);
+    visitNode(node.typeArguments);
+    token(leftBracket);
+
+    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
+    _writer.increaseIndent();
+
+    // Split after the "{".
+    _writer.multisplit(allowTrailingCommentBefore: false);
+
+    visitCommaSeparatedNodes(elements, between: () {
+      _writer.multisplit(text: " ");
+      _writer.resetNesting();
+    });
+
+    optionalTrailingComma(rightBracket);
+    _writer.resetNesting();
+
+    token(rightBracket, before: () {
+      // Split before the "}".
+      _writer.decreaseIndent();
+      _writer.multisplit();
+      _writer.endMultisplit();
+    });
   }
 
   /// Emit the given [modifier] if it's non null, followed by non-breaking

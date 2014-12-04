@@ -323,7 +323,7 @@ class LineWriter {
   ///
   void resetNesting() {
     // All other explicit nesting should have been discarded by now.
-    assert(_nesting == 0);
+    assert(_nesting <= 0);
 
     // TODO(bob): Call this after directives, and top-level
     // definitions.
