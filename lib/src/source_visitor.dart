@@ -9,8 +9,10 @@ import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
 
 import '../dart_style.dart';
-import 'line.dart';
+import 'chunk.dart';
+import 'cost.dart';
 import 'line_writer.dart';
+import 'whitespace.dart';
 
 /// An AST visitor that drives formatting heuristics.
 class SourceVisitor implements AstVisitor {
@@ -43,7 +45,7 @@ class SourceVisitor implements AstVisitor {
 
   visitAdjacentStrings(AdjacentStrings node) {
     visitNodes(node.strings,
-        between: () => split(cost: SplitCost.ADJACENT_STRINGS));
+        between: () => split(cost: Cost.ADJACENT_STRINGS));
   }
 
   visitAnnotation(Annotation node) {
@@ -61,7 +63,7 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     // Allow splitting after "(".
-    var cost = SplitCost.BEFORE_ARGUMENT + node.arguments.length + 1;
+    var cost = Cost.BEFORE_ARGUMENT + node.arguments.length + 1;
     zeroSplit(cost--);
 
     // See if we kept all of the arguments on the same line.
@@ -75,7 +77,7 @@ class SourceVisitor implements AstVisitor {
 
     // End the span after the ")". That ensures inline block comments after the
     // last argument are part of the span.
-    _writer.endSpan(SplitCost.SPLIT_ARGUMENTS);
+    _writer.endSpan(Cost.SPLIT_ARGUMENTS);
     _writer.unnest();
   }
 
@@ -99,10 +101,10 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split(cost: SplitCost.ASSIGNMENT);
+    split(cost: Cost.ASSIGNMENT);
     _writer.startSpan();
     visit(node.rightHandSide);
-    _writer.endSpan(SplitCost.ASSIGNMENT_SPAN);
+    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -129,7 +131,7 @@ class SourceVisitor implements AstVisitor {
     addOperands(node.rightOperand);
 
     // TODO(rnystrom: Use different costs for different operator precedences.
-    _writer.startMultisplit(cost: SplitCost.BINARY_OPERATOR);
+    _writer.startMultisplit(cost: Cost.BINARY_OPERATOR);
 
     for (var i = 0; i < operands.length; i++) {
       if (i != 0) {
@@ -311,11 +313,11 @@ class SourceVisitor implements AstVisitor {
     visit(node.condition);
     space();
     token(node.question);
-    split(cost: SplitCost.AFTER_CONDITION);
+    split(cost: Cost.AFTER_CONDITION);
     visit(node.thenExpression);
     space();
     token(node.colon);
-    split(cost: SplitCost.AFTER_COLON);
+    split(cost: Cost.AFTER_COLON);
     visit(node.elseExpression);
   }
 
@@ -462,7 +464,7 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword, after: space);
 
     token(node.functionDefinition); // "=>".
-    split(cost: SplitCost.ARROW);
+    split(cost: Cost.ARROW);
     visit(node.expression);
     token(node.semicolon);
   }
@@ -473,7 +475,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExtendsClause(ExtendsClause node) {
-    split(cost: SplitCost.BEFORE_EXTENDS);
+    split(cost: Cost.BEFORE_EXTENDS);
     token(node.keyword);
     space();
     visit(node.superclass);
@@ -532,7 +534,7 @@ class SourceVisitor implements AstVisitor {
 
       // Allow splitting after the "(" but not for lambdas.
       if (node.parent is! FunctionExpression) {
-        zeroSplit(SplitCost.BEFORE_ARGUMENT);
+        zeroSplit(Cost.BEFORE_ARGUMENT);
       }
 
       for (var i = 0; i < node.parameters.length; i++) {
@@ -540,7 +542,7 @@ class SourceVisitor implements AstVisitor {
         if (i > 0) {
           append(',');
           // Prefer splitting later parameters over earlier ones.
-          split(cost: SplitCost.BEFORE_ARGUMENT +
+          split(cost: Cost.BEFORE_ARGUMENT +
               node.parameters.length + 1 - i);
         }
 
@@ -667,7 +669,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImplementsClause(ImplementsClause node) {
-    split(cost: SplitCost.BEFORE_IMPLEMENTS);
+    split(cost: Cost.BEFORE_IMPLEMENTS);
     token(node.keyword);
     space();
     visitCommaSeparatedNodes(node.interfaces);
@@ -796,7 +798,7 @@ class SourceVisitor implements AstVisitor {
     if (node.target is! MethodInvocation) {
       if (node.period != null) {
         visit(node.target);
-        zeroSplit(SplitCost.BEFORE_PERIOD);
+        zeroSplit(Cost.BEFORE_PERIOD);
         token(node.period);
       }
 
@@ -808,7 +810,7 @@ class SourceVisitor implements AstVisitor {
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
     // split or none of them do.
     _writer.nestExpression();
-    _writer.startMultisplit(cost: SplitCost.BEFORE_PERIOD, separable: true);
+    _writer.startMultisplit(cost: Cost.BEFORE_PERIOD, separable: true);
 
     // Recursively walk the chain of method calls.
     var depth = 0;
@@ -1083,10 +1085,10 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    split(cost: SplitCost.ASSIGNMENT);
+    split(cost: Cost.ASSIGNMENT);
     _writer.startSpan();
     visit(node.initializer);
-    _writer.endSpan(SplitCost.ASSIGNMENT_SPAN);
+    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1122,7 +1124,7 @@ class SourceVisitor implements AstVisitor {
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    var param = new SplitParam(SplitCost.DECLARATION);
+    var param = new SplitParam(Cost.DECLARATION);
 
     visitCommaSeparatedNodes(node.variables, between: () {
       split(param: param);
@@ -1145,7 +1147,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitWithClause(WithClause node) {
-    split(cost: SplitCost.BEFORE_WITH);
+    split(cost: Cost.BEFORE_WITH);
     token(node.withKeyword);
     space();
     visitCommaSeparatedNodes(node.mixinTypes);
@@ -1256,7 +1258,7 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.typeArguments);
     token(leftBracket);
 
-    _writer.startMultisplit(cost: SplitCost.COLLECTION_LITERAL);
+    _writer.startMultisplit(cost: Cost.COLLECTION_LITERAL);
     _writer.increaseIndent();
 
     // Split after the "{".
@@ -1323,13 +1325,13 @@ class SourceVisitor implements AstVisitor {
   /// Writes a single-space split with the given [cost] or [param].
   ///
   /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
-  /// omitted, defaults to [SplitCost.FREE].
+  /// omitted, defaults to [Cost.FREE].
   void split({int cost, SplitParam param}) {
     _writer.writeSplit(cost: cost, param: param, text: " ");
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.
-  void zeroSplit([int cost = SplitCost.FREE]) {
+  void zeroSplit([int cost = Cost.FREE]) {
     _writer.writeSplit(cost: cost);
   }
 
@@ -1406,6 +1408,4 @@ class SourceVisitor implements AstVisitor {
   /// Gets the 1-based column number that the beginning of [token] lies on.
   int _startColumn(Token token) =>
       _lineInfo.getLocation(token.offset).columnNumber;
-
-  String toString() => _writer.toString();
 }

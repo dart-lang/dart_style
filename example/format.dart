@@ -3,16 +3,13 @@ import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/debug.dart';
 
 void main(List<String> args) {
+  // Enable debugging so you can see some of the formatter's internal state.
+  // Normal users do not do this.
   debugFormatter = true;
-  //useAnsiColors = true;
+  useAnsiColors = true;
 
-  formatUnit("""
-main() {
-//  print(1);
-//  print(2);
-  print(3);
-}
-""");
+  formatStmt("sendPort.send({'type': 'error', 'error': 'oops'});");
+  formatUnit("class Foo{}");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

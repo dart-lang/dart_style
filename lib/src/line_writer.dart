@@ -6,8 +6,11 @@ library dart_style.src.source_writer;
 
 import 'dart_formatter.dart';
 import 'debug.dart';
-import 'line.dart';
+import 'chunk.dart';
+import 'cost.dart';
 import 'line_splitter.dart';
+import 'multisplit.dart';
+import 'whitespace.dart';
 
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
@@ -35,11 +38,17 @@ class SourceComment {
       {this.isLineComment, this.isStartOfLine});
 }
 
+/// Takes the incremental serialized output of [SourceVisitor]--the source text
+/// along with any comments and preserved whitespace--and produces a coherent
+/// series of [Chunk]s which can then be split into physical lines.
+///
+/// Keeps track of leading indentation, expression nesting, and all of the hairy
+/// code required to seamlessly integrate existing comments into the pure
+/// output produced by [SourceVisitor].
 class LineWriter {
   final DartFormatter _formatter;
 
-  // TODO(bob): Private?
-  final StringBuffer buffer;
+  final StringBuffer _buffer;
 
   final _chunks = <Chunk>[];
 
@@ -104,7 +113,7 @@ class LineWriter {
     _indentStack[_indentStack.length - 1] = value;
   }
 
-  LineWriter(this._formatter, this.buffer) {
+  LineWriter(this._formatter, this._buffer) {
     increaseIndent(_formatter.indent);
   }
 
@@ -146,11 +155,11 @@ class LineWriter {
 
   /// Write a soft split with [cost], [param] and unsplit [text].
   ///
-  /// If [cost] is omitted, defaults to [SplitCost.FREE]. If [param] is omitted,
-  /// one will be created. If a param is provided, [cost] is ignored. If
-  /// omitted, [text] defaults to an empty string.
+  /// If [cost] is omitted, defaults to [Cost.FREE]. If [param] is omitted, one
+  /// will be created. If a param is provided, [cost] is ignored. If omitted,
+  /// [text] defaults to an empty string.
   void writeSplit({int cost, SplitParam param, String text}) {
-    if (cost == null) cost = SplitCost.FREE;
+    if (cost == null) cost = Cost.FREE;
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
@@ -248,7 +257,6 @@ class LineWriter {
   /// [levels].
   void indent({int levels: 1}) {
     increaseIndent(levels);
-
     _addHardSplit();
   }
 
@@ -257,7 +265,6 @@ class LineWriter {
   /// If [newline] is `false`, does not add a newline. Otherwise, it does.
   void unindent({int levels: 1, bool newline: true}) {
     decreaseIndent(levels);
-
     if (newline) _addHardSplit();
   }
 
@@ -280,16 +287,21 @@ class LineWriter {
     while (levels-- > 0) _indentStack.removeLast();
   }
 
+  /// Starts a new span.
+  ///
+  /// Each call to this needs a later matching call to [endSpan].
   void startSpan() {
     _spans.add(new SpanStartChunk());
     _chunks.add(_spans.last);
   }
 
+  /// Ends the innermost span and associates [cost] with it.
   void endSpan(int cost) {
     _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
   }
 
-  void startMultisplit({int cost: SplitCost.FREE, bool separable}) {
+  /// Starts a new [Multisplit] with [cost].
+  void startMultisplit({int cost: Cost.FREE, bool separable}) {
     _multisplits.add(new Multisplit(
         _chunks.length, cost, separable: separable));
   }
@@ -300,6 +312,9 @@ class LineWriter {
   /// is `true`, then this split will take into account expression nesting.
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
+  ///
+  /// If [allowTrailingCommentBefore] is `false`, then a comment is not allowed
+  /// to adhere to the previous token and remain on the line before the split.
   void multisplit({String text: "", bool nest: false,
       bool allowTrailingCommentBefore: true}) {
     _addSplit(new SplitChunk(_indent, nest ? _nesting : -1,
@@ -308,6 +323,7 @@ class LineWriter {
         allowTrailingCommentBefore: allowTrailingCommentBefore));
   }
 
+  /// Ends the innermost multisplit.
   void endMultisplit() {
     _multisplits.removeLast();
   }
@@ -354,7 +370,7 @@ class LineWriter {
       _chunks.removeLast();
     }
 
-    if (debugFormatter) _dumpChunks("all chunks");
+    if (debugFormatter) dumpChunks(_chunks);
 
     // Break the chunks into unrelated lines that can be wrapped separately.
     var indent = _formatter.indent;
@@ -368,19 +384,15 @@ class LineWriter {
 
       // Write newlines between each line.
       for (var i = 0; i < pendingNewlines; i++) {
-        buffer.write(_formatter.lineEnding);
+        _buffer.write(_formatter.lineEnding);
       }
 
       // Only write non-empty lines so we don't get trailing whitespace for
       // indentation.
       if (chunks.isNotEmpty) {
-        var line = new Line(indent: indent);
-        line.chunks.addAll(chunks);
-
         var splitter = new LineSplitter(_formatter.lineEnding,
-            _formatter.pageWidth, line);
-
-        splitter.apply(buffer);
+            _formatter.pageWidth, chunks, indent);
+        splitter.apply(_buffer);
       }
 
       start = end + 1;
@@ -580,16 +592,4 @@ class LineWriter {
   }
 
   // TODO(bob): Need tests for line-splitting before and after block comments.
-
-  void _dumpChunks(String label, [List<Chunk> chunks]) {
-    if (chunks == null) chunks = _chunks;
-
-    print("\n$label:");
-
-    var i = 0;
-    for (var chunk in chunks) {
-      print("$i: $chunk");
-      i++;
-    }
-  }
 }

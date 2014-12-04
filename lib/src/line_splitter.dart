@@ -4,12 +4,21 @@
 
 library dart_style.src.line_printer;
 
+import 'chunk.dart';
+import 'cost.dart';
 import 'debug.dart';
-import 'line.dart';
+import 'nesting.dart';
 
-const _INVALID_SPLITS = -1;
+/// The number of spaces in a single level of indentation.
+const SPACES_PER_INDENT = 2;
 
-/// Takes a [Line] determines the best way to split it into multiple physical
+/// The number of indentation levels in a single level of expression nesting.
+const INDENTS_PER_NEST = 2;
+
+/// Cost or indent value used to indication no solution could be found.
+const INVALID_SPLITS = -1;
+
+/// Takes a series of [Chunk]s and determines the best way to split them into
 /// lines of output that fit within the page width (if possible).
 ///
 /// Trying all possible combinations is exponential in the number of splits
@@ -57,16 +66,19 @@ class LineSplitter {
   /// The number of characters allowed in a single line.
   final int _pageWidth;
 
-  /// The (logical) [Line] being split.
-  final Line _line;
+  /// The list of chunks being split.
+  final List<Chunk> _chunks;
+
+  /// The leading indentation at the beginning of the first line.
+  final int _indent;
 
   /// Memoization table for the best set of splits for the remainder of the
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
   /// Creates a new splitter that tries to fit lines within [pageWidth].
-  LineSplitter(this._lineEnding, this._pageWidth, this._line) {
-    assert(_line.chunks.isNotEmpty);
+  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._indent) {
+    assert(_chunks.isNotEmpty);
   }
 
   /// Convert the line to a [String] representation.
@@ -74,15 +86,15 @@ class LineSplitter {
   /// It will determine how best to split it into multiple lines of output and
   /// return a single string that may contain one or more newline characters.
   void apply(StringBuffer buffer) {
-    if (debugFormatter) _dumpLine();
+    if (debugFormatter) dumpLine(_chunks, _indent);
 
     var splits = _findBestSplits(new LinePrefix());
 
-    var indent = _line.indent;
-    var nester = new Nester(_line.indent, new NestingStack());
+    var indent = _indent;
+    var nester = new Nester(_indent, new NestingStack());
 
     // Write each chunk in the line.
-    for (var chunk in _line.chunks) {
+    for (var chunk in _chunks) {
       if (chunk.isSplit && chunk.shouldSplit(splits)) {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
@@ -103,16 +115,15 @@ class LineSplitter {
     var memoized = _bestSplits[prefix];
     if (memoized != null) return memoized;
 
-    var indent = prefix.getNextLineIndent(_line);
+    var indent = prefix.getNextLineIndent(_chunks, _indent);
 
-    // TODO(bob): Clarify "firstLine" in presence of newlines.
-    // Find the set of splits that occur before going past the first page
-    // boundary. At least one of them must be split if the end result is going
-    // to fit within the page width.
+    // Find the set of soft splits that occur before going past the page
+    // boundary on some line. At least one of them must be split if the end
+    // result is going to fit within the page width.
     var length = indent * SPACES_PER_INDENT;
     var firstLineSplitIndices = [];
-    for (var i = prefix.length; i < _line.chunks.length; i++) {
-      var chunk = _line.chunks[i];
+    for (var i = prefix.length; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
       if (chunk.isSoftSplit) firstLineSplitIndices.add(i);
 
       if (chunk.isHardSplit) {
@@ -122,8 +133,6 @@ class LineSplitter {
         // need for a certain nesting level.
         length = chunk.indent * SPACES_PER_INDENT;
       } else {
-        // TODO(bob): Clean up.
-        assert(chunk is TextChunk || chunk.isSoftSplit || chunk is SpanStartChunk || chunk is SpanEndChunk);
         length += chunk.text.length;
       }
 
@@ -143,9 +152,9 @@ class LineSplitter {
     var bestSplits;
 
     for (var i in firstLineSplitIndices) {
-      var split = _line.chunks[i] as SplitChunk;
+      var split = _chunks[i] as SplitChunk;
 
-      var longerPrefix = prefix.expand(_line, i + 1);
+      var longerPrefix = prefix.expand(_chunks, i + 1);
 
       // If we can't split at this chunk without breaking the nesting stack,
       // then ignore this possible solution.
@@ -170,7 +179,7 @@ class LineSplitter {
 
       // If the set of splits is invalid (usually meaning an unsplit collection
       // containing a split), then ignore it.
-      if (cost == _INVALID_SPLITS) continue;
+      if (cost == INVALID_SPLITS) continue;
 
       if (lowestCost == null || cost < lowestCost) {
         lowestCost = cost;
@@ -235,7 +244,7 @@ class LineSplitter {
       // completely because it may be that the only solution still goes over
       // (for example with long string literals).
       if (length > _pageWidth) {
-        cost += (length - _pageWidth) * SplitCost.OVERFLOW_CHAR;
+        cost += (length - _pageWidth) * Cost.OVERFLOW_CHAR;
       }
 
       // Splitting here, so every param we've seen so far is now on a
@@ -247,11 +256,11 @@ class LineSplitter {
     }
 
     var nester = new Nester(
-        prefix.getNextLineIndent(_line, includeNesting: false),
+        prefix.getNextLineIndent(_chunks, _indent, includeNesting: false),
         prefix._nesting);
 
-    for (var i = prefix.length; i < _line.chunks.length; i++) {
-      var chunk = _line.chunks[i];
+    for (var i = prefix.length; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
 
       if (chunk is SpanStartChunk) {
         spanStarts[chunk] = line;
@@ -264,13 +273,13 @@ class LineSplitter {
 
           // Start the new line.
           indent = nester.handleSplit(chunk);
-          if (indent == _INVALID_SPLITS) return _INVALID_SPLITS;
+          if (indent == INVALID_SPLITS) return INVALID_SPLITS;
 
           length = indent * SPACES_PER_INDENT;
         } else if (chunk.isSoftSplit) {
           // If we've seen the same param on a previous line, the unsplit
           // multisplit got split, so this isn't valid.
-          if (previousParams.contains(chunk.param)) return _INVALID_SPLITS;
+          if (previousParams.contains(chunk.param)) return INVALID_SPLITS;
           thisLineParams.add(chunk.param);
 
           length += chunk.text.length;
@@ -284,47 +293,6 @@ class LineSplitter {
     endLine();
 
     return cost;
-  }
-
-  /// Prints [line] to stdout with split chunks made visible.
-  ///
-  /// This is just for debugging.
-  void _dumpLine([LinePrefix prefix, Set<SplitParam> splits]) {
-    if (prefix == null) prefix = new LinePrefix();
-    if (splits == null) splits = new Set();
-
-    var buffer = new StringBuffer()
-        ..write(Color.gray)
-        ..write("| " * prefix.getNextLineIndent(_line))
-        ..write(Color.none);
-
-    for (var i = prefix.length; i < _line.chunks.length; i++) {
-      var chunk = _line.chunks[i];
-
-      if (chunk is SpanStartChunk) {
-        buffer.write("${Color.cyan}‹${Color.none}");
-      } else if (chunk is SpanEndChunk) {
-        buffer.write("${Color.cyan}›(${chunk.cost})${Color.none}");
-      } else if (chunk is TextChunk) {
-        buffer.write(chunk.text);
-      } else if (chunk.isSoftSplit) {
-        var split = chunk as SplitChunk;
-        var color = splits.contains(split.param) ? Color.green : Color.gray;
-
-        buffer.write("$color§${split.param.cost}");
-        if (split.nesting != -1) {
-          buffer.write(":${split.nesting}");
-        }
-        buffer.write("${Color.none}");
-      } else if (chunk.isHardSplit) {
-        buffer.write("${Color.magenta}\\n${"->" * chunk.indent}${Color.none}");
-      } else {
-        // Unexpected chunk type.
-        buffer.write("${Color.red}‹$chunk›${Color.none}");
-      }
-    }
-
-    print(buffer);
   }
 }
 
@@ -370,8 +338,8 @@ class LinePrefix {
   ///
   /// Returns `null` if the new split chunk results in an invalid prefix. See
   /// [NestingStack.modify] for details.
-  LinePrefix expand(Line line, int length) {
-    var split = line.chunks[length - 1] as SplitChunk;
+  LinePrefix expand(List<Chunk> chunks, int length) {
+    var split = chunks[length - 1] as SplitChunk;
     var nesting = _nesting.modify(split);
     if (nesting == null) return null;
 
@@ -383,16 +351,14 @@ class LinePrefix {
   ///
   /// Takes into account the indentation of the previous split and any
   /// additional indentation from wrapped nested expressions.
-  int getNextLineIndent(Line line, {bool includeNesting: true}) {
+  int getNextLineIndent(List<Chunk> chunks, int indent,
+      {bool includeNesting: true}) {
     // TODO(rnystrom): This could be cached at construction time, which may be
     // faster.
     // Get the initial indentation of the line immediately after the prefix,
     // ignoring any extra indentation caused by nested expressions.
-    var indent;
-    if (length == 0) {
-      indent = line.indent;
-    } else {
-      indent = (line.chunks[length - 1] as SplitChunk).indent;
+    if (length > 0) {
+      indent = (chunks[length - 1] as SplitChunk).indent;
     }
 
     if (includeNesting) indent += _nesting.indent;
@@ -401,167 +367,4 @@ class LinePrefix {
   }
 
   String toString() => "LinePrefix(length: $length, nesting $_nesting)";
-}
-
-/// Keeps track of indentation caused by wrapped nested expressions within a
-/// line.
-class Nester {
-  /// The current level of statement/definition indentation.
-  ///
-  /// If a split changes this, that resets the nesting stack, since expression
-  /// nesting is specific to the current innermost statement being formatted.
-  /// Consider a long method call containing a function body which in turn
-  /// contains long method call. The nested stack of the inner call is
-  /// unrelated to the outer one.
-  int _indent;
-
-  /// The current nesting stack.
-  NestingStack _nesting;
-
-  Nester(this._indent, this._nesting);
-
-  /// Updates the indentation state with [split], which should be an enabled
-  /// split.
-  ///
-  /// Returns the number of levels of indentation the next line should have.
-  /// Returns [_INVALID_SPLITS] if the split is not allowed for the current
-  /// indentation stack.
-  int handleSplit(SplitChunk split) {
-    if (!split.isInExpression) return split.indent;
-
-    if (split.indent != _indent) {
-      _nesting = new NestingStack();
-      _indent = split.indent;
-    }
-
-    var was = _nesting;
-    _nesting = _nesting.modify(split);
-    if (_nesting == null) return _INVALID_SPLITS;
-
-    return _indent + _nesting.indent;
-  }
-}
-
-/// Maintains a stack of nested expressions that have currently been split.
-///
-/// A single statement may have multiple different levels of indentation based
-/// on the expression nesting level at the point where the line is broken. For
-/// example:
-///
-///     someFunction(argument, argument,
-///         innerFunction(argument,
-///             innermost), argument);
-///
-/// This means that when splitting a line, we need to keep track of the nesting
-/// level of the previous line(s) to determine how far the next line must be
-/// indented.
-///
-/// This class is a persistent collection. Each instance is immutable and
-/// methods to modify it return a new collection.
-class NestingStack {
-  /// The number of visible indentation levels for the current nesting.
-  ///
-  /// This may be less than [_depth] since split lines can skip multiple
-  /// nesting depths.
-  final int indent;
-
-  final NestingStack _parent;
-
-  /// The number of surrounding expression nesting levels.
-  final int _depth;
-
-  NestingStack() : this._(null, -1, 0);
-
-  NestingStack._(this._parent, this._depth, this.indent);
-
-  /// LinePrefixes implement their own value equality to ensure that two
-  /// prefixes with the same nesting stack are considered equal even if the
-  /// nesting occurred from different splits.
-  ///
-  /// For example, consider these two prefixes with `^` marking where splits
-  /// have been applied:
-  ///
-  ///     fn( first, second, ...
-  ///        ^
-  ///     fn( first, second, ...
-  ///               ^
-  ///
-  /// These are equivalent from the view of the suffix because they have the
-  /// same nesting stack, even though the nesting came from different tokens.
-  /// This lets us reuse memoized suffixes more frequently when solving.
-  bool operator ==(other) {
-    if (other is! NestingStack) return false;
-
-    var self = this;
-    while (self != null) {
-      if (self._depth != other._depth) return false;
-      self = self._parent;
-      other = other._parent;
-
-      // They should be the same length.
-      if ((self == null) != (other == null)) return false;
-    }
-
-    return true;
-  }
-
-  int get hashCode {
-    // TODO(rnystrom): Is it worth iterating throught the stack?
-    return indent.hashCode ^ _depth.hashCode;
-  }
-
-  /// Modifies the nesting stack by taking into account a split that occurs at
-  /// [depth].
-  ///
-  /// If [depth] is -1, that indicates a split that does not affect nesting --
-  /// this is primarily multi-line collections.
-  ///
-  /// Returns a new nesting stack (which may the same as `this` if no change
-  /// was needed). Returns `null` if the split is not allowed for the current
-  /// indentation stack. This can happen if a level of nesting is skipped on a
-  /// previous line but then needed on a later line. For example:
-  ///
-  ///     // 40 columns                           |
-  ///     callSomeMethod(innerFunction(argument,
-  ///         argument, argument), argument, ...
-  ///
-  /// Here, the second line is indented one level even though it is two levels
-  /// of nesting deep (the `(` after `callSomeMethod` and `innerFunction`).
-  /// When trying to indent the third line, we are not only one level in, but
-  /// there is no level of indentation on the stack that corresponds to that.
-  /// When that happens, we just consider this an invalid solution and discard
-  /// it.
-  NestingStack modify(SplitChunk split) {
-    if (!split.isInExpression) return this;
-
-    if (split.nesting == _depth) return this;
-
-    if (split.nesting > _depth) {
-      // This expression is deeper than the last split, so add it to the
-      // stack.
-      return new NestingStack._(this, split.nesting, indent + INDENTS_PER_NEST);
-    }
-
-    // Pop items off the stack until we find the level we are now at.
-    var stack = this;
-    while (stack != null) {
-      if (stack._depth == split.nesting) return stack;
-      stack = stack._parent;
-    }
-
-    // If we got here, the level wasn't found. That means there is no correct
-    // stack level to pop to, since the stack skips past our indentation level.
-    return null;
-  }
-
-  String toString() {
-    var nesting = this;
-    var levels = [];
-    while (nesting != null) {
-      levels.add("${nesting._depth}:${nesting.indent}");
-      nesting = nesting._parent;
-    }
-
-    return levels.join(" ");
-  }
 }
