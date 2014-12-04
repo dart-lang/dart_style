@@ -282,12 +282,10 @@ class LineWriter {
 
   void startSpan() {
     _spans.add(new SpanStartChunk());
-    // TODO(bob): What about pending whitespace?
     _chunks.add(_spans.last);
   }
 
   void endSpan(int cost) {
-    // TODO(bob): What about pending whitespace?
     _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
   }
 
@@ -311,27 +309,7 @@ class LineWriter {
   }
 
   void endMultisplit() {
-    var multisplit = _multisplits.removeLast();
-
-    // See if it contains any hard splits that force it in turn to split.
-    var forced = false;
-    for (var i = multisplit.startChunk; i < _chunks.length; i++) {
-      if (_chunks[i].isHardSplit) {
-        forced = true;
-        break;
-      }
-    }
-
-    // TODO(bob): If last chunk is split for this multi, discard it? I think
-    // that will completely eliminate the chunks for an empty block/collection.
-
-    if (!forced) return;
-
-    // Turn all of this multis soft splits into hard.
-    for (var i = multisplit.startChunk; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
-      if (chunk.isSoftSplit && chunk.param == multisplit.param) chunk.harden();
-    }
+    _multisplits.removeLast();
   }
 
   /// Resets the expression nesting back to the "top-level" unnested state.
@@ -387,7 +365,6 @@ class LineWriter {
     splitLine() {
       // TODO(bob): Lots of list copying. Linked list would be good here.
       var chunks = _chunks.getRange(start, end).toList();
-      if (debugFormatter) _dumpChunks("top-level line", chunks);
 
       // Write newlines between each line.
       for (var i = 0; i < pendingNewlines; i++) {
@@ -570,6 +547,35 @@ class LineWriter {
       _chunks.last.mergeSplit(split);
     } else {
       _chunks.add(split);
+    }
+
+    if (_chunks.last.isHardSplit) _splitMultisplits();
+  }
+
+  /// Handles multisplits when a hard line occurs.
+  ///
+  /// Any active separable multisplits will get split in two at this point.
+  /// Other multisplits are forced into the "hard" state. All of their previous
+  /// splits are turned into explicit hard splits and any new splits for that
+  /// multisplit become hard splits too.
+  void _splitMultisplits() {
+    if (_multisplits.isEmpty) return;
+
+    var splitParams = new Set();
+    for (var multisplit in _multisplits) {
+      // If this multisplit isn't separable or already split, we need to harden
+      // all of its previous splits now.
+      var param = multisplit.harden();
+      if (param != null) splitParams.add(param);
+    }
+
+    if (splitParams.isEmpty) return;
+
+    // Take any existing splits for the multisplits and hard split them.
+    for (var chunk in _chunks) {
+      if (chunk.isSoftSplit && chunk.shouldSplit(splitParams)) {
+        chunk.harden();
+      }
     }
   }
 

@@ -368,9 +368,39 @@ class Multisplit {
   SplitParam get param => _param;
   SplitParam _param;
 
+  /// `true` if a hard newline has forced this multisplit to be split.
+  bool _isSplit = false;
+
   final bool _separable;
 
   Multisplit(this.startChunk, int cost, {bool separable})
       : _param = new SplitParam(cost),
         _separable = separable != null ? separable : false;
+
+  /// Handles a hard split occurring in the middle of this multisplit.
+  ///
+  /// If the multisplit is separable, this creates a new param so the previous
+  /// split chunks can vary independently of later ones. Otherwise, it just
+  /// marks this multisplit as being split.
+  ///
+  /// Returns a [SplitParam] for existing splits that should be hardened if this
+  /// splits a non-separable multisplit for the first time. Otherwise, returns
+  /// `null`.
+  SplitParam harden() {
+    if (_isSplit) return null;
+
+    _isSplit = true;
+
+    if (_separable) {
+      _param = new SplitParam(param.cost);
+
+      // Previous splits may still remain unsplit.
+      return null;
+    } else {
+      // Any other splits created from this multisplit should be hardened now.
+      var oldParam = _param;
+      _param = null;
+      return oldParam;
+    }
+  }
 }
