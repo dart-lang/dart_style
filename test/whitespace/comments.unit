@@ -121,6 +121,9 @@ library foo;
 // Comment 2
 
 /* Comment 3 */
+
+
+class C {}
 <<<
 library foo;
 
@@ -129,6 +132,8 @@ library foo;
 // Comment 2
 
 /* Comment 3 */
+
+class C {}
 >>>
 library foo; //zamm
 
@@ -150,7 +155,8 @@ var x; //x
 class X { //X!
 }
 <<<
-class X { //X!
+class X {
+  //X!
 }
 >>>
 var /* int */ x; //x

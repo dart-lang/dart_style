@@ -128,13 +128,16 @@ class LineWriter {
     _addSplit(new SplitChunk(_indent, _nesting, param: param, text: text));
   }
 
-  /// Outputs a series of [comments] and associated whitespace.
+  /// Outputs the series of [comments] and associated whitespace that appear
+  /// before [token] (which is not written by this).
   ///
   /// The list contains each comment as it appeared in the source between the
-  /// last token written and the next one that's about to be written. This list
-  /// also contains one final sentinel element whose [linesBefore] contains the
-  /// number of lines between the last comment and next token.
-  void writeComments(List<SourceComment> comments) {
+  /// last token written and the next one that's about to be written.
+  ///
+  /// [linesAfterLast] is number of lines between the last comment (or previous
+  /// token if there are no comments) and the next token.
+  void writeComments(List<SourceComment> comments, int linesAfterLast,
+      String token) {
     // Corner case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
@@ -148,17 +151,22 @@ class LineWriter {
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
     if (_pendingWhitespace == Whitespace.TWO_NEWLINES &&
+        comments.isNotEmpty &&
         comments.first.linesBefore < 2) {
-      for (var i = 1; i < comments.length; i++) {
-        if (comments[i].linesBefore > 1) {
-          _pendingWhitespace = Whitespace.NEWLINE;
-          break;
+      if (linesAfterLast > 1) {
+        _pendingWhitespace = Whitespace.NEWLINE;
+      } else {
+        for (var i = 1; i < comments.length; i++) {
+          if (comments[i].linesBefore > 1) {
+            _pendingWhitespace = Whitespace.NEWLINE;
+            break;
+          }
         }
       }
     }
 
     // Write each comment and the whitespace between them.
-    for (var i = 0; i < comments.length - 1; i++) {
+    for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
 
       _preserveNewlines(comment.linesBefore);
@@ -167,8 +175,8 @@ class LineWriter {
       var precedingSplit;
 
       if (comment.linesBefore == 0) {
-        // If we're sitting on a soft split, move the comment before it to
-        // adhere it to the preceding text.
+        // If we're sitting on a split, move the comment before it to adhere it
+        // to the preceding text.
         if (_chunks.isNotEmpty &&
             _chunks.last is SplitChunk &&
             _chunks.last.allowTrailingCommentBefore) {
@@ -191,12 +199,19 @@ class LineWriter {
 
       // Make sure there is at least one newline after a line comment and allow
       // one or two after a block comment that has nothing after it.
-      if (comments[i + 1].linesBefore > 0) {
-        _addHardSplit(nest: true, double: comments[i + 1].linesBefore > 1);
-      }
+      var linesAfter = linesAfterLast;
+      if (i < comments.length - 1) linesAfter = comments[i + 1].linesBefore;
+
+      if (linesAfter > 0) _addHardSplit(nest: true, double: linesAfter > 1);
     }
 
-    _preserveNewlines(comments.last.linesBefore);
+    // If the comment has text following it (aside from a grouping character),
+    // it needs a trailing space.
+    if (_needsSpaceAfterLastComment(comments, token)) {
+      _pendingWhitespace = Whitespace.SPACE;
+    }
+
+    _preserveNewlines(linesAfterLast);
   }
 
   // TODO(bob): Lose these and just do explicit newlines()?
@@ -467,6 +482,22 @@ class LineWriter {
 
     // Block comments do not get a space if following a grouping character.
     return text != "(" && text != "[" && text != "{";
+  }
+
+  /// Returns `true` if a space should be output after the last comment which
+  /// was just written and the token that will be written.
+  bool _needsSpaceAfterLastComment(List<SourceComment> comments, String token) {
+    // If there are no comments (except the sentinel fake one), don't need a
+    // space.
+    if (comments.isEmpty) return false;
+
+    // If there is a split after the last comment, we don't need a space.
+    if (_chunks.last is! TextChunk) return false;
+
+    // Otherwise, it gets a space if the following token is not a grouping
+    // character, a comma, (or the empty string, for EOF).
+    return token != ")" && token != "]" && token != "}" &&
+        token != "," && token != "";
   }
 
   /// Appends a hard split with the current indentation and nesting (the latter

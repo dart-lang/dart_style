@@ -297,11 +297,13 @@ class SourceVisitor implements AstVisitor {
   visitCommentReference(CommentReference node) => null;
 
   visitCompilationUnit(CompilationUnit node) {
-    var scriptTag = node.scriptTag;
-    var directives = node.directives;
-    visit(scriptTag);
+    visit(node.scriptTag);
 
-    visitNodes(directives, between: oneOrTwoNewlines, after: twoNewlines);
+    visitNodes(node.directives, between: oneOrTwoNewlines);
+
+    if (node.directives.isNotEmpty && node.declarations.isNotEmpty) {
+      twoNewlines();
+    }
 
     visitNodes(node.declarations, between: oneOrTwoNewlines);
 
@@ -1388,7 +1390,6 @@ class SourceVisitor implements AstVisitor {
         nextLine = tokenLine;
       }
 
-
       comments.add(new SourceComment(comment.toString().trim(),
           commentLine - previousLine,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT));
@@ -1397,12 +1398,8 @@ class SourceVisitor implements AstVisitor {
       comment = comment.next;
     }
 
-    // Add a dummy comment to the end to track how many lines are between the
-    // last comment and the subsequent token.
-    comments.add(new SourceComment(null, startLine(token) - previousLine,
-        isLineComment: false));
-
-    _writer.writeComments(comments);
+    _writer.writeComments(comments, startLine(token) - previousLine,
+        token.lexeme);
   }
 
   /// Append the given [string] to the source writer if it's non-null.
