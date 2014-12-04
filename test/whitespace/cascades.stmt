@@ -7,18 +7,18 @@
 "foo"..toString(argument, argument, argument);
 <<<
 "foo"
-    ..toString(
-        argument, argument, argument);
+  ..toString(
+      argument, argument, argument);
 >>> multiple cascades get their own line
 "foo"..toString()..toString();
 <<<
 "foo"
-    ..toString()
-    ..toString();
+  ..toString()
+  ..toString();
 >>> cascades indent contained blocks (and force multi-line)
 "foo"..toString(() {body;});
 <<<
 "foo"
-    ..toString(() {
-      body;
-    });
+  ..toString(() {
+    body;
+  });

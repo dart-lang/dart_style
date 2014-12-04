@@ -190,32 +190,29 @@ class SourceVisitor implements AstVisitor {
 
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
-    // TODO(bob): Need to decide if this should indent or nest:
-    //
-    //     object
-    //         ..method(() {
-    //           ...
-    //         })
-    //         ..method(() {
-    //           ...
-    //         });
-    //
-    // or:
-    //
-    //     object
-    //         ..method(() {
-    //       ...
-    //     })
-    //         ..method(() {
-    //       ...
-    //     });
-    _writer.increaseIndent(2);
-    // Single cascades do not force a linebreak (dartbug.com/16384)
+
+    _writer.increaseIndent();
+
+    // If there are multiple cascades, they always get their own line, even if
+    // they would fit.
     if (node.cascadeSections.length > 1) {
       newline();
+      visitNodes(node.cascadeSections, between: () {
+        newline();
+        _writer.resetNesting();
+      });
+    } else {
+      _writer.startMultisplit();
+      _writer.multisplit();
+      visitNodes(node.cascadeSections, between: () {
+        _writer.multisplit();
+        _writer.resetNesting();
+      });
+
+      _writer.endMultisplit();
     }
-    visitNodes(node.cascadeSections, between: newline);
-    _writer.decreaseIndent(2);
+
+    _writer.decreaseIndent();
   }
 
   visitCatchClause(CatchClause node) {

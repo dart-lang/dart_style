@@ -40,8 +40,8 @@ main() async {
 fish() => []..add(1)..add(2);
 <<<
 fish() => []
-    ..add(1)
-    ..add(2);
+  ..add(1)
+  ..add(2);
 >>>
 fish() => []..add(1);
 <<<
