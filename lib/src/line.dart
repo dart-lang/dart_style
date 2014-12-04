@@ -154,6 +154,10 @@ class SplitChunk extends Chunk {
   /// take the main indent level into account.
   bool get isInExpression => _nesting != -1;
 
+  /// `true` if the split should output an extra blank line.
+  bool get isDouble => _isDouble;
+  bool _isDouble;
+
   /// `true` if a trailing comment is allowed to appear at the end of the line
   /// before this split.
   ///
@@ -170,8 +174,9 @@ class SplitChunk extends Chunk {
   /// If [_param] is non-`null`, creates a soft split. Otherwise, creates a
   /// hard split. When non-split, a soft split expands to [text].
   SplitChunk(this._indent, this._nesting, {SplitParam param, this.text: "",
-      this.allowTrailingCommentBefore: true})
-      : _param = param;
+      bool double: false, this.allowTrailingCommentBefore: true})
+      : _param = param,
+        _isDouble = double;
 
   bool get isHardSplit => _param == null;
   bool get isSoftSplit => _param != null;
@@ -196,6 +201,9 @@ class SplitChunk extends Chunk {
     _indent = later._indent;
     _nesting = later._nesting;
 
+    // Preserve a blank line.
+    _isDouble = _isDouble || later._isDouble;
+
     // Text should either be irrelevant, or the same. We don't expect to merge
     // sequential soft splits with different text.
     assert(isHardSplit || text == later.text);
@@ -219,6 +227,7 @@ class SplitChunk extends Chunk {
       buffer.write(" hard");
     }
 
+    if (_isDouble) buffer.write(" double");
     if (_indent != 0) buffer.write(" indent $_indent");
     if (_nesting != -1) buffer.write(" nest $_nesting");
     if (text != "") buffer.write(" '$text'");

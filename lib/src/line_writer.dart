@@ -9,6 +9,24 @@ import 'debug.dart';
 import 'line.dart';
 import 'line_splitter.dart';
 
+/// A comment in the source, with a bit of information about the surrounding
+/// whitespace.
+class SourceComment {
+  /// The text of the comment, including `//`, `/*`, and `*/`.
+  final String text;
+
+  /// The number of newlines between the comment or token preceding this comment
+  /// and the beginning of this one.
+  ///
+  /// Will be zero if the comment is a trailing one.
+  final int linesBefore;
+
+  /// `true` if this comment is a line comment.
+  final bool isLineComment;
+
+  SourceComment(this.text, this.linesBefore, {this.isLineComment});
+}
+
 class LineWriter {
   final DartFormatter _formatter;
 
@@ -110,61 +128,75 @@ class LineWriter {
     _addSplit(new SplitChunk(_indent, _nesting, param: param, text: text));
   }
 
-  void preserveNewlines(int numLines) {
-    // If we didn't know how many newlines the user authored between the last
-    // token and this one, now we do.
-    switch (_pendingWhitespace) {
-      case Whitespace.SPACE_OR_NEWLINE:
-        if (numLines > 0) {
+  /// Outputs a series of [comments] and associated whitespace.
+  ///
+  /// The list contains each comment as it appeared in the source between the
+  /// last token written and the next one that's about to be written. This list
+  /// also contains one final sentinel element whose [linesBefore] contains the
+  /// number of lines between the last comment and next token.
+  void writeComments(List<SourceComment> comments) {
+    // Corner case: if we require a blank line, but there exists one between
+    // some of the comments, or after the last one, then we don't need to
+    // enforce one before the first comment. Example:
+    //
+    //     library foo;
+    //     // comment
+    //
+    //     class Bar {}
+    //
+    // Normally, a blank line is required after `library`, but since there is
+    // one after the comment, we don't need one before it. This is mainly so
+    // that commented out directives stick with their preceding group.
+    if (_pendingWhitespace == Whitespace.TWO_NEWLINES &&
+        comments.first.linesBefore < 2) {
+      for (var i = 1; i < comments.length; i++) {
+        if (comments[i].linesBefore > 1) {
           _pendingWhitespace = Whitespace.NEWLINE;
-        } else {
-          _pendingWhitespace = Whitespace.SPACE;
+          break;
         }
-        break;
-
-      case Whitespace.ONE_OR_TWO_NEWLINES:
-        if (numLines > 1) {
-          _pendingWhitespace = Whitespace.TWO_NEWLINES;
-        } else {
-          _pendingWhitespace = Whitespace.NEWLINE;
-        }
-        break;
-    }
-  }
-
-  /// Writes a comment with [text] (including the "//" or "/* */" syntax).
-  void writeComment(String text,
-      {bool isLineComment, bool isTrailing, bool isLeading}) {
-    // TODO(bob): What about _pendingWhitespace?
-
-    if (isTrailing) {
-      // If we're sitting on a soft split, move the comment before it to adhere
-      // it to the preceding text.
-      var split;
-      if (_chunks.isNotEmpty &&
-          _chunks.last is SplitChunk &&
-          _chunks.last.allowTrailingCommentBefore) {
-        split = _chunks.removeLast();
       }
-
-      // The comment follows other text, so we need to decide if it gets a space
-      // before it or not.
-      if (_needsSpaceBeforeComment(isLineComment: isLineComment)) {
-        _chunks.add(new TextChunk(" "));
-      }
-
-      write(text);
-
-      if (split != null) _chunks.add(split);
-    } else {
-      // The comment starts a line, so make sure it stays on its own line.
-      _addHardSplit(nest: true);
-      write(text);
     }
 
-    // Make sure there is at least one newline after a line comment and allow
-    // one after a block comment that has nothing after it.
-    if (!isLeading) _addHardSplit(nest: true);
+    // Write each comment and the whitespace between them.
+    for (var i = 0; i < comments.length - 1; i++) {
+      var comment = comments[i];
+
+      _preserveNewlines(comment.linesBefore);
+      _emitPendingWhitespace();
+
+      var precedingSplit;
+
+      if (comment.linesBefore == 0) {
+        // If we're sitting on a soft split, move the comment before it to
+        // adhere it to the preceding text.
+        if (_chunks.isNotEmpty &&
+            _chunks.last is SplitChunk &&
+            _chunks.last.allowTrailingCommentBefore) {
+          precedingSplit = _chunks.removeLast();
+        }
+
+        // The comment follows other text, so we need to decide if it gets a
+        // space before it or not.
+        if (_needsSpaceBeforeComment(isLineComment: comment.isLineComment)) {
+          write(" ");
+        }
+      } else {
+        // The comment starts a line, so make sure it stays on its own line.
+        _addHardSplit(nest: true);
+      }
+
+      write(comment.text);
+
+      if (precedingSplit != null) _chunks.add(precedingSplit);
+
+      // Make sure there is at least one newline after a line comment and allow
+      // one or two after a block comment that has nothing after it.
+      if (comments[i + 1].linesBefore > 0) {
+        _addHardSplit(nest: true, double: comments[i + 1].linesBefore > 1);
+      }
+    }
+
+    _preserveNewlines(comments.last.linesBefore);
   }
 
   // TODO(bob): Lose these and just do explicit newlines()?
@@ -301,6 +333,7 @@ class LineWriter {
     var indent = _formatter.indent;
     var start = 0;
     var end;
+    var pendingNewlines = 0;
 
     splitLine() {
       // TODO(bob): Lots of list copying. Linked list would be good here.
@@ -308,7 +341,9 @@ class LineWriter {
       if (debugFormatter) _dumpChunks("top-level line", chunks);
 
       // Write newlines between each line.
-      if (start > 0) buffer.write(_formatter.lineEnding);
+      for (var i = 0; i < pendingNewlines; i++) {
+        buffer.write(_formatter.lineEnding);
+      }
 
       // Only write non-empty lines so we don't get trailing whitespace for
       // indentation.
@@ -333,11 +368,37 @@ class LineWriter {
       if (chunk.isHardSplit && chunk.indent == 0 && chunk.nesting == 0) {
         splitLine();
         indent = _chunks[end].indent;
+        pendingNewlines = chunk.isDouble ? 2 : 1;
       }
     }
 
     // Handle the last line.
     if (start < end) splitLine();
+  }
+
+  /// If the current pending whitespace allows some source discretion, pins
+  /// that down given that the source contains [numLines] newlines at that
+  /// point.
+  void _preserveNewlines(int numLines) {
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (numLines > 0) {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        } else {
+          _pendingWhitespace = Whitespace.SPACE;
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (numLines > 1) {
+          _pendingWhitespace = Whitespace.TWO_NEWLINES;
+        } else {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        }
+        break;
+    }
   }
 
   /// Writes the current pending [Whitespace] to the output, if any.
@@ -358,8 +419,7 @@ class LineWriter {
         break;
 
       case Whitespace.TWO_NEWLINES:
-        _addHardSplit();
-        _addHardSplit(collapse: false);
+        _addHardSplit(double: true);
         break;
 
       case Whitespace.SPACE_OR_NEWLINE:
@@ -399,8 +459,8 @@ class LineWriter {
     assert(chunk is TextChunk);
     var text = (chunk as TextChunk).text;
 
-    // TODO(bob): Do we need to handle this case?
-    assert(text != " ");
+    // Don't add a space if there already is one.
+    if (text == " ") return false;
 
     // Always put a space before line comments.
     if (isLineComment) return true;
@@ -411,24 +471,20 @@ class LineWriter {
 
   /// Appends a hard split with the current indentation and nesting (the latter
   /// only if [nest] is `true`).
-  void _addHardSplit({bool nest: false, bool collapse: true}) {
+  void _addHardSplit({bool nest: false, bool double: false}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
 
-    _addSplit(new SplitChunk(_indent, nest ? _nesting : -1),
-        collapse: collapse);
+    _addSplit(new SplitChunk(_indent, nest ? _nesting : -1, double: double));
   }
 
   /// Appends [split] to the output.
-  ///
-  /// If [collapse] is `false`, always appends. Otherwise, this merges [split]
-  /// with the last chunk if the last chunk is also a split.
-  void _addSplit(SplitChunk split, {bool collapse: true}) {
+  void _addSplit(SplitChunk split) {
     // TODO(bob): What if pending is space?
     _emitPendingWhitespace();
 
     // Collapse duplicate splits.
-    if (collapse && _chunks.isNotEmpty && _chunks.last is SplitChunk) {
+    if (_chunks.isNotEmpty && _chunks.last is SplitChunk) {
       _chunks.last.mergeSplit(split);
     } else {
       _chunks.add(split);

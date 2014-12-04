@@ -1349,8 +1349,12 @@ class SourceVisitor implements AstVisitor {
     if (after != null) after();
   }
 
-  /// Writes any formatted whitespace and comments that appear before [token].
+  /// Writes all formatted whitespace and comments that appear before [token].
   void writePrecedingCommentsAndNewlines(Token token) {
+    // TODO(rnystrom): Consider a fast path that doesn't create a comment
+    // list if there are none if that helps perf.
+    var comments = [];
+
     var previousLine = endLine(token.previous);
     var tokenLine = startLine(token);
 
@@ -1359,8 +1363,6 @@ class SourceVisitor implements AstVisitor {
       var commentLine = startLine(comment);
       var commentEndLine = endLine(comment);
 
-      _writer.preserveNewlines(commentLine - previousLine);
-
       var nextLine;
       if (comment.next != null) {
         nextLine = startLine(comment.next);
@@ -1368,19 +1370,20 @@ class SourceVisitor implements AstVisitor {
         nextLine = tokenLine;
       }
 
-      _writer.writeComment(comment.toString().trim(),
-          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
-          isTrailing: commentLine == previousLine,
-          isLeading: token.type != TokenType.EOF && commentEndLine == nextLine);
+      comments.add(new SourceComment(comment.toString().trim(),
+          commentLine - previousLine,
+          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT));
 
       comment = comment.next;
       previousLine = commentEndLine;
     }
 
-    // If the last whitespace written can preserve some of the source's
-    // newlines, handle that now that we know how many newlines there are
-    // between this token and the last.
-    _writer.preserveNewlines(startLine(token) - previousLine);
+    // Add a dummy comment to the end to track how many lines are between the
+    // last comment and the subsequent token.
+    comments.add(new SourceComment(null, startLine(token) - previousLine,
+        isLineComment: false));
+
+    _writer.writeComments(comments);
   }
 
   /// Append the given [string] to the source writer if it's non-null.

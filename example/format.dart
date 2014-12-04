@@ -4,10 +4,13 @@ import 'package:dart_style/src/debug.dart';
 
 void main(List<String> args) {
   debugFormatter = true;
-  useAnsiColors = true;
+  //useAnsiColors = true;
 
-  formatStmt("""
-someMethod(argument1, argument2 /* comment */);
+  formatUnit("""
+import 'a.dart';
+// a comment
+
+class Foo {}
 """);
 }
 

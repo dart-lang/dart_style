@@ -85,6 +85,8 @@ class LineSplitter {
     for (var chunk in _line.chunks) {
       if (chunk is SplitChunk && chunk.shouldSplit(splits)) {
         buffer.write(_lineEnding);
+        if (chunk.isDouble) buffer.write(_lineEnding);
+
         indent = nester.handleSplit(chunk);
       } else {
         // Now that we know the line isn't empty, write the leading indentation.
