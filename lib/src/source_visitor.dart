@@ -100,7 +100,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.operator);
     split(cost: SplitCost.ASSIGNMENT);
+    _writer.startSpan();
     visit(node.rightHandSide);
+    _writer.endSpan(SplitCost.ASSIGNMENT_SPAN);
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -1129,7 +1131,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.equals);
     split(cost: SplitCost.ASSIGNMENT);
+    _writer.startSpan();
     visit(node.initializer);
+    _writer.endSpan(SplitCost.ASSIGNMENT_SPAN);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {

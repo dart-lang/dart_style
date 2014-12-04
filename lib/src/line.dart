@@ -272,6 +272,10 @@ class SplitCost {
   /// Between adjacent string literals.
   static const ADJACENT_STRINGS = 10;
 
+  /// The span to try to keep the right-hand side of an assignment/initializer
+  /// together.
+  static const ASSIGNMENT_SPAN = 10;
+
   /// Splitting before "." in a method call.
   static const BEFORE_PERIOD = 20;
 
