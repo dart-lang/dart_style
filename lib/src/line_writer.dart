@@ -303,7 +303,7 @@ class LineWriter {
     // All other explicit nesting should have been discarded by now.
     assert(_nesting == 0);
 
-    // TODO(bob): Call this after members, directives, and top-level
+    // TODO(bob): Call this after directives, and top-level
     // definitions.
 
     _nesting = -1;

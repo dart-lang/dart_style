@@ -149,10 +149,16 @@ class SourceVisitor implements AstVisitor {
     _writer.startMultisplit();
     _writer.multisplit(allowTrailingCommentBefore: false);
 
-    for (var statement in node.statements) {
-      visit(statement);
-      // TODO(bob): Don't allow extra newline after last statement.
-      oneOrTwoNewlines();
+    for (var i = 0; i < node.statements.length; i++) {
+      visit(node.statements[i]);
+
+      // Allow a blank line between statements, but not after the last.
+      if (i == node.statements.length - 1) {
+        newline();
+      } else {
+        oneOrTwoNewlines();
+      }
+
       _writer.resetNesting();
     }
 
@@ -249,10 +255,17 @@ class SourceVisitor implements AstVisitor {
     _writer.startMultisplit();
     _writer.multisplit(allowTrailingCommentBefore: false);
 
-    for (var member in node.members) {
-      visit(member);
-      // TODO(bob): Don't allow extra newline after last statement.
-      oneOrTwoNewlines();
+    for (var i = 0; i < node.members.length; i++) {
+      visit(node.members[i]);
+
+      // Allow a blank line between statements, but not after the last.
+      if (i == node.members.length - 1) {
+        newline();
+      } else {
+        oneOrTwoNewlines();
+      }
+
+      _writer.resetNesting();
     }
 
     token(node.rightBracket, before: () {
@@ -1361,7 +1374,12 @@ class SourceVisitor implements AstVisitor {
     var comment = token.precedingComments;
     while (comment != null) {
       var commentLine = startLine(comment);
-      var commentEndLine = endLine(comment);
+
+      // Don't preserve newlines at the top of the file.
+      if (comment == token.precedingComments &&
+          token.previous.type == TokenType.EOF) {
+        previousLine = commentLine;
+      }
 
       var nextLine;
       if (comment.next != null) {
@@ -1370,12 +1388,13 @@ class SourceVisitor implements AstVisitor {
         nextLine = tokenLine;
       }
 
+
       comments.add(new SourceComment(comment.toString().trim(),
           commentLine - previousLine,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT));
 
+      previousLine = endLine(comment);
       comment = comment.next;
-      previousLine = commentEndLine;
     }
 
     // Add a dummy comment to the end to track how many lines are between the
