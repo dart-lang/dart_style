@@ -29,6 +29,24 @@ void main() {
        throwsA(new isInstanceOf<FormatterException>()));
   });
 
+  test("FormatterException describes parse errors", () {
+    try {
+      new DartFormatter().format("""
+
+      var a = some error;
+
+      var b = another one;
+      """, uri: "my_file.dart");
+
+      fail("Should throw.");
+    } on FormatterException catch (err) {
+      var message = err.message();
+      expect(message, contains("my_file.dart"));
+      expect(message, contains("line 2"));
+      expect(message, contains("line 4"));
+    }
+  });
+
   test("adds newline to unit", () {
     expect(new DartFormatter().format("var x = 1;"),
         equals("var x = 1;\n"));

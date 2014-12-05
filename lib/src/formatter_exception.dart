@@ -5,40 +5,31 @@
 library dart_style.src.formatter_exception;
 
 import 'package:analyzer/analyzer.dart';
-import 'package:analyzer/src/generated/source.dart';
+import 'package:source_span/source_span.dart';
 
-/// Thrown when an error occurs in formatting.
+/// Thrown when one or more errors occurs while parsing the code to be
+/// formatted.
 class FormatterException implements Exception {
-  /// A message describing the error.
-  final String message;
+  /// The [AnalysisError]s that occurred.
+  final List<AnalysisError> errors;
 
   /// Creates a new FormatterException with an optional error [message].
-  const FormatterException(this.message);
+  const FormatterException(this.errors);
 
-  factory FormatterException.forErrors(List<AnalysisError> errors,
-      [LineInfo lines]) {
+  /// Creates a human-friendly representation of the analysis errors.
+  String message() {
     var buffer = new StringBuffer();
+    buffer.writeln("Could not format because the source could not be parsed:");
 
     for (var error in errors) {
-      // Show position information if we have it.
-      var pos;
-      if (lines != null) {
-        var start = lines.getLocation(error.offset);
-        var end = lines.getLocation(error.offset + error.length);
-        pos = "${start.lineNumber}:${start.columnNumber}-";
-        if (start.lineNumber == end.lineNumber) {
-          pos += "${end.columnNumber}";
-        } else {
-          pos += "${end.lineNumber}:${end.columnNumber}";
-        }
-      } else {
-        pos = "${error.offset}...${error.offset + error.length}";
-      }
-      buffer.writeln("$pos: ${error.message}");
+      var file = new SourceFile(error.source.contents.data,
+          url: error.source.fullName);
+
+      var span = file.span(error.offset, error.offset + error.length);
+      if (buffer.isNotEmpty) buffer.writeln();
+      buffer.write(span.message(error.message, color: true));
     }
 
-    return new FormatterException(buffer.toString());
+    return buffer.toString();
   }
-
-  String toString() => message;
 }

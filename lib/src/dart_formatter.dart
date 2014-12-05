@@ -4,6 +4,7 @@
 
 library dart_style.src.code_formatter;
 
+import 'package:analyzer/src/string_source.dart';
 import 'package:analyzer/src/generated/parser.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
@@ -40,10 +41,20 @@ class DartFormatter {
   /// Format the given [source] string containing an entire Dart compilation
   /// unit.
   ///
-  /// If [indent] is given, that many levels of indentation will be prefixed
-  /// before each resulting line in the output.
-  String format(String source) {
-    return _format(source, isCompilationUnit: true);
+  /// If [uri] is given, it is a [String] or [Uri] used to identify the file
+  /// being formatted in error messages.
+  String format(String source, {uri}) {
+    if (uri == null) {
+      uri = "<unknown>";
+    } else if (uri is Uri) {
+      uri = uri.toString();
+    } else if (uri is String) {
+      // Do nothing.
+    } else {
+      throw new ArgumentError("uri must be `null`, a Uri, or a String.");
+    }
+
+    return _format(source, uri: uri, isCompilationUnit: true);
   }
 
   /// Format the given [source] string containing a single Dart statement.
@@ -51,40 +62,15 @@ class DartFormatter {
     return _format(source, isCompilationUnit: false);
   }
 
-  String _format(String source, {bool isCompilationUnit}) {
+  String _format(String source, {String uri, bool isCompilationUnit}) {
     var errorListener = new ErrorListener();
-    var startToken = _tokenize(source, errorListener);
-    errorListener.throwIfErrors();
 
-    var parser = new Parser(null, errorListener);
-    parser.parseAsync = true;
-
-    var node;
-    if (isCompilationUnit) {
-      node = parser.parseCompilationUnit(startToken);
-    } else {
-      node = parser.parseStatement(startToken);
-    }
-
-    errorListener.throwIfErrors();
-
-    var buffer = new StringBuffer();
-    var visitor = new SourceVisitor(this, errorListener.lineInfo, source,
-        buffer);
-
-    visitor.run(node);
-
-    // Be a good citizen, end with a newline.
-    if (isCompilationUnit) buffer.write(lineEnding);
-
-    return buffer.toString();
-  }
-
-  Token _tokenize(String source, ErrorListener errorListener) {
+    // Tokenize the source.
     var reader = new CharSequenceReader(source);
-    var scanner = new Scanner(null, reader, errorListener);
-    var token = scanner.tokenize();
-    errorListener.lineInfo = new LineInfo(scanner.lineStarts);
+    var stringSource = new StringSource(source, uri);
+    var scanner = new Scanner(stringSource, reader, errorListener);
+    var startToken = scanner.tokenize();
+    var lineInfo = new LineInfo(scanner.lineStarts);
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
@@ -99,6 +85,30 @@ class DartFormatter {
       }
     }
 
-    return token;
+    errorListener.throwIfErrors();
+
+    // Parse it.
+    var parser = new Parser(stringSource, errorListener);
+    parser.parseAsync = true;
+
+    var node;
+    if (isCompilationUnit) {
+      node = parser.parseCompilationUnit(startToken);
+    } else {
+      node = parser.parseStatement(startToken);
+    }
+
+    errorListener.throwIfErrors();
+
+    // Format it.
+    var buffer = new StringBuffer();
+    var visitor = new SourceVisitor(this, lineInfo, source, buffer);
+
+    visitor.run(node);
+
+    // Be a good citizen, end with a newline.
+    if (isCompilationUnit) buffer.write(lineEnding);
+
+    return buffer.toString();
   }
 }

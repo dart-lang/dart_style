@@ -56,7 +56,7 @@ packages:
   source_span:
     description: source_span
     source: hosted
-    version: "1.0.0"
+    version: "1.0.2"
   stack_trace:
     description: stack_trace
     source: hosted

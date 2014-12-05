@@ -38,7 +38,7 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
 
   var formatter = new DartFormatter(pageWidth: pageWidth);
   try {
-    var output = formatter.format(file.readAsStringSync());
+    var output = formatter.format(file.readAsStringSync(), uri: file.path);
     if (overwrite) {
       file.writeAsStringSync(output);
       print("Formatted $label");
@@ -46,7 +46,7 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
       print(output);
     }
   } on FormatterException catch (err, stack) {
-    stderr.writeln("Failed $label:\n$err");
+    stderr.writeln(err.message());
   } catch (err, stack) {
     stderr.writeln('''Hit a bug in the formatter when formatting $label
   Please report at: github.com/dart-lang/dart_style/issues

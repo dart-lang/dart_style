@@ -6,13 +6,12 @@ library dart_style.src.error_listener;
 
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/source.dart';
+import 'package:source_span/source_span.dart';
 
 import 'formatter_exception.dart';
 
 /// A simple [AnalysisErrorListener] that just collects the reported errors.
 class ErrorListener implements AnalysisErrorListener {
-  LineInfo lineInfo;
-
   final _errors = <AnalysisError>[];
 
   void onError(AnalysisError error) {
@@ -23,6 +22,6 @@ class ErrorListener implements AnalysisErrorListener {
   void throwIfErrors() {
     if (_errors.isEmpty) return;
 
-    throw new FormatterException.forErrors(_errors, lineInfo);
+    throw new FormatterException(_errors);
   }
 }
