@@ -60,6 +60,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitArgumentList(ArgumentList node) {
+    // Don't allow any splitting in an empty argument list.
+    if (node.arguments.isEmpty &&
+        node.rightParenthesis.precedingComments == null) {
+      token(node.leftParenthesis);
+      token(node.rightParenthesis);
+      return;
+    }
+
     // Nest around the parentheses in case there are comments before or after
     // them.
     _writer.nestExpression();

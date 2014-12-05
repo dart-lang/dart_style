@@ -551,7 +551,8 @@ class LineWriter {
     // Don't allow leading newlines.
     if (_chunks.isEmpty) return;
 
-    // TODO(bob): What if pending is space?
+    // We shouldn't be about to emit a trailing space.
+    assert(_pendingWhitespace != Whitespace.SPACE);
     _emitPendingWhitespace();
 
     // Collapse duplicate splits.
@@ -590,6 +591,4 @@ class LineWriter {
       }
     }
   }
-
-  // TODO(bob): Need tests for line-splitting before and after block comments.
 }

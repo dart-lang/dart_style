@@ -57,3 +57,12 @@ foo(argument, argument, argument,
   fn;
 }, argument, argument, argument,
     argument);
+>>> do not split empty argument list
+foo___________________________________();
+<<<
+foo___________________________________();
+>>> do split empty argument list if it contains a comment
+foo___________________________________(/* */);
+<<<
+foo___________________________________(
+    /* */);
