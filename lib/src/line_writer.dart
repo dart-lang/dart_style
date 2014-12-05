@@ -130,7 +130,7 @@ class LineWriter {
   }
 
   LineWriter(this._formatter, this._buffer) {
-    increaseIndent(_formatter.indent);
+    indent(_formatter.indent);
     _beginningIndent = _formatter.indent;
   }
 
@@ -269,38 +269,13 @@ class LineWriter {
     _preserveNewlines(linesBeforeToken);
   }
 
-  // TODO(bob): Lose these and just do explicit newlines()?
-  /// Outputs an [IndentChunk] that emits a newline and increases indentation by
-  /// [levels].
-  void indent({int levels: 1}) {
-    increaseIndent(levels);
-    _addHardSplit();
-  }
-
-  /// Outputs [UnindentChunk] that decreases indentation by [levels].
-  ///
-  /// If [newline] is `false`, does not add a newline. Otherwise, it does.
-  void unindent({int levels: 1, bool newline: true}) {
-    decreaseIndent(levels);
-    if (newline) _addHardSplit();
-  }
-
-  /// Increase indentation of the next line by [levels].
-  ///
-  /// Unlike [indent], this does not insert an [IndentChunk] or a newline. It's
-  /// used to explicitly control indentation within an expression or statement,
-  /// for example, indenting subsequent variables in a variable declaration.
-  void increaseIndent([int levels = 1]) {
+  /// Increases indentation of the next line by [levels].
+  void indent([int levels = 1]) {
     while (levels-- > 0) _indentStack.add(-1);
   }
 
   /// Decreases indentation of the next line by [levels].
-  ///
-  /// Unlike [unindent], this does not insert an [UnindentChunk] or a newline.
-  /// It's used to explicitly control indentation within an expression or
-  /// statement, for example, indenting subsequent variables in a variable
-  /// declaration.
-  void decreaseIndent([int levels = 1]) {
+  void unindent([int levels = 1]) {
     while (levels-- > 0) _indentStack.removeLast();
   }
 
@@ -357,10 +332,6 @@ class LineWriter {
   void resetNesting() {
     // All other explicit nesting should have been discarded by now.
     assert(_nesting <= 0);
-
-    // TODO(bob): Call this after directives, and top-level
-    // definitions.
-
     _nesting = -1;
   }
 

@@ -187,7 +187,7 @@ class SourceVisitor implements AstVisitor {
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
 
-    _writer.increaseIndent();
+    _writer.indent();
 
     // If there are multiple cascades, they always get their own line, even if
     // they would fit.
@@ -208,7 +208,7 @@ class SourceVisitor implements AstVisitor {
       _writer.endMultisplit();
     }
 
-    _writer.decreaseIndent();
+    _writer.unindent();
   }
 
   visitCatchClause(CatchClause node) {
@@ -328,7 +328,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorInitializers(ConstructorDeclaration node) {
-    _writer.increaseIndent(2);
+    _writer.indent(2);
 
     if (node.initializers.length > 1) {
       newline();
@@ -350,7 +350,7 @@ class SourceVisitor implements AstVisitor {
         // Foo()
         //     : first,
         //       second;
-        if (i == 1) _writer.increaseIndent();
+        if (i == 1) _writer.indent();
         newline();
       }
 
@@ -358,9 +358,9 @@ class SourceVisitor implements AstVisitor {
     }
 
     // If there were multiple fields, discard their extra indentation.
-    if (node.initializers.length > 1) _writer.decreaseIndent();
+    if (node.initializers.length > 1) _writer.unindent();
 
-    _writer.decreaseIndent(2);
+    _writer.unindent(2);
   }
 
   visitConstructorRedirects(ConstructorDeclaration node) {
@@ -977,18 +977,26 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.expression);
     token(node.colon);
+
     _writer.indent();
+    // TODO(rnystrom): Allow inline cases?
+    newline();
+
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    _writer.unindent(newline: false);
+    _writer.unindent();
   }
 
   visitSwitchDefault(SwitchDefault node) {
     visitNodes(node.labels, between: space, after: space);
     token(node.keyword);
     token(node.colon);
+
     _writer.indent();
+    // TODO(rnystrom): Allow inline cases?
+    newline();
+
     visitNodes(node.statements, between: oneOrTwoNewlines);
-    _writer.unindent(newline: false);
+    _writer.unindent();
   }
 
   visitSwitchStatement(SwitchStatement node) {
@@ -1000,8 +1008,13 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.leftBracket);
     _writer.indent();
+    newline();
+
     visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
-    token(node.rightBracket, before: _writer.unindent);
+    token(node.rightBracket, before: () {
+      _writer.unindent();
+      newline();
+    });
   }
 
   visitSymbolLiteral(SymbolLiteral node) {
@@ -1093,7 +1106,7 @@ class SourceVisitor implements AstVisitor {
       visit(node.variables.first);
 
       // Indent variables after the first one to line up past "var".
-      _writer.increaseIndent(2);
+      _writer.indent(2);
 
       for (var variable in node.variables.skip(1)) {
         token(variable.beginToken.previous); // Comma.
@@ -1102,7 +1115,7 @@ class SourceVisitor implements AstVisitor {
         visit(variable);
       }
 
-      _writer.decreaseIndent(2);
+      _writer.unindent(2);
       return;
     }
 
@@ -1265,7 +1278,7 @@ class SourceVisitor implements AstVisitor {
 
     // Indent the body.
     _writer.startMultisplit(cost: cost);
-    _writer.increaseIndent();
+    _writer.indent();
 
     // Split after the bracket.
     _writer.multisplit(allowTrailingCommentBefore: false);
@@ -1280,7 +1293,7 @@ class SourceVisitor implements AstVisitor {
 
     token(rightBracket, before: () {
       // Split before the closing bracket character.
-      _writer.decreaseIndent();
+      _writer.unindent();
       _writer.multisplit();
       _writer.endMultisplit();
     });
