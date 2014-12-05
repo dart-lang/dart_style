@@ -157,31 +157,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
-    token(node.leftBracket);
+    _startBody(node.leftBracket);
 
-    // TODO(bob): Helper fn for these?
-    _writer.increaseIndent();
-    _writer.startMultisplit();
-    _writer.multisplit(allowTrailingCommentBefore: false);
-
-    for (var i = 0; i < node.statements.length; i++) {
-      visit(node.statements[i]);
-
-      // Allow a blank line between statements, but not after the last.
-      if (i == node.statements.length - 1) {
-        newline();
-      } else {
-        oneOrTwoNewlines();
-      }
-
+    visitNodes(node.statements, between: () {
+      oneOrTwoNewlines();
       _writer.resetNesting();
-    }
+    }, after: newline);
 
-    token(node.rightBracket, before: () {
-      _writer.decreaseIndent();
-      _writer.multisplit();
-      _writer.endMultisplit();
-    });
+    _endBody(node.rightBracket);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -262,30 +245,15 @@ class SourceVisitor implements AstVisitor {
     visitNode(node.implementsClause);
     visitNode(node.nativeClause, before: space);
     space();
-    token(node.leftBracket);
-    _writer.increaseIndent();
-    _writer.startMultisplit();
-    _writer.multisplit(allowTrailingCommentBefore: false);
 
-    for (var i = 0; i < node.members.length; i++) {
-      visit(node.members[i]);
+    _startBody(node.leftBracket);
 
-      // Allow a blank line between statements, but not after the last.
-      if (i == node.members.length - 1) {
-        newline();
-      } else {
-        oneOrTwoNewlines();
-      }
-
+    visitNodes(node.members, between: () {
+      oneOrTwoNewlines();
       _writer.resetNesting();
-    }
+    }, after: newline);
 
-    token(node.rightBracket, before: () {
-      // TODO(bob): Move these out of before?
-      _writer.decreaseIndent();
-      _writer.multisplit();
-      _writer.endMultisplit();
-    });
+    _endBody(node.rightBracket);
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
@@ -1278,13 +1246,8 @@ class SourceVisitor implements AstVisitor {
       Iterable<AstNode> elements, Token rightBracket) {
     modifier(node.constKeyword);
     visitNode(node.typeArguments);
-    token(leftBracket);
 
-    _writer.startMultisplit(cost: Cost.COLLECTION_LITERAL);
-    _writer.increaseIndent();
-
-    // Split after the "{".
-    _writer.multisplit(allowTrailingCommentBefore: false);
+    _startBody(leftBracket, Cost.COLLECTION_LITERAL);
 
     visitCommaSeparatedNodes(elements, between: () {
       _writer.multisplit(text: " ");
@@ -1292,10 +1255,31 @@ class SourceVisitor implements AstVisitor {
     });
 
     optionalTrailingComma(rightBracket);
+    _endBody(rightBracket);
+  }
+
+  /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
+  /// starting the multisplit it contains.
+  void _startBody(Token leftBracket, [int cost = Cost.FREE]) {
+    token(leftBracket);
+
+    // Indent the body.
+    _writer.startMultisplit(cost: cost);
+    _writer.increaseIndent();
+
+    // Split after the bracket.
+    _writer.multisplit(allowTrailingCommentBefore: false);
+  }
+
+  /// Writes a closing bracket token (")", "}", "]") and handles unindenting
+  /// and ending the multisplit it contains.
+  ///
+  /// Used for blocks, other curly bodies, and collection literals.
+  void _endBody(Token rightBracket) {
     _writer.resetNesting();
 
     token(rightBracket, before: () {
-      // Split before the "}".
+      // Split before the closing bracket character.
       _writer.decreaseIndent();
       _writer.multisplit();
       _writer.endMultisplit();
