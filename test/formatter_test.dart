@@ -14,16 +14,14 @@ import 'package:dart_style/dart_style.dart';
 
 void main() {
   // Tidy up the unittest output.
-  //filterStacks = true;
-  //formatStacks = true;
-  //useCompactVMConfiguration();
+  filterStacks = true;
+  formatStacks = true;
+  useCompactVMConfiguration();
 
   testDirectory("comments");
-
-  // TODO(bob): Move comments tests.
-  testDirectory("whitespace");
-  testDirectory("splitting");
   testDirectory("regression");
+  testDirectory("splitting");
+  testDirectory("whitespace");
 
   test("throws a FormatterException on failed parse", () {
     var formatter = new DartFormatter();

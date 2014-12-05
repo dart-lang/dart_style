@@ -57,3 +57,40 @@ class A {  /* comment
 <<<
 class A {/* comment
 */}
+>>> lines comments at the start of the line in a class body
+class A {
+//  int a;
+//  int b;
+  int c;
+}
+<<<
+class A {
+//  int a;
+//  int b;
+  int c;
+}
+>>> block comment
+class C/* is cool */{
+  /* int */ foo(/* comment */) => 42;
+}
+<<<
+class C /* is cool */ {
+  /* int */ foo(/* comment */) => 42;
+}
+>>> block comment
+library foo;
+/* A long
+ * Comment
+*/
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}
+<<<
+library foo;
+
+/* A long
+ * Comment
+*/
+class C /* is cool */ {
+  /* int */ foo() => 42;
+}

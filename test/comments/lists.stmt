@@ -83,3 +83,7 @@ var list = [
   'a', // 1
   // 2
 ];
+>>> space on left between block comment and ","
+var list = [1,/* a */ 2 /* b */  , 3];
+<<<
+var list = [1, /* a */ 2 /* b */, 3];

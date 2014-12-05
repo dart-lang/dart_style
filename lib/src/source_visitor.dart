@@ -39,6 +39,9 @@ class SourceVisitor implements AstVisitor {
   void run(AstNode node) {
     node.accept(this);
 
+    // Output trailing comments.
+    writePrecedingCommentsAndNewlines(node.endToken.next);
+
     // Finish off the last line.
     _writer.end();
   }
@@ -303,10 +306,6 @@ class SourceVisitor implements AstVisitor {
     visitNodes(node.directives, between: oneOrTwoNewlines);
     twoNewlines();
     visitNodes(node.declarations, between: oneOrTwoNewlines);
-
-    // TODO(bob): What about trailing comments when formatting a statement?
-    // Output trailing comments before the EOF.
-    writePrecedingCommentsAndNewlines(node.endToken);
   }
 
   visitConditionalExpression(ConditionalExpression node) {

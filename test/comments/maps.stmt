@@ -83,3 +83,12 @@ var map = {
   'a': 'b', // 1
   // 2
 };
+>>> inside map literal
+var map = {
+  // comment
+  'foo': 1};
+<<<
+var map = {
+  // comment
+  'foo': 1
+};

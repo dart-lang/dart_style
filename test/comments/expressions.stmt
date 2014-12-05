@@ -20,3 +20,19 @@ someMethod(argument1,
 [
   'item' // comment
 ];
+>>> inside argument list
+foo(1 /* bang */, 2);
+<<<
+foo(1 /* bang */, 2);
+>>> no space between "(" and ")" and block comment
+foo(   /* */  ) {}
+<<<
+foo(/* */) {}
+>>> space on left between block comment and ","
+foo(1,/* a */ 2 /* b */  , 3);
+<<<
+foo(1, /* a */ 2 /* b */, 3);
+>>> space between block comment and other tokens
+var/**/a/**/=/**/1/**/+/**/2;
+<<<
+var /**/ a /**/ = /**/ 1 /**/ + /**/ 2;

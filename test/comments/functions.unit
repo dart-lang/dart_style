@@ -57,3 +57,15 @@ main() {  /* comment
 <<<
 main() {/* comment
 */}
+>>> line comments at the start of the line in a function
+main() {
+//  print(1);
+//  print(2);
+  print(3);
+}
+<<<
+main() {
+//  print(1);
+//  print(2);
+  print(3);
+}
