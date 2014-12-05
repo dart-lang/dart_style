@@ -273,8 +273,6 @@ class LineSplitter {
 
           // Start the new line.
           indent = nester.handleSplit(chunk);
-          if (indent == INVALID_SPLITS) return INVALID_SPLITS;
-
           length = indent * SPACES_PER_INDENT;
         } else if (chunk.isSoftSplit) {
           // If we've seen the same param on a previous line, the unsplit

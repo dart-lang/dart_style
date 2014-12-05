@@ -28,8 +28,6 @@ class Nester {
   /// split.
   ///
   /// Returns the number of levels of indentation the next line should have.
-  /// Returns [_INVALID_SPLITS] if the split is not allowed for the current
-  /// indentation stack.
   int handleSplit(SplitChunk split) {
     if (!split.isInExpression) return split.indent;
 

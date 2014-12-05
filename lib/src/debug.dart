@@ -42,10 +42,8 @@ void dumpChunks(List<Chunk> chunks) {
 
 /// Prints [chunks] to stdout as a single line with non-printing chunks made
 /// visible.
-void dumpLine(List<Chunk> chunks, int indent,
-    [LinePrefix prefix, Set<SplitParam> splits]) {
-  if (!debugFormatter) return;
-
+void dumpLine(List<Chunk> chunks,
+    [int indent = 0, LinePrefix prefix, Set<SplitParam> splits]) {
   if (prefix == null) prefix = new LinePrefix();
   if (splits == null) splits = new Set();
 

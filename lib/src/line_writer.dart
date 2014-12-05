@@ -52,9 +52,25 @@ class LineWriter {
 
   final _chunks = <Chunk>[];
 
-  /// The whitespace that should be written before the next non-whitespace token
-  /// or `null` if no whitespace is pending.
+  /// The whitespace that should be written to [_chunks] before the next
+  ///  non-whitespace token or `null` if no whitespace is pending.
+  ///
+  /// This ensures that changes to indentation and nesting also apply to the
+  /// most recent split, even if the visitor "creates" the split before changing
+  /// indentation or nesting.
   Whitespace _pendingWhitespace;
+
+  /// The number of newlines that need to be written to [_buffer] before the
+  /// next line can be output.
+  ///
+  /// Where [_pendingWhitespace] buffers between the [SourceVisitor] and
+  /// [_chunks], this buffers between the [LineWriter] and [_buffer]. It ensures
+  /// we don't have trailing newlines in the output.
+  int _bufferedNewlines = 0;
+
+  /// The indentation at the beginning of the current complete line being
+  /// written.
+  int _beginningIndent;
 
   /// The nested stack of multisplits that are currently being written.
   ///
@@ -115,6 +131,7 @@ class LineWriter {
 
   LineWriter(this._formatter, this._buffer) {
     increaseIndent(_formatter.indent);
+    _beginningIndent = _formatter.indent;
   }
 
   /// Writes [string], the text for a single token, to the output.
@@ -142,7 +159,7 @@ class LineWriter {
   /// They pass `false` for [implyNesting] to avoid that.
   void write(String string, {bool implyNesting: true}) {
     _emitPendingWhitespace();
-    _chunks.add(new TextChunk(string));
+    _addText(string);
 
     // If we hadn't started a wrappable line yet, we have now, so start nesting.
     if (implyNesting && _nesting == -1) _nesting = 0;
@@ -365,53 +382,12 @@ class LineWriter {
 
   /// Finish writing the last line.
   void end() {
-    // Discard any trailing splits.
-    while (_chunks.isNotEmpty && _chunks.last.isSplit) {
-      _chunks.removeLast();
-    }
+    // Discard any trailing lines.
+    while (_chunks.isNotEmpty && _chunks.last.isSplit) _chunks.removeLast();
 
-    if (debugFormatter) dumpChunks(_chunks);
+    if (_chunks.isEmpty) return;
 
-    // Break the chunks into unrelated lines that can be wrapped separately.
-    var indent = _formatter.indent;
-    var start = 0;
-    var end;
-    var pendingNewlines = 0;
-
-    splitLine() {
-      // TODO(bob): Lots of list copying. Linked list would be good here.
-      var chunks = _chunks.getRange(start, end).toList();
-
-      // Write newlines between each line.
-      for (var i = 0; i < pendingNewlines; i++) {
-        _buffer.write(_formatter.lineEnding);
-      }
-
-      // Only write non-empty lines so we don't get trailing whitespace for
-      // indentation.
-      if (chunks.isNotEmpty) {
-        var splitter = new LineSplitter(_formatter.lineEnding,
-            _formatter.pageWidth, chunks, indent);
-        splitter.apply(_buffer);
-      }
-
-      start = end + 1;
-    }
-
-    for (end = 0; end < _chunks.length; end++) {
-      var chunk = _chunks[end];
-
-      // TODO(bob): Do this while chunks are being written instead of all at
-      // the end.
-      if (chunk.isHardSplit && chunk.indent == 0 && chunk.nesting == 0) {
-        splitLine();
-        indent = _chunks[end].indent;
-        pendingNewlines = chunk.isDouble ? 2 : 1;
-      }
-    }
-
-    // Handle the last line.
-    if (start < end) splitLine();
+    _completeLine();
   }
 
   /// If the current pending whitespace allows some source discretion, pins
@@ -449,7 +425,7 @@ class LineWriter {
     // trailing.
     switch (_pendingWhitespace) {
       case Whitespace.SPACE:
-        _chunks.add(new TextChunk(" "));
+        _addText(" ");
         break;
 
       case Whitespace.NEWLINE:
@@ -510,12 +486,11 @@ class LineWriter {
   /// Returns `true` if a space should be output after the last comment which
   /// was just written and the token that will be written.
   bool _needsSpaceAfterLastComment(List<SourceComment> comments, String token) {
-    // If there are no comments (except the sentinel fake one), don't need a
-    // space.
+    // If there are no comments, don't need a space.
     if (comments.isEmpty) return false;
 
     // If there is a split after the last comment, we don't need a space.
-    if (_chunks.last is! TextChunk) return false;
+    if (_chunks.isEmpty || _chunks.last is! TextChunk) return false;
 
     // Otherwise, it gets a space if the following token is not a grouping
     // character, a comma, (or the empty string, for EOF).
@@ -563,6 +538,59 @@ class LineWriter {
     }
 
     if (_chunks.last.isHardSplit) _splitMultisplits();
+  }
+
+  /// Writes a [TextChunk] for [text].
+  void _addText(String text) {
+    // Since we're about to write some text, we know the previous split (if any)
+    // is fully done being tweaked and merged, so know we can see if it ends
+    // the current line before starting a new one.
+    _checkForCompleteLine();
+
+    _chunks.add(new TextChunk(text));
+  }
+
+  /// Checks to see if we are currently at a point where the existing chunks
+  /// can be processed as a single line and processes them if so.
+  ///
+  /// We want to send small lists of chunks to [LineSplitter] for performance.
+  /// We can do that when we know one set of chunks will absolutely not affect
+  /// anything following it. The rule for that is pretty simple: a hard newline
+  /// that is not nested inside an expression.
+  void _checkForCompleteLine() {
+    if (_chunks.isEmpty) return;
+
+    // Can only split on a hard line that is not nested in the middle of an
+    // expression.
+    if (!_chunks.last.isHardSplit || _chunks.last.nesting > 0) return;
+
+    // Discard the split.
+    var split = _chunks.removeLast();
+
+    // Don't write any empty line, just discard it.
+    if (_chunks.isNotEmpty) {
+      _completeLine();
+      _chunks.clear();
+    }
+
+    // Get ready for the next line.
+    _bufferedNewlines = split.isDouble ? 2 : 1;
+    _beginningIndent = split.indent;
+  }
+
+  /// Hands off the current list of chunks to [LineSplitter] as a single logical
+  /// line.
+  void _completeLine() {
+    assert(_chunks.isNotEmpty);
+
+    // Write the newlines required by the previous line.
+    for (var i = 0; i < _bufferedNewlines; i++) {
+      _buffer.write(_formatter.lineEnding);
+    }
+
+    var splitter = new LineSplitter(_formatter.lineEnding,
+        _formatter.pageWidth, _chunks, _beginningIndent);
+    splitter.apply(_buffer);
   }
 
   /// Handles multisplits when a hard line occurs.
