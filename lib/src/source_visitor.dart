@@ -301,9 +301,18 @@ class SourceVisitor implements AstVisitor {
   visitCommentReference(CommentReference node) => null;
 
   visitCompilationUnit(CompilationUnit node) {
-    visit(node.scriptTag);
-    // TODO(bob): twoNewlines() here? Test.
-    visitNodes(node.directives, between: oneOrTwoNewlines);
+    visit(node.scriptTag, after: twoNewlines);
+
+    // Put a blank line between the library tag and the other directives.
+    var directives = node.directives;
+    if (directives.isNotEmpty && directives.first is LibraryDirective) {
+      visitNode(directives.first);
+      twoNewlines();
+
+      directives = directives.skip(1);
+    }
+
+    visitNodes(directives, between: oneOrTwoNewlines);
     twoNewlines();
     visitNodes(node.declarations, between: oneOrTwoNewlines);
   }
@@ -942,7 +951,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitScriptTag(ScriptTag node) {
-    token(node.scriptTag);
+    // The lexeme includes the trailing newline. Strip it off since the
+    // formatter ensures it gets a newline after it.
+    append(node.scriptTag.lexeme.trim());
   }
 
   visitShowCombinator(ShowCombinator node) {
@@ -1161,9 +1172,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Safely visit the given [node].
-  void visit(AstNode node) {
+  ///
+  /// If [node] is not `null`, invokes [after] if given after visiting the node.
+  void visit(AstNode node, {void after()}) {
     if (node != null) {
       node.accept(this);
+
+      if (after != null) after();
     }
   }
 
@@ -1210,7 +1225,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded
   /// and followed by the given functions.
-  void visitNodes(NodeList<AstNode> nodes, {before(), between(), after()}) {
+  void visitNodes(Iterable<AstNode> nodes, {before(), between(), after()}) {
     if (nodes == null || nodes.isEmpty) return;
 
     if (before != null) before();
@@ -1225,7 +1240,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Visit a comma-separated list of [nodes] if not null.
-  void visitCommaSeparatedNodes(NodeList<AstNode> nodes, {between()}) {
+  void visitCommaSeparatedNodes(Iterable<AstNode> nodes, {between()}) {
     if (nodes == null || nodes.isEmpty) return;
 
     if (between == null) between = space;

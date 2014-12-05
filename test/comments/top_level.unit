@@ -47,3 +47,124 @@ class A {}
 
 /// Dangling ones too
 int x;
+>>>
+library foo;
+
+//comment one
+
+class C {
+}
+<<<
+library foo;
+
+//comment one
+
+class C {}
+>>>
+library foo;
+
+//comment one
+
+//comment two
+
+class C {
+}
+<<<
+library foo;
+
+//comment one
+
+//comment two
+
+class C {}
+>>>
+import 'a.dart'; // a comment
+class Foo {}
+<<<
+import 'a.dart'; // a comment
+
+class Foo {}
+>>>
+import 'a.dart'; // a comment
+                 // comment
+class Foo {}
+<<<
+import 'a.dart'; // a comment
+
+// comment
+class Foo {}
+>>>
+import 'a.dart'; /* a */ // b
+/* c */ // d
+class Foo {}
+<<<
+import 'a.dart'; /* a */ // b
+
+/* c */ // d
+class Foo {}
+>>>
+import 'a.dart';
+// a comment
+class Foo {}
+<<<
+import 'a.dart';
+
+// a comment
+class Foo {}
+>>>
+import 'a.dart';
+// import 'b.dart';
+class Foo {}
+<<<
+import 'a.dart';
+
+// import 'b.dart';
+class Foo {}
+>>>
+import 'a.dart';
+
+// a comment
+class Foo {}
+<<<
+import 'a.dart';
+
+// a comment
+class Foo {}
+>>>
+import 'a.dart';
+// a comment
+
+class Foo {}
+<<<
+import 'a.dart';
+// a comment
+
+class Foo {}
+>>> two lines between library and import
+library foo;
+import 'a.dart';
+<<<
+library foo;
+
+import 'a.dart';
+>>> two lines between library and export
+library foo;
+export 'a.dart';
+<<<
+library foo;
+
+export 'a.dart';
+>>> two lines between library and part
+library foo;
+part 'a.dart';
+<<<
+library foo;
+
+part 'a.dart';
+>>> two lines between script and directive
+#!script
+library foo;
+<<<
+#!script
+
+library foo;
