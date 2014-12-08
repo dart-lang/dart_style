@@ -250,7 +250,8 @@ class LineWriter {
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _addHardSplit(nest: true, allowIndent: !comment.isStartOfLine);
+        _addHardSplit(nest: true, allowIndent: !comment.isStartOfLine,
+            double: comment.linesBefore > 1);
       }
 
       write(comment.text, implyNesting: false);

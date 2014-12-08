@@ -36,3 +36,13 @@ foo(1, /* a */ 2 /* b */, 3);
 var/**/a/**/=/**/1/**/+/**/2;
 <<<
 var /**/ a /**/ = /**/ 1 /**/ + /**/ 2;
+>>> preserve space before comment in expression
+foo &&
+
+  // comment
+  bar;
+<<<
+foo &&
+
+    // comment
+    bar;
