@@ -159,10 +159,7 @@ class SourceVisitor implements AstVisitor {
   visitBlock(Block node) {
     _startBody(node.leftBracket);
 
-    visitNodes(node.statements, between: () {
-      oneOrTwoNewlines();
-      _writer.resetNesting();
-    }, after: newline);
+    visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
 
     _endBody(node.rightBracket);
   }
@@ -193,10 +190,7 @@ class SourceVisitor implements AstVisitor {
     // they would fit.
     if (node.cascadeSections.length > 1) {
       newline();
-      visitNodes(node.cascadeSections, between: () {
-        newline();
-        _writer.resetNesting();
-      });
+      visitNodes(node.cascadeSections, between: newline);
     } else {
       _writer.startMultisplit();
       _writer.multisplit();
@@ -248,10 +242,7 @@ class SourceVisitor implements AstVisitor {
 
     _startBody(node.leftBracket);
 
-    visitNodes(node.members, between: () {
-      oneOrTwoNewlines();
-      _writer.resetNesting();
-    }, after: newline);
+    visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
 
     _endBody(node.rightBracket);
   }

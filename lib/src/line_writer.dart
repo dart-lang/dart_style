@@ -168,6 +168,11 @@ class LineWriter {
   /// Writes a [WhitespaceChunk] of [type].
   void writeWhitespace(Whitespace type) {
     _pendingWhitespace = type;
+
+    // Any newline whitespace (coming from outside and not one created
+    // internally in the writer by comments) implies that we're not nested
+    // inside an expression, so clear any implicit nesting.
+    if (type != Whitespace.SPACE) resetNesting();
   }
 
   /// Write a soft split with [cost], [param] and unsplit [text].
@@ -533,7 +538,7 @@ class LineWriter {
 
     // Can only split on a hard line that is not nested in the middle of an
     // expression.
-    if (!_chunks.last.isHardSplit || _chunks.last.nesting > 0) return;
+    if (!_chunks.last.isHardSplit || _chunks.last.nesting >= 0) return;
 
     // Discard the split.
     var split = _chunks.removeLast();
@@ -553,6 +558,8 @@ class LineWriter {
   /// line.
   void _completeLine() {
     assert(_chunks.isNotEmpty);
+
+    if (debugFormatter) dumpChunks(_chunks);
 
     // Write the newlines required by the previous line.
     for (var i = 0; i < _bufferedNewlines; i++) {

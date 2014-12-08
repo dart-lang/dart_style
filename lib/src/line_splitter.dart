@@ -100,6 +100,9 @@ class LineSplitter {
         if (chunk.isDouble) buffer.write(_lineEnding);
 
         indent = nester.handleSplit(chunk);
+
+        // Should have a valid set of splits when we get here.
+        assert(indent != INVALID_SPLITS);
       } else {
         // Now that we know the line isn't empty, write the leading indentation.
         if (indent != 0) buffer.write(" " * (indent * SPACES_PER_INDENT));
@@ -273,6 +276,8 @@ class LineSplitter {
 
           // Start the new line.
           indent = nester.handleSplit(chunk);
+          if (indent == INVALID_SPLITS) return INVALID_SPLITS;
+
           length = indent * SPACES_PER_INDENT;
         } else if (chunk.isSoftSplit) {
           // If we've seen the same param on a previous line, the unsplit

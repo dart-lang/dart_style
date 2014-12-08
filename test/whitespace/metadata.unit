@@ -165,11 +165,20 @@ class Foo<
 T> {}
 <<<
 class Foo<@a @b T> {}
->>> comment within metadata
+>>> comment after metadata
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
 typedef void DatabaseCallback(database);
 <<<
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
+typedef void DatabaseCallback(database);
+>>> comment between metadata
+@DomName('DatabaseCallback') // deprecated
+  @Experimental()
+      typedef void DatabaseCallback(database);
+<<<
+@DomName(
+    'DatabaseCallback') // deprecated
+@Experimental()
 typedef void DatabaseCallback(database);

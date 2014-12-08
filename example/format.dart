@@ -13,31 +13,38 @@ void main(List<String> args) {
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
-  var result = new DartFormatter(pageWidth: pageWidth).formatStatement(source);
-
-  result = highlightSpaces(result);
-
-  drawRuler("before", pageWidth);
-  print(source);
-  drawRuler("after", pageWidth);
-  print(result);
+  runFormatter(source, pageWidth, isCompilationUnit: false);
 }
 
 void formatUnit(String source, [int pageWidth = 40]) {
-  var result = new DartFormatter(pageWidth: pageWidth).format(source);
+  runFormatter(source, pageWidth, isCompilationUnit: true);
+}
 
-  result = highlightSpaces(result);
+void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
+  try {
+    var formatter = new DartFormatter(pageWidth: pageWidth);
 
-  drawRuler("before", pageWidth);
-  print(source);
-  drawRuler("after", pageWidth);
-  print(result);
+    var result;
+    if (isCompilationUnit) {
+      result = formatter.format(source);
+    } else {
+      result = formatter.formatStatement(source);
+    }
+
+    if (useAnsiColors) {
+      result = result.replaceAll(" ", "\u001b[1;30m·\u001b[0m");
+    }
+
+    drawRuler("before", pageWidth);
+    print(source);
+    drawRuler("after", pageWidth);
+    print(result);
+  } on FormatterException catch (error) {
+    print(error.message());
+  }
 }
 
 void drawRuler(String label, int width) {
   var padding = " " * (width - label.length - 1);
   print("$label:$padding|");
 }
-
-String highlightSpaces(String text) =>
-    text.replaceAll(" ", "\u001b[1;30m·\u001b[0m");

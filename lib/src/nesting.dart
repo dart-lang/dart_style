@@ -37,6 +37,8 @@ class Nester {
     }
 
     _nesting = _nesting.modify(split);
+    if (_nesting == null) return INVALID_SPLITS;
+
     return _indent + _nesting.indent;
   }
 }
@@ -109,11 +111,7 @@ class NestingStack {
     return indent.hashCode ^ _depth.hashCode;
   }
 
-  /// Modifies the nesting stack by taking into account a split that occurs at
-  /// [depth].
-  ///
-  /// If [depth] is -1, that indicates a split that does not affect nesting --
-  /// this is primarily multi-line collections.
+  /// Modifies the nesting stack by taking into account [split].
   ///
   /// Returns a new nesting stack (which may the same as `this` if no change
   /// was needed). Returns `null` if the split is not allowed for the current
