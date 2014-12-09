@@ -125,33 +125,26 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
-    var operands = [];
+    // TODO(rnystrom: Use different costs for different operator precedences.
+    _writer.startMultisplit(cost: Cost.BINARY_OPERATOR, separable: true);
 
     // Flatten out a tree/chain of the same operator type. If we split on this
     // operator, we will break all of them.
-    addOperands(Expression e) {
+    traverse(Expression e) {
       if (e is BinaryExpression && e.operator.type == node.operator.type) {
-        addOperands(e.leftOperand);
-        addOperands(e.rightOperand);
-      } else {
-        operands.add(e);
-      }
-    }
+        traverse(e.leftOperand);
 
-    addOperands(node.leftOperand);
-    addOperands(node.rightOperand);
-
-    // TODO(rnystrom: Use different costs for different operator precedences.
-    _writer.startMultisplit(cost: Cost.BINARY_OPERATOR);
-
-    for (var i = 0; i < operands.length; i++) {
-      if (i != 0) {
         space();
-        token(node.operator);
+        token(e.operator);
         _writer.multisplit(text: " ", nest: true);
+
+        traverse(e.rightOperand);
+      } else {
+        visit(e);
       }
-      visit(operands[i]);
     }
+
+    traverse(node);
 
     _writer.endMultisplit();
   }

@@ -29,3 +29,31 @@ var kind = element != null ? argument : arg;
 <<<
 var kind = element != null ? argument :
     arg;
+>>> unsplit operator chains before and after block
+first + second + () {body;} + third + fourth;
+<<<
+first + second + () {
+  body;
+} + third + fourth;
+>>> split operator chain before block
+first + second + third + fourth + fifth + () {body;} + sixth + seventh;
+<<<
+first +
+    second +
+    third +
+    fourth +
+    fifth +
+    () {
+  body;
+} + sixth + seventh;
+>>> split operator chain after block
+first + second + third + () {body;} + fourth + fifth + sixth + seventh + eighth;
+<<<
+first + second + third + () {
+  body;
+} +
+    fourth +
+    fifth +
+    sixth +
+    seventh +
+    eighth;
