@@ -767,7 +767,7 @@ class SourceVisitor implements AstVisitor {
     if (node.target is! MethodInvocation) {
       if (node.period != null) {
         visit(node.target);
-        zeroSplit(Cost.BEFORE_PERIOD);
+        zeroSplit();
         token(node.period);
       }
 
@@ -1399,6 +1399,7 @@ class SourceVisitor implements AstVisitor {
     _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
   }
 
+  // TODO(rnystrom): Eliminate this. It can cause comments to be discarded.
   /// Append the given [string] to the source writer if it's non-null.
   void append(String string) {
     if (string == null || string.isEmpty) return;
