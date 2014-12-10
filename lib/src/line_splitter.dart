@@ -69,6 +69,7 @@ class LineSplitter {
   /// The list of chunks being split.
   final List<Chunk> _chunks;
 
+  /// The set of spans that wrap around [_chunks].
   final List<Span> _spans;
 
   /// The leading indentation at the beginning of the first line.
