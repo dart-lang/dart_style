@@ -100,6 +100,8 @@ void main() {
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
 void testDirectory(String name) {
+  var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
+
   var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
   for (var entry in new Directory(dir).listSync()) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
@@ -119,6 +121,17 @@ void testDirectory(String name) {
       var i = 0;
       while (i < lines.length) {
         var description = lines[i++].replaceAll(">>>", "").trim();
+
+        // Let the test specify a leading indentation. This is handy for
+        // regression tests which often come from a chunk of nested code.
+        var leadingIndent = 0;
+        var indentMatch = indentPattern.firstMatch(description);
+        if (indentMatch != null) {
+          // The test specifies it in spaces, but the formatter expects levels.
+          leadingIndent = int.parse(indentMatch[1]) ~/ 2;
+          description = description.substring(indentMatch.end);
+        }
+
         if (description == "") {
           description = "line ${i + 1}";
         } else {
@@ -135,13 +148,9 @@ void testDirectory(String name) {
           expectedOutput += lines[i] + "\n";
         }
 
-        if (description.contains("SKIP")) {
-          print("SKIP: $description");
-          continue;
-        }
-
         test(description, () {
-          var formatter = new DartFormatter(pageWidth: pageWidth);
+          var formatter = new DartFormatter(
+              pageWidth: pageWidth, indent: leadingIndent);
 
           var result;
           if (p.extension(entry.path) == ".stmt") {

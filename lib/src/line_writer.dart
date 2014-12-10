@@ -7,6 +7,7 @@ library dart_style.src.source_writer;
 import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'cost.dart';
+import 'debug.dart';
 import 'line_splitter.dart';
 import 'multisplit.dart';
 import 'whitespace.dart';
