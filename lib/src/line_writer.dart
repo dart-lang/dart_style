@@ -230,6 +230,10 @@ class LineWriter {
       var comment = comments[i];
 
       _preserveNewlines(comment.linesBefore);
+
+      // Don't emit a space because we'll handle it below. If we emit it here,
+      // we may get a trailing space if the comment needs a line before it.
+      if (_pendingWhitespace == Whitespace.SPACE) _pendingWhitespace = null;
       _emitPendingWhitespace();
 
       var precedingSplit;
