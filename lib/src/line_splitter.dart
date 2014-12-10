@@ -78,7 +78,8 @@ class LineSplitter {
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
-  /// Creates a new splitter that tries to fit lines within [pageWidth].
+  /// Creates a new splitter that tries to fit a series of chunks within a
+  /// given page width.
   LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._spans,
       this._indent) {
     assert(_chunks.isNotEmpty);

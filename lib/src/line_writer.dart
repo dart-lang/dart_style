@@ -325,7 +325,7 @@ class LineWriter {
     while (levels-- > 0) _indentStack.removeLast();
   }
 
-  /// Starts a new span.
+  /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.CHEAP]) {
@@ -333,7 +333,7 @@ class LineWriter {
     _spans.add(_openSpans.last);
   }
 
-  /// Ends the innermost span and associates [cost] with it.
+  /// Ends the innermost span.
   void endSpan() {
     _openSpans.removeLast().close(_chunks.length - 1);
   }
@@ -466,15 +466,11 @@ class LineWriter {
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
   bool _needsSpaceBeforeComment({bool isLineComment}) {
-    // Find the preceding visible (non-span) chunk, if any.
-    var chunk = _chunks.lastWhere(
-        (chunk) => chunk.isSplit || chunk is TextChunk,
-        orElse: () => null);
-
     // Don't need a space before a file-leading comment.
-    if (chunk == null) return false;
+    if (_chunks.isEmpty) return false;
 
     // Don't need a space if the comment isn't a trailing comment in the output.
+    var chunk = _chunks.last;
     if (chunk.isSplit) return false;
 
     assert(chunk is TextChunk);
