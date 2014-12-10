@@ -9,6 +9,11 @@ var result = myFunction(argument * argument, argument * argument);
 var result = myFunction(
     argument * argument,
     argument * argument);
+>>> initializer doesn't fit one line, wrap inside, keep name
+var result = myFunction(argument, argument, argument, argument);
+<<<
+var result = myFunction(argument,
+    argument, argument, argument);
 >>> initializer fits one line
 var variableName = veryLongInitializerName;
 <<<

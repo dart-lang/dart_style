@@ -47,8 +47,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitAdjacentStrings(AdjacentStrings node) {
-    visitNodes(node.strings,
-        between: () => split(cost: Cost.ADJACENT_STRINGS));
+    visitNodes(node.strings, between: split);
   }
 
   visitAnnotation(Annotation node) {
@@ -112,10 +111,10 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split(cost: Cost.ASSIGNMENT);
+    split();
     _writer.startSpan();
     visit(node.rightHandSide);
-    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
+    _writer.endSpan(Cost.ASSIGNMENT);
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -126,7 +125,8 @@ class SourceVisitor implements AstVisitor {
 
   visitBinaryExpression(BinaryExpression node) {
     // TODO(rnystrom: Use different costs for different operator precedences.
-    _writer.startMultisplit(cost: Cost.BINARY_OPERATOR, separable: true);
+    _writer.startMultisplit(separable: true);
+    _writer.startSpan();
 
     // Flatten out a tree/chain of the same operator type. If we split on this
     // operator, we will break all of them.
@@ -146,6 +146,7 @@ class SourceVisitor implements AstVisitor {
 
     traverse(node);
 
+    _writer.endSpan(Cost.BINARY_OPERATOR);
     _writer.endMultisplit();
   }
 
@@ -280,13 +281,16 @@ class SourceVisitor implements AstVisitor {
   visitConditionalExpression(ConditionalExpression node) {
     visit(node.condition);
     space();
+
+    _writer.startSpan();
     token(node.question);
-    split(cost: Cost.AFTER_CONDITION);
+    split();
     visit(node.thenExpression);
     space();
     token(node.colon);
-    split(cost: Cost.AFTER_COLON);
+    split();
     visit(node.elseExpression);
+    _writer.endSpan();
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {
@@ -432,9 +436,11 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword, after: space);
 
     token(node.functionDefinition); // "=>".
-    split(cost: Cost.ARROW);
+    split();
+    _writer.startSpan();
     visit(node.expression);
     token(node.semicolon);
+    _writer.endSpan();
   }
 
   visitExpressionStatement(ExpressionStatement node) {
@@ -1107,7 +1113,8 @@ class SourceVisitor implements AstVisitor {
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    var param = new SplitParam(Cost.DECLARATION);
+    var param = new SplitParam();
+    // TODO(rnystrom): Should use a multisplit here.
 
     visitCommaSeparatedNodes(node.variables, between: () {
       split(param: param);
@@ -1148,11 +1155,11 @@ class SourceVisitor implements AstVisitor {
   ///
   /// If [node] is not `null`, invokes [after] if given after visiting the node.
   void visit(AstNode node, {void after()}) {
-    if (node != null) {
-      node.accept(this);
+    if (node == null) return;
 
-      if (after != null) after();
-    }
+    node.accept(this);
+
+    if (after != null) after();
   }
 
   /// Visit metadata annotations on directives and declarations.
@@ -1244,7 +1251,7 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visitNode(node.typeArguments);
 
-    _startBody(leftBracket, Cost.COLLECTION_LITERAL);
+    _startBody(leftBracket);
 
     visitCommaSeparatedNodes(elements, between: () {
       _writer.multisplit(text: " ");
@@ -1257,11 +1264,11 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the multisplit it contains.
-  void _startBody(Token leftBracket, [int cost = Cost.FREE]) {
+  void _startBody(Token leftBracket) {
     token(leftBracket);
 
     // Indent the body.
-    _writer.startMultisplit(cost: cost);
+    _writer.startMultisplit();
     _writer.indent();
 
     // Split after the bracket.
@@ -1334,7 +1341,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.
-  void zeroSplit([int cost = Cost.FREE]) {
+  void zeroSplit([int cost]) {
     _writer.writeSplit(cost: cost);
   }
 

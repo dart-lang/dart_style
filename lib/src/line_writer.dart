@@ -181,7 +181,7 @@ class LineWriter {
   /// will be created. If a param is provided, [cost] is ignored. If omitted,
   /// [text] defaults to an empty string.
   void writeSplit({int cost, SplitParam param, String text}) {
-    if (cost == null) cost = Cost.FREE;
+    if (cost == null) cost = Cost.CHEAP;
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
@@ -298,12 +298,12 @@ class LineWriter {
   }
 
   /// Ends the innermost span and associates [cost] with it.
-  void endSpan(int cost) {
+  void endSpan([int cost = Cost.CHEAP]) {
     _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
   }
 
   /// Starts a new [Multisplit] with [cost].
-  void startMultisplit({int cost: Cost.FREE, bool separable}) {
+  void startMultisplit({int cost: Cost.CHEAP, bool separable}) {
     _multisplits.add(new Multisplit(
         _chunks.length, cost, separable: separable));
   }

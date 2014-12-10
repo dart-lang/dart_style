@@ -228,7 +228,7 @@ class SplitParam {
   /// Creates a new [SplitParam].
   ///
   /// This should not be called directly from outside of [SourceWriter].
-  SplitParam([this.cost = Cost.FREE]);
+  SplitParam([this.cost = Cost.CHEAP]);
 
   String toString() => "$cost";
 }
