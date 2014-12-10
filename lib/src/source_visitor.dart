@@ -47,8 +47,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitAdjacentStrings(AdjacentStrings node) {
-    visitNodes(node.strings,
-        between: () => split(cost: Cost.ADJACENT_STRINGS));
+    visitNodes(node.strings, between: split);
   }
 
   visitAnnotation(Annotation node) {
@@ -78,7 +77,7 @@ class SourceVisitor implements AstVisitor {
     zeroSplit(cost--);
 
     // See if we kept all of the arguments on the same line.
-    _writer.startSpan();
+    _writer.startSpan(Cost.SPLIT_ARGUMENTS);
 
     // Prefer splitting later arguments over earlier ones.
     visitCommaSeparatedNodes(node.arguments,
@@ -88,7 +87,7 @@ class SourceVisitor implements AstVisitor {
 
     // End the span after the ")". That ensures inline block comments after the
     // last argument are part of the span.
-    _writer.endSpan(Cost.SPLIT_ARGUMENTS);
+    _writer.endSpan();
     _writer.unnest();
   }
 
@@ -112,10 +111,10 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split(cost: Cost.ASSIGNMENT);
-    _writer.startSpan();
+    split();
+    _writer.startSpan(Cost.ASSIGNMENT);
     visit(node.rightHandSide);
-    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
+    _writer.endSpan();
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -125,8 +124,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
-    // TODO(rnystrom: Use different costs for different operator precedences.
-    _writer.startMultisplit(cost: Cost.BINARY_OPERATOR, separable: true);
+    _writer.startMultisplit(separable: true);
+    _writer.startSpan(Cost.BINARY_OPERATOR);
 
     // Flatten out a tree/chain of the same operator type. If we split on this
     // operator, we will break all of them.
@@ -146,6 +145,7 @@ class SourceVisitor implements AstVisitor {
 
     traverse(node);
 
+    _writer.endSpan();
     _writer.endMultisplit();
   }
 
@@ -280,13 +280,16 @@ class SourceVisitor implements AstVisitor {
   visitConditionalExpression(ConditionalExpression node) {
     visit(node.condition);
     space();
+
+    _writer.startSpan();
     token(node.question);
-    split(cost: Cost.AFTER_CONDITION);
+    split();
     visit(node.thenExpression);
     space();
     token(node.colon);
-    split(cost: Cost.AFTER_COLON);
+    split();
     visit(node.elseExpression);
+    _writer.endSpan();
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {
@@ -432,9 +435,11 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword, after: space);
 
     token(node.functionDefinition); // "=>".
-    split(cost: Cost.ARROW);
+    split();
+    _writer.startSpan();
     visit(node.expression);
     token(node.semicolon);
+    _writer.endSpan();
   }
 
   visitExpressionStatement(ExpressionStatement node) {
@@ -677,14 +682,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitInterpolationExpression(InterpolationExpression node) {
-    if (node.rightBracket != null) {
-      token(node.leftBracket);
-      visit(node.expression);
-      token(node.rightBracket);
-    } else {
-      token(node.leftBracket);
-      visit(node.expression);
-    }
+    token(node.leftBracket);
+    visit(node.expression);
+    token(node.rightBracket);
   }
 
   visitInterpolationString(InterpolationString node) {
@@ -765,7 +765,7 @@ class SourceVisitor implements AstVisitor {
     if (node.target is! MethodInvocation) {
       if (node.period != null) {
         visit(node.target);
-        zeroSplit(Cost.BEFORE_PERIOD);
+        zeroSplit();
         token(node.period);
       }
 
@@ -897,16 +897,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitReturnStatement(ReturnStatement node) {
-    var expression = node.expression;
-    if (expression == null) {
-      token(node.keyword);
-      token(node.semicolon);
-    } else {
-      token(node.keyword);
+    token(node.keyword);
+    if (node.expression != null) {
       space();
-      expression.accept(this);
-      token(node.semicolon);
+      visit(node.expression);
     }
+    token(node.semicolon);
   }
 
   visitScriptTag(ScriptTag node) {
@@ -1068,9 +1064,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.equals);
     split(cost: Cost.ASSIGNMENT);
-    _writer.startSpan();
+    _writer.startSpan(Cost.ASSIGNMENT_SPAN);
     visit(node.initializer);
-    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
+    _writer.endSpan();
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1106,7 +1102,8 @@ class SourceVisitor implements AstVisitor {
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    var param = new SplitParam(Cost.DECLARATION);
+    var param = new SplitParam();
+    // TODO(rnystrom): Should use a multisplit here.
 
     visitCommaSeparatedNodes(node.variables, between: () {
       split(param: param);
@@ -1147,11 +1144,11 @@ class SourceVisitor implements AstVisitor {
   ///
   /// If [node] is not `null`, invokes [after] if given after visiting the node.
   void visit(AstNode node, {void after()}) {
-    if (node != null) {
-      node.accept(this);
+    if (node == null) return;
 
-      if (after != null) after();
-    }
+    node.accept(this);
+
+    if (after != null) after();
   }
 
   /// Visit metadata annotations on directives and declarations.
@@ -1243,7 +1240,7 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visitNode(node.typeArguments);
 
-    _startBody(leftBracket, Cost.COLLECTION_LITERAL);
+    _startBody(leftBracket);
 
     visitCommaSeparatedNodes(elements, between: () {
       _writer.multisplit(text: " ");
@@ -1256,15 +1253,15 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the multisplit it contains.
-  void _startBody(Token leftBracket, [int cost = Cost.FREE]) {
+  void _startBody(Token leftBracket) {
     token(leftBracket);
 
     // Indent the body.
-    _writer.startMultisplit(cost: cost);
+    _writer.startMultisplit();
     _writer.indent();
 
     // Split after the bracket.
-    _writer.multisplit(allowTrailingCommentBefore: false);
+    _writer.multisplit();
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
@@ -1333,7 +1330,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.
-  void zeroSplit([int cost = Cost.FREE]) {
+  void zeroSplit([int cost]) {
     _writer.writeSplit(cost: cost);
   }
 
@@ -1357,14 +1354,21 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes all formatted whitespace and comments that appear before [token].
   void writePrecedingCommentsAndNewlines(Token token) {
-    // TODO(rnystrom): Consider a fast path that doesn't create a comment
-    // list if there are none if that helps perf.
-    var comments = [];
+    var comment = token.precedingComments;
+
+    // For performance, avoid calculating newlines between tokens unless
+    // actually needed.
+    if (comment == null) {
+      if (_writer.needsToPreserveNewlines) {
+        _writer.preserveNewlines(_startLine(token) - _endLine(token.previous));
+      }
+      return;
+    }
 
     var previousLine = _endLine(token.previous);
     var tokenLine = _startLine(token);
 
-    var comment = token.precedingComments;
+    var comments = [];
     while (comment != null) {
       var commentLine = _startLine(comment);
 
@@ -1390,10 +1394,10 @@ class SourceVisitor implements AstVisitor {
       comment = comment.next;
     }
 
-    _writer.writeComments(
-        comments, _startLine(token) - previousLine, token.lexeme);
+    _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
   }
 
+  // TODO(rnystrom): Eliminate this. It can cause comments to be discarded.
   /// Append the given [string] to the source writer if it's non-null.
   void append(String string) {
     if (string == null || string.isEmpty) return;

@@ -51,10 +51,16 @@ callSomeMethod(
     body;
   }).another().another()
 ];
+>>> wrap at =>
+receiver.firstMethod().next(() => longIdentifier == veryLongIdentifier);
+<<<
+receiver.firstMethod().next(() =>
+    longIdentifier ==
+    veryLongIdentifier);
 >>> wrap at nested binary operator
-receiver.firstMethod().next((link) => longIdentifier == veryLongIdentifier);
+receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
 receiver
     .firstMethod()
-    .next((link) => longIdentifier ==
+    .next(longIdentifier ==
         veryLongIdentifier);

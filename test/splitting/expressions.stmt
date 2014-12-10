@@ -25,10 +25,10 @@ var kind = element != null ? longArgument : arg;
 var kind = element != null ?
     longArgument : arg;
 >>> split conditional after ":"
-var kind = element != null ? argument : arg;
+var kind = element != null ? argument : secondArgumentThatIsReallyLong;
 <<<
 var kind = element != null ? argument :
-    arg;
+    secondArgumentThatIsReallyLong;
 >>> unsplit operator chains before and after block
 first + second + () {body;} + third + fourth;
 <<<

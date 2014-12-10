@@ -69,6 +69,9 @@ class LineSplitter {
   /// The list of chunks being split.
   final List<Chunk> _chunks;
 
+  /// The set of spans that wrap around [_chunks].
+  final List<Span> _spans;
+
   /// The leading indentation at the beginning of the first line.
   final int _indent;
 
@@ -76,8 +79,10 @@ class LineSplitter {
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
-  /// Creates a new splitter that tries to fit lines within [pageWidth].
-  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._indent) {
+  /// Creates a new splitter that tries to fit a series of chunks within a
+  /// given page width.
+  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._spans,
+      this._indent) {
     assert(_chunks.isNotEmpty);
   }
 
@@ -214,12 +219,6 @@ class LineSplitter {
     var line = 0;
     var length = indent * SPACES_PER_INDENT;
 
-    // Determine which spans got split. Note that the line may not always
-    // contain matched start/end pairs. If a hard newline appears in the middle
-    // of a span, the line may contain only the beginning or end of a span. In
-    // that case, they will effectively do nothing, which is what we want.
-    var spanStarts = {};
-
     // TODO(rnystrom): Instead of determining this after applying the splits,
     // we could store the params as a tree so that every param inside a
     // multisplit is nested under its param. Then a param can only be set if
@@ -241,6 +240,8 @@ class LineSplitter {
     // that was previously seen on a different line.
     var previousParams = new Set();
     var thisLineParams = new Set();
+
+    var splitIndexes = [];
 
     endLine() {
       // Punish lines that went over the length. We don't rule these out
@@ -265,14 +266,10 @@ class LineSplitter {
     for (var i = prefix.length; i < _chunks.length; i++) {
       var chunk = _chunks[i];
 
-      if (chunk is SpanStartChunk) {
-        spanStarts[chunk] = line;
-      } else if (chunk is SpanEndChunk) {
-        // If the end span is on a different line from the start, pay for it.
-        if (spanStarts[chunk.start] != line) cost += chunk.cost;
-      } else if (chunk.isSplit) {
+      if (chunk.isSplit) {
         if (chunk.shouldSplit(splits)) {
           endLine();
+          splitIndexes.add(i);
 
           // Start the new line.
           indent = nester.handleSplit(chunk);
@@ -289,6 +286,19 @@ class LineSplitter {
         }
       } else {
         length += chunk.text.length;
+      }
+    }
+
+    // See which spans got split. We avoid iterators here for performance.
+    for (var i = 0; i < _spans.length; i++) {
+      var span = _spans[i];
+
+      for (var j = 0; j < splitIndexes.length; j++) {
+        var index = splitIndexes[j];
+        if (index >= span.start && index <= span.end) {
+          cost += span.cost;
+          break;
+        }
       }
     }
 

@@ -7,6 +7,7 @@ library dart_style.src.source_writer;
 import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'cost.dart';
+import 'debug.dart';
 import 'line_splitter.dart';
 import 'multisplit.dart';
 import 'whitespace.dart';
@@ -95,7 +96,10 @@ class LineWriter {
   final _multisplits = <Multisplit>[];
 
   /// The nested stack of spans that are currently being written.
-  final _spans = <SpanStartChunk>[];
+  final _openSpans = <Span>[];
+
+  /// All of the spans that have been created, open and closed.
+  final _spans = <Span>[];
 
   /// The current indentation and nesting levels.
   ///
@@ -127,6 +131,16 @@ class LineWriter {
   void set _nesting(int value) {
     _indentStack[_indentStack.length - 1] = value;
   }
+
+  /// Whether there is pending whitespace that depends on the number of
+  /// newlines in the source.
+  ///
+  /// This is used to avoid calculating the newlines between tokens unless
+  /// actually needed since doing so is slow when done between every single
+  /// token pair.
+  bool get needsToPreserveNewlines =>
+      _pendingWhitespace == Whitespace.ONE_OR_TWO_NEWLINES ||
+      _pendingWhitespace == Whitespace.SPACE_OR_NEWLINE;
 
   LineWriter(this._formatter, this._buffer) {
     indent(_formatter.indent);
@@ -180,7 +194,7 @@ class LineWriter {
   /// will be created. If a param is provided, [cost] is ignored. If omitted,
   /// [text] defaults to an empty string.
   void writeSplit({int cost, SplitParam param, String text}) {
-    if (cost == null) cost = Cost.FREE;
+    if (cost == null) cost = Cost.CHEAP;
     if (param == null) param = new SplitParam(cost);
     if (text == null) text = "";
 
@@ -228,7 +242,7 @@ class LineWriter {
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
 
-      _preserveNewlines(comment.linesBefore);
+      preserveNewlines(comment.linesBefore);
 
       // Don't emit a space because we'll handle it below. If we emit it here,
       // we may get a trailing space if the comment needs a line before it.
@@ -240,9 +254,7 @@ class LineWriter {
       if (comment.linesBefore == 0) {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
-        if (_chunks.isNotEmpty &&
-            _chunks.last.isSplit &&
-            _chunks.last.allowTrailingCommentBefore) {
+        if (_shouldMoveCommentBeforeSplit()) {
           precedingSplit = _chunks.removeLast();
         }
 
@@ -275,7 +287,32 @@ class LineWriter {
       _pendingWhitespace = Whitespace.SPACE;
     }
 
-    _preserveNewlines(linesBeforeToken);
+    preserveNewlines(linesBeforeToken);
+  }
+
+  /// If the current pending whitespace allows some source discretion, pins
+  /// that down given that the source contains [numLines] newlines at that
+  /// point.
+  void preserveNewlines(int numLines) {
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (numLines > 0) {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        } else {
+          _pendingWhitespace = Whitespace.SPACE;
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (numLines > 1) {
+          _pendingWhitespace = Whitespace.TWO_NEWLINES;
+        } else {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        }
+        break;
+    }
   }
 
   /// Increases indentation of the next line by [levels].
@@ -288,21 +325,21 @@ class LineWriter {
     while (levels-- > 0) _indentStack.removeLast();
   }
 
-  /// Starts a new span.
+  /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
-  void startSpan() {
-    _spans.add(new SpanStartChunk());
-    _chunks.add(_spans.last);
+  void startSpan([int cost = Cost.CHEAP]) {
+    _openSpans.add(new Span(_chunks.length, cost));
+    _spans.add(_openSpans.last);
   }
 
-  /// Ends the innermost span and associates [cost] with it.
-  void endSpan(int cost) {
-    _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
+  /// Ends the innermost span.
+  void endSpan() {
+    _openSpans.removeLast().close(_chunks.length - 1);
   }
 
   /// Starts a new [Multisplit] with [cost].
-  void startMultisplit({int cost: Cost.FREE, bool separable}) {
+  void startMultisplit({int cost: Cost.CHEAP, bool separable}) {
     _multisplits.add(new Multisplit(
         _chunks.length, cost, separable: separable));
   }
@@ -313,15 +350,9 @@ class LineWriter {
   /// is `true`, then this split will take into account expression nesting.
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
-  ///
-  /// If [allowTrailingCommentBefore] is `false`, then a comment is not allowed
-  /// to adhere to the previous token and remain on the line before the split.
-  void multisplit({String text: "", bool nest: false,
-      bool allowTrailingCommentBefore: true}) {
+  void multisplit({String text: "", bool nest: false}) {
     _addSplit(new SplitChunk(_indent, nest ? _nesting : -1,
-        param: _multisplits.last.param,
-        text: text,
-        allowTrailingCommentBefore: allowTrailingCommentBefore));
+        param: _multisplits.last.param, text: text));
   }
 
   /// Ends the innermost multisplit.
@@ -370,31 +401,6 @@ class LineWriter {
     _completeLine();
   }
 
-  /// If the current pending whitespace allows some source discretion, pins
-  /// that down given that the source contains [numLines] newlines at that
-  /// point.
-  void _preserveNewlines(int numLines) {
-    // If we didn't know how many newlines the user authored between the last
-    // token and this one, now we do.
-    switch (_pendingWhitespace) {
-      case Whitespace.SPACE_OR_NEWLINE:
-        if (numLines > 0) {
-          _pendingWhitespace = Whitespace.NEWLINE;
-        } else {
-          _pendingWhitespace = Whitespace.SPACE;
-        }
-        break;
-
-      case Whitespace.ONE_OR_TWO_NEWLINES:
-        if (numLines > 1) {
-          _pendingWhitespace = Whitespace.TWO_NEWLINES;
-        } else {
-          _pendingWhitespace = Whitespace.NEWLINE;
-        }
-        break;
-    }
-  }
-
   /// Writes the current pending [Whitespace] to the output, if any.
   ///
   /// This should only be called after source lines have been preserved to turn
@@ -426,6 +432,27 @@ class LineWriter {
     _pendingWhitespace = null;
   }
 
+  /// Returns `true` if the last chunk is a split that should be move after the
+  /// comment that is about to be written.
+  bool _shouldMoveCommentBeforeSplit() {
+    // If there is nothing before, we can't.
+    if (_chunks.isEmpty) return false;
+
+    // Must have a trailing split.
+    var last = _chunks.last;
+    if (!last.isSplit) return false;
+
+    if (_chunks.length == 1) return true;
+
+    // Shouldn't have redundant splits.
+    assert(_chunks[_chunks.length - 2] is TextChunk);
+
+    // If the text before the split is an open grouping character, we don't
+    // want to adhere the comment to that.
+    var text = _chunks[_chunks.length - 2].text;
+    return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
+  }
+
   /// Returns `true` if a space should be output between the end of the current
   /// output and the subsequent comment which is about to be written.
   ///
@@ -439,15 +466,11 @@ class LineWriter {
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
   bool _needsSpaceBeforeComment({bool isLineComment}) {
-    // Find the preceding visible (non-span) chunk, if any.
-    var chunk = _chunks.lastWhere(
-        (chunk) => chunk.isSplit || chunk is TextChunk,
-        orElse: () => null);
-
     // Don't need a space before a file-leading comment.
-    if (chunk == null) return false;
+    if (_chunks.isEmpty) return false;
 
     // Don't need a space if the comment isn't a trailing comment in the output.
+    var chunk = _chunks.last;
     if (chunk.isSplit) return false;
 
     assert(chunk is TextChunk);
@@ -460,7 +483,7 @@ class LineWriter {
     if (isLineComment) return true;
 
     // Block comments do not get a space if following a grouping character.
-    return text != "(" && text != "[" && text != "{";
+    return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
   /// Returns `true` if a space should be output after the last comment which
@@ -527,7 +550,14 @@ class LineWriter {
     // the current line before starting a new one.
     _checkForCompleteLine();
 
-    _chunks.add(new TextChunk(text));
+    // Concatenate sequential text chunks. Makes line splitting a bit faster
+    // since there are fewer individual chunks to iterate over.
+    if (_chunks.isNotEmpty && _chunks.last is TextChunk) {
+      var last = _chunks.removeLast();
+      _chunks.add(new TextChunk("${last.text}$text"));
+    } else {
+      _chunks.add(new TextChunk(text));
+    }
   }
 
   /// Checks to see if we are currently at a point where the existing chunks
@@ -544,6 +574,10 @@ class LineWriter {
     // expression.
     if (!_chunks.last.isHardSplit || _chunks.last.nesting >= 0) return;
 
+    // If we're still in the middle of a span, wait until it's done so we can
+    // calculate costs correctly.
+    if (_openSpans.isNotEmpty) return;
+
     // Discard the split.
     var split = _chunks.removeLast();
 
@@ -552,6 +586,8 @@ class LineWriter {
       _completeLine();
       _chunks.clear();
     }
+
+    _spans.clear();
 
     // Get ready for the next line.
     _bufferedNewlines = split.isDouble ? 2 : 1;
@@ -571,7 +607,7 @@ class LineWriter {
     }
 
     var splitter = new LineSplitter(_formatter.lineEnding,
-        _formatter.pageWidth, _chunks, _beginningIndent);
+        _formatter.pageWidth, _chunks, _spans, _beginningIndent);
     splitter.apply(_buffer);
   }
 

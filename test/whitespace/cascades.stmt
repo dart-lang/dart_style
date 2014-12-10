@@ -6,8 +6,7 @@
 >>> long single cascade
 "foo"..toString(argument, argument, argument);
 <<<
-"foo"
-  ..toString(
+"foo"..toString(
       argument, argument, argument);
 >>> multiple cascades get their own line
 "foo"..toString()..toString();
