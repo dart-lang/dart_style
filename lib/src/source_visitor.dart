@@ -77,7 +77,7 @@ class SourceVisitor implements AstVisitor {
     zeroSplit(cost--);
 
     // See if we kept all of the arguments on the same line.
-    _writer.startSpan();
+    _writer.startSpan(Cost.SPLIT_ARGUMENTS);
 
     // Prefer splitting later arguments over earlier ones.
     visitCommaSeparatedNodes(node.arguments,
@@ -87,7 +87,7 @@ class SourceVisitor implements AstVisitor {
 
     // End the span after the ")". That ensures inline block comments after the
     // last argument are part of the span.
-    _writer.endSpan(Cost.SPLIT_ARGUMENTS);
+    _writer.endSpan();
     _writer.unnest();
   }
 
@@ -112,9 +112,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.operator);
     split();
-    _writer.startSpan();
+    _writer.startSpan(Cost.ASSIGNMENT);
     visit(node.rightHandSide);
-    _writer.endSpan(Cost.ASSIGNMENT);
+    _writer.endSpan();
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -126,7 +126,7 @@ class SourceVisitor implements AstVisitor {
   visitBinaryExpression(BinaryExpression node) {
     // TODO(rnystrom: Use different costs for different operator precedences.
     _writer.startMultisplit(separable: true);
-    _writer.startSpan();
+    _writer.startSpan(Cost.BINARY_OPERATOR);
 
     // Flatten out a tree/chain of the same operator type. If we split on this
     // operator, we will break all of them.
@@ -146,7 +146,7 @@ class SourceVisitor implements AstVisitor {
 
     traverse(node);
 
-    _writer.endSpan(Cost.BINARY_OPERATOR);
+    _writer.endSpan();
     _writer.endMultisplit();
   }
 
@@ -684,14 +684,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitInterpolationExpression(InterpolationExpression node) {
-    if (node.rightBracket != null) {
-      token(node.leftBracket);
-      visit(node.expression);
-      token(node.rightBracket);
-    } else {
-      token(node.leftBracket);
-      visit(node.expression);
-    }
+    token(node.leftBracket);
+    visit(node.expression);
+    token(node.rightBracket);
   }
 
   visitInterpolationString(InterpolationString node) {
@@ -904,16 +899,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitReturnStatement(ReturnStatement node) {
-    var expression = node.expression;
-    if (expression == null) {
-      token(node.keyword);
-      token(node.semicolon);
-    } else {
-      token(node.keyword);
+    token(node.keyword);
+    if (node.expression != null) {
       space();
-      expression.accept(this);
-      token(node.semicolon);
+      visit(node.expression);
     }
+    token(node.semicolon);
   }
 
   visitScriptTag(ScriptTag node) {
@@ -1075,9 +1066,9 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.equals);
     split(cost: Cost.ASSIGNMENT);
-    _writer.startSpan();
+    _writer.startSpan(Cost.ASSIGNMENT_SPAN);
     visit(node.initializer);
-    _writer.endSpan(Cost.ASSIGNMENT_SPAN);
+    _writer.endSpan();
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1272,7 +1263,7 @@ class SourceVisitor implements AstVisitor {
     _writer.indent();
 
     // Split after the bracket.
-    _writer.multisplit(allowTrailingCommentBefore: false);
+    _writer.multisplit();
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting

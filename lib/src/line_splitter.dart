@@ -69,6 +69,8 @@ class LineSplitter {
   /// The list of chunks being split.
   final List<Chunk> _chunks;
 
+  final List<Span> _spans;
+
   /// The leading indentation at the beginning of the first line.
   final int _indent;
 
@@ -77,7 +79,8 @@ class LineSplitter {
   final _bestSplits = <LinePrefix, Set<SplitParam>>{};
 
   /// Creates a new splitter that tries to fit lines within [pageWidth].
-  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._indent) {
+  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._spans,
+      this._indent) {
     assert(_chunks.isNotEmpty);
   }
 
@@ -214,12 +217,6 @@ class LineSplitter {
     var line = 0;
     var length = indent * SPACES_PER_INDENT;
 
-    // Determine which spans got split. Note that the line may not always
-    // contain matched start/end pairs. If a hard newline appears in the middle
-    // of a span, the line may contain only the beginning or end of a span. In
-    // that case, they will effectively do nothing, which is what we want.
-    var spanStarts = {};
-
     // TODO(rnystrom): Instead of determining this after applying the splits,
     // we could store the params as a tree so that every param inside a
     // multisplit is nested under its param. Then a param can only be set if
@@ -262,15 +259,13 @@ class LineSplitter {
         prefix.getNextLineIndent(_chunks, _indent, includeNesting: false),
         prefix._nesting);
 
+    var chunkLines = [];
+
     for (var i = prefix.length; i < _chunks.length; i++) {
       var chunk = _chunks[i];
+      chunkLines.add(line);
 
-      if (chunk is SpanStartChunk) {
-        spanStarts[chunk] = line;
-      } else if (chunk is SpanEndChunk) {
-        // If the end span is on a different line from the start, pay for it.
-        if (spanStarts[chunk.start] != line) cost += chunk.cost;
-      } else if (chunk.isSplit) {
+      if (chunk.isSplit) {
         if (chunk.shouldSplit(splits)) {
           endLine();
 
@@ -289,6 +284,16 @@ class LineSplitter {
         }
       } else {
         length += chunk.text.length;
+      }
+    }
+
+    // See which spans got split.
+    for (var span in _spans) {
+      var start = span.start - prefix.length;
+      var end = span.end - prefix.length;
+      if (start >= 0 && end >= 0 &&
+          chunkLines[start] != chunkLines[end]) {
+        cost += span.cost;
       }
     }
 

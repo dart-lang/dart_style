@@ -55,12 +55,7 @@ void dumpLine(List<Chunk> chunks,
   for (var i = prefix.length; i < chunks.length; i++) {
     var chunk = chunks[i];
 
-    if (chunk is SpanStartChunk) {
-      buffer.write("${Color.cyan}$UNICODE_LASQUO${Color.none}");
-    } else if (chunk is SpanEndChunk) {
-      buffer.write("${Color.cyan}$UNICODE_RASQUO(${chunk.cost})"
-          "${Color.none}");
-    } else if (chunk is TextChunk) {
+    if (chunk is TextChunk) {
       buffer.write(chunk.text);
     } else if (chunk.isSoftSplit) {
       var split = chunk as SplitChunk;

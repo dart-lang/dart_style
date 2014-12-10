@@ -96,7 +96,10 @@ class LineWriter {
   final _multisplits = <Multisplit>[];
 
   /// The nested stack of spans that are currently being written.
-  final _spans = <SpanStartChunk>[];
+  final _openSpans = <Span>[];
+
+  /// All of the spans that have been created, open and closed.
+  final _spans = <Span>[];
 
   /// The current indentation and nesting levels.
   ///
@@ -241,9 +244,7 @@ class LineWriter {
       if (comment.linesBefore == 0) {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
-        if (_chunks.isNotEmpty &&
-            _chunks.last.isSplit &&
-            _chunks.last.allowTrailingCommentBefore) {
+        if (_shouldMoveCommentBeforeSplit()) {
           precedingSplit = _chunks.removeLast();
         }
 
@@ -292,14 +293,14 @@ class LineWriter {
   /// Starts a new span.
   ///
   /// Each call to this needs a later matching call to [endSpan].
-  void startSpan() {
-    _spans.add(new SpanStartChunk());
-    _chunks.add(_spans.last);
+  void startSpan([int cost = Cost.CHEAP]) {
+    _openSpans.add(new Span(_chunks.length, cost));
+    _spans.add(_openSpans.last);
   }
 
   /// Ends the innermost span and associates [cost] with it.
-  void endSpan([int cost = Cost.CHEAP]) {
-    _chunks.add(new SpanEndChunk(_spans.removeLast(), cost));
+  void endSpan() {
+    _openSpans.removeLast().close(_chunks.length - 1);
   }
 
   /// Starts a new [Multisplit] with [cost].
@@ -314,15 +315,9 @@ class LineWriter {
   /// is `true`, then this split will take into account expression nesting.
   /// Otherwise, it will not. Collections do not follow expression nesting,
   /// while other uses of multisplits generally do.
-  ///
-  /// If [allowTrailingCommentBefore] is `false`, then a comment is not allowed
-  /// to adhere to the previous token and remain on the line before the split.
-  void multisplit({String text: "", bool nest: false,
-      bool allowTrailingCommentBefore: true}) {
+  void multisplit({String text: "", bool nest: false}) {
     _addSplit(new SplitChunk(_indent, nest ? _nesting : -1,
-        param: _multisplits.last.param,
-        text: text,
-        allowTrailingCommentBefore: allowTrailingCommentBefore));
+        param: _multisplits.last.param, text: text));
   }
 
   /// Ends the innermost multisplit.
@@ -425,6 +420,27 @@ class LineWriter {
     }
 
     _pendingWhitespace = null;
+  }
+
+  /// Returns `true` if the last chunk is a split that should be move after the
+  /// comment that is about to be written.
+  bool _shouldMoveCommentBeforeSplit() {
+    // If there is nothing before, we can't.
+    if (_chunks.isEmpty) return false;
+
+    // Must have a trailing split.
+    var last = _chunks.last;
+    if (!last.isSplit) return false;
+
+    if (_chunks.length == 1) return true;
+
+    // Shouldn't have redundant splits.
+    assert(_chunks[_chunks.length - 2] is TextChunk);
+
+    // If the text before the split is an open grouping character, we don't
+    // want to adhere the comment to that.
+    var text = _chunks[_chunks.length - 2].text;
+    return text != "(" && text != "[" && text != "{";
   }
 
   /// Returns `true` if a space should be output between the end of the current
@@ -545,6 +561,10 @@ class LineWriter {
     // expression.
     if (!_chunks.last.isHardSplit || _chunks.last.nesting >= 0) return;
 
+    // If we're still in the middle of a span, wait until it's done so we can
+    // calculate costs correctly.
+    if (_openSpans.isNotEmpty) return;
+
     // Discard the split.
     var split = _chunks.removeLast();
 
@@ -553,6 +573,8 @@ class LineWriter {
       _completeLine();
       _chunks.clear();
     }
+
+    _spans.clear();
 
     // Get ready for the next line.
     _bufferedNewlines = split.isDouble ? 2 : 1;
@@ -572,7 +594,7 @@ class LineWriter {
     }
 
     var splitter = new LineSplitter(_formatter.lineEnding,
-        _formatter.pageWidth, _chunks, _beginningIndent);
+        _formatter.pageWidth, _chunks, _spans, _beginningIndent);
     splitter.apply(_buffer);
   }
 

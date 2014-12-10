@@ -43,38 +43,6 @@ class TextChunk extends Chunk {
   }
 }
 
-/// The first of a pair of chunks used to delimit a range of chunks that must
-/// end up on the same line to avoid paying a cost.
-///
-/// If a start and its paired end chunk end up split onto different lines, then
-/// a cost penalty (in addition to the costs of the splits themselves) is added.
-/// This is used to penalize splitting arguments onto multiple lines so that it
-/// prefers to keep arguments together even if it means moving them all to the
-/// next line when possible.
-class SpanStartChunk extends Chunk {
-  String get text => "";
-
-  String toString() => "${Color.cyan}$UNICODE_LASQUO${Color.none}";
-}
-
-/// The second of a pair of chunks used to delimit a range of chunks that must
-/// end up on the same line to avoid paying a cost.
-///
-/// See [SpanStartChunk] for details.
-class SpanEndChunk extends Chunk {
-  /// The [SpanStartChunk] that marks the beginning of this span.
-  final SpanStartChunk start;
-
-  /// The cost applied when the span is split across multiple lines.
-  final int cost;
-
-  String get text => "";
-
-  SpanEndChunk(this.start, this.cost);
-
-  String toString() => "${Color.cyan}$UNICODE_RASQUO$cost${Color.none}";
-}
-
 /// A place where a line-break may appear in the final output.
 ///
 /// Splits come in a few different forms:
@@ -137,23 +105,13 @@ class SplitChunk extends Chunk {
   bool get isDouble => _isDouble;
   bool _isDouble;
 
-  /// `true` if a trailing comment is allowed to appear at the end of the line
-  /// before this split.
-  ///
-  /// This is `true` for most splits, but `false` for splits before a block or
-  /// collection literal in order to forbid constructs like:
-  ///
-  ///     main() { // comment
-  ///     }
-  final bool allowTrailingCommentBefore;
-
   /// Creates a new [SplitChunk] where the following line will have [_indent]
   /// and [_nesting].
   ///
   /// If [_param] is non-`null`, creates a soft split. Otherwise, creates a
   /// hard split. When non-split, a soft split expands to [text].
-  SplitChunk(this._indent, this._nesting, {SplitParam param, this.text: "",
-      bool double: false, this.allowTrailingCommentBefore: true})
+  SplitChunk(this._indent, this._nesting,
+      {SplitParam param, this.text: "", bool double: false})
       : _param = param,
         _isDouble = double;
 
@@ -231,4 +189,25 @@ class SplitParam {
   SplitParam([this.cost = Cost.CHEAP]);
 
   String toString() => "$cost";
+}
+
+/// Delimits a range of chunks that must end up on the same line to avoid
+/// paying a cost.
+class Span {
+  /// Index of the first chunk contained in this span.
+  final int start;
+
+  /// Index of the last chunk contained in this span.
+  int get end => _end;
+  int _end;
+
+  /// The cost applied when the span is split across multiple lines.
+  final int cost;
+
+  Span(this.start, this.cost);
+
+  void close(int end) {
+    assert(_end == null);
+    _end = end;
+  }
 }
