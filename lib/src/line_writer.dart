@@ -132,6 +132,16 @@ class LineWriter {
     _indentStack[_indentStack.length - 1] = value;
   }
 
+  /// Whether there is pending whitespace that depends on the number of
+  /// newlines in the source.
+  ///
+  /// This is used to avoid calculating the newlines between tokens unless
+  /// actually needed since doing so is slow when done between every single
+  /// token pair.
+  bool get needsToPreserveNewlines =>
+      _pendingWhitespace == Whitespace.ONE_OR_TWO_NEWLINES ||
+      _pendingWhitespace == Whitespace.SPACE_OR_NEWLINE;
+
   LineWriter(this._formatter, this._buffer) {
     indent(_formatter.indent);
     _beginningIndent = _formatter.indent;
@@ -232,7 +242,7 @@ class LineWriter {
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
 
-      _preserveNewlines(comment.linesBefore);
+      preserveNewlines(comment.linesBefore);
 
       // Don't emit a space because we'll handle it below. If we emit it here,
       // we may get a trailing space if the comment needs a line before it.
@@ -277,7 +287,32 @@ class LineWriter {
       _pendingWhitespace = Whitespace.SPACE;
     }
 
-    _preserveNewlines(linesBeforeToken);
+    preserveNewlines(linesBeforeToken);
+  }
+
+  /// If the current pending whitespace allows some source discretion, pins
+  /// that down given that the source contains [numLines] newlines at that
+  /// point.
+  void preserveNewlines(int numLines) {
+    // If we didn't know how many newlines the user authored between the last
+    // token and this one, now we do.
+    switch (_pendingWhitespace) {
+      case Whitespace.SPACE_OR_NEWLINE:
+        if (numLines > 0) {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        } else {
+          _pendingWhitespace = Whitespace.SPACE;
+        }
+        break;
+
+      case Whitespace.ONE_OR_TWO_NEWLINES:
+        if (numLines > 1) {
+          _pendingWhitespace = Whitespace.TWO_NEWLINES;
+        } else {
+          _pendingWhitespace = Whitespace.NEWLINE;
+        }
+        break;
+    }
   }
 
   /// Increases indentation of the next line by [levels].
@@ -366,31 +401,6 @@ class LineWriter {
     _completeLine();
   }
 
-  /// If the current pending whitespace allows some source discretion, pins
-  /// that down given that the source contains [numLines] newlines at that
-  /// point.
-  void _preserveNewlines(int numLines) {
-    // If we didn't know how many newlines the user authored between the last
-    // token and this one, now we do.
-    switch (_pendingWhitespace) {
-      case Whitespace.SPACE_OR_NEWLINE:
-        if (numLines > 0) {
-          _pendingWhitespace = Whitespace.NEWLINE;
-        } else {
-          _pendingWhitespace = Whitespace.SPACE;
-        }
-        break;
-
-      case Whitespace.ONE_OR_TWO_NEWLINES:
-        if (numLines > 1) {
-          _pendingWhitespace = Whitespace.TWO_NEWLINES;
-        } else {
-          _pendingWhitespace = Whitespace.NEWLINE;
-        }
-        break;
-    }
-  }
-
   /// Writes the current pending [Whitespace] to the output, if any.
   ///
   /// This should only be called after source lines have been preserved to turn
@@ -440,7 +450,7 @@ class LineWriter {
     // If the text before the split is an open grouping character, we don't
     // want to adhere the comment to that.
     var text = _chunks[_chunks.length - 2].text;
-    return text != "(" && text != "[" && text != "{";
+    return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
   /// Returns `true` if a space should be output between the end of the current
@@ -477,7 +487,7 @@ class LineWriter {
     if (isLineComment) return true;
 
     // Block comments do not get a space if following a grouping character.
-    return text != "(" && text != "[" && text != "{";
+    return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
   /// Returns `true` if a space should be output after the last comment which
@@ -544,7 +554,14 @@ class LineWriter {
     // the current line before starting a new one.
     _checkForCompleteLine();
 
-    _chunks.add(new TextChunk(text));
+    // Concatenate sequential text chunks. Makes line splitting a bit faster
+    // since there are fewer individual chunks to iterate over.
+    if (_chunks.isNotEmpty && _chunks.last is TextChunk) {
+      var last = _chunks.removeLast();
+      _chunks.add(new TextChunk("${last.text}$text"));
+    } else {
+      _chunks.add(new TextChunk(text));
+    }
   }
 
   /// Checks to see if we are currently at a point where the existing chunks

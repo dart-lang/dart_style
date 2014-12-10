@@ -1356,14 +1356,21 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes all formatted whitespace and comments that appear before [token].
   void writePrecedingCommentsAndNewlines(Token token) {
-    // TODO(rnystrom): Consider a fast path that doesn't create a comment
-    // list if there are none if that helps perf.
-    var comments = [];
+    var comment = token.precedingComments;
+
+    // For performance, avoid calculating newlines between tokens unless
+    // actually needed.
+    if (comment == null) {
+      if (_writer.needsToPreserveNewlines) {
+        _writer.preserveNewlines(_startLine(token) - _endLine(token.previous));
+      }
+      return;
+    }
 
     var previousLine = _endLine(token.previous);
     var tokenLine = _startLine(token);
 
-    var comment = token.precedingComments;
+    var comments = [];
     while (comment != null) {
       var commentLine = _startLine(comment);
 
@@ -1389,8 +1396,7 @@ class SourceVisitor implements AstVisitor {
       comment = comment.next;
     }
 
-    _writer.writeComments(comments, _startLine(token) - previousLine,
-        token.lexeme);
+    _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
   }
 
   /// Append the given [string] to the source writer if it's non-null.

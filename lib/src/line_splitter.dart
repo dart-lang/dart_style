@@ -239,6 +239,8 @@ class LineSplitter {
     var previousParams = new Set();
     var thisLineParams = new Set();
 
+    var splitIndexes = [];
+
     endLine() {
       // Punish lines that went over the length. We don't rule these out
       // completely because it may be that the only solution still goes over
@@ -259,15 +261,13 @@ class LineSplitter {
         prefix.getNextLineIndent(_chunks, _indent, includeNesting: false),
         prefix._nesting);
 
-    var chunkLines = [];
-
     for (var i = prefix.length; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      chunkLines.add(line);
 
       if (chunk.isSplit) {
         if (chunk.shouldSplit(splits)) {
           endLine();
+          splitIndexes.add(i);
 
           // Start the new line.
           indent = nester.handleSplit(chunk);
@@ -287,13 +287,16 @@ class LineSplitter {
       }
     }
 
-    // See which spans got split.
-    for (var span in _spans) {
-      var start = span.start - prefix.length;
-      var end = span.end - prefix.length;
-      if (start >= 0 && end >= 0 &&
-          chunkLines[start] != chunkLines[end]) {
-        cost += span.cost;
+    // See which spans got split. We avoid iterators here for performance.
+    for (var i = 0; i < _spans.length; i++) {
+      var span = _spans[i];
+
+      for (var j = 0; j < splitIndexes.length; j++) {
+        var index = splitIndexes[j];
+        if (index >= span.start && index <= span.end) {
+          cost += span.cost;
+          break;
+        }
       }
     }
 
