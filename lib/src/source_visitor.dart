@@ -515,8 +515,7 @@ class SourceVisitor implements AstVisitor {
         if (i > 0) {
           append(',');
           // Prefer splitting later parameters over earlier ones.
-          split(cost: Cost.BEFORE_ARGUMENT +
-              node.parameters.length + 1 - i);
+          split(cost: Cost.BEFORE_ARGUMENT + node.parameters.length + 1 - i);
         }
 
         if (groupEnd == null && parameter is DefaultFormalParameter) {
