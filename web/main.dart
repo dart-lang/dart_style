@@ -22,14 +22,14 @@ void reformat() {
   try {
     after.value = new DartFormatter().format(source);
     return;
-  } on FormatterException catch(err) {
+  } on FormatterException catch (err) {
     // Do nothing.
   }
 
   // Maybe it's a statement.
   try {
     after.value = new DartFormatter().formatStatement(source);
-  } on FormatterException catch(err) {
+  } on FormatterException catch (err) {
     after.value = "Format failed:\n$err";
   }
 }
