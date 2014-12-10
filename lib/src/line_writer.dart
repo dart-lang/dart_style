@@ -5,7 +5,6 @@
 library dart_style.src.source_writer;
 
 import 'dart_formatter.dart';
-import 'debug.dart';
 import 'chunk.dart';
 import 'cost.dart';
 import 'line_splitter.dart';

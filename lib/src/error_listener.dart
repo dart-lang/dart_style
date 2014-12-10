@@ -5,8 +5,6 @@
 library dart_style.src.error_listener;
 
 import 'package:analyzer/analyzer.dart';
-import 'package:analyzer/src/generated/source.dart';
-import 'package:source_span/source_span.dart';
 
 import 'formatter_exception.dart';
 
