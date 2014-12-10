@@ -124,7 +124,6 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
-    // TODO(rnystrom: Use different costs for different operator precedences.
     _writer.startMultisplit(separable: true);
     _writer.startSpan(Cost.BINARY_OPERATOR);
 
