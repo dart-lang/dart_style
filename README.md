@@ -8,7 +8,7 @@ intelligent line wrapping. It has no problems with nested collections, function
 expressions, long argument lists, or otherwise tricky code.
 
 **The formatter is at an alpha state right now. It does a good job on most code,
-and I'd love to have you try it and report bugs, but it has known issue and its
+and I'd love to have you try it and report bugs, but it has known issues and its
 output will change over time.**
 
 ## Running it
