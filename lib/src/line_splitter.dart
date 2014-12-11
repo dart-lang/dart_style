@@ -120,8 +120,8 @@ class LineSplitter {
   /// Finds the best set of splits to apply to the remainder of the line
   /// following [prefix].
   Set<SplitParam> _findBestSplits(LinePrefix prefix) {
-    var memoized = _bestSplits[prefix];
-    if (memoized != null) return memoized;
+    // Use the memoized result if we have it.
+    if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
 
     var indent = prefix.getNextLineIndent(_chunks, _indent);
 
