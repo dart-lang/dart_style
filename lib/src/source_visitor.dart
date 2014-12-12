@@ -839,7 +839,9 @@ class SourceVisitor implements AstVisitor {
 
   visitParenthesizedExpression(ParenthesizedExpression node) {
     token(node.leftParenthesis);
+    _writer.nestExpression();
     visit(node.expression);
+    _writer.unnest();
     token(node.rightParenthesis);
   }
 
