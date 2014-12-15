@@ -57,6 +57,12 @@ first + second + third + () {
     sixth +
     seventh +
     eighth;
+>>> indent previous line farther because later line is nested deeper
+someFunction(someExtremelyLongArgumentName).clamp();
+<<<
+someFunction(
+        someExtremelyLongArgumentName)
+    .clamp();
 >>> wrap inside parenthesized
 (someVerylongIdentifier * someVerylongIdentifier);
 <<<

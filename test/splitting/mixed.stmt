@@ -35,8 +35,7 @@ someFunctionName(argument, argument,
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
 <<<
-callSomeMethod(
-    innerFunction(
+callSomeMethod(innerFunction(
         argument, argument, argument),
     argument, argument, argument);
 >>> function inside a collection

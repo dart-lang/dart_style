@@ -7,42 +7,6 @@ library dart_style.src.nesting;
 import 'chunk.dart';
 import 'line_splitter.dart';
 
-/// Keeps track of indentation caused by wrapped nested expressions within a
-/// line.
-class Nester {
-  /// The current level of statement/definition indentation.
-  ///
-  /// If a split changes this, that resets the nesting stack, since expression
-  /// nesting is specific to the current innermost statement being formatted.
-  /// Consider a long method call containing a function body which in turn
-  /// contains long method call. The nested stack of the inner call is
-  /// unrelated to the outer one.
-  int _indent;
-
-  /// The current nesting stack.
-  NestingStack _nesting;
-
-  Nester(this._indent, this._nesting);
-
-  /// Updates the indentation state with [split], which should be an enabled
-  /// split.
-  ///
-  /// Returns the number of levels of indentation the next line should have.
-  int handleSplit(SplitChunk split) {
-    if (!split.isInExpression) return split.indent;
-
-    if (split.indent != _indent) {
-      _nesting = new NestingStack();
-      _indent = split.indent;
-    }
-
-    _nesting = _nesting.modify(split);
-    if (_nesting == null) return INVALID_SPLITS;
-
-    return _indent + _nesting.indent;
-  }
-}
-
 /// Maintains a stack of nested expressions that have currently been split.
 ///
 /// A single statement may have multiple different levels of indentation based
@@ -111,44 +75,126 @@ class NestingStack {
     return indent.hashCode ^ _depth.hashCode;
   }
 
-  /// Modifies the nesting stack by taking into account [split].
+  /// Takes this nesting stack and produces all of the new nesting stacks that
+  /// are possible when followed by the nesting level of [split].
   ///
-  /// Returns a new nesting stack (which may the same as `this` if no change
-  /// was needed). Returns `null` if the split is not allowed for the current
-  /// indentation stack. This can happen if a level of nesting is skipped on a
-  /// previous line but then needed on a later line. For example:
+  /// This may produce multiple solutions because a non-incremental jump in
+  /// nesting depth can be sliced up multiple ways. Let's say the prefix is:
   ///
-  ///     // 40 columns                           |
-  ///     callSomeMethod(innerFunction(argument,
-  ///         argument, argument), argument, ...
+  ///     first(second(third(...
   ///
-  /// Here, the second line is indented one level even though it is two levels
-  /// of nesting deep (the `(` after `callSomeMethod` and `innerFunction`).
-  /// When trying to indent the third line, we are not only one level in, but
-  /// there is no level of indentation on the stack that corresponds to that.
-  /// When that happens, we just consider this an invalid solution and discard
-  /// it.
-  NestingStack modify(SplitChunk split) {
-    if (!split.isInExpression) return this;
+  /// The current nesting stack is empty (since we're on the first line). How
+  /// do we modify it by taking into account the split after `third(`? The
+  /// simple answer is to just increase the indentation by one level:
+  ///
+  ///     first(second(third(
+  ///         argumentToThird)));
+  ///
+  /// This is correct in most cases, but not all. Consider:
+  ///
+  ///     first(second(third(
+  ///         argumentToThird),
+  ///     argumentToSecond));
+  ///
+  /// Oops! There's no place for `argumentToSecond` to go. To handle that, the
+  /// second line needs to be indented one more level to make room for the later
+  /// line:
+  ///
+  ///     first(second(third(
+  ///             argumentToThird),
+  ///         argumentToSecond));
+  ///
+  /// It's even possible we may need to do:
+  ///
+  ///     first(second(third(
+  ///                 argumentToThird),
+  ///             argumentToSecond),
+  ///         argumentToFirst);
+  ///
+  /// To accommodate those, this returns the list of all possible ways the
+  /// nesting stack can be modified. It generates the in order of best to worst
+  /// so that the line splitter can stop as soon as it finds a working solution.
+  /// "Best" here means it tries fewer levels of indentation first.
+  List<NestingStack> applySplit(SplitChunk split) {
+    assert(split.isInExpression);
 
-    if (split.nesting == _depth) return this;
+    if (split.nesting == _depth) return [this];
 
-    if (split.nesting > _depth) {
-      // This expression is deeper than the last split, so add it to the
-      // stack.
-      return new NestingStack._(this, split.nesting, indent + INDENTS_PER_NEST);
+    // If the new split is less nested than we currently are, pop and discard
+    // the previous nesting levels.
+    if (split.nesting < _depth) {
+      // Pop items off the stack until we find the level we are now at.
+      var stack = this;
+      while (stack != null) {
+        if (stack._depth == split.nesting) return [stack];
+        stack = stack._parent;
+      }
+
+      // If we got here, the level wasn't found. That means there is no correct
+      // stack level to pop to, since the stack skips past our indentation
+      // level.
+      return [];
     }
 
-    // Pop items off the stack until we find the level we are now at.
-    var stack = this;
-    while (stack != null) {
-      if (stack._depth == split.nesting) return stack;
-      stack = stack._parent;
+    // TODO(rnystrom): This eagerly generates all of the nesting stacks even
+    // though LineSplitter._findBestSplits() will early out of looping over
+    // them. Optimize by generating these only as needed.
+
+    // Going deeper, so try every indentating for every subset of expression
+    // nesting levels between the old and new one.
+    return _depthSubsets(_depth + 1, split.nesting - 1).map((depths) {
+      var result = this;
+
+      for (var depth in depths) {
+        result = new NestingStack._(
+            result, depth, result.indent + INDENTS_PER_NEST);
+      }
+
+      return new NestingStack._(
+            result, split.nesting, result.indent + INDENTS_PER_NEST);
+    }).toList();
+  }
+
+  /// Given [min] and [max], generates all of the subsets of numbers in that
+  /// range (inclusive), including the empty set.
+  ///
+  /// Subsets are generated in order of increasing length. For example, `(2, 5)`
+  /// yields:
+  ///
+  ///     []
+  ///     [0], [1], [2], [3], [4]
+  ///     [0, 1], [0, 2], [0, 3], [0, 4], [1, 2],
+  ///     [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]
+  ///     [0, 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3], [0, 2, 4],
+  ///     [0, 3, 4], [1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4]
+  List<List<int>> _depthSubsets(int min, int max) {
+    var subsets = [[]];
+
+    var lastLengthStart = 0;
+    var lastLengthEnd = subsets.length;
+
+    // Generate subsets in order of increasing length.
+    for (var length = 1; length <= max - min + 1; length++) {
+      // Start with each subset containing one fewer element.
+      for (var i = lastLengthStart; i < lastLengthEnd; i++) {
+        var previousSubset = subsets[i];
+
+        var start = previousSubset.isNotEmpty ? previousSubset.last + 1 : 0;
+
+        // Then for each value in the remainer, make a new subset that is the
+        // union of the shorter subset and that value.
+        for (var j = start; j <= max; j++) {
+          var subset = previousSubset.toList()..add(j);
+          subsets.add(subset);
+        }
+      }
+
+      // Move on to the next length range.
+      lastLengthStart = lastLengthEnd;
+      lastLengthEnd = subsets.length;
     }
 
-    // If we got here, the level wasn't found. That means there is no correct
-    // stack level to pop to, since the stack skips past our indentation level.
-    return null;
+    return subsets;
   }
 
   String toString() {

@@ -776,8 +776,7 @@ class SourceVisitor implements AstVisitor {
 
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
     // split or none of them do.
-    _writer.nestExpression();
-    _writer.startMultisplit(cost: Cost.BEFORE_PERIOD, separable: true);
+    var startedMultisplit = false;
 
     // Recursively walk the chain of method calls.
     var depth = 0;
@@ -794,25 +793,24 @@ class SourceVisitor implements AstVisitor {
       }
 
       if (hasTarget) {
+        // Don't start the multisplit until after the first target. This
+        // ensures we don't get tripped up by newlines or comments before the
+        // first target.
+        if (!startedMultisplit) {
+          _writer.startMultisplit(cost: Cost.BEFORE_PERIOD, separable: true);
+          startedMultisplit = true;
+        }
+
         _writer.multisplit(nest: true);
         token(invocation.period);
       }
-
-      // End the multisplit right at the last ".". This allows the last
-      // argument list to be multi-line without forcing the multisplit, as in:
-      //
-      //     some.chained.call(() {
-      //       ...
-      //     });
-      depth--;
-      if (depth == 0) _writer.endMultisplit();
 
       visit(invocation.methodName);
       visit(invocation.argumentList);
     }
 
     visitInvocation(node);
-    _writer.unnest();
+    if (startedMultisplit) _writer.endMultisplit();
   }
 
   visitNamedExpression(NamedExpression node) {

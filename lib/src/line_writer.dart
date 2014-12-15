@@ -335,6 +335,7 @@ class LineWriter {
 
   /// Ends the innermost span.
   void endSpan() {
+    // TODO(rnystrom): If the span's length is one (start and end are the same),
     _openSpans.removeLast().close(_chunks.length - 1);
   }
 
@@ -632,7 +633,7 @@ class LineWriter {
 
     // Take any existing splits for the multisplits and hard split them.
     for (var chunk in _chunks) {
-      if (chunk.isSoftSplit && chunk.shouldSplit(splitParams)) {
+      if (chunk.isSoftSplit && splitParams.contains(chunk.param)) {
         chunk.harden();
       }
     }

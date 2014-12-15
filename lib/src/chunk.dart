@@ -7,6 +7,11 @@ library dart_style.src.chunk;
 import 'cost.dart';
 import 'debug.dart';
 
+// TODO(rnystrom): Now that TextChunks are coalesced, SplitChunks are merged,
+// and spans are no longer chunks, a line is now a *strict* alternation of
+// TextChunks and SplitChunks. Consider unifying those by adding "preceding
+// text" to SplitChunk and turning it into just "Chunk".
+
 /// A chunk of output.
 ///
 /// Chunks are the input to the [LineSplitter]. They are either literal text
@@ -119,11 +124,6 @@ class SplitChunk extends Chunk {
   bool get isHardSplit => _param == null;
   bool get isSoftSplit => _param != null;
 
-  /// Returns `true` if this split is active, given that [splits] are all in
-  /// effect.
-  bool shouldSplit(Set<SplitParam> splits) =>
-      _param == null || splits.contains(_param);
-
   /// Merges [later] onto this split.
   ///
   /// This is called when redundant splits are written to the output. This is
@@ -210,4 +210,6 @@ class Span {
     assert(_end == null);
     _end = end;
   }
+
+  String toString() => "Span($start - $end \$$cost)";
 }

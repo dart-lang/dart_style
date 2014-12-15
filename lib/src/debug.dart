@@ -7,7 +7,6 @@ library dart_style.src.debug;
 
 import 'chunk.dart';
 import 'line_splitter.dart';
-import 'nesting.dart';
 
 /// Set this to `true` to turn out diagnostic output while formatting.
 bool debugFormatter = false;
@@ -84,12 +83,11 @@ void dumpLine(List<Chunk> chunks,
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
 void dumpLines(List<Chunk> chunks,
-    [int indent = 0, LinePrefix prefix, Set<SplitParam> splits]) {
+    [int indent = 0, LinePrefix prefix, SplitSet splits]) {
   if (prefix == null) prefix = new LinePrefix();
-  if (splits == null) splits = new Set();
+  if (splits == null) splits = new SplitSet();
 
   indent = prefix.getNextLineIndent(chunks, indent);
-  var nester = new Nester(indent, new NestingStack());
 
   var buffer = new StringBuffer();
 
@@ -97,21 +95,21 @@ void dumpLines(List<Chunk> chunks,
   for (var i = prefix.length; i < chunks.length; i++) {
     var chunk = chunks[i];
 
-    if (chunk.isSplit && chunk.shouldSplit(splits)) {
+    if (splits.shouldSplitAt(i)) {
+      var split = chunks[i] as SplitChunk;
       buffer.writeln();
-      if (chunk.isDouble) buffer.writeln();
+      if (split.isDouble) buffer.writeln();
 
-      indent = nester.handleSplit(chunk);
-
-      // Should have a valid set of splits when we get here.
-      assert(indent != INVALID_SPLITS);
+      indent = split.indent + splits.getNesting(i);
     } else {
       // Now that we know the line isn't empty, write the leading indentation.
-      if (indent != 0) {
+      if (indent > 0) {
         buffer
         ..write(Color.gray)
         ..write("| " * indent)
         ..write(Color.none);
+      } else if (indent == INVALID_SPLITS) {
+        buffer.write("${Color.red}!!${Color.none}");
       }
 
       buffer.write(chunk.text);
