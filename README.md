@@ -18,9 +18,9 @@ library. The easiest way to invoke it is to [globally activate][] the package
 and let pub put its executable on your path:
 
     $ pub global activate dart_style
-    $ dartfmt ...
+    $ dartformat ...
 
-If you don't want `dartfmt` on your path, you can run it explicitly:
+If you don't want `dartformat` on your path, you can run it explicitly:
 
     $ pub global activate dart_style --no-executables
     $ pub global run dart_style:format ...
