@@ -177,14 +177,22 @@ class LineSplitter {
       // If we already skipped over this param, have to skip over it here too.
       if (split.isSoftSplit && skippedParams.contains(split.param)) continue;
 
-      // If the split's param is used in the suffix, we need to ensure that the
-      // suffix knows that.
-      var addedSplitParam =
-          _suffixContainsParam(i, split.param) ? split.param : null;
+      // Get the set of params we have forced to split in the prefix that also
+      // appear in the suffix. We rebuild the set from scratch so that splits
+      // that no longer appear in the shorter suffix are discarded. This helps
+      // keeps the set small in the prefix, which maximizes the memoization
+      // hits.
+      var splitParams = new Set();
+      for (var param in prefix.splitParams) {
+        if (_suffixContainsParam(i, param)) splitParams.add(param);
+      }
+
+      // Consider this split too.
+      if (_suffixContainsParam(i, split.param)) splitParams.add(split.param);
 
       // Find all the params we did *not* split in the prefix that appear in
       // the suffix so we can ensure they aren't split there either.
-      var unsplitParams = new Set();
+      var unsplitParams = prefix.unsplitParams.toSet();
       for (var param in skippedParams) {
         if (_suffixContainsParam(i, param)) unsplitParams.add(param);
       }
@@ -193,7 +201,7 @@ class LineSplitter {
       // multiple solutions here since there are different ways to handle a
       // jump in nesting depth.
       var longerPrefixes = prefix.expand(
-          _chunks, unsplitParams, addedSplitParam, i + 1);
+          _chunks, unsplitParams, splitParams, i + 1);
 
       for (var longerPrefix in longerPrefixes) {
         // Given the nesting stack for this split, see what we can do with the

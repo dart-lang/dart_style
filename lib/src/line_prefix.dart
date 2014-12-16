@@ -99,39 +99,27 @@ class LinePrefix {
   /// The nesting of the chunk immediately preceding the suffix modifies the
   /// new prefix's nesting stack.
   ///
-  /// [unsplitParams] is the set of [SplitParam]s not in this prefix but in the
-  /// new prefix that the splitter decided to *not* split. [splitParam] is the
-  /// [SplitParam] in the new prefix that has been chosen to be split. It will
-  /// be `null` if that param does not appear in the suffix of the line.
+  /// [unsplitParams] is the set of [SplitParam]s in the new prefix that the
+  /// splitter decided to *not* split (including unsplit ones also in this
+  /// prefix). [splitParams] is likewise the set that have been chosen to be
+  /// split.
   ///
-  /// Returns an empty list if the new split chunk results in an invalid prefix.
-  /// See [NestingStack.applySplit] for details.
+  /// Returns an empty iterable if the new split chunk results in an invalid
+  /// prefix. See [NestingStack.applySplit] for details.
   Iterable<LinePrefix> expand(List<Chunk> chunks, Set<SplitParam> unsplitParams,
-      SplitParam splitParam, int length) {
+      Set<SplitParam> splitParams, int length) {
     var split = chunks[length - 1];
-
-    var newUnsplitMultiParams = unsplitParams;
-    if (unsplitParams.isNotEmpty) {
-      newUnsplitMultiParams = unsplitParams.toSet();
-      newUnsplitMultiParams.addAll(unsplitParams);
-    }
-
-    var newSplitMultiParams = splitParams;
-    if (splitParam != null) {
-      newSplitMultiParams = splitParams.toSet();
-      newSplitMultiParams.add(splitParam);
-    }
 
     if (!split.isInExpression) {
       return [
-        new LinePrefix._(length, newUnsplitMultiParams, newSplitMultiParams,
+        new LinePrefix._(length, unsplitParams, splitParams,
             new NestingStack())
       ];
     }
 
     return _nesting.applySplit(split).map((nesting) =>
         new LinePrefix._(
-            length, newUnsplitMultiParams, newSplitMultiParams, nesting));
+            length, unsplitParams, splitParams, nesting));
   }
 
   /// Gets the leading indentation of the newline that immediately follows
