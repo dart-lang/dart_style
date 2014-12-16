@@ -132,6 +132,16 @@ class LineWriter {
     _indentStack[_indentStack.length - 1] = value;
   }
 
+  /// The index of the "current" chunk being written.
+  ///
+  /// If the last chunk is still being appended to, this is its index.
+  /// Otherwise, it is the index of the next chunk which will be created.
+  int get _currentChunkIndex {
+    if (_chunks.isEmpty) return 0;
+    if (_chunks.last.canAddText) return _chunks.length - 1;
+    return _chunks.length;
+  }
+
   /// Whether there is pending whitespace that depends on the number of
   /// newlines in the source.
   ///
@@ -149,33 +159,23 @@ class LineWriter {
 
   /// Writes [string], the text for a single token, to the output.
   ///
-  /// By default, this will also implicitly add one level of nesting if we
-  /// aren't currently nested at all. We do this here so that if a comment
-  /// appears after any token within a statement or top-level form and that
-  /// comment leads to splitting, we correctly nest. Even pathological cases
-  /// like:
+  /// By default, this also implicitly adds one level of nesting if we aren't
+  /// currently nested at all. We do this here so that if a comment appears
+  /// after any token within a statement or top-level form and that comment
+  /// leads to splitting, we correctly nest. Even pathological cases like:
+  ///
   ///
   ///     import // comment
   ///         "this_gets_nested.dart";
   ///
   /// If we didn't do this here, we'd have to call [nestExpression] after the
   /// first token of practically every grammar production.
-  ///
-  /// However, comments are also written by calling this. Those *don't*
-  /// increase nesting, otherwise you'd end up with:
-  ///
-  ///     main() {
-  ///       // first
-  ///           code();
-  ///     }
-  ///
-  /// They pass `false` for [implyNesting] to avoid that.
-  void write(String string, {bool implyNesting: true}) {
+  void write(String string) {
     _emitPendingWhitespace();
-    _addText(string);
+    _writeText(string);
 
     // If we hadn't started a wrappable line yet, we have now, so start nesting.
-    if (implyNesting && _nesting == -1) _nesting = 0;
+    if (_nesting == -1) _nesting = 0;
   }
 
   /// Writes a [WhitespaceChunk] of [type].
@@ -188,17 +188,17 @@ class LineWriter {
     if (type != Whitespace.SPACE) resetNesting();
   }
 
-  /// Write a soft split with [cost], [param] and unsplit [text].
+  /// Write a soft split with [cost] and [param].
+  ///
+  /// If unsplit, it expands to a space if [space] is `true`.
   ///
   /// If [cost] is omitted, defaults to [Cost.FREE]. If [param] is omitted, one
-  /// will be created. If a param is provided, [cost] is ignored. If omitted,
-  /// [text] defaults to an empty string.
-  void writeSplit({int cost, SplitParam param, String text}) {
+  /// will be created. If a param is provided, [cost] is ignored.
+  void writeSplit({int cost, SplitParam param, bool space}) {
     if (cost == null) cost = Cost.CHEAP;
     if (param == null) param = new SplitParam(cost);
-    if (text == null) text = "";
 
-    _addSplit(new SplitChunk(_indent, _nesting, param: param, text: text));
+    _writeSplit(_indent, _nesting, param, spaceWhenUnsplit: space);
   }
 
   /// Outputs the series of [comments] and associated whitespace that appear
@@ -255,30 +255,28 @@ class LineWriter {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
         if (_shouldMoveCommentBeforeSplit()) {
-          precedingSplit = _chunks.removeLast();
+          _chunks.last.allowText();
         }
 
         // The comment follows other text, so we need to decide if it gets a
         // space before it or not.
         if (_needsSpaceBeforeComment(isLineComment: comment.isLineComment)) {
-          write(" ", implyNesting: false);
+          _writeText(" ");
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _addHardSplit(nest: true, allowIndent: !comment.isStartOfLine,
+        _writeHardSplit(nest: true, allowIndent: !comment.isStartOfLine,
             double: comment.linesBefore > 1);
       }
 
-      write(comment.text, implyNesting: false);
-
-      if (precedingSplit != null) _chunks.add(precedingSplit);
+      _writeText(comment.text);
 
       // Make sure there is at least one newline after a line comment and allow
       // one or two after a block comment that has nothing after it.
       var linesAfter = linesBeforeToken;
       if (i < comments.length - 1) linesAfter = comments[i + 1].linesBefore;
 
-      if (linesAfter > 0) _addHardSplit(nest: true, double: linesAfter > 1);
+      if (linesAfter > 0) _writeHardSplit(nest: true, double: linesAfter > 1);
     }
 
     // If the comment has text following it (aside from a grouping character),
@@ -329,31 +327,32 @@ class LineWriter {
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.CHEAP]) {
-    _openSpans.add(new Span(_chunks.length, cost));
+    _openSpans.add(new Span(_currentChunkIndex, cost));
     _spans.add(_openSpans.last);
   }
 
   /// Ends the innermost span.
   void endSpan() {
     // TODO(rnystrom): If the span's length is one (start and end are the same),
-    _openSpans.removeLast().close(_chunks.length - 1);
+    // then the span can be discarded since it will never come into play.
+    _openSpans.removeLast().close(_currentChunkIndex);
   }
 
   /// Starts a new [Multisplit] with [cost].
   void startMultisplit({int cost: Cost.CHEAP, bool separable}) {
     _multisplits.add(new Multisplit(
-        _chunks.length, cost, separable: separable));
+        _currentChunkIndex, cost, separable: separable));
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
   ///
-  /// If [text] is given, that will be the text of the unsplit chunk. If [nest]
-  /// is `true`, then this split will take into account expression nesting.
-  /// Otherwise, it will not. Collections do not follow expression nesting,
-  /// while other uses of multisplits generally do.
-  void multisplit({String text: "", bool nest: false}) {
-    _addSplit(new SplitChunk(_indent, nest ? _nesting : -1,
-        param: _multisplits.last.param, text: text));
+  /// If [space] is `true`, the chunk will include a space when unsplit. If
+  /// [nest] is `true`, then this split will take into account expression
+  /// nesting. Otherwise, it will not. Collections do not follow expression
+  /// nesting, while other uses of multisplits generally do.
+  void multisplit({bool nest: false, bool space}) {
+    _writeSplit(_indent, nest ? _nesting : -1, _multisplits.last.param,
+        spaceWhenUnsplit: space);
   }
 
   /// Ends the innermost multisplit.
@@ -394,12 +393,7 @@ class LineWriter {
 
   /// Finish writing the last line.
   void end() {
-    // Discard any trailing lines.
-    while (_chunks.isNotEmpty && _chunks.last.isSplit) _chunks.removeLast();
-
-    if (_chunks.isEmpty) return;
-
-    _completeLine();
+    if (_chunks.isNotEmpty) _completeLine();
   }
 
   /// Writes the current pending [Whitespace] to the output, if any.
@@ -412,15 +406,15 @@ class LineWriter {
     // trailing.
     switch (_pendingWhitespace) {
       case Whitespace.SPACE:
-        _addText(" ");
+        _writeText(" ");
         break;
 
       case Whitespace.NEWLINE:
-        _addHardSplit();
+        _writeHardSplit();
         break;
 
       case Whitespace.TWO_NEWLINES:
-        _addHardSplit(double: true);
+        _writeHardSplit(double: true);
         break;
 
       case Whitespace.SPACE_OR_NEWLINE:
@@ -436,21 +430,12 @@ class LineWriter {
   /// Returns `true` if the last chunk is a split that should be move after the
   /// comment that is about to be written.
   bool _shouldMoveCommentBeforeSplit() {
-    // If there is nothing before, we can't.
+    // Not if there is nothing before it.
     if (_chunks.isEmpty) return false;
-
-    // Must have a trailing split.
-    var last = _chunks.last;
-    if (!last.isSplit) return false;
-
-    if (_chunks.length == 1) return true;
-
-    // Shouldn't have redundant splits.
-    assert(_chunks[_chunks.length - 2] is TextChunk);
 
     // If the text before the split is an open grouping character, we don't
     // want to adhere the comment to that.
-    var text = _chunks[_chunks.length - 2].text;
+    var text = _chunks.last.text;
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
@@ -467,34 +452,28 @@ class LineWriter {
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
   bool _needsSpaceBeforeComment({bool isLineComment}) {
-    // Don't need a space before a file-leading comment.
+    // Not at the start of the file.
     if (_chunks.isEmpty) return false;
 
-    // Don't need a space if the comment isn't a trailing comment in the output.
-    var chunk = _chunks.last;
-    if (chunk.isSplit) return false;
-
-    assert(chunk is TextChunk);
-    var text = (chunk as TextChunk).text;
-
-    // Don't add a space if there already is one.
-    if (text == " ") return false;
+    // Not at the start of a line.
+    if (!_chunks.last.canAddText) return false;
 
     // Always put a space before line comments.
     if (isLineComment) return true;
 
     // Block comments do not get a space if following a grouping character.
+    var text = _chunks.last.text;
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
   /// Returns `true` if a space should be output after the last comment which
   /// was just written and the token that will be written.
   bool _needsSpaceAfterLastComment(List<SourceComment> comments, String token) {
-    // If there are no comments, don't need a space.
+    // Not if there are no comments.
     if (comments.isEmpty) return false;
 
-    // If there is a split after the last comment, we don't need a space.
-    if (_chunks.isEmpty || _chunks.last is! TextChunk) return false;
+    // Not at the beginning of a line.
+    if (!_chunks.last.canAddText) return false;
 
     // Otherwise, it gets a space if the following token is not a grouping
     // character, a comma, (or the empty string, for EOF).
@@ -510,7 +489,7 @@ class LineWriter {
   /// If [allowIndent] is `false, then the split will always cause the next
   /// line to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
-  void _addHardSplit({bool nest: false, bool double: false,
+  void _writeHardSplit({bool nest: false, bool double: false,
       bool allowIndent: true}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
@@ -522,42 +501,34 @@ class LineWriter {
       nesting = -1;
     }
 
-    _addSplit(new SplitChunk(indent, nesting, double: double));
+    _writeSplit(indent, nesting, null, isDouble: double);
   }
 
-  /// Appends [split] to the output.
-  void _addSplit(SplitChunk split) {
-    // Don't allow leading newlines.
+  /// Ends the current chunk (if any) with the given split information.
+  void _writeSplit(int indent, int nesting, SplitParam param,
+      {bool isDouble, bool spaceWhenUnsplit}) {
     if (_chunks.isEmpty) return;
 
-    // We shouldn't be about to emit a trailing space.
-    assert(_pendingWhitespace != Whitespace.SPACE);
-    _emitPendingWhitespace();
-
-    // Collapse duplicate splits.
-    if (_chunks.isNotEmpty && _chunks.last.isSplit) {
-      _chunks.last.mergeSplit(split);
-    } else {
-      _chunks.add(split);
-    }
+    _chunks.last.applySplit(indent, nesting, param,
+        isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
 
     if (_chunks.last.isHardSplit) _splitMultisplits();
   }
 
-  /// Writes a [TextChunk] for [text].
-  void _addText(String text) {
-    // Since we're about to write some text, we know the previous split (if any)
-    // is fully done being tweaked and merged, so know we can see if it ends
-    // the current line before starting a new one.
-    _checkForCompleteLine();
-
-    // Concatenate sequential text chunks. Makes line splitting a bit faster
-    // since there are fewer individual chunks to iterate over.
-    if (_chunks.isNotEmpty && _chunks.last is TextChunk) {
-      var last = _chunks.removeLast();
-      _chunks.add(new TextChunk("${last.text}$text"));
+  /// Writes [text] to either the current chunk or a new one if the current
+  /// chunk is complete.
+  void _writeText(String text) {
+    if (_chunks.isEmpty) {
+      _chunks.add(new Chunk(text));
+    } else if (_chunks.last.canAddText) {
+      _chunks.last.appendText(text);
     } else {
-      _chunks.add(new TextChunk(text));
+      // Since we're about to write some text on the next line, we know the
+      // previous one is fully done being tweaked and merged, so now we can see
+      // if it can be split independently.
+       _checkForCompleteLine();
+
+      _chunks.add(new Chunk(text));
     }
   }
 
@@ -579,8 +550,8 @@ class LineWriter {
     // calculate costs correctly.
     if (_openSpans.isNotEmpty) return;
 
-    // Discard the split.
-    var split = _chunks.removeLast();
+    // Hang on to the split info so we can reset the writer to start with it.
+    var split = _chunks.last;
 
     // Don't write any empty line, just discard it.
     if (_chunks.isNotEmpty) {

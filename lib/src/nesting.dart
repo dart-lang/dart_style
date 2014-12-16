@@ -115,7 +115,7 @@ class NestingStack {
   /// nesting stack can be modified. It generates the in order of best to worst
   /// so that the line splitter can stop as soon as it finds a working solution.
   /// "Best" here means it tries fewer levels of indentation first.
-  List<NestingStack> applySplit(SplitChunk split) {
+  List<NestingStack> applySplit(Chunk split) {
     assert(split.isInExpression);
 
     if (split.nesting == _depth) return [this];

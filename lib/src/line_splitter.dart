@@ -9,7 +9,7 @@ import 'dart:math' as math;
 import 'chunk.dart';
 import 'cost.dart';
 import 'debug.dart';
-import 'nesting.dart';
+import 'line_prefix.dart';
 
 /// The number of spaces in a single level of indentation.
 const SPACES_PER_INDENT = 2;
@@ -100,26 +100,29 @@ class LineSplitter {
 
     var splits = _findBestSplits(new LinePrefix());
 
-    var indent = _indent;
+    // Write each chunk and the split after it.
+    buffer.write(" " * (_indent * SPACES_PER_INDENT));
+    for (var i = 0; i < _chunks.length - 1; i++) {
+      var chunk = _chunks[i];
 
-    // Write each chunk in the line.
-    for (var i = 0; i < _chunks.length; i++) {
+      buffer.write(chunk.text);
+
       if (splits.shouldSplitAt(i)) {
-        var split = _chunks[i] as SplitChunk;
         buffer.write(_lineEnding);
-        if (split.isDouble) buffer.write(_lineEnding);
+        if (chunk.isDouble) buffer.write(_lineEnding);
 
-        indent = split.indent + splits.getNesting(i);
+        var indent = chunk.indent + splits.getNesting(i);
+        buffer.write(" " * (indent * SPACES_PER_INDENT));
 
         // Should have a valid set of splits when we get here.
         assert(indent != INVALID_SPLITS);
       } else {
-        // Now that we know the line isn't empty, write the leading indentation.
-        if (indent != 0) buffer.write(" " * (indent * SPACES_PER_INDENT));
-        buffer.write(_chunks[i].text);
-        indent = 0;
+        if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
     }
+
+    // Write the final chunk without any trailing newlines.
+    buffer.write(_chunks.last.text);
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
@@ -133,18 +136,9 @@ class LineSplitter {
     var bestSplits;
     var lowestCost;
 
-    var hasHard = false;
-    for (var i = prefix.length; i < _chunks.length; i++) {
-      if (_chunks[i].isHardSplit || (_chunks[i].isSoftSplit &&
-              prefix.splitParams.contains((_chunks[i] as SplitChunk).param))) {
-        hasHard = true;
-        break;
-      }
-    }
-
     // If there are no required splits, consider not splitting any of the soft
     // splits (if there are any) as one possible solution.
-    if (!hasHard) {
+    if (!_suffixContainsHardSplits(prefix)) {
       var splits = new SplitSet();
       var cost = _evaluateCost(prefix, indent, splits);
 
@@ -169,12 +163,9 @@ class LineSplitter {
 
     var length = indent * SPACES_PER_INDENT;
 
-    for (var i = prefix.length; i < _chunks.length; i++) {
-      length += _chunks[i].text.length;
-
-      if (!_chunks[i].isSplit) continue;
-
-      var split = _chunks[i] as SplitChunk;
+    // Don't consider the last chunk, since there's no point in splitting on it.
+    for (var i = prefix.length; i < _chunks.length - 1; i++) {
+      var split = _chunks[i];
 
       // If we didn't split the param in the prefix, we can't split on the same
       // param in the suffix.
@@ -186,29 +177,16 @@ class LineSplitter {
       // If we already skipped over this param, have to skip over it here too.
       if (split.isSoftSplit && skippedParams.contains(split.param)) continue;
 
-      suffixContainsParam(param) {
-        if (param == null) return false;
-
-        for (var j = i + 1; j < _chunks.length; j++) {
-          if (_chunks[j].isSoftSplit &&
-              (_chunks[j] as SplitChunk).param == param) {
-            return true;
-          }
-        }
-
-        return false;
-      }
-
       // If the split's param is used in the suffix, we need to ensure that the
       // suffix knows that.
       var addedSplitParam =
-          suffixContainsParam(split.param) ? split.param : null;
+          _suffixContainsParam(i, split.param) ? split.param : null;
 
       // Find all the params we did *not* split in the prefix that appear in
       // the suffix so we can ensure they aren't split there either.
       var unsplitParams = new Set();
       for (var param in skippedParams) {
-        if (suffixContainsParam(param)) unsplitParams.add(param);
+        if (_suffixContainsParam(i, param)) unsplitParams.add(param);
       }
 
       // Create new prefixes that go all the way up to the split. There can be
@@ -247,6 +225,8 @@ class LineSplitter {
       // If we go past the end of the page and we've already found a solution
       // that fits, then no other solution that involves overflowing will beat
       // that, so stop.
+      length += split.text.length;
+      if (split.spaceWhenUnsplit) length++;
       if (length > _pageWidth &&
           lowestCost != null &&
           lowestCost < Cost.OVERFLOW_CHAR) {
@@ -264,6 +244,35 @@ class LineSplitter {
     _bestSplits[prefix] = bestSplits;
 
     return bestSplits;
+  }
+
+  /// Gets whether the suffix after [prefix] contains any mandatory splits.
+  ///
+  /// This includes both hard splits and splits that depend on params that were
+  /// set in the prefix.
+  bool _suffixContainsHardSplits(LinePrefix prefix) {
+    for (var i = prefix.length; i < _chunks.length - 1; i++) {
+      if (_chunks[i].isHardSplit || (_chunks[i].isSoftSplit &&
+              prefix.splitParams.contains(_chunks[i].param))) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /// Gets whether the suffix of the line after index [split] contains a soft
+  /// split using [param].
+  bool _suffixContainsParam(int split, SplitParam param) {
+    if (param == null) return false;
+
+    for (var j = split + 1; j < _chunks.length; j++) {
+      if (_chunks[j].isSoftSplit && _chunks[j].param == param) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
@@ -300,7 +309,7 @@ class LineSplitter {
     //
     // Here, the inner list is correctly split, but the outer is not even
     // though its contents span multiple lines (because the inner list split).
-    // To check this, we'll see if any SplitChunks refer to an unsplit param
+    // To check this, we'll see if any Chunks refer to an unsplit param
     // that was previously seen on a different line.
     var previousParams = new Set();
     var thisLineParams = new Set();
@@ -326,44 +335,46 @@ class LineSplitter {
     for (var i = prefix.length; i < _chunks.length; i++) {
       var chunk = _chunks[i];
 
-      if (chunk.isSplit) {
-        var split = chunk as SplitChunk;
+      length += chunk.text.length;
 
+      if (i < _chunks.length - 1) {
         if (splits.shouldSplitAt(i)) {
           endLine();
           splitIndexes.add(i);
 
-          if (split.param != null && !params.contains(split.param)) {
+          if (chunk.param != null && !params.contains(chunk.param)) {
             // Don't double-count params if multiple splits share the same
             // param.
             // TODO(rnystrom): Is this needed? Can we actually let splits that
             // share a param accumulate cost?
-            params.add(split.param);
-            cost += split.param.cost;
+            params.add(chunk.param);
+            cost += chunk.param.cost;
           }
 
           // Start the new line.
-          length = (split.indent + splits.getNesting(i)) * SPACES_PER_INDENT;
-        } else if (chunk.isSoftSplit) {
-          // If we've seen the same param on a previous line, the unsplit
-          // multisplit got split, so this isn't valid.
-          if (previousParams.contains(chunk.param)) return INVALID_SPLITS;
-          thisLineParams.add(chunk.param);
+          length = (chunk.indent + splits.getNesting(i)) * SPACES_PER_INDENT;
+        } else {
+          if (chunk.spaceWhenUnsplit) length++;
 
-          length += chunk.text.length;
+          if (chunk.isSoftSplit) {
+            // If we've seen the same param on a previous line, the unsplit
+            // multisplit got split, so this isn't valid.
+            if (previousParams.contains(chunk.param)) return INVALID_SPLITS;
+            thisLineParams.add(chunk.param);
+          }
         }
-      } else {
-        length += chunk.text.length;
       }
     }
 
     // See which spans got split. We avoid iterators here for performance.
     for (var i = 0; i < _spans.length; i++) {
       var span = _spans[i];
-
       for (var j = 0; j < splitIndexes.length; j++) {
         var index = splitIndexes[j];
-        if (index >= span.start && index <= span.end) {
+
+        // If the split is contained within a span (and is not the tail end of
+        // it), the span got split.
+        if (index >= span.start && index < span.end) {
           cost += span.cost;
           break;
         }
@@ -377,152 +388,7 @@ class LineSplitter {
   }
 }
 
-/// A prefix of a [Line], which in turn can be considered a key to describe
-/// the suffix of the remaining line that follows it.
-///
-/// This is used by the splitter to memoize suffixes whose best splits have
-/// previously been calculated. For each unique [LinePrefix], there will be a
-/// single set of best splits for the remainder of the line following it.
-class LinePrefix {
-  /// The number of chunks in the prefix.
-  ///
-  /// The remainder of the line will the chunks that start at index [length].
-  final int length;
-
-  /// The [SplitParam]s for params that appear both in the prefix and suffix
-  /// and have not been set.
-  ///
-  /// This is used to ensure that we honor the decisions already made in the
-  /// prefix when processing the suffix. It only includes params that appear in
-  /// the suffix to avoid storing information about irrelevant params. This is
-  /// critical to ensure we keep prefixes simple to maximize the reuse we get
-  /// from the memoization table.
-  ///
-  /// This does *not* include params that appear only in the suffix. In other
-  /// words, it only includes params that have deliberately been chosen to not
-  /// be set, not params we simply haven't considered yet.
-  final Set<SplitParam> unsplitParams;
-
-  /// The [SplitParam]s for params that appear both in the prefix and suffix
-  /// and have been set.
-  ///
-  /// This is used to ensure that we honor the decisions already made in the
-  /// prefix when processing the suffix. It only includes params that appear in
-  /// the suffix to avoid storing information about irrelevant params. This is
-  /// critical to ensure we keep prefixes simple to maximize the reuse we get
-  /// from the memoization table.
-  final Set<SplitParam> splitParams;
-
-  /// The nested expressions in the prefix that are still open at the beginning
-  /// of the suffix.
-  ///
-  /// For example, if the line is `outer(inner(argument))`, and the prefix is
-  /// `outer(inner(`, the nesting stack will be two levels deep.
-  final NestingStack _nesting;
-
-  /// The depth of indentation caused expression nesting.
-  int get nestingIndent => _nesting.indent;
-
-  /// Creates a new zero-length prefix whose suffix is the entire line.
-  LinePrefix([int length = 0])
-      : this._(length, new Set(), new Set(), new NestingStack());
-
-  LinePrefix._(this.length, this.unsplitParams, this.splitParams,
-      this._nesting) {
-    assert(_nesting != null);
-  }
-
-  bool operator ==(other) {
-    if (other is! LinePrefix) return false;
-
-    if (length != other.length) return false;
-    if (_nesting != other._nesting) return false;
-
-    if (unsplitParams.length != other.unsplitParams.length) {
-      return false;
-    }
-
-    if (splitParams.length != other.splitParams.length) {
-      return false;
-    }
-
-    for (var param in unsplitParams) {
-      if (!other.unsplitParams.contains(param)) return false;
-    }
-
-    for (var param in splitParams) {
-      if (!other.splitParams.contains(param)) return false;
-    }
-
-    return true;
-  }
-
-  int get hashCode => length.hashCode ^ _nesting.hashCode;
-
-  /// Create zero or more new [LinePrefix]es starting from the same nesting
-  /// stack as this one but expanded to [length].
-  ///
-  /// [length] is assumed to point to a chunk immediately after a [SplitChunk].
-  /// The nesting of that chunk modifies the new prefix's nesting stack.
-  ///
-  /// [unsplitParams] is the set of [SplitParam]s not in this prefix but in the
-  /// new prefix that the splitter decided to *not* split. [splitParam] is the
-  /// [SplitParam] in the new prefix that has been chosen to be split. It will
-  /// be `null` if that param does not appear in the suffix of the line.
-  ///
-  /// Returns an empty list if the new split chunk results in an invalid prefix.
-  /// See [NestingStack.applySplit] for details.
-  Iterable<LinePrefix> expand(List<Chunk> chunks, Set<SplitParam> unsplitParams,
-      SplitParam splitParam, int length) {
-    var split = chunks[length - 1] as SplitChunk;
-
-    var newUnsplitMultiParams = unsplitParams;
-    if (unsplitParams.isNotEmpty) {
-      newUnsplitMultiParams = unsplitParams.toSet();
-      newUnsplitMultiParams.addAll(unsplitParams);
-    }
-
-    var newSplitMultiParams = splitParams;
-    if (splitParam != null) {
-      newSplitMultiParams = splitParams.toSet();
-      newSplitMultiParams.add(splitParam);
-    }
-
-    if (!split.isInExpression) {
-      return [
-        new LinePrefix._(length, newUnsplitMultiParams, newSplitMultiParams,
-            new NestingStack())
-      ];
-    }
-
-    return _nesting.applySplit(split).map((nesting) =>
-        new LinePrefix._(
-            length, newUnsplitMultiParams, newSplitMultiParams, nesting));
-  }
-
-  /// Gets the leading indentation of the newline that immediately follows
-  /// this prefix.
-  ///
-  /// Takes into account the indentation of the previous split and any
-  /// additional indentation from wrapped nested expressions.
-  int getNextLineIndent(List<Chunk> chunks, int indent) {
-    // TODO(rnystrom): This could be cached at construction time, which may be
-    // faster.
-    // Get the initial indentation of the line immediately after the prefix,
-    // ignoring any extra indentation caused by nested expressions.
-    if (length > 0) {
-      indent = (chunks[length - 1] as SplitChunk).indent;
-    }
-
-    return indent + _nesting.indent;
-  }
-
-  String toString() =>
-      "LinePrefix(length $length, nesting $_nesting, "
-      "unsplit $unsplitParams, split $splitParams)";
-}
-
-/// An immutable, persistent set of enabled [SplitChunk]s.
+/// An immutable, persistent set of enabled soft split [Chunk]s.
 ///
 /// For each chunk, this tracks if it has been split and, if so, what the
 /// chosen level of expression nesting is for the following line.

@@ -4,8 +4,8 @@ method(int firstArgument, int argumentTo) {
   print('42');
 }
 <<<
-method(int firstArgument,
-    int argumentTo) {
+method(
+    int firstArgument, int argumentTo) {
   print('42');
 }
 >>> parameters fit but } does not
@@ -13,8 +13,8 @@ method(int firstArgument, int argument) {
   print('42');
 }
 <<<
-method(int firstArgument,
-    int argument) {
+method(
+    int firstArgument, int argument) {
   print('42');
 }
 >>> many parameters

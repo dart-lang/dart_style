@@ -7,88 +7,44 @@ library dart_style.src.chunk;
 import 'cost.dart';
 import 'debug.dart';
 
-// TODO(rnystrom): Now that TextChunks are coalesced, SplitChunks are merged,
-// and spans are no longer chunks, a line is now a *strict* alternation of
-// TextChunks and SplitChunks. Consider unifying those by adding "preceding
-// text" to SplitChunk and turning it into just "Chunk".
-
-/// A chunk of output.
+/// A chunk of non-breaking output text terminated by a hard or soft newline.
 ///
-/// Chunks are the input to the [LineSplitter]. They are either literal text
-/// ([TextChunk]) or a piece of metadata used to determine how the series of
-/// chunks should be best split into physical lines ([SplitChunk],
-/// [SpanStartChunk], and [SpanEndChunk]).
+/// Chunks are created by [LineWriter] and fed into [LineSplitter]. Each
+/// contains some text, along with the data needed to tell how the next line
+/// should be formatted and how desireable it is to split after the chunk.
 ///
-/// These classes all implement [toString()] but only for debugging purposes.
-abstract class Chunk {
-  String get text;
-
-  /// Whether this chunk is a [SplitChunk].
-  bool get isSplit => false;
-
-  /// Whether this chunk is a [SplitChunk] that must cause a newline.
-  bool get isHardSplit => false;
-
-  /// Whether this chunk is a [SplitChunk] that may cause a newline depending
-  /// on how line-splitting goes.
-  bool get isSoftSplit => false;
-}
-
-/// A string of literal program text or comment. This will end up in the final
-/// formatted output verbatim.
-class TextChunk extends Chunk {
-  final String text;
-
-  TextChunk(this.text);
-
-  String toString() {
-    var visibleWhitespace = text.replaceAll(
-        " ", "${Color.gray}$UNICODE_MIDDOT${Color.noColor}");
-    return "${Color.bold}$visibleWhitespace${Color.none}";
-  }
-}
-
-/// A place where a line-break may appear in the final output.
-///
-/// Splits come in a few different forms:
+/// Line splitting after chunks comes in a few different forms.
 ///
 /// *   A "hard" split is a mandatory newline. The formatted output will contain
-///     at least one newline at this point.
+///     at least one newline after the chunk's text.
 /// *   A "soft" split is a discretionary newline. If a line doesn't fit within
 ///     the page width, one or more soft splits may be turned into newlines to
 ///     wrap the line to fit within the bounds. If a soft split is not turned
 ///     into a newline, it may instead appear as a space or zero-length string
-///     in the output, depending on the split.
+///     in the output, depending on [spaceWhenUnsplit].
 /// *   A "double" split expands to two newlines. In other words, it leaves a
-///     blank line in the output. Hard or soft splits may be doubled.
+///     blank line in the output. Hard or soft splits may be doubled. This is
+///     determined by [isDouble].
 ///
 /// A split controls the leading spacing of the subsequent line, both
-/// block-based indentation and expression-wrapping-based nesting.
-class SplitChunk extends Chunk {
-  /// The text for this chunk when it's not split into a newline.
-  final String text;
+/// block-based [indent] and expression-wrapping-based [nesting].
+class Chunk {
+  /// The literal text output for the chunk.
+  String get text => _text;
+  String _text;
 
-  /// The [SplitParam] that determines if this chunk is being used as a split
-  /// or not.
-  ///
-  /// Multiple splits may share a [SplitParam] because they are part of the
-  /// same [Multisplit], in which case the are split or unsplit in unison.
-  ///
-  /// This will be `null` for hard splits.
-  SplitParam get param => _param;
-  SplitParam _param;
-
-  /// The indentation level of the next line after this one.
+  /// The indentation level of the line following this chunk.
   ///
   /// Note that this is not a relative indentation *offset*. It's the full
-  /// indentation.
+  /// indentation. When a chunk is newly created from text, this is `null` to
+  /// indicate that the chunk has no splitting information yet.
   int get indent => _indent;
-  int _indent;
+  int _indent = null;
 
-  /// The number of levels of expression nesting at the end of this line.
+  /// The number of levels of expression nesting following this chunk.
   ///
-  /// This is used to determine how much to increase the indentation when this
-  /// split comes into effect. A single statement may be indented multiple
+  /// This is used to determine how much to increase the indentation when a
+  /// line starts after this chunk. A single statement may be indented multiple
   /// times if the splits occur in more deeply nested expressions, for example:
   ///
   ///     // 40 columns                           |
@@ -96,9 +52,9 @@ class SplitChunk extends Chunk {
   ///         argument, anotherFunction(argument,
   ///             argument));
   int get nesting => _nesting;
-  int _nesting;
+  int _nesting = -1;
 
-  /// Whether or not the split occurs inside an expression.
+  /// Whether or not the chunk occurs inside an expression.
   ///
   /// Splits within expressions must take into account how deeply nested they
   /// are to determine the indentation of subsequent lines. "Statement level"
@@ -106,45 +62,57 @@ class SplitChunk extends Chunk {
   /// take the main indent level into account.
   bool get isInExpression => _nesting != -1;
 
-  /// `true` if the split should output an extra blank line.
+  /// Whether it's valid to add more text to this chunk or not.
+  ///
+  /// Chunks are built up by adding text and then "capped off" by having their
+  /// split information set by calling [handleSplit]. Once the latter has been
+  /// called, no more text should be added to the chunk since it would appear
+  /// *before* the split.
+  bool get canAddText => _indent == null;
+
+  /// The [SplitParam] that determines if this chunk is being used as a split
+  /// or not.
+  ///
+  /// Multiple splits may share a [SplitParam] because they are part of the
+  /// same [Multisplit], in which case they are split or unsplit in unison.
+  ///
+  /// This is `null` for hard splits.
+  SplitParam get param => _param;
+  SplitParam _param;
+
+  /// Whether this chunk is always followed by a newline or whether the line
+  /// splitter may choose to keep the next chunk on the same line.
+  bool get isHardSplit => _indent != null && _param == null;
+
+  /// Whether this chunk may cause a newline depending on line splitting.
+  bool get isSoftSplit => _indent != null && _param != null;
+
+  /// `true` if an extra blank line should be output after this chunk if it's
+  /// split.
   bool get isDouble => _isDouble;
-  bool _isDouble;
+  bool _isDouble = false;
 
-  /// Creates a new [SplitChunk] where the following line will have [_indent]
-  /// and [_nesting].
+  /// Whether this chunk should append an extra space if it's a soft split and
+  /// is left unsplit.
   ///
-  /// If [_param] is non-`null`, creates a soft split. Otherwise, creates a
-  /// hard split. When non-split, a soft split expands to [text].
-  SplitChunk(this._indent, this._nesting,
-      {SplitParam param, this.text: "", bool double: false})
-      : _param = param,
-        _isDouble = double;
+  /// This is `true`, for example, in a chunk that ends with a ",".
+  bool get spaceWhenUnsplit => _spaceWhenUnsplit;
+  bool _spaceWhenUnsplit = false;
 
-  bool get isSplit => true;
-  bool get isHardSplit => _param == null;
-  bool get isSoftSplit => _param != null;
+  /// Creates a new chunk starting with [_text].
+  Chunk(this._text);
 
-  /// Merges [later] onto this split.
-  ///
-  /// This is called when redundant splits are written to the output. This is
-  /// called on the first splitting, passing in the latter. It modifies this
-  /// one to be a split containing the important properties of both.
-  void mergeSplit(SplitChunk later) {
-    // A hard split always wins.
-    if (isHardSplit || later.isHardSplit) {
-      _param = null;
-    }
+  /// Discard the split for the chunk and put it back into the state where more
+  /// text can be appended.
+  void allowText() {
+    _indent = null;
+  }
 
-    // Last newline settings win.
-    _indent = later._indent;
-    _nesting = later._nesting;
+  /// Append [text] to the end of the split's text.
+  void appendText(String text) {
+    assert(canAddText);
 
-    // Preserve a blank line.
-    _isDouble = _isDouble || later._isDouble;
-
-    // Text should either be irrelevant, or the same. We don't expect to merge
-    // sequential soft splits with different text.
-    assert(isHardSplit || text == later.text);
+    _text += text;
   }
 
   /// Forces this soft split to become a hard split.
@@ -156,27 +124,59 @@ class SplitChunk extends Chunk {
     _param = null;
   }
 
-  String toString() {
-    var buffer = new StringBuffer();
-    buffer.write("Split");
-    if (_param != null) {
-      buffer.write(" $_param");
-    } else {
-      buffer.write(" hard");
+  /// Finishes off this chunk with the given split information.
+  ///
+  /// This may be called multiple times on the same split since the splits
+  /// produced by walking the source and the splits coming from comments and
+  /// preserved whitespace often overlap. When that happens, this has logic to
+  /// combine that information into a single split.
+  void applySplit(int indent, int nesting, SplitParam param,
+      {bool spaceWhenUnsplit, bool isDouble}) {
+    if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
+    if (isDouble == null) isDouble = false;
+
+    if (isHardSplit || param == null) {
+      // A hard split always wins.
+      _param = null;
+    } else if (_indent == null) {
+      // If the chunk hasn't been initialized yet, just inherit the param.
+      _param = param;
     }
 
-    if (_isDouble) buffer.write(" double");
-    if (_indent != 0) buffer.write(" indent $_indent");
-    if (_nesting != -1) buffer.write(" nest $_nesting");
-    if (text != "") buffer.write(" '$text'");
+    // Last newline settings win.
+    _indent = indent;
+    _nesting = nesting;
+    _spaceWhenUnsplit = spaceWhenUnsplit;
 
-    return buffer.toString();
+    // Preserve a blank line.
+    _isDouble = _isDouble || isDouble;
+  }
+
+  String toString() {
+    var parts = [];
+
+    if (text.isNotEmpty) parts.add("${Color.bold}$text${Color.none}");
+
+    if (_indent == null) {
+      parts.add("(no split info)");
+    } else if (isHardSplit) {
+      parts.add("hard");
+    } else {
+      parts.add("soft $_param");
+    }
+
+    if (_indent != 0) parts.add("indent $_indent");
+    if (_nesting != -1) parts.add("nest $_nesting");
+    if (spaceWhenUnsplit) parts.add("space");
+    if (_isDouble) parts.add("double");
+
+    return parts.join(" ");
   }
 }
 
-/// A toggle for enabling one or more [SplitChunk]s in a [Line].
+/// Controls whether or not one or more soft split [Chunk]s are split.
 ///
-/// When [LinePrinter] tries to split a line to fit within its page width, it
+/// When [LineSplitter] tries to split a line to fit within its page width, it
 /// does so by trying different combinations of parameters to see which set of
 /// active ones yields the best result.
 class SplitParam {
@@ -184,8 +184,6 @@ class SplitParam {
   final int cost;
 
   /// Creates a new [SplitParam].
-  ///
-  /// This should not be called directly from outside of [SourceWriter].
   SplitParam([this.cost = Cost.CHEAP]);
 
   String toString() => "$cost";

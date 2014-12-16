@@ -135,7 +135,7 @@ class SourceVisitor implements AstVisitor {
 
         space();
         token(e.operator);
-        _writer.multisplit(text: " ", nest: true);
+        _writer.multisplit(space: true, nest: true);
 
         traverse(e.rightOperand);
       } else {
@@ -506,7 +506,8 @@ class SourceVisitor implements AstVisitor {
       var groupEnd;
 
       // Allow splitting after the "(" but not for lambdas.
-      if (node.parent is! FunctionExpression) {
+      if (node.parent is! FunctionExpression ||
+          (node.parent as FunctionExpression).body is! ExpressionFunctionBody) {
         zeroSplit(Cost.BEFORE_ARGUMENT);
       }
 
@@ -1243,7 +1244,7 @@ class SourceVisitor implements AstVisitor {
     _startBody(leftBracket);
 
     visitCommaSeparatedNodes(elements, between: () {
-      _writer.multisplit(text: " ");
+      _writer.multisplit(space: true);
       _writer.resetNesting();
     });
 
@@ -1275,6 +1276,7 @@ class SourceVisitor implements AstVisitor {
       // Split before the closing bracket character.
       _writer.unindent();
       _writer.multisplit();
+    }, after: () {
       _writer.endMultisplit();
     });
   }
@@ -1324,9 +1326,9 @@ class SourceVisitor implements AstVisitor {
   /// Writes a single-space split with the given [cost] or [param].
   ///
   /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
-  /// omitted, defaults to [Cost.FREE].
+  /// omitted, defaults to [Cost.CHEAP].
   void split({int cost, SplitParam param}) {
-    _writer.writeSplit(cost: cost, param: param, text: " ");
+    _writer.writeSplit(cost: cost, param: param, space: true);
   }
 
   /// Writes a split with [cost] that is the empty string when unsplit.

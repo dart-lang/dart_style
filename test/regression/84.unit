@@ -11,8 +11,8 @@ Future<TextureAtlas> load(String url, BitmapDataLoadOptions bitmapDataLoadOption
   });
 }
 <<<
-Future<TextureAtlas> load(String url,
-    BitmapDataLoadOptions bitmapDataLoadOptions) {
+Future<TextureAtlas> load(
+    String url, BitmapDataLoadOptions bitmapDataLoadOptions) {
   HttpRequest.getString(url).then((textureAtlasJson) {
     ;
 

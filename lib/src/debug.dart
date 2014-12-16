@@ -48,30 +48,23 @@ void dumpLine(List<Chunk> chunks,
   if (splits == null) splits = new Set();
 
   var buffer = new StringBuffer()
-      ..write(Color.gray)
-      ..write("| " * prefix.getNextLineIndent(chunks, indent))
-      ..write(Color.none);
+    ..write(Color.gray)
+    ..write("| " * prefix.getNextLineIndent(chunks, indent))
+    ..write(Color.none);
 
   for (var i = prefix.length; i < chunks.length; i++) {
     var chunk = chunks[i];
 
-    if (chunk is TextChunk) {
-      buffer.write(chunk.text);
-    } else if (chunk.isSoftSplit) {
-      var split = chunk as SplitChunk;
-      var color = splits.contains(split.param) ? Color.green : Color.gray;
+    buffer.write(chunk.text);
 
-      buffer.write("$color$UNICODE_SECT${split.param.cost}");
-      if (split.nesting != -1) {
-        buffer.write(":${split.nesting}");
-      }
+    if (chunk.isSoftSplit) {
+      var color = splits.contains(chunk.param) ? Color.green : Color.gray;
+
+      buffer.write("$color$UNICODE_SECT${chunk.param.cost}");
+      if (chunk.nesting != -1) buffer.write(":${chunk.nesting}");
       buffer.write("${Color.none}");
     } else if (chunk.isHardSplit) {
       buffer.write("${Color.magenta}\\n${"->" * chunk.indent}${Color.none}");
-    } else {
-      // Unexpected chunk type.
-      buffer.write("${Color.red}$UNICODE_LASQUO$chunk$UNICODE_RASQUO"
-          "${Color.none}");
     }
   }
 
@@ -87,36 +80,33 @@ void dumpLines(List<Chunk> chunks,
   if (prefix == null) prefix = new LinePrefix();
   if (splits == null) splits = new SplitSet();
 
-  indent = prefix.getNextLineIndent(chunks, indent);
+  var buffer = new StringBuffer()
+    ..write(Color.gray)
+    ..write("| " * indent)
+    ..write(Color.none);
 
-  var buffer = new StringBuffer();
-
-  // Write each chunk in the line.
-  for (var i = prefix.length; i < chunks.length; i++) {
+  for (var i = prefix.length; i < chunks.length - 1; i++) {
     var chunk = chunks[i];
+    buffer.write(chunk.text);
 
     if (splits.shouldSplitAt(i)) {
-      var split = chunks[i] as SplitChunk;
       buffer.writeln();
-      if (split.isDouble) buffer.writeln();
+      if (chunk.isDouble) buffer.writeln();
 
-      indent = split.indent + splits.getNesting(i);
-    } else {
-      // Now that we know the line isn't empty, write the leading indentation.
-      if (indent > 0) {
-        buffer
+      indent = chunk.indent + splits.getNesting(i);
+      buffer
         ..write(Color.gray)
         ..write("| " * indent)
         ..write(Color.none);
-      } else if (indent == INVALID_SPLITS) {
-        buffer.write("${Color.red}!!${Color.none}");
-      }
 
-      buffer.write(chunk.text);
-      indent = 0;
+      // Should have a valid set of splits when we get here.
+      assert(indent != INVALID_SPLITS);
+    } else {
+      if (chunk.spaceWhenUnsplit) buffer.write(" ");
     }
   }
 
+  buffer.write(chunks.last.text);
   print(buffer);
 }
 
