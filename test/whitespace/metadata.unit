@@ -182,3 +182,11 @@ typedef void DatabaseCallback(database);
     'DatabaseCallback') // deprecated
 @Experimental()
 typedef void DatabaseCallback(database);
+>>> metadata on top-level variables
+@DomName('DatabaseCallback')
+@Experimental()
+var variable;
+<<<
+@DomName('DatabaseCallback')
+@Experimental()
+var variable;

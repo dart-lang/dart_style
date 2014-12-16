@@ -1029,6 +1029,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
+    visitDeclarationMetadata(node.metadata);
     visit(node.variables);
     token(node.semicolon);
   }
