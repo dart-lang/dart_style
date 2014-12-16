@@ -73,7 +73,7 @@ void printUsage(ArgParser parser, [String error]) {
 
   output.write("""$message
 
-Usage: dartfmt [-l <line length>] <files or directories...>
+Usage: dartformat [-l <line length>] <files or directories...>
 
 ${parser.usage}
 """);
