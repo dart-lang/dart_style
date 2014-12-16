@@ -3,10 +3,11 @@
 "foo"..toString();
 <<<
 "foo"..toString();
->>> long single cascade
+>>> long single cascade forces multi-line
 "foo"..toString(argument, argument, argument);
 <<<
-"foo"..toString(
+"foo"
+  ..toString(
       argument, argument, argument);
 >>> multiple cascades get their own line
 "foo"..toString()..toString();

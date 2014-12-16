@@ -807,11 +807,19 @@ class SourceVisitor implements AstVisitor {
       }
 
       visit(invocation.methodName);
+
+      // Stop the multisplit after the last call, but before it's arguments.
+      // That allows unsplit chains where the last argument list wraps, like:
+      //
+      //     foo().bar().baz(
+      //         argument, list);
+      depth--;
+      if (depth == 0 && startedMultisplit) _writer.endMultisplit();
+
       visit(invocation.argumentList);
     }
 
     visitInvocation(node);
-    if (startedMultisplit) _writer.endMultisplit();
   }
 
   visitNamedExpression(NamedExpression node) {

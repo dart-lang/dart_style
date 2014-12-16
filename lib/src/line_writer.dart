@@ -328,20 +328,29 @@ class LineWriter {
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.CHEAP]) {
     _openSpans.add(new Span(_currentChunkIndex, cost));
-    _spans.add(_openSpans.last);
   }
 
   /// Ends the innermost span.
   void endSpan() {
-    // TODO(rnystrom): If the span's length is one (start and end are the same),
-    // then the span can be discarded since it will never come into play.
-    _openSpans.removeLast().close(_currentChunkIndex);
+    var span = _openSpans.removeLast();
+    span.close(_currentChunkIndex);
+
+    // A span that just covers a single chunk can't be split anyway.
+    if (span.start == span.end) return;
+
+    // If the span was for a multisplit that got hardened, we don't need it.
+    if (span.param == null && span.cost == null) return;
+
+    _spans.add(span);
   }
 
   /// Starts a new [Multisplit] with [cost].
   void startMultisplit({int cost: Cost.CHEAP, bool separable}) {
-    _multisplits.add(new Multisplit(
-        _currentChunkIndex, cost, separable: separable));
+    var multisplit = new Multisplit(
+        _currentChunkIndex, cost, separable: separable);
+
+    _multisplits.add(multisplit);
+    _openSpans.add(new Span.multisplit(_currentChunkIndex, multisplit.param));
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
@@ -358,6 +367,7 @@ class LineWriter {
   /// Ends the innermost multisplit.
   void endMultisplit() {
     _multisplits.removeLast();
+    endSpan();
   }
 
   /// Resets the expression nesting back to the "top-level" unnested state.
@@ -548,7 +558,9 @@ class LineWriter {
 
     // If we're still in the middle of a span, wait until it's done so we can
     // calculate costs correctly.
-    if (_openSpans.isNotEmpty) return;
+    if (_openSpans.every((span) => span.param == null && span.cost == null)) {
+      return;
+    }
 
     // Hang on to the split info so we can reset the writer to start with it.
     var split = _chunks.last;
@@ -596,8 +608,15 @@ class LineWriter {
     for (var multisplit in _multisplits) {
       // If this multisplit isn't separable or already split, we need to harden
       // all of its previous splits now.
+      var oldParam = multisplit.param;
+
       var param = multisplit.harden();
       if (param != null) splitParams.add(param);
+
+      // Update any multisplit spans to point to the new (or null) param.
+      for (var span in _openSpans) {
+        span.rebindParam(oldParam, param);
+      }
     }
 
     if (splitParams.isEmpty) return;

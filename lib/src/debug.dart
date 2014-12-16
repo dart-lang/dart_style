@@ -6,6 +6,7 @@
 library dart_style.src.debug;
 
 import 'chunk.dart';
+import 'line_prefix.dart';
 import 'line_splitter.dart';
 
 /// Set this to `true` to turn out diagnostic output while formatting.
@@ -90,14 +91,15 @@ void dumpLines(List<Chunk> chunks,
     buffer.write(chunk.text);
 
     if (splits.shouldSplitAt(i)) {
-      buffer.writeln();
-      if (chunk.isDouble) buffer.writeln();
+      for (var j = 0; j < (chunk.isDouble ? 2 : 1); j++) {
+        buffer.writeln();
 
-      indent = chunk.indent + splits.getNesting(i);
-      buffer
-        ..write(Color.gray)
-        ..write("| " * indent)
-        ..write(Color.none);
+        indent = chunk.indent + splits.getNesting(i);
+        buffer
+          ..write(Color.gray)
+          ..write("| " * indent)
+          ..write(Color.none);
+      }
 
       // Should have a valid set of splits when we get here.
       assert(indent != INVALID_SPLITS);

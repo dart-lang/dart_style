@@ -291,29 +291,6 @@ class LineSplitter {
 
     var params = new Set();
 
-    // TODO(rnystrom): Instead of determining this after applying the splits,
-    // we could store the params as a tree so that every param inside a
-    // multisplit is nested under its param. Then a param can only be set if
-    // all of its parents are. Updating and reading from these sets is a major
-    // perf bottleneck right now.
-    // Make sure any unsplit multisplits don't get split across multiple
-    // lines. For example, we need to ensure this is not allowed:
-    //
-    //     [[
-    //         element,
-    //         element,
-    //         element,
-    //         element,
-    //         element
-    //     ]]
-    //
-    // Here, the inner list is correctly split, but the outer is not even
-    // though its contents span multiple lines (because the inner list split).
-    // To check this, we'll see if any Chunks refer to an unsplit param
-    // that was previously seen on a different line.
-    var previousParams = new Set();
-    var thisLineParams = new Set();
-
     var splitIndexes = [];
 
     endLine() {
@@ -323,11 +300,6 @@ class LineSplitter {
       if (length > _pageWidth) {
         cost += (length - _pageWidth) * Cost.OVERFLOW_CHAR;
       }
-
-      // Splitting here, so every param we've seen so far is now on a
-      // previous line.
-      previousParams.addAll(thisLineParams);
-      thisLineParams.clear();
 
       line++;
     }
@@ -355,13 +327,6 @@ class LineSplitter {
           length = (chunk.indent + splits.getNesting(i)) * SPACES_PER_INDENT;
         } else {
           if (chunk.spaceWhenUnsplit) length++;
-
-          if (chunk.isSoftSplit) {
-            // If we've seen the same param on a previous line, the unsplit
-            // multisplit got split, so this isn't valid.
-            if (previousParams.contains(chunk.param)) return INVALID_SPLITS;
-            thisLineParams.add(chunk.param);
-          }
         }
       }
     }
@@ -375,7 +340,16 @@ class LineSplitter {
         // If the split is contained within a span (and is not the tail end of
         // it), the span got split.
         if (index >= span.start && index < span.end) {
-          cost += span.cost;
+          if (span.param != null) {
+            // If a multisplit span got split and the associated param didn't,
+            // fail.
+            if (span.start >= prefix.length && !params.contains(span.param)) {
+              return INVALID_SPLITS;
+            }
+          } else {
+            cost += span.cost;
+          }
+
           break;
         }
       }

@@ -189,9 +189,43 @@ class SplitParam {
   String toString() => "$cost";
 }
 
-/// Delimits a range of chunks that must end up on the same line to avoid
-/// paying a cost.
+/// Delimits a range of chunks that must end up on the same line to avoid a
+/// penalty.
+///
+/// Spans come in two flavors. Simple cost spans just increase the cost of the
+/// resulting solution if their contents don't fit inside a line. These are used
+/// to encourage the line splitter to try to keep things together, like
+/// parameter lists and binary operator expressions.
+///
+/// Multisplit spans are associates with the [SplitParam] for a [Multisplit].
+/// When a multisplit gets broken across multiple lines -- even if due to a
+/// split not owned by the multisplit -- the multisplit must itself be split.
+/// Make sure any unsplit multisplits don't get split across multiple
+/// lines. For example:
+///
+///     [() {
+///       body;
+///     }]
+///
+/// The above code is mis-formatted. The hard newline inside the function
+/// should force the outer multisplit for the list to also split, leading to:
+///
+///     [
+///       () {
+///         body;
+///       }
+///     ]
+///
+/// To enforce this, every multisplit creates a [Span] bound to its param and
+/// covering the same region of chunks as the multisplit itself. When the line
+/// splitter chooses a solution, if this span is broken but the underlying
+/// param has not been set, then it considers that a failed solution.
 class Span {
+  /// The param for the [Multisplit] this span manages, or `null` if the span
+  /// is not bound to a multisplit.
+  SplitParam get param => _param;
+  SplitParam _param;
+
   /// Index of the first chunk contained in this span.
   final int start;
 
@@ -199,15 +233,39 @@ class Span {
   int get end => _end;
   int _end;
 
-  /// The cost applied when the span is split across multiple lines.
+  /// The cost applied when the span is split across multiple lines or `null`
+  /// if the span is for a multisplit.
   final int cost;
 
-  Span(this.start, this.cost);
+  Span(this.start, this.cost)
+      : _param = null;
 
+  Span.multisplit(this.start, this._param)
+      : cost = null;
+
+  /// Marks this span as ending at [end].
   void close(int end) {
     assert(_end == null);
     _end = end;
   }
 
-  String toString() => "Span($start - $end \$$cost)";
+  /// Updates this span's [param] to [to] if it is [from].
+  void rebindParam(SplitParam from, SplitParam to) {
+    if (_param == from) _param = to;
+  }
+
+  String toString() {
+    var result = "Span($start";
+
+    if (end != null) {
+      result += " - $end";
+    } else {
+      result += "...";
+    }
+
+    if (cost != null) result += " \$$cost";
+    if (_param != null) result += " p$_param";
+
+    return result + ")";
+  }
 }
