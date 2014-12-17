@@ -249,8 +249,6 @@ class LineWriter {
       if (_pendingWhitespace == Whitespace.SPACE) _pendingWhitespace = null;
       _emitPendingWhitespace();
 
-      var precedingSplit;
-
       if (comment.linesBefore == 0) {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
