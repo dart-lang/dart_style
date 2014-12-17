@@ -4,11 +4,7 @@
 
 library dart_style.src.line_printer;
 
-import 'dart:math' as math;
-
 import 'chunk.dart';
-import 'cost.dart';
-import 'debug.dart';
 import 'nesting.dart';
 
 /// A prefix of a series of chunks, which in turn can be considered a key to

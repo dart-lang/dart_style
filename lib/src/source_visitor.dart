@@ -1008,7 +1008,6 @@ class SourceVisitor implements AstVisitor {
   visitSymbolLiteral(SymbolLiteral node) {
     token(node.poundSign);
     var components = node.components;
-    var size = components.length;
     for (var component in components) {
       // The '.' separator
       if (component.previous.lexeme == '.') {
@@ -1387,13 +1386,6 @@ class SourceVisitor implements AstVisitor {
       if (comment == token.precedingComments &&
           token.previous.type == TokenType.EOF) {
         previousLine = commentLine;
-      }
-
-      var nextLine;
-      if (comment.next != null) {
-        nextLine = _startLine(comment.next);
-      } else {
-        nextLine = tokenLine;
       }
 
       comments.add(new SourceComment(comment.toString().trim(),

@@ -294,7 +294,6 @@ class LineSplitter {
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var line = 0;
     var length = indent * SPACES_PER_INDENT;
 
     var params = new Set();
@@ -308,8 +307,6 @@ class LineSplitter {
       if (length > _pageWidth) {
         cost += (length - _pageWidth) * Cost.OVERFLOW_CHAR;
       }
-
-      line++;
     }
 
     for (var i = prefix.length; i < _chunks.length; i++) {

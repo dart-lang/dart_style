@@ -45,7 +45,7 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
     } else {
       print(output);
     }
-  } on FormatterException catch (err, stack) {
+  } on FormatterException catch (err) {
     stderr.writeln(err.message());
   } catch (err, stack) {
     stderr.writeln('''Hit a bug in the formatter when formatting $label
