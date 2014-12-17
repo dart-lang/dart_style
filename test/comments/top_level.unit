@@ -161,10 +161,3 @@ part 'a.dart';
 library foo;
 
 part 'a.dart';
->>> two lines between script and directive
-#!script
-library foo;
-<<<
-#!script
-
-library foo;

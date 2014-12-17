@@ -263,7 +263,7 @@ class SourceVisitor implements AstVisitor {
   visitCommentReference(CommentReference node) => null;
 
   visitCompilationUnit(CompilationUnit node) {
-    visit(node.scriptTag, after: twoNewlines);
+    visit(node.scriptTag);
 
     // Put a blank line between the library tag and the other directives.
     var directives = node.directives;
@@ -275,8 +275,8 @@ class SourceVisitor implements AstVisitor {
     }
 
     visitNodes(directives, between: oneOrTwoNewlines);
-    twoNewlines();
-    visitNodes(node.declarations, between: oneOrTwoNewlines);
+    visitNodes(node.declarations,
+        before: twoNewlines, between: oneOrTwoNewlines);
   }
 
   visitConditionalExpression(ConditionalExpression node) {
@@ -920,6 +920,7 @@ class SourceVisitor implements AstVisitor {
     // The lexeme includes the trailing newline. Strip it off since the
     // formatter ensures it gets a newline after it.
     append(node.scriptTag.lexeme.trim());
+    oneOrTwoNewlines();
   }
 
   visitShowCombinator(ShowCombinator node) {
@@ -1378,6 +1379,13 @@ class SourceVisitor implements AstVisitor {
     }
 
     var previousLine = _endLine(token.previous);
+
+    // Corner case! The analyzer includes the "\n" in the script tag's lexeme,
+    // which means it appears to be one line later than it is. That causes a
+    // comment following it to appear to be on the same line. Fix that here by
+    // correcting the script tag's line.
+    if (token.previous.type == TokenType.SCRIPT_TAG) previousLine--;
+
     var tokenLine = _startLine(token);
 
     var comments = [];

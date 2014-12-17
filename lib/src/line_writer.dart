@@ -466,11 +466,13 @@ class LineWriter {
     // Not at the start of a line.
     if (!_chunks.last.canAddText) return false;
 
+    var text = _chunks.last.text;
+    if (text.endsWith("\n")) return false;
+
     // Always put a space before line comments.
     if (isLineComment) return true;
 
     // Block comments do not get a space if following a grouping character.
-    var text = _chunks.last.text;
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
