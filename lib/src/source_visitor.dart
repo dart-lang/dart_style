@@ -126,6 +126,7 @@ class SourceVisitor implements AstVisitor {
   visitBinaryExpression(BinaryExpression node) {
     _writer.startMultisplit(separable: true);
     _writer.startSpan(Cost.BINARY_OPERATOR);
+    _writer.nestExpression();
 
     // Flatten out a tree/chain of the same operator type. If we split on this
     // operator, we will break all of them.
@@ -145,6 +146,7 @@ class SourceVisitor implements AstVisitor {
 
     traverse(node);
 
+    _writer.unnest();
     _writer.endSpan();
     _writer.endMultisplit();
   }

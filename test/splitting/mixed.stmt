@@ -55,7 +55,7 @@ receiver.firstMethod().next(() => longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(() =>
     longIdentifier ==
-    veryLongIdentifier);
+        veryLongIdentifier);
 >>> wrap at nested binary operator
 receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
