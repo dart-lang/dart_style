@@ -738,7 +738,7 @@ class SourceVisitor implements AstVisitor {
   visitMapLiteralEntry(MapLiteralEntry node) {
     visit(node.key);
     token(node.separator);
-    space();
+    split();
     visit(node.value);
   }
 
