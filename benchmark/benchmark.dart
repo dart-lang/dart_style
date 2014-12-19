@@ -60,7 +60,7 @@ void formatSource() {
 
   // Sanity check to make sure the output is what we expect and to make sure
   // the VM doesn't optimize "dead" code away.
-  if (result.length != 29452) {
+  if (result.length != 29797) {
     print("Incorrect output (length ${result.length}):\n$result");
     exit(1);
   }
@@ -157,6 +157,12 @@ class BacktrackingSolver {
     for (var override in root.dependencyOverrides) {
       _overrides[override.name] = override;
     }
+
+    // A deeply nested statement that's hard on the formatter.
+    isTwoWay = !isEvent && bindings.isWhole && (isCustomTag ||
+        tag == 'input' && (name == 'value' || name =='checked') ||
+        tag == 'select' && (name == 'selectedindex' || name == 'value') ||
+        tag == 'textarea' && name == 'value');
   }
 
   /// Run the solver.

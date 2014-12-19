@@ -162,11 +162,11 @@ class Chunk {
     } else if (isHardSplit) {
       parts.add("hard");
     } else {
-      parts.add("soft $_param");
+      parts.add("p$_param");
     }
 
-    if (_indent != 0) parts.add("indent $_indent");
-    if (_nesting != -1) parts.add("nest $_nesting");
+    if (_indent != 0) parts.add("indent:$_indent");
+    if (_nesting != -1) parts.add("nest:$_nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
 

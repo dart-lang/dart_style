@@ -142,7 +142,7 @@ class NestingStack {
 
     // Going deeper, so try every indentating for every subset of expression
     // nesting levels between the old and new one.
-    return _depthSubsets(_depth + 1, split.nesting - 1).map((depths) {
+    return _intermediateDepths(_depth, split.nesting).map((depths) {
       var result = this;
 
       for (var depth in depths) {
@@ -151,23 +151,28 @@ class NestingStack {
       }
 
       return new NestingStack._(
-            result, split.nesting, result.indent + INDENTS_PER_NEST);
+          result, split.nesting, result.indent + INDENTS_PER_NEST);
     }).toList();
   }
 
   /// Given [min] and [max], generates all of the subsets of numbers in that
-  /// range (inclusive), including the empty set.
+  /// range (exclusive), including the empty set.
   ///
-  /// Subsets are generated in order of increasing length. For example, `(2, 5)`
+  /// This is used for determine what sets of intermediate nesting levels to
+  /// consider when jumping from a shallow nesting level to a much deeper one.
+  /// Subsets are generated in order of increasing length. For example, `(2, 6)`
   /// yields:
   ///
   ///     []
-  ///     [0], [1], [2], [3], [4]
-  ///     [0, 1], [0, 2], [0, 3], [0, 4], [1, 2],
-  ///     [1, 3], [1, 4], [2, 3], [2, 4], [3, 4]
-  ///     [0, 1, 2], [0, 1, 3], [0, 1, 4], [0, 2, 3], [0, 2, 4],
-  ///     [0, 3, 4], [1, 2, 3], [1, 2, 4], [1, 3, 4], [2, 3, 4]
-  List<List<int>> _depthSubsets(int min, int max) {
+  ///     [3] [4] [5]
+  ///     [3, 4] [3, 5] [4, 5]
+  ///     [3, 4, 5]
+  ///
+  /// This ensures the splitter prefers solutions that use the least
+  /// indentation.
+  List<List<int>> _intermediateDepths(int min, int max) {
+    assert(min < max);
+
     var subsets = [[]];
 
     var lastLengthStart = 0;
@@ -179,11 +184,11 @@ class NestingStack {
       for (var i = lastLengthStart; i < lastLengthEnd; i++) {
         var previousSubset = subsets[i];
 
-        var start = previousSubset.isNotEmpty ? previousSubset.last + 1 : 0;
+        var start = previousSubset.isNotEmpty ? previousSubset.last + 1 : min + 1;
 
         // Then for each value in the remainer, make a new subset that is the
         // union of the shorter subset and that value.
-        for (var j = start; j <= max; j++) {
+        for (var j = start; j < max; j++) {
           var subset = previousSubset.toList()..add(j);
           subsets.add(subset);
         }
