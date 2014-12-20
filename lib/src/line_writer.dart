@@ -199,6 +199,15 @@ class LineWriter {
     if (param == null) param = new SplitParam(cost);
 
     _writeSplit(_indent, _nesting, param, spaceWhenUnsplit: space);
+
+    // If a split inside a multisplit is chosen, this forces the multisplit too.
+    // This ensures that, for example, a split inside a collection literal
+    // forces the collection to also go multiline. Since a multisplit's param
+    // also implies *its* surrounding multisplit, this will split the whole
+    // chain of contained multisplits.
+    if (_multisplits.isNotEmpty && _multisplits.last.param != null) {
+      param.implies.add(_multisplits.last.param);
+    }
   }
 
   /// Outputs the series of [comments] and associated whitespace that appear
@@ -335,10 +344,6 @@ class LineWriter {
 
     // A span that just covers a single chunk can't be split anyway.
     if (span.start == span.end) return;
-
-    // If the span was for a multisplit that got hardened, we don't need it.
-    if (span.param == null && span.cost == null) return;
-
     _spans.add(span);
   }
 
@@ -348,7 +353,6 @@ class LineWriter {
         _currentChunkIndex, cost, separable: separable);
 
     _multisplits.add(multisplit);
-    _openSpans.add(new Span.multisplit(_currentChunkIndex, multisplit.param));
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
@@ -364,8 +368,16 @@ class LineWriter {
 
   /// Ends the innermost multisplit.
   void endMultisplit() {
-    _multisplits.removeLast();
-    endSpan();
+    var multisplit = _multisplits.removeLast();
+
+    // If this multisplit is contained in another one and they didn't already
+    // get hardened, wire them together: if the inner one chooses to split, it
+    // should force the outer one to split too.
+    if (_multisplits.isNotEmpty &&
+        multisplit.param != null &&
+        _multisplits.last.param != null) {
+      multisplit.param.implies.add(_multisplits.last.param);
+    }
   }
 
   /// Resets the expression nesting back to the "top-level" unnested state.
@@ -558,9 +570,7 @@ class LineWriter {
 
     // If we're still in the middle of a span, wait until it's done so we can
     // calculate costs correctly.
-    if (_openSpans.every((span) => span.param == null && span.cost == null)) {
-      return;
-    }
+    if (_openSpans.isNotEmpty) return;
 
     // Hang on to the split info so we can reset the writer to start with it.
     var split = _chunks.last;
@@ -605,26 +615,35 @@ class LineWriter {
     if (_multisplits.isEmpty) return;
 
     var splitParams = new Set();
+
+    // Add [param] and the transitive closure of its implied params to
+    // [splitParams].
+    traverseParams(param) {
+      splitParams.add(param);
+
+      // Traverse the tree of implied params.
+      param.implies.forEach(traverseParams);
+    }
+
     for (var multisplit in _multisplits) {
       // If this multisplit isn't separable or already split, we need to harden
       // all of its previous splits now.
-      var oldParam = multisplit.param;
-
       var param = multisplit.harden();
-      if (param != null) splitParams.add(param);
-
-      // Update any multisplit spans to point to the new (or null) param.
-      for (var span in _openSpans) {
-        span.rebindParam(oldParam, param);
-      }
+      if (param != null) traverseParams(param);
     }
 
     if (splitParams.isEmpty) return;
 
     // Take any existing splits for the multisplits and hard split them.
     for (var chunk in _chunks) {
-      if (chunk.isSoftSplit && splitParams.contains(chunk.param)) {
+      if (chunk.param == null) continue;
+
+      if (splitParams.contains(chunk.param)) {
         chunk.harden();
+      } else {
+        // If the chunk isn't hardened, but implies something that is, we can
+        // discard the implication since it is always satisfied now.
+        chunk.param.implies.removeWhere(splitParams.contains);
       }
     }
   }

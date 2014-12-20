@@ -63,3 +63,13 @@ receiver
     .firstMethod()
     .next(longIdentifier ==
         veryLongIdentifier);
+>>> list inside separable TODO(rnystrom): Is this what we want?
+receiver.first([listItem, secondItem, thirdItem]).second();
+<<<
+receiver
+    .first([
+  listItem,
+  secondItem,
+  thirdItem
+])
+    .second();

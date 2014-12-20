@@ -157,18 +157,26 @@ class Chunk {
 
     if (text.isNotEmpty) parts.add("${Color.bold}$text${Color.none}");
 
+    if (_indent != 0 && _indent != null) parts.add("indent:$_indent");
+    if (_nesting != -1) parts.add("nest:$_nesting");
+    if (spaceWhenUnsplit) parts.add("space");
+    if (_isDouble) parts.add("double");
+
     if (_indent == null) {
       parts.add("(no split info)");
     } else if (isHardSplit) {
       parts.add("hard");
     } else {
-      parts.add("p$_param");
-    }
+      var param = "p$_param";
 
-    if (_indent != 0) parts.add("indent:$_indent");
-    if (_nesting != -1) parts.add("nest:$_nesting");
-    if (spaceWhenUnsplit) parts.add("space");
-    if (_isDouble) parts.add("double");
+      if (_param.implies.isNotEmpty) {
+        var impliedIds = _param.implies.map(
+            (param) => "p${param.id}").join(" ");
+        param += " -> $impliedIds";
+      }
+
+      parts.add(param);
+    }
 
     return parts.join(" ");
   }
@@ -180,52 +188,42 @@ class Chunk {
 /// does so by trying different combinations of parameters to see which set of
 /// active ones yields the best result.
 class SplitParam {
+  static int _nextId = 0;
+
+  /// A semi-unique numeric indentifier for the param.
+  ///
+  /// This is useful for debugging and also speeds up using the param in hash
+  /// sets. Ids are *semi*-unique because they may wrap around in long running
+  /// processes. Since params are equal based on their identity, this is
+  /// innocuous and prevents ids from growing without bound.
+  final int id = _nextId = (_nextId + 1) & 0x0fffffff;
+
   /// The cost of this param when split.
   final int cost;
+
+  /// The other [SplitParam]s that are "implied" by this one.
+  ///
+  /// Implication means that if the splitter chooses to split this param, it
+  /// must also split all of its implied ones (transitively). Implication is
+  /// one-way. If A implies B, it's fine to split B without splitting A.
+  final implies = <SplitParam>[];
 
   /// Creates a new [SplitParam].
   SplitParam([this.cost = Cost.CHEAP]);
 
-  String toString() => "$cost";
+  String toString() => "$id";
+
+  int get hashCode => id.hashCode;
+
+  bool operator ==(other) => identical(this, other);
 }
 
-/// Delimits a range of chunks that must end up on the same line to avoid a
-/// penalty.
+/// Delimits a range of chunks that must end up on the same line to avoid an
+/// additional cost.
 ///
-/// Spans come in two flavors. Simple cost spans just increase the cost of the
-/// resulting solution if their contents don't fit inside a line. These are used
-/// to encourage the line splitter to try to keep things together, like
-/// parameter lists and binary operator expressions.
-///
-/// Multisplit spans are associates with the [SplitParam] for a [Multisplit].
-/// When a multisplit gets broken across multiple lines -- even if due to a
-/// split not owned by the multisplit -- the multisplit must itself be split.
-/// Make sure any unsplit multisplits don't get split across multiple
-/// lines. For example:
-///
-///     [() {
-///       body;
-///     }]
-///
-/// The above code is mis-formatted. The hard newline inside the function
-/// should force the outer multisplit for the list to also split, leading to:
-///
-///     [
-///       () {
-///         body;
-///       }
-///     ]
-///
-/// To enforce this, every multisplit creates a [Span] bound to its param and
-/// covering the same region of chunks as the multisplit itself. When the line
-/// splitter chooses a solution, if this span is broken but the underlying
-/// param has not been set, then it considers that a failed solution.
+/// These are used to encourage the line splitter to try to keep things
+/// together, like parameter lists and binary operator expressions.
 class Span {
-  /// The param for the [Multisplit] this span manages, or `null` if the span
-  /// is not bound to a multisplit.
-  SplitParam get param => _param;
-  SplitParam _param;
-
   /// Index of the first chunk contained in this span.
   final int start;
 
@@ -237,21 +235,12 @@ class Span {
   /// if the span is for a multisplit.
   final int cost;
 
-  Span(this.start, this.cost)
-      : _param = null;
-
-  Span.multisplit(this.start, this._param)
-      : cost = null;
+  Span(this.start, this.cost);
 
   /// Marks this span as ending at [end].
   void close(int end) {
     assert(_end == null);
     _end = end;
-  }
-
-  /// Updates this span's [param] to [to] if it is [from].
-  void rebindParam(SplitParam from, SplitParam to) {
-    if (_param == from) _param = to;
   }
 
   String toString() {
@@ -264,7 +253,6 @@ class Span {
     }
 
     if (cost != null) result += " \$$cost";
-    if (_param != null) result += " p$_param";
 
     return result + ")";
   }

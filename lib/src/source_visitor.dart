@@ -428,7 +428,7 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     visit(node.uri);
-    visitNodes(node.combinators, before: space, between: space);
+    _visitCombinators(node.combinators);
     token(node.semicolon);
   }
 
@@ -612,9 +612,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitHideCombinator(HideCombinator node) {
-    token(node.keyword);
-    space();
-    visitCommaSeparatedNodes(node.hiddenNames);
+    _visitCombinator(node.keyword, node.hiddenNames);
   }
 
   visitIfStatement(IfStatement node) {
@@ -658,7 +656,7 @@ class SourceVisitor implements AstVisitor {
     token(node.deferredToken, before: space);
     token(node.asToken, before: split, after: space);
     visit(node.prefix);
-    visitNodes(node.combinators, before: space, between: space);
+    _visitCombinators(node.combinators);
     token(node.semicolon);
   }
 
@@ -924,9 +922,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitShowCombinator(ShowCombinator node) {
-    token(node.keyword);
-    space();
-    visitCommaSeparatedNodes(node.shownNames);
+    _visitCombinator(node.keyword, node.shownNames);
   }
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
@@ -1110,16 +1106,15 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // Use a single param for all of the splits. If there are multiple
+    // Use a multisplit between all of the variables. If there are multiple
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    var param = new SplitParam();
-    // TODO(rnystrom): Should use a multisplit here.
-
+    _writer.startMultisplit();
     visitCommaSeparatedNodes(node.variables, between: () {
-      split(param: param);
+      _writer.multisplit(space: true, nest: true);
     });
+    _writer.endMultisplit();
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {
@@ -1213,7 +1208,7 @@ class SourceVisitor implements AstVisitor {
 
     visit(nodes.first);
     for (var node in nodes.skip(1)) {
-      between();
+      if (between != null) between();
       visit(node);
     }
 
@@ -1261,6 +1256,67 @@ class SourceVisitor implements AstVisitor {
 
     optionalTrailingComma(rightBracket);
     _endBody(rightBracket);
+  }
+
+  /// Visits a list of [combinators] following an "import" or "export"
+  /// directive. Combinators can be split in a few different ways:
+  ///
+  ///     // All on one line:
+  ///     import 'animals.dart' show Ant hide Cat;
+  ///
+  ///     // Wrap before each keyword:
+  ///     import 'animals.dart'
+  ///         show Ant, Baboon
+  ///         hide Cat;
+  ///
+  ///     // Wrap either or both of the name lists:
+  ///     import 'animals.dart'
+  ///         show
+  ///             Ant,
+  ///             Baboon
+  ///         hide Cat;
+  ///
+  /// Multisplits are used here to specifically avoid a few undesirable
+  /// combinations:
+  ///
+  ///     // Wrap list but not keyword:
+  ///     import 'animals.dart' show
+  ///             Ant,
+  ///             Baboon
+  ///         hide Cat;
+  ///
+  ///     // Wrap one keyword but not both:
+  ///     import 'animals.dart'
+  ///         show Ant, Baboon hide Cat;
+  ///
+  /// This ensures that when any wrapping occurs, the keywords are always at
+  /// the beginning of the line.
+  void _visitCombinators(NodeList<Combinator> combinators) {
+    if (combinators.isEmpty) return;
+
+    _writer.startMultisplit();
+    visitNodes(combinators);
+    _writer.endMultisplit();
+  }
+
+  /// Visits a [HideCombinator] or [ShowCombinator] starting with [keyword] and
+  /// containing [names].
+  ///
+  /// This assumes it has been called from within the [Multisplit] created by
+  /// [_visitCombinators].
+  void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
+    // Allow splitting after the keyword.
+    _writer.multisplit(space: true, nest: true);
+    token(keyword);
+
+    _writer.startMultisplit();
+    _writer.nestExpression();
+    _writer.multisplit(nest: true, space: true);
+    visitCommaSeparatedNodes(names,
+        between: () => _writer.multisplit(nest: true, space: true));
+
+    _writer.unnest();
+    _writer.endMultisplit();
   }
 
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and

@@ -167,28 +167,10 @@ class LineSplitter {
     for (var i = prefix.length; i < _chunks.length - 1; i++) {
       var split = _chunks[i];
 
-      // If we didn't split the param in the prefix, we can't split on the same
-      // param in the suffix.
-      if (split.isSoftSplit &&
-          prefix.unsplitParams.contains(split.param)) {
-        continue;
-      }
+      // We must skip over this chunk if it cannot be split.
+      if (!_canSplit(prefix, split, skippedParams)) continue;
 
-      // If we already skipped over this param, have to skip over it here too.
-      if (split.isSoftSplit && skippedParams.contains(split.param)) continue;
-
-      // Get the set of params we have forced to split in the prefix that also
-      // appear in the suffix. We rebuild the set from scratch so that splits
-      // that no longer appear in the shorter suffix are discarded. This helps
-      // keeps the set small in the prefix, which maximizes the memoization
-      // hits.
-      var splitParams = new Set();
-      for (var param in prefix.splitParams) {
-        if (_suffixContainsParam(i, param)) splitParams.add(param);
-      }
-
-      // Consider this split too.
-      if (_suffixContainsParam(i, split.param)) splitParams.add(split.param);
+      var splitParams = _getSplitParams(prefix, i, split);
 
       // Find all the params we did *not* split in the prefix that appear in
       // the suffix so we can ensure they aren't split there either.
@@ -254,6 +236,66 @@ class LineSplitter {
     return bestSplits;
   }
 
+  /// Gets whether the splitter can split [chunk] given [prefix] and
+  /// [skippedParams] which come before it.
+  ///
+  /// This returns `false` if the prefix or skipped params imply that this
+  /// chunk's param must also not be applied.
+  bool _canSplit(LinePrefix prefix, Chunk chunk,
+      Set<SplitParam> skippedParams) {
+    // Can always split on a hard split.
+    if (chunk.param == null) return true;
+
+    // If we didn't split the param in the prefix, we can't split on the same
+    // param in the suffix.
+    if (prefix.unsplitParams.contains(chunk.param)) return false;
+
+    // If we already skipped over the chunk's param,
+    // have to skip over it on this chunk too.
+    if (skippedParams.contains(chunk.param)) return false;
+
+    isParamSkipped(param) {
+      if (skippedParams.contains(param)) return false;
+
+      // If any param implied by this one is skipped, then splitting on the
+      // starting param would imply it should be split, which violates that,
+      // so don't allow the root one to be split.
+      for (var implied in param.implies) {
+        if (!isParamSkipped(implied)) return false;
+      }
+
+      return true;
+    }
+
+    return isParamSkipped(chunk.param);
+  }
+
+  /// Get the set of params we have forced to split in [prefix] (including
+  /// [split] which is also forced to split) that also appear in the suffix.
+  ///
+  /// We rebuild the set from scratch so that splits that no longer appear in
+  /// the shorter suffix are discarded. This helps keep the set small in the
+  /// prefix, which maximizes the memoization hits.
+  Set<SplitParam> _getSplitParams(LinePrefix prefix, int index, Chunk split) {
+    var splitParams = new Set();
+
+    addParam(param) {
+      if (!_suffixContainsParam(index, param)) return;
+
+      splitParams.add(param);
+
+      // Recurse into the params that are implied by this one.
+      param.implies.forEach(addParam);
+    }
+
+    prefix.splitParams.forEach(addParam);
+
+    // Consider this split too.
+    if (split.param != null) addParam(split.param);
+
+    return splitParams;
+  }
+
   /// Gets whether the suffix after [prefix] contains any mandatory splits.
   ///
   /// This includes both hard splits and splits that depend on params that were
@@ -274,8 +316,8 @@ class LineSplitter {
   bool _suffixContainsParam(int split, SplitParam param) {
     if (param == null) return false;
 
-    for (var j = split + 1; j < _chunks.length; j++) {
-      if (_chunks[j].isSoftSplit && _chunks[j].param == param) {
+    for (var i = split + 1; i < _chunks.length; i++) {
+      if (_chunks[i].isSoftSplit && _chunks[i].param == param) {
         return true;
       }
     }
@@ -285,9 +327,6 @@ class LineSplitter {
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of params.
-  ///
-  /// Returns the cost where a higher number is a worse set of splits or
-  /// [_INVALID_SPLITS] if the set of splits is completely invalid.
   int _evaluateCost(LinePrefix prefix, int indent, SplitSet splits) {
     assert(splits != null);
 
@@ -345,16 +384,7 @@ class LineSplitter {
         // If the split is contained within a span (and is not the tail end of
         // it), the span got split.
         if (index >= span.start && index < span.end) {
-          if (span.param != null) {
-            // If a multisplit span got split and the associated param didn't,
-            // fail.
-            if (span.start >= prefix.length && !params.contains(span.param)) {
-              return INVALID_SPLITS;
-            }
-          } else {
-            cost += span.cost;
-          }
-
+          cost += span.cost;
           break;
         }
       }
