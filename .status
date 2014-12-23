@@ -13,4 +13,4 @@ packages/*/*: Skip
 */*/*/*/*/packages/*/*: Skip
 
 [ $runtime != vm ]
-test/io_test: Skip  # This only runs on the VM.
+test/*: Skip  # Tests only run on the VM since they use dart:io.
