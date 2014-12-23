@@ -10,7 +10,6 @@ import 'package:analyzer/src/generated/source.dart';
 
 import '../dart_style.dart';
 import 'chunk.dart';
-import 'cost.dart';
 import 'line_writer.dart';
 import 'whitespace.dart';
 
@@ -73,20 +72,14 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     // Allow splitting after "(".
-    var cost = Cost.BEFORE_ARGUMENT + node.arguments.length + 1;
-    zeroSplit(cost--);
+    zeroSplit();
 
-    // See if we kept all of the arguments on the same line.
-    _writer.startSpan(Cost.SPLIT_ARGUMENTS);
+    // Try to keep the arguments together.
+    _writer.startSpan();
 
-    // Prefer splitting later arguments over earlier ones.
-    visitCommaSeparatedNodes(node.arguments,
-        between: () => split(cost: cost--));
+    visitCommaSeparatedNodes(node.arguments, between: split);
 
     token(node.rightParenthesis);
-
-    // End the span after the ")". That ensures inline block comments after the
-    // last argument are part of the span.
     _writer.endSpan();
     _writer.unnest();
   }
@@ -111,8 +104,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split();
-    _writer.startSpan(Cost.ASSIGNMENT);
+    split(Cost.ASSIGNMENT);
+    _writer.startSpan();
     visit(node.rightHandSide);
     _writer.endSpan();
   }
@@ -125,7 +118,7 @@ class SourceVisitor implements AstVisitor {
 
   visitBinaryExpression(BinaryExpression node) {
     _writer.startMultisplit(separable: true);
-    _writer.startSpan(Cost.BINARY_OPERATOR);
+    _writer.startSpan();
     _writer.nestExpression();
 
     // Flatten out a tree/chain of the same operator type. If we split on this
@@ -436,8 +429,15 @@ class SourceVisitor implements AstVisitor {
     // The "async" or "sync" keyword.
     token(node.keyword, after: space);
 
+    // Try to keep the "(...) => " with the start of the body for anonymous
+    // functions.
+    if (_isLambda(node)) _writer.startSpan();
+
     token(node.functionDefinition); // "=>".
     split();
+
+    if (_isLambda(node)) _writer.endSpan();
+
     _writer.startSpan();
     visit(node.expression);
     token(node.semicolon);
@@ -450,7 +450,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExtendsClause(ExtendsClause node) {
-    split(cost: Cost.BEFORE_EXTENDS);
+    split();
     token(node.keyword);
     space();
     visit(node.superclass);
@@ -501,43 +501,40 @@ class SourceVisitor implements AstVisitor {
   visitFormalParameterList(FormalParameterList node) {
     token(node.leftParenthesis);
 
-    // TODO(rnystrom): Put a span here similar to ArgumentList to try to keep
-    // parameters together.
+    // Allow splitting after the "(" but not for lambdas.
+    // TODO(rnystrom): Need to check for comments in empty parameter list.
+    // See visitArgumentList.
+    if (node.parameters.isNotEmpty && !_isLambda(node)) zeroSplit();
 
-    if (node.parameters.isNotEmpty) {
-      var groupEnd;
+    // Try to keep the parameters together.
+    _writer.startSpan();
 
-      // Allow splitting after the "(" but not for lambdas.
-      if (node.parent is! FunctionExpression ||
-          (node.parent as FunctionExpression).body is! ExpressionFunctionBody) {
-        zeroSplit(Cost.BEFORE_ARGUMENT);
+    var groupEnd;
+
+    for (var i = 0; i < node.parameters.length; i++) {
+      var parameter = node.parameters[i];
+      if (i > 0) {
+        append(',');
+        split();
       }
 
-      for (var i = 0; i < node.parameters.length; i++) {
-        var parameter = node.parameters[i];
-        if (i > 0) {
-          append(',');
-          // Prefer splitting later parameters over earlier ones.
-          split(cost: Cost.BEFORE_ARGUMENT + node.parameters.length + 1 - i);
+      if (groupEnd == null && parameter is DefaultFormalParameter) {
+        if (parameter.kind == ParameterKind.NAMED) {
+          groupEnd = '}';
+          append('{');
+        } else {
+          groupEnd = ']';
+          append('[');
         }
-
-        if (groupEnd == null && parameter is DefaultFormalParameter) {
-          if (parameter.kind == ParameterKind.NAMED) {
-            groupEnd = '}';
-            append('{');
-          } else {
-            groupEnd = ']';
-            append('[');
-          }
-        }
-
-        visit(parameter);
       }
 
-      if (groupEnd != null) append(groupEnd);
+      visit(parameter);
     }
 
+    if (groupEnd != null) append(groupEnd);
+
     token(node.rightParenthesis);
+    _writer.endSpan();
   }
 
   visitForStatement(ForStatement node) {
@@ -583,10 +580,7 @@ class SourceVisitor implements AstVisitor {
 
   visitFunctionExpression(FunctionExpression node) {
     visit(node.parameters);
-    if (node.body is! EmptyFunctionBody) {
-      space();
-    }
-    visit(node.body);
+    visitBody(node.body);
   }
 
   visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
@@ -642,7 +636,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImplementsClause(ImplementsClause node) {
-    split(cost: Cost.BEFORE_IMPLEMENTS);
+    split();
     token(node.keyword);
     space();
     visitCommaSeparatedNodes(node.interfaces);
@@ -756,28 +750,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    // TODO(rnystrom): Do we need to handle cascdes here?
-
-    // If we have a single method call, allow it to split at "." but don't
-    // require it to if the whole expression is multiline. For example:
-    //
-    //     receiver.method(
-    //         some, very, long, argument, list);
-    if (node.target is! MethodInvocation) {
-      if (node.period != null) {
-        visit(node.target);
-        zeroSplit();
-        token(node.period);
-      }
-
-      visit(node.methodName);
-      visit(node.argumentList);
-      return;
-    }
-
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
     // split or none of them do.
     var startedMultisplit = false;
+
+    // Try to keep the entire method chain one line.
+    _writer.startSpan();
 
     // Recursively walk the chain of method calls.
     var depth = 0;
@@ -798,11 +776,12 @@ class SourceVisitor implements AstVisitor {
         // ensures we don't get tripped up by newlines or comments before the
         // first target.
         if (!startedMultisplit) {
-          _writer.startMultisplit(cost: Cost.BEFORE_PERIOD, separable: true);
+          _writer.startMultisplit(separable: true);
           startedMultisplit = true;
         }
 
         _writer.multisplit(nest: true);
+
         token(invocation.period);
       }
 
@@ -820,6 +799,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     visitInvocation(node);
+    _writer.endSpan();
   }
 
   visitNamedExpression(NamedExpression node) {
@@ -895,10 +875,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitRedirectingConstructorInvocation(RedirectingConstructorInvocation node) {
+    _writer.startSpan();
+
     token(node.keyword);
     token(node.period);
     visit(node.constructorName);
     visit(node.argumentList);
+
+    _writer.endSpan();
   }
 
   visitRethrowExpression(RethrowExpression node) {
@@ -948,10 +932,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
+    _writer.startSpan();
+
     token(node.keyword);
     token(node.period);
     visit(node.constructorName);
     visit(node.argumentList);
+
+    _writer.endSpan();
   }
 
   visitSuperExpression(SuperExpression node) {
@@ -1071,8 +1059,8 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    split(cost: Cost.ASSIGNMENT);
-    _writer.startSpan(Cost.ASSIGNMENT_SPAN);
+    split(Cost.ASSIGNMENT);
+    _writer.startSpan();
     visit(node.initializer);
     _writer.endSpan();
   }
@@ -1133,7 +1121,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitWithClause(WithClause node) {
-    split(cost: Cost.BEFORE_WITH);
+    split();
     token(node.withKeyword);
     space();
     visitCommaSeparatedNodes(node.mixinTypes);
@@ -1348,6 +1336,12 @@ class SourceVisitor implements AstVisitor {
     });
   }
 
+  /// Returns `true` if [node] is immediately contained within an anonymous
+  /// [FunctionExpression].
+  bool _isLambda(AstNode node) =>
+      node.parent is FunctionExpression &&
+      node.parent.parent is! FunctionDeclaration;
+
   /// Emit the given [modifier] if it's non null, followed by non-breaking
   /// whitespace.
   void modifier(Token modifier) {
@@ -1390,18 +1384,15 @@ class SourceVisitor implements AstVisitor {
     _writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
   }
 
-  /// Writes a single-space split with the given [cost] or [param].
+  /// Writes a single-space split with the given [cost].
   ///
-  /// If [param] is omitted, defaults to a new param with [cost]. If [cost] is
-  /// omitted, defaults to [Cost.CHEAP].
-  void split({int cost, SplitParam param}) {
-    _writer.writeSplit(cost: cost, param: param, space: true);
+  /// If [cost] is omitted, defaults to [Cost.CHEAP].
+  void split([int cost]) {
+    _writer.writeSplit(cost: cost, space: true);
   }
 
-  /// Writes a split with [cost] that is the empty string when unsplit.
-  void zeroSplit([int cost]) {
-    _writer.writeSplit(cost: cost);
-  }
+  /// Writes a split that is the empty string when unsplit.
+  void zeroSplit() => _writer.writeSplit();
 
   /// Emit [token], along with any comments and formatted whitespace that comes
   /// before it.

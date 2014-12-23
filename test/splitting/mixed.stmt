@@ -1,11 +1,9 @@
 40 columns                              |
->>> prefers to expand map over multi-line arguments
+>>> keeps map on one line if possible
 sendPort.send({'type': 'error', 'error': 'oops'});
 <<<
-sendPort.send({
-  'type': 'error',
-  'error': 'oops'
-});
+sendPort.send(
+    {'type': 'error', 'error': 'oops'});
 >>> prefers to wrap before "."
 new Future.sync(() => callback('msg')).then(
     (result) => replyTo.send()).catchError((error) {});
@@ -50,18 +48,23 @@ callSomeMethod(innerFunction(
     body;
   }).another().another()
 ];
->>> wrap at =>
+>>> wrap before =>
 receiver.firstMethod().next(() => longIdentifier == veryLongIdentifier);
 <<<
+receiver.firstMethod().next(
+    () => longIdentifier ==
+        veryLongIdentifier);
+>>> wrap after =>
+receiver.firstMethod().next(() => veryveryveryverylongIdentifier == veryLongIdentifier);
+<<<
 receiver.firstMethod().next(() =>
-    longIdentifier ==
+    veryveryveryverylongIdentifier ==
         veryLongIdentifier);
 >>> wrap at nested binary operator
 receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
-receiver
-    .firstMethod()
-    .next(longIdentifier ==
+receiver.firstMethod().next(
+    longIdentifier ==
         veryLongIdentifier);
 >>> list inside separable TODO(rnystrom): Is this what we want?
 receiver.first([listItem, secondItem, thirdItem]).second();

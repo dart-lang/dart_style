@@ -30,3 +30,13 @@ method(int first, int second, int third,
     int twelfth) {
   print('42');
 }
+>>> no split after "(" in lambda
+var meth = (
+    int firstArgument, int argument) {
+  print('42');
+};
+<<<
+var meth = (int firstArgument,
+    int argument) {
+  print('42');
+};

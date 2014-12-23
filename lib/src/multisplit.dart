@@ -53,16 +53,15 @@ class Multisplit {
 
   /// The [SplitParam] that controls all of the split chunks.
   SplitParam get param => _param;
-  SplitParam _param;
+  SplitParam _param = new SplitParam();
 
   /// `true` if a hard newline has forced this multisplit to be split.
   bool _isSplit = false;
 
   final bool _separable;
 
-  Multisplit(this.startChunk, int cost, {bool separable})
-      : _param = new SplitParam(cost),
-        _separable = separable != null ? separable : false;
+  Multisplit(this.startChunk, {bool separable})
+      : _separable = separable != null ? separable : false;
 
   /// Handles a hard split occurring in the middle of this multisplit.
   ///

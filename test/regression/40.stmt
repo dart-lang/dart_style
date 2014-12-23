@@ -15,7 +15,5 @@
         ]);
 <<<
       var s = new Serialization()
-        ..addRuleFor(Various, constructor: "Foo", constructorFields: [
-          "d",
-          "e"
-        ]);
+        ..addRuleFor(
+            Various, constructor: "Foo", constructorFields: ["d", "e"]);

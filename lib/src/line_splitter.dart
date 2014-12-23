@@ -7,7 +7,6 @@ library dart_style.src.line_splitter;
 import 'dart:math' as math;
 
 import 'chunk.dart';
-import 'cost.dart';
 import 'debug.dart';
 import 'line_prefix.dart';
 
@@ -168,47 +167,50 @@ class LineSplitter {
       var split = _chunks[i];
 
       // We must skip over this chunk if it cannot be split.
-      if (!_canSplit(prefix, split, skippedParams)) continue;
+      if (_canSplit(prefix, split, skippedParams)) {
+        var splitParams = _getSplitParams(prefix, i, split);
 
-      var splitParams = _getSplitParams(prefix, i, split);
+        // Find all the params we did *not* split in the prefix that appear in
+        // the suffix so we can ensure they aren't split there either.
+        var unsplitParams = prefix.unsplitParams.toSet();
+        for (var param in skippedParams) {
+          if (_suffixContainsParam(i, param)) unsplitParams.add(param);
+        }
 
-      // Find all the params we did *not* split in the prefix that appear in
-      // the suffix so we can ensure they aren't split there either.
-      var unsplitParams = prefix.unsplitParams.toSet();
-      for (var param in skippedParams) {
-        if (_suffixContainsParam(i, param)) unsplitParams.add(param);
-      }
-
-      // Create new prefixes that go all the way up to the split. There can be
-      // multiple solutions here since there are different ways to handle a
-      // jump in nesting depth.
-      var longerPrefixes = prefix.expand(
+        // Create new prefixes that go all the way up to the split. There can be
+        // multiple solutions here since there are different ways to handle a
+        // jump in nesting depth.
+        var longerPrefixes = prefix.expand(
           _chunks, unsplitParams, splitParams, i + 1);
 
-      for (var longerPrefix in longerPrefixes) {
-        // Given the nesting stack for this split, see what we can do with the
-        // rest of the line.
-        var remaining = _findBestSplits(longerPrefix);
+        for (var longerPrefix in longerPrefixes) {
+          // Given the nesting stack for this split, see what we can do with the
+          // rest of the line.
+          var remaining = _findBestSplits(longerPrefix);
 
-        // If it wasn't possible to split the suffix given this nesting stack,
-        // skip it.
-        if (remaining == null) continue;
+          // If it wasn't possible to split the suffix given this nesting stack,
+          // skip it.
+          if (remaining == null) continue;
 
-        var splits = remaining.add(i, longerPrefix.nestingIndent);
-        var cost = _evaluateCost(prefix, indent, splits);
+          var splits = remaining.add(i, longerPrefix.nestingIndent);
+          var cost = _evaluateCost(prefix, indent, splits);
 
-        // If the suffix is invalid (because of a mis-matching multisplit),
-        // skip it.
-        if (cost == INVALID_SPLITS) continue;
+          // If the suffix is invalid (because of a mis-matching multisplit),
+          // skip it.
+          if (cost == INVALID_SPLITS) continue;
 
-        if (lowestCost == null || cost < lowestCost) {
-          lowestCost = cost;
-          bestSplits = splits;
+          if (lowestCost == null ||
+              cost < lowestCost ||
+              (cost == lowestCost && splits.weight > bestSplits.weight)) {
+            lowestCost = cost;
+            bestSplits = splits;
 
-          // If we found a set of expression nesting levels that reaches a good
-          // solution, we can stop. Since we try them in increasingly complex
-          // order, the first non-overflowing solution will be the best.
-          if (lowestCost < Cost.OVERFLOW_CHAR) break;
+            // If we found a set of expression nesting levels that reaches a
+            // good solution, we can stop. Since we try them in increasingly
+            // complex order, the first non-overflowing solution will be the
+            // best.
+            if (lowestCost < Cost.OVERFLOW_CHAR) break;
+          }
         }
       }
 
@@ -431,6 +433,27 @@ class SplitSet {
 
   /// Gets the nesting level of the split chunk at [splitIndex].
   int getNesting(int splitIndex) => _splitNesting[splitIndex];
+
+  /// Determines the "weight" of the set.
+  ///
+  /// This is the sum of the positions where splits occur. Having more splits
+  /// increases weight but, more importantly, having a split closer to the end
+  /// increases its weight.
+  ///
+  /// This is used to break a tie when two [SplitSets] have the same cost. When
+  /// that occurs, we prefer splits later in the line since that keeps most
+  /// code towards the top lines. This occurs frequently in argument lists.
+  /// Since every argument split has the same cost, a long argument list can be
+  /// split in two a number of equal-cost ways. The weight is used to select
+  /// the one that puts the most arguments on the first line(s).
+  int get weight {
+    var result = 0;
+    for (var i = 0; i < _splitNesting.length; i++) {
+      if (_splitNesting[i] != null) result += i;
+    }
+
+    return result;
+  }
 
   String toString() {
     var result = [];

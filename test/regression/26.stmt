@@ -3,7 +3,8 @@ experimentalBootstrap = document
     .querySelectorAll('link')
     .any((link) => link.attributes['rel'] ==
     'import' && link.attributes['href'] == POLYMER_EXPERIMENTAL_HTML);
-<<< TODO(rnystrom): Should split at && instead of ==.
-experimentalBootstrap = document.querySelectorAll('link').any((link) =>
-    link.attributes['rel'] == 'import' &&
+<<<
+experimentalBootstrap = document
+    .querySelectorAll('link')
+    .any((link) => link.attributes['rel'] == 'import' &&
         link.attributes['href'] == POLYMER_EXPERIMENTAL_HTML);

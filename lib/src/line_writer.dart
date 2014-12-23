@@ -6,7 +6,6 @@ library dart_style.src.source_writer;
 
 import 'dart_formatter.dart';
 import 'chunk.dart';
-import 'cost.dart';
 import 'debug.dart';
 import 'line_splitter.dart';
 import 'multisplit.dart';
@@ -188,16 +187,15 @@ class LineWriter {
     if (type != Whitespace.SPACE) resetNesting();
   }
 
-  /// Write a soft split with [cost] and [param].
+  /// Write a soft split with its own param at [cost].
   ///
   /// If unsplit, it expands to a space if [space] is `true`.
   ///
-  /// If [cost] is omitted, defaults to [Cost.FREE]. If [param] is omitted, one
-  /// will be created. If a param is provided, [cost] is ignored.
-  void writeSplit({int cost, SplitParam param, bool space}) {
-    if (cost == null) cost = Cost.CHEAP;
-    if (param == null) param = new SplitParam(cost);
+  /// If [cost] is omitted, defaults to [Cost.NORMAL].
+  void writeSplit({int cost, bool space}) {
+    if (cost == null) cost = Cost.NORMAL;
 
+    var param = new SplitParam(cost);
     _writeSplit(_indent, _nesting, param, spaceWhenUnsplit: space);
 
     // If a split inside a multisplit is chosen, this forces the multisplit too.
@@ -333,7 +331,7 @@ class LineWriter {
   /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
-  void startSpan([int cost = Cost.CHEAP]) {
+  void startSpan([int cost = Cost.NORMAL]) {
     _openSpans.add(new Span(_currentChunkIndex, cost));
   }
 
@@ -347,11 +345,9 @@ class LineWriter {
     _spans.add(span);
   }
 
-  /// Starts a new [Multisplit] with [cost].
-  void startMultisplit({int cost: Cost.CHEAP, bool separable}) {
-    var multisplit = new Multisplit(
-        _currentChunkIndex, cost, separable: separable);
-
+  /// Starts a new [Multisplit].
+  void startMultisplit({bool separable}) {
+    var multisplit = new Multisplit(_currentChunkIndex, separable: separable);
     _multisplits.add(multisplit);
   }
 
