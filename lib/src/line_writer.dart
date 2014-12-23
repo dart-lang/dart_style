@@ -191,8 +191,8 @@ class LineWriter {
   ///
   /// If unsplit, it expands to a space if [space] is `true`.
   ///
-  /// If [cost] is omitted, defaults to [Cost.NORMAL].
-  void writeSplit({int cost, bool space}) {
+  /// If [cost] is omitted, defaults to [Cost.NORMAL]. Returns the new param.
+  SplitParam writeSplit({int cost, bool space}) {
     if (cost == null) cost = Cost.NORMAL;
 
     var param = new SplitParam(cost);
@@ -206,6 +206,8 @@ class LineWriter {
     if (_multisplits.isNotEmpty && _multisplits.last.param != null) {
       param.implies.add(_multisplits.last.param);
     }
+
+    return param;
   }
 
   /// Outputs the series of [comments] and associated whitespace that appear
@@ -346,9 +348,13 @@ class LineWriter {
   }
 
   /// Starts a new [Multisplit].
-  void startMultisplit({bool separable}) {
+  ///
+  /// Returns the [SplitParam] for the multisplit.
+  SplitParam startMultisplit({bool separable}) {
     var multisplit = new Multisplit(_currentChunkIndex, separable: separable);
     _multisplits.add(multisplit);
+
+    return multisplit.param;
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
@@ -589,7 +595,10 @@ class LineWriter {
   void _completeLine() {
     assert(_chunks.isNotEmpty);
 
-    if (debugFormatter) dumpChunks(_chunks);
+    if (debugFormatter) {
+      dumpChunks(_chunks);
+      print(_spans.join("\n"));
+    }
 
     // Write the newlines required by the previous line.
     for (var i = 0; i < _bufferedNewlines; i++) {

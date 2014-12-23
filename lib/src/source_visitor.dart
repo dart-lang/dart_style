@@ -57,6 +57,17 @@ class SourceVisitor implements AstVisitor {
     visit(node.arguments);
   }
 
+  /// Visits an argument list.
+  ///
+  /// This is a bit complex to handle the rules for formatting positional and
+  /// named arguments. The goals, in rough order of descending priority are:
+  ///
+  /// 1. Keep everything on the first line.
+  /// 2. Keep the named arguments together on the next line.
+  /// 3. Keep everything together on the second line.
+  /// 4. Split between one or more positional arguments, trying to keep as many
+  ///    on earlier lines as possible.
+  /// 5. Split the named arguments each onto their own line.
   visitArgumentList(ArgumentList node) {
     // Don't allow any splitting in an empty argument list.
     if (node.arguments.isEmpty &&
@@ -72,15 +83,75 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
 
     // Allow splitting after "(".
-    zeroSplit();
+    var lastParam = zeroSplit();
 
-    // Try to keep the arguments together.
+    // Try to keep the positional arguments together.
     _writer.startSpan();
 
-    visitCommaSeparatedNodes(node.arguments, between: split);
+    var i = 0;
+    for (; i < node.arguments.length; i++) {
+      var argument = node.arguments[i];
 
-    token(node.rightParenthesis);
-    _writer.endSpan();
+      if (argument is NamedExpression) break;
+
+      visit(argument);
+
+      // Write the trailing comma and split.
+      if (i < node.arguments.length - 1) {
+        token(argument.endToken.next);
+
+        // If there are both positional and named arguments, only try to keep
+        // the positional ones together.
+        if (node.arguments[i + 1] is NamedExpression) _writer.endSpan();
+
+        // Positional arguments split independently.
+        lastParam = split();
+      }
+    }
+
+    // If there are named arguments, write them.
+    if (i < node.arguments.length) {
+      // Named arguments all split together, but not before the first. This
+      // allows all of the named arguments to get pushed to the next line, but
+      // stay together.
+      var multisplitParam = _writer.startMultisplit(separable: true);
+
+      // However, if they *do* all split, we want to split before the first one
+      // too. This disallows:
+      //
+      //     method(first: 1,
+      //         second: 2,
+      //         third: 3);
+      multisplitParam.implies.add(lastParam);
+
+      for (; i < node.arguments.length; i++) {
+        var argument = node.arguments[i];
+
+        visit(argument);
+
+        // Write the trailing comma and split.
+        if (i < node.arguments.length - 1) {
+          token(argument.endToken.next);
+
+          _writer.multisplit(nest: true, space: true);
+        }
+      }
+
+      token(node.rightParenthesis);
+
+      // If there were no positional arguments, the span covers the named ones,
+      // so end it here.
+      if (node.arguments.first is NamedExpression) _writer.endSpan();
+
+      _writer.endMultisplit();
+    } else {
+      token(node.rightParenthesis);
+
+      // Keep the positional span past the ")" to include comments after the
+      // last argument.
+      _writer.endSpan();
+    }
+
     _writer.unnest();
   }
 
@@ -1389,13 +1460,14 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes a single-space split with the given [cost].
   ///
-  /// If [cost] is omitted, defaults to [Cost.CHEAP].
-  void split([int cost]) {
-    _writer.writeSplit(cost: cost, space: true);
-  }
+  /// If [cost] is omitted, defaults to [Cost.NORMAL]. Returns the newly created
+  /// [SplitParam].
+  SplitParam split([int cost]) => _writer.writeSplit(cost: cost, space: true);
 
   /// Writes a split that is the empty string when unsplit.
-  void zeroSplit() => _writer.writeSplit();
+  ///
+  /// Returns the newly created [SplitParam].
+  SplitParam zeroSplit() => _writer.writeSplit();
 
   /// Emit [token], along with any comments and formatted whitespace that comes
   /// before it.
