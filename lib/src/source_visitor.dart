@@ -509,29 +509,27 @@ class SourceVisitor implements AstVisitor {
     // Try to keep the parameters together.
     _writer.startSpan();
 
-    var groupEnd;
-
+    var inOptionalParams = false;
     for (var i = 0; i < node.parameters.length; i++) {
       var parameter = node.parameters[i];
       if (i > 0) {
-        append(',');
+        // Preceding comma.
+        token(node.parameters[i - 1].endToken.next);
         split();
       }
 
-      if (groupEnd == null && parameter is DefaultFormalParameter) {
-        if (parameter.kind == ParameterKind.NAMED) {
-          groupEnd = '}';
-          append('{');
-        } else {
-          groupEnd = ']';
-          append('[');
-        }
+      if (!inOptionalParams && parameter is DefaultFormalParameter) {
+        // "[" or "{" for optional parameters.
+        token(node.leftDelimiter);
+
+        inOptionalParams = true;
       }
 
       visit(parameter);
     }
 
-    if (groupEnd != null) append(groupEnd);
+    // "]" or "}" for optional parameters.
+    token(node.rightDelimiter);
 
     token(node.rightParenthesis);
     _writer.endSpan();
@@ -714,7 +712,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitLibraryIdentifier(LibraryIdentifier node) {
-    append(node.name);
+    token(node.beginToken);
   }
 
   visitListLiteral(ListLiteral node) {
@@ -900,8 +898,10 @@ class SourceVisitor implements AstVisitor {
 
   visitScriptTag(ScriptTag node) {
     // The lexeme includes the trailing newline. Strip it off since the
-    // formatter ensures it gets a newline after it.
-    append(node.scriptTag.lexeme.trim());
+    // formatter ensures it gets a newline after it. Since the script tag must
+    // come at the top of the file, we don't have to worry about preceding
+    // comments or whitespace.
+    _writer.write(node.scriptTag.lexeme.trim());
     oneOrTwoNewlines();
   }
 
@@ -925,10 +925,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitStringInterpolation(StringInterpolation node) {
+    // Since we output the interpolated text manually, ensure we include any
+    // preceding stuff first.
+    writePrecedingCommentsAndNewlines(node.beginToken);
+
     // Ensure that interpolated strings don't get broken up by manually
     // outputting them as an unformatted substring of the source.
-    writePrecedingCommentsAndNewlines(node.beginToken);
-    append(_source.substring(node.beginToken.offset, node.endToken.end));
+    _writer.write(_source.substring(node.beginToken.offset, node.endToken.end));
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -1455,14 +1458,6 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
-  }
-
-  // TODO(rnystrom): Eliminate this. It can cause comments to be discarded.
-  /// Append the given [string] to the source writer if it's non-null.
-  void append(String string) {
-    if (string == null || string.isEmpty) return;
-
-    _writer.write(string);
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.

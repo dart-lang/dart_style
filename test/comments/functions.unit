@@ -69,3 +69,43 @@ main() {
 //  print(2);
   print(3);
 }
+>>> before "," in param list
+main(a/* c */,b) {}
+<<<
+main(a /* c */, b) {}
+>>> after "," in param list
+main(a,/* c */b) {}
+<<<
+main(a, /* c */ b) {}
+>>> before "[" in param list
+main(/* c */[arg]) {}
+<<<
+main(/* c */ [arg]) {}
+>>> after "[" in param list
+main([/* c */arg]) {}
+<<<
+main([/* c */ arg]) {}
+>>> before "]" in param list
+main([arg/* c */]) {}
+<<<
+main([arg /* c */]) {}
+>>> after "]" in param list
+main([arg]/* c */) {}
+<<<
+main([arg] /* c */) {}
+>>> before "{" in param list
+main(/* c */{arg}) {}
+<<<
+main(/* c */ {arg}) {}
+>>> after "{" in param list
+main({/* c */arg}) {}
+<<<
+main({/* c */ arg}) {}
+>>> before "}" in param list
+main({arg/* c */}) {}
+<<<
+main({arg /* c */}) {}
+>>> after "{" in param list
+main({arg}/* c */) {}
+<<<
+main({arg} /* c */) {}

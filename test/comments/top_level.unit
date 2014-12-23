@@ -161,3 +161,7 @@ part 'a.dart';
 library foo;
 
 part 'a.dart';
+>>> before library name
+library/* c */foo;
+<<<
+library /* c */ foo;
