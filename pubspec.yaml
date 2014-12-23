@@ -14,3 +14,9 @@ dev_dependencies:
   unittest: '>=0.11.0 <0.12.0'
 executables:
   dartformat: format
+
+# Tell the bots not to bother building the tests since they don't run in a
+# browser anyway.
+transformers:
+- $dart2js:
+    $exclude: 'test/**'

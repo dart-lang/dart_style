@@ -12,5 +12,8 @@ packages/*/*: Skip
 */*/*/*/packages/*/*: Skip
 */*/*/*/*/packages/*/*: Skip
 
+# No need to run any of the built output.
+build/test/*: Skip
+
 [ $browser ]
-test/*: Skip  # Tests only run on the VM since they use dart:io.
+test/*: Skip # Tests only run on the VM since they use dart:io.
