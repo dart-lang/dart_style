@@ -487,6 +487,14 @@ class SourceVisitor implements AstVisitor {
     token(node.semicolon);
   }
 
+  visitEnumConstantDeclaration(EnumConstantDeclaration node) {
+    throw new UnimplementedError("Enum formatting is not implemented yet.");
+  }
+
+  visitEnumDeclaration(EnumDeclaration node) {
+    throw new UnimplementedError("Enum formatting is not implemented yet.");
+  }
+
   visitExportDirective(ExportDirective node) {
     visitDeclarationMetadata(node.metadata);
     token(node.keyword);
@@ -561,14 +569,6 @@ class SourceVisitor implements AstVisitor {
     visit(node.body);
   }
 
-  visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    throw new UnimplementedError("Enum formatting is not implemented yet.");
-  }
-
-  visitEnumDeclaration(EnumDeclaration node) {
-    throw new UnimplementedError("Enum formatting is not implemented yet.");
-  }
-
   visitFormalParameterList(FormalParameterList node) {
     token(node.leftParenthesis);
 
@@ -610,27 +610,52 @@ class SourceVisitor implements AstVisitor {
     token(node.forKeyword);
     space();
     token(node.leftParenthesis);
+
+    _writer.startMultisplit();
+
+    // The initialization clause.
     if (node.initialization != null) {
       visit(node.initialization);
     } else {
       if (node.variables == null) {
         space();
       } else {
-        visit(node.variables);
+        // Indent split variables more so they aren't at the same level
+        // as the rest of the loop clauses.
+        _writer.indent(2);
+
+        var declaration = node.variables;
+        visitDeclarationMetadata(declaration.metadata);
+        modifier(declaration.keyword);
+        visitNode(declaration.type, after: space);
+
+        visitCommaSeparatedNodes(declaration.variables, between: () {
+          _writer.multisplit(space: true, nest: true);
+        });
+
+        _writer.unindent(2);
       }
     }
+
     token(node.leftSeparator);
-    space();
+    _writer.multisplit(nest: true, space: true);
+
+    // The condition clause.
     visit(node.condition);
     token(node.rightSeparator);
+
+    // The update clause.
     if (node.updaters != null) {
-      space();
-      visitCommaSeparatedNodes(node.updaters);
+      _writer.multisplit(nest: true, space: true);
+      visitCommaSeparatedNodes(node.updaters,
+          between: () => _writer.multisplit(nest: true, space: true));
     }
+
     token(node.rightParenthesis);
-    if (node.body is! EmptyStatement) {
-      space();
-    }
+    _writer.endMultisplit();
+
+    // The body.
+    if (node.body is! EmptyStatement) space();
     visit(node.body);
   }
 
