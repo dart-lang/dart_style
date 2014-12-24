@@ -1336,6 +1336,11 @@ class SourceVisitor implements AstVisitor {
 
     _startBody(leftBracket);
 
+    // Each list element takes at least 3 characters (one character for the
+    // element, one for the comma, one for the space), so force it to split if
+    // we know that won't fit.
+    if (elements.length > _writer.pageWidth ~/ 3) _writer.preemptMultisplits();
+
     visitCommaSeparatedNodes(elements, between: () {
       _writer.multisplit(space: true);
       _writer.resetNesting();

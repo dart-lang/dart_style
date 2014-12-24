@@ -151,6 +151,9 @@ class LineWriter {
       _pendingWhitespace == Whitespace.ONE_OR_TWO_NEWLINES ||
       _pendingWhitespace == Whitespace.SPACE_OR_NEWLINE;
 
+  /// The number of characters of code that can fit in a single line.
+  int get pageWidth => _formatter.pageWidth;
+
   LineWriter(this._formatter, this._buffer) {
     indent(_formatter.indent);
     _beginningIndent = _formatter.indent;
@@ -382,6 +385,18 @@ class LineWriter {
     }
   }
 
+  /// Pre-emptively forces all of the multisplits to become hard splits.
+  ///
+  /// This is called by [SourceVisitor] when it can determine that a multisplit
+  /// will never be satisfied. Turning it into hard splits lets the writer
+  /// break the output into smaller pieces for the line splitter, which helps
+  /// performance and avoids failing on very large input.
+  ///
+  /// In particular, it's easy for the visitor to know that collections with a
+  /// large number of items must split. Doing that early avoids crashing the
+  /// splitter when it tries to recurse on huge collection literals.
+  void preemptMultisplits() => _splitMultisplits();
+
   /// Resets the expression nesting back to the "top-level" unnested state.
   ///
   /// One level of nesting is implicitly created after the first piece of text
@@ -569,10 +584,6 @@ class LineWriter {
     // Can only split on a hard line that is not nested in the middle of an
     // expression.
     if (!_chunks.last.isHardSplit || _chunks.last.nesting >= 0) return;
-
-    // If we're still in the middle of a span, wait until it's done so we can
-    // calculate costs correctly.
-    if (_openSpans.isNotEmpty) return;
 
     // Hang on to the split info so we can reset the writer to start with it.
     var split = _chunks.last;
