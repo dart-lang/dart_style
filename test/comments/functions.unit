@@ -109,3 +109,8 @@ main({arg /* c */}) {}
 main({arg}/* c */) {}
 <<<
 main({arg} /* c */) {}
+>>>
+longFunction(/* a very long block comment */) {}
+<<<
+longFunction(
+    /* a very long block comment */) {}

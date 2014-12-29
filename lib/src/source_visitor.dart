@@ -572,10 +572,13 @@ class SourceVisitor implements AstVisitor {
   visitFormalParameterList(FormalParameterList node) {
     token(node.leftParenthesis);
 
-    // Allow splitting after the "(" but not for lambdas.
-    // TODO(rnystrom): Need to check for comments in empty parameter list.
-    // See visitArgumentList.
-    if (node.parameters.isNotEmpty && !_isLambda(node)) zeroSplit();
+    // Allow splitting after the "(" in non-empty parameter lists, but not for
+    // lambdas.
+    if ((node.parameters.isNotEmpty ||
+            node.rightParenthesis.precedingComments != null) &&
+        !_isLambda(node)) {
+      zeroSplit();
+    }
 
     // Try to keep the parameters together.
     _writer.startSpan();
@@ -583,13 +586,21 @@ class SourceVisitor implements AstVisitor {
     var inOptionalParams = false;
     for (var i = 0; i < node.parameters.length; i++) {
       var parameter = node.parameters[i];
-      if (i > 0) {
-        // Preceding comma.
-        token(node.parameters[i - 1].endToken.next);
-        split();
-      }
+      var inFirstOptional =
+          !inOptionalParams && parameter is DefaultFormalParameter;
 
-      if (!inOptionalParams && parameter is DefaultFormalParameter) {
+      // Preceding comma.
+      if (i > 0) token(node.parameters[i - 1].endToken.next);
+
+      // Don't try to keep optional parameters together with mandatory ones.
+      if (inFirstOptional) _writer.endSpan();
+
+      if (i > 0) split();
+
+      if (inFirstOptional) {
+        // Do try to keep optional parameters with each other.
+        _writer.startSpan();
+
         // "[" or "{" for optional parameters.
         token(node.leftDelimiter);
 

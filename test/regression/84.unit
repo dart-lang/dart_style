@@ -41,8 +41,8 @@ class SoundSprite {
 }
 <<<
 class SoundSprite {
-  static Future<SoundSprite> load(
-      String url, [SoundLoadOptions soundLoadOptions = null]) {
+  static Future<SoundSprite> load(String url,
+      [SoundLoadOptions soundLoadOptions = null]) {
     HttpRequest.getString(url).then((soundSpriteJson) {
       if (segments is Map) {}
 

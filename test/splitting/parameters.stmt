@@ -40,3 +40,21 @@ var meth = (int firstArgument,
     int argument) {
   print('42');
 };
+>>> keep mandatory and positional on same line
+foo(param, [foo, bar]) {}
+<<<
+foo(param, [foo, bar]) {}
+>>> keep mandatory and named on same line
+foo(param, {foo, bar}) {}
+<<<
+foo(param, {foo, bar}) {}
+>>> move just optional positional to second line even though all fit on second
+reallyLongMethod(parameter, [foo, bar]) {}
+<<<
+reallyLongMethod(parameter,
+    [foo, bar]) {}
+>>> move just named to second line even though all fit on second
+reallyLongMethod(parameter, {foo, bar}) {}
+<<<
+reallyLongMethod(parameter,
+    {foo, bar}) {}
