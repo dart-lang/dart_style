@@ -706,8 +706,12 @@ class SourceVisitor implements AstVisitor {
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
     visitNode(node.returnType, after: space);
+
+    // Try to keep the function's parameters with its name.
+    _writer.startSpan();
     visit(node.identifier);
     visit(node.parameters);
+    _writer.endSpan();
   }
 
   visitHideCombinator(HideCombinator node) {
