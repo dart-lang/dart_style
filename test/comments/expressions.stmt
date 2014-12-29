@@ -65,3 +65,13 @@ someExtremelyLongArgumentName).clamp();
 someFunction(//
         someExtremelyLongArgumentName)
     .clamp();
+>>> line comment before binary operator
+{
+  // comment
+  1 + 2;
+}
+<<<
+{
+  // comment
+  1 + 2;
+}

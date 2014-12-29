@@ -938,8 +938,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitParenthesizedExpression(ParenthesizedExpression node) {
-    token(node.leftParenthesis);
     _writer.nestExpression();
+    token(node.leftParenthesis);
     visit(node.expression);
     _writer.unnest();
     token(node.rightParenthesis);
@@ -1418,10 +1418,11 @@ class SourceVisitor implements AstVisitor {
   void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
     // Allow splitting after the keyword.
     _writer.multisplit(space: true, nest: true);
+
+    _writer.nestExpression();
     token(keyword);
 
     _writer.startMultisplit();
-    _writer.nestExpression();
     _writer.multisplit(nest: true, space: true);
     visitCommaSeparatedNodes(names,
         between: () => _writer.multisplit(nest: true, space: true));

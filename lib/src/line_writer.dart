@@ -131,6 +131,26 @@ class LineWriter {
     _indentStack[_indentStack.length - 1] = value;
   }
 
+  /// When not `null`, the nesting level of the current inner-most block after
+  /// the next token is written.
+  ///
+  /// When the nesting level is increased, we don't want it to take effect until
+  /// after at least one token has been written. That ensures that comments
+  /// appearing before the first token are correctly indented. For example, a
+  /// binary operator expression increases the nesting before the first operand
+  /// to ensure any splits within the left operand are handled correctly. If we
+  /// changed the nesting level immediately, then code like:
+  ///
+  ///     {
+  ///       // comment
+  ///       foo + bar;
+  ///     }
+  ///
+  /// would incorrectly get indented because the line comment adds a split which
+  /// would take the nesting level of the binary operator into account even
+  /// though we haven't written any of its tokens yet.
+  int _pendingNesting;
+
   /// The index of the "current" chunk being written.
   ///
   /// If the last chunk is still being appended to, this is its index.
@@ -176,8 +196,16 @@ class LineWriter {
     _emitPendingWhitespace();
     _writeText(string);
 
+    if (_pendingNesting != null) {
+      _nesting = _pendingNesting;
+      _pendingNesting = null;
+    }
+
+    // TODO(rnystrom): Unify this with _pendingNesting somehow.
     // If we hadn't started a wrappable line yet, we have now, so start nesting.
-    if (_nesting == -1) _nesting = 0;
+    if (_nesting == -1) {
+      _nesting = 0;
+    }
   }
 
   /// Writes a [WhitespaceChunk] of [type].
@@ -409,7 +437,12 @@ class LineWriter {
   void resetNesting() {
     // All other explicit nesting should have been discarded by now.
     assert(_nesting <= 0);
+
     _nesting = -1;
+
+    // By the time the nesting is reset, it should have emitted some text and
+    // not be pending anymore.
+    assert(_pendingNesting == null);
   }
 
   /// Increases the level of expression nesting.
@@ -417,7 +450,11 @@ class LineWriter {
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void nestExpression() {
-    _nesting++;
+    if (_pendingNesting != null) {
+      _pendingNesting++;
+    } else {
+      _pendingNesting = _nesting + 1;
+    }
   }
 
   /// Decreases the level of expression nesting.
@@ -425,6 +462,10 @@ class LineWriter {
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void unnest() {
+    // By the time the nesting is done, it should have emitted some text and
+    // not be pending anymore.
+    assert(_pendingNesting == null);
+
     _nesting--;
   }
 
