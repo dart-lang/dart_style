@@ -165,3 +165,23 @@ part 'a.dart';
 library/* c */foo;
 <<<
 library /* c */ foo;
+>>> block comment before "." in library
+library a/**/.b.c;
+<<<
+library a /**/ .b.c;
+>>> block comment after "." in library
+library a./**/b.c;
+<<<
+library a. /**/ b.c;
+>>> line comment before "." in library
+library a//
+.b.c;
+<<<
+library a //
+    .b.c;
+>>> line comment after "." in library
+library a.//
+b.c;
+<<<
+library a. //
+    b.c;

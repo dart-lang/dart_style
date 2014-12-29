@@ -46,3 +46,7 @@ part of foo;
 part of some_very_long_library_name_that_wraps;
 <<<
 part of some_very_long_library_name_that_wraps;
+>>> no spaces between library identifiers
+library    a .  b   . c;
+<<<
+library a.b.c;

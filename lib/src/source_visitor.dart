@@ -808,7 +808,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitLibraryIdentifier(LibraryIdentifier node) {
-    token(node.beginToken);
+    visit(node.components.first);
+    for (var component in node.components.skip(1)) {
+      token(component.beginToken.previous); // "."
+      visit(component);
+    }
   }
 
   visitListLiteral(ListLiteral node) {
