@@ -43,7 +43,8 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
       file.writeAsStringSync(output);
       print("Formatted $label");
     } else {
-      print(output);
+      // Don't add an extra newline.
+      stdout.write(output);
     }
   } on FormatterException catch (err) {
     stderr.writeln(err.message());
