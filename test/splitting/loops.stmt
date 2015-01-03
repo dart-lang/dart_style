@@ -49,3 +49,17 @@ for (very +
         expression;
     a;
     b) {}
+>>> split in for-in loop
+for (var identifier in iteratableExpression) {}
+<<<
+for (var identifier
+    in iteratableExpression) {}
+>>> split in while condition
+while (aLongConditionExpressionThatWraps) {
+  ;
+}
+<<<
+while (
+    aLongConditionExpressionThatWraps) {
+  ;
+}

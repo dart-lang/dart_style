@@ -1,9 +1,20 @@
 40 columns                              |
->>> adjacent strings
+>>> space-separated adjacent strings are not split
 var name = new Symbol("the first string" "the second string");
 <<<
-var name = new Symbol("the first string"
-    "the second string");
+var name = new Symbol(
+    "the first string" "the second string");
+>>> preserve one newline between adjacent strings
+var name = "the first string"
+"the second string"
+
+
+
+"the third string";
+<<<
+var name = "the first string"
+    "the second string"
+    "the third string";
 >>> conditions, same operator
 if (identifier || identifier || identifier || identifier) {
 }

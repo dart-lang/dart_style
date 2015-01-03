@@ -11,3 +11,29 @@ var x; // x
 var x /* X */, y;
 <<<
 var x /* X */, y;
+>>> continue with line comment
+while (true) {
+  continue // comment
+  ;
+}
+<<<
+while (true) {
+  continue // comment
+      ;
+}
+>>> continue with wrapped block comment
+while (true) {
+  continue /* a long comment that does not wrap */;
+}
+<<<
+while (true) {
+  continue /* a long comment that does not wrap */;
+}
+>>> do with line comment
+do // comment
+{;} while (true);
+<<<
+do // comment
+    {
+  ;
+} while (true);

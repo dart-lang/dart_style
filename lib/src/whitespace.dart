@@ -16,6 +16,10 @@ class Whitespace {
   /// A single newline.
   static const NEWLINE = const Whitespace._("NEWLINE");
 
+  /// A single newline that takes into account the current expression nesting
+  /// for the next line.
+  static const NESTED_NEWLINE = const Whitespace._("NESTED_NEWLINE");
+
   /// Two newlines, a single blank line of separation.
   static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
 

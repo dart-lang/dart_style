@@ -200,22 +200,11 @@ class LineWriter {
       _nesting = _pendingNesting;
       _pendingNesting = null;
     }
-
-    // TODO(rnystrom): Unify this with _pendingNesting somehow.
-    // If we hadn't started a wrappable line yet, we have now, so start nesting.
-    if (_nesting == -1) {
-      _nesting = 0;
-    }
   }
 
   /// Writes a [WhitespaceChunk] of [type].
   void writeWhitespace(Whitespace type) {
     _pendingWhitespace = type;
-
-    // Any newline whitespace (coming from outside and not one created
-    // internally in the writer by comments) implies that we're not nested
-    // inside an expression, so clear any implicit nesting.
-    if (type != Whitespace.SPACE) resetNesting();
   }
 
   /// Write a soft split with its own param at [cost].
@@ -335,7 +324,7 @@ class LineWriter {
     switch (_pendingWhitespace) {
       case Whitespace.SPACE_OR_NEWLINE:
         if (numLines > 0) {
-          _pendingWhitespace = Whitespace.NEWLINE;
+          _pendingWhitespace = Whitespace.NESTED_NEWLINE;
         } else {
           _pendingWhitespace = Whitespace.SPACE;
         }
@@ -425,26 +414,6 @@ class LineWriter {
   /// splitter when it tries to recurse on huge collection literals.
   void preemptMultisplits() => _splitMultisplits();
 
-  /// Resets the expression nesting back to the "top-level" unnested state.
-  ///
-  /// One level of nesting is implicitly created after the first piece of text
-  /// written to a line. This is done automatically so we don't have to add tons
-  /// of [nestExpression] calls throughout the visitor.
-  ///
-  /// Once we reach the end of a wrappable "line" (a statement, top-level
-  /// variable, directive, etc.), this implicit nesting needs to be discarded.
-  ///
-  void resetNesting() {
-    // All other explicit nesting should have been discarded by now.
-    assert(_nesting <= 0);
-
-    _nesting = -1;
-
-    // By the time the nesting is reset, it should have emitted some text and
-    // not be pending anymore.
-    assert(_pendingNesting == null);
-  }
-
   /// Increases the level of expression nesting.
   ///
   /// Expressions that are more nested will get increased indentation when split
@@ -489,6 +458,10 @@ class LineWriter {
 
       case Whitespace.NEWLINE:
         _writeHardSplit();
+        break;
+
+      case Whitespace.NESTED_NEWLINE:
+        _writeHardSplit(nest: true);
         break;
 
       case Whitespace.TWO_NEWLINES:
@@ -555,10 +528,10 @@ class LineWriter {
     // Not at the beginning of a line.
     if (!_chunks.last.canAddText) return false;
 
-    // Otherwise, it gets a space if the following token is not a grouping
-    // character, a comma, (or the empty string, for EOF).
+    // Otherwise, it gets a space if the following token is not a delimiter or
+    // the empty string, for EOF.
     return token != ")" && token != "]" && token != "}" &&
-        token != "," && token != "";
+           token != "," && token != ";" && token != "";
   }
 
   /// Appends a hard split with the current indentation and nesting (the latter

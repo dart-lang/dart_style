@@ -20,3 +20,8 @@ class SomeClass extends BaseClass with Mixin {}
 <<<
 class SomeClass extends BaseClass
     with Mixin {}
+>>> class alias
+class SomeClass = BaseClass with LongMixinName;
+<<<
+class SomeClass = BaseClass
+    with LongMixinName;
