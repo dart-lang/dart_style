@@ -1076,7 +1076,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSimpleStringLiteral(SimpleStringLiteral node) {
-    token(node.literal);
+    // Since we output the string literal manually, ensure any preceding
+    // comments are written first.
+    writePrecedingCommentsAndNewlines(node.literal);
+
+    _writeStringLiteral(node.literal.lexeme);
   }
 
   visitStringInterpolation(StringInterpolation node) {
@@ -1084,9 +1088,11 @@ class SourceVisitor implements AstVisitor {
     // preceding stuff first.
     writePrecedingCommentsAndNewlines(node.beginToken);
 
-    // Ensure that interpolated strings don't get broken up by manually
-    // outputting them as an unformatted substring of the source.
-    _writer.write(_source.substring(node.beginToken.offset, node.endToken.end));
+    // Right now, the formatter does not try to do any reformatting of the
+    // contents of interpolated strings. Instead, it treats the entire thing as
+    // a single (possibly multi-line) chunk of text.
+     _writeStringLiteral(
+        _source.substring(node.beginToken.offset, node.endToken.end));
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -1524,6 +1530,22 @@ class SourceVisitor implements AstVisitor {
   bool _isLambda(AstNode node) =>
       node.parent is FunctionExpression &&
       node.parent.parent is! FunctionDeclaration;
+
+  /// Writes the string literal [string] to the output.
+  ///
+  /// Splits multiline strings into separate chunks so that the line splitter
+  /// can handle them correctly.
+  void _writeStringLiteral(String string) {
+    // Split each line of a multiline string into separate chunks.
+    var lines = string.split("\n");
+
+    _writer.write(lines.first);
+
+    for (var line in lines.skip(1)) {
+      _writer.writeWhitespace(Whitespace.NEWLINE_FLUSH_LEFT);
+      _writer.write(line);
+    }
+  }
 
   /// Emit the given [modifier] if it's non null, followed by non-breaking
   /// whitespace.

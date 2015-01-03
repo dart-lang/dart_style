@@ -20,6 +20,12 @@ class Whitespace {
   /// for the next line.
   static const NESTED_NEWLINE = const Whitespace._("NESTED_NEWLINE");
 
+  /// A single newline with all indentation eliminated at the beginning of the
+  /// next line.
+  ///
+  /// Used for subsequent lines in a multiline string.
+  static const NEWLINE_FLUSH_LEFT = const Whitespace._("NEWLINE_FLUSH_LEFT");
+
   /// Two newlines, a single blank line of separation.
   static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
 

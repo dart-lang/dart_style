@@ -464,6 +464,10 @@ class LineWriter {
         _writeHardSplit(nest: true);
         break;
 
+      case Whitespace.NEWLINE_FLUSH_LEFT:
+        _writeHardSplit(allowIndent: false);
+        break;
+
       case Whitespace.TWO_NEWLINES:
         _writeHardSplit(double: true);
         break;
