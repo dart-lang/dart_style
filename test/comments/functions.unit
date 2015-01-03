@@ -55,8 +55,10 @@ main() {/* 1 */ /* 2 */ /* 3 */}
 main() {  /* comment
 */  }
 <<<
-main() {/* comment
-*/}
+main() {
+  /* comment
+*/
+}
 >>> line comments at the start of the line in a function
 main() {
 //  print(1);

@@ -300,8 +300,22 @@ class LineWriter {
 
       // Make sure there is at least one newline after a line comment and allow
       // one or two after a block comment that has nothing after it.
-      var linesAfter = linesBeforeToken;
-      if (i < comments.length - 1) linesAfter = comments[i + 1].linesBefore;
+      var linesAfter;
+      if (i < comments.length - 1) {
+        linesAfter = comments[i + 1].linesBefore;
+      } else {
+        linesAfter = linesBeforeToken;
+
+        // Always force a newline after multi-line block comments. Prevents
+        // mistakes like:
+        //
+        //     /**
+        //      * Some doc comment.
+        //      */ someFunction() { ... }
+        if (linesAfter == 0 && comments.last.text.contains("\n")) {
+          linesAfter = 1;
+        }
+      }
 
       if (linesAfter > 0) _writeHardSplit(nest: true, double: linesAfter > 1);
     }

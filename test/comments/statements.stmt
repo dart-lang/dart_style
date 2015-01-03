@@ -37,3 +37,10 @@ do // comment
     {
   ;
 } while (true);
+>>> always place newline after multi-line block comment
+/*
+*/ var i = value;
+<<<
+/*
+*/
+var i = value;

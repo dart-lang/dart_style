@@ -55,8 +55,10 @@ var map = {/* 1 */ /* 2 */ /* 3 */};
 var map = {  /* comment
 */  };
 <<<
-var map = {/* comment
-*/};
+var map = {
+  /* comment
+*/
+};
 >>> line comment between items
 var map = {'a': 'b', // comment
   'c': 'd'};

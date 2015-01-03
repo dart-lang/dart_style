@@ -55,8 +55,10 @@ var list = [/* 1 */ /* 2 */ /* 3 */];
 var list = [  /* comment
 */  ];
 <<<
-var list = [/* comment
-*/];
+var list = [
+  /* comment
+*/
+];
 >>> line comment between items
 var list = ['a', // comment
   'b'];

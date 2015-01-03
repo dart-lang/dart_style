@@ -55,8 +55,10 @@ class A {/* 1 */ /* 2 */ /* 3 */}
 class A {  /* comment
 */  }
 <<<
-class A {/* comment
-*/}
+class A {
+  /* comment
+*/
+}
 >>> lines comments at the start of the line in a class body
 class A {
 //  int a;
