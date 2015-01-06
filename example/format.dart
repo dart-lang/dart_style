@@ -8,27 +8,8 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatUnit('class Foo {\n'
-    '  Stream methodName(AssetId id) =>\n'
-    '      methodBodyHereItIs;\n'
-    '}\n');
-
-  /*
-  formatStmt("""
-foo("first"
-"second");
-""");
-  */
-
-  /*
-  formatStmt(r"""
-  verify(
-      "Caractères qui doivent être échapper, par exemple barres \\ "
-      "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
-      "des citations \" "
-      "avec quelques paramètres ainsi 1, 2, et 3");
-""", 80);
-  */
+  formatStmt("sendPort.send({'type': 'error', 'error': 'oops'});");
+  formatUnit("class Foo{}");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

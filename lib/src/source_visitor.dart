@@ -755,6 +755,7 @@ class SourceVisitor implements AstVisitor {
 
     space();
     visit(node.thenStatement);
+    _writer.unnest();
 
     if (node.elseStatement != null) {
       if (node.thenStatement is Block) {
@@ -770,8 +771,6 @@ class SourceVisitor implements AstVisitor {
       space();
       visit(node.elseStatement);
     }
-
-    _writer.unnest();
   }
 
   visitImplementsClause(ImplementsClause node) {
