@@ -32,3 +32,9 @@ class Foo extends Bar {
       : super(a),
         this.b = b == null ? 0 : b;
 }
+>>> try to keep constructor call together
+var longIdentifier = new Thing(
+    argument, argument);
+<<<
+var longIdentifier =
+    new Thing(argument, argument);

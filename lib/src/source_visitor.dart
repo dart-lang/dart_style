@@ -819,10 +819,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {
+    _writer.startSpan();
     token(node.keyword);
     space();
     visit(node.constructorName);
     visit(node.argumentList);
+    _writer.endSpan();
   }
 
   visitIntegerLiteral(IntegerLiteral node) {
