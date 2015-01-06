@@ -14,10 +14,8 @@ bool debugFormatter = false;
 
 bool useAnsiColors = false;
 
-const UNICODE_SECT = "\u00a7";
-const UNICODE_MIDDOT = "\u00b7";
-const UNICODE_LASQUO = "\u2039";
-const UNICODE_RASQUO = "\u203a";
+const unicodeSection = "\u00a7";
+const unicodeMidDot = "\u00b7";
 
 /// Constants for ANSI color escape codes.
 class Color {
@@ -61,7 +59,7 @@ void dumpLine(List<Chunk> chunks,
     if (chunk.isSoftSplit) {
       var color = splits.contains(chunk.param) ? Color.green : Color.gray;
 
-      buffer.write("$color$UNICODE_SECT${chunk.param.cost}");
+      buffer.write("$color$unicodeSection${chunk.param.cost}");
       if (chunk.nesting != -1) buffer.write(":${chunk.nesting}");
       buffer.write("${Color.none}");
     } else if (chunk.isHardSplit) {
@@ -102,7 +100,7 @@ void dumpLines(List<Chunk> chunks,
       }
 
       // Should have a valid set of splits when we get here.
-      assert(indent != INVALID_SPLITS);
+      assert(indent != invalidSplits);
     } else {
       if (chunk.spaceWhenUnsplit) buffer.write(" ");
     }

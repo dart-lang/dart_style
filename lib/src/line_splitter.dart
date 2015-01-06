@@ -11,13 +11,13 @@ import 'debug.dart';
 import 'line_prefix.dart';
 
 /// The number of spaces in a single level of indentation.
-const SPACES_PER_INDENT = 2;
+const spacesPerIndent = 2;
 
 /// The number of indentation levels in a single level of expression nesting.
-const INDENTS_PER_NEST = 2;
+const indentsPerNest = 2;
 
 /// Cost or indent value used to indication no solution could be found.
-const INVALID_SPLITS = -1;
+const invalidSplits = -1;
 
 // TODO(rnystrom): This needs to be updated to take into account how it works
 // now.
@@ -100,7 +100,7 @@ class LineSplitter {
     var splits = _findBestSplits(new LinePrefix());
 
     // Write each chunk and the split after it.
-    buffer.write(" " * (_indent * SPACES_PER_INDENT));
+    buffer.write(" " * (_indent * spacesPerIndent));
     for (var i = 0; i < _chunks.length - 1; i++) {
       var chunk = _chunks[i];
 
@@ -111,10 +111,10 @@ class LineSplitter {
         if (chunk.isDouble) buffer.write(_lineEnding);
 
         var indent = chunk.indent + splits.getNesting(i);
-        buffer.write(" " * (indent * SPACES_PER_INDENT));
+        buffer.write(" " * (indent * spacesPerIndent));
 
         // Should have a valid set of splits when we get here.
-        assert(indent != INVALID_SPLITS);
+        assert(indent != invalidSplits);
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
@@ -141,13 +141,13 @@ class LineSplitter {
       var splits = new SplitSet();
       var cost = _evaluateCost(prefix, indent, splits);
 
-      if (cost != INVALID_SPLITS) {
+      if (cost != invalidSplits) {
         bestSplits = splits;
         lowestCost = cost;
 
         // If we fit the whole suffix without any splitting, that's going to be
         // the best solution, so don't bother trying any others.
-        if (cost < Cost.OVERFLOW_CHAR) {
+        if (cost < Cost.overflowChar) {
           _bestSplits[prefix] = bestSplits;
           return bestSplits;
         }
@@ -160,7 +160,7 @@ class LineSplitter {
     // cost subset out of all of those.
     var skippedParams = new Set();
 
-    var length = indent * SPACES_PER_INDENT;
+    var length = indent * spacesPerIndent;
 
     // Don't consider the last chunk, since there's no point in splitting on it.
     for (var i = prefix.length; i < _chunks.length - 1; i++) {
@@ -197,7 +197,7 @@ class LineSplitter {
 
           // If the suffix is invalid (because of a mis-matching multisplit),
           // skip it.
-          if (cost == INVALID_SPLITS) continue;
+          if (cost == invalidSplits) continue;
 
           if (lowestCost == null ||
               cost < lowestCost ||
@@ -215,7 +215,7 @@ class LineSplitter {
       if (split.spaceWhenUnsplit) length++;
       if (length > _pageWidth &&
           lowestCost != null &&
-          lowestCost < Cost.OVERFLOW_CHAR) {
+          lowestCost < Cost.overflowChar) {
         break;
       }
 
@@ -329,7 +329,7 @@ class LineSplitter {
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = indent * SPACES_PER_INDENT;
+    var length = indent * spacesPerIndent;
 
     var params = new Set();
 
@@ -340,7 +340,7 @@ class LineSplitter {
       // completely because it may be that the only solution still goes over
       // (for example with long string literals).
       if (length > _pageWidth) {
-        cost += (length - _pageWidth) * Cost.OVERFLOW_CHAR;
+        cost += (length - _pageWidth) * Cost.overflowChar;
       }
     }
 
@@ -364,7 +364,7 @@ class LineSplitter {
           }
 
           // Start the new line.
-          length = (chunk.indent + splits.getNesting(i)) * SPACES_PER_INDENT;
+          length = (chunk.indent + splits.getNesting(i)) * spacesPerIndent;
         } else {
           if (chunk.spaceWhenUnsplit) length++;
         }

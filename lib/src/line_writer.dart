@@ -168,8 +168,8 @@ class LineWriter {
   /// actually needed since doing so is slow when done between every single
   /// token pair.
   bool get needsToPreserveNewlines =>
-      _pendingWhitespace == Whitespace.ONE_OR_TWO_NEWLINES ||
-      _pendingWhitespace == Whitespace.SPACE_OR_NEWLINE;
+      _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
+      _pendingWhitespace == Whitespace.spaceOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
@@ -211,9 +211,9 @@ class LineWriter {
   ///
   /// If unsplit, it expands to a space if [space] is `true`.
   ///
-  /// If [cost] is omitted, defaults to [Cost.NORMAL]. Returns the new param.
+  /// If [cost] is omitted, defaults to [Cost.normal]. Returns the new param.
   SplitParam writeSplit({int cost, bool space}) {
-    if (cost == null) cost = Cost.NORMAL;
+    if (cost == null) cost = Cost.normal;
 
     var param = new SplitParam(cost);
     _writeSplit(_indent, _nesting, param, spaceWhenUnsplit: space);
@@ -252,15 +252,15 @@ class LineWriter {
     // Normally, a blank line is required after `library`, but since there is
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
-    if (_pendingWhitespace == Whitespace.TWO_NEWLINES &&
+    if (_pendingWhitespace == Whitespace.twoNewlines &&
         comments.isNotEmpty &&
         comments.first.linesBefore < 2) {
       if (linesBeforeToken > 1) {
-        _pendingWhitespace = Whitespace.NEWLINE;
+        _pendingWhitespace = Whitespace.newline;
       } else {
         for (var i = 1; i < comments.length; i++) {
           if (comments[i].linesBefore > 1) {
-            _pendingWhitespace = Whitespace.NEWLINE;
+            _pendingWhitespace = Whitespace.newline;
             break;
           }
         }
@@ -275,7 +275,7 @@ class LineWriter {
 
       // Don't emit a space because we'll handle it below. If we emit it here,
       // we may get a trailing space if the comment needs a line before it.
-      if (_pendingWhitespace == Whitespace.SPACE) _pendingWhitespace = null;
+      if (_pendingWhitespace == Whitespace.space) _pendingWhitespace = null;
       _emitPendingWhitespace();
 
       if (comment.linesBefore == 0) {
@@ -323,7 +323,7 @@ class LineWriter {
     // If the comment has text following it (aside from a grouping character),
     // it needs a trailing space.
     if (_needsSpaceAfterLastComment(comments, token)) {
-      _pendingWhitespace = Whitespace.SPACE;
+      _pendingWhitespace = Whitespace.space;
     }
 
     preserveNewlines(linesBeforeToken);
@@ -336,19 +336,19 @@ class LineWriter {
     // If we didn't know how many newlines the user authored between the last
     // token and this one, now we do.
     switch (_pendingWhitespace) {
-      case Whitespace.SPACE_OR_NEWLINE:
+      case Whitespace.spaceOrNewline:
         if (numLines > 0) {
-          _pendingWhitespace = Whitespace.NESTED_NEWLINE;
+          _pendingWhitespace = Whitespace.nestedNewline;
         } else {
-          _pendingWhitespace = Whitespace.SPACE;
+          _pendingWhitespace = Whitespace.space;
         }
         break;
 
-      case Whitespace.ONE_OR_TWO_NEWLINES:
+      case Whitespace.oneOrTwoNewlines:
         if (numLines > 1) {
-          _pendingWhitespace = Whitespace.TWO_NEWLINES;
+          _pendingWhitespace = Whitespace.twoNewlines;
         } else {
-          _pendingWhitespace = Whitespace.NEWLINE;
+          _pendingWhitespace = Whitespace.newline;
         }
         break;
     }
@@ -367,7 +367,7 @@ class LineWriter {
   /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
-  void startSpan([int cost = Cost.NORMAL]) {
+  void startSpan([int cost = Cost.normal]) {
     _openSpans.add(new Span(_currentChunkIndex, cost));
   }
 
@@ -466,28 +466,28 @@ class LineWriter {
     // Output any pending whitespace first now that we know it won't be
     // trailing.
     switch (_pendingWhitespace) {
-      case Whitespace.SPACE:
+      case Whitespace.space:
         _writeText(" ");
         break;
 
-      case Whitespace.NEWLINE:
+      case Whitespace.newline:
         _writeHardSplit();
         break;
 
-      case Whitespace.NESTED_NEWLINE:
+      case Whitespace.nestedNewline:
         _writeHardSplit(nest: true);
         break;
 
-      case Whitespace.NEWLINE_FLUSH_LEFT:
+      case Whitespace.newlineFlushLeft:
         _writeHardSplit(allowIndent: false);
         break;
 
-      case Whitespace.TWO_NEWLINES:
+      case Whitespace.twoNewlines:
         _writeHardSplit(double: true);
         break;
 
-      case Whitespace.SPACE_OR_NEWLINE:
-      case Whitespace.ONE_OR_TWO_NEWLINES:
+      case Whitespace.spaceOrNewline:
+      case Whitespace.oneOrTwoNewlines:
         // We should have pinned these down before getting here.
         assert(false);
         break;

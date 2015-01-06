@@ -147,11 +147,11 @@ class NestingStack {
 
       for (var depth in depths) {
         result = new NestingStack._(
-            result, depth, result.indent + INDENTS_PER_NEST);
+            result, depth, result.indent + indentsPerNest);
       }
 
       return new NestingStack._(
-          result, split.nesting, result.indent + INDENTS_PER_NEST);
+          result, split.nesting, result.indent + indentsPerNest);
     }).toList();
   }
 

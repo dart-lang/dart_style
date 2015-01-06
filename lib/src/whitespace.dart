@@ -11,37 +11,37 @@ library dart_style.src.whitespace;
 /// encountered to avoid trailing whitespace.
 class Whitespace {
   /// A single non-breaking space.
-  static const SPACE = const Whitespace._("SPACE");
+  static const space = const Whitespace._("space");
 
   /// A single newline.
-  static const NEWLINE = const Whitespace._("NEWLINE");
+  static const newline = const Whitespace._("newline");
 
   /// A single newline that takes into account the current expression nesting
   /// for the next line.
-  static const NESTED_NEWLINE = const Whitespace._("NESTED_NEWLINE");
+  static const nestedNewline = const Whitespace._("nestedNewline");
 
   /// A single newline with all indentation eliminated at the beginning of the
   /// next line.
   ///
   /// Used for subsequent lines in a multiline string.
-  static const NEWLINE_FLUSH_LEFT = const Whitespace._("NEWLINE_FLUSH_LEFT");
+  static const newlineFlushLeft = const Whitespace._("newlineFlushLeft");
 
   /// Two newlines, a single blank line of separation.
-  static const TWO_NEWLINES = const Whitespace._("TWO_NEWLINES");
+  static const twoNewlines = const Whitespace._("twoNewlines");
 
   /// A space or newline should be output based on whether the current token is
   /// on the same line as the previous one or not.
   ///
   /// In general, we like to avoid using this because it makes the formatter
   /// less prescriptive over the user's whitespace.
-  static const SPACE_OR_NEWLINE = const Whitespace._("SPACE_OR_NEWLINE");
+  static const spaceOrNewline = const Whitespace._("spaceOrNewline");
 
   /// One or two newlines should be output based on how many newlines are
   /// present between the next token and the previous one.
   ///
   /// In general, we like to avoid using this because it makes the formatter
   /// less prescriptive over the user's whitespace.
-  static const ONE_OR_TWO_NEWLINES = const Whitespace._("ONE_OR_TWO_NEWLINES");
+  static const oneOrTwoNewlines = const Whitespace._("oneOrTwoNewlines");
 
   final String name;
 

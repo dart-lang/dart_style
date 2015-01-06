@@ -168,7 +168,7 @@ class Chunk {
     } else {
       var param = "p$_param";
 
-      if (_param.cost != Cost.NORMAL) param += " \$${_param.cost}";
+      if (_param.cost != Cost.normal) param += " \$${_param.cost}";
 
       if (_param.implies.isNotEmpty) {
         var impliedIds = _param.implies.map(
@@ -192,16 +192,16 @@ class Cost {
   /// otherwise, the formatter won't try to keep things on one line at all.
   /// Almost all splits and spans use this. Greater costs tend to come from a
   /// greater number of nested spans.
-  static const NORMAL = 1;
+  static const normal = 1;
 
   /// The cost of splitting after a "=" both for assignment and initialization.
-  static const ASSIGNMENT = 2;
+  static const assignment = 2;
 
   /// The cost of a single character that goes past the page limit.
   ///
   /// This cost is high to ensure any solution that fits in the page is
   /// preferred over one that does not.
-  static const OVERFLOW_CHAR = 1000;
+  static const overflowChar = 1000;
 }
 
 /// Controls whether or not one or more soft split [Chunk]s are split.
@@ -231,7 +231,7 @@ class SplitParam {
   final implies = <SplitParam>[];
 
   /// Creates a new [SplitParam].
-  SplitParam([this.cost = Cost.NORMAL]);
+  SplitParam([this.cost = Cost.normal]);
 
   String toString() => "$id";
 

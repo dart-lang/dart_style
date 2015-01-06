@@ -32,7 +32,8 @@ void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
     }
 
     if (useAnsiColors) {
-      result = result.replaceAll(" ", "\u001b[1;30m·\u001b[0m");
+      result = result.replaceAll(
+          " ", "${Color.gray}$unicodeMidDot${Color.none}");
     }
 
     drawRuler("before", pageWidth);

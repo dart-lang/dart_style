@@ -184,7 +184,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    split(Cost.ASSIGNMENT);
+    split(Cost.assignment);
     _writer.startSpan();
     visit(node.rightHandSide);
     _writer.endSpan();
@@ -1243,7 +1243,7 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    split(Cost.ASSIGNMENT);
+    split(Cost.assignment);
     _writer.startSpan();
     visit(node.initializer);
     _writer.endSpan();
@@ -1557,7 +1557,7 @@ class SourceVisitor implements AstVisitor {
     _writer.write(lines.first);
 
     for (var line in lines.skip(1)) {
-      _writer.writeWhitespace(Whitespace.NEWLINE_FLUSH_LEFT);
+      _writer.writeWhitespace(Whitespace.newlineFlushLeft);
       _writer.write(line);
     }
   }
@@ -1570,36 +1570,36 @@ class SourceVisitor implements AstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    _writer.writeWhitespace(Whitespace.SPACE);
+    _writer.writeWhitespace(Whitespace.space);
   }
 
   /// Emit a single mandatory newline.
   void newline() {
-    _writer.writeWhitespace(Whitespace.NEWLINE);
+    _writer.writeWhitespace(Whitespace.newline);
   }
 
   /// Emit a two mandatory newlines.
   void twoNewlines() {
-    _writer.writeWhitespace(Whitespace.TWO_NEWLINES);
+    _writer.writeWhitespace(Whitespace.twoNewlines);
   }
 
   /// Allow either a single space or newline to be emitted before the next
   /// non-whitespace token based on whether a newline exists in the source
   /// between the last token and the next one.
   void spaceOrNewline() {
-    _writer.writeWhitespace(Whitespace.SPACE_OR_NEWLINE);
+    _writer.writeWhitespace(Whitespace.spaceOrNewline);
   }
 
   /// Allow either one or two newlines to be emitted before the next
   /// non-whitespace token based on whether more than one newline exists in the
   /// source between the last token and the next one.
   void oneOrTwoNewlines() {
-    _writer.writeWhitespace(Whitespace.ONE_OR_TWO_NEWLINES);
+    _writer.writeWhitespace(Whitespace.oneOrTwoNewlines);
   }
 
   /// Writes a single-space split with the given [cost].
   ///
-  /// If [cost] is omitted, defaults to [Cost.NORMAL]. Returns the newly created
+  /// If [cost] is omitted, defaults to [Cost.normal]. Returns the newly created
   /// [SplitParam].
   SplitParam split([int cost]) => _writer.writeSplit(cost: cost, space: true);
 
