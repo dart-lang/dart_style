@@ -354,12 +354,18 @@ class SourceVisitor implements AstVisitor {
 
     _writer.startSpan();
     token(node.question);
-    split();
+
+    // If we split after one clause in a conditional, always split after both.
+    _writer.startMultisplit();
+    _writer.multisplit(nest: true, space: true);
     visit(node.thenExpression);
+
     space();
     token(node.colon);
-    split();
+    _writer.multisplit(nest: true, space: true);
     visit(node.elseExpression);
+
+    _writer.endMultisplit();
     _writer.endSpan();
   }
 

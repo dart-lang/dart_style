@@ -30,15 +30,17 @@ if (identifier && identifier || identifier
 <<<
 if (identifier && identifier ||
     identifier && identifier) {}
->>> split conditional after "?"
+>>> split conditional because then doesn't fit
 var kind = element != null ? longArgument : arg;
 <<<
 var kind = element != null ?
-    longArgument : arg;
->>> split conditional after ":"
+    longArgument :
+    arg;
+>>> split conditional because else doesn't fit
 var kind = element != null ? argument : secondArgumentThatIsReallyLong;
 <<<
-var kind = element != null ? argument :
+var kind = element != null ?
+    argument :
     secondArgumentThatIsReallyLong;
 >>> unsplit operator chains before and after block
 first + second + () {body;} + third + fourth;
