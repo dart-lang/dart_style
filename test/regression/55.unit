@@ -19,5 +19,6 @@
                 new File(path.join(dirname, 'lib', '_internal', 'libraries.dart'))
                 .existsSync();
 <<<
-            bool isSdkDir(String dirname) => new File(path.join(
-                dirname, 'lib', '_internal', 'libraries.dart')).existsSync();
+            bool isSdkDir(String dirname) => new File(
+                    path.join(dirname, 'lib', '_internal', 'libraries.dart'))
+                .existsSync();

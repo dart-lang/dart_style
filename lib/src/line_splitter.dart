@@ -204,12 +204,6 @@ class LineSplitter {
               (cost == lowestCost && splits.weight > bestSplits.weight)) {
             lowestCost = cost;
             bestSplits = splits;
-
-            // If we found a set of expression nesting levels that reaches a
-            // good solution, we can stop. Since we try them in increasingly
-            // complex order, the first non-overflowing solution will be the
-            // best.
-            if (lowestCost < Cost.OVERFLOW_CHAR) break;
           }
         }
       }

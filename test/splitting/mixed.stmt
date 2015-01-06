@@ -102,3 +102,11 @@ receiver
           a______________ ||
       a______________;
 }
+>>> choose extra nesting if it leads to better solution
+longIdentifier +
+    (longIdentifier ? 0 :
+        1) == identifier;
+<<<
+longIdentifier +
+        (longIdentifier ? 0 : 1) ==
+    identifier;
