@@ -96,3 +96,8 @@ reallyLongMethod(
     foo: first,
     bar: second,
     baz: third);
+>>> avoid splitting before single positional argument
+someLongReceiver.veryLongMethod(argument);
+<<<
+someLongReceiver
+    .veryLongMethod(argument);

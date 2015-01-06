@@ -77,6 +77,12 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    // If there is just one positional argument, it tends to look weird to
+    // split before it, so try not to.
+    var singleArgument = node.arguments.length == 1 &&
+        node.arguments.single is ! NamedExpression;
+    if (singleArgument) _writer.startSpan();
+
     // Nest around the parentheses in case there are comments before or after
     // them.
     _writer.nestExpression();
@@ -152,6 +158,7 @@ class SourceVisitor implements AstVisitor {
       _writer.endSpan();
     }
 
+    if (singleArgument) _writer.endSpan();
     _writer.unnest();
   }
 
@@ -910,6 +917,7 @@ class SourceVisitor implements AstVisitor {
 
     // Try to keep the entire method chain one line.
     _writer.startSpan();
+    _writer.nestExpression();
 
     // Recursively walk the chain of method calls.
     var depth = 0;
@@ -953,6 +961,8 @@ class SourceVisitor implements AstVisitor {
     }
 
     visitInvocation(node);
+
+    _writer.unnest();
     _writer.endSpan();
   }
 
