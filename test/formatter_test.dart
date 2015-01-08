@@ -20,6 +20,7 @@ void main() {
 
   testDirectory("comments");
   testDirectory("regression");
+  testDirectory("selections");
   testDirectory("splitting");
   testDirectory("whitespace");
 
@@ -45,6 +46,44 @@ void main() {
       expect(message, contains("line 2"));
       expect(message, contains("line 4"));
     }
+  });
+
+  group('SourceCode', () {
+    test('throws on negative start', () {
+      expect(() {
+        new SourceCode("12345;", selectionStart: -1, selectionLength: 0);
+      }, throwsArgumentError);
+    });
+
+    test('throws on out of bounds start', () {
+      expect(() {
+        new SourceCode("12345;", selectionStart: 7, selectionLength: 0);
+      }, throwsArgumentError);
+    });
+
+    test('throws on negative length', () {
+      expect(() {
+        new SourceCode("12345;", selectionStart: 1, selectionLength: -1);
+      }, throwsArgumentError);
+    });
+
+    test('throws on out of bounds length', () {
+      expect(() {
+        new SourceCode("12345;", selectionStart: 2, selectionLength: 5);
+      }, throwsArgumentError);
+    });
+
+    test('throws is start is null and length is not', () {
+      expect(() {
+        new SourceCode("12345;", selectionStart: 0);
+      }, throwsArgumentError);
+    });
+
+    test('throws is length is null and start is not', () {
+      expect(() {
+        new SourceCode("12345;", selectionLength: 1);
+      }, throwsArgumentError);
+    });
   });
 
   test("adds newline to unit", () {
@@ -149,19 +188,52 @@ void testDirectory(String name) {
         }
 
         test(description, () {
+          var isCompilationUnit = p.extension(entry.path) == ".unit";
+
+          var inputCode = _extractSelection(input,
+              isCompilationUnit: isCompilationUnit);
+
+          var expected = _extractSelection(expectedOutput,
+              isCompilationUnit: isCompilationUnit);
+
           var formatter = new DartFormatter(
               pageWidth: pageWidth, indent: leadingIndent);
 
-          var result;
-          if (p.extension(entry.path) == ".stmt") {
-            result = formatter.formatStatement(input) + "\n";
-          } else {
-            result = formatter.format(input);
-          }
+          var actual = formatter.formatSource(inputCode);
 
-          expect(result, equals(expectedOutput));
+          // The test files always put a newline at the end of the expectation.
+          // Statements from the formatter (correctly) don't have that, so add
+          // one to line up with the expected result.
+          var actualText = actual.text;
+          if (!isCompilationUnit) actualText += "\n";
+
+          expect(actualText, equals(expected.text));
+          expect(actual.selectionStart, equals(expected.selectionStart));
+          expect(actual.selectionLength, equals(expected.selectionLength));
         });
       }
     });
   }
+}
+
+/// Given a source string that contains ‹ and › to indicate a selection, returns
+/// a [SourceCode] with the text (with the selection markers removed) and the
+/// correct selection range.
+SourceCode _extractSelection(String source, {bool isCompilationUnit: false}) {
+  var start = source.indexOf("‹");
+  source = source.replaceAll("‹", "");
+
+  var end = source.indexOf("›");
+  source = source.replaceAll("›", "");
+
+  // If the selection end is after a trailing newline, there will be an extra
+  // newline *after* the "›", so remove it.
+  if (end != -1 && source.endsWith("\n\n")) {
+    source = source.substring(0, source.length - 1);
+  }
+
+  return new SourceCode(source,
+      isCompilationUnit: isCompilationUnit,
+      selectionStart: start == -1 ? null : start,
+      selectionLength: end == -1 ? null : end - start);
 }

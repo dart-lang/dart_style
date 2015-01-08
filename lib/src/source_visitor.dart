@@ -21,28 +21,38 @@ class SourceVisitor implements AstVisitor {
   /// Cached line info for calculating blank lines.
   LineInfo _lineInfo;
 
-  /// The source being formatted (used in interpolation handling)
-  final String _source;
+  /// The source being formatted.
+  final SourceCode _source;
+
+  /// `true` if the visitor has written past the beginning of the selection in
+  /// the original source text.
+  bool _passedSelectionStart = false;
+
+  /// `true` if the visitor has written past the end of the selection in the
+  /// original source text.
+  bool _passedSelectionEnd = false;
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(DartFormatter formatter, this._lineInfo, this._source,
-      StringBuffer outputBuffer)
-      : _writer = new LineWriter(formatter, outputBuffer);
+  SourceVisitor(DartFormatter formatter, this._lineInfo, SourceCode source)
+      : _source = source,
+        _writer = new LineWriter(formatter, source);
 
-  /// Run the visitor on [node], writing all of the formatted output to the
-  /// output buffer.
+  /// Runs the visitor on [node], formatting its contents.
+  ///
+  /// Returns a [SourceCode] containing the resulting formatted source and
+  /// updated selection, if any.
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  void run(AstNode node) {
+  SourceCode run(AstNode node) {
     visit(node);
 
     // Output trailing comments.
     writePrecedingCommentsAndNewlines(node.endToken.next);
 
-    // Finish off the last line.
-    _writer.end();
+    // Finish writing and return the complete result.
+    return _writer.end();
   }
 
   visitAdjacentStrings(AdjacentStrings node) {
@@ -1073,7 +1083,8 @@ class SourceVisitor implements AstVisitor {
     // formatter ensures it gets a newline after it. Since the script tag must
     // come at the top of the file, we don't have to worry about preceding
     // comments or whitespace.
-    _writer.write(node.scriptTag.lexeme.trim());
+    _writeText(node.scriptTag.lexeme.trim(), node.offset);
+
     oneOrTwoNewlines();
   }
 
@@ -1097,7 +1108,7 @@ class SourceVisitor implements AstVisitor {
     // comments are written first.
     writePrecedingCommentsAndNewlines(node.literal);
 
-    _writeStringLiteral(node.literal.lexeme);
+    _writeStringLiteral(node.literal.lexeme, node.offset);
   }
 
   visitStringInterpolation(StringInterpolation node) {
@@ -1109,7 +1120,8 @@ class SourceVisitor implements AstVisitor {
     // contents of interpolated strings. Instead, it treats the entire thing as
     // a single (possibly multi-line) chunk of text.
      _writeStringLiteral(
-        _source.substring(node.beginToken.offset, node.endToken.end));
+        _source.text.substring(node.beginToken.offset, node.endToken.end),
+        node.offset);
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -1552,15 +1564,18 @@ class SourceVisitor implements AstVisitor {
   ///
   /// Splits multiline strings into separate chunks so that the line splitter
   /// can handle them correctly.
-  void _writeStringLiteral(String string) {
+  void _writeStringLiteral(String string, int offset) {
     // Split each line of a multiline string into separate chunks.
     var lines = string.split("\n");
 
-    _writer.write(lines.first);
+    _writeText(lines.first, offset);
+    offset += lines.first.length;
 
     for (var line in lines.skip(1)) {
       _writer.writeWhitespace(Whitespace.newlineFlushLeft);
-      _writer.write(line);
+      offset++;
+      _writeText(line, offset);
+      offset += line.length;
     }
   }
 
@@ -1623,7 +1638,7 @@ class SourceVisitor implements AstVisitor {
 
     if (before != null) before();
 
-    _writer.write(token.lexeme);
+    _writeText(token.lexeme, token.offset);
 
     if (after != null) after();
   }
@@ -1661,16 +1676,100 @@ class SourceVisitor implements AstVisitor {
         previousLine = commentLine;
       }
 
-      comments.add(new SourceComment(comment.toString().trim(),
+      var sourceComment = new SourceComment(comment.toString().trim(),
           commentLine - previousLine,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
-          isStartOfLine: _startColumn(comment) == 1));
+          isStartOfLine: _startColumn(comment) == 1);
+
+      // If this comment contains either of the selection endpoints, mark them
+      // in the comment.
+      var start = _getSelectionStartWithin(comment.offset, comment.length);
+      if (start != null) sourceComment.startSelection(start);
+
+      var end = _getSelectionEndWithin(comment.offset, comment.length);
+      if (end != null) sourceComment.endSelection(end);
+
+      comments.add(sourceComment);
 
       previousLine = _endLine(comment);
       comment = comment.next;
     }
 
     _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
+  }
+
+  /// Write [text] to the current chunk, given that it starts at [offset] in
+  /// the original source.
+  ///
+  /// Also outputs the selection endpoints if needed.
+  void _writeText(String text, int offset) {
+    _writer.write(text);
+
+    // If this text contains either of the selection endpoints, mark them in
+    // the chunk.
+    var start = _getSelectionStartWithin(offset, text.length);
+    if (start != null) {
+      _writer.startSelectionFromEnd(text.length - start);
+    }
+
+    var end = _getSelectionEndWithin(offset, text.length);
+    if (end != null) {
+      _writer.endSelectionFromEnd(text.length - end);
+    }
+  }
+
+  /// Returns the number of characters past [offset] in the source where the
+  /// selection start appears if it appears before `offset + length`.
+  ///
+  /// Returns `null` if the selection start has already been processed or is
+  /// not within that range.
+  int _getSelectionStartWithin(int offset, int length) {
+    // If there is no selection, do nothing.
+    if (_source.selectionStart == null) return null;
+
+    // If we've already passed it, don't consider it again.
+    if (_passedSelectionStart) return null;
+
+    var start = _source.selectionStart - offset;
+
+    // If it started in whitespace before this text, push it forward to the
+    // beginning of the non-whitespace text.
+    if (start < 0) start = 0;
+
+    // If we haven't reached it yet, don't consider it.
+    if (start >= length) return null;
+
+    // We found it.
+    _passedSelectionStart = true;
+
+    return start;
+  }
+
+  /// Returns the number of characters past [offset] in the source where the
+  /// selection endpoint appears if it appears before `offset + length`.
+  ///
+  /// Returns `null` if the selection endpoint has already been processed or is
+  /// not within that range.
+  int _getSelectionEndWithin(int offset, int length) {
+    // If there is no selection, do nothing.
+    if (_source.selectionLength == null) return null;
+
+    // If we've already passed it, don't consider it again.
+    if (_passedSelectionEnd) return null;
+
+    var end = _source.selectionStart + _source.selectionLength - offset;
+
+    // If it started in whitespace before this text, push it forward to the
+    // beginning of the non-whitespace text.
+    if (end < 0) end = 0;
+
+    // If we haven't reached it yet, don't consider it.
+    if (end >= length) return null;
+
+    // We found it.
+    _passedSelectionEnd = true;
+
+    return end;
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.

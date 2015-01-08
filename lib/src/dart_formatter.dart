@@ -12,6 +12,58 @@ import 'package:analyzer/src/generated/source.dart';
 import 'error_listener.dart';
 import 'source_visitor.dart';
 
+/// Describes a chunk of source code that is to be formatted or has been
+/// formatted.
+class SourceCode {
+  /// The [uri] where the source code is from.
+  ///
+  /// Used in error messages if the code cannot be parsed.
+  final String uri;
+
+  /// The Dart source code text.
+  final String text;
+
+  /// Whether the source is a compilation unit or a bare statement.
+  final bool isCompilationUnit;
+
+  /// The offset in [text] where the selection begins, or `null` if there is
+  /// no selection.
+  final int selectionStart;
+
+  /// The number of selected characters or `null` if there is no selection.
+  final int selectionLength;
+
+  SourceCode(this.text,
+      {this.uri, this.isCompilationUnit: true, this.selectionStart,
+      this.selectionLength}) {
+    // Must either provide both selection bounds or neither.
+    if ((selectionStart == null) != (selectionLength == null)) {
+      throw new ArgumentError(
+          "Is selectionStart is provided, selectionLength must be too.");
+    }
+
+    if (selectionStart != null) {
+      if (selectionStart < 0) {
+        throw new ArgumentError("selectionStart must be non-negative.");
+      }
+
+      if (selectionStart > text.length) {
+        throw new ArgumentError("selectionStart must be within text.");
+      }
+    }
+
+    if (selectionLength != null) {
+      if (selectionLength < 0) {
+        throw new ArgumentError("selectionLength must be non-negative.");
+      }
+
+      if (selectionStart + selectionLength > text.length) {
+        throw new ArgumentError("selectionLength must end within text.");
+      }
+    }
+  }
+}
+
 /// Dart source code formatter.
 class DartFormatter {
   /// The string that newlines should use.
@@ -38,7 +90,7 @@ class DartFormatter {
   DartFormatter({this.lineEnding, int pageWidth, this.indent: 0})
       : this.pageWidth = (pageWidth == null) ? 80 : pageWidth;
 
-  /// Format the given [source] string containing an entire Dart compilation
+  /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
   ///
   /// If [uri] is given, it is a [String] or [Uri] used to identify the file
@@ -54,20 +106,25 @@ class DartFormatter {
       throw new ArgumentError("uri must be `null`, a Uri, or a String.");
     }
 
-    return _format(source, uri: uri, isCompilationUnit: true);
+    return formatSource(
+        new SourceCode(source, uri: uri, isCompilationUnit: true)).text;
   }
 
-  /// Format the given [source] string containing a single Dart statement.
+  /// Formats the given [source] string containing a single Dart statement.
   String formatStatement(String source) {
-    return _format(source, isCompilationUnit: false);
+    return formatSource(new SourceCode(source, isCompilationUnit: false)).text;
   }
 
-  String _format(String source, {String uri, bool isCompilationUnit}) {
+  /// Formats the given [source].
+  ///
+  /// Returns a new [SourceCode] containing the formatted code and the resulting
+  /// selection, if any.
+  SourceCode formatSource(SourceCode source) {
     var errorListener = new ErrorListener();
 
     // Tokenize the source.
-    var reader = new CharSequenceReader(source);
-    var stringSource = new StringSource(source, uri);
+    var reader = new CharSequenceReader(source.text);
+    var stringSource = new StringSource(source.text, source.uri);
     var scanner = new Scanner(stringSource, reader, errorListener);
     var startToken = scanner.tokenize();
     var lineInfo = new LineInfo(scanner.lineStarts);
@@ -78,7 +135,7 @@ class DartFormatter {
       // If the first newline is "\r\n", use that. Otherwise, use "\n".
       if (scanner.lineStarts.length > 1 &&
           scanner.lineStarts[1] >= 2 &&
-          source[scanner.lineStarts[1] - 2] == '\r') {
+          source.text[scanner.lineStarts[1] - 2] == '\r') {
         lineEnding = "\r\n";
       } else {
         lineEnding = "\n";
@@ -92,7 +149,7 @@ class DartFormatter {
     parser.parseAsync = true;
 
     var node;
-    if (isCompilationUnit) {
+    if (source.isCompilationUnit) {
       node = parser.parseCompilationUnit(startToken);
     } else {
       node = parser.parseStatement(startToken);
@@ -101,14 +158,7 @@ class DartFormatter {
     errorListener.throwIfErrors();
 
     // Format it.
-    var buffer = new StringBuffer();
-    var visitor = new SourceVisitor(this, lineInfo, source, buffer);
-
-    visitor.run(node);
-
-    // Be a good citizen, end with a newline.
-    if (isCompilationUnit) buffer.write(lineEnding);
-
-    return buffer.toString();
+    var visitor = new SourceVisitor(this, lineInfo, source);
+    return visitor.run(node);
   }
 }

@@ -32,4 +32,6 @@ class FormatterException implements Exception {
 
     return buffer.toString();
   }
+
+  String toString() => message();
 }

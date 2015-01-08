@@ -9,6 +9,7 @@ import 'dart:math' as math;
 import 'chunk.dart';
 import 'debug.dart';
 import 'line_prefix.dart';
+import 'line_writer.dart';
 
 /// The number of spaces in a single level of indentation.
 const spacesPerIndent = 2;
@@ -94,19 +95,38 @@ class LineSplitter {
   ///
   /// It will determine how best to split it into multiple lines of output and
   /// return a single string that may contain one or more newline characters.
-  void apply(StringBuffer buffer) {
+  ///
+  /// Returns a two-element list. The first element will be an [int] indicating
+  /// where in [buffer] the selection start point should appear if it was
+  /// contained in the formatted list of chunks. Otherwise it will be `null`.
+  /// Likewise, the second element will be non-`null` if the selection endpoint
+  /// is within the list of chunks.
+  List<int> apply(StringBuffer buffer) {
     if (debugFormatter) dumpLine(_chunks, _indent);
 
     var splits = _findBestSplits(new LinePrefix());
+    var selection = [null, null];
 
     // Write each chunk and the split after it.
     buffer.write(" " * (_indent * spacesPerIndent));
-    for (var i = 0; i < _chunks.length - 1; i++) {
+    for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
+
+      // If this chunk contains one of the selection markers, tell the writer
+      // where it ended up in the final output.
+      if (chunk.selectionStart != null) {
+        selection[0] = buffer.length + chunk.selectionStart;
+      }
+
+      if (chunk.selectionEnd != null) {
+        selection[1] = buffer.length + chunk.selectionEnd;
+      }
 
       buffer.write(chunk.text);
 
-      if (splits.shouldSplitAt(i)) {
+      if (i == _chunks.length - 1) {
+        // Don't write trailing whitespace after the last chunk.
+      } else if (splits.shouldSplitAt(i)) {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
@@ -120,8 +140,7 @@ class LineSplitter {
       }
     }
 
-    // Write the final chunk without any trailing newlines.
-    buffer.write(_chunks.last.text);
+    return selection;
   }
 
   /// Finds the best set of splits to apply to the remainder of the line

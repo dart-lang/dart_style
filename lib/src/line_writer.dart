@@ -11,32 +11,6 @@ import 'line_splitter.dart';
 import 'multisplit.dart';
 import 'whitespace.dart';
 
-/// A comment in the source, with a bit of information about the surrounding
-/// whitespace.
-class SourceComment {
-  /// The text of the comment, including `//`, `/*`, and `*/`.
-  final String text;
-
-  /// The number of newlines between the comment or token preceding this comment
-  /// and the beginning of this one.
-  ///
-  /// Will be zero if the comment is a trailing one.
-  final int linesBefore;
-
-  /// Whether this comment is a line comment.
-  final bool isLineComment;
-
-  /// Whether this comment starts at column one in the source.
-  ///
-  /// Comments that start at the start of the line will not be indented in the
-  /// output. This way, commented out chunks of code do not get erroneously
-  /// re-indented.
-  final bool isStartOfLine;
-
-  SourceComment(this.text, this.linesBefore,
-      {this.isLineComment, this.isStartOfLine});
-}
-
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
 /// series of [Chunk]s which can then be split into physical lines.
@@ -47,7 +21,9 @@ class SourceComment {
 class LineWriter {
   final DartFormatter _formatter;
 
-  final StringBuffer _buffer;
+  final SourceCode _source;
+
+  final _buffer = new StringBuffer();
 
   final _chunks = <Chunk>[];
 
@@ -161,6 +137,18 @@ class LineWriter {
     return _chunks.length;
   }
 
+  /// The offset in [_buffer] where the selection starts in the formatted code.
+  ///
+  /// This will be `null` if there is no selection or the writer hasn't reached
+  /// the beginning of the selection yet.
+  int _selectionStart;
+
+  /// The length in [_buffer] of the selection in the formatted code.
+  ///
+  /// This will be `null` if there is no selection or the writer hasn't reached
+  /// the end of the selection yet.
+  int _selectionLength;
+
   /// Whether there is pending whitespace that depends on the number of
   /// newlines in the source.
   ///
@@ -174,7 +162,7 @@ class LineWriter {
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
 
-  LineWriter(this._formatter, this._buffer) {
+  LineWriter(this._formatter, this._source) {
     indent(_formatter.indent);
     _beginningIndent = _formatter.indent;
   }
@@ -297,6 +285,14 @@ class LineWriter {
       }
 
       _writeText(comment.text);
+
+      if (comment.selectionStart != null) {
+        startSelectionFromEnd(comment.text.length - comment.selectionStart);
+      }
+
+      if (comment.selectionEnd != null) {
+        endSelectionFromEnd(comment.text.length - comment.selectionEnd);
+      }
 
       // Make sure there is at least one newline after a line comment and allow
       // one or two after a block comment that has nothing after it.
@@ -452,9 +448,51 @@ class LineWriter {
     _nesting--;
   }
 
-  /// Finish writing the last line.
-  void end() {
+  /// Marks the selection starting point as occurring [fromEnd] characters to
+  /// the left of the end of what's currently been written.
+  ///
+  /// It counts backwards from the end because this is called *after* the chunk
+  /// of text containing the selection has been output.
+  void startSelectionFromEnd(int fromEnd) {
+    assert(_chunks.isNotEmpty);
+    _chunks.last.startSelectionFromEnd(fromEnd);
+  }
+
+  /// Marks the selection ending point as occurring [fromEnd] characters to the
+  /// left of the end of what's currently been written.
+  ///
+  /// It counts backwards from the end because this is called *after* the chunk
+  /// of text containing the selection has been output.
+  void endSelectionFromEnd(int fromEnd) {
+    assert(_chunks.isNotEmpty);
+    _chunks.last.endSelectionFromEnd(fromEnd);
+  }
+
+  /// Finishes writing and returns a [SourceCode] containing the final output
+  /// and updated selection, if any.
+  SourceCode end() {
     if (_chunks.isNotEmpty) _completeLine();
+
+    // Be a good citizen, end with a newline.
+    if (_source.isCompilationUnit) _buffer.write(_formatter.lineEnding);
+
+    // If we haven't hit the beginning and/or end of the selection yet, they
+    // must be at the very end of the code.
+    if (_source.selectionStart != null) {
+      if (_selectionStart == null) {
+        _selectionStart = _buffer.length;
+      }
+
+      if (_selectionLength == null) {
+        _selectionLength = _buffer.length - _selectionStart;
+      }
+    }
+
+    return new SourceCode(_buffer.toString(),
+        uri: _source.uri,
+        isCompilationUnit: _source.isCompilationUnit,
+        selectionStart: _selectionStart,
+        selectionLength: _selectionLength);
   }
 
   /// Writes the current pending [Whitespace] to the output, if any.
@@ -648,9 +686,12 @@ class LineWriter {
       _buffer.write(_formatter.lineEnding);
     }
 
-    var splitter = new LineSplitter(_formatter.lineEnding,
-        _formatter.pageWidth, _chunks, _spans, _beginningIndent);
-    splitter.apply(_buffer);
+    var splitter = new LineSplitter(_formatter.lineEnding, _formatter.pageWidth,
+        _chunks, _spans, _beginningIndent);
+    var selection = splitter.apply(_buffer);
+
+    if (selection[0] != null) _selectionStart = selection[0];
+    if (selection[1] != null) _selectionLength = selection[1] - _selectionStart;
   }
 
   /// Handles multisplits when a hard line occurs.

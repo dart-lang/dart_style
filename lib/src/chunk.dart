@@ -6,6 +6,43 @@ library dart_style.src.chunk;
 
 import 'debug.dart';
 
+/// Tracks where a selection start or end point may appear in some piece of
+/// text.
+abstract class Selection {
+  /// The chunk of text.
+  String get text;
+
+  /// The offset from the beginning of [text] where the selection starts, or
+  /// `null` if the selection does not start within this chunk.
+  int get selectionStart => _selectionStart;
+  int _selectionStart;
+
+  /// The offset from the beginning of [text] where the selection ends, or
+  /// `null` if the selection does not start within this chunk.
+  int get selectionEnd => _selectionEnd;
+  int _selectionEnd;
+
+  /// Sets [selectionStart] to be [start] characters into [text].
+  void startSelection(int start) {
+    _selectionStart = start;
+  }
+
+  /// Sets [selectionStart] to be [fromEnd] characters from the end of [text].
+  void startSelectionFromEnd(int fromEnd) {
+    _selectionStart = text.length - fromEnd;
+  }
+
+  /// Sets [selectionEnd] to be [end] characters into [text].
+  void endSelection(int end) {
+    _selectionEnd = end;
+  }
+
+  /// Sets [selectionEnd] to be [fromEnd] characters from the end of [text].
+  void endSelectionFromEnd(int fromEnd) {
+    _selectionEnd = text.length - fromEnd;
+  }
+}
+
 /// A chunk of non-breaking output text terminated by a hard or soft newline.
 ///
 /// Chunks are created by [LineWriter] and fed into [LineSplitter]. Each
@@ -27,7 +64,7 @@ import 'debug.dart';
 ///
 /// A split controls the leading spacing of the subsequent line, both
 /// block-based [indent] and expression-wrapping-based [nesting].
-class Chunk {
+class Chunk extends Selection {
   /// The literal text output for the chunk.
   String get text => _text;
   String _text;
@@ -278,4 +315,30 @@ class Span {
 
     return result + ")";
   }
+}
+
+/// A comment in the source, with a bit of information about the surrounding
+/// whitespace.
+class SourceComment extends Selection {
+  /// The text of the comment, including `//`, `/*`, and `*/`.
+  final String text;
+
+  /// The number of newlines between the comment or token preceding this comment
+  /// and the beginning of this one.
+  ///
+  /// Will be zero if the comment is a trailing one.
+  final int linesBefore;
+
+  /// Whether this comment is a line comment.
+  final bool isLineComment;
+
+  /// Whether this comment starts at column one in the source.
+  ///
+  /// Comments that start at the start of the line will not be indented in the
+  /// output. This way, commented out chunks of code do not get erroneously
+  /// re-indented.
+  final bool isStartOfLine;
+
+  SourceComment(this.text, this.linesBefore,
+      {this.isLineComment, this.isStartOfLine});
 }
