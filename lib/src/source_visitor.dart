@@ -523,11 +523,34 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    throw new UnimplementedError("Enum formatting is not implemented yet.");
+    visit(node.name);
   }
 
   visitEnumDeclaration(EnumDeclaration node) {
-    throw new UnimplementedError("Enum formatting is not implemented yet.");
+    visitDeclarationMetadata(node.metadata);
+
+    token(node.keyword);
+    space();
+    visit(node.name);
+    space();
+    token(node.leftBracket);
+
+    _writer.indent();
+    _writer.startMultisplit();
+    _writer.multisplit(space: true);
+
+    visitCommaSeparatedNodes(node.constants, between: () {
+      _writer.multisplit(space: true);
+    });
+
+    // Trailing comma.
+    if (node.rightBracket.previous.lexeme == ",") {
+      token(node.rightBracket.previous);
+    }
+
+    _writer.unindent();
+    _writer.multisplit(space: true);
+    token(node.rightBracket);
   }
 
   visitExportDirective(ExportDirective node) {
