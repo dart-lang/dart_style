@@ -117,22 +117,32 @@ void main() {
   group('line endings', () {
     test('uses given line ending', () {
       expect(new DartFormatter(lineEnding: "%").format("var i = 1;"),
-        equals("var i = 1;%"));
+          equals("var i = 1;%"));
     });
 
     test('infers \\r\\n if the first newline uses that', () {
       expect(new DartFormatter().format("var\r\ni\n=\n1;\n"),
-        equals("var i = 1;\r\n"));
+          equals("var i = 1;\r\n"));
     });
 
     test('infers \\n if the first newline uses that', () {
       expect(new DartFormatter().format("var\ni\r\n=\r\n1;\r\n"),
-        equals("var i = 1;\n"));
+          equals("var i = 1;\n"));
     });
 
     test('defaults to \\n if there are no newlines', () {
       expect(new DartFormatter().format("var i =1;"),
-        equals("var i = 1;\n"));
+          equals("var i = 1;\n"));
+    });
+
+    test('handles Windows line endings in multiline strings', () {
+      expect(new DartFormatter(lineEnding: "\r\n").formatStatement(
+          '  """first\r\n'
+          'second\r\n'
+          'third"""  ;'), equals(
+          '"""first\r\n'
+          'second\r\n'
+          'third""";'));
     });
   });
 }

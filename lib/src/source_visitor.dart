@@ -15,6 +15,8 @@ import 'whitespace.dart';
 
 /// An AST visitor that drives formatting heuristics.
 class SourceVisitor implements AstVisitor {
+  final DartFormatter _formatter;
+
   /// The writer to which the output lines are written.
   final LineWriter _writer;
 
@@ -34,8 +36,9 @@ class SourceVisitor implements AstVisitor {
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(DartFormatter formatter, this._lineInfo, SourceCode source)
-      : _source = source,
+  SourceVisitor(formatter, this._lineInfo, SourceCode source)
+      : _formatter = formatter,
+        _source = source,
         _writer = new LineWriter(formatter, source);
 
   /// Runs the visitor on [node], formatting its contents.
@@ -1589,7 +1592,7 @@ class SourceVisitor implements AstVisitor {
   /// can handle them correctly.
   void _writeStringLiteral(String string, int offset) {
     // Split each line of a multiline string into separate chunks.
-    var lines = string.split("\n");
+    var lines = string.split(_formatter.lineEnding);
 
     _writeText(lines.first, offset);
     offset += lines.first.length;
