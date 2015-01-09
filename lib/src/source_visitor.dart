@@ -369,6 +369,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConditionalExpression(ConditionalExpression node) {
+    _writer.nestExpression();
     visit(node.condition);
     space();
 
@@ -387,6 +388,7 @@ class SourceVisitor implements AstVisitor {
 
     _writer.endMultisplit();
     _writer.endSpan();
+    _writer.unnest();
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {

@@ -94,3 +94,13 @@ someFunction(
     (verylongIdentifier *
         verylongIdentifier) *
     identifier);
+>>> conditional operands are nested
+identifier ? identifier ? someParticularlyLongOperand : someParticularlyLongOperand : identifier ? someParticularlyLongOperand : someParticularlyLongOperand;
+<<<
+identifier ?
+    identifier ?
+        someParticularlyLongOperand :
+        someParticularlyLongOperand :
+    identifier ?
+        someParticularlyLongOperand :
+        someParticularlyLongOperand;
