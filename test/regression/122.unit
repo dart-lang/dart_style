@@ -5,11 +5,11 @@ var xsrfValue = _urlIsSameOrigin(url) ?
     defaults.xsrfCookieName] :
     null;
 <<<
-var xsrfValue = _urlIsSameOrigin(url) ?
-    _cookies[xsrfCookieName != null ?
-        xsrfCookieName :
-        defaults.xsrfCookieName] :
-    null;
+var xsrfValue = _urlIsSameOrigin(url)
+    ? _cookies[xsrfCookieName != null
+        ? xsrfCookieName
+        : defaults.xsrfCookieName]
+    : null;
 >>>
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
@@ -20,7 +20,7 @@ class _Streams {
 <<<
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
-      : _typeCounts = inheritStreams == null ?
-          new HashMap<String, int>() :
-          new HashMap.from(inheritStreams._typeCounts);
+      : _typeCounts = inheritStreams == null
+          ? new HashMap<String, int>()
+          : new HashMap.from(inheritStreams._typeCounts);
 }

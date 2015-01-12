@@ -371,19 +371,21 @@ class SourceVisitor implements AstVisitor {
   visitConditionalExpression(ConditionalExpression node) {
     _writer.nestExpression();
     visit(node.condition);
-    space();
 
     _writer.startSpan();
-    token(node.question);
 
     // If we split after one clause in a conditional, always split after both.
     _writer.startMultisplit();
     _writer.multisplit(nest: true, space: true);
+    token(node.question);
+    space();
+
     visit(node.thenExpression);
 
-    space();
-    token(node.colon);
     _writer.multisplit(nest: true, space: true);
+    token(node.colon);
+    space();
+
     visit(node.elseExpression);
 
     _writer.endMultisplit();
