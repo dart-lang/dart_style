@@ -102,6 +102,44 @@ receiver
           a______________ ||
       a______________;
 }
+>>> mixed multiplicative operators
+longName * longName / longName % longName ~/ longName;
+<<<
+longName *
+    longName /
+    longName %
+    longName ~/
+    longName;
+>>> mixed additive operators
+longName + longName - longName + longName - longName;
+<<<
+longName +
+    longName -
+    longName +
+    longName -
+    longName;
+>>> mixed shift operators
+longName >> longName << longName >> longName << longName;
+<<<
+longName >>
+    longName <<
+    longName >>
+    longName <<
+    longName;
+>>> mixture of same and different precedence
+veryLongIdentifier + veryLongIdentifier / veryLongIdentifier *
+veryLongIdentifier - veryLongIdentifier * veryLongIdentifier +
+veryLongIdentifier / veryLongIdentifier - veryLongIdentifier;
+<<<
+veryLongIdentifier +
+    veryLongIdentifier /
+        veryLongIdentifier *
+        veryLongIdentifier -
+    veryLongIdentifier *
+        veryLongIdentifier +
+    veryLongIdentifier /
+        veryLongIdentifier -
+    veryLongIdentifier;
 >>> choose extra nesting if it leads to better solution
 longIdentifier +
     (longIdentifier ? 0 :
