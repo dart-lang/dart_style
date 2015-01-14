@@ -38,10 +38,15 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
 
   var formatter = new DartFormatter(pageWidth: pageWidth);
   try {
-    var output = formatter.format(file.readAsStringSync(), uri: file.path);
+    var source = file.readAsStringSync();
+    var output = formatter.format(source, uri: file.path);
     if (overwrite) {
-      file.writeAsStringSync(output);
-      print("Formatted $label");
+      if (source != output) {
+        file.writeAsStringSync(output);
+        print("Formatted $label");
+      } else {
+        print("Unchanged $label");
+      }
     } else {
       // Don't add an extra newline.
       stdout.write(output);

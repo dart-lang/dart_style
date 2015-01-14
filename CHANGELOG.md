@@ -2,6 +2,7 @@
 
 * Split different operators with the same precedence equally (#130).
 * No spaces for empty for loop clauses (#132).
+* Don't touch files whose contents did not change (#127).
 
 # 0.1.2
 

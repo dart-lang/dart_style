@@ -4,6 +4,7 @@
 
 library dart_style.test.io;
 
+import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_style/src/io.dart';
@@ -49,6 +50,41 @@ void main() {
     d.dir('code.dart', [
       d.file('a.dart', _FORMATTED)
     ]).validate();
+  });
+
+  test("doesn't touch unchanged files", () {
+    d.dir('code', [
+      d.file('bad.dart', _SOURCE),
+      d.file('good.dart', _FORMATTED),
+    ]).create();
+
+    modTime(String file) {
+      return new File(p.join(d.defaultRoot, 'code', file)).statSync().modified;
+    }
+
+    var badBefore;
+    var goodBefore;
+
+    schedule(() {
+      badBefore = modTime('bad.dart');
+      goodBefore = modTime('good.dart');
+
+      // Wait a bit so the mod time of a formatted file will be different.
+      return new Future.delayed(new Duration(seconds: 1));
+    });
+
+    schedule(() {
+      var dir = new Directory(p.join(d.defaultRoot, 'code'));
+      processDirectory(dir, overwrite: true);
+
+      // Should be touched.
+      var badAfter = modTime('bad.dart');
+      expect(badAfter, isNot(equals(badBefore)));
+
+      // Should not be touched.
+      var goodAfter = modTime('good.dart');
+      expect(goodAfter, equals(goodBefore));
+    });
   });
 
   test("doesn't follow directory symlinks by default", () {
