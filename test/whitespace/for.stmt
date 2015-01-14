@@ -7,10 +7,14 @@ for (var i = 0;i<100;i++) {
 for (var i = 0; i < 100; i++) {
   print(i);
 }
->>> empty clauses TODO(rnystrom): Is this what we want?
+>>> empty clauses
 for(;;);
 <<<
-for ( ; ; );
+for (;;);
+>>> empty initializer clause
+for (  ;   foo; bar) {}
+<<<
+for (; foo; bar) {}
 >>> whitespace
 for (var    file  in  files   ) {
   print(file);

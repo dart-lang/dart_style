@@ -753,36 +753,32 @@ class SourceVisitor implements AstVisitor {
     // The initialization clause.
     if (node.initialization != null) {
       visit(node.initialization);
-    } else {
-      if (node.variables == null) {
-        space();
-      } else {
-        // Indent split variables more so they aren't at the same level
-        // as the rest of the loop clauses.
-        _writer.indent(4);
+    } else if (node.variables != null) {
+      // Indent split variables more so they aren't at the same level
+      // as the rest of the loop clauses.
+      _writer.indent(4);
 
-        var declaration = node.variables;
-        visitDeclarationMetadata(declaration.metadata);
-        modifier(declaration.keyword);
-        visit(declaration.type, after: space);
+      var declaration = node.variables;
+      visitDeclarationMetadata(declaration.metadata);
+      modifier(declaration.keyword);
+      visit(declaration.type, after: space);
 
-        visitCommaSeparatedNodes(declaration.variables, between: () {
-          _writer.multisplit(space: true, nest: true);
-        });
+      visitCommaSeparatedNodes(declaration.variables, between: () {
+        _writer.multisplit(space: true, nest: true);
+      });
 
-        _writer.unindent(4);
-      }
+      _writer.unindent(4);
     }
 
     token(node.leftSeparator);
-    _writer.multisplit(nest: true, space: true);
 
     // The condition clause.
+    if (node.condition != null) _writer.multisplit(nest: true, space: true);
     visit(node.condition);
     token(node.rightSeparator);
 
     // The update clause.
-    if (node.updaters != null) {
+    if (node.updaters.isNotEmpty) {
       _writer.multisplit(nest: true, space: true);
       visitCommaSeparatedNodes(node.updaters,
           between: () => _writer.multisplit(nest: true, space: true));
