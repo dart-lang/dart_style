@@ -87,6 +87,40 @@ void main() {
     });
   });
 
+  test("skips subdirectories whose name starts with '.'", () {
+    d.dir('code', [
+      d.dir('.skip', [
+        d.file('a.dart', _SOURCE)
+      ])
+    ]).create();
+
+    schedule(() {
+      var dir = new Directory(d.defaultRoot);
+      processDirectory(dir, overwrite: true);
+    }, 'Run formatter.');
+
+    d.dir('code', [
+      d.dir('.skip', [
+        d.file('a.dart', _SOURCE)
+      ])
+    ]).validate();
+  });
+
+  test("traverses the given directory even if its name starts with '.'", () {
+    d.dir('.code', [
+      d.file('a.dart', _SOURCE)
+    ]).create();
+
+    schedule(() {
+      var dir = new Directory(p.join(d.defaultRoot, '.code'));
+      processDirectory(dir, overwrite: true);
+    }, 'Run formatter.');
+
+    d.dir('.code', [
+      d.file('a.dart', _FORMATTED)
+    ]).validate();
+  });
+
   test("doesn't follow directory symlinks by default", () {
     d.dir('code', [
       d.file('a.dart', _SOURCE),

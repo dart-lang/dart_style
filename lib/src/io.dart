@@ -26,6 +26,12 @@ void processDirectory(Directory directory,
 
     if (entry is! File || !entry.path.endsWith(".dart")) continue;
 
+    // If the path is in a subdirectory starting with ".", ignore it.
+    if (p.split(relative).any((part) => part.startsWith("."))) {
+      print("Skipping hidden file $relative");
+      continue;
+    }
+
     processFile(
         entry, label: relative, overwrite: overwrite, pageWidth: pageWidth);
   }
