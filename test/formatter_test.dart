@@ -48,44 +48,6 @@ void main() {
     }
   });
 
-  group('SourceCode', () {
-    test('throws on negative start', () {
-      expect(() {
-        new SourceCode("12345;", selectionStart: -1, selectionLength: 0);
-      }, throwsArgumentError);
-    });
-
-    test('throws on out of bounds start', () {
-      expect(() {
-        new SourceCode("12345;", selectionStart: 7, selectionLength: 0);
-      }, throwsArgumentError);
-    });
-
-    test('throws on negative length', () {
-      expect(() {
-        new SourceCode("12345;", selectionStart: 1, selectionLength: -1);
-      }, throwsArgumentError);
-    });
-
-    test('throws on out of bounds length', () {
-      expect(() {
-        new SourceCode("12345;", selectionStart: 2, selectionLength: 5);
-      }, throwsArgumentError);
-    });
-
-    test('throws is start is null and length is not', () {
-      expect(() {
-        new SourceCode("12345;", selectionStart: 0);
-      }, throwsArgumentError);
-    });
-
-    test('throws is length is null and start is not', () {
-      expect(() {
-        new SourceCode("12345;", selectionLength: 1);
-      }, throwsArgumentError);
-    });
-  });
-
   test("adds newline to unit", () {
     expect(new DartFormatter().format("var x = 1;"),
         equals("var x = 1;\n"));
@@ -235,12 +197,6 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit: false}) {
 
   var end = source.indexOf("›");
   source = source.replaceAll("›", "");
-
-  // If the selection end is after a trailing newline, there will be an extra
-  // newline *after* the "›", so remove it.
-  if (end != -1 && source.endsWith("\n\n")) {
-    source = source.substring(0, source.length - 1);
-  }
 
   return new SourceCode(source,
       isCompilationUnit: isCompilationUnit,

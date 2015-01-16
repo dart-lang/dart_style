@@ -9,8 +9,7 @@
 <<<
 ‹main() {
   body();
-}
-›
+}›
 >>> trailing comment
    ma‹in() {}
 // com›ment
@@ -29,8 +28,8 @@ veryLongMethodCall(›veryLongArgumentName);
 main() {
   veryLongMethodCall(
       ‹veryLongArgumentName);
-  veryLongMethodCall(
-      ›veryLongArgumentName);
+  veryLongMethodCall(›
+      veryLongArgumentName);
 }
 >>> in soft space split whitespace
 main() {shortCall(argument, ‹  argument);
@@ -39,7 +38,7 @@ shortCall(argument,  › argument);
 <<<
 main() {
   shortCall(argument, ‹argument);
-  shortCall(argument, ›argument);
+  shortCall(argument,› argument);
 }
 >>> in hard split whitespace
 foo() {body;  ‹  }
@@ -49,8 +48,8 @@ foo() {
   body;
 ‹}
 bar() {
-  body;
-›}
+  body;›
+}
 >>> across lines that get split separately
 foo() {
 
@@ -67,3 +66,18 @@ foo() {
 bar() {
   sec›ond();
 }
+>>> only whitespace in newline selected
+foo() {} ‹  › bar() {}
+<<<
+foo() {}
+‹›bar() {}
+>>> only whitespace in double newline selected
+class Foo {}
+
+‹  ›
+
+class Bar {}
+<<<
+class Foo {}
+
+‹›class Bar {}

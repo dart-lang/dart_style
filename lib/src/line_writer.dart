@@ -9,6 +9,7 @@ import 'chunk.dart';
 import 'debug.dart';
 import 'line_splitter.dart';
 import 'multisplit.dart';
+import 'source_code.dart';
 import 'whitespace.dart';
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text

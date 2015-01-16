@@ -8,9 +8,10 @@ import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
 
-import '../dart_style.dart';
+import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'line_writer.dart';
+import 'source_code.dart';
 import 'whitespace.dart';
 
 /// An AST visitor that drives formatting heuristics.
@@ -33,6 +34,11 @@ class SourceVisitor implements AstVisitor {
   /// `true` if the visitor has written past the end of the selection in the
   /// original source text.
   bool _passedSelectionEnd = false;
+
+  /// The character offset of the end of the selection, if there is a selection.
+  ///
+  /// This is calculated and cached by [_findSelectionEnd].
+  int _selectionEnd;
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -1835,19 +1841,52 @@ class SourceVisitor implements AstVisitor {
     // If we've already passed it, don't consider it again.
     if (_passedSelectionEnd) return null;
 
-    var end = _source.selectionStart + _source.selectionLength - offset;
+    var end = _findSelectionEnd() - offset;
 
     // If it started in whitespace before this text, push it forward to the
     // beginning of the non-whitespace text.
     if (end < 0) end = 0;
 
     // If we haven't reached it yet, don't consider it.
-    if (end >= length) return null;
+    if (end > length) return null;
+
+    if (end == length && _findSelectionEnd() == _source.selectionStart) {
+      return null;
+    }
 
     // We found it.
     _passedSelectionEnd = true;
 
     return end;
+  }
+
+  /// Calculates the character offset in the source text of the end of the
+  /// selection.
+  ///
+  /// Removes any trailing whitespace from the selection.
+  int _findSelectionEnd() {
+    if (_selectionEnd != null) return _selectionEnd;
+
+    _selectionEnd = _source.selectionStart + _source.selectionLength;
+
+    // If the selection bumps to the end of the source, pin it there.
+    if (_selectionEnd == _source.text.length) return _selectionEnd;
+
+    // Trim off any trailing whitespace. We want the selection to "rubberband"
+    // around the selected non-whitespace tokens since the whitespace will
+    // be munged by the formatter itself.
+    while (_selectionEnd > _source.selectionStart) {
+      // Stop if we hit anything other than space, tab, newline or carriage
+      // return.
+      var char = _source.text.codeUnitAt(_selectionEnd - 1);
+      if (char != 0x20 && char != 0x09 && char != 0x0a && char != 0x0d) {
+        break;
+      }
+
+      _selectionEnd--;
+    }
+
+    return _selectionEnd;
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.

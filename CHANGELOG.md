@@ -4,6 +4,7 @@
 * No spaces for empty for loop clauses (#132).
 * Don't touch files whose contents did not change (#127).
 * Skip formatting files in hidden directories (#125).
+* Don't include trailing whitespace when preserving selection (#124).
 
 # 0.1.2
 

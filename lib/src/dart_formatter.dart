@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.code_formatter;
+library dart_style.src.dart_formatter;
 
 import 'package:analyzer/src/string_source.dart';
 import 'package:analyzer/src/generated/parser.dart';
@@ -10,59 +10,8 @@ import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
 
 import 'error_listener.dart';
+import 'source_code.dart';
 import 'source_visitor.dart';
-
-/// Describes a chunk of source code that is to be formatted or has been
-/// formatted.
-class SourceCode {
-  /// The [uri] where the source code is from.
-  ///
-  /// Used in error messages if the code cannot be parsed.
-  final String uri;
-
-  /// The Dart source code text.
-  final String text;
-
-  /// Whether the source is a compilation unit or a bare statement.
-  final bool isCompilationUnit;
-
-  /// The offset in [text] where the selection begins, or `null` if there is
-  /// no selection.
-  final int selectionStart;
-
-  /// The number of selected characters or `null` if there is no selection.
-  final int selectionLength;
-
-  SourceCode(this.text,
-      {this.uri, this.isCompilationUnit: true, this.selectionStart,
-      this.selectionLength}) {
-    // Must either provide both selection bounds or neither.
-    if ((selectionStart == null) != (selectionLength == null)) {
-      throw new ArgumentError(
-          "Is selectionStart is provided, selectionLength must be too.");
-    }
-
-    if (selectionStart != null) {
-      if (selectionStart < 0) {
-        throw new ArgumentError("selectionStart must be non-negative.");
-      }
-
-      if (selectionStart > text.length) {
-        throw new ArgumentError("selectionStart must be within text.");
-      }
-    }
-
-    if (selectionLength != null) {
-      if (selectionLength < 0) {
-        throw new ArgumentError("selectionLength must be non-negative.");
-      }
-
-      if (selectionStart + selectionLength > text.length) {
-        throw new ArgumentError("selectionLength must end within text.");
-      }
-    }
-  }
-}
 
 /// Dart source code formatter.
 class DartFormatter {

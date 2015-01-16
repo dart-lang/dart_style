@@ -16,9 +16,9 @@
 <<<
 12‹345;›
 >>> unchanged
-f‹oo(a, ›b, c);
+f‹oo(a, b›, c);
 <<<
-f‹oo(a, ›b, c);
+f‹oo(a, b›, c);
 >>> includes added whitespace
 a+f‹irst+se›cond;
 <<<
@@ -62,12 +62,20 @@ someMethod(
 >>> before comments
 1  ‹  /* */ +  ›  /* */ 2;
 <<<
-1 ‹/* */ + ›/* */ 2;
+1 ‹/* */ +› /* */ 2;
 >>> after comments
 1/* */  ‹  +/* */  ›   2;
 <<<
-1 /* */ ‹+ /* */ ›2;
+1 /* */ ‹+ /* */› 2;
 >>> between adjacent comments
 1/* */  ‹  /* */ › /* */ +  2;
 <<<
-1 /* */ ‹/* */ ›/* */ + 2;
+1 /* */ ‹/* */› /* */ + 2;
+>>> only whitespace in zero space selected
+foo(  ‹  ›  argument);
+<<<
+foo(‹›argument);
+>>> only whitespace in space selected
+foo(argument,  ‹  ›  argument);
+<<<
+foo(argument, ‹›argument);
