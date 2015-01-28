@@ -38,3 +38,13 @@ var longIdentifier = new Thing(
 <<<
 var longIdentifier =
     new Thing(argument, argument);
+>>> splits before ":" if the parameter list does not fit on one line
+class Foo {
+  Foo(int longArg1, int longArg2, int longArg3) : this._(longArg1);
+}
+<<<
+class Foo {
+  Foo(int longArg1, int longArg2,
+      int longArg3)
+      : this._(longArg1);
+}

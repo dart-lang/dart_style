@@ -5,6 +5,8 @@
 * Don't touch files whose contents did not change (#127).
 * Skip formatting files in hidden directories (#125).
 * Don't include trailing whitespace when preserving selection (#124).
+* Force constructor initialization lists to their own line if the parameter
+  list is split across multiple lines (#151).
 * Allow splitting in index operator calls (#140).
 
 # 0.1.2

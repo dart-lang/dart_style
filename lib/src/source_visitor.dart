@@ -463,15 +463,19 @@ class SourceVisitor implements AstVisitor {
     visit(node.returnType);
     token(node.period);
     visit(node.name);
+
+    // Start a multisplit that spans the parameter list. We'll use this for the
+    // split before ":" to ensure that if the parameter list doesn't fit on one
+    // line that the initialization list gets pushed to its own line too.
+    if (node.initializers.length == 1) _writer.startMultisplit();
+
     visit(node.parameters);
 
-    // Check for redirects or initializer lists
-    if (node.separator != null) {
-      if (node.redirectedConstructor != null) {
-        visitConstructorRedirects(node);
-      } else {
-        visitConstructorInitializers(node);
-      }
+    // Check for redirects or initializer lists.
+    if (node.redirectedConstructor != null) {
+      _visitConstructorRedirects(node);
+    } else if (node.initializers.isNotEmpty) {
+      _visitConstructorInitializers(node);
     }
 
     _writer.unnest();
@@ -479,13 +483,16 @@ class SourceVisitor implements AstVisitor {
     visitBody(node.body);
   }
 
-  visitConstructorInitializers(ConstructorDeclaration node) {
+  void _visitConstructorInitializers(ConstructorDeclaration node) {
     _writer.indent(2);
 
-    if (node.initializers.length > 1) {
-      newline();
+    if (node.initializers.length == 1) {
+      // If there is only a single initializer, allow it on the first line, but
+      // only if the parameter list also fit all one line.
+      _writer.multisplit(space: true);
+      _writer.endMultisplit();
     } else {
-      split();
+      newline();
     }
 
     token(node.separator); // ":".
@@ -515,7 +522,7 @@ class SourceVisitor implements AstVisitor {
     _writer.unindent(2);
   }
 
-  visitConstructorRedirects(ConstructorDeclaration node) {
+  void _visitConstructorRedirects(ConstructorDeclaration node) {
     token(node.separator /* = */, before: space, after: space);
     visitCommaSeparatedNodes(node.initializers);
     visit(node.redirectedConstructor);

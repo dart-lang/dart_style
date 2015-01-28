@@ -294,9 +294,7 @@ class LineSplitter {
     var splitParams = new Set();
 
     addParam(param) {
-      if (!_suffixContainsParam(index, param)) return;
-
-      splitParams.add(param);
+      if (_suffixContainsParam(index, param)) splitParams.add(param);
 
       // Recurse into the params that are implied by this one.
       param.implies.forEach(addParam);
