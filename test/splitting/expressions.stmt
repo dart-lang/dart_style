@@ -104,3 +104,14 @@ identifier
     : identifier
         ? someParticularlyLongOperand
         : someParticularlyLongOperand;
+>>> index expressions can split after "["
+verylongIdentifier[someParticularlyLongArgument];
+<<<
+verylongIdentifier[
+    someParticularlyLongArgument];
+>>> index arguments nest
+verylongIdentifier[someParticularlyLongArgument[someParticularlyLongArgument]];
+<<<
+verylongIdentifier[
+    someParticularlyLongArgument[
+        someParticularlyLongArgument]];

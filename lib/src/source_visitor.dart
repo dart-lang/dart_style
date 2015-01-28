@@ -438,7 +438,9 @@ class SourceVisitor implements AstVisitor {
     token(node.question);
     space();
 
+    _writer.nestExpression();
     visit(node.thenExpression);
+    _writer.unnest();
 
     _writer.multisplit(nest: true, space: true);
     token(node.colon);
@@ -907,9 +909,13 @@ class SourceVisitor implements AstVisitor {
     } else {
       visit(node.target);
     }
+
     token(node.leftBracket);
+    _writer.nestExpression();
+    zeroSplit();
     visit(node.index);
     token(node.rightBracket);
+    _writer.unnest();
   }
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {

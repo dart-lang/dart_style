@@ -5,6 +5,7 @@
 * Don't touch files whose contents did not change (#127).
 * Skip formatting files in hidden directories (#125).
 * Don't include trailing whitespace when preserving selection (#124).
+* Allow splitting in index operator calls (#140).
 
 # 0.1.2
 

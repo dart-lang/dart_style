@@ -6,9 +6,8 @@ var xsrfValue = _urlIsSameOrigin(url) ?
     null;
 <<<
 var xsrfValue = _urlIsSameOrigin(url)
-    ? _cookies[xsrfCookieName != null
-        ? xsrfCookieName
-        : defaults.xsrfCookieName]
+    ? _cookies[
+        xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName]
     : null;
 >>>
 class _Streams {
