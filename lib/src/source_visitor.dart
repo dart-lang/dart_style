@@ -305,7 +305,11 @@ class SourceVisitor implements AstVisitor {
 
   visitBlockFunctionBody(BlockFunctionBody node) {
     // The "async" or "sync" keyword.
-    token(node.keyword, after: space);
+    token(node.keyword);
+
+    // The "*" in "async*" or "sync*".
+    token(node.star);
+    if (node.keyword != null) space();
 
     visit(node.block);
   }

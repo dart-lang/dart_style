@@ -8,6 +8,7 @@
 * Force constructor initialization lists to their own line if the parameter
   list is split across multiple lines (#151).
 * Allow splitting in index operator calls (#140).
+* Handle sync* and async* syntax (#151).
 
 # 0.1.2
 

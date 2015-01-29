@@ -64,3 +64,15 @@ foo({showScrollbars: false}) {}
 listen([int port=80]) {}
 <<<
 listen([int port = 80]) {}
+>>> async*
+main()async  *{var lambda = ()async *{};}
+<<<
+main() async* {
+  var lambda = () async* {};
+}
+>>> sync* functions
+main()sync  *{var lambda = ()sync *{};}
+<<<
+main() sync* {
+  var lambda = () sync* {};
+}
