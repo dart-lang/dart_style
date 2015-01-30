@@ -460,7 +460,6 @@ class SourceVisitor implements AstVisitor {
   visitConstructorDeclaration(ConstructorDeclaration node) {
     visitMemberMetadata(node.metadata);
 
-    _writer.nestExpression();
     modifier(node.externalKeyword);
     modifier(node.constKeyword);
     modifier(node.factoryKeyword);
@@ -473,18 +472,14 @@ class SourceVisitor implements AstVisitor {
     // line that the initialization list gets pushed to its own line too.
     if (node.initializers.length == 1) _writer.startMultisplit();
 
-    visit(node.parameters);
-
-    // Check for redirects or initializer lists.
-    if (node.redirectedConstructor != null) {
-      _visitConstructorRedirects(node);
-    } else if (node.initializers.isNotEmpty) {
-      _visitConstructorInitializers(node);
-    }
-
-    _writer.unnest();
-
-    visitBody(node.body);
+    _visitBody(node.parameters, node.body, () {
+      // Check for redirects or initializer lists.
+      if (node.redirectedConstructor != null) {
+        _visitConstructorRedirects(node);
+      } else if (node.initializers.isNotEmpty) {
+        _visitConstructorInitializers(node);
+      }
+    });
   }
 
   void _visitConstructorInitializers(ConstructorDeclaration node) {
@@ -714,6 +709,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFormalParameterList(FormalParameterList node) {
+    _writer.nestExpression();
     token(node.leftParenthesis);
 
     // Allow splitting after the "(" in non-empty parameter lists, but not for
@@ -758,6 +754,7 @@ class SourceVisitor implements AstVisitor {
     token(node.rightDelimiter);
 
     token(node.rightParenthesis);
+    _writer.unnest();
     _writer.endSpan();
   }
 
@@ -829,8 +826,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionExpression(FunctionExpression node) {
-    visit(node.parameters);
-    visitBody(node.body);
+    _visitBody(node.parameters, node.body);
   }
 
   visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
@@ -1009,18 +1005,14 @@ class SourceVisitor implements AstVisitor {
   visitMethodDeclaration(MethodDeclaration node) {
     visitMemberMetadata(node.metadata);
 
-    _writer.nestExpression();
     modifier(node.externalKeyword);
     modifier(node.modifierKeyword);
     visit(node.returnType, after: space);
     modifier(node.propertyKeyword);
     modifier(node.operatorKeyword);
     visit(node.name);
-    if (!node.isGetter) visit(node.parameters);
 
-    _writer.unnest();
-
-    visitBody(node.body);
+    _visitBody(node.parameters, node.body);
   }
 
   visitMethodInvocation(MethodInvocation node) {
@@ -1485,9 +1477,29 @@ class SourceVisitor implements AstVisitor {
     visitNodes(metadata, between: space, after: space);
   }
 
-  /// Visit the given function [body], printing a space before it if it's not
-  /// empty.
-  void visitBody(FunctionBody body) {
+  /// Visit the given function [parameters] followed by its [body], printing a
+  /// space before it if it's not empty.
+  ///
+  /// If [afterParameters] is provided, it is invoked between the parameters
+  /// and body. (It's used for constructor initialization lists.)
+  void _visitBody(FormalParameterList parameters, FunctionBody body,
+      [afterParameters()]) {
+    if (parameters != null) {
+      // If the body is "=>", add an extra level of indentation around the
+      // parameters. This ensures that if they wrap, they wrap more deeply than
+      // the "=>" does, as in:
+      //
+      //     someFunction(parameter,
+      //             parameter, parameter) =>
+      //         "the body";
+      if (body is ExpressionFunctionBody) _writer.nestExpression();
+
+      visit(parameters);
+      if (afterParameters != null) afterParameters();
+
+      if (body is ExpressionFunctionBody) _writer.unnest();
+    }
+
     if (body is! EmptyFunctionBody) space();
     visit(body);
   }

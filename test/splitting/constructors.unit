@@ -48,3 +48,13 @@ class Foo {
       int longArg3)
       : this._(longArg1);
 }
+>>> indent parameters more if body is a wrapped =>
+class Foo {
+  Foo(firstArgument, secondArgument, third) => "very long body that must wrap";
+}
+<<<
+class Foo {
+  Foo(firstArgument, secondArgument,
+          third) =>
+      "very long body that must wrap";
+}

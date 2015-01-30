@@ -9,6 +9,7 @@
   list is split across multiple lines (#151).
 * Allow splitting in index operator calls (#140).
 * Handle sync* and async* syntax (#151).
+* Indent the parameter list more if the body is a wrapped "=>" (#144).
 
 # 0.1.2
 
