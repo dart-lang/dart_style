@@ -61,3 +61,11 @@ class MyClass {
   MyClass(first, second)
       : this(first, second);
 }
+>>> handle a comma after function typed initializing formals
+class Foo {
+  Foo(this.bar(), baz);
+}
+<<<
+class Foo {
+  Foo(this.bar(), baz);
+}
