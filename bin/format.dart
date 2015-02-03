@@ -4,12 +4,15 @@ import 'package:args/args.dart';
 import 'package:dart_style/src/io.dart';
 
 void main(List<String> args) {
-  var parser = new ArgParser();
+  var parser = new ArgParser(allowTrailingOptions: true);
+
   parser.addFlag("help", abbr: "h", negatable: false,
       help: "Shows usage information.");
   parser.addOption("line-length", abbr: "l",
       help: "Wrap lines longer than this.",
       defaultsTo: "80");
+  parser.addFlag("dry-run", abbr: "n", negatable: false,
+      help: "Show which files would be modified but make no changes.");
   parser.addFlag("overwrite", abbr: "w", negatable: false,
       help: "Overwrite input files with formatted output.\n"
             "If unset, prints results to standard output.");
@@ -17,15 +20,30 @@ void main(List<String> args) {
       help: "Follow links to files and directories.\n"
             "If unset, links will be ignored.");
 
-  var options = parser.parse(args);
+  var options;
+  try {
+    options = parser.parse(args);
+  } on FormatException catch (err) {
+    printUsage(parser, err.message);
+    exitCode = 64;
+    return;
+  }
 
   if (options["help"]) {
     printUsage(parser);
     return;
   }
 
+  var dryRun = options["dry-run"];
   var overwrite = options["overwrite"];
   var followLinks = options["follow-links"];
+
+  if (dryRun && overwrite) {
+    printUsage(parser,
+        "Cannot use --dry-run and --overwrite at the same time.");
+    exitCode = 64;
+    return;
+  }
 
   var pageWidth;
 
@@ -48,14 +66,24 @@ void main(List<String> args) {
   for (var path in options.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      processDirectory(directory, overwrite: overwrite, pageWidth: pageWidth,
-          followLinks: followLinks);
+      if (!processDirectory(directory,
+          dryRun: dryRun,
+          overwrite: overwrite,
+          pageWidth: pageWidth,
+          followLinks: followLinks)) {
+        exitCode = 65;
+      }
       continue;
     }
 
     var file = new File(path);
     if (file.existsSync()) {
-      processFile(file, overwrite: overwrite, pageWidth: pageWidth);
+      if (!processFile(file,
+          dryRun: dryRun,
+          overwrite: overwrite,
+          pageWidth: pageWidth)) {
+        exitCode = 65;
+      }
     } else {
       stderr.writeln('No file or directory found at "$path".');
     }

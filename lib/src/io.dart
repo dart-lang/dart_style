@@ -12,15 +12,22 @@ import 'package:dart_style/dart_style.dart';
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
-void processDirectory(Directory directory,
-    {bool overwrite, int pageWidth, bool followLinks: false}) {
-  print("Formatting directory ${directory.path}:");
+///
+/// Returns `true` if successful or `false` if an error occurred in any of the
+/// files.
+bool processDirectory(Directory directory,
+    {bool dryRun, bool overwrite, int pageWidth, bool followLinks: false}) {
+  if (dryRun == null) dryRun = false;
+
+  if (!dryRun) print("Formatting directory ${directory.path}:");
+
+  var success = true;
   for (var entry in directory.listSync(
       recursive: true, followLinks: followLinks)) {
     var relative = p.relative(entry.path, from: directory.path);
 
     if (entry is Link) {
-      print("Skipping link $relative");
+      if (!dryRun) print("Skipping link $relative");
       continue;
     }
 
@@ -28,25 +35,39 @@ void processDirectory(Directory directory,
 
     // If the path is in a subdirectory starting with ".", ignore it.
     if (p.split(relative).any((part) => part.startsWith("."))) {
-      print("Skipping hidden file $relative");
+      if (!dryRun) print("Skipping hidden file $relative");
       continue;
     }
 
-    processFile(
-        entry, label: relative, overwrite: overwrite, pageWidth: pageWidth);
+    if (!processFile(entry,
+        label: relative,
+        dryRun: dryRun,
+        overwrite: overwrite,
+        pageWidth: pageWidth)) {
+      success = false;
+    }
   }
+
+  return success;
 }
 
 /// Runs the formatter on [file].
-void processFile(File file, {String label, bool overwrite, int pageWidth}) {
+///
+/// Returns `true` if successful or `false` if an error occurred.
+bool processFile(File file,
+    {String label, bool dryRun, bool overwrite, int pageWidth}) {
   if (label == null) label = file.path;
+  if (dryRun == null) dryRun = false;
   if (overwrite == null) overwrite = false;
 
   var formatter = new DartFormatter(pageWidth: pageWidth);
   try {
     var source = file.readAsStringSync();
     var output = formatter.format(source, uri: file.path);
-    if (overwrite) {
+    if (dryRun) {
+      // Only show the filenames of changed files.
+      if (source != output) print(label);
+    } else if (overwrite) {
       if (source != output) {
         file.writeAsStringSync(output);
         print("Formatted $label");
@@ -57,6 +78,8 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
       // Don't add an extra newline.
       stdout.write(output);
     }
+
+    return true;
   } on FormatterException catch (err) {
     stderr.writeln(err.message());
   } catch (err, stack) {
@@ -65,4 +88,6 @@ void processFile(File file, {String label, bool overwrite, int pageWidth}) {
 $err
 $stack''');
   }
+
+  return false;
 }

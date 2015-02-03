@@ -1,6 +1,7 @@
 # 0.1.4
 
 * Don't mangle comma after function-typed initializing formal (#156).
+* Add `--dry-run` option to show files that need formatting (#67).
 
 # 0.1.3
 

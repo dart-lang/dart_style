@@ -11,35 +11,15 @@ import 'package:dart_style/src/io.dart';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
-import 'package:unittest/compact_vm_config.dart';
 
-const _SOURCE = 'void  main()  =>  print("hello") ;';
-const _FORMATTED = 'void main() => print("hello");\n';
+import 'utils.dart';
 
 void main() {
-  // Tidy up the unittest output.
-  filterStacks = true;
-  formatStacks = true;
-  useCompactVMConfiguration();
-
-  setUp(() {
-    var tempDir;
-    schedule(() {
-      return Directory.systemTemp.createTemp('dart_style.test.').then((dir) {
-        tempDir = dir;
-        d.defaultRoot = tempDir.path;
-      });
-    });
-
-    currentSchedule.onComplete.schedule(() {
-      d.defaultRoot = null;
-      return tempDir.delete(recursive: true);
-    });
-  });
+  setUpTestSuite();
 
   test('handles directory ending in ".dart"', () {
     d.dir('code.dart', [
-      d.file('a.dart', _SOURCE),
+      d.file('a.dart', unformattedSource),
     ]).create();
 
     schedule(() {
@@ -48,14 +28,14 @@ void main() {
     }, 'Run formatter.');
 
     d.dir('code.dart', [
-      d.file('a.dart', _FORMATTED)
+      d.file('a.dart', formattedSource)
     ]).validate();
   });
 
   test("doesn't touch unchanged files", () {
     d.dir('code', [
-      d.file('bad.dart', _SOURCE),
-      d.file('good.dart', _FORMATTED),
+      d.file('bad.dart', unformattedSource),
+      d.file('good.dart', formattedSource),
     ]).create();
 
     modTime(String file) {
@@ -90,7 +70,7 @@ void main() {
   test("skips subdirectories whose name starts with '.'", () {
     d.dir('code', [
       d.dir('.skip', [
-        d.file('a.dart', _SOURCE)
+        d.file('a.dart', unformattedSource)
       ])
     ]).create();
 
@@ -101,14 +81,14 @@ void main() {
 
     d.dir('code', [
       d.dir('.skip', [
-        d.file('a.dart', _SOURCE)
+        d.file('a.dart', unformattedSource)
       ])
     ]).validate();
   });
 
   test("traverses the given directory even if its name starts with '.'", () {
     d.dir('.code', [
-      d.file('a.dart', _SOURCE)
+      d.file('a.dart', unformattedSource)
     ]).create();
 
     schedule(() {
@@ -117,17 +97,17 @@ void main() {
     }, 'Run formatter.');
 
     d.dir('.code', [
-      d.file('a.dart', _FORMATTED)
+      d.file('a.dart', formattedSource)
     ]).validate();
   });
 
   test("doesn't follow directory symlinks by default", () {
     d.dir('code', [
-      d.file('a.dart', _SOURCE),
+      d.file('a.dart', unformattedSource),
     ]).create();
 
     d.dir('target_dir', [
-      d.file('b.dart', _SOURCE),
+      d.file('b.dart', unformattedSource),
     ]).create();
 
     schedule(() {
@@ -142,20 +122,20 @@ void main() {
     }, 'Run formatter.');
 
     d.dir('code', [
-      d.file('a.dart', _FORMATTED),
+      d.file('a.dart', formattedSource),
       d.dir('linked_dir', [
-        d.file('b.dart', _SOURCE),
+        d.file('b.dart', unformattedSource),
       ])
     ]).validate();
   });
 
   test("follows directory symlinks when 'followLinks' is true", () {
     d.dir('code', [
-      d.file('a.dart', _SOURCE),
+      d.file('a.dart', unformattedSource),
     ]).create();
 
     d.dir('target_dir', [
-      d.file('b.dart', _SOURCE),
+      d.file('b.dart', unformattedSource),
     ]).create();
 
     schedule(() {
@@ -170,9 +150,9 @@ void main() {
     }, 'running formatter');
 
     d.dir('code', [
-      d.file('a.dart', _FORMATTED),
+      d.file('a.dart', formattedSource),
       d.dir('linked_dir', [
-        d.file('b.dart', _FORMATTED),
+        d.file('b.dart', formattedSource),
       ])
     ]).validate();
   });
@@ -180,7 +160,7 @@ void main() {
   if (!Platform.isWindows) {
     test("doesn't follow file symlinks by default", () {
       d.dir('code').create();
-      d.file('target_file.dart', _SOURCE).create();
+      d.file('target_file.dart', unformattedSource).create();
 
       schedule(() {
         // Create a link to the target file in the code directory.
@@ -194,13 +174,13 @@ void main() {
       }, 'Run formatter.');
 
       d.dir('code', [
-        d.file('linked_file.dart', _SOURCE),
+        d.file('linked_file.dart', unformattedSource),
       ]).validate();
     });
 
     test("follows file symlinks when 'followLinks' is true", () {
       d.dir('code').create();
-      d.file('target_file.dart', _SOURCE).create();
+      d.file('target_file.dart', unformattedSource).create();
 
       schedule(() {
         // Create a link to the target file in the code directory.
@@ -214,7 +194,7 @@ void main() {
       }, 'running formatter');
 
       d.dir('code', [
-        d.file('linked_file.dart', _FORMATTED),
+        d.file('linked_file.dart', formattedSource),
       ]).validate();
     });
   }

@@ -37,6 +37,17 @@ You may pass a `--line-length` option to control the width of the page that it
 wraps lines to fit within, but you're strongly encouraged to keep the default
 line length of 80 columns.
 
+## Validating files
+
+If you want to use the formatter in something like a [presubmit script][] or
+[commit hook][], you can use the `--dry-run` option. If you pass that, the
+formatter prints the paths of the files whose contents would change if the
+formatter were run normally. If it prints no output, then everything is already
+correctly formatted.
+
+[presubmit script]: http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
+[commit hook]: http://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
+
 ## Using it programmatically
 
 The package also exposes a single dart_style library containing a programmatic
