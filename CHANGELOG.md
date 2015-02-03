@@ -2,6 +2,7 @@
 
 * Don't mangle comma after function-typed initializing formal (#156).
 * Add `--dry-run` option to show files that need formatting (#67).
+* Try to avoid splitting in before index argument (#158, #160).
 
 # 0.1.3
 

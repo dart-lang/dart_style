@@ -927,12 +927,14 @@ class SourceVisitor implements AstVisitor {
       visit(node.target);
     }
 
+    _writer.startSpan();
     token(node.leftBracket);
     _writer.nestExpression();
     zeroSplit();
     visit(node.index);
     token(node.rightBracket);
     _writer.unnest();
+    _writer.endSpan();
   }
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {
