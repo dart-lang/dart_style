@@ -701,7 +701,7 @@ class SourceVisitor implements AstVisitor {
     split();
     token(node.inKeyword);
     space();
-    visit(node.iterator);
+    visit(node.iterable);
     token(node.rightParenthesis);
     space();
     visit(node.body);
@@ -730,17 +730,7 @@ class SourceVisitor implements AstVisitor {
           !inOptionalParams && parameter is DefaultFormalParameter;
 
       // Preceding comma.
-      if (i > 0) {
-        var param = node.parameters[i - 1];
-        var comma = param.endToken.next;
-
-        // TODO(rnystrom): Work around http://www.dartbug.com/22245
-        if (param is FieldFormalParameter && param.parameters != null) {
-          comma = param.parameters.endToken.next;
-        }
-
-        token(comma);
-      }
+      if (i > 0) token(node.parameters[i - 1].endToken.next);
 
       // Don't try to keep optional parameters together with mandatory ones.
       if (inFirstOptional) _writer.endSpan();

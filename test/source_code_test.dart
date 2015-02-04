@@ -57,7 +57,6 @@ void main() {
     });
 
     test('gets entire string if no selection', () {
-      var code = new SourceCode("123456;");
       expect(noSelection.textBeforeSelection, equals("123456;"));
     });
   });
