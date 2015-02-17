@@ -65,3 +65,19 @@ new Future(new Duration(1), () {
 new ListBox(showScrollbars :true);
 <<<
 new ListBox(showScrollbars: true);
+>>> multiple prefix operators
+-  ~  !  foo;
+<<<
+-~!foo;
+>>> sequential "-" operators are not joined
+-  -  -  -foo;
+<<<
+- - - -foo;
+>>> a "-" operator before a negative integer is not joined
+-  -1;
+<<<
+- -1;
+>>> a "-" operator before a negative floating point number is not joined
+-  -1.2;
+<<<
+- -1.2;

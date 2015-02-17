@@ -5,6 +5,7 @@
 * Try to avoid splitting in before index argument (#158, #160).
 * Support `await for` statements (#154).
 * Don't delete commas between enum values with doc comments (#171).
+* Put a space between nested unary `-` calls (#170).
 
 # 0.1.3
 

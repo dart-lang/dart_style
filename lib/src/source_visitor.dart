@@ -1126,6 +1126,14 @@ class SourceVisitor implements AstVisitor {
 
   visitPrefixExpression(PrefixExpression node) {
     token(node.operator);
+
+    // Corner case: put a space between successive "-" operators so we don't
+    // inadvertently turn them into a "--" decrement operator.
+    if (node.operand is PrefixExpression &&
+        node.operand.operator.lexeme == "-") {
+      space();
+    }
+
     visit(node.operand);
   }
 
