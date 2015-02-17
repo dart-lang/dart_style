@@ -606,24 +606,14 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.name);
     space();
-    token(node.leftBracket);
 
-    _writer.indent();
-    _writer.startMultisplit();
-    _writer.multisplit(space: true);
+    _startBody(node.leftBracket, space: true);
 
     visitCommaSeparatedNodes(node.constants, between: () {
       _writer.multisplit(space: true);
     });
 
-    // Trailing comma.
-    if (node.rightBracket.previous.lexeme == ",") {
-      token(node.rightBracket.previous);
-    }
-
-    _writer.unindent();
-    _writer.multisplit(space: true);
-    token(node.rightBracket);
+    _endBody(node.rightBracket, space: true);
   }
 
   visitExportDirective(ExportDirective node) {
@@ -1528,12 +1518,15 @@ class SourceVisitor implements AstVisitor {
 
     if (between == null) between = space;
 
-    visit(nodes.first);
+    var first = true;
+    for (var node in nodes) {
+      if (!first) between();
+      first = false;
 
-    for (var node in nodes.skip(1)) {
-      token(node.beginToken.previous); // Comma.
-      between();
       visit(node);
+
+      // The comma after the node.
+      if (node.endToken.next.lexeme == ",") token(node.endToken.next);
     }
   }
 
@@ -1644,7 +1637,10 @@ class SourceVisitor implements AstVisitor {
   }
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the multisplit it contains.
-  void _startBody(Token leftBracket) {
+  ///
+  /// If [space] is `true`, then the initial multisplit will use a space if not
+  /// split.
+  void _startBody(Token leftBracket, {bool space: false}) {
     token(leftBracket);
 
     // Indent the body.
@@ -1652,21 +1648,24 @@ class SourceVisitor implements AstVisitor {
     _writer.indent();
 
     // Split after the bracket.
-    _writer.multisplit();
+    _writer.multisplit(space: space);
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
   /// and ending the multisplit it contains.
   ///
   /// Used for blocks, other curly bodies, and collection literals.
-  void _endBody(Token rightBracket) {
+  ///
+  /// If [space] is `true`, then the initial multisplit will use a space if not
+  /// split.
+  void _endBody(Token rightBracket, {bool space: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
-      _writer.multisplit();
-    }, after: () {
-      _writer.endMultisplit();
+      _writer.multisplit(space: space);
     });
+
+    _writer.endMultisplit();
   }
 
   /// Returns `true` if [node] is immediately contained within an anonymous
