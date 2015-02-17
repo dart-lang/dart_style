@@ -680,6 +680,7 @@ class SourceVisitor implements AstVisitor {
 
   visitForEachStatement(ForEachStatement node) {
     _writer.nestExpression();
+    token(node.awaitKeyword, after: space);
     token(node.forKeyword);
     space();
     token(node.leftParenthesis);

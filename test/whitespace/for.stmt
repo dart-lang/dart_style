@@ -73,3 +73,12 @@ for (x in xs) {
 for (x in xs) {
   print(x);
 }
+>>> async
+foo() async {
+  await    for(x in y) {
+  }
+}
+<<<
+foo() async {
+  await for (x in y) {}
+}
