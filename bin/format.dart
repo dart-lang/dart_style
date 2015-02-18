@@ -19,6 +19,8 @@ void main(List<String> args) {
   parser.addFlag("follow-links", negatable: false,
       help: "Follow links to files and directories.\n"
             "If unset, links will be ignored.");
+  parser.addFlag("transform", abbr: "t", negatable: false,
+      help: "Unused flag for compability with the old formatter.");
 
   var options;
   try {
@@ -101,7 +103,7 @@ void printUsage(ArgParser parser, [String error]) {
 
   output.write("""$message
 
-Usage: dartformat [-l <line length>] <files or directories...>
+Usage: dartformat [-w] <files or directories...>
 
 ${parser.usage}
 """);
