@@ -20,12 +20,12 @@ void main() {
       d.file("a.dart", unformattedSource)
     ]).create();
 
-    var process = runFormatter();
+    var process = runFormatterOnDir();
     process.shouldExit(0);
   });
 
   test("Exits with 64 on a command line argument error.", () {
-    var process = runFormatter(["-wat"]);
+    var process = runFormatterOnDir(["-wat"]);
     process.shouldExit(64);
   });
 
@@ -34,7 +34,7 @@ void main() {
       d.file("a.dart", "herp derp i are a dart")
     ]).create();
 
-    var process = runFormatter();
+    var process = runFormatterOnDir();
     process.shouldExit(65);
   });
 
@@ -43,7 +43,25 @@ void main() {
       d.file("a.dart", unformattedSource)
     ]).create();
 
-    var process = runFormatter(["--dry-run", "--overwrite"]);
+    var process = runFormatterOnDir(["--dry-run", "--overwrite"]);
+    process.shouldExit(64);
+  });
+
+  test("Errors if --dry-run and --machine are both passed.", () {
+    d.dir("code", [
+      d.file("a.dart", unformattedSource)
+    ]).create();
+
+    var process = runFormatterOnDir(["--dry-run", "--machine"]);
+    process.shouldExit(64);
+  });
+
+  test("Errors if --machine and --overwrite are both passed.", () {
+    d.dir("code", [
+      d.file("a.dart", unformattedSource)
+    ]).create();
+
+    var process = runFormatterOnDir(["--machine", "--overwrite"]);
     process.shouldExit(64);
   });
 
@@ -74,7 +92,7 @@ void main() {
         d.file("d_good.dart", formattedSource)
       ]).create();
 
-      var process = runFormatter(["--dry-run"]);
+      var process = runFormatterOnDir(["--dry-run"]);
       process.stdout.expect(p.join("code", "a_bad.dart"));
       process.stdout.expect(p.join("code", "c_bad.dart"));
       process.shouldExit();
@@ -85,13 +103,13 @@ void main() {
         d.file("a.dart", unformattedSource)
       ]).create();
 
-      var process = runFormatter(["--dry-run"]);
+      var process = runFormatterOnDir(["--dry-run"]);
       process.stdout.expect(p.join("code", "a.dart"));
       process.shouldExit();
 
       d.dir('code', [
         d.file('a.dart', unformattedSource)
-    ]).validate();
+      ]).validate();
     });
   });
 
@@ -102,7 +120,7 @@ void main() {
         d.file("b.dart", unformattedSource)
       ]).create();
 
-      var process = runFormatter(["--machine", "code"]);
+      var process = runFormatterOnDir(["--machine"]);
 
       var json = {
         "path": p.join("code", "a.dart"),
@@ -115,6 +133,23 @@ void main() {
       json["path"] = p.join("code", "b.dart");
       process.stdout.expect(JSON.encode(json));
 
+      process.shouldExit();
+    });
+  });
+
+  group("with no paths", () {
+    test("errors on --overwrite.", () {
+      var process = runFormatter(["--overwrite"]);
+      process.shouldExit(64);
+    });
+
+    test("reads from stdin.", () {
+      var process = runFormatter();
+      process.writeLine(unformattedSource);
+      process.closeStdin();
+
+      // No trailing newline at the end.
+      process.stdout.expect(formattedSource.trimRight());
       process.shouldExit();
     });
   });

@@ -15,14 +15,22 @@ import 'package:unittest/compact_vm_config.dart';
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
+/// Runs the command line formatter, passing it [args].
 ScheduledProcess runFormatter([List<String> args]) {
   if (args == null) args = [];
 
   var formatterPath = p.join(
       p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
 
-  args.insertAll(0, [formatterPath, d.defaultRoot]);
+  args.insert(0, formatterPath);
   return new ScheduledProcess.start(Platform.executable, args);
+}
+
+/// Runs the command line formatter, passing it the test directory followed by
+/// [args].
+ScheduledProcess runFormatterOnDir([List<String> args]) {
+  if (args == null) args = [];
+  return runFormatter([d.defaultRoot]..addAll(args));
 }
 
 /// Set up the scheduled test suite.

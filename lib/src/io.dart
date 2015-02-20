@@ -60,8 +60,8 @@ bool processFile(FormatterOptions options, File file,
   } on FormatterException catch (err) {
     stderr.writeln(err.message());
   } catch (err, stack) {
-    stderr.writeln('''Hit a bug in the formatter when formatting $label
-  Please report at: github.com/dart-lang/dart_style/issues
+    stderr.writeln('''Hit a bug in the formatter when formatting $label.
+Please report at: github.com/dart-lang/dart_style/issues
 $err
 $stack''');
   }

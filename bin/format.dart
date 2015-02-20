@@ -1,6 +1,13 @@
+// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:dart_style/src/dart_formatter.dart';
+import 'package:dart_style/src/formatter_exception.dart';
 import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
 
@@ -15,13 +22,12 @@ void main(List<String> args) {
   parser.addFlag("dry-run", abbr: "n", negatable: false,
       help: "Show which files would be modified but make no changes.");
   parser.addFlag("overwrite", abbr: "w", negatable: false,
-      help: "Overwrite input files with formatted output.\n"
-            "If unset, prints results to standard output.");
+      help: "Overwrite input files with formatted output.");
+  parser.addFlag("machine", abbr: "m", negatable: false,
+      help: "Produce machine-readable JSON output.");
   parser.addFlag("follow-links", negatable: false,
       help: "Follow links to files and directories.\n"
             "If unset, links will be ignored.");
-  parser.addFlag("machine", abbr: "m", negatable: false,
-      help: "Produce machine-readable JSON output.");
   parser.addFlag("transform", abbr: "t", negatable: false,
       help: "Unused flag for compability with the old formatter.");
 
@@ -47,22 +53,29 @@ void main(List<String> args) {
   }
 
   checkForReporterCollision(String chosen, String other) {
-    if (argResults[other]) {
-      printUsage(parser,
-          "Cannot use --$chosen and --$other at the same time.");
-      exitCode = 64;
-      return;
-    }
+    if (!argResults[other]) return false;
+
+    printUsage(parser,
+        "Cannot use --$chosen and --$other at the same time.");
+    exitCode = 64;
+    return true;
   }
 
   var reporter = OutputReporter.print;
   if (argResults["dry-run"]) {
-    checkForReporterCollision("dry-run", "overwrite");
-    checkForReporterCollision("dry-run", "machine");
+    if (checkForReporterCollision("dry-run", "overwrite")) return;
+    if (checkForReporterCollision("dry-run", "machine")) return;
 
     reporter = OutputReporter.dryRun;
   } else if (argResults["overwrite"]) {
-    checkForReporterCollision("overwrite", "machine");
+    if (checkForReporterCollision("overwrite", "machine")) return;
+
+    if (argResults.rest.isEmpty) {
+      printUsage(parser,
+          "Cannot use --overwrite without providing any paths to format.");
+      exitCode = 64;
+      return;
+    }
 
     reporter = OutputReporter.overwrite;
   } else if (argResults["machine"]) {
@@ -82,17 +95,41 @@ void main(List<String> args) {
 
   var followLinks = argResults["follow-links"];
 
-  if (argResults.rest.isEmpty) {
-    printUsage(parser,
-        "Please provide at least one directory or file to format.");
-    exitCode = 64;
-    return;
-  }
-
   var options = new FormatterOptions(reporter,
       pageWidth: pageWidth, followLinks: followLinks);
 
-  for (var path in argResults.rest) {
+  if (argResults.rest.isEmpty) {
+    formatStdin(options);
+  } else {
+    formatPaths(options, argResults.rest);
+  }
+}
+
+/// Reads input from stdin until it's closed, and the formats it.
+void formatStdin(FormatterOptions options) {
+  var input = new StringBuffer();
+  stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
+    var formatter = new DartFormatter(pageWidth: options.pageWidth);
+    try {
+      var source = input.toString();
+      var output = formatter.format(source, uri: "stdin");
+      options.reporter.showFile(null, "<stdin>", output,
+          changed: source != output);
+      return true;
+    } on FormatterException catch (err) {
+      stderr.writeln(err.message());
+    } catch (err, stack) {
+      stderr.writeln('''Hit a bug in the formatter when formatting stdin.
+Please report at: github.com/dart-lang/dart_style/issues
+$err
+$stack''');
+    }
+  });
+}
+
+/// Formats all of the files and directories given by [paths].
+void formatPaths(FormatterOptions options, List<String> paths) {
+  for (var path in paths) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
       if (!processDirectory(options, directory)) {
@@ -123,7 +160,7 @@ void printUsage(ArgParser parser, [String error]) {
 
   output.write("""$message
 
-Usage: dartformat [-w] <files or directories...>
+Usage: dartformat [-n|-w] [files or directories...]
 
 ${parser.usage}
 """);
