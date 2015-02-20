@@ -4,6 +4,9 @@
 
 library dart_style.test.command_line;
 
+import 'dart:convert';
+
+import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
 
@@ -44,6 +47,24 @@ void main() {
     process.shouldExit(64);
   });
 
+  test("Errors if --dry-run and --machine are both passed.", () {
+    d.dir("code", [
+      d.file("a.dart", unformattedSource)
+    ]).create();
+
+    var process = runFormatter(["--dry-run", "--machine"]);
+    process.shouldExit(64);
+  });
+
+  test("Errors if --machine and --overwrite are both passed.", () {
+    d.dir("code", [
+      d.file("a.dart", unformattedSource)
+    ]).create();
+
+    var process = runFormatter(["--machine", "--overwrite"]);
+    process.shouldExit(64);
+  });
+
   group("--dry-run", () {
     test("prints names of files that would change.", () {
       d.dir("code", [
@@ -54,8 +75,8 @@ void main() {
       ]).create();
 
       var process = runFormatter(["--dry-run"]);
-      process.stdout.expect("code/a_bad.dart");
-      process.stdout.expect("code/c_bad.dart");
+      process.stdout.expect(p.join("code", "a_bad.dart"));
+      process.stdout.expect(p.join("code", "c_bad.dart"));
       process.shouldExit();
     });
 
@@ -65,12 +86,36 @@ void main() {
       ]).create();
 
       var process = runFormatter(["--dry-run"]);
-      process.stdout.expect("code/a.dart");
+      process.stdout.expect(p.join("code", "a.dart"));
       process.shouldExit();
 
       d.dir('code', [
         d.file('a.dart', unformattedSource)
     ]).validate();
+    });
+  });
+
+  group("--machine", () {
+    test("writes each output as json", () {
+      d.dir("code", [
+        d.file("a.dart", unformattedSource),
+        d.file("b.dart", unformattedSource)
+      ]).create();
+
+      var process = runFormatter(["--machine", "code"]);
+
+      var json = {
+        "path": p.join("code", "a.dart"),
+        "source": formattedSource,
+        "selection": {"offset": -1, "length": -1}
+      };
+
+      process.stdout.expect(JSON.encode(json));
+
+      json["path"] = p.join("code", "b.dart");
+      process.stdout.expect(JSON.encode(json));
+
+      process.shouldExit();
     });
   });
 }

@@ -12,10 +12,17 @@ import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
 
+import 'package:dart_style/src/formatter_options.dart';
+
 import 'utils.dart';
 
 void main() {
   setUpTestSuite();
+
+  var overwriteOptions = new FormatterOptions(OutputReporter.overwrite);
+
+  var followOptions = new FormatterOptions(OutputReporter.overwrite,
+      followLinks: true);
 
   test('handles directory ending in ".dart"', () {
     d.dir('code.dart', [
@@ -24,7 +31,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(d.defaultRoot);
-      processDirectory(dir, overwrite: true);
+      processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
     d.dir('code.dart', [
@@ -55,7 +62,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(dir, overwrite: true);
+      processDirectory(overwriteOptions, dir);
 
       // Should be touched.
       var badAfter = modTime('bad.dart');
@@ -76,7 +83,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(d.defaultRoot);
-      processDirectory(dir, overwrite: true);
+      processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
     d.dir('code', [
@@ -93,7 +100,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(p.join(d.defaultRoot, '.code'));
-      processDirectory(dir, overwrite: true);
+      processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
     d.dir('.code', [
@@ -118,7 +125,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(dir, overwrite: true);
+      processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
     d.dir('code', [
@@ -146,7 +153,7 @@ void main() {
 
     schedule(() {
       var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(dir, overwrite: true, followLinks: true);
+      processDirectory(followOptions, dir);
     }, 'running formatter');
 
     d.dir('code', [
@@ -170,7 +177,7 @@ void main() {
 
       schedule(() {
         var dir = new Directory(p.join(d.defaultRoot, 'code'));
-        processDirectory(dir, overwrite: true);
+        processDirectory(overwriteOptions, dir);
       }, 'Run formatter.');
 
       d.dir('code', [
@@ -190,7 +197,7 @@ void main() {
 
       schedule(() {
         var dir = new Directory(p.join(d.defaultRoot, 'code'));
-        processDirectory(dir, overwrite: true, followLinks: true);
+        processDirectory(followOptions, dir);
       }, 'running formatter');
 
       d.dir('code', [

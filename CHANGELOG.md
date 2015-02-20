@@ -7,6 +7,7 @@
 * Don't delete commas between enum values with doc comments (#171).
 * Put a space between nested unary `-` calls (#170).
 * Allow `-t` flag to preserve compability with old formatter (#166).
+* Support `--machine` flag for machine-readable output (#164).
 
 # 0.1.3
 

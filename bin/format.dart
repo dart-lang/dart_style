@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
 
 void main(List<String> args) {
@@ -19,60 +20,82 @@ void main(List<String> args) {
   parser.addFlag("follow-links", negatable: false,
       help: "Follow links to files and directories.\n"
             "If unset, links will be ignored.");
+  parser.addFlag("machine", abbr: "m", negatable: false,
+      help: "Produce machine-readable JSON output.");
   parser.addFlag("transform", abbr: "t", negatable: false,
       help: "Unused flag for compability with the old formatter.");
 
-  var options;
+  var argResults;
   try {
-    options = parser.parse(args);
+    argResults = parser.parse(args);
   } on FormatException catch (err) {
     printUsage(parser, err.message);
     exitCode = 64;
     return;
   }
 
-  if (options["help"]) {
+  if (argResults["help"]) {
     printUsage(parser);
     return;
   }
 
-  var dryRun = options["dry-run"];
-  var overwrite = options["overwrite"];
-  var followLinks = options["follow-links"];
-
-  if (dryRun && overwrite) {
+  if (argResults["dry-run"] && argResults["overwrite"]) {
     printUsage(parser,
         "Cannot use --dry-run and --overwrite at the same time.");
     exitCode = 64;
     return;
   }
 
+  checkForReporterCollision(String chosen, String other) {
+    if (argResults[other]) {
+      printUsage(parser,
+          "Cannot use --$chosen and --$other at the same time.");
+      exitCode = 64;
+      return;
+    }
+  }
+
+  var reporter = OutputReporter.print;
+  if (argResults["dry-run"]) {
+    checkForReporterCollision("dry-run", "overwrite");
+    checkForReporterCollision("dry-run", "machine");
+
+    reporter = OutputReporter.dryRun;
+  } else if (argResults["overwrite"]) {
+    checkForReporterCollision("overwrite", "machine");
+
+    reporter = OutputReporter.overwrite;
+  } else if (argResults["machine"]) {
+    reporter = OutputReporter.printJson;
+  }
+
   var pageWidth;
 
   try {
-    pageWidth = int.parse(options["line-length"]);
+    pageWidth = int.parse(argResults["line-length"]);
   } on FormatException catch (_) {
     printUsage(parser, '--line-length must be an integer, was '
-                       '"${options['line-length']}".');
+                       '"${argResults['line-length']}".');
     exitCode = 64;
     return;
   }
 
-  if (options.rest.isEmpty) {
+  var followLinks = argResults["follow-links"];
+
+  if (argResults.rest.isEmpty) {
     printUsage(parser,
         "Please provide at least one directory or file to format.");
     exitCode = 64;
     return;
   }
 
-  for (var path in options.rest) {
+  var options = new FormatterOptions(reporter,
+      pageWidth: pageWidth, followLinks: followLinks);
+
+  for (var path in argResults.rest) {
     var directory = new Directory(path);
     if (directory.existsSync()) {
-      if (!processDirectory(directory,
-          dryRun: dryRun,
-          overwrite: overwrite,
-          pageWidth: pageWidth,
-          followLinks: followLinks)) {
+      if (!processDirectory(options, directory)) {
         exitCode = 65;
       }
       continue;
@@ -80,10 +103,7 @@ void main(List<String> args) {
 
     var file = new File(path);
     if (file.existsSync()) {
-      if (!processFile(file,
-          dryRun: dryRun,
-          overwrite: overwrite,
-          pageWidth: pageWidth)) {
+      if (!processFile(options, file)) {
         exitCode = 65;
       }
     } else {
