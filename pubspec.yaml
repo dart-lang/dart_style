@@ -1,5 +1,5 @@
 name: dart_style
-version: 0.1.4
+version: 0.1.5
 author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
@@ -13,7 +13,8 @@ dev_dependencies:
   scheduled_test: '>=0.11.2 <0.12.0'
   unittest: '>=0.11.0 <0.12.0'
 executables:
-  dartformat: format
+  dartfmt: format
+  dartformat: format # Allow the old name for compatibility.
 
 # Tell the bots not to bother building the tests since they don't run in a
 # browser anyway.

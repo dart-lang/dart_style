@@ -1130,7 +1130,7 @@ class SourceVisitor implements AstVisitor {
     // Corner case: put a space between successive "-" operators so we don't
     // inadvertently turn them into a "--" decrement operator.
     if (node.operand is PrefixExpression &&
-        node.operand.operator.lexeme == "-") {
+        (node.operand as PrefixExpression).operator.lexeme == "-") {
       space();
     }
 

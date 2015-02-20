@@ -7,10 +7,6 @@ It handles indentation, inline whitespace and (by far the most difficult),
 intelligent line wrapping. It has no problems with nested collections, function
 expressions, long argument lists, or otherwise tricky code.
 
-**The formatter is at a beta state right now. It does a good job on most code,
-and I'd love to have you try it and [report bugs][bugs], but its output may
-change over time.**
-
 ## Running it
 
 The package exposes a simple command-line wrapper around the core formatting
@@ -18,7 +14,7 @@ library. The easiest way to invoke it is to [globally activate][] the package
 and let pub put its executable on your path:
 
     $ pub global activate dart_style
-    $ dartformat ...
+    $ dartfmt ...
 
 If you don't want `dartformat` on your path, you can run it explicitly:
 

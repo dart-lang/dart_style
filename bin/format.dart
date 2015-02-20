@@ -160,7 +160,7 @@ void printUsage(ArgParser parser, [String error]) {
 
   output.write("""$message
 
-Usage: dartformat [-n|-w] [files or directories...]
+Usage: dartfmt [-n|-w] [files or directories...]
 
 ${parser.usage}
 """);

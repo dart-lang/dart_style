@@ -1,3 +1,7 @@
+# 0.1.5
+
+* Change executable name from `dartformat` to `dartfmt`.
+
 # 0.1.4
 
 * Don't mangle comma after function-typed initializing formal (#156).
