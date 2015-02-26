@@ -9,6 +9,7 @@ import 'dart:convert';
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_test.dart';
+import 'package:scheduled_test/scheduled_stream.dart';
 
 import 'utils.dart';
 
@@ -92,9 +93,14 @@ void main() {
         d.file("d_good.dart", formattedSource)
       ]).create();
 
+      var aBad = p.join("code", "a_bad.dart");
+      var cBad = p.join("code", "c_bad.dart");
+
       var process = runFormatterOnDir(["--dry-run"]);
-      process.stdout.expect(p.join("code", "a_bad.dart"));
-      process.stdout.expect(p.join("code", "c_bad.dart"));
+
+      // The order isn't specified.
+      process.stdout.expect(either(aBad, cBad));
+      process.stdout.expect(either(aBad, cBad));
       process.shouldExit();
     });
 

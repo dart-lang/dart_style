@@ -22,7 +22,13 @@ ScheduledProcess runFormatter([List<String> args]) {
   var formatterPath = p.join(
       p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
 
-  args.insertAll(0, ["--package-root=${Platform.packageRoot}", formatterPath]);
+  args.insert(0, formatterPath);
+
+  // Use the same package root, if there is one.
+  if (Platform.packageRoot.isNotEmpty) {
+    args.insert(0, "--package-root=${Platform.packageRoot}");
+  }
+
   return new ScheduledProcess.start(Platform.executable, args);
 }
 

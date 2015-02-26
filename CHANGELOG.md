@@ -1,6 +1,6 @@
-# 0.1.5+1
+# 0.1.5+1, 0.1.5+2
 
-* Fix test file to work in main Dart repo test runner.
+* Fix test files to work in main Dart repo test runner.
 
 # 0.1.5
 
