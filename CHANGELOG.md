@@ -1,3 +1,7 @@
+# 0.1.5+1
+
+* Fix test file to work in main Dart repo test runner.
+
 # 0.1.5
 
 * Change executable name from `dartformat` to `dartfmt`.

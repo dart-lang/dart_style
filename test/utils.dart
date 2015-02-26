@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.test.command_line;
+library dart_style.test.utils;
 
 import 'dart:io';
 
@@ -22,7 +22,7 @@ ScheduledProcess runFormatter([List<String> args]) {
   var formatterPath = p.join(
       p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
 
-  args.insert(0, formatterPath);
+  args.insertAll(0, ["--package-root=${Platform.packageRoot}", formatterPath]);
   return new ScheduledProcess.start(Platform.executable, args);
 }
 
