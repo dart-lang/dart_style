@@ -126,19 +126,23 @@ void main() {
         d.file("b.dart", unformattedSource)
       ]).create();
 
-      var process = runFormatterOnDir(["--machine"]);
-
-      var json = {
+      var jsonA = JSON.encode({
         "path": p.join("code", "a.dart"),
         "source": formattedSource,
         "selection": {"offset": -1, "length": -1}
-      };
+      });
 
-      process.stdout.expect(JSON.encode(json));
+      var jsonB = JSON.encode({
+        "path": p.join("code", "b.dart"),
+        "source": formattedSource,
+        "selection": {"offset": -1, "length": -1}
+      });
 
-      json["path"] = p.join("code", "b.dart");
-      process.stdout.expect(JSON.encode(json));
+      var process = runFormatterOnDir(["--machine"]);
 
+      // The order isn't specified.
+      process.stdout.expect(either(jsonA, jsonB));
+      process.stdout.expect(either(jsonA, jsonB));
       process.shouldExit();
     });
   });
