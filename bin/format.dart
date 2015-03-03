@@ -10,6 +10,7 @@ import 'package:dart_style/src/dart_formatter.dart';
 import 'package:dart_style/src/formatter_exception.dart';
 import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
+import 'package:dart_style/src/source_code.dart';
 
 void main(List<String> args) {
   var parser = new ArgParser(allowTrailingOptions: true);
@@ -19,6 +20,8 @@ void main(List<String> args) {
   parser.addOption("line-length", abbr: "l",
       help: "Wrap lines longer than this.",
       defaultsTo: "80");
+  parser.addOption("preserve",
+      help: 'Selection to preserve, formatted as "start:length".');
   parser.addFlag("dry-run", abbr: "n", negatable: false,
       help: "Show which files would be modified but make no changes.");
   parser.addFlag("overwrite", abbr: "w", negatable: false,
@@ -35,9 +38,7 @@ void main(List<String> args) {
   try {
     argResults = parser.parse(args);
   } on FormatException catch (err) {
-    printUsage(parser, err.message);
-    exitCode = 64;
-    return;
+    usageError(parser, err.message);
   }
 
   if (argResults["help"]) {
@@ -45,36 +46,45 @@ void main(List<String> args) {
     return;
   }
 
+  // Can only preserve a selection when parsing from stdin.
+  var selection;
+
+  if (argResults["preserve"] != null && argResults.rest.isNotEmpty) {
+    usageError(parser, "Can only use --preserve when reading from stdin.");
+  }
+
+  try {
+    selection = parseSelection(argResults["preserve"]);
+  } on FormatException catch (_) {
+    usageError(parser,
+        '--preserve must be a colon-separated pair of integers, was '
+        '"${argResults['preserve']}".');
+  }
+
   if (argResults["dry-run"] && argResults["overwrite"]) {
-    printUsage(parser,
+    usageError(parser,
         "Cannot use --dry-run and --overwrite at the same time.");
-    exitCode = 64;
-    return;
   }
 
   checkForReporterCollision(String chosen, String other) {
-    if (!argResults[other]) return false;
+    if (!argResults[other]) return;
 
-    printUsage(parser,
+    usageError(parser,
         "Cannot use --$chosen and --$other at the same time.");
-    exitCode = 64;
-    return true;
   }
 
   var reporter = OutputReporter.print;
   if (argResults["dry-run"]) {
-    if (checkForReporterCollision("dry-run", "overwrite")) return;
-    if (checkForReporterCollision("dry-run", "machine")) return;
+    checkForReporterCollision("dry-run", "overwrite");
+    checkForReporterCollision("dry-run", "machine");
 
     reporter = OutputReporter.dryRun;
   } else if (argResults["overwrite"]) {
-    if (checkForReporterCollision("overwrite", "machine")) return;
+    checkForReporterCollision("overwrite", "machine");
 
     if (argResults.rest.isEmpty) {
-      printUsage(parser,
+      usageError(parser,
           "Cannot use --overwrite without providing any paths to format.");
-      exitCode = 64;
-      return;
     }
 
     reporter = OutputReporter.overwrite;
@@ -87,10 +97,8 @@ void main(List<String> args) {
   try {
     pageWidth = int.parse(argResults["line-length"]);
   } on FormatException catch (_) {
-    printUsage(parser, '--line-length must be an integer, was '
+    usageError(parser, '--line-length must be an integer, was '
                        '"${argResults['line-length']}".');
-    exitCode = 64;
-    return;
   }
 
   var followLinks = argResults["follow-links"];
@@ -99,20 +107,43 @@ void main(List<String> args) {
       pageWidth: pageWidth, followLinks: followLinks);
 
   if (argResults.rest.isEmpty) {
-    formatStdin(options);
+    formatStdin(options, selection);
   } else {
     formatPaths(options, argResults.rest);
   }
 }
 
+List<int> parseSelection(String selection) {
+  if (selection == null) return null;
+
+  var coordinates = selection.split(":");
+  if (coordinates.length != 2) {
+    throw new FormatException(
+        'Selection should be a colon-separated pair of integers, "123:45".');
+  }
+
+  return coordinates.map((coord) => coord.trim()).map(int.parse).toList();
+}
+
 /// Reads input from stdin until it's closed, and the formats it.
-void formatStdin(FormatterOptions options) {
+void formatStdin(FormatterOptions options, List<int> selection) {
+  var selectionStart = 0;
+  var selectionLength = 0;
+
+  if (selection != null) {
+    selectionStart = selection[0];
+    selectionLength = selection[1];
+  }
+
   var input = new StringBuffer();
   stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = new DartFormatter(pageWidth: options.pageWidth);
     try {
-      var source = input.toString();
-      var output = formatter.format(source, uri: "stdin");
+      var source = new SourceCode(input.toString(),
+          uri: "stdin",
+          selectionStart: selectionStart,
+          selectionLength: selectionLength);
+      var output = formatter.formatSource(source);
       options.reporter.showFile(null, "<stdin>", output,
           changed: source != output);
       return true;
@@ -147,6 +178,12 @@ void formatPaths(FormatterOptions options, List<String> paths) {
       stderr.writeln('No file or directory found at "$path".');
     }
   }
+}
+
+/// Prints [error] and usage help then exits with exit code 64.
+void usageError(ArgParser parser, String error) {
+  printUsage(parser, error);
+  exit(64);
 }
 
 void printUsage(ArgParser parser, [String error]) {

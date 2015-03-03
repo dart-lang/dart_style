@@ -1,3 +1,7 @@
+# 0.1.6
+
+* Allow passing in selection to preserve through command line (#194).
+
 # 0.1.5+1, 0.1.5+2, 0.1.5+3
 
 * Fix test files to work in main Dart repo test runner.

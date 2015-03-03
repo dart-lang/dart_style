@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'dart_formatter.dart';
 import 'formatter_options.dart';
 import 'formatter_exception.dart';
+import 'source_code.dart';
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
@@ -47,15 +48,15 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 /// Runs the formatter on [file].
 ///
 /// Returns `true` if successful or `false` if an error occurred.
-bool processFile(FormatterOptions options, File file,
-    {String label}) {
+bool processFile(FormatterOptions options, File file, {String label}) {
   if (label == null) label = file.path;
 
   var formatter = new DartFormatter(pageWidth: options.pageWidth);
   try {
-    var source = file.readAsStringSync();
-    var output = formatter.format(source, uri: file.path);
-    options.reporter.showFile(file, label, output, changed: source != output);
+    var source = new SourceCode(file.readAsStringSync(), uri: file.path);
+    var output = formatter.formatSource(source);
+    options.reporter.showFile(file, label, output,
+        changed: source.text != output.text);
     return true;
   } on FormatterException catch (err) {
     stderr.writeln(err.message());

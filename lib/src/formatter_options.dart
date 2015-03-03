@@ -7,6 +7,8 @@ library dart_style.src.formatter_options;
 import 'dart:convert';
 import 'dart:io';
 
+import 'source_code.dart';
+
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
   /// The [OutputReporter] used to show the formatting results.
@@ -52,13 +54,13 @@ abstract class OutputReporter {
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
-  void showFile(File file, String label, String output, {bool changed});
+  void showFile(File file, String label, SourceCode output, {bool changed});
 }
 
 /// Prints only the names of files whose contents are different from their
 /// formatted version.
 class _DryRunReporter extends OutputReporter {
-  void showFile(File file, String label, String output, {bool changed}) {
+  void showFile(File file, String label, SourceCode output, {bool changed}) {
     // Only show the changed files.
     if (changed) print(label);
   }
@@ -78,16 +80,16 @@ class _PrintReporter extends OutputReporter {
     print("Skipping hidden file $path");
   }
 
-  void showFile(File file, String label, String output, {bool changed}) {
+  void showFile(File file, String label, SourceCode output, {bool changed}) {
     // Don't add an extra newline.
-    stdout.write(output);
+    stdout.write(output.text);
   }
 }
 
 /// Prints the formatted result and selection info of each file to stdout as a
 /// JSON map.
 class _PrintJsonReporter extends OutputReporter {
-  void showFile(File file, String label, String output, {bool changed}) {
+  void showFile(File file, String label, SourceCode output, {bool changed}) {
     // TODO(rnystrom): Put an empty selection in here to remain compatible with
     // the old formatter. Since there's no way to pass a selection on the
     // command line, this will never be used, which is why it's hard-coded to
@@ -95,17 +97,20 @@ class _PrintJsonReporter extends OutputReporter {
     // result here.
     print(JSON.encode({
       "path": label,
-      "source": output,
-      "selection": {"offset": -1, "length": -1}
+      "source": output.text,
+      "selection": {
+        "offset": output.selectionStart != null ? output.selectionStart : -1,
+        "length": output.selectionLength != null ? output.selectionLength : -1
+      }
     }));
   }
 }
 
 /// Overwrites each file with its formatted result.
 class _OverwriteReporter extends _PrintReporter {
-  void showFile(File file, String label, String output, {bool changed}) {
+  void showFile(File file, String label, SourceCode output, {bool changed}) {
     if (changed) {
-      file.writeAsStringSync(output);
+      file.writeAsStringSync(output.text);
       print("Formatted $label");
     } else {
       print("Unchanged $label");

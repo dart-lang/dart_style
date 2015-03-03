@@ -147,6 +147,41 @@ void main() {
     });
   });
 
+  group("--preserve", () {
+    test("errors if given paths.", () {
+      var process = runFormatter(["--preserve", "path", "another"]);
+      process.shouldExit(64);
+    });
+
+    test("errors on wrong number of components.", () {
+      var process = runFormatter(["--preserve", "1"]);
+      process.shouldExit(64);
+
+      process = runFormatter(["--preserve", "1:2:3"]);
+      process.shouldExit(64);
+    });
+
+    test("errors on non-integer component.", () {
+      var process = runFormatter(["--preserve", "1:2.3"]);
+      process.shouldExit(64);
+    });
+
+    test("updates selection.", () {
+      var process = runFormatter(["--preserve", "6:10", "-m"]);
+      process.writeLine(unformattedSource);
+      process.closeStdin();
+
+      var json = JSON.encode({
+        "path": "<stdin>",
+        "source": formattedSource,
+        "selection": {"offset": 5, "length": 9}
+      });
+
+      process.stdout.expect(json);
+      process.shouldExit();
+    });
+  });
+
   group("with no paths", () {
     test("errors on --overwrite.", () {
       var process = runFormatter(["--overwrite"]);
