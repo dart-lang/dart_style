@@ -1,3 +1,7 @@
+# 0.1.7
+
+* Update to latest analyzer (#177).
+
 # 0.1.6
 
 * Allow passing in selection to preserve through command line (#194).

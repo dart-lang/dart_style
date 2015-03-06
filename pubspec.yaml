@@ -4,7 +4,7 @@ author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
 dependencies:
-  analyzer: '>=0.23.0 <0.24.0'
+  analyzer: '>=0.24.0 <0.25.0'
   args: '>=0.12.1 <0.13.0'
   path: '>=1.0.0 <2.0.0'
   source_span: '>=1.0.0 <2.0.0'
