@@ -1,6 +1,7 @@
 # 0.1.7
 
 * Update to latest analyzer (#177).
+* Don't discard annotations on initializing formals (#197).
 
 # 0.1.6
 

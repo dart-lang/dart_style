@@ -190,3 +190,29 @@ var variable;
 @DomName('DatabaseCallback')
 @Experimental()
 var variable;
+>>> metadata on parameters
+main(@foo @bar param) {}
+<<<
+main(@foo @bar param) {}
+>>> metadata on initializing formal
+class Foo {
+  Foo(@bar this.field);
+}
+<<<
+class Foo {
+  Foo(@bar this.field);
+}
+>>> metadata on function-typed formal parameter
+withReturnType(@foo @bar int fn(@foo param)) {}
+withoutReturnType(@foo @bar fn(@foo param)) {}
+<<<
+withReturnType(
+    @foo @bar int fn(@foo param)) {}
+withoutReturnType(
+    @foo @bar fn(@foo param)) {}
+>>> metadata on default formal parameter
+positional([@foo bar]) {}
+named({@foo bar}) {}
+<<<
+positional([@foo bar]) {}
+named({@foo bar}) {}

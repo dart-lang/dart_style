@@ -560,9 +560,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.parameter);
     if (node.separator != null) {
       // The '=' separator is preceded by a space.
-      if (node.separator.type == TokenType.EQ) {
-        space();
-      }
+      if (node.separator.type == TokenType.EQ) space();
       token(node.separator);
       visit(node.defaultValue, before: space);
     }
@@ -670,6 +668,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFieldFormalParameter(FieldFormalParameter node) {
+    visitParameterMetadata(node.metadata);
     token(node.keyword, after: space);
     visit(node.type, after: space);
     token(node.thisToken);
@@ -839,6 +838,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
+    visitParameterMetadata(node.metadata);
     visit(node.returnType, after: space);
 
     // Try to keep the function's parameters with its name.
