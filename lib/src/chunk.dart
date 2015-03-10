@@ -283,7 +283,8 @@ class SplitParam {
 /// together, like parameter lists and binary operator expressions.
 class Span {
   /// Index of the first chunk contained in this span.
-  final int start;
+  int get start => _start;
+  int _start;
 
   /// Index of the last chunk contained in this span.
   int get end => _end;
@@ -293,7 +294,7 @@ class Span {
   /// if the span is for a multisplit.
   final int cost;
 
-  Span(this.start, this.cost);
+  Span(this._start, this.cost);
 
   /// Marks this span as ending at [end].
   void close(int end) {
@@ -313,6 +314,23 @@ class Span {
     if (cost != null) result += " \$$cost";
 
     return result + ")";
+  }
+
+  /// Shifts the indexes of the chunk down by [offset].
+  ///
+  /// This is used when a prefix of the chunk list gets pulled off by the
+  /// [LineWriter] after it gets formatted as a line. The remaining spans need
+  /// to have their indices shifted to account for the removed chunks.
+  ///
+  /// Returns `true` if the span has shifted all the way off the front and
+  /// should just be discarded.
+  bool shift(int offset) {
+    if (end != null && end < offset) return true;
+
+    _start -= offset;
+    if (_end != null) _end -= offset;
+
+    return false;
   }
 }
 

@@ -472,7 +472,7 @@ class LineWriter {
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode end() {
-    if (_chunks.isNotEmpty) _completeLine();
+    if (_chunks.isNotEmpty) _completeLine(_chunks.length);
 
     // Be a good citizen, end with a newline.
     if (_source.isCompilationUnit) _buffer.write(_formatter.lineEnding);
@@ -636,49 +636,49 @@ class LineWriter {
       // Since we're about to write some text on the next line, we know the
       // previous one is fully done being tweaked and merged, so now we can see
       // if it can be split independently.
-       _checkForCompleteLine();
+       _checkForCompleteLine(_chunks.length);
 
       _chunks.add(new Chunk(text));
     }
   }
 
-  /// Checks to see if we are currently at a point where the existing chunks
-  /// can be processed as a single line and processes them if so.
+  /// Checks to see if we the first [length] chunks can be processed as a
+  /// single line and processes them if so.
   ///
   /// We want to send small lists of chunks to [LineSplitter] for performance.
   /// We can do that when we know one set of chunks will absolutely not affect
   /// anything following it. The rule for that is pretty simple: a hard newline
   /// that is not nested inside an expression.
-  void _checkForCompleteLine() {
-    if (_chunks.isEmpty) return;
+  bool _checkForCompleteLine(int length) {
+    if (length == 0) return false;
+
+    // Hang on to the split info so we can reset the writer to start with it.
+    var split = _chunks[length - 1];
 
     // Can only split on a hard line that is not nested in the middle of an
     // expression.
-    if (!_chunks.last.isHardSplit || _chunks.last.nesting >= 0) return;
+    if (!split.isHardSplit || split.nesting >= 0) return false;
 
-    // Hang on to the split info so we can reset the writer to start with it.
-    var split = _chunks.last;
+    _completeLine(length);
 
-    // Don't write any empty line, just discard it.
-    if (_chunks.isNotEmpty) {
-      _completeLine();
-      _chunks.clear();
-    }
-
-    _spans.clear();
+    // Discard the formatted chunks and any spans contained in them.
+    _chunks.removeRange(0, length);
+    _spans.removeWhere((span) => span.shift(length));
 
     // Get ready for the next line.
     _bufferedNewlines = split.isDouble ? 2 : 1;
     _beginningIndent = split.indent;
+
+    return true;
   }
 
-  /// Hands off the current list of chunks to [LineSplitter] as a single logical
-  /// line.
-  void _completeLine() {
+  /// Hands off the first [length] chunks to the [LineSplitter] as a single
+  /// logical line to be split.
+  void _completeLine(int length) {
     assert(_chunks.isNotEmpty);
 
     if (debugFormatter) {
-      dumpChunks(_chunks);
+      dumpChunks(_chunks.take(length).toList());
       print(_spans.join("\n"));
     }
 
@@ -687,8 +687,18 @@ class LineWriter {
       _buffer.write(_formatter.lineEnding);
     }
 
+    // If we aren't completing the entire set of chunks, get the subset that we
+    // are completing.
+    var chunks = _chunks;
+    var spans = _spans;
+
+    if (length < _chunks.length) {
+      chunks = chunks.take(length).toList();
+      spans = spans.where((span) => span.start <= length).toList();
+    }
+
     var splitter = new LineSplitter(_formatter.lineEnding, _formatter.pageWidth,
-        _chunks, _spans, _beginningIndent);
+        chunks, spans, _beginningIndent);
     var selection = splitter.apply(_buffer);
 
     if (selection[0] != null) _selectionStart = selection[0];
@@ -725,11 +735,17 @@ class LineWriter {
     if (splitParams.isEmpty) return;
 
     // Take any existing splits for the multisplits and hard split them.
-    for (var chunk in _chunks) {
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
       if (chunk.param == null) continue;
 
       if (splitParams.contains(chunk.param)) {
         chunk.harden();
+
+        // Now that this chunk is a hard split, we may be able to format up to
+        // it as its own line. If so, the chunks will get removed, so reset
+        // the loop counter.
+        if (_checkForCompleteLine(i + 1)) i = -1;
       } else {
         // If the chunk isn't hardened, but implies something that is, we can
         // discard the implication since it is always satisfied now.
