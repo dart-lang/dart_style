@@ -74,7 +74,7 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _openSpans = <Span>[];
 
-  /// All of the spans that have been created, open and closed.
+  /// All of the spans that have been created and closed.
   final _spans = <Span>[];
 
   /// The current indentation and nesting levels.
@@ -371,6 +371,10 @@ class LineWriter {
   /// Ends the innermost span.
   void endSpan() {
     var span = _openSpans.removeLast();
+
+    // If the span was discarded while it was still open, just forget about it.
+    if (span == null) return;
+
     span.close(_currentChunkIndex);
 
     // A span that just covers a single chunk can't be split anyway.
@@ -381,8 +385,9 @@ class LineWriter {
   /// Starts a new [Multisplit].
   ///
   /// Returns the [SplitParam] for the multisplit.
-  SplitParam startMultisplit({bool separable}) {
-    var multisplit = new Multisplit(_currentChunkIndex, separable: separable);
+  SplitParam startMultisplit({bool separable, int cost}) {
+    var multisplit = new Multisplit(_currentChunkIndex,
+        separable: separable, cost: cost);
     _multisplits.add(multisplit);
 
     return multisplit.param;
@@ -423,7 +428,7 @@ class LineWriter {
   /// In particular, it's easy for the visitor to know that collections with a
   /// large number of items must split. Doing that early avoids crashing the
   /// splitter when it tries to recurse on huge collection literals.
-  void preemptMultisplits() => _splitMultisplits();
+  void preemptMultisplits() => _handleHardSplit();
 
   /// Increases the level of expression nesting.
   ///
@@ -622,7 +627,7 @@ class LineWriter {
     _chunks.last.applySplit(indent, nesting, param,
         isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
 
-    if (_chunks.last.isHardSplit) _splitMultisplits();
+    if (_chunks.last.isHardSplit) _handleHardSplit();
   }
 
   /// Writes [text] to either the current chunk or a new one if the current
@@ -677,11 +682,6 @@ class LineWriter {
   void _completeLine(int length) {
     assert(_chunks.isNotEmpty);
 
-    if (debugFormatter) {
-      dumpChunks(_chunks.take(length).toList());
-      print(_spans.join("\n"));
-    }
-
     // Write the newlines required by the previous line.
     for (var i = 0; i < _bufferedNewlines; i++) {
       _buffer.write(_formatter.lineEnding);
@@ -697,6 +697,11 @@ class LineWriter {
       spans = spans.where((span) => span.start <= length).toList();
     }
 
+    if (debugFormatter) {
+      dumpChunks(chunks);
+      print(spans.join("\n"));
+    }
+
     var splitter = new LineSplitter(_formatter.lineEnding, _formatter.pageWidth,
         chunks, spans, _beginningIndent);
     var selection = splitter.apply(_buffer);
@@ -705,13 +710,21 @@ class LineWriter {
     if (selection[1] != null) _selectionLength = selection[1] - _selectionStart;
   }
 
-  /// Handles multisplits when a hard line occurs.
+  /// Handles open multisplits and spans when a hard line occurs.
   ///
   /// Any active separable multisplits will get split in two at this point.
   /// Other multisplits are forced into the "hard" state. All of their previous
   /// splits are turned into explicit hard splits and any new splits for that
   /// multisplit become hard splits too.
-  void _splitMultisplits() {
+  ///
+  /// All open spans get discarded since they will never be satisfied.
+  void _handleHardSplit() {
+    // Discard all open spans. We don't remove them from the stack so that we
+    // can still correctly count later calls to endSpan().
+    for (var i = 0; i < _openSpans.length; i++) {
+      _openSpans[i] = null;
+    }
+
     if (_multisplits.isEmpty) return;
 
     var splitParams = new Set();

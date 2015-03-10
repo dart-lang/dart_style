@@ -3,6 +3,10 @@
 * Update to latest analyzer (#177).
 * Don't discard annotations on initializing formals (#197).
 * Optimize formatting deeply nested expressions (#108).
+* Discard unused nesting level to improve performance (#108).
+* Discard unused spans to improve performance (#108).
+* Try to avoid splitting single-element lists (#211).
+* Avoid splitting when the first argument is a function expression (#211). 
 
 # 0.1.6
 

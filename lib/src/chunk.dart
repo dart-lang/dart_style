@@ -230,8 +230,18 @@ class Cost {
   /// greater number of nested spans.
   static const normal = 1;
 
-  /// The cost of splitting after a "=" both for assignment and initialization.
+  /// Splitting after a "=" both for assignment and initialization.
   static const assignment = 2;
+
+  /// Splitting before the first argument when it happens to be a function
+  /// expression with a block body.
+  static const firstBlockArgument = 2;
+
+  /// The series of positional arguments.
+  static const positionalArguments = 2;
+
+  /// Splitting inside the brackets of a list with only one element.
+  static const singleElementList = 2;
 
   /// The cost of a single character that goes past the page limit.
   ///
@@ -267,7 +277,8 @@ class SplitParam {
   final implies = <SplitParam>[];
 
   /// Creates a new [SplitParam].
-  SplitParam([this.cost = Cost.normal]);
+  SplitParam([int cost])
+      : cost = cost != null ? cost : Cost.normal;
 
   String toString() => "$id";
 
