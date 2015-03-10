@@ -103,6 +103,8 @@ class LineSplitter {
   List<int> apply(StringBuffer buffer) {
     if (debugFormatter) dumpLine(_chunks, _indent);
 
+    _flattenNestingLevels();
+
     var splits = _findBestSplits(new LinePrefix());
     var selection = [null, null];
 
@@ -140,6 +142,41 @@ class LineSplitter {
     }
 
     return selection;
+  }
+
+  /// Removes any unused nesting levels from the chunks.
+  ///
+  /// The line splitter considers every possible combination of mapping
+  /// indentation to nesting levels when trying to find the best solution. For
+  /// example, it may assign 4 spaces of indentation to level 1, 8 spaces to
+  /// level 3, etc.
+  ///
+  /// It's fairly common for a nesting level to not actually appear at the
+  /// boundary of a chunk. The source visitor may enter more than one level of
+  /// nesting at a point where a split cannot happen. In that case, there's no
+  /// point in trying to assign an indentation level to that nesting level. It
+  /// will never be used because no line will begin at that level of
+  /// indentation.
+  ///
+  /// Worse, if the splitter *does* consider these levels, it can dramatically
+  /// increase solving time. To avoid that, this renumbers all of the nesting
+  /// levels in the chunks to not have any of these unused gaps.
+  void _flattenNestingLevels() {
+    var nestingLevels = _chunks
+        .map((chunk) => chunk.nesting)
+        .where((nesting) => nesting != -1)
+        .toSet()
+        .toList();
+    nestingLevels.sort();
+
+    var nestingMap = {-1: -1};
+    for (var i = 0; i < nestingLevels.length; i++) {
+      nestingMap[nestingLevels[i]] = i;
+    }
+
+    for (var chunk in _chunks) {
+      chunk.nesting = nestingMap[chunk.nesting];
+    }
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
@@ -328,6 +365,8 @@ class LineSplitter {
   bool _suffixContainsParam(int split, SplitParam param) {
     if (param == null) return false;
 
+    // TODO(rnystrom): Consider caching the set of params that appear at every
+    // suffix.
     for (var i = split + 1; i < _chunks.length; i++) {
       if (_chunks[i].isSoftSplit && _chunks[i].param == param) {
         return true;

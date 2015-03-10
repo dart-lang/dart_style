@@ -94,6 +94,35 @@ class BacktrackingSolver {
         tag == 'input' && (name == 'value' || name =='checked') ||
         tag == 'select' && (name == 'selectedindex' || name == 'value') ||
         tag == 'textarea' && name == 'value');
+
+     // Even more deeply nested pathological example.
+     if (javaBooleanAnd(
+        javaBooleanAnd(
+            javaBooleanAnd(
+                javaBooleanAnd(
+                    javaBooleanAnd(
+                        javaBooleanAnd(
+                            javaBooleanAnd(
+                                javaBooleanAnd(),
+                                _isEqualTokens(
+                                    node.period,
+                                    toNode.period)),
+                            _isEqualNodes(
+                                node.name,
+                                toNode.name)),
+                        _isEqualNodes(
+                            node.parameters,
+                            toNode.parameters)),
+                    _isEqualTokens(
+                        node.separator,
+                        toNode.separator)),
+                _isEqualNodeLists(node.initializers, toNode.initializers)),
+            _isEqualNodes(
+                node.redirectedConstructor,
+                toNode.redirectedConstructor)),
+        _isEqualNodes(node.body, toNode.body))) {
+      toNode.element = node.element;
+    }
   }
 
   /// Run the solver.

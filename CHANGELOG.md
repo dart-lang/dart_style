@@ -2,6 +2,7 @@
 
 * Update to latest analyzer (#177).
 * Don't discard annotations on initializing formals (#197).
+* Optimize formatting deeply nested expressions (#108).
 
 # 0.1.6
 

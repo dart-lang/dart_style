@@ -87,8 +87,7 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  int get nesting => _nesting;
-  int _nesting = -1;
+  int nesting = -1;
 
   /// Whether or not the chunk occurs inside an expression.
   ///
@@ -96,7 +95,7 @@ class Chunk extends Selection {
   /// are to determine the indentation of subsequent lines. "Statement level"
   /// splits that occur between statements or in the top-level of a unit only
   /// take the main indent level into account.
-  bool get isInExpression => _nesting != -1;
+  bool get isInExpression => nesting != -1;
 
   /// Whether it's valid to add more text to this chunk or not.
   ///
@@ -181,7 +180,7 @@ class Chunk extends Selection {
 
     // Last newline settings win.
     _indent = indent;
-    _nesting = nesting;
+    this.nesting = nesting;
     _spaceWhenUnsplit = spaceWhenUnsplit;
 
     // Preserve a blank line.
@@ -194,7 +193,7 @@ class Chunk extends Selection {
     if (text.isNotEmpty) parts.add("${Color.bold}$text${Color.none}");
 
     if (_indent != 0 && _indent != null) parts.add("indent:$_indent");
-    if (_nesting != -1) parts.add("nest:$_nesting");
+    if (nesting != -1) parts.add("nest:$nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
 
