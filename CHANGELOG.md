@@ -5,6 +5,7 @@
 * Optimize formatting deeply nested expressions (#108).
 * Discard unused nesting level to improve performance (#108).
 * Discard unused spans to improve performance (#108).
+* Harden splits that containg too much nesting (#108).
 * Try to avoid splitting single-element lists (#211).
 * Avoid splitting when the first argument is a function expression (#211). 
 

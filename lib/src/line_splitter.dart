@@ -103,9 +103,29 @@ class LineSplitter {
   List<int> apply(StringBuffer buffer) {
     if (debugFormatter) dumpLine(_chunks, _indent);
 
-    _flattenNestingLevels();
+    var nestingDepth = _flattenNestingLevels();
+
+    // Hack. The formatter doesn't handle formatting very deeply nested code
+    // well. It can make performance spiral into a pit of sadness. Fortunately,
+    // we only tend to see expressions pathologically deeply nested in
+    // generated code that isn't read by humans much anyway. To avoid burning
+    // too much time on these, harden any splits containing more than a certain
+    // level of nesting.
+    //
+    // The number here was chosen empirically based on formatting the repo. It
+    // was picked to get the best performance while affecting the minimum amount
+    // of results.
+    // TODO(rnystrom): Do something smarter.
+    if (nestingDepth > 9) {
+      for (var chunk in _chunks) {
+        if (chunk.param != null && nestingDepth - chunk.nesting > 9) {
+          chunk.harden();
+        }
+      }
+    }
 
     var splits = _findBestSplits(new LinePrefix());
+
     var selection = [null, null];
 
     // Write each chunk and the split after it.
@@ -161,7 +181,11 @@ class LineSplitter {
   /// Worse, if the splitter *does* consider these levels, it can dramatically
   /// increase solving time. To avoid that, this renumbers all of the nesting
   /// levels in the chunks to not have any of these unused gaps.
-  void _flattenNestingLevels() {
+  ///
+  /// Returns the number of distinct nesting levels remaining after flattening.
+  /// This may be zero if the chunks have no nesting (i.e. just statement-level
+  /// indentation).
+  int _flattenNestingLevels() {
     var nestingLevels = _chunks
         .map((chunk) => chunk.nesting)
         .where((nesting) => nesting != -1)
@@ -177,6 +201,8 @@ class LineSplitter {
     for (var chunk in _chunks) {
       chunk.nesting = nestingMap[chunk.nesting];
     }
+
+    return nestingLevels.length;
   }
 
   /// Finds the best set of splits to apply to the remainder of the line
