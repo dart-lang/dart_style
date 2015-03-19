@@ -146,7 +146,9 @@ class SourceVisitor implements AstVisitor {
     }
 
     // Allow splitting after "(".
-    var lastParam = zeroSplit(cost);
+    var rule = new PositionalArgsRule();
+    _writer.startRule(rule);
+    rule.beforeArgument(_writer.split());
 
     // Try to keep the positional arguments together.
     _writer.startSpan(Cost.positionalArguments);
@@ -168,12 +170,13 @@ class SourceVisitor implements AstVisitor {
         if (node.arguments[i + 1] is NamedExpression) _writer.endSpan();
 
         // Positional arguments split independently.
-        lastParam = split();
+        rule.beforeArgument(_writer.split(space: true));
       }
     }
 
     // If there are named arguments, write them.
     if (i < node.arguments.length) {
+      /*
       // Named arguments all split together, but not before the first. This
       // allows all of the named arguments to get pushed to the next line, but
       // stay together.
@@ -186,6 +189,7 @@ class SourceVisitor implements AstVisitor {
       //         second: 2,
       //         third: 3);
       multisplitParam.implies.add(lastParam);
+      */
 
       for (; i < node.arguments.length; i++) {
         var argument = node.arguments[i];
@@ -196,7 +200,9 @@ class SourceVisitor implements AstVisitor {
         if (i < node.arguments.length - 1) {
           token(argument.endToken.next);
 
+          /*
           _writer.multisplit(nest: true, space: true);
+          */
         }
       }
 
@@ -206,7 +212,9 @@ class SourceVisitor implements AstVisitor {
       // so end it here.
       if (node.arguments.first is NamedExpression) _writer.endSpan();
 
+      /*
       _writer.endMultisplit();
+      */
     } else {
       token(node.rightParenthesis);
 
@@ -214,6 +222,8 @@ class SourceVisitor implements AstVisitor {
       // last argument.
       _writer.endSpan();
     }
+
+    _writer.endRule();
 
     if (singleArgument) _writer.endSpan();
     _writer.unnest();
@@ -241,7 +251,12 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
+    // TODO(bob): Temporary to aovid spurious test failures. Make this use a
+    // split.
+    space();
+    /*
     split(Cost.assignment);
+    */
     _writer.startSpan();
     visit(node.rightHandSide);
     _writer.endSpan();
@@ -254,7 +269,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
+    /*
     _writer.startMultisplit(separable: true);
+    */
     _writer.startSpan();
     _writer.nestExpression();
 
@@ -318,8 +335,12 @@ class SourceVisitor implements AstVisitor {
 
         space();
         token(e.operator);
-        _writer.multisplit(space: true, nest: true);
 
+        // TODO(bob): Temp to get unrelated tests passing. Should be a split.
+        space();
+        /*
+        _writer.multisplit(space: true, nest: true);
+        */
         traverse(e.rightOperand);
       } else {
         visit(e);
@@ -330,7 +351,9 @@ class SourceVisitor implements AstVisitor {
 
     _writer.unnest();
     _writer.endSpan();
+    /*
     _writer.endMultisplit();
+    */
   }
 
   visitBlock(Block node) {
@@ -673,7 +696,11 @@ class SourceVisitor implements AstVisitor {
       if (_isLambda(node)) _writer.startSpan();
 
       token(node.functionDefinition); // "=>".
+      // TODO(bob): Temp to get unrelated tests passing. Should be a split.
+      space();
+      /*
       split();
+      */
 
       if (_isLambda(node)) _writer.endSpan();
 
@@ -740,6 +767,7 @@ class SourceVisitor implements AstVisitor {
     _writer.nestExpression();
     token(node.leftParenthesis);
 
+    // TODO(bob): Use PositionalArgumentsRule here.
     // Allow splitting after the "(" in non-empty parameter lists, but not for
     // lambdas.
     if ((node.parameters.isNotEmpty ||
@@ -1392,7 +1420,12 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
+    // TODO(bob): Temporary to aovid spurious test failures. Make this use a
+    // split.
+    space();
+    /*
     split(Cost.assignment);
+    */
     _writer.startSpan();
     visit(node.initializer);
     _writer.endSpan();
@@ -1699,15 +1732,9 @@ class SourceVisitor implements AstVisitor {
     token(leftBracket);
 
     // Indent the body.
-    /*
-    _writer.startMultisplit(cost: cost);
-    */
     _writer.indent();
 
     // Split after the bracket.
-    /*
-    _writer.multisplit(space: space);
-    */
     // TODO(bob): Cost.
     _writer.startRule(new BlockSplitRule());
     _writer.writeSplit(nest: false, space: space);
@@ -1724,9 +1751,6 @@ class SourceVisitor implements AstVisitor {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
-      /*
-      _writer.multisplit(space: space);
-      */
       _writer.writeSplit(nest: false, space: space);
     });
 

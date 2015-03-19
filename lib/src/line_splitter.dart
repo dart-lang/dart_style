@@ -101,6 +101,30 @@ class LineSplitter {
   /// Likewise, the second element will be non-`null` if the selection endpoint
   /// is within the list of chunks.
   List<int> apply(StringBuffer buffer) {
+    var nestingDepth = _flattenNestingLevels();
+
+    // Hack. The formatter doesn't handle formatting very deeply nested code
+    // well. It can make performance spiral into a pit of sadness. Fortunately,
+    // we only tend to see expressions pathologically deeply nested in
+    // generated code that isn't read by humans much anyway. To avoid burning
+    // too much time on these, harden any splits containing more than a certain
+    // level of nesting.
+    //
+    // The number here was chosen empirically based on formatting the repo. It
+    // was picked to get the best performance while affecting the minimum amount
+    // of results.
+    // TODO(rnystrom): Do something smarter.
+    // TODO(bob): Had to crank this way down to get decent perf with new rule
+    // stuff. Optimize or fix.
+    const maxDepth = 5; // Was 9.
+    if (nestingDepth > maxDepth) {
+      for (var chunk in _chunks) {
+        if (!chunk.isHardSplit && nestingDepth - chunk.nesting > maxDepth) {
+          chunk.harden();
+        }
+      }
+    }
+
     var splits = _findBestSplits(new LinePrefix());
     var selection = [null, null];
 
@@ -140,6 +164,47 @@ class LineSplitter {
     return selection;
   }
 
+  /// Removes any unused nesting levels from the chunks.
+  ///
+  /// The line splitter considers every possible combination of mapping
+  /// indentation to nesting levels when trying to find the best solution. For
+  /// example, it may assign 4 spaces of indentation to level 1, 8 spaces to
+  /// level 3, etc.
+  ///
+  /// It's fairly common for a nesting level to not actually appear at the
+  /// boundary of a chunk. The source visitor may enter more than one level of
+  /// nesting at a point where a split cannot happen. In that case, there's no
+  /// point in trying to assign an indentation level to that nesting level. It
+  /// will never be used because no line will begin at that level of
+  /// indentation.
+  ///
+  /// Worse, if the splitter *does* consider these levels, it can dramatically
+  /// increase solving time. To avoid that, this renumbers all of the nesting
+  /// levels in the chunks to not have any of these unused gaps.
+  ///
+  /// Returns the number of distinct nesting levels remaining after flattening.
+  /// This may be zero if the chunks have no nesting (i.e. just statement-level
+  /// indentation).
+  int _flattenNestingLevels() {
+    var nestingLevels = _chunks
+        .map((chunk) => chunk.nesting)
+        .where((nesting) => nesting != -1)
+        .toSet()
+        .toList();
+    nestingLevels.sort();
+
+    var nestingMap = {-1: -1};
+    for (var i = 0; i < nestingLevels.length; i++) {
+      nestingMap[nestingLevels[i]] = i;
+    }
+
+    for (var chunk in _chunks) {
+      chunk.nesting = nestingMap[chunk.nesting];
+    }
+
+    return nestingLevels.length;
+  }
+
   /// Finds the best set of splits to apply to the remainder of the line
   /// following [prefix].
   SplitSet _findBestSplits(LinePrefix prefix) {
@@ -177,7 +242,7 @@ class LineSplitter {
       LinePrefix prefix, BestSplits bestSplits, int value) {
     var chunk = _chunks[prefix.length];
 
-    var isSplit = chunk.rule.isSplit(value);
+    var isSplit = chunk.rule.isSplit(value, chunk);
 
     // If we're in a block that decided not to split, we can't allow any other
     // splits.
@@ -211,7 +276,8 @@ class LineSplitter {
     }
 
     var indent = prefix.getNextLineIndent(_chunks, _indent);
-    bestSplits.update(splits, _evaluateCost(prefix, indent, splits));
+    var cost = _evaluateCost(prefix, indent, splits);
+    bestSplits.update(splits, cost);
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
@@ -298,8 +364,8 @@ class BestSplits {
   void update(SplitSet splits, int cost) {
     // TODO(bob): Is weight still needed?
     if (_lowestCost == null ||
-        cost < _lowestCost ||
-        (cost == _lowestCost && splits.weight > _bestSplits.weight)) {
+        cost < _lowestCost/* ||
+        (cost == _lowestCost && splits.weight > _bestSplits.weight)*/) {
       _bestSplits = splits;
       _lowestCost = cost;
     }

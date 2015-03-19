@@ -206,6 +206,15 @@ class LineWriter {
     _pendingWhitespace = type;
   }
 
+  /// Write a split owned by the current innermost rule.
+  ///
+  /// Ignores nesting when split if [nest] is `false`. If unsplit, it expands
+  /// to a space if [space] is `true`.
+  Chunk split({bool nest: true, bool space}) {
+    return _writeSplit(_indent, nest ? _nesting : -1, _rules.last,
+        spaceWhenUnsplit: space);
+  }
+
   /*
   /// Write a soft split with its own param at [cost].
   ///
@@ -657,14 +666,19 @@ class LineWriter {
   }
 
   /// Ends the current chunk (if any) with the given split information.
-  void _writeSplit(int indent, int nesting, SplitRule rule,
+  ///
+  /// Returns the chunk.
+  Chunk _writeSplit(int indent, int nesting, SplitRule rule,
       {bool isDouble, bool spaceWhenUnsplit}) {
-    if (_chunks.isEmpty) return;
+    if (_chunks.isEmpty) return null;
 
-    _chunks.last.applySplit(indent, nesting, rule,
+    var chunk = _chunks.last;
+    chunk.applySplit(indent, nesting, rule,
         isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
 
-    if (_chunks.last.isHardSplit) _handleHardSplit();
+    if (chunk.isHardSplit) _handleHardSplit();
+
+    return chunk;
   }
 
   /// Writes [text] to either the current chunk or a new one if the current
@@ -694,7 +708,7 @@ class LineWriter {
   bool _checkForCompleteLine(int length) {
     if (length == 0) return false;
 
-    // TODO(bob): Can we be less pessimistic?
+    // TODO(bob): Be less pessimistic.
     if (_rules.isNotEmpty) return false;
 
     // Hang on to the split info so we can reset the writer to start with it.

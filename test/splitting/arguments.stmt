@@ -43,12 +43,14 @@ someFunctionTwo(argument, argument, argument),
 someFunctionTwo(argument, argument, argument),
 someArgument, someArgument);
 <<<
-someFunctionOne(someArgument,
+someFunctionOne(
+    someArgument,
     someFunctionTwo(
         argument, argument, argument),
     someFunctionTwo(
         argument, argument, argument),
-    someArgument, someArgument);
+    someArgument,
+    someArgument);
 >>> hard split inside argument list
 foo(argument, argument, argument, argument, () { fn; }, argument, argument,
     argument, argument);

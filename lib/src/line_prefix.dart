@@ -70,7 +70,7 @@ class LinePrefix {
   bool get isInUnsplitBlock {
     // TODO(rnystrom): Cache this?
     for (var rule in ruleValues.keys) {
-      if (rule is BlockSplitRule && !rule.isSplit(ruleValues[rule])) {
+      if (rule is BlockSplitRule && !rule.isSplit(ruleValues[rule], null)) {
         return true;
       }
     }
@@ -121,10 +121,10 @@ class LinePrefix {
   }
 
   String toString() {
-    var result = "Prefix($length";
+    var result = "prefix $length";
     if (_nesting.indent != 0) result += " nesting $_nesting";
-    if (ruleValues.isNotEmpty) result +="rules $ruleValues";
-    return result + ")";
+    if (ruleValues.isNotEmpty) result +=" rules $ruleValues";
+    return result;
   }
 
   // TODO(bob): Doc.

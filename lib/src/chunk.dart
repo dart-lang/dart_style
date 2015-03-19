@@ -260,6 +260,7 @@ class Cost {
 }
 
 // TODO(bob): Doc.
+// TODO(bob): Rename Rule.
 abstract class SplitRule {
   static int _nextId = 0;
 
@@ -282,8 +283,7 @@ abstract class SplitRule {
   /// a hard split.
   bool get hardenOnHardSplit => true;
 
-  // TODO(bob): Pass stuff in.
-  bool isSplit(int value) => true;
+  bool isSplit(int value, Chunk chunk);
 
   String toString() => "$id";
 }
@@ -294,16 +294,64 @@ class HardSplitRule extends SplitRule {
   /// It's already hardened.
   bool get hardenOnHardSplit => false;
 
-  bool isSplit(int value) => true;
+  bool isSplit(int value, Chunk chunk) => true;
 }
 
 // TODO(bob): Doc. Better name?
 class BlockSplitRule extends SplitRule {
+  /// Two values: 0 is unsplit, 1 is split.
   int get numValues => 2;
 
-  bool isSplit(int value) => value == 1;
+  bool isSplit(int value, Chunk chunk) => value == 1;
 
   String toString() => "${super.toString()}-block";
+}
+
+/// Splitting rule for a list of position arguments or parameters. Given an
+/// argument list with, say, 5 arguments, its values mean:
+///
+/// * 0: Do not split at all.
+/// * 1: Split only before first argument.
+/// * 2...5: Split between one pair of arguments working back to front.
+/// * 6: Split before all arguments, including the first.
+class PositionalArgsRule extends SplitRule {
+  /// The chunks prior to each positional argument.
+  final List<Chunk> _arguments = [];
+
+  int get numValues {
+    // If there is just one argument, can either split before it or not.
+    if (_arguments.length == 1) return 2;
+
+    // With multiple arguments, can split before any one, none, or all.
+    return 2 + _arguments.length;
+  }
+
+  void beforeArgument(Chunk chunk) {
+    _arguments.add(chunk);
+  }
+
+  bool isSplit(int value, Chunk chunk) {
+    // Don't split at all.
+    if (value == 0) return false;
+
+    // If there is only one argument, split before it.
+    if (_arguments.length == 1) return true;
+
+    // Split only before the first argument. Keep the entire argument list
+    // together on the next line.
+    if (value == 1) return chunk == _arguments.first;
+
+    // Put each argument on its own line.
+    if (value == numValues - 1) return true;
+
+    // Otherwise, split between exactly one pair of arguments. Try later
+    // arguments before earlier ones to try to keep as much on the first line
+    // as possible.
+    var argument = numValues - value - 1;
+    return chunk == _arguments[argument];
+  }
+
+  String toString() => "${super.toString()}-args";
 }
 
 /// Delimits a range of chunks that must end up on the same line to avoid an
