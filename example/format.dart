@@ -12,8 +12,7 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatStmt("sendPort.send({'type': 'error', 'error': 'oops'});");
-  formatUnit("class Foo{}");
+  formatStmt("[[[[argument, argument], [argument, argument, argument, argument, argument], [argument, argument]]]];");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

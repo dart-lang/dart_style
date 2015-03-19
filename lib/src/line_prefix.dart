@@ -62,6 +62,22 @@ class LinePrefix {
 
   int get hashCode => length.hashCode ^ _nesting.hashCode;
 
+  /// Whether this prefix specifies a value for a [BlockSplitRule] that does
+  /// not split it.
+  ///
+  /// This lets inner splitting choices preserve the requirement that a block
+  /// cannot contain any splits.
+  bool get isInUnsplitBlock {
+    // TODO(rnystrom): Cache this?
+    for (var rule in ruleValues.keys) {
+      if (rule is BlockSplitRule && !rule.isSplit(ruleValues[rule])) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /// Create a new LinePrefix one chunk longer than this one using [value] for
   /// the next chunk's rule, and assuming that we do not split before that
   /// chunk.

@@ -178,27 +178,10 @@ class LineSplitter {
     var chunk = _chunks[prefix.length];
 
     var isSplit = chunk.rule.isSplit(value);
-    // TODO(bob): Don't do this in such a hacky way.
-    if (isSplit) {
-      for (var rule in prefix.ruleValues.keys) {
-        if (rule == chunk.rule) continue;
 
-        // TODO(bob): Mega hack. If this is an unsplit block rule, don't
-        // allow any splits inside it.
-        if (prefix.ruleValues[rule] == 1) break;
-
-        var min, max;
-        for (var i = 0; i < _chunks.length; i++) {
-          if (_chunks[i].rule == rule) {
-            if (min == null) min = i;
-            max = i;
-          }
-        }
-
-        // TODO(bob): Any off-by-1 errors in this?
-        if (prefix.length >= min && prefix.length <= max) return;
-      }
-    }
+    // If we're in a block that decided not to split, we can't allow any other
+    // splits.
+    if (isSplit && prefix.isInUnsplitBlock) return;
 
     // Create new prefixes including this chunk.
     if (!isSplit) {
