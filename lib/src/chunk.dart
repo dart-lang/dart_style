@@ -43,6 +43,7 @@ abstract class Selection {
   }
 }
 
+// TODO(bob): Clean up docs that mention param.
 /// A chunk of non-breaking output text terminated by a hard or soft newline.
 ///
 /// Chunks are created by [LineWriter] and fed into [LineSplitter]. Each
@@ -105,22 +106,24 @@ class Chunk extends Selection {
   /// *before* the split.
   bool get canAddText => _indent == null;
 
-  /// The [SplitParam] that determines if this chunk is being used as a split
+  /// The [SplitRule] that determines if this chunk is being used as a split
   /// or not.
   ///
-  /// Multiple splits may share a [SplitParam] because they are part of the
-  /// same [Multisplit], in which case they are split or unsplit in unison.
+  /// Multiple splits may share a [SplitRule].
   ///
   /// This is `null` for hard splits.
-  SplitParam get param => _param;
-  SplitParam _param;
+  SplitRule get rule => _rule;
+  SplitRule _rule;
+  // TODO(bob): Do we want to have an actual rule for hard splits?
 
   /// Whether this chunk is always followed by a newline or whether the line
   /// splitter may choose to keep the next chunk on the same line.
-  bool get isHardSplit => _indent != null && _param == null;
+  bool get isHardSplit => _indent != null && _rule is HardSplitRule;
 
+  /*
   /// Whether this chunk may cause a newline depending on line splitting.
-  bool get isSoftSplit => _indent != null && _param != null;
+  bool get isSoftSplit => _indent != null && _rule is! HardSplitRule;
+  */
 
   /// `true` if an extra blank line should be output after this chunk if it's
   /// split.
@@ -152,30 +155,31 @@ class Chunk extends Selection {
 
   /// Forces this soft split to become a hard split.
   ///
-  /// This is called on the soft splits of a [Multisplit] when it ends up
-  /// containing some other hard split.
+  /// This is called on the soft splits owned by a rule that decides to harden
+  /// when it finds out another hard split occurs within its chunks.
   void harden() {
-    assert(_param != null);
-    _param = null;
+    _rule = new HardSplitRule();
   }
 
+  // TODO(bob): Doc rule.
   /// Finishes off this chunk with the given split information.
   ///
   /// This may be called multiple times on the same split since the splits
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(int indent, int nesting, SplitParam param,
+  void applySplit(int indent, int nesting, SplitRule rule,
       {bool spaceWhenUnsplit, bool isDouble}) {
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
     if (isDouble == null) isDouble = false;
 
-    if (isHardSplit || param == null) {
+    // TODO(bob): Don't use type test here.
+    if (isHardSplit || rule is HardSplitRule) {
       // A hard split always wins.
-      _param = null;
+      _rule = rule;
     } else if (_indent == null) {
-      // If the chunk hasn't been initialized yet, just inherit the param.
-      _param = param;
+      // If the chunk hasn't been initialized yet, just inherit the rule.
+      _rule = rule;
     }
 
     // Last newline settings win.
@@ -202,7 +206,9 @@ class Chunk extends Selection {
     } else if (isHardSplit) {
       parts.add("hard");
     } else {
-      var param = "p$_param";
+      // TODO(bob): ...
+      /*
+      var rule = "$_rule";
 
       if (_param.cost != Cost.normal) param += " \$${_param.cost}";
 
@@ -213,7 +219,10 @@ class Chunk extends Selection {
       }
 
       parts.add(param);
+      */
     }
+
+    parts.add(rule.toString());
 
     return parts.join(" ");
   }
@@ -250,41 +259,51 @@ class Cost {
   static const overflowChar = 1000;
 }
 
-/// Controls whether or not one or more soft split [Chunk]s are split.
-///
-/// When [LineSplitter] tries to split a line to fit within its page width, it
-/// does so by trying different combinations of parameters to see which set of
-/// active ones yields the best result.
-class SplitParam {
+// TODO(bob): Doc.
+abstract class SplitRule {
   static int _nextId = 0;
 
-  /// A semi-unique numeric indentifier for the param.
+  /// A semi-unique numeric indentifier for the rule.
   ///
-  /// This is useful for debugging and also speeds up using the param in hash
+  /// This is useful for debugging and also speeds up using the rule in hash
   /// sets. Ids are *semi*-unique because they may wrap around in long running
-  /// processes. Since params are equal based on their identity, this is
+  /// processes. Since rules are equal based on their identity, this is
   /// innocuous and prevents ids from growing without bound.
   final int id = _nextId = (_nextId + 1) & 0x0fffffff;
 
-  /// The cost of this param when split.
-  final int cost;
+  int get numValues;
 
-  /// The other [SplitParam]s that are "implied" by this one.
-  ///
-  /// Implication means that if the splitter chooses to split this param, it
-  /// must also split all of its implied ones (transitively). Implication is
-  /// one-way. If A implies B, it's fine to split B without splitting A.
-  final implies = <SplitParam>[];
-
-  /// Creates a new [SplitParam].
-  SplitParam([int cost])
-      : cost = cost != null ? cost : Cost.normal;
-
-  String toString() => "$id";
+  // TODO(bob): Eliminate, or let rule decide based on value.
+  int get cost => Cost.normal;
 
   int get hashCode => id.hashCode;
 
-  bool operator ==(other) => identical(this, other);
+  /// Whether or not this rule should forcibly harden if it ends up containing
+  /// a hard split.
+  bool get hardenOnHardSplit => true;
+
+  // TODO(bob): Pass stuff in.
+  bool isSplit(int value) => true;
+
+  String toString() => "$id";
+}
+
+class HardSplitRule extends SplitRule {
+  int get numValues => 1;
+
+  /// It's already hardened.
+  bool get hardenOnHardSplit => false;
+
+  bool isSplit(int value) => true;
+}
+
+// TODO(bob): Doc. Better name?
+class BlockSplitRule extends SplitRule {
+  int get numValues => 2;
+
+  bool isSplit(int value) => value == 1;
+
+  String toString() => "${super.toString()}-block";
 }
 
 /// Delimits a range of chunks that must end up on the same line to avoid an

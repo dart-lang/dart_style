@@ -1595,7 +1595,12 @@ class SourceVisitor implements AstVisitor {
     if (elements.length > _writer.pageWidth ~/ 3) _writer.preemptMultisplits();
 
     for (var element in elements) {
+      /*
       if (element != elements.first) _writer.multisplit(space: true);
+      */
+      if (element != elements.first) {
+        _writer.writeSplit(nest: false, space: true);
+      }
 
       _writer.nestExpression();
 
@@ -1694,11 +1699,18 @@ class SourceVisitor implements AstVisitor {
     token(leftBracket);
 
     // Indent the body.
+    /*
     _writer.startMultisplit(cost: cost);
+    */
     _writer.indent();
 
     // Split after the bracket.
+    /*
     _writer.multisplit(space: space);
+    */
+    // TODO(bob): Cost.
+    _writer.startRule(new BlockSplitRule());
+    _writer.writeSplit(nest: false, space: space);
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
@@ -1712,9 +1724,13 @@ class SourceVisitor implements AstVisitor {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
+      /*
       _writer.multisplit(space: space);
+      */
+      _writer.writeSplit(nest: false, space: space);
     });
 
+    _writer.endRule();
     _writer.endMultisplit();
   }
 
@@ -1782,12 +1798,20 @@ class SourceVisitor implements AstVisitor {
   ///
   /// If [cost] is omitted, defaults to [Cost.normal]. Returns the newly created
   /// [SplitParam].
-  SplitParam split([int cost]) => _writer.writeSplit(cost: cost, space: true);
+  /*SplitParam*/ split([int cost]) {
+    /*
+    _writer.writeSplit(cost: cost, space: true);
+    */
+  }
 
   /// Writes a split that is the empty string when unsplit.
   ///
   /// Returns the newly created [SplitParam].
-  SplitParam zeroSplit([int cost]) => _writer.writeSplit(cost: cost);
+  /*SplitParam*/ zeroSplit([int cost]) {
+    /*
+    _writer.writeSplit(cost: cost);
+    */
+  }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
   /// before it.

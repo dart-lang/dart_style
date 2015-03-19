@@ -19,29 +19,12 @@ class LinePrefix {
   /// The suffix is the remaining chunks starting at index [length].
   final int length;
 
-  /// The [SplitParam]s for params that appear both in the prefix and suffix
-  /// and have not been set.
+  /// The [SplitRules] that apply to chunks in the prefix and have thus already
+  /// had their values selected.
   ///
-  /// This is used to ensure that we honor the decisions already made in the
-  /// prefix when processing the suffix. It only includes params that appear in
-  /// the suffix to avoid storing information about irrelevant params. This is
-  /// critical to ensure we keep prefixes simple to maximize the reuse we get
-  /// from the memoization table.
-  ///
-  /// This does *not* include params that appear only in the suffix. In other
-  /// words, it only includes params that have deliberately been chosen to not
-  /// be set, not params we simply haven't considered yet.
-  final Set<SplitParam> unsplitParams;
-
-  /// The [SplitParam]s for params that appear both in the prefix and suffix
-  /// and have been set.
-  ///
-  /// This is used to ensure that we honor the decisions already made in the
-  /// prefix when processing the suffix. It only includes params that appear in
-  /// the suffix to avoid storing information about irrelevant params. This is
-  /// critical to ensure we keep prefixes simple to maximize the reuse we get
-  /// from the memoization table.
-  final Set<SplitParam> splitParams;
+  /// Does not include rules that do not also appear in the suffix since they
+  /// don't affect the suffix.
+  final Map<SplitRule, int> ruleValues;
 
   /// The nested expressions in the prefix that are still open at the beginning
   /// of the suffix.
@@ -55,10 +38,9 @@ class LinePrefix {
 
   /// Creates a new zero-length prefix whose suffix is the entire line.
   LinePrefix([int length = 0])
-      : this._(length, new Set(), new Set(), new NestingStack());
+      : this._(length, {}, new NestingStack());
 
-  LinePrefix._(this.length, this.unsplitParams, this.splitParams,
-      this._nesting) {
+  LinePrefix._(this.length, this.ruleValues, this._nesting) {
     assert(_nesting != null);
   }
 
@@ -68,20 +50,11 @@ class LinePrefix {
     if (length != other.length) return false;
     if (_nesting != other._nesting) return false;
 
-    if (unsplitParams.length != other.unsplitParams.length) {
-      return false;
-    }
+    // Compare rule values.
+    if (ruleValues.length != other.ruleValues.length) return false;
 
-    if (splitParams.length != other.splitParams.length) {
-      return false;
-    }
-
-    for (var param in unsplitParams) {
-      if (!other.unsplitParams.contains(param)) return false;
-    }
-
-    for (var param in splitParams) {
-      if (!other.splitParams.contains(param)) return false;
+    for (var key in ruleValues.keys) {
+      if (other.ruleValues[key] != ruleValues[key]) return false;
     }
 
     return true;
@@ -89,33 +62,31 @@ class LinePrefix {
 
   int get hashCode => length.hashCode ^ _nesting.hashCode;
 
-  /// Create zero or more new [LinePrefix]es starting from the same nesting
-  /// stack as this one but expanded to [length].
-  ///
-  /// The nesting of the chunk immediately preceding the suffix modifies the
-  /// new prefix's nesting stack.
-  ///
-  /// [unsplitParams] is the set of [SplitParam]s in the new prefix that the
-  /// splitter decided to *not* split (including unsplit ones also in this
-  /// prefix). [splitParams] is likewise the set that have been chosen to be
-  /// split.
-  ///
-  /// Returns an empty iterable if the new split chunk results in an invalid
-  /// prefix. See [NestingStack.applySplit] for details.
-  Iterable<LinePrefix> expand(List<Chunk> chunks, Set<SplitParam> unsplitParams,
-      Set<SplitParam> splitParams, int length) {
-    var split = chunks[length - 1];
+  /// Create a new LinePrefix one chunk longer than this one using [value] for
+  /// the next chunk's rule, and assuming that we do not split before that
+  /// chunk.
+  LinePrefix advanceUnsplit(List<Chunk> chunks, int value) {
+    // We aren't splitting on the new chunk, so preserve the previous nesting.
+    var ruleValues = _advanceRuleValues(chunks, value);
+    return new LinePrefix._(length + 1, ruleValues, _nesting);
+  }
 
-    if (!split.isInExpression) {
-      return [
-        new LinePrefix._(length, unsplitParams, splitParams,
-            new NestingStack())
-      ];
+  // TODO(bob): Doc.
+  Iterable<LinePrefix> advanceSplit(List<Chunk> chunks, int value) {
+    var updatedRules = _advanceRuleValues(chunks, value);
+
+    // TODO(bob): Can we hoist this out to splitter and avoid making lists for
+    // the cases where it's not needed?
+    var chunk = chunks[length];
+    if (!chunk.isInExpression) {
+      // The split is in statement context so there is no nesting stack.
+      return [new LinePrefix._(length + 1, updatedRules, new NestingStack())];
+    } else {
+      // The nesting stack has changed, so return all of the possible ways it
+      // can be different.
+      return _nesting.applySplit(chunk).map((nesting) =>
+          new LinePrefix._(length + 1, updatedRules, nesting));
     }
-
-    return _nesting.applySplit(split).map((nesting) =>
-        new LinePrefix._(
-            length, unsplitParams, splitParams, nesting));
   }
 
   /// Gets the leading indentation of the newline that immediately follows
@@ -128,14 +99,35 @@ class LinePrefix {
     // faster.
     // Get the initial indentation of the line immediately after the prefix,
     // ignoring any extra indentation caused by nested expressions.
-    if (length > 0) {
-      indent = chunks[length - 1].indent;
-    }
+    if (length > 0) indent = chunks[length - 1].indent;
 
     return indent + _nesting.indent;
   }
 
-  String toString() =>
-      "LinePrefix(length $length, nesting $_nesting, "
-      "unsplit $unsplitParams, split $splitParams)";
+  String toString() {
+    var result = "Prefix($length";
+    if (_nesting.indent != 0) result += " nesting $_nesting";
+    if (ruleValues.isNotEmpty) result +="rules $ruleValues";
+    return result + ")";
+  }
+
+  // TODO(bob): Doc.
+  Map<SplitRule, int> _advanceRuleValues(List<Chunk> chunks, int value) {
+    // TODO(bob): Precalculate and cache these.
+    // Get the rules that appear in both in and after the new prefix. These are
+    // the rules that already have values that the suffix needs to honor.
+    var prefix = chunks.take(length + 1).map((chunk) => chunk.rule).toSet();
+    var suffix = chunks.skip(length + 1).map((chunk) => chunk.rule).toSet();
+
+    var spanningRules = prefix.intersection(suffix);
+
+    // Make a new map for the pinned rule values for the rules that appear in
+    // the suffix that we have values for, including the rule for the next
+    // chunk.
+    var nextRule = chunks[length].rule;
+    return new Map.fromIterable(spanningRules, value: (rule) {
+      if (rule == nextRule) return value;
+      return ruleValues[rule];
+    });
+  }
 }

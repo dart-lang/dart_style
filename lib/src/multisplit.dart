@@ -4,6 +4,7 @@
 
 library dart_style.src.multisplit;
 
+/*
 import 'chunk.dart';
 
 /// Handles a series of [Chunks] that all either split or don't split together.
@@ -91,3 +92,4 @@ class Multisplit {
     }
   }
 }
+*/

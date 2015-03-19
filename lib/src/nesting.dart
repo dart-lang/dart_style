@@ -202,14 +202,22 @@ class NestingStack {
     return subsets;
   }
 
+  /// Shows each indentation level and the nesting depth associated with it.
+  ///
+  /// For example:
+  ///
+  ///     |1|3
+  ///
+  /// Means that the first level of indentation is associated with nesting
+  /// level one, and the second level of indentation is associated with nesting
+  /// level three.
   String toString() {
-    var nesting = this;
-    var levels = [];
-    while (nesting != null) {
-      levels.add("${nesting._depth}:${nesting.indent}");
-      nesting = nesting._parent;
+    var result = "";
+
+    for (var nesting = this; nesting._depth != -1; nesting = nesting._parent) {
+      result = "|${nesting._depth}$result";
     }
 
-    return levels.join(" ");
+    return result;
   }
 }

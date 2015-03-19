@@ -8,7 +8,9 @@ import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'debug.dart';
 import 'line_splitter.dart';
+/*
 import 'multisplit.dart';
+*/
 import 'source_code.dart';
 import 'whitespace.dart';
 
@@ -48,6 +50,7 @@ class LineWriter {
   /// written.
   int _beginningIndent;
 
+  /*
   /// The nested stack of multisplits that are currently being written.
   ///
   /// If a hard newline appears in the middle of a multisplit, then the
@@ -70,6 +73,13 @@ class LineWriter {
   /// happens, we need to force all surrounding collections to be multi-line.
   /// This tracks them so we can do that.
   final _multisplits = <Multisplit>[];
+  */
+
+  /// The nested stack of rules that are currently in use.
+  ///
+  /// New soft splits are implicitly owned by the innermost rule when the split
+  /// is written.
+  final _rules = <SplitRule>[];
 
   /// The nested stack of spans that are currently being written.
   final _openSpans = <Span>[];
@@ -196,16 +206,19 @@ class LineWriter {
     _pendingWhitespace = type;
   }
 
+  /*
   /// Write a soft split with its own param at [cost].
   ///
   /// If unsplit, it expands to a space if [space] is `true`.
   ///
   /// If [cost] is omitted, defaults to [Cost.normal]. Returns the new param.
   SplitParam writeSplit({int cost, bool space}) {
+    /*
     if (cost == null) cost = Cost.normal;
 
     var param = new SplitParam(cost);
-    _writeSplit(_indent, _nesting, param, spaceWhenUnsplit: space);
+    // TODO(bob): Cost for rule.
+    _writeSplit(_indent, _nesting, new SoloSplitRule(), param, spaceWhenUnsplit: space);
 
     // If a split inside a multisplit is chosen, this forces the multisplit too.
     // This ensures that, for example, a split inside a collection literal
@@ -217,6 +230,13 @@ class LineWriter {
     }
 
     return param;
+    */
+    return null;
+  }
+  */
+  void writeSplit({bool nest: true, bool space}) {
+    _writeSplit(_indent, nest ? _nesting : -1, _rules.last,
+        spaceWhenUnsplit: space);
   }
 
   /// Outputs the series of [comments] and associated whitespace that appear
@@ -382,15 +402,27 @@ class LineWriter {
     _spans.add(span);
   }
 
+  /// Starts a new [SplitRule].
+  void startRule(SplitRule rule) {
+    _rules.add(rule);
+  }
+
+  /// Ends the innermost rule.
+  void endRule() {
+    _rules.removeLast();
+  }
+
   /// Starts a new [Multisplit].
   ///
   /// Returns the [SplitParam] for the multisplit.
-  SplitParam startMultisplit({bool separable, int cost}) {
+  /*SplitParam*/ startMultisplit({bool separable, int cost}) {
+    /*
     var multisplit = new Multisplit(_currentChunkIndex,
         separable: separable, cost: cost);
     _multisplits.add(multisplit);
 
     return multisplit.param;
+    */
   }
 
   /// Adds a new split point for the current innermost [Multisplit].
@@ -400,12 +432,16 @@ class LineWriter {
   /// nesting. Otherwise, it will not. Collections do not follow expression
   /// nesting, while other uses of multisplits generally do.
   void multisplit({bool nest: false, bool space}) {
-    _writeSplit(_indent, nest ? _nesting : -1, _multisplits.last.param,
+    /*
+    // TODO(bob): Pass in rule.
+    _writeSplit(_indent, nest ? _nesting : -1, _multisplits.last.rule, _multisplits.last.param,
         spaceWhenUnsplit: space);
+    */
   }
 
   /// Ends the innermost multisplit.
   void endMultisplit() {
+    /*
     var multisplit = _multisplits.removeLast();
 
     // If this multisplit is contained in another one and they didn't already
@@ -416,6 +452,7 @@ class LineWriter {
         _multisplits.last.param != null) {
       multisplit.param.implies.add(_multisplits.last.param);
     }
+    */
   }
 
   /// Pre-emptively forces all of the multisplits to become hard splits.
@@ -616,15 +653,15 @@ class LineWriter {
       nesting = -1;
     }
 
-    _writeSplit(indent, nesting, null, isDouble: double);
+    _writeSplit(indent, nesting, new HardSplitRule(), isDouble: double);
   }
 
   /// Ends the current chunk (if any) with the given split information.
-  void _writeSplit(int indent, int nesting, SplitParam param,
+  void _writeSplit(int indent, int nesting, SplitRule rule,
       {bool isDouble, bool spaceWhenUnsplit}) {
     if (_chunks.isEmpty) return;
 
-    _chunks.last.applySplit(indent, nesting, param,
+    _chunks.last.applySplit(indent, nesting, rule,
         isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
 
     if (_chunks.last.isHardSplit) _handleHardSplit();
@@ -656,6 +693,9 @@ class LineWriter {
   /// that is not nested inside an expression.
   bool _checkForCompleteLine(int length) {
     if (length == 0) return false;
+
+    // TODO(bob): Can we be less pessimistic?
+    if (_rules.isNotEmpty) return false;
 
     // Hang on to the split info so we can reset the writer to start with it.
     var split = _chunks[length - 1];
@@ -725,44 +765,30 @@ class LineWriter {
       _openSpans[i] = null;
     }
 
-    if (_multisplits.isEmpty) return;
-
-    var splitParams = new Set();
-
-    // Add [param] and the transitive closure of its implied params to
-    // [splitParams].
-    traverseParams(param) {
-      splitParams.add(param);
-
-      // Traverse the tree of implied params.
-      param.implies.forEach(traverseParams);
+    // Tell each ongoing rule that it now contains a hard split and see if it
+    // wants to harden itself.
+    var hardenedRules = new Set();
+    for (var i = 0; i < _rules.length; i++) {
+      var rule = _rules[i];
+      if (rule.hardenOnHardSplit) {
+        _rules[i] = new HardSplitRule();
+        hardenedRules.add(rule);
+      }
     }
 
-    for (var multisplit in _multisplits) {
-      // If this multisplit isn't separable or already split, we need to harden
-      // all of its previous splits now.
-      var param = multisplit.harden();
-      if (param != null) traverseParams(param);
-    }
-
-    if (splitParams.isEmpty) return;
-
-    // Take any existing splits for the multisplits and hard split them.
+    // Harden any chunks whose rule was hardened.
+    if (hardenedRules.isEmpty) return;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (chunk.param == null) continue;
+      if (chunk.rule == null) continue;
 
-      if (splitParams.contains(chunk.param)) {
+      if (hardenedRules.contains(chunk.rule)) {
         chunk.harden();
 
         // Now that this chunk is a hard split, we may be able to format up to
         // it as its own line. If so, the chunks will get removed, so reset
         // the loop counter.
         if (_checkForCompleteLine(i + 1)) i = -1;
-      } else {
-        // If the chunk isn't hardened, but implies something that is, we can
-        // discard the implication since it is always satisfied now.
-        chunk.param.implies.removeWhere(splitParams.contains);
       }
     }
   }
