@@ -1650,44 +1650,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Visits a list of [combinators] following an "import" or "export"
-  /// directive. Combinators can be split in a few different ways:
-  ///
-  ///     // All on one line:
-  ///     import 'animals.dart' show Ant hide Cat;
-  ///
-  ///     // Wrap before each keyword:
-  ///     import 'animals.dart'
-  ///         show Ant, Baboon
-  ///         hide Cat;
-  ///
-  ///     // Wrap either or both of the name lists:
-  ///     import 'animals.dart'
-  ///         show
-  ///             Ant,
-  ///             Baboon
-  ///         hide Cat;
-  ///
-  /// Multisplits are used here to specifically avoid a few undesirable
-  /// combinations:
-  ///
-  ///     // Wrap list but not keyword:
-  ///     import 'animals.dart' show
-  ///             Ant,
-  ///             Baboon
-  ///         hide Cat;
-  ///
-  ///     // Wrap one keyword but not both:
-  ///     import 'animals.dart'
-  ///         show Ant, Baboon hide Cat;
-  ///
-  /// This ensures that when any wrapping occurs, the keywords are always at
-  /// the beginning of the line.
+  /// directive.
   void _visitCombinators(NodeList<Combinator> combinators) {
     if (combinators.isEmpty) return;
 
-    _writer.startMultisplit();
+    _writer.startRule(new CombinatorRule());
     visitNodes(combinators);
-    _writer.endMultisplit();
+    _writer.endRule();
   }
 
   /// Visits a [HideCombinator] or [ShowCombinator] starting with [keyword] and
@@ -1696,19 +1665,18 @@ class SourceVisitor implements AstVisitor {
   /// This assumes it has been called from within the [Multisplit] created by
   /// [_visitCombinators].
   void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
-    // Allow splitting after the keyword.
-    _writer.multisplit(space: true, nest: true);
+    // Allow splitting before the keyword.
+    var rule = _writer.rule as CombinatorRule;
+    rule.addCombinator(_writer.split(space: true));
 
     _writer.nestExpression();
     token(keyword);
 
-    _writer.startMultisplit();
-    _writer.multisplit(nest: true, space: true);
+    rule.addName(_writer.split(space: true));
     visitCommaSeparatedNodes(names,
-        between: () => _writer.multisplit(nest: true, space: true));
+        between: () => rule.addName(_writer.split(space: true)));
 
     _writer.unnest();
-    _writer.endMultisplit();
   }
 
   /// Writes the simple statement or semicolon-delimited top-level declaration.

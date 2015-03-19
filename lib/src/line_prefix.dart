@@ -6,6 +6,7 @@ library dart_style.src.line_printer;
 
 import 'chunk.dart';
 import 'nesting.dart';
+import 'rule.dart';
 
 /// A prefix of a series of chunks, which in turn can be considered a key to
 /// describe the suffix of the remaining chunks that follows it.
@@ -24,7 +25,7 @@ class LinePrefix {
   ///
   /// Does not include rules that do not also appear in the suffix since they
   /// don't affect the suffix.
-  final Map<SplitRule, int> ruleValues;
+  final Map<Rule, int> ruleValues;
 
   /// The nested expressions in the prefix that are still open at the beginning
   /// of the suffix.
@@ -128,7 +129,7 @@ class LinePrefix {
   }
 
   // TODO(bob): Doc.
-  Map<SplitRule, int> _advanceRuleValues(List<Chunk> chunks, int value) {
+  Map<Rule, int> _advanceRuleValues(List<Chunk> chunks, int value) {
     // TODO(bob): Precalculate and cache these.
     // Get the rules that appear in both in and after the new prefix. These are
     // the rules that already have values that the suffix needs to honor.

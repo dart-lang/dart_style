@@ -171,6 +171,9 @@ class LineWriter {
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
 
+  /// The current innermost rule.
+  Rule get rule => _rules.last;
+
   LineWriter(this._formatter, this._source) {
     indent(_formatter.indent);
     _beginningIndent = _formatter.indent;
