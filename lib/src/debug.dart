@@ -39,6 +39,8 @@ void dumpChunks(List<Chunk> chunks) {
   }
 }
 
+// TODO(bob): Fix these to work with rules.
+
 /// Prints [chunks] to stdout as a single line with non-printing chunks made
 /// visible.
 void dumpLine(List<Chunk> chunks,

@@ -101,10 +101,6 @@ class LineSplitter {
   /// Likewise, the second element will be non-`null` if the selection endpoint
   /// is within the list of chunks.
   List<int> apply(StringBuffer buffer) {
-    /*
-    if (debugFormatter) dumpLine(_chunks, _indent);
-    */
-
     var splits = _findBestSplits(new LinePrefix());
     var selection = [null, null];
 
@@ -150,93 +146,89 @@ class LineSplitter {
     // Use the memoized result if we have it.
     if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
 
-    // TODO(bob): Doc.
+    // We never need to split at the end of the last chunk.
     if (prefix.length == _chunks.length - 1) {
       return _bestSplits[prefix] = new SplitSet();
     }
 
-    var indent = prefix.getNextLineIndent(_chunks, _indent);
     var chunk = _chunks[prefix.length];
-    var bestSplits;
-    var lowestCost;
-
-    // TODO(bob): Make these not local fns?
-    useValue(value) {
-      var isSplit = chunk.rule.isSplit(value);
-      // TODO(bob): Validate that this choice is allowed by the other rules.
-      // if a block rule is unsplit, don't allow anything to split between its
-      // chunks.
-      // TODO(bob): Need to handle hard splits. Probably want to handle those
-      // in the writer. A rule should never have to worry about a hard split
-      // occurring here in the splitter since we want the earlier rule to be
-      // able to constrain the later, and that would interfere with that.
-      if (isSplit) {
-        for (var rule in prefix.ruleValues.keys) {
-          if (rule == chunk.rule) continue;
-
-          // TODO(bob): Mega hack. If this is an unsplit block rule, don't
-          // allow any splits inside it.
-          if (prefix.ruleValues[rule] == 1) break;
-
-          var min, max;
-          for (var i = 0; i < _chunks.length; i++) {
-            if (_chunks[i].rule == rule) {
-              if (min == null) min = i;
-              max = i;
-            }
-          }
-
-          // TODO(bob): Any off-by-1 errors in this?
-          if (prefix.length >= min && prefix.length <= max) return;
-        }
-      }
-
-      // TODO(bob): This too.
-      tryPrefix(longerPrefix) {
-        var remaining = _findBestSplits(longerPrefix);
-
-        // If it wasn't possible to split the suffix given this nesting stack,
-        // skip it.
-        if (remaining == null) return;
-
-        var splits = remaining;
-        if (isSplit) {
-          splits = remaining.add(prefix.length, longerPrefix.nestingIndent);
-        }
-
-        var cost = _evaluateCost(prefix, indent, splits);
-
-        if (lowestCost == null ||
-            cost < lowestCost ||
-            (cost == lowestCost && splits.weight > bestSplits.weight)) { // TODO(bob): <-- needed?
-          lowestCost = cost;
-          bestSplits = splits;
-        }
-      }
-
-      // Create new prefixes including this chunk.
-      if (!isSplit) {
-        tryPrefix(prefix.advanceUnsplit(_chunks, value));
-      } else {
-        // There can be multiple since there are different ways to handle a
-        // jump in nesting depth.
-        prefix.advanceSplit(_chunks, value).forEach(tryPrefix);
-      }
-    }
+    var bestSplits = new BestSplits();
 
     // See if this chunk's rule already has a value.
     var value = prefix.ruleValues[chunk.rule];
     if (value == null) {
       // No, so try every value for the rule.
       for (var value = 0; value < chunk.rule.numValues; value++) {
-        useValue(value);
+        _findBestSplitsForValue(prefix, bestSplits, value);
       }
     } else {
       // It does, so stick with it.
-      useValue(value);
+      _findBestSplitsForValue(prefix, bestSplits, value);
     }
 
-    return _bestSplits[prefix] = bestSplits;
+    return _bestSplits[prefix] = bestSplits.splits;
+  }
+
+  /// Looks for sets of splits to apply to the suffix after [prefix], using
+  /// [value] for the rule of the chunk just after the prefix.
+  ///
+  /// Updates [bestSplits] with candidate solutions that it finds.
+  void _findBestSplitsForValue(
+      LinePrefix prefix, BestSplits bestSplits, int value) {
+    var chunk = _chunks[prefix.length];
+
+    var isSplit = chunk.rule.isSplit(value);
+    // TODO(bob): Don't do this in such a hacky way.
+    if (isSplit) {
+      for (var rule in prefix.ruleValues.keys) {
+        if (rule == chunk.rule) continue;
+
+        // TODO(bob): Mega hack. If this is an unsplit block rule, don't
+        // allow any splits inside it.
+        if (prefix.ruleValues[rule] == 1) break;
+
+        var min, max;
+        for (var i = 0; i < _chunks.length; i++) {
+          if (_chunks[i].rule == rule) {
+            if (min == null) min = i;
+            max = i;
+          }
+        }
+
+        // TODO(bob): Any off-by-1 errors in this?
+        if (prefix.length >= min && prefix.length <= max) return;
+      }
+    }
+
+    // Create new prefixes including this chunk.
+    if (!isSplit) {
+      _tryLongerPrefix(prefix, bestSplits,
+          prefix.advanceUnsplit(_chunks, value), isSplit);
+    } else {
+      // There can be multiple since there are different ways to handle a
+      // jump in nesting depth.
+      for (var longerPrefix in prefix.advanceSplit(_chunks, value)) {
+        _tryLongerPrefix(prefix, bestSplits, longerPrefix, isSplit);
+      }
+    }
+  }
+
+  // TODO(bob): Doc.
+  void _tryLongerPrefix(LinePrefix prefix, BestSplits bestSplits,
+      LinePrefix longerPrefix, bool isSplit) {
+    var remaining = _findBestSplits(longerPrefix);
+
+    // If it wasn't possible to split the suffix given this nesting stack,
+    // skip it.
+    if (remaining == null) return;
+
+    var splits = remaining;
+    if (isSplit) {
+      splits = remaining.add(prefix.length, longerPrefix.nestingIndent);
+    }
+
+    var indent = prefix.getNextLineIndent(_chunks, _indent);
+    bestSplits.update(splits, _evaluateCost(prefix, indent, splits));
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
@@ -307,6 +299,27 @@ class LineSplitter {
     endLine();
 
     return cost;
+  }
+}
+
+/// Keeps track of the best set of splits found so far.
+class BestSplits {
+  SplitSet _bestSplits;
+  int _lowestCost;
+
+  /// The best set of splits currently found.
+  SplitSet get splits => _bestSplits;
+
+  /// Compares [splits] which has [cost] to the best set found so far and keeps
+  /// it if it's better.
+  void update(SplitSet splits, int cost) {
+    // TODO(bob): Is weight still needed?
+    if (_lowestCost == null ||
+        cost < _lowestCost ||
+        (cost == _lowestCost && splits.weight > _bestSplits.weight)) {
+      _bestSplits = splits;
+      _lowestCost = cost;
+    }
   }
 }
 
