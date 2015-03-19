@@ -11,6 +11,7 @@ import 'package:analyzer/src/generated/source.dart';
 import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'line_writer.dart';
+import 'rule.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
@@ -1723,6 +1724,7 @@ class SourceVisitor implements AstVisitor {
     token((node as dynamic).semicolon);
     _writer.unnest();
   }
+
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the multisplit it contains.
   ///

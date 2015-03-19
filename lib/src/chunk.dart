@@ -5,6 +5,7 @@
 library dart_style.src.chunk;
 
 import 'debug.dart';
+import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
 /// text.
@@ -112,8 +113,8 @@ class Chunk extends Selection {
   /// Multiple splits may share a [SplitRule].
   ///
   /// This is `null` for hard splits.
-  SplitRule get rule => _rule;
-  SplitRule _rule;
+  Rule get rule => _rule;
+  Rule _rule;
   // TODO(bob): Do we want to have an actual rule for hard splits?
 
   /// Whether this chunk is always followed by a newline or whether the line
@@ -168,7 +169,7 @@ class Chunk extends Selection {
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(int indent, int nesting, SplitRule rule,
+  void applySplit(int indent, int nesting, Rule rule,
       {bool spaceWhenUnsplit, bool isDouble}) {
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
     if (isDouble == null) isDouble = false;
@@ -257,101 +258,6 @@ class Cost {
   /// This cost is high to ensure any solution that fits in the page is
   /// preferred over one that does not.
   static const overflowChar = 1000;
-}
-
-// TODO(bob): Doc.
-// TODO(bob): Rename Rule.
-abstract class SplitRule {
-  static int _nextId = 0;
-
-  /// A semi-unique numeric indentifier for the rule.
-  ///
-  /// This is useful for debugging and also speeds up using the rule in hash
-  /// sets. Ids are *semi*-unique because they may wrap around in long running
-  /// processes. Since rules are equal based on their identity, this is
-  /// innocuous and prevents ids from growing without bound.
-  final int id = _nextId = (_nextId + 1) & 0x0fffffff;
-
-  int get numValues;
-
-  // TODO(bob): Eliminate, or let rule decide based on value.
-  int get cost => Cost.normal;
-
-  int get hashCode => id.hashCode;
-
-  /// Whether or not this rule should forcibly harden if it ends up containing
-  /// a hard split.
-  bool get hardenOnHardSplit => true;
-
-  bool isSplit(int value, Chunk chunk);
-
-  String toString() => "$id";
-}
-
-class HardSplitRule extends SplitRule {
-  int get numValues => 1;
-
-  /// It's already hardened.
-  bool get hardenOnHardSplit => false;
-
-  bool isSplit(int value, Chunk chunk) => true;
-}
-
-// TODO(bob): Doc. Better name?
-class BlockSplitRule extends SplitRule {
-  /// Two values: 0 is unsplit, 1 is split.
-  int get numValues => 2;
-
-  bool isSplit(int value, Chunk chunk) => value == 1;
-
-  String toString() => "${super.toString()}-block";
-}
-
-/// Splitting rule for a list of position arguments or parameters. Given an
-/// argument list with, say, 5 arguments, its values mean:
-///
-/// * 0: Do not split at all.
-/// * 1: Split only before first argument.
-/// * 2...5: Split between one pair of arguments working back to front.
-/// * 6: Split before all arguments, including the first.
-class PositionalArgsRule extends SplitRule {
-  /// The chunks prior to each positional argument.
-  final List<Chunk> _arguments = [];
-
-  int get numValues {
-    // If there is just one argument, can either split before it or not.
-    if (_arguments.length == 1) return 2;
-
-    // With multiple arguments, can split before any one, none, or all.
-    return 2 + _arguments.length;
-  }
-
-  void beforeArgument(Chunk chunk) {
-    _arguments.add(chunk);
-  }
-
-  bool isSplit(int value, Chunk chunk) {
-    // Don't split at all.
-    if (value == 0) return false;
-
-    // If there is only one argument, split before it.
-    if (_arguments.length == 1) return true;
-
-    // Split only before the first argument. Keep the entire argument list
-    // together on the next line.
-    if (value == 1) return chunk == _arguments.first;
-
-    // Put each argument on its own line.
-    if (value == numValues - 1) return true;
-
-    // Otherwise, split between exactly one pair of arguments. Try later
-    // arguments before earlier ones to try to keep as much on the first line
-    // as possible.
-    var argument = numValues - value - 1;
-    return chunk == _arguments[argument];
-  }
-
-  String toString() => "${super.toString()}-args";
 }
 
 /// Delimits a range of chunks that must end up on the same line to avoid an

@@ -8,9 +8,7 @@ import 'dart_formatter.dart';
 import 'chunk.dart';
 import 'debug.dart';
 import 'line_splitter.dart';
-/*
-import 'multisplit.dart';
-*/
+import 'rule.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
@@ -79,7 +77,7 @@ class LineWriter {
   ///
   /// New soft splits are implicitly owned by the innermost rule when the split
   /// is written.
-  final _rules = <SplitRule>[];
+  final _rules = <Rule>[];
 
   /// The nested stack of spans that are currently being written.
   final _openSpans = <Span>[];
@@ -412,7 +410,7 @@ class LineWriter {
   }
 
   /// Starts a new [SplitRule].
-  void startRule(SplitRule rule) {
+  void startRule(Rule rule) {
     _rules.add(rule);
   }
 
@@ -668,7 +666,7 @@ class LineWriter {
   /// Ends the current chunk (if any) with the given split information.
   ///
   /// Returns the chunk.
-  Chunk _writeSplit(int indent, int nesting, SplitRule rule,
+  Chunk _writeSplit(int indent, int nesting, Rule rule,
       {bool isDouble, bool spaceWhenUnsplit}) {
     if (_chunks.isEmpty) return null;
 
