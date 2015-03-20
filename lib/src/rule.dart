@@ -53,7 +53,7 @@ class BlockSplitRule extends Rule {
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 
-  String toString() => "${super.toString()}-block";
+  String toString() => "Block${super.toString()}";
 }
 
 /// Handles a list of [combinators] following an "import" or "export" directive.
@@ -163,7 +163,7 @@ class CombinatorRule extends Rule {
     return _combinators.contains(chunk) || _names[combinator].contains(chunk);
   }
 
-  String toString() => "${super.toString()}-combinators";
+  String toString() => "Combinator${super.toString()}";
 }
 
 /// Splitting rule for a list of position arguments or parameters. Given an
@@ -210,5 +210,34 @@ class PositionalArgsRule extends Rule {
     return chunk == _arguments[argument];
   }
 
-  String toString() => "${super.toString()}-args";
+  String toString() => "Positional${super.toString()}";
+}
+
+/// Splitting rule for a list of named arguments or parameters. Its values mean:
+///
+/// * 0: Do not split at all.
+/// * 1: Split only before first argument.
+/// * 2: Split before all arguments, including the first.
+class NamedArgsRule extends Rule {
+  /// The chunk prior to the first named argument.
+  Chunk _first;
+
+  int get numValues => 3;
+
+  void beforeArguments(Chunk chunk) {
+    assert(_first == null);
+    _first = chunk;
+  }
+
+  bool isSplit(int value, Chunk chunk) {
+    switch (value) {
+      case 0: return false;
+      case 1: return chunk == _first;
+      case 2: return true;
+    }
+
+    throw "unreachable";
+  }
+
+  String toString() => "Named${super.toString()}";
 }

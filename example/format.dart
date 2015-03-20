@@ -12,7 +12,8 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatStmt("[[[[argument, argument], [argument, argument, argument, argument, argument], [argument, argument]]]];");
+  formatStmt('reallyLongMethod(argument,\n'
+    '    foo: first, bar: second);\n');
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {

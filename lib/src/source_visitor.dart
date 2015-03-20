@@ -97,16 +97,19 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    // Assumes named arguments follow all positional ones.
+    var positionalArgs = node.arguments
+        .takeWhile((arg) => arg is! NamedExpression).toList();
+    var namedArgs = node.arguments.skip(positionalArgs.length).toList();
+
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
-    var singleArgument = node.arguments.length == 1 &&
-        node.arguments.single is ! NamedExpression;
+    var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
     if (singleArgument) _writer.startSpan();
 
     // Nest around the parentheses in case there are comments before or after
     // them.
     _writer.nestExpression();
-
     token(node.leftParenthesis);
 
     // Corner case: If the first argument to a method is a block-bodied
@@ -137,94 +140,82 @@ class SourceVisitor implements AstVisitor {
     // before the argument list and the function's parameter list. That requires
     // spans to not strictly be a stack, though, so would be a larger change
     // than I want to do right now.
+    // TODO(bob): Do this.
+    /*
     var cost = Cost.normal;
-    if (node.arguments.isNotEmpty) {
-      var firstArg = node.arguments.first;
+    if (positionalArgs.isNotEmpty) {
+      var firstArg = positionalArgs.first;
       if (firstArg is FunctionExpression &&
           firstArg.body is BlockFunctionBody) {
         cost = Cost.firstBlockArgument;
       }
     }
+    */
 
-    // Allow splitting after "(".
-    var rule = new PositionalArgsRule();
-    _writer.startRule(rule);
-    rule.beforeArgument(_writer.split());
+    if (positionalArgs.isNotEmpty) {
+      // Allow splitting after "(".
+      var rule = new PositionalArgsRule();
+      _writer.startRule(rule);
+      rule.beforeArgument(_writer.split());
 
-    // Try to keep the positional arguments together.
-    _writer.startSpan(Cost.positionalArguments);
+      // Try to keep the positional arguments together.
+      _writer.startSpan(Cost.positionalArguments);
 
-    var i = 0;
-    for (; i < node.arguments.length; i++) {
-      var argument = node.arguments[i];
-
-      if (argument is NamedExpression) break;
-
-      visit(argument);
-
-      // Write the trailing comma and split.
-      if (i < node.arguments.length - 1) {
-        token(argument.endToken.next);
-
-        // If there are both positional and named arguments, only try to keep
-        // the positional ones together.
-        if (node.arguments[i + 1] is NamedExpression) _writer.endSpan();
-
-        // Positional arguments split independently.
-        rule.beforeArgument(_writer.split(space: true));
-      }
-    }
-
-    // If there are named arguments, write them.
-    if (i < node.arguments.length) {
-      /*
-      // Named arguments all split together, but not before the first. This
-      // allows all of the named arguments to get pushed to the next line, but
-      // stay together.
-      var multisplitParam = _writer.startMultisplit(separable: true);
-
-      // However, if they *do* all split, we want to split before the first one
-      // too. This disallows:
-      //
-      //     method(first: 1,
-      //         second: 2,
-      //         third: 3);
-      multisplitParam.implies.add(lastParam);
-      */
-
-      for (; i < node.arguments.length; i++) {
-        var argument = node.arguments[i];
-
+      for (var argument in positionalArgs) {
         visit(argument);
 
-        // Write the trailing comma and split.
-        if (i < node.arguments.length - 1) {
+        // Write the trailing comma.
+        if (argument != node.arguments.last) {
           token(argument.endToken.next);
+        }
 
-          /*
-          _writer.multisplit(nest: true, space: true);
-          */
+        // Positional arguments split independently.
+        if (argument != positionalArgs.last) {
+          rule.beforeArgument(_writer.split(space: true));
         }
       }
 
-      token(node.rightParenthesis);
-
-      // If there were no positional arguments, the span covers the named ones,
-      // so end it here.
-      if (node.arguments.first is NamedExpression) _writer.endSpan();
-
+      // We want either the positional or named span to extend past the ")".
+      // Only end the positional one here if there are named args.
       /*
-      _writer.endMultisplit();
+      if (namedArgs.isNotEmpty) _writer.endSpan();
       */
-    } else {
-      token(node.rightParenthesis);
-
-      // Keep the positional span past the ")" to include comments after the
-      // last argument.
       _writer.endSpan();
+      _writer.endRule();
     }
 
-    _writer.endRule();
+    if (namedArgs.isNotEmpty) {
+      var rule = new NamedArgsRule();
+      _writer.startRule(rule);
+
+      // Split before the first named argument.
+      rule.beforeArguments(
+          _writer.split(nest: true, space: positionalArgs.isNotEmpty));
+
+      /*
+      _writer.startSpan();
+      */
+
+      for (var argument in namedArgs) {
+        visit(argument);
+
+        // Write the trailing comma and split.
+        if (argument != namedArgs.last) {
+          token(argument.endToken.next);
+          _writer.split(nest: true, space: true);
+        }
+      }
+
+      _writer.endRule();
+    }
+
+    token(node.rightParenthesis);
+
+    /*
+    // Keep the last span -- either the positional or named one -- past the ")"
+    // to include comments after the last argument.
+    _writer.endSpan();
+    */
 
     if (singleArgument) _writer.endSpan();
     _writer.unnest();
