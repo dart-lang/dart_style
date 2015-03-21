@@ -206,79 +206,84 @@ class LineSplitter {
     return nestingLevels.length;
   }
 
-  /// Finds the best set of splits to apply to the remainder of the line
+  /// Finds the best set of splits to apply to the remainder of the chunks
   /// following [prefix].
+  ///
+  /// This can only be called for a suffix that begins a new line. (In other
+  /// words, the last chunk in the prefix cannot be unsplit.)
   SplitSet _findBestSplits(LinePrefix prefix) {
     // Use the memoized result if we have it.
     if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
 
-    // We never need to split at the end of the last chunk.
-    if (prefix.length == _chunks.length - 1) {
-      return _bestSplits[prefix] = new SplitSet();
-    }
+    // TODO(bob): The old splitter has a shortcut here where it checks to see
+    // if the entire suffix can fit in a line with no splits (and if there are
+    // no hard splits). Do that here.
 
-    var chunk = _chunks[prefix.length];
-    var bestSplits = new BestSplits();
+    var indent = prefix.getNextLineIndent(_chunks, _indent);
+    var solution = new Solution(prefix, indent);
+    _tryChunkRuleValues(solution, prefix);
 
-    // See if this chunk's rule already has a value.
-    var value = prefix.ruleValues[chunk.rule];
-    if (value == null) {
-      // No, so try every value for the rule.
-      for (var value = 0; value < chunk.rule.numValues; value++) {
-        _findBestSplitsForValue(prefix, bestSplits, value);
-      }
-    } else {
-      // It does, so stick with it.
-      _findBestSplitsForValue(prefix, bestSplits, value);
-    }
-
-    return _bestSplits[prefix] = bestSplits.splits;
+    return _bestSplits[prefix] = solution.splits;
   }
 
-  /// Looks for sets of splits to apply to the suffix after [prefix], using
-  /// [value] for the rule of the chunk just after the prefix.
-  ///
-  /// Updates [bestSplits] with candidate solutions that it finds.
-  void _findBestSplitsForValue(
-      LinePrefix prefix, BestSplits bestSplits, int value) {
+  /// Updates [solution] with the best rule value selection for the chunk
+  /// immediately following [prefix].
+  void _tryChunkRuleValues(Solution solution, LinePrefix prefix) {
+    // We don't care about the last chunk's rule. It just never splits.
+    if (prefix.length == _chunks.length - 1) {
+      solution.allowEmpty();
+      return;
+    }
+
     var chunk = _chunks[prefix.length];
 
-    var isSplit = chunk.rule.isSplit(value, chunk);
+    // See if a chunk in the prefix has the same rule. If so, we have to stick
+    // with that value.
+    var value = prefix.ruleValues[chunk.rule];
+    if (value != null) {
+      // It does, so stick with it.
+      _tryRuleValue(solution, prefix, value);
+      return;
+    }
+
+    // Try every possible value for the rule.
+    for (var value = 0; value < chunk.rule.numValues; value++) {
+      _tryRuleValue(solution, prefix, value);
+    }
+  }
+
+  /// Updates [solution] with the best solution that can be found after
+  /// setting the chunk after [prefix]'s rule to [value].
+  void _tryRuleValue(Solution solution, LinePrefix prefix, int value) {
+    var chunk = _chunks[prefix.length];
+
+    // If the rule causes this chunk to split, recurse and find the best
+    // solution for the suffix following this chunk.
+    if (!chunk.rule.isSplit(value, chunk)) {
+      // We didn't split here, so just add this chunk and its rule value to the
+      // prefix and continue on to the next.
+      _tryChunkRuleValues(solution, prefix.advanceUnsplit(_chunks, value));
+      return;
+    }
 
     // If we're in a block that decided not to split, we can't allow any other
     // splits.
-    if (isSplit && prefix.isInUnsplitBlock) return;
+    if (prefix.isInUnsplitBlock) return;
 
-    // Create new prefixes including this chunk.
-    if (!isSplit) {
-      _tryLongerPrefix(prefix, bestSplits,
-          prefix.advanceUnsplit(_chunks, value), isSplit);
-    } else {
-      // There can be multiple since there are different ways to handle a
-      // jump in nesting depth.
-      for (var longerPrefix in prefix.advanceSplit(_chunks, value)) {
-        _tryLongerPrefix(prefix, bestSplits, longerPrefix, isSplit);
-      }
+    // There are multiple possible ways to split at this chunk with different
+    // nesting stacks. Try them all.
+    for (var longerPrefix in prefix.advanceSplit(_chunks, value)) {
+      var remaining = _findBestSplits(longerPrefix);
+
+      // If it wasn't possible to split the suffix given this nesting stack,
+      // skip it.
+      if (remaining == null) return;
+
+      var splits = remaining.add(prefix.length,
+          longerPrefix.nestingIndent);
+
+      solution.update(this, splits);
     }
-  }
-
-  // TODO(bob): Doc.
-  void _tryLongerPrefix(LinePrefix prefix, BestSplits bestSplits,
-      LinePrefix longerPrefix, bool isSplit) {
-    var remaining = _findBestSplits(longerPrefix);
-
-    // If it wasn't possible to split the suffix given this nesting stack,
-    // skip it.
-    if (remaining == null) return;
-
-    var splits = remaining;
-    if (isSplit) {
-      splits = remaining.add(prefix.length, longerPrefix.nestingIndent);
-    }
-
-    var indent = prefix.getNextLineIndent(_chunks, _indent);
-    var cost = _evaluateCost(prefix, indent, splits);
-    bestSplits.update(splits, cost);
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
@@ -352,17 +357,28 @@ class LineSplitter {
   }
 }
 
-/// Keeps track of the best set of splits found so far.
-class BestSplits {
+/// Keeps track of the best set of splits found so far for a suffix of some
+/// prefix.
+class Solution {
+  /// The prefix whose suffix we are finding a solution for.
+  final LinePrefix prefix;
+
+  /// The indentation at the beginning of the suffix.
+  final int _indent;
+
   SplitSet _bestSplits;
   int _lowestCost;
 
   /// The best set of splits currently found.
   SplitSet get splits => _bestSplits;
 
-  /// Compares [splits] which has [cost] to the best set found so far and keeps
-  /// it if it's better.
-  void update(SplitSet splits, int cost) {
+  Solution(this.prefix, this._indent);
+
+  /// Compares [splits] to the best solution found so far and keeps it if it's
+  /// better.
+  void update(LineSplitter splitter, SplitSet splits) {
+    var cost = splitter._evaluateCost(prefix, _indent, splits);
+
     // TODO(bob): Is weight still needed?
     if (_lowestCost == null ||
         cost < _lowestCost/* ||
@@ -370,6 +386,12 @@ class BestSplits {
       _bestSplits = splits;
       _lowestCost = cost;
     }
+  }
+
+  /// Makes the empty split set a valid solution.
+  void allowEmpty() {
+    _bestSplits = new SplitSet();
+    _lowestCost = 0;
   }
 }
 
