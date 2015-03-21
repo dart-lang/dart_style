@@ -12,8 +12,7 @@ someMethod(argument1, argument2 // comment
 );
 <<<
 someMethod(
-    argument1,
-    argument2 // comment
+    argument1, argument2 // comment
     );
 >>> inside list literal
 ['item' // comment

@@ -268,7 +268,7 @@ class LineSplitter {
 
     // If we're in a block that decided not to split, we can't allow any other
     // splits.
-    if (prefix.isInUnsplitBlock) return;
+    if (!prefix.allowsSplits) return;
 
     // There are multiple possible ways to split at this chunk with different
     // nesting stacks. Try them all.

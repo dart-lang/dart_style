@@ -46,14 +46,14 @@ class HardSplitRule extends Rule {
   bool isSplit(int value, Chunk chunk) => true;
 }
 
-// TODO(bob): Doc. Better name?
-class BlockSplitRule extends Rule {
+/// A basic rule that has two states: unsplit or split.
+class SimpleRule extends Rule {
   /// Two values: 0 is unsplit, 1 is split.
   int get numValues => 2;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 
-  String toString() => "Block${super.toString()}";
+  String toString() => "Simple${super.toString()}";
 }
 
 /// Handles a list of [combinators] following an "import" or "export" directive.

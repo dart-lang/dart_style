@@ -63,20 +63,23 @@ class LinePrefix {
 
   int get hashCode => length.hashCode ^ _nesting.hashCode;
 
-  /// Whether this prefix specifies a value for a [BlockSplitRule] that does
-  /// not split it.
+  /// Whether this prefix specifies a value for a rule that does not allow any
+  /// more splits to occur.
   ///
-  /// This lets inner splitting choices preserve the requirement that a block
+  /// This lets inner splitting choices preserve the requirement that a rule
   /// cannot contain any splits.
-  bool get isInUnsplitBlock {
+  bool get allowsSplits {
     // TODO(rnystrom): Cache this?
     for (var rule in ruleValues.keys) {
-      if (rule is BlockSplitRule && !rule.isSplit(ruleValues[rule], null)) {
-        return true;
+      // TODO(bob): Need to distinguish between the rules used for collections
+      // et. al. that do want this behavior and the ones for things like binary
+      // operators that may not. Or do we?
+      if (rule is SimpleRule && !rule.isSplit(ruleValues[rule], null)) {
+        return false;
       }
     }
 
-    return false;
+    return true;
   }
 
   /// Create a new LinePrefix one chunk longer than this one using [value] for

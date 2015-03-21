@@ -412,8 +412,11 @@ class LineWriter {
     _spans.add(span);
   }
 
-  /// Starts a new [SplitRule].
-  void startRule(Rule rule) {
+  /// Starts a new [Rule].
+  ///
+  /// If omitted, defaults to a new [SimpleRule].
+  void startRule([Rule rule]) {
+    if (rule == null) rule = new SimpleRule();
     _rules.add(rule);
   }
 

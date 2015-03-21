@@ -171,7 +171,7 @@ class SourceVisitor implements AstVisitor {
 
         // Positional arguments split independently.
         if (argument != positionalArgs.last) {
-          rule.beforeArgument(_writer.split(space: true));
+          rule.beforeArgument(split());
         }
       }
 
@@ -190,7 +190,7 @@ class SourceVisitor implements AstVisitor {
 
       // Split before the first named argument.
       rule.beforeArguments(
-          _writer.split(nest: true, space: positionalArgs.isNotEmpty));
+          _writer.split(space: positionalArgs.isNotEmpty));
 
       /*
       _writer.startSpan();
@@ -202,7 +202,7 @@ class SourceVisitor implements AstVisitor {
         // Write the trailing comma and split.
         if (argument != namedArgs.last) {
           token(argument.endToken.next);
-          _writer.split(nest: true, space: true);
+          split();
         }
       }
 
@@ -233,7 +233,7 @@ class SourceVisitor implements AstVisitor {
     _simpleStatement(node, () {
       token(node.keyword);
       token(node.leftParenthesis);
-      zeroSplit();
+      soloZeroSplit();
       visit(node.condition);
       token(node.rightParenthesis);
     });
@@ -490,8 +490,8 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
 
     // If we split after one clause in a conditional, always split after both.
-    _writer.startMultisplit();
-    _writer.multisplit(nest: true, space: true);
+    _writer.startRule();
+    split();
     token(node.question);
     space();
 
@@ -499,13 +499,13 @@ class SourceVisitor implements AstVisitor {
     visit(node.thenExpression);
     _writer.unnest();
 
-    _writer.multisplit(nest: true, space: true);
+    split();
     token(node.colon);
     space();
 
     visit(node.elseExpression);
 
-    _writer.endMultisplit();
+    _writer.endRule();
     _writer.endSpan();
     _writer.unnest();
   }
@@ -628,7 +628,7 @@ class SourceVisitor implements AstVisitor {
       token(node.whileKeyword);
       space();
       token(node.leftParenthesis);
-      zeroSplit();
+      soloZeroSplit();
       visit(node.condition);
       token(node.rightParenthesis);
     });
@@ -660,9 +660,7 @@ class SourceVisitor implements AstVisitor {
 
     _startBody(node.leftBracket, space: true);
 
-    visitCommaSeparatedNodes(node.constants, between: () {
-      _writer.multisplit(space: true);
-    });
+    visitCommaSeparatedNodes(node.constants, between: split);
 
     _endBody(node.rightBracket, space: true);
   }
@@ -709,7 +707,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExtendsClause(ExtendsClause node) {
-    split();
+    soloSplit();
     token(node.keyword);
     space();
     visit(node.superclass);
@@ -745,7 +743,7 @@ class SourceVisitor implements AstVisitor {
     } else {
       visit(node.identifier);
     }
-    split();
+    soloSplit();
     token(node.inKeyword);
     space();
     visit(node.iterable);
@@ -765,7 +763,7 @@ class SourceVisitor implements AstVisitor {
     if ((node.parameters.isNotEmpty ||
             node.rightParenthesis.precedingComments != null) &&
         !_isLambda(node)) {
-      zeroSplit();
+      soloZeroSplit();
     }
 
     // Try to keep the parameters together.
@@ -783,7 +781,7 @@ class SourceVisitor implements AstVisitor {
       // Don't try to keep optional parameters together with mandatory ones.
       if (inFirstOptional) _writer.endSpan();
 
-      if (i > 0) split();
+      if (i > 0) soloSplit();
 
       if (inFirstOptional) {
         // Do try to keep optional parameters with each other.
@@ -812,7 +810,7 @@ class SourceVisitor implements AstVisitor {
     space();
     token(node.leftParenthesis);
 
-    _writer.startMultisplit();
+    _writer.startRule();
 
     // The initialization clause.
     if (node.initialization != null) {
@@ -828,7 +826,7 @@ class SourceVisitor implements AstVisitor {
       visit(declaration.type, after: space);
 
       visitCommaSeparatedNodes(declaration.variables, between: () {
-        _writer.multisplit(space: true, nest: true);
+        split();
       });
 
       _writer.unindent(4);
@@ -837,19 +835,18 @@ class SourceVisitor implements AstVisitor {
     token(node.leftSeparator);
 
     // The condition clause.
-    if (node.condition != null) _writer.multisplit(nest: true, space: true);
+    if (node.condition != null) split();
     visit(node.condition);
     token(node.rightSeparator);
 
     // The update clause.
     if (node.updaters.isNotEmpty) {
-      _writer.multisplit(nest: true, space: true);
-      visitCommaSeparatedNodes(node.updaters,
-          between: () => _writer.multisplit(nest: true, space: true));
+      split();
+      visitCommaSeparatedNodes(node.updaters, between: split);
     }
 
     token(node.rightParenthesis);
-    _writer.endMultisplit();
+    _writer.endRule();
     _writer.unnest();
 
     // The body.
@@ -939,7 +936,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImplementsClause(ImplementsClause node) {
-    split();
+    soloSplit();
     token(node.keyword);
     space();
     visitCommaSeparatedNodes(node.interfaces);
@@ -953,7 +950,7 @@ class SourceVisitor implements AstVisitor {
       space();
       visit(node.uri);
       token(node.deferredToken, before: space);
-      token(node.asToken, before: split, after: space);
+      token(node.asToken, before: soloSplit, after: space);
       visit(node.prefix);
       _visitCombinators(node.combinators);
     });
@@ -969,7 +966,7 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
     token(node.leftBracket);
     _writer.nestExpression();
-    zeroSplit();
+    soloZeroSplit();
     visit(node.index);
     token(node.rightBracket);
     _writer.unnest();
@@ -1052,7 +1049,7 @@ class SourceVisitor implements AstVisitor {
   visitMapLiteralEntry(MapLiteralEntry node) {
     visit(node.key);
     token(node.separator);
-    split();
+    soloSplit();
     visit(node.value);
   }
 
@@ -1327,7 +1324,7 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     token(node.leftParenthesis);
-    zeroSplit();
+    soloZeroSplit();
     visit(node.expression);
     token(node.rightParenthesis);
     space();
@@ -1452,15 +1449,13 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // Use a multisplit between all of the variables. If there are multiple
+    // Use a single rule for all of the variables. If there are multiple
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
     // line.
-    _writer.startMultisplit();
-    visitCommaSeparatedNodes(node.variables, between: () {
-      _writer.multisplit(space: true, nest: true);
-    });
-    _writer.endMultisplit();
+    _writer.startRule();
+    visitCommaSeparatedNodes(node.variables, between: split);
+    _writer.endRule();
   }
 
   visitVariableDeclarationStatement(VariableDeclarationStatement node) {
@@ -1474,7 +1469,7 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     token(node.leftParenthesis);
-    zeroSplit();
+    soloZeroSplit();
     visit(node.condition);
     token(node.rightParenthesis);
     if (node.body is! EmptyStatement) space();
@@ -1483,7 +1478,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitWithClause(WithClause node) {
-    split();
+    soloSplit();
     token(node.withKeyword);
     space();
     visitCommaSeparatedNodes(node.mixinTypes);
@@ -1658,14 +1653,14 @@ class SourceVisitor implements AstVisitor {
   void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
     // Allow splitting before the keyword.
     var rule = _writer.rule as CombinatorRule;
-    rule.addCombinator(_writer.split(space: true));
+    rule.addCombinator(split());
 
     _writer.nestExpression();
     token(keyword);
 
-    rule.addName(_writer.split(space: true));
+    rule.addName(split());
     visitCommaSeparatedNodes(names,
-        between: () => rule.addName(_writer.split(space: true)));
+        between: () => rule.addName(split()));
 
     _writer.unnest();
   }
@@ -1697,7 +1692,7 @@ class SourceVisitor implements AstVisitor {
 
     // Split after the bracket.
     // TODO(bob): Cost.
-    _writer.startRule(new BlockSplitRule());
+    _writer.startRule();
     _writer.writeSplit(nest: false, space: space);
   }
 
@@ -1779,23 +1774,25 @@ class SourceVisitor implements AstVisitor {
     _writer.writeWhitespace(Whitespace.oneOrTwoNewlines);
   }
 
-  /// Writes a single-space split with the given [cost].
+  /// Writes a single space split owned by the current rule.
   ///
-  /// If [cost] is omitted, defaults to [Cost.normal]. Returns the newly created
-  /// [SplitParam].
-  /*SplitParam*/ split([int cost]) {
-    /*
-    _writer.writeSplit(cost: cost, space: true);
-    */
+  /// Returns the chunk the split was applied to.
+  Chunk split() {
+    return _writer.split(space: true);
   }
 
-  /// Writes a split that is the empty string when unsplit.
-  ///
-  /// Returns the newly created [SplitParam].
-  /*SplitParam*/ zeroSplit([int cost]) {
-    /*
-    _writer.writeSplit(cost: cost);
-    */
+  /// Writes a single space split with its own rule.
+  void soloSplit() {
+    _writer.startRule();
+    _writer.split(space: true);
+    _writer.endRule();
+  }
+
+  /// Writes a zero-space split with its own rule.
+  void soloZeroSplit() {
+    _writer.startRule();
+    _writer.split();
+    _writer.endRule();
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
