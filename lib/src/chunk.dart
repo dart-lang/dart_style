@@ -121,11 +121,6 @@ class Chunk extends Selection {
   /// splitter may choose to keep the next chunk on the same line.
   bool get isHardSplit => _indent != null && _rule is HardSplitRule;
 
-  /*
-  /// Whether this chunk may cause a newline depending on line splitting.
-  bool get isSoftSplit => _indent != null && _rule is! HardSplitRule;
-  */
-
   /// `true` if an extra blank line should be output after this chunk if it's
   /// split.
   bool get isDouble => _isDouble;

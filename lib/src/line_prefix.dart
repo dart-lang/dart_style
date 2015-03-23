@@ -85,14 +85,14 @@ class LinePrefix {
   /// Create a new LinePrefix one chunk longer than this one using [value] for
   /// the next chunk's rule, and assuming that we do not split before that
   /// chunk.
-  LinePrefix advanceUnsplit(List<Chunk> chunks, int value) {
+  LinePrefix addChunk(List<Chunk> chunks, int value) {
     // We aren't splitting on the new chunk, so preserve the previous nesting.
     var ruleValues = _advanceRuleValues(chunks, value);
     return new LinePrefix._(length + 1, ruleValues, _nesting);
   }
 
   // TODO(bob): Doc.
-  Iterable<LinePrefix> advanceSplit(List<Chunk> chunks, int value) {
+  Iterable<LinePrefix> addSplit(List<Chunk> chunks, int value) {
     var updatedRules = _advanceRuleValues(chunks, value);
 
     // TODO(bob): Can we hoist this out to splitter and avoid making lists for

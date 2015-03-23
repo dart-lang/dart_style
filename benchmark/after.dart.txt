@@ -98,8 +98,10 @@ class BacktrackingSolver {
             tag == 'textarea' && name == 'value');
 
     // Even more deeply nested pathological example.
-    if (javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(
-                    javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(
+    if (javaBooleanAnd(
+        javaBooleanAnd(
+            javaBooleanAnd(
+                javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(
                                 javaBooleanAnd(),
                                 _isEqualTokens(node.period, toNode.period)),
                             _isEqualNodes(node.name, toNode.name)),
@@ -107,8 +109,11 @@ class BacktrackingSolver {
                     _isEqualTokens(node.separator, toNode.separator)),
                 _isEqualNodeLists(node.initializers, toNode.initializers)),
             _isEqualNodes(
-                node.redirectedConstructor, toNode.redirectedConstructor)),
-        _isEqualNodes(node.body, toNode.body))) {
+                node.redirectedConstructor,
+                toNode.redirectedConstructor)),
+        _isEqualNodes(
+            node.body,
+            toNode.body))) {
       toNode.element = node.element;
     }
   }
@@ -126,7 +131,8 @@ class BacktrackingSolver {
     var overrides = _overrides.values.toList();
     overrides.sort((a, b) => a.name.compareTo(b.name));
 
-    return newFuture(() {
+    return newFuture(
+        () {
       stopwatch.start();
 
       // Pre-cache the root package's known pubspec.
@@ -134,20 +140,29 @@ class BacktrackingSolver {
 
       _validateSdkConstraint(root.pubspec);
       return _traverseSolution();
-    }).then((packages) {
+    }).then(
+        (packages) {
       var pubspecs = new Map.fromIterable(packages,
           key: (id) => id.name, value: (id) => cache.getCachedPubspec(id));
 
-      return new SolveResult.success(sources, root, lockFile, packages,
-          overrides, pubspecs, _getAvailableVersions(packages),
+      return new SolveResult.success(
+          sources,
+          root,
+          lockFile,
+          packages,
+          overrides,
+          pubspecs,
+          _getAvailableVersions(packages),
           attemptedSolutions);
-    }).catchError((error) {
+    }).catchError(
+        (error) {
       if (error is! SolveFailure) throw error;
 
       // Wrap a failure in a result so we can attach some other data.
       return new SolveResult.failure(
           sources, root, lockFile, overrides, error, attemptedSolutions);
-    }).whenComplete(() {
+    }).whenComplete(
+        () {
       // Gather some solving metrics.
       var buffer = new StringBuffer();
       buffer.writeln('${runtimeType} took ${stopwatch.elapsed} seconds.');
@@ -236,11 +251,14 @@ class BacktrackingSolver {
   /// If there are no more versions, continues to backtrack to previous
   /// selections, and so on. If there is nothing left to backtrack to,
   /// completes to the last failure that occurred.
-  Future<List<PackageId>> _traverseSolution() => resetStack(() {
-    return new Traverser(this).traverse().catchError((error) {
+  Future<List<PackageId>> _traverseSolution() => resetStack(
+      () {
+    return new Traverser(this).traverse().catchError(
+        (error) {
       if (error is! SolveFailure) throw error;
 
-      return _backtrack(error).then((canTry) {
+      return _backtrack(error).then(
+          (canTry) {
         if (canTry) {
           _attemptedSolutions++;
           return _traverseSolution();
@@ -278,7 +296,8 @@ class BacktrackingSolver {
     advanceVersion() {
       _backjump(failure);
       var previous = _selected.last.current;
-      return _selected.last.advance().then((success) {
+      return _selected.last.advance().then(
+          (success) {
         if (success) {
           logSolve();
           return true;
@@ -486,7 +505,8 @@ class Traverser {
     }
     _visited.add(id);
 
-    return _solver.cache.getPubspec(id).then((pubspec) {
+    return _solver.cache.getPubspec(id).then(
+        (pubspec) {
       _validateSdkConstraint(pubspec);
 
       var deps = pubspec.dependencies.toSet();
@@ -501,7 +521,8 @@ class Traverser {
       }
 
       // Replace any overridden dependencies.
-      deps = deps.map((dep) {
+      deps = deps.map(
+          (dep) {
         var override = _solver._overrides[dep.name];
         if (override != null) return override;
 
@@ -518,7 +539,8 @@ class Traverser {
       }
 
       return _traverseDeps(id, new DependencyQueue(_solver, deps));
-    }).catchError((error) {
+    }).catchError(
+        (error) {
       if (error is! PackageNotFoundException) throw error;
 
       // We can only get here if the lockfile refers to a specific package
@@ -537,10 +559,13 @@ class Traverser {
     // Move onto the next package if we've traversed all of these references.
     if (deps.isEmpty) return _traversePackage();
 
-    return resetStack(() {
-      return deps.advance().then((dep) {
+    return resetStack(
+        () {
+      return deps.advance().then(
+          (dep) {
         var dependency = new Dependency(depender.name, depender.version, dep);
-        return _registerDependency(dependency).then((_) {
+        return _registerDependency(dependency).then(
+            (_) {
           if (dep.name == "barback") return _addImplicitDependencies();
         });
       }).then((_) => _traverseDeps(depender, deps));
@@ -550,7 +575,8 @@ class Traverser {
   /// Register [dependency]'s constraints on the package it depends on and
   /// enqueues the package for processing if necessary.
   Future _registerDependency(Dependency dependency) {
-    return new Future.sync(() {
+    return new Future.sync(
+        () {
       _validateDependency(dependency);
 
       var dep = dependency.dep;
@@ -561,9 +587,8 @@ class Traverser {
 
       // See if it's possible for a package to match that constraint.
       if (constraint.isEmpty) {
-        var constraints = dependencies
-            .map((dep) => "  ${dep.dep.constraint} from ${dep.depender}")
-            .join('\n');
+        var constraints = dependencies.map(
+            (dep) => "  ${dep.dep.constraint} from ${dep.depender}").join('\n');
         _solver.logSolve('disjoint constraints on ${dep.name}:\n$constraints');
         throw new DisjointConstraintException(dep.name, dependencies);
       }
@@ -580,7 +605,9 @@ class Traverser {
       // the constraints we currently have for this package.
       var locked = _getValidLocked(dep.name);
 
-      return VersionQueue.create(locked, () {
+      return VersionQueue.create(
+          locked,
+          () {
         return _getAllowedVersions(dep);
       }).then((versions) => _packages.add(_solver.select(versions)));
     });
@@ -590,7 +617,8 @@ class Traverser {
   /// it.
   Future<Iterable<PackageId>> _getAllowedVersions(PackageDep dep) {
     var constraint = _getConstraint(dep.name);
-    return _solver.cache.getVersions(dep.toRef()).then((versions) {
+    return _solver.cache.getVersions(dep.toRef()).then(
+        (versions) {
       var allowed = versions.where((id) => constraint.allows(id.version));
 
       if (allowed.isEmpty) {
@@ -610,7 +638,8 @@ class Traverser {
       }
 
       return allowed;
-    }).catchError((error, stackTrace) {
+    }).catchError(
+        (error, stackTrace) {
       if (error is PackageNotFoundException) {
         // Show the user why the package was being requested.
         throw new DependencyNotFoundException(
@@ -643,7 +672,8 @@ class Traverser {
     // Make sure all of the existing descriptions match the new reference.
     var source = _solver.sources[dep.source];
     if (!source.descriptionsEqual(dep.description, required.dep.description)) {
-      _solver.logSolve('description mismatch on ${dep.name}: '
+      _solver.logSolve(
+          'description mismatch on ${dep.name}: '
           '${required.dep.description} != ${dep.description}');
       throw new DescriptionMismatchException(dep.name, [required, dependency]);
     }
@@ -677,10 +707,12 @@ class Traverser {
     /// Ensure we only add the barback dependency once.
     if (_getDependencies("barback").length != 1) return new Future.value();
 
-    return Future.wait(barback.pubConstraints.keys.map((depName) {
+    return Future.wait(
+        barback.pubConstraints.keys.map(
+            (depName) {
       var constraint = barback.pubConstraints[depName];
-      _solver
-          .logSolve('add implicit $constraint pub dependency on ' '$depName');
+      _solver.logSolve(
+          'add implicit $constraint pub dependency on ' '$depName');
 
       var override = _solver._overrides[depName];
 
@@ -722,9 +754,9 @@ class Traverser {
   /// Gets the combined [VersionConstraint] currently being placed on package
   /// [name].
   VersionConstraint _getConstraint(String name) {
-    var constraint = _getDependencies(name)
-        .map((dep) => dep.dep.constraint)
-        .fold(VersionConstraint.any, (a, b) => a.intersect(b));
+    var constraint = _getDependencies(name).map(
+        (dep) => dep.dep.constraint).fold(
+        VersionConstraint.any, (a, b) => a.intersect(b));
 
     return constraint;
   }
@@ -800,7 +832,8 @@ class Traverser {
 void _validateSdkConstraint(Pubspec pubspec) {
   if (pubspec.environment.sdkVersion.allows(sdk.version)) return;
 
-  throw new BadSdkVersionException(pubspec.name,
+  throw new BadSdkVersionException(
+      pubspec.name,
       'Package ${pubspec.name} requires SDK version '
       '${pubspec.environment.sdkVersion} but the current SDK is ' '${sdk.version}.');
 }

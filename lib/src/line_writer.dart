@@ -611,9 +611,6 @@ class LineWriter {
   bool _checkForCompleteLine(int length) {
     if (length == 0) return false;
 
-    // TODO(bob): Be less pessimistic.
-    if (_rules.isNotEmpty) return false;
-
     // Hang on to the split info so we can reset the writer to start with it.
     var split = _chunks[length - 1];
 

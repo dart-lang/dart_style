@@ -215,15 +215,16 @@ class LineSplitter {
     if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
 
     var indent = prefix.getNextLineIndent(_chunks, _indent);
+
     var solution = new Solution(prefix, indent);
-    _tryChunkRuleValues(solution, prefix);
+    _tryChunkRuleValues(solution, prefix, indent * spacesPerIndent);
 
     return _bestSplits[prefix] = solution.splits;
   }
 
   /// Updates [solution] with the best rule value selection for the chunk
   /// immediately following [prefix].
-  void _tryChunkRuleValues(Solution solution, LinePrefix prefix) {
+  void _tryChunkRuleValues(Solution solution, LinePrefix prefix, int length) {
     // If we made it to the end, this prefix can be solved without splitting
     // any chunks.
     if (prefix.length == _chunks.length - 1) {
@@ -233,32 +234,39 @@ class LineSplitter {
 
     var chunk = _chunks[prefix.length];
 
-    // See if we already specified a value for this rule used by a previous
-    // chunk.
     var value = prefix.ruleValues[chunk.rule];
     if (value != null) {
       // We did, so stick with it.
-      _tryRuleValue(solution, prefix, value);
+      _tryRuleValue(solution, prefix, value, length);
       return;
     }
 
     // Try every possible value for the rule.
     for (var value = 0; value < chunk.rule.numValues; value++) {
-      _tryRuleValue(solution, prefix, value);
+      _tryRuleValue(solution, prefix, value, length);
     }
   }
 
   /// Updates [solution] with the best solution that can be found after
   /// setting the chunk after [prefix]'s rule to [value].
-  void _tryRuleValue(Solution solution, LinePrefix prefix, int value) {
+  void _tryRuleValue(Solution solution, LinePrefix prefix, int value,
+      int length) {
     var chunk = _chunks[prefix.length];
 
     // If the rule causes this chunk to split, recurse and find the best
     // solution for the suffix following this chunk.
     if (!chunk.rule.isSplit(value, chunk)) {
-      // We didn't split here, so just add this chunk and its rule value to the
+      // If this chunk bumps us past the page limit and we already have a
+      // solution that fits, no solution after this chunk will beat that, so
+      // stop looking.
+      length += chunk.text.length;
+      if (chunk.spaceWhenUnsplit) length++;
+
+      if (length > _pageWidth && solution.isAdequate) return;
+
+      // We didn't split here, so add this chunk and its rule value to the
       // prefix and continue on to the next.
-      _tryChunkRuleValues(solution, prefix.advanceUnsplit(_chunks, value));
+      _tryChunkRuleValues(solution, prefix.addChunk(_chunks, value), length);
       return;
     }
 
@@ -268,16 +276,14 @@ class LineSplitter {
 
     // There are multiple possible ways to split at this chunk with different
     // nesting stacks. Try them all.
-    for (var longerPrefix in prefix.advanceSplit(_chunks, value)) {
+    for (var longerPrefix in prefix.addSplit(_chunks, value)) {
       var remaining = _findBestSplits(longerPrefix);
 
       // If it wasn't possible to split the suffix given this nesting stack,
       // skip it.
-      if (remaining == null) return;
+      if (remaining == null) continue;
 
-      var splits = remaining.add(prefix.length,
-          longerPrefix.nestingIndent);
-
+      var splits = remaining.add(prefix.length, longerPrefix.nestingIndent);
       solution.update(this, splits);
     }
   }
@@ -367,6 +373,9 @@ class Solution {
 
   /// The best set of splits currently found.
   SplitSet get splits => _bestSplits;
+
+  /// Whether a solution that fits within a page has been found yet.
+  bool get isAdequate => _lowestCost != null && _lowestCost < Cost.overflowChar;
 
   Solution(this._prefix, this._indent);
 
