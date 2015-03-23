@@ -48,35 +48,10 @@ class LineWriter {
   /// written.
   int _beginningIndent;
 
-  /*
-  /// The nested stack of multisplits that are currently being written.
-  ///
-  /// If a hard newline appears in the middle of a multisplit, then the
-  /// multisplit itself must be split. For example, a collection can either be
-  /// single line:
-  ///
-  ///    [all, on, one, line];
-  ///
-  /// or multi-line:
-  ///
-  ///    [
-  ///      one,
-  ///      item,
-  ///      per,
-  ///      line
-  ///    ]
-  ///
-  /// Collections can also contain function expressions, which have blocks which
-  /// in turn force a newline in the middle of the collection. When that
-  /// happens, we need to force all surrounding collections to be multi-line.
-  /// This tracks them so we can do that.
-  final _multisplits = <Multisplit>[];
-  */
-
   /// The nested stack of rules that are currently in use.
   ///
-  /// New soft splits are implicitly owned by the innermost rule when the split
-  /// is written.
+  /// New chunks are implicitly split by the innermost rule when the chunk is
+  /// ended.
   final _rules = <Rule>[];
 
   /// The nested stack of spans that are currently being written.
@@ -392,60 +367,17 @@ class LineWriter {
     _rules.removeLast();
   }
 
-  /// Starts a new [Multisplit].
+  /// Pre-emptively forces all of the current rules to become hard splits.
   ///
-  /// Returns the [SplitParam] for the multisplit.
-  /*SplitParam*/ startMultisplit({bool separable, int cost}) {
-    /*
-    var multisplit = new Multisplit(_currentChunkIndex,
-        separable: separable, cost: cost);
-    _multisplits.add(multisplit);
-
-    return multisplit.param;
-    */
-  }
-
-  /// Adds a new split point for the current innermost [Multisplit].
-  ///
-  /// If [space] is `true`, the chunk will include a space when unsplit. If
-  /// [nest] is `true`, then this split will take into account expression
-  /// nesting. Otherwise, it will not. Collections do not follow expression
-  /// nesting, while other uses of multisplits generally do.
-  void multisplit({bool nest: false, bool space}) {
-    /*
-    // TODO(bob): Pass in rule.
-    _writeSplit(_indent, nest ? _nesting : -1, _multisplits.last.rule, _multisplits.last.param,
-        spaceWhenUnsplit: space);
-    */
-  }
-
-  /// Ends the innermost multisplit.
-  void endMultisplit() {
-    /*
-    var multisplit = _multisplits.removeLast();
-
-    // If this multisplit is contained in another one and they didn't already
-    // get hardened, wire them together: if the inner one chooses to split, it
-    // should force the outer one to split too.
-    if (_multisplits.isNotEmpty &&
-        multisplit.param != null &&
-        _multisplits.last.param != null) {
-      multisplit.param.implies.add(_multisplits.last.param);
-    }
-    */
-  }
-
-  /// Pre-emptively forces all of the multisplits to become hard splits.
-  ///
-  /// This is called by [SourceVisitor] when it can determine that a multisplit
-  /// will never be satisfied. Turning it into hard splits lets the writer
-  /// break the output into smaller pieces for the line splitter, which helps
-  /// performance and avoids failing on very large input.
+  /// This is called by [SourceVisitor] when it can determine that a rule will
+  /// will always be split. Turning it (and the surrounding rules) into hard
+  /// splits lets the writer break the output into smaller pieces for the line
+  /// splitter, which helps performance and avoids failing on very large input.
   ///
   /// In particular, it's easy for the visitor to know that collections with a
   /// large number of items must split. Doing that early avoids crashing the
   /// splitter when it tries to recurse on huge collection literals.
-  void preemptMultisplits() => _handleHardSplit();
+  void forceRules() => _handleHardSplit();
 
   /// Increases the level of expression nesting.
   ///

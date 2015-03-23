@@ -379,6 +379,8 @@ class SourceVisitor implements AstVisitor {
     });
   }
 
+  // TODO(bob): Document how hardening nested rules works.
+
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
 
@@ -390,11 +392,15 @@ class SourceVisitor implements AstVisitor {
       newline();
       visitNodes(node.cascadeSections, between: newline);
     } else {
+      /*
       _writer.startMultisplit();
       _writer.multisplit();
-      visitNodes(node.cascadeSections, between: _writer.multisplit);
+      */
+      visitNodes(node.cascadeSections/*, between: _writer.multisplit*/);
 
+      /*
       _writer.endMultisplit();
+      */
     }
 
     _writer.unindent();
@@ -521,10 +527,10 @@ class SourceVisitor implements AstVisitor {
     token(node.period);
     visit(node.name);
 
-    // Start a multisplit that spans the parameter list. We'll use this for the
-    // split before ":" to ensure that if the parameter list doesn't fit on one
-    // line that the initialization list gets pushed to its own line too.
-    if (node.initializers.length == 1) _writer.startMultisplit();
+    // Start a rule that spans the parameter list. We'll use this for the split
+    // before ":" to ensure that if the parameter list doesn't fit on one line
+    // that the initialization list gets pushed to its own line too.
+    if (node.initializers.length == 1) _writer.startRule();
 
     _visitBody(node.parameters, node.body, () {
       // Check for redirects or initializer lists.
@@ -536,14 +542,20 @@ class SourceVisitor implements AstVisitor {
     });
   }
 
+  void _visitConstructorRedirects(ConstructorDeclaration node) {
+    token(node.separator /* = */, before: space, after: space);
+    visitCommaSeparatedNodes(node.initializers);
+    visit(node.redirectedConstructor);
+  }
+
   void _visitConstructorInitializers(ConstructorDeclaration node) {
     _writer.indent(2);
 
     if (node.initializers.length == 1) {
       // If there is only a single initializer, allow it on the first line, but
-      // only if the parameter list also fit all one line.
-      _writer.multisplit(space: true);
-      _writer.endMultisplit();
+      // only if the parameter list also fits all one line.
+      split();
+      _writer.endRule();
     } else {
       newline();
     }
@@ -573,12 +585,6 @@ class SourceVisitor implements AstVisitor {
     if (node.initializers.length > 1) _writer.unindent();
 
     _writer.unindent(2);
-  }
-
-  void _visitConstructorRedirects(ConstructorDeclaration node) {
-    token(node.separator /* = */, before: space, after: space);
-    visitCommaSeparatedNodes(node.initializers);
-    visit(node.redirectedConstructor);
   }
 
   visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
@@ -1095,11 +1101,15 @@ class SourceVisitor implements AstVisitor {
         // ensures we don't get tripped up by newlines or comments before the
         // first target.
         if (!startedMultisplit) {
+          /*
           _writer.startMultisplit(separable: true);
+          */
           startedMultisplit = true;
         }
 
+        /*
         _writer.multisplit(nest: true);
+        */
 
         token(invocation.period);
       }
@@ -1112,8 +1122,10 @@ class SourceVisitor implements AstVisitor {
       //     foo().bar().baz(
       //         argument, list);
       depth--;
+      /*
       if (depth == 0 && startedMultisplit) _writer.endMultisplit();
-
+      */
+      
       visit(invocation.argumentList);
     }
 
@@ -1613,15 +1625,10 @@ class SourceVisitor implements AstVisitor {
     // Each list element takes at least 3 characters (one character for the
     // element, one for the comma, one for the space), so force it to split if
     // we know that won't fit.
-    if (elements.length > _writer.pageWidth ~/ 3) _writer.preemptMultisplits();
+    if (elements.length > _writer.pageWidth ~/ 3) _writer.forceRules();
 
     for (var element in elements) {
-      /*
-      if (element != elements.first) _writer.multisplit(space: true);
-      */
-      if (element != elements.first) {
-        _writer.split(nest: false, space: true);
-      }
+      if (element != elements.first) _writer.split(nest: false, space: true);
 
       _writer.nestExpression();
 
@@ -1649,7 +1656,7 @@ class SourceVisitor implements AstVisitor {
   /// Visits a [HideCombinator] or [ShowCombinator] starting with [keyword] and
   /// containing [names].
   ///
-  /// This assumes it has been called from within the [Multisplit] created by
+  /// This assumes it has been called from within the [Rule] created by
   /// [_visitCombinators].
   void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
     // Allow splitting before the keyword.
@@ -1681,9 +1688,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
-  /// starting the multisplit it contains.
+  /// starting the rule used to split inside the brackets.
   ///
-  /// If [space] is `true`, then the initial multisplit will use a space if not
+  /// If [space] is `true`, then the initial split will use a space if not
   /// split.
   void _startBody(Token leftBracket, {int cost, bool space: false}) {
     token(leftBracket);
@@ -1698,12 +1705,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
-  /// and ending the multisplit it contains.
+  /// and ending the rule used to split inside the brackets.
   ///
   /// Used for blocks, other curly bodies, and collection literals.
   ///
-  /// If [space] is `true`, then the initial multisplit will use a space if not
-  /// split.
+  /// If [space] is `true`, then the final split will use a space if not split.
   void _endBody(Token rightBracket, {bool space: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
@@ -1712,7 +1718,6 @@ class SourceVisitor implements AstVisitor {
     });
 
     _writer.endRule();
-    _writer.endMultisplit();
   }
 
   /// Returns `true` if [node] is immediately contained within an anonymous
