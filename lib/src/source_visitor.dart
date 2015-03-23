@@ -261,11 +261,10 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBinaryExpression(BinaryExpression node) {
-    /*
-    _writer.startMultisplit(separable: true);
-    */
     _writer.startSpan();
     _writer.nestExpression();
+
+    var startedRule = false;
 
     // Note that we have the full precedence table here even though some
     // operators are not associative and so can never chain. In particular,
@@ -328,11 +327,15 @@ class SourceVisitor implements AstVisitor {
         space();
         token(e.operator);
 
-        // TODO(bob): Temp to get unrelated tests passing. Should be a split.
-        space();
-        /*
-        _writer.multisplit(space: true, nest: true);
-        */
+        // Don't start the rule until after the first operand. Ensures we don't
+        // force the operator to split if a line comment appears before the
+        // first operand.
+        if (!startedRule) {
+          _writer.startRule();
+          startedRule = true;
+        }
+
+        split();
         traverse(e.rightOperand);
       } else {
         visit(e);
@@ -343,9 +346,7 @@ class SourceVisitor implements AstVisitor {
 
     _writer.unnest();
     _writer.endSpan();
-    /*
-    _writer.endMultisplit();
-    */
+    _writer.endRule();
   }
 
   visitBlock(Block node) {
@@ -1619,7 +1620,7 @@ class SourceVisitor implements AstVisitor {
       if (element != elements.first) _writer.multisplit(space: true);
       */
       if (element != elements.first) {
-        _writer.writeSplit(nest: false, space: true);
+        _writer.split(nest: false, space: true);
       }
 
       _writer.nestExpression();
@@ -1693,7 +1694,7 @@ class SourceVisitor implements AstVisitor {
     // Split after the bracket.
     // TODO(bob): Cost.
     _writer.startRule();
-    _writer.writeSplit(nest: false, space: space);
+    _writer.split(nest: false, space: space);
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
@@ -1707,7 +1708,7 @@ class SourceVisitor implements AstVisitor {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
-      _writer.writeSplit(nest: false, space: space);
+      _writer.split(nest: false, space: space);
     });
 
     _writer.endRule();
@@ -1784,7 +1785,7 @@ class SourceVisitor implements AstVisitor {
   /// Writes a single space split with its own rule.
   void soloSplit() {
     _writer.startRule();
-    _writer.split(space: true);
+    split();
     _writer.endRule();
   }
 

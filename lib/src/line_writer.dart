@@ -216,39 +216,6 @@ class LineWriter {
         spaceWhenUnsplit: space);
   }
 
-  /*
-  /// Write a soft split with its own param at [cost].
-  ///
-  /// If unsplit, it expands to a space if [space] is `true`.
-  ///
-  /// If [cost] is omitted, defaults to [Cost.normal]. Returns the new param.
-  SplitParam writeSplit({int cost, bool space}) {
-    /*
-    if (cost == null) cost = Cost.normal;
-
-    var param = new SplitParam(cost);
-    // TODO(bob): Cost for rule.
-    _writeSplit(_indent, _nesting, new SoloSplitRule(), param, spaceWhenUnsplit: space);
-
-    // If a split inside a multisplit is chosen, this forces the multisplit too.
-    // This ensures that, for example, a split inside a collection literal
-    // forces the collection to also go multiline. Since a multisplit's param
-    // also implies *its* surrounding multisplit, this will split the whole
-    // chain of contained multisplits.
-    if (_multisplits.isNotEmpty && _multisplits.last.param != null) {
-      param.implies.add(_multisplits.last.param);
-    }
-
-    return param;
-    */
-    return null;
-  }
-  */
-  void writeSplit({bool nest: true, bool space}) {
-    _writeSplit(_indent, nest ? _nesting : -1, _rules.last,
-        spaceWhenUnsplit: space);
-  }
-
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
   ///
