@@ -76,15 +76,19 @@ void dumpLine(List<Chunk> chunks,
 ///
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
-void dumpLines(List<Chunk> chunks,
-    [int indent = 0, LinePrefix prefix, SplitSet splits]) {
-  if (prefix == null) prefix = new LinePrefix();
-  if (splits == null) splits = new SplitSet();
+void dumpLines(List<Chunk> chunks, int indent, LinePrefix prefix,
+    SplitSet splits) {
+  var buffer = new StringBuffer();
 
-  var buffer = new StringBuffer()
-    ..write(Color.gray)
-    ..write("| " * indent)
-    ..write(Color.none);
+  startLine(nextIndent) {
+    indent = nextIndent;
+    buffer
+      ..write(Color.gray)
+      ..write("| " * indent)
+      ..write(Color.none);
+  }
+
+  startLine(indent);
 
   for (var i = prefix.length; i < chunks.length - 1; i++) {
     var chunk = chunks[i];
@@ -93,12 +97,7 @@ void dumpLines(List<Chunk> chunks,
     if (splits.shouldSplitAt(i)) {
       for (var j = 0; j < (chunk.isDouble ? 2 : 1); j++) {
         buffer.writeln();
-
-        indent = chunk.indent + splits.getNesting(i);
-        buffer
-          ..write(Color.gray)
-          ..write("| " * indent)
-          ..write(Color.none);
+        startLine(chunk.indent + splits.getNesting(i));
       }
 
       // Should have a valid set of splits when we get here.

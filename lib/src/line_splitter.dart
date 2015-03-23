@@ -9,7 +9,6 @@ import 'dart:math' as math;
 import 'chunk.dart';
 import 'debug.dart';
 import 'line_prefix.dart';
-import 'rule.dart';
 
 /// The number of spaces in a single level of indentation.
 const spacesPerIndent = 2;
@@ -215,10 +214,6 @@ class LineSplitter {
     // Use the memoized result if we have it.
     if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
 
-    // TODO(bob): The old splitter has a shortcut here where it checks to see
-    // if the entire suffix can fit in a line with no splits (and if there are
-    // no hard splits). Do that here.
-
     var indent = prefix.getNextLineIndent(_chunks, _indent);
     var solution = new Solution(prefix, indent);
     _tryChunkRuleValues(solution, prefix);
@@ -229,19 +224,20 @@ class LineSplitter {
   /// Updates [solution] with the best rule value selection for the chunk
   /// immediately following [prefix].
   void _tryChunkRuleValues(Solution solution, LinePrefix prefix) {
-    // We don't care about the last chunk's rule. It just never splits.
+    // If we made it to the end, this prefix can be solved without splitting
+    // any chunks.
     if (prefix.length == _chunks.length - 1) {
-      solution.allowEmpty();
+      solution.update(this, new SplitSet());
       return;
     }
 
     var chunk = _chunks[prefix.length];
 
-    // See if a chunk in the prefix has the same rule. If so, we have to stick
-    // with that value.
+    // See if we already specified a value for this rule used by a previous
+    // chunk.
     var value = prefix.ruleValues[chunk.rule];
     if (value != null) {
-      // It does, so stick with it.
+      // We did, so stick with it.
       _tryRuleValue(solution, prefix, value);
       return;
     }
@@ -361,7 +357,7 @@ class LineSplitter {
 /// prefix.
 class Solution {
   /// The prefix whose suffix we are finding a solution for.
-  final LinePrefix prefix;
+  final LinePrefix _prefix;
 
   /// The indentation at the beginning of the suffix.
   final int _indent;
@@ -372,12 +368,12 @@ class Solution {
   /// The best set of splits currently found.
   SplitSet get splits => _bestSplits;
 
-  Solution(this.prefix, this._indent);
+  Solution(this._prefix, this._indent);
 
   /// Compares [splits] to the best solution found so far and keeps it if it's
   /// better.
   void update(LineSplitter splitter, SplitSet splits) {
-    var cost = splitter._evaluateCost(prefix, _indent, splits);
+    var cost = splitter._evaluateCost(_prefix, _indent, splits);
 
     // TODO(bob): Is weight still needed?
     if (_lowestCost == null ||
@@ -386,12 +382,12 @@ class Solution {
       _bestSplits = splits;
       _lowestCost = cost;
     }
-  }
 
-  /// Makes the empty split set a valid solution.
-  void allowEmpty() {
-    _bestSplits = new SplitSet();
-    _lowestCost = 0;
+    if (debugFormatter) {
+      var best = _bestSplits == splits ? " (best)" : "";
+      print("\n${Color.gray}${_prefix} $splits \$$cost$best");
+      dumpLines(splitter._chunks, _indent, _prefix, splits);
+    }
   }
 }
 
