@@ -1,6 +1,7 @@
 # 0.1.8-dev
 
 * Update to latest args.
+* Allow cascades with repeated method names to be one line.
 
 # 0.1.7
 

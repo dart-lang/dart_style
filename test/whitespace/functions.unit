@@ -36,12 +36,12 @@ main() async {
   y() async {}
   var z = () async {};
 }
->>> dartbug.com/16384
-fish() => []..add(1)..add(2);
-<<<
+>>>
 fish() => []
   ..add(1)
   ..add(2);
+<<<
+fish() => []..add(1)..add(2);
 >>>
 fish() => []..add(1);
 <<<
