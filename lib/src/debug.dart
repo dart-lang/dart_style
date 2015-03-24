@@ -39,39 +39,6 @@ void dumpChunks(List<Chunk> chunks) {
   }
 }
 
-// TODO(bob): Fix these to work with rules.
-
-/// Prints [chunks] to stdout as a single line with non-printing chunks made
-/// visible.
-void dumpLine(List<Chunk> chunks,
-    [int indent = 0, LinePrefix prefix, Set<SplitParam> splits]) {
-  if (prefix == null) prefix = new LinePrefix();
-  if (splits == null) splits = new Set();
-
-  var buffer = new StringBuffer()
-    ..write(Color.gray)
-    ..write("| " * prefix.getNextLineIndent(chunks, indent))
-    ..write(Color.none);
-
-  for (var i = prefix.length; i < chunks.length; i++) {
-    var chunk = chunks[i];
-
-    buffer.write(chunk.text);
-
-    if (chunk.isSoftSplit) {
-      var color = splits.contains(chunk.param) ? Color.green : Color.gray;
-
-      buffer.write("$color$unicodeSection${chunk.param.cost}");
-      if (chunk.nesting != -1) buffer.write(":${chunk.nesting}");
-      buffer.write("${Color.none}");
-    } else if (chunk.isHardSplit) {
-      buffer.write("${Color.magenta}\\n${"->" * chunk.indent}${Color.none}");
-    }
-  }
-
-  print(buffer);
-}
-
 /// Convert the line to a [String] representation.
 ///
 /// It will determine how best to split it into multiple lines of output and

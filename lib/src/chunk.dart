@@ -203,25 +203,8 @@ class Chunk extends Selection {
     if (_indent == null) {
       parts.add("(no split info)");
     } else if (isHardSplit) {
-      parts.add("hard");
-    } else {
-      // TODO(bob): ...
-      /*
-      var rule = "$_rule";
-
-      if (_param.cost != Cost.normal) param += " \$${_param.cost}";
-
-      if (_param.implies.isNotEmpty) {
-        var impliedIds = _param.implies.map(
-            (param) => "p${param.id}").join(" ");
-        param += " -> $impliedIds";
-      }
-
-      parts.add(param);
-      */
+      parts.add(rule.toString());
     }
-
-    parts.add(rule.toString());
 
     return parts.join(" ");
   }

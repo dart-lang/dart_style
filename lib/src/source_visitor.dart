@@ -243,12 +243,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    // TODO(bob): Temporary to aovid spurious test failures. Make this use a
-    // split.
-    space();
-    /*
-    split(Cost.assignment);
-    */
+    soloSplit(/*Cost.assignment*/);
     _writer.startSpan();
     visit(node.rightHandSide);
     _writer.endSpan();
@@ -693,11 +688,7 @@ class SourceVisitor implements AstVisitor {
       if (_isLambda(node)) _writer.startSpan();
 
       token(node.functionDefinition); // "=>".
-      // TODO(bob): Temp to get unrelated tests passing. Should be a split.
-      space();
-      /*
-      split();
-      */
+      soloSplit();
 
       if (_isLambda(node)) _writer.endSpan();
 
@@ -1125,7 +1116,7 @@ class SourceVisitor implements AstVisitor {
       /*
       if (depth == 0 && startedMultisplit) _writer.endMultisplit();
       */
-      
+
       visit(invocation.argumentList);
     }
 
@@ -1422,12 +1413,7 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    // TODO(bob): Temporary to aovid spurious test failures. Make this use a
-    // split.
-    space();
-    /*
-    split(Cost.assignment);
-    */
+    soloSplit(/*Cost.assignment*/);
     _writer.startSpan();
     visit(node.initializer);
     _writer.endSpan();
