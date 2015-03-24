@@ -1067,7 +1067,7 @@ class SourceVisitor implements AstVisitor {
   visitMethodInvocation(MethodInvocation node) {
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
     // split or none of them do.
-    var startedMultisplit = false;
+    var startedRule = false;
 
     // Try to keep the entire method chain one line.
     _writer.startSpan();
@@ -1091,31 +1091,25 @@ class SourceVisitor implements AstVisitor {
         // Don't start the multisplit until after the first target. This
         // ensures we don't get tripped up by newlines or comments before the
         // first target.
-        if (!startedMultisplit) {
-          /*
-          _writer.startMultisplit(separable: true);
-          */
-          startedMultisplit = true;
+        if (!startedRule) {
+          _writer.startRule();
+          startedRule = true;
         }
 
-        /*
-        _writer.multisplit(nest: true);
-        */
+        zeroSplit();
 
         token(invocation.period);
       }
 
       visit(invocation.methodName);
 
-      // Stop the multisplit after the last call, but before it's arguments.
+      // Stop the multisplit after the last call, but before its arguments.
       // That allows unsplit chains where the last argument list wraps, like:
       //
       //     foo().bar().baz(
       //         argument, list);
       depth--;
-      /*
-      if (depth == 0 && startedMultisplit) _writer.endMultisplit();
-      */
+      if (depth == 0 && startedRule) _writer.endRule();
 
       visit(invocation.argumentList);
     }
@@ -1769,9 +1763,12 @@ class SourceVisitor implements AstVisitor {
   /// Writes a single space split owned by the current rule.
   ///
   /// Returns the chunk the split was applied to.
-  Chunk split() {
-    return _writer.split(space: true);
-  }
+  Chunk split() => _writer.split(space: true);
+
+  /// Writes a zero-space split owned by the current rule.
+  ///
+  /// Returns the chunk the split was applied to.
+  Chunk zeroSplit() => _writer.split();
 
   /// Writes a single space split with its own rule.
   void soloSplit() {

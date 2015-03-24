@@ -102,6 +102,10 @@ class LineSplitter {
   /// Likewise, the second element will be non-`null` if the selection endpoint
   /// is within the list of chunks.
   List<int> apply(StringBuffer buffer) {
+    if (debugFormatter) {
+      dumpChunks(_chunks);
+    }
+
     var splits = _findBestSplits(new LinePrefix());
     var selection = [null, null];
 

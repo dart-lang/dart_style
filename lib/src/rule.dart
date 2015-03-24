@@ -44,6 +44,8 @@ class HardSplitRule extends Rule {
   bool get hardenOnHardSplit => false;
 
   bool isSplit(int value, Chunk chunk) => true;
+
+  String toString() => "Hard";
 }
 
 /// A basic rule that has two states: unsplit or split.
