@@ -163,7 +163,7 @@ class CombinatorRule extends Rule {
     return _combinators.contains(chunk) || _names[combinator].contains(chunk);
   }
 
-  String toString() => "Combinator${super.toString()}";
+  String toString() => "Comb${super.toString()}";
 }
 
 /// Splitting rule for a list of position arguments or parameters. Given an
@@ -210,7 +210,7 @@ class PositionalArgsRule extends Rule {
     return chunk == _arguments[argument];
   }
 
-  String toString() => "Positional${super.toString()}";
+  String toString() => "Pos${super.toString()}";
 }
 
 /// Splitting rule for a list of named arguments or parameters. Its values mean:

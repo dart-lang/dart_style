@@ -6,7 +6,6 @@ library dart_style.src.source_writer;
 
 import 'dart_formatter.dart';
 import 'chunk.dart';
-import 'debug.dart';
 import 'line_splitter.dart';
 import 'rule.dart';
 import 'source_code.dart';
@@ -636,10 +635,15 @@ class LineWriter {
   void _completeLine(int length) {
     assert(_chunks.isNotEmpty);
 
+    // We know unused nesting levels will never be used now, so flatten them.
+    _flattenNestingLevels(length);
+
     // Write the newlines required by the previous line.
     for (var i = 0; i < _bufferedNewlines; i++) {
       _buffer.write(_formatter.lineEnding);
     }
+
+    _preemptRules(length);
 
     // If we aren't completing the entire set of chunks, get the subset that we
     // are completing.
@@ -651,17 +655,129 @@ class LineWriter {
       spans = spans.where((span) => span.start <= length).toList();
     }
 
-    if (debugFormatter) {
-      dumpChunks(chunks);
-      print(spans.join("\n"));
-    }
-
     var splitter = new LineSplitter(_formatter.lineEnding, _formatter.pageWidth,
         chunks, spans, _beginningIndent);
     var selection = splitter.apply(_buffer);
 
     if (selection[0] != null) _selectionStart = selection[0];
     if (selection[1] != null) _selectionLength = selection[1] - _selectionStart;
+  }
+
+  /// Removes any unused nesting levels from the first [length] chunks in
+  /// [_chunks] .
+  ///
+  /// The line splitter considers every possible combination of mapping
+  /// indentation to nesting levels when trying to find the best solution. For
+  /// example, it may assign 4 spaces of indentation to level 1, 8 spaces to
+  /// level 3, etc.
+  ///
+  /// It's fairly common for a nesting level to not actually appear at the
+  /// boundary of a chunk. The source visitor may enter more than one level of
+  /// nesting at a point where a split cannot happen. In that case, there's no
+  /// point in trying to assign an indentation level to that nesting level. It
+  /// will never be used because no line will begin at that level of
+  /// indentation.
+  ///
+  /// Worse, if the splitter *does* consider these levels, it can dramatically
+  /// increase solving time. We can't determine which nesting levels will get
+  /// used eagerly since a level may not be used until later. Instead, when we
+  /// bounce all the way back to no nesting, this goes through and renumbers
+  /// the nesting levels of all of the preceding chunks.
+  void _flattenNestingLevels(int length) {
+    var nestingLevels = _chunks
+        .take(length)
+        .map((chunk) => chunk.nesting)
+        .where((nesting) => nesting != -1)
+        .toSet()
+        .toList();
+    nestingLevels.sort();
+
+    var nestingMap = {-1: -1};
+    for (var i = 0; i < nestingLevels.length; i++) {
+      nestingMap[nestingLevels[i]] = i;
+    }
+
+    for (var chunk in _chunks.take(length)) {
+      chunk.nesting = nestingMap[chunk.nesting];
+    }
+  }
+
+  /// Preemptively harden rules in the first [length] chunks if there will
+  /// certainly be no solution that allows them to remain unsplit.
+  ///
+  /// Very long and/or deeply nested code can make the splitter go exponential.
+  /// This virtually never happens in hand-authored code, but generated code
+  /// can be pretty pathological.
+  ///
+  /// To handle that, we just preemptively harden any rule where we can
+  /// eagerly tell there is no solution that leaves it completely unsplit. We
+  /// use two heuristis for this:
+  ///
+  /// 1. If the rule is used for multiple chunks and there are more than page
+  ///    [_pageWidth] characters between the beginning and the end, then a
+  ///    split will certainly be chosen in there somewhere.
+  ///
+  /// 2. If a chunk within a rule's range of chunks has a nesting level more
+  ///    than half the page deep (in other words, more than 40 spaces
+  ///    of indentation!) then we're certainly in wacko code and may as well
+  ///    just split it eagerly .
+  ///
+  /// In both cases, splitting on that inner chunk implies that the outer rule
+  /// gets split too, so we harden it now.
+  // TODO(bob): Eventually we probably only want to do this for rules
+  // that have "multisplit"-like behavior where an inner split always
+  // implies that it gets split.
+  void _preemptRules(int length) {
+    var rules = _chunks
+        .take(length)
+        .map((chunk) => chunk.rule)
+        .where((rule) => rule is! HardSplitRule)
+        .toSet();
+
+    // Find the range of chunks that each rule surrounds.
+    var mins = {};
+    var maxes = {};
+
+    for (var i = 0; i < length; i++) {
+      var rule = _chunks[i].rule;
+      if (!mins.containsKey(rule)) mins[rule] = i;
+      maxes[rule] = i;
+    }
+
+    // Find the rules that contain too much.
+    var rulesToHarden = new Set();
+    for (var rule in rules) {
+      var length = 0;
+      for (var i = mins[rule] + 1; i <= maxes[rule]; i++) {
+        // TODO(bob): What if the chunk has a hard split?
+        length += _chunks[i].length;
+        if (length > pageWidth) {
+          rulesToHarden.add(rule);
+          break;
+        }
+
+        if (_chunks[i].nesting * indentsPerNest * spacesPerIndent >
+            pageWidth ~/ 2) {
+          rulesToHarden.add(rule);
+          break;
+        }
+      }
+    }
+
+    // Harden their chunks.
+    for (var chunk in _chunks) {
+      if (rulesToHarden.contains(chunk.rule)) {
+        chunk.harden();
+      }
+    }
+
+    // TODO(bob): When we create hard splits here, that will likely let us pass
+    // the remaining chunks to the LineSplitter in smaller batches. We should
+    // do that. Not doing it now because it's a bit trickily recursive since
+    // this gets called during _completeLine().
+
+    // TODO(bob): What if the rules are still in effect? Should we replace them
+    // in _rules too?
   }
 
   /// Handles open multisplits and spans when a hard line occurs.
@@ -690,7 +806,6 @@ class LineWriter {
       }
     }
 
-    // Harden any chunks whose rule was hardened.
     if (hardenedRules.isEmpty) return;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];

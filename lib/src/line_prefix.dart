@@ -127,7 +127,13 @@ class LinePrefix {
   String toString() {
     var result = "prefix $length";
     if (_nesting.indent != 0) result += " nesting $_nesting";
-    if (ruleValues.isNotEmpty) result +=" rules $ruleValues";
+    if (ruleValues.isNotEmpty) {
+      var rules = ruleValues.keys
+          .map((key) => "$key:${ruleValues[key]}")
+          .join(" ");
+
+      result +=" rules $rules";
+    }
     return result;
   }
 

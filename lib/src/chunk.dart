@@ -133,6 +133,9 @@ class Chunk extends Selection {
   bool get spaceWhenUnsplit => _spaceWhenUnsplit;
   bool _spaceWhenUnsplit = false;
 
+  /// The number of characters in this chunk when unsplit.
+  int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
+
   /// Creates a new chunk starting with [_text].
   Chunk(this._text);
 
