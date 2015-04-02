@@ -1605,6 +1605,7 @@ class SourceVisitor implements AstVisitor {
     // Each list element takes at least 3 characters (one character for the
     // element, one for the comma, one for the space), so force it to split if
     // we know that won't fit.
+    // TODO(bob): Is this still needed now that writer preempts?
     if (elements.length > _writer.pageWidth ~/ 3) _writer.forceRules();
 
     for (var element in elements) {

@@ -281,16 +281,14 @@ class Span {
     return result + ")";
   }
 
-  /// Shifts the indexes of the chunk down by [offset].
-  ///
   /// This is used when a prefix of the chunk list gets pulled off by the
-  /// [LineWriter] after it gets formatted as a line. The remaining spans need
-  /// to have their indices shifted to account for the removed chunks.
+  /// [LineWriter] and is formatted as a line. The remaining spans need to have
+  /// their indices shifted to account for the removed chunks.
   ///
-  /// Returns `true` if the span has shifted all the way off the front and
-  /// should just be discarded.
-  bool shift(int offset) {
-    if (end != null && end < offset) return true;
+  /// Returns `true` if the span is contained in the prefix being removed and
+  /// should be discarded.
+  bool subtractPrefix(int offset) {
+    if (_start < offset) return true;
 
     _start -= offset;
     if (_end != null) _end -= offset;

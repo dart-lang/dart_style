@@ -9,7 +9,6 @@ import 'dart:math' as math;
 import 'chunk.dart';
 import 'debug.dart';
 import 'line_prefix.dart';
-import 'rule.dart';
 
 /// The number of spaces in a single level of indentation.
 const spacesPerIndent = 2;
