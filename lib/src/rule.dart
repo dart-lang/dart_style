@@ -25,11 +25,29 @@ abstract class Rule {
   // TODO(bob): Eliminate, or let rule decide based on value.
   int get cost => Cost.normal;
 
+  // TODO(bob): Doc.
+  /// The span of [Chunk]s that were written while this rule was still in
+  /// effect.
+  ///
+  /// This is used to tell which rules should be pre-emptively split if their
+  /// contents are too long. This may be a wider range than the set of chunks
+  /// enclosed by chunks whose rule is this one. A rule may still be on the
+  /// list of open rules for a while after its last chunk is written.
+  Span get span => _span;
+  Span _span;
+
   int get hashCode => id.hashCode;
 
   /// Whether or not this rule should forcibly harden if it ends up containing
   /// a hard split.
   bool get hardenOnHardSplit => true;
+
+  /// Creates the [Span] associated with this rule's bounds, starting at
+  /// [startChunk].
+  void startSpan(int startChunk) {
+    assert(_span == null);
+    _span = new Span(startChunk, 0);
+  }
 
   bool isSplit(int value, Chunk chunk);
 

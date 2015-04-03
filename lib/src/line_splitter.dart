@@ -103,7 +103,11 @@ class LineSplitter {
   List<int> apply(StringBuffer buffer) {
     if (debugFormatter) {
       dumpChunks(_chunks);
+      print(_spans.join("\n"));
     }
+
+    // TODO(rnystrom): One optimization we could perform is to merge spans that
+    // have the same range into a single span with a summed cost.
 
     var splits = _findBestSplits(new LinePrefix());
     var selection = [null, null];

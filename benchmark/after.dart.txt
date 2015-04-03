@@ -90,10 +90,12 @@ class BacktrackingSolver {
     }
 
     // A deeply nested statement that's hard on the formatter.
-    isTwoWay = !isEvent && bindings.isWhole && (isCustomTag ||
-        tag == 'input' && (name == 'value' || name == 'checked') ||
-        tag == 'select' && (name == 'selectedindex' || name == 'value') ||
-        tag == 'textarea' && name == 'value');
+    isTwoWay = !isEvent &&
+        bindings.isWhole &&
+        (isCustomTag ||
+            tag == 'input' && (name == 'value' || name == 'checked') ||
+            tag == 'select' && (name == 'selectedindex' || name == 'value') ||
+            tag == 'textarea' && name == 'value');
 
     // Even more deeply nested pathological example.
     if (javaBooleanAnd(
@@ -101,7 +103,8 @@ class BacktrackingSolver {
             javaBooleanAnd(
                 javaBooleanAnd(
                     javaBooleanAnd(
-                        javaBooleanAnd(javaBooleanAnd(javaBooleanAnd(),
+                        javaBooleanAnd(
+                            javaBooleanAnd(javaBooleanAnd(),
                                 _isEqualTokens(node.period, toNode.period)),
                             _isEqualNodes(node.name, toNode.name)),
                         _isEqualNodes(node.parameters, toNode.parameters)),

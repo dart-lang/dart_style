@@ -341,8 +341,11 @@ class LineWriter {
 
   /// Ends the innermost span.
   void endSpan() {
-    var span = _openSpans.removeLast();
+    _endSpan(_openSpans.removeLast());
+  }
 
+  /// Ends [span].
+  void _endSpan(Span span) {
     // If the span was discarded while it was still open, just forget about it.
     if (span == null) return;
 
@@ -359,11 +362,14 @@ class LineWriter {
   void startRule([Rule rule]) {
     if (rule == null) rule = new SimpleRule();
     _rules.add(rule);
+    rule.startSpan(_currentChunkIndex);
   }
 
   /// Ends the innermost rule.
   void endRule() {
-    _rules.removeLast();
+    // Keep track of the rule's span so that its bounds get adjusted correctly
+    // when chunks get pulled off the beginning of the list.
+    _endSpan(_rules.removeLast().span);
   }
 
   /// Pre-emptively forces all of the current rules to become hard splits.
@@ -663,7 +669,9 @@ class LineWriter {
       _spans.removeWhere((span) {
         if (!span.subtractPrefix(thisLength)) return false;
 
-        spans.add(span);
+        // We can ditch the spans that only existed to track rule bounds now.
+        // They don't affect splitting.
+        if (span.cost > 0) spans.add(span);
         return true;
       });
 
@@ -729,25 +737,10 @@ class LineWriter {
   /// Preemptively harden rules in the first [length] chunks if there will
   /// certainly be no solution that allows them to remain unsplit.
   ///
-  /// Very long and/or deeply nested code can make the splitter go exponential.
-  /// This virtually never happens in hand-authored code, but generated code
-  /// can be pretty pathological.
-  ///
-  /// To handle that, we just preemptively harden any rule where we can
-  /// eagerly tell there is no solution that leaves it completely unsplit. We
-  /// use two heuristis for this:
-  ///
-  /// 1. If the rule is used for multiple chunks and there are more than page
-  ///    [_pageWidth] characters between the beginning and the end, then a
-  ///    split will certainly be chosen in there somewhere.
-  ///
-  /// 2. If a chunk within a rule's range of chunks has a nesting level more
-  ///    than half the page deep (in other words, more than 40 spaces
-  ///    of indentation!) then we're certainly in wacko code and may as well
-  ///    just split it eagerly.
-  ///
-  /// In both cases, splitting on that inner chunk implies that the outer rule
-  /// gets split too, so we harden it now.
+  /// For each rule, we look at the span of chunks it covers. If that range is
+  /// longer than the page width, than the rule is preemptively hardened now.
+  /// Doing this now lets us break the chunks into separate smaller lines to
+  /// hand off to the line splitter, which is much faster.
   ///
   /// Returns the indexes of chunks that got hardened.
   // TODO(bob): Eventually we probably only want to do this for rules
@@ -760,39 +753,19 @@ class LineWriter {
         .where((rule) => rule is! HardSplitRule)
         .toSet();
 
-    // Find the range of chunks that each rule surrounds.
-    var mins = {};
-    var maxes = {};
-
-    for (var i = 0; i < length; i++) {
-      var rule = _chunks[i].rule;
-      if (!mins.containsKey(rule)) mins[rule] = i;
-      maxes[rule] = i;
-    }
-
     // Find the rules that contain too much.
     var rulesToHarden = new Set();
     for (var rule in rules) {
       var length = 0;
-      for (var i = mins[rule] + 1; i <= maxes[rule]; i++) {
+      for (var i = rule.span.start + 1; i <= rule.span.end; i++) {
         // TODO(bob): What if the chunk has a hard split?
         length += _chunks[i].length;
         if (length > pageWidth) {
           rulesToHarden.add(rule);
           break;
         }
-
-        if (_chunks[i].nesting * indentsPerNest * spacesPerIndent >
-            pageWidth ~/ 2) {
-          rulesToHarden.add(rule);
-          break;
-        }
       }
     }
-
-    // TODO(bob): This doesn't include the full extent of rule's "effect". For
-    // example, a method chain "ends" at the last ".", but should probably be
-    // split if the length of the trailing arg list makes it too long.
 
     return _hardenRules(rulesToHarden, length);
 
@@ -831,16 +804,6 @@ class LineWriter {
     for (var i = 0; i < _openSpans.length; i++) {
       _openSpans[i] = null;
     }
-
-    // TODO(bob): This is a bit fishy. Unlike the splitter, this will force a
-    // rule to split even if the rule never ends up being associated with any
-    // later chunks. A rule can still be one the stack here while being "done"
-    // from the perspective of the splitter. That will force it to split here,
-    // but the same behavior (an inner chunk being split) will not force the
-    // same rule to split in the splitter if the rule doesn't end up being used
-    // for any later chunks.
-    //
-    // Need to rationalize these.
 
     // Tell each ongoing rule that it now contains a hard split and see if it
     // wants to harden itself.

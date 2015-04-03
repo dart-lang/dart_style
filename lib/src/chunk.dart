@@ -202,7 +202,7 @@ class Chunk extends Selection {
 
     if (_indent == null) {
       parts.add("(no split info)");
-    } else {
+    } else if (!isHardSplit) {
       parts.add(rule.toString());
     }
 
