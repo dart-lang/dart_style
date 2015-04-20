@@ -22,7 +22,6 @@ abstract class Rule {
 
   int get numValues;
 
-  // TODO(bob): Eliminate, or let rule decide based on value.
   int get cost => Cost.normal;
 
   // TODO(bob): Doc.
@@ -70,6 +69,11 @@ class HardSplitRule extends Rule {
 class SimpleRule extends Rule {
   /// Two values: 0 is unsplit, 1 is split.
   int get numValues => 2;
+
+  final int cost;
+
+  SimpleRule([int cost])
+      : cost = cost != null ? cost : Cost.normal;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 

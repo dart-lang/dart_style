@@ -243,7 +243,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.leftHandSide);
     space();
     token(node.operator);
-    soloSplit(/*Cost.assignment*/);
+    soloSplit(Cost.assignment);
     _writer.startSpan();
     visit(node.rightHandSide);
     _writer.endSpan();
@@ -1407,7 +1407,7 @@ class SourceVisitor implements AstVisitor {
 
     space();
     token(node.equals);
-    soloSplit(/*Cost.assignment*/);
+    soloSplit(Cost.assignment);
     _writer.startSpan();
     visit(node.initializer);
     _writer.endSpan();
@@ -1772,8 +1772,8 @@ class SourceVisitor implements AstVisitor {
   Chunk zeroSplit() => _writer.split();
 
   /// Writes a single space split with its own rule.
-  void soloSplit() {
-    _writer.startRule();
+  void soloSplit([int cost]) {
+    _writer.startRule(new SimpleRule(cost));
     split();
     _writer.endRule();
   }

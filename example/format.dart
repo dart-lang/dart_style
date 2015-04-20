@@ -12,8 +12,9 @@ void main(List<String> args) {
   debugFormatter = true;
   useAnsiColors = true;
 
-  formatStmt('reallyLongMethod(argument,\n'
-    '    foo: first, bar: second);\n');
+  formatStmt("""
+var map = const {"foo": "bar", "fuz": null};
+""");
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
