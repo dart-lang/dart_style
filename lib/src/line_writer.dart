@@ -742,16 +742,30 @@ class LineWriter {
   /// Doing this now lets us break the chunks into separate smaller lines to
   /// hand off to the line splitter, which is much faster.
   ///
+  /// This may discard a more optimal solution in some cases. When a rule is
+  /// hardened, it is *fully* hardened. There may have been a solution where
+  /// only some of a rule's chunks needed to be split (for example, not fully
+  /// breaking an argument list). This won't consider those kinds of solution
+  /// To avoid this, pre-emption only kicks in for lines that look like they
+  /// will be hard to solve directly.
+  ///
   /// Returns the indexes of chunks that got hardened.
   // TODO(bob): Eventually we probably only want to do this for rules
   // that have "multisplit"-like behavior where an inner split always
   // implies that it gets split.
+  // TODO(bob): The fact that this generates non-optimal solutions is a drag.
+  // Can we do something better?
   List<int> _preemptRules(int length) {
     var rules = _chunks
         .take(length)
         .map((chunk) => chunk.rule)
         .where((rule) => rule is! HardSplitRule)
         .toSet();
+
+    var values = rules.fold(1, (value, rule) => value * rule.numValues);
+
+    // If the number of possible solutions is reasonable, solve it directly.
+    if (values < 1024) return [];
 
     // Find the rules that contain too much.
     var rulesToHarden = new Set();
