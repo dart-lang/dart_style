@@ -37,10 +37,6 @@ abstract class Rule {
 
   int get hashCode => id.hashCode;
 
-  /// Whether or not this rule should forcibly harden if it ends up containing
-  /// a hard split.
-  bool get hardenOnHardSplit => true;
-
   /// Creates the [Span] associated with this rule's bounds, starting at
   /// [startChunk].
   void startSpan(int startChunk) {
@@ -56,9 +52,6 @@ abstract class Rule {
 /// A rule that always splits a chunk.
 class HardSplitRule extends Rule {
   int get numValues => 1;
-
-  /// It's already hardened.
-  bool get hardenOnHardSplit => false;
 
   bool isSplit(int value, Chunk chunk) => true;
 

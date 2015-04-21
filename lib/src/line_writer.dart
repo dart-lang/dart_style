@@ -824,7 +824,7 @@ class LineWriter {
     var hardenedRules = new Set();
     for (var i = 0; i < _rules.length; i++) {
       var rule = _rules[i];
-      if (rule.hardenOnHardSplit) {
+      if (rule is! HardSplitRule) {
         _rules[i] = new HardSplitRule();
         hardenedRules.add(rule);
       }
