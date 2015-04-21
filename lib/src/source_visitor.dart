@@ -89,10 +89,13 @@ class SourceVisitor implements AstVisitor {
   ///    on earlier lines as possible.
   /// 5. Split the named arguments each onto their own line.
   visitArgumentList(ArgumentList node) {
-    // Don't allow any splitting in an empty argument list.
-    if (node.arguments.isEmpty &&
-        node.rightParenthesis.precedingComments == null) {
+    // Corner case: handle empty argument lists.
+    if (node.arguments.isEmpty) {
       token(node.leftParenthesis);
+
+      // If there is a comment inside the parens, do allow splitting before it.
+      if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
+
       token(node.rightParenthesis);
       return;
     }
