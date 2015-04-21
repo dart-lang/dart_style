@@ -184,8 +184,12 @@ class LineSplitter {
       return;
     }
 
+    // If the prefix implies that this rule must split (in some way), then skip
+    // over value zero which means "all unsplit".
+    var start = prefix.impliedRules.contains(chunk.rule) ? 1 : 0;
+
     // Try every possible value for the rule.
-    for (var value = 0; value < chunk.rule.numValues; value++) {
+    for (var value = start; value < chunk.rule.numValues; value++) {
       _tryRuleValue(solution, prefix, value, length);
     }
   }
@@ -214,6 +218,7 @@ class LineSplitter {
 
     // If we're in a block that decided not to split, we can't allow any other
     // splits.
+    // TODO(bob): Can we unify this with implies?
     if (!prefix.allowsSplits) return;
 
     // There are multiple possible ways to split at this chunk with different
@@ -334,7 +339,7 @@ class Solution {
       _lowestCost = cost;
     }
 
-    if (debugFormatter) {
+    if (debugSplitter) {
       var best = _bestSplits == splits ? " (best)" : "";
       print("\n${Color.gray}${_prefix} $splits \$$cost$best");
       dumpLines(splitter._chunks, _indent, _prefix, splits);

@@ -10,6 +10,7 @@ void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
   // Normal users do not do this.
   debugFormatter = true;
+  debugSplitter = true;
   useAnsiColors = true;
 
   formatStmt("""

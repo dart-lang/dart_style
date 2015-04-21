@@ -20,12 +20,20 @@ class LinePrefix {
   /// The suffix is the remaining chunks starting at index [length].
   final int length;
 
-  /// The [SplitRules] that apply to chunks in the prefix and have thus already
-  /// had their values selected.
+  /// The [Rule]s that apply to chunks in the prefix and have thus already had
+  /// their values selected.
   ///
   /// Does not include rules that do not also appear in the suffix since they
   /// don't affect the suffix.
   final Map<Rule, int> ruleValues;
+
+  /// The [Rule]s in the prefix whose value was non-zero and that imply rules
+  /// appearing in the suffix.
+  ///
+  /// Ensures that when one rule splitting forces other rules to split that
+  /// the previous choice to split or not on the former rule is preserved for
+  /// the latter ones.
+  final Set<Rule> impliedRules;
 
   /// The nested expressions in the prefix that are still open at the beginning
   /// of the suffix.
@@ -39,9 +47,9 @@ class LinePrefix {
 
   /// Creates a new zero-length prefix whose suffix is the entire line.
   LinePrefix([int length = 0])
-      : this._(length, {}, new NestingStack());
+      : this._(length, {}, new Set(), new NestingStack());
 
-  LinePrefix._(this.length, this.ruleValues, this._nesting) {
+  LinePrefix._(this.length, this.ruleValues, this.impliedRules, this._nesting) {
     assert(_nesting != null);
   }
 
@@ -58,9 +66,16 @@ class LinePrefix {
       if (other.ruleValues[key] != ruleValues[key]) return false;
     }
 
+    // Compare implied sets.
+    if (impliedRules.length != other.impliedRules.length) return false;
+    for (var implied in impliedRules) {
+      if (!other.impliedRules.contains(implied)) return false;
+    }
+
     return true;
   }
 
+  // TODO(rnystrom): Can we make this more effective?
   int get hashCode => length.hashCode ^ _nesting.hashCode;
 
   /// Whether this prefix specifies a value for a rule that does not allow any
@@ -87,25 +102,31 @@ class LinePrefix {
   /// chunk.
   LinePrefix addChunk(List<Chunk> chunks, int value) {
     // We aren't splitting on the new chunk, so preserve the previous nesting.
-    var ruleValues = _advanceRuleValues(chunks, value);
-    return new LinePrefix._(length + 1, ruleValues, _nesting);
+    var updatedRules = {};
+    var implied = new Set();
+    _advanceRuleValues(chunks, value, updatedRules, implied);
+    return new LinePrefix._(length + 1, updatedRules, implied, _nesting);
   }
 
   // TODO(bob): Doc.
   Iterable<LinePrefix> addSplit(List<Chunk> chunks, int value) {
-    var updatedRules = _advanceRuleValues(chunks, value);
+    var updatedRules = {};
+    var implied = new Set();
+    _advanceRuleValues(chunks, value, updatedRules, implied);
 
     // TODO(bob): Can we hoist this out to splitter and avoid making lists for
     // the cases where it's not needed?
     var chunk = chunks[length];
     if (!chunk.isInExpression) {
       // The split is in statement context so there is no nesting stack.
-      return [new LinePrefix._(length + 1, updatedRules, new NestingStack())];
+      return [
+        new LinePrefix._(length + 1, updatedRules, implied, new NestingStack())
+      ];
     } else {
       // The nesting stack has changed, so return all of the possible ways it
       // can be different.
       return _nesting.applySplit(chunk).map((nesting) =>
-          new LinePrefix._(length + 1, updatedRules, nesting));
+          new LinePrefix._(length + 1, updatedRules, implied, nesting));
     }
   }
 
@@ -137,23 +158,37 @@ class LinePrefix {
     return result;
   }
 
-  // TODO(bob): Doc.
-  Map<Rule, int> _advanceRuleValues(List<Chunk> chunks, int value) {
+  /// Fills in [updatedRules] and [implied] with the results for a new prefix
+  /// based on whose length has been extended by one and whose rule on the new
+  /// last chunk has [value].
+  void _advanceRuleValues(List<Chunk> chunks, int value,
+      Map<Rule, int> updatedRules, Set<Rule> implied) {
     // TODO(bob): Precalculate and cache these.
     // Get the rules that appear in both in and after the new prefix. These are
     // the rules that already have values that the suffix needs to honor.
     var prefix = chunks.take(length + 1).map((chunk) => chunk.rule).toSet();
     var suffix = chunks.skip(length + 1).map((chunk) => chunk.rule).toSet();
 
-    var spanningRules = prefix.intersection(suffix);
-
-    // Make a new map for the pinned rule values for the rules that appear in
-    // the suffix that we have values for, including the rule for the next
-    // chunk.
     var nextRule = chunks[length].rule;
-    return new Map.fromIterable(spanningRules, value: (rule) {
-      if (rule == nextRule) return value;
-      return ruleValues[rule];
-    });
+
+    // Fill in the rules in the suffix where the prefix implies it cannot be
+    // unsplit.
+    traverseImplied(Rule rule) {
+      if (suffix.contains(rule)) implied.add(rule);
+      rule.implies.forEach(traverseImplied);
+    }
+
+    for (var rule in prefix) {
+      var ruleValue = rule == nextRule ? value : ruleValues[rule];
+      if (ruleValue != null && ruleValue != 0) traverseImplied(rule);
+    }
+
+    // Fill in the pinned rule values for the rules that appear in the suffix
+    // that we have values for, including the rule for the next chunk.
+    for (var rule in prefix) {
+      if (!suffix.contains(rule)) continue;
+
+      updatedRules[rule] = rule == nextRule ? value : ruleValues[rule];
+    }
   }
 }

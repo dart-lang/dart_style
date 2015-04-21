@@ -10,7 +10,8 @@ class A {
 <<<
 class A {
   final Map x;
-  A() : x = {
+  A()
+      : x = {
         // comment
         'foo': 1,
         'bar': 2,

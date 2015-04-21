@@ -525,10 +525,10 @@ class SourceVisitor implements AstVisitor {
     token(node.period);
     visit(node.name);
 
-    // Start a rule that spans the parameter list. We'll use this for the split
-    // before ":" to ensure that if the parameter list doesn't fit on one line
-    // that the initialization list gets pushed to its own line too.
-    if (node.initializers.length == 1) _writer.startRule();
+    // Make the rule for the ":" span both the preceding parameter list and
+    // the entire initialization list. This ensures that we split before the
+    // ":" if the parameters and initialization list don't all fit on one line.
+    _writer.startRule();
 
     _visitBody(node.parameters, node.body, () {
       // Check for redirects or initializer lists.
@@ -549,15 +549,7 @@ class SourceVisitor implements AstVisitor {
   void _visitConstructorInitializers(ConstructorDeclaration node) {
     _writer.indent(2);
 
-    if (node.initializers.length == 1) {
-      // If there is only a single initializer, allow it on the first line, but
-      // only if the parameter list also fits all one line.
-      split();
-      _writer.endRule();
-    } else {
-      newline();
-    }
-
+    split();
     token(node.separator); // ":".
     space();
 
@@ -583,6 +575,9 @@ class SourceVisitor implements AstVisitor {
     if (node.initializers.length > 1) _writer.unindent();
 
     _writer.unindent(2);
+
+    // End the rule for ":" after all of the initializers.
+    _writer.endRule();
   }
 
   visitConstructorFieldInitializer(ConstructorFieldInitializer node) {

@@ -206,6 +206,10 @@ class Chunk extends Selection {
       parts.add(rule.toString());
     }
 
+    if (_rule.implies.isNotEmpty) {
+      parts.add("-> ${_rule.implies.join(' ')}");
+    }
+
     return parts.join(" ");
   }
 }

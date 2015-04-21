@@ -32,8 +32,18 @@ abstract class Rule {
   /// contents are too long. This may be a wider range than the set of chunks
   /// enclosed by chunks whose rule is this one. A rule may still be on the
   /// list of open rules for a while after its last chunk is written.
+  // TODO(bob): This is only being used by preemption which is kind of hacky.
+  // Get rid of this?
   Span get span => _span;
   Span _span;
+
+  /// The other [Rule]s that are "implied" by this one.
+  ///
+  /// Implication means that if the splitter chooses to split this rule (i.e.
+  /// set its value to something non-zero), it must also force all of its
+  /// implied rules to have some non-zero value (transitively). Implication is
+  /// one-way. If A implies B, it's fine to split B without splitting A.
+  final Set<Rule> implies = new Set<Rule>();
 
   int get hashCode => id.hashCode;
 

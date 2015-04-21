@@ -12,6 +12,9 @@ import 'line_splitter.dart';
 /// Set this to `true` to turn out diagnostic output while formatting.
 bool debugFormatter = false;
 
+/// Set this to `true` to turn out diagnostic output while line splitting.
+bool debugSplitter = false;
+
 bool useAnsiColors = false;
 
 const unicodeSection = "\u00a7";

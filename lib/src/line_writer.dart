@@ -361,6 +361,12 @@ class LineWriter {
   /// If omitted, defaults to a new [SimpleRule].
   void startRule([Rule rule]) {
     if (rule == null) rule = new SimpleRule();
+
+    // Whenever a rule splits, any rules that contain it must split too.
+    if (_rules.isNotEmpty && _rules.last is! HardSplitRule) {
+      rule.implies.add(_rules.last);
+    }
+
     _rules.add(rule);
     rule.startSpan(_currentChunkIndex);
   }
@@ -792,6 +798,9 @@ class LineWriter {
   /// Returns the list of lengths within [length] that can now be split as
   /// separate lines.
   List<int> _hardenRules(Set<Rule> rules, int length) {
+    // TODO(bob): Traverse implied rules too. If a rule is hardened and implies
+    // a SimpleRule, we can harden it too.
+
     var lengths = [];
     for (var i = 0; i < length; i++) {
       var chunk = _chunks[i];
@@ -799,6 +808,12 @@ class LineWriter {
         chunk.harden();
         if (_canEndLineAfter(i + 1)) lengths.add(i + 1);
       }
+    }
+
+    // Remove implied references to hardened rules. If a rule implies one
+    // that's already hardened, we don't need to track the implication anymore.
+    for (var chunk in _chunks) {
+      chunk.rule.implies.removeAll(rules);
     }
 
     return lengths;
