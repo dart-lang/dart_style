@@ -834,8 +834,9 @@ class LineWriter {
       _openSpans[i] = null;
     }
 
-    // Tell each ongoing rule that it now contains a hard split and see if it
-    // wants to harden itself.
+    // Replace each ongoing rule with a hard split.
+    // TODO(bob): This probably isn't correct for all rules. The rule should
+    // have a chance to decide how it wants to handle hardening.
     var hardenedRules = new Set();
     for (var i = 0; i < _rules.length; i++) {
       var rule = _rules[i];
@@ -846,6 +847,16 @@ class LineWriter {
     }
 
     if (hardenedRules.isEmpty) return;
+
+    // Remove implied references to hardened rules. If a rule implies one
+    // that's already hardened, we don't need to track the implication anymore.
+    for (var chunk in _chunks) {
+      chunk.rule.implies.removeAll(hardenedRules);
+    }
+
+    // TODO(bob): There's some duplication between this and _hardenRules().
+    // Clean up.
+
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
       if (chunk.rule == null) continue;
