@@ -195,12 +195,14 @@ class LineSplitter {
     // Seed with the direct implications.
     for (var rule in rules) {
       _ruleImplications[rule] = rule.implies.toSet();
+      // TODO(bob): Is it worth filtering hard splits out of this?
     }
 
     // TODO(rnystrom): This is a hotspot right now. Can we optimize it? One
     // idea is to renumber the rule IDs to be their index in the rule set/list.
     // That would let us avoid the map and directly index.
-    hasPath(int from, int to) => _ruleImplications[rules[from]].contains(rules[to]);
+    hasPath(int from, int to) =>
+        _ruleImplications[rules[from]].contains(rules[to]);
 
     // Calculate the transitive closure.
     for (var i = 0; i < rules.length; i++) {
@@ -285,11 +287,17 @@ class LineSplitter {
     assert(value >= 0);
 
     var chunk = _chunks[prefix.length];
-    var ruleValues = _advancePrefix(prefix, value);
 
     // If the rule causes this chunk to split, recurse and find the best
     // solution for the suffix following this chunk.
     if (!chunk.rule.isSplit(value, chunk)) {
+      // Keep track of the rule that did begin this line so we can take into
+      // account its implications.
+      var previousSplit;
+      if (solution._prefix.length > 0) {
+        previousSplit = _chunks[solution._prefix.length - 1].rule;
+      }
+
       // If this chunk bumps us past the page limit and we already have a
       // solution that fits, no solution after this chunk will beat that, so
       // stop looking.
@@ -299,16 +307,18 @@ class LineSplitter {
 
       // We didn't split here, so add this chunk and its rule value to the
       // prefix and continue on to the next.
+      var ruleValues = _advancePrefix(prefix, value, previousSplit);
       var added = prefix.addChunk(ruleValues);
       _tryChunkRuleValues(solution, added, length);
       return;
     }
 
+    var ruleValues = _advancePrefix(prefix, value);
+
     if (!chunk.isInExpression) {
       // The chunk is at a statement boundary, so we don't have to worry about
       // nesting stacks.
-      _tryLongerPrefix(solution, prefix,
-          prefix.addStatement(ruleValues));
+      _tryLongerPrefix(solution, prefix, prefix.addStatement(ruleValues));
     } else {
       // The nesting stack has changed, so return all of the possible ways it
       // can be different.
@@ -336,9 +346,15 @@ class LineSplitter {
   /// Determines the set of rule values for a new [LinePrefix] one chunk longer
   /// than [prefix] whose rule on the new last chunk has [value].
   ///
+  /// If [previousSplit] is not `null`, it is the rule for the chunk before
+  /// the beginning of the line this prefix is extending. This will only be
+  /// non-null if we are advancing the prefix by adding a chunk that does *not*
+  /// split the line.
+  ///
   /// Returns a map of [Rule]s to values for those rules for the values that
   /// span the prefix and suffix of the [LinePrefix].
-  Map<Rule, int> _advancePrefix(LinePrefix prefix, int value) {
+  Map<Rule, int> _advancePrefix(LinePrefix prefix, int value,
+      [Rule previousSplit]) {
     // Get the rules that appear in both in and after the new prefix. These are
     // the rules that already have values that the suffix needs to honor.
     var prefixRules = _prefixRules[prefix.length + 1];
@@ -362,11 +378,11 @@ class LineSplitter {
       // doesn't place any constraint on the suffix.
       if (ruleValue == null) continue;
 
-      // If a rule in the prefix implies a rule in the suffix, then we need to
-      // preserve that implication. In particular, if the prefix rule did split
-      // (i.e. it has a non-zero value), then we can't allow the suffix rule to
-      // be unsplit.
       if (ruleValue != 0) {
+        // A rule in the prefix implies a rule in the suffix, so we need to
+        // preserve that implication. In particular, if the prefix rule split
+        // (i.e. it has a non-zero value), then we can't allow the suffix rule
+        // to be unsplit.
         for (var suffixRule in suffixRules) {
           // If we already have a harder constraint, keep it.
           if (updatedValues.containsKey(suffixRule)) continue;
@@ -375,13 +391,11 @@ class LineSplitter {
             updatedValues[suffixRule] = -1;
           }
         }
-      }
-
-      // We also need to consider the backwards case, where a later rule in the
-      // suffix implies a rule in the prefix. If that happens, and the prefix
-      // rule did not split, then we can't let the suffix rule that implies it
-      // split either since that would lead to a failed implication.
-      if (ruleValue == 0) {
+      } else {
+        // We also need to consider the backwards case, where a later rule in
+        // the suffix implies a rule in the prefix. If that happens, and the
+        // prefix rule did not split, then we can't let the suffix rule that
+        // implies it split either since that would violate the implication.
         for (var suffixRule in suffixRules) {
           // If we already have a harder constraint, keep it.
           if (updatedValues.containsKey(suffixRule)) continue;
@@ -389,6 +403,21 @@ class LineSplitter {
           if (_ruleImplications[suffixRule].contains(prefixRule)) {
             updatedValues[suffixRule] = 0;
           }
+        }
+      }
+    }
+
+    // We may be creating a new prefix that does not begin a line if we are
+    // adding a new unsplit chunk to [prefix]. However, the split that *did*
+    // begin this line may still imply something about the suffix. Add that in
+    // here.
+    if (previousSplit != null) {
+      for (var suffixRule in suffixRules) {
+        // If we already have a harder constraint, keep it.
+        if (updatedValues.containsKey(suffixRule)) continue;
+
+        if (_ruleImplications[previousSplit].contains(suffixRule)) {
+          updatedValues[suffixRule] = -1;
         }
       }
     }
