@@ -7,7 +7,7 @@ library dart_style.src.line_splitter;
 import 'dart:math' as math;
 
 import 'chunk.dart';
-import 'debug.dart';
+import 'debug.dart' as debug;
 import 'line_prefix.dart';
 import 'rule.dart';
 
@@ -116,9 +116,11 @@ class LineSplitter {
   /// Likewise, the second element will be non-`null` if the selection endpoint
   /// is within the list of chunks.
   List<int> apply(StringBuffer buffer) {
-    if (debugFormatter) {
-      dumpChunks(_chunks);
-      print(_spans.join("\n"));
+    if (debug.traceFormatter) {
+      debug.log(debug.green("\nSplitting:"));
+      debug.dumpChunks(_chunks);
+      if (_spans.isNotEmpty) debug.log(_spans.join("\n"));
+      debug.log();
     }
 
     _precalculateRuleRelations();
@@ -219,12 +221,27 @@ class LineSplitter {
   /// words, the last chunk in the prefix cannot be unsplit.)
   SplitSet _findBestSplits(LinePrefix prefix) {
     // Use the memoized result if we have it.
-    if (_bestSplits.containsKey(prefix)) return _bestSplits[prefix];
+    if (_bestSplits.containsKey(prefix)) {
+      if (debug.traceSplitter) {
+        debug.log("memoized splits for $prefix = ${_bestSplits[prefix]}");
+      }
+      return _bestSplits[prefix];
+    }
+
+    if (debug.traceSplitter) {
+      debug.log("find splits for $prefix");
+      debug.indent();
+    }
 
     var indent = prefix.getNextLineIndent(_chunks, _indent);
 
     var solution = new Solution(prefix, indent);
     _tryChunkRuleValues(solution, prefix, indent * spacesPerIndent);
+
+    if (debug.traceSplitter) {
+      debug.unindent();
+      debug.log("best splits for $prefix = ${solution.splits}");
+    }
 
     return _bestSplits[prefix] = solution.splits;
   }
@@ -483,10 +500,11 @@ class Solution {
       _lowestCost = cost;
     }
 
-    if (debugSplitter) {
+    if (debug.traceSplitter) {
       var best = _bestSplits == splits ? " (best)" : "";
-      print("\n${Color.gray}${_prefix} $splits \$$cost$best");
-      dumpLines(splitter._chunks, _indent, _prefix, splits);
+      debug.log(debug.gray("$_prefix $splits \$$cost$best"));
+      debug.dumpLines(splitter._chunks, _indent, _prefix, splits);
+      debug.log();
     }
   }
 }

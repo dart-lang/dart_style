@@ -4,7 +4,7 @@
 
 library dart_style.src.chunk;
 
-import 'debug.dart';
+import 'debug.dart' as debug;
 import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -193,7 +193,7 @@ class Chunk extends Selection {
   String toString() {
     var parts = [];
 
-    if (text.isNotEmpty) parts.add("${Color.bold}$text${Color.none}");
+    if (text.isNotEmpty) parts.add("${debug.bold(text)}");
 
     if (_indent != 0 && _indent != null) parts.add("indent:$_indent");
     if (nesting != -1) parts.add("nest:$nesting");

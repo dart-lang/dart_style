@@ -4,14 +4,14 @@
 
 import 'package:dart_style/dart_style.dart';
 
-import 'package:dart_style/src/debug.dart';
+import 'package:dart_style/src/debug.dart' as debug;
 
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
   // Normal users do not do this.
-  debugFormatter = true;
-  debugSplitter = true;
-  useAnsiColors = true;
+  debug.traceFormatter = true;
+  debug.traceSplitter = true;
+  debug.useAnsiColors = true;
 
   formatStmt("""
 var map = const {"foo": "bar", "fuz": null};
@@ -37,9 +37,8 @@ void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
       result = formatter.formatStatement(source);
     }
 
-    if (useAnsiColors) {
-      result = result.replaceAll(
-          " ", "${Color.gray}$unicodeMidDot${Color.none}");
+    if (debug.useAnsiColors) {
+      result = result.replaceAll(" ", debug.gray(debug.unicodeMidDot));
     }
 
     drawRuler("before", pageWidth);
