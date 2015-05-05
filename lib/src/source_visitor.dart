@@ -390,15 +390,10 @@ class SourceVisitor implements AstVisitor {
       newline();
       visitNodes(node.cascadeSections, between: newline);
     } else {
-      /*
-      _writer.startMultisplit();
-      _writer.multisplit();
-      */
-      visitNodes(node.cascadeSections/*, between: _writer.multisplit*/);
-
-      /*
-      _writer.endMultisplit();
-      */
+      _writer.startRule();
+      zeroSplit();
+      visitNodes(node.cascadeSections, between: zeroSplit);
+      _writer.endRule();
     }
 
     _writer.unindent();
