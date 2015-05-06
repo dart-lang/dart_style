@@ -796,9 +796,6 @@ class LineWriter {
   /// Returns the list of lengths within [length] that can now be split as
   /// separate lines.
   List<int> _hardenRules(Set<Rule> rules, int length) {
-    // TODO(bob): Traverse implied rules too. If a rule is hardened and implies
-    // a SimpleRule, we can harden it too.
-
     var lengths = [];
     for (var i = 0; i < length; i++) {
       var chunk = _chunks[i];
@@ -832,13 +829,12 @@ class LineWriter {
       _openSpans[i] = null;
     }
 
-    // Replace each ongoing rule with a hard split.
-    // TODO(bob): This probably isn't correct for all rules. The rule should
-    // have a chance to decide how it wants to handle hardening.
+    // Replace each ongoing rule with a hard split if it wants to split when
+    // it contains an inner split.
     var hardenedRules = new Set();
     for (var i = 0; i < _rules.length; i++) {
       var rule = _rules[i];
-      if (rule is! HardSplitRule) {
+      if (rule.canBeImplied) {
         _rules[i] = new HardSplitRule();
         hardenedRules.add(rule);
       }
