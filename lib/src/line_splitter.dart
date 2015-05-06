@@ -17,9 +17,6 @@ const spacesPerIndent = 2;
 /// The number of indentation levels in a single level of expression nesting.
 const indentsPerNest = 2;
 
-/// Cost or indent value used to indication no solution could be found.
-const invalidSplits = -1;
-
 // TODO(rnystrom): This needs to be updated to take into account how it works
 // now.
 /// Takes a series of [Chunk]s and determines the best way to split them into
@@ -84,12 +81,6 @@ class LineSplitter {
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, SplitSet>{};
 
-  /// The transitive closure of all of the implications between the rules.
-  ///
-  /// Keys are rules and values are all of the rules that the key implies,
-  /// either directly or transitively.
-  final _ruleImplications = <Rule, Set<Rule>>{};
-
   /// The rules that appear in the first `n` chunks of the line where `n` is
   /// the index into the list.
   final _prefixRules = <Set<Rule>>[];
@@ -123,7 +114,13 @@ class LineSplitter {
       debug.log();
     }
 
-    _precalculateRuleRelations();
+    // Pre-calculate the set of rules appear before and after each length. We
+    // use these frequently when creating [LinePrefix]es and they only depend
+    // on the length, so we can cache them up front.
+    for (var i = 0; i < _chunks.length; i++) {
+      _prefixRules.add(_chunks.take(i).map((chunk) => chunk.rule).toSet());
+      _suffixRules.add(_chunks.skip(i).map((chunk) => chunk.rule).toSet());
+    }
 
     // TODO(rnystrom): One optimization we could perform is to merge spans that
     // have the same range into a single span with a summed cost.
@@ -156,64 +153,12 @@ class LineSplitter {
 
         var indent = chunk.indent + splits.getNesting(i);
         buffer.write(" " * (indent * spacesPerIndent));
-
-        // Should have a valid set of splits when we get here.
-        assert(indent != invalidSplits);
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
     }
 
     return selection;
-  }
-
-  /// Generates cached, reusable data about the relationships between rules in
-  /// various prefixes and suffixes.
-  ///
-  /// A [LinePrefix] tracks the state in a prefix of the line that affects the
-  /// suffix. Much of this state isn't specific to certain rule *values* so we
-  /// can calculate it ahead of time and reuse the results.
-  ///
-  /// In particular, the set of rules that appear in both the prefix and suffix
-  /// for any given length depends only on the length.
-  ///
-  /// In addition, calculating the transitive closure of which rules imply
-  /// each other makes it faster to track those relationships.
-  void _precalculateRuleRelations() {
-    var rules = _chunks.map((chunk) => chunk.rule).toSet().toList();
-
-    // Calculate the set of rules appear before and after each length.
-    for (var i = 0; i < _chunks.length; i++) {
-      _prefixRules.add(_chunks.take(i).map((chunk) => chunk.rule).toSet());
-      _suffixRules.add(_chunks.skip(i).map((chunk) => chunk.rule).toSet());
-    }
-
-    // Calculate the transitive closure of the rule implications, using
-    // Warshall's algorithm. This way, if we know rule A implies B which implies
-    // C, we can immediately tell that A implies C.
-
-    // Seed with the direct implications.
-    for (var rule in rules) {
-      _ruleImplications[rule] = rule.implies.toSet();
-      // TODO(bob): Is it worth filtering hard splits out of this?
-    }
-
-    // TODO(rnystrom): This is a hotspot right now. Can we optimize it? One
-    // idea is to renumber the rule IDs to be their index in the rule set/list.
-    // That would let us avoid the map and directly index.
-    hasPath(int from, int to) =>
-        _ruleImplications[rules[from]].contains(rules[to]);
-
-    // Calculate the transitive closure.
-    for (var i = 0; i < rules.length; i++) {
-      for (var j = 0; j < rules.length; j++) {
-        for (var k = 0; k < rules.length; k++) {
-          if (hasPath(j, i) && hasPath(i, k)) {
-            _ruleImplications[rules[j]].add(rules[k]);
-          }
-        }
-      }
-    }
   }
 
   /// Finds the best set of splits to apply to the remainder of the chunks
@@ -260,23 +205,17 @@ class LineSplitter {
 
     var chunk = _chunks[prefix.length];
 
-    // See if we've already constrained the value for the rule.
-    var constrainedValue = prefix.ruleValues[chunk.rule];
+    // See if we've already selected a value for the rule.
+    var value = prefix.ruleValues[chunk.rule];
 
-    if (constrainedValue == null) {
+    if (value == null) {
       // No, so try every possible value for the rule.
-      for (var value = 0; value < chunk.rule.numValues; value++) {
-        _tryRuleValue(solution, prefix, value, length);
-      }
-    } else if (constrainedValue == -1) {
-      // It's constrained to allow any split value, so skip zero.
-      assert(chunk.rule.numValues > 1);
-      for (var value = 1; value < chunk.rule.numValues; value++) {
+      for (value = 0; value < chunk.rule.numValues; value++) {
         _tryRuleValue(solution, prefix, value, length);
       }
     } else {
       // Otherwise, it's constrained to a single value, so use it.
-      _tryRuleValue(solution, prefix, constrainedValue, length);
+      _tryRuleValue(solution, prefix, value, length);
     }
   }
 
@@ -284,44 +223,31 @@ class LineSplitter {
   /// the chunk after [prefix]'s rule to [value].
   void _tryRuleValue(Solution solution, LinePrefix prefix, int value,
       int length) {
-    assert(value >= 0);
-
     var chunk = _chunks[prefix.length];
 
-    // If the rule causes this chunk to split, recurse and find the best
-    // solution for the suffix following this chunk.
-    if (!chunk.rule.isSplit(value, chunk)) {
-      // Keep track of the rule that did begin this line so we can take into
-      // account its implications.
-      var previousSplit;
-      if (solution._prefix.length > 0) {
-        previousSplit = _chunks[solution._prefix.length - 1].rule;
-      }
-
+    var isSplit = chunk.rule.isSplit(value, chunk);
+    if (!isSplit) {
       // If this chunk bumps us past the page limit and we already have a
-      // solution that fits, no solution after this chunk will beat that, so
+      // solution that fits, no solution past this chunk will beat that, so
       // stop looking.
       length += chunk.length;
-
       if (length > _pageWidth && solution.isAdequate) return;
-
-      // We didn't split here, so add this chunk and its rule value to the
-      // prefix and continue on to the next.
-      var ruleValues = _advancePrefix(prefix, value, previousSplit);
-      var added = prefix.addChunk(ruleValues);
-      _tryChunkRuleValues(solution, added, length);
-      return;
     }
 
     var ruleValues = _advancePrefix(prefix, value);
 
-    if (!chunk.isInExpression) {
-      // The chunk is at a statement boundary, so we don't have to worry about
-      // nesting stacks.
+    if (!isSplit) {
+      // We didn't split here, so add this chunk and its rule value to the
+      // prefix and continue on to the next.
+      var added = prefix.addChunk(ruleValues);
+      _tryChunkRuleValues(solution, added, length);
+    } else if (!chunk.isInExpression) {
+      // The chunk is splitting at a statement boundary, so we don't have to
+      // worry about nesting stacks.
       _tryLongerPrefix(solution, prefix, prefix.addStatement(ruleValues));
     } else {
-      // The nesting stack has changed, so return all of the possible ways it
-      // can be different.
+      // The chunk is splitting in an expression, so try all of the possible
+      // nesting combinations.
       var longerPrefixes = prefix.addExpressionSplit(chunk, ruleValues);
       for (var longerPrefix in longerPrefixes) {
         _tryLongerPrefix(solution, prefix, longerPrefix);
@@ -346,15 +272,9 @@ class LineSplitter {
   /// Determines the set of rule values for a new [LinePrefix] one chunk longer
   /// than [prefix] whose rule on the new last chunk has [value].
   ///
-  /// If [previousSplit] is not `null`, it is the rule for the chunk before
-  /// the beginning of the line this prefix is extending. This will only be
-  /// non-null if we are advancing the prefix by adding a chunk that does *not*
-  /// split the line.
-  ///
   /// Returns a map of [Rule]s to values for those rules for the values that
   /// span the prefix and suffix of the [LinePrefix].
-  Map<Rule, int> _advancePrefix(LinePrefix prefix, int value,
-      [Rule previousSplit]) {
+  Map<Rule, int> _advancePrefix(LinePrefix prefix, int value) {
     // Get the rules that appear in both in and after the new prefix. These are
     // the rules that already have values that the suffix needs to honor.
     var prefixRules = _prefixRules[prefix.length + 1];
@@ -378,49 +298,41 @@ class LineSplitter {
       // doesn't place any constraint on the suffix.
       if (ruleValue == null) continue;
 
-      if (ruleValue != 0) {
-        // A rule in the prefix implies a rule in the suffix, so we need to
-        // preserve that implication. In particular, if the prefix rule split
-        // (i.e. it has a non-zero value), then we can't allow the suffix rule
-        // to be unsplit.
+      // Track the implications between rules. If this rule is split, then
+      // any rule it implies must split too. Conversely, if it is not fully
+      // split then any rule that implies it must also not split.
+      if (ruleValue == prefixRule.fullySplitValue) {
+        // The prefix rule split so we have to force the implied rules in the
+        // suffix to split too.
         for (var suffixRule in suffixRules) {
-          // If we already have a harder constraint, keep it.
-          if (updatedValues.containsKey(suffixRule)) continue;
-
-          if (_ruleImplications[prefixRule].contains(suffixRule)) {
-            updatedValues[suffixRule] = -1;
+          if (prefixRule.implies.contains(suffixRule)) {
+            // TODO(bob): See TODO below about the next line.
+            updatedValues[prefixRule] = ruleValue;
+            updatedValues[suffixRule] = suffixRule.fullySplitValue;
           }
         }
       } else {
-        // We also need to consider the backwards case, where a later rule in
-        // the suffix implies a rule in the prefix. If that happens, and the
-        // prefix rule did not split, then we can't let the suffix rule that
-        // implies it split either since that would violate the implication.
+        // Also consider the backwards case, where a later rule in the suffix
+        // implies a rule in the prefix. If prefix rule did not split, then
+        // don't let the suffix rule that implies it split either since that
+        // would violate the implication.
         for (var suffixRule in suffixRules) {
-          // If we already have a harder constraint, keep it.
-          if (updatedValues.containsKey(suffixRule)) continue;
-
-          if (_ruleImplications[suffixRule].contains(prefixRule)) {
+          if (suffixRule.implies.contains(prefixRule)) {
+            // TODO(bob): See TODO below about the next line.
+            updatedValues[prefixRule] = ruleValue;
             updatedValues[suffixRule] = 0;
           }
         }
       }
     }
 
-    // We may be creating a new prefix that does not begin a line if we are
-    // adding a new unsplit chunk to [prefix]. However, the split that *did*
-    // begin this line may still imply something about the suffix. Add that in
-    // here.
-    if (previousSplit != null) {
-      for (var suffixRule in suffixRules) {
-        // If we already have a harder constraint, keep it.
-        if (updatedValues.containsKey(suffixRule)) continue;
-
-        if (_ruleImplications[previousSplit].contains(suffixRule)) {
-          updatedValues[suffixRule] = -1;
-        }
-      }
-    }
+    // TODO(bob): I don't think I fully understand these, though they seem to
+    // be needed to get correct behavior. I think it has something to do with
+    // ensuring that a rule that implies other rules is preserved so that later
+    // extensions of the resulting prefix maintain that early rule setting. I'm
+    // not sure if there's a cleaner way to handle that. I'm also not sure if
+    // it makes LinePrefixes unnecessarily precise and worsens the memoization
+    // hits.
 
     return updatedValues;
   }

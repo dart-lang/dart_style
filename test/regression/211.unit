@@ -7,7 +7,8 @@
   }
 <<<
   LiteralMap mapLiteral(List<LiteralMapEntry> entries, {bool isConst: false}) {
-    return new LiteralMap(null, // Type arguments.
+    return new LiteralMap(
+        null, // Type arguments.
         new NodeList(symbolToken(OPEN_CURLY_BRACKET_INFO), linkedList(entries),
             symbolToken(CLOSE_CURLY_BRACKET_INFO), ','),
         isConst ? keywordToken('const') : null);

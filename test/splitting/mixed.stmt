@@ -33,7 +33,8 @@ someFunctionName(argument, argument, argument,
 someFunctionName(
     argument,
     argument,
-    argument, some(other(function(
+    argument,
+    some(other(function(
         argument, argument, arg))));
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);

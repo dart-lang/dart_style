@@ -20,11 +20,21 @@ abstract class Rule {
   /// innocuous and prevents ids from growing without bound.
   final int id = _nextId = (_nextId + 1) & 0x0fffffff;
 
+  /// The number of different states this rule can be in.
+  ///
+  /// Each state determines which set of chunks using this rule are split and
+  /// which aren't. Values range from zero to one minus this. Value zero
+  /// always means "no chunks are split" and increasing values by convention
+  /// mean increasingly undesirable splits.
   int get numValues;
+
+  /// The rule value that forces this rule into its maximally split state.
+  ///
+  /// By convention, this is the highest of the range of allowed values.
+  int get fullySplitValue => numValues - 1;
 
   int get cost => Cost.normal;
 
-  // TODO(bob): Doc.
   /// The span of [Chunk]s that were written while this rule was still in
   /// effect.
   ///
@@ -43,7 +53,17 @@ abstract class Rule {
   /// set its value to something non-zero), it must also force all of its
   /// implied rules to have some non-zero value (transitively). Implication is
   /// one-way. If A implies B, it's fine to split B without splitting A.
+  ///
+  /// This contains all direct as well as transitive implications. If A implies
+  /// B which implies C, A's implies set includes both B and C.
   final Set<Rule> implies = new Set<Rule>();
+
+  /// Whether this rule cares about rules that it contains.
+  ///
+  /// If `true` then inner rules will imply this one and force it to split when
+  /// they split. Otherwise, it can split independently of any contained rules.
+  // TODO(bob): Ugh. Better name.
+  bool get canBeImplied => true;
 
   int get hashCode => id.hashCode;
 
@@ -63,6 +83,9 @@ abstract class Rule {
 class HardSplitRule extends Rule {
   int get numValues => 1;
 
+  /// It's always split anyway.
+  bool get canBeImplied => false;
+
   bool isSplit(int value, Chunk chunk) => true;
 
   String toString() => "Hard";
@@ -75,8 +98,11 @@ class SimpleRule extends Rule {
 
   final int cost;
 
-  SimpleRule([int cost])
-      : cost = cost != null ? cost : Cost.normal;
+  final bool canBeImplied;
+
+  SimpleRule({int cost, bool canBeImplied})
+      : cost = cost != null ? cost : Cost.normal,
+        canBeImplied = canBeImplied != null ? canBeImplied : true;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 

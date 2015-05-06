@@ -60,6 +60,20 @@ foo(argument, argument, argument,
   fn;
 }, argument, argument, argument,
     argument);
+>>> force all arguments to split if an argument splits
+foo(a, b, inner(veryLongArgument, veryLongArgument), c);
+<<<
+foo(
+    a,
+    b,
+    inner(veryLongArgument,
+        veryLongArgument),
+    c);
+>>> do not force single-argument list to split if argument splits
+foo(inner(veryLongArgument, veryLongArgument));
+<<<
+foo(inner(veryLongArgument,
+    veryLongArgument));
 >>> do not split empty argument list
 foo___________________________________();
 <<<

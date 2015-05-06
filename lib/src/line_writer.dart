@@ -362,10 +362,8 @@ class LineWriter {
   void startRule([Rule rule]) {
     if (rule == null) rule = new SimpleRule();
 
-    // Whenever a rule splits, any rules that contain it must split too.
-    if (_rules.isNotEmpty && _rules.last is! HardSplitRule) {
-      rule.implies.add(_rules.last);
-    }
+    // See if any of the rules that contain this one care if it splits.
+    _rules.where((rule) => rule.canBeImplied).forEach(rule.implies.add);
 
     _rules.add(rule);
     rule.startSpan(_currentChunkIndex);

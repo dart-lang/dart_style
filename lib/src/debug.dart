@@ -94,9 +94,6 @@ void dumpLines(List<Chunk> chunks, int indent, LinePrefix prefix,
         buffer.writeln();
         startLine(chunk.indent + splits.getNesting(i));
       }
-
-      // Should have a valid set of splits when we get here.
-      assert(indent != invalidSplits);
     } else {
       if (chunk.spaceWhenUnsplit) buffer.write(" ");
     }

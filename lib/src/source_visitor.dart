@@ -155,9 +155,26 @@ class SourceVisitor implements AstVisitor {
     }
     */
 
-    if (positionalArgs.isNotEmpty) {
+    if (singleArgument) {
+      // Allow splitting after "(". Unlike normal argument lists, allow not
+      // splitting before the argument even if the argument itself contains a
+      // split.
+      var rule = new SimpleRule(canBeImplied: false);
+
+      _writer.startRule(rule);
+      _writer.split();
+
+      // Try to not split the argument.
+      _writer.startSpan(Cost.positionalArguments);
+
+      visit(positionalArgs.single);
+
+      _writer.endSpan();
+      _writer.endRule();
+    } else if (positionalArgs.isNotEmpty) {
       // Allow splitting after "(".
       var rule = new PositionalArgsRule();
+
       _writer.startRule(rule);
       rule.beforeArgument(_writer.split());
 
@@ -178,11 +195,6 @@ class SourceVisitor implements AstVisitor {
         }
       }
 
-      // We want either the positional or named span to extend past the ")".
-      // Only end the positional one here if there are named args.
-      /*
-      if (namedArgs.isNotEmpty) _writer.endSpan();
-      */
       _writer.endSpan();
       _writer.endRule();
     }
@@ -194,10 +206,6 @@ class SourceVisitor implements AstVisitor {
       // Split before the first named argument.
       rule.beforeArguments(
           _writer.split(space: positionalArgs.isNotEmpty));
-
-      /*
-      _writer.startSpan();
-      */
 
       for (var argument in namedArgs) {
         visit(argument);
@@ -213,12 +221,6 @@ class SourceVisitor implements AstVisitor {
     }
 
     token(node.rightParenthesis);
-
-    /*
-    // Keep the last span -- either the positional or named one -- past the ")"
-    // to include comments after the last argument.
-    _writer.endSpan();
-    */
 
     if (singleArgument) _writer.endSpan();
     _writer.unnest();
@@ -1766,7 +1768,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes a single space split with its own rule.
   void soloSplit([int cost]) {
-    _writer.startRule(new SimpleRule(cost));
+    _writer.startRule(new SimpleRule(cost: cost));
     split();
     _writer.endRule();
   }
