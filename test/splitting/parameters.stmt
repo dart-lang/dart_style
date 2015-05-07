@@ -32,12 +32,12 @@ method(int first, int second, int third,
 }
 >>> no split after "(" in lambda
 var meth = (
-    int firstArgument, int argument) {
+    int firstArgument, int argumentTo) {
   print('42');
 };
 <<<
 var meth = (int firstArgument,
-    int argument) {
+    int argumentTo) {
   print('42');
 };
 >>> keep mandatory and positional on same line
