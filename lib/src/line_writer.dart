@@ -35,18 +35,6 @@ class LineWriter {
   /// indentation or nesting.
   Whitespace _pendingWhitespace;
 
-  /// The number of newlines that need to be written to [_buffer] before the
-  /// next line can be output.
-  ///
-  /// Where [_pendingWhitespace] buffers between the [SourceVisitor] and
-  /// [_chunks], this buffers between the [LineWriter] and [_buffer]. It ensures
-  /// we don't have trailing newlines in the output.
-  int _bufferedNewlines = 0;
-
-  /// The indentation at the beginning of the current complete line being
-  /// written.
-  int _beginningIndent;
-
   /// The nested stack of rules that are currently in use.
   ///
   /// New chunks are implicitly split by the innermost rule when the chunk is
@@ -150,7 +138,6 @@ class LineWriter {
 
   LineWriter(this._formatter, this._source) {
     indent(_formatter.indent);
-    _beginningIndent = _formatter.indent;
   }
 
   /// Writes [string], the text for a single token, to the output.
@@ -437,7 +424,7 @@ class LineWriter {
   SourceCode end() {
     if (_chunks.isNotEmpty) {
       _writeHardSplit();
-      _completeLine(_chunks.length);
+      _splitLines();
     }
 
     // Be a good citizen, end with a newline.
@@ -604,98 +591,86 @@ class LineWriter {
     } else if (_chunks.last.canAddText) {
       _chunks.last.appendText(text);
     } else {
-      // Since we're about to write some text on the next line, we know the
-      // previous one is fully done being tweaked and merged, so now we can see
-      // if it can be split independently.
-       _checkForCompleteLine(_chunks.length);
-
       _chunks.add(new Chunk(text));
     }
   }
 
-  /// Checks to see if we the first [length] chunks can be processed as a
-  /// single line and processes them if so.
+  /// Takes all of the chunks and breaks them into sublists that can be line
+  /// split individually.
   ///
-  /// We want to send small lists of chunks to [LineSplitter] for performance.
-  /// We can do that when we know one set of chunks will absolutely not affect
-  /// anything following it. The rule for that is pretty simple: a hard newline
-  /// that is not nested inside an expression.
-  bool _checkForCompleteLine(int length) {
-    // Can only split on a hard line that is not nested in the middle of an
-    // expression.
-    if (!_canEndLineAfter(length)) return false;
-
-    _completeLine(length);
-
-    return true;
-  }
-
-  /// Returns `true` if the first [length] chunks can be line split separately
-  /// from the rest of the chunks.
-  ///
-  /// This is true only if the last chunk in the prefix has a hard split and is
-  /// not nested in an expression.
-  bool _canEndLineAfter(int length) {
-    if (length == 0) return false;
-
-    var chunk = _chunks[length - 1];
-    return chunk.isHardSplit && chunk.nesting == -1;
-  }
-
-  /// Takes the first [length] of the chunks and breaks them into lines that
-  /// can be split independently.
-  void _completeLine(int length) {
-    assert(_chunks.isNotEmpty);
-
-    // We know unused nesting levels will never be used now, so flatten them.
-    _flattenNestingLevels(length);
-
-    // Now that we know where a line will end, go back and see if there are
-    // any other places in that range where we can also preemptively force hard
-    // splits.
-    var lengths = _preemptRules(length);
-    lengths.add(length);
-
+  /// This should only be called once, after all of the chunks have been
+  /// written.
+  void _splitLines() {
+    // For each independent set of chunks, see if there are any rules in them
+    // that we want to preemptively harden. This is basically to send smaller
+    // batches of chunks to LineSplitter in cases where the code is deeply
+    // nested or complex.
     var start = 0;
-    for (var index in lengths) {
-      var thisLength = index - start;
+    for (var i = 1; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      if (chunk.isHardSplit && chunk.nesting == -1) {
+        _preemptRules(start, i);
+        start = i;
+      }
+    }
+
+    // Now that we know what hard splits there will be, break the chunks into
+    // independently splittable lines.
+    var bufferedNewlines = 0;
+    var beginningIndent = _formatter.indent;
+
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+
+      if (!chunk.isHardSplit || chunk.nesting != -1) continue;
 
       // Write the newlines required by the previous line.
-      for (var i = 0; i < _bufferedNewlines; i++) {
+      for (var i = 0; i < bufferedNewlines; i++) {
         _buffer.write(_formatter.lineEnding);
       }
 
-      // Remove the prefix from the list of rules and spans.
-      var chunks = _chunks.take(thisLength).toList();
-      _chunks.removeRange(0, thisLength);
-
-      var spans = [];
-      _spans.removeWhere((span) {
-        if (!span.subtractPrefix(thisLength)) return false;
-
-        // We can ditch the spans that only existed to track rule bounds now.
-        // They don't affect splitting.
-        if (span.cost > 0) spans.add(span);
-        return true;
-      });
-
-      var splitter = new LineSplitter(_formatter.lineEnding,
-          _formatter.pageWidth, chunks, spans, _beginningIndent);
-      var selection = splitter.apply(_buffer);
-
-      if (selection[0] != null) {
-        _selectionStart = selection[0];
-      }
-
-      if (selection[1] != null) {
-        _selectionLength = selection[1] -_selectionStart;
-      }
+      _completeLine(beginningIndent, i + 1);
+      i = -1;
 
       // Get ready for the next line.
-      _bufferedNewlines = chunks.last.isDouble ? 2 : 1;
-      _beginningIndent = chunks.last.indent;
+      bufferedNewlines = chunk.isDouble ? 2 : 1;
+      beginningIndent = chunk.indent;
+    }
 
-      start += thisLength;
+    if (_chunks.isNotEmpty) _completeLine(beginningIndent, _chunks.length);
+  }
+
+  /// Takes the first [length] of the chunks with leading [indent], removes
+  /// them, and runs the [LineSplitter] on them.
+  void _completeLine(int indent, int length) {
+    // We know unused nesting levels will never be used now, so flatten them.
+    _flattenNestingLevels(length);
+
+    // Remove the prefix from the list of rules and spans.
+    var chunks = _chunks.take(length).toList();
+    // TODO(rnystrom): Mutating the list is a big perf hit. Do something better.
+    _chunks.removeRange(0, length);
+
+    var spans = [];
+    _spans.removeWhere((span) {
+      if (!span.subtractPrefix(length)) return false;
+
+      // We can ditch the spans that only existed to track rule bounds now.
+      // They don't affect splitting.
+      if (span.cost > 0) spans.add(span);
+      return true;
+    });
+
+    var splitter = new LineSplitter(_formatter.lineEnding,
+    _formatter.pageWidth, chunks, spans, indent);
+    var selection = splitter.apply(_buffer);
+
+    if (selection[0] != null) {
+      _selectionStart = selection[0];
+    }
+
+    if (selection[1] != null) {
+      _selectionLength = selection[1] -_selectionStart;
     }
   }
 
@@ -720,8 +695,9 @@ class LineWriter {
   /// bounce all the way back to no nesting, this goes through and renumbers
   /// the nesting levels of all of the preceding chunks.
   void _flattenNestingLevels(int length) {
-    var nestingLevels = _chunks
-        .take(length)
+    var chunks = _chunks.take(length);
+
+    var nestingLevels = chunks
         .map((chunk) => chunk.nesting)
         .where((nesting) => nesting != -1)
         .toSet()
@@ -733,13 +709,14 @@ class LineWriter {
       nestingMap[nestingLevels[i]] = i;
     }
 
-    for (var chunk in _chunks.take(length)) {
+    for (var chunk in chunks) {
       chunk.nesting = nestingMap[chunk.nesting];
     }
   }
 
-  /// Preemptively harden rules in the first [length] chunks if there will
-  /// certainly be no solution that allows them to remain unsplit.
+  /// Preemptively hardens rules in the range of chunks from [start] to [end]
+  /// (half-inclusive) if there will certainly be no solution that allows them
+  /// to remain unsplit.
   ///
   /// For each rule, we look at the span of chunks it covers. If that range is
   /// longer than the page width, than the rule is preemptively hardened now.
@@ -759,17 +736,17 @@ class LineWriter {
   // implies that it gets split.
   // TODO(bob): The fact that this generates non-optimal solutions is a drag.
   // Can we do something better?
-  List<int> _preemptRules(int length) {
+  void _preemptRules(int start, int end) {
     var rules = _chunks
-        .take(length)
+        .sublist(start, end)
         .map((chunk) => chunk.rule)
         .where((rule) => rule is! HardSplitRule)
         .toSet();
 
     var values = rules.fold(1, (value, rule) => value * rule.numValues);
 
-    // If the number of possible solutions is reasonable, solve it directly.
-    if (values < 1024) return [];
+    // If the number of possible solutions is reasonable, don't preempt any.
+    if (values < 1024) return;
 
     // Find the rules that contain too much.
     var rulesToHarden = new Set();
@@ -785,50 +762,29 @@ class LineWriter {
       }
     }
 
-    return _hardenRules(rulesToHarden, length);
-
-    // TODO(bob): What if the rules are still in effect? Should we replace them
-    // in _rules too?
+    _hardenRules(rulesToHarden, start, end);
   }
 
-  /// Hardens every chunk in the first [length] chunks that uses one of [rules].
-  ///
-  /// Returns the list of lengths within [length] that can now be split as
-  /// separate lines.
-  List<int> _hardenRules(Set<Rule> rules, int length) {
-    var lengths = [];
-    for (var i = 0; i < length; i++) {
+  /// Hardens every chunk in the range of chunks from [start] to [end]
+  /// (half-inclusive) that uses one of [rules].
+  void _hardenRules(Set<Rule> rules, int start, int end) {
+    if (rules.isEmpty) return;
+
+    for (var i = start; i < end; i++) {
       var chunk = _chunks[i];
       if (rules.contains(chunk.rule)) {
         chunk.harden();
-        if (_canEndLineAfter(i + 1)) lengths.add(i + 1);
       }
     }
 
-    // Remove implied references to hardened rules. If a rule implies one
-    // that's already hardened, we don't need to track the implication anymore.
-    for (var chunk in _chunks) {
-      chunk.rule.implies.removeAll(rules);
-    }
-
-    return lengths;
+    // Note that other rules may still imply the now-discarded rules. We could
+    // clean those out, but it takes time to do so and it's harmless to leave
+    // them alone. Since removing them noticeably affects perf, we just ignore
+    // them.
   }
 
-  /// Handles open multisplits and spans when a hard line occurs.
-  ///
-  /// Any active separable multisplits will get split in two at this point.
-  /// Other multisplits are forced into the "hard" state. All of their previous
-  /// splits are turned into explicit hard splits and any new splits for that
-  /// multisplit become hard splits too.
-  ///
-  /// All open spans get discarded since they will never be satisfied.
+  /// Hardens any active rules that care when a hard split occurs within them.
   void _handleHardSplit() {
-    // Discard all open spans. We don't remove them from the stack so that we
-    // can still correctly count later calls to endSpan().
-    for (var i = 0; i < _openSpans.length; i++) {
-      _openSpans[i] = null;
-    }
-
     // Replace each ongoing rule with a hard split if it wants to split when
     // it contains an inner split.
     var hardenedRules = new Set();
@@ -840,29 +796,6 @@ class LineWriter {
       }
     }
 
-    if (hardenedRules.isEmpty) return;
-
-    // Remove implied references to hardened rules. If a rule implies one
-    // that's already hardened, we don't need to track the implication anymore.
-    for (var chunk in _chunks) {
-      chunk.rule.implies.removeAll(hardenedRules);
-    }
-
-    // TODO(bob): There's some duplication between this and _hardenRules().
-    // Clean up.
-
-    for (var i = 0; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
-      if (chunk.rule == null) continue;
-
-      if (hardenedRules.contains(chunk.rule)) {
-        chunk.harden();
-
-        // Now that this chunk is a hard split, we may be able to format up to
-        // it as its own line. If so, the chunks will get removed, so reset
-        // the loop counter.
-        if (_checkForCompleteLine(i + 1)) i = -1;
-      }
-    }
+    _hardenRules(hardenedRules, 0, _chunks.length);
   }
 }
