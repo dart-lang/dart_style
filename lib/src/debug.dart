@@ -65,7 +65,7 @@ String bold(message) => "$_bold$message$_none";
 void dumpChunks(List<Chunk> chunks) {
   var i = 0;
   for (var chunk in chunks) {
-    log("$i: $chunk");
+    log("$i: $chunk ${chunk.spans.join(" ")}");
     i++;
   }
 }

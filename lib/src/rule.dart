@@ -5,21 +5,11 @@
 library dart_style.src.rule;
 
 import 'chunk.dart';
+import 'fast_hash.dart';
 
-// TODO(bob): Doc.
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
-abstract class Rule {
-  static int _nextId = 0;
-
-  /// A semi-unique numeric indentifier for the rule.
-  ///
-  /// This is useful for debugging and also speeds up using the rule in hash
-  /// sets. Ids are *semi*-unique because they may wrap around in long running
-  /// processes. Since rules are equal based on their identity, this is
-  /// innocuous and prevents ids from growing without bound.
-  final int id = _nextId = (_nextId + 1) & 0x0fffffff;
-
+abstract class Rule extends FastHash {
   /// The number of different states this rule can be in.
   ///
   /// Each state determines which set of chunks using this rule are split and
@@ -44,8 +34,8 @@ abstract class Rule {
   /// list of open rules for a while after its last chunk is written.
   // TODO(bob): This is only being used by preemption which is kind of hacky.
   // Get rid of this?
-  Span get span => _span;
-  Span _span;
+  int start;
+  int end;
 
   /// The other [Rule]s that are "implied" by this one.
   ///
@@ -64,15 +54,6 @@ abstract class Rule {
   /// they split. Otherwise, it can split independently of any contained rules.
   // TODO(bob): Ugh. Better name.
   bool get canBeImplied => true;
-
-  int get hashCode => id.hashCode;
-
-  /// Creates the [Span] associated with this rule's bounds, starting at
-  /// [startChunk].
-  void startSpan(int startChunk) {
-    assert(_span == null);
-    _span = new Span(startChunk, 0);
-  }
 
   bool isSplit(int value, Chunk chunk);
 

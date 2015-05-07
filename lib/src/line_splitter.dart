@@ -71,9 +71,6 @@ class LineSplitter {
   /// The list of chunks being split.
   final List<Chunk> _chunks;
 
-  /// The set of spans that wrap around [_chunks].
-  final List<Span> _spans;
-
   /// The leading indentation at the beginning of the first line.
   final int _indent;
 
@@ -91,8 +88,7 @@ class LineSplitter {
 
   /// Creates a new splitter that tries to fit a series of chunks within a
   /// given page width.
-  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._spans,
-      this._indent) {
+  LineSplitter(this._lineEnding, this._pageWidth, this._chunks, this._indent) {
     assert(_chunks.isNotEmpty);
   }
 
@@ -110,7 +106,6 @@ class LineSplitter {
     if (debug.traceFormatter) {
       debug.log(debug.green("\nSplitting:"));
       debug.dumpChunks(_chunks);
-      if (_spans.isNotEmpty) debug.log(_spans.join("\n"));
       debug.log();
     }
 
@@ -348,7 +343,6 @@ class LineSplitter {
     var length = indent * spacesPerIndent;
 
     var splitRules = new Set();
-    var splitIndexes = [];
 
     endLine() {
       // Punish lines that went over the length. We don't rule these out
@@ -359,6 +353,11 @@ class LineSplitter {
       }
     }
 
+    // The set of spans that contain chunks that ended up splitting. We store
+    // these in a set so a span's cost doesn't get double-counted if more than
+    // one split occurs in it.
+    var splitSpans = new Set();
+
     for (var i = prefix.length; i < _chunks.length; i++) {
       var chunk = _chunks[i];
 
@@ -367,7 +366,8 @@ class LineSplitter {
       if (i < _chunks.length - 1) {
         if (splits.shouldSplitAt(i)) {
           endLine();
-          splitIndexes.add(i);
+
+          splitSpans.addAll(chunk.spans);
 
           if (chunk.rule != null && !splitRules.contains(chunk.rule)) {
             // Don't double-count rules if multiple splits share the same
@@ -386,20 +386,8 @@ class LineSplitter {
       }
     }
 
-    // See which spans got split. We avoid iterators here for performance.
-    for (var i = 0; i < _spans.length; i++) {
-      var span = _spans[i];
-      for (var j = 0; j < splitIndexes.length; j++) {
-        var index = splitIndexes[j];
-
-        // If the split is contained within a span (and is not the tail end of
-        // it), the span got split.
-        if (index >= span.start && index < span.end) {
-          cost += span.cost;
-          break;
-        }
-      }
-    }
+    // Add the costs for the spans containing splits.
+    for (var span in splitSpans) cost += span.cost;
 
     // Finish the last line.
     endLine();

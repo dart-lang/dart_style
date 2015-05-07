@@ -5,6 +5,7 @@
 library dart_style.src.chunk;
 
 import 'debug.dart' as debug;
+import 'fast_hash.dart';
 import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -136,6 +137,9 @@ class Chunk extends Selection {
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
 
+  /// The [Span]s that contain this chunk.
+  final spans = [];
+
   /// Creates a new chunk starting with [_text].
   Chunk(this._text);
 
@@ -206,7 +210,7 @@ class Chunk extends Selection {
       parts.add(rule.toString());
     }
 
-    if (_rule.implies.isNotEmpty) {
+    if (_rule != null && _rule.implies.isNotEmpty) {
       parts.add("-> ${_rule.implies.join(' ')}");
     }
 
@@ -245,60 +249,39 @@ class Cost {
   static const overflowChar = 1000;
 }
 
-/// Delimits a range of chunks that must end up on the same line to avoid an
-/// additional cost.
-///
-/// These are used to encourage the line splitter to try to keep things
-/// together, like parameter lists and binary operator expressions.
-class Span {
+/// The in-progress state for a [Span] that has been started but has not yet
+/// been completed.
+class OpenSpan {
   /// Index of the first chunk contained in this span.
   int get start => _start;
   int _start;
-
-  /// Index of the last chunk contained in this span.
-  int get end => _end;
-  int _end;
 
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.
   final int cost;
 
-  Span(this._start, this.cost);
+  OpenSpan(this._start, this.cost);
 
-  /// Marks this span as ending at [end].
-  void close(int end) {
-    assert(_end == null);
-    _end = end;
-  }
+  String toString() => "OpenSpan($start, \$$cost)";
+}
 
-  String toString() {
-    var result = "Span($start";
+/// Delimits a range of chunks that must end up on the same line to avoid an
+/// additional cost.
+///
+/// These are used to encourage the line splitter to try to keep things
+/// together, like parameter lists and binary operator expressions.
+///
+/// This is a wrapper around the cost so that spans have unique identities.
+/// This way we can correctly avoid paying the cost multiple times if the same
+/// span is split by multiple chunks.
+class Span extends FastHash {
+  /// The cost applied when the span is split across multiple lines or `null`
+  /// if the span is for a multisplit.
+  final int cost;
 
-    if (end != null) {
-      result += " - $end";
-    } else {
-      result += "...";
-    }
+  Span(this.cost);
 
-    if (cost != null) result += " \$$cost";
-
-    return result + ")";
-  }
-
-  /// This is used when a prefix of the chunk list gets pulled off by the
-  /// [LineWriter] and is formatted as a line. The remaining spans need to have
-  /// their indices shifted to account for the removed chunks.
-  ///
-  /// Returns `true` if the span is contained in the prefix being removed and
-  /// should be discarded.
-  bool subtractPrefix(int offset) {
-    if (_start < offset) return true;
-
-    _start -= offset;
-    if (_end != null) _end -= offset;
-
-    return false;
-  }
+  String toString() => "Span(\$$cost)";
 }
 
 /// A comment in the source, with a bit of information about the surrounding

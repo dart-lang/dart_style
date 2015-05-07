@@ -41,11 +41,11 @@ class LineWriter {
   /// ended.
   final _rules = <Rule>[];
 
-  /// The nested stack of spans that are currently being written.
-  final _openSpans = <Span>[];
+  /// The chunks owned by each rule.
+  final _ruleChunks = <Rule, List<Chunk>>{};
 
-  /// All of the spans that have been created and closed.
-  final _spans = <Span>[];
+  /// The nested stack of spans that are currently being written.
+  final _openSpans = <OpenSpan>[];
 
   /// The current indentation and nesting levels.
   ///
@@ -323,24 +323,25 @@ class LineWriter {
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.normal]) {
-    _openSpans.add(new Span(_currentChunkIndex, cost));
+    _openSpans.add(new OpenSpan(_currentChunkIndex, cost));
   }
 
   /// Ends the innermost span.
   void endSpan() {
-    _endSpan(_openSpans.removeLast());
-  }
+    var openSpan = _openSpans.removeLast();
 
-  /// Ends [span].
-  void _endSpan(Span span) {
     // If the span was discarded while it was still open, just forget about it.
-    if (span == null) return;
-
-    span.close(_currentChunkIndex);
+    if (openSpan == null) return;
 
     // A span that just covers a single chunk can't be split anyway.
-    if (span.start == span.end) return;
-    _spans.add(span);
+    var end = _currentChunkIndex;
+    if (openSpan.start == end) return;
+
+    // Add the span to every chunk that can split it.
+    var span = new Span(openSpan.cost);
+    for (var i = openSpan.start; i < end; i++) {
+      _chunks[i].spans.add(span);
+    }
   }
 
   /// Starts a new [Rule].
@@ -351,16 +352,18 @@ class LineWriter {
 
     // See if any of the rules that contain this one care if it splits.
     _rules.where((rule) => rule.canBeImplied).forEach(rule.implies.add);
-
     _rules.add(rule);
-    rule.startSpan(_currentChunkIndex);
+
+    // Keep track of the rule's chunk range so we know how to calculate its
+    // length for preemption.
+    rule.start = _currentChunkIndex;
   }
 
   /// Ends the innermost rule.
   void endRule() {
-    // Keep track of the rule's span so that its bounds get adjusted correctly
-    // when chunks get pulled off the beginning of the list.
-    _endSpan(_rules.removeLast().span);
+    // Keep track of the rule's chunk range so we know how to calculate its
+    // length for preemption.
+    _rules.removeLast().end = _currentChunkIndex;
   }
 
   /// Pre-emptively forces all of the current rules to become hard splits.
@@ -578,6 +581,9 @@ class LineWriter {
     chunk.applySplit(indent, nesting, rule,
         isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
 
+    // Keep track of which chunks are owned by the rule.
+    _ruleChunks.putIfAbsent(rule, () => []).add(chunk);
+
     if (chunk.isHardSplit) _handleHardSplit();
 
     return chunk;
@@ -586,9 +592,7 @@ class LineWriter {
   /// Writes [text] to either the current chunk or a new one if the current
   /// chunk is complete.
   void _writeText(String text) {
-    if (_chunks.isEmpty) {
-      _chunks.add(new Chunk(text));
-    } else if (_chunks.last.canAddText) {
+    if (_chunks.isNotEmpty && _chunks.last.canAddText) {
       _chunks.last.appendText(text);
     } else {
       _chunks.add(new Chunk(text));
@@ -608,10 +612,14 @@ class LineWriter {
     var start = 0;
     for (var i = 1; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (chunk.isHardSplit && chunk.nesting == -1) {
-        _preemptRules(start, i);
-        start = i;
-      }
+      if (!chunk.isHardSplit || chunk.nesting != -1) continue;
+
+      _preemptRules(start, i);
+      start = i;
+    }
+
+    if (start < _chunks.length) {
+      _preemptRules(start, _chunks.length);
     }
 
     // Now that we know what hard splits there will be, break the chunks into
@@ -619,9 +627,9 @@ class LineWriter {
     var bufferedNewlines = 0;
     var beginningIndent = _formatter.indent;
 
+    start = 0;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-
       if (!chunk.isHardSplit || chunk.nesting != -1) continue;
 
       // Write the newlines required by the previous line.
@@ -629,40 +637,27 @@ class LineWriter {
         _buffer.write(_formatter.lineEnding);
       }
 
-      _completeLine(beginningIndent, i + 1);
-      i = -1;
+      _completeLine(beginningIndent, _chunks.sublist(start, i + 1));
 
       // Get ready for the next line.
       bufferedNewlines = chunk.isDouble ? 2 : 1;
       beginningIndent = chunk.indent;
+      start = i + 1;
     }
 
-    if (_chunks.isNotEmpty) _completeLine(beginningIndent, _chunks.length);
+    if (start < _chunks.length) {
+      _completeLine(beginningIndent, _chunks.sublist(start, _chunks.length));
+    }
   }
 
   /// Takes the first [length] of the chunks with leading [indent], removes
   /// them, and runs the [LineSplitter] on them.
-  void _completeLine(int indent, int length) {
+  void _completeLine(int indent, List<Chunk> chunks) {
     // We know unused nesting levels will never be used now, so flatten them.
-    _flattenNestingLevels(length);
+    _flattenNestingLevels(chunks);
 
-    // Remove the prefix from the list of rules and spans.
-    var chunks = _chunks.take(length).toList();
-    // TODO(rnystrom): Mutating the list is a big perf hit. Do something better.
-    _chunks.removeRange(0, length);
-
-    var spans = [];
-    _spans.removeWhere((span) {
-      if (!span.subtractPrefix(length)) return false;
-
-      // We can ditch the spans that only existed to track rule bounds now.
-      // They don't affect splitting.
-      if (span.cost > 0) spans.add(span);
-      return true;
-    });
-
-    var splitter = new LineSplitter(_formatter.lineEnding,
-    _formatter.pageWidth, chunks, spans, indent);
+    var splitter = new LineSplitter(
+        _formatter.lineEnding, _formatter.pageWidth, chunks, indent);
     var selection = splitter.apply(_buffer);
 
     if (selection[0] != null) {
@@ -674,8 +669,7 @@ class LineWriter {
     }
   }
 
-  /// Removes any unused nesting levels from the first [length] chunks in
-  /// [_chunks] .
+  /// Removes any unused nesting levels from [chunks].
   ///
   /// The line splitter considers every possible combination of mapping
   /// indentation to nesting levels when trying to find the best solution. For
@@ -694,9 +688,7 @@ class LineWriter {
   /// used eagerly since a level may not be used until later. Instead, when we
   /// bounce all the way back to no nesting, this goes through and renumbers
   /// the nesting levels of all of the preceding chunks.
-  void _flattenNestingLevels(int length) {
-    var chunks = _chunks.take(length);
-
+  void _flattenNestingLevels(List<Chunk> chunks) {
     var nestingLevels = chunks
         .map((chunk) => chunk.nesting)
         .where((nesting) => nesting != -1)
@@ -749,53 +741,41 @@ class LineWriter {
     if (values < 1024) return;
 
     // Find the rules that contain too much.
-    var rulesToHarden = new Set();
     for (var rule in rules) {
       var length = 0;
-      for (var i = rule.span.start + 1; i <= rule.span.end; i++) {
+      for (var i = rule.start + 1; i <= rule.end; i++) {
         // TODO(bob): What if the chunk has a hard split?
         length += _chunks[i].length;
         if (length > pageWidth) {
-          rulesToHarden.add(rule);
+          _hardenRule(rule);
           break;
         }
       }
     }
-
-    _hardenRules(rulesToHarden, start, end);
-  }
-
-  /// Hardens every chunk in the range of chunks from [start] to [end]
-  /// (half-inclusive) that uses one of [rules].
-  void _hardenRules(Set<Rule> rules, int start, int end) {
-    if (rules.isEmpty) return;
-
-    for (var i = start; i < end; i++) {
-      var chunk = _chunks[i];
-      if (rules.contains(chunk.rule)) {
-        chunk.harden();
-      }
-    }
-
-    // Note that other rules may still imply the now-discarded rules. We could
-    // clean those out, but it takes time to do so and it's harmless to leave
-    // them alone. Since removing them noticeably affects perf, we just ignore
-    // them.
   }
 
   /// Hardens any active rules that care when a hard split occurs within them.
   void _handleHardSplit() {
     // Replace each ongoing rule with a hard split if it wants to split when
     // it contains an inner split.
-    var hardenedRules = new Set();
     for (var i = 0; i < _rules.length; i++) {
       var rule = _rules[i];
       if (rule.canBeImplied) {
         _rules[i] = new HardSplitRule();
-        hardenedRules.add(rule);
+        _hardenRule(rule);
       }
     }
+  }
 
-    _hardenRules(hardenedRules, 0, _chunks.length);
+  /// Hardens every [Chunk] that uses [rule].
+  void _hardenRule(Rule rule) {
+    if (!_ruleChunks.containsKey(rule)) return;
+
+    for (var chunk in _ruleChunks[rule]) chunk.harden();
+
+    // Note that other rules may still imply the now-discarded rule. We could
+    // clean those out, but it takes time to do so and it's harmless to leave
+    // them alone. Since removing them noticeably affects perf, we just ignore
+    // them.
   }
 }
