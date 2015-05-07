@@ -340,7 +340,8 @@ class LineWriter {
     // Add the span to every chunk that can split it.
     var span = new Span(openSpan.cost);
     for (var i = openSpan.start; i < end; i++) {
-      _chunks[i].spans.add(span);
+      var chunk = _chunks[i];
+      if (!chunk.isHardSplit) chunk.spans.add(span);
     }
   }
 

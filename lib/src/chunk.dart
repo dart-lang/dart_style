@@ -162,6 +162,7 @@ class Chunk extends Selection {
   /// when it finds out another hard split occurs within its chunks.
   void harden() {
     _rule = new HardSplitRule();
+    spans.clear();
   }
 
   // TODO(bob): Doc rule.
