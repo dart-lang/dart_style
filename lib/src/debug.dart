@@ -5,6 +5,8 @@
 /// Internal debugging utilities.
 library dart_style.src.debug;
 
+import 'dart:math' as math;
+
 import 'chunk.dart';
 import 'line_prefix.dart';
 import 'line_splitter.dart';
@@ -63,10 +65,45 @@ String bold(message) => "$_bold$message$_none";
 /// Prints [chunks] to stdout, one chunk per line, with detailed information
 /// about each chunk.
 void dumpChunks(List<Chunk> chunks) {
+  if (chunks.isEmpty) return;
+
+  var rows = [];
   var i = 0;
   for (var chunk in chunks) {
-    log("$i: $chunk ${chunk.spans.join(" ")}");
+    var row = [];
+    row.add(gray("$i: "));
+    row.add("${chunk.text}  ");
+    row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
+    if (chunk.rule.implies.isEmpty) {
+      row.add("");
+    } else {
+      row.add(" -> ${chunk.rule.implies.join(" ")}");
+    }
+    rows.add(row);
     i++;
+  }
+
+  var rowWidths = new List.filled(rows.first.length, 0);
+  for (var row in rows) {
+    for (var i = 0; i < row.length; i++) {
+      rowWidths[i] = math.max(rowWidths[i], row[i].length);
+    }
+  }
+
+  for (var row in rows) {
+    var line = "";
+    for (var i = 0; i < row.length; i++) {
+      var cell = row[i];
+      if (i == 0) {
+        cell = cell.padLeft(rowWidths[i]);
+      } else {
+        cell = cell.padRight(rowWidths[i]);
+      }
+
+      line += cell;
+    }
+
+    print(line);
   }
 }
 

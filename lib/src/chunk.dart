@@ -282,7 +282,7 @@ class Span extends FastHash {
 
   Span(this.cost);
 
-  String toString() => "Span(\$$cost)";
+  String toString() => "$id\$$cost";
 }
 
 /// A comment in the source, with a bit of information about the surrounding
