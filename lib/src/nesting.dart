@@ -71,7 +71,7 @@ class NestingStack {
   }
 
   int get hashCode {
-    // TODO(rnystrom): Is it worth iterating throught the stack?
+    // TODO(rnystrom): Is it worth iterating through the stack?
     return indent.hashCode ^ _depth.hashCode;
   }
 
@@ -112,9 +112,7 @@ class NestingStack {
   ///         argumentToFirst);
   ///
   /// To accommodate those, this returns the list of all possible ways the
-  /// nesting stack can be modified. It generates the in order of best to worst
-  /// so that the line splitter can stop as soon as it finds a working solution.
-  /// "Best" here means it tries fewer levels of indentation first.
+  /// nesting stack can be modified.
   List<NestingStack> applySplit(Chunk split) {
     assert(split.isInExpression);
 
@@ -136,10 +134,6 @@ class NestingStack {
       return [];
     }
 
-    // TODO(rnystrom): This eagerly generates all of the nesting stacks even
-    // though LineSplitter._findBestSplits() will early out of looping over
-    // them. Optimize by generating these only as needed.
-
     // Going deeper, so try every indentating for every subset of expression
     // nesting levels between the old and new one.
     return _intermediateDepths(_depth, split.nesting).map((depths) {
@@ -158,7 +152,7 @@ class NestingStack {
   /// Given [min] and [max], generates all of the subsets of numbers in that
   /// range (exclusive), including the empty set.
   ///
-  /// This is used for determine what sets of intermediate nesting levels to
+  /// This is used to determine what sets of intermediate nesting levels to
   /// consider when jumping from a shallow nesting level to a much deeper one.
   /// Subsets are generated in order of increasing length. For example, `(2, 6)`
   /// yields:

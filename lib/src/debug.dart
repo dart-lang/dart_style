@@ -71,14 +71,27 @@ void dumpChunks(List<Chunk> chunks) {
   var i = 0;
   for (var chunk in chunks) {
     var row = [];
-    row.add(gray("$i: "));
-    row.add("${chunk.text}  ");
+    row.add(gray("$i:"));
+    row.add("${chunk.text}");
     row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
     if (chunk.rule.implies.isEmpty) {
       row.add("");
     } else {
-      row.add(" -> ${chunk.rule.implies.join(" ")}");
+      row.add("-> ${chunk.rule.implies.join(" ")}");
     }
+
+    if (chunk.indent != 0) {
+      row.add("indent ${chunk.indent}");
+    } else {
+      row.add("");
+    }
+
+    if (chunk.nesting != -1) {
+      row.add("nest ${chunk.nesting}");
+    } else {
+      row.add("");
+    }
+
     rows.add(row);
     i++;
   }
@@ -100,6 +113,7 @@ void dumpChunks(List<Chunk> chunks) {
         cell = cell.padRight(rowWidths[i]);
       }
 
+      if (line != "") line += "  ";
       line += cell;
     }
 

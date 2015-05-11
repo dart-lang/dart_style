@@ -4,8 +4,9 @@
 
 library dart_style.src.source_writer;
 
-import 'dart_formatter.dart';
 import 'chunk.dart';
+import 'dart_formatter.dart';
+import 'debug.dart' as debug;
 import 'line_splitter.dart';
 import 'rule.dart';
 import 'source_code.dart';
@@ -67,7 +68,7 @@ class LineWriter {
   ///
   /// Start with an implicit entry so that top-level definitions and directives
   /// can be split.
-  var _indentStack = [-1];
+  final List<int> _indentStack = [-1];
 
   /// The current indentation, not including expression nesting.
   int get _indent => _indentStack.length - 1;
@@ -621,6 +622,12 @@ class LineWriter {
 
     if (start < _chunks.length) {
       _preemptRules(start, _chunks.length);
+    }
+
+    if (debug.traceFormatter) {
+      debug.log(debug.green("\nWriting:"));
+      debug.dumpChunks(_chunks);
+      debug.log();
     }
 
     // Now that we know what hard splits there will be, break the chunks into

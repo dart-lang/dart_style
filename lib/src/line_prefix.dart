@@ -25,8 +25,6 @@ class LinePrefix {
   ///
   /// Does not include rules that do not also appear in the suffix since they
   /// don't affect the suffix.
-  ///
-  /// Some values here may be -1, which means "allow any non-zero value".
   final Map<Rule, int> ruleValues;
 
   /// The nested expressions in the prefix that are still open at the beginning
@@ -36,7 +34,7 @@ class LinePrefix {
   /// `outer(inner(`, the nesting stack will be two levels deep.
   final NestingStack _nesting;
 
-  /// The depth of indentation caused expression nesting.
+  /// The depth of indentation caused by expression nesting.
   int get nestingIndent => _nesting.indent;
 
   /// Creates a new zero-length prefix whose suffix is the entire line.

@@ -103,7 +103,7 @@ class LineSplitter {
   /// Likewise, the second element will be non-`null` if the selection endpoint
   /// is within the list of chunks.
   List<int> apply(StringBuffer buffer) {
-    if (debug.traceFormatter) {
+    if (debug.traceSplitter) {
       debug.log(debug.green("\nSplitting:"));
       debug.dumpChunks(_chunks);
       debug.log();
@@ -421,10 +421,7 @@ class Solution {
   void update(LineSplitter splitter, SplitSet splits) {
     var cost = splitter._evaluateCost(_prefix, _indent, splits);
 
-    // TODO(bob): Is weight still needed?
-    if (_lowestCost == null ||
-        cost < _lowestCost/* ||
-        (cost == _lowestCost && splits.weight > _bestSplits.weight)*/) {
+    if (_lowestCost == null || cost < _lowestCost) {
       _bestSplits = splits;
       _lowestCost = cost;
     }
@@ -472,28 +469,6 @@ class SplitSet {
 
   /// Gets the nesting level of the split chunk at [splitIndex].
   int getNesting(int splitIndex) => _splitNesting[splitIndex];
-
-  // TODO(bob): Is this still needed with split rules?
-  /// Determines the "weight" of the set.
-  ///
-  /// This is the sum of the positions where splits occur. Having more splits
-  /// increases weight but, more importantly, having a split closer to the end
-  /// increases its weight.
-  ///
-  /// This is used to break a tie when two [SplitSets] have the same cost. When
-  /// that occurs, we prefer splits later in the line since that keeps most
-  /// code towards the top lines. This occurs frequently in argument lists.
-  /// Since every argument split has the same cost, a long argument list can be
-  /// split in two a number of equal-cost ways. The weight is used to select
-  /// the one that puts the most arguments on the first line(s).
-  int get weight {
-    var result = 0;
-    for (var i = 0; i < _splitNesting.length; i++) {
-      if (_splitNesting[i] != null) result += i;
-    }
-
-    return result;
-  }
 
   String toString() {
     var result = [];
