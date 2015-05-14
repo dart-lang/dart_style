@@ -35,7 +35,9 @@ class NestingStack {
   /// The number of surrounding expression nesting levels.
   final int _depth;
 
-  NestingStack() : this._(null, -1, 0);
+  int get depth => _depth;
+
+  NestingStack() : this._(null, 0, 0);
 
   NestingStack._(this._parent, this._depth, this.indent);
 
@@ -208,7 +210,7 @@ class NestingStack {
   String toString() {
     var result = "";
 
-    for (var nesting = this; nesting._depth != -1; nesting = nesting._parent) {
+    for (var nesting = this; nesting._depth != 0; nesting = nesting._parent) {
       result = "|${nesting._depth}$result";
     }
 

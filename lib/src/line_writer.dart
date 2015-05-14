@@ -68,7 +68,7 @@ class LineWriter {
   ///
   /// Start with an implicit entry so that top-level definitions and directives
   /// can be split.
-  final List<int> _indentStack = [-1];
+  final List<int> _indentStack = [0];
 
   /// The current indentation, not including expression nesting.
   int get _indent => _indentStack.length - 1;
@@ -174,7 +174,7 @@ class LineWriter {
   /// Ignores nesting when split if [nest] is `false`. If unsplit, it expands
   /// to a space if [space] is `true`.
   Chunk split({bool nest: true, bool space}) {
-    return _writeSplit(_indent, nest ? _nesting : -1, _rules.last,
+    return _writeSplit(_indent, nest ? _nesting : 0, _rules.last,
         spaceWhenUnsplit: space);
   }
 
@@ -312,7 +312,7 @@ class LineWriter {
 
   /// Increases indentation of the next line by [levels].
   void indent([int levels = 1]) {
-    while (levels-- > 0) _indentStack.add(-1);
+    while (levels-- > 0) _indentStack.add(0);
   }
 
   /// Decreases indentation of the next line by [levels].
@@ -563,10 +563,10 @@ class LineWriter {
     _pendingWhitespace = null;
 
     var indent = _indent;
-    var nesting = nest ? _nesting : -1;
+    var nesting = nest ? _nesting : 0;
     if (!allowIndent) {
       indent = 0;
-      nesting = -1;
+      nesting = 0;
     }
 
     _writeSplit(indent, nesting, new HardSplitRule(), isDouble: double);
@@ -614,7 +614,7 @@ class LineWriter {
     var start = 0;
     for (var i = 1; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit || chunk.nesting != -1) continue;
+      if (!chunk.isHardSplit || chunk.nesting != 0) continue;
 
       _preemptRules(start, i);
       start = i;
@@ -638,7 +638,7 @@ class LineWriter {
     start = 0;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit || chunk.nesting != -1) continue;
+      if (!chunk.isHardSplit || chunk.nesting != 0) continue;
 
       // Write the newlines required by the previous line.
       for (var i = 0; i < bufferedNewlines; i++) {
@@ -699,14 +699,14 @@ class LineWriter {
   void _flattenNestingLevels(List<Chunk> chunks) {
     var nestingLevels = chunks
         .map((chunk) => chunk.nesting)
-        .where((nesting) => nesting != -1)
+        .where((nesting) => nesting != 0)
         .toSet()
         .toList();
     nestingLevels.sort();
 
-    var nestingMap = {-1: -1};
+    var nestingMap = {0: 0};
     for (var i = 0; i < nestingLevels.length; i++) {
-      nestingMap[nestingLevels[i]] = i;
+      nestingMap[nestingLevels[i]] = i + 1;
     }
 
     for (var chunk in chunks) {
