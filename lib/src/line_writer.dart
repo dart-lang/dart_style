@@ -755,6 +755,9 @@ class LineWriter {
         // TODO(bob): What if the chunk has a hard split?
         length += _chunks[i].length;
         if (length > pageWidth) {
+          // TODO(bob): This is incorrect when the rule isn't a Simple rule.
+          // For example it will harden an argument list to full one-per-line
+          // even if the arg list could fit when split to two lines.
           _hardenRule(rule);
           break;
         }
