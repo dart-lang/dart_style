@@ -34,14 +34,21 @@ class LinePrefix {
   /// `outer(inner(`, the nesting stack will be two levels deep.
   final NestingStack _nesting;
 
-  /// The depth of indentation caused by expression nesting.
-  int get nestingIndent => _nesting.indent;
+  /// The indentation level of the line starting after this chunk, not
+  /// including additional levels from [_nesting].
+  final int _indent;
 
-  /// Creates a new zero-length prefix whose suffix is the entire line.
-  LinePrefix([int length = 0])
-      : this._(length, {}, new NestingStack());
+  /// The indentation level of the line starting after this chunk, including
+  /// from expression nesting.
+  int get indent => _indent + _nesting.indent;
 
-  LinePrefix._(this.length, this.ruleValues, this._nesting) {
+  /// Creates a new zero-length prefix with initial [indent] whose suffix is
+  /// the entire line.
+  LinePrefix(int indent)
+      : this._(0, {}, indent, new NestingStack());
+
+  LinePrefix._(this.length, this.ruleValues, this._indent,
+      this._nesting) {
     assert(_nesting != null);
   }
 
@@ -66,38 +73,17 @@ class LinePrefix {
 
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
-  LinePrefix addChunk(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _nesting);
-
-  /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
-  /// and assuming that the new chunk splits at a statement boundary so there
-  /// is no nesting stack.
-  LinePrefix addStatement(Map<Rule, int> updatedValues) =>
-      new LinePrefix._(length + 1, updatedValues, new NestingStack());
+  LinePrefix extend(Map<Rule, int> ruleValues) =>
+      new LinePrefix._(length + 1, ruleValues, _indent, _nesting);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
   /// boundary so there may be multiple possible different nesting stacks.
-  Iterable<LinePrefix> addExpressionSplit(Chunk chunk,
-                                          Map<Rule, int> updatedValues) {
+  Iterable<LinePrefix> split(
+      Chunk chunk, Map<Rule, int> updatedValues, int indent) {
     // TODO(rnystrom): Inline this in LineSplitter?
     return _nesting.applySplit(chunk).map((nesting) =>
-        new LinePrefix._(length + 1, updatedValues, nesting));
-  }
-
-  /// Gets the leading indentation of the newline that immediately follows
-  /// this prefix.
-  ///
-  /// Takes into account the indentation of the previous split and any
-  /// additional indentation from wrapped nested expressions.
-  int getNextLineIndent(List<Chunk> chunks, int indent) {
-    // TODO(rnystrom): This could be cached at construction time, which may be
-    // faster.
-    // Get the initial indentation of the line immediately after the prefix,
-    // ignoring any extra indentation caused by nested expressions.
-    if (length > 0) indent = chunks[length - 1].indent;
-
-    return indent + _nesting.indent;
+        new LinePrefix._(length + 1, updatedValues, indent, nesting));
   }
 
   String toString() {

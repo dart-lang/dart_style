@@ -78,7 +78,7 @@ class Chunk extends Selection {
   /// indentation. When a chunk is newly created from text, this is `null` to
   /// indicate that the chunk has no splitting information yet.
   int get indent => _indent;
-  int _indent = null;
+  int _indent;
 
   /// The number of levels of expression nesting following this chunk.
   ///
@@ -90,15 +90,7 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  int nesting = -1;
-
-  /// Whether or not the chunk occurs inside an expression.
-  ///
-  /// Splits within expressions must take into account how deeply nested they
-  /// are to determine the indentation of subsequent lines. "Statement level"
-  /// splits that occur between statements or in the top-level of a unit only
-  /// take the main indent level into account.
-  bool get isInExpression => nesting != -1;
+  int nesting;
 
   /// Whether it's valid to add more text to this chunk or not.
   ///
@@ -201,7 +193,7 @@ class Chunk extends Selection {
     if (text.isNotEmpty) parts.add("${debug.bold(text)}");
 
     if (_indent != 0 && _indent != null) parts.add("indent:$_indent");
-    if (nesting != -1) parts.add("nest:$nesting");
+    if (nesting != 0) parts.add("nest:$nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
 

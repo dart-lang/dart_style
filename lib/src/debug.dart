@@ -86,7 +86,7 @@ void dumpChunks(List<Chunk> chunks) {
       row.add("");
     }
 
-    if (chunk.nesting != -1) {
+    if (chunk.nesting != 0) {
       row.add("nest ${chunk.nesting}");
     } else {
       row.add("");
@@ -125,16 +125,11 @@ void dumpChunks(List<Chunk> chunks) {
 ///
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
-void dumpLines(List<Chunk> chunks, int indent, LinePrefix prefix,
-    SplitSet splits) {
+void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
   var buffer = new StringBuffer();
 
-  startLine(nextIndent) {
-    indent = nextIndent;
-    buffer.write(gray("| " * indent));
-  }
-
-  startLine(indent);
+  writeIndent(indent) => buffer.write(gray("| " * indent));
+  writeIndent(prefix.indent);
 
   for (var i = prefix.length; i < chunks.length - 1; i++) {
     var chunk = chunks[i];
@@ -143,7 +138,7 @@ void dumpLines(List<Chunk> chunks, int indent, LinePrefix prefix,
     if (splits.shouldSplitAt(i)) {
       for (var j = 0; j < (chunk.isDouble ? 2 : 1); j++) {
         buffer.writeln();
-        startLine(chunk.indent + splits.getNesting(i));
+        writeIndent(splits.getIndent(i));
       }
     } else {
       if (chunk.spaceWhenUnsplit) buffer.write(" ");

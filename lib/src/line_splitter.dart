@@ -120,7 +120,7 @@ class LineSplitter {
     // TODO(rnystrom): One optimization we could perform is to merge spans that
     // have the same range into a single span with a summed cost.
 
-    var splits = _findBestSplits(new LinePrefix());
+    var splits = _findBestSplits(new LinePrefix(_indent));
     var selection = [null, null];
 
     // Write each chunk and the split after it.
@@ -146,8 +146,7 @@ class LineSplitter {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
-        var indent = chunk.indent + splits.getNesting(i);
-        buffer.write(" " * (indent * spacesPerIndent));
+        buffer.write(" " * (splits.getIndent(i) * spacesPerIndent));
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
@@ -175,10 +174,8 @@ class LineSplitter {
       debug.indent();
     }
 
-    var indent = prefix.getNextLineIndent(_chunks, _indent);
-
-    var solution = new Solution(prefix, indent);
-    _tryChunkRuleValues(solution, prefix, indent * spacesPerIndent);
+    var solution = new Solution(prefix);
+    _tryChunkRuleValues(solution, prefix, prefix.indent * spacesPerIndent);
 
     if (debug.traceSplitter) {
       debug.unindent();
@@ -220,33 +217,25 @@ class LineSplitter {
       int length) {
     var chunk = _chunks[prefix.length];
 
-    var isSplit = chunk.rule.isSplit(value, chunk);
-    if (!isSplit) {
+    if (chunk.rule.isSplit(value, chunk)) {
       // If this chunk bumps us past the page limit and we already have a
       // solution that fits, no solution past this chunk will beat that, so
       // stop looking.
       length += chunk.length;
       if (length > _pageWidth && solution.isAdequate) return;
-    }
 
-    var ruleValues = _advancePrefix(prefix, value);
-
-    if (!isSplit) {
-      // We didn't split here, so add this chunk and its rule value to the
-      // prefix and continue on to the next.
-      var added = prefix.addChunk(ruleValues);
-      _tryChunkRuleValues(solution, added, length);
-    } else if (!chunk.isInExpression) {
-      // The chunk is splitting at a statement boundary, so we don't have to
-      // worry about nesting stacks.
-      _tryLongerPrefix(solution, prefix, prefix.addStatement(ruleValues));
-    } else {
       // The chunk is splitting in an expression, so try all of the possible
       // nesting combinations.
-      var longerPrefixes = prefix.addExpressionSplit(chunk, ruleValues);
+      var ruleValues = _advancePrefix(prefix, value);
+      var longerPrefixes = prefix.split(chunk, ruleValues, chunk.indent);
       for (var longerPrefix in longerPrefixes) {
         _tryLongerPrefix(solution, prefix, longerPrefix);
       }
+    } else {
+      // We didn't split here, so add this chunk and its rule value to the
+      // prefix and continue on to the next.
+      var added = prefix.extend(_advancePrefix(prefix, value));
+      _tryChunkRuleValues(solution, added, length);
     }
   }
 
@@ -260,7 +249,7 @@ class LineSplitter {
     // skip it.
     if (remaining == null) return;
 
-    var splits = remaining.add(prefix.length, longerPrefix.nestingIndent);
+    var splits = remaining.add(prefix.length, longerPrefix.indent);
     solution.update(this, splits);
   }
 
@@ -334,13 +323,13 @@ class LineSplitter {
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of params.
-  int _evaluateCost(LinePrefix prefix, int indent, SplitSet splits) {
+  int _evaluateCost(LinePrefix prefix, SplitSet splits) {
     assert(splits != null);
 
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = indent * spacesPerIndent;
+    var length = prefix.indent * spacesPerIndent;
 
     var splitRules = new Set();
 
@@ -379,7 +368,7 @@ class LineSplitter {
           }
 
           // Start the new line.
-          length = (chunk.indent + splits.getNesting(i)) * spacesPerIndent;
+          length = splits.getIndent(i) * spacesPerIndent;
         } else {
           if (chunk.spaceWhenUnsplit) length++;
         }
@@ -402,9 +391,6 @@ class Solution {
   /// The prefix whose suffix we are finding a solution for.
   final LinePrefix _prefix;
 
-  /// The indentation at the beginning of the suffix.
-  final int _indent;
-
   SplitSet _bestSplits;
   int _lowestCost;
 
@@ -414,12 +400,12 @@ class Solution {
   /// Whether a solution that fits within a page has been found yet.
   bool get isAdequate => _lowestCost != null && _lowestCost < Cost.overflowChar;
 
-  Solution(this._prefix, this._indent);
+  Solution(this._prefix);
 
   /// Compares [splits] to the best solution found so far and keeps it if it's
   /// better.
   void update(LineSplitter splitter, SplitSet splits) {
-    var cost = splitter._evaluateCost(_prefix, _indent, splits);
+    var cost = splitter._evaluateCost(_prefix, splits);
 
     if (_lowestCost == null || cost < _lowestCost) {
       _bestSplits = splits;
@@ -429,52 +415,52 @@ class Solution {
     if (debug.traceSplitter) {
       var best = _bestSplits == splits ? " (best)" : "";
       debug.log(debug.gray("$_prefix $splits \$$cost$best"));
-      debug.dumpLines(splitter._chunks, _indent, _prefix, splits);
+      debug.dumpLines(splitter._chunks, _prefix, splits);
       debug.log();
     }
   }
 }
 
-/// An immutable, persistent set of enabled soft split [Chunk]s.
+/// An immutable, persistent set of enabled split [Chunk]s.
 ///
 /// For each chunk, this tracks if it has been split and, if so, what the
-/// chosen level of expression nesting is for the following line.
+/// chosen level of indentation is for the following line.
 ///
 /// Internally, this uses a sparse parallel list where each element corresponds
-/// to the nesting level of the chunk at that index in the chunk list, or `null`
-/// if there is no active split there. This had about a 10% perf improvement
-/// over using a [Set] of splits or a persistent linked list of split
-/// index/nesting pairs.
+/// to the indentation level of the chunk at that index in the chunk list, or
+/// `null` if there is no active split there. This had about a 10% perf
+/// improvement over using a [Set] of splits or a persistent linked list of
+/// split index/indent pairs.
 class SplitSet {
-  List<int> _splitNesting;
+  List<int> _indents;
 
   /// Creates a new empty split set.
   SplitSet() : this._(const []);
 
-  SplitSet._(this._splitNesting);
+  SplitSet._(this._indents);
 
   /// Returns a new [SplitSet] containing the union of this one and the split
-  /// at [splitIndex] with [nestingIndent].
-  SplitSet add(int splitIndex, int nestingIndent) {
-    var newNesting = new List(math.max(splitIndex + 1, _splitNesting.length));
-    newNesting.setAll(0, _splitNesting);
-    newNesting[splitIndex] = nestingIndent;
+  /// at [index] with [indent].
+  SplitSet add(int index, int indent) {
+    var newIndents = new List(math.max(index + 1, _indents.length));
+    newIndents.setAll(0, _indents);
+    newIndents[index] = indent;
 
-    return new SplitSet._(newNesting);
+    return new SplitSet._(newIndents);
   }
 
   /// Returns `true` if the chunk at [splitIndex] should be split.
-  bool shouldSplitAt(int splitIndex) =>
-      splitIndex < _splitNesting.length && _splitNesting[splitIndex] != null;
+  bool shouldSplitAt(int index) =>
+      index < _indents.length && _indents[index] != null;
 
-  /// Gets the nesting level of the split chunk at [splitIndex].
-  int getNesting(int splitIndex) => _splitNesting[splitIndex];
+  /// Gets the indentation level of the split chunk at [index].
+  int getIndent(int index) => _indents[index];
 
   String toString() {
     var result = [];
-    for (var i = 0; i < _splitNesting.length; i++) {
-      if (_splitNesting[i] != null) {
-        result.add("$i:${_splitNesting[i]}");
+    for (var i = 0; i < _indents.length; i++) {
+      if (_indents[i] != null) {
+        result.add("$i:${_indents[i]}");
       }
     }
 

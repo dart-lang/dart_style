@@ -116,8 +116,6 @@ class NestingStack {
   /// To accommodate those, this returns the list of all possible ways the
   /// nesting stack can be modified.
   List<NestingStack> applySplit(Chunk split) {
-    assert(split.isInExpression);
-
     if (split.nesting == _depth) return [this];
 
     // If the new split is less nested than we currently are, pop and discard
