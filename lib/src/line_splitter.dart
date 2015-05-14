@@ -12,10 +12,7 @@ import 'line_prefix.dart';
 import 'rule.dart';
 
 /// The number of spaces in a single level of indentation.
-const spacesPerIndent = 2;
-
-/// The number of indentation levels in a single level of expression nesting.
-const indentsPerNest = 2;
+const _spacesPerIndent = 2;
 
 // TODO(rnystrom): This needs to be updated to take into account how it works
 // now.
@@ -124,7 +121,7 @@ class LineSplitter {
     var selection = [null, null];
 
     // Write each chunk and the split after it.
-    buffer.write(" " * (_indent * spacesPerIndent));
+    buffer.write(" " * (_indent * _spacesPerIndent));
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
 
@@ -146,7 +143,7 @@ class LineSplitter {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
-        buffer.write(" " * (splits.getIndent(i) * spacesPerIndent));
+        buffer.write(" " * (splits.getIndent(i) * _spacesPerIndent));
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
@@ -175,7 +172,7 @@ class LineSplitter {
     }
 
     var solution = new Solution(prefix);
-    _tryChunkRuleValues(solution, prefix, prefix.indent * spacesPerIndent);
+    _tryChunkRuleValues(solution, prefix, prefix.indent * _spacesPerIndent);
 
     if (debug.traceSplitter) {
       debug.unindent();
@@ -329,7 +326,7 @@ class LineSplitter {
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = prefix.indent * spacesPerIndent;
+    var length = prefix.indent * _spacesPerIndent;
 
     var splitRules = new Set();
 
@@ -368,7 +365,7 @@ class LineSplitter {
           }
 
           // Start the new line.
-          length = splits.getIndent(i) * spacesPerIndent;
+          length = splits.getIndent(i) * _spacesPerIndent;
         } else {
           if (chunk.spaceWhenUnsplit) length++;
         }

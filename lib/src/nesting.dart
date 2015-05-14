@@ -5,7 +5,9 @@
 library dart_style.src.nesting;
 
 import 'chunk.dart';
-import 'line_splitter.dart';
+
+/// The number of indentation levels in a single level of expression nesting.
+const _indentsPerNest = 2;
 
 /// Maintains a stack of nested expressions that have currently been split.
 ///
@@ -141,11 +143,11 @@ class NestingStack {
 
       for (var depth in depths) {
         result = new NestingStack._(
-            result, depth, result.indent + indentsPerNest);
+            result, depth, result.indent + _indentsPerNest);
       }
 
       return new NestingStack._(
-          result, split.nesting, result.indent + indentsPerNest);
+          result, split.nesting, result.indent + _indentsPerNest);
     }).toList();
   }
 
