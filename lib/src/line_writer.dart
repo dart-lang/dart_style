@@ -7,6 +7,7 @@ library dart_style.src.source_writer;
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
+import 'indent_stack.dart';
 import 'line_splitter.dart';
 import 'rule.dart';
 import 'source_code.dart';
@@ -48,56 +49,8 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _openSpans = <OpenSpan>[];
 
-  /// The current indentation and nesting levels.
-  ///
-  /// This is tracked as a stack of numbers. Each element in the stack
-  /// represents a level of statement indentation. The number of the element is
-  /// the current expression nesting depth for that statement.
-  ///
-  /// It's stored as a stack because expressions may contain statements which
-  /// in turn contain other expressions. The nesting level of the inner
-  /// expressions are unrelated to the surrounding ones. For example:
-  ///
-  ///     outer(invocation(() {
-  ///       inner(lambda());
-  ///     }));
-  ///
-  /// When writing `inner(lambda())`, we need to track its nesting level. At
-  /// the same time, when the lambda is done, we need to return to the nesting
-  /// level of `outer(invocation(...`.
-  ///
-  /// Start with an implicit entry so that top-level definitions and directives
-  /// can be split.
-  final List<int> _indentStack = [0];
-
-  /// The current indentation, not including expression nesting.
-  int get _indent => _indentStack.length - 1;
-
-  /// The nesting depth of the current inner-most block.
-  int get _nesting => _indentStack.last;
-  void set _nesting(int value) {
-    _indentStack[_indentStack.length - 1] = value;
-  }
-
-  /// When not `null`, the nesting level of the current inner-most block after
-  /// the next token is written.
-  ///
-  /// When the nesting level is increased, we don't want it to take effect until
-  /// after at least one token has been written. That ensures that comments
-  /// appearing before the first token are correctly indented. For example, a
-  /// binary operator expression increases the nesting before the first operand
-  /// to ensure any splits within the left operand are handled correctly. If we
-  /// changed the nesting level immediately, then code like:
-  ///
-  ///     {
-  ///       // comment
-  ///       foo + bar;
-  ///     }
-  ///
-  /// would incorrectly get indented because the line comment adds a split which
-  /// would take the nesting level of the binary operator into account even
-  /// though we haven't written any of its tokens yet.
-  int _pendingNesting;
+  /// The current indentation levels.
+  final _stack = new IndentStack();
 
   /// The index of the "current" chunk being written.
   ///
@@ -158,10 +111,7 @@ class LineWriter {
     _emitPendingWhitespace();
     _writeText(string);
 
-    if (_pendingNesting != null) {
-      _nesting = _pendingNesting;
-      _pendingNesting = null;
-    }
+    _stack.commitNesting();
   }
 
   /// Writes a [WhitespaceChunk] of [type].
@@ -174,7 +124,10 @@ class LineWriter {
   /// Ignores nesting when split if [nest] is `false`. If unsplit, it expands
   /// to a space if [space] is `true`.
   Chunk split({bool nest: true, bool space}) {
-    return _writeSplit(_indent, nest ? _nesting : 0, _rules.last,
+    return _writeSplit(
+        _stack.indentation,
+        nest ? _stack.nesting : 0,
+        _rules.last,
         spaceWhenUnsplit: space);
   }
 
@@ -312,12 +265,12 @@ class LineWriter {
 
   /// Increases indentation of the next line by [levels].
   void indent([int levels = 1]) {
-    while (levels-- > 0) _indentStack.add(0);
+    _stack.indent(levels);
   }
 
   /// Decreases indentation of the next line by [levels].
   void unindent([int levels = 1]) {
-    while (levels-- > 0) _indentStack.removeLast();
+    _stack.unindent(levels);
   }
 
   /// Starts a new span with [cost].
@@ -385,11 +338,7 @@ class LineWriter {
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void nestExpression() {
-    if (_pendingNesting != null) {
-      _pendingNesting++;
-    } else {
-      _pendingNesting = _nesting + 1;
-    }
+    _stack.nest();
   }
 
   /// Decreases the level of expression nesting.
@@ -397,11 +346,7 @@ class LineWriter {
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void unnest() {
-    // By the time the nesting is done, it should have emitted some text and
-    // not be pending anymore.
-    assert(_pendingNesting == null);
-
-    _nesting--;
+    _stack.unnest();
   }
 
   /// Marks the selection starting point as occurring [fromEnd] characters to
@@ -562,8 +507,8 @@ class LineWriter {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
 
-    var indent = _indent;
-    var nesting = nest ? _nesting : 0;
+    var indent = _stack.indentation;
+    var nesting = nest ? _stack.nesting : 0;
     if (!allowIndent) {
       indent = 0;
       nesting = 0;
