@@ -4,8 +4,16 @@
 
 library dart_style.src.indent_stack;
 
-/// Tracks the current block indentation and and expression nesting.
-class IndentStack {
+/// Describes the block indentation and expression nesting at a point in the
+/// code.
+///
+/// This class when used by itself represents an immutable "frozen" indentation
+/// state. The [IndentStack] is a the "live" mutable state managed by
+/// [LineWriter].
+///
+/// Technically, this class is only mostly immutable. It does allow it's
+/// nesting levels to be remapped, but that's a one-time operation.
+class IndentState {
   /// The expression nesting level within each block level.
   ///
   /// This is tracked as a stack of numbers. Each element in the stack
@@ -26,8 +34,44 @@ class IndentStack {
   ///
   /// Has an implicit entry for top-most expression nest nesting outside of any
   /// block for things like wrapped directives.
-  final List<int> _stack = [0];
+  final List<int> _stack;
 
+  /// The number of levels of block indentation.
+  int get indentation => _stack.length - 1;
+
+  /// The nesting depth of the current inner-most block.
+  int get nesting => _stack.last;
+
+  /// Creates a new state with no indentation.
+  IndentState() : _stack = [0];
+
+  IndentState._(this._stack);
+
+  /// Creates an immutable copy of the state current indentation state.
+  IndentState clone({bool nest: false}) {
+    var state = new IndentState._(_stack.toList());
+    if (!nest) state._setNesting(0);
+    return state;
+  }
+
+  /// Renumbers the expression nesting level of the innermost block using
+  /// [nesting].
+  ///
+  /// The map maps old nesting levels to new ones.
+  void flattenNesting(Map<int, int> nesting) {
+    // TODO(bob): This only touches the innermost block now. Eventually we'll
+    // need to renumber outer ones too when we flatten.
+    _setNesting(nesting[this.nesting]);
+  }
+
+  /// Sets the nesting level of the innermost block to [value].
+  void _setNesting(int value) {
+    _stack[_stack.length - 1] = value;
+  }
+}
+
+/// Tracks the current block indentation and and expression nesting.
+class IndentStack extends IndentState {
   /// When not `null`, the nesting level of the current innermost block after
   /// the next token is written.
   ///
@@ -47,12 +91,6 @@ class IndentStack {
   /// would take the nesting level of the binary operator into account even
   /// though we haven't written any of its tokens yet.
   int _pendingNesting;
-
-  /// The number of levels of block indentation.
-  int get indentation => _stack.length - 1;
-
-  /// The nesting depth of the current inner-most block.
-  int get nesting => _stack.last;
 
   /// Increases indentation of the next line by [levels].
   void indent([int levels = 1]) {
@@ -98,10 +136,5 @@ class IndentStack {
 
     _setNesting(_pendingNesting);
     _pendingNesting = null;
-  }
-
-  /// Sets the nesting level of the innermost block to [value].
-  void _setNesting(int value) {
-    _stack[_stack.length - 1] = value;
   }
 }

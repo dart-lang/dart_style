@@ -43,7 +43,7 @@ class LineWriter {
   /// ended.
   final _rules = <Rule>[];
 
-  /// The chunks owned by each rule.
+  /// The chunks owned by each rule (except for hard splits).
   final _ruleChunks = <Rule, List<Chunk>>{};
 
   /// The nested stack of spans that are currently being written.
@@ -123,13 +123,8 @@ class LineWriter {
   ///
   /// Ignores nesting when split if [nest] is `false`. If unsplit, it expands
   /// to a space if [space] is `true`.
-  Chunk split({bool nest: true, bool space}) {
-    return _writeSplit(
-        _stack.indentation,
-        nest ? _stack.nesting : 0,
-        _rules.last,
-        spaceWhenUnsplit: space);
-  }
+  Chunk split({bool nest: true, bool space}) =>
+      _writeSplit(_rules.last, nest: nest, spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -193,7 +188,7 @@ class LineWriter {
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _writeHardSplit(nest: true, allowIndent: !comment.isStartOfLine,
+        _writeHardSplit(nest: true, flushLeft: comment.isStartOfLine,
             double: comment.linesBefore > 1);
       }
 
@@ -421,7 +416,7 @@ class LineWriter {
         break;
 
       case Whitespace.newlineFlushLeft:
-        _writeHardSplit(allowIndent: false);
+        _writeHardSplit(flushLeft: true);
         break;
 
       case Whitespace.twoNewlines:
@@ -499,37 +494,34 @@ class LineWriter {
   ///
   /// If [double] is `true`, a double-split (i.e. a blank line) is output.
   ///
-  /// If [allowIndent] is `false, then the split will always cause the next
-  /// line to be at column zero. Otherwise, it uses the normal indentation and
+  /// If [flushLeft] is `true`, then the split will always cause the next line
+  /// to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
-  void _writeHardSplit({bool nest: false, bool double: false,
-      bool allowIndent: true}) {
+  void _writeHardSplit({bool nest: false, bool double: false, bool flushLeft}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
-
-    var indent = _stack.indentation;
-    var nesting = nest ? _stack.nesting : 0;
-    if (!allowIndent) {
-      indent = 0;
-      nesting = 0;
-    }
-
-    _writeSplit(indent, nesting, new HardSplitRule(), isDouble: double);
+    _writeSplit(new HardSplitRule(),
+        nest: nest, flushLeft: flushLeft, isDouble: double);
   }
 
   /// Ends the current chunk (if any) with the given split information.
   ///
   /// Returns the chunk.
-  Chunk _writeSplit(int indent, int nesting, Rule rule,
-      {bool isDouble, bool spaceWhenUnsplit}) {
+  Chunk _writeSplit(Rule rule,
+      {bool nest, bool flushLeft, bool isDouble, bool spaceWhenUnsplit}) {
     if (_chunks.isEmpty) return null;
 
     var chunk = _chunks.last;
-    chunk.applySplit(indent, nesting, rule,
-        isDouble: isDouble, spaceWhenUnsplit: spaceWhenUnsplit);
+    chunk.applySplit(_stack, rule,
+        nest: nest,
+        flushLeft: flushLeft,
+        isDouble: isDouble,
+        spaceWhenUnsplit: spaceWhenUnsplit);
 
     // Keep track of which chunks are owned by the rule.
-    _ruleChunks.putIfAbsent(rule, () => []).add(chunk);
+    if (rule is! HardSplitRule) {
+      _ruleChunks.putIfAbsent(rule, () => []).add(chunk);
+    }
 
     if (chunk.isHardSplit) _handleHardSplit();
 
@@ -655,7 +647,7 @@ class LineWriter {
     }
 
     for (var chunk in chunks) {
-      chunk.nesting = nestingMap[chunk.nesting];
+      chunk.flattenNesting(nestingMap);
     }
   }
 

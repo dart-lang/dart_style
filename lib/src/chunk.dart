@@ -6,6 +6,7 @@ library dart_style.src.chunk;
 
 import 'debug.dart' as debug;
 import 'fast_hash.dart';
+import 'indent_stack.dart';
 import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -75,10 +76,8 @@ class Chunk extends Selection {
   /// The indentation level of the line following this chunk.
   ///
   /// Note that this is not a relative indentation *offset*. It's the full
-  /// indentation. When a chunk is newly created from text, this is `null` to
-  /// indicate that the chunk has no splitting information yet.
-  int get indent => _indent;
-  int _indent;
+  /// indentation.
+  int get indent => _indent.indentation;
 
   /// The number of levels of expression nesting following this chunk.
   ///
@@ -90,7 +89,13 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  int nesting;
+  int get nesting => _indent.nesting;
+
+  /// The indentation state for the line following this chunk.
+  ///
+  /// When a chunk is newly created from text, this is `null` to indicate that
+  /// the chunk has no splitting information yet.
+  IndentState _indent;
 
   /// Whether it's valid to add more text to this chunk or not.
   ///
@@ -100,15 +105,11 @@ class Chunk extends Selection {
   /// *before* the split.
   bool get canAddText => _indent == null;
 
-  /// The [SplitRule] that determines if this chunk is being used as a split
-  /// or not.
+  /// The [Rule] that controls when a split should occur after this chunk.
   ///
-  /// Multiple splits may share a [SplitRule].
-  ///
-  /// This is `null` for hard splits.
+  /// Multiple splits may share a [Rule].
   Rule get rule => _rule;
   Rule _rule;
-  // TODO(bob): Do we want to have an actual rule for hard splits?
 
   /// Whether this chunk is always followed by a newline or whether the line
   /// splitter may choose to keep the next chunk on the same line.
@@ -119,8 +120,7 @@ class Chunk extends Selection {
   bool get isDouble => _isDouble;
   bool _isDouble = false;
 
-  /// Whether this chunk should append an extra space if it's a soft split and
-  /// is left unsplit.
+  /// Whether this chunk should append an extra space if it does not split.
   ///
   /// This is `true`, for example, in a chunk that ends with a ",".
   bool get spaceWhenUnsplit => _spaceWhenUnsplit;
@@ -164,12 +164,13 @@ class Chunk extends Selection {
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(int indent, int nesting, Rule rule,
-      {bool spaceWhenUnsplit, bool isDouble}) {
+  void applySplit(IndentState indent, Rule rule,
+      {bool nest, bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
+    if (nest == null) nest = false;
+    if (flushLeft == null) flushLeft = false;
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
     if (isDouble == null) isDouble = false;
 
-    // TODO(bob): Don't use type test here.
     if (isHardSplit || rule is HardSplitRule) {
       // A hard split always wins.
       _rule = rule;
@@ -179,12 +180,20 @@ class Chunk extends Selection {
     }
 
     // Last newline settings win.
-    _indent = indent;
-    this.nesting = nesting;
+    if (!flushLeft) {
+      _indent = indent.clone(nest: nest);
+    } else {
+      _indent = new IndentState();
+    }
+
     _spaceWhenUnsplit = spaceWhenUnsplit;
 
     // Preserve a blank line.
     _isDouble = _isDouble || isDouble;
+  }
+
+  void flattenNesting(Map<int, int> nesting) {
+    _indent.flattenNesting(nesting);
   }
 
   String toString() {
@@ -192,16 +201,17 @@ class Chunk extends Selection {
 
     if (text.isNotEmpty) parts.add("${debug.bold(text)}");
 
-    if (_indent != 0 && _indent != null) parts.add("indent:$_indent");
-    if (nesting != 0) parts.add("nest:$nesting");
+    if (_indent != null) {
+      if (_indent.indentation != 0) parts.add("indent:${_indent.indentation}");
+      if (_indent.nesting != 0) parts.add("nest:${_indent.nesting}");
+    } else {
+      parts.add("(no split info)");
+    }
+
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
 
-    if (_indent == null) {
-      parts.add("(no split info)");
-    } else if (!isHardSplit) {
-      parts.add(rule.toString());
-    }
+    if (!isHardSplit) parts.add(rule.toString());
 
     if (_rule != null && _rule.implies.isNotEmpty) {
       parts.add("-> ${_rule.implies.join(' ')}");
