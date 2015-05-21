@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.line_printer;
+library dart_style.src.line_prefix;
 
 import 'chunk.dart';
 import 'nesting.dart';
@@ -44,13 +44,9 @@ class LinePrefix {
 
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
-  LinePrefix(int indent)
-      : this._(0, {}, indent, new NestingStack());
+  LinePrefix(int indent) : this._(0, {}, indent, new NestingStack());
 
-  LinePrefix._(this.length, this.ruleValues, this._indent,
-      this._nesting) {
-    assert(_nesting != null);
-  }
+  LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting);
 
   bool operator ==(other) {
     if (other is! LinePrefix) return false;
@@ -94,7 +90,7 @@ class LinePrefix {
           .map((key) => "$key:${ruleValues[key]}")
           .join(" ");
 
-      result +=" rules $rules";
+      result += " rules $rules";
     }
     return result;
   }
