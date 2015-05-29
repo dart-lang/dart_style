@@ -8,6 +8,9 @@ import 'chunk.dart';
 import 'nesting.dart';
 import 'rule.dart';
 
+/// The number of spaces in a single level of indentation.
+const spacesPerIndent = 2;
+
 /// A prefix of a series of chunks and the context needed to uniquely describe
 /// any shared state between the preceding and following chunks.
 ///
@@ -44,23 +47,33 @@ class LinePrefix {
   /// The current expression nesting at the end of the prefix.
   final NestingStack _nesting;
 
-  /// The indentation level of the line starting after this chunk, including
-  /// from expression nesting.
+  /// The indentation level after this chunk, including expression nesting.
   int get indent => _body.indent + _extraIndent + _nesting.indent;
+
+  /// The actual absolute starting column of the line after this chunk.
+  ///
+  /// Unlike [indent], this takes into account whether the line should be
+  /// flush left or not. Also, returns a column number, not an indentation
+  /// level count.
+  int get column => _flushLeft ? 0 : indent * spacesPerIndent;
+  final bool _flushLeft;
 
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
   LinePrefix(int indent)
-      : this._(0, {}, new NestingStack(), indent, new NestingStack());
+      : this._(0, {}, new NestingStack(), indent, new NestingStack(),
+          flushLeft: false);
 
   LinePrefix._(this.length, this.ruleValues, this._body, this._extraIndent,
-      this._nesting);
+      this._nesting, {bool flushLeft : false})
+      : _flushLeft = flushLeft;
 
   bool operator ==(other) {
     if (other is! LinePrefix) return false;
 
     if (length != other.length) return false;
     if (_extraIndent != other._extraIndent) return false;
+    if (_flushLeft != other._flushLeft) return false;
     if (_body != other._body) return false;
     if (_nesting != other._nesting) return false;
 
@@ -84,7 +97,8 @@ class LinePrefix {
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
   LinePrefix extend(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _body, _extraIndent, _nesting);
+      new LinePrefix._(length + 1, ruleValues, _body, _extraIndent, _nesting,
+          flushLeft: _flushLeft);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
@@ -96,7 +110,8 @@ class LinePrefix {
     // TODO(bob): To ignore nesting, use _body.indent + _offset instead of chunk.indent.
     return _nesting.updateExpression(chunk.nesting)
         .map((nesting) => new LinePrefix._(
-            length + 1, updatedValues, body, chunk.indent, nesting));
+            length + 1, updatedValues, body, chunk.indent, nesting,
+            flushLeft: chunk.flushLeft));
   }
 
   String toString() {

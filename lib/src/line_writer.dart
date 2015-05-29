@@ -607,7 +607,7 @@ class LineWriter {
 
       // Get ready for the next line.
       bufferedNewlines = chunk.isDouble ? 2 : 1;
-      beginningIndent = chunk.indent;
+      beginningIndent = chunk.absoluteIndent;
       start = i + 1;
     }
 

@@ -134,8 +134,8 @@ void dumpChunks(List<Chunk> chunks) {
 void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
   var buffer = new StringBuffer();
 
-  writeIndent(indent) => buffer.write(gray("| " * indent));
-  writeIndent(prefix.indent);
+  writeIndent(indent) => buffer.write(gray("| " * (indent ~/ 2)));
+  writeIndent(prefix.column);
 
   for (var i = prefix.length; i < chunks.length - 1; i++) {
     var chunk = chunks[i];
@@ -144,7 +144,7 @@ void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
     if (splits.shouldSplitAt(i)) {
       for (var j = 0; j < (chunk.isDouble ? 2 : 1); j++) {
         buffer.writeln();
-        writeIndent(splits.getIndent(i));
+        writeIndent(splits.getColumn(i));
       }
     } else {
       if (chunk.spaceWhenUnsplit) buffer.write(" ");

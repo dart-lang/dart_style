@@ -11,9 +11,6 @@ import 'debug.dart' as debug;
 import 'line_prefix.dart';
 import 'rule.dart';
 
-/// The number of spaces in a single level of indentation.
-const _spacesPerIndent = 2;
-
 // TODO(rnystrom): This needs to be updated to take into account how it works
 // now.
 /// Takes a series of [Chunk]s and determines the best way to split them into
@@ -121,7 +118,7 @@ class LineSplitter {
     var selection = [null, null];
 
     // Write each chunk and the split after it.
-    buffer.write(" " * (_indent * _spacesPerIndent));
+    buffer.write(" " * (_indent * spacesPerIndent));
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
 
@@ -143,7 +140,7 @@ class LineSplitter {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
-        buffer.write(" " * (splits.getIndent(i) * _spacesPerIndent));
+        buffer.write(" " * (splits.getColumn(i)));
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
@@ -172,7 +169,7 @@ class LineSplitter {
     }
 
     var solution = new Solution(prefix);
-    _tryChunkRuleValues(solution, prefix, prefix.indent * _spacesPerIndent);
+    _tryChunkRuleValues(solution, prefix, prefix.column);
 
     if (debug.traceSplitter) {
       debug.unindent();
@@ -246,7 +243,7 @@ class LineSplitter {
     // skip it.
     if (remaining == null) return;
 
-    var splits = remaining.add(prefix.length, longerPrefix.indent);
+    var splits = remaining.add(prefix.length, longerPrefix.column);
     solution.update(this, splits);
   }
 
@@ -326,7 +323,7 @@ class LineSplitter {
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = prefix.indent * _spacesPerIndent;
+    var length = prefix.column;
 
     var splitRules = new Set();
 
@@ -365,7 +362,7 @@ class LineSplitter {
           }
 
           // Start the new line.
-          length = splits.getIndent(i) * _spacesPerIndent;
+          length = splits.getColumn(i);
         } else {
           if (chunk.spaceWhenUnsplit) length++;
         }
@@ -421,43 +418,43 @@ class Solution {
 /// An immutable, persistent set of enabled split [Chunk]s.
 ///
 /// For each chunk, this tracks if it has been split and, if so, what the
-/// chosen level of indentation is for the following line.
+/// chosen column is for the following line.
 ///
 /// Internally, this uses a sparse parallel list where each element corresponds
-/// to the indentation level of the chunk at that index in the chunk list, or
-/// `null` if there is no active split there. This had about a 10% perf
-/// improvement over using a [Set] of splits or a persistent linked list of
-/// split index/indent pairs.
+/// to the column of the chunk at that index in the chunk list, or `null` if
+/// there is no active split there. This had about a 10% perf improvement over
+/// using a [Set] of splits or a persistent linked list of split index/indent
+/// pairs.
 class SplitSet {
-  List<int> _indents;
+  List<int> _columns;
 
   /// Creates a new empty split set.
   SplitSet() : this._(const []);
 
-  SplitSet._(this._indents);
+  SplitSet._(this._columns);
 
   /// Returns a new [SplitSet] containing the union of this one and the split
-  /// at [index] with [indent].
-  SplitSet add(int index, int indent) {
-    var newIndents = new List(math.max(index + 1, _indents.length));
-    newIndents.setAll(0, _indents);
-    newIndents[index] = indent;
+  /// at [index] with next line starting at [column].
+  SplitSet add(int index, int column) {
+    var newIndents = new List(math.max(index + 1, _columns.length));
+    newIndents.setAll(0, _columns);
+    newIndents[index] = column;
 
     return new SplitSet._(newIndents);
   }
 
   /// Returns `true` if the chunk at [splitIndex] should be split.
   bool shouldSplitAt(int index) =>
-      index < _indents.length && _indents[index] != null;
+      index < _columns.length && _columns[index] != null;
 
-  /// Gets the indentation level of the split chunk at [index].
-  int getIndent(int index) => _indents[index];
+  /// Gets the zero-based starting column for the chunk at [index].
+  int getColumn(int index) => _columns[index];
 
   String toString() {
     var result = [];
-    for (var i = 0; i < _indents.length; i++) {
-      if (_indents[i] != null) {
-        result.add("$i:${_indents[i]}");
+    for (var i = 0; i < _columns.length; i++) {
+      if (_columns[i] != null) {
+        result.add("$i:${_columns[i]}");
       }
     }
 

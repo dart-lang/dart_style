@@ -80,6 +80,15 @@ class Chunk extends Selection {
   int get indent => _indent;
   int _indent;
 
+  /// The absolute number of levels of indentation from the left edge of the
+  /// page.
+  ///
+  /// This can only be called for chunks that are not nested in any bodies.
+  int get absoluteIndent {
+    assert(_bodyDepth == 0);
+    return _flushLeft ? 0 : _indent;
+  }
+
   /// The number of levels of expression nesting following this chunk.
   ///
   /// This is used to determine how much to increase the indentation when a
@@ -121,6 +130,13 @@ class Chunk extends Selection {
   /// split.
   bool get isDouble => _isDouble;
   bool _isDouble = false;
+
+  /// If `true`, then the line after this chunk should always be at column
+  /// zero regardless of any indentation or expression nesting.
+  ///
+  /// Used for multi-line strings and commented out code.
+  bool get flushLeft => _flushLeft;
+  bool _flushLeft;
 
   /// Whether this chunk should append an extra space if it does not split.
   ///
@@ -188,13 +204,8 @@ class Chunk extends Selection {
     }
 
     // Last newline settings win.
-    if (!flushLeft && nest) {
-      _nesting = indent.nesting;
-    } else {
-      _nesting = 0;
-    }
-
-    // TODO(bob): Handle flushLeft.
+    _flushLeft = flushLeft;
+    _nesting = nest ? indent.nesting : 0;
     _indent = indent.indentation;
     _bodyDepth = indent.bodyDepth;
 
@@ -217,6 +228,7 @@ class Chunk extends Selection {
     if (_nesting != 0) parts.add("nesting:$_nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
+    if (_flushLeft) parts.add("flush");
 
     if (_rule == null) {
       parts.add("(no split)");
