@@ -81,46 +81,41 @@ class BacktrackingSolver {
       : type = type,
         sources = sources,
         cache = new PubspecCache(type, sources) {
-          for (var package in useLatest) {
-            _forceLatest.add(package);
-          }
+    for (var package in useLatest) {
+      _forceLatest.add(package);
+    }
 
-          for (var override in root.dependencyOverrides) {
-            _overrides[override.name] = override;
-          }
+    for (var override in root.dependencyOverrides) {
+      _overrides[override.name] = override;
+    }
 
-          // A deeply nested statement that's hard on the formatter.
-          isTwoWay = !isEvent &&
-              bindings.isWhole &&
-              (isCustomTag ||
-                  tag == 'input' && (name == 'value' || name == 'checked') ||
-                  tag == 'select' &&
-                      (name == 'selectedindex' || name == 'value') ||
-                  tag == 'textarea' && name == 'value');
+    // A deeply nested statement that's hard on the formatter.
+    isTwoWay = !isEvent &&
+        bindings.isWhole &&
+        (isCustomTag ||
+            tag == 'input' && (name == 'value' || name == 'checked') ||
+            tag == 'select' && (name == 'selectedindex' || name == 'value') ||
+            tag == 'textarea' && name == 'value');
 
-          // Even more deeply nested pathological example.
-          if (javaBooleanAnd(
-              javaBooleanAnd(
-                  javaBooleanAnd(
-                      javaBooleanAnd(
-                          javaBooleanAnd(
-                              javaBooleanAnd(
-                                  javaBooleanAnd(
-                                      javaBooleanAnd(),
-                                      _isEqualTokens(
-                                          node.period, toNode.period)),
-                                  _isEqualNodes(node.name, toNode.name)),
-                              _isEqualNodes(
-                                  node.parameters, toNode.parameters)),
-                          _isEqualTokens(node.separator, toNode.separator)),
-                      _isEqualNodeLists(
-                          node.initializers, toNode.initializers)),
-                  _isEqualNodes(node.redirectedConstructor,
-                      toNode.redirectedConstructor)),
-              _isEqualNodes(node.body, toNode.body))) {
-            toNode.element = node.element;
-          }
-        }
+    // Even more deeply nested pathological example.
+    if (javaBooleanAnd(
+        javaBooleanAnd(
+            javaBooleanAnd(
+                javaBooleanAnd(
+                    javaBooleanAnd(
+                        javaBooleanAnd(
+                            javaBooleanAnd(javaBooleanAnd(),
+                                _isEqualTokens(node.period, toNode.period)),
+                            _isEqualNodes(node.name, toNode.name)),
+                        _isEqualNodes(node.parameters, toNode.parameters)),
+                    _isEqualTokens(node.separator, toNode.separator)),
+                _isEqualNodeLists(node.initializers, toNode.initializers)),
+            _isEqualNodes(
+                node.redirectedConstructor, toNode.redirectedConstructor)),
+        _isEqualNodes(node.body, toNode.body))) {
+      toNode.element = node.element;
+    }
+  }
 
   /// Run the solver.
   ///
@@ -135,49 +130,43 @@ class BacktrackingSolver {
     var overrides = _overrides.values.toList();
     overrides.sort((a, b) => a.name.compareTo(b.name));
 
-    return newFuture(
-        () {
-          stopwatch.start();
+    return newFuture(() {
+      stopwatch.start();
 
-          // Pre-cache the root package's known pubspec.
-          cache.cache(new PackageId.root(root), root.pubspec);
+      // Pre-cache the root package's known pubspec.
+      cache.cache(new PackageId.root(root), root.pubspec);
 
-          _validateSdkConstraint(root.pubspec);
-          return _traverseSolution();
-        })
-        .then(
-            (packages) {
-              var pubspecs = new Map.fromIterable(packages,
-                  key: (id) => id.name,
-                  value: (id) => cache.getCachedPubspec(id));
+      _validateSdkConstraint(root.pubspec);
+      return _traverseSolution();
+    })
+        .then((packages) {
+      var pubspecs = new Map.fromIterable(packages,
+          key: (id) => id.name, value: (id) => cache.getCachedPubspec(id));
 
-              return new SolveResult.success(
-                  sources,
-                  root,
-                  lockFile,
-                  packages,
-                  overrides,
-                  pubspecs,
-                  _getAvailableVersions(packages),
-                  attemptedSolutions);
-            })
-        .catchError(
-            (error) {
-              if (error is! SolveFailure) throw error;
+      return new SolveResult.success(
+          sources,
+          root,
+          lockFile,
+          packages,
+          overrides,
+          pubspecs,
+          _getAvailableVersions(packages),
+          attemptedSolutions);
+    })
+        .catchError((error) {
+      if (error is! SolveFailure) throw error;
 
-              // Wrap a failure in a result so we can attach some other data.
-              return new SolveResult.failure(sources, root, lockFile, overrides,
-                  error, attemptedSolutions);
-            })
-        .whenComplete(
-            () {
-              // Gather some solving metrics.
-              var buffer = new StringBuffer();
-              buffer
-                  .writeln('${runtimeType} took ${stopwatch.elapsed} seconds.');
-              buffer.writeln(cache.describeResults());
-              log.solver(buffer);
-            });
+      // Wrap a failure in a result so we can attach some other data.
+      return new SolveResult.failure(
+          sources, root, lockFile, overrides, error, attemptedSolutions);
+    })
+        .whenComplete(() {
+      // Gather some solving metrics.
+      var buffer = new StringBuffer();
+      buffer.writeln('${runtimeType} took ${stopwatch.elapsed} seconds.');
+      buffer.writeln(cache.describeResults());
+      log.solver(buffer);
+    });
   }
 
   /// Generates a map containing all of the known available versions for each
@@ -302,23 +291,22 @@ class BacktrackingSolver {
     advanceVersion() {
       _backjump(failure);
       var previous = _selected.last.current;
-      return _selected.last.advance().then(
-          (success) {
-            if (success) {
-              logSolve();
-              return true;
-            }
+      return _selected.last.advance().then((success) {
+        if (success) {
+          logSolve();
+          return true;
+        }
 
-            logSolve('$previous is last version, backtracking');
+        logSolve('$previous is last version, backtracking');
 
-            // That package has no more versions, so pop it and try the next one.
-            _selected.removeLast();
-            if (_selected.isEmpty) return false;
+        // That package has no more versions, so pop it and try the next one.
+        _selected.removeLast();
+        if (_selected.isEmpty) return false;
 
-            // If we got here, the leafmost package was discarded so we need to
-            // advance the next one.
-            return advanceVersion();
-          });
+        // If we got here, the leafmost package was discarded so we need to
+        // advance the next one.
+        return advanceVersion();
+      });
     }
 
     return advanceVersion();
@@ -513,52 +501,49 @@ class Traverser {
 
     return _solver.cache
         .getPubspec(id)
-        .then(
-            (pubspec) {
-              _validateSdkConstraint(pubspec);
+        .then((pubspec) {
+      _validateSdkConstraint(pubspec);
 
-              var deps = pubspec.dependencies.toSet();
+      var deps = pubspec.dependencies.toSet();
 
-              if (id.isRoot) {
-                // Include dev dependencies of the root package.
-                deps.addAll(pubspec.devDependencies);
+      if (id.isRoot) {
+        // Include dev dependencies of the root package.
+        deps.addAll(pubspec.devDependencies);
 
-                // Add all overrides. This ensures a dependency only present as an
-                // override is still included.
-                deps.addAll(_solver._overrides.values);
-              }
+        // Add all overrides. This ensures a dependency only present as an
+        // override is still included.
+        deps.addAll(_solver._overrides.values);
+      }
 
-              // Replace any overridden dependencies.
-              deps = deps
-                  .map(
-                      (dep) {
-                        var override = _solver._overrides[dep.name];
-                        if (override != null) return override;
+      // Replace any overridden dependencies.
+      deps = deps
+          .map((dep) {
+        var override = _solver._overrides[dep.name];
+        if (override != null) return override;
 
-                        // Not overridden.
-                        return dep;
-                      })
-                  .toSet();
+        // Not overridden.
+        return dep;
+      })
+          .toSet();
 
-              // Make sure the package doesn't have any bad dependencies.
-              for (var dep in deps) {
-                if (!dep.isRoot &&
-                    _solver.sources[dep.source] is UnknownSource) {
-                  throw new UnknownSourceException(
-                      id.name, [new Dependency(id.name, id.version, dep)]);
-                }
-              }
+      // Make sure the package doesn't have any bad dependencies.
+      for (var dep in deps) {
+        if (!dep.isRoot && _solver.sources[dep.source] is UnknownSource) {
+          throw new UnknownSourceException(id.name, [
+            new Dependency(id.name, id.version, dep)
+          ]);
+        }
+      }
 
-              return _traverseDeps(id, new DependencyQueue(_solver, deps));
-            })
-        .catchError(
-            (error) {
-              if (error is! PackageNotFoundException) throw error;
+      return _traverseDeps(id, new DependencyQueue(_solver, deps));
+    })
+        .catchError((error) {
+      if (error is! PackageNotFoundException) throw error;
 
-              // We can only get here if the lockfile refers to a specific package
-              // version that doesn't exist (probably because it was yanked).
-              throw new NoVersionException(id.name, null, id.version, []);
-            });
+      // We can only get here if the lockfile refers to a specific package
+      // version that doesn't exist (probably because it was yanked).
+      throw new NoVersionException(id.name, null, id.version, []);
+    });
   }
 
   /// Traverses the references that [depender] depends on, stored in [deps].
@@ -568,69 +553,61 @@ class Traverser {
   /// Otherwise, recurses.
   Future<List<PackageId>> _traverseDeps(
       PackageId depender, DependencyQueue deps) {
-        // Move onto the next package if we've traversed all of these references.
-        if (deps.isEmpty) return _traversePackage();
+    // Move onto the next package if we've traversed all of these references.
+    if (deps.isEmpty) return _traversePackage();
 
-        return resetStack(
-            () {
-              return deps
-                  .advance()
-                  .then(
-                      (dep) {
-                        var dependency = new Dependency(
-                            depender.name, depender.version, dep);
-                        return _registerDependency(dependency).then((_) {
-                          if (dep.name ==
-                              "barback") return _addImplicitDependencies();
-                        });
-                  })
-              .then((_) => _traverseDeps(depender, deps));
+    return resetStack(() {
+      return deps
+          .advance()
+          .then((dep) {
+        var dependency = new Dependency(depender.name, depender.version, dep);
+        return _registerDependency(dependency).then((_) {
+          if (dep.name == "barback") return _addImplicitDependencies();
         });
+      })
+          .then((_) => _traverseDeps(depender, deps));
+    });
   }
 
   /// Register [dependency]'s constraints on the package it depends on and
   /// enqueues the package for processing if necessary.
   Future _registerDependency(Dependency dependency) {
-    return new Future.sync(
-        () {
-          _validateDependency(dependency);
+    return new Future.sync(() {
+      _validateDependency(dependency);
 
-          var dep = dependency.dep;
-          var dependencies = _getDependencies(dep.name);
-          dependencies.add(dependency);
+      var dep = dependency.dep;
+      var dependencies = _getDependencies(dep.name);
+      dependencies.add(dependency);
 
-          var constraint = _getConstraint(dep.name);
+      var constraint = _getConstraint(dep.name);
 
-          // See if it's possible for a package to match that constraint.
-          if (constraint.isEmpty) {
-            var constraints = dependencies
-                .map((dep) => "  ${dep.dep.constraint} from ${dep.depender}")
-                .join('\n');
-            _solver
-                .logSolve('disjoint constraints on ${dep.name}:\n$constraints');
-            throw new DisjointConstraintException(dep.name, dependencies);
-          }
+      // See if it's possible for a package to match that constraint.
+      if (constraint.isEmpty) {
+        var constraints = dependencies
+            .map((dep) => "  ${dep.dep.constraint} from ${dep.depender}")
+            .join('\n');
+        _solver.logSolve('disjoint constraints on ${dep.name}:\n$constraints');
+        throw new DisjointConstraintException(dep.name, dependencies);
+      }
 
-          var selected = _validateSelected(dep, constraint);
-          if (selected != null) {
-            // The selected package version is good, so enqueue it to traverse
-            // into it.
-            _packages.add(selected);
-            return null;
-          }
+      var selected = _validateSelected(dep, constraint);
+      if (selected != null) {
+        // The selected package version is good, so enqueue it to traverse
+        // into it.
+        _packages.add(selected);
+        return null;
+      }
 
-          // We haven't selected a version. Try all of the versions that match
-          // the constraints we currently have for this package.
-          var locked = _getValidLocked(dep.name);
+      // We haven't selected a version. Try all of the versions that match
+      // the constraints we currently have for this package.
+      var locked = _getValidLocked(dep.name);
 
-          return VersionQueue
-              .create(
-                  locked,
-                  () {
-                    return _getAllowedVersions(dep);
-                  })
-              .then((versions) => _packages.add(_solver.select(versions)));
-        });
+      return VersionQueue
+          .create(locked, () {
+        return _getAllowedVersions(dep);
+      })
+          .then((versions) => _packages.add(_solver.select(versions)));
+    });
   }
 
   /// Gets all versions of [dep] that match the current constraints placed on
@@ -639,42 +616,36 @@ class Traverser {
     var constraint = _getConstraint(dep.name);
     return _solver.cache
         .getVersions(dep.toRef())
-        .then(
-            (versions) {
-              var allowed =
-                  versions.where((id) => constraint.allows(id.version));
+        .then((versions) {
+      var allowed = versions.where((id) => constraint.allows(id.version));
 
-              if (allowed.isEmpty) {
-                _solver
-                    .logSolve('no versions for ${dep.name} match $constraint');
-                throw new NoVersionException(
-                    dep.name, null, constraint, _getDependencies(dep.name));
-              }
+      if (allowed.isEmpty) {
+        _solver.logSolve('no versions for ${dep.name} match $constraint');
+        throw new NoVersionException(
+            dep.name, null, constraint, _getDependencies(dep.name));
+      }
 
-              // If we're doing an upgrade on this package, only allow the latest
-              // version.
-              if (_solver._forceLatest.contains(dep.name)) allowed = [
-                allowed.first
-              ];
+      // If we're doing an upgrade on this package, only allow the latest
+      // version.
+      if (_solver._forceLatest.contains(dep.name)) allowed = [allowed.first];
 
-              // Remove the locked version, if any, since that was already handled.
-              var locked = _getValidLocked(dep.name);
-              if (locked != null) {
-                allowed = allowed.where((dep) => dep.version != locked.version);
-              }
+      // Remove the locked version, if any, since that was already handled.
+      var locked = _getValidLocked(dep.name);
+      if (locked != null) {
+        allowed = allowed.where((dep) => dep.version != locked.version);
+      }
 
-              return allowed;
-            })
-        .catchError(
-            (error, stackTrace) {
-              if (error is PackageNotFoundException) {
-                // Show the user why the package was being requested.
-                throw new DependencyNotFoundException(
-                    dep.name, error, _getDependencies(dep.name));
-              }
+      return allowed;
+    })
+        .catchError((error, stackTrace) {
+      if (error is PackageNotFoundException) {
+        // Show the user why the package was being requested.
+        throw new DependencyNotFoundException(
+            dep.name, error, _getDependencies(dep.name));
+      }
 
-              throw error;
-            });
+      throw error;
+    });
   }
 
   /// Ensures that dependency [dep] from [depender] is consistent with the
@@ -699,8 +670,7 @@ class Traverser {
     // Make sure all of the existing descriptions match the new reference.
     var source = _solver.sources[dep.source];
     if (!source.descriptionsEqual(dep.description, required.dep.description)) {
-      _solver.logSolve(
-          'description mismatch on ${dep.name}: '
+      _solver.logSolve('description mismatch on ${dep.name}: '
           '${required.dep.description} != ${dep.description}');
       throw new DescriptionMismatchException(dep.name, [required, dependency]);
     }
@@ -734,24 +704,22 @@ class Traverser {
     /// Ensure we only add the barback dependency once.
     if (_getDependencies("barback").length != 1) return new Future.value();
 
-    return Future.wait(
-        barback.pubConstraints.keys.map(
-            (depName) {
-              var constraint = barback.pubConstraints[depName];
-              _solver.logSolve(
-                  'add implicit $constraint pub dependency on ' '$depName');
+    return Future.wait(barback.pubConstraints.keys.map((depName) {
+      var constraint = barback.pubConstraints[depName];
+      _solver
+          .logSolve('add implicit $constraint pub dependency on ' '$depName');
 
-              var override = _solver._overrides[depName];
+      var override = _solver._overrides[depName];
 
-              // Use the same source and description as the dependency override if one
-              // exists. This is mainly used by the pkgbuild tests, which use dependency
-              // overrides for all repo packages.
-              var pubDep = override == null
-                  ? new PackageDep(depName, "hosted", constraint, depName)
-                  : override.withConstraint(constraint);
-              return _registerDependency(
-                  new Dependency("pub itself", Version.none, pubDep));
-            }));
+      // Use the same source and description as the dependency override if one
+      // exists. This is mainly used by the pkgbuild tests, which use dependency
+      // overrides for all repo packages.
+      var pubDep = override == null
+          ? new PackageDep(depName, "hosted", constraint, depName)
+          : override.withConstraint(constraint);
+      return _registerDependency(
+          new Dependency("pub itself", Version.none, pubDep));
+    }));
   }
 
   /// Gets the list of dependencies for package [name].

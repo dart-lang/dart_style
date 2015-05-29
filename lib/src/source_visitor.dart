@@ -100,14 +100,54 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    // Determine if arguments that are bodies need to be indented like regular
+    // arguments or if we can indent them like blocks. In other words, choose
+    // between this:
+    //
+    //     function(
+    //         () {
+    //           body;
+    //         });
+    //
+    // and this:
+    //
+    //     function(() {
+    //       body;
+    //     });
+    //
+    // The rule is pretty simple: if a non-body argument follows any body
+    // argument, then they all have to be indented like regular arguments.
+    var nestBodies = false;
+    var afterBody = false;
+    var trailingBodies = [];
+    for (var argument in node.arguments) {
+      var body = _getBody(argument);
+
+      if (body != null) {
+        afterBody = true;
+        trailingBodies.add(argument);
+      } else if (afterBody) {
+        nestBodies = true;
+        trailingBodies.clear();
+        _startNestBodies();
+        break;
+      }
+    }
+
     // Assumes named arguments follow all positional ones.
     var positionalArgs = node.arguments
         .takeWhile((arg) => arg is! NamedExpression).toList();
     var namedArgs = node.arguments.skip(positionalArgs.length).toList();
 
+    positionalArgs.removeWhere(trailingBodies.contains);
+    namedArgs.removeWhere(trailingBodies.contains);
+
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
-    var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
+    var singleArgument =
+        positionalArgs.length == 1 &&
+        namedArgs.isEmpty &&
+        trailingBodies.isEmpty;
     if (singleArgument) _writer.startSpan();
 
     // Nest around the parentheses in case there are comments before or after
@@ -204,15 +244,18 @@ class SourceVisitor implements AstVisitor {
       _writer.startRule(rule);
 
       // Split before the first named argument.
-      rule.beforeArguments(
-          _writer.split(space: positionalArgs.isNotEmpty));
+      rule.beforeArguments(_writer.split(space: positionalArgs.isNotEmpty));
 
       for (var argument in namedArgs) {
         visit(argument);
 
-        // Write the trailing comma and split.
-        if (argument != namedArgs.last) {
+        // Write the trailing comma.
+        if (argument != node.arguments.last) {
           token(argument.endToken.next);
+        }
+
+        // Write the split.
+        if (argument != namedArgs.last) {
           split();
         }
       }
@@ -220,10 +263,29 @@ class SourceVisitor implements AstVisitor {
       _writer.endRule();
     }
 
-    token(node.rightParenthesis);
+    if (trailingBodies.isNotEmpty) {
+      _writer.unnest();
 
-    if (singleArgument) _writer.endSpan();
-    _writer.unnest();
+      for (var argument in trailingBodies) {
+        if (argument != node.arguments.first) space();
+
+        visit(argument);
+
+        // Write the trailing comma.
+        if (argument != trailingBodies.last) {
+          token(argument.endToken.next);
+        }
+      }
+
+      token(node.rightParenthesis);
+    } else {
+      token(node.rightParenthesis);
+
+      if (singleArgument) _writer.endSpan();
+      _writer.unnest();
+    }
+
+    if (nestBodies) _endNestBodies();
   }
 
   visitAsExpression(AsExpression node) {
@@ -342,7 +404,13 @@ class SourceVisitor implements AstVisitor {
       }
     }
 
+    // Bodies as operands to infix operators should always nest like regular
+    // operands. (Granted, this case is exceedingly rare in real code.)
+    _startNestBodies();
+
     traverse(node);
+
+    _endNestBodies();
 
     _writer.unnest();
     _writer.endSpan();
@@ -381,10 +449,10 @@ class SourceVisitor implements AstVisitor {
     });
   }
 
-  // TODO(bob): Document how hardening nested rules works.
-
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
+
+    // TODO(bob): Force nested blocks here?
 
     _writer.indent();
 
@@ -1070,6 +1138,9 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
     _writer.nestExpression();
 
+    // TODO(bob): Will want to _startNestBodies() here and end at the end in
+    // some cases.
+
     // Recursively walk the chain of method calls.
     var depth = 0;
     visitInvocation(invocation) {
@@ -1665,6 +1736,51 @@ class SourceVisitor implements AstVisitor {
     _writer.unnest();
   }
 
+  /// Returns the AstNode representing the body for [expression] or `null` if
+  /// [expression] doesn't denote a body.
+  ///
+  /// Here, "body" means a collection literal or a function expression's block
+  /// body. This is used to tell which arguments to method calls are bodies or
+  /// not so we can decide how they should be indented.
+  AstNode _getBody(Expression expression) {
+    if (expression is NamedExpression) {
+      expression = (expression as NamedExpression).expression;
+    }
+
+    // TODO(rnystrom): Should we step into parenthesized expressions?
+
+    // Collections are bodies.
+    if (expression is ListLiteral) return expression;
+    if (expression is MapLiteral) return expression;
+
+    // Curly body functions are.
+    if (expression is! FunctionExpression) return null;
+    var function = expression as FunctionExpression;
+    if (function.body is! BlockFunctionBody) return null;
+    var body = function.body as BlockFunctionBody;
+    return body.block;
+  }
+
+  // TODO(bob): Clean up.
+  // TODO(bob): Could make this a stack of sets instead of a monotlithic one.
+
+  /// The number out oustanding calls to [_startNestBodies].
+  int _nestBodiesCount = 0;
+
+  /// Indicates that all bodies visited until the matching [_endNestBodies]
+  /// call will be indented based on expression nesting.
+  ///
+  /// Ohterwise, instead of creating an actual body, we just update the
+  /// indentation of the current one.
+  void _startNestBodies() {
+    _nestBodiesCount++;
+  }
+
+  /// Ends the nesting caused by a previous call to [_startNestBodies].
+  void _endNestBodies() {
+    _nestBodiesCount--;
+  }
+
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the rule used to split inside the brackets.
   ///
@@ -1677,7 +1793,7 @@ class SourceVisitor implements AstVisitor {
     token(leftBracket);
 
     // Indent the body.
-    if (isBody) _writer.startBody();
+    if (isBody && _nestBodiesCount > 0) _writer.startBody();
     _writer.indent();
 
     // Split after the bracket.
@@ -1700,7 +1816,7 @@ class SourceVisitor implements AstVisitor {
       _writer.split(nest: false, space: space);
     });
 
-    if (isBody) _writer.endBody();
+    if (isBody && _nestBodiesCount > 0) _writer.endBody();
 
     _writer.endRule();
   }

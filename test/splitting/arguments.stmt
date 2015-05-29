@@ -135,13 +135,97 @@ someLongReceiver
 method(function([veryLongElement, veryLongElement], [veryLongElement, veryLongElement]), argument);
 <<<
 method(
-    function(
-        [
-          veryLongElement,
-          veryLongElement
-        ],
-        [
-          veryLongElement,
-          veryLongElement
-        ]),
+    function([
+      veryLongElement,
+      veryLongElement
+    ], [
+      veryLongElement,
+      veryLongElement
+    ]),
     argument);
+>>> trailing functions are not indented
+function(argument, argument, argument, argument, () {;}, () {;}, () {;}, () {;});
+<<<
+function(argument, argument, argument,
+    argument, () {
+  ;
+}, () {
+  ;
+}, () {
+  ;
+}, () {
+  ;
+});
+>>> all trailing functions
+function(() {;}, () {;}, () {;}, () {;});
+<<<
+function(() {
+  ;
+}, () {
+  ;
+}, () {
+  ;
+}, () {
+  ;
+});
+>>> trailing bodies with named arguments
+function(() {;}, () {;}, a: () {;}, b: () {;});
+<<<
+function(() {
+  ;
+}, () {
+  ;
+}, a: () {
+  ;
+}, b: () {
+  ;
+});
+>>> trailing collections are not indented
+function(argument, argument, argument, argument,
+[element, element, element, element],
+{'key': value, 'other key': value, 'third key': value});
+<<<
+function(argument, argument, argument,
+    argument, [
+      element,
+      element,
+      element,
+      element
+    ], {
+      'key': value,
+      'other key': value,
+      'third key': value
+    });
+>>> all trailing collections
+function([element, element, element, element], {'key': value, 'other key': value, 'third key': value});
+<<<
+function([
+  element,
+  element,
+  element,
+  element
+], {
+  'key': value,
+  'other key': value,
+  'third key': value
+});
+>>> non-body non-preceding argument forces all bodies to indent
+function([element, element, element, element], argument,
+{'key': value, 'other key': value, 'third key': value}, () {;});
+<<<
+function(
+    [
+      element,
+      element,
+      element,
+      element
+    ],
+    argument,
+    {
+      'key': value,
+      'other key': value,
+      'third key': value
+    },
+    () {
+      ;
+    });
