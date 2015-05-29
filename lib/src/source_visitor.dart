@@ -350,11 +350,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
-    _startBody(node.leftBracket);
+    var isBody = node.parent is BlockFunctionBody;
+
+    _startBody(node.leftBracket, isBody: isBody);
 
     visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
 
-    _endBody(node.rightBracket);
+    _endBody(node.rightBracket, isBody: isBody);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -1595,7 +1597,7 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visit(node.typeArguments);
 
-    _startBody(leftBracket, cost: cost);
+    _startBody(leftBracket, cost: cost, isBody: true);
 
     // Each list element takes at least 3 characters (one character for the
     // element, one for the comma, one for the space), so force it to split if
@@ -1616,7 +1618,7 @@ class SourceVisitor implements AstVisitor {
       _writer.unnest();
     }
 
-    _endBody(rightBracket);
+    _endBody(rightBracket, isBody: true);
   }
 
   /// Visits a list of [combinators] following an "import" or "export"
@@ -1667,11 +1669,15 @@ class SourceVisitor implements AstVisitor {
   /// starting the rule used to split inside the brackets.
   ///
   /// If [space] is `true`, then the initial split will use a space if not
-  /// split.
-  void _startBody(Token leftBracket, {int cost, bool space: false}) {
+  /// split.  If [isBody] is `true`, creates a new body as well. This is used
+  /// for functions and collection literals, but not other "curly bodies" like
+  /// classes, blocks, etc.
+  void _startBody(Token leftBracket,
+      {int cost, bool space: false, bool isBody: false}) {
     token(leftBracket);
 
     // Indent the body.
+    if (isBody) _writer.startBody();
     _writer.indent();
 
     // Split after the bracket.
@@ -1686,12 +1692,15 @@ class SourceVisitor implements AstVisitor {
   /// Used for blocks, other curly bodies, and collection literals.
   ///
   /// If [space] is `true`, then the final split will use a space if not split.
-  void _endBody(Token rightBracket, {bool space: false}) {
+  /// if [isBody] is `true`, this closes the innermost body.
+  void _endBody(Token rightBracket, {bool space: false, bool isBody: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
       _writer.split(nest: false, space: space);
     });
+
+    if (isBody) _writer.endBody();
 
     _writer.endRule();
   }

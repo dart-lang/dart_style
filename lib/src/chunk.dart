@@ -4,7 +4,6 @@
 
 library dart_style.src.chunk;
 
-import 'debug.dart' as debug;
 import 'fast_hash.dart';
 import 'indent_stack.dart';
 import 'rule.dart';
@@ -73,11 +72,13 @@ class Chunk extends Selection {
   String get text => _text;
   String _text;
 
-  /// The indentation level of the line following this chunk.
+  /// The number of levels of indentation from the left edge of the body that
+  /// contains this chunk.
   ///
-  /// Note that this is not a relative indentation *offset*. It's the full
-  /// indentation.
-  int get indent => _indent.indentation;
+  /// For top level chunks that are not inside any body, this also includes
+  /// leading indentation.
+  int get indent => _indent;
+  int _indent;
 
   /// The number of levels of expression nesting following this chunk.
   ///
@@ -89,13 +90,14 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  int get nesting => _indent.nesting;
+  int get nesting => _nesting;
+  int _nesting;
 
-  /// The indentation state for the line following this chunk.
+  /// The number of surrounding bodies containing the end of this chunk.
   ///
-  /// When a chunk is newly created from text, this is `null` to indicate that
-  /// the chunk has no splitting information yet.
-  IndentState _indent;
+  /// Zero for top-level chunks.
+  int get bodyDepth => _bodyDepth;
+  int _bodyDepth;
 
   /// Whether it's valid to add more text to this chunk or not.
   ///
@@ -103,7 +105,7 @@ class Chunk extends Selection {
   /// split information set by calling [handleSplit]. Once the latter has been
   /// called, no more text should be added to the chunk since it would appear
   /// *before* the split.
-  bool get canAddText => _indent == null;
+  bool get canAddText => _rule == null;
 
   /// The [Rule] that controls when a split should occur after this chunk.
   ///
@@ -113,7 +115,7 @@ class Chunk extends Selection {
 
   /// Whether this chunk is always followed by a newline or whether the line
   /// splitter may choose to keep the next chunk on the same line.
-  bool get isHardSplit => _indent != null && _rule is HardSplitRule;
+  bool get isHardSplit => _rule is HardSplitRule;
 
   /// `true` if an extra blank line should be output after this chunk if it's
   /// split.
@@ -129,6 +131,13 @@ class Chunk extends Selection {
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
 
+  /// Gets whether this chunk ends a series of chunks that can be split
+  /// completely independently of the following chunks.
+  ///
+  /// Used to run the [LineSplitter] on smaller lists of chunks to improve
+  /// performance.
+  bool get endsLine => isHardSplit && nesting == 0 && bodyDepth == 0;
+
   /// The [Span]s that contain this chunk.
   final spans = [];
 
@@ -138,13 +147,12 @@ class Chunk extends Selection {
   /// Discard the split for the chunk and put it back into the state where more
   /// text can be appended.
   void allowText() {
-    _indent = null;
+    _rule = null;
   }
 
   /// Append [text] to the end of the split's text.
   void appendText(String text) {
     assert(canAddText);
-
     _text += text;
   }
 
@@ -164,7 +172,7 @@ class Chunk extends Selection {
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(IndentState indent, Rule rule,
+  void applySplit(IndentStack indent, Rule rule,
       {bool nest, bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (nest == null) nest = false;
     if (flushLeft == null) flushLeft = false;
@@ -174,17 +182,21 @@ class Chunk extends Selection {
     if (isHardSplit || rule is HardSplitRule) {
       // A hard split always wins.
       _rule = rule;
-    } else if (_indent == null) {
+    } else if (_rule == null) {
       // If the chunk hasn't been initialized yet, just inherit the rule.
       _rule = rule;
     }
 
     // Last newline settings win.
-    if (!flushLeft) {
-      _indent = indent.clone(nest: nest);
+    if (!flushLeft && nest) {
+      _nesting = indent.nesting;
     } else {
-      _indent = new IndentState();
+      _nesting = 0;
     }
+
+    // TODO(bob): Handle flushLeft.
+    _indent = indent.indentation;
+    _bodyDepth = indent.bodyDepth;
 
     _spaceWhenUnsplit = spaceWhenUnsplit;
 
@@ -192,29 +204,30 @@ class Chunk extends Selection {
     _isDouble = _isDouble || isDouble;
   }
 
-  void flattenNesting(Map<int, int> nesting) {
-    _indent.flattenNesting(nesting);
+  void flattenNesting(Map<int, int> nestingMap) {
+    _nesting = nestingMap[_nesting];
   }
 
   String toString() {
     var parts = [];
 
-    if (text.isNotEmpty) parts.add("${debug.bold(text)}");
+    if (text.isNotEmpty) parts.add(text);
 
-    if (_indent != null) {
-      if (_indent.indentation != 0) parts.add("indent:${_indent.indentation}");
-      if (_indent.nesting != 0) parts.add("nest:${_indent.nesting}");
-    } else {
-      parts.add("(no split info)");
-    }
-
+    if (_indent != null) parts.add("indent:$_indent");
+    if (_nesting != 0) parts.add("nesting:$_nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
 
-    if (!isHardSplit) parts.add(rule.toString());
+    if (_rule == null) {
+      parts.add("(no split)");
+    } else if (isHardSplit) {
+      parts.add("hard");
+    } else {
+      parts.add(rule.toString());
 
-    if (_rule != null && _rule.implies.isNotEmpty) {
-      parts.add("-> ${_rule.implies.join(' ')}");
+      if (_rule.implies.isNotEmpty) {
+        parts.add("-> ${_rule.implies.join(' ')}");
+      }
     }
 
     return parts.join(" ");

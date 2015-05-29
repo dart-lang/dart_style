@@ -224,7 +224,7 @@ class LineSplitter {
       // The chunk is splitting in an expression, so try all of the possible
       // nesting combinations.
       var ruleValues = _advancePrefix(prefix, value);
-      var longerPrefixes = prefix.split(chunk, ruleValues, chunk.indent);
+      var longerPrefixes = prefix.split(chunk, ruleValues);
       for (var longerPrefix in longerPrefixes) {
         _tryLongerPrefix(solution, prefix, longerPrefix);
       }

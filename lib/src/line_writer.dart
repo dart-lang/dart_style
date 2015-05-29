@@ -268,6 +268,33 @@ class LineWriter {
     _stack.unindent(levels);
   }
 
+  /// Begins a new body.
+  ///
+  /// Used for function expressions and collection literals. Unlike simple
+  /// indentation, the entire contents of a body may be indented based on
+  /// the nesting of the expression containing the body. For example:
+  ///
+  ///     function(
+  ///         {
+  ///           innerFunction;
+  ///         },
+  ///         [
+  ///           list,
+  ///           elements
+  ///         ],
+  ///         argument);
+  ///
+  /// Note that the function and list bodies are both indented +4 to match the
+  /// argument lists's indentation.
+  void startBody() {
+    _stack.startBody();
+  }
+
+  /// Ends the innermost body.
+  void endBody() {
+    _stack.endBody();
+  }
+
   /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
@@ -551,7 +578,7 @@ class LineWriter {
     var start = 0;
     for (var i = 1; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit || chunk.nesting != 0) continue;
+      if (!chunk.endsLine) continue;
 
       _preemptRules(start, i);
       start = i;
@@ -559,12 +586,6 @@ class LineWriter {
 
     if (start < _chunks.length) {
       _preemptRules(start, _chunks.length);
-    }
-
-    if (debug.traceFormatter) {
-      debug.log(debug.green("\nWriting:"));
-      debug.dumpChunks(_chunks);
-      debug.log();
     }
 
     // Now that we know what hard splits there will be, break the chunks into
@@ -575,7 +596,7 @@ class LineWriter {
     start = 0;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit || chunk.nesting != 0) continue;
+      if (!chunk.endsLine) continue;
 
       // Write the newlines required by the previous line.
       for (var i = 0; i < bufferedNewlines; i++) {
@@ -600,6 +621,12 @@ class LineWriter {
   void _completeLine(int indent, List<Chunk> chunks) {
     // We know unused nesting levels will never be used now, so flatten them.
     _flattenNestingLevels(chunks);
+
+    if (debug.traceFormatter) {
+      debug.log(debug.green("\nWriting:"));
+      debug.dumpChunks(chunks);
+      debug.log();
+    }
 
     var splitter = new LineSplitter(
         _formatter.lineEnding, _formatter.pageWidth, chunks, indent);

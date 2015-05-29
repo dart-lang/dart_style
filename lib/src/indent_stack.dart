@@ -4,16 +4,10 @@
 
 library dart_style.src.indent_stack;
 
+// TODO(bob): Unify "block" and "body" terminology. Rename this class.
 /// Describes the block indentation and expression nesting at a point in the
 /// code.
-///
-/// This class when used by itself represents an immutable "frozen" indentation
-/// state. The [IndentStack] is a the "live" mutable state managed by
-/// [LineWriter].
-///
-/// Technically, this class is only mostly immutable. It does allow it's
-/// nesting levels to be remapped, but that's a one-time operation.
-class IndentState {
+class IndentStack  {
   /// The expression nesting level within each block level.
   ///
   /// This is tracked as a stack of numbers. Each element in the stack
@@ -32,46 +26,15 @@ class IndentState {
   /// the same time, when the lambda is done, we need to return to the nesting
   /// level of `outer(invocation(...`.
   ///
-  /// Has an implicit entry for top-most expression nest nesting outside of any
+  /// Has an implicit entry for top-most expression nesting outside of any
   /// block for things like wrapped directives.
-  final List<int> _stack;
+  final List<int> _stack = [0];
 
-  /// The number of levels of block indentation.
-  int get indentation => _stack.length - 1;
+  // TODO(rnystrom): Unify with _stack?
+  /// The initial absolute indentation level of each of the currently open
+  /// bodies.
+  final _bodies = [0];
 
-  /// The nesting depth of the current inner-most block.
-  int get nesting => _stack.last;
-
-  /// Creates a new state with no indentation.
-  IndentState() : _stack = [0];
-
-  IndentState._(this._stack);
-
-  /// Creates an immutable copy of the state current indentation state.
-  IndentState clone({bool nest: false}) {
-    var state = new IndentState._(_stack.toList());
-    if (!nest) state._setNesting(0);
-    return state;
-  }
-
-  /// Renumbers the expression nesting level of the innermost block using
-  /// [nesting].
-  ///
-  /// The map maps old nesting levels to new ones.
-  void flattenNesting(Map<int, int> nesting) {
-    // TODO(bob): This only touches the innermost block now. Eventually we'll
-    // need to renumber outer ones too when we flatten.
-    _setNesting(nesting[this.nesting]);
-  }
-
-  /// Sets the nesting level of the innermost block to [value].
-  void _setNesting(int value) {
-    _stack[_stack.length - 1] = value;
-  }
-}
-
-/// Tracks the current block indentation and and expression nesting.
-class IndentStack extends IndentState {
   /// When not `null`, the nesting level of the current innermost block after
   /// the next token is written.
   ///
@@ -92,14 +55,36 @@ class IndentStack extends IndentState {
   /// though we haven't written any of its tokens yet.
   int _pendingNesting;
 
-  /// Increases indentation of the next line by [levels].
+  /// The current number of open bodies.
+  int get bodyDepth => _bodies.length - 1;
+
+  /// The current number of levels of indentation within the current body.
+  int get indentation => _absoluteIndent - _bodies.last;
+
+  /// The nesting depth of the current inner-most block.
+  int get nesting => _stack.last;
+
+  /// The total current number of levels of block indentation.
+  int get _absoluteIndent => _stack.length - 1;
+
+  /// Begins a new body.
+  void startBody() {
+    _bodies.add(_absoluteIndent);
+  }
+
+  /// Ends the innermost body.
+  void endBody() {
+    _bodies.removeLast();
+  }
+
+  /// Increases indentation of the next line in the current body by [levels].
   void indent([int levels = 1]) {
     assert(_pendingNesting == null);
 
     while (levels-- > 0) _stack.add(0);
   }
 
-  /// Decreases indentation of the next line by [levels].
+  /// Decreases indentation of the next line in the current body by [levels].
   void unindent([int levels = 1]) {
     assert(_pendingNesting == null);
 
@@ -136,5 +121,10 @@ class IndentStack extends IndentState {
 
     _setNesting(_pendingNesting);
     _pendingNesting = null;
+  }
+
+  /// Sets the nesting level of the innermost block to [value].
+  void _setNesting(int value) {
+    _stack[_stack.length - 1] = value;
   }
 }

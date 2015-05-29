@@ -80,7 +80,13 @@ void dumpChunks(List<Chunk> chunks) {
       row.add("-> ${chunk.rule.implies.join(" ")}");
     }
 
-    if (chunk.indent != 0) {
+    if (chunk.bodyDepth != null) {
+      row.add("body ${chunk.bodyDepth}");
+    } else {
+      row.add("");
+    }
+
+    if (chunk.indent != null) {
       row.add("indent ${chunk.indent}");
     } else {
       row.add("");

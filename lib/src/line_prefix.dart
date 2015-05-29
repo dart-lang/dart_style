@@ -8,12 +8,16 @@ import 'chunk.dart';
 import 'nesting.dart';
 import 'rule.dart';
 
-/// A prefix of a series of chunks, which in turn can be considered a key to
-/// describe the suffix of the remaining chunks that follows it.
+/// A prefix of a series of chunks and the context needed to uniquely describe
+/// any shared state between the preceding and following chunks.
 ///
-/// This is used by the splitter to memoize suffixes whose best splits have
-/// previously been calculated. For each unique [LinePrefix], there will be a
-/// single set of best splits for the remainder of the line following it.
+/// This is used by [LineSplitter] to memoize suffixes whose best splits have
+/// previously been calculated. For each unique [LinePrefix], there is a single
+/// set of best splits for the remainder of the line following it.
+///
+/// [LinePrefix] is a value type. It overloads [hashCode] and [==] and it's
+/// critical that those be correct and efficient. These objects are used as
+/// keys in the [LineSplitter]'s memoization table.
 class LinePrefix {
   /// The number of chunks in the prefix.
   ///
@@ -27,31 +31,37 @@ class LinePrefix {
   /// don't affect the suffix.
   final Map<Rule, int> ruleValues;
 
-  /// The nested expressions in the prefix that are still open at the beginning
-  /// of the suffix.
-  ///
-  /// For example, if the line is `outer(inner(argument))`, and the prefix is
-  /// `outer(inner(`, the nesting stack will be two levels deep.
-  final NestingStack _nesting;
+  /// The stack of bodies that are open at the end of the prefix.
+  final NestingStack _body;
 
-  /// The indentation level of the line starting after this chunk, not
-  /// including additional levels from [_nesting].
-  final int _indent;
+  /// Additional indentation within the current [_body].
+  ///
+  /// This handles things like switch cases, blocks, and constructor
+  /// initialization lists that tweak the per-line indentation but aren't full
+  /// bodies themselves.
+  final int _extraIndent;
+
+  /// The current expression nesting at the end of the prefix.
+  final NestingStack _nesting;
 
   /// The indentation level of the line starting after this chunk, including
   /// from expression nesting.
-  int get indent => _indent + _nesting.indent;
+  int get indent => _body.indent + _extraIndent + _nesting.indent;
 
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
-  LinePrefix(int indent) : this._(0, {}, indent, new NestingStack());
+  LinePrefix(int indent)
+      : this._(0, {}, new NestingStack(), indent, new NestingStack());
 
-  LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting);
+  LinePrefix._(this.length, this.ruleValues, this._body, this._extraIndent,
+      this._nesting);
 
   bool operator ==(other) {
     if (other is! LinePrefix) return false;
 
     if (length != other.length) return false;
+    if (_extraIndent != other._extraIndent) return false;
+    if (_body != other._body) return false;
     if (_nesting != other._nesting) return false;
 
     // Compare rule values.
@@ -65,26 +75,33 @@ class LinePrefix {
   }
 
   // TODO(rnystrom): Can we make this more effective?
-  int get hashCode => length.hashCode ^ _nesting.hashCode;
+  int get hashCode =>
+      length.hashCode ^
+      _body.hashCode ^
+      _extraIndent ^
+      _nesting.hashCode;
 
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
   LinePrefix extend(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _indent, _nesting);
+      new LinePrefix._(length + 1, ruleValues, _body, _extraIndent, _nesting);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
   /// boundary so there may be multiple possible different nesting stacks.
-  Iterable<LinePrefix> split(
-      Chunk chunk, Map<Rule, int> updatedValues, int indent) {
+  Iterable<LinePrefix> split(Chunk chunk, Map<Rule, int> updatedValues) {
     // TODO(rnystrom): Inline this in LineSplitter?
-    return _nesting.applySplit(chunk).map((nesting) =>
-        new LinePrefix._(length + 1, updatedValues, indent, nesting));
+    var body = _body.updateBody(chunk.bodyDepth, indent);
+
+    // TODO(bob): To ignore nesting, use _body.indent + _offset instead of chunk.indent.
+    return _nesting.updateExpression(chunk.nesting)
+        .map((nesting) => new LinePrefix._(
+            length + 1, updatedValues, body, chunk.indent, nesting));
   }
 
   String toString() {
     var result = "prefix $length";
-    if (_nesting.indent != 0) result += " nesting $_nesting";
+    if (_nesting.indent != 0) result += " nesting ${_nesting.indent}";
     if (ruleValues.isNotEmpty) {
       var rules = ruleValues.keys
           .map((key) => "$key:${ruleValues[key]}")

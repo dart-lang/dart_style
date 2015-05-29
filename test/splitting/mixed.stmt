@@ -75,15 +75,15 @@ receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 receiver.firstMethod().next(
     longIdentifier ==
         veryLongIdentifier);
->>> list inside separable TODO(rnystrom): Is this what we want?
+>>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
 receiver
     .first([
-  listItem,
-  secondItem,
-  thirdItem
-])
+      listItem,
+      secondItem,
+      thirdItem
+    ])
     .second();
 >>> binary operators in ascending precedence
 {

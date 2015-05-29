@@ -4,16 +4,19 @@
 
 library dart_style.src.nesting;
 
-import 'chunk.dart';
-
 /// The number of indentation levels in a single level of expression nesting.
 const _indentsPerNest = 2;
 
-/// Maintains a stack of nested expressions that have currently been split.
+/// Maintains a stack of indentation levels. Used for tracking both body
+/// indentation and nested expressions.
 ///
-/// A single statement may have multiple different levels of indentation based
-/// on the expression nesting level at the point where the line is broken. For
-/// example:
+/// For bodies, each depth is the number of surrounding bodies and the indent
+/// is the starting indentation level of the body. A [NestingStack] for a body
+/// will have a "node" for each depth with varying indent values at each depth.
+///
+/// Expression nesting is a little different. A single statement may have
+/// multiple different levels of indentation based on the expression nesting
+/// level at the point where the line is broken. For example:
 ///
 ///     someFunction(argument, argument,
 ///         innerFunction(argument,
@@ -23,8 +26,13 @@ const _indentsPerNest = 2;
 /// level of the previous line(s) to determine how far the next line must be
 /// indented.
 ///
+/// When used for expressions, each indent will always be two levels more than
+/// the parent. However, nodes may skip over a depth if that level of
+/// expression nesting wasn't assigned to a column.
+///
 /// This class is a persistent collection. Each instance is immutable and
-/// methods to modify it return a new collection.
+/// methods to modify it return a new collection. Its state defines part of a
+/// [LinePrefix] and is used by [LineSplitter].
 class NestingStack {
   /// The number of visible indentation levels for the current nesting.
   ///
@@ -35,9 +43,8 @@ class NestingStack {
   final NestingStack _parent;
 
   /// The number of surrounding expression nesting levels.
-  final int _depth;
-
   int get depth => _depth;
+  final int _depth;
 
   NestingStack() : this._(null, 0, 0);
 
@@ -79,6 +86,32 @@ class NestingStack {
     return indent.hashCode ^ _depth.hashCode;
   }
 
+  /// Updates a body chain to match [depth].
+  ///
+  /// Pushes or pops bodies as needed. If a new body is added, its initial
+  /// indentation will be [newIndent].
+  NestingStack updateBody(int depth, int newIndent) {
+    // Update the body stack to get to the chunk's body.
+    var nesting = this;
+
+    // If we have exited any bodies, return to the previous indentation depth.
+    while (depth < nesting.depth) {
+      nesting = nesting._parent;
+    }
+
+    // If we have entered a new body, keep track of it.
+    if (depth > nesting.depth) {
+      // Should never jump into more than one body in a single chunk. The rules
+      // for how inner bodies force outer splits should prevent this from
+      // occurring.
+      assert(depth == nesting.depth + 1);
+
+      nesting = new NestingStack._(nesting, depth, newIndent);
+    }
+
+    return nesting;
+  }
+
   /// Takes this nesting stack and produces all of the new nesting stacks that
   /// are possible when followed by the nesting level of [split].
   ///
@@ -117,16 +150,16 @@ class NestingStack {
   ///
   /// To accommodate those, this returns the list of all possible ways the
   /// nesting stack can be modified.
-  List<NestingStack> applySplit(Chunk split) {
-    if (split.nesting == _depth) return [this];
+  List<NestingStack> updateExpression(int nesting) {
+    if (nesting == _depth) return [this];
 
     // If the new split is less nested than we currently are, pop and discard
     // the previous nesting levels.
-    if (split.nesting < _depth) {
+    if (nesting < _depth) {
       // Pop items off the stack until we find the level we are now at.
       var stack = this;
       while (stack != null) {
-        if (stack._depth == split.nesting) return [stack];
+        if (stack._depth == nesting) return [stack];
         stack = stack._parent;
       }
 
@@ -138,7 +171,7 @@ class NestingStack {
 
     // Going deeper, so try every indentating for every subset of expression
     // nesting levels between the old and new one.
-    return _intermediateDepths(_depth, split.nesting).map((depths) {
+    return _intermediateDepths(_depth, nesting).map((depths) {
       var result = this;
 
       for (var depth in depths) {
@@ -147,7 +180,7 @@ class NestingStack {
       }
 
       return new NestingStack._(
-          result, split.nesting, result.indent + _indentsPerNest);
+          result, nesting, result.indent + _indentsPerNest);
     }).toList();
   }
 
