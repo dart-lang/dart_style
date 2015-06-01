@@ -139,16 +139,19 @@ class SourceVisitor implements AstVisitor {
         .takeWhile((arg) => arg is! NamedExpression).toList();
     var namedArgs = node.arguments.skip(positionalArgs.length).toList();
 
-    positionalArgs.removeWhere(trailingBodies.contains);
-    namedArgs.removeWhere(trailingBodies.contains);
-
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
-    var singleArgument =
-        positionalArgs.length == 1 &&
-        namedArgs.isEmpty &&
-        trailingBodies.isEmpty;
-    if (singleArgument) _writer.startSpan();
+    var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
+    if (singleArgument) {
+      _writer.startSpan();
+
+      // If we just have a single positional argument, we never need to treat
+      // it like a nested trailing body.
+      trailingBodies.clear();
+    }
+
+    positionalArgs.removeWhere(trailingBodies.contains);
+    namedArgs.removeWhere(trailingBodies.contains);
 
     // Nest around the parentheses in case there are comments before or after
     // them.
