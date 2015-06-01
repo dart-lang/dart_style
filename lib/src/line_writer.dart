@@ -701,6 +701,9 @@ class LineWriter {
   // TODO(bob): The fact that this generates non-optimal solutions is a drag.
   // Can we do something better?
   void _preemptRules(int start, int end) {
+    // TODO(bob): Should be rule.canBeImplied instead of is! HardSplitRule.
+    // But that significantly regresses perf at least until we have better
+    // handling for method chains.
     var rules = _chunks
         .sublist(start, end)
         .map((chunk) => chunk.rule)

@@ -160,16 +160,6 @@ void testDirectory(String name) {
         }
 
         test(description, () {
-          // TODO(bob): Temp!
-          if (entry.path.contains("38")) {
-            throw "test 38 is stack overflowing";
-          }
-
-          // TODO(bob): Temp!
-          if (entry.path.contains("108")) {
-            throw "test 108 is slow";
-          }
-
           var isCompilationUnit = p.extension(entry.path) == ".unit";
 
           var inputCode = _extractSelection(input,
