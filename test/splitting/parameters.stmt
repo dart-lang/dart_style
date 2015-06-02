@@ -1,4 +1,25 @@
 40 columns                              |
+>>> many parameters
+method(first, second, third, fourth, fifth, sixth, seventh, eighth, ninth,
+    tenth, eleventh, twelfth) {
+  print('42');
+}
+<<<
+method(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+    sixth,
+    seventh,
+    eighth,
+    ninth,
+    tenth,
+    eleventh,
+    twelfth) {
+  print('42');
+}
 >>> parameters fit but ) does not
 method(int firstArgument, int argumentTo) {
   print('42');

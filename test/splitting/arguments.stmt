@@ -1,15 +1,21 @@
 40 columns                              |
 >>> many arguments
 method(first, second, third, fourth, fifth, sixth, seventh, eighth, ninth,
-    tenth, eleventh, twelfth) {
-  print('42');
-}
+    tenth, eleventh, twelfth);
 <<<
-method(first, second, third, fourth,
-    fifth, sixth, seventh, eighth,
-    ninth, tenth, eleventh, twelfth) {
-  print('42');
-}
+method(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+    sixth,
+    seventh,
+    eighth,
+    ninth,
+    tenth,
+    eleventh,
+    twelfth);
 >>> wrap before first argument
 longFunctionIsLoooooooooooooong(argument, argument);
 <<<
@@ -25,20 +31,6 @@ printNumbers(000000000000000000000, 111);
 <<<
 printNumbers(
     000000000000000000000, 111);
->>> force multi-line because of contained block
-method(first,() {"fn";},third,fourth, fifth, sixth, seventh, eighth);
-<<<
-method(
-    first,
-    () {
-      "fn";
-    },
-    third,
-    fourth,
-    fifth,
-    sixth,
-    seventh,
-    eighth);
 >>>
 function(firstArg * second, third * fourthAndLongest);
 <<<
@@ -58,22 +50,6 @@ someFunctionOne(
         argument, argument, argument),
     someArgument,
     someArgument);
->>> hard split inside argument list
-foo(argument, argument, argument, argument, () { fn; }, argument, argument,
-    argument, argument);
-<<<
-foo(
-    argument,
-    argument,
-    argument,
-    argument,
-    () {
-      fn;
-    },
-    argument,
-    argument,
-    argument,
-    argument);
 >>> force all arguments to split if an argument splits
 foo(a, b, inner(veryLongArgument, veryLongArgument), c);
 <<<
@@ -126,6 +102,20 @@ reallyLongMethod(
     foo: first,
     bar: second,
     baz: third);
+>>> if positional args go one per line, named do too
+reallyLongMethod(first, second, third, fourth, fifth, sixth, seventh, eighth, a: 1, b: 2);
+<<<
+reallyLongMethod(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+    sixth,
+    seventh,
+    eighth,
+    a: 1,
+    b: 2);
 >>> avoid splitting before single positional argument
 someLongReceiver.veryLongMethod(argument);
 <<<
@@ -143,43 +133,6 @@ method(
       veryLongElement
     ]),
     argument);
->>> trailing functions are not indented
-function(argument, argument, argument, argument, () {;}, () {;}, () {;}, () {;});
-<<<
-function(argument, argument, argument,
-    argument, () {
-  ;
-}, () {
-  ;
-}, () {
-  ;
-}, () {
-  ;
-});
->>> all trailing functions
-function(() {;}, () {;}, () {;}, () {;});
-<<<
-function(() {
-  ;
-}, () {
-  ;
-}, () {
-  ;
-}, () {
-  ;
-});
->>> trailing bodies with named arguments
-function(() {;}, () {;}, a: () {;}, b: () {;});
-<<<
-function(() {
-  ;
-}, () {
-  ;
-}, a: () {
-  ;
-}, b: () {
-  ;
-});
 >>> trailing collections are not indented
 function(argument, argument, argument, argument,
 [element, element, element, element],

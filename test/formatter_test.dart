@@ -16,7 +16,7 @@ void main() {
   // Tidy up the unittest output.
   filterStacks = true;
   formatStacks = true;
-  useCompactVMConfiguration();
+  //useCompactVMConfiguration();
 
   testDirectory("comments");
   testDirectory("regression");

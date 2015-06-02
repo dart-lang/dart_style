@@ -1,0 +1,91 @@
+40 columns                              |
+>>> force multi-line because of contained function
+method(first,() {fn;},third);
+<<<
+method(
+    first,
+    () {
+      fn;
+    },
+    third);
+>>> nothing but function args does not nest
+longFunctionName(() {;}, () {;}, () {;});
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
+}, () {
+  ;
+});
+>>> trailing functions do not nest
+longFunctionName(argument, argument, argument, argument, () {;}, () {;});
+<<<
+longFunctionName(argument, argument,
+    argument, argument, () {
+  ;
+}, () {
+  ;
+});
+>>> leading functions do not nest
+longFunctionName(() {;}, () {;}, argument, argument, argument, argument);
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
+}, argument, argument, argument,
+    argument);
+>>> functions between other args do not nest
+longFunctionName(argument, argument, argument, argument, () {;}, () {;}, argument, argument);
+<<<
+longFunctionName(argument, argument,
+    argument, argument, () {
+  ;
+}, () {
+  ;
+}, argument, argument);
+>>> arg between functions forces nesting
+longFunctionName(argument, () {;}, argument, () {;}, argument);
+<<<
+longFunctionName(
+    argument,
+    () {
+      ;
+    },
+    argument,
+    () {
+      ;
+    },
+    argument);
+>>> many leading and trailing
+longFunctionName(argument, argument, argument, argument, argument, argument,
+() {;}, () {;}, argument, argument, argument, argument, argument, argument);
+<<<
+longFunctionName(
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argument, () {
+  ;
+}, () {
+  ;
+},
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argument);
+>>> functions with named arguments
+longFunctionName(() {;}, a: () {;}, b: () {;});
+<<<
+longFunctionName(() {
+  ;
+}, a: () {
+  ;
+}, b: () {
+  ;
+});
