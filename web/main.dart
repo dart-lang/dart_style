@@ -7,25 +7,30 @@ TextAreaElement after;
 
 int width = 80;
 
+PreElement columnMarker = querySelector(".column-marker");
+InputElement widthInput = querySelector("#width");
+OutputElement widthOutput = querySelector("#width-output");
+
 void main() {
   before = querySelector("#before") as TextAreaElement;
   after = querySelector("#after") as TextAreaElement;
 
   before.onKeyUp.listen((event) {
     reformat();
+
+    window.localStorage["code"] = before.value;
   });
 
-  var columnMarker = querySelector(".column-marker");
+  var code = window.localStorage["code"];
+  if (code != null) before.text = code;
 
-  var widthInput = querySelector("#width") as InputElement;
-  var widthOutput = querySelector("#width-output") as OutputElement;
+  if (window.localStorage.containsKey("width")) {
+    setWidth(window.localStorage["width"]);
+  }
 
   widthInput.onInput.listen((event) {
-    widthOutput.value = widthInput.value;
-    width = int.parse(widthInput.value);
-    var pad = " " * width + "|";
-    columnMarker.innerHtml = "$pad $width columns" + "\n$pad" * 29;
-    reformat();
+    setWidth(widthInput.value);
+    window.localStorage["width"] = widthInput.value;
   });
 
   reformat();
@@ -47,4 +52,15 @@ void reformat() {
   } on FormatterException catch (err) {
     after.value = "Format failed:\n$err";
   }
+}
+
+void setWidth(String widthString) {
+  width = int.parse(widthString);
+
+  widthInput.value = widthString;
+  widthOutput.value = widthString;
+
+  var pad = " " * width + "|";
+  columnMarker.innerHtml = "$pad $width columns" + "\n$pad" * 29;
+  reformat();
 }
