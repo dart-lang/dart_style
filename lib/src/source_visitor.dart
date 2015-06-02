@@ -197,11 +197,12 @@ class SourceVisitor implements AstVisitor {
     */
 
     // Allow splitting after "(".
+    var positionalRule;
     if (positionalArgs.isNotEmpty) {
-      var rule = new PositionalArgsRule(isSingleArgument: singleArgument);
+      positionalRule = new PositionalArgsRule(isSingleArgument: singleArgument);
 
-      _writer.startRule(rule);
-      rule.beforeArgument(_writer.split());
+      _writer.startRule(positionalRule);
+      positionalRule.beforeArgument(_writer.split());
 
       // Try to not split the argument.
       _writer.startSpan(Cost.positionalArguments);
@@ -216,7 +217,7 @@ class SourceVisitor implements AstVisitor {
 
         // Positional arguments split independently.
         if (argument != positionalArgs.last) {
-          rule.beforeArgument(split());
+          positionalRule.beforeArgument(split());
         }
       }
 
@@ -227,6 +228,11 @@ class SourceVisitor implements AstVisitor {
     if (namedArgs.isNotEmpty) {
       var rule = new NamedArgsRule();
       _writer.startRule(rule);
+
+      // Let the positional args force the named ones to split.
+      if (positionalRule != null) {
+        positionalRule.setNamedArgsRule(rule);
+      }
 
       // Split before the first named argument.
       rule.beforeArguments(_writer.split(space: positionalArgs.isNotEmpty));

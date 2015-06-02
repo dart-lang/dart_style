@@ -74,10 +74,10 @@ void dumpChunks(List<Chunk> chunks) {
     row.add(gray("$i:"));
     row.add("${chunk.text}");
     row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
-    if (chunk.rule.implies.isEmpty) {
+    if (chunk.rule.outerRules.isEmpty) {
       row.add("");
     } else {
-      row.add("-> ${chunk.rule.implies.join(" ")}");
+      row.add("-> ${chunk.rule.outerRules.join(" ")}");
     }
 
     if (chunk.bodyDepth != null) {

@@ -102,6 +102,20 @@ reallyLongMethod(
     foo: first,
     bar: second,
     baz: third);
+>>> if split before first positional, split before first named too
+reallyLongMethodName(
+    first, second, third, a: 1, b: 1);
+<<<
+reallyLongMethodName(
+    first, second, third,
+    a: 1, b: 1);
+>>> if split before other positional, split before first named too
+reallyLongMethodName(first, second,
+    third, fourth, fif, s, a: 1, b: 1);
+<<<
+reallyLongMethodName(first, second,
+    third, fourth, fif, s,
+    a: 1, b: 1);
 >>> if positional args go one per line, named do too
 reallyLongMethod(first, second, third, fourth, fifth, sixth, seventh, eighth, a: 1, b: 2);
 <<<

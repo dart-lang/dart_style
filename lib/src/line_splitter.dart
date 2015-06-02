@@ -199,6 +199,12 @@ class LineSplitter {
       for (value = 0; value < chunk.rule.numValues; value++) {
         _tryRuleValue(solution, prefix, value, length);
       }
+    } else if (value == -1) {
+      // A -1 "value" means, "any non-zero value". In other words, the rule has
+      // to split somehow, but can split however it chooses.
+      for (value = 1; value < chunk.rule.numValues; value++) {
+        _tryRuleValue(solution, prefix, value, length);
+      }
     } else {
       // Otherwise, it's constrained to a single value, so use it.
       _tryRuleValue(solution, prefix, value, length);
@@ -276,41 +282,23 @@ class LineSplitter {
       // doesn't place any constraint on the suffix.
       if (ruleValue == null) continue;
 
-      // Track the implications between rules. If this rule is split, then
-      // any rule it implies must split too. Conversely, if it is not fully
-      // split then any rule that implies it must also not split.
-      if (ruleValue == prefixRule.fullySplitValue) {
-        // The prefix rule split so we have to force the implied rules in the
-        // suffix to split too.
-        for (var suffixRule in suffixRules) {
-          if (prefixRule.implies.contains(suffixRule)) {
-            // TODO(bob): See TODO below about the next line.
-            updatedValues[prefixRule] = ruleValue;
-            updatedValues[suffixRule] = suffixRule.fullySplitValue;
-          }
-        }
-      } else {
+      // Enforce the constraints between rules.
+      for (var suffixRule in suffixRules) {
+        // See if the prefix rule's value constrains any values in the suffix.
+        var value = prefixRule.constrain(ruleValue, suffixRule);
+
         // Also consider the backwards case, where a later rule in the suffix
-        // implies a rule in the prefix. If prefix rule did not split, then
-        // don't let the suffix rule that implies it split either since that
-        // would violate the implication.
-        for (var suffixRule in suffixRules) {
-          if (suffixRule.implies.contains(prefixRule)) {
-            // TODO(bob): See TODO below about the next line.
-            updatedValues[prefixRule] = ruleValue;
-            updatedValues[suffixRule] = 0;
-          }
+        // constrains a rule in the prefix.
+        if (value == null) {
+          value = suffixRule.reverseConstrain(ruleValue, prefixRule);
+        }
+
+        if (value != null) {
+          updatedValues[prefixRule] = ruleValue;
+          updatedValues[suffixRule] = value;
         }
       }
     }
-
-    // TODO(bob): I don't think I fully understand these, though they seem to
-    // be needed to get correct behavior. I think it has something to do with
-    // ensuring that a rule that implies other rules is preserved so that later
-    // extensions of the resulting prefix maintain that early rule setting. I'm
-    // not sure if there's a cleaner way to handle that. I'm also not sure if
-    // it makes LinePrefixes unnecessarily precise and worsens the memoization
-    // hits.
 
     return updatedValues;
   }

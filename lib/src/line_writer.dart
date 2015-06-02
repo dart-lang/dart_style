@@ -328,7 +328,7 @@ class LineWriter {
     if (rule == null) rule = new SimpleRule();
 
     // See if any of the rules that contain this one care if it splits.
-    _rules.where((rule) => rule.canBeImplied).forEach(rule.implies.add);
+    _rules.forEach((outer) => outer.contain(rule));
     _rules.add(rule);
 
     // Keep track of the rule's chunk range so we know how to calculate its
@@ -701,7 +701,7 @@ class LineWriter {
   // TODO(bob): The fact that this generates non-optimal solutions is a drag.
   // Can we do something better?
   void _preemptRules(int start, int end) {
-    // TODO(bob): Should be rule.canBeImplied instead of is! HardSplitRule.
+    // TODO(bob): Should be rule.splitsOnInnerRules instead of is! HardSplitRule.
     // But that significantly regresses perf at least until we have better
     // handling for method chains.
     var rules = _chunks
@@ -738,7 +738,7 @@ class LineWriter {
     // it contains an inner split.
     for (var i = 0; i < _rules.length; i++) {
       var rule = _rules[i];
-      if (rule.canBeImplied) {
+      if (rule.splitsOnInnerRules) {
         _rules[i] = new HardSplitRule();
         _hardenRule(rule);
       }

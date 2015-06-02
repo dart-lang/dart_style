@@ -37,25 +37,67 @@ abstract class Rule extends FastHash {
   int start;
   int end;
 
-  /// The other [Rule]s that are "implied" by this one.
+  /// The other [Rule]s that "surround" this one (and care about that fact).
   ///
-  /// Implication means that if the splitter chooses to split this rule (i.e.
-  /// set its value to something non-zero), it must also force all of its
-  /// implied rules to have some non-zero value (transitively). Implication is
-  /// one-way. If A implies B, it's fine to split B without splitting A.
+  /// In many cases, if a split occurs inside an expression, surrounding rules
+  /// also want to split too. For example, a split in the middle of an argument
+  /// forces the entire argument list to also split.
   ///
-  /// This contains all direct as well as transitive implications. If A implies
-  /// B which implies C, A's implies set includes both B and C.
-  final Set<Rule> implies = new Set<Rule>();
+  /// This tracks those relationships. If this rule splits, (sets its value to
+  /// [fullySplitValue]) then all of the outer rules will also be set to their
+  /// fully split value.
+  ///
+  /// This contains all direct as well as transitive relationships. If A
+  /// contains B which contains C, C's outerRules contains both B and A.
+  Iterable<Rule> get outerRules => _outerRules;
+  final Set<Rule> _outerRules = new Set<Rule>();
+
+  /// Adds [inner] as an inner rule of this rule if it cares about inner rules.
+  ///
+  /// When an inner rule splits, it forces any surrounding outer rules to also
+  /// split.
+  void contain(Rule inner) {
+    if (!splitsOnInnerRules) return;
+    inner._outerRules.add(this);
+  }
 
   /// Whether this rule cares about rules that it contains.
   ///
-  /// If `true` then inner rules will imply this one and force it to split when
-  /// they split. Otherwise, it can split independently of any contained rules.
-  // TODO(bob): Ugh. Better name.
-  bool get canBeImplied => true;
+  /// If `true` then inner rules will constrain this one and force it to split
+  /// when they split. Otherwise, it can split independently of any contained
+  /// rules.
+  bool get splitsOnInnerRules => true;
 
   bool isSplit(int value, Chunk chunk);
+
+  /// Given that this rule has [value], determine if [other]'s value should be
+  /// constrained.
+  ///
+  /// Allows relationships between rules like "if I split, then this should
+  /// split too". Returns a non-negative value to force [other] to take that
+  /// value. Returns -1 to allow [other] to take any non-zero value. Returns
+  /// null to not constrain other.
+  int constrain(int value, Rule other) {
+    // By default, any implied rule will be fully split if this one is fully
+    // split.
+    if (value != fullySplitValue) return null;
+    if (_outerRules.contains(other)) return other.fullySplitValue;
+
+    return null;
+  }
+
+  /// Like [constrain], but in the other direction.
+  ///
+  /// If [other] has [otherValue], returns the constrained value this rule may
+  /// have, or `null` if any value is allowed.
+  int reverseConstrain(int otherValue, Rule other) {
+    // If [other] did not fully split, then we can't split either if us
+    // splitting implies that it should have.
+    if (otherValue == other.fullySplitValue) return null;
+    if (_outerRules.contains(other)) return 0;
+
+    return null;
+  }
 
   String toString() => "$id";
 }
@@ -65,7 +107,7 @@ class HardSplitRule extends Rule {
   int get numValues => 1;
 
   /// It's always split anyway.
-  bool get canBeImplied => false;
+  bool get splitsOnInnerRules => false;
 
   bool isSplit(int value, Chunk chunk) => true;
 
@@ -79,11 +121,13 @@ class SimpleRule extends Rule {
 
   final int cost;
 
-  final bool canBeImplied;
+  final bool splitsOnInnerRules;
 
-  SimpleRule({int cost, bool canBeImplied})
+  SimpleRule({int cost, bool splitsOnInnerRules})
       : cost = cost != null ? cost : Cost.normal,
-        canBeImplied = canBeImplied != null ? canBeImplied : true;
+        splitsOnInnerRules = splitsOnInnerRules != null
+            ? splitsOnInnerRules
+            : true;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 
@@ -211,6 +255,10 @@ class PositionalArgsRule extends Rule {
   /// The chunks prior to each positional argument.
   final List<Chunk> _arguments = [];
 
+  /// If there are named arguments following these positional ones, this will
+  /// be their rule.
+  Rule _namedArgsRule;
+
   int get numValues {
     // If there is just one argument, can either split before it or not.
     if (_arguments.length == 1) return 2;
@@ -221,13 +269,17 @@ class PositionalArgsRule extends Rule {
 
   /// If there is only a single argument, allow it to split internally without
   /// forcing a split before the argument.
-  final bool canBeImplied;
+  final bool splitsOnInnerRules;
 
   PositionalArgsRule({bool isSingleArgument})
-      : canBeImplied = !isSingleArgument;
+      : splitsOnInnerRules = !isSingleArgument;
 
   void beforeArgument(Chunk chunk) {
     _arguments.add(chunk);
+  }
+
+  void setNamedArgsRule(NamedArgsRule rule) {
+    _namedArgsRule = rule;
   }
 
   bool isSplit(int value, Chunk chunk) {
@@ -249,6 +301,23 @@ class PositionalArgsRule extends Rule {
     // as possible.
     var argument = numValues - value - 1;
     return chunk == _arguments[argument];
+  }
+
+  int constrain(int value, Rule other) {
+    var constrained = super.constrain(value, other);
+    if (constrained != null) return constrained;
+
+    // Handle the relationship between the positional and named args.
+    if (other == _namedArgsRule) {
+      // If the positional args are one-per-line, the named args are too.
+      if (value == fullySplitValue) return _namedArgsRule.fullySplitValue;
+
+      // Otherwise, if there is any split in the positional arguments, don't
+      // allow the named arguments on the same line as them.
+      if (value != 0) return -1;
+    }
+
+    return null;
   }
 
   String toString() => "Pos${super.toString()}";
