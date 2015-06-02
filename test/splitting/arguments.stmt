@@ -187,15 +187,15 @@ function(argument, argument, argument, argument,
 <<<
 function(argument, argument, argument,
     argument, [
-      element,
-      element,
-      element,
-      element
-    ], {
-      'key': value,
-      'other key': value,
-      'third key': value
-    });
+  element,
+  element,
+  element,
+  element
+], {
+  'key': value,
+  'other key': value,
+  'third key': value
+});
 >>> all trailing collections
 function([element, element, element, element], {'key': value, 'other key': value, 'third key': value});
 <<<

@@ -219,6 +219,13 @@ class PositionalArgsRule extends Rule {
     return 2 + _arguments.length;
   }
 
+  /// If there is only a single argument, allow it to split internally without
+  /// forcing a split before the argument.
+  final bool canBeImplied;
+
+  PositionalArgsRule({bool isSingleArgument})
+      : canBeImplied = !isSingleArgument;
+
   void beforeArgument(Chunk chunk) {
     _arguments.add(chunk);
   }

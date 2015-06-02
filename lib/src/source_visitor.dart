@@ -41,6 +41,9 @@ class SourceVisitor implements AstVisitor {
   /// This is calculated and cached by [_findSelectionEnd].
   int _selectionEnd;
 
+  /// The number out oustanding calls to [_startNestBodies].
+  int _nestBodiesCount = 0;
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(formatter, this._lineInfo, SourceCode source)
@@ -117,19 +120,17 @@ class SourceVisitor implements AstVisitor {
     //
     // The rule is pretty simple: if a non-body argument follows any body
     // argument, then they all have to be indented like regular arguments.
+    //
+    // Returns the list of body arguments. This will either be every body
+    // argument in the list, or none of them.
     var nestBodies = false;
-    var afterBody = false;
-    var trailingBodies = [];
+    var unnestedBodies = [];
     for (var argument in node.arguments) {
-      var body = _getBody(argument);
-
-      if (body != null) {
-        afterBody = true;
-        trailingBodies.add(argument);
-      } else if (afterBody) {
+      if (_isBody(argument)) {
+        unnestedBodies.add(argument);
+      } else if (unnestedBodies.isNotEmpty) {
         nestBodies = true;
-        trailingBodies.clear();
-        _startNestBodies();
+        unnestedBodies.clear();
         break;
       }
     }
@@ -142,16 +143,13 @@ class SourceVisitor implements AstVisitor {
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
     var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
-    if (singleArgument) {
-      _writer.startSpan();
+    if (singleArgument) _writer.startSpan();
 
-      // If we just have a single positional argument, we never need to treat
-      // it like a nested trailing body.
-      trailingBodies.clear();
-    }
+    // Don't process the bodies twice.
+    positionalArgs.removeWhere(unnestedBodies.contains);
+    namedArgs.removeWhere(unnestedBodies.contains);
 
-    positionalArgs.removeWhere(trailingBodies.contains);
-    namedArgs.removeWhere(trailingBodies.contains);
+    if (nestBodies) _startNestBodies();
 
     // Nest around the parentheses in case there are comments before or after
     // them.
@@ -198,30 +196,14 @@ class SourceVisitor implements AstVisitor {
     }
     */
 
-    if (singleArgument) {
-      // Allow splitting after "(". Unlike normal argument lists, allow not
-      // splitting before the argument even if the argument itself contains a
-      // split.
-      var rule = new SimpleRule(canBeImplied: false);
-
-      _writer.startRule(rule);
-      _writer.split();
-
-      // Try to not split the argument.
-      _writer.startSpan(Cost.positionalArguments);
-
-      visit(positionalArgs.single);
-
-      _writer.endSpan();
-      _writer.endRule();
-    } else if (positionalArgs.isNotEmpty) {
-      // Allow splitting after "(".
-      var rule = new PositionalArgsRule();
+    // Allow splitting after "(".
+    if (positionalArgs.isNotEmpty) {
+      var rule = new PositionalArgsRule(isSingleArgument: singleArgument);
 
       _writer.startRule(rule);
       rule.beforeArgument(_writer.split());
 
-      // Try to keep the positional arguments together.
+      // Try to not split the argument.
       _writer.startSpan(Cost.positionalArguments);
 
       for (var argument in positionalArgs) {
@@ -266,28 +248,34 @@ class SourceVisitor implements AstVisitor {
       _writer.endRule();
     }
 
-    if (trailingBodies.isNotEmpty) {
+    if (unnestedBodies.isNotEmpty) {
+      // TODO(bob): This currently does the wrong thing for collection literals
+      // since it prohibits moving the collection to the next line without
+      // splitting it like:
+      //
+      //     someFunctionName(
+      //         [element, element]);
+      //
+      // Fix.
       _writer.unnest();
 
-      for (var argument in trailingBodies) {
+      for (var argument in unnestedBodies) {
         if (argument != node.arguments.first) space();
 
         visit(argument);
 
         // Write the trailing comma.
-        if (argument != trailingBodies.last) {
+        if (argument != unnestedBodies.last) {
           token(argument.endToken.next);
         }
       }
-
-      token(node.rightParenthesis);
-    } else {
-      token(node.rightParenthesis);
-
-      if (singleArgument) _writer.endSpan();
-      _writer.unnest();
     }
 
+    token(node.rightParenthesis);
+
+    if (unnestedBodies.isEmpty) _writer.unnest();
+
+    if (singleArgument) _writer.endSpan();
     if (nestBodies) _endNestBodies();
   }
 
@@ -1133,59 +1121,61 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    // With a chain of method calls like `foo.bar.baz.bang`, they either all
-    // split or none of them do.
-    var startedRule = false;
-
-    // Try to keep the entire method chain one line.
+    // Try to keep the entire method invocation one line.
     _writer.startSpan();
     _writer.nestExpression();
 
-    // TODO(bob): Will want to _startNestBodies() here and end at the end in
-    // some cases.
+    // If there's no target, this is a "bare" function call like "foo(1, 2)",
+    // or a section in a cascade. Handle this case specially.
+    if (node.target == null) {
+      // This will be non-null for cascade sections.
+      token(node.period);
+      token(node.methodName.token);
+      visit(node.argumentList);
+    } else {
+      // Otherwise, it's a dotted method call. We want to format a chain of
+      // method calls holistically, so flatten the tree of calls into a single
+      // list.
+      var target;
+      var invocations = [];
 
-    // Recursively walk the chain of method calls.
-    var depth = 0;
-    visitInvocation(invocation) {
-      depth++;
-      var hasTarget = true;
+      flatten(expression) {
+        target = expression;
 
-      if (invocation.target is MethodInvocation) {
-        visitInvocation(invocation.target);
-      } else if (invocation.period != null) {
-        visit(invocation.target);
-      } else {
-        hasTarget = false;
-      }
-
-      if (hasTarget) {
-        // Don't start the multisplit until after the first target. This
-        // ensures we don't get tripped up by newlines or comments before the
-        // first target.
-        if (!startedRule) {
-          _writer.startRule();
-          startedRule = true;
+        if (expression is MethodInvocation && expression.target != null) {
+          flatten(expression.target);
+          invocations.add(expression);
         }
-
-        zeroSplit();
-
-        token(invocation.period);
       }
 
-      visit(invocation.methodName);
+      // Recursively walk the chain of method calls.
+      flatten(node);
 
-      // Stop the multisplit after the last call, but before its arguments.
-      // That allows unsplit chains where the last argument list wraps, like:
-      //
-      //     foo().bar().baz(
-      //         argument, list);
-      depth--;
-      if (depth == 0 && startedRule) _writer.endRule();
+      // TODO(bob): Will want to _startNestBodies() here and end at the end in
+      // some cases.
 
-      visit(invocation.argumentList);
+      visit(target);
+
+      // With a chain of method calls like `foo.bar.baz.bang`, they either all
+      // split or none of them do.
+      _writer.startRule();
+
+      for (var invocation in invocations) {
+        zeroSplit();
+        token(invocation.period);
+        token(invocation.methodName.token);
+
+        // Stop the rule after the last call, but before its arguments. This
+        // allows unsplit chains where the last argument list wraps, like:
+        //
+        //     foo().bar().baz(
+        //         argument, list);
+        // TODO(rnystrom): Is this what we want?
+        if (invocation == invocations.last) _writer.endRule();
+
+        visit(invocation.argumentList);
+      }
     }
-
-    visitInvocation(node);
 
     _writer.unnest();
     _writer.endSpan();
@@ -1739,13 +1729,12 @@ class SourceVisitor implements AstVisitor {
     _writer.unnest();
   }
 
-  /// Returns the AstNode representing the body for [expression] or `null` if
-  /// [expression] doesn't denote a body.
+  /// Returns true if [expression] denotes a body.
   ///
-  /// Here, "body" means a collection literal or a function expression's block
-  /// body. This is used to tell which arguments to method calls are bodies or
-  /// not so we can decide how they should be indented.
-  AstNode _getBody(Expression expression) {
+  /// Here, "body" means a collection literal or a function expression with a
+  /// block body. This is used to tell which arguments to method calls are
+  /// bodies or not so we can decide how they should be indented.
+  bool _isBody(Expression expression) {
     if (expression is NamedExpression) {
       expression = (expression as NamedExpression).expression;
     }
@@ -1753,22 +1742,14 @@ class SourceVisitor implements AstVisitor {
     // TODO(rnystrom): Should we step into parenthesized expressions?
 
     // Collections are bodies.
-    if (expression is ListLiteral) return expression;
-    if (expression is MapLiteral) return expression;
+    if (expression is ListLiteral) return true;
+    if (expression is MapLiteral) return true;
 
     // Curly body functions are.
-    if (expression is! FunctionExpression) return null;
+    if (expression is! FunctionExpression) return false;
     var function = expression as FunctionExpression;
-    if (function.body is! BlockFunctionBody) return null;
-    var body = function.body as BlockFunctionBody;
-    return body.block;
+    return function.body is BlockFunctionBody;
   }
-
-  // TODO(bob): Clean up.
-  // TODO(bob): Could make this a stack of sets instead of a monotlithic one.
-
-  /// The number out oustanding calls to [_startNestBodies].
-  int _nestBodiesCount = 0;
 
   /// Indicates that all bodies visited until the matching [_endNestBodies]
   /// call will be indented based on expression nesting.
