@@ -80,7 +80,7 @@ abstract class Rule extends FastHash {
   int constrain(int value, Rule other) {
     // By default, any implied rule will be fully split if this one is fully
     // split.
-    if (value != fullySplitValue) return null;
+    if (value == 0) return null;
     if (_outerRules.contains(other)) return other.fullySplitValue;
 
     return null;

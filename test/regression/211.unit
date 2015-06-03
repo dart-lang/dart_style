@@ -21,9 +21,13 @@ void defineProperty(var obj, String property, var value) {
 }
 <<<
 void defineProperty(var obj, String property, var value) {
-  JS('void', 'Object.defineProperty(#, #, '
-      '{value: #, enumerable: false, writable: true, configurable: true})', obj,
-      property, value);
+  JS(
+      'void',
+      'Object.defineProperty(#, #, '
+      '{value: #, enumerable: false, writable: true, configurable: true})',
+      obj,
+      property,
+      value);
 }
 >>> (indent 4)
     main() {

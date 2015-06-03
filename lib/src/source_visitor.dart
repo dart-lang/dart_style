@@ -230,9 +230,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       // Write the trailing comma.
-      if (argument != node.arguments.last) {
-        token(argument.endToken.next);
-      }
+      if (argument != node.arguments.last) token(argument.endToken.next);
     }
 
     // Allow splitting after "(".
@@ -245,7 +243,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       _writer.startRule(rule);
-      rule.beforeArgument(_writer.split());
+      rule.beforeArgument(zeroSplit());
 
       // Try to not split the argument.
       _writer.startSpan(Cost.positionalArguments);
@@ -822,54 +820,82 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFormalParameterList(FormalParameterList node) {
+    // Corner case: empty parameter lists.
+    if (node.parameters.isEmpty) {
+      token(node.leftParenthesis);
+
+      // If there is a comment, do allow splitting before it.
+      if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
+
+      token(node.rightParenthesis);
+      return;
+    }
+
+    var requiredParams = node.parameters
+        .where((param) => param is! DefaultFormalParameter).toList();
+    var optionalParams = node.parameters
+        .where((param) => param is DefaultFormalParameter).toList();
+
     _writer.nestExpression();
     token(node.leftParenthesis);
 
-    // TODO(bob): Use PositionalArgumentsRule here.
-    // Allow splitting after the "(" in non-empty parameter lists, but not for
-    // lambdas.
-    if ((node.parameters.isNotEmpty ||
-            node.rightParenthesis.precedingComments != null) &&
-        !_isLambda(node)) {
-      soloZeroSplit();
-    }
-
-    // Try to keep the parameters together.
-    _writer.startSpan();
-
-    var inOptionalParams = false;
-    for (var i = 0; i < node.parameters.length; i++) {
-      var parameter = node.parameters[i];
-      var inFirstOptional =
-          !inOptionalParams && parameter is DefaultFormalParameter;
-
-      // Preceding comma.
-      if (i > 0) token(node.parameters[i - 1].endToken.next);
-
-      // Don't try to keep optional parameters together with mandatory ones.
-      if (inFirstOptional) _writer.endSpan();
-
-      if (i > 0) soloSplit();
-
-      if (inFirstOptional) {
-        // Do try to keep optional parameters with each other.
-        _writer.startSpan();
-
-        // "[" or "{" for optional parameters.
-        token(node.leftDelimiter);
-
-        inOptionalParams = true;
+    var rule;
+    if (requiredParams.isNotEmpty) {
+      if (requiredParams.length > 1) {
+        rule = new MultiplePositionalRule(null, 0, 0);
+      } else {
+        rule = new SinglePositionalRule(null);
       }
 
-      visit(parameter);
+      _writer.startRule(rule);
+      if (_isLambda(node)) {
+        // Don't allow splitting before the first argument (i.e. right after
+        // the bare "(" in a lambda. Instead, just stuff a null chunk in there
+        // to avoid confusing the arg rule.
+        rule.beforeArgument(null);
+      } else {
+        // Split before the first argument.
+        rule.beforeArgument(zeroSplit());
+      }
+
+      for (var param in requiredParams) {
+        visit(param);
+
+        // Write the trailing comma.
+        if (param != node.parameters.last) token(param.endToken.next);
+
+        if (param != requiredParams.last) rule.beforeArgument(split());
+      }
+
+      _writer.endRule();
     }
 
-    // "]" or "}" for optional parameters.
-    token(node.rightDelimiter);
+    if (optionalParams.isNotEmpty) {
+      var namedRule = new NamedArgsRule(rule);
+      _writer.startRule(namedRule);
+
+      namedRule.beforeArguments(
+          _writer.split(space: requiredParams.isNotEmpty));
+
+      // "[" or "{" for optional parameters.
+      token(node.leftDelimiter);
+
+      for (var param in optionalParams) {
+        visit(param);
+
+        // Write the trailing comma.
+        if (param != node.parameters.last) token(param.endToken.next);
+        if (param != optionalParams.last) split();
+      }
+
+      _writer.endRule();
+
+      // "]" or "}" for optional parameters.
+      token(node.rightDelimiter);
+    }
 
     token(node.rightParenthesis);
     _writer.unnest();
-    _writer.endSpan();
   }
 
   visitForStatement(ForStatement node) {
