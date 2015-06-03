@@ -155,7 +155,7 @@ class Chunk extends Selection {
   bool get endsLine => isHardSplit && nesting == 0 && bodyDepth == 0;
 
   /// The [Span]s that contain this chunk.
-  final spans = [];
+  final spans = <Span>[];
 
   /// Creates a new chunk starting with [_text].
   Chunk(this._text);
@@ -269,6 +269,12 @@ class Cost {
 
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;
+
+  /// Splitting the internals of literal body arguments.
+  ///
+  /// Used to prefer splitting at the argument boundary over splitting the
+  /// bodies.
+  static const splitBodies = 2;
 
   /// The cost of a single character that goes past the page limit.
   ///

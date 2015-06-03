@@ -44,6 +44,15 @@ class SourceVisitor implements AstVisitor {
   /// The number out oustanding calls to [_startNestBodies].
   int _nestBodiesCount = 0;
 
+  /// The rule that should be used for the contents of a literal body that are
+  /// about to be written.
+  ///
+  /// This is set by [visitArgumentList] to ensure that all body arguments share
+  /// a rule.
+  ///
+  /// If `null`, a literal body creates its own rule.
+  Rule _nextBodyRule;
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(formatter, this._lineInfo, SourceCode source)
@@ -103,53 +112,53 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // Determine if arguments that are bodies need to be indented like regular
-    // arguments or if we can indent them like blocks. In other words, choose
-    // between this:
-    //
-    //     function(
-    //         () {
-    //           body;
-    //         });
-    //
-    // and this:
-    //
-    //     function(() {
-    //       body;
-    //     });
-    //
-    // The rule is pretty simple: if a non-body argument follows any body
-    // argument, then they all have to be indented like regular arguments.
-    //
-    // Returns the list of body arguments. This will either be every body
-    // argument in the list, or none of them.
-    var nestBodies = false;
-    var unnestedBodies = [];
-    for (var argument in node.arguments) {
-      if (_isBody(argument)) {
-        unnestedBodies.add(argument);
-      } else if (unnestedBodies.isNotEmpty) {
-        nestBodies = true;
-        unnestedBodies.clear();
-        break;
-      }
-    }
-
     // Assumes named arguments follow all positional ones.
     var positionalArgs = node.arguments
         .takeWhile((arg) => arg is! NamedExpression).toList();
     var namedArgs = node.arguments.skip(positionalArgs.length).toList();
 
+    var leadingBodies = 0;
+    var trailingBodies = 0;
+
+    var bodies = node.arguments.where(_isBody).toSet();
+
+    for (var argument in node.arguments) {
+      if (!bodies.contains(argument)) break;
+      leadingBodies++;
+    }
+
+    if (leadingBodies != node.arguments.length) {
+      for (var argument in node.arguments.reversed) {
+        if (!bodies.contains(argument)) break;
+        trailingBodies++;
+      }
+    }
+
+    // If only some of the named arguments are bodies, treat none of them as
+    // bodies. Avoids cases like:
+    //
+    //     function(
+    //         a: arg,
+    //         b: [
+    //       ...
+    //     ]);
+    if (trailingBodies < namedArgs.length) trailingBodies = 0;
+
+    // Bodies must all be a prefix or suffix of the argument list (and not
+    // both).
+    if (leadingBodies != bodies.length) leadingBodies = 0;
+    if (trailingBodies != bodies.length) trailingBodies = 0;
+
+    // Ignore any bodies in the middle of the argument list.
+    if (leadingBodies == 0 && trailingBodies == 0) {
+      bodies.clear();
+    }
+
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
     var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
+
     if (singleArgument) _writer.startSpan();
-
-    // Don't process the bodies twice.
-    positionalArgs.removeWhere(unnestedBodies.contains);
-    namedArgs.removeWhere(unnestedBodies.contains);
-
-    if (nestBodies) _startNestBodies();
 
     // Nest around the parentheses in case there are comments before or after
     // them.
@@ -184,7 +193,7 @@ class SourceVisitor implements AstVisitor {
     // before the argument list and the function's parameter list. That requires
     // spans to not strictly be a stack, though, so would be a larger change
     // than I want to do right now.
-    // TODO(bob): Do this.
+    // TODO(bob): Do this?
     /*
     var cost = Cost.normal;
     if (positionalArgs.isNotEmpty) {
@@ -195,29 +204,58 @@ class SourceVisitor implements AstVisitor {
       }
     }
     */
+    var bodyRule = bodies.isNotEmpty
+        ? new SimpleRule(cost: Cost.splitBodies)
+        : null;
+
+    var rule;
+
+    writeArgument(argument) {
+      // If we're about to write a body argument, handle it specially.
+      if (bodies.contains(argument)) {
+        if (rule != null) rule.beforeBodyArgument();
+
+        // Tell it to use the rule we've already created.
+        _nextBodyRule = bodyRule;
+      } else {
+        _startNestBodies();
+      }
+
+      visit(argument);
+
+      if (bodies.contains(argument)) {
+        if (rule != null) rule.afterBodyArgument();
+      } else {
+        _endNestBodies();
+      }
+
+      // Write the trailing comma.
+      if (argument != node.arguments.last) {
+        token(argument.endToken.next);
+      }
+    }
 
     // Allow splitting after "(".
-    var positionalRule;
     if (positionalArgs.isNotEmpty) {
-      positionalRule = new PositionalArgsRule(isSingleArgument: singleArgument);
+      if (positionalArgs.length == 1) {
+        rule = new SinglePositionalRule(bodyRule);
+      } else {
+        rule = new MultiplePositionalRule(
+            bodyRule, leadingBodies, trailingBodies);
+      }
 
-      _writer.startRule(positionalRule);
-      positionalRule.beforeArgument(_writer.split());
+      _writer.startRule(rule);
+      rule.beforeArgument(_writer.split());
 
       // Try to not split the argument.
       _writer.startSpan(Cost.positionalArguments);
 
       for (var argument in positionalArgs) {
-        visit(argument);
-
-        // Write the trailing comma.
-        if (argument != node.arguments.last) {
-          token(argument.endToken.next);
-        }
+        writeArgument(argument);
 
         // Positional arguments split independently.
         if (argument != positionalArgs.last) {
-          positionalRule.beforeArgument(split());
+          rule.beforeArgument(split());
         }
       }
 
@@ -226,7 +264,8 @@ class SourceVisitor implements AstVisitor {
     }
 
     if (namedArgs.isNotEmpty) {
-      var rule = new NamedArgsRule();
+      var positionalRule = rule;
+      rule = new NamedArgsRule(bodyRule, areBodies: trailingBodies > 0);
       _writer.startRule(rule);
 
       // Let the positional args force the named ones to split.
@@ -238,51 +277,20 @@ class SourceVisitor implements AstVisitor {
       rule.beforeArguments(_writer.split(space: positionalArgs.isNotEmpty));
 
       for (var argument in namedArgs) {
-        visit(argument);
-
-        // Write the trailing comma.
-        if (argument != node.arguments.last) {
-          token(argument.endToken.next);
-        }
+        writeArgument(argument);
 
         // Write the split.
-        if (argument != namedArgs.last) {
-          split();
-        }
+        if (argument != namedArgs.last) split();
       }
 
       _writer.endRule();
     }
 
-    if (unnestedBodies.isNotEmpty) {
-      // TODO(bob): This currently does the wrong thing for collection literals
-      // since it prohibits moving the collection to the next line without
-      // splitting it like:
-      //
-      //     someFunctionName(
-      //         [element, element]);
-      //
-      // Fix.
-      _writer.unnest();
-
-      for (var argument in unnestedBodies) {
-        if (argument != node.arguments.first) space();
-
-        visit(argument);
-
-        // Write the trailing comma.
-        if (argument != unnestedBodies.last) {
-          token(argument.endToken.next);
-        }
-      }
-    }
-
     token(node.rightParenthesis);
 
-    if (unnestedBodies.isEmpty) _writer.unnest();
+    _writer.unnest();
 
     if (singleArgument) _writer.endSpan();
-    if (nestBodies) _endNestBodies();
   }
 
   visitAsExpression(AsExpression node) {
@@ -1786,9 +1794,12 @@ class SourceVisitor implements AstVisitor {
     if (isBody && _nestBodiesCount > 0) _writer.startBody();
     _writer.indent();
 
-    // Split after the bracket.
+    // Split after the bracket. Use the explicitly given rule if we have one.
+    // Otherwise, create a new rule.
     // TODO(bob): Cost.
-    _writer.startRule();
+    _writer.startRule(_nextBodyRule);
+    _nextBodyRule = null;
+
     _writer.split(nest: false, space: space);
   }
 

@@ -571,6 +571,16 @@ class LineWriter {
   /// This should only be called once, after all of the chunks have been
   /// written.
   void _splitLines() {
+    // Make sure we don't split the line in the middle of a rule.
+    var rules = _chunks.map((chunk) => chunk.rule).toSet();
+    var ruleSpanningIndexes = new Set();
+    for (var rule in rules) {
+      if (rule.start == null) continue;
+      for (var i = rule.start; i < rule.end; i++) {
+        ruleSpanningIndexes.add(i);
+      }
+    }
+
     // For each independent set of chunks, see if there are any rules in them
     // that we want to preemptively harden. This is basically to send smaller
     // batches of chunks to LineSplitter in cases where the code is deeply
@@ -579,6 +589,7 @@ class LineWriter {
     for (var i = 1; i < _chunks.length; i++) {
       var chunk = _chunks[i];
       if (!chunk.endsLine) continue;
+      if (ruleSpanningIndexes.contains(i)) continue;
 
       _preemptRules(start, i);
       start = i;
@@ -596,7 +607,9 @@ class LineWriter {
     start = 0;
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
+
       if (!chunk.endsLine) continue;
+      if (ruleSpanningIndexes.contains(i)) continue;
 
       // Write the newlines required by the previous line.
       for (var i = 0; i < bufferedNewlines; i++) {

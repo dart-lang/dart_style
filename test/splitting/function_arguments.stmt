@@ -1,5 +1,5 @@
 40 columns                              |
->>> force multi-line because of contained function
+>>> args before and after function forces nesting
 method(first,() {fn;},third);
 <<<
 method(
@@ -36,31 +36,46 @@ longFunctionName(() {
   ;
 }, argument, argument, argument,
     argument);
->>> functions between other args do not nest
-longFunctionName(argument, argument, argument, argument, () {;}, () {;}, argument, argument);
+>>> arg between functions forces nesting
+longFunctionName(() {;}, argument, () {;});
+<<<
+longFunctionName(
+    () {
+      ;
+    },
+    argument,
+    () {
+      ;
+    });
+>>> unsplit leading args
+longFunctionName(arg, arg, () {;}, () {;});
+<<<
+longFunctionName(arg, arg, () {
+  ;
+}, () {
+  ;
+});
+>>> split before leading args
+longFunctionName(argument, argument, argument, () {;}, () {;});
+<<<
+longFunctionName(
+    argument, argument, argument, () {
+  ;
+}, () {
+  ;
+});
+>>> split in middle of leading args
+longFunctionName(argument, argument, argument, argument, () {;}, () {;});
 <<<
 longFunctionName(argument, argument,
     argument, argument, () {
   ;
 }, () {
   ;
-}, argument, argument);
->>> arg between functions forces nesting
-longFunctionName(argument, () {;}, argument, () {;}, argument);
-<<<
-longFunctionName(
-    argument,
-    () {
-      ;
-    },
-    argument,
-    () {
-      ;
-    },
-    argument);
->>> many leading and trailing
+});
+>>> split before all leading args
 longFunctionName(argument, argument, argument, argument, argument, argument,
-() {;}, () {;}, argument, argument, argument, argument, argument, argument);
+() {;}, () {;});
 <<<
 longFunctionName(
     argument,
@@ -72,7 +87,43 @@ longFunctionName(
   ;
 }, () {
   ;
+});
+>>> unsplit trailing args
+longFunctionName(() {;}, () {;}, argument, argument);
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
+}, argument, argument);
+>>> split before trailing args
+longFunctionName(() {;}, () {;} /* very very long comment */, argument, argument);
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
+} /* very very long comment */,
+    argument, argument);
+>>> split in middle of trailing args
+longFunctionName(() {;}, () {;}, argument, argument, argument, argument);
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
+}, argument, argument, argument,
+    argument);
+>>> split before all trailing args
+longFunctionName(() {;}, () {;}, argument, argument, argument, argument,
+argument, argument, argument);
+<<<
+longFunctionName(() {
+  ;
+}, () {
+  ;
 },
+    argument,
     argument,
     argument,
     argument,
