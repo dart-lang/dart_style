@@ -131,15 +131,15 @@ class BacktrackingSolver {
     overrides.sort((a, b) => a.name.compareTo(b.name));
 
     return newFuture(
-        () {
-          stopwatch.start();
+            () {
+              stopwatch.start();
 
-          // Pre-cache the root package's known pubspec.
-          cache.cache(new PackageId.root(root), root.pubspec);
+              // Pre-cache the root package's known pubspec.
+              cache.cache(new PackageId.root(root), root.pubspec);
 
-          _validateSdkConstraint(root.pubspec);
-          return _traverseSolution();
-        }).then(
+              _validateSdkConstraint(root.pubspec);
+              return _traverseSolution();
+            }).then(
         (packages) {
       var pubspecs = new Map.fromIterable(packages,
           key: (id) => id.name, value: (id) => cache.getCachedPubspec(id));
