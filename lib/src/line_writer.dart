@@ -43,6 +43,10 @@ class LineWriter {
   /// ended.
   final _rules = <Rule>[];
 
+  /// The list of rules that are waiting until the next whitespace has been
+  /// written before they start.
+  final _lazyRules = <Rule>[];
+
   /// The chunks owned by each rule (except for hard splits).
   final _ruleChunks = <Rule, List<Chunk>>{};
 
@@ -110,6 +114,9 @@ class LineWriter {
   void write(String string) {
     _emitPendingWhitespace();
     _writeText(string);
+
+    _lazyRules.forEach(startRule);
+    _lazyRules.clear();
 
     _stack.commitNesting();
   }
@@ -325,6 +332,8 @@ class LineWriter {
   ///
   /// If omitted, defaults to a new [SimpleRule].
   void startRule([Rule rule]) {
+    //assert(_pendingRule == null);
+
     if (rule == null) rule = new SimpleRule();
 
     // See if any of the rules that contain this one care if it splits.
@@ -334,6 +343,20 @@ class LineWriter {
     // Keep track of the rule's chunk range so we know how to calculate its
     // length for preemption.
     rule.start = _currentChunkIndex;
+  }
+
+  /// Starts a new [Rule] that comes into play *after* the next whitespace
+  /// (including comments) is written.
+  ///
+  /// This is used for binary operators who want to start a rule before the
+  /// first operand but not get forced to split if a comment appears before the
+  /// entire expression.
+  ///
+  /// If [rule] is omitted, defaults to a new [SimpleRule].
+  void startLazyRule([Rule rule]) {
+    if (rule == null) rule = new SimpleRule();
+
+    _lazyRules.add(rule);
   }
 
   /// Ends the innermost rule.
@@ -726,7 +749,7 @@ class LineWriter {
     var values = rules.fold(1, (value, rule) => value * rule.numValues);
 
     // If the number of possible solutions is reasonable, don't preempt any.
-    if (values < 1024) return;
+    if (values < 4096) return;
 
     // Find the rules that contain too much.
     for (var rule in rules) {

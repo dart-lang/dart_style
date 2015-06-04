@@ -54,11 +54,20 @@ callSomeMethod(
       .method(argument)
       .method(argument)
       .method(() {
-        body;
-      })
-      .another()
-      .another()
+    body;
+  }).another().another()
 ];
+>>> function inside an argument list
+function(
+    argument,
+    obj
+        .method(argument)
+        .method(argument)
+        .method(() {
+      body;
+    }).another().another());
+<<<
+function(argument, obj.method(argument).method(argument).method(() {body;}).another().another());
 >>> wrap before =>
 receiver.firstMethod().next(() => longIdentifier == veryLongIdentifier);
 <<<

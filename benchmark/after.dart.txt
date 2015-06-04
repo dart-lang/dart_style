@@ -132,16 +132,15 @@ class BacktrackingSolver {
 
     return newFuture(
         () {
-      stopwatch.start();
+          stopwatch.start();
 
-      // Pre-cache the root package's known pubspec.
-      cache.cache(new PackageId.root(root), root.pubspec);
+          // Pre-cache the root package's known pubspec.
+          cache.cache(new PackageId.root(root), root.pubspec);
 
-      _validateSdkConstraint(root.pubspec);
-      return _traverseSolution();
-    })
-        .then(
-            (packages) {
+          _validateSdkConstraint(root.pubspec);
+          return _traverseSolution();
+        }).then(
+        (packages) {
       var pubspecs = new Map.fromIterable(packages,
           key: (id) => id.name, value: (id) => cache.getCachedPubspec(id));
 
@@ -154,17 +153,15 @@ class BacktrackingSolver {
           pubspecs,
           _getAvailableVersions(packages),
           attemptedSolutions);
-    })
-        .catchError(
-            (error) {
+    }).catchError(
+        (error) {
       if (error is! SolveFailure) throw error;
 
       // Wrap a failure in a result so we can attach some other data.
       return new SolveResult.failure(
           sources, root, lockFile, overrides, error, attemptedSolutions);
-    })
-        .whenComplete(
-            () {
+    }).whenComplete(
+        () {
       // Gather some solving metrics.
       var buffer = new StringBuffer();
       buffer.writeln('${runtimeType} took ${stopwatch.elapsed} seconds.');
@@ -503,10 +500,8 @@ class Traverser {
     }
     _visited.add(id);
 
-    return _solver.cache
-        .getPubspec(id)
-        .then(
-            (pubspec) {
+    return _solver.cache.getPubspec(id).then(
+        (pubspec) {
       _validateSdkConstraint(pubspec);
 
       var deps = pubspec.dependencies.toSet();
@@ -521,16 +516,14 @@ class Traverser {
       }
 
       // Replace any overridden dependencies.
-      deps = deps
-          .map(
-              (dep) {
+      deps = deps.map(
+          (dep) {
         var override = _solver._overrides[dep.name];
         if (override != null) return override;
 
         // Not overridden.
         return dep;
-      })
-          .toSet();
+      }).toSet();
 
       // Make sure the package doesn't have any bad dependencies.
       for (var dep in deps) {
@@ -541,9 +534,8 @@ class Traverser {
       }
 
       return _traverseDeps(id, new DependencyQueue(_solver, deps));
-    })
-        .catchError(
-            (error) {
+    }).catchError(
+        (error) {
       if (error is! PackageNotFoundException) throw error;
 
       // We can only get here if the lockfile refers to a specific package
@@ -564,16 +556,13 @@ class Traverser {
 
     return resetStack(
         () {
-      return deps
-          .advance()
-          .then(
-              (dep) {
+      return deps.advance().then(
+          (dep) {
         var dependency = new Dependency(depender.name, depender.version, dep);
         return _registerDependency(dependency).then((_) {
           if (dep.name == "barback") return _addImplicitDependencies();
         });
-      })
-          .then((_) => _traverseDeps(depender, deps));
+      }).then((_) => _traverseDeps(depender, deps));
     });
   }
 
@@ -611,11 +600,9 @@ class Traverser {
       // the constraints we currently have for this package.
       var locked = _getValidLocked(dep.name);
 
-      return VersionQueue
-          .create(locked, () {
+      return VersionQueue.create(locked, () {
         return _getAllowedVersions(dep);
-      })
-          .then((versions) => _packages.add(_solver.select(versions)));
+      }).then((versions) => _packages.add(_solver.select(versions)));
     });
   }
 
@@ -623,10 +610,8 @@ class Traverser {
   /// it.
   Future<Iterable<PackageId>> _getAllowedVersions(PackageDep dep) {
     var constraint = _getConstraint(dep.name);
-    return _solver.cache
-        .getVersions(dep.toRef())
-        .then(
-            (versions) {
+    return _solver.cache.getVersions(dep.toRef()).then(
+        (versions) {
       var allowed = versions.where((id) => constraint.allows(id.version));
 
       if (allowed.isEmpty) {
@@ -646,9 +631,8 @@ class Traverser {
       }
 
       return allowed;
-    })
-        .catchError(
-            (error, stackTrace) {
+    }).catchError(
+        (error, stackTrace) {
       if (error is PackageNotFoundException) {
         // Show the user why the package was being requested.
         throw new DependencyNotFoundException(

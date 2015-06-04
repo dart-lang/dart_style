@@ -27,18 +27,36 @@ compiler
 compiler.run(script).then((_) {
   body;
 });
->>> a body in a method chain forces it to split
+>>> allow inline chains before and after a hard newline
 compiler.a().b((_) {
   body;
 }).c().d();
 <<<
+compiler.a().b((_) {
+  body;
+}).c().d();
+>>> allow an inline chain before a hard newline but not after
+compiler.a().b((_) {
+  body;
+}).somethingLong().somethingLong().somethingLong();
+<<<
+compiler.a().b((_) {
+  body;
+})
+    .somethingLong()
+    .somethingLong()
+    .somethingLong();
+>>> allow an inline chain after a hard newline but not before
+compiler.somethingLong().somethingLong().somethingLong((_) {
+  body;
+}).a().b();
+<<<
 compiler
-    .a()
-    .b((_) {
-      body;
-    })
-    .c()
-    .d();
+    .somethingLong()
+    .somethingLong()
+    .somethingLong((_) {
+  body;
+}).a().b();
 >>> nest calls one more than target
 someVeryLongExpression = someVeryLongExpression.someLongMethod();
 <<<

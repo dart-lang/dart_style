@@ -58,7 +58,8 @@ a
 <<<
 a
     // comment
-    && b;
+    &&
+    b;
 >>> hard line caused by a comment before a nested line
 someFunction(//
 someExtremelyLongArgumentName).clamp();

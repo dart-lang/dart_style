@@ -165,45 +165,6 @@ class SourceVisitor implements AstVisitor {
     _writer.nestExpression();
     token(node.leftParenthesis);
 
-    // Corner case: If the first argument to a method is a block-bodied
-    // function, it looks bad if its parameter list gets wrapped to the next
-    // line. Bump the cost to try to avoid that. This prefers:
-    //
-    //     receiver
-    //         .method()
-    //         .chain((parameter, list) {
-    //       ...
-    //     });
-    //
-    // over:
-    //
-    //     receiver.method().chain(
-    //         (parameter, list) {
-    //       ...
-    //     });
-    // TODO(rnystrom): This causes a function expression's long parameter list
-    // to get split instead, like:
-    //
-    //     receiver.method((longParameter,
-    //         anotherParameter) {
-    //       ...
-    //     });
-    //
-    // Instead of bumping the cost, this should wrap a span around the "("
-    // before the argument list and the function's parameter list. That requires
-    // spans to not strictly be a stack, though, so would be a larger change
-    // than I want to do right now.
-    // TODO(bob): Do this?
-    /*
-    var cost = Cost.normal;
-    if (positionalArgs.isNotEmpty) {
-      var firstArg = positionalArgs.first;
-      if (firstArg is FunctionExpression &&
-          firstArg.body is BlockFunctionBody) {
-        cost = Cost.firstBlockArgument;
-      }
-    }
-    */
     var bodyRule = bodies.isNotEmpty
         ? new SimpleRule(cost: Cost.splitBodies)
         : null;
@@ -245,7 +206,7 @@ class SourceVisitor implements AstVisitor {
       _writer.startRule(rule);
       rule.beforeArgument(zeroSplit());
 
-      // Try to not split the argument.
+      // Try to not split the arguments.
       _writer.startSpan(Cost.positionalArguments);
 
       for (var argument in positionalArgs) {
@@ -329,8 +290,6 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
     _writer.nestExpression();
 
-    var startedRule = false;
-
     // Note that we have the full precedence table here even though some
     // operators are not associative and so can never chain. In particular,
     // Dart does not allow sequences of comparison or equality operators.
@@ -382,6 +341,10 @@ class SourceVisitor implements AstVisitor {
     var precedence = operatorPrecedences[node.operator.type];
     assert(precedence != null);
 
+    // Start lazily so we don't force the operator to split if a line comment
+    // appears before the first operand.
+    _writer.startLazyRule();
+
     traverse(Expression e) {
       if (e is BinaryExpression &&
           operatorPrecedences[e.operator.type] == precedence) {
@@ -391,14 +354,6 @@ class SourceVisitor implements AstVisitor {
 
         space();
         token(e.operator);
-
-        // Don't start the rule until after the first operand. Ensures we don't
-        // force the operator to split if a line comment appears before the
-        // first operand.
-        if (!startedRule) {
-          _writer.startRule();
-          startedRule = true;
-        }
 
         split();
         traverse(e.rightOperand);
@@ -753,12 +708,12 @@ class SourceVisitor implements AstVisitor {
 
       // Try to keep the "(...) => " with the start of the body for anonymous
       // functions.
-      if (_isLambda(node)) _writer.startSpan();
+      if (_isInLambda(node)) _writer.startSpan();
 
       token(node.functionDefinition); // "=>".
       soloSplit();
 
-      if (_isLambda(node)) _writer.endSpan();
+      if (_isInLambda(node)) _writer.endSpan();
 
       _writer.startSpan();
       visit(node.expression);
@@ -848,7 +803,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       _writer.startRule(rule);
-      if (_isLambda(node)) {
+      if (_isInLambda(node)) {
         // Don't allow splitting before the first argument (i.e. right after
         // the bare "(" in a lambda. Instead, just stuff a null chunk in there
         // to avoid confusing the arg rule.
@@ -1161,59 +1116,86 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodInvocation(MethodInvocation node) {
-    // Try to keep the entire method invocation one line.
-    _writer.startSpan();
-    _writer.nestExpression();
-
     // If there's no target, this is a "bare" function call like "foo(1, 2)",
     // or a section in a cascade. Handle this case specially.
     if (node.target == null) {
+      // Try to keep the entire method invocation one line.
+      _writer.startSpan();
+      _writer.nestExpression();
+
       // This will be non-null for cascade sections.
       token(node.period);
       token(node.methodName.token);
       visit(node.argumentList);
-    } else {
-      // Otherwise, it's a dotted method call. We want to format a chain of
-      // method calls holistically, so flatten the tree of calls into a single
-      // list.
-      var target;
-      var invocations = [];
 
-      flatten(expression) {
-        target = expression;
+      _writer.unnest();
+      _writer.endSpan();
+      return;
+    }
 
-        if (expression is MethodInvocation && expression.target != null) {
-          flatten(expression.target);
-          invocations.add(expression);
-        }
+    // Otherwise, it's a dotted method call. We want to format a chain of
+    // method calls holistically, so flatten the tree of calls into a single
+    // list.
+    var target;
+    var invocations = [];
+
+    flatten(expression) {
+      target = expression;
+
+      if (expression is MethodInvocation && expression.target != null) {
+        flatten(expression.target);
+        invocations.add(expression);
+      }
+    }
+
+    // Recursively walk the chain of method calls.
+    flatten(node);
+
+    _startNestBodies();
+
+    // Try to keep the entire method invocation one line.
+    _writer.startSpan();
+    _writer.nestExpression();
+
+    visit(target);
+
+    // With a chain of method calls like `foo.bar.baz.bang`, they either all
+    // split or none of them do.
+    _writer.startRule();
+
+    for (var invocation in invocations) {
+      zeroSplit();
+      token(invocation.period);
+      token(invocation.methodName.token);
+
+      // If a method's argument list includes a block-bodied lambda, we know
+      // it will split. Treat the chains before and after that as separate
+      // unrelated method chains.
+      //
+      // This is kind of a hack since it doesn't use the same logic for
+      // collection literals, but it makes for much better chains of
+      // higher-order method calls.
+      var hasLambda = invocation.argumentList.arguments.any(_isBlockLambda);
+
+      // Stop the rule after the last call, but before its arguments. This
+      // allows unsplit chains where the last argument list wraps, like:
+      //
+      //     foo().bar().baz(
+      //         argument, list);
+      // TODO(rnystrom): Is this what we want?
+      if (invocation == invocations.last) {
+        _writer.endRule();
+        _endNestBodies();
+      } else if (hasLambda) {
+        _writer.endRule();
+        _endNestBodies();
       }
 
-      // Recursively walk the chain of method calls.
-      flatten(node);
+      visit(invocation.argumentList);
 
-      // TODO(bob): Will want to _startNestBodies() here and end at the end in
-      // some cases.
-
-      visit(target);
-
-      // With a chain of method calls like `foo.bar.baz.bang`, they either all
-      // split or none of them do.
-      _writer.startRule();
-
-      for (var invocation in invocations) {
-        zeroSplit();
-        token(invocation.period);
-        token(invocation.methodName.token);
-
-        // Stop the rule after the last call, but before its arguments. This
-        // allows unsplit chains where the last argument list wraps, like:
-        //
-        //     foo().bar().baz(
-        //         argument, list);
-        // TODO(rnystrom): Is this what we want?
-        if (invocation == invocations.last) _writer.endRule();
-
-        visit(invocation.argumentList);
+      if (invocation != invocations.last && hasLambda) {
+        _startNestBodies();
+        _writer.startRule();
       }
     }
 
@@ -1786,6 +1768,15 @@ class SourceVisitor implements AstVisitor {
     if (expression is MapLiteral) return true;
 
     // Curly body functions are.
+    return _isBlockLambda(expression);
+  }
+
+  /// Returns `true` if [expression] is a function expression with a block body.
+  bool _isBlockLambda(Expression expression) {
+    if (expression is NamedExpression) {
+      expression = (expression as NamedExpression).expression;
+    }
+
     if (expression is! FunctionExpression) return false;
     var function = expression as FunctionExpression;
     return function.body is BlockFunctionBody;
@@ -1794,7 +1785,7 @@ class SourceVisitor implements AstVisitor {
   /// Indicates that all bodies visited until the matching [_endNestBodies]
   /// call will be indented based on expression nesting.
   ///
-  /// Ohterwise, instead of creating an actual body, we just update the
+  /// Otherwise, instead of creating an actual body, we just update the
   /// indentation of the current one.
   void _startNestBodies() {
     _nestBodiesCount++;
@@ -1850,7 +1841,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Returns `true` if [node] is immediately contained within an anonymous
   /// [FunctionExpression].
-  bool _isLambda(AstNode node) =>
+  bool _isInLambda(AstNode node) =>
       node.parent is FunctionExpression &&
       node.parent.parent is! FunctionDeclaration;
 

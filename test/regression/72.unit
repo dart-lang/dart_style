@@ -12,8 +12,10 @@ class A {
 class A {
   foo() {
     // comment #1
-    if (comment != null && comment.end == token.offset
+    if (comment != null &&
+        comment.end == token.offset
         // comment #2
-        && node.parent.beginToken != token) {}
+        &&
+        node.parent.beginToken != token) {}
   }
 }
