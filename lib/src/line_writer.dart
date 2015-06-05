@@ -768,28 +768,57 @@ class LineWriter {
     }
   }
 
-  /// Hardens any active rules that care when a hard split occurs within them.
+  /// Hardens the active rules when a hard split occurs within them.
   void _handleHardSplit() {
-    // Replace each ongoing rule with a hard split if it wants to split when
-    // it contains an inner split.
-    for (var i = 0; i < _rules.length; i++) {
-      var rule = _rules[i];
-      if (rule.splitsOnInnerRules) {
-        _rules[i] = new HardSplitRule();
-        _hardenRule(rule);
-      }
-    }
+    if (_rules.isEmpty) return;
+
+    // If the current rule doesn't care, it will "eat" the hard split and no
+    // others will care either.
+    if (!_rules.last.splitsOnInnerRules) return;
+
+    // Start with the innermost rule. This will traverse the other rules it
+    // constrains.
+    _hardenRule(_rules.last);
   }
 
-  /// Hardens every [Chunk] that uses [rule].
+  /// Replaces [rule] with a hard split.
+  ///
+  /// This also applies all of the implications of that change:
+  ///
+  /// * Existing chunks using that rule are hardened.
+  /// * Later chunks using that rule will use a hard split instead.
+  /// * Any other rules that are constrained by this one are also hardened.
   void _hardenRule(Rule rule) {
-    if (!_ruleChunks.containsKey(rule)) return;
+    var hardened = new Set();
 
-    for (var chunk in _ruleChunks[rule]) _chunks[chunk].harden();
+    harden(rule) {
+      if (hardened.contains(rule)) return;
+      hardened.add(rule);
 
-    // Note that other rules may still imply the now-discarded rule. We could
-    // clean those out, but it takes time to do so and it's harmless to leave
-    // them alone. Since removing them noticeably affects perf, we just ignore
-    // them.
+      // Harden every existing chunk that uses this rule.
+      if (_ruleChunks.containsKey(rule)) {
+        for (var chunk in _ruleChunks[rule]) _chunks[chunk].harden();
+      }
+
+      // If the rule is still active, swap it out with a hard split so that
+      // later chunks using the rule are hardened too.
+      for (var i = 0; i < _rules.length; i++) {
+        if (_rules[i] == rule) {
+          _rules[i] = new HardSplitRule();
+        }
+      }
+
+      // Follow this rule's constraints, recursively.
+      for (var other in _ruleChunks.keys) {
+        if (other == rule) continue;
+
+        if (rule.constrain(rule.fullySplitValue, other) ==
+            other.fullySplitValue) {
+          harden(other);
+        }
+      }
+    }
+
+    harden(rule);
   }
 }
