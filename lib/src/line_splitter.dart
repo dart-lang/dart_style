@@ -169,7 +169,7 @@ class LineSplitter {
     }
 
     var solution = new Solution(prefix);
-    _tryChunkRuleValues(solution, prefix, prefix.column);
+    _tryChunkRuleValues(solution, prefix);
 
     if (debug.traceSplitter) {
       debug.unindent();
@@ -181,7 +181,7 @@ class LineSplitter {
 
   /// Updates [solution] with the best rule value selection for the chunk
   /// immediately following [prefix].
-  void _tryChunkRuleValues(Solution solution, LinePrefix prefix, int length) {
+  void _tryChunkRuleValues(Solution solution, LinePrefix prefix) {
     // If we made it to the end, this prefix can be solved without splitting
     // any chunks.
     if (prefix.length == _chunks.length - 1) {
@@ -191,35 +191,29 @@ class LineSplitter {
 
     var chunk = _chunks[prefix.length];
 
-    // If this chunk bumps us past the page limit and we already have a
-    // solution that fits, no solution past this chunk will beat that, so
-    // stop looking.
-    if (length + chunk.length > _pageWidth && solution.isAdequate) return;
-
     // See if we've already selected a value for the rule.
     var value = prefix.ruleValues[chunk.rule];
 
     if (value == null) {
       // No, so try every possible value for the rule.
       for (value = 0; value < chunk.rule.numValues; value++) {
-        _tryRuleValue(solution, prefix, value, length);
+        _tryRuleValue(solution, prefix, value);
       }
     } else if (value == -1) {
       // A -1 "value" means, "any non-zero value". In other words, the rule has
       // to split somehow, but can split however it chooses.
       for (value = 1; value < chunk.rule.numValues; value++) {
-        _tryRuleValue(solution, prefix, value, length);
+        _tryRuleValue(solution, prefix, value);
       }
     } else {
       // Otherwise, it's constrained to a single value, so use it.
-      _tryRuleValue(solution, prefix, value, length);
+      _tryRuleValue(solution, prefix, value);
     }
   }
 
   /// Updates [solution] with the best solution that can be found by setting
   /// the chunk after [prefix]'s rule to [value].
-  void _tryRuleValue(Solution solution, LinePrefix prefix, int value,
-      int length) {
+  void _tryRuleValue(Solution solution, LinePrefix prefix, int value) {
     var chunk = _chunks[prefix.length];
 
     if (chunk.rule.isSplit(value, chunk)) {
@@ -234,7 +228,7 @@ class LineSplitter {
       // We didn't split here, so add this chunk and its rule value to the
       // prefix and continue on to the next.
       var added = prefix.extend(_advancePrefix(prefix, value));
-      _tryChunkRuleValues(solution, added, length);
+      _tryChunkRuleValues(solution, added);
     }
   }
 
