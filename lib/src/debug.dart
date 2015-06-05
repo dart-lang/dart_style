@@ -67,12 +67,26 @@ String bold(message) => "$_bold$message$_none";
 void dumpChunks(List<Chunk> chunks) {
   if (chunks.isEmpty) return;
 
+  // Show the spans as vertical bands over their range.
+  var spans = new Set();
+  for (var chunk in chunks) {
+    spans.addAll(chunk.spans);
+  }
+  spans = spans.toList();
+
   var rows = [];
   var i = 0;
   for (var chunk in chunks) {
     var row = [];
     row.add(gray("$i:"));
     row.add("${chunk.text}");
+
+    var spanBars = "";
+    for (var span in spans) {
+      spanBars += chunk.spans.contains(span) ? "|" : " ";
+    }
+    row.add(spanBars);
+
     row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
     if (chunk.rule.outerRules.isEmpty) {
       row.add("");

@@ -1,10 +1,9 @@
 >>>
-return _provideDirectorySources(graph.packages[package], "bin")
-    .then((_) => BarbackServer.bind(
+return _provideDirectorySources(graph.packages[package], "bin").then((_) => BarbackServer.bind(
         this, _hostname, 0, package: package, rootDirectory: "bin"));
 <<<
-return _provideDirectorySources(graph.packages[package], "bin").then(
-    (_) => BarbackServer.bind(this, _hostname, 0,
+return _provideDirectorySources(graph.packages[package], "bin").then((_) =>
+    BarbackServer.bind(this, _hostname, 0,
         package: package, rootDirectory: "bin"));
 >>>
 messageMentionsAsset(id) =>

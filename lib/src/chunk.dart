@@ -147,13 +147,6 @@ class Chunk extends Selection {
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
 
-  /// Gets whether this chunk ends a series of chunks that can be split
-  /// completely independently of the following chunks.
-  ///
-  /// Used to run the [LineSplitter] on smaller lists of chunks to improve
-  /// performance.
-  bool get endsLine => isHardSplit && nesting == 0 && bodyDepth == 0;
-
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];
 

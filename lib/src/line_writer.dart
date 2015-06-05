@@ -47,8 +47,8 @@ class LineWriter {
   /// written before they start.
   final _lazyRules = <Rule>[];
 
-  /// The chunks owned by each rule (except for hard splits).
-  final _ruleChunks = <Rule, List<Chunk>>{};
+  /// The indexes of the chunks owned by each rule (except for hard splits).
+  final _ruleChunks = <Rule, List<int>>{};
 
   /// The nested stack of spans that are currently being written.
   final _openSpans = <OpenSpan>[];
@@ -306,15 +306,19 @@ class LineWriter {
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.normal]) {
-    _openSpans.add(new OpenSpan(_currentChunkIndex, cost));
+    _openSpans.add(createSpan(cost));
   }
 
-  /// Ends the innermost span.
-  void endSpan() {
-    var openSpan = _openSpans.removeLast();
+  /// Creates a "free" span not stored on the span stack.
+  ///
+  /// By creating this and later passing it to [endSpan], you can create spans
+  /// that don't follow the normal strictly nested behavior.
+  OpenSpan createSpan([int cost = Cost.normal]) =>
+      new OpenSpan(_currentChunkIndex, cost);
 
-    // If the span was discarded while it was still open, just forget about it.
-    if (openSpan == null) return;
+  /// Ends the innermost span.
+  void endSpan([OpenSpan openSpan]) {
+    if (openSpan == null) openSpan = _openSpans.removeLast();
 
     // A span that just covers a single chunk can't be split anyway.
     var end = _currentChunkIndex;
@@ -570,7 +574,7 @@ class LineWriter {
 
     // Keep track of which chunks are owned by the rule.
     if (rule is! HardSplitRule) {
-      _ruleChunks.putIfAbsent(rule, () => []).add(chunk);
+      _ruleChunks.putIfAbsent(rule, () => []).add(_chunks.length - 1);
     }
 
     if (chunk.isHardSplit) _handleHardSplit();
@@ -591,17 +595,21 @@ class LineWriter {
   /// Takes all of the chunks and breaks them into sublists that can be line
   /// split individually.
   ///
-  /// This should only be called once, after all of the chunks have been
-  /// written.
+  /// Since this is linear and line splitting is... worse... it's good to feed
+  /// the line splitter smaller lists of chunks when possible. This should only
+  /// be called once, after all of the chunks have been written.
   void _splitLines() {
-    // Make sure we don't split the line in the middle of a rule.
-    var rules = _chunks.map((chunk) => chunk.rule).toSet();
-    var ruleSpanningIndexes = new Set();
-    for (var rule in rules) {
-      if (rule.start == null) continue;
-      for (var i = rule.start; i < rule.end; i++) {
-        ruleSpanningIndexes.add(i);
-      }
+    canSplitAt(int i) {
+      var chunk = _chunks[i];
+      if (!chunk.isHardSplit) return false;
+      if (chunk.nesting > 0) return false;
+      if (chunk.bodyDepth > 0) return false;
+
+      // Make sure we don't split the line in the middle of a rule.
+      var chunks = _ruleChunks[chunk.rule];
+      if (chunks != null && chunks.any((other) => other > i)) return false;
+
+      return true;
     }
 
     // For each independent set of chunks, see if there are any rules in them
@@ -610,12 +618,10 @@ class LineWriter {
     // nested or complex.
     var start = 0;
     for (var i = 1; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
-      if (!chunk.endsLine) continue;
-      if (ruleSpanningIndexes.contains(i)) continue;
-
-      _preemptRules(start, i);
-      start = i;
+      if (canSplitAt(i)) {
+        _preemptRules(start, i);
+        start = i;
+      }
     }
 
     if (start < _chunks.length) {
@@ -629,10 +635,7 @@ class LineWriter {
 
     start = 0;
     for (var i = 0; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
-
-      if (!chunk.endsLine) continue;
-      if (ruleSpanningIndexes.contains(i)) continue;
+      if (!canSplitAt(i)) continue;
 
       // Write the newlines required by the previous line.
       for (var i = 0; i < bufferedNewlines; i++) {
@@ -642,6 +645,7 @@ class LineWriter {
       _completeLine(beginningIndent, _chunks.sublist(start, i + 1));
 
       // Get ready for the next line.
+      var chunk = _chunks[i];
       bufferedNewlines = chunk.isDouble ? 2 : 1;
       beginningIndent = chunk.absoluteIndent;
       start = i + 1;
@@ -785,7 +789,7 @@ class LineWriter {
   void _hardenRule(Rule rule) {
     if (!_ruleChunks.containsKey(rule)) return;
 
-    for (var chunk in _ruleChunks[rule]) chunk.harden();
+    for (var chunk in _ruleChunks[rule]) _chunks[chunk].harden();
 
     // Note that other rules may still imply the now-discarded rule. We could
     // clean those out, but it takes time to do so and it's harmless to leave

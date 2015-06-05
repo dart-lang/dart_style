@@ -53,6 +53,10 @@ class SourceVisitor implements AstVisitor {
   /// If `null`, a literal body creates its own rule.
   Rule _nextBodyRule;
 
+  /// The span that binds the parameter list of a lambda function argument to
+  /// the surrounding argument list.
+  OpenSpan _firstFunctionSpan;
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(formatter, this._lineInfo, SourceCode source)
@@ -160,9 +164,30 @@ class SourceVisitor implements AstVisitor {
 
     if (singleArgument) _writer.startSpan();
 
+    // Corner case: If the first argument to a method is a function, it looks
+    // bad if its parameter list gets wrapped to the next line. Bump the cost
+    // to try to avoid that. This prefers:
+    //
+    //     receiver
+    //         .method()
+    //         .chain((parameter, list) {
+    //       ...
+    //     });
+    //
+    // over:
+    //
+    //     receiver.method().chain(
+    //         (parameter, list) {
+    //       ...
+    //     });
+    if (node.arguments.first is FunctionExpression) {
+      _firstFunctionSpan = _writer.createSpan();
+    }
+
     // Nest around the parentheses in case there are comments before or after
     // them.
     _writer.nestExpression();
+    _writer.startSpan();
     token(node.leftParenthesis);
 
     var bodyRule = bodies.isNotEmpty
@@ -247,6 +272,7 @@ class SourceVisitor implements AstVisitor {
 
     token(node.rightParenthesis);
 
+    _writer.endSpan();
     _writer.unnest();
 
     if (singleArgument) _writer.endSpan();
@@ -794,6 +820,14 @@ class SourceVisitor implements AstVisitor {
     _writer.nestExpression();
     token(node.leftParenthesis);
 
+    // If this parameter list is for a lambda argument that we want to avoid
+    // splitting, close the span that sticks it to the beginning of the
+    // argument list.
+    if (_firstFunctionSpan != null) {
+      _writer.endSpan(_firstFunctionSpan);
+      _firstFunctionSpan = null;
+    }
+
     var rule;
     if (requiredParams.isNotEmpty) {
       if (requiredParams.length > 1) {
@@ -1186,6 +1220,19 @@ class SourceVisitor implements AstVisitor {
       if (invocation == invocations.last) {
         _writer.endRule();
         _endNestBodies();
+
+        // For a single method call, stop the span before the arguments to make
+        // it easier to keep the call name with the target. In other words,
+        // prefer:
+        //
+        //     target.method(
+        //         argument, list);
+        //
+        // Over:
+        //
+        //     target
+        //         .method(argument, list);
+        if (invocations.length == 1) _writer.endSpan();
       } else if (hasLambda) {
         _writer.endRule();
         _endNestBodies();
@@ -1200,7 +1247,12 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.unnest();
-    _writer.endSpan();
+
+    // For longer method chains, do include the last argument list. We want to
+    // make it very easy to split long chains. Wrapping the span around the
+    // last args means it won't try to split in the last args to keep the
+    // chain together, since that will still split this span.
+    if (invocations.length > 1) _writer.endSpan();
   }
 
   visitNamedExpression(NamedExpression node) {
