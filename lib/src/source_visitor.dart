@@ -436,8 +436,6 @@ class SourceVisitor implements AstVisitor {
   visitCascadeExpression(CascadeExpression node) {
     visit(node.target);
 
-    // TODO(bob): Force nested blocks here?
-
     _writer.indent();
 
     // If there are multiple cascades, they always get their own line, even if
@@ -1737,12 +1735,6 @@ class SourceVisitor implements AstVisitor {
 
     _startBody(leftBracket, cost: cost, isBody: true);
 
-    // Each list element takes at least 3 characters (one character for the
-    // element, one for the comma, one for the space), so force it to split if
-    // we know that won't fit.
-    // TODO(bob): Is this still needed now that writer preempts?
-    if (elements.length > _writer.pageWidth ~/ 3) _writer.forceRules();
-
     for (var element in elements) {
       if (element != elements.first) _writer.split(nest: false, space: true);
 
@@ -1865,7 +1857,6 @@ class SourceVisitor implements AstVisitor {
 
     // Split after the bracket. Use the explicitly given rule if we have one.
     // Otherwise, create a new rule.
-    // TODO(bob): Cost.
     _writer.startRule(_nextBodyRule);
     _nextBodyRule = null;
 

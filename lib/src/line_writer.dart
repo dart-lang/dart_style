@@ -7,7 +7,7 @@ library dart_style.src.source_writer;
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
-import 'indent_stack.dart';
+import 'nesting_writer.dart';
 import 'line_splitter.dart';
 import 'rule.dart';
 import 'source_code.dart';
@@ -53,8 +53,8 @@ class LineWriter {
   /// The nested stack of spans that are currently being written.
   final _openSpans = <OpenSpan>[];
 
-  /// The current indentation levels.
-  final _stack = new IndentStack();
+  /// The current state.
+  final _nesting = new NestingWriter();
 
   /// The index of the "current" chunk being written.
   ///
@@ -118,7 +118,7 @@ class LineWriter {
     _lazyRules.forEach(startRule);
     _lazyRules.clear();
 
-    _stack.commitNesting();
+    _nesting.commitNesting();
   }
 
   /// Writes a [WhitespaceChunk] of [type].
@@ -267,12 +267,12 @@ class LineWriter {
 
   /// Increases indentation of the next line by [levels].
   void indent([int levels = 1]) {
-    _stack.indent(levels);
+    _nesting.indent(levels);
   }
 
   /// Decreases indentation of the next line by [levels].
   void unindent([int levels = 1]) {
-    _stack.unindent(levels);
+    _nesting.unindent(levels);
   }
 
   /// Begins a new body.
@@ -294,12 +294,12 @@ class LineWriter {
   /// Note that the function and list bodies are both indented +4 to match the
   /// argument lists's indentation.
   void startBody() {
-    _stack.startBody();
+    _nesting.startBody();
   }
 
   /// Ends the innermost body.
   void endBody() {
-    _stack.endBody();
+    _nesting.endBody();
   }
 
   /// Starts a new span with [cost].
@@ -370,24 +370,12 @@ class LineWriter {
     _rules.removeLast().end = _currentChunkIndex;
   }
 
-  /// Pre-emptively forces all of the current rules to become hard splits.
-  ///
-  /// This is called by [SourceVisitor] when it can determine that a rule will
-  /// will always be split. Turning it (and the surrounding rules) into hard
-  /// splits lets the writer break the output into smaller pieces for the line
-  /// splitter, which helps performance and avoids failing on very large input.
-  ///
-  /// In particular, it's easy for the visitor to know that collections with a
-  /// large number of items must split. Doing that early avoids crashing the
-  /// splitter when it tries to recurse on huge collection literals.
-  void forceRules() => _handleHardSplit();
-
   /// Increases the level of expression nesting.
   ///
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void nestExpression() {
-    _stack.nest();
+    _nesting.nest();
   }
 
   /// Decreases the level of expression nesting.
@@ -395,7 +383,7 @@ class LineWriter {
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
   void unnest() {
-    _stack.unnest();
+    _nesting.unnest();
   }
 
   /// Marks the selection starting point as occurring [fromEnd] characters to
@@ -566,7 +554,7 @@ class LineWriter {
     if (_chunks.isEmpty) return null;
 
     var chunk = _chunks.last;
-    chunk.applySplit(_stack, rule,
+    chunk.applySplit(_nesting, rule,
         nest: nest,
         flushLeft: flushLeft,
         isDouble: isDouble,
@@ -642,7 +630,7 @@ class LineWriter {
         _buffer.write(_formatter.lineEnding);
       }
 
-      _completeLine(beginningIndent, _chunks.sublist(start, i + 1));
+      _completeLine(beginningIndent, start, i + 1);
 
       // Get ready for the next line.
       var chunk = _chunks[i];
@@ -652,19 +640,21 @@ class LineWriter {
     }
 
     if (start < _chunks.length) {
-      _completeLine(beginningIndent, _chunks.sublist(start, _chunks.length));
+      _completeLine(beginningIndent, start, _chunks.length);
     }
   }
 
   /// Takes the first [length] of the chunks with leading [indent], removes
   /// them, and runs the [LineSplitter] on them.
-  void _completeLine(int indent, List<Chunk> chunks) {
+  void _completeLine(int indent, int start, int end) {
+    var chunks = _chunks.sublist(start, end);
+
     // We know unused nesting levels will never be used now, so flatten them.
     _flattenNestingLevels(chunks);
 
     if (debug.traceFormatter) {
       debug.log(debug.green("\nWriting:"));
-      debug.dumpChunks(chunks);
+      debug.dumpChunks(start, chunks);
       debug.log();
     }
 
@@ -735,12 +725,10 @@ class LineWriter {
   /// will be hard to solve directly.
   ///
   /// Returns the indexes of chunks that got hardened.
-  // TODO(bob): Eventually we probably only want to do this for rules
-  // that have "multisplit"-like behavior where an inner split always
-  // implies that it gets split.
-  // TODO(bob): The fact that this generates non-optimal solutions is a drag.
-  // Can we do something better?
   void _preemptRules(int start, int end) {
+    // TODO(rnystrom): The fact that this generates non-optimal solutions is a
+    // drag. We should do something better.
+
     // TODO(bob): Should be rule.splitsOnInnerRules instead of is! HardSplitRule.
     // But that significantly regresses perf at least until we have better
     // handling for method chains.
@@ -759,12 +747,8 @@ class LineWriter {
     for (var rule in rules) {
       var length = 0;
       for (var i = rule.start + 1; i <= rule.end; i++) {
-        // TODO(bob): What if the chunk has a hard split?
         length += _chunks[i].length;
         if (length > pageWidth) {
-          // TODO(bob): This is incorrect when the rule isn't a Simple rule.
-          // For example it will harden an argument list to full one-per-line
-          // even if the arg list could fit when split to two lines.
           _hardenRule(rule);
           break;
         }

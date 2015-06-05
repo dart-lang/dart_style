@@ -32,8 +32,8 @@ abstract class Rule extends FastHash {
   /// contents are too long. This may be a wider range than the set of chunks
   /// enclosed by chunks whose rule is this one. A rule may still be on the
   /// list of open rules for a while after its last chunk is written.
-  // TODO(bob): This is only being used by preemption which is kind of hacky.
-  // Get rid of this?
+  // TODO(rnystrom): These are only used by preemption which is kind of hacky.
+  // Remove this if preemption is redone.
   int start;
   int end;
 

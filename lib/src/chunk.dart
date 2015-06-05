@@ -5,7 +5,7 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
-import 'indent_stack.dart';
+import 'nesting_writer.dart';
 import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -45,7 +45,6 @@ abstract class Selection {
   }
 }
 
-// TODO(bob): Clean up docs that mention param.
 /// A chunk of non-breaking output text terminated by a hard or soft newline.
 ///
 /// Chunks are created by [LineWriter] and fed into [LineSplitter]. Each
@@ -174,14 +173,13 @@ class Chunk extends Selection {
     spans.clear();
   }
 
-  // TODO(bob): Doc rule.
-  /// Finishes off this chunk with the given split information.
+  /// Finishes off this chunk with the given [rule] and split information.
   ///
   /// This may be called multiple times on the same split since the splits
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(IndentStack indent, Rule rule,
+  void applySplit(NestingWriter nesting, Rule rule,
       {bool nest, bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (nest == null) nest = false;
     if (flushLeft == null) flushLeft = false;
@@ -198,9 +196,9 @@ class Chunk extends Selection {
 
     // Last newline settings win.
     _flushLeft = flushLeft;
-    _nesting = nest ? indent.nesting : 0;
-    _indent = indent.indentation;
-    _bodyDepth = indent.bodyDepth;
+    _nesting = nest ? nesting.nesting : 0;
+    _indent = nesting.indentation;
+    _bodyDepth = nesting.bodyDepth;
 
     _spaceWhenUnsplit = spaceWhenUnsplit;
 

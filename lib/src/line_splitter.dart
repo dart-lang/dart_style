@@ -99,7 +99,7 @@ class LineSplitter {
   List<int> apply(StringBuffer buffer) {
     if (debug.traceSplitter) {
       debug.log(debug.green("\nSplitting:"));
-      debug.dumpChunks(_chunks);
+      debug.dumpChunks(0, _chunks);
       debug.log();
     }
 
@@ -304,7 +304,7 @@ class LineSplitter {
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
-  /// into [lines] physical lines based on the current set of params.
+  /// into [lines] physical lines based on the current set of rules.
   int _evaluateCost(LinePrefix prefix, SplitSet splits) {
     assert(splits != null);
 

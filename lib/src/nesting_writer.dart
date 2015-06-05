@@ -2,12 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.indent_stack;
+library dart_style.src.nesting_writer;
 
-// TODO(bob): Unify "block" and "body" terminology. Rename this class.
-/// Describes the block indentation and expression nesting at a point in the
-/// code.
-class IndentStack  {
+/// Keeps track of block indentation and expression nesting while the source
+/// code is being visited and the chunks are being written.
+class NestingWriter {
   /// The expression nesting level within each block level.
   ///
   /// This is tracked as a stack of numbers. Each element in the stack
