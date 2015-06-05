@@ -447,7 +447,8 @@ class MultiplePositionalRule extends PositionalArgsRule {
         if (chunk == _arguments[i]) return false;
       }
 
-      for (var i = _arguments.length - _trailingBodies; i < _arguments.length; i++) {
+      for (var i = _arguments.length - _trailingBodies;
+          i < _arguments.length; i++) {
         if (chunk == _arguments[i]) return false;
       }
 

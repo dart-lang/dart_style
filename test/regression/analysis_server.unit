@@ -1,0 +1,40 @@
+>>> (indent 2)
+  main() {
+    List<Future<List<LocationImpl>>> nodeFutures =
+        <Future<List<LocationImpl>>>[];
+  }
+<<<
+  main() {
+    List<Future<List<LocationImpl>>> nodeFutures =
+        <Future<List<LocationImpl>>>[];
+  }
+>>>
+class CachingPubPackageMapProvider {
+  CachingPubPackageMapProvider(ResourceProvider resourceProvider,
+      DirectoryBasedDartSdk sdk, [RunPubList runPubList, this._writeFile])
+      : super(resourceProvider, sdk, runPubList) {
+    ;
+  }
+}
+<<<
+class CachingPubPackageMapProvider {
+  CachingPubPackageMapProvider(
+      ResourceProvider resourceProvider, DirectoryBasedDartSdk sdk,
+      [RunPubList runPubList, this._writeFile])
+      : super(resourceProvider, sdk, runPubList) {
+    ;
+  }
+}
+>>>
+class Foo {
+  bool selectionIncludesNonWhitespaceOutsideNode(SourceRange selection,
+      AstNode node) => _selectionIncludesNonWhitespaceOutsideRange(
+           selection, SourceRangeFactory.rangeNode(node));
+}
+<<<
+class Foo {
+  bool selectionIncludesNonWhitespaceOutsideNode(
+          SourceRange selection, AstNode node) =>
+      _selectionIncludesNonWhitespaceOutsideRange(
+          selection, SourceRangeFactory.rangeNode(node));
+}

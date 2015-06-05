@@ -284,6 +284,8 @@ class LineSplitter {
 
       // Enforce the constraints between rules.
       for (var suffixRule in suffixRules) {
+        if (suffixRule == prefixRule) continue;
+
         // See if the prefix rule's value constrains any values in the suffix.
         var value = prefixRule.constrain(ruleValue, suffixRule);
 

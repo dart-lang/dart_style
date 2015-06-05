@@ -370,6 +370,18 @@ class LineWriter {
     _rules.removeLast().end = _currentChunkIndex;
   }
 
+  /// Pre-emptively forces all of the current rules to become hard splits.
+  ///
+  /// This is called by [SourceVisitor] when it can determine that a rule will
+  /// will always be split. Turning it (and the surrounding rules) into hard
+  /// splits lets the writer break the output into smaller pieces for the line
+  /// splitter, which helps performance and avoids failing on very large input.
+  ///
+  /// In particular, it's easy for the visitor to know that collections with a
+  /// large number of items must split. Doing that early avoids crashing the
+  /// splitter when it tries to recurse on huge collection literals.
+  void forceRules() => _handleHardSplit();
+
   /// Increases the level of expression nesting.
   ///
   /// Expressions that are more nested will get increased indentation when split

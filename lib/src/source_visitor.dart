@@ -224,8 +224,15 @@ class SourceVisitor implements AstVisitor {
       if (positionalArgs.length == 1) {
         rule = new SinglePositionalRule(bodyRule);
       } else {
+        // Only count the positional bodies in the positional rule.
+        var positionalLeadingBodies = leadingBodies;
+        if (leadingBodies == node.arguments.length) {
+          positionalLeadingBodies -= namedArgs.length;
+        }
+
+        var positionalTrailingBodies = trailingBodies - namedArgs.length;
         rule = new MultiplePositionalRule(
-            bodyRule, leadingBodies, trailingBodies);
+            bodyRule, positionalLeadingBodies, positionalTrailingBodies);
       }
 
       _writer.startRule(rule);
@@ -404,11 +411,11 @@ class SourceVisitor implements AstVisitor {
   visitBlock(Block node) {
     var isBody = node.parent is BlockFunctionBody;
 
-    _startBody(node.leftBracket, isBody: isBody);
+    _startBody(node.leftBracket, nestBody: isBody);
 
     visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
 
-    _endBody(node.rightBracket, isBody: isBody);
+    _endBody(node.rightBracket, nestBody: isBody);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -845,6 +852,8 @@ class SourceVisitor implements AstVisitor {
         rule.beforeArgument(zeroSplit());
       }
 
+      _writer.startSpan();
+
       for (var param in requiredParams) {
         visit(param);
 
@@ -854,11 +863,14 @@ class SourceVisitor implements AstVisitor {
         if (param != requiredParams.last) rule.beforeArgument(split());
       }
 
+      _writer.endSpan();
       _writer.endRule();
     }
 
     if (optionalParams.isNotEmpty) {
-      var namedRule = new NamedArgsRule(rule);
+      var namedRule = new NamedArgsRule(null);
+      if (rule != null) rule.setNamedArgsRule(namedRule);
+
       _writer.startRule(namedRule);
 
       namedRule.beforeArguments(
@@ -1733,7 +1745,23 @@ class SourceVisitor implements AstVisitor {
     modifier(node.constKeyword);
     visit(node.typeArguments);
 
-    _startBody(leftBracket, cost: cost, isBody: true);
+    // Don't allow splitting in an empty collection.
+    if (elements.isEmpty && rightBracket.precedingComments == null) {
+      token(leftBracket);
+      token(rightBracket);
+      return;
+    }
+
+    var fitsInLine = true;
+    if (elements.isNotEmpty) {
+      fitsInLine = _fitsInLine(elements.first.beginToken,
+          elements.last.endToken);
+    }
+
+    _startBody(leftBracket, cost: cost, nestBody: true);
+
+    // If we know the collection is going to split, do so now for performance.
+    if (!fitsInLine) _writer.forceRules();
 
     for (var element in elements) {
       if (element != elements.first) _writer.split(nest: false, space: true);
@@ -1748,7 +1776,7 @@ class SourceVisitor implements AstVisitor {
       _writer.unnest();
     }
 
-    _endBody(rightBracket, isBody: true);
+    _endBody(rightBracket, nestBody: true);
   }
 
   /// Visits a list of [combinators] following an "import" or "export"
@@ -1844,15 +1872,15 @@ class SourceVisitor implements AstVisitor {
   /// starting the rule used to split inside the brackets.
   ///
   /// If [space] is `true`, then the initial split will use a space if not
-  /// split.  If [isBody] is `true`, creates a new body as well. This is used
+  /// split.  If [nestBody] is `true`, creates a new body as well. This is used
   /// for functions and collection literals, but not other "curly bodies" like
   /// classes, blocks, etc.
   void _startBody(Token leftBracket,
-      {int cost, bool space: false, bool isBody: false}) {
+      {int cost, bool space: false, bool nestBody: false}) {
     token(leftBracket);
 
     // Indent the body.
-    if (isBody && _nestBodiesCount > 0) _writer.startBody();
+    if (nestBody && _nestBodiesCount > 0) _writer.startBody();
     _writer.indent();
 
     // Split after the bracket. Use the explicitly given rule if we have one.
@@ -1869,15 +1897,15 @@ class SourceVisitor implements AstVisitor {
   /// Used for blocks, other curly bodies, and collection literals.
   ///
   /// If [space] is `true`, then the final split will use a space if not split.
-  /// if [isBody] is `true`, this closes the innermost body.
-  void _endBody(Token rightBracket, {bool space: false, bool isBody: false}) {
+  /// if [nestBody] is `true`, this closes the innermost body.
+  void _endBody(Token rightBracket, {bool space: false, bool nestBody: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
       _writer.split(nest: false, space: space);
     });
 
-    if (isBody && _nestBodiesCount > 0) _writer.endBody();
+    if (nestBody && _nestBodiesCount > 0) _writer.endBody();
 
     _writer.endRule();
   }
@@ -2144,6 +2172,24 @@ class SourceVisitor implements AstVisitor {
     }
 
     return _selectionEnd;
+  }
+
+  /// Returns true if the lexemes in the token range from [start] to [end]
+  /// (inclusive) are longer than the page.
+  ///
+  /// Used to eagerly force some rules to split when there's no chance of them
+  /// fitting.
+  bool _fitsInLine(Token start, Token end) {
+    // TODO(rnystrom): Should this take comments into account?
+
+    var length = 0;
+    for (var token = start; token != end; token = token.next) {
+      length += token.lexeme.length;
+    }
+
+    length += end.lexeme.length;
+
+    return length <= _formatter.pageWidth;
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.
