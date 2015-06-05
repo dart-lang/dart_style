@@ -191,6 +191,11 @@ class LineSplitter {
 
     var chunk = _chunks[prefix.length];
 
+    // If this chunk bumps us past the page limit and we already have a
+    // solution that fits, no solution past this chunk will beat that, so
+    // stop looking.
+    if (length + chunk.length > _pageWidth && solution.isAdequate) return;
+
     // See if we've already selected a value for the rule.
     var value = prefix.ruleValues[chunk.rule];
 
@@ -218,12 +223,6 @@ class LineSplitter {
     var chunk = _chunks[prefix.length];
 
     if (chunk.rule.isSplit(value, chunk)) {
-      // If this chunk bumps us past the page limit and we already have a
-      // solution that fits, no solution past this chunk will beat that, so
-      // stop looking.
-      length += chunk.length;
-      if (length > _pageWidth && solution.isAdequate) return;
-
       // The chunk is splitting in an expression, so try all of the possible
       // nesting combinations.
       var ruleValues = _advancePrefix(prefix, value);

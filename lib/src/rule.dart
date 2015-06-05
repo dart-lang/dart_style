@@ -508,14 +508,9 @@ class NamedArgsRule extends ArgsRule {
   /// The chunk prior to the first named argument.
   Chunk _first;
 
-  /// `true` if the named arguments are all bodies.
-  final bool _areBodies;
-
   int get numValues => 3;
 
-  NamedArgsRule(Rule bodyRule, {bool areBodies})
-      : _areBodies = areBodies,
-        super(bodyRule);
+  NamedArgsRule(Rule bodyRule) : super(bodyRule);
 
   void beforeArguments(Chunk chunk) {
     assert(_first == null);
@@ -531,7 +526,6 @@ class NamedArgsRule extends ArgsRule {
 
     // TODO(rnystrom): We might need a value to represent "split before
     // non-body but not body args".
-
     throw "unreachable";
   }
 

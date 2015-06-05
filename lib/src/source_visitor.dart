@@ -256,7 +256,7 @@ class SourceVisitor implements AstVisitor {
 
     if (namedArgs.isNotEmpty) {
       var positionalRule = rule;
-      rule = new NamedArgsRule(bodyRule, areBodies: trailingBodies > 0);
+      rule = new NamedArgsRule(bodyRule);
       _writer.startRule(rule);
 
       // Let the positional args force the named ones to split.
