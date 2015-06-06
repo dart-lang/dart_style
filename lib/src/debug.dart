@@ -69,16 +69,23 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   // Show the spans as vertical bands over their range.
   var spans = new Set();
-  for (var chunk in chunks) {
-    spans.addAll(chunk.spans);
+  addSpans(chunks) {
+    for (var chunk in chunks) {
+      spans.addAll(chunk.spans);
+
+      addSpans(chunk.blockChunks);
+    }
   }
+
+  addSpans(chunks);
+
   spans = spans.toList();
 
   var rows = [];
-  var i = start;
-  for (var chunk in chunks) {
+
+  addChunk(chunk, prefix, index) {
     var row = [];
-    row.add(gray("$i:"));
+    row.add("$prefix$index:");
     row.add("${chunk.text}");
 
     var spanBars = "";
@@ -113,6 +120,15 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
 
     rows.add(row);
+
+    for (var j = 0; j < chunk.blockChunks.length; j++) {
+      addChunk(chunk.blockChunks[j], "$prefix$index.", j);
+    }
+  }
+
+  var i = start;
+  for (var chunk in chunks) {
+    addChunk(chunk, "", i);
     i++;
   }
 
@@ -126,12 +142,9 @@ void dumpChunks(int start, List<Chunk> chunks) {
   for (var row in rows) {
     var line = "";
     for (var i = 0; i < row.length; i++) {
-      var cell = row[i];
-      if (i == 0) {
-        cell = cell.padLeft(rowWidths[i]);
-      } else {
-        cell = cell.padRight(rowWidths[i]);
-      }
+      var cell = row[i].padRight(rowWidths[i]);
+
+      if (i != 1) cell = gray(cell);
 
       if (line != "") line += "  ";
       line += cell;

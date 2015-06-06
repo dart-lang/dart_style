@@ -672,14 +672,14 @@ class LineWriter {
 
     var splitter = new LineSplitter(
         _formatter.lineEnding, _formatter.pageWidth, chunks, indent);
-    var selection = splitter.apply(_buffer);
+    var result = splitter.apply(_buffer);
 
-    if (selection[0] != null) {
-      _selectionStart = selection[0];
+    if (result.selectionStart != null) {
+      _selectionStart = result.selectionStart;
     }
 
-    if (selection[1] != null) {
-      _selectionLength = selection[1] -_selectionStart;
+    if (result.selectionEnd != null) {
+      _selectionLength = result.selectionEnd -_selectionStart;
     }
   }
 

@@ -107,6 +107,10 @@ class Chunk extends Selection {
   int get bodyDepth => _bodyDepth;
   int _bodyDepth;
 
+  /// If this chunk marks the beginning of a block, these are the chunks
+  /// contained in the block.
+  final blockChunks = <Chunk>[];
+
   /// Whether it's valid to add more text to this chunk or not.
   ///
   /// Chunks are built up by adding text and then "capped off" by having their
@@ -145,6 +149,19 @@ class Chunk extends Selection {
 
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
+
+  /// The unsplit length of all of this chunk's block contents.
+  ///
+  /// Does not include this chunk's own length, just the length of its child
+  /// block chunks (recursively).
+  int get unsplitBlockLength {
+    var length = 0;
+    for (var chunk in blockChunks) {
+      length += chunk.length + chunk.unsplitBlockLength;
+    }
+
+    return length;
+  }
 
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];

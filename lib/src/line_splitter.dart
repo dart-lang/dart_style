@@ -72,6 +72,9 @@ class LineSplitter {
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, SplitSet>{};
 
+  /// The cache of child blocks of this line that have already been split.
+  final _formattedBlocks = <BlockKey, FormattedBlock>{};
+
   /// The rules that appear in the first `n` chunks of the line where `n` is
   /// the index into the list.
   final _prefixRules = <Set<Rule>>[];
@@ -89,14 +92,8 @@ class LineSplitter {
   /// Convert the line to a [String] representation.
   ///
   /// It will determine how best to split it into multiple lines of output and
-  /// return a single string that may contain one or more newline characters.
-  ///
-  /// Returns a two-element list. The first element will be an [int] indicating
-  /// where in [buffer] the selection start point should appear if it was
-  /// contained in the formatted list of chunks. Otherwise it will be `null`.
-  /// Likewise, the second element will be non-`null` if the selection endpoint
-  /// is within the list of chunks.
-  List<int> apply(StringBuffer buffer) {
+  /// write the result to [buffer].
+  SplitResult apply(StringBuffer buffer) {
     if (debug.traceSplitter) {
       debug.log(debug.green("\nSplitting:"));
       debug.dumpChunks(0, _chunks);
@@ -114,8 +111,13 @@ class LineSplitter {
     // TODO(rnystrom): One optimization we could perform is to merge spans that
     // have the same range into a single span with a summed cost.
 
-    var splits = _findBestSplits(new LinePrefix(_indent));
-    var selection = [null, null];
+
+    var prefix = new LinePrefix(_indent);
+    var solution = new Solution(prefix);
+    _tryChunkRuleValues(solution, prefix);
+
+    var selectionStart;
+    var selectionEnd;
 
     // Write each chunk and the split after it.
     buffer.write(" " * (_indent * spacesPerIndent));
@@ -125,28 +127,47 @@ class LineSplitter {
       // If this chunk contains one of the selection markers, tell the writer
       // where it ended up in the final output.
       if (chunk.selectionStart != null) {
-        selection[0] = buffer.length + chunk.selectionStart;
+        selectionStart = buffer.length + chunk.selectionStart;
       }
 
       if (chunk.selectionEnd != null) {
-        selection[1] = buffer.length + chunk.selectionEnd;
+        selectionEnd = buffer.length + chunk.selectionEnd;
       }
 
       buffer.write(chunk.text);
 
+      if (chunk.blockChunks.isNotEmpty) {
+        if (!solution.splits.shouldSplitAt(i)) {
+          // This block didn't split (which implies none of the child blocks
+          // of that block split either, recursively), so write them all inline.
+          writeChunks(chunks) {
+            for (var inner in chunks) {
+              buffer.write(inner.text);
+              if (inner.spaceWhenUnsplit) buffer.write(" ");
+              writeChunks(inner.blockChunks);
+            }
+          }
+
+          writeChunks(chunk.blockChunks);
+        } else {
+          // Include the formatted block contents.
+          buffer.write(_formatBlock(i, solution.splits.getColumn(i)).text);
+        }
+      }
+
       if (i == _chunks.length - 1) {
         // Don't write trailing whitespace after the last chunk.
-      } else if (splits.shouldSplitAt(i)) {
+      } else if (solution.splits.shouldSplitAt(i)) {
         buffer.write(_lineEnding);
         if (chunk.isDouble) buffer.write(_lineEnding);
 
-        buffer.write(" " * (splits.getColumn(i)));
+        buffer.write(" " * (solution.splits.getColumn(i)));
       } else {
         if (chunk.spaceWhenUnsplit) buffer.write(" ");
       }
     }
 
-    return selection;
+    return new SplitResult(solution._lowestCost, selectionStart, selectionEnd);
   }
 
   /// Finds the best set of splits to apply to the remainder of the chunks
@@ -338,16 +359,22 @@ class LineSplitter {
           if (chunk.rule != null && !splitRules.contains(chunk.rule)) {
             // Don't double-count rules if multiple splits share the same
             // rule.
-            // TODO(rnystrom): Is this needed? Can we actually let splits that
-            // share a rule accumulate cost?
             splitRules.add(chunk.rule);
             cost += chunk.rule.cost;
+          }
+
+          // Include the cost of the nested block.
+          if (chunk.blockChunks.isNotEmpty) {
+            cost += _formatBlock(i, splits.getColumn(i)).cost;
           }
 
           // Start the new line.
           length = splits.getColumn(i);
         } else {
           if (chunk.spaceWhenUnsplit) length++;
+
+          // Include the nested block inline, if any.
+          length += chunk.unsplitBlockLength;
         }
       }
     }
@@ -360,6 +387,103 @@ class LineSplitter {
 
     return cost;
   }
+
+  /// Gets the results of formatting the child block of the chunk at
+  /// [chunkIndex] with starting [column].
+  ///
+  /// If that block has already been formatted, reuses the results.
+  ///
+  /// The column is the column for the delimiters. The contents of the block
+  /// are always implicitly one level deeper than that.
+  ///
+  ///     main() {
+  ///       function(() {
+  ///         block;
+  ///       });
+  ///     }
+  ///
+  /// When we format the anonymous lambda, [column] will be 2, not 4.
+  FormattedBlock _formatBlock(int chunkIndex, int column) {
+    var key = new BlockKey(chunkIndex, column);
+
+    // Use the cached one if we have it.
+    var cached = _formattedBlocks[key];
+    if (cached != null) return cached;
+
+    // Blocks are always indented one level relative to the containing
+    // delimiters.
+    column += spacesPerIndent;
+
+    var splitter = new LineSplitter(_lineEnding, _pageWidth - column,
+        _chunks[chunkIndex].blockChunks, 0);
+
+    var buffer = new StringBuffer();
+
+    // There is always a newline after the opening delimiter.
+    buffer.write(_lineEnding);
+
+    var result = splitter.apply(buffer);
+
+    // Apply the indentation.
+    var text = buffer.toString().replaceAll(
+        _lineEnding, "$_lineEnding${' ' * column}");
+    return _formattedBlocks[key] = new FormattedBlock(text, result.cost);
+  }
+}
+
+/// Key type for the formatted block cache.
+///
+/// To cache formatted blocks, we just need to know which block it is (the
+/// index of its parent chunk) and how far it was indented when we formatted it
+/// (the starting column).
+class BlockKey {
+  /// The index of the chunk in the surrounding chunk list that contains this
+  /// body.
+  final int chunk;
+
+  /// The absolute zero-based column number where the body starts.
+  final int column;
+
+  BlockKey(this.chunk, this.column);
+
+  bool operator ==(other) {
+    if (other is! BlockKey) return false;
+    return chunk == other.chunk && column == other.column;
+  }
+
+  int get hashCode => chunk.hashCode ^ column.hashCode;
+}
+
+/// The result of formatting a child block of a chunk.
+class FormattedBlock {
+  /// The resulting formatted text, including newlines and leading whitespace
+  /// to reach the proper column.
+  final String text;
+
+  /// The cost of the solution that was chosen.
+  final int cost;
+
+  FormattedBlock(this.text, this.cost);
+}
+
+/// The result of running the [LineSplitter] on a range of chunks.
+class SplitResult {
+  /// The numeric cost of the chosen solution.
+  final int cost;
+
+  /// Where in the resulting buffer the selection starting point should appear
+  /// if it was contained within this split list of chunks.
+  ///
+  /// Otherwise, this is `null`.
+  final int selectionStart;
+
+  /// Where in the resulting buffer the selection end point should appear if it
+  /// was contained within this split list of chunks.
+  ///
+  /// Otherwise, this is `null`.
+  final int selectionEnd;
+
+  SplitResult(this.cost, this.selectionStart, this.selectionEnd);
 }
 
 /// Keeps track of the best set of splits found so far for a suffix of some
