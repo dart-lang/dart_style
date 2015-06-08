@@ -32,6 +32,7 @@ class NestingWriter {
   // TODO(rnystrom): Unify with _stack?
   /// The initial absolute indentation level of each of the currently open
   /// bodies.
+  // TODO(bob): Remove when functions use block nesting.
   final _bodies = [0];
 
   /// When not `null`, the nesting level of the current innermost block after
@@ -62,6 +63,11 @@ class NestingWriter {
 
   /// The nesting depth of the current inner-most block.
   int get nesting => _stack.last;
+
+  /// The nesting depth of the current inner-most block, including any pending
+  /// nesting.
+  int get currentNesting =>
+      _pendingNesting != null ? _pendingNesting : _stack.last;
 
   /// The total current number of levels of block indentation.
   int get _absoluteIndent => _stack.length - 1;

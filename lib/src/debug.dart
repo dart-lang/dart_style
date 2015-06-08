@@ -94,26 +94,34 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
     row.add(spanBars);
 
-    row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
-    if (chunk.rule.outerRules.isEmpty) {
-      row.add("");
+    if (chunk.rule != null) {
+      row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
+
+      if (chunk.rule.outerRules.isEmpty) {
+        row.add("");
+      } else {
+        row.add("-> ${chunk.rule.outerRules.join(" ")}");
+      }
     } else {
-      row.add("-> ${chunk.rule.outerRules.join(" ")}");
+      row.add("(no rule)");
+
+      // Outer rules.
+      row.add("");
     }
 
-    if (chunk.bodyDepth != null) {
+    if (chunk.bodyDepth != null && chunk.bodyDepth != 0) {
       row.add("body ${chunk.bodyDepth}");
     } else {
       row.add("");
     }
 
-    if (chunk.indent != null) {
+    if (chunk.indent != null && chunk.indent != 0) {
       row.add("indent ${chunk.indent}");
     } else {
       row.add("");
     }
 
-    if (chunk.nesting != 0) {
+    if (chunk.nesting != null && chunk.nesting != 0) {
       row.add("nest ${chunk.nesting}");
     } else {
       row.add("");
@@ -160,6 +168,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
 /// return a single string that may contain one or more newline characters.
 void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
   var buffer = new StringBuffer();
+
+  // TODO(rnystrom): Handle block chunks here.
 
   writeIndent(indent) => buffer.write(gray("| " * (indent ~/ 2)));
   writeIndent(prefix.column);

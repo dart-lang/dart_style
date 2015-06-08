@@ -106,6 +106,13 @@ abstract class Rule extends FastHash {
 class HardSplitRule extends Rule {
   int get numValues => 1;
 
+  /// It's always going to be applied, so there's no point in penalizing it.
+  ///
+  /// Also, this avoids doubled counting in literal blocks where there is both
+  /// a split in the outer chunk containing the block and the inner hard split
+  /// between the elements or statements.
+  int get cost => 0;
+
   /// It's always split anyway.
   bool get splitsOnInnerRules => false;
 

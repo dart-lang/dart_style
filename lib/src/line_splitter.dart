@@ -100,12 +100,16 @@ class LineSplitter {
       debug.log();
     }
 
+    // Ignore the trailing rule on the last chunk since it isn't used for
+    // anything.
+    var ruleChunks = _chunks.take(_chunks.length - 1);
+
     // Pre-calculate the set of rules appear before and after each length. We
     // use these frequently when creating [LinePrefix]es and they only depend
     // on the length, so we can cache them up front.
     for (var i = 0; i < _chunks.length; i++) {
-      _prefixRules.add(_chunks.take(i).map((chunk) => chunk.rule).toSet());
-      _suffixRules.add(_chunks.skip(i).map((chunk) => chunk.rule).toSet());
+      _prefixRules.add(ruleChunks.take(i).map((chunk) => chunk.rule).toSet());
+      _suffixRules.add(ruleChunks.skip(i).map((chunk) => chunk.rule).toSet());
     }
 
     // TODO(rnystrom): One optimization we could perform is to merge spans that
@@ -410,12 +414,11 @@ class LineSplitter {
     var cached = _formattedBlocks[key];
     if (cached != null) return cached;
 
-    // Blocks are always indented one level relative to the containing
-    // delimiters.
-    column += spacesPerIndent;
-
+    // TODO(bob): Passing in an initial indent here is hacky. The writer
+    // ensures all but the first chunk of an indent of one, and this handles
+    // the first chunk. This collusion is gross. Do something cleaner.
     var splitter = new LineSplitter(_lineEnding, _pageWidth - column,
-        _chunks[chunkIndex].blockChunks, 0);
+        _chunks[chunkIndex].blockChunks, 1);
 
     var buffer = new StringBuffer();
 

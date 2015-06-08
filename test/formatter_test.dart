@@ -160,6 +160,13 @@ void testDirectory(String name) {
         }
 
         test(description, () {
+          // TODO(bob): Right now, functions don't use the new block stuff so
+          // are exponentially slow. Just early fail them for now.
+          if (entry.path.contains("108.unit")) fail("Need to optimize functions");
+          if (entry.path.contains("75.unit")) fail("Need to optimize functions");
+          if (entry.path.contains("76.unit")) fail("Need to optimize functions");
+          if (entry.path.contains("dart2js.unit")) fail("Need to optimize functions");
+
           var isCompilationUnit = p.extension(entry.path) == ".unit";
 
           var inputCode = _extractSelection(input,

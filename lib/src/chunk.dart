@@ -190,15 +190,15 @@ class Chunk extends Selection {
     spans.clear();
   }
 
+  // TODO(bob): Stop passing in NestingWriter once bodyDepth stuff is gone.
   /// Finishes off this chunk with the given [rule] and split information.
   ///
   /// This may be called multiple times on the same split since the splits
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(NestingWriter nesting, Rule rule,
-      {bool nest, bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
-    if (nest == null) nest = false;
+  void applySplit(NestingWriter writer, Rule rule, int nesting,
+      {bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (flushLeft == null) flushLeft = false;
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
     if (isDouble == null) isDouble = false;
@@ -213,9 +213,9 @@ class Chunk extends Selection {
 
     // Last newline settings win.
     _flushLeft = flushLeft;
-    _nesting = nest ? nesting.nesting : 0;
-    _indent = nesting.indentation;
-    _bodyDepth = nesting.bodyDepth;
+    _nesting = nesting;
+    _indent = writer.indentation;
+    _bodyDepth = writer.bodyDepth;
 
     _spaceWhenUnsplit = spaceWhenUnsplit;
 

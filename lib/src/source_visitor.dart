@@ -19,8 +19,14 @@ import 'whitespace.dart';
 class SourceVisitor implements AstVisitor {
   final DartFormatter _formatter;
 
-  /// The writer to which the output lines are written.
-  final LineWriter _writer;
+  /// The nested stack of writers for each block currently being written.
+  ///
+  /// The last writer in the stack is the innermost block (the one actually
+  /// being written) and the others are the blocks that contain it.
+  final _writerStack = <LineWriter>[];
+
+  /// The current writer to which the output chunks are written.
+  LineWriter get _writer => _writerStack.last;
 
   /// Cached line info for calculating blank lines.
   LineInfo _lineInfo;
@@ -42,7 +48,14 @@ class SourceVisitor implements AstVisitor {
   int _selectionEnd;
 
   /// The number out oustanding calls to [_startNestBodies].
+  // TODO(bob): Remove this.
   int _nestBodiesCount = 0;
+
+  /// The nesting stack where block arguments may start.
+  ///
+  /// A block argument's contents will nest at the last level in this stack.
+  // TODO(bob): Can this be moved into LineWriter once functions use it too?
+  final _blockArgumentNesting = [0];
 
   /// The rule that should be used for the contents of a literal body that are
   /// about to be written.
@@ -51,6 +64,8 @@ class SourceVisitor implements AstVisitor {
   /// a rule.
   ///
   /// If `null`, a literal body creates its own rule.
+  // TODO(bob): This is kind of ugly. Is there a cleaner way to pass the rule
+  // to all of the block arguments?
   Rule _nextBodyRule;
 
   /// The span that binds the parameter list of a lambda function argument to
@@ -61,8 +76,9 @@ class SourceVisitor implements AstVisitor {
   /// the visited nodes to the given [writer].
   SourceVisitor(formatter, this._lineInfo, SourceCode source)
       : _formatter = formatter,
-        _source = source,
-        _writer = new LineWriter(formatter, source);
+        _source = source {
+    _writerStack.add(new LineWriter(formatter, source));
+  }
 
   /// Runs the visitor on [node], formatting its contents.
   ///
@@ -190,6 +206,10 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
     token(node.leftParenthesis);
 
+    // Keep track of the nesting level outside of the arguments themselves.
+    // Block arguments will nest at that level.
+    var blockArgumentNesting = _writer.currentNesting;
+
     var bodyRule = bodies.isNotEmpty
         ? new SimpleRule(cost: Cost.splitBodies)
         : null;
@@ -205,6 +225,7 @@ class SourceVisitor implements AstVisitor {
         _nextBodyRule = bodyRule;
       } else {
         _startNestBodies();
+        _startBlockArgumentNesting(blockArgumentNesting);
       }
 
       visit(argument);
@@ -213,6 +234,7 @@ class SourceVisitor implements AstVisitor {
         if (rule != null) rule.afterBodyArgument();
       } else {
         _endNestBodies();
+        _endBlockArgumentNesting();
       }
 
       // Write the trailing comma.
@@ -1201,6 +1223,8 @@ class SourceVisitor implements AstVisitor {
     _writer.startSpan();
     _writer.nestExpression();
 
+    _startBlockArgumentNesting();
+
     visit(target);
 
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
@@ -1230,6 +1254,8 @@ class SourceVisitor implements AstVisitor {
       if (invocation == invocations.last) {
         _writer.endRule();
         _endNestBodies();
+
+        _endBlockArgumentNesting();
 
         // For a single method call, stop the span before the arguments to make
         // it easier to keep the call name with the target. In other words,
@@ -1752,19 +1778,24 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    var fitsInLine = true;
-    if (elements.isNotEmpty) {
-      fitsInLine = _fitsInLine(elements.first.beginToken,
-          elements.last.endToken);
-    }
+    token(leftBracket);
 
-    _startBody(leftBracket, cost: cost, nestBody: true);
+    // Split the collection. Use the explicitly given rule if we have one.
+    // Otherwise, create a new rule.
+    var rule = _nextBodyRule;
+    _nextBodyRule = null;
 
-    // If we know the collection is going to split, do so now for performance.
-    if (!fitsInLine) _writer.forceRules();
+    // Process the contents of the body as a separate set of chunks.
+    _writerStack.add(_writer.startBlock());
+
+    // Always use a hard rule to split the elements. The parent chunk of the
+    // collection will handle the unsplit case, so this only comes into play
+    // when the collection is split.
+    var elementSplit = new HardSplitRule();
+    _writer.startRule(elementSplit);
 
     for (var element in elements) {
-      if (element != elements.first) _writer.split(nest: false, space: true);
+      if (element != elements.first) _writer.split(nesting: 0, space: true);
 
       _writer.nestExpression();
 
@@ -1776,7 +1807,33 @@ class SourceVisitor implements AstVisitor {
       _writer.unnest();
     }
 
-    _endBody(rightBracket, nestBody: true);
+    // Put comments before the closing delimiter inside the block.
+    var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
+
+    var blockSplits = _writer.endBlock(elementSplit);
+
+    _writerStack.removeLast();
+
+    // Create a rule for whether or not to split the block contents.
+    _writer.startRule(rule);
+
+    // If there is a hard newline within the block, force the surrounding rule
+    // for it so that we apply that constraint.
+    // TODO(bob): This does the wrong thing when there is are multiple block
+    // arguments. We correctly force the rule, but then it gets popped off the
+    // writer's stack and it forgets it was forced. Can repro with:
+    //
+    // longFunctionName(
+    //     [longElementName, longElementName, longElementName],
+    //     [short]);
+    if (blockSplits || hasLeadingNewline) _writer.forceRules();
+
+    _writer.split(nesting: _blockArgumentNesting.last);
+
+    _writer.endRule();
+
+    // Now write the delimiter itself.
+    _writeText(rightBracket.lexeme, rightBracket.offset);
   }
 
   /// Visits a list of [combinators] following an "import" or "export"
@@ -1868,6 +1925,18 @@ class SourceVisitor implements AstVisitor {
     _nestBodiesCount--;
   }
 
+  /// Captures [nesting] as the nesting level where subsequent block arguments
+  /// should start.
+  void _startBlockArgumentNesting([int nesting]) {
+    if (nesting == null) nesting = _writer.currentNesting;
+    _blockArgumentNesting.add(_writer.currentNesting);
+  }
+
+  /// Releases the last nesting level captured by [startBlockArgumentNesting].
+  void _endBlockArgumentNesting() {
+    _blockArgumentNesting.removeLast();
+  }
+
   /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
   /// starting the rule used to split inside the brackets.
   ///
@@ -1888,7 +1957,7 @@ class SourceVisitor implements AstVisitor {
     _writer.startRule(_nextBodyRule);
     _nextBodyRule = null;
 
-    _writer.split(nest: false, space: space);
+    _writer.split(nesting: 0, space: space);
   }
 
   /// Writes a closing bracket token (")", "}", "]") and handles unindenting
@@ -1902,7 +1971,7 @@ class SourceVisitor implements AstVisitor {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
-      _writer.split(nest: false, space: space);
+      _writer.split(nesting: 0, space: space);
     });
 
     if (nestBody && _nestBodiesCount > 0) _writer.endBody();
@@ -2013,7 +2082,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   /// Writes all formatted whitespace and comments that appear before [token].
-  void writePrecedingCommentsAndNewlines(Token token) {
+  bool writePrecedingCommentsAndNewlines(Token token) {
     var comment = token.precedingComments;
 
     // For performance, avoid calculating newlines between tokens unless
@@ -2022,7 +2091,8 @@ class SourceVisitor implements AstVisitor {
       if (_writer.needsToPreserveNewlines) {
         _writer.preserveNewlines(_startLine(token) - _endLine(token.previous));
       }
-      return;
+
+      return false;
     }
 
     var previousLine = _endLine(token.previous);
@@ -2065,6 +2135,13 @@ class SourceVisitor implements AstVisitor {
     }
 
     _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
+
+    // TODO(bob): This is wrong. Consider:
+    //
+    // [/* inline comment */
+    //     // line comment
+    //     element];
+    return comments.first.linesBefore > 0;
   }
 
   /// Write [text] to the current chunk, given that it starts at [offset] in
@@ -2172,24 +2249,6 @@ class SourceVisitor implements AstVisitor {
     }
 
     return _selectionEnd;
-  }
-
-  /// Returns true if the lexemes in the token range from [start] to [end]
-  /// (inclusive) are longer than the page.
-  ///
-  /// Used to eagerly force some rules to split when there's no chance of them
-  /// fitting.
-  bool _fitsInLine(Token start, Token end) {
-    // TODO(rnystrom): Should this take comments into account?
-
-    var length = 0;
-    for (var token = start; token != end; token = token.next) {
-      length += token.lexeme.length;
-    }
-
-    length += end.lexeme.length;
-
-    return length <= _formatter.pageWidth;
   }
 
   /// Gets the 1-based line number that the beginning of [token] lies on.
