@@ -9,13 +9,26 @@
 "foo"
   ..toString(
       argument, argument, argument);
->>> multiple cascades get their own line
-"foo"..toString()..toString();
+>>> multiple cascades get the same line when the method names are the same
+list
+  ..add("baz")
+  ..add("bar");
 <<<
-"foo"
-  ..toString()
+list..add("baz")..add("bar");
+>>> cascades indent contained blocks (and force multi-line) multiple cascades get their own line when method names are different
+foo..fooBar()..toString();
+<<<
+foo
+  ..fooBar()
   ..toString();
+>>> cascaded setters are always multi-line even with the same name
+foo..baz = 3..baz=5;
+<<<
+foo
+  ..baz = 3
+  ..baz = 5;
 >>> cascades indent contained blocks (and force multi-line)
+
 "foo"..toString(() {body;});
 <<<
 "foo"

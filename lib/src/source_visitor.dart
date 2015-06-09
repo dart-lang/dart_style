@@ -310,19 +310,39 @@ class SourceVisitor implements AstVisitor {
 
     _writer.indent();
 
-    // If there are multiple cascades, they always get their own line, even if
-    // they would fit.
-    if (node.cascadeSections.length > 1) {
-      newline();
-      visitNodes(node.cascadeSections, between: newline);
-    } else {
+    // If the cascade sections have consistent names they can be broken
+    // normally otherwise they always get their own line.
+    if (_allowInlineCascade(node.cascadeSections)) {
       _writer.startRule();
       zeroSplit();
       visitNodes(node.cascadeSections, between: zeroSplit);
       _writer.endRule();
+    } else {
+      newline();
+      visitNodes(node.cascadeSections, between: newline);
     }
 
     _writer.unindent();
+  }
+
+  /// Whether a cascade should be allowed to be inline as opposed to one
+  /// expression per line.
+  bool _allowInlineCascade(List<Expression> sections) {
+    if (sections.length < 2) return true;
+
+    var name;
+    // We could be more forgiving about what constitutes sections with
+    // consistent names but for now we require all sections to have the same
+    // method name.
+    for (var expression in sections) {
+      if (expression is! MethodInvocation) return false;
+      if (name == null) {
+        name = expression.methodName.name;
+      } else if (name != expression.methodName.name) {
+        return false;
+      }
+    }
+    return true;
   }
 
   visitCatchClause(CatchClause node) {

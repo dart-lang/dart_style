@@ -1,3 +1,8 @@
+# 0.1.8
+
+* Update to latest `analyzer` and `args` packages.
+* Allow cascades with repeated method names to be one line.
+
 # 0.1.7
 
 * Update to latest analyzer (#177).
@@ -5,9 +10,9 @@
 * Optimize formatting deeply nested expressions (#108).
 * Discard unused nesting level to improve performance (#108).
 * Discard unused spans to improve performance (#108).
-* Harden splits that containg too much nesting (#108).
+* Harden splits that contain too much nesting (#108).
 * Try to avoid splitting single-element lists (#211).
-* Avoid splitting when the first argument is a function expression (#211). 
+* Avoid splitting when the first argument is a function expression (#211).
 
 # 0.1.6
 
@@ -29,7 +34,7 @@
 * Support `await for` statements (#154).
 * Don't delete commas between enum values with doc comments (#171).
 * Put a space between nested unary `-` calls (#170).
-* Allow `-t` flag to preserve compability with old formatter (#166).
+* Allow `-t` flag to preserve compatibility with old formatter (#166).
 * Support `--machine` flag for machine-readable output (#164).
 * If no paths are provided, read source from stdin (#165).
 
