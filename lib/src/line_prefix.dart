@@ -34,17 +34,19 @@ class LinePrefix {
   /// don't affect the suffix.
   final Map<Rule, int> ruleValues;
 
-  /// Additional indentation within the current block.
+  /// The "statement-based" indentation of the line after the prefix.
   ///
-  /// This handles things like switch cases, blocks, and constructor
-  /// initialization lists that tweak the per-line indentation but aren't full
-  /// blocks themselves.
-  final int _extraIndent;
+  /// This handles things like control flow, switch cases, and constructor
+  /// initialization lists that tweak the per-line indentation.
+  ///
+  /// For nested blocks, this also includes the indentation to push the entire
+  /// block over.
+  final int _indent;
 
   final Nesting _nesting;
 
   /// The indentation level after this chunk, including expression nesting.
-  int get indent => _extraIndent + _nesting.indent;
+  int get indent => _indent + _nesting.indent;
 
   /// The actual absolute starting column of the line after this chunk.
   ///
@@ -59,7 +61,7 @@ class LinePrefix {
   LinePrefix(int indent)
       : this._(0, {}, indent, new Nesting(), flushLeft: false);
 
-  LinePrefix._(this.length, this.ruleValues, this._extraIndent, this._nesting,
+  LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting,
       {bool flushLeft : false})
       : _flushLeft = flushLeft;
 
@@ -67,7 +69,7 @@ class LinePrefix {
     if (other is! LinePrefix) return false;
 
     if (length != other.length) return false;
-    if (_extraIndent != other._extraIndent) return false;
+    if (_indent != other._indent) return false;
     if (_flushLeft != other._flushLeft) return false;
     if (_nesting != other._nesting) return false;
 
@@ -81,30 +83,30 @@ class LinePrefix {
     return true;
   }
 
-  // TODO(rnystrom): Can we make this more effective?
-  int get hashCode =>
-      length.hashCode ^
-      _extraIndent ^
-      _nesting.hashCode;
+  int get hashCode => length.hashCode ^ _indent ^ _nesting.hashCode;
 
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
   LinePrefix extend(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _extraIndent,
+      new LinePrefix._(length + 1, ruleValues, _indent,
           _nesting, flushLeft: _flushLeft);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
   /// boundary so there may be multiple possible different nesting stacks.
-  Iterable<LinePrefix> split(Chunk chunk, Map<Rule, int> updatedValues) {
-    return _nesting.update(chunk.nesting)
-        .map((nesting) => new LinePrefix._(
-            length + 1, updatedValues, chunk.indent, nesting,
-            flushLeft: chunk.flushLeft));
+  ///
+  /// If this prefix is for a nested block, [blockIndentation] may be nonzero
+  /// to push the output to the right.
+  Iterable<LinePrefix> split(Chunk chunk, int blockIndentation,
+      Map<Rule, int> ruleValues) {
+    var indent = chunk.indent + blockIndentation;
+    return _nesting.update(chunk.nesting).map((nesting) => new LinePrefix._(
+        length + 1, ruleValues, indent, nesting, flushLeft: chunk.flushLeft));
   }
 
   String toString() {
     var result = "prefix $length";
+    if (_indent != 0) result += " indent ${_indent}";
     if (_nesting.indent != 0) result += " nesting ${_nesting.indent}";
     if (ruleValues.isNotEmpty) {
       var rules = ruleValues.keys

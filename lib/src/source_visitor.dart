@@ -19,14 +19,8 @@ import 'whitespace.dart';
 class SourceVisitor implements AstVisitor {
   final DartFormatter _formatter;
 
-  /// The nested stack of writers for each block currently being written.
-  ///
-  /// The last writer in the stack is the innermost block (the one actually
-  /// being written) and the others are the blocks that contain it.
-  final _writerStack = <LineWriter>[];
-
   /// The current writer to which the output chunks are written.
-  LineWriter get _writer => _writerStack.last;
+  ChunkWriter _writer;
 
   /// Cached line info for calculating blank lines.
   LineInfo _lineInfo;
@@ -70,7 +64,7 @@ class SourceVisitor implements AstVisitor {
   SourceVisitor(formatter, this._lineInfo, SourceCode source)
       : _formatter = formatter,
         _source = source {
-    _writerStack.add(new LineWriter(formatter, source));
+    _writer = new ChunkWriter(formatter, source);
   }
 
   /// Runs the visitor on [node], formatting its contents.
@@ -273,19 +267,20 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
+    // Format function bodies as separate blocks.
     if (node.parent is BlockFunctionBody) {
       _writeBlockLiteral(node.leftBracket, node.rightBracket,
-            node.statements.isNotEmpty, () {
+            forceRule: node.statements.isNotEmpty, block: () {
         visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
       });
       return;
     }
 
-    _startBody(node.leftBracket);
-
-    visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
-
-    _endBody(node.rightBracket);
+    // For everything else, just bump the indentation and keep it in the current
+    // block.
+    _writeBody(node.leftBracket, node.rightBracket, body: () {
+      visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
+    });
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -368,11 +363,9 @@ class SourceVisitor implements AstVisitor {
     space();
 
     _writer.unnest();
-    _startBody(node.leftBracket);
-
-    visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
-
-    _endBody(node.rightBracket);
+    _writeBody(node.leftBracket, node.rightBracket, body: () {
+      visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
+    });
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
@@ -584,11 +577,9 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     space();
 
-    _startBody(node.leftBracket, space: true);
-
-    visitCommaSeparatedNodes(node.constants, between: split);
-
-    _endBody(node.rightBracket, space: true);
+    _writeBody(node.leftBracket, node.rightBracket, space: true, body: () {
+      visitCommaSeparatedNodes(node.constants, between: split);
+    });
   }
 
   visitExportDirective(ExportDirective node) {
@@ -1635,7 +1626,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    _writeBlockLiteral(leftBracket, rightBracket, false, () {
+    _writeBlockLiteral(leftBracket, rightBracket, forceRule: false, block: () {
       // Always use a hard rule to split the elements. The parent chunk of the
       // collection will handle the unsplit case, so this only comes into play
       // when the collection is split.
@@ -1661,8 +1652,14 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes a block literal (function, list, or map), handling indentation
   /// when the literal appears in an argument list.
-  void _writeBlockLiteral(Token leftBracket, Token rightBracket, bool forceRule,
-      Rule callback()) {
+  ///
+  /// if [forceRule] is `true`, then the block will always split.
+  ///
+  /// The [block] callback should write the contents of the literal. It may
+  /// optionally return a Rule. If it does, that rule will be ignored when
+  /// determining if the contents of the block should split.
+  void _writeBlockLiteral(Token leftBracket, Token rightBracket,
+      {bool forceRule, Rule block()}) {
     token(leftBracket);
 
     // Split the literal. Use the explicitly given rule if we have one.
@@ -1670,37 +1667,19 @@ class SourceVisitor implements AstVisitor {
     var rule = _nextLiteralBodyRule;
     _nextLiteralBodyRule = null;
 
-    // Process the contents of the literal as a separate set of chunks.
-    _writerStack.add(_writer.startBlock());
+    // Create a rule for whether or not to split the block contents.
+    _writer.startRule(rule);
 
-    var elementRule = callback();
+    // Process the contents of the literal as a separate set of chunks.
+    _writer = _writer.startBlock();
+
+    var elementRule = block();
 
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    var result = _writer.endBlock(elementRule);
-    var blockSplits = result[0];
-    var flushLeft = result[1];
-
-    _writerStack.removeLast();
-
-    // Create a rule for whether or not to split the block contents.
-    _writer.startRule(rule);
-
-    // If there is a hard newline within the block, force the surrounding rule
-    // for it so that we apply that constraint.
-    // TODO(rnystrom): This does the wrong thing when there is are multiple
-    // block arguments. We correctly force the rule, but then it gets popped
-    // off the writer's stack and it forgets it was forced. Can repro with:
-    //
-    // longFunctionName(
-    //     [longElementName, longElementName, longElementName],
-    //     [short]);
-    if (blockSplits || hasLeadingNewline || forceRule) {
-      _writer.forceRules();
-    }
-
-    _writer.split(nesting: _blockArgumentNesting.last, flushLeft: flushLeft);
+    _writer =_writer.endBlock(elementRule, _blockArgumentNesting.last,
+        alwaysSplit: hasLeadingNewline || forceRule);
 
     _writer.endRule();
 
@@ -1764,12 +1743,13 @@ class SourceVisitor implements AstVisitor {
     _blockArgumentNesting.removeLast();
   }
 
-  /// Writes an opening bracket token ("(", "{", "[") and handles indenting and
-  /// starting the rule used to split inside the brackets.
+  /// Writes an bracket-delimited body and handles indenting and starting the
+  /// rule used to split the contents.
   ///
-  /// If [space] is `true`, then the initial split will use a space if not
-  /// split.
-  void _startBody(Token leftBracket, {int cost, bool space: false}) {
+  /// If [space] is `true`, then the contents and delimiters will have a space
+  /// between then when unsplit.
+  void _writeBody(Token leftBracket, Token rightBracket,
+      {bool space: false, body()}) {
     token(leftBracket);
 
     // Indent the body.
@@ -1778,15 +1758,9 @@ class SourceVisitor implements AstVisitor {
     // Split after the bracket.
     _writer.startRule();
     _writer.split(nesting: 0, space: space);
-  }
 
-  /// Writes a closing bracket token (")", "}", "]") and handles unindenting
-  /// and ending the rule used to split inside the brackets.
-  ///
-  /// Used for blocks, other curly bodies, and collection literals.
-  ///
-  /// If [space] is `true`, then the final split will use a space if not split.
-  void _endBody(Token rightBracket, {bool space: false}) {
+    body();
+
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();

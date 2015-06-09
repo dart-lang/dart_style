@@ -67,3 +67,18 @@ library foo;
 /* Comment 3 */
 
 class C {}
+>>> multiline comment inside nested blocks
+main() {
+  inner() {
+    function(/*
+comment */argument);
+  }
+}
+<<<
+main() {
+  inner() {
+    function(/*
+comment */
+        argument);
+  }
+}

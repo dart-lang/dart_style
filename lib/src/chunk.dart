@@ -5,7 +5,6 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
-import 'nesting_writer.dart';
 import 'rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -79,10 +78,6 @@ class Chunk extends Selection {
   int get indent => _indent;
   int _indent;
 
-  /// The absolute number of levels of indentation from the left edge of the
-  /// page.
-  int get absoluteIndent => _flushLeft ? 0 : _indent;
-
   /// The number of levels of expression nesting following this chunk.
   ///
   /// This is used to determine how much to increase the indentation when a
@@ -135,6 +130,15 @@ class Chunk extends Selection {
   /// This is `true`, for example, in a chunk that ends with a ",".
   bool get spaceWhenUnsplit => _spaceWhenUnsplit;
   bool _spaceWhenUnsplit = false;
+
+  /// Whether this chunk marks the end of a range of chunks that can be line
+  /// split independently of the following chunks.
+  bool get canDivide {
+    // Have to call markDivide() before accessing this.
+    assert(_canDivide != null);
+    return _canDivide;
+  }
+  bool _canDivide;
 
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
@@ -208,6 +212,14 @@ class Chunk extends Selection {
 
     // Preserve a blank line.
     _isDouble = _isDouble || isDouble;
+  }
+
+  // Mark whether this chunk can divide the range of chunks.
+  void markDivide(canDivide) {
+    // Should only do this once.
+    assert(_canDivide == null);
+
+    _canDivide = canDivide;
   }
 
   void flattenNesting(Map<int, int> nestingMap) {

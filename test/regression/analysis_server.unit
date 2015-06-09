@@ -38,3 +38,37 @@ class Foo {
       _selectionIncludesNonWhitespaceOutsideRange(
           selection, SourceRangeFactory.rangeNode(node));
 }
+>>> (indent 2)
+  void _writeCompletionPerformanceList(StringBuffer buffer) {
+    buffer.write('''
+      <p><strong>First (ms)</strong> - the number of milliseconds
+        from when completion received the request until the first notification
+        with completion results was queued for sending back to the client.
+      <p><strong>Complete (ms)</strong> - the number of milliseconds
+        from when completion received the request until the final notification
+        with completion results was queued for sending back to the client.
+      <p><strong># Notifications</strong> - the total number of notifications
+        sent to the client with completion results for this request.
+      <p><strong># Suggestions</strong> - the number of suggestions
+        sent to the client in the first notification, followed by a comma,
+        followed by the number of suggestions send to the client
+        in the last notification. If there is only one notification,
+        then there will be only one number in this column.''');
+  }
+<<<
+  void _writeCompletionPerformanceList(StringBuffer buffer) {
+    buffer.write('''
+      <p><strong>First (ms)</strong> - the number of milliseconds
+        from when completion received the request until the first notification
+        with completion results was queued for sending back to the client.
+      <p><strong>Complete (ms)</strong> - the number of milliseconds
+        from when completion received the request until the final notification
+        with completion results was queued for sending back to the client.
+      <p><strong># Notifications</strong> - the total number of notifications
+        sent to the client with completion results for this request.
+      <p><strong># Suggestions</strong> - the number of suggestions
+        sent to the client in the first notification, followed by a comma,
+        followed by the number of suggestions send to the client
+        in the last notification. If there is only one notification,
+        then there will be only one number in this column.''');
+  }

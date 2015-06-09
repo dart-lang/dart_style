@@ -2,17 +2,19 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.line_writer;
+library dart_style.src.chunk_writer;
 
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
 import 'nesting_writer.dart';
+import 'line_prefix.dart';
 import 'line_splitter.dart';
 import 'rule.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
+// TODO(rnystrom): Rename to ChunkBuilder and move to separate file.
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
 /// tree of [Chunk]s which can then be split into physical lines.
@@ -20,12 +22,14 @@ import 'whitespace.dart';
 /// Keeps track of leading indentation, expression nesting, and all of the hairy
 /// code required to seamlessly integrate existing comments into the pure
 /// output produced by [SourceVisitor].
-class LineWriter {
+class ChunkWriter {
   final DartFormatter _formatter;
 
-  final SourceCode _source;
+  /// The writer for the code surrounding the block that this writer is for, or
+  /// `null` if this is writing the top-level code.
+  final ChunkWriter _parent;
 
-  final _buffer = new StringBuffer();
+  final SourceCode _source;
 
   final List<Chunk> _chunks;
 
@@ -66,18 +70,6 @@ class LineWriter {
     return _chunks.length;
   }
 
-  /// The offset in [_buffer] where the selection starts in the formatted code.
-  ///
-  /// This will be `null` if there is no selection or the writer hasn't reached
-  /// the beginning of the selection yet.
-  int _selectionStart;
-
-  /// The length in [_buffer] of the selection in the formatted code.
-  ///
-  /// This will be `null` if there is no selection or the writer hasn't reached
-  /// the end of the selection yet.
-  int _selectionLength;
-
   /// Whether or not there was a leading comment that was flush left before any
   /// other content was written.
   ///
@@ -105,12 +97,13 @@ class LineWriter {
   /// The current level of expression nesting.
   int get currentNesting => _nesting.currentNesting;
 
-  LineWriter(this._formatter, this._source)
-      : _chunks = [] {
+  ChunkWriter(this._formatter, this._source)
+      : _parent = null,
+        _chunks = [] {
     indent(_formatter.indent);
   }
 
-  LineWriter._(this._formatter, this._source, this._chunks);
+  ChunkWriter._(this._parent, this._formatter, this._source, this._chunks);
 
   /// Writes [string], the text for a single token, to the output.
   ///
@@ -409,9 +402,9 @@ class LineWriter {
   /// Starts a new block as a child of the current chunk.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  LineWriter startBlock() {
-    var writer = new LineWriter._(
-        this._formatter, this._source, _chunks.last.blockChunks);
+  ChunkWriter startBlock() {
+    var writer = new ChunkWriter._(this, _formatter, _source,
+        _chunks.last.blockChunks);
 
     // A block always starts off indented one level.
     writer.indent();
@@ -419,60 +412,81 @@ class LineWriter {
     return writer;
   }
 
-  /// Ends this [LineWriter], which must have been created by [startBlock()].
+  /// Ends this [ChunkWriter], which must have been created by [startBlock()].
   ///
-  /// Returns a pair of booleans. The first is `true` if the block will
-  /// definitely split because it either contains hard splits or doesn't fit
-  /// within a line. Ignores hard newlines coming from [ignoredSplit] if given.
+  /// Forces the chunk that owns the block to split if it can tell that the
+  /// block contents will always split. It does that by looking for hard splits
+  /// in the block. If [ignoredSplit] is given, that rule will be ignored
+  /// when determining if a block contains a hard split. If [alwaysSplit] is
+  /// `true`, the block is considered to always split.
   ///
-  /// The second is `true` if the first line of the block should be flush left.
-  List<bool> endBlock([HardSplitRule ignoredSplit]) {
-    _finishChunks();
+  /// Returns the previous writer for the surrounding block.
+  ChunkWriter endBlock(HardSplitRule ignoredSplit, int nesting,
+      {bool alwaysSplit}) {
+    _divideChunks();
 
-    // Determine if there will always be a split in here.
-    var length = 0;
-    for (var chunk in _chunks) {
-      length += chunk.length + chunk.unsplitBlockLength;
-      if (length > _formatter.pageWidth) {
-        return [true, _firstFlushLeft];
-      }
+    // If we don't already know if the block is going to split, see if it
+    // contains any hard splits or is longer than a page.
+    if (!alwaysSplit) {
+      var length = 0;
+      for (var chunk in _chunks) {
+        length += chunk.length + chunk.unsplitBlockLength;
+        if (length > _formatter.pageWidth) {
+          alwaysSplit = true;
+          break;
+        }
 
-      if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
-        return [true, _firstFlushLeft];
+        if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
+          alwaysSplit = true;
+          break;
+        }
       }
     }
 
-    // TODO(rnystrom): Returning a pair like this is ugly. Do something cleaner.
-    return [false, _firstFlushLeft];
+    // If there is a hard newline within the block, force the surrounding rule
+    // for it so that we apply that constraint.
+    // TODO(rnystrom): This does the wrong thing when there is are multiple
+    // block arguments. We correctly force the rule, but then it gets popped
+    // off the writer's stack and it forgets it was forced. Can repro with:
+    //
+    // longFunctionName(
+    //     [longElementName, longElementName, longElementName],
+    //     [short]);
+    if (alwaysSplit) _parent.forceRules();
+
+    _parent.split(nesting: nesting, flushLeft: _firstFlushLeft);
+    return _parent;
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode end() {
     _writeHardSplit();
-    _finishChunks();
-    _splitLines();
+    _divideChunks();
 
-    // Be a good citizen, end with a newline.
-    if (_source.isCompilationUnit) _buffer.write(_formatter.lineEnding);
+    var writer = new LineWriter(_formatter, _chunks);
+    var result = writer.writeLines(_formatter.indent,
+        isCompilationUnit: _source.isCompilationUnit);
 
-    // If we haven't hit the beginning and/or end of the selection yet, they
-    // must be at the very end of the code.
+    var selectionStart;
+    var selectionLength;
     if (_source.selectionStart != null) {
-      if (_selectionStart == null) {
-        _selectionStart = _buffer.length;
-      }
+      selectionStart = result.selectionStart;
+      var selectionEnd = result.selectionEnd;
 
-      if (_selectionLength == null) {
-        _selectionLength = _buffer.length - _selectionStart;
-      }
+      // If we haven't hit the beginning and/or end of the selection yet, they
+      // must be at the very end of the code.
+      if (selectionStart == null) selectionStart = writer.length;
+      if (selectionEnd == null) selectionEnd = writer.length;
+
+      selectionLength = selectionEnd - selectionStart;
     }
 
-    return new SourceCode(_buffer.toString(),
+    return new SourceCode(writer.toString(),
         uri: _source.uri,
         isCompilationUnit: _source.isCompilationUnit,
-        selectionStart: _selectionStart,
-        selectionLength: _selectionLength);
+        selectionStart: selectionStart,
+        selectionLength: selectionLength);
   }
 
   /// Writes the current pending [Whitespace] to the output, if any.
@@ -497,7 +511,7 @@ class LineWriter {
         break;
 
       case Whitespace.newlineFlushLeft:
-        _writeHardSplit(flushLeft: true);
+        _writeHardSplit(nest: true, flushLeft: true);
         break;
 
       case Whitespace.twoNewlines:
@@ -624,44 +638,9 @@ class LineWriter {
     }
   }
 
-  /// Takes all of the chunks and breaks them into sublists that can be line
-  /// split individually.
-  ///
-  /// Since this is linear and line splitting is... worse... it's good to feed
-  /// the line splitter smaller lists of chunks when possible. This should only
-  /// be called once, after all of the chunks have been written.
-  void _splitLines() {
-    // Now that we know what hard splits there will be, break the chunks into
-    // independently splittable lines.
-    var bufferedNewlines = 0;
-    var beginningIndent = _formatter.indent;
-
-    var start = 0;
-    for (var i = 0; i < _chunks.length; i++) {
-      if (!_canSplitAt(i)) continue;
-
-      // Write the newlines required by the previous line.
-      for (var i = 0; i < bufferedNewlines; i++) {
-        _buffer.write(_formatter.lineEnding);
-      }
-
-      _completeLine(beginningIndent, start, i + 1);
-
-      // Get ready for the next line.
-      var chunk = _chunks[i];
-      bufferedNewlines = chunk.isDouble ? 2 : 1;
-      beginningIndent = chunk.absoluteIndent;
-      start = i + 1;
-    }
-
-    if (start < _chunks.length) {
-      _completeLine(beginningIndent, start, _chunks.length);
-    }
-  }
-
   /// Returns true if we can divide the chunks at [index] and line split the
   /// ones before and after that separately.
-  bool _canSplitAt(int i) {
+  bool _canDivideAt(int i) {
     var chunk = _chunks[i];
     if (!chunk.isHardSplit) return false;
     if (chunk.nesting > 0) return false;
@@ -674,43 +653,19 @@ class LineWriter {
     return true;
   }
 
-  /// Takes the first [length] of the chunks with leading [indent], removes
-  /// them, and runs the [LineSplitter] on them.
-  void _completeLine(int indent, int start, int end) {
-    var chunks = _chunks.sublist(start, end);
-
-    if (debug.traceFormatter) {
-      debug.log(debug.green("\nWriting:"));
-      debug.dumpChunks(start, chunks);
-      debug.log();
-    }
-
-    var splitter = new LineSplitter(
-        _formatter.lineEnding, _formatter.pageWidth, chunks, indent);
-    var result = splitter.apply(_buffer);
-
-    if (result.selectionStart != null) {
-      _selectionStart = result.selectionStart;
-    }
-
-    if (result.selectionEnd != null) {
-      _selectionLength = result.selectionEnd -_selectionStart;
-    }
-  }
-
   /// Pre-processes the chunks after they are done being written by the visitor
   /// but before they are run through the line splitter.
-  void _finishChunks() {
-    // Need at least two chunks to have any splits.
-    if (_chunks.length < 2) return;
-
+  ///
+  /// Marks ranges of chunks that can be line split independently to keep the
+  /// batches we send to [LineSplitter] small.
+  void _divideChunks() {
     // For each independent set of chunks, see if there are any rules in them
     // that we want to preemptively harden. This is basically to send smaller
     // batches of chunks to LineSplitter in cases where the code is deeply
     // nested or complex.
     var start = 0;
-    for (var i = 1; i < _chunks.length; i++) {
-      if (_canSplitAt(i)) {
+    for (var i = 0; i < _chunks.length; i++) {
+      if (_canDivideAt(i)) {
         _preemptRules(start, i);
         start = i;
       }
@@ -718,6 +673,12 @@ class LineWriter {
 
     if (start < _chunks.length) {
       _preemptRules(start, _chunks.length);
+    }
+
+    // Now that we know where all of the divided chunk sections are, mark the
+    // chunks.
+    for (var i = 0; i < _chunks.length; i++) {
+      _chunks[i].markDivide(_canDivideAt(i));
     }
   }
 
@@ -795,6 +756,9 @@ class LineWriter {
 
     var values = rules.fold(1, (value, rule) => value * rule.numValues);
 
+    // TODO(rnystrom): We could do something more precise here by taking the
+    // rule types into account.
+
     // If the number of possible solutions is reasonable, don't preempt any.
     if (values < 4096) return;
 
@@ -863,5 +827,223 @@ class LineWriter {
     }
 
     harden(rule);
+  }
+}
+
+/// Given a series of chunks, splits them into lines and writes the result to
+/// a buffer.
+class LineWriter {
+  final _buffer = new StringBuffer();
+
+  final List<Chunk> _chunks;
+
+  final String _lineEnding;
+
+  /// The number of characters allowed in a single line.
+  final int pageWidth;
+
+  /// The number of levels of additional indentation to apply to each line.
+  ///
+  /// This is used when formatting blocks to get the output into the right
+  /// column based on where the block appears.
+  final int _blockIndentation;
+
+  /// The cache of blocks that have already been split.
+  final Map<BlockKey, FormattedBlock> _blockCache;
+
+  /// The offset in [_buffer] where the selection starts in the formatted code.
+  ///
+  /// This will be `null` if there is no selection or the writer hasn't reached
+  /// the beginning of the selection yet.
+  int _selectionStart;
+
+  /// The offset in [_buffer] where the selection ends in the formatted code.
+  ///
+  /// This will be `null` if there is no selection or the writer hasn't reached
+  /// the end of the selection yet.
+  int _selectionEnd;
+
+  /// The number of characters that have been written to the output.
+  int get length => _buffer.length;
+
+  LineWriter(DartFormatter formatter, this._chunks)
+      : _lineEnding = formatter.lineEnding,
+        pageWidth = formatter.pageWidth,
+        _blockIndentation = 0,
+        _blockCache = {};
+
+  /// Creates a line writer for a block.
+  LineWriter._(this._chunks, this._lineEnding, this.pageWidth,
+      this._blockIndentation, this._blockCache) {
+    // There is always a newline after the opening delimiter.
+    _buffer.write(_lineEnding);
+  }
+
+  /// Gets the results of formatting the child block of [chunk] at with
+  /// starting [column].
+  ///
+  /// If that block has already been formatted, reuses the results.
+  ///
+  /// The column is the column for the delimiters. The contents of the block
+  /// are always implicitly one level deeper than that.
+  ///
+  ///     main() {
+  ///       function(() {
+  ///         block;
+  ///       });
+  ///     }
+  ///
+  /// When we format the anonymous lambda, [column] will be 2, not 4.
+  FormattedBlock formatBlock(Chunk chunk, int column) {
+    var key = new BlockKey(chunk, column);
+
+    // Use the cached one if we have it.
+    var cached = _blockCache[key];
+    if (cached != null) return cached;
+
+    // TODO(rnystrom): Dividing here because SplitSet works in columns while
+    // LineWriter and LineSplitter work in indent levels. Should probably just
+    // make everything use columns.
+    var writer = new LineWriter._(chunk.blockChunks, _lineEnding,
+        pageWidth, column ~/ spacesPerIndent, _blockCache);
+
+    // TODO(rnystrom): Passing in an initial indent here is hacky. The
+    // LineWriter ensures all but the first chunk have an indent of 1, and this
+    // handles the first chunk. Do something cleaner.
+    var result = writer.writeLines(chunk.flushLeft ? 0 : 1);
+    return _blockCache[key] = new FormattedBlock(writer.toString(), result);
+  }
+
+  /// Takes all of the chunks and divides them into sublists and line splits
+  /// each list.
+  ///
+  /// Since this is linear and line splitting is worse it's good to feed the
+  /// line splitter smaller lists of chunks when possible.
+  SplitResult writeLines(int firstLineIndent, {bool isCompilationUnit: false}) {
+    // Now that we know what hard splits there will be, break the chunks into
+    // independently splittable lines.
+    var newlines = 0;
+    var indent = firstLineIndent;
+    var totalCost = 0;
+    var start = 0;
+
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      if (!chunk.canDivide) continue;
+
+      totalCost += _completeLine(newlines, indent, start, i + 1);
+
+      // Get ready for the next line.
+      newlines = chunk.isDouble ? 2 : 1;
+      if (chunk.flushLeft) {
+        indent = 0;
+      } else {
+        indent = chunk.indent;
+      }
+      start = i + 1;
+    }
+
+    if (start < _chunks.length) {
+      totalCost += _completeLine(newlines, indent, start, _chunks.length);
+    }
+
+    // Be a good citizen, end with a newline.
+    if (isCompilationUnit) _buffer.write(_lineEnding);
+
+    return new SplitResult(totalCost, _selectionStart, _selectionEnd);
+  }
+
+  /// Gets the formatted output.
+  String toString() => _buffer.toString();
+
+  /// Takes the first [length] of the chunks with leading [indent], removes
+  /// them, and runs the [LineSplitter] on them.
+  int _completeLine(int newlines, int indent, int start, int end) {
+    // Write the newlines required by the previous line.
+    for (var j = 0; j < newlines; j++) {
+      _buffer.write(_lineEnding);
+    }
+
+    var chunks = _chunks.sublist(start, end);
+
+    if (debug.traceFormatter) {
+      debug.log(debug.green("\nWriting:"));
+      debug.dumpChunks(start, chunks);
+      debug.log();
+    }
+
+    // Run the line splitter.
+    var splitter = new LineSplitter(this, chunks, _blockIndentation);
+    var solution = splitter.apply(indent);
+
+    // Write each chunk with the appropriate splits between them.
+    _buffer.write(" " * ((indent + _blockIndentation) * spacesPerIndent));
+    for (var i = 0; i < chunks.length; i++) {
+      var chunk = chunks[i];
+      _writeChunk(chunk);
+
+      if (chunk.blockChunks.isNotEmpty) {
+        if (!solution.splits.shouldSplitAt(i)) {
+          // This block didn't split (which implies none of the child blocks
+          // of that block split either, recursively), so write them all inline.
+          _writeChunksUnsplit(chunk.blockChunks);
+        } else {
+          // Include the formatted block contents.
+          var block = formatBlock(chunk, solution.splits.getColumn(i));
+
+          // If this block contains one of the selection markers, tell the
+          // writer where it ended up in the final output.
+          if (block.result.selectionStart != null) {
+            _selectionStart = length + block.result.selectionStart;
+          }
+
+          if (block.result.selectionEnd != null) {
+            _selectionEnd = length + block.result.selectionEnd;
+          }
+
+          _buffer.write(block.text);
+        }
+      }
+
+      if (i == chunks.length - 1) {
+        // Don't write trailing whitespace after the last chunk.
+      } else if (solution.splits.shouldSplitAt(i)) {
+        _buffer.write(_lineEnding);
+        if (chunk.isDouble) _buffer.write(_lineEnding);
+
+        _buffer.write(" " * (solution.splits.getColumn(i)));
+      } else {
+        if (chunk.spaceWhenUnsplit) _buffer.write(" ");
+      }
+    }
+
+    return solution.cost;
+  }
+
+  /// Writes [chunks] (and any child chunks of them, recursively) without any
+  /// splitting.
+  void _writeChunksUnsplit(List<Chunk> chunks) {
+    for (var chunk in chunks) {
+      _writeChunk(chunk);
+
+      if (chunk.spaceWhenUnsplit) _buffer.write(" ");
+
+      // Recurse into the block.
+      _writeChunksUnsplit(chunk.blockChunks);
+    }
+  }
+
+  /// Writes [chunk] to the output and updates the selection if the chunk
+  /// contains a selection marker.
+  void _writeChunk(Chunk chunk) {
+    if (chunk.selectionStart != null) {
+      _selectionStart = length + chunk.selectionStart;
+    }
+
+    if (chunk.selectionEnd != null) {
+      _selectionEnd = length + chunk.selectionEnd;
+    }
+
+    _buffer.write(chunk.text);
   }
 }
