@@ -252,35 +252,36 @@ class CombinatorRule extends Rule {
 }
 
 abstract class ArgsRule extends Rule {
-  final Rule _bodyRule;
+  /// The rule used to split block arguments in the argument list, if any.
+  final Rule _blockRule;
 
   /// If true, then inner rules that are written will force this rule to split.
   ///
-  /// Temporarily disabled while writing unnested bodies so that they can be
+  /// Temporarily disabled while writing block arguments so that they can be
   /// multi-line without forcing the whole argument list to split.
   bool _trackInnerRules = true;
 
-  /// Don't split when an inner body rule splits.
+  /// Don't split when an inner block rule splits.
   bool get splitsOnInnerRules => _trackInnerRules;
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [bodyRule] is given, it is the rule used to split the body arguments
-  /// in the list.
-  ArgsRule(this._bodyRule);
+  /// If [_blockRule] is given, it is the rule used to split the block
+  /// arguments in the list.
+  ArgsRule(this._blockRule);
 
-  /// Called before a body argument is written.
+  /// Called before a block argument is written.
   ///
-  /// Disables tracking inner rules while a body argument is being written.
-  void beforeBodyArgument() {
+  /// Disables tracking inner rules while a block argument is being written.
+  void beforeBlockArgument() {
     assert(_trackInnerRules == true);
     _trackInnerRules = false;
   }
 
-  /// Called after a body argument is complete.
+  /// Called after a block argument is complete.
   ///
-  /// Re-enables tracking inner rules after a body argument is complete.
-  void afterBodyArgument() {
+  /// Re-enables tracking inner rules after a block argument is complete.
+  void afterBlockArgument() {
     assert(_trackInnerRules == false);
     _trackInnerRules = true;
   }
@@ -297,9 +298,9 @@ abstract class PositionalArgsRule extends ArgsRule {
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [bodyRule] is given, it is the rule used to split the body arguments
+  /// If [blockRule] is given, it is the rule used to split the block arguments
   /// in the list.
-  PositionalArgsRule(Rule bodyRule) : super(bodyRule);
+  PositionalArgsRule(Rule blockRule) : super(blockRule);
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
@@ -338,7 +339,7 @@ abstract class PositionalArgsRule extends ArgsRule {
 }
 
 /// Split rule for a call with a single positional argument (which may or may
-/// not be a body.)
+/// not be a block argument.)
 class SinglePositionalRule extends PositionalArgsRule {
   int get numValues => 2;
 
@@ -348,10 +349,10 @@ class SinglePositionalRule extends PositionalArgsRule {
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [bodyRule] is given, it is the rule used to split the body arguments
+  /// If [blockRule] is given, it is the rule used to split the block arguments
   /// in the list. If [isSingleArgument] is `true`, then the argument list will
   /// only contain a single argument.
-  SinglePositionalRule(Rule bodyRule) : super(bodyRule);
+  SinglePositionalRule(Rule blockRule) : super(blockRule);
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 
@@ -359,12 +360,12 @@ class SinglePositionalRule extends PositionalArgsRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _bodyRule) return null;
+    if (other != _blockRule) return null;
 
-    // If we aren't splitting any args, we can split the body.
+    // If we aren't splitting any args, we can split the block.
     if (value == 0) return null;
 
-    // We are splitting before a body, so don't let it split internally.
+    // We are splitting before a block, so don't let it split internally.
     return 0;
   }
 
@@ -385,40 +386,40 @@ class SinglePositionalRule extends PositionalArgsRule {
 ///
 /// Then there is a value that splits before every argument.
 ///
-/// Finally, if there are bodies, there is another value that splits before all
-/// of the non-body arguments, but does not split before the body ones, so that
-/// they can split internally.
+/// Finally, if there are block arguments, there is another value that splits
+/// before all of the non-block arguments, but does not split before the block
+/// ones, so that they can split internally.
 class MultiplePositionalRule extends PositionalArgsRule {
-  /// The number of leading arguments that are bodies.
+  /// The number of leading block arguments.
   ///
-  /// This and [_trailingBodies] cannot both be positive. If every argument is
-  /// a body, this will be [_arguments.length] and [_trailingBodies] will be 0.
-  final int _leadingBodies;
+  /// This and [_trailingBlocks] cannot both be positive. If every argument is
+  /// a block, this will be [_arguments.length] and [_trailingBlocks] will be 0.
+  final int _leadingBlocks;
 
-  /// The number of trailing arguments that are bodies.
+  /// The number of trailing block arguments.
   ///
-  /// This and [_leadingBodies] cannot both be positive.
-  final int _trailingBodies;
+  /// This and [_leadingBlocks] cannot both be positive.
+  final int _trailingBlocks;
 
   int get numValues {
     // Can split before any one argument, none, or all.
     var result = 2 + _arguments.length;
 
-    // When there are body arguments, there are two ways we can split on "all"
+    // When there are block arguments, there are two ways we can split on "all"
     // arguments:
     //
-    // - Split on just the non-body arguments, and force the body arguments to
-    //   split internally.
-    // - Split on all of them including the body arguments, and do not allow
-    //   the body arguments to split internally.
-    if (_leadingBodies > 0 || _trailingBodies > 0) result++;
+    // - Split on just the non-block arguments, and force the block arguments
+    //   to split internally.
+    // - Split on all of them including the block arguments, and do not allow
+    //   the block arguments to split internally.
+    if (_leadingBlocks > 0 || _trailingBlocks > 0) result++;
 
     return result;
   }
 
   MultiplePositionalRule(
-      Rule bodyRule, this._leadingBodies, this._trailingBodies)
-      : super(bodyRule);
+      Rule blockRule, this._leadingBlocks, this._trailingBlocks)
+      : super(blockRule);
 
   String toString() => "*Pos${super.toString()}";
 
@@ -437,9 +438,9 @@ class MultiplePositionalRule extends PositionalArgsRule {
       return chunk == _arguments[argument];
     }
 
-    // Only split before the non-body arguments. Note that we consider this
+    // Only split before the non-block arguments. Note that we consider this
     // case to correctly prefer this over the latter case because function
-    // body arguments always split internally. Preferring this case ensures we
+    // block arguments always split internally. Preferring this case ensures we
     // avoid:
     //
     //     function( // <-- :(
@@ -450,11 +451,11 @@ class MultiplePositionalRule extends PositionalArgsRule {
     //         ...
     //         argument;
     if (value == _arguments.length + 1) {
-      for (var i = 0; i < _leadingBodies; i++) {
+      for (var i = 0; i < _leadingBlocks; i++) {
         if (chunk == _arguments[i]) return false;
       }
 
-      for (var i = _arguments.length - _trailingBodies;
+      for (var i = _arguments.length - _trailingBlocks;
           i < _arguments.length; i++) {
         if (chunk == _arguments[i]) return false;
       }
@@ -462,7 +463,7 @@ class MultiplePositionalRule extends PositionalArgsRule {
       return true;
     }
 
-    // Split before all of the arguments, even the body ones.
+    // Split before all of the arguments, even the block ones.
     return true;
   }
 
@@ -470,37 +471,37 @@ class MultiplePositionalRule extends PositionalArgsRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _bodyRule) return null;
+    if (other != _blockRule) return null;
 
-    // If we aren't splitting any args, we can split the body.
+    // If we aren't splitting any args, we can split the block.
     if (value == 0) return null;
 
     // Split only before the first argument.
     if (value == 1) {
-      if (_leadingBodies > 0) {
-        // We are splitting before a body, so don't let it split internally.
+      if (_leadingBlocks > 0) {
+        // We are splitting before a block, so don't let it split internally.
         return 0;
       } else {
-        // The split is outside of the bodies so they can split or not.
+        // The split is outside of the blocks so they can split or not.
         return null;
       }
     }
 
-    // Split before a single argument. If it's in the middle of the body
+    // Split before a single argument. If it's in the middle of the block
     // arguments, don't allow them to split.
     if (value <= _arguments.length) {
       var argument = _arguments.length - value + 1;
-      if (argument < _leadingBodies) return 0;
-      if (argument >= _arguments.length - _trailingBodies) return 0;
+      if (argument < _leadingBlocks) return 0;
+      if (argument >= _arguments.length - _trailingBlocks) return 0;
 
       return null;
     }
 
-    // Only split before the non-body arguments. This case only comes into
-    // play when we do want to split the bodies, so force that here.
+    // Only split before the non-block arguments. This case only comes into
+    // play when we do want to split the blocks, so force that here.
     if (value == _arguments.length + 1) return 1;
 
-    // Split before all of the arguments, even the body ones, so don't let
+    // Split before all of the arguments, even the block ones, so don't let
     // them split.
     return 0;
   }
@@ -517,7 +518,7 @@ class NamedArgsRule extends ArgsRule {
 
   int get numValues => 3;
 
-  NamedArgsRule(Rule bodyRule) : super(bodyRule);
+  NamedArgsRule(Rule blockRule) : super(blockRule);
 
   void beforeArguments(Chunk chunk) {
     assert(_first == null);
@@ -531,8 +532,6 @@ class NamedArgsRule extends ArgsRule {
       case 2: return true;
     }
 
-    // TODO(rnystrom): We might need a value to represent "split before
-    // non-body but not body args".
     throw "unreachable";
   }
 
@@ -540,12 +539,12 @@ class NamedArgsRule extends ArgsRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _bodyRule) return null;
+    if (other != _blockRule) return null;
 
-    // If we aren't splitting any args, we can split the body.
+    // If we aren't splitting any args, we can split the block.
     if (value == 0) return null;
 
-    // Split before all of the arguments, even the body ones, so don't let
+    // Split before all of the arguments, even the block ones, so don't let
     // them split.
     return 0;
   }

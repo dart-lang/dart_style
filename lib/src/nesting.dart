@@ -7,68 +7,39 @@ library dart_style.src.nesting;
 /// The number of indentation levels in a single level of expression nesting.
 const _indentsPerNest = 2;
 
-/// Manages the linked chain of nesting where a point in code may appear.
+/// Maintains a stack of nested expressions that have currently been split.
 ///
-/// This is used to define the unique identity of a [LinePrefix].
+/// A single statement may have multiple different levels of indentation based
+/// on the expression nesting level at the point where the line is broken. For
+/// example:
 ///
-/// Consider the following code:
+///     someFunction(argument, argument,
+///         innerFunction(argument,
+///             innermost), argument);
 ///
-///     function(
-///         argument,
-///         wrapper(() {
-///           alpha(beta(gamma("here"))));
-///         }),
-///         argument);
+/// This means that when splitting a line, we need to keep track of the nesting
+/// level of the previous line(s) to determine how far the next line must be
+/// indented.
 ///
-/// We are sitting at "here". What is the state we need to store in order to
-/// be able to determine where a newline starts if we split before that string?
-/// This class contains that state.
-///
-/// It is a linked list of nesting levels from the innermost out to the
-/// top-level code. Each node can represent a level of expression nesting
-/// (this class), or a body ([_BodyNesting]). In this example, that's:
-///
-/// * The expression level for the argument list for `gamma()`.
-/// * The expression level for the argument list for `beta()`.
-/// * The expression level for the argument list for `alpha()`.
-/// * The body of the anonymous function.
-/// * The expression level for the argument list for `wrapper()`.
-/// * The expression level for the argument list for `function()`.
-/// * The top-level body.
-///
-/// In many cases, some expression levels will be omitted from the stack. This
-/// happens when a split doesn't occur at that nesting level so it doesn't get
-/// an indentation column bound to that level. (For example, in the above code,
-/// there are no splits in `alpha(beta(gamma("here"))))` so those expression
-/// depths are not represented.)
-///
-/// The entire stack is a persistent collection. Each instance is immutable and
-/// methods to modify it return a new collection. The stack is stored as a
-/// linked list from inner to outer nodes so that a "new" stack can reuse almost
-/// all of an existing one.
-///
-class ExpressionNesting {
-  /// The body containing this expression nesting.
-  final _BodyNesting _body;
-
-  final ExpressionNesting _parent;
+/// This class is a persistent collection. Each instance is immutable and
+/// methods to modify it return a new collection.
+class Nesting {
+  final Nesting _parent;
 
   /// The number of visible indentation levels for the current nesting.
   ///
-  /// Takes into account both expression and surrounding body nesting.
-  ///
   /// This may be less than [_depth] since split lines can skip multiple
   /// nesting depths.
-  int get indent => _body.indent + _indent;
+  int get indent => _indent;
   final int _indent;
 
   /// The number of surrounding expression nesting levels.
   int get depth => _depth;
   final int _depth;
 
-  ExpressionNesting() : this._(new _BodyNesting._(null, 0, 0), null, 0, 0);
+  Nesting() : this._(null, 0, 0);
 
-  ExpressionNesting._(this._body, this._parent, this._depth, this._indent);
+  Nesting._(this._parent, this._depth, this._indent);
 
   /// LinePrefixes implement their own value equality to ensure that two
   /// prefixes with the same nesting stack are considered equal even if the
@@ -86,55 +57,25 @@ class ExpressionNesting {
   /// same nesting stack, even though the nesting came from different tokens.
   /// This lets us reuse memoized suffixes more frequently when solving.
   bool operator ==(other) {
-    if (other is! ExpressionNesting) return false;
+    if (other is! Nesting) return false;
 
-    var thisExpression = this;
-    var otherExpression = other;
-    while (thisExpression != null) {
-      if (thisExpression._indent != otherExpression._indent) return false;
-      if (thisExpression._depth != otherExpression._depth) return false;
-      thisExpression = thisExpression._parent;
-      otherExpression = otherExpression._parent;
+    var self = this;
+    while (self != null) {
+      if (self._indent != other._indent) return false;
+      if (self._depth != other._depth) return false;
+      self = self._parent;
+      other = other._parent;
 
       // They should be the same length.
-      if ((thisExpression == null) != (otherExpression == null)) return false;
+      if ((self == null) != (other == null)) return false;
     }
 
-    return _body == other._body;
+    return true;
   }
 
   int get hashCode {
     // TODO(rnystrom): Is it worth iterating through the stack?
     return _indent.hashCode ^ _depth.hashCode;
-  }
-
-  /// Updates the nesting to match expression [nestingDepth] at [bodyDepth]
-  /// with [newIndent].
-  ///
-  /// Pushes or pops bodies as needed to match [bodyDepth]. If a new body is
-  /// added, its initial indentation will be [newIndent]. Then, updates the
-  /// innermost expression nesting to match [nestingDepth].
-  List<ExpressionNesting> update(int bodyDepth, int newIndent, int nestingDepth) {
-    // Update the body stack to get to the chunk's body.
-    var nesting = this;
-
-    // If we have exited any bodies, return to the previous indentation depth.
-    while (bodyDepth < nesting._body.depth) {
-      nesting = _body._expression;
-    }
-
-    // If we have entered a new body, keep track of it.
-    if (bodyDepth > _body.depth) {
-      // Should never jump into more than one body in a single chunk. The rules
-      // for how inner bodies force outer splits should prevent this from
-      // occurring.
-      assert(bodyDepth == _body.depth + 1);
-
-      var newBody = new _BodyNesting._(nesting, bodyDepth, newIndent);
-      nesting = new ExpressionNesting._(newBody, null, 0, 0);
-    }
-
-    return nesting._updateExpression(nestingDepth);
   }
 
   /// Takes this nesting stack and produces all of the new nesting stacks that
@@ -175,7 +116,7 @@ class ExpressionNesting {
   ///
   /// To accommodate those, this returns the list of all possible ways the
   /// nesting stack can be modified.
-  List<ExpressionNesting> _updateExpression(int nestingDepth) {
+  List<Nesting> update(int nestingDepth) {
     if (nestingDepth == _depth) return [this];
 
     // If the new split is less nested than we currently are, pop and discard
@@ -200,12 +141,12 @@ class ExpressionNesting {
       var result = this;
 
       for (var depth in depths) {
-        result = new ExpressionNesting._(
-            _body, result, depth, result._indent + _indentsPerNest);
+        result = new Nesting._(
+            result, depth, result._indent + _indentsPerNest);
       }
 
-      return new ExpressionNesting._(
-          _body, result, nestingDepth, result._indent + _indentsPerNest);
+      return new Nesting._(
+          result, nestingDepth, result._indent + _indentsPerNest);
     }).toList();
   }
 
@@ -272,53 +213,6 @@ class ExpressionNesting {
       result = "|${nesting._depth}$result";
     }
 
-    // TODO(rnystrom): Include body.
     return result;
-  }
-}
-
-/// Nesting stack node representing a "body". This includes top-level code,
-/// function literals, and collection literals.
-class _BodyNesting {
-  /// The expression where this body appears, or `null` if this is the outermost
-  /// body.
-  final ExpressionNesting _expression;
-
-  /// The number of visible indentation levels for the body.
-  final int indent;
-
-  /// The number of surrounding bodies.
-  int get depth => _depth;
-  final int _depth;
-
-  _BodyNesting._(this._expression, this._depth, this.indent);
-
-  /// LinePrefixes implement their own value equality to ensure that two
-  /// prefixes with the same nesting stack are considered equal even if the
-  /// nesting occurred from different splits.
-  ///
-  /// For example, consider these two prefixes with `^` marking where splits
-  /// have been applied:
-  ///
-  ///     fn( first, second, ...
-  ///        ^
-  ///     fn( first, second, ...
-  ///               ^
-  ///
-  /// These are equivalent from the view of the suffix because they have the
-  /// same nesting stack, even though the nesting came from different tokens.
-  /// This lets us reuse memoized suffixes more frequently when solving.
-  bool operator ==(other) {
-    if (other is! _BodyNesting) return false;
-
-    if (indent != other.indent) return false;
-    if (_depth != other._depth) return false;
-
-    return _expression == other._expression;
-  }
-
-  int get hashCode {
-    // TODO(rnystrom): Is it worth iterating through the stack?
-    return indent.hashCode ^ _depth.hashCode;
   }
 }

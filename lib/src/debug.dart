@@ -86,7 +86,12 @@ void dumpChunks(int start, List<Chunk> chunks) {
   addChunk(chunk, prefix, index) {
     var row = [];
     row.add("$prefix$index:");
-    row.add("${chunk.text}");
+
+    if (chunk.text.length > 70) {
+      row.add(chunk.text.substring(0, 70));
+    } else {
+      row.add(chunk.text);
+    }
 
     var spanBars = "";
     for (var span in spans) {
@@ -94,14 +99,19 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
     row.add(spanBars);
 
+    writeIf(predicate, String callback()) {
+      if (predicate) {
+        row.add(callback());
+      } else {
+        row.add("");
+      }
+    }
+
     if (chunk.rule != null) {
       row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
 
-      if (chunk.rule.outerRules.isEmpty) {
-        row.add("");
-      } else {
-        row.add("-> ${chunk.rule.outerRules.join(" ")}");
-      }
+      writeIf(chunk.rule.outerRules.isNotEmpty,
+          () => "-> ${chunk.rule.outerRules.join(" ")}");
     } else {
       row.add("(no rule)");
 
@@ -109,23 +119,14 @@ void dumpChunks(int start, List<Chunk> chunks) {
       row.add("");
     }
 
-    if (chunk.bodyDepth != null && chunk.bodyDepth != 0) {
-      row.add("body ${chunk.bodyDepth}");
-    } else {
-      row.add("");
-    }
+    writeIf(chunk.indent != null && chunk.indent != 0,
+        () => "indent ${chunk.indent}");
 
-    if (chunk.indent != null && chunk.indent != 0) {
-      row.add("indent ${chunk.indent}");
-    } else {
-      row.add("");
-    }
+    writeIf(chunk.nesting != null && chunk.nesting != 0,
+        () => "nest ${chunk.nesting}");
 
-    if (chunk.nesting != null && chunk.nesting != 0) {
-      row.add("nest ${chunk.nesting}");
-    } else {
-      row.add("");
-    }
+    writeIf(chunk.flushLeft != null && chunk.flushLeft,
+        () => "flush");
 
     rows.add(row);
 
@@ -147,19 +148,21 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
   }
 
+  var buffer = new StringBuffer();
   for (var row in rows) {
-    var line = "";
     for (var i = 0; i < row.length; i++) {
       var cell = row[i].padRight(rowWidths[i]);
 
       if (i != 1) cell = gray(cell);
 
-      if (line != "") line += "  ";
-      line += cell;
+      buffer.write(cell);
+      buffer.write("  ");
     }
 
-    print(line);
+    buffer.writeln();
   }
+
+  print(buffer.toString());
 }
 
 /// Convert the line to a [String] representation.

@@ -4,8 +4,8 @@
 
 library dart_style.src.nesting_writer;
 
-/// Keeps track of block indentation and expression nesting while the source
-/// code is being visited and the chunks are being written.
+/// Keeps track of expression nesting while the source code is being visited
+/// and the chunks are being written.
 class NestingWriter {
   /// The expression nesting level within each block level.
   ///
@@ -29,12 +29,6 @@ class NestingWriter {
   /// block for things like wrapped directives.
   final List<int> _stack = [0];
 
-  // TODO(rnystrom): Unify with _stack?
-  /// The initial absolute indentation level of each of the currently open
-  /// bodies.
-  // TODO(bob): Remove when functions use block nesting.
-  final _bodies = [0];
-
   /// When not `null`, the nesting level of the current innermost block after
   /// the next token is written.
   ///
@@ -55,11 +49,8 @@ class NestingWriter {
   /// though we haven't written any of its tokens yet.
   int _pendingNesting;
 
-  /// The current number of open bodies.
-  int get bodyDepth => _bodies.length - 1;
-
-  /// The current number of levels of indentation within the current body.
-  int get indentation => _absoluteIndent - _bodies.last;
+  /// The current number of levels of indentation block indentation.
+  int get indentation => _stack.length - 1;
 
   /// The nesting depth of the current inner-most block.
   int get nesting => _stack.last;
@@ -69,27 +60,14 @@ class NestingWriter {
   int get currentNesting =>
       _pendingNesting != null ? _pendingNesting : _stack.last;
 
-  /// The total current number of levels of block indentation.
-  int get _absoluteIndent => _stack.length - 1;
-
-  /// Begins a new body.
-  void startBody() {
-    _bodies.add(_absoluteIndent);
-  }
-
-  /// Ends the innermost body.
-  void endBody() {
-    _bodies.removeLast();
-  }
-
-  /// Increases indentation of the next line in the current body by [levels].
+  /// Increases indentation of the next line by [levels].
   void indent([int levels = 1]) {
     assert(_pendingNesting == null);
 
     while (levels-- > 0) _stack.add(0);
   }
 
-  /// Decreases indentation of the next line in the current body by [levels].
+  /// Decreases indentation of the next line by [levels].
   void unindent([int levels = 1]) {
     assert(_pendingNesting == null);
 

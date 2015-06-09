@@ -71,22 +71,17 @@ class Chunk extends Selection {
   String get text => _text;
   String _text;
 
-  /// The number of levels of indentation from the left edge of the body that
+  /// The number of levels of indentation from the left edge of the block that
   /// contains this chunk.
   ///
-  /// For top level chunks that are not inside any body, this also includes
+  /// For top level chunks that are not inside any block, this also includes
   /// leading indentation.
   int get indent => _indent;
   int _indent;
 
   /// The absolute number of levels of indentation from the left edge of the
   /// page.
-  ///
-  /// This can only be called for chunks that are not nested in any bodies.
-  int get absoluteIndent {
-    assert(_bodyDepth == 0);
-    return _flushLeft ? 0 : _indent;
-  }
+  int get absoluteIndent => _flushLeft ? 0 : _indent;
 
   /// The number of levels of expression nesting following this chunk.
   ///
@@ -100,12 +95,6 @@ class Chunk extends Selection {
   ///             argument));
   int get nesting => _nesting;
   int _nesting;
-
-  /// The number of surrounding bodies containing the end of this chunk.
-  ///
-  /// Zero for top-level chunks.
-  int get bodyDepth => _bodyDepth;
-  int _bodyDepth;
 
   /// If this chunk marks the beginning of a block, these are the chunks
   /// contained in the block.
@@ -190,14 +179,13 @@ class Chunk extends Selection {
     spans.clear();
   }
 
-  // TODO(bob): Stop passing in NestingWriter once bodyDepth stuff is gone.
   /// Finishes off this chunk with the given [rule] and split information.
   ///
   /// This may be called multiple times on the same split since the splits
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(NestingWriter writer, Rule rule, int nesting,
+  void applySplit(Rule rule, int indent, int nesting,
       {bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (flushLeft == null) flushLeft = false;
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
@@ -211,11 +199,10 @@ class Chunk extends Selection {
       _rule = rule;
     }
 
-    // Last newline settings win.
+    // Last split settings win.
     _flushLeft = flushLeft;
     _nesting = nesting;
-    _indent = writer.indentation;
-    _bodyDepth = writer.bodyDepth;
+    _indent = indent;
 
     _spaceWhenUnsplit = spaceWhenUnsplit;
 
@@ -278,11 +265,11 @@ class Cost {
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;
 
-  /// Splitting the internals of literal body arguments.
+  /// Splitting the internals of literal block arguments.
   ///
   /// Used to prefer splitting at the argument boundary over splitting the
-  /// bodies.
-  static const splitBodies = 2;
+  /// block contents.
+  static const splitBlocks = 2;
 
   /// The cost of a single character that goes past the page limit.
   ///

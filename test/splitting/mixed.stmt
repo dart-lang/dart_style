@@ -66,8 +66,8 @@ function(
         .method(argument)
         .method(argument)
         .method(() {
-          body;
-        }).another().another());
+      body;
+    }).another().another());
 >>> unnested function inside nested expression
 function(argument, function(() {;}));
 <<<
@@ -110,13 +110,20 @@ receiver.firstMethod().next(
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
-receiver
-    .first([
-      listItem,
-      secondItem,
-      thirdItem
-    ])
-    .second();
+receiver.first([
+  listItem,
+  secondItem,
+  thirdItem
+]).second();
+>>> list at end of method chain
+receiver.first().second([listItem, secondItem, thirdItem, fourthItem]);
+<<<
+receiver.first().second([
+  listItem,
+  secondItem,
+  thirdItem,
+  fourthItem
+]);
 >>> binary operators in ascending precedence
 {
   b___________________ || a______________ && a______________ == a______________ > a______________ + a______________;

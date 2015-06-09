@@ -72,6 +72,24 @@ class LineSplitter {
   /// line following a given prefix.
   final _bestSplits = <LinePrefix, SplitSet>{};
 
+  // TODO(rnystrom): Instead of a cache per LineSplitter, we should store a
+  // single global cache that uses the parent chunk's identity in the key. That
+  // way, we can reuse results across transitive recursive line splitting. For
+  // example, say we have code like:
+  //
+  //     void main() {
+  //       function(argument, argument, /* A */ () {
+  //         function(argument, argument, /* B */ () {
+  //           ;
+  //         });
+  //       });
+  //     }
+  //
+  // The LineSplitter for the top level may create a few child splitters for
+  // each indentation where function A can appear. Each of those will in turn
+  // create child splitters for each indentation of B. In many cases, those
+  // will be redundant. However, each time one of the line splitters for A is
+  // done, it discards all of the cached results for B.
   /// The cache of child blocks of this line that have already been split.
   final _formattedBlocks = <BlockKey, FormattedBlock>{};
 
@@ -112,22 +130,14 @@ class LineSplitter {
       _suffixRules.add(ruleChunks.skip(i).map((chunk) => chunk.rule).toSet());
     }
 
-    // TODO(rnystrom): One optimization we could perform is to merge spans that
-    // have the same range into a single span with a summed cost.
-
-
     var prefix = new LinePrefix(_indent);
-    var solution = new Solution(prefix);
+    var solution = new RunningSolution(prefix);
     _tryChunkRuleValues(solution, prefix);
 
     var selectionStart;
     var selectionEnd;
 
-    // Write each chunk and the split after it.
-    buffer.write(" " * (_indent * spacesPerIndent));
-    for (var i = 0; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
-
+    writeChunk(Chunk chunk) {
       // If this chunk contains one of the selection markers, tell the writer
       // where it ended up in the final output.
       if (chunk.selectionStart != null) {
@@ -139,23 +149,43 @@ class LineSplitter {
       }
 
       buffer.write(chunk.text);
+    }
+
+    writeChunks(List<Chunk> chunks) {
+      for (var chunk in chunks) {
+        writeChunk(chunk);
+
+        if (chunk.spaceWhenUnsplit) buffer.write(" ");
+        writeChunks(chunk.blockChunks);
+      }
+    }
+
+    // Write each chunk and the split after it.
+    buffer.write(" " * (_indent * spacesPerIndent));
+    for (var i = 0; i < _chunks.length; i++) {
+      var chunk = _chunks[i];
+      writeChunk(chunk);
 
       if (chunk.blockChunks.isNotEmpty) {
         if (!solution.splits.shouldSplitAt(i)) {
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
-          writeChunks(chunks) {
-            for (var inner in chunks) {
-              buffer.write(inner.text);
-              if (inner.spaceWhenUnsplit) buffer.write(" ");
-              writeChunks(inner.blockChunks);
-            }
-          }
-
           writeChunks(chunk.blockChunks);
         } else {
           // Include the formatted block contents.
-          buffer.write(_formatBlock(i, solution.splits.getColumn(i)).text);
+          var block = _formatBlock(i, solution.splits.getColumn(i));
+
+          // If this block contains one of the selection markers, tell the
+          // writer where it ended up in the final output.
+          if (block.result.selectionStart != null) {
+            selectionStart = buffer.length + block.result.selectionStart;
+          }
+
+          if (block.result.selectionEnd != null) {
+            selectionEnd = buffer.length + block.result.selectionEnd;
+          }
+
+          buffer.write(block.text);
         }
       }
 
@@ -193,7 +223,7 @@ class LineSplitter {
       debug.indent();
     }
 
-    var solution = new Solution(prefix);
+    var solution = new RunningSolution(prefix);
     _tryChunkRuleValues(solution, prefix);
 
     if (debug.traceSplitter) {
@@ -206,7 +236,7 @@ class LineSplitter {
 
   /// Updates [solution] with the best rule value selection for the chunk
   /// immediately following [prefix].
-  void _tryChunkRuleValues(Solution solution, LinePrefix prefix) {
+  void _tryChunkRuleValues(RunningSolution solution, LinePrefix prefix) {
     // If we made it to the end, this prefix can be solved without splitting
     // any chunks.
     if (prefix.length == _chunks.length - 1) {
@@ -238,7 +268,7 @@ class LineSplitter {
 
   /// Updates [solution] with the best solution that can be found by setting
   /// the chunk after [prefix]'s rule to [value].
-  void _tryRuleValue(Solution solution, LinePrefix prefix, int value) {
+  void _tryRuleValue(RunningSolution solution, LinePrefix prefix, int value) {
     var chunk = _chunks[prefix.length];
 
     if (chunk.rule.isSplit(value, chunk)) {
@@ -252,14 +282,14 @@ class LineSplitter {
     } else {
       // We didn't split here, so add this chunk and its rule value to the
       // prefix and continue on to the next.
-      var added = prefix.extend(_advancePrefix(prefix, value));
-      _tryChunkRuleValues(solution, added);
+      var extended = prefix.extend(_advancePrefix(prefix, value));
+      _tryChunkRuleValues(solution, extended);
     }
   }
 
   /// Updates [solution] with the solution for [prefix] assuming it uses
   /// [longerPrefix] for the next chunk.
-  void _tryLongerPrefix(Solution solution, LinePrefix prefix,
+  void _tryLongerPrefix(RunningSolution solution, LinePrefix prefix,
         LinePrefix longerPrefix) {
     var remaining = _findBestSplits(longerPrefix);
 
@@ -267,8 +297,7 @@ class LineSplitter {
     // skip it.
     if (remaining == null) return;
 
-    var splits = remaining.add(prefix.length, longerPrefix.column);
-    solution.update(this, splits);
+    solution.update(this, remaining.add(prefix.length, longerPrefix.column));
   }
 
   /// Determines the set of rule values for a new [LinePrefix] one chunk longer
@@ -369,7 +398,7 @@ class LineSplitter {
 
           // Include the cost of the nested block.
           if (chunk.blockChunks.isNotEmpty) {
-            cost += _formatBlock(i, splits.getColumn(i)).cost;
+            cost += _formatBlock(i, splits.getColumn(i)).result.cost;
           }
 
           // Start the new line.
@@ -414,11 +443,15 @@ class LineSplitter {
     var cached = _formattedBlocks[key];
     if (cached != null) return cached;
 
-    // TODO(bob): Passing in an initial indent here is hacky. The writer
-    // ensures all but the first chunk of an indent of one, and this handles
-    // the first chunk. This collusion is gross. Do something cleaner.
+    // TODO(rnystrom): Going straight to LineSplitter here skips the line
+    // breaking that LineWriter does. This is a huge perf sink on big nested
+    // blocks. Reorganize.
+
+    // TODO(rnystrom): Passing in an initial indent here is hacky. The
+    // LineWriter ensures all but the first chunk have an indent of 1, and this
+    // handles the first chunk. Do something cleaner.
     var splitter = new LineSplitter(_lineEnding, _pageWidth - column,
-        _chunks[chunkIndex].blockChunks, 1);
+        _chunks[chunkIndex].blockChunks, _chunks[chunkIndex].flushLeft ? 0 : 1);
 
     var buffer = new StringBuffer();
 
@@ -427,10 +460,18 @@ class LineSplitter {
 
     var result = splitter.apply(buffer);
 
-    // Apply the indentation.
-    var text = buffer.toString().replaceAll(
-        _lineEnding, "$_lineEnding${' ' * column}");
-    return _formattedBlocks[key] = new FormattedBlock(text, result.cost);
+    // TODO(rnystrom): Munging this this way is gross. Instead of passing a raw
+    // StringBuffer to apply(), provide something more structured that provides
+    // output lines we can indent.
+    // Apply the indentation to non-empty lines.
+    var lines = buffer.toString().split(_lineEnding);
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      if (line.trim() != "") lines[i] = "${' ' * column}$line";
+    }
+
+    var text = lines.join(_lineEnding);
+    return _formattedBlocks[key] = new FormattedBlock(text, result);
   }
 }
 
@@ -441,10 +482,10 @@ class LineSplitter {
 /// (the starting column).
 class BlockKey {
   /// The index of the chunk in the surrounding chunk list that contains this
-  /// body.
+  /// block.
   final int chunk;
 
-  /// The absolute zero-based column number where the body starts.
+  /// The absolute zero-based column number where the block starts.
   final int column;
 
   BlockKey(this.chunk, this.column);
@@ -463,10 +504,10 @@ class FormattedBlock {
   /// to reach the proper column.
   final String text;
 
-  /// The cost of the solution that was chosen.
-  final int cost;
+  /// The result of running the [LineSplitter] on the block.
+  final SplitResult result;
 
-  FormattedBlock(this.text, this.cost);
+  FormattedBlock(this.text, this.result);
 }
 
 /// The result of running the [LineSplitter] on a range of chunks.
@@ -491,7 +532,7 @@ class SplitResult {
 
 /// Keeps track of the best set of splits found so far for a suffix of some
 /// prefix.
-class Solution {
+class RunningSolution {
   /// The prefix whose suffix we are finding a solution for.
   final LinePrefix _prefix;
 
@@ -504,7 +545,7 @@ class Solution {
   /// Whether a solution that fits within a page has been found yet.
   bool get isAdequate => _lowestCost != null && _lowestCost < Cost.overflowChar;
 
-  Solution(this._prefix);
+  RunningSolution(this._prefix);
 
   /// Compares [splits] to the best solution found so far and keeps it if it's
   /// better.

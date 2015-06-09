@@ -19,3 +19,63 @@
           d.file("foo.dart", "final message = 'Hello!';")
         ])
       ]);
+>>> (indent 4) was slow
+    d.dir(appPath, [
+      d.dir('build', [
+        d.dir('example', [
+          d.file("index.html", "html"),
+          d.dir('packages', [
+            d.dir('foo', [
+              d.file('foo.txt', 'foo'),
+              d.dir('sub', [
+                d.file('bar.txt', 'bar'),
+              ]),
+            ])
+          ])
+        ]),
+        d.dir('web', [
+          d.file("index.html", "html"),
+          d.dir('packages', [
+            d.dir('foo', [
+              d.file('foo.txt', 'foo'),
+              d.dir('sub', [
+                d.file('bar.txt', 'bar'),
+              ]),
+            ])
+          ]),
+          d.dir("sub", [
+            d.file("index.html", "html"),
+            // "packages" should *only* be created in the top-level directory.
+            d.nothing("packages")
+          ])
+        ])
+      ])
+    ]).validate();
+<<<
+    d.dir(appPath, [
+      d.dir('build', [
+        d.dir('example', [
+          d.file("index.html", "html"),
+          d.dir('packages', [
+            d.dir('foo', [
+              d.file('foo.txt', 'foo'),
+              d.dir('sub', [d.file('bar.txt', 'bar'),]),
+            ])
+          ])
+        ]),
+        d.dir('web', [
+          d.file("index.html", "html"),
+          d.dir('packages', [
+            d.dir('foo', [
+              d.file('foo.txt', 'foo'),
+              d.dir('sub', [d.file('bar.txt', 'bar'),]),
+            ])
+          ]),
+          d.dir("sub", [
+            d.file("index.html", "html"),
+            // "packages" should *only* be created in the top-level directory.
+            d.nothing("packages")
+          ])
+        ])
+      ])
+    ]).validate();

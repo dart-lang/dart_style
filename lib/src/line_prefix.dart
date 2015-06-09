@@ -34,14 +34,14 @@ class LinePrefix {
   /// don't affect the suffix.
   final Map<Rule, int> ruleValues;
 
-  /// Additional indentation within the current [_body].
+  /// Additional indentation within the current block.
   ///
   /// This handles things like switch cases, blocks, and constructor
   /// initialization lists that tweak the per-line indentation but aren't full
-  /// bodies themselves.
+  /// blocks themselves.
   final int _extraIndent;
 
-  final ExpressionNesting _nesting;
+  final Nesting _nesting;
 
   /// The indentation level after this chunk, including expression nesting.
   int get indent => _extraIndent + _nesting.indent;
@@ -57,7 +57,7 @@ class LinePrefix {
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
   LinePrefix(int indent)
-      : this._(0, {}, indent, new ExpressionNesting(), flushLeft: false);
+      : this._(0, {}, indent, new Nesting(), flushLeft: false);
 
   LinePrefix._(this.length, this.ruleValues, this._extraIndent, this._nesting,
       {bool flushLeft : false})
@@ -97,7 +97,7 @@ class LinePrefix {
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
   /// boundary so there may be multiple possible different nesting stacks.
   Iterable<LinePrefix> split(Chunk chunk, Map<Rule, int> updatedValues) {
-    return _nesting.update(chunk.bodyDepth, indent, chunk.nesting)
+    return _nesting.update(chunk.nesting)
         .map((nesting) => new LinePrefix._(
             length + 1, updatedValues, chunk.indent, nesting,
             flushLeft: chunk.flushLeft));

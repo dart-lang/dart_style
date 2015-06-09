@@ -15,7 +15,7 @@ import 'whitespace.dart';
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
-/// series of [Chunk]s which can then be split into physical lines.
+/// tree of [Chunk]s which can then be split into physical lines.
 ///
 /// Keeps track of leading indentation, expression nesting, and all of the hairy
 /// code required to seamlessly integrate existing comments into the pure
@@ -78,6 +78,14 @@ class LineWriter {
   /// the end of the selection yet.
   int _selectionLength;
 
+  /// Whether or not there was a leading comment that was flush left before any
+  /// other content was written.
+  ///
+  /// This is used when writing child blocks to make the parent chunk have the
+  /// right flush left value when a comment appears immediately inside the
+  /// block.
+  bool _firstFlushLeft = false;
+
   /// Whether there is pending whitespace that depends on the number of
   /// newlines in the source.
   ///
@@ -95,7 +103,6 @@ class LineWriter {
   Rule get rule => _rules.last;
 
   /// The current level of expression nesting.
-  // TODO(bob): If the block nesting stuff moves here, get rid of this.
   int get currentNesting => _nesting.currentNesting;
 
   LineWriter(this._formatter, this._source)
@@ -137,8 +144,9 @@ class LineWriter {
   ///
   /// If [nesting] is given, uses that. Otherwise, uses the current nesting
   /// level. If unsplit, it expands to a space if [space] is `true`.
-  Chunk split({int nesting, bool space}) =>
-      _writeSplit(_rules.last, nesting: nesting, spaceWhenUnsplit: space);
+  Chunk split({int nesting, bool space, bool flushLeft}) =>
+      _writeSplit(_rules.last,
+          nesting: nesting, flushLeft: flushLeft, spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -282,33 +290,6 @@ class LineWriter {
     _nesting.unindent(levels);
   }
 
-  /// Begins a new body.
-  ///
-  /// Used for function expressions and collection literals. Unlike simple
-  /// indentation, the entire contents of a body may be indented based on
-  /// the nesting of the expression containing the body. For example:
-  ///
-  ///     function(
-  ///         {
-  ///           innerFunction;
-  ///         },
-  ///         [
-  ///           list,
-  ///           elements
-  ///         ],
-  ///         argument);
-  ///
-  /// Note that the function and list bodies are both indented +4 to match the
-  /// argument lists's indentation.
-  void startBody() {
-    _nesting.startBody();
-  }
-
-  /// Ends the innermost body.
-  void endBody() {
-    _nesting.endBody();
-  }
-
   /// Starts a new span with [cost].
   ///
   /// Each call to this needs a later matching call to [endSpan].
@@ -440,31 +421,37 @@ class LineWriter {
 
   /// Ends this [LineWriter], which must have been created by [startBlock()].
   ///
-  /// Returns `true` if the block will definitely split because it either
-  /// contains hard splits or doesn't fit within a line. Ignores hard newlines
-  /// coming from [ignoredSplit].
-  bool endBlock(HardSplitRule ignoredSplit) {
-    // TODO(bob): What about selection?.
+  /// Returns a pair of booleans. The first is `true` if the block will
+  /// definitely split because it either contains hard splits or doesn't fit
+  /// within a line. Ignores hard newlines coming from [ignoredSplit] if given.
+  ///
+  /// The second is `true` if the first line of the block should be flush left.
+  List<bool> endBlock([HardSplitRule ignoredSplit]) {
+    _finishChunks();
 
     // Determine if there will always be a split in here.
     var length = 0;
     for (var chunk in _chunks) {
       length += chunk.length + chunk.unsplitBlockLength;
-      if (length > _formatter.pageWidth) return true;
+      if (length > _formatter.pageWidth) {
+        return [true, _firstFlushLeft];
+      }
 
-      if (chunk.isHardSplit && chunk.rule != ignoredSplit) return true;
+      if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
+        return [true, _firstFlushLeft];
+      }
     }
 
-    return false;
+    // TODO(rnystrom): Returning a pair like this is ugly. Do something cleaner.
+    return [false, _firstFlushLeft];
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode end() {
-    if (_chunks.isNotEmpty) {
-      _writeHardSplit();
-      _splitLines();
-    }
+    _writeHardSplit();
+    _finishChunks();
+    _splitLines();
 
     // Be a good citizen, end with a newline.
     if (_source.isCompilationUnit) _buffer.write(_formatter.lineEnding);
@@ -603,12 +590,16 @@ class LineWriter {
   /// Returns the chunk.
   Chunk _writeSplit(Rule rule,
       {int nesting, bool flushLeft, bool isDouble, bool spaceWhenUnsplit}) {
-    if (_chunks.isEmpty) return null;
+    if (_chunks.isEmpty) {
+      if (flushLeft != null) _firstFlushLeft = flushLeft;
+
+      return null;
+    }
 
     if (nesting == null) nesting = _nesting.nesting;
 
     var chunk = _chunks.last;
-    chunk.applySplit(_nesting, rule, nesting,
+    chunk.applySplit(rule, _nesting.indentation, nesting,
         flushLeft: flushLeft,
         isDouble: isDouble,
         spaceWhenUnsplit: spaceWhenUnsplit);
@@ -633,19 +624,69 @@ class LineWriter {
     }
   }
 
-  /// Runs the chunks through the [LineSplitter] to line wrap them.
+  /// Takes all of the chunks and breaks them into sublists that can be line
+  /// split individually.
+  ///
+  /// Since this is linear and line splitting is... worse... it's good to feed
+  /// the line splitter smaller lists of chunks when possible. This should only
+  /// be called once, after all of the chunks have been written.
   void _splitLines() {
-    // We know unused nesting levels will never be used now, so flatten them.
-    _flattenNestingLevels(_chunks);
+    // Now that we know what hard splits there will be, break the chunks into
+    // independently splittable lines.
+    var bufferedNewlines = 0;
+    var beginningIndent = _formatter.indent;
+
+    var start = 0;
+    for (var i = 0; i < _chunks.length; i++) {
+      if (!_canSplitAt(i)) continue;
+
+      // Write the newlines required by the previous line.
+      for (var i = 0; i < bufferedNewlines; i++) {
+        _buffer.write(_formatter.lineEnding);
+      }
+
+      _completeLine(beginningIndent, start, i + 1);
+
+      // Get ready for the next line.
+      var chunk = _chunks[i];
+      bufferedNewlines = chunk.isDouble ? 2 : 1;
+      beginningIndent = chunk.absoluteIndent;
+      start = i + 1;
+    }
+
+    if (start < _chunks.length) {
+      _completeLine(beginningIndent, start, _chunks.length);
+    }
+  }
+
+  /// Returns true if we can divide the chunks at [index] and line split the
+  /// ones before and after that separately.
+  bool _canSplitAt(int i) {
+    var chunk = _chunks[i];
+    if (!chunk.isHardSplit) return false;
+    if (chunk.nesting > 0) return false;
+    if (chunk.blockChunks.isNotEmpty) return false;
+
+    // Make sure we don't split the line in the middle of a rule.
+    var chunks = _ruleChunks[chunk.rule];
+    if (chunks != null && chunks.any((other) => other > i)) return false;
+
+    return true;
+  }
+
+  /// Takes the first [length] of the chunks with leading [indent], removes
+  /// them, and runs the [LineSplitter] on them.
+  void _completeLine(int indent, int start, int end) {
+    var chunks = _chunks.sublist(start, end);
 
     if (debug.traceFormatter) {
       debug.log(debug.green("\nWriting:"));
-      debug.dumpChunks(0, _chunks);
+      debug.dumpChunks(start, chunks);
       debug.log();
     }
 
-    var splitter = new LineSplitter(_formatter.lineEnding, _formatter.pageWidth,
-        _chunks, _formatter.indent);
+    var splitter = new LineSplitter(
+        _formatter.lineEnding, _formatter.pageWidth, chunks, indent);
     var result = splitter.apply(_buffer);
 
     if (result.selectionStart != null) {
@@ -654,6 +695,29 @@ class LineWriter {
 
     if (result.selectionEnd != null) {
       _selectionLength = result.selectionEnd -_selectionStart;
+    }
+  }
+
+  /// Pre-processes the chunks after they are done being written by the visitor
+  /// but before they are run through the line splitter.
+  void _finishChunks() {
+    // Need at least two chunks to have any splits.
+    if (_chunks.length < 2) return;
+
+    // For each independent set of chunks, see if there are any rules in them
+    // that we want to preemptively harden. This is basically to send smaller
+    // batches of chunks to LineSplitter in cases where the code is deeply
+    // nested or complex.
+    var start = 0;
+    for (var i = 1; i < _chunks.length; i++) {
+      if (_canSplitAt(i)) {
+        _preemptRules(start, i);
+        start = i;
+      }
+    }
+
+    if (start < _chunks.length) {
+      _preemptRules(start, _chunks.length);
     }
   }
 
@@ -677,9 +741,11 @@ class LineWriter {
   /// bounce all the way back to no nesting, this goes through and renumbers
   /// the nesting levels of all of the preceding chunks.
   void _flattenNestingLevels(List<Chunk> chunks) {
+    if (chunks.isEmpty) return;
+
     var nestingLevels = chunks
         .map((chunk) => chunk.nesting)
-        .where((nesting) => nesting != 0)
+        .where((nesting) => nesting != null && nesting != 0)
         .toSet()
         .toList();
     nestingLevels.sort();
@@ -691,6 +757,57 @@ class LineWriter {
 
     for (var chunk in chunks) {
       chunk.flattenNesting(nestingMap);
+    }
+  }
+
+  /// Force some rules to become hard splits if it looks like there's no other
+  /// option to get a solution in reasonable time.
+  ///
+  /// In most cases, the formatter can find an ideal solution to a set of rules
+  /// in reasonable time. Splitting chunks into short lists, nested blocks, and
+  /// the memoization and block caching that [LineSplitter] does all help.
+  ///
+  /// However, some code isn't helped by any of that. In particular, a very
+  /// large, deeply nested expression that contains no collection or function
+  /// literals has to be solved all at once by the line splitter. Memoization
+  /// helps, but some expressions just have too many permutations.
+  ///
+  /// In practice, this almost always occurs in machine-generated code where
+  /// the output quality doesn't matter as much. To avoid getting stuck there,
+  /// this finds rules that surround more than a page of code and forces them
+  /// to fully split. It only does this if it thinks it won't find a reasonable
+  /// solution otherwise.
+  ///
+  /// This may discard a more optimal solution in some cases. When a rule is
+  /// hardened, it is *fully* hardened. There may have been a solution where
+  /// only some of a rule's chunks needed to be split (for example, not fully
+  /// breaking an argument list). This won't consider those kinds of solution
+  /// To avoid this, pre-emption only kicks in for lines that look like they
+  /// will be hard to solve directly.
+  void _preemptRules(int start, int end) {
+    var chunks = _chunks.sublist(start, end);
+    _flattenNestingLevels(chunks);
+
+    var rules = chunks
+        .map((chunk) => chunk.rule)
+        .where((rule) => rule != null && rule is! HardSplitRule)
+        .toSet();
+
+    var values = rules.fold(1, (value, rule) => value * rule.numValues);
+
+    // If the number of possible solutions is reasonable, don't preempt any.
+    if (values < 4096) return;
+
+    // Find the rules that contain too much.
+    for (var rule in rules) {
+      var length = 0;
+      for (var i = rule.start + 1; i <= rule.end; i++) {
+        length += _chunks[i].length + _chunks[i].unsplitBlockLength;
+        if (length > pageWidth) {
+          _hardenRule(rule);
+          break;
+        }
+      }
     }
   }
 

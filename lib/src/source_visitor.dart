@@ -47,26 +47,19 @@ class SourceVisitor implements AstVisitor {
   /// This is calculated and cached by [_findSelectionEnd].
   int _selectionEnd;
 
-  /// The number out oustanding calls to [_startNestBodies].
-  // TODO(bob): Remove this.
-  int _nestBodiesCount = 0;
-
-  /// The nesting stack where block arguments may start.
+  /// The stack of nesting levels where block arguments may start.
   ///
   /// A block argument's contents will nest at the last level in this stack.
-  // TODO(bob): Can this be moved into LineWriter once functions use it too?
   final _blockArgumentNesting = [0];
 
   /// The rule that should be used for the contents of a literal body that are
   /// about to be written.
   ///
-  /// This is set by [visitArgumentList] to ensure that all body arguments share
-  /// a rule.
+  /// This is set by [visitArgumentList] to ensure that all block arguments
+  /// share a rule.
   ///
   /// If `null`, a literal body creates its own rule.
-  // TODO(bob): This is kind of ugly. Is there a cleaner way to pass the rule
-  // to all of the block arguments?
-  Rule _nextBodyRule;
+  Rule _nextLiteralBodyRule;
 
   /// The span that binds the parameter list of a lambda function argument to
   /// the surrounding argument list.
@@ -132,54 +125,6 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // Assumes named arguments follow all positional ones.
-    var positionalArgs = node.arguments
-        .takeWhile((arg) => arg is! NamedExpression).toList();
-    var namedArgs = node.arguments.skip(positionalArgs.length).toList();
-
-    var leadingBodies = 0;
-    var trailingBodies = 0;
-
-    var bodies = node.arguments.where(_isBody).toSet();
-
-    for (var argument in node.arguments) {
-      if (!bodies.contains(argument)) break;
-      leadingBodies++;
-    }
-
-    if (leadingBodies != node.arguments.length) {
-      for (var argument in node.arguments.reversed) {
-        if (!bodies.contains(argument)) break;
-        trailingBodies++;
-      }
-    }
-
-    // If only some of the named arguments are bodies, treat none of them as
-    // bodies. Avoids cases like:
-    //
-    //     function(
-    //         a: arg,
-    //         b: [
-    //       ...
-    //     ]);
-    if (trailingBodies < namedArgs.length) trailingBodies = 0;
-
-    // Bodies must all be a prefix or suffix of the argument list (and not
-    // both).
-    if (leadingBodies != bodies.length) leadingBodies = 0;
-    if (trailingBodies != bodies.length) trailingBodies = 0;
-
-    // Ignore any bodies in the middle of the argument list.
-    if (leadingBodies == 0 && trailingBodies == 0) {
-      bodies.clear();
-    }
-
-    // If there is just one positional argument, it tends to look weird to
-    // split before it, so try not to.
-    var singleArgument = positionalArgs.length == 1 && namedArgs.isEmpty;
-
-    if (singleArgument) _writer.startSpan();
-
     // Corner case: If the first argument to a method is a function, it looks
     // bad if its parameter list gets wrapped to the next line. Bump the cost
     // to try to avoid that. This prefers:
@@ -200,111 +145,8 @@ class SourceVisitor implements AstVisitor {
       _firstFunctionSpan = _writer.createSpan();
     }
 
-    // Nest around the parentheses in case there are comments before or after
-    // them.
-    _writer.nestExpression();
-    _writer.startSpan();
-    token(node.leftParenthesis);
-
-    // Keep track of the nesting level outside of the arguments themselves.
-    // Block arguments will nest at that level.
-    var blockArgumentNesting = _writer.currentNesting;
-
-    var bodyRule = bodies.isNotEmpty
-        ? new SimpleRule(cost: Cost.splitBodies)
-        : null;
-
-    var rule;
-
-    writeArgument(argument) {
-      // If we're about to write a body argument, handle it specially.
-      if (bodies.contains(argument)) {
-        if (rule != null) rule.beforeBodyArgument();
-
-        // Tell it to use the rule we've already created.
-        _nextBodyRule = bodyRule;
-      } else {
-        _startNestBodies();
-        _startBlockArgumentNesting(blockArgumentNesting);
-      }
-
-      visit(argument);
-
-      if (bodies.contains(argument)) {
-        if (rule != null) rule.afterBodyArgument();
-      } else {
-        _endNestBodies();
-        _endBlockArgumentNesting();
-      }
-
-      // Write the trailing comma.
-      if (argument != node.arguments.last) token(argument.endToken.next);
-    }
-
-    // Allow splitting after "(".
-    if (positionalArgs.isNotEmpty) {
-      if (positionalArgs.length == 1) {
-        rule = new SinglePositionalRule(bodyRule);
-      } else {
-        // Only count the positional bodies in the positional rule.
-        var positionalLeadingBodies = leadingBodies;
-        if (leadingBodies == node.arguments.length) {
-          positionalLeadingBodies -= namedArgs.length;
-        }
-
-        var positionalTrailingBodies = trailingBodies - namedArgs.length;
-        rule = new MultiplePositionalRule(
-            bodyRule, positionalLeadingBodies, positionalTrailingBodies);
-      }
-
-      _writer.startRule(rule);
-      rule.beforeArgument(zeroSplit());
-
-      // Try to not split the arguments.
-      _writer.startSpan(Cost.positionalArguments);
-
-      for (var argument in positionalArgs) {
-        writeArgument(argument);
-
-        // Positional arguments split independently.
-        if (argument != positionalArgs.last) {
-          rule.beforeArgument(split());
-        }
-      }
-
-      _writer.endSpan();
-      _writer.endRule();
-    }
-
-    if (namedArgs.isNotEmpty) {
-      var positionalRule = rule;
-      rule = new NamedArgsRule(bodyRule);
-      _writer.startRule(rule);
-
-      // Let the positional args force the named ones to split.
-      if (positionalRule != null) {
-        positionalRule.setNamedArgsRule(rule);
-      }
-
-      // Split before the first named argument.
-      rule.beforeArguments(_writer.split(space: positionalArgs.isNotEmpty));
-
-      for (var argument in namedArgs) {
-        writeArgument(argument);
-
-        // Write the split.
-        if (argument != namedArgs.last) split();
-      }
-
-      _writer.endRule();
-    }
-
-    token(node.rightParenthesis);
-
-    _writer.endSpan();
-    _writer.unnest();
-
-    if (singleArgument) _writer.endSpan();
+    var args = new ArgumentListWriter(this, node);
+    args.write();
   }
 
   visitAsExpression(AsExpression node) {
@@ -417,13 +259,13 @@ class SourceVisitor implements AstVisitor {
       }
     }
 
-    // Bodies as operands to infix operators should always nest like regular
+    // Blocks as operands to infix operators should always nest like regular
     // operands. (Granted, this case is exceedingly rare in real code.)
-    _startNestBodies();
+    _startBlockArgumentNesting();
 
     traverse(node);
 
-    _endNestBodies();
+    _endBlockArgumentNesting();
 
     _writer.unnest();
     _writer.endSpan();
@@ -431,13 +273,19 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
-    var isBody = node.parent is BlockFunctionBody;
+    if (node.parent is BlockFunctionBody) {
+      _writeBlockLiteral(node.leftBracket, node.rightBracket,
+            node.statements.isNotEmpty, () {
+        visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
+      });
+      return;
+    }
 
-    _startBody(node.leftBracket, nestBody: isBody);
+    _startBody(node.leftBracket);
 
     visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
 
-    _endBody(node.rightBracket, nestBody: isBody);
+    _endBody(node.rightBracket);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -1217,13 +1065,11 @@ class SourceVisitor implements AstVisitor {
     // Recursively walk the chain of method calls.
     flatten(node);
 
-    _startNestBodies();
-
     // Try to keep the entire method invocation one line.
     _writer.startSpan();
     _writer.nestExpression();
 
-    _startBlockArgumentNesting();
+    var blockArgumentNesting = _writer.currentNesting;
 
     visit(target);
 
@@ -1243,41 +1089,52 @@ class SourceVisitor implements AstVisitor {
       // This is kind of a hack since it doesn't use the same logic for
       // collection literals, but it makes for much better chains of
       // higher-order method calls.
-      var hasLambda = invocation.argumentList.arguments.any(_isBlockLambda);
+      var args = new ArgumentListWriter(this, invocation.argumentList);
 
       // Stop the rule after the last call, but before its arguments. This
       // allows unsplit chains where the last argument list wraps, like:
       //
       //     foo().bar().baz(
       //         argument, list);
-      // TODO(rnystrom): Is this what we want?
-      if (invocation == invocations.last) {
+      //
+      // Also stop the rule to split the argument list at any call with
+      // block arguments. This makes for nicer chains of higher-order method
+      // calls, like:
+      //
+      //     items.map((element) {
+      //       ...
+      //     }).where((element) {
+      //       ...
+      //     });
+      if (invocation == invocations.last || args.hasBlockArguments) {
         _writer.endRule();
-        _endNestBodies();
-
-        _endBlockArgumentNesting();
-
-        // For a single method call, stop the span before the arguments to make
-        // it easier to keep the call name with the target. In other words,
-        // prefer:
-        //
-        //     target.method(
-        //         argument, list);
-        //
-        // Over:
-        //
-        //     target
-        //         .method(argument, list);
-        if (invocations.length == 1) _writer.endSpan();
-      } else if (hasLambda) {
-        _writer.endRule();
-        _endNestBodies();
       }
+
+      if (!args.hasBlockArguments) {
+        _startBlockArgumentNesting(blockArgumentNesting);
+      }
+
+      // For a single method call, stop the span before the arguments to make
+      // it easier to keep the call name with the target. In other words,
+      // prefer:
+      //
+      //     target.method(
+      //         argument, list);
+      //
+      // Over:
+      //
+      //     target
+      //         .method(argument, list);
+      if (invocations.length == 1) _writer.endSpan();
 
       visit(invocation.argumentList);
 
-      if (invocation != invocations.last && hasLambda) {
-        _startNestBodies();
+      if (!args.hasBlockArguments) {
+        _endBlockArgumentNesting();
+      }
+
+      // If we split the chain and more methods are coming, start a new one.
+      if (invocation != invocations.last && args.hasBlockArguments) {
         _writer.startRule();
       }
     }
@@ -1778,39 +1635,52 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    _writeBlockLiteral(leftBracket, rightBracket, false, () {
+      // Always use a hard rule to split the elements. The parent chunk of the
+      // collection will handle the unsplit case, so this only comes into play
+      // when the collection is split.
+      var elementSplit = new HardSplitRule();
+      _writer.startRule(elementSplit);
+
+      for (var element in elements) {
+        if (element != elements.first) _writer.split(nesting: 0, space: true);
+
+        _writer.nestExpression();
+
+        visit(element);
+
+        // The comma after the element.
+        if (element.endToken.next.lexeme == ",") token(element.endToken.next);
+
+        _writer.unnest();
+      }
+
+      return elementSplit;
+    });
+  }
+
+  /// Writes a block literal (function, list, or map), handling indentation
+  /// when the literal appears in an argument list.
+  void _writeBlockLiteral(Token leftBracket, Token rightBracket, bool forceRule,
+      Rule callback()) {
     token(leftBracket);
 
-    // Split the collection. Use the explicitly given rule if we have one.
+    // Split the literal. Use the explicitly given rule if we have one.
     // Otherwise, create a new rule.
-    var rule = _nextBodyRule;
-    _nextBodyRule = null;
+    var rule = _nextLiteralBodyRule;
+    _nextLiteralBodyRule = null;
 
-    // Process the contents of the body as a separate set of chunks.
+    // Process the contents of the literal as a separate set of chunks.
     _writerStack.add(_writer.startBlock());
 
-    // Always use a hard rule to split the elements. The parent chunk of the
-    // collection will handle the unsplit case, so this only comes into play
-    // when the collection is split.
-    var elementSplit = new HardSplitRule();
-    _writer.startRule(elementSplit);
-
-    for (var element in elements) {
-      if (element != elements.first) _writer.split(nesting: 0, space: true);
-
-      _writer.nestExpression();
-
-      visit(element);
-
-      // The comma after the element.
-      if (element.endToken.next.lexeme == ",") token(element.endToken.next);
-
-      _writer.unnest();
-    }
+    var elementRule = callback();
 
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    var blockSplits = _writer.endBlock(elementSplit);
+    var result = _writer.endBlock(elementRule);
+    var blockSplits = result[0];
+    var flushLeft = result[1];
 
     _writerStack.removeLast();
 
@@ -1819,16 +1689,18 @@ class SourceVisitor implements AstVisitor {
 
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
-    // TODO(bob): This does the wrong thing when there is are multiple block
-    // arguments. We correctly force the rule, but then it gets popped off the
-    // writer's stack and it forgets it was forced. Can repro with:
+    // TODO(rnystrom): This does the wrong thing when there is are multiple
+    // block arguments. We correctly force the rule, but then it gets popped
+    // off the writer's stack and it forgets it was forced. Can repro with:
     //
     // longFunctionName(
     //     [longElementName, longElementName, longElementName],
     //     [short]);
-    if (blockSplits || hasLeadingNewline) _writer.forceRules();
+    if (blockSplits || hasLeadingNewline || forceRule) {
+      _writer.forceRules();
+    }
 
-    _writer.split(nesting: _blockArgumentNesting.last);
+    _writer.split(nesting: _blockArgumentNesting.last, flushLeft: flushLeft);
 
     _writer.endRule();
 
@@ -1880,51 +1752,6 @@ class SourceVisitor implements AstVisitor {
     _writer.unnest();
   }
 
-  /// Returns true if [expression] denotes a body.
-  ///
-  /// Here, "body" means a collection literal or a function expression with a
-  /// block body. This is used to tell which arguments to method calls are
-  /// bodies or not so we can decide how they should be indented.
-  bool _isBody(Expression expression) {
-    if (expression is NamedExpression) {
-      expression = (expression as NamedExpression).expression;
-    }
-
-    // TODO(rnystrom): Should we step into parenthesized expressions?
-
-    // Collections are bodies.
-    if (expression is ListLiteral) return true;
-    if (expression is MapLiteral) return true;
-
-    // Curly body functions are.
-    return _isBlockLambda(expression);
-  }
-
-  /// Returns `true` if [expression] is a function expression with a block body.
-  bool _isBlockLambda(Expression expression) {
-    if (expression is NamedExpression) {
-      expression = (expression as NamedExpression).expression;
-    }
-
-    if (expression is! FunctionExpression) return false;
-    var function = expression as FunctionExpression;
-    return function.body is BlockFunctionBody;
-  }
-
-  /// Indicates that all bodies visited until the matching [_endNestBodies]
-  /// call will be indented based on expression nesting.
-  ///
-  /// Otherwise, instead of creating an actual body, we just update the
-  /// indentation of the current one.
-  void _startNestBodies() {
-    _nestBodiesCount++;
-  }
-
-  /// Ends the nesting caused by a previous call to [_startNestBodies].
-  void _endNestBodies() {
-    _nestBodiesCount--;
-  }
-
   /// Captures [nesting] as the nesting level where subsequent block arguments
   /// should start.
   void _startBlockArgumentNesting([int nesting]) {
@@ -1941,22 +1768,15 @@ class SourceVisitor implements AstVisitor {
   /// starting the rule used to split inside the brackets.
   ///
   /// If [space] is `true`, then the initial split will use a space if not
-  /// split.  If [nestBody] is `true`, creates a new body as well. This is used
-  /// for functions and collection literals, but not other "curly bodies" like
-  /// classes, blocks, etc.
-  void _startBody(Token leftBracket,
-      {int cost, bool space: false, bool nestBody: false}) {
+  /// split.
+  void _startBody(Token leftBracket, {int cost, bool space: false}) {
     token(leftBracket);
 
     // Indent the body.
-    if (nestBody && _nestBodiesCount > 0) _writer.startBody();
     _writer.indent();
 
-    // Split after the bracket. Use the explicitly given rule if we have one.
-    // Otherwise, create a new rule.
-    _writer.startRule(_nextBodyRule);
-    _nextBodyRule = null;
-
+    // Split after the bracket.
+    _writer.startRule();
     _writer.split(nesting: 0, space: space);
   }
 
@@ -1966,15 +1786,12 @@ class SourceVisitor implements AstVisitor {
   /// Used for blocks, other curly bodies, and collection literals.
   ///
   /// If [space] is `true`, then the final split will use a space if not split.
-  /// if [nestBody] is `true`, this closes the innermost body.
-  void _endBody(Token rightBracket, {bool space: false, bool nestBody: false}) {
+  void _endBody(Token rightBracket, {bool space: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       _writer.unindent();
       _writer.split(nesting: 0, space: space);
     });
-
-    if (nestBody && _nestBodiesCount > 0) _writer.endBody();
 
     _writer.endRule();
   }
@@ -2136,7 +1953,7 @@ class SourceVisitor implements AstVisitor {
 
     _writer.writeComments(comments, tokenLine - previousLine, token.lexeme);
 
-    // TODO(bob): This is wrong. Consider:
+    // TODO(rnystrom): This is wrong. Consider:
     //
     // [/* inline comment */
     //     // line comment
@@ -2260,4 +2077,262 @@ class SourceVisitor implements AstVisitor {
   /// Gets the 1-based column number that the beginning of [token] lies on.
   int _startColumn(Token token) =>
       _lineInfo.getLocation(token.offset).columnNumber;
+}
+
+/// Helper class for [SourceVisitor] that handles visiting and write an
+/// [ArgumentList], including all of the special code needed to handle block
+/// arguments.
+class ArgumentListWriter {
+  final SourceVisitor _visitor;
+
+  final ArgumentList _node;
+
+  /// The positional arguments, in order.
+  final List<Expression> _positional;
+
+  /// The named arguments, in order.
+  final List<Expression> _named;
+
+  /// The set of arguments that are valid block literals.
+  final Set<Expression> _blockArguments;
+
+  /// The number of leading block arguments.
+  ///
+  /// If all arguments are block arguments, this counts them.
+  final int _leadingBlockArguments;
+
+  /// The number of trailing block arguments.
+  ///
+  /// If all arguments are block arguments, this is zero.
+  final int _trailingBlockArguments;
+
+  /// The nesting level for block arguments.
+  ///
+  /// Only valid during a call to [write].
+  int _blockArgumentNesting;
+
+  /// The rule used to split the bodies of all of the block arguments.
+  Rule get _blockArgumentRule {
+    // Lazy initialize.
+    if (_blockRule == null && _blockArguments.isNotEmpty) {
+      _blockRule = new SimpleRule(cost: Cost.splitBlocks);
+    }
+
+    return _blockRule;
+  }
+  Rule _blockRule;
+
+  /// Returns `true` if there is only a single positional argument.
+  bool get _isSingle => _positional.length == 1 && _named.isEmpty;
+
+  /// Whether this argument list has any block arguments that are functions.
+  bool get hasFunctionBlockArguments => _blockArguments.any(_isBlockFunction);
+
+  bool get hasBlockArguments => _blockArguments.isNotEmpty;
+
+  factory ArgumentListWriter(SourceVisitor visitor, ArgumentList node) {
+    // Assumes named arguments follow all positional ones.
+    var positional = node.arguments
+        .takeWhile((arg) => arg is! NamedExpression).toList();
+    var named = node.arguments.skip(positional.length).toList();
+
+    var bodies = node.arguments.where(_isBlockArgument).toSet();
+
+    // Count the leading arguments that are block literals.
+    var leadingBlocks = 0;
+    for (var argument in node.arguments) {
+      if (!bodies.contains(argument)) break;
+      leadingBlocks++;
+    }
+
+    // Count the trailing arguments that are block literals.
+    var trailingBlocks = 0;
+    if (leadingBlocks != node.arguments.length) {
+      for (var argument in node.arguments.reversed) {
+        if (!bodies.contains(argument)) break;
+        trailingBlocks++;
+      }
+    }
+
+    // If only some of the named arguments are bodies, treat none of them as
+    // bodies. Avoids cases like:
+    //
+    //     function(
+    //         a: arg,
+    //         b: [
+    //       ...
+    //     ]);
+    if (trailingBlocks < named.length) trailingBlocks = 0;
+
+    // Bodies must all be a prefix or suffix of the argument list (and not
+    // both).
+    if (leadingBlocks != bodies.length) leadingBlocks = 0;
+    if (trailingBlocks != bodies.length) trailingBlocks = 0;
+
+    // Ignore any bodies in the middle of the argument list.
+    if (leadingBlocks == 0 && trailingBlocks == 0) {
+      bodies.clear();
+    }
+
+    return new ArgumentListWriter._(visitor, node, positional, named, bodies,
+        leadingBlocks, trailingBlocks);
+  }
+
+  ArgumentListWriter._(this._visitor, this._node, this._positional, this._named,
+     this._blockArguments, this._leadingBlockArguments, this._trailingBlockArguments);
+
+  /// Writes the argument list to the visitor's current writer.
+  void write() {
+    // If there is just one positional argument, it tends to look weird to
+    // split before it, so try not to.
+    if (_isSingle) _visitor._writer.startSpan();
+
+    // Nest around the parentheses in case there are comments before or after
+    // them.
+    _visitor._writer.nestExpression();
+    _visitor._writer.startSpan();
+    _visitor.token(_node.leftParenthesis);
+
+    // Keep track of the nesting level outside of the arguments themselves.
+    // Block arguments will nest at that level.
+    _blockArgumentNesting = _visitor._writer.currentNesting;
+
+    var rule = _writePositional();
+    _writeNamed(rule);
+
+    _visitor.token(_node.rightParenthesis);
+
+    _visitor._writer.endSpan();
+    _visitor._writer.unnest();
+
+    if (_isSingle) _visitor._writer.endSpan();
+  }
+
+  /// Writes the positional arguments, if any.
+  PositionalArgsRule _writePositional() {
+    if (_positional.isEmpty) return null;
+
+    // Allow splitting after "(".
+    var rule;
+    if (_positional.length == 1) {
+      rule = new SinglePositionalRule(_blockArgumentRule);
+    } else {
+      // Only count the positional bodies in the positional rule.
+      var leadingPositional = _leadingBlockArguments;
+      if (_leadingBlockArguments == _node.arguments.length) {
+        leadingPositional -= _named.length;
+      }
+
+      var trailingPositional = _trailingBlockArguments - _named.length;
+      rule = new MultiplePositionalRule(
+          _blockArgumentRule, leadingPositional, trailingPositional);
+    }
+
+    _visitor._writer.startRule(rule);
+    rule.beforeArgument(_visitor.zeroSplit());
+
+    // Try to not split the arguments.
+    _visitor._writer.startSpan(Cost.positionalArguments);
+
+    for (var argument in _positional) {
+      _writeArgument(rule, argument);
+
+      // Positional arguments split independently.
+      if (argument != _positional.last) {
+        rule.beforeArgument(_visitor.split());
+      }
+    }
+
+    _visitor._writer.endSpan();
+    _visitor._writer.endRule();
+
+    return rule;
+  }
+
+  /// Writes the named arguments, if any.
+  void _writeNamed(PositionalArgsRule rule) {
+    if (_named.isEmpty) return;
+
+    var positionalRule = rule;
+    var namedRule = new NamedArgsRule(_blockArgumentRule);
+    _visitor._writer.startRule(namedRule);
+
+    // Let the positional args force the named ones to split.
+    if (positionalRule != null) {
+      positionalRule.setNamedArgsRule(namedRule);
+    }
+
+    // Split before the first named argument.
+    namedRule.beforeArguments(
+        _visitor._writer.split(space: _positional.isNotEmpty));
+
+    for (var argument in _named) {
+      _writeArgument(namedRule, argument);
+
+      // Write the split.
+      if (argument != _named.last) _visitor.split();
+    }
+
+    _visitor._writer.endRule();
+  }
+
+  void _writeArgument(ArgsRule rule, Expression argument) {
+    // If we're about to write a block argument, handle it specially.
+    if (_blockArguments.contains(argument)) {
+      if (rule != null) rule.beforeBlockArgument();
+
+      // Tell it to use the rule we've already created.
+      _visitor._nextLiteralBodyRule = _blockArgumentRule;
+    } else {
+      _visitor._startBlockArgumentNesting(_blockArgumentNesting);
+    }
+
+    _visitor.visit(argument);
+
+    if (_blockArguments.contains(argument)) {
+      if (rule != null) rule.afterBlockArgument();
+    } else {
+      _visitor._endBlockArgumentNesting();
+    }
+
+    // Write the trailing comma.
+    if (argument != _node.arguments.last) {
+      _visitor.token(argument.endToken.next);
+    }
+  }
+
+  /// Returns true if [expression] denotes a block argument.
+  ///
+  /// That means a collection literal or a function expression with a block
+  /// body. Block arguments can get special indentation to make them look more
+  /// statement-like.
+  static bool _isBlockArgument(Expression expression) {
+    if (expression is NamedExpression) {
+      expression = (expression as NamedExpression).expression;
+    }
+
+    // TODO(rnystrom): Should we step into parenthesized expressions?
+
+    // Collections are bodies.
+    if (expression is ListLiteral) return true;
+    if (expression is MapLiteral) return true;
+
+    // Curly body functions are.
+    if (expression is! FunctionExpression) return false;
+    var function = expression as FunctionExpression;
+    return function.body is BlockFunctionBody;
+  }
+
+  /// Returns `true` if [expression] is a [FunctionExpression] with a block
+  /// body.
+  static bool _isBlockFunction(Expression expression) {
+    if (expression is NamedExpression) {
+      expression = (expression as NamedExpression).expression;
+    }
+
+    // Curly body functions are.
+    if (expression is! FunctionExpression) return false;
+    var function = expression as FunctionExpression;
+    return function.body is BlockFunctionBody;
+  }
 }
