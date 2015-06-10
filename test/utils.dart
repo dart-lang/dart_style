@@ -19,8 +19,8 @@ const formattedSource = 'void main() => print("hello");\n';
 ScheduledProcess runFormatter([List<String> args]) {
   if (args == null) args = [];
 
-  var formatterPath = p.join(
-      p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
+  var formatterPath =
+      p.join(p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
 
   args.insert(0, formatterPath);
 

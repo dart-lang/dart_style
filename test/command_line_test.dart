@@ -17,9 +17,7 @@ void main() {
   setUpTestSuite();
 
   test("Exits with 0 on success.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir();
     process.shouldExit(0);
@@ -31,54 +29,42 @@ void main() {
   });
 
   test("Exits with 65 on a parse error.", () {
-    d.dir("code", [
-      d.file("a.dart", "herp derp i are a dart")
-    ]).create();
+    d.dir("code", [d.file("a.dart", "herp derp i are a dart")]).create();
 
     var process = runFormatterOnDir();
     process.shouldExit(65);
   });
 
   test("Errors if --dry-run and --overwrite are both passed.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--dry-run", "--overwrite"]);
     process.shouldExit(64);
   });
 
   test("Errors if --dry-run and --machine are both passed.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--dry-run", "--machine"]);
     process.shouldExit(64);
   });
 
   test("Errors if --machine and --overwrite are both passed.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--machine", "--overwrite"]);
     process.shouldExit(64);
   });
 
   test("Errors if --dry-run and --machine are both passed.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatter(["--dry-run", "--machine"]);
     process.shouldExit(64);
   });
 
   test("Errors if --machine and --overwrite are both passed.", () {
-    d.dir("code", [
-      d.file("a.dart", unformattedSource)
-    ]).create();
+    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatter(["--machine", "--overwrite"]);
     process.shouldExit(64);
@@ -105,17 +91,13 @@ void main() {
     });
 
     test("does not modify files.", () {
-      d.dir("code", [
-        d.file("a.dart", unformattedSource)
-      ]).create();
+      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
       var process = runFormatterOnDir(["--dry-run"]);
       process.stdout.expect(p.join("code", "a.dart"));
       process.shouldExit();
 
-      d.dir('code', [
-        d.file('a.dart', unformattedSource)
-      ]).validate();
+      d.dir('code', [d.file('a.dart', unformattedSource)]).validate();
     });
   });
 

@@ -33,8 +33,8 @@ void main(List<String> args) {
       result = formatSource();
     }
 
-    var elapsed = new DateTime.now()
-        .difference(start).inMilliseconds / FORMATS_PER_TRIAL;
+    var elapsed =
+        new DateTime.now().difference(start).inMilliseconds / FORMATS_PER_TRIAL;
 
     // Keep track of the best run so far.
     if (elapsed >= best) continue;

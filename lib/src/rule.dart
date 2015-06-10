@@ -456,7 +456,8 @@ class MultiplePositionalRule extends PositionalArgsRule {
       }
 
       for (var i = _arguments.length - _trailingBlocks;
-          i < _arguments.length; i++) {
+          i < _arguments.length;
+          i++) {
         if (chunk == _arguments[i]) return false;
       }
 
@@ -527,9 +528,12 @@ class NamedArgsRule extends ArgsRule {
 
   bool isSplit(int value, Chunk chunk) {
     switch (value) {
-      case 0: return false;
-      case 1: return chunk == _first;
-      case 2: return true;
+      case 0:
+        return false;
+      case 1:
+        return chunk == _first;
+      case 2:
+        return true;
     }
 
     throw "unreachable";

@@ -125,8 +125,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     writeIf(chunk.nesting != null && chunk.nesting != 0,
         () => "nest ${chunk.nesting}");
 
-    writeIf(chunk.flushLeft != null && chunk.flushLeft,
-        () => "flush");
+    writeIf(chunk.flushLeft != null && chunk.flushLeft, () => "flush");
 
     rows.add(row);
 

@@ -141,8 +141,7 @@ class Nesting {
       var result = this;
 
       for (var depth in depths) {
-        result = new Nesting._(
-            result, depth, result._indent + _indentsPerNest);
+        result = new Nesting._(result, depth, result._indent + _indentsPerNest);
       }
 
       return new Nesting._(
@@ -179,7 +178,8 @@ class Nesting {
       for (var i = lastLengthStart; i < lastLengthEnd; i++) {
         var previousSubset = subsets[i];
 
-        var start = previousSubset.isNotEmpty ? previousSubset.last + 1 : min + 1;
+        var start =
+            previousSubset.isNotEmpty ? previousSubset.last + 1 : min + 1;
 
         // Then for each value in the remainer, make a new subset that is the
         // union of the shorter subset and that value.

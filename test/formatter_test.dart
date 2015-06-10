@@ -27,7 +27,7 @@ void main() {
   test("throws a FormatterException on failed parse", () {
     var formatter = new DartFormatter();
     expect(() => formatter.format('wat?!'),
-       throwsA(new isInstanceOf<FormatterException>()));
+        throwsA(new isInstanceOf<FormatterException>()));
   });
 
   test("FormatterException describes parse errors", () {
@@ -49,8 +49,7 @@ void main() {
   });
 
   test("adds newline to unit", () {
-    expect(new DartFormatter().format("var x = 1;"),
-        equals("var x = 1;\n"));
+    expect(new DartFormatter().format("var x = 1;"), equals("var x = 1;\n"));
   });
 
   test("adds newline to unit after trailing comment", () {
@@ -59,8 +58,8 @@ void main() {
   });
 
   test("removes extra newlines", () {
-    expect(new DartFormatter().format("var x = 1;\n\n\n"),
-        equals("var x = 1;\n"));
+    expect(
+        new DartFormatter().format("var x = 1;\n\n\n"), equals("var x = 1;\n"));
   });
 
   test("does not add newline to statement", () {
@@ -70,10 +69,10 @@ void main() {
 
   test('preserves initial indent', () {
     var formatter = new DartFormatter(indent: 2);
-    expect(formatter.formatStatement('if (foo) {bar;}'),  equals(
-        '    if (foo) {\n'
-        '      bar;\n'
-        '    }'));
+    expect(
+        formatter.formatStatement('if (foo) {bar;}'), equals('    if (foo) {\n'
+            '      bar;\n'
+            '    }'));
   });
 
   group('line endings', () {
@@ -93,18 +92,16 @@ void main() {
     });
 
     test('defaults to \\n if there are no newlines', () {
-      expect(new DartFormatter().format("var i =1;"),
-          equals("var i = 1;\n"));
+      expect(new DartFormatter().format("var i =1;"), equals("var i = 1;\n"));
     });
 
     test('handles Windows line endings in multiline strings', () {
-      expect(new DartFormatter(lineEnding: "\r\n").formatStatement(
-          '  """first\r\n'
-          'second\r\n'
-          'third"""  ;'), equals(
-          '"""first\r\n'
-          'second\r\n'
-          'third""";'));
+      expect(
+          new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
+              'second\r\n'
+              'third"""  ;'), equals('"""first\r\n'
+              'second\r\n'
+              'third""";'));
     });
   });
 }
@@ -162,14 +159,14 @@ void testDirectory(String name) {
         test(description, () {
           var isCompilationUnit = p.extension(entry.path) == ".unit";
 
-          var inputCode = _extractSelection(input,
-              isCompilationUnit: isCompilationUnit);
+          var inputCode =
+              _extractSelection(input, isCompilationUnit: isCompilationUnit);
 
           var expected = _extractSelection(expectedOutput,
               isCompilationUnit: isCompilationUnit);
 
-          var formatter = new DartFormatter(
-              pageWidth: pageWidth, indent: leadingIndent);
+          var formatter =
+              new DartFormatter(pageWidth: pageWidth, indent: leadingIndent);
 
           var actual = formatter.formatSource(inputCode);
 
