@@ -7,17 +7,11 @@ library dart_style.test.formatter_test;
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/compact_vm_config.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:dart_style/dart_style.dart';
 
 void main() {
-  // Tidy up the unittest output.
-  filterStacks = true;
-  formatStacks = true;
-  useCompactVMConfiguration();
-
   testDirectory("comments");
   testDirectory("regression");
   testDirectory("selections");
@@ -27,7 +21,7 @@ void main() {
   test("throws a FormatterException on failed parse", () {
     var formatter = new DartFormatter();
     expect(() => formatter.format('wat?!'),
-       throwsA(new isInstanceOf<FormatterException>()));
+        throwsA(new isInstanceOf<FormatterException>()));
   });
 
   test("FormatterException describes parse errors", () {
@@ -49,8 +43,7 @@ void main() {
   });
 
   test("adds newline to unit", () {
-    expect(new DartFormatter().format("var x = 1;"),
-        equals("var x = 1;\n"));
+    expect(new DartFormatter().format("var x = 1;"), equals("var x = 1;\n"));
   });
 
   test("adds newline to unit after trailing comment", () {
@@ -59,8 +52,8 @@ void main() {
   });
 
   test("removes extra newlines", () {
-    expect(new DartFormatter().format("var x = 1;\n\n\n"),
-        equals("var x = 1;\n"));
+    expect(
+        new DartFormatter().format("var x = 1;\n\n\n"), equals("var x = 1;\n"));
   });
 
   test("does not add newline to statement", () {
@@ -70,10 +63,10 @@ void main() {
 
   test('preserves initial indent', () {
     var formatter = new DartFormatter(indent: 2);
-    expect(formatter.formatStatement('if (foo) {bar;}'),  equals(
-        '    if (foo) {\n'
-        '      bar;\n'
-        '    }'));
+    expect(
+        formatter.formatStatement('if (foo) {bar;}'), equals('    if (foo) {\n'
+            '      bar;\n'
+            '    }'));
   });
 
   group('line endings', () {
@@ -93,18 +86,16 @@ void main() {
     });
 
     test('defaults to \\n if there are no newlines', () {
-      expect(new DartFormatter().format("var i =1;"),
-          equals("var i = 1;\n"));
+      expect(new DartFormatter().format("var i =1;"), equals("var i = 1;\n"));
     });
 
     test('handles Windows line endings in multiline strings', () {
-      expect(new DartFormatter(lineEnding: "\r\n").formatStatement(
-          '  """first\r\n'
-          'second\r\n'
-          'third"""  ;'), equals(
-          '"""first\r\n'
-          'second\r\n'
-          'third""";'));
+      expect(
+          new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
+              'second\r\n'
+              'third"""  ;'), equals('"""first\r\n'
+              'second\r\n'
+              'third""";'));
     });
   });
 }
@@ -113,7 +104,7 @@ void main() {
 void testDirectory(String name) {
   var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
-  var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
+  var dir = p.join('test', name);
   for (var entry in new Directory(dir).listSync()) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
       continue;
@@ -162,14 +153,14 @@ void testDirectory(String name) {
         test(description, () {
           var isCompilationUnit = p.extension(entry.path) == ".unit";
 
-          var inputCode = _extractSelection(input,
-              isCompilationUnit: isCompilationUnit);
+          var inputCode =
+              _extractSelection(input, isCompilationUnit: isCompilationUnit);
 
           var expected = _extractSelection(expectedOutput,
               isCompilationUnit: isCompilationUnit);
 
-          var formatter = new DartFormatter(
-              pageWidth: pageWidth, indent: leadingIndent);
+          var formatter =
+              new DartFormatter(pageWidth: pageWidth, indent: leadingIndent);
 
           var actual = formatter.formatSource(inputCode);
 

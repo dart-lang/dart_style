@@ -15,23 +15,31 @@ import 'package:dart_style/src/source_code.dart';
 void main(List<String> args) {
   var parser = new ArgParser(allowTrailingOptions: true);
 
-  parser.addFlag("help", abbr: "h", negatable: false,
-      help: "Shows usage information.");
-  parser.addOption("line-length", abbr: "l",
-      help: "Wrap lines longer than this.",
-      defaultsTo: "80");
+  parser.addFlag("help",
+      abbr: "h", negatable: false, help: "Shows usage information.");
+  parser.addOption("line-length",
+      abbr: "l", help: "Wrap lines longer than this.", defaultsTo: "80");
   parser.addOption("preserve",
       help: 'Selection to preserve, formatted as "start:length".');
-  parser.addFlag("dry-run", abbr: "n", negatable: false,
+  parser.addFlag("dry-run",
+      abbr: "n",
+      negatable: false,
       help: "Show which files would be modified but make no changes.");
-  parser.addFlag("overwrite", abbr: "w", negatable: false,
+  parser.addFlag("overwrite",
+      abbr: "w",
+      negatable: false,
       help: "Overwrite input files with formatted output.");
-  parser.addFlag("machine", abbr: "m", negatable: false,
+  parser.addFlag("machine",
+      abbr: "m",
+      negatable: false,
       help: "Produce machine-readable JSON output.");
-  parser.addFlag("follow-links", negatable: false,
+  parser.addFlag("follow-links",
+      negatable: false,
       help: "Follow links to files and directories.\n"
-            "If unset, links will be ignored.");
-  parser.addFlag("transform", abbr: "t", negatable: false,
+      "If unset, links will be ignored.");
+  parser.addFlag("transform",
+      abbr: "t",
+      negatable: false,
       help: "Unused flag for compability with the old formatter.");
 
   var argResults;
@@ -56,21 +64,21 @@ void main(List<String> args) {
   try {
     selection = parseSelection(argResults["preserve"]);
   } on FormatException catch (_) {
-    usageError(parser,
+    usageError(
+        parser,
         '--preserve must be a colon-separated pair of integers, was '
         '"${argResults['preserve']}".');
   }
 
   if (argResults["dry-run"] && argResults["overwrite"]) {
-    usageError(parser,
-        "Cannot use --dry-run and --overwrite at the same time.");
+    usageError(
+        parser, "Cannot use --dry-run and --overwrite at the same time.");
   }
 
   checkForReporterCollision(String chosen, String other) {
     if (!argResults[other]) return;
 
-    usageError(parser,
-        "Cannot use --$chosen and --$other at the same time.");
+    usageError(parser, "Cannot use --$chosen and --$other at the same time.");
   }
 
   var reporter = OutputReporter.print;
@@ -97,8 +105,10 @@ void main(List<String> args) {
   try {
     pageWidth = int.parse(argResults["line-length"]);
   } on FormatException catch (_) {
-    usageError(parser, '--line-length must be an integer, was '
-                       '"${argResults['line-length']}".');
+    usageError(
+        parser,
+        '--line-length must be an integer, was '
+        '"${argResults['line-length']}".');
   }
 
   var followLinks = argResults["follow-links"];

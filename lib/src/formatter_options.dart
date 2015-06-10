@@ -96,13 +96,15 @@ class _PrintJsonReporter extends OutputReporter {
     // -1, -1. If we add support for passing in a selection, put the real
     // result here.
     print(JSON.encode({
-      "path": label,
-      "source": output.text,
-      "selection": {
-        "offset": output.selectionStart != null ? output.selectionStart : -1,
-        "length": output.selectionLength != null ? output.selectionLength : -1
-      }
-    }));
+          "path": label,
+          "source": output.text,
+          "selection": {
+                "offset":
+                    output.selectionStart != null ? output.selectionStart : -1,
+                "length":
+                    output.selectionLength != null ? output.selectionLength : -1
+              }
+        }));
   }
 }
 

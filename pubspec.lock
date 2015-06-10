@@ -9,6 +9,10 @@ packages:
     description: args
     source: hosted
     version: "0.13.2"
+  barback:
+    description: barback
+    source: hosted
+    version: "0.15.2+4"
   browser:
     description: browser
     source: hosted
@@ -21,6 +25,10 @@ packages:
     description: crypto
     source: hosted
     version: "0.9.0"
+  glob:
+    description: glob
+    source: hosted
+    version: "1.0.4"
   http:
     description: http
     source: hosted
@@ -32,19 +40,51 @@ packages:
   http_parser:
     description: http_parser
     source: hosted
-    version: "0.0.2+6"
+    version: "0.0.2+7"
+  matcher:
+    description: matcher
+    source: hosted
+    version: "0.12.0+1"
+  mime:
+    description: mime
+    source: hosted
+    version: "0.9.3"
   path:
     description: path
     source: hosted
     version: "1.3.5"
+  pool:
+    description: pool
+    source: hosted
+    version: "1.0.2"
+  pub_semver:
+    description: pub_semver
+    source: hosted
+    version: "1.2.1"
   scheduled_test:
     description: scheduled_test
     source: hosted
-    version: "0.11.8+1"
+    version: "0.12.0+1"
   shelf:
     description: shelf
     source: hosted
     version: "0.6.1+2"
+  shelf_static:
+    description: shelf_static
+    source: hosted
+    version: "0.2.2"
+  shelf_web_socket:
+    description: shelf_web_socket
+    source: hosted
+    version: "0.0.1+2"
+  source_map_stack_trace:
+    description: source_map_stack_trace
+    source: hosted
+    version: "1.0.4"
+  source_maps:
+    description: source_maps
+    source: hosted
+    version: "0.10.1"
   source_span:
     description: source_span
     source: hosted
@@ -52,16 +92,20 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.3.2"
+    version: "1.3.3"
   string_scanner:
     description: string_scanner
     source: hosted
     version: "0.1.3+1"
-  unittest:
-    description: unittest
+  test:
+    description: test
     source: hosted
-    version: "0.11.6+1"
+    version: "0.12.3"
   watcher:
     description: watcher
     source: hosted
     version: "0.9.5"
+  yaml:
+    description: yaml
+    source: hosted
+    version: "2.1.3"

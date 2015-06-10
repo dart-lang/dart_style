@@ -86,7 +86,7 @@ class ChunkWriter {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-      _pendingWhitespace == Whitespace.spaceOrNewline;
+          _pendingWhitespace == Whitespace.spaceOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
@@ -137,9 +137,11 @@ class ChunkWriter {
   ///
   /// If [nesting] is given, uses that. Otherwise, uses the current nesting
   /// level. If unsplit, it expands to a space if [space] is `true`.
-  Chunk split({int nesting, bool space, bool flushLeft}) =>
-      _writeSplit(_rules.last,
-          nesting: nesting, flushLeft: flushLeft, spaceWhenUnsplit: space);
+  Chunk split({int nesting, bool space, bool flushLeft}) => _writeSplit(
+      _rules.last,
+      nesting: nesting,
+      flushLeft: flushLeft,
+      spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -149,8 +151,8 @@ class ChunkWriter {
   ///
   /// [linesBeforeToken] is number of lines between the last comment (or
   /// previous token if there are no comments) and the next token.
-  void writeComments(List<SourceComment> comments, int linesBeforeToken,
-      String token) {
+  void writeComments(
+      List<SourceComment> comments, int linesBeforeToken, String token) {
     // Corner case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
@@ -203,7 +205,9 @@ class ChunkWriter {
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _writeHardSplit(nest: true, flushLeft: comment.isStartOfLine,
+        _writeHardSplit(
+            nest: true,
+            flushLeft: comment.isStartOfLine,
             double: comment.linesBefore > 1);
       }
 
@@ -403,8 +407,8 @@ class ChunkWriter {
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
   ChunkWriter startBlock() {
-    var writer = new ChunkWriter._(this, _formatter, _source,
-        _chunks.last.blockChunks);
+    var writer =
+        new ChunkWriter._(this, _formatter, _source, _chunks.last.blockChunks);
 
     // A block always starts off indented one level.
     writer.indent();
@@ -580,8 +584,12 @@ class ChunkWriter {
 
     // Otherwise, it gets a space if the following token is not a delimiter or
     // the empty string, for EOF.
-    return token != ")" && token != "]" && token != "}" &&
-           token != "," && token != ";" && token != "";
+    return token != ")" &&
+        token != "]" &&
+        token != "}" &&
+        token != "," &&
+        token != ";" &&
+        token != "";
   }
 
   /// Appends a hard split with the current indentation and nesting (the latter
@@ -904,8 +912,8 @@ class LineWriter {
     // TODO(rnystrom): Dividing here because SplitSet works in columns while
     // LineWriter and LineSplitter work in indent levels. Should probably just
     // make everything use columns.
-    var writer = new LineWriter._(chunk.blockChunks, _lineEnding,
-        pageWidth, column ~/ spacesPerIndent, _blockCache);
+    var writer = new LineWriter._(chunk.blockChunks, _lineEnding, pageWidth,
+        column ~/ spacesPerIndent, _blockCache);
 
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
     // LineWriter ensures all but the first chunk have an indent of 1, and this

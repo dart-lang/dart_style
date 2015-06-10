@@ -4,13 +4,13 @@
 
 library dart_style.test.source_code_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:dart_style/dart_style.dart';
 
 void main() {
-  var selection = new SourceCode("123456;",
-      selectionStart: 3, selectionLength: 2);
+  var selection =
+      new SourceCode("123456;", selectionStart: 3, selectionLength: 2);
   var noSelection = new SourceCode("123456;");
 
   group('constructor', () {

@@ -198,8 +198,8 @@ class LineSplitter {
 
   /// Updates [solution] with the solution for [prefix] assuming it uses
   /// [longerPrefix] for the next chunk.
-  void _tryLongerPrefix(SplitSolution solution, LinePrefix prefix,
-        LinePrefix longerPrefix) {
+  void _tryLongerPrefix(
+      SplitSolution solution, LinePrefix prefix, LinePrefix longerPrefix) {
     var remaining = _findBestSplits(longerPrefix);
 
     // If it wasn't possible to split the suffix given this nesting stack,
@@ -224,9 +224,8 @@ class LineSplitter {
     var updatedValues = {};
 
     for (var prefixRule in prefixRules) {
-      var ruleValue = prefixRule == nextRule
-          ? value
-          : prefix.ruleValues[prefixRule];
+      var ruleValue =
+          prefixRule == nextRule ? value : prefix.ruleValues[prefixRule];
 
       if (suffixRules.contains(prefixRule)) {
         // If the same rule appears in both the prefix and suffix, then preserve

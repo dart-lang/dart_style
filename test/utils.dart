@@ -10,7 +10,6 @@ import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
 import 'package:scheduled_test/scheduled_process.dart';
 import 'package:scheduled_test/scheduled_test.dart';
-import 'package:unittest/compact_vm_config.dart';
 
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
@@ -19,8 +18,7 @@ const formattedSource = 'void main() => print("hello");\n';
 ScheduledProcess runFormatter([List<String> args]) {
   if (args == null) args = [];
 
-  var formatterPath = p.join(
-      p.dirname(p.fromUri(Platform.script)), "..", "bin", "format.dart");
+  var formatterPath = p.join("bin", "format.dart");
 
   args.insert(0, formatterPath);
 
@@ -44,11 +42,6 @@ ScheduledProcess runFormatterOnDir([List<String> args]) {
 /// Configures the unit test output and makes a sandbox directory for the
 /// scheduled tests to run in.
 void setUpTestSuite() {
-  // Tidy up the unittest output.
-  filterStacks = true;
-  formatStacks = true;
-  useCompactVMConfiguration();
-
   // Make a sandbox directory for the scheduled tests to run in.
   setUp(() {
     var tempDir = Directory.systemTemp.createTempSync('dart_style.test.');
