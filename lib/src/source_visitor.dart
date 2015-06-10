@@ -435,8 +435,25 @@ class SourceVisitor implements AstVisitor {
     }
 
     visitNodes(directives, between: oneOrTwoNewlines);
-    visitNodes(node.declarations,
-        before: twoNewlines, between: oneOrTwoNewlines);
+
+    if (node.declarations.isNotEmpty) {
+      twoNewlines();
+
+      for (var i = 0; i < node.declarations.length; i++) {
+        visit(node.declarations[i]);
+
+        if (i < node.declarations.length - 1) {
+          // Require blank lines around classes.
+          if (node.declarations[i] is ClassDeclaration ||
+              node.declarations[i + 1] is ClassDeclaration) {
+            twoNewlines();
+          } else {
+            // Functions and variables can be more tightly packed.
+            oneOrTwoNewlines();
+          }
+        }
+      }
+    }
   }
 
   visitConditionalExpression(ConditionalExpression node) {
