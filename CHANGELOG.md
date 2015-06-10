@@ -13,6 +13,7 @@
 * Allow splitting inside with and implements clauses (#228, #259).
 * Preserve mandatory newlines in inline block comments (#178).
 * Allow multiple variable declarations on one line if they fit (#155).
+* Splitting inside type parameter and type argument lists (#184).
 * Enforce a blank line before and after classes (#186).
 
 # 0.1.8

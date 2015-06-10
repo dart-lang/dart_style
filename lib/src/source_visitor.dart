@@ -15,6 +15,7 @@ import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
 import 'rule/rule.dart';
+import 'rule/type_argument.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
@@ -1446,9 +1447,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTypeArgumentList(TypeArgumentList node) {
-    token(node.leftBracket);
-    visitCommaSeparatedNodes(node.arguments);
-    token(node.rightBracket);
+    _visitGenericList(node.leftBracket, node.rightBracket, node.arguments);
   }
 
   visitTypeName(TypeName node) {
@@ -1464,9 +1463,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTypeParameterList(TypeParameterList node) {
-    token(node.leftBracket);
-    visitCommaSeparatedNodes(node.typeParameters);
-    token(node.rightBracket);
+    _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
   }
 
   visitVariableDeclaration(VariableDeclaration node) {
@@ -1565,12 +1562,40 @@ class SourceVisitor implements AstVisitor {
     }
   }
 
-  /// Visit metadata annotations on parameters and type parameters.
+  /// Visits metadata annotations on parameters and type parameters.
   ///
   /// These are always on the same line as the parameter.
   void visitParameterMetadata(NodeList<Annotation> metadata) {
     // TODO(rnystrom): Allow splitting after annotations?
     visitNodes(metadata, between: space, after: space);
+  }
+
+  /// Visits a type parameter or type argument list.
+  void _visitGenericList(
+      Token leftBracket, Token rightBracket, List<AstNode> nodes) {
+    var rule = new TypeArgumentRule();
+    builder.startRule(rule);
+    builder.startSpan();
+    builder.nestExpression();
+
+    token(leftBracket);
+    rule.beforeArgument(zeroSplit());
+
+    for (var node in nodes) {
+      visit(node);
+
+      // Write the trailing comma.
+      if (node != nodes.last) {
+        token(node.endToken.next);
+        rule.beforeArgument(split());
+      }
+    }
+
+    token(rightBracket);
+
+    builder.unnest();
+    builder.endSpan();
+    builder.endRule();
   }
 
   /// Visit the given function [parameters] followed by its [body], printing a
