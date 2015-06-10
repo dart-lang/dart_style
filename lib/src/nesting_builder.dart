@@ -2,11 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.nesting_writer;
+library dart_style.src.nesting_builder;
 
 /// Keeps track of expression nesting while the source code is being visited
-/// and the chunks are being written.
-class NestingWriter {
+/// and the chunks are being built.
+class NestingBuilder {
   /// The expression nesting level within each block level.
   ///
   /// This is tracked as a stack of numbers. Each element in the stack

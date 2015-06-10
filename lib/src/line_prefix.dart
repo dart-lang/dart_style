@@ -6,7 +6,7 @@ library dart_style.src.line_prefix;
 
 import 'chunk.dart';
 import 'nesting.dart';
-import 'rule.dart';
+import 'rule/rule.dart';
 
 /// The number of spaces in a single level of indentation.
 const spacesPerIndent = 2;

@@ -9,8 +9,8 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'dart_formatter.dart';
-import 'formatter_options.dart';
 import 'formatter_exception.dart';
+import 'formatter_options.dart';
 import 'source_code.dart';
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),

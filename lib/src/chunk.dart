@@ -5,7 +5,7 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
-import 'rule.dart';
+import 'rule/rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
 /// text.

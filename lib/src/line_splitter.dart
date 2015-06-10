@@ -7,10 +7,10 @@ library dart_style.src.line_splitter;
 import 'dart:math' as math;
 
 import 'chunk.dart';
-import 'line_writer.dart';
 import 'debug.dart' as debug;
 import 'line_prefix.dart';
-import 'rule.dart';
+import 'line_writer.dart';
+import 'rule/rule.dart';
 
 // TODO(rnystrom): This needs to be updated to take into account how it works
 // now.
@@ -307,7 +307,7 @@ class LineSplitter {
 
           // Include the cost of the nested block.
           if (chunk.blockChunks.isNotEmpty) {
-            cost += _writer.formatBlock(chunk, splits.getColumn(i)).result.cost;
+            cost += _writer.formatBlock(chunk, splits.getColumn(i)).cost;
           }
 
           // Start the new line.
@@ -331,75 +331,19 @@ class LineSplitter {
   }
 }
 
-/// Key type for the formatted block cache.
-///
-/// To cache formatted blocks, we just need to know which block it is (the
-/// index of its parent chunk) and how far it was indented when we formatted it
-/// (the starting column).
-class BlockKey {
-  /// The index of the chunk in the surrounding chunk list that contains this
-  /// block.
-  final Chunk chunk;
-
-  /// The absolute zero-based column number where the block starts.
-  final int column;
-
-  BlockKey(this.chunk, this.column);
-
-  bool operator ==(other) {
-    if (other is! BlockKey) return false;
-    return chunk == other.chunk && column == other.column;
-  }
-
-  int get hashCode => chunk.hashCode ^ column.hashCode;
-}
-
-/// The result of formatting a child block of a chunk.
-class FormattedBlock {
-  /// The resulting formatted text, including newlines and leading whitespace
-  /// to reach the proper column.
-  final String text;
-
-  /// The result of running the [LineSplitter] on the block.
-  final SplitResult result;
-
-  FormattedBlock(this.text, this.result);
-}
-
-/// The result of running the [LineSplitter] on a range of chunks.
-class SplitResult {
-  /// The numeric cost of the chosen solution.
-  final int cost;
-
-  /// Where in the resulting buffer the selection starting point should appear
-  /// if it was contained within this split list of chunks.
-  ///
-  /// Otherwise, this is `null`.
-  final int selectionStart;
-
-  /// Where in the resulting buffer the selection end point should appear if it
-  /// was contained within this split list of chunks.
-  ///
-  /// Otherwise, this is `null`.
-  final int selectionEnd;
-
-  SplitResult(this.cost, this.selectionStart, this.selectionEnd);
-}
-
 /// Keeps track of the best set of splits found so far for a suffix of some
 /// prefix.
 class SplitSolution {
   /// The prefix whose suffix we are finding a solution for.
   final LinePrefix _prefix;
 
-  SplitSet _bestSplits;
-  int _lowestCost;
-
   /// The best set of splits currently found.
   SplitSet get splits => _bestSplits;
+  SplitSet _bestSplits;
 
   /// The lowest cost currently found.
   int get cost => _lowestCost;
+  int _lowestCost;
 
   /// Whether a solution that fits within a page has been found yet.
   bool get isAdequate => _lowestCost != null && _lowestCost < Cost.overflowChar;
