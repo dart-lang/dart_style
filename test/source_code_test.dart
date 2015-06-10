@@ -4,7 +4,7 @@
 
 library dart_style.test.source_code_test;
 
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:dart_style/dart_style.dart';
 
