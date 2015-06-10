@@ -381,8 +381,12 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     visit(node.typeParameters);
     visit(node.extendsClause);
+
+    builder.startRule(new CombinatorRule());
     visit(node.withClause);
     visit(node.implementsClause);
+    builder.endRule();
+
     visit(node.nativeClause, before: space);
     space();
 
@@ -404,9 +408,13 @@ class SourceVisitor implements AstVisitor {
       space();
       token(node.equals);
       space();
+
       visit(node.superclass);
+
+      builder.startRule(new CombinatorRule());
       visit(node.withClause);
       visit(node.implementsClause);
+      builder.endRule();
     });
   }
 
@@ -613,7 +621,10 @@ class SourceVisitor implements AstVisitor {
       token(node.keyword);
       space();
       visit(node.uri);
-      _visitCombinators(node.combinators);
+
+      builder.startRule(new CombinatorRule());
+      visitNodes(node.combinators);
+      builder.endRule();
     });
   }
 
@@ -914,10 +925,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImplementsClause(ImplementsClause node) {
-    soloSplit();
-    token(node.keyword);
-    space();
-    visitCommaSeparatedNodes(node.interfaces);
+    _visitCombinator(node.implementsKeyword, node.interfaces);
   }
 
   visitImportDirective(ImportDirective node) {
@@ -930,7 +938,10 @@ class SourceVisitor implements AstVisitor {
       token(node.deferredToken, before: space);
       token(node.asToken, before: soloSplit, after: space);
       visit(node.prefix);
-      _visitCombinators(node.combinators);
+
+      builder.startRule(new CombinatorRule());
+      visitNodes(node.combinators);
+      builder.endRule();
     });
   }
 
@@ -1514,10 +1525,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitWithClause(WithClause node) {
-    soloSplit();
-    token(node.withKeyword);
-    space();
-    visitCommaSeparatedNodes(node.mixinTypes);
+    _visitCombinator(node.withKeyword, node.mixinTypes);
   }
 
   visitYieldStatement(YieldStatement node) {
@@ -1711,22 +1719,15 @@ class SourceVisitor implements AstVisitor {
     _writeText(rightBracket.lexeme, rightBracket.offset);
   }
 
-  /// Visits a list of [combinators] following an "import" or "export"
-  /// directive.
-  void _visitCombinators(NodeList<Combinator> combinators) {
-    if (combinators.isEmpty) return;
-
-    builder.startRule(new CombinatorRule());
-    visitNodes(combinators);
-    builder.endRule();
-  }
-
-  /// Visits a [HideCombinator] or [ShowCombinator] starting with [keyword] and
-  /// containing [names].
+  /// Visits a "combinator".
   ///
-  /// This assumes it has been called from within the [Rule] created by
-  /// [_visitCombinators].
-  void _visitCombinator(Token keyword, NodeList<SimpleIdentifier> names) {
+  /// This is a [keyword] followed by a list of [nodes], with specific line
+  /// splitting rules. As the name implies, this is used for [HideCombinator]
+  /// and [ShowCombinator], but it also used for "with" and "implements"
+  /// clauses in class declarations, which are formatted the same way.
+  ///
+  /// This assumes the current rule is a [CombinatorRule].
+  void _visitCombinator(Token keyword, Iterable<AstNode> nodes) {
     // Allow splitting before the keyword.
     var rule = builder.rule as CombinatorRule;
     rule.addCombinator(split());
@@ -1735,8 +1736,7 @@ class SourceVisitor implements AstVisitor {
     token(keyword);
 
     rule.addName(split());
-    visitCommaSeparatedNodes(names,
-        between: () => rule.addName(split()));
+    visitCommaSeparatedNodes(nodes, between: () => rule.addName(split()));
 
     builder.unnest();
   }

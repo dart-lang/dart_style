@@ -1,18 +1,16 @@
 # 0.2.0
 
-This version introduces a new n-way constraint system replacing the previous
-binary constraints. It's mostly an internal change, but allows us to fix a
-number of bugs that the old solver couldn't express solutions to.
+* This version introduces a new n-way constraint system replacing the previous
+  binary constraints. It's mostly an internal change, but allows us to fix a
+  number of bugs that the old solver couldn't express solutions to.
 
-(#78, #97, #101, #123, #139, #141, #142, #143)
+  In particular, it forces argument and parameter lists to go one-per-line if
+  they don't all fit in two lines. And it allows function and collection
+  literals inside expressions to indent like expressions in some contexts.
 
-* Force argument lists to go one argument-per-line if they don't all fit in two
-  lines.
-* Force parameter lists to go one argument-per-line if they don't all fit in
-  two lines.
-* Allow function and collection literals inside expressions to indent like
-  expressions in some contexts.
-* Many other small implementation changes.
+  (#78, #97, #101, #123, #139, #141, #142, #143)
+
+* Allow splitting inside with and implements clauses (#228, #259).
 
 # 0.1.8
 

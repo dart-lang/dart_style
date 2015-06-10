@@ -7,7 +7,12 @@ library dart_style.src.rule.combinator;
 import '../chunk.dart';
 import 'rule.dart';
 
-/// Handles a list of [combinators] following an "import" or "export" directive.
+/// Handles a list of "combinators".
+///
+/// A combinator is a keyword followed by a list of nodes used to modify some
+/// declaration. It's used for actual hide and show combinators as well as
+/// "with" and "implements" clauses in class declarations.
+///
 /// Combinators can be split in a few different ways:
 ///
 ///     // All on one line:
