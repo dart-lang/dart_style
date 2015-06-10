@@ -157,7 +157,7 @@ class SourceVisitor implements AstVisitor {
 
   visitAssertStatement(AssertStatement node) {
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.assertKeyword);
       token(node.leftParenthesis);
       soloZeroSplit();
       visit(node.condition);
@@ -304,7 +304,7 @@ class SourceVisitor implements AstVisitor {
 
   visitBreakStatement(BreakStatement node) {
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.breakKeyword);
       visit(node.label, before: space);
     });
   }
@@ -401,7 +401,7 @@ class SourceVisitor implements AstVisitor {
 
     _simpleStatement(node, () {
       modifier(node.abstractKeyword);
-      token(node.keyword);
+      token(node.typedefKeyword);
       space();
       visit(node.name);
       visit(node.typeParameters);
@@ -532,7 +532,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
-    token(node.keyword);
+    token(node.thisKeyword);
     token(node.period);
     visit(node.fieldName);
     space();
@@ -549,7 +549,7 @@ class SourceVisitor implements AstVisitor {
 
   visitContinueStatement(ContinueStatement node) {
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.continueKeyword);
       visit(node.label, before: space);
     });
   }
@@ -604,7 +604,7 @@ class SourceVisitor implements AstVisitor {
   visitEnumDeclaration(EnumDeclaration node) {
     visitDeclarationMetadata(node.metadata);
 
-    token(node.keyword);
+    token(node.enumKeyword);
     space();
     visit(node.name);
     space();
@@ -656,7 +656,7 @@ class SourceVisitor implements AstVisitor {
 
   visitExtendsClause(ExtendsClause node) {
     soloSplit();
-    token(node.keyword);
+    token(node.extendsKeyword);
     space();
     visit(node.superclass);
   }
@@ -674,7 +674,7 @@ class SourceVisitor implements AstVisitor {
     visitParameterMetadata(node.metadata);
     token(node.keyword, after: space);
     visit(node.type, after: space);
-    token(node.thisToken);
+    token(node.thisKeyword);
     token(node.period);
     visit(node.identifier);
     visit(node.parameters);
@@ -872,7 +872,7 @@ class SourceVisitor implements AstVisitor {
     visitDeclarationMetadata(node.metadata);
 
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.typedefKeyword);
       space();
       visit(node.returnType, after: space);
       visit(node.name);
@@ -935,8 +935,8 @@ class SourceVisitor implements AstVisitor {
       token(node.keyword);
       space();
       visit(node.uri);
-      token(node.deferredToken, before: space);
-      token(node.asToken, before: soloSplit, after: space);
+      token(node.deferredKeyword, before: space);
+      token(node.asKeyword, before: soloSplit, after: space);
       visit(node.prefix);
 
       builder.startRule(new CombinatorRule());
@@ -1064,7 +1064,7 @@ class SourceVisitor implements AstVisitor {
       builder.nestExpression();
 
       // This will be non-null for cascade sections.
-      token(node.period);
+      token(node.operator);
       token(node.methodName.token);
       visit(node.argumentList);
 
@@ -1180,14 +1180,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitNativeClause(NativeClause node) {
-    token(node.keyword);
+    token(node.nativeKeyword);
     space();
     visit(node.name);
   }
 
   visitNativeFunctionBody(NativeFunctionBody node) {
     _simpleStatement(node, () {
-      token(node.nativeToken);
+      token(node.nativeKeyword);
       space();
       visit(node.stringLiteral);
     });
@@ -1217,7 +1217,7 @@ class SourceVisitor implements AstVisitor {
     _simpleStatement(node, () {
       token(node.keyword);
       space();
-      token(node.ofToken);
+      token(node.ofKeyword);
       space();
       visit(node.libraryName);
     });
@@ -1260,7 +1260,7 @@ class SourceVisitor implements AstVisitor {
   visitRedirectingConstructorInvocation(RedirectingConstructorInvocation node) {
     builder.startSpan();
 
-    token(node.keyword);
+    token(node.thisKeyword);
     token(node.period);
     visit(node.constructorName);
     visit(node.argumentList);
@@ -1269,16 +1269,13 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitRethrowExpression(RethrowExpression node) {
-    token(node.keyword);
+    token(node.rethrowKeyword);
   }
 
   visitReturnStatement(ReturnStatement node) {
     _simpleStatement(node, () {
-      token(node.keyword);
-      if (node.expression != null) {
-        space();
-        visit(node.expression);
-      }
+      token(node.returnKeyword);
+      visit(node.expression, before: space);
     });
   }
 
@@ -1331,7 +1328,7 @@ class SourceVisitor implements AstVisitor {
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
     builder.startSpan();
 
-    token(node.keyword);
+    token(node.superKeyword);
     token(node.period);
     visit(node.constructorName);
     visit(node.argumentList);
@@ -1340,7 +1337,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSuperExpression(SuperExpression node) {
-    token(node.keyword);
+    token(node.superKeyword);
   }
 
   visitSwitchCase(SwitchCase node) {
@@ -1373,7 +1370,7 @@ class SourceVisitor implements AstVisitor {
 
   visitSwitchStatement(SwitchStatement node) {
     builder.nestExpression();
-    token(node.keyword);
+    token(node.switchKeyword);
     space();
     token(node.leftParenthesis);
     soloZeroSplit();
@@ -1405,11 +1402,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitThisExpression(ThisExpression node) {
-    token(node.keyword);
+    token(node.thisKeyword);
   }
 
   visitThrowExpression(ThrowExpression node) {
-    token(node.keyword);
+    token(node.throwKeyword);
     space();
     visit(node.expression);
   }
@@ -1445,7 +1442,7 @@ class SourceVisitor implements AstVisitor {
   visitTypeParameter(TypeParameter node) {
     visitParameterMetadata(node.metadata);
     visit(node.name);
-    token(node.keyword /* extends */, before: space, after: space);
+    token(node.extendsKeyword, before: space, after: space);
     visit(node.bound);
   }
 
@@ -1489,7 +1486,7 @@ class SourceVisitor implements AstVisitor {
 
   visitWhileStatement(WhileStatement node) {
     builder.nestExpression();
-    token(node.keyword);
+    token(node.whileKeyword);
     space();
     token(node.leftParenthesis);
     soloZeroSplit();

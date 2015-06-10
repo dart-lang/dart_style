@@ -95,8 +95,6 @@ class DartFormatter {
 
     // Parse it.
     var parser = new Parser(stringSource, errorListener);
-    parser.parseAsync = true;
-    parser.parseEnum = true;
 
     var node;
     if (source.isCompilationUnit) {
