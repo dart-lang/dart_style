@@ -32,12 +32,12 @@ class ChunkBuilder {
   final List<Chunk> _chunks;
 
   /// The whitespace that should be written to [_chunks] before the next
-  ///  non-whitespace token or `null` if no whitespace is pending.
+  ///  non-whitespace token.
   ///
   /// This ensures that changes to indentation and nesting also apply to the
   /// most recent split, even if the visitor "creates" the split before changing
   /// indentation or nesting.
-  Whitespace _pendingWhitespace;
+  Whitespace _pendingWhitespace = Whitespace.none;
 
   /// The nested stack of rules that are currently in use.
   ///
@@ -145,7 +145,7 @@ class ChunkBuilder {
   /// The list contains each comment as it appeared in the source between the
   /// last token written and the next one that's about to be written.
   ///
-  /// [linesBeforeToken] is number of lines between the last comment (or
+  /// [linesBeforeToken] is the number of lines between the last comment (or
   /// previous token if there are no comments) and the next token.
   void writeComments(List<SourceComment> comments, int linesBeforeToken,
       String token) {
@@ -176,6 +176,28 @@ class ChunkBuilder {
       }
     }
 
+    // Corner case: if the comments are completely inline (i.e. just a series
+    // of block comments with no newlines before, after, or between them), then
+    // they will eat any pending newlines. Make sure that doesn't happen by
+    // putting the pending whitespace before the first comment and moving them
+    // to their own line. Turns this:
+    //
+    //     library foo; /* a */ /* b */ import 'a.dart';
+    //
+    // into:
+    //
+    //     library foo;
+    //
+    //     /* a */ /* b */
+    //     import 'a.dart';
+    if (linesBeforeToken == 0 &&
+        comments.every((comment) => comment.isInline)) {
+      if (_pendingWhitespace.minimumLines > 0) {
+        comments.first.linesBefore = _pendingWhitespace.minimumLines;
+        linesBeforeToken = 1;
+      }
+    }
+
     // Write each comment and the whitespace between them.
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
@@ -184,7 +206,9 @@ class ChunkBuilder {
 
       // Don't emit a space because we'll handle it below. If we emit it here,
       // we may get a trailing space if the comment needs a line before it.
-      if (_pendingWhitespace == Whitespace.space) _pendingWhitespace = null;
+      if (_pendingWhitespace == Whitespace.space) {
+        _pendingWhitespace = Whitespace.none;
+      }
       _emitPendingWhitespace();
 
       if (comment.linesBefore == 0) {
@@ -492,7 +516,6 @@ class ChunkBuilder {
   /// This should only be called after source lines have been preserved to turn
   /// any ambiguous whitespace into a concrete choice.
   void _emitPendingWhitespace() {
-    if (_pendingWhitespace == null) return;
     // Output any pending whitespace first now that we know it won't be
     // trailing.
     switch (_pendingWhitespace) {
@@ -523,7 +546,7 @@ class ChunkBuilder {
         break;
     }
 
-    _pendingWhitespace = null;
+    _pendingWhitespace = Whitespace.none;
   }
 
   /// Returns `true` if the last chunk is a split that should be move after the

@@ -335,7 +335,7 @@ class SourceComment extends Selection {
   /// and the beginning of this one.
   ///
   /// Will be zero if the comment is a trailing one.
-  final int linesBefore;
+  int linesBefore;
 
   /// Whether this comment is a line comment.
   final bool isLineComment;
@@ -346,6 +346,9 @@ class SourceComment extends Selection {
   /// output. This way, commented out chunks of code do not get erroneously
   /// re-indented.
   final bool isStartOfLine;
+
+  /// Whether this comment is an inline block comment.
+  bool get isInline => linesBefore == 0 && !isLineComment;
 
   SourceComment(this.text, this.linesBefore,
       {this.isLineComment, this.isStartOfLine});

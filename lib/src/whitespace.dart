@@ -10,6 +10,9 @@ library dart_style.src.whitespace;
 /// We defer actually writing whitespace until a non-whitespace token is
 /// encountered to avoid trailing whitespace.
 class Whitespace {
+  /// No whitespace.
+  static const none = const Whitespace._("none");
+
   /// A single non-breaking space.
   static const space = const Whitespace._("space");
 
@@ -44,6 +47,23 @@ class Whitespace {
   static const oneOrTwoNewlines = const Whitespace._("oneOrTwoNewlines");
 
   final String name;
+
+  /// Gets the minimum number of newlines contained in this whitespace.
+  int get minimumLines {
+    switch (this) {
+      case Whitespace.newline:
+      case Whitespace.nestedNewline:
+      case Whitespace.newlineFlushLeft:
+      case Whitespace.oneOrTwoNewlines:
+        return 1;
+
+      case Whitespace.twoNewlines:
+        return 2;
+
+      default:
+        return 0;
+    }
+  }
 
   const Whitespace._(this.name);
 
