@@ -11,6 +11,7 @@
   (#78, #97, #101, #123, #139, #141, #142, #143)
 
 * Allow splitting inside with and implements clauses (#228, #259).
+* Preserve mandatory newlines in inline block comments (#178).
 
 # 0.1.8
 
