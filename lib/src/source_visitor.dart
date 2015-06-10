@@ -1951,10 +1951,17 @@ class SourceVisitor implements AstVisitor {
         previousLine = commentLine;
       }
 
-      var sourceComment = new SourceComment(comment.toString().trim(),
-          commentLine - previousLine,
+      var text = comment.toString().trim();
+      var flushLeft = _startColumn(comment) == 1;
+
+      // Line doc comments are always indented even if they were flush left.
+      if (text.startsWith("///") && !text.startsWith("////")) {
+        flushLeft = false;
+      }
+
+      var sourceComment = new SourceComment(text, commentLine - previousLine,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
-          isStartOfLine: _startColumn(comment) == 1);
+          flushLeft: flushLeft);
 
       // If this comment contains either of the selection endpoints, mark them
       // in the comment.

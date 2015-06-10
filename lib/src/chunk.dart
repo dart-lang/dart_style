@@ -345,11 +345,11 @@ class SourceComment extends Selection {
   /// Comments that start at the start of the line will not be indented in the
   /// output. This way, commented out chunks of code do not get erroneously
   /// re-indented.
-  final bool isStartOfLine;
+  final bool flushLeft;
 
   /// Whether this comment is an inline block comment.
   bool get isInline => linesBefore == 0 && !isLineComment;
 
   SourceComment(this.text, this.linesBefore,
-      {this.isLineComment, this.isStartOfLine});
+      {this.isLineComment, this.flushLeft});
 }

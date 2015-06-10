@@ -11,10 +11,13 @@ import 'chunk.dart';
 import 'line_prefix.dart';
 import 'line_splitter.dart';
 
-/// Set this to `true` to turn out diagnostic output while formatting.
-bool traceFormatter = false;
+/// Set this to `true` to turn on diagnostic output while building chunks.
+bool traceChunkBuilder = false;
 
-/// Set this to `true` to turn out diagnostic output while line splitting.
+/// Set this to `true` to turn on diagnostic output while writing lines.
+bool traceLineWriter = false;
+
+/// Set this to `true` to turn on diagnostic output while line splitting.
 bool traceSplitter = false;
 
 bool useAnsiColors = false;

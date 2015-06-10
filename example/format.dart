@@ -9,8 +9,9 @@ import 'package:dart_style/src/debug.dart' as debug;
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
   // Normal users do not do this.
-  debug.traceFormatter = true;
-  debug.traceSplitter = true;
+  debug.traceChunkBuilder = true;
+  //debug.traceLineWriter = true;
+  //debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
   formatStmt("""

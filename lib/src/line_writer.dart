@@ -144,7 +144,7 @@ class LineWriter {
 
     var chunks = _chunks.sublist(start, end);
 
-    if (debug.traceFormatter) {
+    if (debug.traceLineWriter) {
       debug.log(debug.green("\nWriting:"));
       debug.dumpChunks(start, chunks);
       debug.log();

@@ -6,6 +6,7 @@ library dart_style.src.chunk_builder;
 
 import 'chunk.dart';
 import 'dart_formatter.dart';
+import 'debug.dart' as debug;
 import 'line_splitter.dart';
 import 'line_writer.dart';
 import 'nesting_builder.dart';
@@ -225,7 +226,7 @@ class ChunkBuilder {
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _writeHardSplit(nest: true, flushLeft: comment.isStartOfLine,
+        _writeHardSplit(nest: true, flushLeft: comment.flushLeft,
             double: comment.linesBefore > 1);
       }
 
@@ -485,6 +486,12 @@ class ChunkBuilder {
   SourceCode end() {
     _writeHardSplit();
     _divideChunks();
+
+    if (debug.traceChunkBuilder) {
+      debug.log(debug.green("\nBuilt:"));
+      debug.dumpChunks(0, _chunks);
+      debug.log();
+    }
 
     var writer = new LineWriter(_formatter, _chunks);
     var result = writer.writeLines(_formatter.indent,
