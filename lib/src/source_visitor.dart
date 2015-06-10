@@ -1472,30 +1472,6 @@ class SourceVisitor implements AstVisitor {
     modifier(node.keyword);
     visit(node.type, after: space);
 
-    if (node.variables.length == 1) {
-      visit(node.variables.single);
-      return;
-    }
-
-    // If there are multiple declarations and any of them have initializers,
-    // put them all on their own lines.
-    if (node.variables.any((variable) => variable.initializer != null)) {
-      visit(node.variables.first);
-
-      // Indent variables after the first one to line up past "var".
-      builder.indent(2);
-
-      for (var variable in node.variables.skip(1)) {
-        token(variable.beginToken.previous); // Comma.
-        newline();
-
-        visit(variable);
-      }
-
-      builder.unindent(2);
-      return;
-    }
-
     // Use a single rule for all of the variables. If there are multiple
     // declarations, we will try to keep them all on one line. If that isn't
     // possible, we split after *every* declaration so that each is on its own
