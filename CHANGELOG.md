@@ -15,6 +15,7 @@
 * Allow multiple variable declarations on one line if they fit (#155).
 * Splitting inside type parameter and type argument lists (#184).
 * Enforce a blank line before and after classes (#186).
+* Re-indent line doc comments even if they are flush left (#192).
 
 # 0.1.8
 
