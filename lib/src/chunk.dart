@@ -113,10 +113,17 @@ class Chunk extends Selection {
   /// splitter may choose to keep the next chunk on the same line.
   bool get isHardSplit => _rule is HardSplitRule;
 
-  /// `true` if an extra blank line should be output after this chunk if it's
-  /// split.
-  bool get isDouble => _isDouble;
-  bool _isDouble = false;
+  /// Whether or not an extra blank line should be output after this chunk if
+  /// it's split.
+  ///
+  /// Internally, this can be either `true`, `false`, or `null`. The latter is
+  /// an indeterminate state that lets later modifications to the split decide
+  /// whether it should be double or not.
+  ///
+  /// However, this getter does not expose that. It will return `false` if the
+  /// chunk is still indeterminate.
+  bool get isDouble => _isDouble != null ? _isDouble : false;
+  bool _isDouble;
 
   /// If `true`, then the line after this chunk should always be at column
   /// zero regardless of any indentation or expression nesting.
@@ -193,8 +200,6 @@ class Chunk extends Selection {
       {bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (flushLeft == null) flushLeft = false;
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
-    if (isDouble == null) isDouble = false;
-
     if (isHardSplit || rule is HardSplitRule) {
       // A hard split always wins.
       _rule = rule;
@@ -210,8 +215,8 @@ class Chunk extends Selection {
 
     _spaceWhenUnsplit = spaceWhenUnsplit;
 
-    // Preserve a blank line.
-    _isDouble = _isDouble || isDouble;
+    // Pin down the double state, if given and we haven't already.
+    if (_isDouble == null) _isDouble = isDouble;
   }
 
   // Mark whether this chunk can divide the range of chunks.

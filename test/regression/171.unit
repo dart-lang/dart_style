@@ -17,12 +17,16 @@ enum RefType {
 enum RefType {
   /// Indicates a reference to type: *T &*
   ref,
+
   /// Indicates a const reference to type: *T const&*
   cref,
+
   /// Indicates a volatile reference to type: *T volatile&*
   vref,
+
   /// Indicates a const volatile reference to type: *T const volatile&*
   cvref,
+
   /// Indicates not a reference
   value
 }

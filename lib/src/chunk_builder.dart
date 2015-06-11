@@ -136,9 +136,18 @@ class ChunkBuilder {
   ///
   /// If [nesting] is given, uses that. Otherwise, uses the current nesting
   /// level. If unsplit, it expands to a space if [space] is `true`.
-  Chunk split({int nesting, bool space, bool flushLeft}) =>
+  ///
+  /// If [flushLeft] is `true`, then forces the next line to start at column
+  /// one regardless of any indentation or nesting.
+  ///
+  /// If [isDouble] is passed, forces the split to either be a single or double
+  /// newline. Otherwise, leaves it indeterminate.
+  Chunk split({int nesting, bool space, bool isDouble, bool flushLeft}) =>
       _writeSplit(_rules.last,
-          nesting: nesting, flushLeft: flushLeft, spaceWhenUnsplit: space);
+          nesting: nesting,
+          flushLeft: flushLeft,
+          isDouble: isDouble,
+          spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -615,12 +624,13 @@ class ChunkBuilder {
   /// Appends a hard split with the current indentation and nesting (the latter
   /// only if [nest] is `true`).
   ///
-  /// If [double] is `true`, a double-split (i.e. a blank line) is output.
+  /// If [double] is `true` or `false`, forces a since or double line to be
+  /// output. Otherwise, it is left indeterminate.
   ///
   /// If [flushLeft] is `true`, then the split will always cause the next line
   /// to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
-  void _writeHardSplit({bool nest: false, bool double: false, bool flushLeft}) {
+  void _writeHardSplit({bool nest: false, bool double, bool flushLeft}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
     _writeSplit(new HardSplitRule(),

@@ -101,3 +101,36 @@ var b = 1;
 c() {}
 d() {}
 var e = 1;
+>>> require blank line after non-empty block-bodied members
+var a = 1; b() {;} c() => null; get d {;} get e => null; set f(value) {;
+} set g(value) => null; var h = 1;
+<<<
+var a = 1;
+b() {
+  ;
+}
+
+c() => null;
+get d {
+  ;
+}
+
+get e => null;
+set f(value) {
+  ;
+}
+
+set g(value) => null;
+var h = 1;
+>>> no required blank line after empty block-bodied members
+var a = 1; b() {} c() => null; get d {} get e => null; set f(value) {
+} set g(value) => null; var h = 1;
+<<<
+var a = 1;
+b() {}
+c() => null;
+get d {}
+get e => null;
+set f(value) {}
+set g(value) => null;
+var h = 1;

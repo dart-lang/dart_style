@@ -393,7 +393,37 @@ class SourceVisitor implements AstVisitor {
 
     builder.unnest();
     _writeBody(node.leftBracket, node.rightBracket, body: () {
-      visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
+      if (node.members.isNotEmpty) {
+        for (var member in node.members) {
+          visit(member);
+
+          if (member == node.members.last) {
+            newline();
+            break;
+          }
+
+          var needsDouble = false;
+          if (member is ClassDeclaration) {
+            // Add a blank line after classes.
+            twoNewlines();
+          } else if (member is MethodDeclaration) {
+            // Add a blank line after non-empty block methods.
+            var method = member as MethodDeclaration;
+            if (method.body is BlockFunctionBody) {
+              var body = method.body as BlockFunctionBody;
+              needsDouble = body.block.statements.isNotEmpty;
+            }
+          }
+
+          if (needsDouble) {
+            twoNewlines();
+          } else {
+            // Variables and arrow-bodied members can be more tightly packed if
+            // the user wants to group things together.
+            oneOrTwoNewlines();
+          }
+        }
+      }
     });
   }
 
@@ -438,19 +468,32 @@ class SourceVisitor implements AstVisitor {
     visitNodes(directives, between: oneOrTwoNewlines);
 
     if (node.declarations.isNotEmpty) {
-      twoNewlines();
+      var needsDouble = true;
 
-      for (var i = 0; i < node.declarations.length; i++) {
-        visit(node.declarations[i]);
+      for (var declaration in node.declarations) {
+        // Add a blank line before classes.
+        if (declaration is ClassDeclaration) needsDouble = true;
 
-        if (i < node.declarations.length - 1) {
-          // Require blank lines around classes.
-          if (node.declarations[i] is ClassDeclaration ||
-              node.declarations[i + 1] is ClassDeclaration) {
-            twoNewlines();
-          } else {
-            // Functions and variables can be more tightly packed.
-            oneOrTwoNewlines();
+        if (needsDouble) {
+          twoNewlines();
+        } else {
+          // Variables and arrow-bodied members can be more tightly packed if
+          // the user wants to group things together.
+          oneOrTwoNewlines();
+        }
+
+        visit(declaration);
+
+        needsDouble = false;
+        if (declaration is ClassDeclaration) {
+          // Add a blank line after classes.
+          needsDouble = true;
+        } else if (declaration is FunctionDeclaration) {
+          // Add a blank line after non-empty block functions.
+          var function = declaration as FunctionDeclaration;
+          if (function.functionExpression.body is BlockFunctionBody) {
+            var body = function.functionExpression.body as BlockFunctionBody;
+            needsDouble = body.block.statements.isNotEmpty;
           }
         }
       }
@@ -1725,7 +1768,7 @@ class SourceVisitor implements AstVisitor {
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    builder =builder.endBlock(elementRule, _blockArgumentNesting.last,
+    builder = builder.endBlock(elementRule, _blockArgumentNesting.last,
         alwaysSplit: hasLeadingNewline || forceRule);
 
     builder.endRule();
@@ -1802,7 +1845,7 @@ class SourceVisitor implements AstVisitor {
 
     // Split after the bracket.
     builder.startRule();
-    builder.split(nesting: 0, space: space);
+    builder.split(nesting: 0, space: space, isDouble: false);
 
     body();
 
@@ -1952,14 +1995,18 @@ class SourceVisitor implements AstVisitor {
       }
 
       var text = comment.toString().trim();
+      var linesBefore = commentLine - previousLine;
       var flushLeft = _startColumn(comment) == 1;
 
-      // Line doc comments are always indented even if they were flush left.
       if (text.startsWith("///") && !text.startsWith("////")) {
+        // Line doc comments are always indented even if they were flush left.
         flushLeft = false;
+
+        // Always add a blank line (if possible) before a doc comment block.
+        if (comment == token.precedingComments) linesBefore = 2;
       }
 
-      var sourceComment = new SourceComment(text, commentLine - previousLine,
+      var sourceComment = new SourceComment(text, linesBefore,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
           flushLeft: flushLeft);
 
