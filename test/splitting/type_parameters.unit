@@ -29,3 +29,9 @@ class LongClassName<
     Fifth,
     Sixth,
     Seventh> {}
+>>> prefers to not split at type arguments
+class SomeClass<
+    TypeArgument> extends Base {}
+<<<
+class SomeClass<TypeArgument>
+    extends Base {}

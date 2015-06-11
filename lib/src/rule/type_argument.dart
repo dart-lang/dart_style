@@ -31,6 +31,8 @@ class TypeArgumentRule extends Rule {
   /// The chunks prior to each positional type argument.
   final List<Chunk> _arguments = [];
 
+  int get cost => Cost.typeArgument;
+
   int get numValues => _arguments.length == 1 ? 2 : _arguments.length + 2;
 
   /// Remembers [chunk] as containing the split that occurs right before a type

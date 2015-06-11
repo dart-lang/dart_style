@@ -283,6 +283,9 @@ class Cost {
   /// block contents.
   static const splitBlocks = 2;
 
+  /// Splitting before a type argument or type parameter.
+  static const typeArgument = 4;
+
   /// The cost of a single character that goes past the page limit.
   ///
   /// This cost is high to ensure any solution that fits in the page is

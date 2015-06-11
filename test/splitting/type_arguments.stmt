@@ -30,3 +30,9 @@ new LongClassName<
     Sixth,
     Seventh,
     Eighth>();
+>>> prefers to not split at type arguments
+new SomeClass<
+    TypeArgument>(valueArgument);
+<<<
+new SomeClass<TypeArgument>(
+    valueArgument);

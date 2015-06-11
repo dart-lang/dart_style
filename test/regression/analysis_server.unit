@@ -72,3 +72,11 @@ class Foo {
         in the last notification. If there is only one notification,
         then there will be only one number in this column.''');
   }
+>>>
+final ListResultDescriptor<AnalysisError> HINTS =
+    new ListResultDescriptor<AnalysisError>(
+        'HINT_ERRORS', AnalysisError.NO_ERRORS);
+<<<
+final ListResultDescriptor<AnalysisError> HINTS =
+    new ListResultDescriptor<AnalysisError>(
+        'HINT_ERRORS', AnalysisError.NO_ERRORS);
