@@ -12,6 +12,7 @@ import 'argument_list_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
 import 'dart_formatter.dart';
+import 'nesting_builder.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
 import 'rule/rule.dart';
@@ -49,7 +50,7 @@ class SourceVisitor implements AstVisitor {
   /// The stack of nesting levels where block arguments may start.
   ///
   /// A block argument's contents will nest at the last level in this stack.
-  final _blockArgumentNesting = [0];
+  final _blockArgumentNesting = <NestingLevel>[];
 
   /// The rule that should be used for the contents of a literal body that are
   /// about to be written.
@@ -70,6 +71,8 @@ class SourceVisitor implements AstVisitor {
       : _formatter = formatter,
         _source = source {
     builder = new ChunkBuilder(formatter, source);
+
+    _blockArgumentNesting.add(builder.currentNesting);
   }
 
   /// Runs the visitor on [node], formatting its contents.
@@ -167,6 +170,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitAssignmentExpression(AssignmentExpression node) {
+    builder.nestExpression();
+
     visit(node.leftHandSide);
     space();
     token(node.operator);
@@ -174,6 +179,8 @@ class SourceVisitor implements AstVisitor {
     builder.startSpan();
     visit(node.rightHandSide);
     builder.endSpan();
+
+    builder.unnest();
   }
 
   visitAwaitExpression(AwaitExpression node) {
@@ -289,6 +296,9 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
+    // Space after the parameter list.
+    space();
+
     // The "async" or "sync" keyword.
     token(node.keyword);
 
@@ -311,9 +321,10 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitCascadeExpression(CascadeExpression node) {
-    visit(node.target);
+    builder.nestExpression(Indent.cascade);
+    startBlockArgumentNesting();
 
-    builder.indent();
+    visit(node.target);
 
     // If the cascade sections have consistent names they can be broken
     // normally otherwise they always get their own line.
@@ -323,11 +334,14 @@ class SourceVisitor implements AstVisitor {
       visitNodes(node.cascadeSections, between: zeroSplit);
       builder.endRule();
     } else {
-      newline();
-      visitNodes(node.cascadeSections, between: newline);
+      builder.startRule(new HardSplitRule());
+      zeroSplit();
+      visitNodes(node.cascadeSections, between: zeroSplit);
+      builder.endRule();
     }
 
-    builder.unindent();
+    endBlockArgumentNesting();
+    builder.unnest();
   }
 
   /// Whether a cascade should be allowed to be inline as opposed to one
@@ -691,6 +705,9 @@ class SourceVisitor implements AstVisitor {
 
   visitExpressionFunctionBody(ExpressionFunctionBody node) {
     _simpleStatement(node, () {
+      // Space after the parameter list.
+      space();
+
       // The "async" or "sync" keyword.
       token(node.keyword, after: space);
 
@@ -1156,8 +1173,6 @@ class SourceVisitor implements AstVisitor {
     builder.startSpan();
     builder.nestExpression();
 
-    var blockArgumentNesting = builder.currentNesting;
-
     visit(target);
 
     // With a chain of method calls like `foo.bar.baz.bang`, they either all
@@ -1198,7 +1213,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       if (!args.hasBlockArguments) {
-        startBlockArgumentNesting(blockArgumentNesting);
+        startBlockArgumentNesting();
       }
 
       // For a single method call, stop the span before the arguments to make
@@ -1248,6 +1263,7 @@ class SourceVisitor implements AstVisitor {
 
   visitNativeFunctionBody(NativeFunctionBody node) {
     _simpleStatement(node, () {
+      space();
       token(node.nativeKeyword);
       space();
       visit(node.stringLiteral);
@@ -1648,24 +1664,27 @@ class SourceVisitor implements AstVisitor {
   /// and body. (It's used for constructor initialization lists.)
   void _visitBody(FormalParameterList parameters, FunctionBody body,
       [afterParameters()]) {
+    // If the body is "=>", add an extra level of indentation around the
+    // parameters and the body. This ensures that if the parameters wrap, they
+    // wrap more deeply than the "=>" does, as in:
+    //
+    //     someFunction(parameter,
+    //             parameter, parameter) =>
+    //         "the body";
+    if (body is ExpressionFunctionBody) builder.nestExpression();
+
     if (parameters != null) {
-      // If the body is "=>", add an extra level of indentation around the
-      // parameters. This ensures that if they wrap, they wrap more deeply than
-      // the "=>" does, as in:
-      //
-      //     someFunction(parameter,
-      //             parameter, parameter) =>
-      //         "the body";
-      if (body is ExpressionFunctionBody) builder.nestExpression();
+      builder.nestExpression();
 
       visit(parameters);
       if (afterParameters != null) afterParameters();
 
-      if (body is ExpressionFunctionBody) builder.unnest();
+      builder.unnest();
     }
 
-    if (body is! EmptyFunctionBody) space();
     visit(body);
+
+    if (body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded
@@ -1724,7 +1743,7 @@ class SourceVisitor implements AstVisitor {
       builder.startRule(elementSplit);
 
       for (var element in elements) {
-        if (element != elements.first) builder.split(nesting: 0, space: true);
+        if (element != elements.first) builder.blockSplit(space: true);
 
         builder.nestExpression();
 
@@ -1819,10 +1838,9 @@ class SourceVisitor implements AstVisitor {
     _nextLiteralBodyRule = rule;
   }
 
-  /// Captures [nesting] as the nesting level where subsequent block arguments
-  /// should start.
-  void startBlockArgumentNesting([int nesting]) {
-    if (nesting == null) nesting = builder.currentNesting;
+  /// Captures the current nesting level as marking where subsequent block
+  /// arguments should start.
+  void startBlockArgumentNesting() {
     _blockArgumentNesting.add(builder.currentNesting);
   }
 
@@ -1845,14 +1863,14 @@ class SourceVisitor implements AstVisitor {
 
     // Split after the bracket.
     builder.startRule();
-    builder.split(nesting: 0, space: space, isDouble: false);
+    builder.blockSplit(space: space, isDouble: false);
 
     body();
 
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       builder.unindent();
-      builder.split(nesting: 0, space: space);
+      builder.blockSplit(space: space);
     });
 
     builder.endRule();

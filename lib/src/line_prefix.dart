@@ -41,7 +41,7 @@ class LinePrefix {
   /// block over.
   final int _indent;
 
-  final Nesting _nesting;
+  final NestingSplitter _nesting;
 
   /// The absolute starting column of the line after this chunk.
   ///
@@ -52,7 +52,7 @@ class LinePrefix {
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
   LinePrefix(int indent)
-      : this._(0, {}, indent, new Nesting(), flushLeft: false);
+      : this._(0, {}, indent, new NestingSplitter(), flushLeft: false);
 
   LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting,
       {bool flushLeft : false})

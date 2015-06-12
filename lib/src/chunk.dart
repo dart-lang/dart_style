@@ -5,6 +5,7 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
+import 'nesting.dart';
 import 'rule/rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -78,7 +79,7 @@ class Chunk extends Selection {
   int get indent => _indent;
   int _indent;
 
-  /// The number of levels of expression nesting following this chunk.
+  /// The expression nesting level following this chunk.
   ///
   /// This is used to determine how much to increase the indentation when a
   /// line starts after this chunk. A single statement may be indented multiple
@@ -88,8 +89,8 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  int get nesting => _nesting;
-  int _nesting;
+  NestingLevel get nesting => _nesting;
+  NestingLevel _nesting;
 
   /// If this chunk marks the beginning of a block, these are the chunks
   /// contained in the block.
@@ -196,7 +197,7 @@ class Chunk extends Selection {
   /// produced by walking the source and the splits coming from comments and
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
-  void applySplit(Rule rule, int indent, int nesting,
+  void applySplit(Rule rule, int indent, NestingLevel nesting,
       {bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
     if (flushLeft == null) flushLeft = false;
     if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
@@ -227,17 +228,12 @@ class Chunk extends Selection {
     _canDivide = canDivide;
   }
 
-  void flattenNesting(Map<int, int> nestingMap) {
-    _nesting = nestingMap[_nesting];
-  }
-
   String toString() {
     var parts = [];
 
     if (text.isNotEmpty) parts.add(text);
 
     if (_indent != null) parts.add("indent:$_indent");
-    if (_nesting != 0) parts.add("nesting:$_nesting");
     if (spaceWhenUnsplit) parts.add("space");
     if (_isDouble) parts.add("double");
     if (_flushLeft) parts.add("flush");

@@ -9,6 +9,7 @@ import 'dart_formatter.dart';
 import 'debug.dart' as debug;
 import 'line_splitter.dart';
 import 'line_writer.dart';
+import 'nesting.dart';
 import 'nesting_builder.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
@@ -94,7 +95,7 @@ class ChunkBuilder {
   Rule get rule => _rules.last;
 
   /// The current level of expression nesting.
-  int get currentNesting => _nesting.currentNesting;
+  NestingLevel get currentNesting => _nesting.currentNesting;
 
   ChunkBuilder(this._formatter, this._source)
       : _parent = null,
@@ -142,10 +143,16 @@ class ChunkBuilder {
   ///
   /// If [isDouble] is passed, forces the split to either be a single or double
   /// newline. Otherwise, leaves it indeterminate.
-  Chunk split({int nesting, bool space, bool isDouble, bool flushLeft}) =>
-      _writeSplit(_rules.last,
-          nesting: nesting,
-          flushLeft: flushLeft,
+  Chunk split({bool space, bool isDouble, bool flushLeft}) =>
+      _writeSplit(_rules.last, null,
+          flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
+
+  /// Write a split owned by the current innermost rule.
+  ///
+  /// Unlike [split()], this ignores any current expression nesting. It always
+  /// indents the next line at the statement level.
+  Chunk blockSplit({bool space, bool isDouble}) =>
+      _writeSplit(_rules.last, _nesting.blockNesting,
           isDouble: isDouble,
           spaceWhenUnsplit: space);
 
@@ -397,15 +404,15 @@ class ChunkBuilder {
   /// splitter when it tries to recurse on huge collection literals.
   void forceRules() => _handleHardSplit();
 
-  /// Increases the level of expression nesting.
+  /// Begins a new expression nesting level [spaces] deeper than the current
+  /// one if it splits.
   ///
-  /// Expressions that are more nested will get increased indentation when split
-  /// if the previous line has a lower level of nesting.
-  void nestExpression() {
-    _nesting.nest();
+  /// If [spaces] is omitted, defaults to [Indent.expression].
+  void nestExpression([int spaces]) {
+    _nesting.nest(spaces);
   }
 
-  /// Decreases the level of expression nesting.
+  /// Discards the most recent level of expression nesting.
   ///
   /// Expressions that are more nested will get increased indentation when split
   /// if the previous line has a lower level of nesting.
@@ -455,7 +462,7 @@ class ChunkBuilder {
   /// `true`, the block is considered to always split.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(HardSplitRule ignoredSplit, int nesting,
+  ChunkBuilder endBlock(HardSplitRule ignoredSplit, NestingLevel nesting,
       {bool alwaysSplit}) {
     _divideChunks();
 
@@ -488,7 +495,9 @@ class ChunkBuilder {
     //     [short]);
     if (alwaysSplit) _parent.forceRules();
 
-    _parent.split(nesting: nesting, flushLeft: _firstFlushLeft);
+    // Write the split for the block contents themselves.
+    _parent._writeSplit(_parent._rules.last, nesting,
+        flushLeft: _firstFlushLeft);
     return _parent;
   }
 
@@ -635,15 +644,15 @@ class ChunkBuilder {
   void _writeHardSplit({bool nest: false, bool double, bool flushLeft}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
-    _writeSplit(new HardSplitRule(),
-        nesting: nest ? null : 0, flushLeft: flushLeft, isDouble: double);
+    _writeSplit(new HardSplitRule(), nest ? null : _nesting.blockNesting,
+        flushLeft: flushLeft, isDouble: double);
   }
 
   /// Ends the current chunk (if any) with the given split information.
   ///
   /// Returns the chunk.
-  Chunk _writeSplit(Rule rule,
-      {int nesting, bool flushLeft, bool isDouble, bool spaceWhenUnsplit}) {
+  Chunk _writeSplit(Rule rule, NestingLevel nesting,
+      {bool flushLeft, bool isDouble, bool spaceWhenUnsplit}) {
     if (_chunks.isEmpty) {
       if (flushLeft != null) _firstFlushLeft = flushLeft;
 
@@ -683,7 +692,7 @@ class ChunkBuilder {
   bool _canDivideAt(int i) {
     var chunk = _chunks[i];
     if (!chunk.isHardSplit) return false;
-    if (chunk.nesting > 0) return false;
+    if (chunk.nesting.depth != 0) return false;
     if (chunk.blockChunks.isNotEmpty) return false;
 
     // Make sure we don't split the line in the middle of a rule.
@@ -738,26 +747,22 @@ class ChunkBuilder {
   ///
   /// Worse, if the splitter *does* consider these levels, it can dramatically
   /// increase solving time. We can't determine which nesting levels will get
-  /// used eagerly since a level may not be used until later. Instead, when we
-  /// bounce all the way back to no nesting, this goes through and renumbers
-  /// the nesting levels of all of the preceding chunks.
+  /// used eagerly since a level may not be used until later. Instead, when
+  /// we're building all of the chunks, this goes through and renumbers the
+  /// nesting levels.
   void _flattenNestingLevels(List<Chunk> chunks) {
     if (chunks.isEmpty) return;
 
-    var nestingLevels = chunks
-        .map((chunk) => chunk.nesting)
-        .where((nesting) => nesting != null && nesting != 0)
-        .toSet()
-        .toList();
-    nestingLevels.sort();
-
-    var nestingMap = {0: 0};
-    for (var i = 0; i < nestingLevels.length; i++) {
-      nestingMap[nestingLevels[i]] = i + 1;
+    // Find all of the nesting levels that actually appear at the end of chunks.
+    var usedNestings = new Set();
+    for (var chunk in chunks) {
+      if (chunk.nesting == null) continue;
+      usedNestings.add(chunk.nesting);
     }
 
-    for (var chunk in chunks) {
-      chunk.flattenNesting(nestingMap);
+    // Now get rid of any others that didn't occur where a split happened.
+    for (var nesting in usedNestings) {
+      nesting.removeUnused(usedNestings);
     }
   }
 
@@ -800,7 +805,7 @@ class ChunkBuilder {
     // rule types into account.
 
     // If the number of possible solutions is reasonable, don't preempt any.
-    if (values < 4096) return;
+    if (values <= 4096) return;
 
     // Find the rules that contain too much.
     for (var rule in rules) {

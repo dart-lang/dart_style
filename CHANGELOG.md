@@ -20,6 +20,7 @@
 * Enforce a blank line before and after classes (#186).
 * Re-indent line doc comments even if they are flush left (#192).
 * More precisely control newlines between declarations (#173).
+* Nest cascades like expressions (#200, #203, #205, #221, #236).
 
 # 0.1.8
 

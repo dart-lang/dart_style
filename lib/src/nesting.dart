@@ -4,7 +4,82 @@
 
 library dart_style.src.nesting;
 
-import 'whitespace.dart';
+/// A single level of expression nesting.
+///
+/// When a line is split in the middle of an expression, this tracks the
+/// context of where in the expression that split occurs. It ensures that the
+/// [LineSplitter] obeys the expression nesting when deciding what column to
+/// start lines at when split inside an expression.
+///
+/// Each instance of this represents a single level of expression nesting. If we
+/// split at to chunks with different levels of nesting, the splitter ensures
+/// they each get assigned to different columns.
+///
+/// In addition, each level has an indent. This is the number of spaces it is
+/// indented relative to the outer expression. It's almost always
+/// [Indent.expression], but cascades are special magic snowflakes and use
+/// [Indent.cascade].
+class NestingLevel {
+  /// The nesting level surrounding this one, or `null` if this is represents
+  /// top level code in a block.
+  NestingLevel get parent => _parent;
+  NestingLevel _parent;
+
+  /// The number of characters that this nesting level is indented relative to
+  /// the containing level.
+  ///
+  /// Normally, this is [Indent.expression], but cascades use [Indent.cascade].
+  final int indent;
+
+  /// The number of nesting levels surrounding this one.
+  int get depth {
+    var result = 0;
+    var nesting = this;
+    while (nesting != null) {
+      result++;
+      nesting = nesting.parent;
+    }
+
+    return result - 1;
+  }
+
+  NestingLevel() : indent = 0;
+
+  NestingLevel._(this._parent, this.indent);
+
+  /// Creates a new deeper level of nesting indented [spaces] more characters
+  /// that the outer level.
+  NestingLevel nest(int spaces) => new NestingLevel._(this, spaces);
+
+  /// Gets the relative indentation of the nesting level at [depth].
+  int indentAtDepth(int depth) {
+    // How many levels do we need to walk up to reach [depth]?
+    var levels = this.depth - depth;
+    assert(levels >= 0);
+
+    var nesting = this;
+    for (var i = 0; i < levels; i++) {
+      nesting = nesting._parent;
+    }
+
+    return nesting.indent;
+  }
+
+  /// Discards this level's parent if it is not in [used] (or is not the top
+  /// level nesting).
+  void removeUnused(Set<NestingLevel> used) {
+    // Always keep the top level zero nesting.
+    if (_parent == null) return;
+    if (_parent._parent == null) return;
+
+    if (used.contains(_parent)) return;
+
+    // Unlink the unused parent from the chain.
+    _parent = _parent._parent;
+  }
+
+  String toString() => depth.toString();
+}
 
 /// Maintains a stack of nested expressions that have currently been split.
 ///
@@ -22,8 +97,8 @@ import 'whitespace.dart';
 ///
 /// This class is a persistent collection. Each instance is immutable and
 /// methods to modify it return a new collection.
-class Nesting {
-  final Nesting _parent;
+class NestingSplitter {
+  final NestingSplitter _parent;
 
   /// The number of characters of indentation for the current nesting.
   int get indent => _indent;
@@ -33,9 +108,9 @@ class Nesting {
   int get depth => _depth;
   final int _depth;
 
-  Nesting() : this._(null, 0, 0);
+  NestingSplitter() : this._(null, 0, 0);
 
-  Nesting._(this._parent, this._depth, this._indent);
+  NestingSplitter._(this._parent, this._depth, this._indent);
 
   /// LinePrefixes implement their own value equality to ensure that two
   /// prefixes with the same nesting stack are considered equal even if the
@@ -53,7 +128,7 @@ class Nesting {
   /// same nesting stack, even though the nesting came from different tokens.
   /// This lets us reuse memoized suffixes more frequently when solving.
   bool operator ==(other) {
-    if (other is! Nesting) return false;
+    if (other is! NestingSplitter) return false;
 
     var self = this;
     while (self != null) {
@@ -75,7 +150,7 @@ class Nesting {
   }
 
   /// Takes this nesting stack and produces all of the new nesting stacks that
-  /// are possible when followed by the nesting level of [split].
+  /// are possible when followed by [nesting].
   ///
   /// This may produce multiple solutions because a non-incremental jump in
   /// nesting depth can be sliced up multiple ways. Let's say the prefix is:
@@ -112,16 +187,16 @@ class Nesting {
   ///
   /// To accommodate those, this returns the list of all possible ways the
   /// nesting stack can be modified.
-  List<Nesting> update(int nestingDepth) {
-    if (nestingDepth == _depth) return [this];
+  List<NestingSplitter> update(NestingLevel nesting) {
+    if (nesting.depth == _depth) return [this];
 
     // If the new split is less nested than we currently are, pop and discard
     // the previous nesting levels.
-    if (nestingDepth < _depth) {
+    if (nesting.depth < _depth) {
       // Pop items off the stack until we find the level we are now at.
       var stack = this;
       while (stack != null) {
-        if (stack._depth == nestingDepth) return [stack];
+        if (stack._depth == nesting.depth) return [stack];
         stack = stack._parent;
       }
 
@@ -131,18 +206,18 @@ class Nesting {
       return [];
     }
 
-    // Going deeper, so try every indentating for every subset of expression
+    // Going deeper, so try every indentation for every subset of expression
     // nesting levels between the old and new one.
-    return _intermediateDepths(_depth, nestingDepth).map((depths) {
+    return _intermediateDepths(_depth, nesting.depth).map((depths) {
       var result = this;
 
       for (var depth in depths) {
-        result = new Nesting._(
-            result, depth, result._indent + Indent.expression);
+        result = new NestingSplitter._(
+            result, depth, result._indent + nesting.indentAtDepth(depth));
       }
 
-      return new Nesting._(
-          result, nestingDepth, result._indent + Indent.expression);
+      return new NestingSplitter._(
+          result, nesting.depth, result._indent + nesting.indent);
     }).toList();
   }
 

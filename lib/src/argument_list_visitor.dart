@@ -38,11 +38,6 @@ class ArgumentListVisitor {
   /// If all arguments are block arguments, this is zero.
   final int _trailingBlockArguments;
 
-  /// The nesting level for block arguments.
-  ///
-  /// Only valid during a call to [write].
-  int _blockArgumentNesting;
-
   /// The rule used to split the bodies of all of the block arguments.
   Rule get _blockArgumentRule {
     // Lazy initialize.
@@ -131,10 +126,6 @@ class ArgumentListVisitor {
     _visitor.builder.startSpan();
     _visitor.token(_node.leftParenthesis);
 
-    // Keep track of the nesting level outside of the arguments themselves.
-    // Block arguments will nest at that level.
-    _blockArgumentNesting = _visitor.builder.currentNesting;
-
     var rule = _writePositional();
     _writeNamed(rule);
 
@@ -222,7 +213,7 @@ class ArgumentListVisitor {
       // Tell it to use the rule we've already created.
       _visitor.setNextLiteralBodyRule(_blockArgumentRule);
     } else {
-      _visitor.startBlockArgumentNesting(_blockArgumentNesting);
+      _visitor.startBlockArgumentNesting();
     }
 
     _visitor.visit(argument);
