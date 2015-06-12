@@ -4,18 +4,18 @@
 
 library dart_style.src.nesting_builder;
 
+import 'whitespace.dart';
+
 /// Keeps track of expression nesting while the source code is being visited
 /// and the chunks are being built.
 class NestingBuilder {
-  /// The expression nesting level within each block level.
+  /// The expression nesting levels and block indentation levels.
   ///
-  /// This is tracked as a stack of numbers. Each element in the stack
-  /// represents a level of block indentation. The number of the element is the
-  /// number of expression nesting levels in that block.
-  ///
-  /// It's stored as a stack because expressions may contain blocks which in
-  /// turn contain other expressions. The nesting level of the inner
-  /// expressions are unrelated to the surrounding ones. For example:
+  /// This is tracked as a stack of [_IndentLevel]s. Each element in the stack
+  /// represents a level of block indentation. It's stored as a stack because
+  /// expressions may contain blocks which in turn contain other expressions.
+  /// The nesting level of the inner expressions are unrelated to the
+  /// surrounding ones. For example:
   ///
   ///     outer(invocation(() {
   ///       inner(lambda());
@@ -24,10 +24,13 @@ class NestingBuilder {
   /// When writing `inner(lambda())`, we need to track its nesting level. At
   /// the same time, when the lambda is done, we need to return to the nesting
   /// level of `outer(invocation(...`.
+  // TODO(rnystrom): I think this is no longer true now that blocks are handled
+  // as separate nested chunks. Once cascades use expression nesting, we may
+  // be able to just store a single nesting depth in NestingBuilder.
   ///
   /// Has an implicit entry for top-most expression nesting outside of any
   /// block for things like wrapped directives.
-  final List<int> _stack = [0];
+  final List<_IndentLevel> _stack = [new _IndentLevel(0)];
 
   /// When not `null`, the nesting level of the current innermost block after
   /// the next token is written.
@@ -49,29 +52,32 @@ class NestingBuilder {
   /// though we haven't written any of its tokens yet.
   int _pendingNesting;
 
-  /// The current number of levels of indentation block indentation.
-  int get indentation => _stack.length - 1;
+  /// The current number of characters of block indentation.
+  int get indentation => _stack.last.indent;
 
   /// The nesting depth of the current inner-most block.
-  int get nesting => _stack.last;
+  int get nesting => _stack.last.nesting;
 
   /// The nesting depth of the current inner-most block, including any pending
   /// nesting.
   int get currentNesting =>
-      _pendingNesting != null ? _pendingNesting : _stack.last;
+      _pendingNesting != null ? _pendingNesting : _stack.last.nesting;
 
-  /// Increases indentation of the next line by [levels].
-  void indent([int levels = 1]) {
+  /// Creates a new indentation level [spaces] deeper than the current one.
+  ///
+  /// If omitted, [spaces] defaults to [Indent.block].
+  void indent([int spaces]) {
+    if (spaces == null) spaces = Indent.block;
+
     assert(_pendingNesting == null);
 
-    while (levels-- > 0) _stack.add(0);
+    _stack.add(new _IndentLevel(_stack.last.indent + spaces));
   }
 
-  /// Decreases indentation of the next line by [levels].
-  void unindent([int levels = 1]) {
+  /// Discards the most recent indentation level.
+  void unindent() {
     assert(_pendingNesting == null);
-
-    while (levels-- > 0) _stack.removeLast();
+    _stack.removeLast();
   }
 
   /// Increases the level of expression nesting.
@@ -108,6 +114,18 @@ class NestingBuilder {
 
   /// Sets the nesting level of the innermost block to [value].
   void _setNesting(int value) {
-    _stack[_stack.length - 1] = value;
+    _stack.last.nesting = value;
   }
+}
+
+/// Tracks both the "statement-level" indentation and expression nesting while
+/// the code is being visited.
+class _IndentLevel {
+  /// The number of spaces of indentation at this level.
+  final int indent;
+
+  /// The current expression nesting in this indentation level.
+  int nesting = 0;
+
+  _IndentLevel(this.indent);
 }

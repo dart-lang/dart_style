@@ -62,7 +62,7 @@ class LineSplitter {
   /// The list of chunks being split.
   final List<Chunk> _chunks;
 
-  /// The number of levels of additional indentation to apply to each line.
+  /// The number of characters of additional indentation to apply to each line.
   ///
   /// This is used when formatting blocks to get the output into the right
   /// column based on where the block appears.
@@ -88,6 +88,9 @@ class LineSplitter {
   ///
   /// It will determine how best to split it into multiple lines of output and
   /// write the result to [writer].
+  ///
+  /// [firstLineIndent] is the number of characters of whitespace to prefix the
+  /// first line of output with.
   SplitSolution apply(int firstLineIndent) {
     if (debug.traceSplitter) {
       debug.log(debug.green("\nSplitting:"));

@@ -1,5 +1,8 @@
 # 0.2.0
 
+* **BREAKING:** The `indent` argument to `new DartFormatter()` is now a number
+  of *spaces*, not *indentation levels*.
+
 * This version introduces a new n-way constraint system replacing the previous
   binary constraints. It's mostly an internal change, but allows us to fix a
   number of bugs that the old solver couldn't express solutions to.

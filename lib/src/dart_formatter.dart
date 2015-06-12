@@ -25,7 +25,7 @@ class DartFormatter {
   /// The number of characters allowed in a single line.
   final int pageWidth;
 
-  /// The number of levels of indentation to prefix the output lines with.
+  /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
   /// Creates a new formatter for Dart code.

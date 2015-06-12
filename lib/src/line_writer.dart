@@ -7,8 +7,8 @@ library dart_style.src.line_writer;
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
-import 'line_prefix.dart';
 import 'line_splitter.dart';
+import 'whitespace.dart';
 
 /// Given a series of chunks, splits them into lines and writes the result to
 /// a buffer.
@@ -22,7 +22,7 @@ class LineWriter {
   /// The number of characters allowed in a single line.
   final int pageWidth;
 
-  /// The number of levels of additional indentation to apply to each line.
+  /// The number of characters of additional indentation to apply to each line.
   ///
   /// This is used when formatting blocks to get the output into the right
   /// column based on where the block appears.
@@ -81,16 +81,13 @@ class LineWriter {
     var cached = _blockCache[key];
     if (cached != null) return cached;
 
-    // TODO(rnystrom): Dividing here because SplitSet works in columns while
-    // LineWriter and LineSplitter work in indent levels. Should probably just
-    // make everything use columns.
     var writer = new LineWriter._(chunk.blockChunks, _lineEnding,
-        pageWidth, column ~/ spacesPerIndent, _blockCache);
+        pageWidth, column, _blockCache);
 
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
-    // LineWriter ensures all but the first chunk have an indent of 1, and this
+    // LineWriter ensures all but the first chunk have a block indent, and this
     // handles the first chunk. Do something cleaner.
-    var result = writer.writeLines(chunk.flushLeft ? 0 : 1);
+    var result = writer.writeLines(chunk.flushLeft ? 0 : Indent.block);
     return _blockCache[key] = result;
   }
 
@@ -115,11 +112,7 @@ class LineWriter {
 
       // Get ready for the next line.
       newlines = chunk.isDouble ? 2 : 1;
-      if (chunk.flushLeft) {
-        indent = 0;
-      } else {
-        indent = chunk.indent;
-      }
+      indent = chunk.flushLeft ? 0 : chunk.indent;
       start = i + 1;
     }
 
@@ -155,7 +148,7 @@ class LineWriter {
     var solution = splitter.apply(indent);
 
     // Write each chunk with the appropriate splits between them.
-    _buffer.write(" " * ((indent + _blockIndentation) * spacesPerIndent));
+    _buffer.write(" " * (indent + _blockIndentation));
     for (var i = 0; i < chunks.length; i++) {
       var chunk = chunks[i];
       _writeChunk(chunk);

@@ -63,11 +63,11 @@ void main() {
   });
 
   test('preserves initial indent', () {
-    var formatter = new DartFormatter(indent: 2);
+    var formatter = new DartFormatter(indent: 3);
     expect(formatter.formatStatement('if (foo) {bar;}'),  equals(
-        '    if (foo) {\n'
-        '      bar;\n'
-        '    }'));
+        '   if (foo) {\n'
+        '     bar;\n'
+        '   }'));
   });
 
   group('line endings', () {
@@ -132,8 +132,7 @@ void testDirectory(String name) {
         var leadingIndent = 0;
         var indentMatch = indentPattern.firstMatch(description);
         if (indentMatch != null) {
-          // The test specifies it in spaces, but the formatter expects levels.
-          leadingIndent = int.parse(indentMatch[1]) ~/ 2;
+          leadingIndent = int.parse(indentMatch[1]);
           description = description.substring(indentMatch.end);
         }
 

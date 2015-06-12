@@ -305,14 +305,16 @@ class ChunkBuilder {
     }
   }
 
-  /// Increases indentation of the next line by [levels].
-  void indent([int levels = 1]) {
-    _nesting.indent(levels);
+  /// Creates a new indentation level [spaces] deeper than the current one.
+  ///
+  /// If omitted, [spaces] defaults to [Indent.block].
+  void indent([int spaces]) {
+    _nesting.indent(spaces);
   }
 
-  /// Decreases indentation of the next line by [levels].
-  void unindent([int levels = 1]) {
-    _nesting.unindent(levels);
+  /// Discards the most recent indentation level.
+  void unindent() {
+    _nesting.unindent();
   }
 
   /// Starts a new span with [cost].

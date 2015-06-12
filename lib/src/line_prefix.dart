@@ -8,9 +8,6 @@ import 'chunk.dart';
 import 'nesting.dart';
 import 'rule/rule.dart';
 
-/// The number of spaces in a single level of indentation.
-const spacesPerIndent = 2;
-
 /// A prefix of a series of chunks and the context needed to uniquely describe
 /// any shared state between the preceding and following chunks.
 ///
@@ -34,7 +31,8 @@ class LinePrefix {
   /// don't affect the suffix.
   final Map<Rule, int> ruleValues;
 
-  /// The "statement-based" indentation of the line after the prefix.
+  /// The number of characters of "statement-based" indentation of the line
+  /// after the prefix.
   ///
   /// This handles things like control flow, switch cases, and constructor
   /// initialization lists that tweak the per-line indentation.
@@ -45,15 +43,10 @@ class LinePrefix {
 
   final Nesting _nesting;
 
-  /// The indentation level after this chunk, including expression nesting.
-  int get indent => _indent + _nesting.indent;
-
-  /// The actual absolute starting column of the line after this chunk.
+  /// The absolute starting column of the line after this chunk.
   ///
-  /// Unlike [indent], this takes into account whether the line should be
-  /// flush left or not. Also, returns a column number, not an indentation
-  /// level count.
-  int get column => _flushLeft ? 0 : indent * spacesPerIndent;
+  /// This takes into account whether the line should be flush left or not.
+  int get column => _flushLeft ? 0 : _indent + _nesting.indent;
   final bool _flushLeft;
 
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
@@ -88,8 +81,8 @@ class LinePrefix {
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
   LinePrefix extend(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _indent,
-          _nesting, flushLeft: _flushLeft);
+      new LinePrefix._(length + 1, ruleValues, _indent, _nesting,
+          flushLeft: _flushLeft);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression

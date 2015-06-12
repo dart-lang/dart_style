@@ -70,8 +70,8 @@ class Chunk extends Selection {
   String get text => _text;
   String _text;
 
-  /// The number of levels of indentation from the left edge of the block that
-  /// contains this chunk.
+  /// The number of characters of indentation from the left edge of the block
+  /// that contains this chunk.
   ///
   /// For top level chunks that are not inside any block, this also includes
   /// leading indentation.

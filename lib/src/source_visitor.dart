@@ -559,7 +559,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   void _visitConstructorInitializers(ConstructorDeclaration node) {
-    builder.indent(2);
+    builder.indent(Indent.constructorInitializer);
 
     split();
     token(node.separator); // ":".
@@ -586,7 +586,7 @@ class SourceVisitor implements AstVisitor {
     // If there were multiple fields, discard their extra indentation.
     if (node.initializers.length > 1) builder.unindent();
 
-    builder.unindent(2);
+    builder.unindent();
 
     // End the rule for ":" after all of the initializers.
     builder.endRule();
@@ -868,7 +868,7 @@ class SourceVisitor implements AstVisitor {
     } else if (node.variables != null) {
       // Indent split variables more so they aren't at the same level
       // as the rest of the loop clauses.
-      builder.indent(4);
+      builder.indent(Indent.loopVariable);
 
       var declaration = node.variables;
       visitDeclarationMetadata(declaration.metadata);
@@ -879,7 +879,7 @@ class SourceVisitor implements AstVisitor {
         split();
       });
 
-      builder.unindent(4);
+      builder.unindent();
     }
 
     token(node.leftSeparator);
