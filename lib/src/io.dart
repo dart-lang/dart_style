@@ -59,7 +59,10 @@ bool processFile(FormatterOptions options, File file, {String label}) {
         changed: source.text != output.text);
     return true;
   } on FormatterException catch (err) {
-    stderr.writeln(err.message());
+    var color = Platform.operatingSystem != "windows" &&
+        stdioType(stderr) == StdioType.TERMINAL;
+
+    stderr.writeln(err.message(color: color));
   } catch (err, stack) {
     stderr.writeln('''Hit a bug in the formatter when formatting $label.
 Please report at: github.com/dart-lang/dart_style/issues

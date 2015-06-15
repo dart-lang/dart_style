@@ -17,17 +17,26 @@ class FormatterException implements Exception {
   const FormatterException(this.errors);
 
   /// Creates a human-friendly representation of the analysis errors.
-  String message() {
+  String message({bool color}) {
     var buffer = new StringBuffer();
     buffer.writeln("Could not format because the source could not be parsed:");
 
-    for (var error in errors) {
+    // In case we get a huge series of cascaded errors, just show the first few.
+    var shownErrors = errors;
+    if (errors.length > 10) shownErrors = errors.take(10);
+
+    for (var error in shownErrors) {
       var file = new SourceFile(error.source.contents.data,
           url: error.source.fullName);
 
       var span = file.span(error.offset, error.offset + error.length);
       if (buffer.isNotEmpty) buffer.writeln();
-      buffer.write(span.message(error.message, color: true));
+      buffer.write(span.message(error.message, color: color));
+    }
+
+    if (shownErrors.length != errors.length) {
+      buffer.writeln();
+      buffer.write("(${errors.length - shownErrors.length} more errors...)");
     }
 
     return buffer.toString();
