@@ -190,3 +190,35 @@ longFunctionName(
     {k: v},
     {key: value},
     {key: longerValue});
+>>> don't nest because of nested 1-arg fn
+outer(inner({key: value, otherKey: otherLongValue}));
+<<<
+outer(inner({
+  key: value,
+  otherKey: otherLongValue
+}));
+>>> do nest because of nested many-arg fn
+outer(argument, inner({key: value, otherKey: otherLongValue}));
+<<<
+outer(
+    argument,
+    inner({
+      key: value,
+      otherKey: otherLongValue
+    }));
+>>> don't nest because of nested 1-arg method call
+obj.outer(obj.inner({key: value, otherKey: otherLongValue}));
+<<<
+obj.outer(obj.inner({
+  key: value,
+  otherKey: otherLongValue
+}));
+>>> do nest because of nested many-arg method call
+obj.outer(argument, obj.inner({key: value, otherKey: otherLongValue}));
+<<<
+obj.outer(
+    argument,
+    obj.inner({
+      key: value,
+      otherKey: otherLongValue
+    }));

@@ -21,6 +21,8 @@
 * Re-indent line doc comments even if they are flush left (#192).
 * More precisely control newlines between declarations (#173).
 * Nest cascades like expressions (#200, #203, #205, #221, #236).
+* Do not nest blocks inside single-argument function and method calls.
+* Do nest blocks inside `=>` functions.
 
 # 0.1.8
 

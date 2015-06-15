@@ -18,10 +18,10 @@
  * Internal use only. Call initializeDateFormatting instead.
  **/
 Map dateTimePatternMap() => const {
-  /**
+      /**
    * Extended set of localized date/time patterns for locale af.
    */
-  'af': const {
-    'd': 'd', // DAY
-  }
-};
+      'af': const {
+        'd': 'd', // DAY
+      }
+    };

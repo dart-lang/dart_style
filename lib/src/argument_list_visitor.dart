@@ -57,6 +57,22 @@ class ArgumentListVisitor {
 
   bool get hasBlockArguments => _blockArguments.isNotEmpty;
 
+  /// Whether this argument list should force the containing method chain to
+  /// add a level of block nesting.
+  bool get nestMethodArguments {
+    // If there are block arguments, we don't want the method to force them to
+    // the right.
+    if (_blockArguments.isNotEmpty) return false;
+
+    // Corner case: If there is just a single argument, don't bump the nesting.
+    // This lets us avoid spurious indentation in cases like:
+    //
+    //     object.method(function(() {
+    //       body;
+    //     }));
+    return _node.arguments.length > 1;
+  }
+
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
     // Assumes named arguments follow all positional ones.
     var positional = node.arguments
@@ -212,16 +228,22 @@ class ArgumentListVisitor {
 
       // Tell it to use the rule we've already created.
       _visitor.setNextLiteralBodyRule(_blockArgumentRule);
-    } else {
-      _visitor.startBlockArgumentNesting();
+    } else if (_node.arguments.length > 1) {
+      // Corner case: If there is just a single argument, don't bump the
+      // nesting. This lets us avoid spurious indentation in cases like:
+      //
+      //     function(function(() {
+      //       body;
+      //     }));
+      _visitor.builder.startBlockArgumentNesting();
     }
 
     _visitor.visit(argument);
 
     if (_blockArguments.contains(argument)) {
       if (rule != null) rule.afterBlockArgument();
-    } else {
-      _visitor.endBlockArgumentNesting();
+    } else if (_node.arguments.length > 1) {
+      _visitor.builder.endBlockArgumentNesting();
     }
 
     // Write the trailing comma.

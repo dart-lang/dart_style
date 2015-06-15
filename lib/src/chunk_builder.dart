@@ -60,6 +60,11 @@ class ChunkBuilder {
   /// The current state.
   final _nesting = new NestingBuilder();
 
+  /// The stack of nesting levels where block arguments may start.
+  ///
+  /// A block argument's contents will nest at the last level in this stack.
+  final _blockArgumentNesting = <NestingLevel>[];
+
   /// The index of the "current" chunk being written.
   ///
   /// If the last chunk is still being appended to, this is its index.
@@ -94,16 +99,16 @@ class ChunkBuilder {
   /// The current innermost rule.
   Rule get rule => _rules.last;
 
-  /// The current level of expression nesting.
-  NestingLevel get currentNesting => _nesting.currentNesting;
-
   ChunkBuilder(this._formatter, this._source)
       : _parent = null,
         _chunks = [] {
     indent(_formatter.indent);
+    startBlockArgumentNesting();
   }
 
-  ChunkBuilder._(this._parent, this._formatter, this._source, this._chunks);
+  ChunkBuilder._(this._parent, this._formatter, this._source, this._chunks) {
+    startBlockArgumentNesting();
+  }
 
   /// Writes [string], the text for a single token, to the output.
   ///
@@ -440,6 +445,17 @@ class ChunkBuilder {
     _chunks.last.endSelectionFromEnd(fromEnd);
   }
 
+  /// Captures the current nesting level as marking where subsequent block
+  /// arguments should start.
+  void startBlockArgumentNesting() {
+    _blockArgumentNesting.add(_nesting.currentNesting);
+  }
+
+  /// Releases the last nesting level captured by [startBlockArgumentNesting].
+  void endBlockArgumentNesting() {
+    _blockArgumentNesting.removeLast();
+  }
+
   /// Starts a new block as a child of the current chunk.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
@@ -462,8 +478,7 @@ class ChunkBuilder {
   /// `true`, the block is considered to always split.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(HardSplitRule ignoredSplit, NestingLevel nesting,
-      {bool alwaysSplit}) {
+  ChunkBuilder endBlock(HardSplitRule ignoredSplit, {bool alwaysSplit}) {
     _divideChunks();
 
     // If we don't already know if the block is going to split, see if it
@@ -496,7 +511,7 @@ class ChunkBuilder {
     if (alwaysSplit) _parent.forceRules();
 
     // Write the split for the block contents themselves.
-    _parent._writeSplit(_parent._rules.last, nesting,
+    _parent._writeSplit(_parent._rules.last, _parent._blockArgumentNesting.last,
         flushLeft: _firstFlushLeft);
     return _parent;
   }

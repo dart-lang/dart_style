@@ -12,7 +12,6 @@ import 'argument_list_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
 import 'dart_formatter.dart';
-import 'nesting_builder.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
 import 'rule/rule.dart';
@@ -47,11 +46,6 @@ class SourceVisitor implements AstVisitor {
   /// This is calculated and cached by [_findSelectionEnd].
   int _selectionEnd;
 
-  /// The stack of nesting levels where block arguments may start.
-  ///
-  /// A block argument's contents will nest at the last level in this stack.
-  final _blockArgumentNesting = <NestingLevel>[];
-
   /// The rule that should be used for the contents of a literal body that are
   /// about to be written.
   ///
@@ -71,8 +65,6 @@ class SourceVisitor implements AstVisitor {
       : _formatter = formatter,
         _source = source {
     builder = new ChunkBuilder(formatter, source);
-
-    _blockArgumentNesting.add(builder.currentNesting);
   }
 
   /// Runs the visitor on [node], formatting its contents.
@@ -267,11 +259,11 @@ class SourceVisitor implements AstVisitor {
 
     // Blocks as operands to infix operators should always nest like regular
     // operands. (Granted, this case is exceedingly rare in real code.)
-    startBlockArgumentNesting();
+    builder.startBlockArgumentNesting();
 
     traverse(node);
 
-    endBlockArgumentNesting();
+    builder.endBlockArgumentNesting();
 
     builder.unnest();
     builder.endSpan();
@@ -322,7 +314,7 @@ class SourceVisitor implements AstVisitor {
 
   visitCascadeExpression(CascadeExpression node) {
     builder.nestExpression(Indent.cascade);
-    startBlockArgumentNesting();
+    builder.startBlockArgumentNesting();
 
     visit(node.target);
 
@@ -340,7 +332,7 @@ class SourceVisitor implements AstVisitor {
       builder.endRule();
     }
 
-    endBlockArgumentNesting();
+    builder.endBlockArgumentNesting();
     builder.unnest();
   }
 
@@ -720,9 +712,11 @@ class SourceVisitor implements AstVisitor {
 
       if (_isInLambda(node)) builder.endSpan();
 
+      builder.startBlockArgumentNesting();
       builder.startSpan();
       visit(node.expression);
       builder.endSpan();
+      builder.endBlockArgumentNesting();
     });
   }
 
@@ -1212,9 +1206,7 @@ class SourceVisitor implements AstVisitor {
         builder.endRule();
       }
 
-      if (!args.hasBlockArguments) {
-        startBlockArgumentNesting();
-      }
+      if (args.nestMethodArguments) builder.startBlockArgumentNesting();
 
       // For a single method call, stop the span before the arguments to make
       // it easier to keep the call name with the target. In other words,
@@ -1231,9 +1223,7 @@ class SourceVisitor implements AstVisitor {
 
       visit(invocation.argumentList);
 
-      if (!args.hasBlockArguments) {
-        endBlockArgumentNesting();
-      }
+      if (args.nestMethodArguments) builder.endBlockArgumentNesting();
 
       // If we split the chain and more methods are coming, start a new one.
       if (invocation != invocations.last && args.hasBlockArguments) {
@@ -1787,7 +1777,7 @@ class SourceVisitor implements AstVisitor {
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    builder = builder.endBlock(elementRule, _blockArgumentNesting.last,
+    builder = builder.endBlock(elementRule,
         alwaysSplit: hasLeadingNewline || forceRule);
 
     builder.endRule();
@@ -1836,17 +1826,6 @@ class SourceVisitor implements AstVisitor {
   /// or function literal body that are about to be visited.
   void setNextLiteralBodyRule(Rule rule) {
     _nextLiteralBodyRule = rule;
-  }
-
-  /// Captures the current nesting level as marking where subsequent block
-  /// arguments should start.
-  void startBlockArgumentNesting() {
-    _blockArgumentNesting.add(builder.currentNesting);
-  }
-
-  /// Releases the last nesting level captured by [startBlockArgumentNesting].
-  void endBlockArgumentNesting() {
-    _blockArgumentNesting.removeLast();
   }
 
   /// Writes an bracket-delimited body and handles indenting and starting the

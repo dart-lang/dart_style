@@ -80,3 +80,72 @@ final ListResultDescriptor<AnalysisError> HINTS =
 final ListResultDescriptor<AnalysisError> HINTS =
     new ListResultDescriptor<AnalysisError>(
         'HINT_ERRORS', AnalysisError.NO_ERRORS);
+>>> (indent 2)
+  makeMatcher() {
+    docComment(toHtmlVisitor.collectHtml(() {
+      toHtmlVisitor.p(() {
+        toHtmlVisitor.write(context);
+      });
+    }));
+  }
+<<<
+  makeMatcher() {
+    docComment(toHtmlVisitor.collectHtml(() {
+      toHtmlVisitor.p(() {
+        toHtmlVisitor.write(context);
+      });
+    }));
+  }
+>>> (indent 6)
+      main() {
+        files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
+            valueDecoder: (String jsonPath, Object json) =>
+                jsonDecoder._decodeUnion(
+                    jsonPath,
+                    json,
+                    "type",
+                    {
+              "add": (String jsonPath, Object json) =>
+                  new AddContentOverlay.fromJson(jsonDecoder, jsonPath, json),
+              "change": (String jsonPath, Object json) =>
+                  new ChangeContentOverlay.fromJson(
+                      jsonDecoder, jsonPath, json),
+              "remove": (String jsonPath, Object json) =>
+                  new RemoveContentOverlay.fromJson(jsonDecoder, jsonPath, json)
+            }));
+      }
+<<<
+      main() {
+        files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
+            valueDecoder: (String jsonPath, Object json) =>
+                jsonDecoder._decodeUnion(
+                    jsonPath,
+                    json,
+                    "type",
+                    {
+                  "add": (String jsonPath, Object json) =>
+                      new AddContentOverlay.fromJson(
+                          jsonDecoder, jsonPath, json),
+                  "change": (String jsonPath, Object json) =>
+                      new ChangeContentOverlay.fromJson(
+                          jsonDecoder, jsonPath, json),
+                  "remove": (String jsonPath, Object json) =>
+                      new RemoveContentOverlay.fromJson(
+                          jsonDecoder, jsonPath, json)
+                }));
+      }
+>>> (indent 2)
+  main() {
+    fieldInitializationCode.add(collectCode(() {
+          writeln(
+              '_$streamName = new StreamController<$className>(sync: true);');
+          writeln('$streamName = _$streamName.stream.asBroadcastStream();');
+        }));
+  }
+<<<
+  main() {
+    fieldInitializationCode.add(collectCode(() {
+      writeln('_$streamName = new StreamController<$className>(sync: true);');
+      writeln('$streamName = _$streamName.stream.asBroadcastStream();');
+    }));
+  }

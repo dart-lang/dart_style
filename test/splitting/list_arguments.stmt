@@ -300,3 +300,43 @@ longFunctionName(
     name2: [element, element],
     name3: argument,
     name4: argument);
+>>> don't nest because of nested 1-arg fn
+outer(inner([element, element, element, element]));
+<<<
+outer(inner([
+  element,
+  element,
+  element,
+  element
+]));
+>>> do nest because of nested many-arg fn
+outer(argument, inner([element, element, element, element]));
+<<<
+outer(
+    argument,
+    inner([
+      element,
+      element,
+      element,
+      element
+    ]));
+>>> don't nest because of nested 1-arg method call
+obj.outer(obj.inner([element, element, element, element]));
+<<<
+obj.outer(obj.inner([
+  element,
+  element,
+  element,
+  element
+]));
+>>> do nest because of nested many-arg method call
+obj.outer(argument, obj.inner([element, element, element, element]));
+<<<
+obj.outer(
+    argument,
+    obj.inner([
+      element,
+      element,
+      element,
+      element
+    ]));
