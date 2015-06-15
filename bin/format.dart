@@ -149,11 +149,13 @@ void formatStdin(FormatterOptions options, List<int> selection) {
       return true;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
+      exitCode = 65; // sysexits.h: EX_DATAERR
     } catch (err, stack) {
       stderr.writeln('''Hit a bug in the formatter when formatting stdin.
 Please report at: github.com/dart-lang/dart_style/issues
 $err
 $stack''');
+      exitCode = 70; // sysexits.h: EX_SOFTWARE
     }
   });
 }

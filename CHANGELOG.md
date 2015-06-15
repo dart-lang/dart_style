@@ -23,6 +23,7 @@
 * Nest cascades like expressions (#200, #203, #205, #221, #236).
 * Do not nest blocks inside single-argument function and method calls.
 * Do nest blocks inside `=>` functions.
+* Set failure exit code for malformed input when reading from stdin (#359).
 
 # 0.1.8
 
