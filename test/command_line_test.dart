@@ -188,6 +188,13 @@ void main() {
       process.shouldExit(64);
     });
 
+    test("exits with 65 on parse error.", () {
+      var process = runFormatter();
+      process.writeLine("herp derp i are a dart");
+      process.closeStdin();
+      process.shouldExit(65);
+    });
+
     test("reads from stdin.", () {
       var process = runFormatter();
       process.writeLine(unformattedSource);
@@ -195,7 +202,7 @@ void main() {
 
       // No trailing newline at the end.
       process.stdout.expect(formattedSource.trimRight());
-      process.shouldExit();
+      process.shouldExit(0);
     });
   });
 }
