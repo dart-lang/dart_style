@@ -47,6 +47,7 @@ class ArgumentListVisitor {
 
     return _blockRule;
   }
+
   Rule _blockRule;
 
   /// Returns `true` if there is only a single positional argument.
@@ -75,8 +76,8 @@ class ArgumentListVisitor {
 
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
     // Assumes named arguments follow all positional ones.
-    var positional = node.arguments
-        .takeWhile((arg) => arg is! NamedExpression).toList();
+    var positional =
+        node.arguments.takeWhile((arg) => arg is! NamedExpression).toList();
     var named = node.arguments.skip(positional.length).toList();
 
     var blocks = node.arguments.where(_isBlockArgument).toSet();
@@ -208,8 +209,8 @@ class ArgumentListVisitor {
     }
 
     // Split before the first named argument.
-    namedRule.beforeArguments(
-        _visitor.builder.split(space: _positional.isNotEmpty));
+    namedRule
+        .beforeArguments(_visitor.builder.split(space: _positional.isNotEmpty));
 
     for (var argument in _named) {
       _writeArgument(namedRule, argument);

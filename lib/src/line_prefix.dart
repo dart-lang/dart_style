@@ -55,7 +55,7 @@ class LinePrefix {
       : this._(0, {}, indent, new NestingSplitter(), flushLeft: false);
 
   LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting,
-      {bool flushLeft : false})
+      {bool flushLeft: false})
       : _flushLeft = flushLeft;
 
   bool operator ==(other) {
@@ -80,9 +80,9 @@ class LinePrefix {
 
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
-  LinePrefix extend(Map<Rule, int> ruleValues) =>
-      new LinePrefix._(length + 1, ruleValues, _indent, _nesting,
-          flushLeft: _flushLeft);
+  LinePrefix extend(Map<Rule, int> ruleValues) => new LinePrefix._(
+      length + 1, ruleValues, _indent, _nesting,
+      flushLeft: _flushLeft);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression
@@ -90,11 +90,12 @@ class LinePrefix {
   ///
   /// If this prefix is for a nested block, [blockIndentation] may be nonzero
   /// to push the output to the right.
-  Iterable<LinePrefix> split(Chunk chunk, int blockIndentation,
-      Map<Rule, int> ruleValues) {
+  Iterable<LinePrefix> split(
+      Chunk chunk, int blockIndentation, Map<Rule, int> ruleValues) {
     var indent = chunk.indent + blockIndentation;
     return _nesting.update(chunk.nesting).map((nesting) => new LinePrefix._(
-        length + 1, ruleValues, indent, nesting, flushLeft: chunk.flushLeft));
+        length + 1, ruleValues, indent, nesting,
+        flushLeft: chunk.flushLeft));
   }
 
   String toString() {
@@ -102,9 +103,8 @@ class LinePrefix {
     if (_indent != 0) result += " indent ${_indent}";
     if (_nesting.indent != 0) result += " nesting ${_nesting.indent}";
     if (ruleValues.isNotEmpty) {
-      var rules = ruleValues.keys
-          .map((key) => "$key:${ruleValues[key]}")
-          .join(" ");
+      var rules =
+          ruleValues.keys.map((key) => "$key:${ruleValues[key]}").join(" ");
 
       result += " rules $rules";
     }

@@ -272,9 +272,11 @@ class SourceVisitor implements AstVisitor {
     // Format function bodies as separate blocks.
     if (node.parent is BlockFunctionBody) {
       _writeBlockLiteral(node.leftBracket, node.rightBracket,
-            forceRule: node.statements.isNotEmpty, block: () {
-        visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
-      });
+          forceRule: node.statements.isNotEmpty,
+          block: () {
+            visitNodes(node.statements,
+                between: oneOrTwoNewlines, after: newline);
+          });
       return;
     }
 
@@ -674,9 +676,11 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     space();
 
-    _writeBody(node.leftBracket, node.rightBracket, space: true, body: () {
-      visitCommaSeparatedNodes(node.constants, between: split);
-    });
+    _writeBody(node.leftBracket, node.rightBracket,
+        space: true,
+        body: () {
+          visitCommaSeparatedNodes(node.constants, between: split);
+        });
   }
 
   visitExportDirective(ExportDirective node) {
@@ -784,9 +788,11 @@ class SourceVisitor implements AstVisitor {
     }
 
     var requiredParams = node.parameters
-        .where((param) => param is! DefaultFormalParameter).toList();
+        .where((param) => param is! DefaultFormalParameter)
+        .toList();
     var optionalParams = node.parameters
-        .where((param) => param is DefaultFormalParameter).toList();
+        .where((param) => param is DefaultFormalParameter)
+        .toList();
 
     builder.nestExpression();
     token(node.leftParenthesis);
@@ -839,8 +845,8 @@ class SourceVisitor implements AstVisitor {
 
       builder.startRule(namedRule);
 
-      namedRule.beforeArguments(
-          builder.split(space: requiredParams.isNotEmpty));
+      namedRule
+          .beforeArguments(builder.split(space: requiredParams.isNotEmpty));
 
       // "[" or "{" for optional parameters.
       token(node.leftDelimiter);
@@ -1293,7 +1299,7 @@ class SourceVisitor implements AstVisitor {
     // Right now, the formatter does not try to do any reformatting of the
     // contents of interpolated strings. Instead, it treats the entire thing as
     // a single (possibly multi-line) chunk of text.
-     _writeStringLiteral(
+    _writeStringLiteral(
         _source.text.substring(node.beginToken.offset, node.endToken.end),
         node.offset);
   }
@@ -1620,7 +1626,8 @@ class SourceVisitor implements AstVisitor {
   /// Visits the collection literal [node] whose body starts with [leftBracket],
   /// ends with [rightBracket] and contains [elements].
   void _visitCollectionLiteral(TypedLiteral node, Token leftBracket,
-      Iterable<AstNode> elements, Token rightBracket, [int cost]) {
+      Iterable<AstNode> elements, Token rightBracket,
+      [int cost]) {
     modifier(node.constKeyword);
     visit(node.typeArguments);
 
@@ -1631,28 +1638,31 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    _writeBlockLiteral(leftBracket, rightBracket, forceRule: false, block: () {
-      // Always use a hard rule to split the elements. The parent chunk of the
-      // collection will handle the unsplit case, so this only comes into play
-      // when the collection is split.
-      var elementSplit = new HardSplitRule();
-      builder.startRule(elementSplit);
+    _writeBlockLiteral(leftBracket, rightBracket,
+        forceRule: false,
+        block: () {
+          // Always use a hard rule to split the elements. The parent chunk of
+          // the collection will handle the unsplit case, so this only comes
+          // into play when the collection is split.
+          var elementSplit = new HardSplitRule();
+          builder.startRule(elementSplit);
 
-      for (var element in elements) {
-        if (element != elements.first) builder.blockSplit(space: true);
+          for (var element in elements) {
+            if (element != elements.first) builder.blockSplit(space: true);
 
-        builder.nestExpression();
+            builder.nestExpression();
 
-        visit(element);
+            visit(element);
 
-        // The comma after the element.
-        if (element.endToken.next.lexeme == ",") token(element.endToken.next);
+            // The comma after the element.
+            if (element.endToken.next.lexeme ==
+                ",") token(element.endToken.next);
 
-        builder.unnest();
-      }
+            builder.unnest();
+          }
 
-      return elementSplit;
-    });
+          return elementSplit;
+        });
   }
 
   /// Writes a block literal (function, list, or map), handling indentation
@@ -1763,8 +1773,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Returns `true` if [node] is immediately contained within an anonymous
   /// [FunctionExpression].
-  bool _isInLambda(AstNode node) =>
-      node.parent is FunctionExpression &&
+  bool _isInLambda(AstNode node) => node.parent is FunctionExpression &&
       node.parent.parent is! FunctionDeclaration;
 
   /// Writes the string literal [string] to the output.

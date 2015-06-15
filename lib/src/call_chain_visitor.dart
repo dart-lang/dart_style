@@ -30,7 +30,7 @@ class CallChainVisitor {
 
   /// The mixed method calls and property accesses in the call chain in the
   /// order that they appear in the source.
-  final List <Expression> _calls;
+  final List<Expression> _calls;
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -74,9 +74,8 @@ class CallChainVisitor {
     //       .length;
     var properties = [];
     if (target is SimpleIdentifier) {
-      properties = calls
-          .takeWhile((call) => call is! MethodInvocation)
-          .toList();
+      properties =
+          calls.takeWhile((call) => call is! MethodInvocation).toList();
     }
 
     calls.removeRange(0, properties.length);

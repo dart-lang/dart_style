@@ -91,7 +91,7 @@ class ChunkBuilder {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-      _pendingWhitespace == Whitespace.spaceOrNewline;
+          _pendingWhitespace == Whitespace.spaceOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
@@ -148,18 +148,17 @@ class ChunkBuilder {
   ///
   /// If [isDouble] is passed, forces the split to either be a single or double
   /// newline. Otherwise, leaves it indeterminate.
-  Chunk split({bool space, bool isDouble, bool flushLeft}) =>
-      _writeSplit(_rules.last, null,
-          flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
+  Chunk split({bool space, bool isDouble, bool flushLeft}) => _writeSplit(
+      _rules.last, null,
+      flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
 
   /// Write a split owned by the current innermost rule.
   ///
   /// Unlike [split()], this ignores any current expression nesting. It always
   /// indents the next line at the statement level.
-  Chunk blockSplit({bool space, bool isDouble}) =>
-      _writeSplit(_rules.last, _nesting.blockNesting,
-          isDouble: isDouble,
-          spaceWhenUnsplit: space);
+  Chunk blockSplit({bool space, bool isDouble}) => _writeSplit(
+      _rules.last, _nesting.blockNesting,
+      isDouble: isDouble, spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
@@ -169,8 +168,8 @@ class ChunkBuilder {
   ///
   /// [linesBeforeToken] is the number of lines between the last comment (or
   /// previous token if there are no comments) and the next token.
-  void writeComments(List<SourceComment> comments, int linesBeforeToken,
-      String token) {
+  void writeComments(
+      List<SourceComment> comments, int linesBeforeToken, String token) {
     // Corner case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
@@ -247,7 +246,9 @@ class ChunkBuilder {
         }
       } else {
         // The comment starts a line, so make sure it stays on its own line.
-        _writeHardSplit(nest: true, flushLeft: comment.flushLeft,
+        _writeHardSplit(
+            nest: true,
+            flushLeft: comment.flushLeft,
             double: comment.linesBefore > 1);
       }
 
@@ -460,8 +461,8 @@ class ChunkBuilder {
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
   ChunkBuilder startBlock() {
-    var builder = new ChunkBuilder._(this, _formatter, _source,
-        _chunks.last.blockChunks);
+    var builder =
+        new ChunkBuilder._(this, _formatter, _source, _chunks.last.blockChunks);
 
     // A block always starts off indented one level.
     builder.indent();
@@ -643,8 +644,12 @@ class ChunkBuilder {
 
     // Otherwise, it gets a space if the following token is not a delimiter or
     // the empty string, for EOF.
-    return token != ")" && token != "]" && token != "}" &&
-           token != "," && token != ";" && token != "";
+    return token != ")" &&
+        token != "]" &&
+        token != "}" &&
+        token != "," &&
+        token != ";" &&
+        token != "";
   }
 
   /// Appends a hard split with the current indentation and nesting (the latter

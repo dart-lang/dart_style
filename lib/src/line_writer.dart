@@ -81,8 +81,8 @@ class LineWriter {
     var cached = _blockCache[key];
     if (cached != null) return cached;
 
-    var writer = new LineWriter._(chunk.blockChunks, _lineEnding,
-        pageWidth, column, _blockCache);
+    var writer = new LineWriter._(
+        chunk.blockChunks, _lineEnding, pageWidth, column, _blockCache);
 
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
     // LineWriter ensures all but the first chunk have a block indent, and this
@@ -96,7 +96,8 @@ class LineWriter {
   ///
   /// Since this is linear and line splitting is worse it's good to feed the
   /// line splitter smaller lists of chunks when possible.
-  FormatResult writeLines(int firstLineIndent, {bool isCompilationUnit: false}) {
+  FormatResult writeLines(int firstLineIndent,
+      {bool isCompilationUnit: false}) {
     // Now that we know what hard splits there will be, break the chunks into
     // independently splittable lines.
     var newlines = 0;

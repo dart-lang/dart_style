@@ -146,6 +146,7 @@ class Chunk extends Selection {
     assert(_canDivide != null);
     return _canDivide;
   }
+
   bool _canDivide;
 
   /// The number of characters in this chunk when unsplit.
