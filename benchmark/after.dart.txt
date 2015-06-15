@@ -247,20 +247,20 @@ class BacktrackingSolver {
   /// selections, and so on. If there is nothing left to backtrack to,
   /// completes to the last failure that occurred.
   Future<List<PackageId>> _traverseSolution() => resetStack(() {
-    return new Traverser(this).traverse().catchError((error) {
-      if (error is! SolveFailure) throw error;
+        return new Traverser(this).traverse().catchError((error) {
+          if (error is! SolveFailure) throw error;
 
-      return _backtrack(error).then((canTry) {
-        if (canTry) {
-          _attemptedSolutions++;
-          return _traverseSolution();
-        }
+          return _backtrack(error).then((canTry) {
+            if (canTry) {
+              _attemptedSolutions++;
+              return _traverseSolution();
+            }
 
-        // All out of solutions, so fail.
-        throw error;
+            // All out of solutions, so fail.
+            throw error;
+          });
+        });
       });
-    });
-  });
 
   /// Backtracks from the current failed solution and determines the next
   /// solution to try.
@@ -688,21 +688,21 @@ class Traverser {
     if (_getDependencies("barback").length != 1) return new Future.value();
 
     return Future.wait(barback.pubConstraints.keys.map((depName) {
-          var constraint = barback.pubConstraints[depName];
-          _solver.logSolve(
-              'add implicit $constraint pub dependency on ' '$depName');
+      var constraint = barback.pubConstraints[depName];
+      _solver
+          .logSolve('add implicit $constraint pub dependency on ' '$depName');
 
-          var override = _solver._overrides[depName];
+      var override = _solver._overrides[depName];
 
-          // Use the same source and description as the dependency override if one
-          // exists. This is mainly used by the pkgbuild tests, which use dependency
-          // overrides for all repo packages.
-          var pubDep = override == null
-              ? new PackageDep(depName, "hosted", constraint, depName)
-              : override.withConstraint(constraint);
-          return _registerDependency(
-              new Dependency("pub itself", Version.none, pubDep));
-        }));
+      // Use the same source and description as the dependency override if one
+      // exists. This is mainly used by the pkgbuild tests, which use dependency
+      // overrides for all repo packages.
+      var pubDep = override == null
+          ? new PackageDep(depName, "hosted", constraint, depName)
+          : override.withConstraint(constraint);
+      return _registerDependency(
+          new Dependency("pub itself", Version.none, pubDep));
+    }));
   }
 
   /// Gets the list of dependencies for package [name].

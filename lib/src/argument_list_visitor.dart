@@ -130,8 +130,8 @@ class ArgumentListVisitor {
       this._leadingBlockArguments,
       this._trailingBlockArguments);
 
-  /// Writes the argument list to the visitor's current writer.
-  void write() {
+  /// Builds chunks for the call chain.
+  void visit() {
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
     if (_isSingle) _visitor.builder.startSpan();

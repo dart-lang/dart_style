@@ -118,11 +118,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
       main() {
         files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
             valueDecoder: (String jsonPath, Object json) =>
-                jsonDecoder._decodeUnion(
-                    jsonPath,
-                    json,
-                    "type",
-                    {
+                jsonDecoder._decodeUnion(jsonPath, json, "type", {
                   "add": (String jsonPath, Object json) =>
                       new AddContentOverlay.fromJson(
                           jsonDecoder, jsonPath, json),
@@ -147,5 +143,48 @@ final ListResultDescriptor<AnalysisError> HINTS =
     fieldInitializationCode.add(collectCode(() {
       writeln('_$streamName = new StreamController<$className>(sync: true);');
       writeln('$streamName = _$streamName.stream.asBroadcastStream();');
+    }));
+  }
+>>> (indent 2)
+  main() {
+    return context.getContents(source).data.substring(
+        replacementOffset, offset);
+  }
+<<<
+  main() {
+    return context
+        .getContents(source)
+        .data
+        .substring(replacementOffset, offset);
+  }
+>>> (indent 2)
+  main() {
+    contextsChangedRaw(new ContextsChangedEvent(
+        added: event.added.length > 0 ? [mockContext] : [],
+        changed: event.changed.length > 0 ? [mockContext] : [],
+        removed: event.removed.length > 0 ? [mockContext] : []));
+  }
+<<<
+  main() {
+    contextsChangedRaw(
+        new ContextsChangedEvent(
+            added: event.added.length > 0 ? [mockContext] : [],
+            changed: event.changed.length > 0 ? [mockContext] : [],
+            removed: event.removed.length > 0 ? [mockContext] : []));
+  }
+>>> (indent 2)
+  void emitEmptyObjectClass(String className, ImpliedType impliedType) {
+    docComment(toHtmlVisitor.collectHtml(() {
+          toHtmlVisitor.p(() {
+            toHtmlVisitor.write(impliedType.humanReadableName);
+          });
+        }));
+  }
+<<<
+  void emitEmptyObjectClass(String className, ImpliedType impliedType) {
+    docComment(toHtmlVisitor.collectHtml(() {
+      toHtmlVisitor.p(() {
+        toHtmlVisitor.write(impliedType.humanReadableName);
+      });
     }));
   }

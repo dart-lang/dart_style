@@ -181,6 +181,9 @@ class LineSplitter {
   /// Updates [solution] with the best solution that can be found by setting
   /// the chunk after [prefix]'s rule to [value].
   void _tryRuleValue(SplitSolution solution, LinePrefix prefix, int value) {
+    // If we already have an unbeatable solution, don't bother trying this one.
+    if (solution.cost == 0) return;
+
     var chunk = _chunks[prefix.length];
 
     if (chunk.rule.isSplit(value, chunk)) {
@@ -190,6 +193,9 @@ class LineSplitter {
       var longerPrefixes = prefix.split(chunk, _blockIndentation, ruleValues);
       for (var longerPrefix in longerPrefixes) {
         _tryLongerPrefix(solution, prefix, longerPrefix);
+
+        // If we find an unbeatable solution, don't try any more.
+        if (solution.cost == 0) break;
       }
     } else {
       // We didn't split here, so add this chunk and its rule value to the

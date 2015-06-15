@@ -9,6 +9,7 @@ import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
 
 import 'argument_list_visitor.dart';
+import 'call_chain_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
 import 'dart_formatter.dart';
@@ -61,10 +62,8 @@ class SourceVisitor implements AstVisitor {
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(formatter, this._lineInfo, SourceCode source)
-      : _formatter = formatter,
-        _source = source {
-    builder = new ChunkBuilder(formatter, source);
+  SourceVisitor(this._formatter, this._lineInfo, this._source) {
+    builder = new ChunkBuilder(_formatter, _source);
   }
 
   /// Runs the visitor on [node], formatting its contents.
@@ -139,8 +138,7 @@ class SourceVisitor implements AstVisitor {
       _firstFunctionSpan = builder.createSpan();
     }
 
-    var args = new ArgumentListVisitor(this, node);
-    args.write();
+    new ArgumentListVisitor(this, node).visit();
   }
 
   visitAsExpression(AsExpression node) {
@@ -1145,99 +1143,7 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // Otherwise, it's a dotted method call. We want to format a chain of
-    // method calls holistically, so flatten the tree of calls into a single
-    // list.
-    var target;
-    var invocations = [];
-
-    flatten(expression) {
-      target = expression;
-
-      if (expression is MethodInvocation && expression.target != null) {
-        flatten(expression.target);
-        invocations.add(expression);
-      }
-    }
-
-    // Recursively walk the chain of method calls.
-    flatten(node);
-
-    // Try to keep the entire method invocation one line.
-    builder.startSpan();
-    builder.nestExpression();
-
-    visit(target);
-
-    // With a chain of method calls like `foo.bar.baz.bang`, they either all
-    // split or none of them do.
-    builder.startRule();
-
-    for (var invocation in invocations) {
-      zeroSplit();
-      token(invocation.period);
-      token(invocation.methodName.token);
-
-      // If a method's argument list includes any block arguments, there's a
-      // good chance it will split. Treat the chains before and after that as
-      // separate unrelated method chains.
-      //
-      // This is kind of a hack since it treats methods before and after a
-      // collection literal argument differently even when the collection
-      // doesn't split, but it works out OK in practice.
-      var args = new ArgumentListVisitor(this, invocation.argumentList);
-
-      // Stop the rule after the last call, but before its arguments. This
-      // allows unsplit chains where the last argument list wraps, like:
-      //
-      //     foo().bar().baz(
-      //         argument, list);
-      //
-      // Also stop the rule to split the argument list at any call with
-      // block arguments. This makes for nicer chains of higher-order method
-      // calls, like:
-      //
-      //     items.map((element) {
-      //       ...
-      //     }).where((element) {
-      //       ...
-      //     });
-      if (invocation == invocations.last || args.hasBlockArguments) {
-        builder.endRule();
-      }
-
-      if (args.nestMethodArguments) builder.startBlockArgumentNesting();
-
-      // For a single method call, stop the span before the arguments to make
-      // it easier to keep the call name with the target. In other words,
-      // prefer:
-      //
-      //     target.method(
-      //         argument, list);
-      //
-      // Over:
-      //
-      //     target
-      //         .method(argument, list);
-      if (invocations.length == 1) builder.endSpan();
-
-      visit(invocation.argumentList);
-
-      if (args.nestMethodArguments) builder.endBlockArgumentNesting();
-
-      // If we split the chain and more methods are coming, start a new one.
-      if (invocation != invocations.last && args.hasBlockArguments) {
-        builder.startRule();
-      }
-    }
-
-    builder.unnest();
-
-    // For longer method chains, do include the last argument list. We want to
-    // make it very easy to split long chains. Wrapping the span around the
-    // last args means it won't try to split in the last args to keep the
-    // chain together, since that will still split this span.
-    if (invocations.length > 1) builder.endSpan();
+    new CallChainVisitor(this, node).visit();
   }
 
   visitNamedExpression(NamedExpression node) {
@@ -1317,11 +1223,11 @@ class SourceVisitor implements AstVisitor {
   visitPropertyAccess(PropertyAccess node) {
     if (node.isCascaded) {
       token(node.operator);
-    } else {
-      visit(node.target);
-      token(node.operator);
+      visit(node.propertyName);
+      return;
     }
-    visit(node.propertyName);
+
+    new CallChainVisitor(this, node).visit();
   }
 
   visitRedirectingConstructorInvocation(RedirectingConstructorInvocation node) {

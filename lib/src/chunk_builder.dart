@@ -820,7 +820,7 @@ class ChunkBuilder {
     // rule types into account.
 
     // If the number of possible solutions is reasonable, don't preempt any.
-    if (values <= 4096) return;
+    if (values <= 32768) return;
 
     // Find the rules that contain too much.
     for (var rule in rules) {

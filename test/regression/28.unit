@@ -4,5 +4,6 @@ bool _hasLibraryDirective(String code) =>
         .directives.any((d) => d is LibraryDirective);
 <<<
 bool _hasLibraryDirective(String code) =>
-    parseDirectives(code, suppressErrors: true).directives
+    parseDirectives(code, suppressErrors: true)
+        .directives
         .any((d) => d is LibraryDirective);
