@@ -24,6 +24,17 @@ void main() {
         throwsA(new isInstanceOf<FormatterException>()));
   });
 
+  test("FormatterException.message() does not throw", () {
+    // This is a regression test for #358 where an error whose position is
+    // past the end of the source caused FormatterException to throw.
+    try {
+      new DartFormatter().format("library");
+    } on FormatterException catch (err) {
+      var message = err.message();
+      expect(message, contains("Could not format"));
+    }
+  });
+
   test("FormatterException describes parse errors", () {
     try {
       new DartFormatter().format("""

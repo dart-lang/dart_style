@@ -26,9 +26,16 @@ class FormatterException implements Exception {
     if (errors.length > 10) shownErrors = errors.take(10);
 
     for (var error in shownErrors) {
-      var file = new SourceFile(error.source.contents.data,
-          url: error.source.fullName);
+      var source = error.source.contents.data;
 
+      // If the parse error is for something missing from the end of the file,
+      // the error position will go past the end of the source. In that case,
+      // just pad the source with spaces so we can report it nicely.
+      if (error.offset + error.length > source.length) {
+        source += " " * (error.offset + error.length - source.length);
+      }
+
+      var file = new SourceFile(source, url: error.source.fullName);
       var span = file.span(error.offset, error.offset + error.length);
       if (buffer.isNotEmpty) buffer.writeln();
       buffer.write(span.message(error.message, color: color));
