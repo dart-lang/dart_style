@@ -533,6 +533,12 @@ class SourceVisitor implements AstVisitor {
 
   visitConditionalExpression(ConditionalExpression node) {
     builder.nestExpression();
+
+    // Push any block arguments all the way past the leading "?" and ":".
+    builder.nestExpression(indent: Indent.block, now: true);
+    builder.startBlockArgumentNesting();
+    builder.unnest();
+
     visit(node.condition);
 
     builder.startSpan();
@@ -555,6 +561,7 @@ class SourceVisitor implements AstVisitor {
 
     builder.endRule();
     builder.endSpan();
+    builder.endBlockArgumentNesting();
     builder.unnest();
   }
 

@@ -26,6 +26,7 @@
 * Set failure exit code for malformed input when reading from stdin (#359).
 * Indent cascades more deeply when the receiver is a method call (#137).
 * Prefer splitting at "." on non-identifier method targets (#161).
+* Nest blocks deeper inside a wrapped conditional operator (#186).
 
 # 0.1.8
 
