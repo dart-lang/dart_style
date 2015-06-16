@@ -184,9 +184,9 @@ class CallChainVisitor {
 
     if (args.nestMethodArguments) _visitor.builder.startBlockArgumentNesting();
 
-    // For a single method call, stop the span before the arguments to make
-    // it easier to keep the call name with the target. In other words,
-    // prefer:
+    // For a single method call on an identifier, stop the span before the
+    // arguments to make it easier to keep the call name with the target. In
+    // other words, prefer:
     //
     //     target.method(
     //         argument, list);
@@ -195,7 +195,16 @@ class CallChainVisitor {
     //
     //     target
     //         .method(argument, list);
-    if (_calls.length == 1) _endSpan();
+    //
+    // Alternatively, the way to think of this is try to avoid splitting on the
+    // "." when calling a single method on a single name. This is especially
+    // important because the identifier is often a library prefix, and splitting
+    // there looks really odd.
+    if (_properties.isEmpty &&
+        _calls.length == 1 &&
+        _target is SimpleIdentifier) {
+      _endSpan();
+    }
 
     _visitor.visit(invocation.argumentList);
 
