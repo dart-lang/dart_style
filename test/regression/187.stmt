@@ -12,7 +12,8 @@
         desc: 'Some very long descriptive text that actually isn\'t obeying the...');
 <<<
   String someComplicatedHelpMessage(String numberInputFieldPlaceholder,
-      String timeUnitDropdownPlaceholder) => Intl.message(
+          String timeUnitDropdownPlaceholder) =>
+      Intl.message(
           'Deflagrate the persimmon to $numberInputFieldPlaceholder golgafrinchans per'
           '$timeUnitDropdownPlaceholder maximum, unless we say otherwise',
           name: 'someComplicatedHelpMessage',

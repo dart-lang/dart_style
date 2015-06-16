@@ -718,7 +718,11 @@ class SourceVisitor implements AstVisitor {
       if (_isInLambda(node)) builder.startSpan();
 
       token(node.functionDefinition); // "=>".
-      soloSplit(Cost.arrow);
+
+      // Split after the "=>", using the rule created before the parameters
+      // by _visitBody().
+      split();
+      builder.endRule();
 
       if (_isInLambda(node)) builder.endSpan();
 
@@ -1567,13 +1571,34 @@ class SourceVisitor implements AstVisitor {
   void _visitBody(FormalParameterList parameters, FunctionBody body,
       [afterParameters()]) {
     // If the body is "=>", add an extra level of indentation around the
-    // parameters and the body. This ensures that if the parameters wrap, they
-    // wrap more deeply than the "=>" does, as in:
+    // parameters and a rule that spans the parameters and the "=>". This
+    // ensures that if the parameters wrap, they wrap more deeply than the "=>"
+    // does, as in:
     //
     //     someFunction(parameter,
     //             parameter, parameter) =>
     //         "the body";
-    if (body is ExpressionFunctionBody) builder.nestExpression();
+    //
+    // Also, it ensures that if the parameters wrap, we split at the "=>" too
+    // to avoid:
+    //
+    //     someFunction(parameter,
+    //         parameter) => function(
+    //         argument);
+    //
+    // This is confusing because it looks like those two lines are at the same
+    // level when they are actually unrelated. Splitting at "=>" forces:
+    //
+    //     someFunction(parameter,
+    //             parameter) =>
+    //         function(
+    //             argument);
+    if (body is ExpressionFunctionBody) {
+      builder.nestExpression();
+
+      // This rule is ended by visitExpressionFunctionBody().
+      builder.startRule(new SimpleRule(cost: Cost.arrow));
+    }
 
     if (parameters != null) {
       builder.nestExpression();
