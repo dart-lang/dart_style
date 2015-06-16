@@ -92,17 +92,17 @@ class NestingBuilder {
     _stack.removeLast();
   }
 
-  /// Begins a new expression nesting level [spaces] deeper than the current
+  /// Begins a new expression nesting level [indent] deeper than the current
   /// one if it splits.
   ///
-  /// If [spaces] is omitted, defaults to [Indent.expression].
-  void nest([int spaces]) {
-    if (spaces == null) spaces = Indent.expression;
+  /// If [indent] is omitted, defaults to [Indent.expression].
+  void nest([int indent]) {
+    if (indent == null) indent = Indent.expression;
 
     if (_pendingNesting != null) {
-      _pendingNesting = _pendingNesting.nest(spaces);
+      _pendingNesting = _pendingNesting.nest(indent);
     } else {
-      _pendingNesting = nesting.nest(spaces);
+      _pendingNesting = nesting.nest(indent);
     }
   }
 

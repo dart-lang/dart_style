@@ -410,12 +410,17 @@ class ChunkBuilder {
   /// splitter when it tries to recurse on huge collection literals.
   void forceRules() => _handleHardSplit();
 
-  /// Begins a new expression nesting level [spaces] deeper than the current
-  /// one if it splits.
+  /// Begins a new expression nesting level [indent] spaces deeper than the
+  /// current one if it splits.
   ///
-  /// If [spaces] is omitted, defaults to [Indent.expression].
-  void nestExpression([int spaces]) {
-    _nesting.nest(spaces);
+  /// If [indent] is omitted, defaults to [Indent.expression]. If [now] is
+  /// `true`, commits the nesting change immediately instead of waiting until
+  /// after the next chunk of text is written.
+  void nestExpression({int indent, bool now}) {
+    if (now == null) now = false;
+
+    _nesting.nest(indent);
+    if (now) _nesting.commitNesting();
   }
 
   /// Discards the most recent level of expression nesting.

@@ -313,10 +313,33 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitCascadeExpression(CascadeExpression node) {
-    builder.nestExpression(Indent.cascade);
-    builder.startBlockArgumentNesting();
+    // If the target of the cascade is a method call (or chain of them), we
+    // treat the nesting specially. Normally, you would end up with:
+    //
+    //     receiver
+    //           .method()
+    //           .method()
+    //       ..cascade()
+    //       ..cascade();
+    //
+    // This is logical, since the method chain is an operand of the cascade
+    // expression, so it's more deeply nested. But it looks wrong, so we leave
+    // the method chain's nesting active until after the cascade sections to
+    // force the *cascades* to be deeper because it looks better:
+    //
+    //     receiver
+    //         .method()
+    //         .method()
+    //           ..cascade()
+    //           ..cascade();
+    if (node.target is MethodInvocation) {
+      new CallChainVisitor(this, node.target).visit(unnest: false);
+    } else {
+      visit(node.target);
+    }
 
-    visit(node.target);
+    builder.nestExpression(indent: Indent.cascade, now: true);
+    builder.startBlockArgumentNesting();
 
     // If the cascade sections have consistent names they can be broken
     // normally otherwise they always get their own line.
@@ -334,6 +357,8 @@ class SourceVisitor implements AstVisitor {
 
     builder.endBlockArgumentNesting();
     builder.unnest();
+
+    if (node.target is MethodInvocation) builder.unnest();
   }
 
   /// Whether a cascade should be allowed to be inline as opposed to one

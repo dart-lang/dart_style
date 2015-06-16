@@ -87,10 +87,18 @@ class CallChainVisitor {
       this._visitor, this._target, this._properties, this._calls);
 
   /// Builds chunks for the call chain.
-  void visit() {
+  ///
+  /// If [unnest] is `false` than this will not close the expression nesting
+  /// created for the call chain and the caller must end it. Used by cascades
+  /// to force a cascade after a method chain to be more deeply nested than
+  /// the methods.
+  void visit({bool unnest}) {
+    if (unnest == null) unnest = true;
+
+    _visitor.builder.nestExpression();
+
     // Try to keep the entire method invocation one line.
     _visitor.builder.startSpan();
-    _visitor.builder.nestExpression();
 
     _visitor.visit(_target);
 
@@ -120,8 +128,9 @@ class CallChainVisitor {
     }
 
     _disableRule();
-    _visitor.builder.unnest();
     _endSpan();
+
+    if (unnest) _visitor.builder.unnest();
   }
 
   /// Writes [call], which must be one of the supported expression types.
