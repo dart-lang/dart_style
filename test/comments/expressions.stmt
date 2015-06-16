@@ -77,3 +77,12 @@ someFunction(//
   // comment
   1 + 2;
 }
+>>> force named args to split on line comment in positional
+function(argument, //
+    argument, named: argument, another: argument);
+<<<
+function(
+    argument, //
+    argument,
+    named: argument,
+    another: argument);

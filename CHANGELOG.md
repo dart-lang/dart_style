@@ -17,7 +17,7 @@
 * Preserve mandatory newlines in inline block comments (#178).
 * Allow multiple variable declarations on one line if they fit (#155).
 * Splitting inside type parameter and type argument lists (#184).
-* Enforce a blank line before and after classes (#186).
+* Enforce a blank line before and after classes (#168).
 * Re-indent line doc comments even if they are flush left (#192).
 * More precisely control newlines between declarations (#173).
 * Nest cascades like expressions (#200, #203, #205, #221, #236).
@@ -27,6 +27,7 @@
 * Indent cascades more deeply when the receiver is a method call (#137).
 * Prefer splitting at "." on non-identifier method targets (#161).
 * Nest blocks deeper inside a wrapped conditional operator (#186).
+* Split named arguments if the positional arguments split (#189).
 
 # 0.1.8
 

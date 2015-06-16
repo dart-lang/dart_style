@@ -168,3 +168,14 @@ obj.outer(
     obj.inner(() {
       body;
     }));
+>>> force named args to split on positional function
+function(argument, () {;},
+    named: argument, another: argument);
+<<<
+function(
+    argument,
+    () {
+      ;
+    },
+    named: argument,
+    another: argument);

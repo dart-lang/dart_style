@@ -47,6 +47,17 @@ class ChunkBuilder {
   /// ended.
   final _rules = <Rule>[];
 
+  /// The set of rules known to contain hard splits that will in turn force
+  /// these rules to harden.
+  ///
+  /// This is accumulated lazily while chunks are being built. Then, once they
+  /// are all done, the rules are all hardened. We do this later because some
+  /// rules may not have all of their constraints fully wired up until after
+  /// the hard split appears. For example, a hard split in a positional
+  /// argument list needs to force the named arguments to split too, but we
+  /// don't create that rule until after the positional arguments are done.
+  final _rulesToHarden = new Set<Rule>();
+
   /// The list of rules that are waiting until the next whitespace has been
   /// written before they start.
   final _lazyRules = <Rule>[];
@@ -733,6 +744,12 @@ class ChunkBuilder {
   /// Marks ranges of chunks that can be line split independently to keep the
   /// batches we send to [LineSplitter] small.
   void _divideChunks() {
+    // Harden all of the rules that we know get forced by containing hard
+    // splits, along with all of the other rules they constrain.
+    for (var rule in _rulesToHarden) {
+      _hardenRule(rule);
+    }
+
     // For each independent set of chunks, see if there are any rules in them
     // that we want to preemptively harden. This is basically to send smaller
     // batches of chunks to LineSplitter in cases where the code is deeply
@@ -855,7 +872,7 @@ class ChunkBuilder {
 
     // Start with the innermost rule. This will traverse the other rules it
     // constrains.
-    _hardenRule(_rules.last);
+    _rulesToHarden.add(_rules.last);
   }
 
   /// Replaces [rule] with a hard split.
