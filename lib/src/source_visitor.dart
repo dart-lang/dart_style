@@ -56,10 +56,6 @@ class SourceVisitor implements AstVisitor {
   /// If `null`, a literal body creates its own rule.
   Rule _nextLiteralBodyRule;
 
-  /// The span that binds the parameter list of a lambda function argument to
-  /// the surrounding argument list.
-  OpenSpan _firstFunctionSpan;
-
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(this._formatter, this._lineInfo, this._source) {
@@ -116,26 +112,6 @@ class SourceVisitor implements AstVisitor {
 
       token(node.rightParenthesis);
       return;
-    }
-
-    // Corner case: If the first argument to a method is a function, it looks
-    // bad if its parameter list gets wrapped to the next line. Bump the cost
-    // to try to avoid that. This prefers:
-    //
-    //     receiver
-    //         .method()
-    //         .chain((parameter, list) {
-    //       ...
-    //     });
-    //
-    // over:
-    //
-    //     receiver.method().chain(
-    //         (parameter, list) {
-    //       ...
-    //     });
-    if (node.arguments.first is FunctionExpression) {
-      _firstFunctionSpan = builder.createSpan();
     }
 
     new ArgumentListVisitor(this, node).visit();
@@ -742,7 +718,7 @@ class SourceVisitor implements AstVisitor {
       if (_isInLambda(node)) builder.startSpan();
 
       token(node.functionDefinition); // "=>".
-      soloSplit();
+      soloSplit(Cost.arrow);
 
       if (_isInLambda(node)) builder.endSpan();
 
@@ -828,14 +804,6 @@ class SourceVisitor implements AstVisitor {
 
     builder.nestExpression();
     token(node.leftParenthesis);
-
-    // If this parameter list is for a lambda argument that we want to avoid
-    // splitting, close the span that sticks it to the beginning of the
-    // argument list.
-    if (_firstFunctionSpan != null) {
-      builder.endSpan(_firstFunctionSpan);
-      _firstFunctionSpan = null;
-    }
 
     var rule;
     if (requiredParams.isNotEmpty) {

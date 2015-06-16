@@ -258,12 +258,18 @@ class Chunk extends Selection {
 /// Constants for the cost heuristics used to determine which set of splits is
 /// most desirable.
 class Cost {
-  /// The smallest cost.
+  /// The cost of splitting after the `=>` in a lambda or arrow-bodied member.
+  ///
+  /// We make this zero because there is already a span around the entire body
+  /// and we generally do prefer splitting after the `=>` over other places.
+  static const arrow = 0;
+
+  /// The default cost.
   ///
   /// This isn't zero because we want to ensure all splitting has *some* cost,
   /// otherwise, the formatter won't try to keep things on one line at all.
-  /// Almost all splits and spans use this. Greater costs tend to come from a
-  /// greater number of nested spans.
+  /// Most splits and spans use this. Greater costs tend to come from a greater
+  /// number of nested spans.
   static const normal = 1;
 
   /// Splitting after a "=" both for assignment and initialization.

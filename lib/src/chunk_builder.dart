@@ -345,19 +345,12 @@ class ChunkBuilder {
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.normal]) {
-    _openSpans.add(createSpan(cost));
+    _openSpans.add(new OpenSpan(_currentChunkIndex, cost));
   }
 
-  /// Creates a "free" span not stored on the span stack.
-  ///
-  /// By creating this and later passing it to [endSpan], you can create spans
-  /// that don't follow the normal strictly nested behavior.
-  OpenSpan createSpan([int cost = Cost.normal]) =>
-      new OpenSpan(_currentChunkIndex, cost);
-
   /// Ends the innermost span.
-  void endSpan([OpenSpan openSpan]) {
-    if (openSpan == null) openSpan = _openSpans.removeLast();
+  void endSpan() {
+    var openSpan = _openSpans.removeLast();
 
     // A span that just covers a single chunk can't be split anyway.
     var end = _currentChunkIndex;

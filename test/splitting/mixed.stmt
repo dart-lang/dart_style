@@ -90,10 +90,10 @@ function(
           ;
         }));
 >>> wrap before =>
-receiver.firstMethod().next(() => longIdentifier == veryLongIdentifier);
+receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(
-    () => longIdentifier ==
+    (parameter) => longIdentifier ==
         veryLongIdentifier);
 >>> wrap after =>
 receiver.firstMethod().next(() => veryveryveryverylongIdentifier == veryLongIdentifier);

@@ -28,6 +28,7 @@
 * Prefer splitting at "." on non-identifier method targets (#161).
 * Nest blocks deeper inside a wrapped conditional operator (#186).
 * Split named arguments if the positional arguments split (#189).
+* Prefer splitting after `=>` over other options (#217).
 
 # 0.1.8
 
