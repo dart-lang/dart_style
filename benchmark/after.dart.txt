@@ -725,8 +725,8 @@ class Traverser {
   /// can have a bunch of dependencies back onto the root package as long as
   /// they all agree with each other.
   Dependency _getRequired(String name) {
-    return _getDependencies(name).firstWhere((dep) => !dep.dep.isRoot,
-        orElse: () => null);
+    return _getDependencies(name)
+        .firstWhere((dep) => !dep.dep.isRoot, orElse: () => null);
   }
 
   /// Gets the combined [VersionConstraint] currently being placed on package

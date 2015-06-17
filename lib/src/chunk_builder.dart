@@ -56,7 +56,7 @@ class ChunkBuilder {
   /// the hard split appears. For example, a hard split in a positional
   /// argument list needs to force the named arguments to split too, but we
   /// don't create that rule until after the positional arguments are done.
-  final _rulesToHarden = new Set<Rule>();
+  final _hardSplitRules = new Set<Rule>();
 
   /// The list of rules that are waiting until the next whitespace has been
   /// written before they start.
@@ -739,25 +739,27 @@ class ChunkBuilder {
   void _divideChunks() {
     // Harden all of the rules that we know get forced by containing hard
     // splits, along with all of the other rules they constrain.
-    for (var rule in _rulesToHarden) {
-      _hardenRule(rule);
-    }
+    _hardenRules(_hardSplitRules);
 
     // For each independent set of chunks, see if there are any rules in them
     // that we want to preemptively harden. This is basically to send smaller
     // batches of chunks to LineSplitter in cases where the code is deeply
     // nested or complex.
+    var preemptedRules = new Set();
+
     var start = 0;
     for (var i = 0; i < _chunks.length; i++) {
       if (_canDivideAt(i)) {
-        _preemptRules(start, i);
+        _preemptRules(start, i, preemptedRules);
         start = i;
       }
     }
 
     if (start < _chunks.length) {
-      _preemptRules(start, _chunks.length);
+      _preemptRules(start, _chunks.length, preemptedRules);
     }
+
+    _hardenRules(preemptedRules);
 
     // Now that we know where all of the divided chunk sections are, mark the
     // chunks.
@@ -801,8 +803,9 @@ class ChunkBuilder {
     }
   }
 
-  /// Force some rules to become hard splits if it looks like there's no other
-  /// option to get a solution in reasonable time.
+  /// Adds some rules used by chunks within [start] and [end] to
+  /// [preemptedRules] to force them become hard splits if it looks like
+  /// there's no other option to get a solution in reasonable time.
   ///
   /// In most cases, the formatter can find an ideal solution to a set of rules
   /// in reasonable time. Splitting chunks into short lists, nested blocks, and
@@ -825,7 +828,7 @@ class ChunkBuilder {
   /// breaking an argument list). This won't consider those kinds of solution
   /// To avoid this, pre-emption only kicks in for lines that look like they
   /// will be hard to solve directly.
-  void _preemptRules(int start, int end) {
+  void _preemptRules(int start, int end, Set<Rule> preemptedRules) {
     var chunks = _chunks.sublist(start, end);
     _flattenNestingLevels(chunks);
 
@@ -848,7 +851,7 @@ class ChunkBuilder {
       for (var i = rule.start + 1; i <= rule.end; i++) {
         length += _chunks[i].length + _chunks[i].unsplitBlockLength;
         if (length > pageWidth) {
-          _hardenRule(rule);
+          preemptedRules.add(rule);
           break;
         }
       }
@@ -865,35 +868,21 @@ class ChunkBuilder {
 
     // Start with the innermost rule. This will traverse the other rules it
     // constrains.
-    _rulesToHarden.add(_rules.last);
+    _hardSplitRules.add(_rules.last);
   }
 
-  /// Replaces [rule] with a hard split.
+  /// Replaces [rules] with hard splits, along with every rule that those
+  /// constrain to also split.
   ///
-  /// This also applies all of the implications of that change:
-  ///
-  /// * Existing chunks using that rule are hardened.
-  /// * Later chunks using that rule will use a hard split instead.
-  /// * Any other rules that are constrained by this one are also hardened.
-  void _hardenRule(Rule rule) {
-    var hardened = new Set();
+  /// This should only be called after all chunks have been written.
+  void _hardenRules(Set<Rule> rules) {
+    if (rules.isEmpty) return;
 
-    harden(rule) {
-      if (hardened.contains(rule)) return;
-      hardened.add(rule);
-
-      // Harden every existing chunk that uses this rule.
-      if (_ruleChunks.containsKey(rule)) {
-        for (var chunk in _ruleChunks[rule]) _chunks[chunk].harden();
-      }
-
-      // If the rule is still active, swap it out with a hard split so that
-      // later chunks using the rule are hardened too.
-      for (var i = 0; i < _rules.length; i++) {
-        if (_rules[i] == rule) {
-          _rules[i] = new HardSplitRule();
-        }
-      }
+    // Harden all of the rules that are constrained by [rules] as well.
+    var hardenedRules = new Set();
+    walkConstraints(rule) {
+      if (hardenedRules.contains(rule)) return;
+      hardenedRules.add(rule);
 
       // Follow this rule's constraints, recursively.
       for (var other in _ruleChunks.keys) {
@@ -901,11 +890,20 @@ class ChunkBuilder {
 
         if (rule.constrain(rule.fullySplitValue, other) ==
             other.fullySplitValue) {
-          harden(other);
+          walkConstraints(other);
         }
       }
     }
 
-    harden(rule);
+    for (var rule in rules) {
+      walkConstraints(rule);
+    }
+
+    // Harden every chunk that uses one of these rules.
+    for (var chunk in _chunks) {
+      if (hardenedRules.contains(chunk.rule)) {
+        chunk.harden();
+      }
+    }
   }
 }
