@@ -72,3 +72,13 @@ class Foo {
         initializer2 = function(
             argument, argument);
 }
+>>> split at "=" in initializer
+class Foo {
+  Foo() : initializer =function(argument, arg);
+}
+<<<
+class Foo {
+  Foo()
+      : initializer =
+            function(argument, arg);
+}

@@ -29,6 +29,7 @@
 * Nest blocks deeper inside a wrapped conditional operator (#186).
 * Split named arguments if the positional arguments split (#189).
 * Prefer splitting after `=>` over other options (#217).
+* Allow splitting after `=` in a constructor initializer (#242).
 * If a `=>` function's parameters split, split after the `=>` too (#250).
 * Allow splitting between successive index operators (#256).
 * Correctly indent wrapped constructor initializers (#257).

@@ -139,12 +139,7 @@ class SourceVisitor implements AstVisitor {
     builder.nestExpression();
 
     visit(node.leftHandSide);
-    space();
-    token(node.operator);
-    soloSplit(Cost.assignment);
-    builder.startSpan();
-    visit(node.rightHandSide);
-    builder.endSpan();
+    _visitAssignment(node.operator, node.rightHandSide);
 
     builder.unnest();
   }
@@ -601,13 +596,15 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
+    builder.nestExpression();
+
     token(node.thisKeyword);
     token(node.period);
     visit(node.fieldName);
-    space();
-    token(node.equals);
-    space();
-    visit(node.expression);
+
+    _visitAssignment(node.equals, node.expression);
+
+    builder.unnest();
   }
 
   visitConstructorName(ConstructorName node) {
@@ -1438,12 +1435,7 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     if (node.initializer == null) return;
 
-    space();
-    token(node.equals);
-    soloSplit(Cost.assignment);
-    builder.startSpan();
-    visit(node.initializer);
-    builder.endSpan();
+    _visitAssignment(node.equals, node.initializer);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1536,6 +1528,21 @@ class SourceVisitor implements AstVisitor {
   void visitParameterMetadata(NodeList<Annotation> metadata) {
     // TODO(rnystrom): Allow splitting after annotations?
     visitNodes(metadata, between: space, after: space);
+  }
+
+  /// Visits the `=` and the following expression in any place where an `=`
+  /// appears:
+  ///
+  /// * Assignment
+  /// * Variable declaration
+  /// * Constructor initialization
+  void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
+    space();
+    token(equalsOperator);
+    soloSplit(Cost.assignment);
+    builder.startSpan();
+    visit(rightHandSide);
+    builder.endSpan();
   }
 
   /// Visits a type parameter or type argument list.
