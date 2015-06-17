@@ -1026,20 +1026,29 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitIndexExpression(IndexExpression node) {
+    builder.nestExpression();
+
     if (node.isCascaded) {
       token(node.period);
     } else {
       visit(node.target);
     }
 
+    if (node.target is IndexExpression) {
+      // Corner case: On a chain of [] accesses, allow splitting between them.
+      // Produces nicer output in cases like:
+      //
+      //     someJson['property']['property']['property']['property']...
+      soloZeroSplit();
+    }
+
     builder.startSpan();
     token(node.leftBracket);
-    builder.nestExpression();
     soloZeroSplit();
     visit(node.index);
     token(node.rightBracket);
-    builder.unnest();
     builder.endSpan();
+    builder.unnest();
   }
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {

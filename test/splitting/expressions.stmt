@@ -97,3 +97,9 @@ verylongIdentifier[someParticularlyLongArgument[someParticularlyLongArgument]];
 verylongIdentifier[
     someParticularlyLongArgument[
         someParticularlyLongArgument]];
+>>> successive index arguments
+identifier[longArgument][longArgument][longArgument][longArgument][longArgument];
+<<<
+identifier[longArgument][longArgument]
+        [longArgument][longArgument]
+    [longArgument];

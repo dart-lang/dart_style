@@ -30,6 +30,7 @@
 * Split named arguments if the positional arguments split (#189).
 * Prefer splitting after `=>` over other options (#217).
 * If a `=>` function's parameters split, split after the `=>` too (#250).
+* Allow splitting between successive index operators (#256).
 
 # 0.1.8
 
