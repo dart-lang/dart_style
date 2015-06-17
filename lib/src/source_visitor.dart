@@ -56,6 +56,18 @@ class SourceVisitor implements AstVisitor {
   /// If `null`, a literal body creates its own rule.
   Rule _nextLiteralBodyRule;
 
+  /// A stack that tracks forcing nested collections to split.
+  ///
+  /// Each entry corresponds to a collection currently being visited and the
+  /// value is whether or not it should be forced to split. Every time a
+  /// collection is entered, it sets all of the existing elements to `true`
+  /// then it pushes `false` for itself.
+  ///
+  /// When done visiting the elements, it removes its value. If it was set to
+  /// `true`, we know we visited a nested collection so we force this one to
+  /// split.
+  final List<bool> _collectionSplits = [];
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(this._formatter, this._lineInfo, this._source) {
@@ -240,22 +252,18 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
-    // Format function bodies as separate blocks.
-    if (node.parent is BlockFunctionBody) {
-      _writeBlockLiteral(node.leftBracket, node.rightBracket,
-          forceRule: node.statements.isNotEmpty,
-          block: () {
-            visitNodes(node.statements,
-                between: oneOrTwoNewlines, after: newline);
-          });
+    // For a block that is not a function body, just bump the indentation and
+    // keep it in the current block.
+    if (node.parent is! BlockFunctionBody) {
+      _writeBody(node.leftBracket, node.rightBracket, body: () {
+        visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
+      });
       return;
     }
 
-    // For everything else, just bump the indentation and keep it in the current
-    // block.
-    _writeBody(node.leftBracket, node.rightBracket, body: () {
-      visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
-    });
+    _startLiteralBody(node.leftBracket);
+    visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
+    _endLiteralBody(node.rightBracket, forceSplit: node.statements.isNotEmpty);
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -1673,43 +1681,46 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    _writeBlockLiteral(leftBracket, rightBracket,
-        forceRule: false,
-        block: () {
-          // Always use a hard rule to split the elements. The parent chunk of
-          // the collection will handle the unsplit case, so this only comes
-          // into play when the collection is split.
-          var elementSplit = new HardSplitRule();
-          builder.startRule(elementSplit);
+    // Force all of the surrounding collections to split.
+    for (var i = 0; i < _collectionSplits.length; i++) {
+      _collectionSplits[i] = true;
+    }
 
-          for (var element in elements) {
-            if (element != elements.first) builder.blockSplit(space: true);
+    // Add this collection to the stack.
+    _collectionSplits.add(false);
 
-            builder.nestExpression();
+    _startLiteralBody(leftBracket);
 
-            visit(element);
+    // Always use a hard rule to split the elements. The parent chunk of
+    // the collection will handle the unsplit case, so this only comes
+    // into play when the collection is split.
+    var rule = new HardSplitRule();
+    builder.startRule(rule);
 
-            // The comma after the element.
-            if (element.endToken.next.lexeme ==
-                ",") token(element.endToken.next);
+    for (var element in elements) {
+      if (element != elements.first) builder.blockSplit(space: true);
 
-            builder.unnest();
-          }
+      builder.nestExpression();
+      visit(element);
 
-          return elementSplit;
-        });
+      // The comma after the element.
+      if (element.endToken.next.lexeme == ",") token(element.endToken.next);
+
+      builder.unnest();
+    }
+
+    // If there is a collection inside this one, it forces this one to split.
+    var force = _collectionSplits.removeLast();
+
+    _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
   }
 
-  /// Writes a block literal (function, list, or map), handling indentation
-  /// when the literal appears in an argument list.
+  /// Begins writing a literal body: a collection or block-bodied function
+  /// expression.
   ///
-  /// if [forceRule] is `true`, then the block will always split.
-  ///
-  /// The [block] callback should write the contents of the literal. It may
-  /// optionally return a Rule. If it does, that rule will be ignored when
-  /// determining if the contents of the block should split.
-  void _writeBlockLiteral(Token leftBracket, Token rightBracket,
-      {bool forceRule, Rule block()}) {
+  /// Writes the delimiter and then creates the [Rule] that handles splitting
+  /// the body.
+  void _startLiteralBody(Token leftBracket) {
     token(leftBracket);
 
     // Split the literal. Use the explicitly given rule if we have one.
@@ -1720,16 +1731,24 @@ class SourceVisitor implements AstVisitor {
     // Create a rule for whether or not to split the block contents.
     builder.startRule(rule);
 
-    // Process the contents of the literal as a separate set of chunks.
+    // Process the collection contents as a separate set of chunks.
     builder = builder.startBlock();
+  }
 
-    var elementRule = block();
+  /// Ends the literal body started by a call to [_startLiteralBody()].
+  ///
+  /// If [forceSplit] is `true`, forces the body to split. If [ignoredRule] is
+  /// given, ignores that rule inside the body when determining if it should
+  /// split.
+  void _endLiteralBody(Token rightBracket,
+      {Rule ignoredRule, bool forceSplit}) {
+    if (forceSplit == null) forceSplit = false;
 
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    builder = builder.endBlock(elementRule,
-        alwaysSplit: hasLeadingNewline || forceRule);
+    builder = builder.endBlock(ignoredRule,
+        forceSplit: hasLeadingNewline || forceSplit);
 
     builder.endRule();
 

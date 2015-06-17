@@ -2,5 +2,9 @@
   var player = body.animate(
       [{"font-size": "500px"}, {"font-size": fontSize}], {"duration": 100});
 <<<
-  var player = body.animate(
-      [{"font-size": "500px"}, {"font-size": fontSize}], {"duration": 100});
+  var player = body.animate([
+    {"font-size": "500px"},
+    {"font-size": fontSize}
+  ], {
+    "duration": 100
+  });

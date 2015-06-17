@@ -15,7 +15,12 @@ return JSON.encode((span == null)
   ]);
 <<<
 return JSON.encode((span == null)
-    ? [{'method': kind, 'params': {'message': entry.message}}]
+    ? [
+        {
+          'method': kind,
+          'params': {'message': entry.message}
+        }
+      ]
     : [
         {
           'method': kind,

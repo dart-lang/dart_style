@@ -484,26 +484,26 @@ class ChunkBuilder {
   /// Forces the chunk that owns the block to split if it can tell that the
   /// block contents will always split. It does that by looking for hard splits
   /// in the block. If [ignoredSplit] is given, that rule will be ignored
-  /// when determining if a block contains a hard split. If [alwaysSplit] is
+  /// when determining if a block contains a hard split. If [forceSplit] is
   /// `true`, the block is considered to always split.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(HardSplitRule ignoredSplit, {bool alwaysSplit}) {
+  ChunkBuilder endBlock(HardSplitRule ignoredSplit, {bool forceSplit}) {
     _divideChunks();
 
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
-    if (!alwaysSplit) {
+    if (!forceSplit) {
       var length = 0;
       for (var chunk in _chunks) {
         length += chunk.length + chunk.unsplitBlockLength;
         if (length > _formatter.pageWidth) {
-          alwaysSplit = true;
+          forceSplit = true;
           break;
         }
 
         if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
-          alwaysSplit = true;
+          forceSplit = true;
           break;
         }
       }
@@ -518,7 +518,7 @@ class ChunkBuilder {
     // longFunctionName(
     //     [longElementName, longElementName, longElementName],
     //     [short]);
-    if (alwaysSplit) _parent.forceRules();
+    if (forceSplit) _parent.forceRules();
 
     // Write the split for the block contents themselves.
     _parent._writeSplit(_parent._rules.last, _parent._blockArgumentNesting.last,

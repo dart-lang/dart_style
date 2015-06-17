@@ -18,11 +18,29 @@
   fifth,
   sixth
 ];
->>> nested unsplit list
+>>> splits outer lists even if they fit
 [[first], [], [
-    second,third, fourth]  ];
+    second,[third], fourth]  ];
 <<<
-[[first], [], [second, third, fourth]];
+[
+  [first],
+  [],
+  [
+    second,
+    [third],
+    fourth
+  ]
+];
+>>> split indirect outer
+[function([inner])];
+<<<
+[
+  function([inner])
+];
+>>> empty literal does not force outer split
+[[], {}, () {}];
+<<<
+[[], {}, () {}];
 >>> nested split list
 [first, [second, third, fourth], fifth, [sixth, seventh, eighth, nine, tenth,
     eleventh]];
