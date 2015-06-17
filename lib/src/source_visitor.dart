@@ -573,33 +573,27 @@ class SourceVisitor implements AstVisitor {
   }
 
   void _visitConstructorInitializers(ConstructorDeclaration node) {
+    // Shift the ":" forward.
     builder.indent(Indent.constructorInitializer);
 
     split();
     token(node.separator); // ":".
     space();
 
+    // Shift everything past the ":".
+    builder.indent();
+
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
         // Preceding comma.
         token(node.initializers[i].beginToken.previous);
-
-        // Indent subsequent fields one more so they line up with the first
-        // field following the ":":
-        //
-        // Foo()
-        //     : first,
-        //       second;
-        if (i == 1) builder.indent();
         newline();
       }
 
       node.initializers[i].accept(this);
     }
 
-    // If there were multiple fields, discard their extra indentation.
-    if (node.initializers.length > 1) builder.unindent();
-
+    builder.unindent();
     builder.unindent();
 
     // End the rule for ":" after all of the initializers.

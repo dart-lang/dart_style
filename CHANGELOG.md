@@ -31,6 +31,7 @@
 * Prefer splitting after `=>` over other options (#217).
 * If a `=>` function's parameters split, split after the `=>` too (#250).
 * Allow splitting between successive index operators (#256).
+* Correctly indent wrapped constructor initializers (#257).
 
 # 0.1.8
 

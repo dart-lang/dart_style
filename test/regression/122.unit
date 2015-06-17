@@ -20,6 +20,6 @@ class _Streams {
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
       : _typeCounts = inheritStreams == null
-          ? new HashMap<String, int>()
-          : new HashMap.from(inheritStreams._typeCounts);
+            ? new HashMap<String, int>()
+            : new HashMap.from(inheritStreams._typeCounts);
 }
