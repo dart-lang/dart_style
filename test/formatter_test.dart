@@ -2,9 +2,11 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@TestOn("vm")
 library dart_style.test.formatter_test;
 
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -115,7 +117,14 @@ void main() {
 void testDirectory(String name) {
   var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
-  var entries = new Directory(p.join('test', name))
+  // Locate the "test" directory. Use mirrors so that this works with the test
+  // package, which loads this suite into an isolate.
+  var testDir = p.dirname(currentMirrorSystem()
+      .findLibrary(#dart_style.test.formatter_test)
+      .uri
+      .path);
+
+  var entries = new Directory(p.join(testDir, name))
       .listSync(recursive: true, followLinks: false);
   for (var entry in entries) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
