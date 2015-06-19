@@ -1615,7 +1615,7 @@ class SourceVisitor implements AstVisitor {
       builder.nestExpression();
 
       // This rule is ended by visitExpressionFunctionBody().
-      builder.startRule(new SimpleRule(cost: Cost.arrow));
+      builder.startLazyRule(new SimpleRule(cost: Cost.arrow));
     }
 
     if (parameters != null) {
@@ -1697,8 +1697,24 @@ class SourceVisitor implements AstVisitor {
     var rule = new HardSplitRule();
     builder.startRule(rule);
 
+    // If a collection contains a line comment, we assume it's a big complex
+    // blob of data with some documented structure. In that case, the user
+    // probably broke the elements into lines deliberately, so preserve those.
+    var preserveNewlines = _containsLineComments(elements, rightBracket);
+
     for (var element in elements) {
-      if (element != elements.first) builder.blockSplit(space: true);
+      if (element != elements.first) {
+        if (preserveNewlines) {
+          if (_endLine(element.beginToken.previous) !=
+              _startLine(element.beginToken)) {
+            oneOrTwoNewlines();
+          } else {
+            soloSplit();
+          }
+        } else {
+          builder.blockSplit(space: true);
+        }
+      }
 
       builder.nestExpression();
       visit(element);
@@ -1709,10 +1725,36 @@ class SourceVisitor implements AstVisitor {
       builder.unnest();
     }
 
+    builder.endRule();
+
     // If there is a collection inside this one, it forces this one to split.
     var force = _collectionSplits.removeLast();
 
     _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
+  }
+
+  /// Returns `true` if the collection withs [elements] delimited by
+  /// [rightBracket] contains any line comments.
+  ///
+  /// This only looks for comments at the element boundary. Comments within an
+  /// element are ignored.
+  bool _containsLineComments(Iterable<AstNode> elements, Token rightBracket) {
+    hasLineCommentBefore(token) {
+      var comment = token.precedingComments;
+      for (; comment != null; comment = comment.next) {
+        if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
+      }
+
+      return false;
+    }
+
+    // Look before each element.
+    for (var element in elements) {
+      if (hasLineCommentBefore(element.beginToken)) return true;
+    }
+
+    // Look before the closing bracket.
+    return hasLineCommentBefore(rightBracket);
   }
 
   /// Begins writing a literal body: a collection or block-bodied function
