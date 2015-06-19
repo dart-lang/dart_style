@@ -115,8 +115,9 @@ void main() {
 void testDirectory(String name) {
   var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
-  var dir = p.join('test', name);
-  for (var entry in new Directory(dir).listSync()) {
+  var entries = new Directory(p.join('test', name))
+      .listSync(recursive: true, followLinks: false);
+  for (var entry in entries) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
       continue;
     }

@@ -12,50 +12,106 @@ import 'line_prefix.dart';
 import 'line_writer.dart';
 import 'rule/rule.dart';
 
-// TODO(rnystrom): This needs to be updated to take into account how it works
-// now.
 /// Takes a series of [Chunk]s and determines the best way to split them into
 /// lines of output that fit within the page width (if possible).
 ///
-/// Trying all possible combinations is exponential in the number of
-/// [SplitParam]s and expression nesting levels both of which can be quite large
-/// with things like long method chains containing function literals, lots of
-/// named parameters, etc. To tame that, this uses dynamic programming. The
-/// basic process is:
+/// Imagine a naïve solution. You start at the first chunk in the list and work
+/// your way forward. For each chunk, you try every possible value of the rule
+/// that the chunk uses. Then, you ask the rule if that chunk should split or
+/// not when the rule has that value. If it does, then you try every possible
+/// way you could modify the expression nesting context at that point.
 ///
-/// Given a suffix of the entire line, we walk over the tokens keeping track
-/// of any splits we find until we fill the page width (or run out of line).
-/// If we reached the end of the line without crossing the page width, we're
-/// fine and the suffix is good as it is.
+/// For each of those possible results, you start with that as a partial
+/// solution. You move onto the next chunk and repeat the process, building on
+/// to that partial solution. When you reach the last chunk, you determine the
+/// cost of that set of rule values and keep track of the best one.
 ///
-/// If we went over, at least one of those splits must be applied to keep the
-/// suffix in bounds. For each of those splits, we split at that point and
-/// apply the same algorithm for the remainder of the line. We get the results
-/// of all of those, choose the one with the lowest cost, and
-/// that's the best solution.
+/// Once you've tried every single possible permutation of rule values and
+/// nesting stacks, you will have exhaustively covered every possible way the
+/// line can be split and you'll know which one had the lowest cost. That's
+/// your result.
 ///
-/// The fact that this recurses while only removing a small prefix from the
-/// line (the chunks before the first split), means this is exponential.
-/// Thankfully, though, the best set of splits for a suffix of the line depends
-/// only on:
+/// The obvious problem is that this is exponential in the number of values for
+/// each rule and the expression nesting levels, both of which can be quite
+/// large with things like long method chains containing function literals,
+/// large collection literals, etc. To tame that, this uses dynamic programming.
 ///
-///  -   The starting position of the suffix.
+/// As the naïve solver is working its way down the chunks, it's building up a
+/// partial solution. This solution has:
 ///
-///  -   The set of expression nesting levels currently being split up to that
-///      point.
+/// * A length—the number of chunks in it.
+/// * The set of rule values we have selected for the rules used by those
+///   chunks.
+/// * The expression nesting stack that is currently active at the point where
+///   the current chunk splits.
 ///
-///      For example, consider the following:
+/// We'll call this partial solution a [LinePrefix]. The naïve solution starts
+/// with an empty prefix (zero length, no rule values, no expression nesting).
+/// It grabs the next chunk after that prefix and says, OK, given this prefix
+/// what are all of the possible ways we can split that chunk (rule values and
+/// nesting stacks). Create a new, one-chunk-longer prefix for each of those
+/// and then recursively solve each of their suffixes.
 ///
-///          outer(inner(argument1, argument2, argument3));
+/// Normally, this would basically be a depth-first traversal of the entire
+/// possible solution space. However, there is a simple optimization we can
+/// make. When brute forcing the solution tree, we will often solve many
+/// prefixes with the same length.
 ///
-///      If the suffix we are considering is "argument2, ..." then we need to
-///      know if we previously split after "outer(", "inner(", or both. The
-///      answer determines how much leading indentation "argument2, ..." will
-///      have.
+/// For example, if the first chunk's rule can take three different values, we
+/// will solve three line prefixes of length one, one for each rule value.
+/// Those in turn may have lots of permutations leading to even more solutions
+/// all with line prefixes of length two, and so on.
 ///
-/// Thus, whenever we calculate an ideal set of splits for some suffix, we
-/// memoize it. When later recursive calls descend to that suffix again, we can
-/// reuse it.
+/// In many cases, we have to treat these line prefixes separately. If two
+/// prefixes have the same length, but fix a different value for some rule, they
+/// may lead to different ways of splitting the suffix since that rule may
+/// appear in a later chunk too.
+///
+/// But in many cases, the line prefixes are equivalent. For example, consider:
+///
+///     function(
+///         first(arg, arg, arg, arg, arg, arg),
+///         second,
+///         third(arg, arg, arg, arg, arg, arg));
+///
+/// The line splitter will try a number of different ways to split the argument
+/// list to `first`. For each of those, it then has to try all of the different
+/// ways it could split `third`. *However*, those two are unrelated. The way
+/// you split `first` has no impact on how you split `third`.
+///
+/// The precise way to state that is that as the line prefix grows *past*
+/// `first()` and its argument list, it contains *less* state. It discards the
+/// rule value it selected for the argument list rule since that rule doesn't
+/// appear anywhere in the suffix and can't affect it. Any expression nesting
+/// inside the argument list has been popped off by the time we get to `second`.
+///
+/// We'll try every possible way to split `first()`'s argument list and then
+/// recursively solve the remainder of the line for each of those possible
+/// splits. But each of those remainders will end up having identical prefixes.
+/// For any given [LinePrefix], there is a single best solution for the suffix.
+/// So, once we've found it, we can just reuse it the next time that same
+/// prefix comes up.
+///
+/// In other words, we add a memoization table, [_bestSplits]. It is a map from
+/// [LinePrefix]es to [SplitSet]s. For each prefix, it stores the best set of
+/// splits to use for the following suffix. With this, instead of exploring the
+/// entire solution *tree*, which would be exponential, we just traverse the
+/// solution *graph* where entire branches of the tree that are identical
+/// collapse back together.
+///
+/// The trick to making this work is storing the minimal amount of data in the
+/// line prefix to *uniquely* identify a suffix while still collapsing as many
+/// branches as possible. In practice, this means aggressively forgetting state
+/// when the prefix grows. In particular, we do not need to keep track of
+/// rule values we selected in the prefix if that rule does not affect anything
+/// in the suffix.
+///
+/// There are a couple of other smaller scale optimizations too. If we ever hit
+/// a solution whose cost is zero, we know we won't do better, so we stop
+/// searching. If we make it to the end of the chunk list and we haven't gone
+/// past the end of the line, we know we don't need to split anywhere.
+///
+/// But the memoization is the main thing that makes this tractable.
 class LineSplitter {
   final LineWriter _writer;
 
