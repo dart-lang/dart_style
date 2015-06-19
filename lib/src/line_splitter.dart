@@ -91,7 +91,7 @@ class LineSplitter {
   ///
   /// [firstLineIndent] is the number of characters of whitespace to prefix the
   /// first line of output with.
-  SplitSolution apply(int firstLineIndent) {
+  SplitSolution apply(int firstLineIndent, {bool flushLeft}) {
     if (debug.traceSplitter) {
       debug.log(debug.green("\nSplitting:"));
       debug.dumpChunks(0, _chunks);
@@ -110,7 +110,8 @@ class LineSplitter {
       _suffixRules.add(ruleChunks.skip(i).map((chunk) => chunk.rule).toSet());
     }
 
-    var prefix = new LinePrefix(firstLineIndent + _blockIndentation);
+    var prefix = new LinePrefix(firstLineIndent + _blockIndentation,
+        flushLeft: flushLeft);
     var solution = new SplitSolution(prefix);
     _tryChunkRuleValues(solution, prefix);
     return solution;

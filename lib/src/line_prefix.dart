@@ -51,8 +51,8 @@ class LinePrefix {
 
   /// Creates a new zero-length prefix with initial [indent] whose suffix is
   /// the entire line.
-  LinePrefix(int indent)
-      : this._(0, {}, indent, new NestingSplitter(), flushLeft: false);
+  LinePrefix(int indent, {bool flushLeft})
+      : this._(0, {}, indent, new NestingSplitter(), flushLeft: flushLeft);
 
   LinePrefix._(this.length, this.ruleValues, this._indent, this._nesting,
       {bool flushLeft: false})
@@ -93,9 +93,16 @@ class LinePrefix {
   Iterable<LinePrefix> split(
       Chunk chunk, int blockIndentation, Map<Rule, int> ruleValues) {
     var indent = chunk.indent + blockIndentation;
+    var flushLeft = chunk.flushLeft;
+
+    // If the chunk has a block, then its flushLeft property is for the first
+    // line of the block, not the line after the block. The line after the block
+    // is never flush left since it will always be for a `}` or `]`.
+    if (chunk.blockChunks.isNotEmpty) flushLeft = false;
+
     return _nesting.update(chunk.nesting).map((nesting) => new LinePrefix._(
         length + 1, ruleValues, indent, nesting,
-        flushLeft: chunk.flushLeft));
+        flushLeft: flushLeft));
   }
 
   String toString() {

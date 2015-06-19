@@ -87,7 +87,7 @@ class LineWriter {
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
     // LineWriter ensures all but the first chunk have a block indent, and this
     // handles the first chunk. Do something cleaner.
-    var result = writer.writeLines(chunk.flushLeft ? 0 : Indent.block);
+    var result = writer.writeLines(Indent.block, flushLeft: chunk.flushLeft);
     return _blockCache[key] = result;
   }
 
@@ -97,7 +97,7 @@ class LineWriter {
   /// Since this is linear and line splitting is worse it's good to feed the
   /// line splitter smaller lists of chunks when possible.
   FormatResult writeLines(int firstLineIndent,
-      {bool isCompilationUnit: false}) {
+      {bool isCompilationUnit: false, bool flushLeft: false}) {
     // Now that we know what hard splits there will be, break the chunks into
     // independently splittable lines.
     var newlines = 0;
@@ -109,16 +109,19 @@ class LineWriter {
       var chunk = _chunks[i];
       if (!chunk.canDivide) continue;
 
-      totalCost += _completeLine(newlines, indent, start, i + 1);
+      totalCost += _completeLine(newlines, indent, start, i + 1,
+          flushLeft: flushLeft);
 
       // Get ready for the next line.
       newlines = chunk.isDouble ? 2 : 1;
-      indent = chunk.flushLeft ? 0 : chunk.indent;
+      indent = chunk.indent;
+      flushLeft = chunk.flushLeft;
       start = i + 1;
     }
 
     if (start < _chunks.length) {
-      totalCost += _completeLine(newlines, indent, start, _chunks.length);
+      totalCost += _completeLine(newlines, indent, start, _chunks.length,
+          flushLeft: flushLeft);
     }
 
     // Be a good citizen, end with a newline.
@@ -130,7 +133,8 @@ class LineWriter {
 
   /// Takes the first [length] of the chunks with leading [indent], removes
   /// them, and runs the [LineSplitter] on them.
-  int _completeLine(int newlines, int indent, int start, int end) {
+  int _completeLine(int newlines, int indent, int start, int end,
+      {bool flushLeft}) {
     // Write the newlines required by the previous line.
     for (var j = 0; j < newlines; j++) {
       _buffer.write(_lineEnding);
@@ -146,10 +150,14 @@ class LineWriter {
 
     // Run the line splitter.
     var splitter = new LineSplitter(this, chunks, _blockIndentation);
-    var solution = splitter.apply(indent);
+    var solution = splitter.apply(indent, flushLeft: flushLeft);
+
+    // Write the indentation of the first line.
+    if (!flushLeft) {
+      _buffer.write(" " * (indent + _blockIndentation));
+    }
 
     // Write each chunk with the appropriate splits between them.
-    _buffer.write(" " * (indent + _blockIndentation));
     for (var i = 0; i < chunks.length; i++) {
       var chunk = chunks[i];
       _writeChunk(chunk);

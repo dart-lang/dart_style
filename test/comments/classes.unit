@@ -118,3 +118,29 @@ class A {
 class A {
   // comment
 }
+>>> nested flush left comment
+class Foo {
+  method() {
+// flush
+  }
+}
+<<<
+class Foo {
+  method() {
+// flush
+  }
+}
+>>> nested flush left after non-nested
+class Foo {
+  method() {
+    // ...
+// flush
+  }
+}
+<<<
+class Foo {
+  method() {
+    // ...
+// flush
+  }
+}
