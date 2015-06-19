@@ -71,16 +71,18 @@ void main() {
   });
 
   test("skips subdirectories whose name starts with '.'", () {
-    d.dir('code', [d.dir('.skip', [d.file('a.dart', unformattedSource)])])
-        .create();
+    d.dir('code', [
+      d.dir('.skip', [d.file('a.dart', unformattedSource)])
+    ]).create();
 
     schedule(() {
       var dir = new Directory(d.defaultRoot);
       processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
-    d.dir('code', [d.dir('.skip', [d.file('a.dart', unformattedSource)])])
-        .validate();
+    d.dir('code', [
+      d.dir('.skip', [d.file('a.dart', unformattedSource)])
+    ]).validate();
   });
 
   test("traverses the given directory even if its name starts with '.'", () {

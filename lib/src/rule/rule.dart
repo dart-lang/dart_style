@@ -132,9 +132,8 @@ class SimpleRule extends Rule {
 
   SimpleRule({int cost, bool splitsOnInnerRules})
       : cost = cost != null ? cost : Cost.normal,
-        splitsOnInnerRules = splitsOnInnerRules != null
-            ? splitsOnInnerRules
-            : true;
+        splitsOnInnerRules =
+            splitsOnInnerRules != null ? splitsOnInnerRules : true;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 

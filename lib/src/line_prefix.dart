@@ -80,9 +80,9 @@ class LinePrefix {
 
   /// Create a new LinePrefix one chunk longer than this one using [ruleValues],
   /// and assuming that we do not split before that chunk.
-  LinePrefix extend(Map<Rule, int> ruleValues) => new LinePrefix._(
-      length + 1, ruleValues, _indent, _nesting,
-      flushLeft: _flushLeft);
+  LinePrefix extend(Map<Rule, int> ruleValues) =>
+      new LinePrefix._(length + 1, ruleValues, _indent, _nesting,
+          flushLeft: _flushLeft);
 
   /// Create a series of new LinePrefixes one chunk longer than this one using
   /// [ruleValues], and assuming that the new [chunk] splits at an expression

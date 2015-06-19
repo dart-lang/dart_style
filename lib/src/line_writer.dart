@@ -109,8 +109,8 @@ class LineWriter {
       var chunk = _chunks[i];
       if (!chunk.canDivide) continue;
 
-      totalCost += _completeLine(newlines, indent, start, i + 1,
-          flushLeft: flushLeft);
+      totalCost +=
+          _completeLine(newlines, indent, start, i + 1, flushLeft: flushLeft);
 
       // Get ready for the next line.
       newlines = chunk.isDouble ? 2 : 1;

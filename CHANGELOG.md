@@ -10,31 +10,30 @@
   In particular, it forces argument and parameter lists to go one-per-line if
   they don't all fit in two lines. And it allows function and collection
   literals inside expressions to indent like expressions in some contexts.
+  (#78, #97, #101, #123, #139, #141, #142, #143, et. al.)
 
-  (#78, #97, #101, #123, #139, #141, #142, #143)
-
-* Allow splitting inside with and implements clauses (#228, #259).
-* Preserve mandatory newlines in inline block comments (#178).
-* Allow multiple variable declarations on one line if they fit (#155).
-* Splitting inside type parameter and type argument lists (#184).
-* Enforce a blank line before and after classes (#168).
-* Re-indent line doc comments even if they are flush left (#192).
-* More precisely control newlines between declarations (#173).
-* Nest cascades like expressions (#200, #203, #205, #221, #236).
-* Do not nest blocks inside single-argument function and method calls.
-* Do nest blocks inside `=>` functions.
-* Set failure exit code for malformed input when reading from stdin (#359).
 * Indent cascades more deeply when the receiver is a method call (#137).
 * Preserve newlines in collections containing line comments (#139).
+* Allow multiple variable declarations on one line if they fit (#155).
 * Prefer splitting at "." on non-identifier method targets (#161).
+* Enforce a blank line before and after classes (#168).
+* More precisely control newlines between declarations (#173).
+* Preserve mandatory newlines in inline block comments (#178).
+* Splitting inside type parameter and type argument lists (#184).
 * Nest blocks deeper inside a wrapped conditional operator (#186).
 * Split named arguments if the positional arguments split (#189).
+* Re-indent line doc comments even if they are flush left (#192).
+* Nest cascades like expressions (#200, #203, #205, #221, #236).
 * Prefer splitting after `=>` over other options (#217).
 * Nested non-empty collections force surrounding ones to split (#223).
+* Allow splitting inside with and implements clauses (#228, #259).
 * Allow splitting after `=` in a constructor initializer (#242).
 * If a `=>` function's parameters split, split after the `=>` too (#250).
 * Allow splitting between successive index operators (#256).
 * Correctly indent wrapped constructor initializers (#257).
+* Set failure exit code for malformed input when reading from stdin (#359).
+* Do not nest blocks inside single-argument function and method calls.
+* Do nest blocks inside `=>` functions.
 
 # 0.1.8
 

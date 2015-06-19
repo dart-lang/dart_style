@@ -55,8 +55,8 @@ bool processFile(FormatterOptions options, File file, {String label}) {
   try {
     var source = new SourceCode(file.readAsStringSync(), uri: file.path);
     var output = formatter.formatSource(source);
-    options.reporter.showFile(file, label, output,
-        changed: source.text != output.text);
+    options.reporter
+        .showFile(file, label, output, changed: source.text != output.text);
     return true;
   } on FormatterException catch (err) {
     var color = Platform.operatingSystem != "windows" &&

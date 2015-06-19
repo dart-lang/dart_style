@@ -64,7 +64,7 @@ packages:
   scheduled_test:
     description: scheduled_test
     source: hosted
-    version: "0.12.0+1"
+    version: "0.12.1"
   shelf:
     description: shelf
     source: hosted
@@ -100,11 +100,11 @@ packages:
   test:
     description: test
     source: hosted
-    version: "0.12.3"
+    version: "0.12.3+2"
   watcher:
     description: watcher
     source: hosted
-    version: "0.9.5"
+    version: "0.9.6"
   yaml:
     description: yaml
     source: hosted

@@ -159,17 +159,17 @@ class ChunkBuilder {
   ///
   /// If [isDouble] is passed, forces the split to either be a single or double
   /// newline. Otherwise, leaves it indeterminate.
-  Chunk split({bool space, bool isDouble, bool flushLeft}) => _writeSplit(
-      _rules.last, null,
-      flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
+  Chunk split({bool space, bool isDouble, bool flushLeft}) =>
+      _writeSplit(_rules.last, null,
+          flushLeft: flushLeft, isDouble: isDouble, spaceWhenUnsplit: space);
 
   /// Write a split owned by the current innermost rule.
   ///
   /// Unlike [split()], this ignores any current expression nesting. It always
   /// indents the next line at the statement level.
-  Chunk blockSplit({bool space, bool isDouble}) => _writeSplit(
-      _rules.last, _nesting.blockNesting,
-      isDouble: isDouble, spaceWhenUnsplit: space);
+  Chunk blockSplit({bool space, bool isDouble}) =>
+      _writeSplit(_rules.last, _nesting.blockNesting,
+          isDouble: isDouble, spaceWhenUnsplit: space);
 
   /// Outputs the series of [comments] and associated whitespace that appear
   /// before [token] (which is not written by this).
