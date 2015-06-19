@@ -1177,10 +1177,12 @@ class SourceVisitor implements AstVisitor {
 
   visitNativeFunctionBody(NativeFunctionBody node) {
     _simpleStatement(node, () {
-      space();
+      builder.nestExpression(now: true);
+      soloSplit();
       token(node.nativeKeyword);
       space();
       visit(node.stringLiteral);
+      builder.unnest();
     });
   }
 
