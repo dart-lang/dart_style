@@ -849,7 +849,7 @@ class ChunkBuilder {
     for (var rule in rules) {
       var length = 0;
       for (var i = rule.start + 1; i <= rule.end; i++) {
-        length += _chunks[i].length + _chunks[i].unsplitBlockLength;
+        length += _chunks[i].length;
         if (length > pageWidth) {
           preemptedRules.add(rule);
           break;

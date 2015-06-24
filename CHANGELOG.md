@@ -1,4 +1,8 @@
-# 0.2.0
+# 0.2.0-rc.2
+
+* Allow splitting after argument name (#368).
+
+# 0.2.0-rc.1
 
 * **BREAKING:** The `indent` argument to `new DartFormatter()` is now a number
   of *spaces*, not *indentation levels*.

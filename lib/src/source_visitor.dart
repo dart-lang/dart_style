@@ -1165,8 +1165,12 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitNamedExpression(NamedExpression node) {
+    builder.nestExpression();
+    builder.startSpan();
     visit(node.name);
-    visit(node.expression, before: space);
+    visit(node.expression, before: soloSplit);
+    builder.endSpan();
+    builder.unnest();
   }
 
   visitNativeClause(NativeClause node) {
