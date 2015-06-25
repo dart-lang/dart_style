@@ -4,12 +4,16 @@
 
 library dart_style.src.dart_formatter;
 
-import 'package:analyzer/src/string_source.dart';
+import 'dart:math' as math;
+
+import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/parser.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 import 'package:analyzer/src/generated/source.dart';
+import 'package:analyzer/src/string_source.dart';
 
 import 'error_listener.dart';
+import 'formatter_exception.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
 
@@ -101,6 +105,19 @@ class DartFormatter {
       node = parser.parseCompilationUnit(startToken);
     } else {
       node = parser.parseStatement(startToken);
+
+      // Make sure we consumed all of the source.
+      var token = node.endToken.next;
+      if (token.type != TokenType.EOF) {
+        var error = new AnalysisError.con2(
+            stringSource,
+            token.offset,
+            math.max(token.length, 1),
+            ParserErrorCode.UNEXPECTED_TOKEN,
+            [token.lexeme]);
+
+        throw new FormatterException([error]);
+      }
     }
 
     errorListener.throwIfErrors();

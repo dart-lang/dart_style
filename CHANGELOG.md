@@ -1,6 +1,7 @@
 # 0.2.0-rc.2
 
 * Allow splitting after argument name (#368).
+* Parsing a statement fails if there is unconsumed input (#372).
 
 # 0.2.0-rc.1
 

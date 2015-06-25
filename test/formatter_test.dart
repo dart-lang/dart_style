@@ -74,6 +74,19 @@ void main() {
         equals("var x = 1;"));
   });
 
+  test("fails if anything is after the statement", () {
+    try {
+      new DartFormatter().formatStatement("var x = 1;;");
+
+      fail("Should throw.");
+    } catch (err) {
+      expect(err, new isInstanceOf<FormatterException>());
+      var message = err.message();
+      expect(message, contains("Unexpected token"));
+      expect(message, contains("column 11"));
+    }
+  });
+
   test('preserves initial indent', () {
     var formatter = new DartFormatter(indent: 3);
     expect(
