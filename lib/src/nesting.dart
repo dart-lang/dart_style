@@ -72,17 +72,11 @@ class NestingLevel {
     if (_parent == null) return;
     if (_parent._parent == null) return;
 
-    if (used.contains(_parent)) return;
-
     // Unlink the unused parent from the chain.
-    _parent = _parent._parent;
+    if (!used.contains(_parent)) _parent = _parent._parent;
 
-    // TODO(rnystrom): This should walk the entire parent chain looking for
-    // unused levels. Stopping after the first can leave some unused levels on
-    // the stack. This isn't fatal, but it makes the splitter slower.
-    //
-    // However, fixing this causes regression 144 to fail. Investigate what's
-    // going on there and fix that.
+    // Walk up the whole chain.
+    _parent.removeUnused(used);
   }
 
   String toString() => depth.toString();

@@ -705,32 +705,32 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExpressionFunctionBody(ExpressionFunctionBody node) {
-    _simpleStatement(node, () {
-      // Space after the parameter list.
-      space();
+    // Space after the parameter list.
+    space();
 
-      // The "async" or "sync" keyword.
-      token(node.keyword, after: space);
+    // The "async" or "sync" keyword.
+    token(node.keyword, after: space);
 
-      // Try to keep the "(...) => " with the start of the body for anonymous
-      // functions.
-      if (_isInLambda(node)) builder.startSpan();
+    // Try to keep the "(...) => " with the start of the body for anonymous
+    // functions.
+    if (_isInLambda(node)) builder.startSpan();
 
-      token(node.functionDefinition); // "=>".
+    token(node.functionDefinition); // "=>".
 
-      // Split after the "=>", using the rule created before the parameters
-      // by _visitBody().
-      split();
-      builder.endRule();
+    // Split after the "=>", using the rule created before the parameters
+    // by _visitBody().
+    split();
+    builder.endRule();
 
-      if (_isInLambda(node)) builder.endSpan();
+    if (_isInLambda(node)) builder.endSpan();
 
-      builder.startBlockArgumentNesting();
-      builder.startSpan();
-      visit(node.expression);
-      builder.endSpan();
-      builder.endBlockArgumentNesting();
-    });
+    builder.startBlockArgumentNesting();
+    builder.startSpan();
+    visit(node.expression);
+    builder.endSpan();
+    builder.endBlockArgumentNesting();
+
+    token(node.semicolon);
   }
 
   visitExpressionStatement(ExpressionStatement node) {

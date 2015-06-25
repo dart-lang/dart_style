@@ -796,8 +796,8 @@ class Traverser {
         analyzeAll: _configBool('analyzeAll'),
         suppressWarnings: _configBool('suppressWarnings'),
         suppressHints: _configBool('suppressHints'),
-        suppressPackageWarnings: _configBool('suppressPackageWarnings',
-            defaultsTo: true),
+        suppressPackageWarnings:
+            _configBool('suppressPackageWarnings', defaultsTo: true),
         terse: _configBool('terse'),
         includeSourceMapUrls: _settings.mode != BarbackMode.RELEASE);
   }
