@@ -1,3 +1,7 @@
+# 0.1.8+1
+
+* Use the new `test` package runner internally.
+
 # 0.1.8
 
 * Update to latest `analyzer` and `args` packages.

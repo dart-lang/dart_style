@@ -5,19 +5,14 @@
 library dart_style.test.formatter_test;
 
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
-import 'package:unittest/compact_vm_config.dart';
-import 'package:unittest/unittest.dart';
+import 'package:test/test.dart';
 
 import 'package:dart_style/dart_style.dart';
 
 void main() {
-  // Tidy up the unittest output.
-  filterStacks = true;
-  formatStacks = true;
-  useCompactVMConfiguration();
-
   testDirectory("comments");
   testDirectory("regression");
   testDirectory("selections");
@@ -113,8 +108,16 @@ void main() {
 void testDirectory(String name) {
   var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
-  var dir = p.join(p.dirname(p.fromUri(Platform.script)), name);
-  for (var entry in new Directory(dir).listSync()) {
+  // Locate the "test" directory. Use mirrors so that this works with the test
+  // package, which loads this suite into an isolate.
+  var testDir = p.dirname(currentMirrorSystem()
+      .findLibrary(#dart_style.test.formatter_test)
+      .uri
+      .path);
+
+  var entries = new Directory(p.join(testDir, name))
+      .listSync(recursive: true, followLinks: false);
+  for (var entry in entries) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
       continue;
     }
