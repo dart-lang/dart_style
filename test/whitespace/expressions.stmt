@@ -11,6 +11,14 @@ var c = !condition == a > b;
 var d=condition?b:obj.foo(a, b);
 <<<
 var d = condition ? b : obj.foo(a, b);
+>>> as
+identifier     as    TypeName;
+<<<
+identifier as TypeName;
+>>> is
+identifier     is    TypeName;
+<<<
+identifier is TypeName;
 >>> is!
 var d=obj is!SomeType;
 <<<
