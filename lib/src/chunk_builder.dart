@@ -194,7 +194,6 @@ class ChunkBuilder {
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
     if (_pendingWhitespace == Whitespace.twoNewlines &&
-        comments.isNotEmpty &&
         comments.first.linesBefore < 2) {
       if (linesBeforeToken > 1) {
         _pendingWhitespace = Whitespace.newline;
@@ -246,7 +245,7 @@ class ChunkBuilder {
       if (comment.linesBefore == 0) {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
-        if (_shouldMoveCommentBeforeSplit()) {
+        if (_shouldMoveCommentBeforeSplit(comment.text)) {
           _chunks.last.allowText();
         }
 
@@ -601,11 +600,14 @@ class ChunkBuilder {
     _pendingWhitespace = Whitespace.none;
   }
 
-  /// Returns `true` if the last chunk is a split that should be move after the
+  /// Returns `true` if the last chunk is a split that should be moved after the
   /// comment that is about to be written.
-  bool _shouldMoveCommentBeforeSplit() {
+  bool _shouldMoveCommentBeforeSplit(String comment) {
     // Not if there is nothing before it.
     if (_chunks.isEmpty) return false;
+
+    // Multi-line comments are always pushed to the next line.
+    if (comment.contains("\n")) return false;
 
     // If the text before the split is an open grouping character, we don't
     // want to adhere the comment to that.
