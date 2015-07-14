@@ -103,3 +103,10 @@ identifier[longArgument][longArgument][longArgument][longArgument][longArgument]
 identifier[longArgument][longArgument]
         [longArgument][longArgument]
     [longArgument];
+>>> null coalescing operator
+identifier&&identifier&&identifier&&identifier;
+<<<
+identifier &&
+    identifier &&
+    identifier &&
+    identifier;

@@ -166,66 +166,16 @@ class SourceVisitor implements AstVisitor {
     builder.startSpan();
     builder.nestExpression();
 
-    // Note that we have the full precedence table here even though some
-    // operators are not associative and so can never chain. In particular,
-    // Dart does not allow sequences of comparison or equality operators.
-    const operatorPrecedences = const {
-      // Multiplicative.
-      TokenType.STAR: 13,
-      TokenType.SLASH: 13,
-      TokenType.TILDE_SLASH: 13,
-      TokenType.PERCENT: 13,
-
-      // Additive.
-      TokenType.PLUS: 12,
-      TokenType.MINUS: 12,
-
-      // Shift.
-      TokenType.LT_LT: 11,
-      TokenType.GT_GT: 11,
-
-      // "&".
-      TokenType.AMPERSAND: 10,
-
-      // "^".
-      TokenType.CARET: 9,
-
-      // "|".
-      TokenType.BAR: 8,
-
-      // Relational.
-      TokenType.LT: 7,
-      TokenType.GT: 7,
-      TokenType.LT_EQ: 7,
-      TokenType.GT_EQ: 7,
-      // Note: as, is, and is! have the same precedence but are not handled
-      // like regular binary operators since they aren't associative.
-
-      // Equality.
-      TokenType.EQ_EQ: 6,
-      TokenType.BANG_EQ: 6,
-
-      // Logical and.
-      TokenType.AMPERSAND_AMPERSAND: 5,
-
-      // Logical or.
-      TokenType.BAR_BAR: 4,
-    };
-
-    // Flatten out a tree/chain of the same precedence. If we split on this
-    // precedence level, we will break all of them.
-    var precedence = operatorPrecedences[node.operator.type];
-    assert(precedence != null);
-
     // Start lazily so we don't force the operator to split if a line comment
     // appears before the first operand.
     builder.startLazyRule();
 
-    traverse(Expression e) {
-      if (e is BinaryExpression &&
-          operatorPrecedences[e.operator.type] == precedence) {
-        assert(operatorPrecedences[e.operator.type] != null);
+    // Flatten out a tree/chain of the same precedence. If we split on this
+    // precedence level, we will break all of them.
+    var precedence = node.operator.type.precedence;
 
+    traverse(Expression e) {
+      if (e is BinaryExpression && e.operator.type.precedence == precedence) {
         traverse(e.leftOperand);
 
         space();

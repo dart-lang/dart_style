@@ -95,3 +95,15 @@ main() {
 string""");
   }
 }
+>>> null coalescing operator
+argument??    argument;
+<<<
+argument ?? argument;
+>>> ?. operator
+receiver ?.  method() ?. getter;
+<<<
+receiver?.method()?.getter;
+>>> null coalescing self assignment
+variableName??=argument;
+<<<
+variableName ??= argument;
