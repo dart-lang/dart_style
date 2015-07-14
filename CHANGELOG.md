@@ -1,6 +1,7 @@
 # 0.2.0-rc.2
 
 * Force multi-line comments to the next line (#241).
+* Better splitting in metadata annotations in parameter lists (#247).
 * Allow splitting after argument name (#368).
 * Parsing a statement fails if there is unconsumed input (#372).
 * Allow splitting on `as` and `is` expressions (#384).

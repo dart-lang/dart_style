@@ -708,13 +708,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFieldFormalParameter(FieldFormalParameter node) {
-    visitParameterMetadata(node.metadata);
-    token(node.keyword, after: space);
-    visit(node.type, after: space);
-    token(node.thisKeyword);
-    token(node.period);
-    visit(node.identifier);
-    visit(node.parameters);
+    visitParameterMetadata(node.metadata, () {
+      token(node.keyword, after: space);
+      visit(node.type, after: space);
+      token(node.thisKeyword);
+      token(node.period);
+      visit(node.identifier);
+      visit(node.parameters);
+    });
   }
 
   visitForEachStatement(ForEachStatement node) {
@@ -913,14 +914,15 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    visitParameterMetadata(node.metadata);
-    visit(node.returnType, after: space);
+    visitParameterMetadata(node.metadata, () {
+      visit(node.returnType, after: space);
 
-    // Try to keep the function's parameters with its name.
-    builder.startSpan();
-    visit(node.identifier);
-    visit(node.parameters);
-    builder.endSpan();
+      // Try to keep the function's parameters with its name.
+      builder.startSpan();
+      visit(node.identifier);
+      visit(node.parameters);
+      builder.endSpan();
+    });
   }
 
   visitHideCombinator(HideCombinator node) {
@@ -1245,10 +1247,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
-    visitParameterMetadata(node.metadata);
-    modifier(node.keyword);
-    visit(node.type, after: space);
-    visit(node.identifier);
+    visitParameterMetadata(node.metadata, () {
+      modifier(node.keyword);
+      visit(node.type, after: space);
+      visit(node.identifier);
+    });
   }
 
   visitSimpleIdentifier(SimpleIdentifier node) {
@@ -1389,10 +1392,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTypeParameter(TypeParameter node) {
-    visitParameterMetadata(node.metadata);
-    visit(node.name);
-    token(node.extendsKeyword, before: space, after: space);
-    visit(node.bound);
+    visitParameterMetadata(node.metadata, () {
+      visit(node.name);
+      token(node.extendsKeyword, before: space, after: space);
+      visit(node.bound);
+    });
   }
 
   visitTypeParameterList(TypeParameterList node) {
@@ -1493,9 +1497,16 @@ class SourceVisitor implements AstVisitor {
   /// Visits metadata annotations on parameters and type parameters.
   ///
   /// These are always on the same line as the parameter.
-  void visitParameterMetadata(NodeList<Annotation> metadata) {
-    // TODO(rnystrom): Allow splitting after annotations?
-    visitNodes(metadata, between: space, after: space);
+  void visitParameterMetadata(
+      NodeList<Annotation> metadata, void visitParameter()) {
+    // Split before all of the annotations or none.
+    builder.startRule();
+    visitNodes(metadata, between: split, after: split);
+    visitParameter();
+
+    // Wrap the rule around the parameter too. If it splits, we want to force
+    // the annotations to split as well.
+    builder.endRule();
   }
 
   /// Visits the `=` and the following expression in any place where an `=`

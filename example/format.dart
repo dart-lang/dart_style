@@ -15,8 +15,14 @@ void main(List<String> args) {
   debug.useAnsiColors = true;
 
   formatStmt("""
-var map = const {"foo": "bar", "fuz": null};
-""");
+  init({@Option(
+      help: 'The git Uri containing the jefe.yaml.',
+      abbr: 'g') String gitUri, @Option(
+      help: 'The directory to install into',
+      abbr: 'd') String installDirectory: '.', @Flag(
+      help: 'Skips the checkout of the develop branch',
+      abbr: 's') bool skipCheckout: false}) async {}
+""", 80);
 }
 
 void formatStmt(String source, [int pageWidth = 40]) {
