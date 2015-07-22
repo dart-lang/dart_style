@@ -1,3 +1,7 @@
+# 0.1.8+2
+
+* Allow using analyzer 0.26.0-alpha.0.
+
 # 0.1.8+1
 
 * Use the new `test` package runner internally.

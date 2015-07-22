@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.25.0+1"
+    version: "0.25.2"
   args:
     description: args
     source: hosted
@@ -16,11 +16,15 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.15.2+4"
+    version: "0.15.2+5"
   browser:
     description: browser
     source: hosted
     version: "0.10.0+2"
+  charcode:
+    description: charcode
+    source: hosted
+    version: "1.1.0"
   collection:
     description: collection
     source: hosted
@@ -29,14 +33,22 @@ packages:
     description: crypto
     source: hosted
     version: "0.9.0"
+  csslib:
+    description: csslib
+    source: hosted
+    version: "0.12.1"
   glob:
     description: glob
     source: hosted
-    version: "1.0.4"
+    version: "1.0.5"
+  html:
+    description: html
+    source: hosted
+    version: "0.12.1+2"
   http:
     description: http
     source: hosted
-    version: "0.11.2"
+    version: "0.11.3"
   http_multi_server:
     description: http_multi_server
     source: hosted
@@ -44,7 +56,11 @@ packages:
   http_parser:
     description: http_parser
     source: hosted
-    version: "0.0.2+7"
+    version: "0.0.2+8"
+  logging:
+    description: logging
+    source: hosted
+    version: "0.11.1"
   matcher:
     description: matcher
     source: hosted
@@ -53,10 +69,18 @@ packages:
     description: mime
     source: hosted
     version: "0.9.3"
+  package_config:
+    description: package_config
+    source: hosted
+    version: "0.1.1"
   path:
     description: path
     source: hosted
-    version: "1.3.5"
+    version: "1.3.6"
+  plugin:
+    description: plugin
+    source: hosted
+    version: "0.1.0"
   pool:
     description: pool
     source: hosted
@@ -68,11 +92,11 @@ packages:
   scheduled_test:
     description: scheduled_test
     source: hosted
-    version: "0.12.1+2"
+    version: "0.12.2"
   shelf:
     description: shelf
     source: hosted
-    version: "0.6.1+2"
+    version: "0.6.2"
   shelf_static:
     description: shelf_static
     source: hosted
@@ -104,11 +128,15 @@ packages:
   test:
     description: test
     source: hosted
-    version: "0.12.3+4"
+    version: "0.12.3+8"
+  utf:
+    description: utf
+    source: hosted
+    version: "0.9.0+2"
   watcher:
     description: watcher
     source: hosted
-    version: "0.9.6"
+    version: "0.9.7"
   yaml:
     description: yaml
     source: hosted
