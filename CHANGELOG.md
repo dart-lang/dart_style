@@ -44,6 +44,14 @@
 * Do not nest blocks inside single-argument function and method calls.
 * Do nest blocks inside `=>` functions.
 
+# 0.1.8+2
+
+* Allow using analyzer 0.26.0-alpha.0.
+
+# 0.1.8+1
+
+* Use the new `test` package runner internally.
+
 # 0.1.8
 
 * Update to latest `analyzer` and `args` packages.
