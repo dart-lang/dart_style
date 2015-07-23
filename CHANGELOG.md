@@ -7,6 +7,7 @@
 * Parsing a statement fails if there is unconsumed input (#372).
 * Allow splitting on `as` and `is` expressions (#384).
 * Support null-aware operators (`?.`, `??`, and `??=`) (#385).
+* Allow splitting before default parameter values (#389).
 
 # 0.2.0-rc.1
 

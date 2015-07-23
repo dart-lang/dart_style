@@ -589,10 +589,18 @@ class SourceVisitor implements AstVisitor {
   visitDefaultFormalParameter(DefaultFormalParameter node) {
     visit(node.parameter);
     if (node.separator != null) {
-      // The '=' separator is preceded by a space.
+      builder.startSpan();
+      builder.nestExpression();
+
+      // The '=' separator is preceded by a space, ":" is not.
       if (node.separator.type == TokenType.EQ) space();
       token(node.separator);
-      visit(node.defaultValue, before: space);
+
+      soloSplit(Cost.assignment);
+      visit(node.defaultValue);
+
+      builder.unnest();
+      builder.endSpan();
     }
   }
 
