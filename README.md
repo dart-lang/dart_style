@@ -142,6 +142,16 @@ do is spare you the effort of hand-formatting, and ensure your code is
 *consistently* formatted. I hope you'll appreciate the real value in both of
 those.
 
+### How stable is it?
+
+You can rely on the formatter to not break your code or change its semantics.
+If it does do so, this is a critical bug and we'll fix it quickly.
+
+The rules the formatter uses to determine the "best" way to split a line may
+change over time. We don't promise that code produced by the formatter today
+will be identical to the same code run through a later version of the formatter.
+We do hope that you'll like the output of the later version more.
+
 ### Why can't I tell the formatter to ignore a region of code?
 
 Even a really sophisticated formatter can't beat a human in *all* cases. Our
@@ -163,15 +173,87 @@ in most cases where users have asked for this, I've seen formatting errors in
 the examples they provided!) But does doing that really add enough value to
 make up for re-opening that can of worms?
 
-### How stable is it?
+### Why does the formatter mess up my collection literals?
 
-You can rely on the formatter to not break your code or change its semantics.
-If it does do so, this is a critical bug and we'll fix it quickly.
+Large collection literals are often used to define big chunks of structured
+data, like:
 
-The rules the formatter uses to determine the "best" way to split a line may
-change over time. We don't promise that code produced by the formatter today
-will be identical to the same code run through a later version of the formatter.
-We do hope that you'll like the output of the later version more.
+```dart
+/// Maps ASCII character values to what kind of character they represent.
+const characterTypes = const [
+  other, other, other, other, other, other, other, other,
+  other, white, white, other, other, white,              
+  other, other, other, other, other, other, other, other,
+  other, other, other, other, other, other, other, other,
+  other, other, white,                                   
+  punct, other, punct, punct, punct, punct, other,       
+  brace, brace, punct, punct, comma, punct, punct, punct,
+  digit, digit, digit, digit, digit,                     
+  digit, digit, digit, digit, digit,                     
+  punct, punct, punct, punct, punct, punct, punct,       
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, brace, punct, brace, punct, alpha, other,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, brace, punct, brace, punct               
+];
+```
+
+The formatter doesn't know those newlines are meaningful, so it wipes it out
+to:
+
+```dart
+/// Maps ASCII character values to what kind of character they represent.
+const characterTypes = const [
+  other,
+  other,
+  other,
+  
+  // lots more ...
+  
+  punct,
+  brace,
+  punct             
+];
+```
+
+In many cases, ignoring these newlines is a good thing. If you've removed a few
+items from a list, it's a win for the formatter to repack it into one line if
+it fits. But here it clearly loses useful information.
+
+Fortunately, in most cases, structured collections like this have comments
+describing their structure:
+
+```dart
+const characterTypes = const [
+  other, other, other, other, other, other, other, other,
+  other, white, white, other, other, white,
+  other, other, other, other, other, other, other, other,
+  other, other, other, other, other, other, other, other,
+  other, other, white,
+  punct, other, punct, punct, punct, punct, other, //          !"#$%&´
+  brace, brace, punct, punct, comma, punct, punct, punct, //   ()*+,-./
+  digit, digit, digit, digit, digit, //                        01234
+  digit, digit, digit, digit, digit, //                        56789
+  punct, punct, punct, punct, punct, punct, punct, //          :;<=>?@
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha, //   ABCDEFGH
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, brace, punct, brace, punct, alpha, other, //   YZ[\]^_'
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha, //   abcdefgh
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
+  alpha, alpha, brace, punct, brace, punct  //                 yz{|}~
+];
+```
+
+In that case, the formatter is smart enough to recognize this and preserve your
+original newlines. So, if you have a collection that you have carefully split
+into lines, add at least one line comment somewhere inside it to get it to
+preserve all of the newlines in it.
 
 ### Why doesn't the formatter handle multi-line `if` statements better?
 
