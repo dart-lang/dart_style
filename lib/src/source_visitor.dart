@@ -849,6 +849,9 @@ class SourceVisitor implements AstVisitor {
       // as the rest of the loop clauses.
       builder.indent(Indent.loopVariable);
 
+      // Allow the variables to stay unsplit even if the clauses split.
+      builder.startRule();
+
       var declaration = node.variables;
       visitDeclarationMetadata(declaration.metadata);
       modifier(declaration.keyword);
@@ -858,6 +861,7 @@ class SourceVisitor implements AstVisitor {
         split();
       });
 
+      builder.endRule();
       builder.unindent();
     }
 
@@ -871,7 +875,13 @@ class SourceVisitor implements AstVisitor {
     // The update clause.
     if (node.updaters.isNotEmpty) {
       split();
+
+      // Allow the updates to stay unsplit even if the clauses split.
+      builder.startRule();
+
       visitCommaSeparatedNodes(node.updaters, between: split);
+
+      builder.endRule();
     }
 
     token(node.rightParenthesis);
