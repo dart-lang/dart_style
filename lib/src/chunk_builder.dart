@@ -7,9 +7,8 @@ library dart_style.src.chunk_builder;
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
-import 'line_splitter.dart';
 import 'line_writer.dart';
-import 'nesting.dart';
+import 'nesting_level.dart';
 import 'nesting_builder.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
@@ -367,17 +366,11 @@ class ChunkBuilder {
   ///
   /// If omitted, defaults to a new [SimpleRule].
   void startRule([Rule rule]) {
-    //assert(_pendingRule == null);
-
     if (rule == null) rule = new SimpleRule();
 
     // See if any of the rules that contain this one care if it splits.
     _rules.forEach((outer) => outer.contain(rule));
     _rules.add(rule);
-
-    // Keep track of the rule's chunk range so we know how to calculate its
-    // length for preemption.
-    rule.start = _currentChunkIndex;
   }
 
   /// Starts a new [Rule] that comes into play *after* the next whitespace
@@ -396,9 +389,7 @@ class ChunkBuilder {
 
   /// Ends the innermost rule.
   void endRule() {
-    // Keep track of the rule's chunk range so we know how to calculate its
-    // length for preemption.
-    _rules.removeLast().end = _currentChunkIndex;
+    _rules.removeLast();
   }
 
   /// Pre-emptively forces all of the current rules to become hard splits.
@@ -723,7 +714,7 @@ class ChunkBuilder {
   bool _canDivideAt(int i) {
     var chunk = _chunks[i];
     if (!chunk.isHardSplit) return false;
-    if (chunk.nesting.depth != 0) return false;
+    if (chunk.nesting.isNested) return false;
     if (chunk.blockChunks.isNotEmpty) return false;
 
     // Make sure we don't split the line in the middle of a rule.
@@ -741,122 +732,12 @@ class ChunkBuilder {
   void _divideChunks() {
     // Harden all of the rules that we know get forced by containing hard
     // splits, along with all of the other rules they constrain.
-    _hardenRules(_hardSplitRules);
-
-    // For each independent set of chunks, see if there are any rules in them
-    // that we want to preemptively harden. This is basically to send smaller
-    // batches of chunks to LineSplitter in cases where the code is deeply
-    // nested or complex.
-    var preemptedRules = new Set();
-
-    var start = 0;
-    for (var i = 0; i < _chunks.length; i++) {
-      if (_canDivideAt(i)) {
-        _preemptRules(start, i, preemptedRules);
-        start = i;
-      }
-    }
-
-    if (start < _chunks.length) {
-      _preemptRules(start, _chunks.length, preemptedRules);
-    }
-
-    _hardenRules(preemptedRules);
+    _hardenRules();
 
     // Now that we know where all of the divided chunk sections are, mark the
     // chunks.
     for (var i = 0; i < _chunks.length; i++) {
       _chunks[i].markDivide(_canDivideAt(i));
-    }
-  }
-
-  /// Removes any unused nesting levels from [chunks].
-  ///
-  /// The line splitter considers every possible combination of mapping
-  /// indentation to nesting levels when trying to find the best solution. For
-  /// example, it may assign 4 spaces of indentation to level 1, 8 spaces to
-  /// level 3, etc.
-  ///
-  /// It's fairly common for a nesting level to not actually appear at the
-  /// boundary of a chunk. The source visitor may enter more than one level of
-  /// nesting at a point where a split cannot happen. In that case, there's no
-  /// point in trying to assign an indentation level to that nesting level. It
-  /// will never be used because no line will begin at that level of
-  /// indentation.
-  ///
-  /// Worse, if the splitter *does* consider these levels, it can dramatically
-  /// increase solving time. We can't determine which nesting levels will get
-  /// used eagerly since a level may not be used until later. Instead, when
-  /// we're building all of the chunks, this goes through and renumbers the
-  /// nesting levels.
-  void _flattenNestingLevels(List<Chunk> chunks) {
-    if (chunks.isEmpty) return;
-
-    // Find all of the nesting levels that actually appear at the end of chunks.
-    var usedNestings = new Set();
-    for (var chunk in chunks) {
-      if (chunk.nesting == null) continue;
-      usedNestings.add(chunk.nesting);
-    }
-
-    // Now get rid of any others that didn't occur where a split happened.
-    for (var nesting in usedNestings) {
-      nesting.removeUnused(usedNestings);
-    }
-  }
-
-  /// Adds some rules used by chunks within [start] and [end] to
-  /// [preemptedRules] to force them become hard splits if it looks like
-  /// there's no other option to get a solution in reasonable time.
-  ///
-  /// In most cases, the formatter can find an ideal solution to a set of rules
-  /// in reasonable time. Splitting chunks into short lists, nested blocks, and
-  /// the memoization and block caching that [LineSplitter] does all help.
-  ///
-  /// However, some code isn't helped by any of that. In particular, a very
-  /// large, deeply nested expression that contains no collection or function
-  /// literals has to be solved all at once by the line splitter. Memoization
-  /// helps, but some expressions just have too many permutations.
-  ///
-  /// In practice, this almost always occurs in machine-generated code where
-  /// the output quality doesn't matter as much. To avoid getting stuck there,
-  /// this finds rules that surround more than a page of code and forces them
-  /// to fully split. It only does this if it thinks it won't find a reasonable
-  /// solution otherwise.
-  ///
-  /// This may discard a more optimal solution in some cases. When a rule is
-  /// hardened, it is *fully* hardened. There may have been a solution where
-  /// only some of a rule's chunks needed to be split (for example, not fully
-  /// breaking an argument list). This won't consider those kinds of solution
-  /// To avoid this, pre-emption only kicks in for lines that look like they
-  /// will be hard to solve directly.
-  void _preemptRules(int start, int end, Set<Rule> preemptedRules) {
-    var chunks = _chunks.sublist(start, end);
-    _flattenNestingLevels(chunks);
-
-    var rules = chunks
-        .map((chunk) => chunk.rule)
-        .where((rule) => rule != null && rule is! HardSplitRule)
-        .toSet();
-
-    var values = rules.fold(1, (value, rule) => value * rule.numValues);
-
-    // TODO(rnystrom): We could do something more precise here by taking the
-    // rule types into account.
-
-    // If the number of possible solutions is reasonable, don't preempt any.
-    if (values <= 32768) return;
-
-    // Find the rules that contain too much.
-    for (var rule in rules) {
-      var length = 0;
-      for (var i = rule.start + 1; i <= rule.end; i++) {
-        length += _chunks[i].length;
-        if (length > pageWidth) {
-          preemptedRules.add(rule);
-          break;
-        }
-      }
     }
   }
 
@@ -873,12 +754,12 @@ class ChunkBuilder {
     _hardSplitRules.add(_rules.last);
   }
 
-  /// Replaces [rules] with hard splits, along with every rule that those
-  /// constrain to also split.
+  /// Replaces all of the previously hardened rules with hard splits, along
+  /// with every rule that those constrain to also split.
   ///
   /// This should only be called after all chunks have been written.
-  void _hardenRules(Set<Rule> rules) {
-    if (rules.isEmpty) return;
+  void _hardenRules() {
+    if (_hardSplitRules.isEmpty) return;
 
     // Harden all of the rules that are constrained by [rules] as well.
     var hardenedRules = new Set();
@@ -897,7 +778,7 @@ class ChunkBuilder {
       }
     }
 
-    for (var rule in rules) {
+    for (var rule in _hardSplitRules) {
       walkConstraints(rule);
     }
 

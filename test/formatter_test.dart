@@ -118,8 +118,8 @@ void main() {
     test('handles Windows line endings in multiline strings', () {
       expect(
           new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
-                  'second\r\n'
-                  'third"""  ;'), equals('"""first\r\n'
+              'second\r\n'
+              'third"""  ;'), equals('"""first\r\n'
               'second\r\n'
               'third""";'));
     });

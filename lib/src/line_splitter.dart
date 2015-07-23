@@ -1,122 +1,98 @@
-// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
 library dart_style.src.line_splitter;
 
-import 'dart:math' as math;
+import 'package:collection/priority_queue.dart';
 
 import 'chunk.dart';
 import 'debug.dart' as debug;
-import 'line_prefix.dart';
 import 'line_writer.dart';
 import 'rule/rule.dart';
+import 'rule_set.dart';
 
-/// Takes a series of [Chunk]s and determines the best way to split them into
-/// lines of output that fit within the page width (if possible).
+/// To ensure the solver doesn't go totally pathological on giant code, we cap
+/// it at a fixed number of attempts.
 ///
-/// Imagine a naïve solution. You start at the first chunk in the list and work
-/// your way forward. For each chunk, you try every possible value of the rule
-/// that the chunk uses. Then, you ask the rule if that chunk should split or
-/// not when the rule has that value. If it does, then you try every possible
-/// way you could modify the expression nesting context at that point.
+/// If the optimal solution isn't found after this many tries, it just uses the
+/// best it found so far.
+const _maxAttempts = 50000;
+
+/// Takes a set of chunks and determines the best values for its rules in order
+/// to fit it inside the page boundary.
 ///
-/// For each of those possible results, you start with that as a partial
-/// solution. You move onto the next chunk and repeat the process, building on
-/// to that partial solution. When you reach the last chunk, you determine the
-/// cost of that set of rule values and keep track of the best one.
+/// This problem is exponential in the number of rules and a single expression
+/// in Dart can be quite large, so it isn't feasible to brute force this. For
+/// example:
 ///
-/// Once you've tried every single possible permutation of rule values and
-/// nesting stacks, you will have exhaustively covered every possible way the
-/// line can be split and you'll know which one had the lowest cost. That's
-/// your result.
+///     outer(
+///         fn(1 + 2, 3 + 4, 5 + 6, 7 + 8),
+///         fn(1 + 2, 3 + 4, 5 + 6, 7 + 8),
+///         fn(1 + 2, 3 + 4, 5 + 6, 7 + 8),
+///         fn(1 + 2, 3 + 4, 5 + 6, 7 + 8));
 ///
-/// The obvious problem is that this is exponential in the number of values for
-/// each rule and the expression nesting levels, both of which can be quite
-/// large with things like long method chains containing function literals,
-/// large collection literals, etc. To tame that, this uses dynamic programming.
+/// There are 509,607,936 ways this can be split.
 ///
-/// As the naïve solver is working its way down the chunks, it's building up a
-/// partial solution. This solution has:
+/// The problem is even harder because we may not be able to easily tell if a
+/// given solution is the best one. It's possible that there is *no* solution
+/// that fits in the page (due to long strings or identifiers) so the winning
+/// solution may still have overflow characters. This makes it hard to know
+/// when we are done and can stop looking.
 ///
-/// * A length—the number of chunks in it.
-/// * The set of rule values we have selected for the rules used by those
-///   chunks.
-/// * The expression nesting stack that is currently active at the point where
-///   the current chunk splits.
+/// There are a couple of pieces of domain knowledge we use to cope with this:
 ///
-/// We'll call this partial solution a [LinePrefix]. The naïve solution starts
-/// with an empty prefix (zero length, no rule values, no expression nesting).
-/// It grabs the next chunk after that prefix and says, OK, given this prefix
-/// what are all of the possible ways we can split that chunk (rule values and
-/// nesting stacks). Create a new, one-chunk-longer prefix for each of those
-/// and then recursively solve each of their suffixes.
+/// - Changing a rule from unsplit to split will never lower its cost. A
+///   solution with all rules unsplit will always be the one with the lowest
+///   cost (zero). Conversely, setting all of its rules to the maximum split
+///   value will always have the highest cost.
 ///
-/// Normally, this would basically be a depth-first traversal of the entire
-/// possible solution space. However, there is a simple optimization we can
-/// make. When brute forcing the solution tree, we will often solve many
-/// prefixes with the same length.
+///   (You might think there is a converse rule about overflow characters. The
+///   solution with the fewest splits will have the most overflow, and the
+///   solution with the most splits will have the least overflow. Alas, because
+///   of indentation, that isn't always the case. Adding a split may *increase*
+///   overflow in some cases.)
 ///
-/// For example, if the first chunk's rule can take three different values, we
-/// will solve three line prefixes of length one, one for each rule value.
-/// Those in turn may have lots of permutations leading to even more solutions
-/// all with line prefixes of length two, and so on.
+/// - If all of the chunks for a rule are inside lines that already fit in the
+///   page, then splitting that rule will never improve the solution.
 ///
-/// In many cases, we have to treat these line prefixes separately. If two
-/// prefixes have the same length, but fix a different value for some rule, they
-/// may lead to different ways of splitting the suffix since that rule may
-/// appear in a later chunk too.
+/// We start off with a [SolveState] where all rules are unbound (which
+/// implicitly treats them as unsplit). For a given solve state, we can produce
+/// a set of expanded states that takes some of the rules in the first long
+/// line and bind them to split values. This always produces new solve states
+/// with higher cost (but often fewer overflow characters) than the parent
+/// state.
 ///
-/// But in many cases, the line prefixes are equivalent. For example, consider:
+/// We take these expanded states and add them to a work list sorted by cost.
+/// Since unsplit rules always have lower cost solutions, we know that no state
+/// we enqueue later will ever have a lower cost than the ones we already have
+/// enqueued.
 ///
-///     function(
-///         first(arg, arg, arg, arg, arg, arg),
-///         second,
-///         third(arg, arg, arg, arg, arg, arg));
+/// Then we keep pulling states off the work list and expanding them and adding
+/// the results back into the list. We do this until we hit a solution where
+/// all characters fit in the page. The first one we find will have the lowest
+/// cost and we're done.
 ///
-/// The line splitter will try a number of different ways to split the argument
-/// list to `first`. For each of those, it then has to try all of the different
-/// ways it could split `third`. *However*, those two are unrelated. The way
-/// you split `first` has no impact on how you split `third`.
+/// We also keep running track of the best solution we've found so far that
+/// has the fewest overflow characters and the lowest cost. If no solution fits,
+/// we'll use this one.
 ///
-/// The precise way to state that is that as the line prefix grows *past*
-/// `first()` and its argument list, it contains *less* state. It discards the
-/// rule value it selected for the argument list rule since that rule doesn't
-/// appear anywhere in the suffix and can't affect it. Any expression nesting
-/// inside the argument list has been popped off by the time we get to `second`.
+/// As a final escape hatch for pathologically nasty code, after trying some
+/// fixed maximum number of solve states, we just bail and return the best
+/// solution found so far.
 ///
-/// We'll try every possible way to split `first()`'s argument list and then
-/// recursively solve the remainder of the line for each of those possible
-/// splits. But each of those remainders will end up having identical prefixes.
-/// For any given [LinePrefix], there is a single best solution for the suffix.
-/// So, once we've found it, we can just reuse it the next time that same
-/// prefix comes up.
-///
-/// In other words, we add a memoization table, [_bestSplits]. It is a map from
-/// [LinePrefix]es to [SplitSet]s. For each prefix, it stores the best set of
-/// splits to use for the following suffix. With this, instead of exploring the
-/// entire solution *tree*, which would be exponential, we just traverse the
-/// solution *graph* where entire branches of the tree that are identical
-/// collapse back together.
-///
-/// The trick to making this work is storing the minimal amount of data in the
-/// line prefix to *uniquely* identify a suffix while still collapsing as many
-/// branches as possible. In practice, this means aggressively forgetting state
-/// when the prefix grows. In particular, we do not need to keep track of
-/// rule values we selected in the prefix if that rule does not affect anything
-/// in the suffix.
-///
-/// There are a couple of other smaller scale optimizations too. If we ever hit
-/// a solution whose cost is zero, we know we won't do better, so we stop
-/// searching. If we make it to the end of the chunk list and we haven't gone
-/// past the end of the line, we know we don't need to split anywhere.
-///
-/// But the memoization is the main thing that makes this tractable.
+/// Even with the above algorithmic optimizations, complex code may still
+/// require a lot of exploring to find an optimal solution. To make that fast,
+/// this code is carefully profiled and optimized. If you modify this, make
+/// sure to test against the benchmark to ensure you don't regress performance.
 class LineSplitter {
   final LineWriter _writer;
 
   /// The list of chunks being split.
   final List<Chunk> _chunks;
+
+  /// The set of soft rules whose values are being selected.
+  final List<Rule> _rules;
 
   /// The number of characters of additional indentation to apply to each line.
   ///
@@ -124,226 +100,336 @@ class LineSplitter {
   /// column based on where the block appears.
   final int _blockIndentation;
 
-  /// Memoization table for the best set of splits for the remainder of the
-  /// line following a given prefix.
-  final _bestSplits = <LinePrefix, SplitSet>{};
+  /// The starting column of the first line.
+  final int _firstLineIndent;
 
-  /// The rules that appear in the first `n` chunks of the line where `n` is
-  /// the index into the list.
-  final _prefixRules = <Set<Rule>>[];
+  /// The list of solve states to explore further.
+  ///
+  /// This is sorted lowest-cost first. This ensures that as soon as we find a
+  /// solution that fits in the page, we know it will be the lowest cost one
+  /// and can stop looking.
+  final _workList = new HeapPriorityQueue<SolveState>();
 
-  /// The rules that appear after the first `n` chunks of the line where `n` is
-  /// the index into the list.
-  final _suffixRules = <Set<Rule>>[];
+  /// The lowest cost solution found so far.
+  SolveState _bestSolution;
 
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
-  LineSplitter(this._writer, this._chunks, this._blockIndentation);
+  LineSplitter(this._writer, List<Chunk> chunks, int blockIndentation,
+      int firstLineIndent,
+      {bool flushLeft: false})
+      : _chunks = chunks,
+        // Collect the set of soft rules that we need to select values for.
+        _rules = chunks
+            .map((chunk) => chunk.rule)
+            .where((rule) => rule != null && rule is! HardSplitRule)
+            .toSet()
+            .toList(growable: false),
+        _blockIndentation = blockIndentation,
+        _firstLineIndent = flushLeft ? 0 : firstLineIndent + blockIndentation {
+    // Store the rule's index in the rule so we can get from a chunk to a rule
+    // index quickly.
+    for (var i = 0; i < _rules.length; i++) {
+      _rules[i].index = i;
+    }
+  }
 
-  /// Convert the line to a [String] representation.
+  /// Determine the best way to split the chunks into lines that fit in the
+  /// page, if possible.
   ///
-  /// It will determine how best to split it into multiple lines of output and
-  /// write the result to [writer].
+  /// Returns a [SplitSet] that defines where each split occurs and the
+  /// indentation of each line.
   ///
   /// [firstLineIndent] is the number of characters of whitespace to prefix the
   /// first line of output with.
-  SplitSolution apply(int firstLineIndent, {bool flushLeft}) {
+  SplitSet apply() {
+    // Start with a completely unbound, unsplit solution.
+    _workList.add(new SolveState(this, new RuleSet(_rules.length)));
+
+    var attempts = 0;
+    while (!_workList.isEmpty) {
+      var state = _workList.removeFirst();
+
+      if (state.isBetterThan(_bestSolution)) {
+        _bestSolution = state;
+
+        // Since we sort solutions by cost the first solution we find that
+        // fits is the winner.
+        if (_bestSolution.overflowChars == 0) break;
+      }
+
+      if (debug.traceSplitter) {
+        var best = state == _bestSolution ? " (best)" : "";
+        debug.log("$state$best");
+        debug.dumpLines(_chunks, _firstLineIndent, state.splits);
+        debug.log();
+      }
+
+      if (attempts++ > _maxAttempts) break;
+
+      // Try bumping the rule values for rules whose chunks are on long lines.
+      state.expand();
+    }
+
     if (debug.traceSplitter) {
-      debug.log(debug.green("\nSplitting:"));
-      debug.dumpChunks(0, _chunks);
+      debug.log("$_bestSolution (winner)");
+      debug.dumpLines(_chunks, _firstLineIndent, _bestSolution.splits);
       debug.log();
     }
 
-    // Ignore the trailing rule on the last chunk since it isn't used for
-    // anything.
-    var ruleChunks = _chunks.take(_chunks.length - 1);
-
-    // Pre-calculate the set of rules appear before and after each length. We
-    // use these frequently when creating [LinePrefix]es and they only depend
-    // on the length, so we can cache them up front.
-    for (var i = 0; i < _chunks.length; i++) {
-      _prefixRules.add(ruleChunks.take(i).map((chunk) => chunk.rule).toSet());
-      _suffixRules.add(ruleChunks.skip(i).map((chunk) => chunk.rule).toSet());
-    }
-
-    var prefix = new LinePrefix(firstLineIndent + _blockIndentation,
-        flushLeft: flushLeft);
-    var solution = new SplitSolution(prefix);
-    _tryChunkRuleValues(solution, prefix);
-    return solution;
+    return _bestSolution.splits;
   }
+}
 
-  /// Finds the best set of splits to apply to the remainder of the chunks
-  /// following [prefix].
+/// A possibly incomplete solution in the line splitting search space.
+///
+/// A single [SolveState] binds some subset of the rules to values while
+/// leaving the rest unbound. If every rule is bound, the solve state describes
+/// a complete solution to the line splitting problem. Even if rules are
+/// unbound, a state can also usually be used as a solution by treating all
+/// unbound rules as unsplit. (The usually is because a state that constrains
+/// an unbound rule to split can't be used with that rule unsplit.)
+///
+/// From a given solve state, we can explore the search tree to more refined
+/// solve states by producing new ones that add more bound rules to the current
+/// state.
+class SolveState implements Comparable<SolveState> {
+  final LineSplitter _splitter;
+  final RuleSet _ruleValues;
+
+  /// The unbound rules in this state that can be bound to produce new more
+  /// refined states.
   ///
-  /// This can only be called for a suffix that begins a new line. (In other
-  /// words, the last chunk in the prefix cannot be unsplit.)
-  SplitSet _findBestSplits(LinePrefix prefix) {
-    // Use the memoized result if we have it.
-    if (_bestSplits.containsKey(prefix)) {
-      if (debug.traceSplitter) {
-        debug.log("memoized splits for $prefix = ${_bestSplits[prefix]}");
-      }
-      return _bestSplits[prefix];
-    }
-
-    if (debug.traceSplitter) {
-      debug.log("find splits for $prefix");
-      debug.indent();
-    }
-
-    var solution = new SplitSolution(prefix);
-    _tryChunkRuleValues(solution, prefix);
-
-    if (debug.traceSplitter) {
-      debug.unindent();
-      debug.log("best splits for $prefix = ${solution.splits}");
-    }
-
-    return _bestSplits[prefix] = solution.splits;
-  }
-
-  /// Updates [solution] with the best rule value selection for the chunk
-  /// immediately following [prefix].
-  void _tryChunkRuleValues(SplitSolution solution, LinePrefix prefix) {
-    // If we made it to the end, this prefix can be solved without splitting
-    // any chunks.
-    if (prefix.length == _chunks.length - 1) {
-      solution.update(this, new SplitSet());
-      return;
-    }
-
-    var chunk = _chunks[prefix.length];
-
-    // See if we've already selected a value for the rule.
-    var value = prefix.ruleValues[chunk.rule];
-
-    if (value == null) {
-      // No, so try every possible value for the rule.
-      for (value = 0; value < chunk.rule.numValues; value++) {
-        _tryRuleValue(solution, prefix, value);
-      }
-    } else if (value == -1) {
-      // A -1 "value" means, "any non-zero value". In other words, the rule has
-      // to split somehow, but can split however it chooses.
-      for (value = 1; value < chunk.rule.numValues; value++) {
-        _tryRuleValue(solution, prefix, value);
-      }
-    } else {
-      // Otherwise, it's constrained to a single value, so use it.
-      _tryRuleValue(solution, prefix, value);
-    }
-  }
-
-  /// Updates [solution] with the best solution that can be found by setting
-  /// the chunk after [prefix]'s rule to [value].
-  void _tryRuleValue(SplitSolution solution, LinePrefix prefix, int value) {
-    // If we already have an unbeatable solution, don't bother trying this one.
-    if (solution.cost == 0) return;
-
-    var chunk = _chunks[prefix.length];
-
-    if (chunk.rule.isSplit(value, chunk)) {
-      // The chunk is splitting in an expression, so try all of the possible
-      // nesting combinations.
-      var ruleValues = _advancePrefix(prefix, value);
-      var longerPrefixes = prefix.split(chunk, _blockIndentation, ruleValues);
-      for (var longerPrefix in longerPrefixes) {
-        _tryLongerPrefix(solution, prefix, longerPrefix);
-
-        // If we find an unbeatable solution, don't try any more.
-        if (solution.cost == 0) break;
-      }
-    } else {
-      // We didn't split here, so add this chunk and its rule value to the
-      // prefix and continue on to the next.
-      var extended = prefix.extend(_advancePrefix(prefix, value));
-      _tryChunkRuleValues(solution, extended);
-    }
-  }
-
-  /// Updates [solution] with the solution for [prefix] assuming it uses
-  /// [longerPrefix] for the next chunk.
-  void _tryLongerPrefix(
-      SplitSolution solution, LinePrefix prefix, LinePrefix longerPrefix) {
-    var remaining = _findBestSplits(longerPrefix);
-
-    // If it wasn't possible to split the suffix given this nesting stack,
-    // skip it.
-    if (remaining == null) return;
-
-    solution.update(this, remaining.add(prefix.length, longerPrefix.column));
-  }
-
-  /// Determines the set of rule values for a new [LinePrefix] one chunk longer
-  /// than [prefix] whose rule on the new last chunk has [value].
+  /// Keeping this set small is the key to make the entire line splitter
+  /// perform well. If we consider too make rules at each state, our
+  /// exploration of the solution space is too branchy and we waste time on
+  /// dead end solutions.
   ///
-  /// Returns a map of [Rule]s to values for those rules for the values that
-  /// span the prefix and suffix of the [LinePrefix].
-  Map<Rule, int> _advancePrefix(LinePrefix prefix, int value) {
-    // Get the rules that appear in both in and after the new prefix. These are
-    // the rules that already have values that the suffix needs to honor.
-    var prefixRules = _prefixRules[prefix.length + 1];
-    var suffixRules = _suffixRules[prefix.length + 1];
+  /// Here is the key insight. The line splitter treats any unbound rule as
+  /// being unsplit. This means refining a solution always means taking a rule
+  /// that is unsplit and making it split. That monotonically increases the
+  /// cost, but may help fit the solution inside the page.
+  ///
+  /// We want to keep the cost low, so the only reason to consider making a
+  /// rule split is if it reduces an overflowing line. It's also the case that
+  /// splitting an earlier rule will often reshuffle the rest of the line.
+  ///
+  /// Taking that into account, the only rules we consider binding to extend a
+  /// solve state are *unbound rules inside the first line that is overflowing*.
+  /// Even if a line has dozens of rules, this generally keeps the branching
+  /// down to a few. It also means rules inside lines that already fit are
+  /// never touched.
+  ///
+  /// There is one other set of rules that go in here. Sometimes a bound rule
+  /// in the solve state constrains some other unbound rule to split. In that
+  /// case, we also consider that active so we know to not leave it at zero.
+  final _liveRules = new Set<Rule>();
 
-    var nextRule = _chunks[prefix.length].rule;
-    var updatedValues = {};
+  /// The set of splits chosen for this state.
+  SplitSet get splits => _splits;
+  SplitSet _splits;
 
-    for (var prefixRule in prefixRules) {
-      var ruleValue =
-          prefixRule == nextRule ? value : prefix.ruleValues[prefixRule];
+  /// The number of characters that do not fit inside the page with this set of
+  /// splits.
+  int get overflowChars => _overflowChars;
+  int _overflowChars;
 
-      if (suffixRules.contains(prefixRule)) {
-        // If the same rule appears in both the prefix and suffix, then preserve
-        // its exact value.
-        updatedValues[prefixRule] = ruleValue;
-      }
+  /// Whether we can treat this state as a complete solution by leaving its
+  /// unbound rules unsplit.
+  ///
+  /// This is generally true but will be false if the state contains any
+  /// unbound rules that are constrained to not be zero by other bound rules.
+  /// This avoids picking a solution that leaves those rules at zero when they
+  /// aren't allowed to be.
+  bool _isComplete = true;
 
-      // If we haven't specified any value for this rule in the prefix, it
-      // doesn't place any constraint on the suffix.
-      if (ruleValue == null) continue;
+  SolveState(this._splitter, this._ruleValues) {
+    _calculateSplits();
+    _calculateCost();
+  }
 
-      // Enforce the constraints between rules.
-      for (var suffixRule in suffixRules) {
-        if (suffixRule == prefixRule) continue;
+  /// Orders this state relative to [other].
+  ///
+  /// This is the best-first ordering that the [LineSplitter] uses in its
+  /// worklist. It prefers cheaper states even if they overflow because this
+  /// ensures it finds the best solution first as soon as it finds one that
+  /// fits in the page so it can early out.
+  int compareTo(SolveState other) {
+    // TODO(rnystrom): It may be worth sorting by the estimated lowest number
+    // of overflow characters first. That doesn't help in cases where there is
+    // a solution that fits, but may help in corner cases where there is no
+    // fitting solution.
 
-        // See if the prefix rule's value constrains any values in the suffix.
-        var value = prefixRule.constrain(ruleValue, suffixRule);
+    if (splits.cost != other.splits.cost) {
+      return splits.cost.compareTo(other.splits.cost);
+    }
 
-        // Also consider the backwards case, where a later rule in the suffix
-        // constrains a rule in the prefix.
-        if (value == null) {
-          value = suffixRule.reverseConstrain(ruleValue, prefixRule);
+    if (overflowChars != other.overflowChars) {
+      return overflowChars.compareTo(other.overflowChars);
+    }
+
+    // Distinguish states based on the rule values just so that states with the
+    // same cost range but different rule values don't get considered identical
+    // by HeapPriorityQueue.
+    for (var rule in _splitter._rules) {
+      var value = _ruleValues.getValue(rule);
+      var otherValue = other._ruleValues.getValue(rule);
+
+      if (value != otherValue) return value.compareTo(otherValue);
+    }
+
+    // If we get here, this state is identical to [other].
+    return 0;
+  }
+
+  /// Returns `true` if this state is a better solution to use as the final
+  /// result than [other].
+  bool isBetterThan(SolveState other) {
+    // If this state contains an unbound rule that we know can't be left
+    // unsplit, we can't pick this as a solution.
+    if (!_isComplete) return false;
+
+    // Anything is better than nothing.
+    if (other == null) return true;
+
+    // Prefer the solution that fits the most in the page.
+    if (overflowChars != other.overflowChars) {
+      return overflowChars < other.overflowChars;
+    }
+
+    // Otherwise, prefer the best cost.
+    return splits.cost < other.splits.cost;
+  }
+
+  /// Enqueues more solve states to consider based on this one.
+  ///
+  /// For each unbound rule in this state that occurred in the first long line,
+  /// enqueue solve states that bind that rule to each value it can have and
+  /// bind all previous rules to zero. (In other words, try all subsolutions
+  /// where that rule becomes the first new rule to split at.)
+  void expand() {
+    var unsplitRules = _ruleValues.clone();
+
+    // Walk down the rules looking for unbound ones to try.
+    var triedRules = 0;
+    for (var rule in _splitter._rules) {
+      if (_liveRules.contains(rule)) {
+        // We found one worth trying, so try all of its values.
+        for (var value = 1; value < rule.numValues; value++) {
+          var boundRules = unsplitRules.clone();
+
+          var mustSplitRules;
+          var valid = boundRules.tryBind(_splitter._rules, rule, value, (rule) {
+            if (mustSplitRules == null) mustSplitRules = [];
+            mustSplitRules.add(rule);
+          });
+
+          // Make sure we don't violate the constraints of the bound rules.
+          if (!valid) continue;
+
+          var state = new SolveState(_splitter, boundRules);
+
+          // If some unbound rules are constrained to split, remember that.
+          if (mustSplitRules != null) {
+            state._isComplete = false;
+            state._liveRules.addAll(mustSplitRules);
+          }
+
+          _splitter._workList.add(state);
         }
 
-        if (value != null) {
-          updatedValues[prefixRule] = ruleValue;
-          updatedValues[suffixRule] = value;
+        // Stop once we've tried all of the ones we can.
+        if (++triedRules == _liveRules.length) break;
+      }
+
+      // Fill in previous unbound rules with zero.
+      if (!_ruleValues.contains(rule)) {
+        // Pass a dummy callback because zero will never fail. (If it would
+        // have, that rule would already be bound to some other value.)
+        if (!unsplitRules.tryBind(_splitter._rules, rule, 0, (_) {})) {
+          break;
         }
       }
     }
+  }
 
-    return updatedValues;
+  /// Calculates the [SplitSet] for this solve state, assuming any unbound
+  /// rules are set to zero.
+  void _calculateSplits() {
+    // Figure out which expression nesting levels got split and need to be
+    // assigned columns.
+    var usedNestingLevels = new Set();
+    for (var i = 0; i < _splitter._chunks.length - 1; i++) {
+      var chunk = _splitter._chunks[i];
+      if (chunk.rule.isSplit(_getValue(chunk.rule), chunk)) {
+        usedNestingLevels.add(chunk.nesting);
+        chunk.nesting.clearTotalUsedIndent();
+      }
+    }
+
+    for (var nesting in usedNestingLevels) {
+      nesting.refreshTotalUsedIndent(usedNestingLevels);
+    }
+
+    _splits = new SplitSet(_splitter._chunks.length);
+    for (var i = 0; i < _splitter._chunks.length - 1; i++) {
+      var chunk = _splitter._chunks[i];
+      if (chunk.rule.isSplit(_getValue(chunk.rule), chunk)) {
+        var indent = 0;
+        if (!chunk.flushLeftAfter) {
+          // Add in the chunk's indent.
+          indent = _splitter._blockIndentation + chunk.indent;
+
+          // And any expression nesting.
+          indent += chunk.nesting.totalUsedIndent;
+        }
+
+        _splits.add(i, indent);
+      }
+    }
+  }
+
+  /// Gets the value to use for [rule], either the bound value or `0` if it
+  /// isn't bound.
+  int _getValue(Rule rule) {
+    if (rule is HardSplitRule) return 0;
+
+    return _ruleValues.getValue(rule);
   }
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of rules.
-  int _evaluateCost(LinePrefix prefix, SplitSet splits) {
-    assert(splits != null);
+  void _calculateCost() {
+    assert(_splits != null);
 
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = prefix.column;
+    _overflowChars = 0;
 
-    var splitRules = new Set();
+    var length = _splitter._firstLineIndent;
 
-    endLine() {
-      // Punish lines that went over the length. We don't rule these out
-      // completely because it may be that the only solution still goes over
-      // (for example with long string literals).
-      if (length > _writer.pageWidth) {
-        cost += (length - _writer.pageWidth) * Cost.overflowChar;
+    // The unbound rules in use by the current line. This will be null after
+    // the first long line has completed.
+    var currentLineRules = [];
+
+    endLine(int end) {
+      // Track lines that went over the length. It is only rules contained in
+      // long lines that we may want to split.
+      if (length > _splitter._writer.pageWidth) {
+        _overflowChars += length - _splitter._writer.pageWidth;
+
+        // Only try rules that are in the first long line, since we know at
+        // least one of them *will* be split.
+        if (currentLineRules != null && currentLineRules.isNotEmpty) {
+          _liveRules.addAll(currentLineRules);
+          currentLineRules = null;
+        }
+      } else {
+        // The line fit, so don't keep track of its rules.
+        if (currentLineRules != null) {
+          currentLineRules.clear();
+        }
       }
     }
 
@@ -352,131 +438,89 @@ class LineSplitter {
     // one split occurs in it.
     var splitSpans = new Set();
 
-    for (var i = prefix.length; i < _chunks.length; i++) {
-      var chunk = _chunks[i];
+    for (var i = 0; i < _splitter._chunks.length; i++) {
+      var chunk = _splitter._chunks[i];
 
       length += chunk.text.length;
 
-      if (i < _chunks.length - 1) {
-        if (splits.shouldSplitAt(i)) {
-          endLine();
+      // Ignore the split after the last chunk.
+      if (i == _splitter._chunks.length - 1) break;
 
-          splitSpans.addAll(chunk.spans);
+      if (_splits.shouldSplitAt(i)) {
+        endLine(i);
 
-          if (chunk.rule != null && !splitRules.contains(chunk.rule)) {
-            // Don't double-count rules if multiple splits share the same
-            // rule.
-            splitRules.add(chunk.rule);
-            cost += chunk.rule.cost;
-          }
+        splitSpans.addAll(chunk.spans);
 
-          // Include the cost of the nested block.
-          if (chunk.blockChunks.isNotEmpty) {
-            cost += _writer.formatBlock(chunk, splits.getColumn(i)).cost;
-          }
+        // Include the cost of the nested block.
+        if (chunk.blockChunks.isNotEmpty) {
+          cost +=
+              _splitter._writer.formatBlock(chunk, _splits.getColumn(i)).cost;
+        }
 
-          // Start the new line.
-          length = splits.getColumn(i);
-        } else {
-          if (chunk.spaceWhenUnsplit) length++;
+        // Start the new line.
+        length = _splits.getColumn(i);
+      } else {
+        if (chunk.spaceWhenUnsplit) length++;
 
-          // Include the nested block inline, if any.
-          length += chunk.unsplitBlockLength;
+        // Include the nested block inline, if any.
+        length += chunk.unsplitBlockLength;
+
+        // If we might be in the first overly long line, keep track of any
+        // unbound rules we encounter. These are ones that we'll want to try to
+        // bind to shorten the long line.
+        if (currentLineRules != null &&
+            chunk.rule != null &&
+            !chunk.isHardSplit &&
+            !_ruleValues.contains(chunk.rule)) {
+          currentLineRules.add(chunk.rule);
         }
       }
     }
+
+    // Add the costs for the rules that split.
+    _ruleValues.forEach(_splitter._rules, (rule, value) {
+      // A rule may be bound to zero if another rule constrains it to not split.
+      if (value != 0) cost += rule.cost;
+    });
 
     // Add the costs for the spans containing splits.
     for (var span in splitSpans) cost += span.cost;
 
     // Finish the last line.
-    endLine();
+    endLine(_splitter._chunks.length);
 
-    return cost;
+    _splits.setCost(cost);
   }
-}
-
-/// Keeps track of the best set of splits found so far for a suffix of some
-/// prefix.
-class SplitSolution {
-  /// The prefix whose suffix we are finding a solution for.
-  final LinePrefix _prefix;
-
-  /// The best set of splits currently found.
-  SplitSet get splits => _bestSplits;
-  SplitSet _bestSplits;
-
-  /// The lowest cost currently found.
-  int get cost => _lowestCost;
-  int _lowestCost;
-
-  /// Whether a solution that fits within a page has been found yet.
-  bool get isAdequate => _lowestCost != null && _lowestCost < Cost.overflowChar;
-
-  SplitSolution(this._prefix);
-
-  /// Compares [splits] to the best solution found so far and keeps it if it's
-  /// better.
-  void update(LineSplitter splitter, SplitSet splits) {
-    var cost = splitter._evaluateCost(_prefix, splits);
-
-    if (_lowestCost == null || cost < _lowestCost) {
-      _bestSplits = splits;
-      _lowestCost = cost;
-    }
-
-    if (debug.traceSplitter) {
-      var best = _bestSplits == splits ? " (best)" : "";
-      debug.log(debug.gray("$_prefix $splits \$$cost$best"));
-      debug.dumpLines(splitter._chunks, _prefix, splits);
-      debug.log();
-    }
-  }
-}
-
-/// An immutable, persistent set of enabled split [Chunk]s.
-///
-/// For each chunk, this tracks if it has been split and, if so, what the
-/// chosen column is for the following line.
-///
-/// Internally, this uses a sparse parallel list where each element corresponds
-/// to the column of the chunk at that index in the chunk list, or `null` if
-/// there is no active split there. This had about a 10% perf improvement over
-/// using a [Set] of splits or a persistent linked list of split index/indent
-/// pairs.
-class SplitSet {
-  List<int> _columns;
-
-  /// Creates a new empty split set.
-  SplitSet() : this._(const []);
-
-  SplitSet._(this._columns);
-
-  /// Returns a new [SplitSet] containing the union of this one and the split
-  /// at [index] with next line starting at [column].
-  SplitSet add(int index, int column) {
-    var newIndents = new List(math.max(index + 1, _columns.length));
-    newIndents.setAll(0, _columns);
-    newIndents[index] = column;
-
-    return new SplitSet._(newIndents);
-  }
-
-  /// Returns `true` if the chunk at [splitIndex] should be split.
-  bool shouldSplitAt(int index) =>
-      index < _columns.length && _columns[index] != null;
-
-  /// Gets the zero-based starting column for the chunk at [index].
-  int getColumn(int index) => _columns[index];
 
   String toString() {
-    var result = [];
-    for (var i = 0; i < _columns.length; i++) {
-      if (_columns[i] != null) {
-        result.add("$i:${_columns[i]}");
-      }
-    }
+    var buffer = new StringBuffer();
 
-    return result.join(" ");
+    buffer.writeAll(
+        _splitter._rules.map((rule) {
+          var valueLength = "${rule.fullySplitValue}".length;
+
+          var value = "?";
+          if (_ruleValues.contains(rule)) {
+            value = "${_ruleValues.getValue(rule)}";
+          }
+
+          value = value.padLeft(valueLength);
+          if (_liveRules.contains(rule)) {
+            value = debug.bold(value);
+          } else {
+            value = debug.gray(value);
+          }
+
+          return value;
+        }),
+        " ");
+
+    buffer.write("   \$${splits.cost}");
+
+    if (overflowChars > 0) buffer.write(" (${overflowChars} over)");
+    if (!_isComplete) buffer.write(" (incomplete)");
+    if (splits == null) buffer.write(" invalid");
+
+    return buffer.toString();
   }
 }

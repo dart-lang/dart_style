@@ -8,8 +8,8 @@ library dart_style.src.debug;
 import 'dart:math' as math;
 
 import 'chunk.dart';
-import 'line_prefix.dart';
-import 'line_splitter.dart';
+import 'rule/rule.dart';
+import 'rule_set.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;
@@ -84,6 +84,11 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   spans = spans.toList();
 
+  var rules = chunks
+      .map((chunk) => chunk.rule)
+      .where((rule) => rule != null && rule is! HardSplitRule)
+      .toSet();
+
   var rows = [];
 
   addChunk(chunk, prefix, index) {
@@ -113,8 +118,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
     if (chunk.rule != null) {
       row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
 
-      writeIf(chunk.rule.outerRules.isNotEmpty,
-          () => "-> ${chunk.rule.outerRules.join(" ")}");
+      var outerRules = chunk.rule.outerRules.toSet().intersection(rules);
+      writeIf(outerRules.isNotEmpty, () => "-> ${outerRules.join(" ")}");
     } else {
       row.add("(no rule)");
 
@@ -171,15 +176,24 @@ void dumpChunks(int start, List<Chunk> chunks) {
 ///
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
-void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
+void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
   var buffer = new StringBuffer();
 
-  // TODO(rnystrom): Handle block chunks here.
-
   writeIndent(indent) => buffer.write(gray("| " * (indent ~/ 2)));
-  writeIndent(prefix.column);
 
-  for (var i = prefix.length; i < chunks.length - 1; i++) {
+  writeChunksUnsplit(List<Chunk> chunks) {
+    for (var chunk in chunks) {
+      buffer.write(chunk.text);
+      if (chunk.spaceWhenUnsplit) buffer.write(" ");
+
+      // Recurse into the block.
+      writeChunksUnsplit(chunk.blockChunks);
+    }
+  }
+
+  writeIndent(firstLineIndent);
+
+  for (var i = 0; i < chunks.length - 1; i++) {
     var chunk = chunks[i];
     buffer.write(chunk.text);
 
@@ -189,6 +203,8 @@ void dumpLines(List<Chunk> chunks, LinePrefix prefix, SplitSet splits) {
         writeIndent(splits.getColumn(i));
       }
     } else {
+      writeChunksUnsplit(chunk.blockChunks);
+
       if (chunk.spaceWhenUnsplit) buffer.write(" ");
     }
   }

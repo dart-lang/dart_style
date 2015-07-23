@@ -166,11 +166,10 @@ final ListResultDescriptor<AnalysisError> HINTS =
   }
 <<<
   main() {
-    contextsChangedRaw(
-        new ContextsChangedEvent(
-            added: event.added.length > 0 ? [mockContext] : [],
-            changed: event.changed.length > 0 ? [mockContext] : [],
-            removed: event.removed.length > 0 ? [mockContext] : []));
+    contextsChangedRaw(new ContextsChangedEvent(
+        added: event.added.length > 0 ? [mockContext] : [],
+        changed: event.changed.length > 0 ? [mockContext] : [],
+        removed: event.removed.length > 0 ? [mockContext] : []));
   }
 >>> (indent 2)
   void emitEmptyObjectClass(String className, ImpliedType impliedType) {

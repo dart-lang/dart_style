@@ -36,7 +36,7 @@ void main(List<String> args) {
   parser.addFlag("follow-links",
       negatable: false,
       help: "Follow links to files and directories.\n"
-      "If unset, links will be ignored.");
+          "If unset, links will be ignored.");
   parser.addFlag("transform",
       abbr: "t",
       negatable: false,

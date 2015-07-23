@@ -149,8 +149,9 @@ class LineWriter {
     }
 
     // Run the line splitter.
-    var splitter = new LineSplitter(this, chunks, _blockIndentation);
-    var solution = splitter.apply(indent, flushLeft: flushLeft);
+    var splitter = new LineSplitter(this, chunks, _blockIndentation, indent,
+        flushLeft: flushLeft);
+    var splits = splitter.apply();
 
     // Write the indentation of the first line.
     if (!flushLeft) {
@@ -163,13 +164,13 @@ class LineWriter {
       _writeChunk(chunk);
 
       if (chunk.blockChunks.isNotEmpty) {
-        if (!solution.splits.shouldSplitAt(i)) {
+        if (!splits.shouldSplitAt(i)) {
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
           _writeChunksUnsplit(chunk.blockChunks);
         } else {
           // Include the formatted block contents.
-          var block = formatBlock(chunk, solution.splits.getColumn(i));
+          var block = formatBlock(chunk, splits.getColumn(i));
 
           // If this block contains one of the selection markers, tell the
           // writer where it ended up in the final output.
@@ -187,17 +188,17 @@ class LineWriter {
 
       if (i == chunks.length - 1) {
         // Don't write trailing whitespace after the last chunk.
-      } else if (solution.splits.shouldSplitAt(i)) {
+      } else if (splits.shouldSplitAt(i)) {
         _buffer.write(_lineEnding);
         if (chunk.isDouble) _buffer.write(_lineEnding);
 
-        _buffer.write(" " * (solution.splits.getColumn(i)));
+        _buffer.write(" " * (splits.getColumn(i)));
       } else {
         if (chunk.spaceWhenUnsplit) _buffer.write(" ");
       }
     }
 
-    return solution.cost;
+    return splits.cost;
   }
 
   /// Writes [chunks] (and any child chunks of them, recursively) without any

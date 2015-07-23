@@ -25,17 +25,9 @@ abstract class Rule extends FastHash {
 
   int get cost => Cost.normal;
 
-  /// The span of [Chunk]s that were written while this rule was still in
-  /// effect.
-  ///
-  /// This is used to tell which rules should be pre-emptively split if their
-  /// contents are too long. This may be a wider range than the set of chunks
-  /// enclosed by chunks whose rule is this one. A rule may still be on the
-  /// list of open rules for a while after its last chunk is written.
-  // TODO(rnystrom): These are only used by preemption which is kind of hacky.
-  // Remove this if preemption is redone.
-  int start;
-  int end;
+  /// During line splitting [LineSplitter] sets this to the index of this
+  /// rule in its list of rules.
+  int index;
 
   /// The other [Rule]s that "surround" this one (and care about that fact).
   ///
@@ -82,19 +74,6 @@ abstract class Rule extends FastHash {
     // split.
     if (value == 0) return null;
     if (_outerRules.contains(other)) return other.fullySplitValue;
-
-    return null;
-  }
-
-  /// Like [constrain], but in the other direction.
-  ///
-  /// If [other] has [otherValue], returns the constrained value this rule may
-  /// have, or `null` if any value is allowed.
-  int reverseConstrain(int otherValue, Rule other) {
-    // If [other] did not fully split, then we can't split either if us
-    // splitting implies that it should have.
-    if (otherValue == other.fullySplitValue) return null;
-    if (_outerRules.contains(other)) return 0;
 
     return null;
   }

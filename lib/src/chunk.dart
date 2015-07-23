@@ -5,7 +5,7 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
-import 'nesting.dart';
+import 'nesting_level.dart';
 import 'rule/rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -131,7 +131,15 @@ class Chunk extends Selection {
   ///
   /// Used for multi-line strings and commented out code.
   bool get flushLeft => _flushLeft;
-  bool _flushLeft;
+  bool _flushLeft = false;
+
+  /// If `true`, then the line after this chunk and its contained block should
+  /// be flush left.
+  bool get flushLeftAfter {
+    if (blockChunks.isEmpty) return _flushLeft;
+
+    return blockChunks.last.flushLeftAfter;
+  }
 
   /// Whether this chunk should append an extra space if it does not split.
   ///
@@ -293,12 +301,6 @@ class Cost {
 
   /// Splitting before a type argument or type parameter.
   static const typeArgument = 4;
-
-  /// The cost of a single character that goes past the page limit.
-  ///
-  /// This cost is high to ensure any solution that fits in the page is
-  /// preferred over one that does not.
-  static const overflowChar = 1000;
 }
 
 /// The in-progress state for a [Span] that has been started but has not yet
