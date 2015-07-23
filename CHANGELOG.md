@@ -1,5 +1,6 @@
 # 0.2.0-rc.2
 
+* Allow splitting between adjacent strings (#201).
 * Force multi-line comments to the next line (#241).
 * Better splitting in metadata annotations in parameter lists (#247).
 * New optimized line splitter (#360, #380).

@@ -101,7 +101,8 @@ class ChunkBuilder {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-          _pendingWhitespace == Whitespace.spaceOrNewline;
+          _pendingWhitespace == Whitespace.spaceOrNewline ||
+          _pendingWhitespace == Whitespace.splitOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
@@ -314,6 +315,15 @@ class ChunkBuilder {
           _pendingWhitespace = Whitespace.nestedNewline;
         } else {
           _pendingWhitespace = Whitespace.space;
+        }
+        break;
+
+      case Whitespace.splitOrNewline:
+        if (numLines > 0) {
+          _pendingWhitespace = Whitespace.nestedNewline;
+        } else {
+          _pendingWhitespace = Whitespace.none;
+          split(space: true);
         }
         break;
 
@@ -582,6 +592,7 @@ class ChunkBuilder {
         break;
 
       case Whitespace.spaceOrNewline:
+      case Whitespace.splitOrNewline:
       case Whitespace.oneOrTwoNewlines:
         // We should have pinned these down before getting here.
         assert(false);

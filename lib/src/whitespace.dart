@@ -66,6 +66,13 @@ class Whitespace {
   /// less prescriptive over the user's whitespace.
   static const spaceOrNewline = const Whitespace._("spaceOrNewline");
 
+  /// A split or newline should be output based on whether the current token is
+  /// on the same line as the previous one or not.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const splitOrNewline = const Whitespace._("splitOrNewline");
+
   /// One or two newlines should be output based on how many newlines are
   /// present between the next token and the previous one.
   ///

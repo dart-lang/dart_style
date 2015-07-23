@@ -92,7 +92,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitAdjacentStrings(AdjacentStrings node) {
-    visitNodes(node.strings, between: spaceOrNewline);
+    builder.startSpan();
+    builder.startRule();
+    visitNodes(node.strings, between: splitOrNewline);
+    builder.endRule();
+    builder.endSpan();
   }
 
   visitAnnotation(Annotation node) {
@@ -1911,6 +1915,13 @@ class SourceVisitor implements AstVisitor {
   /// between the last token and the next one.
   void spaceOrNewline() {
     builder.writeWhitespace(Whitespace.spaceOrNewline);
+  }
+
+  /// Allow either a single split or newline to be emitted before the next
+  /// non-whitespace token based on whether a newline exists in the source
+  /// between the last token and the next one.
+  void splitOrNewline() {
+    builder.writeWhitespace(Whitespace.splitOrNewline);
   }
 
   /// Allow either one or two newlines to be emitted before the next
