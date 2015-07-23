@@ -5,6 +5,7 @@
 * New optimized line splitter (#360, #380).
 * Allow splitting after argument name (#368).
 * Parsing a statement fails if there is unconsumed input (#372).
+* Split before `deferred` (#381).
 * Allow splitting on `as` and `is` expressions (#384).
 * Support null-aware operators (`?.`, `??`, and `??=`) (#385).
 * Allow splitting before default parameter values (#389).

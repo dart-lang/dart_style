@@ -976,9 +976,14 @@ class SourceVisitor implements AstVisitor {
       token(node.keyword);
       space();
       visit(node.uri);
-      token(node.deferredKeyword, before: space);
-      token(node.asKeyword, before: soloSplit, after: space);
-      visit(node.prefix);
+
+      if (node.asKeyword != null) {
+        soloSplit();
+        token(node.deferredKeyword, after: space);
+        token(node.asKeyword);
+        space();
+        visit(node.prefix);
+      }
 
       builder.startRule(new CombinatorRule());
       visitNodes(node.combinators);
