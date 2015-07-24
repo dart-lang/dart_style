@@ -511,13 +511,6 @@ class ChunkBuilder {
 
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
-    // TODO(rnystrom): This does the wrong thing when there is are multiple
-    // block arguments. We correctly force the rule, but then it gets popped
-    // off the writer's stack and it forgets it was forced. Can repro with:
-    //
-    // longFunctionName(
-    //     [longElementName, longElementName, longElementName],
-    //     [short]);
     if (forceSplit) _parent.forceRules();
 
     // Write the split for the block contents themselves.
