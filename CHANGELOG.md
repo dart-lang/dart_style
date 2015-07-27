@@ -1,3 +1,7 @@
+# 0.2.0-rc.3
+
+* Optimize splitting complex lines (#391).
+
 # 0.2.0-rc.2
 
 * Allow splitting between adjacent strings (#201).
