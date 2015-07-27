@@ -645,8 +645,8 @@ class Traverser {
 
     // Make sure all of the existing sources match the new reference.
     if (required.dep.source != dep.source) {
-      _solver.logSolve(
-          'source mismatch on ${dep.name}: ${required.dep.source} ' '!= ${dep.source}');
+      _solver.logSolve('source mismatch on ${dep.name}: ${required.dep.source} '
+          '!= ${dep.source}');
       throw new SourceMismatchException(dep.name, [required, dependency]);
     }
 
@@ -813,5 +813,6 @@ void _validateSdkConstraint(Pubspec pubspec) {
   throw new BadSdkVersionException(
       pubspec.name,
       'Package ${pubspec.name} requires SDK version '
-      '${pubspec.environment.sdkVersion} but the current SDK is ' '${sdk.version}.');
+      '${pubspec.environment.sdkVersion} but the current SDK is '
+      '${sdk.version}.');
 }

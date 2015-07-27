@@ -7,7 +7,7 @@ library dart_style.src.line_writer;
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
-import 'line_splitter.dart';
+import 'line_splitting/line_splitter.dart';
 import 'whitespace.dart';
 
 /// Given a series of chunks, splits them into lines and writes the result to
