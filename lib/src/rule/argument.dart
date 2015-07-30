@@ -113,9 +113,8 @@ class SinglePositionalRule extends PositionalRule {
   /// split before the argument if the argument itself contains a split.
   SinglePositionalRule(Rule collectionRule, {bool splitsOnInnerRules})
       : super(collectionRule),
-        splitsOnInnerRules = splitsOnInnerRules
-            != null
-            ? splitsOnInnerRules : false;
+        splitsOnInnerRules =
+            splitsOnInnerRules != null ? splitsOnInnerRules : false;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 

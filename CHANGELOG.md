@@ -1,3 +1,7 @@
+# 0.2.0
+
+* Treat functions nested inside function calls like block arguments (#366).
+
 # 0.2.0-rc.4
 
 * Smarter indentation for function arguments (#369).

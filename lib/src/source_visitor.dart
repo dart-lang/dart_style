@@ -647,11 +647,9 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     space();
 
-    _writeBody(node.leftBracket, node.rightBracket,
-        space: true,
-        body: () {
-          visitCommaSeparatedNodes(node.constants, between: split);
-        });
+    _writeBody(node.leftBracket, node.rightBracket, space: true, body: () {
+      visitCommaSeparatedNodes(node.constants, between: split);
+    });
   }
 
   visitExportDirective(ExportDirective node) {

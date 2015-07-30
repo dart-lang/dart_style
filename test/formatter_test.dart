@@ -39,12 +39,14 @@ void main() {
 
   test("FormatterException describes parse errors", () {
     try {
-      new DartFormatter().format("""
+      new DartFormatter().format(
+          """
 
       var a = some error;
 
       var b = another one;
-      """, uri: "my_file.dart");
+      """,
+          uri: "my_file.dart");
 
       fail("Should throw.");
     } on FormatterException catch (err) {
@@ -90,7 +92,8 @@ void main() {
   test('preserves initial indent', () {
     var formatter = new DartFormatter(indent: 3);
     expect(
-        formatter.formatStatement('if (foo) {bar;}'), equals('   if (foo) {\n'
+        formatter.formatStatement('if (foo) {bar;}'),
+        equals('   if (foo) {\n'
             '     bar;\n'
             '   }'));
   });
@@ -119,7 +122,8 @@ void main() {
       expect(
           new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
               'second\r\n'
-              'third"""  ;'), equals('"""first\r\n'
+              'third"""  ;'),
+          equals('"""first\r\n'
               'second\r\n'
               'third""";'));
     });

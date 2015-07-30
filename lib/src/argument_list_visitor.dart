@@ -97,12 +97,8 @@ class ArgumentListVisitor {
         new ArgumentSublist(node.arguments, argumentsAfter));
   }
 
-  ArgumentListVisitor._(
-      this._visitor,
-      this._node,
-      this._arguments,
-      this._functions,
-      this._argumentsAfterFunctions);
+  ArgumentListVisitor._(this._visitor, this._node, this._arguments,
+      this._functions, this._argumentsAfterFunctions);
 
   /// Builds chunks for the call chain.
   void visit() {
@@ -162,10 +158,35 @@ class ArgumentListVisitor {
       expression = (expression as NamedExpression).expression;
     }
 
+    // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
+    if (expression is MethodInvocation) {
+      if (!_isValidWrappingTarget(expression.target)) return false;
+      if (expression.argumentList.arguments.length != 1) return false;
+
+      return _isBlockFunction(expression.argumentList.arguments.single);
+    }
+
     // Curly body functions are.
     if (expression is! FunctionExpression) return false;
     var function = expression as FunctionExpression;
     return function.body is BlockFunctionBody;
+  }
+
+  /// Returns `true` if [expression] is a valid method invocation target for
+  /// an invocation that wraps a function literal argument.
+  static bool _isValidWrappingTarget(Expression expression) {
+    // Allow bare function calls.
+    if (expression == null) return true;
+
+    // Allow property accesses.
+    while (expression is PropertyAccess) {
+      expression = (expression as PropertyAccess).target;
+    }
+
+    if (expression is PrefixedIdentifier) return true;
+    if (expression is SimpleIdentifier) return true;
+
+    return false;
   }
 }
 
@@ -333,8 +354,8 @@ class ArgumentSublist {
     }
 
     // Split before the first named argument.
-    namedRule.beforeArguments(visitor.builder.split(
-        space: !_isFirstArgument(_named.first)));
+    namedRule.beforeArguments(
+        visitor.builder.split(space: !_isFirstArgument(_named.first)));
 
     for (var argument in _named) {
       _visitArgument(visitor, namedRule, argument);
@@ -346,7 +367,8 @@ class ArgumentSublist {
     visitor.builder.endRule();
   }
 
-  void _visitArgument(SourceVisitor visitor, ArgumentRule rule, Expression argument) {
+  void _visitArgument(
+      SourceVisitor visitor, ArgumentRule rule, Expression argument) {
     // If we're about to write a collection argument, handle it specially.
     if (_collections.contains(argument)) {
       if (rule != null) rule.beforeCollection();
