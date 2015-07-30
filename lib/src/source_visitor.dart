@@ -1676,6 +1676,10 @@ class SourceVisitor implements AstVisitor {
     if (elements.isEmpty && rightBracket.precedingComments == null) {
       token(leftBracket);
       token(rightBracket);
+
+      // Clear this out in case this empty collection is in an argument list.
+      // We don't want this rule to bleed over to some other collection.
+      _nextLiteralBodyRule = null;
       return;
     }
 

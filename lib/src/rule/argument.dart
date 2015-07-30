@@ -9,36 +9,36 @@ import 'rule.dart';
 
 /// Base class for a rule that handles argument or parameter lists.
 abstract class ArgumentRule extends Rule {
-  /// The rule used to split block arguments in the argument list, if any.
-  final Rule _blockRule;
+  /// The rule used to split collections in the argument list, if any.
+  final Rule _collectionRule;
 
   /// If true, then inner rules that are written will force this rule to split.
   ///
-  /// Temporarily disabled while writing block arguments so that they can be
+  /// Temporarily disabled while writing collectio arguments so that they can be
   /// multi-line without forcing the whole argument list to split.
   bool _trackInnerRules = true;
 
-  /// Don't split when an inner block rule splits.
+  /// Don't split when an inner collection rule splits.
   bool get splitsOnInnerRules => _trackInnerRules;
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [_blockRule] is given, it is the rule used to split the block
-  /// arguments in the list.
-  ArgumentRule(this._blockRule);
+  /// If [_collectionRule] is given, it is the rule used to split the
+  /// collections in the list.
+  ArgumentRule(this._collectionRule);
 
-  /// Called before a block argument is written.
+  /// Called before a collection argument is written.
   ///
-  /// Disables tracking inner rules while a block argument is being written.
-  void beforeBlockArgument() {
+  /// Disables tracking inner rules while a collection argument is written.
+  void beforeCollection() {
     assert(_trackInnerRules == true);
     _trackInnerRules = false;
   }
 
-  /// Called after a block argument is complete.
+  /// Called after a collection argument is complete.
   ///
-  /// Re-enables tracking inner rules after a block argument is complete.
-  void afterBlockArgument() {
+  /// Re-enables tracking inner rules.
+  void afterCollection() {
     assert(_trackInnerRules == false);
     _trackInnerRules = true;
   }
@@ -55,9 +55,9 @@ abstract class PositionalRule extends ArgumentRule {
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [blockRule] is given, it is the rule used to split the block arguments
-  /// in the list.
-  PositionalRule(Rule blockRule) : super(blockRule);
+  /// If [collectionRule] is given, it is the rule used to split the collection
+  /// arguments in the list.
+  PositionalRule(Rule collectionRule) : super(collectionRule);
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
@@ -96,20 +96,26 @@ abstract class PositionalRule extends ArgumentRule {
 }
 
 /// Split rule for a call with a single positional argument (which may or may
-/// not be a block argument.)
+/// not be a collection argument.)
 class SinglePositionalRule extends PositionalRule {
   int get numValues => 2;
 
-  /// If there is only a single argument, allow it to split internally without
-  /// forcing a split before the argument.
-  bool get splitsOnInnerRules => false;
+  /// If there is only a single non-collection argument, allow it to split
+  /// internally without forcing a split before the argument.
+  final bool splitsOnInnerRules;
+
+  bool hack = false;
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [blockRule] is given, it is the rule used to split the block arguments
-  /// in the list. If [isSingleArgument] is `true`, then the argument list will
-  /// only contain a single argument.
-  SinglePositionalRule(Rule blockRule) : super(blockRule);
+  /// If [collectionRule] is given, it is the rule used to split the
+  /// collections in the list. If [splitsOnInnerRules] is `true`, then we will
+  /// split before the argument if the argument itself contains a split.
+  SinglePositionalRule(Rule collectionRule, {bool splitsOnInnerRules})
+      : super(collectionRule),
+        splitsOnInnerRules = splitsOnInnerRules
+            != null
+            ? splitsOnInnerRules : false;
 
   bool isSplit(int value, Chunk chunk) => value == 1;
 
@@ -117,12 +123,12 @@ class SinglePositionalRule extends PositionalRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _blockRule) return null;
+    if (other != _collectionRule) return null;
 
-    // If we aren't splitting any args, we can split the block.
+    // If we aren't splitting any args, we can split the collection.
     if (value == 0) return null;
 
-    // We are splitting before a block, so don't let it split internally.
+    // We are splitting before a collection, so don't let it split internally.
     return 0;
   }
 
@@ -143,40 +149,41 @@ class SinglePositionalRule extends PositionalRule {
 ///
 /// Then there is a value that splits before every argument.
 ///
-/// Finally, if there are block arguments, there is another value that splits
-/// before all of the non-block arguments, but does not split before the block
-/// ones, so that they can split internally.
+/// Finally, if there are collection arguments, there is another value that
+/// splits before all of the non-collection arguments, but does not split
+/// before the collections, so that they can split internally.
 class MultiplePositionalRule extends PositionalRule {
-  /// The number of leading block arguments.
+  /// The number of leading collection arguments.
   ///
-  /// This and [_trailingBlocks] cannot both be positive. If every argument is
-  /// a block, this will be [_arguments.length] and [_trailingBlocks] will be 0.
-  final int _leadingBlocks;
+  /// This and [_trailingCollections] cannot both be positive. If every
+  /// argument is a collection, this will be [_arguments.length] and
+  /// [_trailingCollections] will be 0.
+  final int _leadingCollections;
 
-  /// The number of trailing block arguments.
+  /// The number of trailing collections.
   ///
-  /// This and [_leadingBlocks] cannot both be positive.
-  final int _trailingBlocks;
+  /// This and [_leadingCollections] cannot both be positive.
+  final int _trailingCollections;
 
   int get numValues {
     // Can split before any one argument, none, or all.
     var result = 2 + _arguments.length;
 
-    // When there are block arguments, there are two ways we can split on "all"
-    // arguments:
+    // When there are collection arguments, there are two ways we can split on
+    // "all" arguments:
     //
-    // - Split on just the non-block arguments, and force the block arguments
-    //   to split internally.
-    // - Split on all of them including the block arguments, and do not allow
-    //   the block arguments to split internally.
-    if (_leadingBlocks > 0 || _trailingBlocks > 0) result++;
+    // - Split on just the non-collection arguments, and force the collection
+    //   arguments to split internally.
+    // - Split on all of them including the collection arguments, and do not
+    //   allow the collection arguments to split internally.
+    if (_leadingCollections > 0 || _trailingCollections > 0) result++;
 
     return result;
   }
 
   MultiplePositionalRule(
-      Rule blockRule, this._leadingBlocks, this._trailingBlocks)
-      : super(blockRule);
+      Rule collectionRule, this._leadingCollections, this._trailingCollections)
+      : super(collectionRule);
 
   String toString() => "*Pos${super.toString()}";
 
@@ -195,24 +202,13 @@ class MultiplePositionalRule extends PositionalRule {
       return chunk == _arguments[argument];
     }
 
-    // Only split before the non-block arguments. Note that we consider this
-    // case to correctly prefer this over the latter case because function
-    // block arguments always split internally. Preferring this case ensures we
-    // avoid:
-    //
-    //     function( // <-- :(
-    //         () {
-    //        ...
-    //     }),
-    //         argument,
-    //         ...
-    //         argument;
+    // Only split before the non-collection arguments.
     if (value == _arguments.length + 1) {
-      for (var i = 0; i < _leadingBlocks; i++) {
+      for (var i = 0; i < _leadingCollections; i++) {
         if (chunk == _arguments[i]) return false;
       }
 
-      for (var i = _arguments.length - _trailingBlocks;
+      for (var i = _arguments.length - _trailingCollections;
           i < _arguments.length;
           i++) {
         if (chunk == _arguments[i]) return false;
@@ -221,7 +217,7 @@ class MultiplePositionalRule extends PositionalRule {
       return true;
     }
 
-    // Split before all of the arguments, even the block ones.
+    // Split before all of the arguments, even the collections.
     return true;
   }
 
@@ -229,37 +225,38 @@ class MultiplePositionalRule extends PositionalRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _blockRule) return null;
+    if (other != _collectionRule) return null;
 
-    // If we aren't splitting any args, we can split the block.
+    // If we aren't splitting any args, we can split the collection.
     if (value == 0) return null;
 
     // Split only before the first argument.
     if (value == 1) {
-      if (_leadingBlocks > 0) {
-        // We are splitting before a block, so don't let it split internally.
+      if (_leadingCollections > 0) {
+        // We are splitting before a collection, so don't let it split
+        // internally.
         return 0;
       } else {
-        // The split is outside of the blocks so they can split or not.
+        // The split is outside of the collections so they can split or not.
         return null;
       }
     }
 
-    // Split before a single argument. If it's in the middle of the block
+    // Split before a single argument. If it's in the middle of the collection
     // arguments, don't allow them to split.
     if (value <= _arguments.length) {
       var argument = _arguments.length - value + 1;
-      if (argument < _leadingBlocks) return 0;
-      if (argument >= _arguments.length - _trailingBlocks) return 0;
+      if (argument < _leadingCollections) return 0;
+      if (argument >= _arguments.length - _trailingCollections) return 0;
 
       return null;
     }
 
-    // Only split before the non-block arguments. This case only comes into
-    // play when we do want to split the blocks, so force that here.
+    // Only split before the non-collection arguments. This case only comes into
+    // play when we do want to split the collection, so force that here.
     if (value == _arguments.length + 1) return 1;
 
-    // Split before all of the arguments, even the block ones, so don't let
+    // Split before all of the arguments, even the collection, so don't let
     // them split.
     return 0;
   }
@@ -276,7 +273,7 @@ class NamedRule extends ArgumentRule {
 
   int get numValues => 3;
 
-  NamedRule(Rule blockRule) : super(blockRule);
+  NamedRule(Rule collectionRule) : super(collectionRule);
 
   void beforeArguments(Chunk chunk) {
     assert(_first == null);
@@ -300,12 +297,12 @@ class NamedRule extends ArgumentRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
-    if (other != _blockRule) return null;
+    if (other != _collectionRule) return null;
 
-    // If we aren't splitting any args, we can split the block.
+    // If we aren't splitting any args, we can split the collection.
     if (value == 0) return null;
 
-    // Split before all of the arguments, even the block ones, so don't let
+    // Split before all of the arguments, even the collections, so don't let
     // them split.
     return 0;
   }

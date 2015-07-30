@@ -1,3 +1,7 @@
+# 0.2.0-rc.4
+
+* Smarter indentation for function arguments (#369).
+
 # 0.2.0-rc.3
 
 * Optimize splitting complex lines (#391).
