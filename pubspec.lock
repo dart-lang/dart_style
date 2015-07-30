@@ -16,7 +16,7 @@ packages:
   barback:
     description: barback
     source: hosted
-    version: "0.15.2+5"
+    version: "0.15.2+6"
   browser:
     description: browser
     source: hosted
