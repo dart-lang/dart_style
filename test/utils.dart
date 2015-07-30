@@ -5,6 +5,7 @@
 library dart_style.test.utils;
 
 import 'dart:io';
+import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
 import 'package:scheduled_test/descriptor.dart' as d;
@@ -18,7 +19,14 @@ const formattedSource = 'void main() => print("hello");\n';
 ScheduledProcess runFormatter([List<String> args]) {
   if (args == null) args = [];
 
-  var formatterPath = p.join("bin", "format.dart");
+  // Locate the "test" directory. Use mirrors so that this works with the test
+  // package, which loads this suite into an isolate.
+  var testDir = p.dirname(currentMirrorSystem()
+      .findLibrary(#dart_style.test.utils)
+      .uri
+      .path);
+
+  var formatterPath = p.normalize(p.join(testDir, "../bin/format.dart"));
 
   args.insert(0, formatterPath);
 
