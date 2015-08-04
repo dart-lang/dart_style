@@ -119,7 +119,7 @@ The has a few goals, in order of descending priority:
     ```c
     if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
         goto fail;
-    goto fail; // <-- not clearly not under the "if".
+    goto fail; // <-- now clearly not under the "if".
     if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
         goto fail;
     ```
