@@ -149,7 +149,8 @@ void testDirectory(String name) {
     }
 
     group("$name ${p.basename(entry.path)}", () {
-      var lines = (entry as File).readAsLinesSync();
+      // Explicitly create a File, in case the entry is a Link.
+      var lines = new File(entry.path).readAsLinesSync();
 
       // The first line may have a "|" to indicate the page width.
       var pageWidth;
