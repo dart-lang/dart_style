@@ -76,36 +76,36 @@ API for formatting code. Simple usage looks like this:
 ### Why have a formatter?
 
 The has a few goals, in order of descending priority:
-    
+
 1.  **Produce consistently formatted code.** Consistent style improves
     readability because you aren't distracted by variance in style between
     different parts of a program. It makes it easier to contribute to others'
     code because their style will already be familiar to you.
-    
+
 2.  **End debates about style issues in code reviews.** This consumes an
     astonishingly large quantity of very valuable engineering energy. Style
     debates are time-consuming, upset people, and rarely change anyone's mind.
     They make code reviews take longer and be more acromonious.
-    
+
 3.  **Free users from having to think about and apply formatting.** When
     writing code, you don't have to try to figure out the best way to split a
     line and then pain-stakingly add in the line breaks. When you do a global
     refactor that changes the length of some identifier, you don't have to go
     back and rewrap all of the lines. When you're in the zone, you can just
     pump out code and let the formatter tidy it up for you as you go.
-    
+
 4.  **Produce beautiful, readable output that helps users understand the code.**
     We could solve all of the above goals with a formatter that just removed
     *all* whitespace, but that wouldn't be very human-friendly. So, finally,
     the formatter tries very hard to produce output that is not just consistent
     but readable to a human. It tries to use indentation and line breaks to
     highlight the structure and organization of the code.
-    
+
     In several cases, the formatter has pointed out bugs where the existing
     indentation was misleading and didn't represent what the code actually did.
     For example, automated formatted would have helped make Apple's
     ["gotofail"][gotofail] security bug easier to notice:
-    
+
     ```c
     if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
         goto fail;
@@ -113,9 +113,9 @@ The has a few goals, in order of descending priority:
     if ((err = SSLHashSHA1.final(&hashCtx, &hashOut)) != 0)
         goto fail;
     ```
-    
+
     The formatter would change this to:
-    
+
     ```c
     if ((err = SSLHashSHA1.update(&hashCtx, &signedParams)) != 0)
         goto fail;
@@ -152,6 +152,12 @@ change over time. We don't promise that code produced by the formatter today
 will be identical to the same code run through a later version of the formatter.
 We do hope that you'll like the output of the later version more.
 
+### How does it work?
+
+I wrote a long article about how the formatter is implemented [here][how].
+
+[how]: http://journal.stuffwithstuff.com/2015/09/08/the-hardest-program-ive-ever-written/
+
 ### Why can't I tell the formatter to ignore a region of code?
 
 Even a really sophisticated formatter can't beat a human in *all* cases. Our
@@ -173,6 +179,69 @@ in most cases where users have asked for this, I've seen formatting errors in
 the examples they provided!) But does doing that really add enough value to
 make up for re-opening that can of worms?
 
+### Why isn't this function or collection indented enough?
+
+In most cases, a function expression or a multiline collection literal's body is
+indented relative to the containing statement, not relative to the expression
+nesting where it appears. This style was inherited from [Google's JavaScript
+style guide][js style] where it seems to work well.
+
+[js style]: https://google.github.io/styleguide/javascriptguide.xml?showone=Code_formatting#Code_formatting
+
+It is so natural in most code that you probably don't even notice it:
+
+```dart
+argParser.addAll([
+  "--help",
+  "--mode",
+  "debug"
+]);
+```
+
+```dart
+test("adds two numbers correctly", () {
+  expect(1 + 2, equals(3));
+});
+```
+
+But the same behavior kicks in even when the body is contained in an expression
+that has other splits:
+
+```dart
+configure(
+    debugStuff: false,
+    optimizeStuff: true,
+    removeExtraStuff: false,
+    thingsToInclude: [
+  "widgets",
+  "gadgets",
+  "doodads",
+  "doohickeys"
+]);
+```
+
+Here, the indentation of the list body is less than the `thingsToInclude:`
+parameter that it applies to, which breaks the general guideline that
+indentation should reflect nesting depth.
+
+We could always indent relative to the surrounding expression, but that also
+leads to bad output in many cases:
+
+```dart
+group("this description is too long"
+    "too fit in one line",
+    () {
+      // 1000 lines of annoyingly indented test code...
+    });
+```
+
+Both indentation styles are useful in different places, so the formatter
+supports both and tries to choose the best based on the context where the body
+appears. The rules here are fairly subtle, and take into account method chains,
+other arguments in the argument list, etc. There doesn't appear to be a *simple*
+rule that makes all code look good and the heuristics it uses aren't perfect. It
+does its best.
+
 ### Why does the formatter mess up my collection literals?
 
 Large collection literals are often used to define big chunks of structured
@@ -182,15 +251,15 @@ data, like:
 /// Maps ASCII character values to what kind of character they represent.
 const characterTypes = const [
   other, other, other, other, other, other, other, other,
-  other, white, white, other, other, white,              
+  other, white, white, other, other, white,
   other, other, other, other, other, other, other, other,
   other, other, other, other, other, other, other, other,
-  other, other, white,                                   
-  punct, other, punct, punct, punct, punct, other,       
+  other, other, white,
+  punct, other, punct, punct, punct, punct, other,
   brace, brace, punct, punct, comma, punct, punct, punct,
-  digit, digit, digit, digit, digit,                     
-  digit, digit, digit, digit, digit,                     
-  punct, punct, punct, punct, punct, punct, punct,       
+  digit, digit, digit, digit, digit,
+  digit, digit, digit, digit, digit,
+  punct, punct, punct, punct, punct, punct, punct,
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
@@ -198,7 +267,7 @@ const characterTypes = const [
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
   alpha, alpha, alpha, alpha, alpha, alpha, alpha, alpha,
-  alpha, alpha, brace, punct, brace, punct               
+  alpha, alpha, brace, punct, brace, punct
 ];
 ```
 
@@ -211,12 +280,12 @@ const characterTypes = const [
   other,
   other,
   other,
-  
+
   // lots more ...
-  
+
   punct,
   brace,
-  punct             
+  punct
 ];
 ```
 
