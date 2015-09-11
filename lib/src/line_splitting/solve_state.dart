@@ -29,7 +29,7 @@ class SolveState {
   /// refined states.
   ///
   /// Keeping this set small is the key to make the entire line splitter
-  /// perform well. If we consider too make rules at each state, our
+  /// perform well. If we consider too many rules at each state, our
   /// exploration of the solution space is too branchy and we waste time on
   /// dead end solutions.
   ///
