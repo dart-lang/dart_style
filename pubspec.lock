@@ -5,6 +5,10 @@ packages:
     description: analyzer
     source: hosted
     version: "0.26.0"
+  ansicolor:
+    description: ansicolor
+    source: hosted
+    version: "0.0.9"
   args:
     description: args
     source: hosted
@@ -25,6 +29,10 @@ packages:
     description: charcode
     source: hosted
     version: "1.1.0"
+  cli_util:
+    description: cli_util
+    source: hosted
+    version: "0.0.1+2"
   collection:
     description: collection
     source: hosted
@@ -41,6 +49,10 @@ packages:
     description: glob
     source: hosted
     version: "1.0.5"
+  grinder:
+    description: grinder
+    source: hosted
+    version: "0.7.2"
   html:
     description: html
     source: hosted
@@ -69,6 +81,10 @@ packages:
     description: mime
     source: hosted
     version: "0.9.3"
+  mockable_filesystem:
+    description: mockable_filesystem
+    source: hosted
+    version: "0.0.3"
   package_config:
     description: package_config
     source: hosted
@@ -125,10 +141,18 @@ packages:
     description: string_scanner
     source: hosted
     version: "0.1.3+1"
+  supports_color:
+    description: supports_color
+    source: hosted
+    version: "0.1.1"
   test:
     description: test
     source: hosted
     version: "0.12.3+9"
+  unscripted:
+    description: unscripted
+    source: hosted
+    version: "0.6.2"
   utf:
     description: utf
     source: hosted
@@ -137,6 +161,14 @@ packages:
     description: watcher
     source: hosted
     version: "0.9.7"
+  when:
+    description: when
+    source: hosted
+    version: "0.2.0"
+  which:
+    description: which
+    source: hosted
+    version: "0.1.3"
   yaml:
     description: yaml
     source: hosted

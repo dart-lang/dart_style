@@ -6,17 +6,23 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
+
 import 'package:dart_style/src/dart_formatter.dart';
 import 'package:dart_style/src/formatter_exception.dart';
 import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/source_code.dart';
 
+// Note: The following line of code is modified by tool/grind.dart.
+const version = "0.2.0+1";
+
 void main(List<String> args) {
   var parser = new ArgParser(allowTrailingOptions: true);
 
   parser.addFlag("help",
       abbr: "h", negatable: false, help: "Shows usage information.");
+  parser.addFlag("version",
+      negatable: false, help: "Shows version information.");
   parser.addOption("line-length",
       abbr: "l", help: "Wrap lines longer than this.", defaultsTo: "80");
   parser.addOption("preserve",
@@ -51,6 +57,11 @@ void main(List<String> args) {
 
   if (argResults["help"]) {
     printUsage(parser);
+    return;
+  }
+
+  if (argResults["version"]) {
+    print(version);
     return;
   }
 

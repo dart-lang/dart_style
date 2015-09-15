@@ -70,6 +70,14 @@ void main() {
     process.shouldExit(64);
   });
 
+  test("--version prints the version number", () {
+    var process = runFormatter(["--version"]);
+
+    // Match something roughly semver-like.
+    process.stdout.expect(matches(r"\d+\.\d+\.\d+.*"));
+    process.shouldExit(0);
+  });
+
   group("--dry-run", () {
     test("prints names of files that would change.", () {
       d.dir("code", [
