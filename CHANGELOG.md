@@ -1,3 +1,7 @@
+# 0.2.1
+
+* `--version` command line argument (#240).
+
 # 0.2.0
 
 * Treat functions nested inside function calls like block arguments (#366).
