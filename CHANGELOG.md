@@ -2,6 +2,7 @@
 
 * `--version` command line argument (#240).
 * Consider a rule live if it constrains a rule in the overflow line (#407).
+* Allow splitting in prefix expressions (#410).
 * Don't collapse states that differ by unbound rule constraints (#424).
 
 # 0.2.0

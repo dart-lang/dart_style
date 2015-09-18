@@ -299,6 +299,9 @@ class Cost {
   /// collection contents.
   static const splitCollections = 2;
 
+  /// Splitting on the "." in a named constructor.
+  static const constructorName = 3;
+
   /// Splitting before a type argument or type parameter.
   static const typeArgument = 4;
 }

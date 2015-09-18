@@ -1033,7 +1033,9 @@ class SourceVisitor implements AstVisitor {
     builder.startSpan();
     token(node.keyword);
     space();
+    builder.startSpan(Cost.constructorName);
     visit(node.constructorName);
+    builder.endSpan();
     visit(node.argumentList);
     builder.endSpan();
   }
@@ -1207,9 +1209,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitPrefixedIdentifier(PrefixedIdentifier node) {
-    visit(node.prefix);
-    token(node.period);
-    visit(node.identifier);
+    new CallChainVisitor(this, node).visit();
   }
 
   visitPrefixExpression(PrefixExpression node) {
