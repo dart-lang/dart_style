@@ -27,6 +27,15 @@ abstract class ArgumentRule extends Rule {
   /// collections in the list.
   ArgumentRule(this._collectionRule);
 
+  Iterable<Rule> get constrainedRules {
+    var rules = super.constrainedRules;
+    if (_collectionRule != null) {
+      rules = rules.toList()..add(_collectionRule);
+    }
+
+    return rules;
+  }
+
   /// Called before a collection argument is written.
   ///
   /// Disables tracking inner rules while a collection argument is written.
@@ -58,6 +67,15 @@ abstract class PositionalRule extends ArgumentRule {
   /// If [collectionRule] is given, it is the rule used to split the collection
   /// arguments in the list.
   PositionalRule(Rule collectionRule) : super(collectionRule);
+
+  Iterable<Rule> get constrainedRules {
+    var rules = super.constrainedRules;
+    if (_namedArgsRule != null) {
+      rules = rules.toList()..add(_namedArgsRule);
+    }
+
+    return rules;
+  }
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.

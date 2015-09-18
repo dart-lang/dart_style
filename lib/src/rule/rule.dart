@@ -78,6 +78,29 @@ abstract class Rule extends FastHash {
     return null;
   }
 
+  /// The other [Rule]s that this rule places immediate constraints on.
+  Iterable<Rule> get constrainedRules => _outerRules;
+
+  /// The transitive closure of all of the rules this rule places constraints
+  /// on, directly or indirectly, including itself.
+  Set<Rule> get allConstrainedRules {
+    if (_allConstrainedRules == null) {
+      visit(Rule rule) {
+        if (_allConstrainedRules.contains(rule)) return;
+
+        _allConstrainedRules.add(rule);
+        rule.constrainedRules.forEach(visit);
+      }
+
+      _allConstrainedRules = new Set();
+      visit(this);
+    }
+
+    return _allConstrainedRules;
+  }
+
+  Set<Rule> _allConstrainedRules;
+
   String toString() => "$id";
 }
 

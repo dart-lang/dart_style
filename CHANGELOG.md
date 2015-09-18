@@ -1,6 +1,8 @@
 # 0.2.1
 
 * `--version` command line argument (#240).
+* Consider a rule live if it constrains a rule in the overflow line (#407).
+* Don't collapse states that differ by unbound rule constraints (#424).
 
 # 0.2.0
 

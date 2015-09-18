@@ -75,6 +75,19 @@ class SolveState {
   /// unbound rules.
   Map<Rule, int> _constraints;
 
+  /// The unbound rule values that are disallowed because they would place
+  /// invalid constraints on the currently bound values.
+  ///
+  /// For example, say rule A is bound to 1 and B is unbound. If B has value
+  /// 1, it constrains A to be 1. Likewise, if B is 2, it constrains A to be
+  /// 2 as well. Since we already know A is 1, that means we know B cannot be
+  /// bound to value 2. This means B is more limited in this state than it
+  /// might be in another state that binds A to a different value.
+  ///
+  /// It's important to track this, because we can't allow to states to overlap
+  /// if one permits more values for some unbound rule than the other does.
+  Map<Rule, List<int>> _unboundConstraints;
+
   /// The bound rules that appear inside lines also containing unbound rules.
   ///
   /// By appearing in the same line, it means these bound rules may affect the
@@ -212,11 +225,10 @@ class SolveState {
 
   /// Returns `true` if [other] overlaps this state.
   bool _isOverlapping(SolveState other) {
-    _ensureOverlapFields();
-    other._ensureOverlapFields();
-
     // Lines that contain both bound and unbound rules must have the same
     // bound values.
+    _ensureBoundRulesInUnboundLines();
+    other._ensureBoundRulesInUnboundLines();
     if (_boundRulesInUnboundLines.length !=
         other._boundRulesInUnboundLines.length) {
       return false;
@@ -229,10 +241,26 @@ class SolveState {
       }
     }
 
+    _ensureConstraints();
+    other._ensureConstraints();
     if (_constraints.length != other._constraints.length) return false;
 
     for (var rule in _constraints.keys) {
       if (_constraints[rule] != other._constraints[rule]) return false;
+    }
+
+    if (_unboundConstraints.length != other._unboundConstraints.length) {
+      return false;
+    }
+
+    for (var rule in _unboundConstraints.keys) {
+      var disallowed = _unboundConstraints[rule];
+      var otherDisallowed = other._unboundConstraints[rule];
+
+      if (disallowed.length != otherDisallowed.length) return false;
+      for (var value in disallowed) {
+        if (!otherDisallowed.contains(value)) return false;
+      }
     }
 
     return true;
@@ -288,7 +316,8 @@ class SolveState {
 
     // The unbound rules in use by the current line. This will be null after
     // the first long line has completed.
-    var currentLineRules = [];
+    var foundOverflowRules = false;
+    var start = 0;
 
     endLine(int end) {
       // Track lines that went over the length. It is only rules contained in
@@ -298,16 +327,16 @@ class SolveState {
 
         // Only try rules that are in the first long line, since we know at
         // least one of them *will* be split.
-        if (currentLineRules != null && currentLineRules.isNotEmpty) {
-          _liveRules.addAll(currentLineRules);
-          currentLineRules = null;
-        }
-      } else {
-        // The line fit, so don't keep track of its rules.
-        if (currentLineRules != null) {
-          currentLineRules.clear();
+        if (!foundOverflowRules) {
+          for (var i = start; i < end; i++) {
+            if (_addLiveRules(_splitter.chunks[i].rule)) {
+              foundOverflowRules = true;
+            }
+          }
         }
       }
+
+      start = end;
     }
 
     // The set of spans that contain chunks that ended up splitting. We store
@@ -341,16 +370,6 @@ class SolveState {
 
         // Include the nested block inline, if any.
         length += chunk.unsplitBlockLength;
-
-        // If we might be in the first overly long line, keep track of any
-        // unbound rules we encounter. These are ones that we'll want to try to
-        // bind to shorten the long line.
-        if (currentLineRules != null &&
-            chunk.rule != null &&
-            !chunk.isHardSplit &&
-            !_ruleValues.contains(chunk.rule)) {
-          currentLineRules.add(chunk.rule);
-        }
       }
     }
 
@@ -369,46 +388,37 @@ class SolveState {
     _splits.setCost(cost);
   }
 
-  /// Lazily initializes the fields needed to compare two states for overlap.
+  /// Adds [rule] and all of the rules it constrains to the set of [_liveRules].
+  ///
+  /// Only does this if [rule] is a valid soft rule. Returns `true` if any new
+  /// live rules were added.
+  bool _addLiveRules(Rule rule) {
+    if (rule == null) return false;
+    if (rule is HardSplitRule) return false;
+
+    var added = false;
+    for (var constrained in rule.allConstrainedRules) {
+      // The rule may constrain some other rule that was already hardened and
+      // discarded. In that case, we can ignore it.
+      if (constrained.index == null) continue;
+
+      if (_ruleValues.contains(constrained)) continue;
+
+      _liveRules.add(constrained);
+      added = true;
+    }
+
+    return added;
+  }
+
+  /// Lazily initializes the [_boundInUnboundLines], which is needed to compare
+  /// two states for overlap.
   ///
   /// We do this lazily because the calculation is a bit slow, and is only
   /// needed when we have two states with the same score.
-  void _ensureOverlapFields() {
-    if (_constraints != null) return;
+  void _ensureBoundRulesInUnboundLines() {
+    if (_boundRulesInUnboundLines != null) return;
 
-    _calculateConstraints();
-    _calculateBoundRulesInUnboundLines();
-  }
-
-  /// Initializes [_constraints] with any constraints the bound rules place on
-  /// the unbound rules.
-  void _calculateConstraints() {
-    _constraints = {};
-
-    var unboundRules = [];
-    var boundRules = [];
-
-    for (var rule in _splitter.rules) {
-      if (_ruleValues.contains(rule)) {
-        boundRules.add(rule);
-      } else {
-        unboundRules.add(rule);
-      }
-    }
-
-    for (var bound in boundRules) {
-      var value = _ruleValues.getValue(bound);
-
-      for (var unbound in unboundRules) {
-        var constraint = bound.constrain(value, unbound);
-        if (constraint != null) {
-          _constraints[unbound] = constraint;
-        }
-      }
-    }
-  }
-
-  void _calculateBoundRulesInUnboundLines() {
     _boundRulesInUnboundLines = new Set();
 
     var boundInLine = new Set();
@@ -433,6 +443,70 @@ class SolveState {
     }
 
     if (hasUnbound) _boundRulesInUnboundLines.addAll(boundInLine);
+  }
+
+  /// Lazily initializes the [_constraints], which is needed to compare two
+  /// states for overlap.
+  ///
+  /// We do this lazily because the calculation is a bit slow, and is only
+  /// needed when we have two states with the same score.
+  void _ensureConstraints() {
+    if (_constraints != null) return;
+
+    var unboundRules = [];
+    var boundRules = [];
+
+    for (var rule in _splitter.rules) {
+      if (_ruleValues.contains(rule)) {
+        boundRules.add(rule);
+      } else {
+        unboundRules.add(rule);
+      }
+    }
+
+    _constraints = {};
+
+    for (var unbound in unboundRules) {
+      for (var bound in boundRules) {
+        var value = _ruleValues.getValue(bound);
+        var constraint = bound.constrain(value, unbound);
+        if (constraint != null) {
+          _constraints[unbound] = constraint;
+        }
+      }
+    }
+
+    _unboundConstraints = {};
+
+    for (var unbound in unboundRules) {
+      var disallowedValues;
+
+      for (var value = 0; value < unbound.numValues; value++) {
+        for (var j = 0; j < boundRules.length; j++) {
+          var bound = boundRules[j];
+          var constraint = unbound.constrain(value, bound);
+
+          // If the unbound rule doesn't place any constraint on this bound
+          // rule, we're fine.
+          if (constraint == null) continue;
+
+          // If the bound rule's value already meets the constraint it applies,
+          // we don't need to track it. This way, two states that have the
+          // same bound value, one of which has a satisfied constraint, are
+          // still allowed to overlap.
+          var boundValue = _ruleValues.getValue(bound);
+          if (constraint == boundValue) continue;
+          if (constraint == -1 && boundValue != 0) continue;
+
+          if (disallowedValues == null) {
+            disallowedValues = new Set();
+            _unboundConstraints[unbound] = disallowedValues;
+          }
+
+          disallowedValues.add(value);
+        }
+      }
+    }
   }
 
   String toString() {
