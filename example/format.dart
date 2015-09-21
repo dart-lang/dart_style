@@ -44,10 +44,6 @@ void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
       result = formatter.formatStatement(source);
     }
 
-    if (debug.useAnsiColors) {
-      result = result.replaceAll(" ", debug.gray(debug.unicodeMidDot));
-    }
-
     drawRuler("before", pageWidth);
     print(source);
     drawRuler("after", pageWidth);

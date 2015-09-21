@@ -51,14 +51,25 @@ class CallChainVisitor {
     flatten(expression) {
       target = expression;
 
-      if (expression is MethodInvocation && expression.target != null) {
-        flatten(expression.target);
+      // Treat index expressions where the target is a valid call in a method
+      // chain as being part of the call. Handles cases like:
+      //
+      //     receiver
+      //         .property
+      //         .property[0]
+      //         .property
+      //         .property;
+      var call = expression;
+      while (call is IndexExpression) call = call.target;
+
+      if (call is MethodInvocation && call.target != null) {
+        flatten(call.target);
         calls.add(expression);
-      } else if (expression is PropertyAccess && expression.target != null) {
-        flatten(expression.target);
+      } else if (call is PropertyAccess && call.target != null) {
+        flatten(call.target);
         calls.add(expression);
-      } else if (expression is PrefixedIdentifier) {
-        flatten(expression.prefix);
+      } else if (call is PrefixedIdentifier) {
+        flatten(call.prefix);
         calls.add(expression);
       }
     }
@@ -135,12 +146,19 @@ class CallChainVisitor {
 
   /// Writes [call], which must be one of the supported expression types.
   void _writeCall(Expression call) {
-    if (call is MethodInvocation) {
+    if (call is IndexExpression) {
+      _visitor.builder.nestExpression();
+      _writeCall(call.target);
+      _visitor.finishIndexExpression(call);
+      _visitor.builder.unnest();
+    } else if (call is MethodInvocation) {
       _writeInvocation(call);
     } else if (call is PropertyAccess) {
-      _writePropertyAccess(call);
+      _visitor.token(call.operator);
+      _visitor.visit(call.propertyName);
     } else if (call is PrefixedIdentifier) {
-      _writePrefixedIdentifier(call);
+      _visitor.token(call.period);
+      _visitor.visit(call.identifier);
     } else {
       // Unexpected type.
       assert(false);
@@ -209,16 +227,6 @@ class CallChainVisitor {
     _visitor.visit(invocation.argumentList);
 
     if (args.nestMethodArguments) _visitor.builder.endBlockArgumentNesting();
-  }
-
-  void _writePropertyAccess(PropertyAccess property) {
-    _visitor.token(property.operator);
-    _visitor.visit(property.propertyName);
-  }
-
-  void _writePrefixedIdentifier(PrefixedIdentifier prefix) {
-    _visitor.token(prefix.period);
-    _visitor.visit(prefix.identifier);
   }
 
   /// If a [Rule] for the method chain is currently active, ends it.

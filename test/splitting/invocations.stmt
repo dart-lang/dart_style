@@ -160,3 +160,33 @@ object
     .method()
     ?.method()
     .method();
+>>> index in property chain
+someReceiverObject.property1.property2
+        .property3[0]
+    .property4
+    .property5
+    .property6;
+<<<
+someReceiverObject
+    .property1
+    .property2
+    .property3[0]
+    .property4
+    .property5
+    .property6;
+>>> chained indexes
+someReceiverObject.property1.property2
+            .property3[argument]
+        [argument][argument]
+    .property4
+    .property5
+    .property6;
+<<<
+someReceiverObject
+    .property1
+    .property2
+    .property3[argument][argument]
+        [argument]
+    .property4
+    .property5
+    .property6;

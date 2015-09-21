@@ -1012,8 +1012,18 @@ class SourceVisitor implements AstVisitor {
       visit(node.target);
     }
 
+    finishIndexExpression(node);
+
+    builder.unnest();
+  }
+
+  /// Visit the index part of [node], excluding the target.
+  ///
+  /// Called by [CallChainVisitor] to handle index expressions in the middle of
+  /// call chains.
+  void finishIndexExpression(IndexExpression node) {
     if (node.target is IndexExpression) {
-      // Corner case: On a chain of [] accesses, allow splitting between them.
+      // Edge case: On a chain of [] accesses, allow splitting between them.
       // Produces nicer output in cases like:
       //
       //     someJson['property']['property']['property']['property']...
@@ -1026,7 +1036,6 @@ class SourceVisitor implements AstVisitor {
     visit(node.index);
     token(node.rightBracket);
     builder.endSpan();
-    builder.unnest();
   }
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {
