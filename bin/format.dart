@@ -39,6 +39,8 @@ void main(List<String> args) {
       abbr: "m",
       negatable: false,
       help: "Produce machine-readable JSON output.");
+  parser.addFlag("profile",
+      negatable: false, help: "Display profile times after running.");
   parser.addFlag("follow-links",
       negatable: false,
       help: "Follow links to files and directories.\n"
@@ -111,6 +113,10 @@ void main(List<String> args) {
     reporter = OutputReporter.printJson;
   }
 
+  if (argResults["profile"]) {
+    reporter = new ProfileReporter(reporter);
+  }
+
   var pageWidth;
 
   try {
@@ -131,6 +137,10 @@ void main(List<String> args) {
     formatStdin(options, selection);
   } else {
     formatPaths(options, argResults.rest);
+  }
+
+  if (argResults["profile"]) {
+    (reporter as ProfileReporter).showProfile();
   }
 }
 
@@ -160,13 +170,14 @@ void formatStdin(FormatterOptions options, List<int> selection) {
   stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = new DartFormatter(pageWidth: options.pageWidth);
     try {
+      options.reporter.beforeFile(null, "<stdin>");
       var source = new SourceCode(input.toString(),
           uri: "stdin",
           selectionStart: selectionStart,
           selectionLength: selectionLength);
       var output = formatter.formatSource(source);
       options.reporter
-          .showFile(null, "<stdin>", output, changed: source != output);
+          .afterFile(null, "<stdin>", output, changed: source != output);
       return true;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
