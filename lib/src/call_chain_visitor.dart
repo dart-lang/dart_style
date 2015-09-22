@@ -58,7 +58,7 @@ class CallChainVisitor {
       //         .property
       //         .property[0]
       //         .property
-      //         .property;
+      //         .method()[1][2];
       var call = expression;
       while (call is IndexExpression) call = call.target;
 
@@ -85,8 +85,11 @@ class CallChainVisitor {
     //       .length;
     var properties = [];
     if (target is SimpleIdentifier) {
-      properties =
-          calls.takeWhile((call) => call is! MethodInvocation).toList();
+      properties = calls.takeWhile((call) {
+        // Step into index expressions to see what the index is on.
+        while (call is IndexExpression) call = call.target;
+        return call is! MethodInvocation;
+      }).toList();
     }
 
     calls.removeRange(0, properties.length);
@@ -111,6 +114,20 @@ class CallChainVisitor {
     // Try to keep the entire method invocation one line.
     _visitor.builder.startSpan();
 
+    // If a split in the target expression forces the first `.` to split, then
+    // start the rule now so that it surrounds the target.
+    var splitOnTarget = _forcesSplit(_target);
+    var argRule;
+
+    if (splitOnTarget) {
+      if (_properties.length > 1) {
+        argRule = new MultiplePositionalRule(null, 0, 0);
+        _visitor.builder.startLazyRule(argRule);
+      } else if (_calls.isNotEmpty) {
+        _enableRule(lazy: true);
+      }
+    }
+
     _visitor.visit(_target);
 
     // Leading properties split like positional arguments: either not at all,
@@ -119,8 +136,10 @@ class CallChainVisitor {
       _visitor.soloZeroSplit();
       _writeCall(_properties.single);
     } else if (_properties.length > 1) {
-      var argRule = new MultiplePositionalRule(null, 0, 0);
-      _visitor.builder.startRule(argRule);
+      if (!splitOnTarget) {
+        argRule = new MultiplePositionalRule(null, 0, 0);
+        _visitor.builder.startRule(argRule);
+      }
 
       for (var property in _properties) {
         argRule.beforeArgument(_visitor.zeroSplit());
@@ -142,6 +161,68 @@ class CallChainVisitor {
     _endSpan();
 
     if (unnest) _visitor.builder.unnest();
+  }
+
+  /// Returns `true` if the method chain should split if a split occurs inside
+  /// [expression].
+  ///
+  /// In most cases, splitting in a method chain's target forces the chain to
+  /// split too:
+  ///
+  ///      receiver(very, long, argument,
+  ///              list)                    // <-- Split here...
+  ///          .method();                   //     ...forces split here.
+  ///
+  /// However, if the target is a collection or function literal (or an
+  /// argument list ending in one of those), we don't want to split:
+  ///
+  ///      receiver(inner(() {
+  ///        ;
+  ///      }).method();                     // <-- Unsplit.
+  bool _forcesSplit(Expression expression) {
+    // TODO(rnystrom): Other cases we may want to consider handling and
+    // recursing into:
+    // * ParenthesizedExpression.
+    // * The right operand in an infix operator call.
+    // * The body of a `=>` function.
+
+    // Don't split right after a collection literal.
+    if (expression is ListLiteral) return false;
+    if (expression is MapLiteral) return false;
+
+    // Don't split right after a non-empty curly-bodied function.
+    if (expression is FunctionExpression) {
+      var function = expression as FunctionExpression;
+
+      if (function.body is! BlockFunctionBody) return false;
+
+      return (function.body as BlockFunctionBody).block.statements.isEmpty;
+    }
+
+    // If the expression ends in an argument list, base the splitting on the
+    // last argument.
+    var argumentList;
+    if (expression is MethodInvocation) {
+      argumentList = (expression as MethodInvocation).argumentList;
+    } else if (expression is InstanceCreationExpression) {
+      argumentList = (expression as InstanceCreationExpression).argumentList;
+    } else if (expression is FunctionExpressionInvocation) {
+      argumentList = (expression as FunctionExpressionInvocation).argumentList;
+    }
+
+    // Any other kind of expression always splits.
+    if (argumentList == null) return true;
+    if (argumentList.arguments.isEmpty) return true;
+
+    var argument = argumentList.arguments.last;
+    if (argument is NamedExpression) argument = argument.expression;
+
+    // TODO(rnystrom): This logic is similar (but not identical) to
+    // ArgumentListVisitor.hasBlockArguments. They overlap conceptually and
+    // both have their own peculiar heuristics. It would be good to unify and
+    // rationalize them.
+
+    return _forcesSplit(argument);
   }
 
   /// Writes [call], which must be one of the supported expression types.
@@ -238,10 +319,15 @@ class CallChainVisitor {
   }
 
   /// Creates a new method chain [Rule] if one is not already active.
-  void _enableRule() {
+  void _enableRule({bool lazy: false}) {
     if (_ruleEnabled) return;
 
-    _visitor.builder.startRule();
+    if (lazy) {
+      _visitor.builder.startLazyRule();
+    } else {
+      _visitor.builder.startRule();
+    }
+
     _ruleEnabled = true;
   }
 

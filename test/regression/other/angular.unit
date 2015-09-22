@@ -1,0 +1,21 @@
+>>> (indent 4)
+    main() {
+      it('should expose traverse locals', () {
+        expect(parser('a.b').bind({
+          'a': {'b': 6}
+        }, ContextLocals.wrapper)({
+          'a': {'b': 1}
+        }))
+            .toEqual(1);
+      });
+    }
+<<<
+    main() {
+      it('should expose traverse locals', () {
+        expect(parser('a.b').bind({
+          'a': {'b': 6}
+        }, ContextLocals.wrapper)({
+          'a': {'b': 1}
+        })).toEqual(1);
+      });
+    }

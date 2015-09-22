@@ -190,3 +190,78 @@ someReceiverObject
     .property4
     .property5
     .property6;
+>>> index on method call
+someReceiverObject.property1.property2
+        .method3()[0]
+    .property4
+    .property5
+    .property6;
+<<<
+someReceiverObject.property1.property2
+    .method3()[0]
+    .property4
+    .property5
+    .property6;
+>>> target splits more deeply than method chain
+someTargetFunction(argument, argument, argument).method().method();
+<<<
+someTargetFunction(
+        argument, argument, argument)
+    .method()
+    .method();
+>>> splitting the target forces methods to split
+someVeryLongTargetFunction(argument, argument).one().two();
+<<<
+someVeryLongTargetFunction(
+        argument, argument)
+    .one()
+    .two();
+>>> target splits more deeply than property chain
+someTargetFunction(argument, argument, argument).property.property;
+<<<
+someTargetFunction(
+        argument, argument, argument)
+    .property
+    .property;
+>>> splitting the target forces methods to split
+someVeryLongTargetFunction(argument, argument).one.two;
+<<<
+someVeryLongTargetFunction(
+        argument, argument)
+    .one
+    .two;
+>>> do not split on "." when target is list
+[element, element, element, element, element].someLongMethod();
+<<<
+[
+  element,
+  element,
+  element,
+  element,
+  element
+].someLongMethod();
+>>> do not split on "." when target is map
+{"key": "value", "another": "another value"}.someLongMethod();
+<<<
+{
+  "key": "value",
+  "another": "another value"
+}.someLongMethod();
+>>> do not split on "." when target is function literal passed to method
+method(() {;}).someLongMethod();
+<<<
+method(() {
+  ;
+}).someLongMethod();
+>>> do not split on "." when target is function literal passed to constructor
+new Foo(() {;}).someLongMethod();
+<<<
+new Foo(() {
+  ;
+}).someLongMethod();
+>>> do not split on "." when target is function literal passed to function
+(function)(() {;}).someLongMethod();
+<<<
+(function)(() {
+  ;
+}).someLongMethod();
