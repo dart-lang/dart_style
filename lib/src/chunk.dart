@@ -207,9 +207,9 @@ class Chunk extends Selection {
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
   void applySplit(Rule rule, int indent, NestingLevel nesting,
-      {bool flushLeft, bool spaceWhenUnsplit, bool isDouble}) {
+      {bool flushLeft, bool isDouble, bool space}) {
     if (flushLeft == null) flushLeft = false;
-    if (spaceWhenUnsplit == null) spaceWhenUnsplit = false;
+    if (space == null) space = false;
     if (isHardSplit || rule is HardSplitRule) {
       // A hard split always wins.
       _rule = rule;
@@ -223,7 +223,7 @@ class Chunk extends Selection {
     _nesting = nesting;
     _indent = indent;
 
-    _spaceWhenUnsplit = spaceWhenUnsplit;
+    _spaceWhenUnsplit = space;
 
     // Pin down the double state, if given and we haven't already.
     if (_isDouble == null) _isDouble = isDouble;

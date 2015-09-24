@@ -7,36 +7,25 @@ library dart_style.src.nesting_builder;
 import 'nesting_level.dart';
 import 'whitespace.dart';
 
-/// Keeps track of expression nesting while the source code is being visited
-/// and the chunks are being built.
+/// Keeps track of block indentation and expression nesting while the source
+/// code is being visited and the chunks are being built.
+///
+/// This class requires (and verifies) that indentation and nesting are
+/// stratified from each other. Expression nesting is always inside block
+/// indentation, which means it is an error to try to change the block
+/// indentation while any expression nesting is in effect.
 class NestingBuilder {
-  /// The expression nesting levels and block indentation levels.
+  /// The block indentation levels.
   ///
-  /// This is tracked as a stack of [_IndentLevel]s. Each element in the stack
-  /// represents a level of block indentation. It's stored as a stack because
-  /// expressions may contain blocks which in turn contain other expressions.
-  /// The nesting level of the inner expressions are unrelated to the
-  /// surrounding ones. For example:
-  ///
-  ///     outer(invocation(() {
-  ///       inner(lambda());
-  ///     }));
-  ///
-  /// When writing `inner(lambda())`, we need to track its nesting level. At
-  /// the same time, when the lambda is done, we need to return to the nesting
-  /// level of `outer(invocation(...`.
-  // TODO(rnystrom): I think this is no longer true now that blocks are handled
-  // as separate nested chunks. Once cascades use expression nesting, we may
-  // be able to just store a single nesting depth in NestingBuilder.
-  ///
-  /// Has an implicit entry for top-most expression nesting outside of any
-  /// block for things like wrapped directives.
-  final List<_IndentLevel> _stack = [new _IndentLevel(0)];
+  /// This is tracked as a stack of numbers, each of which is the total number
+  /// of spaces of block indentation. We only store the stack of previous
+  /// levels as a convenience to the caller: it spares you from having to pass
+  /// the unindent amount to [unindent()].
+  final List<int> _stack = [0];
 
-  /// When not `null`, the nesting level of the current innermost block after
-  /// the next token is written.
+  /// When not `null`, the expression nesting after the next token is written.
   ///
-  /// When the nesting level is increased, we don't want it to take effect until
+  /// When the nesting is increased, we don't want it to take effect until
   /// after at least one token has been written. That ensures that comments
   /// appearing before the first token are correctly indented. For example, a
   /// binary operator expression increases the nesting before the first operand
@@ -51,24 +40,35 @@ class NestingBuilder {
   /// would incorrectly get indented because the line comment adds a split which
   /// would take the nesting level of the binary operator into account even
   /// though we haven't written any of its tokens yet.
+  ///
+  /// Likewise, when nesting is decreased, we may want to defer that until
+  /// we've written the next token to handle uncommon cases like:
+  ///
+  ///     do // comment
+  ///         {
+  ///       ...
+  ///     }
+  ///
+  /// Here, if we discard the expression nesting before we reach the "{", then
+  /// it won't get indented as it should.
   NestingLevel _pendingNesting;
 
   /// The current number of characters of block indentation.
-  int get indentation => _stack.last.indent;
+  int get indentation => _stack.last;
 
-  /// The nesting depth of the current inner-most block.
-  NestingLevel get nesting => _stack.last.nesting;
+  /// The current nesting, ignoring any pending nesting.
+  NestingLevel get nesting => _nesting;
+  NestingLevel _nesting = new NestingLevel();
 
-  /// The nesting depth of the current inner-most block, including any pending
-  /// nesting.
+  /// The current nesting, including any pending nesting.
   NestingLevel get currentNesting =>
-      _pendingNesting != null ? _pendingNesting : _stack.last.nesting;
+      _pendingNesting != null ? _pendingNesting : _nesting;
 
   /// The top "nesting level" that represents no expression nesting for the
   /// current block.
   NestingLevel get blockNesting {
     // Walk the nesting levels until we bottom out.
-    var result = nesting;
+    var result = _nesting;
     while (result.parent != null) {
       result = result.parent;
     }
@@ -81,19 +81,30 @@ class NestingBuilder {
   void indent([int spaces]) {
     if (spaces == null) spaces = Indent.block;
 
+    // Indentation should only change outside of nesting.
     assert(_pendingNesting == null);
+    assert(_nesting.indent == 0);
 
-    _stack.add(new _IndentLevel(_stack.last.indent + spaces));
+    _stack.add(_stack.last + spaces);
   }
 
   /// Discards the most recent indentation level.
   void unindent() {
+    // Indentation should only change outside of nesting.
     assert(_pendingNesting == null);
+    assert(_nesting.indent == 0);
+
+    // If this fails, an unindent() call did not have a preceding indent() call.
+    assert(_stack.isNotEmpty);
+
     _stack.removeLast();
   }
 
   /// Begins a new expression nesting level [indent] deeper than the current
   /// one if it splits.
+  ///
+  /// Expressions that are more nested will get increased indentation when split
+  /// if the previous line has a lower level of nesting.
   ///
   /// If [indent] is omitted, defaults to [Indent.expression].
   void nest([int indent]) {
@@ -102,46 +113,27 @@ class NestingBuilder {
     if (_pendingNesting != null) {
       _pendingNesting = _pendingNesting.nest(indent);
     } else {
-      _pendingNesting = nesting.nest(indent);
+      _pendingNesting = _nesting.nest(indent);
     }
   }
 
   /// Discards the most recent level of expression nesting.
-  ///
-  /// Expressions that are more nested will get increased indentation when split
-  /// if the previous line has a lower level of nesting.
   void unnest() {
-    // By the time the nesting is done, it should have emitted some text and
-    // not be pending anymore.
-    assert(_pendingNesting == null);
+    if (_pendingNesting != null) {
+      _pendingNesting = _pendingNesting.parent;
+    } else {
+      _pendingNesting = _nesting.parent;
+    }
 
-    _setNesting(nesting.parent);
+    // If this fails, an unnest() call did not have a preceding nest() call.
+    assert(_pendingNesting != null);
   }
 
   /// Applies any pending nesting now that we are ready for it to take effect.
   void commitNesting() {
     if (_pendingNesting == null) return;
 
-    _setNesting(_pendingNesting);
+    _nesting = _pendingNesting;
     _pendingNesting = null;
   }
-
-  /// Sets the nesting level of the innermost block to [level].
-  void _setNesting(NestingLevel level) {
-    _stack.last.nesting = level;
-  }
-}
-
-/// A level of block nesting.
-///
-/// This represents indentation changes that typically occur at statement or
-/// block boundaries.
-class _IndentLevel {
-  /// The number of spaces of indentation at this level.
-  final int indent;
-
-  /// The current expression nesting in this indentation level.
-  NestingLevel nesting = new NestingLevel();
-
-  _IndentLevel(this.indent);
 }

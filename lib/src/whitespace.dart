@@ -17,18 +17,6 @@ class Indent {
 
   /// The ":" on a wrapped constructor initialization list.
   static const constructorInitializer = 4;
-
-  /// The indentation for subsequent variables when a for loop defines multiple
-  /// variables that wrap, like:
-  ///
-  ///     for (var a = initializer,
-  ///             b = another,
-  ///             c = third;
-  ///         a + b + c < 100;
-  ///         a++) {
-  ///       ...
-  ///     }
-  static const loopVariable = 8;
 }
 
 /// The kind of pending whitespace that has been "written", but not actually

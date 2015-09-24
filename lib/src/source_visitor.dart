@@ -609,18 +609,22 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitDoStatement(DoStatement node) {
-    _simpleStatement(node, () {
-      token(node.doKeyword);
-      space();
-      visit(node.body);
-      space();
-      token(node.whileKeyword);
-      space();
-      token(node.leftParenthesis);
-      soloZeroSplit();
-      visit(node.condition);
-      token(node.rightParenthesis);
-    });
+    builder.nestExpression();
+    token(node.doKeyword);
+    space();
+    builder.unnest(now: false);
+    visit(node.body);
+
+    builder.nestExpression();
+    space();
+    token(node.whileKeyword);
+    space();
+    token(node.leftParenthesis);
+    soloZeroSplit();
+    visit(node.condition);
+    token(node.rightParenthesis);
+    token(node.semicolon);
+    builder.unnest();
   }
 
   visitDoubleLiteral(DoubleLiteral node) {
@@ -745,8 +749,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.iterable);
     token(node.rightParenthesis);
     space();
+    builder.unnest(now: false);
     visit(node.body);
-    builder.unnest();
   }
 
   visitFormalParameterList(FormalParameterList node) {
@@ -847,9 +851,9 @@ class SourceVisitor implements AstVisitor {
     if (node.initialization != null) {
       visit(node.initialization);
     } else if (node.variables != null) {
-      // Indent split variables more so they aren't at the same level
+      // Nest split variables more so they aren't at the same level
       // as the rest of the loop clauses.
-      builder.indent(Indent.loopVariable);
+      builder.nestExpression();
 
       // Allow the variables to stay unsplit even if the clauses split.
       builder.startRule();
@@ -864,7 +868,7 @@ class SourceVisitor implements AstVisitor {
       });
 
       builder.endRule();
-      builder.unindent();
+      builder.unnest();
     }
 
     token(node.leftSeparator);
@@ -956,10 +960,10 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
+    builder.unnest(now: false);
 
     space();
     visit(node.thenStatement);
-    builder.unnest();
 
     if (node.elseStatement != null) {
       if (node.thenStatement is Block) {
@@ -1366,6 +1370,7 @@ class SourceVisitor implements AstVisitor {
     token(node.rightParenthesis);
     space();
     token(node.leftBracket);
+    builder.unnest();
     builder.indent();
     newline();
 
@@ -1374,7 +1379,6 @@ class SourceVisitor implements AstVisitor {
       builder.unindent();
       newline();
     });
-    builder.unnest();
   }
 
   visitSymbolLiteral(SymbolLiteral node) {
@@ -1472,9 +1476,9 @@ class SourceVisitor implements AstVisitor {
     soloZeroSplit();
     visit(node.condition);
     token(node.rightParenthesis);
+    builder.unnest(now: false);
     if (node.body is! EmptyStatement) space();
     visit(node.body);
-    builder.unnest();
   }
 
   visitWithClause(WithClause node) {
@@ -1625,11 +1629,10 @@ class SourceVisitor implements AstVisitor {
 
     if (parameters != null) {
       builder.nestExpression();
-
       visit(parameters);
-      if (afterParameters != null) afterParameters();
-
       builder.unnest();
+
+      if (afterParameters != null) afterParameters();
     }
 
     visit(body);
@@ -1721,7 +1724,7 @@ class SourceVisitor implements AstVisitor {
             soloSplit();
           }
         } else {
-          builder.blockSplit(space: true);
+          builder.split(nest: false, space: true);
         }
       }
 
@@ -1863,14 +1866,14 @@ class SourceVisitor implements AstVisitor {
 
     // Split after the bracket.
     builder.startRule();
-    builder.blockSplit(space: space, isDouble: false);
+    builder.split(isDouble: false, nest: false, space: space);
 
     body();
 
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       builder.unindent();
-      builder.blockSplit(space: space);
+      builder.split(nest: false, space: space);
     });
 
     builder.endRule();

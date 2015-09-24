@@ -60,7 +60,8 @@ class DartFormatter {
     }
 
     return formatSource(
-        new SourceCode(source, uri: uri, isCompilationUnit: true)).text;
+            new SourceCode(source, uri: uri, isCompilationUnit: true))
+        .text;
   }
 
   /// Formats the given [source] string containing a single Dart statement.
