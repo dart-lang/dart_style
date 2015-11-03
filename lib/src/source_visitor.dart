@@ -1199,6 +1199,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitPartDirective(PartDirective node) {
+    visitDeclarationMetadata(node.metadata);
+
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1207,6 +1209,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitPartOfDirective(PartOfDirective node) {
+    visitDeclarationMetadata(node.metadata);
+
     _simpleStatement(node, () {
       token(node.keyword);
       space();

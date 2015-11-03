@@ -6,6 +6,7 @@
 * Don't collapse states that differ by unbound rule constraints (#424).
 * Split the first `.` in a method chain if the target splits (#255).
 * Handle index expressions in the middle of call chains.
+* Don't drop metadata on part directives (#443).
 
 # 0.2.0
 
