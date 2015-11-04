@@ -748,9 +748,9 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.iterable);
     token(node.rightParenthesis);
-    space();
     builder.unnest(now: false);
-    visit(node.body);
+
+    _visitLoopBody(node.body);
   }
 
   visitFormalParameterList(FormalParameterList node) {
@@ -894,9 +894,7 @@ class SourceVisitor implements AstVisitor {
     builder.endRule();
     builder.unnest();
 
-    // The body.
-    if (node.body is! EmptyStatement) space();
-    visit(node.body);
+    _visitLoopBody(node.body);
   }
 
   visitFunctionDeclaration(FunctionDeclaration node) {
@@ -1505,8 +1503,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.condition);
     token(node.rightParenthesis);
     builder.unnest(now: false);
-    if (node.body is! EmptyStatement) space();
-    visit(node.body);
+
+    _visitLoopBody(node.body);
   }
 
   visitWithClause(WithClause node) {
@@ -1666,6 +1664,29 @@ class SourceVisitor implements AstVisitor {
     visit(body);
 
     if (body is ExpressionFunctionBody) builder.unnest();
+  }
+
+  /// Visits the body statement of a `for` or `for in` loop.
+  void _visitLoopBody(Statement body) {
+    if (body is EmptyStatement) {
+      // No space before the ";".
+      visit(body);
+    } else if (body is Block) {
+      space();
+      visit(body);
+    } else {
+      // Allow splitting in an expression-bodied for even though it's against
+      // the style guide. Since we can't fix the code itself to follow the
+      // style guide, we should at least format it as well as we can.
+      builder.nestExpression(indent: 2, now: true);
+      builder.startRule();
+
+      split();
+      visit(body);
+
+      builder.endRule();
+      builder.unnest();
+    }
   }
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded

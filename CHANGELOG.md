@@ -8,6 +8,7 @@
 * Handle index expressions in the middle of call chains.
 * Don't drop metadata on part directives (#443).
 * Handle `if` statements without curly bodies better (#448).
+* Handle loop statements without curly bodies better (#449).
 
 # 0.2.0
 
