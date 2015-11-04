@@ -52,4 +52,6 @@ class TypeArgumentRule extends Rule {
     // to try to keep as much on the first line as possible.
     return chunk == _arguments[_arguments.length - value];
   }
+
+  String toString() => "TypeArg${super.toString()}";
 }

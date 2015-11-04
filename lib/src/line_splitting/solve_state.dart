@@ -344,6 +344,9 @@ class SolveState {
     // one split occurs in it.
     var splitSpans = new Set();
 
+    // The nesting level of the chunk that ended the previous line.
+    var previousNesting;
+
     for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
 
@@ -362,6 +365,32 @@ class SolveState {
           cost +=
               _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
         }
+
+        // Do not allow sequential lines to have the same indentation but for
+        // different reasons. In other words, don't allow different expressions
+        // to claim the same nesting level on subsequent lines.
+        //
+        // A contrived example would be:
+        //
+        //     function(inner(
+        //         argument), second(
+        //         another);
+        //
+        // For the most part, we prevent this by the constraints on splits.
+        // For example, the above can't happen because the split before
+        // "argument", forces the split before "second".
+        //
+        // But there are a couple of squirrely cases where it's hard to prevent
+        // by construction. Instead, this outlaws it by penalizing it very
+        // heavily if it happens to get this far.
+        if (previousNesting != null &&
+            chunk.nesting.totalUsedIndent != 0 &&
+            chunk.nesting.totalUsedIndent == previousNesting.totalUsedIndent &&
+            !identical(chunk.nesting, previousNesting)) {
+          _overflowChars += 10000;
+        }
+
+        previousNesting = chunk.nesting;
 
         // Start the new line.
         length = _splits.getColumn(i);

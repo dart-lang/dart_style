@@ -208,7 +208,13 @@ void testDirectory(String name) {
           var actualText = actual.text;
           if (!isCompilationUnit) actualText += "\n";
 
-          expect(actualText, equals(expected.text));
+          // Fail with an explicit message because it's easier to read than
+          // the matcher output.
+          if (actualText != expected.text) {
+            fail("Formatting did not match expectation. Expected:\n"
+                "${expected.text}\nActual:\n$actualText");
+          }
+
           expect(actual.selectionStart, equals(expected.selectionStart));
           expect(actual.selectionLength, equals(expected.selectionLength));
         });

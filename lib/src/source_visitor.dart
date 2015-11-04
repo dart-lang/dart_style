@@ -1476,8 +1476,14 @@ class SourceVisitor implements AstVisitor {
 
   visitVariableDeclarationList(VariableDeclarationList node) {
     visitDeclarationMetadata(node.metadata);
+
+    // Allow but try to avoid splitting between the type and name.
+    builder.startSpan();
+
     modifier(node.keyword);
-    visit(node.type, after: space);
+    visit(node.type, after: soloSplit);
+
+    builder.endSpan();
 
     // Use a single rule for all of the variables. If there are multiple
     // declarations, we will try to keep them all on one line. If that isn't
