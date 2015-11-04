@@ -962,8 +962,33 @@ class SourceVisitor implements AstVisitor {
     token(node.rightParenthesis);
     builder.unnest(now: false);
 
-    space();
-    visit(node.thenStatement);
+    visitClause(Statement clause) {
+      if (clause is Block || clause is IfStatement) {
+        space();
+        visit(clause);
+      } else {
+        // Allow splitting in an expression-bodied if even though it's against
+        // the style guide. Since we can't fix the code itself to follow the
+        // style guide, we should at least format it as well as we can.
+        builder.nestExpression(indent: 2, now: true);
+        builder.startRule();
+
+        // If there is an else clause, always split before both the then and
+        // else statements.
+        if (node.elseStatement != null) {
+          builder.writeWhitespace(Whitespace.nestedNewline);
+        } else {
+          split();
+        }
+
+        visit(clause);
+
+        builder.endRule();
+        builder.unnest();
+      }
+    }
+
+    visitClause(node.thenStatement);
 
     if (node.elseStatement != null) {
       if (node.thenStatement is Block) {
@@ -976,8 +1001,7 @@ class SourceVisitor implements AstVisitor {
       }
 
       token(node.elseKeyword);
-      space();
-      visit(node.elseStatement);
+      visitClause(node.elseStatement);
     }
   }
 

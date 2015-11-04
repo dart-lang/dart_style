@@ -7,6 +7,7 @@
 * Split the first `.` in a method chain if the target splits (#255).
 * Handle index expressions in the middle of call chains.
 * Don't drop metadata on part directives (#443).
+* Handle `if` statements without curly bodies better (#448).
 
 # 0.2.0
 
