@@ -670,7 +670,7 @@ class ChunkBuilder {
   /// Appends a hard split with the current indentation and nesting (the latter
   /// only if [nest] is `true`).
   ///
-  /// If [double] is `true` or `false`, forces a since or double line to be
+  /// If [double] is `true` or `false`, forces a single or double line to be
   /// output. Otherwise, it is left indeterminate.
   ///
   /// If [flushLeft] is `true`, then the split will always cause the next line
