@@ -151,8 +151,8 @@ class ArgumentListVisitor {
     if (_isSingle) _visitor.builder.endSpan();
   }
 
-  /// Returns `true` if [expression] is a [FunctionExpression] with a block
-  /// body.
+  /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
+  /// block body.
   static bool _isBlockFunction(Expression expression) {
     if (expression is NamedExpression) {
       expression = (expression as NamedExpression).expression;
@@ -166,10 +166,17 @@ class ArgumentListVisitor {
       return _isBlockFunction(expression.argumentList.arguments.single);
     }
 
-    // Curly body functions are.
+    // Must be a function.
     if (expression is! FunctionExpression) return false;
+
+    // With a curly body.
     var function = expression as FunctionExpression;
-    return function.body is BlockFunctionBody;
+    if (function.body is! BlockFunctionBody) return false;
+
+    // That isn't empty.
+    var body = function.body as BlockFunctionBody;
+    return body.block.statements.isNotEmpty ||
+        body.block.rightBracket.precedingComments != null;
   }
 
   /// Returns `true` if [expression] is a valid method invocation target for

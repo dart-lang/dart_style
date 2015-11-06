@@ -208,6 +208,14 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitBlock(Block node) {
+    // Don't allow splitting in an empty block.
+    if (node.statements.isEmpty &&
+        node.rightBracket.precedingComments == null) {
+      token(node.leftBracket);
+      token(node.rightBracket);
+      return;
+    }
+
     // For a block that is not a function body, just bump the indentation and
     // keep it in the current block.
     if (node.parent is! BlockFunctionBody) {
