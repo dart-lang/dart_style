@@ -823,6 +823,9 @@ class SourceVisitor implements AstVisitor {
 
       builder.startRule(namedRule);
 
+      // Make sure multi-line default values are indented.
+      builder.startBlockArgumentNesting();
+
       namedRule
           .beforeArguments(builder.split(space: requiredParams.isNotEmpty));
 
@@ -837,6 +840,7 @@ class SourceVisitor implements AstVisitor {
         if (param != optionalParams.last) split();
       }
 
+      builder.endBlockArgumentNesting();
       builder.endRule();
 
       // "]" or "}" for optional parameters.
