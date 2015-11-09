@@ -131,7 +131,7 @@ class LineWriter {
         _buffer.toString(), totalCost, _selectionStart, _selectionEnd);
   }
 
-  /// Takes the first [length] of the chunks with leading [indent], removes
+  /// Takes the chunks from [start] to [end] with leading [indent], removes
   /// them, and runs the [LineSplitter] on them.
   int _completeLine(int newlines, int indent, int start, int end,
       {bool flushLeft}) {
