@@ -25,6 +25,16 @@ class SolveState {
   final LineSplitter _splitter;
   final RuleSet _ruleValues;
 
+  /// The set of [Rule]s that are bound by [_ruleValues].
+  ///
+  /// Cached by [_ensureConstraints] for use by [_ensureUnboundConstraints].
+  Set<Rule> _boundRules;
+
+  /// The set of [Rule]s that are not bound by [_ruleValues].
+  ///
+  /// Cached by [_ensureConstraints] for use by [_ensureUnboundConstraints].
+  Set<Rule> _unboundRules;
+
   /// The unbound rules in this state that can be bound to produce new more
   /// refined states.
   ///
@@ -249,6 +259,8 @@ class SolveState {
       if (_constraints[rule] != other._constraints[rule]) return false;
     }
 
+    _ensureUnboundConstraints();
+    other._ensureUnboundConstraints();
     if (_unboundConstraints.length != other._unboundConstraints.length) {
       return false;
     }
@@ -427,10 +439,6 @@ class SolveState {
 
     var added = false;
     for (var constrained in rule.allConstrainedRules) {
-      // The rule may constrain some other rule that was already hardened and
-      // discarded. In that case, we can ignore it.
-      if (constrained.index == null) continue;
-
       if (_ruleValues.contains(constrained)) continue;
 
       _liveRules.add(constrained);
@@ -482,21 +490,23 @@ class SolveState {
   void _ensureConstraints() {
     if (_constraints != null) return;
 
-    var unboundRules = [];
-    var boundRules = [];
+    _unboundRules = new Set();
+    _boundRules = new Set();
 
     for (var rule in _splitter.rules) {
       if (_ruleValues.contains(rule)) {
-        boundRules.add(rule);
+        _boundRules.add(rule);
       } else {
-        unboundRules.add(rule);
+        _unboundRules.add(rule);
       }
     }
 
     _constraints = {};
 
-    for (var unbound in unboundRules) {
-      for (var bound in boundRules) {
+    for (var bound in _boundRules) {
+      for (var unbound in bound.constrainedRules) {
+        if (!_unboundRules.contains(unbound)) continue;
+
         var value = _ruleValues.getValue(bound);
         var constraint = bound.constrain(value, unbound);
         if (constraint != null) {
@@ -504,15 +514,31 @@ class SolveState {
         }
       }
     }
+  }
+
+  /// Lazily initializes the [_unboundConstraints], which is needed to compare
+  /// two states for overlap.
+  ///
+  /// We do this lazily because the calculation is a bit slow, and is only
+  /// needed when we have two states with the same score.
+  void _ensureUnboundConstraints() {
+    if (_unboundConstraints != null) return;
+
+    // _ensureConstraints should be called first which initializes these.
+    assert(_boundRules != null);
+    assert(_unboundRules != null);
 
     _unboundConstraints = {};
 
-    for (var unbound in unboundRules) {
+    for (var unbound in _unboundRules) {
       var disallowedValues;
 
-      for (var value = 0; value < unbound.numValues; value++) {
-        for (var j = 0; j < boundRules.length; j++) {
-          var bound = boundRules[j];
+      for (var bound in unbound.constrainedRules) {
+        if (!_boundRules.contains(bound)) continue;
+
+        var boundValue = _ruleValues.getValue(bound);
+
+        for (var value = 0; value < unbound.numValues; value++) {
           var constraint = unbound.constrain(value, bound);
 
           // If the unbound rule doesn't place any constraint on this bound
@@ -523,7 +549,6 @@ class SolveState {
           // we don't need to track it. This way, two states that have the
           // same bound value, one of which has a satisfied constraint, are
           // still allowed to overlap.
-          var boundValue = _ruleValues.getValue(bound);
           if (constraint == boundValue) continue;
           if (constraint == -1 && boundValue != 0) continue;
 

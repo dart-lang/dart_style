@@ -41,7 +41,6 @@ abstract class Rule extends FastHash {
   ///
   /// This contains all direct as well as transitive relationships. If A
   /// contains B which contains C, C's outerRules contains both B and A.
-  Iterable<Rule> get outerRules => _outerRules;
   final Set<Rule> _outerRules = new Set<Rule>();
 
   /// Adds [inner] as an inner rule of this rule if it cares about inner rules.
@@ -78,8 +77,43 @@ abstract class Rule extends FastHash {
     return null;
   }
 
+  /// A protected method for subclasses to add the rules that they constrain
+  /// to [rules].
+  ///
+  /// Called by [Rule] the first time [constrainedRules] is accessed.
+  void addConstrainedRules(Set<Rule> rules) {}
+
+  /// Discards constraints on any rule that doesn't have an index.
+  ///
+  /// This is called by [LineSplitter] after it has indexed all of the in-use
+  /// rules. A rule may end up with a constraint on a rule that's no longer
+  /// used by any chunk. This can happen if the rule gets hardened, or if it
+  /// simply never got used by a chunk. For example, a rule for splitting an
+  /// empty list of metadata annotations.
+  ///
+  /// This removes all of those.
+  void forgetUnusedRules() {
+    _outerRules.retainWhere((rule) => rule.index != null);
+
+    // Clear the cached ones too.
+    _constrainedRules = null;
+    _allConstrainedRules = null;
+  }
+
   /// The other [Rule]s that this rule places immediate constraints on.
-  Iterable<Rule> get constrainedRules => _outerRules;
+  Set<Rule> get constrainedRules {
+    // Lazy initialize this on first use. Note: Assumes this is only called
+    // after the chunks have been written and any constraints have been wired
+    // up.
+    if (_constrainedRules == null) {
+      _constrainedRules = _outerRules.toSet();
+      addConstrainedRules(_constrainedRules);
+    }
+
+    return _constrainedRules;
+  }
+
+  Set<Rule> _constrainedRules;
 
   /// The transitive closure of all of the rules this rule places constraints
   /// on, directly or indirectly, including itself.

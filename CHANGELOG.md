@@ -12,6 +12,7 @@
 * Indent multi-line collections in default values (#441).
 * Handle `if` statements without curly bodies better (#448).
 * Handle loop statements without curly bodies better (#449).
+* Optimize splitting lines with many rules.
 
 # 0.2.0
 

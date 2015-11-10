@@ -254,8 +254,8 @@ class Chunk extends Selection {
     } else {
       parts.add(rule.toString());
 
-      if (_rule.outerRules.isNotEmpty) {
-        parts.add("-> ${_rule.outerRules.join(' ')}");
+      if (_rule.constrainedRules.isNotEmpty) {
+        parts.add("-> ${_rule.constrainedRules.join(' ')}");
       }
     }
 

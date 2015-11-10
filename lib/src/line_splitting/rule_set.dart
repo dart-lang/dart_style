@@ -59,9 +59,7 @@ class RuleSet {
     _values[rule.index] = value;
 
     // Test this rule against the other rules being bound.
-    for (var other in rules) {
-      if (rule == other) continue;
-
+    for (var other in rule.constrainedRules) {
       var otherValue = _values[other.index];
       var constraint = rule.constrain(value, other);
 

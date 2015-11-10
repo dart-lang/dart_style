@@ -118,8 +118,10 @@ void dumpChunks(int start, List<Chunk> chunks) {
     if (chunk.rule != null) {
       row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
 
-      var outerRules = chunk.rule.outerRules.toSet().intersection(rules);
-      writeIf(outerRules.isNotEmpty, () => "-> ${outerRules.join(" ")}");
+      var constrainedRules =
+          chunk.rule.constrainedRules.toSet().intersection(rules);
+      writeIf(constrainedRules.isNotEmpty,
+          () => "-> ${constrainedRules.join(" ")}");
     } else {
       row.add("(no rule)");
 

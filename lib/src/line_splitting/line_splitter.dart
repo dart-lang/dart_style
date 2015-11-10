@@ -145,6 +145,12 @@ class LineSplitter {
     for (var i = 0; i < rules.length; i++) {
       rules[i].index = i;
     }
+
+    // Now that every used rule has an index, tell the rules to discard any
+    // constraints on unindexed rules.
+    for (var rule in rules) {
+      rule.forgetUnusedRules();
+    }
   }
 
   /// Determine the best way to split the chunks into lines that fit in the

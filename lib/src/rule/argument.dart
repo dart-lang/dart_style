@@ -10,7 +10,7 @@ import 'rule.dart';
 /// Base class for a rule that handles argument or parameter lists.
 abstract class ArgumentRule extends Rule {
   /// The rule used to split collections in the argument list, if any.
-  final Rule _collectionRule;
+  Rule _collectionRule;
 
   /// If true, then inner rules that are written will force this rule to split.
   ///
@@ -27,13 +27,15 @@ abstract class ArgumentRule extends Rule {
   /// collections in the list.
   ArgumentRule(this._collectionRule);
 
-  Iterable<Rule> get constrainedRules {
-    var rules = super.constrainedRules;
-    if (_collectionRule != null) {
-      rules = rules.toList()..add(_collectionRule);
-    }
+  void addConstrainedRules(Set<Rule> rules) {
+    if (_collectionRule != null) rules.add(_collectionRule);
+  }
 
-    return rules;
+  void forgetUnusedRules() {
+    super.forgetUnusedRules();
+    if (_collectionRule != null && _collectionRule.index == null) {
+      _collectionRule = null;
+    }
   }
 
   /// Called before a collection argument is written.
@@ -68,13 +70,15 @@ abstract class PositionalRule extends ArgumentRule {
   /// arguments in the list.
   PositionalRule(Rule collectionRule) : super(collectionRule);
 
-  Iterable<Rule> get constrainedRules {
-    var rules = super.constrainedRules;
-    if (_namedArgsRule != null) {
-      rules = rules.toList()..add(_namedArgsRule);
-    }
+  void addConstrainedRules(Set<Rule> rules) {
+    if (_namedArgsRule != null) rules.add(_namedArgsRule);
+  }
 
-    return rules;
+  void forgetUnusedRules() {
+    super.forgetUnusedRules();
+    if (_namedArgsRule != null && _namedArgsRule.index == null) {
+      _namedArgsRule = null;
+    }
   }
 
   /// Remembers [chunk] as containing the split that occurs right before an
@@ -121,8 +125,6 @@ class SinglePositionalRule extends PositionalRule {
   /// If there is only a single non-collection argument, allow it to split
   /// internally without forcing a split before the argument.
   final bool splitsOnInnerRules;
-
-  bool hack = false;
 
   /// Creates a new rule for a positional argument list.
   ///
