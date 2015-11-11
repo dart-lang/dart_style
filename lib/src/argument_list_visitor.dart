@@ -37,24 +37,12 @@ class ArgumentListVisitor {
       _node.arguments.length == 1 && _node.arguments.single is! NamedExpression;
 
   /// Whether this argument list has any collection or block function arguments.
+  // TODO(rnystrom): Returning true based on collections is non-optimal. It
+  // forces a method chain to break into two but the result collection may not
+  // actually split which can lead to a method chain that's allowed to break
+  // where it shouldn't.
   bool get hasBlockArguments =>
       _arguments._collections.isNotEmpty || _functions != null;
-
-  /// Whether this argument list should force the containing method chain to
-  /// add a level of block nesting.
-  bool get nestMethodArguments {
-    // If there are block arguments, we don't want the method to force them to
-    // the right.
-    if (hasBlockArguments) return false;
-
-    // Corner case: If there is just a single argument, don't bump the nesting.
-    // This lets us avoid spurious indentation in cases like:
-    //
-    //     object.method(function(() {
-    //       body;
-    //     }));
-    return _node.arguments.length > 1;
-  }
 
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
     // Look for a single contiguous range of block function arguments.
@@ -161,6 +149,12 @@ class ArgumentListVisitor {
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
       if (!_isValidWrappingTarget(expression.target)) return false;
+      if (expression.argumentList.arguments.length != 1) return false;
+
+      return _isBlockFunction(expression.argumentList.arguments.single);
+    }
+
+    if (expression is InstanceCreationExpression) {
       if (expression.argumentList.arguments.length != 1) return false;
 
       return _isBlockFunction(expression.argumentList.arguments.single);

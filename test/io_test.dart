@@ -156,8 +156,8 @@ void main() {
         processDirectory(overwriteOptions, dir);
       }, 'Run formatter.');
 
-      d.dir('code', [d.file('linked_file.dart', unformattedSource),])
-          .validate();
+      d.dir(
+          'code', [d.file('linked_file.dart', unformattedSource),]).validate();
     });
 
     test("follows file symlinks when 'followLinks' is true", () {

@@ -32,6 +32,48 @@ class CallChainVisitor {
   /// order that they appear in the source.
   final List<Expression> _calls;
 
+  /// The method calls containing block function literals that break the method
+  /// chain and escape its indentation.
+  ///
+  ///     receiver.a().b().c(() {
+  ///       ;
+  ///     }).d(() {
+  ///       ;
+  ///     }).e();
+  ///
+  /// Here, it will contain `c` and `d`.
+  ///
+  /// The block calls must be contiguous and must be a suffix of the list of
+  /// calls (except for the one allowed hanging call). Otherwise, none of them
+  /// are treated as block calls:
+  ///
+  ///     receiver
+  ///         .a()
+  ///         .b(() {
+  ///           ;
+  ///         })
+  ///         .c(() {
+  ///           ;
+  ///         })
+  ///         .d()
+  ///         .e();
+  final List<Expression> _blockCalls;
+
+  /// If there is one or more block calls and a single chained expression after
+  /// that, this will be that expression.
+  ///
+  ///     receiver.a().b().c(() {
+  ///       ;
+  ///     }).d(() {
+  ///       ;
+  ///     }).e();
+  ///
+  /// We allow a single hanging call after the blocks because it will never
+  /// need to split before its `.` and this accommodates the common pattern of
+  /// a trailing `toList()` or `toSet()` after a series of higher-order methods
+  /// on an iterable.
+  final Expression _hangingCall;
+
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
 
@@ -94,11 +136,51 @@ class CallChainVisitor {
 
     calls.removeRange(0, properties.length);
 
-    return new CallChainVisitor._(visitor, target, properties, calls);
+    // Separate out the block calls, if there are any.
+    var blockCalls;
+    var hangingCall;
+
+    var inBlockCalls = false;
+    for (var call in calls) {
+      // See if this call is a method call whose arguments are block formatted.
+      var isBlockCall = false;
+      if (call is MethodInvocation) {
+        var args = new ArgumentListVisitor(visitor, call.argumentList);
+        isBlockCall = args.hasBlockArguments;
+      }
+
+      if (isBlockCall) {
+        inBlockCalls = true;
+        if (blockCalls == null) blockCalls = [];
+        blockCalls.add(call);
+      } else if (inBlockCalls) {
+        // We found a non-block call after a block call.
+        if (call == calls.last) {
+          // It's the one allowed hanging one, so it's OK.
+          hangingCall = call;
+          break;
+        }
+
+        // Don't allow any of the calls to be block formatted.
+        blockCalls = null;
+        break;
+      }
+    }
+
+    if (blockCalls != null) {
+      for (var blockCall in blockCalls) calls.remove(blockCall);
+    }
+
+    if (hangingCall != null) {
+      calls.remove(hangingCall);
+    }
+
+    return new CallChainVisitor._(
+        visitor, target, properties, calls, blockCalls, hangingCall);
   }
 
-  CallChainVisitor._(
-      this._visitor, this._target, this._properties, this._calls);
+  CallChainVisitor._(this._visitor, this._target, this._properties, this._calls,
+      this._blockCalls, this._hangingCall);
 
   /// Builds chunks for the call chain.
   ///
@@ -149,12 +231,42 @@ class CallChainVisitor {
       _visitor.builder.endRule();
     }
 
-    // The remaining chain of calls generally split atomically (either all or
-    // none), except that block arguments may split a chain into two parts.
+    // Indent any block arguments in the chain that don't get special formatting
+    // below. Only do this if there is more than one argument to avoid spurious
+    // indentation in cases like:
+    //
+    //     object.method(wrapper(() {
+    //       body;
+    //     });
+    // TODO(rnystrom): Come up with a less arbitrary way to express this?
+    if (_calls.length > 1) _visitor.builder.startBlockArgumentNesting();
+
+    // The chain of calls splits atomically (either all or none). Any block
+    // arguments inside them get indented to line up with the `.`.
     for (var call in _calls) {
       _enableRule();
       _visitor.zeroSplit();
       _writeCall(call);
+    }
+
+    if (_calls.length > 1) _visitor.builder.endBlockArgumentNesting();
+
+    // If there are block calls, end the chain and write those without any
+    // extra indentation.
+    if (_blockCalls != null) {
+      _enableRule();
+      _visitor.zeroSplit();
+      _disableRule();
+
+      for (var blockCall in _blockCalls) {
+        _writeBlockCall(blockCall);
+      }
+
+      // If there is a hanging call after the last block, write it without any
+      // split before the ".".
+      if (_hangingCall != null) {
+        _writeCall(_hangingCall);
+      }
     }
 
     _disableRule();
@@ -250,38 +362,15 @@ class CallChainVisitor {
     _visitor.token(invocation.operator);
     _visitor.token(invocation.methodName.token);
 
-    // If a method's argument list includes any block arguments, there's a
-    // good chance it will split. Treat the chains before and after that as
-    // separate unrelated method chains.
-    //
-    // This is kind of a hack since it treats methods before and after a
-    // collection literal argument differently even when the collection
-    // doesn't split, but it works out OK in practice.
-    //
-    // Doing something more precise would require setting up a bunch of complex
-    // constraints between various rules. You'd basically have to say "if the
-    // block argument splits then allow the chain after it to split
-    // independently, otherwise force it to follow the previous chain".
-    var args = new ArgumentListVisitor(_visitor, invocation.argumentList);
-
-    // Stop the rule after the last call, but before its arguments. This
-    // allows unsplit chains where the last argument list wraps, like:
+    // If we don't have any block calls, stop the rule after the last method
+    // call name, but before its arguments. This allows unsplit chains where
+    // the last argument list wraps, like:
     //
     //     foo().bar().baz(
     //         argument, list);
-    //
-    // Also stop the rule to split the argument list at any call with
-    // block arguments. This makes for nicer chains of higher-order method
-    // calls, like:
-    //
-    //     items.map((element) {
-    //       ...
-    //     }).where((element) {
-    //       ...
-    //     });
-    if (invocation == _calls.last || args.hasBlockArguments) _disableRule();
-
-    if (args.nestMethodArguments) _visitor.builder.startBlockArgumentNesting();
+    if (_blockCalls == null && _calls.isNotEmpty && invocation == _calls.last) {
+      _disableRule();
+    }
 
     // For a single method call on an identifier, stop the span before the
     // arguments to make it easier to keep the call name with the target. In
@@ -301,13 +390,18 @@ class CallChainVisitor {
     // there looks really odd.
     if (_properties.isEmpty &&
         _calls.length == 1 &&
+        _blockCalls == null &&
         _target is SimpleIdentifier) {
       _endSpan();
     }
 
     _visitor.visit(invocation.argumentList);
+  }
 
-    if (args.nestMethodArguments) _visitor.builder.endBlockArgumentNesting();
+  void _writeBlockCall(MethodInvocation invocation) {
+    _visitor.token(invocation.operator);
+    _visitor.token(invocation.methodName.token);
+    _visitor.visit(invocation.argumentList);
   }
 
   /// If a [Rule] for the method chain is currently active, ends it.
