@@ -292,7 +292,7 @@ class NamedRule extends ArgumentRule {
 
   int get numValues => 3;
 
-  NamedRule(Rule collectionRule) : super(collectionRule);
+  NamedRule([Rule collectionRule]) : super(collectionRule);
 
   void beforeArguments(Chunk chunk) {
     assert(_first == null);

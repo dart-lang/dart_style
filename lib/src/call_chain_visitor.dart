@@ -80,6 +80,10 @@ class CallChainVisitor {
   /// Whether or not the span wrapping the call chain is currently active.
   bool _spanEnded = false;
 
+  /// After the properties are visited (if there are any), this will be the
+  /// rule used to split between them.
+  PositionalRule _propertyRule;
+
   /// Creates a new call chain visitor for [visitor] starting with [node].
   ///
   /// The [node] is the outermost expression containing the chained "."
@@ -199,12 +203,11 @@ class CallChainVisitor {
     // If a split in the target expression forces the first `.` to split, then
     // start the rule now so that it surrounds the target.
     var splitOnTarget = _forcesSplit(_target);
-    var argRule;
 
     if (splitOnTarget) {
       if (_properties.length > 1) {
-        argRule = new MultiplePositionalRule(null, 0, 0);
-        _visitor.builder.startLazyRule(argRule);
+        _propertyRule = new MultiplePositionalRule(null, 0, 0);
+        _visitor.builder.startLazyRule(_propertyRule);
       } else if (_calls.isNotEmpty) {
         _enableRule(lazy: true);
       }
@@ -219,12 +222,12 @@ class CallChainVisitor {
       _writeCall(_properties.single);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
-        argRule = new MultiplePositionalRule(null, 0, 0);
-        _visitor.builder.startRule(argRule);
+        _propertyRule = new MultiplePositionalRule(null, 0, 0);
+        _visitor.builder.startRule(_propertyRule);
       }
 
       for (var property in _properties) {
-        argRule.beforeArgument(_visitor.zeroSplit());
+        _propertyRule.beforeArgument(_visitor.zeroSplit());
         _writeCall(property);
       }
 
@@ -416,10 +419,14 @@ class CallChainVisitor {
   void _enableRule({bool lazy: false}) {
     if (_ruleEnabled) return;
 
+    // If the properties split, force the calls to split too.
+    var rule = new NamedRule();
+    if (_propertyRule != null) _propertyRule.setNamedArgsRule(rule);
+
     if (lazy) {
-      _visitor.builder.startLazyRule();
+      _visitor.builder.startLazyRule(rule);
     } else {
-      _visitor.builder.startRule();
+      _visitor.builder.startRule(rule);
     }
 
     _ruleEnabled = true;

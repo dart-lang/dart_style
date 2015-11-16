@@ -91,10 +91,11 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   var rows = [];
 
-  addChunk(chunk, prefix, index) {
+  addChunk(List<Chunk> chunks, String prefix, int index) {
     var row = [];
     row.add("$prefix$index:");
 
+    var chunk = chunks[index];
     if (chunk.text.length > 70) {
       row.add(chunk.text.substring(0, 70));
     } else {
@@ -103,7 +104,19 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
     var spanBars = "";
     for (var span in spans) {
-      spanBars += chunk.spans.contains(span) ? "|" : " ";
+      if (chunk.spans.contains(span)) {
+        if (index == 0 || !chunks[index - 1].spans.contains(span)) {
+          spanBars += "╖";
+        } else {
+          spanBars += "║";
+        }
+      } else {
+        if (index > 0 && chunks[index - 1].spans.contains(span)) {
+          spanBars += "╜";
+        } else {
+          spanBars += " ";
+        }
+      }
     }
     row.add(spanBars);
 
@@ -115,18 +128,22 @@ void dumpChunks(int start, List<Chunk> chunks) {
       }
     }
 
-    if (chunk.rule != null) {
-      row.add(chunk.isHardSplit ? "" : chunk.rule.toString());
+    if (chunk.rule == null) {
+      row.add("");
+      row.add("(no rule)");
+      row.add("");
+    } else if (chunk.isHardSplit) {
+      row.add("");
+      row.add("(hard)");
+      row.add("");
+    } else if (chunk.rule != null) {
+      writeIf(chunk.rule.cost != 0, () => "\$${chunk.rule.cost}");
+      row.add(chunk.rule.toString());
 
       var constrainedRules =
           chunk.rule.constrainedRules.toSet().intersection(rules);
       writeIf(constrainedRules.isNotEmpty,
           () => "-> ${constrainedRules.join(" ")}");
-    } else {
-      row.add("(no rule)");
-
-      // Outer rules.
-      row.add("");
     }
 
     writeIf(chunk.indent != null && chunk.indent != 0,
@@ -140,14 +157,12 @@ void dumpChunks(int start, List<Chunk> chunks) {
     rows.add(row);
 
     for (var j = 0; j < chunk.blockChunks.length; j++) {
-      addChunk(chunk.blockChunks[j], "$prefix$index.", j);
+      addChunk(chunk.blockChunks, "$prefix$index.", j);
     }
   }
 
-  var i = start;
-  for (var chunk in chunks) {
-    addChunk(chunk, "", i);
-    i++;
+  for (var i = start; i < chunks.length; i++) {
+    addChunk(chunks, "", i);
   }
 
   var rowWidths = new List.filled(rows.first.length, 0);

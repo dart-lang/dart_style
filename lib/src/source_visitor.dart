@@ -818,7 +818,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     if (optionalParams.isNotEmpty) {
-      var namedRule = new NamedRule(null);
+      var namedRule = new NamedRule();
       if (rule != null) rule.setNamedArgsRule(namedRule);
 
       builder.startRule(namedRule);
