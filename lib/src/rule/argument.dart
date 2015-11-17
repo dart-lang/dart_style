@@ -9,9 +9,6 @@ import 'rule.dart';
 
 /// Base class for a rule that handles argument or parameter lists.
 abstract class ArgumentRule extends Rule {
-  /// The rule used to split collections in the argument list, if any.
-  Rule _collectionRule;
-
   /// If true, then inner rules that are written will force this rule to split.
   ///
   /// Temporarily disabled while writing collectio arguments so that they can be
@@ -20,23 +17,6 @@ abstract class ArgumentRule extends Rule {
 
   /// Don't split when an inner collection rule splits.
   bool get splitsOnInnerRules => _trackInnerRules;
-
-  /// Creates a new rule for a positional argument list.
-  ///
-  /// If [_collectionRule] is given, it is the rule used to split the
-  /// collections in the list.
-  ArgumentRule(this._collectionRule);
-
-  void addConstrainedRules(Set<Rule> rules) {
-    if (_collectionRule != null) rules.add(_collectionRule);
-  }
-
-  void forgetUnusedRules() {
-    super.forgetUnusedRules();
-    if (_collectionRule != null && _collectionRule.index == null) {
-      _collectionRule = null;
-    }
-  }
 
   /// Called before a collection argument is written.
   ///
@@ -60,17 +40,21 @@ abstract class PositionalRule extends ArgumentRule {
   /// The chunks prior to each positional argument.
   final List<Chunk> _arguments = [];
 
+  /// The rule used to split collections in the argument list, if any.
+  Rule _collectionRule;
+
   /// If there are named arguments following these positional ones, this will
   /// be their rule.
   Rule _namedArgsRule;
 
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [collectionRule] is given, it is the rule used to split the collection
+  /// If [_collectionRule] is given, it is the rule used to split the collection
   /// arguments in the list.
-  PositionalRule(Rule collectionRule) : super(collectionRule);
+  PositionalRule(this._collectionRule);
 
   void addConstrainedRules(Set<Rule> rules) {
+    if (_collectionRule != null) rules.add(_collectionRule);
     if (_namedArgsRule != null) rules.add(_namedArgsRule);
   }
 
@@ -78,6 +62,10 @@ abstract class PositionalRule extends ArgumentRule {
     super.forgetUnusedRules();
     if (_namedArgsRule != null && _namedArgsRule.index == null) {
       _namedArgsRule = null;
+    }
+
+    if (_collectionRule != null && _collectionRule.index == null) {
+      _collectionRule = null;
     }
   }
 
@@ -244,7 +232,12 @@ class MultiplePositionalRule extends PositionalRule {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
+    // Decide how to constrain the collection rule.
     if (other != _collectionRule) return null;
+
+    // If all of the collections are in the named arguments, [_collectionRule]
+    // will not be null, but we don't have to handle it.
+    if (_leadingCollections == 0 && _trailingCollections == 0) return null;
 
     // If we aren't splitting any args, we can split the collection.
     if (value == 0) return null;
@@ -292,8 +285,6 @@ class NamedRule extends ArgumentRule {
 
   int get numValues => 3;
 
-  NamedRule([Rule collectionRule]) : super(collectionRule);
-
   void beforeArguments(Chunk chunk) {
     assert(_first == null);
     _first = chunk;
@@ -310,20 +301,6 @@ class NamedRule extends ArgumentRule {
     }
 
     throw "unreachable";
-  }
-
-  int constrain(int value, Rule other) {
-    var constrained = super.constrain(value, other);
-    if (constrained != null) return constrained;
-
-    if (other != _collectionRule) return null;
-
-    // If we aren't splitting any args, we can split the collection.
-    if (value == 0) return null;
-
-    // Split before all of the arguments, even the collections, so don't let
-    // them split.
-    return 0;
   }
 
   String toString() => "Named${super.toString()}";

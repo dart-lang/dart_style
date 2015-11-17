@@ -346,7 +346,7 @@ class ArgumentSublist {
     if (_named.isEmpty) return;
 
     var positionalRule = rule;
-    var namedRule = new NamedRule(_collectionRule);
+    var namedRule = new NamedRule();
     visitor.builder.startRule(namedRule);
 
     // Let the positional args force the named ones to split.

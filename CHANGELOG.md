@@ -1,19 +1,20 @@
 # 0.2.1
 
 * `--version` command line argument (#240).
+* Split the first `.` in a method chain if the target splits (#255).
 * Consider a rule live if it constrains a rule in the overflow line (#407).
 * Allow splitting in prefix expressions (#410).
 * Don't collapse states that differ by unbound rule constraints (#424).
-* Split the first `.` in a method chain if the target splits (#255).
 * Better handling for functions in method chains (#367, #398).
 * Split calls if properties in a chain split (#399).
 * Don't allow splitting inside empty functions (#404).
-* Handle index expressions in the middle of call chains.
-* Don't drop metadata on part directives (#443).
+* Correctly constrain collections in argument lists (#420, #463, #465).
 * Allow splitting between type and variable name (#429, #439, #454). 
 * Indent multi-line collections in default values (#441).
+* Don't drop metadata on part directives (#443).
 * Handle `if` statements without curly bodies better (#448).
 * Handle loop statements without curly bodies better (#449).
+* Handle index expressions in the middle of call chains.
 * Optimize splitting lines with many rules.
 
 # 0.2.0

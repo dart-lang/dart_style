@@ -68,7 +68,7 @@ String bold(message) => "$_bold$message$_none";
 /// Prints [chunks] to stdout, one chunk per line, with detailed information
 /// about each chunk.
 void dumpChunks(int start, List<Chunk> chunks) {
-  if (chunks.isEmpty) return;
+  if (chunks.skip(start).isEmpty) return;
 
   // Show the spans as vertical bands over their range.
   var spans = new Set();
