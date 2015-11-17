@@ -910,15 +910,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionDeclaration(FunctionDeclaration node) {
-    visitMemberMetadata(node.metadata);
-
-    builder.nestExpression();
-    modifier(node.externalKeyword);
-    visit(node.returnType, after: space);
-    modifier(node.propertyKeyword);
-    visit(node.name);
-    visit(node.functionExpression);
-    builder.unnest();
+    _visitMemberDeclaration(node, node.functionExpression);
   }
 
   visitFunctionDeclarationStatement(FunctionDeclarationStatement node) {
@@ -1161,16 +1153,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitMethodDeclaration(MethodDeclaration node) {
-    visitMemberMetadata(node.metadata);
-
-    modifier(node.externalKeyword);
-    modifier(node.modifierKeyword);
-    visit(node.returnType, after: space);
-    modifier(node.propertyKeyword);
-    modifier(node.operatorKeyword);
-    visit(node.name);
-
-    _visitBody(node.parameters, node.body);
+    _visitMemberDeclaration(node, node);
   }
 
   visitMethodInvocation(MethodInvocation node) {
@@ -1632,6 +1615,37 @@ class SourceVisitor implements AstVisitor {
     builder.unnest();
     builder.endSpan();
     builder.endRule();
+  }
+
+  /// Visits a top-level function or method declaration.
+  ///
+  /// The two AST node types are very similar but, alas, share no common
+  /// interface type in analyzer, hence the dynamic typing.
+  void _visitMemberDeclaration(
+      /* FunctionDeclaration|MethodDeclaration */ node,
+      /* FunctionExpression|MethodDeclaration */ function) {
+    visitMemberMetadata(node.metadata);
+
+    // Nest the signature in case we have to split between the return type and
+    // name.
+    builder.nestExpression();
+    builder.startSpan();
+    modifier(node.externalKeyword);
+    if (node is MethodDeclaration) modifier(node.modifierKeyword);
+    visit(node.returnType, after: soloSplit);
+    modifier(node.propertyKeyword);
+    if (node is MethodDeclaration) modifier(node.operatorKeyword);
+    visit(node.name);
+    builder.endSpan();
+
+    // If the body is a block, we need to exit any nesting first. If it's an
+    // expression, we want to wrap the nesting around that so that the body
+    // gets nested farther.
+    if (function.body is! ExpressionFunctionBody) builder.unnest();
+
+    _visitBody(function.parameters, function.body);
+
+    if (function.body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visit the given function [parameters] followed by its [body], printing a
