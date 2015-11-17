@@ -608,7 +608,7 @@ class SourceVisitor implements AstVisitor {
       if (node.separator.type == TokenType.EQ) space();
       token(node.separator);
 
-      soloSplit(Cost.assignment);
+      soloSplit(_assignmentCost(node.defaultValue));
       visit(node.defaultValue);
 
       builder.unnest();
@@ -1583,7 +1583,7 @@ class SourceVisitor implements AstVisitor {
   void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
     space();
     token(equalsOperator);
-    soloSplit(Cost.assignment);
+    soloSplit(_assignmentCost(rightHandSide));
     builder.startSpan();
     visit(rightHandSide);
     builder.endSpan();
@@ -1824,6 +1824,37 @@ class SourceVisitor implements AstVisitor {
     var force = _collectionSplits.removeLast();
 
     _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
+  }
+
+  /// Gets the cost to split at an assignment (or `:` in the case of a named
+  /// default value) with the given [rightHandSide].
+  ///
+  /// "Block-like" expressions (collections and cascades) bind a bit tighter
+  /// because it looks better to have code like:
+  ///
+  ///     var list = [
+  ///       element,
+  ///       element,
+  ///       element
+  ///     ];
+  ///
+  ///     var builder = new SomeBuilderClass()
+  ///       ..method()
+  ///       ..method();
+  ///
+  /// over:
+  ///
+  ///     var list =
+  ///         [element, element, element];
+  ///
+  ///     var builder =
+  ///         new SomeBuilderClass()..method()..method();
+  int _assignmentCost(Expression rightHandSide) {
+    if (rightHandSide is ListLiteral) return Cost.assignBlock;
+    if (rightHandSide is MapLiteral) return Cost.assignBlock;
+    if (rightHandSide is CascadeExpression) return Cost.assignBlock;
+
+    return Cost.assign;
   }
 
   /// Returns `true` if the collection withs [elements] delimited by

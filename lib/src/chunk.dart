@@ -280,8 +280,11 @@ class Cost {
   /// number of nested spans.
   static const normal = 1;
 
-  /// Splitting after a "=" both for assignment and initialization.
-  static const assignment = 2;
+  /// Splitting after a "=".
+  static const assign = 1;
+
+  /// Splitting after a "=" when the right-hand side is a collection or cascade.
+  static const assignBlock = 2;
 
   /// Splitting before the first argument when it happens to be a function
   /// expression with a block body.
