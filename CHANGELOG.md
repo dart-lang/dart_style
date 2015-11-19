@@ -9,6 +9,7 @@
 * Consider a rule live if it constrains a rule in the overflow line (#407).
 * Allow splitting in prefix expressions (#410).
 * Correctly constrain collections in argument lists (#420, #463, #465).
+* Only show a hidden directory once in the output (#428).
 * Allow splitting between type and variable name (#429, #439, #454).
 * Tweak splitting around assignment (#436, #437).
 * Indent multi-line collections in default values (#441).

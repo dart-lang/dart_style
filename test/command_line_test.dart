@@ -78,6 +78,21 @@ void main() {
     process.shouldExit(0);
   });
 
+  test("only prints a hidden directory once", () {
+    d.dir('code', [
+      d.dir('.skip', [
+        d.file('a.dart', unformattedSource),
+        d.file('b.dart', unformattedSource)
+      ])
+    ]).create();
+
+    var process = runFormatterOnDir();
+
+    process.stdout.expect(startsWith("Formatting directory"));
+    process.stdout.expect("Skipping hidden path ${p.join("code", ".skip")}");
+    process.shouldExit();
+  });
+
   group("--dry-run", () {
     test("prints names of files that would change.", () {
       d.dir("code", [

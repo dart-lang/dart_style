@@ -47,8 +47,8 @@ abstract class OutputReporter {
   /// Describe the symlink at [path] that wasn't followed.
   void showSkippedLink(String path) {}
 
-  /// Describe the hidden file at [path] that wasn't processed.
-  void showHiddenFile(String path) {}
+  /// Describe the hidden [path] that wasn't processed.
+  void showHiddenPath(String path) {}
 
   /// Called when [file] is about to be formatted.
   void beforeFile(File file, String label) {}
@@ -79,8 +79,8 @@ class _PrintReporter extends OutputReporter {
     print("Skipping link $path");
   }
 
-  void showHiddenFile(String path) {
-    print("Skipping hidden file $path");
+  void showHiddenPath(String path) {
+    print("Skipping hidden path $path");
   }
 
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
@@ -167,9 +167,9 @@ class ProfileReporter implements OutputReporter {
     _inner.showSkippedLink(path);
   }
 
-  /// Describe the hidden file at [path] that wasn't processed.
-  void showHiddenFile(String path) {
-    _inner.showHiddenFile(path);
+  /// Describe the hidden [path] that wasn't processed.
+  void showHiddenPath(String path) {
+    _inner.showHiddenPath(path);
   }
 
   /// Called when [file] is about to be formatted.
