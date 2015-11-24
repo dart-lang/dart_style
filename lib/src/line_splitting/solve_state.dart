@@ -6,6 +6,7 @@ library dart_style.src.line_splitting.solve_state;
 
 import '../debug.dart' as debug;
 import '../rule/rule.dart';
+import '../whitespace.dart';
 import 'line_splitter.dart';
 import 'rule_set.dart';
 
@@ -307,6 +308,8 @@ class SolveState {
 
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;
+
+          if (chunk.indentBlock(getValue)) indent += Indent.expression;
         }
 
         _splits.add(i, indent);
@@ -373,7 +376,7 @@ class SolveState {
         splitSpans.addAll(chunk.spans);
 
         // Include the cost of the nested block.
-        if (chunk.blockChunks.isNotEmpty) {
+        if (chunk.isBlock) {
           cost +=
               _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
         }

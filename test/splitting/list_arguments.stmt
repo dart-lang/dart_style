@@ -340,3 +340,38 @@ obj.outer(
       element,
       element
     ]));
+>>> leading positional collections indent if their args split
+function([[element]],
+[[element]], argument, // comment
+argument);
+<<<
+function(
+    [
+      [element]
+    ],
+    [
+      [element]
+    ],
+    argument, // comment
+    argument);
+>>> trailing positional collections indent if their args split
+function(argument, // comment
+argument, [[element]], [[element]]);
+<<<
+function(
+    argument, // comment
+    argument,
+    [
+      [element]
+    ],
+    [
+      [element]
+    ]);
+>>> comment before collection
+function(argument, // comment
+[[element]]);
+<<<
+function(argument, // comment
+    [
+      [element]
+    ]);

@@ -25,10 +25,10 @@ main() {
       var objects = [
         createSomeObject(SOME_SUPER_LONG_CONST, new Int64(1),
             mapFromStringToInt64: {
-          'ONE': new Int64(1),
-          'TWO': new Int64(2),
-          'THREE': new Int64(3)
-        }),
+              'ONE': new Int64(1),
+              'TWO': new Int64(2),
+              'THREE': new Int64(3)
+            }),
       ];
     }
   }

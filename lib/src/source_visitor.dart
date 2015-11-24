@@ -47,15 +47,6 @@ class SourceVisitor implements AstVisitor {
   /// This is calculated and cached by [_findSelectionEnd].
   int _selectionEnd;
 
-  /// The rule that should be used for the contents of a literal body that are
-  /// about to be written.
-  ///
-  /// This is set by [visitArgumentList] to ensure that all block arguments
-  /// share a rule.
-  ///
-  /// If `null`, a literal body creates its own rule.
-  Rule _nextLiteralBodyRule;
-
   /// A stack that tracks forcing nested collections to split.
   ///
   /// Each entry corresponds to a collection currently being visited and the
@@ -67,6 +58,21 @@ class SourceVisitor implements AstVisitor {
   /// `true`, we know we visited a nested collection so we force this one to
   /// split.
   final List<bool> _collectionSplits = [];
+
+  /// The mapping for collection literals that are managed by the argument
+  /// list that contains them.
+  ///
+  /// When a collection literal appears inside an [ArgumentSublist], the
+  /// argument list provides a rule for the body to split to ensure that all
+  /// collections split in unison. It also tracks the chunk before the
+  /// argument that determines whether or not the collection body is indented
+  /// like an expression or a statement.
+  ///
+  /// Before a collection literal argument is visited, [ArgumentSublist] binds
+  /// itself to the left bracket token of each collection literal it controls.
+  /// When we later visit that literal, we use the token to find that
+  /// association.
+  final Map<Token, ArgumentSublist> _collectionArgumentLists = {};
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -1682,7 +1688,7 @@ class SourceVisitor implements AstVisitor {
       builder.nestExpression();
 
       // This rule is ended by visitExpressionFunctionBody().
-      builder.startLazyRule(new SimpleRule(cost: Cost.arrow));
+      builder.startLazyRule(new SimpleRule(Cost.arrow));
     }
 
     if (parameters != null) {
@@ -1767,10 +1773,6 @@ class SourceVisitor implements AstVisitor {
     if (elements.isEmpty && rightBracket.precedingComments == null) {
       token(leftBracket);
       token(rightBracket);
-
-      // Clear this out in case this empty collection is in an argument list.
-      // We don't want this rule to bleed over to some other collection.
-      _nextLiteralBodyRule = null;
       return;
     }
 
@@ -1889,16 +1891,21 @@ class SourceVisitor implements AstVisitor {
   void _startLiteralBody(Token leftBracket) {
     token(leftBracket);
 
-    // Split the literal. Use the explicitly given rule if we have one.
-    // Otherwise, create a new rule.
-    var rule = _nextLiteralBodyRule;
-    _nextLiteralBodyRule = null;
+    // See if this literal is associated with an argument list that wants to
+    // handle splitting and indenting it. If not, we'll use a default rule.
+    var rule;
+    var argumentChunk;
+    if (_collectionArgumentLists.containsKey(leftBracket)) {
+      var argumentList = _collectionArgumentLists[leftBracket];
+      rule = argumentList.collectionRule;
+      argumentChunk = argumentList.previousSplit;
+    }
 
     // Create a rule for whether or not to split the block contents.
     builder.startRule(rule);
 
     // Process the collection contents as a separate set of chunks.
-    builder = builder.startBlock();
+    builder = builder.startBlock(argumentChunk);
   }
 
   /// Ends the literal body started by a call to [_startLiteralBody()].
@@ -1958,10 +1965,13 @@ class SourceVisitor implements AstVisitor {
     builder.unnest();
   }
 
-  /// Makes [rule] the rule that will be used for the contents of a collection
-  /// or function literal body that are about to be visited.
-  void setNextLiteralBodyRule(Rule rule) {
-    _nextLiteralBodyRule = rule;
+  /// Marks the collection literal that starts with [leftBracket] as being
+  /// controlled by [argumentList].
+  ///
+  /// When the collection is visited, [argumentList] will determine the
+  /// indentation and splitting rule for the collection.
+  void beforeCollection(Token leftBracket, ArgumentSublist argumentList) {
+    _collectionArgumentLists[leftBracket] = argumentList;
   }
 
   /// Writes an bracket-delimited body and handles indenting and starting the
@@ -2069,7 +2079,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes a single space split with its own rule.
   void soloSplit([int cost]) {
-    builder.startRule(new SimpleRule(cost: cost));
+    builder.startRule(new SimpleRule(cost));
     split();
     builder.endRule();
   }

@@ -76,7 +76,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     for (var chunk in chunks) {
       spans.addAll(chunk.spans);
 
-      addSpans(chunk.blockChunks);
+      if (chunk.isBlock) addSpans(chunk.block.chunks);
     }
   }
 
@@ -156,8 +156,10 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
     rows.add(row);
 
-    for (var j = 0; j < chunk.blockChunks.length; j++) {
-      addChunk(chunk.blockChunks, "$prefix$index.", j);
+    if (chunk.isBlock) {
+      for (var j = 0; j < chunk.block.chunks.length; j++) {
+        addChunk(chunk.block.chunks, "$prefix$index.", j);
+      }
     }
   }
 
@@ -204,7 +206,7 @@ void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
       if (chunk.spaceWhenUnsplit) buffer.write(" ");
 
       // Recurse into the block.
-      writeChunksUnsplit(chunk.blockChunks);
+      if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
     }
   }
 
@@ -220,7 +222,7 @@ void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
         writeIndent(splits.getColumn(i));
       }
     } else {
-      writeChunksUnsplit(chunk.blockChunks);
+      if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
 
       if (chunk.spaceWhenUnsplit) buffer.write(" ");
     }

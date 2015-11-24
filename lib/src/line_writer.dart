@@ -82,7 +82,7 @@ class LineWriter {
     if (cached != null) return cached;
 
     var writer = new LineWriter._(
-        chunk.blockChunks, _lineEnding, pageWidth, column, _blockCache);
+        chunk.block.chunks, _lineEnding, pageWidth, column, _blockCache);
 
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
     // LineWriter ensures all but the first chunk have a block indent, and this
@@ -163,11 +163,11 @@ class LineWriter {
       var chunk = chunks[i];
       _writeChunk(chunk);
 
-      if (chunk.blockChunks.isNotEmpty) {
+      if (chunk.isBlock) {
         if (!splits.shouldSplitAt(i)) {
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
-          _writeChunksUnsplit(chunk.blockChunks);
+          _writeChunksUnsplit(chunk);
         } else {
           // Include the formatted block contents.
           var block = formatBlock(chunk, splits.getColumn(i));
@@ -201,16 +201,18 @@ class LineWriter {
     return splits.cost;
   }
 
-  /// Writes [chunks] (and any child chunks of them, recursively) without any
-  /// splitting.
-  void _writeChunksUnsplit(List<Chunk> chunks) {
-    for (var chunk in chunks) {
-      _writeChunk(chunk);
+  /// Writes the block chunks of [chunk] (and any child chunks of them,
+  /// recursively) without any splitting.
+  void _writeChunksUnsplit(Chunk chunk) {
+    if (!chunk.isBlock) return;
 
-      if (chunk.spaceWhenUnsplit) _buffer.write(" ");
+    for (var blockChunk in chunk.block.chunks) {
+      _writeChunk(blockChunk);
+
+      if (blockChunk.spaceWhenUnsplit) _buffer.write(" ");
 
       // Recurse into the block.
-      _writeChunksUnsplit(chunk.blockChunks);
+      _writeChunksUnsplit(blockChunk);
     }
   }
 

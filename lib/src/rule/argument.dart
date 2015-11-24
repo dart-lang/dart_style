@@ -268,9 +268,9 @@ class MultiplePositionalRule extends PositionalRule {
     // play when we do want to split the collection, so force that here.
     if (value == _arguments.length + 1) return 1;
 
-    // Split before all of the arguments, even the collection, so don't let
-    // them split.
-    return 0;
+    // Split before all of the arguments, even the collections. We'll allow
+    // them to split but indent their bodies if they do.
+    return null;
   }
 }
 
@@ -283,7 +283,13 @@ class NamedRule extends ArgumentRule {
   /// The chunk prior to the first named argument.
   Chunk _first;
 
+  /// Whether any of the named arguments are collection literals.
+  final bool _containsCollections;
+
   int get numValues => 3;
+
+  NamedRule({bool containsCollections})
+      : _containsCollections = containsCollections ?? false;
 
   void beforeArguments(Chunk chunk) {
     assert(_first == null);

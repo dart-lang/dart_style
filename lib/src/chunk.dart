@@ -92,9 +92,13 @@ class Chunk extends Selection {
   NestingLevel get nesting => _nesting;
   NestingLevel _nesting;
 
-  /// If this chunk marks the beginning of a block, these are the chunks
-  /// contained in the block.
-  final blockChunks = <Chunk>[];
+  /// If this chunk marks the beginning of a block, this contains the child
+  /// chunks and other data about that nested block.
+  ChunkBlock get block => _block;
+  ChunkBlock _block;
+
+  /// Whether this chunk has a [block].
+  bool get isBlock => _block != null;
 
   /// Whether it's valid to add more text to this chunk or not.
   ///
@@ -136,9 +140,9 @@ class Chunk extends Selection {
   /// If `true`, then the line after this chunk and its contained block should
   /// be flush left.
   bool get flushLeftAfter {
-    if (blockChunks.isEmpty) return _flushLeft;
+    if (!isBlock) return _flushLeft;
 
-    return blockChunks.last.flushLeftAfter;
+    return _block.chunks.last.flushLeftAfter;
   }
 
   /// Whether this chunk should append an extra space if it does not split.
@@ -165,8 +169,10 @@ class Chunk extends Selection {
   /// Does not include this chunk's own length, just the length of its child
   /// block chunks (recursively).
   int get unsplitBlockLength {
+    if (_block == null) return 0;
+
     var length = 0;
-    for (var chunk in blockChunks) {
+    for (var chunk in _block.chunks) {
       length += chunk.length + chunk.unsplitBlockLength;
     }
 
@@ -229,6 +235,22 @@ class Chunk extends Selection {
     if (_isDouble == null) _isDouble = isDouble;
   }
 
+  /// Turns this chunk into one that can contain a block of child chunks.
+  void makeBlock(Chunk blockArgument) {
+    assert(_block == null);
+    _block = new ChunkBlock(blockArgument);
+  }
+
+  /// Returns `true` if the block body owned by this chunk should be expression
+  /// indented given a set of rule values provided by [getValue].
+  bool indentBlock(int getValue(Rule rule)) {
+    if (_block == null) return false;
+    if (_block.argument == null) return false;
+
+    return _block.argument.rule
+        .isSplit(getValue(_block.argument.rule), _block.argument);
+  }
+
   // Mark whether this chunk can divide the range of chunks.
   void markDivide(canDivide) {
     // Should only do this once.
@@ -243,9 +265,9 @@ class Chunk extends Selection {
     if (text.isNotEmpty) parts.add(text);
 
     if (_indent != null) parts.add("indent:$_indent");
-    if (spaceWhenUnsplit) parts.add("space");
-    if (_isDouble) parts.add("double");
-    if (_flushLeft) parts.add("flush");
+    if (spaceWhenUnsplit == true) parts.add("space");
+    if (_isDouble == true) parts.add("double");
+    if (_flushLeft == true) parts.add("flush");
 
     if (_rule == null) {
       parts.add("(no split)");
@@ -261,6 +283,22 @@ class Chunk extends Selection {
 
     return parts.join(" ");
   }
+}
+
+/// The child chunks owned by a chunk that begins a "block" -- an actual block
+/// statement, function expression, or collection literal.
+class ChunkBlock {
+  /// If this block is for a collection literal in an argument list, this will
+  /// be the chunk preceding this literal argument.
+  ///
+  /// That chunk is owned by the argument list and if it splits, this collection
+  /// may need extra expression-level indentation.
+  final Chunk argument;
+
+  /// The child chunks in this block.
+  final List<Chunk> chunks = [];
+
+  ChunkBlock(this.argument);
 }
 
 /// Constants for the cost heuristics used to determine which set of splits is

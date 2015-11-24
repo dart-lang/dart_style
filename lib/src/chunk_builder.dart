@@ -468,9 +468,12 @@ class ChunkBuilder {
   /// Starts a new block as a child of the current chunk.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock() {
+  ChunkBuilder startBlock(Chunk argumentChunk) {
+    var chunk = _chunks.last;
+    chunk.makeBlock(argumentChunk);
+
     var builder =
-        new ChunkBuilder._(this, _formatter, _source, _chunks.last.blockChunks);
+        new ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
 
     // A block always starts off indented one level.
     builder.indent();
@@ -733,7 +736,7 @@ class ChunkBuilder {
     var chunk = _chunks[i];
     if (!chunk.isHardSplit) return false;
     if (chunk.nesting.isNested) return false;
-    if (chunk.blockChunks.isNotEmpty) return false;
+    if (chunk.isBlock) return false;
 
     // Make sure we don't split the line in the middle of a rule.
     var chunks = _ruleChunks[chunk.rule];
