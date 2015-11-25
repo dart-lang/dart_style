@@ -16,54 +16,54 @@ import 'utils.dart';
 void main() {
   setUpTestSuite();
 
-  test("Exits with 0 on success.", () {
+  test("exits with 0 on success", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir();
     process.shouldExit(0);
   });
 
-  test("Exits with 64 on a command line argument error.", () {
+  test("exits with 64 on a command line argument error", () {
     var process = runFormatterOnDir(["-wat"]);
     process.shouldExit(64);
   });
 
-  test("Exits with 65 on a parse error.", () {
+  test("exits with 65 on a parse error", () {
     d.dir("code", [d.file("a.dart", "herp derp i are a dart")]).create();
 
     var process = runFormatterOnDir();
     process.shouldExit(65);
   });
 
-  test("Errors if --dry-run and --overwrite are both passed.", () {
+  test("errors if --dry-run and --overwrite are both passed", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--dry-run", "--overwrite"]);
     process.shouldExit(64);
   });
 
-  test("Errors if --dry-run and --machine are both passed.", () {
+  test("errors if --dry-run and --machine are both passed", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--dry-run", "--machine"]);
     process.shouldExit(64);
   });
 
-  test("Errors if --machine and --overwrite are both passed.", () {
+  test("errors if --machine and --overwrite are both passed", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatterOnDir(["--machine", "--overwrite"]);
     process.shouldExit(64);
   });
 
-  test("Errors if --dry-run and --machine are both passed.", () {
+  test("errors if --dry-run and --machine are both passed", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatter(["--dry-run", "--machine"]);
     process.shouldExit(64);
   });
 
-  test("Errors if --machine and --overwrite are both passed.", () {
+  test("errors if --machine and --overwrite are both passed", () {
     d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
     var process = runFormatter(["--machine", "--overwrite"]);
@@ -94,7 +94,7 @@ void main() {
   });
 
   group("--dry-run", () {
-    test("prints names of files that would change.", () {
+    test("prints names of files that would change", () {
       d.dir("code", [
         d.file("a_bad.dart", unformattedSource),
         d.file("b_good.dart", formattedSource),
@@ -113,7 +113,7 @@ void main() {
       process.shouldExit();
     });
 
-    test("does not modify files.", () {
+    test("does not modify files", () {
       d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
       var process = runFormatterOnDir(["--dry-run"]);
@@ -153,12 +153,12 @@ void main() {
   });
 
   group("--preserve", () {
-    test("errors if given paths.", () {
+    test("errors if given paths", () {
       var process = runFormatter(["--preserve", "path", "another"]);
       process.shouldExit(64);
     });
 
-    test("errors on wrong number of components.", () {
+    test("errors on wrong number of components", () {
       var process = runFormatter(["--preserve", "1"]);
       process.shouldExit(64);
 
@@ -166,12 +166,12 @@ void main() {
       process.shouldExit(64);
     });
 
-    test("errors on non-integer component.", () {
+    test("errors on non-integer component", () {
       var process = runFormatter(["--preserve", "1:2.3"]);
       process.shouldExit(64);
     });
 
-    test("updates selection.", () {
+    test("updates selection", () {
       var process = runFormatter(["--preserve", "6:10", "-m"]);
       process.writeLine(unformattedSource);
       process.closeStdin();
@@ -187,20 +187,43 @@ void main() {
     });
   });
 
+  group("--indent", () {
+    test("sets the leading indentation of the output", () {
+      var process = runFormatter(["--indent", "3"]);
+      process.writeLine("main() {'''");
+      process.writeLine("a flush left multi-line string''';}");
+      process.closeStdin();
+
+      process.stdout.expect("   main() {");
+      process.stdout.expect("     '''");
+      process.stdout.expect("a flush left multi-line string''';");
+      process.stdout.expect("   }");
+      process.shouldExit(0);
+    });
+
+    test("errors if the indent is not a non-negative number", () {
+      var process = runFormatter(["--indent", "notanum"]);
+      process.shouldExit(64);
+
+      process = runFormatter(["--preserve", "-4"]);
+      process.shouldExit(64);
+    });
+  });
+
   group("with no paths", () {
-    test("errors on --overwrite.", () {
+    test("errors on --overwrite", () {
       var process = runFormatter(["--overwrite"]);
       process.shouldExit(64);
     });
 
-    test("exits with 65 on parse error.", () {
+    test("exits with 65 on parse error", () {
       var process = runFormatter();
       process.writeLine("herp derp i are a dart");
       process.closeStdin();
       process.shouldExit(65);
     });
 
-    test("reads from stdin.", () {
+    test("reads from stdin", () {
       var process = runFormatter();
       process.writeLine(unformattedSource);
       process.closeStdin();

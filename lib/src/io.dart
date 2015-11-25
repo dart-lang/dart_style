@@ -67,7 +67,8 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 bool processFile(FormatterOptions options, File file, {String label}) {
   if (label == null) label = file.path;
 
-  var formatter = new DartFormatter(pageWidth: options.pageWidth);
+  var formatter =
+      new DartFormatter(indent: options.indent, pageWidth: options.pageWidth);
   try {
     var source = new SourceCode(file.readAsStringSync(), uri: file.path);
     options.reporter.beforeFile(file, label);

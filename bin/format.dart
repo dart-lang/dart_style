@@ -25,6 +25,8 @@ void main(List<String> args) {
       negatable: false, help: "Shows version information.");
   parser.addOption("line-length",
       abbr: "l", help: "Wrap lines longer than this.", defaultsTo: "80");
+  parser.addOption("indent",
+      abbr: "i", help: "Spaces of leading indentation.", defaultsTo: "0");
   parser.addOption("preserve",
       help: 'Selection to preserve, formatted as "start:length".');
   parser.addFlag("dry-run",
@@ -118,7 +120,6 @@ void main(List<String> args) {
   }
 
   var pageWidth;
-
   try {
     pageWidth = int.parse(argResults["line-length"]);
   } on FormatException catch (_) {
@@ -128,10 +129,22 @@ void main(List<String> args) {
         '"${argResults['line-length']}".');
   }
 
+  var indent;
+
+  try {
+    indent = int.parse(argResults["indent"]);
+    if (indent < 0 || indent.toInt() != indent) throw new FormatException();
+  } on FormatException catch (_) {
+    usageError(
+        parser,
+        '--indent must be a non-negative integer, was '
+        '"${argResults['indent']}".');
+  }
+
   var followLinks = argResults["follow-links"];
 
   var options = new FormatterOptions(reporter,
-      pageWidth: pageWidth, followLinks: followLinks);
+      indent: indent, pageWidth: pageWidth, followLinks: followLinks);
 
   if (argResults.rest.isEmpty) {
     formatStdin(options, selection);
@@ -168,7 +181,8 @@ void formatStdin(FormatterOptions options, List<int> selection) {
 
   var input = new StringBuffer();
   stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
-    var formatter = new DartFormatter(pageWidth: options.pageWidth);
+    var formatter =
+        new DartFormatter(indent: options.indent, pageWidth: options.pageWidth);
     try {
       options.reporter.beforeFile(null, "<stdin>");
       var source = new SourceCode(input.toString(),

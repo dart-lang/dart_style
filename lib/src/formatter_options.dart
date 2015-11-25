@@ -14,6 +14,9 @@ class FormatterOptions {
   /// The [OutputReporter] used to show the formatting results.
   final OutputReporter reporter;
 
+  /// The number of spaces of indentation to prefix the output with.
+  final int indent;
+
   /// The number of columns that formatted output should be constrained to fit
   /// within.
   final int pageWidth;
@@ -22,7 +25,7 @@ class FormatterOptions {
   final bool followLinks;
 
   FormatterOptions(this.reporter,
-      {this.pageWidth: 80, this.followLinks: false});
+      {this.indent: 0, this.pageWidth: 80, this.followLinks: false});
 }
 
 /// How the formatter reports the results it produces.
