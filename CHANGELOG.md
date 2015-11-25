@@ -17,6 +17,7 @@
 * Handle `if` statements without curly bodies better (#448).
 * Handle loop statements without curly bodies better (#449).
 * Allow splitting before `get` and `set` (#462).
+* Add `--indent` to specify leading indent (#464).
 * Handle index expressions in the middle of call chains.
 * Optimize splitting lines with many rules.
 
