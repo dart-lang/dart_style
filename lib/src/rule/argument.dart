@@ -124,7 +124,7 @@ class SinglePositionalRule extends PositionalRule {
         splitsOnInnerRules =
             splitsOnInnerRules != null ? splitsOnInnerRules : false;
 
-  bool isSplit(int value, Chunk chunk) => value == 1;
+  bool isSplit(int value, Chunk chunk) => value != Rule.unsplit;
 
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
@@ -133,10 +133,10 @@ class SinglePositionalRule extends PositionalRule {
     if (other != _collectionRule) return null;
 
     // If we aren't splitting any args, we can split the collection.
-    if (value == 0) return null;
+    if (value == Rule.unsplit) return null;
 
     // We are splitting before a collection, so don't let it split internally.
-    return 0;
+    return Rule.unsplit;
   }
 
   String toString() => "1Pos${super.toString()}";
@@ -196,7 +196,7 @@ class MultiplePositionalRule extends PositionalRule {
 
   bool isSplit(int value, Chunk chunk) {
     // Don't split at all.
-    if (value == 0) return false;
+    if (value == Rule.unsplit) return false;
 
     // Split only before the first argument. Keep the entire argument list
     // together on the next line.
@@ -240,14 +240,14 @@ class MultiplePositionalRule extends PositionalRule {
     if (_leadingCollections == 0 && _trailingCollections == 0) return null;
 
     // If we aren't splitting any args, we can split the collection.
-    if (value == 0) return null;
+    if (value == Rule.unsplit) return null;
 
     // Split only before the first argument.
     if (value == 1) {
       if (_leadingCollections > 0) {
         // We are splitting before a collection, so don't let it split
         // internally.
-        return 0;
+        return Rule.unsplit;
       } else {
         // The split is outside of the collections so they can split or not.
         return null;
@@ -258,8 +258,10 @@ class MultiplePositionalRule extends PositionalRule {
     // arguments, don't allow them to split.
     if (value <= _arguments.length) {
       var argument = _arguments.length - value + 1;
-      if (argument < _leadingCollections) return 0;
-      if (argument >= _arguments.length - _trailingCollections) return 0;
+      if (argument < _leadingCollections ||
+          argument >= _arguments.length - _trailingCollections) {
+        return Rule.unsplit;
+      }
 
       return null;
     }
@@ -298,7 +300,7 @@ class NamedRule extends ArgumentRule {
 
   bool isSplit(int value, Chunk chunk) {
     switch (value) {
-      case 0:
+      case Rule.unsplit:
         return false;
       case 1:
         return chunk == _first;

@@ -15,6 +15,7 @@ import 'chunk_builder.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
+import 'rule/metadata.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
@@ -58,6 +59,14 @@ class SourceVisitor implements AstVisitor {
   /// `true`, we know we visited a nested collection so we force this one to
   /// split.
   final List<bool> _collectionSplits = [];
+
+  /// The stack of current rules for handling parameter metadata.
+  ///
+  /// Each time a parameter (or type parameter) list is begun, a single rule
+  /// for all of the metadata annotations on parameters in that list is pushed
+  /// onto this stack. We reuse this rule for all annotations so that they split
+  /// in unison.
+  final List<MetadataRule> _metadataRules = [];
 
   /// The mapping for collection literals that are managed by the argument
   /// list that contains them.
@@ -789,6 +798,8 @@ class SourceVisitor implements AstVisitor {
     builder.nestExpression();
     token(node.leftParenthesis);
 
+    _metadataRules.add(new MetadataRule());
+
     var rule;
     if (requiredParams.isNotEmpty) {
       if (requiredParams.length > 1) {
@@ -796,6 +807,8 @@ class SourceVisitor implements AstVisitor {
       } else {
         rule = new SinglePositionalRule(null);
       }
+
+      _metadataRules.last.bindPositionalRule(rule);
 
       builder.startRule(rule);
       if (_isInLambda(node)) {
@@ -827,6 +840,8 @@ class SourceVisitor implements AstVisitor {
       var namedRule = new NamedRule();
       if (rule != null) rule.setNamedArgsRule(namedRule);
 
+      _metadataRules.last.bindNamedRule(namedRule);
+
       builder.startRule(namedRule);
 
       // Make sure multi-line default values are indented.
@@ -852,6 +867,8 @@ class SourceVisitor implements AstVisitor {
       // "]" or "}" for optional parameters.
       token(node.rightDelimiter);
     }
+
+    _metadataRules.removeLast();
 
     token(node.rightParenthesis);
     builder.unnest();
@@ -1465,7 +1482,11 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTypeParameterList(TypeParameterList node) {
+    _metadataRules.add(new MetadataRule());
+
     _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
+
+    _metadataRules.removeLast();
   }
 
   visitVariableDeclaration(VariableDeclaration node) {
@@ -1570,10 +1591,28 @@ class SourceVisitor implements AstVisitor {
   /// These are always on the same line as the parameter.
   void visitParameterMetadata(
       NodeList<Annotation> metadata, void visitParameter()) {
+    if (metadata == null || metadata.isEmpty) {
+      visitParameter();
+      return;
+    }
+
     // Split before all of the annotations or none.
-    builder.startRule();
-    visitNodes(metadata, between: split, after: split);
+    builder.startLazyRule(_metadataRules.last);
+
+    visitNodes(metadata, between: split, after: () {
+      // Don't nest until right before the last metadata. Ensures we only
+      // indent the parameter and not any of the metadata:
+      //
+      //     function(
+      //         @LongAnnotation
+      //         @LongAnnotation
+      //             indentedParameter) {}
+      builder.nestExpression(now: true);
+      split();
+    });
     visitParameter();
+
+    builder.unnest();
 
     // Wrap the rule around the parameter too. If it splits, we want to force
     // the annotations to split as well.

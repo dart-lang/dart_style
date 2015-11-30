@@ -10,6 +10,16 @@ import '../fast_hash.dart';
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
 abstract class Rule extends FastHash {
+  /// Rule value that splits no chunks.
+  ///
+  /// Every rule is required to treat this value as fully unsplit.
+  static const unsplit = 0;
+
+  /// Rule constraint value that means "any value as long as something splits".
+  ///
+  /// It disallows [unsplit] but allows any other value.
+  static const mustSplit = -1;
+
   /// The number of different states this rule can be in.
   ///
   /// Each state determines which set of chunks using this rule are split and
@@ -69,9 +79,8 @@ abstract class Rule extends FastHash {
   /// value. Returns -1 to allow [other] to take any non-zero value. Returns
   /// null to not constrain other.
   int constrain(int value, Rule other) {
-    // By default, any implied rule will be fully split if this one is fully
-    // split.
-    if (value == 0) return null;
+    // By default, any containing rule will be fully split if this one is split.
+    if (value == Rule.unsplit) return null;
     if (_outerRules.contains(other)) return other.fullySplitValue;
 
     return null;
@@ -166,7 +175,7 @@ class SimpleRule extends Rule {
 
   SimpleRule([int cost]) : cost = cost != null ? cost : Cost.normal;
 
-  bool isSplit(int value, Chunk chunk) => value == 1;
+  bool isSplit(int value, Chunk chunk) => value != Rule.unsplit;
 
   String toString() => "Simple${super.toString()}";
 }

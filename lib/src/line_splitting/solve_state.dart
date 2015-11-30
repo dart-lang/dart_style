@@ -111,10 +111,10 @@ class SolveState {
     _calculateCost();
   }
 
-  /// Gets the value to use for [rule], either the bound value or `0` if it
-  /// isn't bound.
+  /// Gets the value to use for [rule], either the bound value or
+  /// [Rule.unsplit] if it isn't bound.
   int getValue(Rule rule) {
-    if (rule is HardSplitRule) return 0;
+    if (rule is HardSplitRule) return Rule.unsplit;
 
     return _ruleValues.getValue(rule);
   }
@@ -417,10 +417,9 @@ class SolveState {
       }
     }
 
-    // Add the costs for the rules that split.
+    // Add the costs for the rules that have any splits.
     _ruleValues.forEach(_splitter.rules, (rule, value) {
-      // A rule may be bound to zero if another rule constrains it to not split.
-      if (value != 0) cost += rule.cost;
+      if (value != Rule.unsplit) cost += rule.cost;
     });
 
     // Add the costs for the spans containing splits.
@@ -553,7 +552,9 @@ class SolveState {
           // same bound value, one of which has a satisfied constraint, are
           // still allowed to overlap.
           if (constraint == boundValue) continue;
-          if (constraint == -1 && boundValue != 0) continue;
+          if (constraint == Rule.mustSplit && boundValue != Rule.unsplit) {
+            continue;
+          }
 
           if (disallowedValues == null) {
             disallowedValues = new Set();

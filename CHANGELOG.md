@@ -4,11 +4,13 @@
 * Split the first `.` in a method chain if the target splits (#255).
 * Don't collapse states that differ by unbound rule constraints (#424).
 * Better handling for functions in method chains (#367, #398).
+* Better handling of large parameter metadata annotations (#387, #444).
 * Split calls if properties in a chain split (#399).
 * Don't allow splitting inside empty functions (#404).
 * Consider a rule live if it constrains a rule in the overflow line (#407).
 * Allow splitting in prefix expressions (#410).
 * Correctly constrain collections in argument lists (#420, #463, #465).
+* Better indentation of collection literals (#421, #469).
 * Only show a hidden directory once in the output (#428).
 * Allow splitting between type and variable name (#429, #439, #454).
 * Tweak splitting around assignment (#436, #437).

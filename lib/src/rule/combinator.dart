@@ -82,7 +82,7 @@ class CombinatorRule extends Rule {
 
   bool isSplit(int value, Chunk chunk) {
     switch (value) {
-      case 0:
+      case Rule.unsplit:
         // Don't split at all.
         return false;
 
