@@ -23,10 +23,18 @@ class RuleSet {
   RuleSet._(this._values);
 
   /// Returns `true` of [rule] is bound in this set.
-  bool contains(Rule rule) => _values[rule.index] != null;
+  bool contains(Rule rule) {
+    // Treat hardened rules as implicitly bound.
+    if (rule.isHardened) return true;
+
+    return _values[rule.index] != null;
+  }
 
   /// Gets the bound value for [rule] or [Rule.unsplit] if it is not bound.
   int getValue(Rule rule) {
+    // Hardened rules are implicitly bound.
+    if (rule.isHardened) return rule.fullySplitValue;
+
     var value = _values[rule.index];
     if (value != null) return value;
 
@@ -56,11 +64,20 @@ class RuleSet {
   /// If an unbound rule gets constrained to `-1` (meaning it must split, but
   /// can split any way it wants), invokes [onSplitRule] with it.
   bool tryBind(List<Rule> rules, Rule rule, int value, onSplitRule(Rule rule)) {
+    assert(!rule.isHardened);
+
     _values[rule.index] = value;
 
     // Test this rule against the other rules being bound.
     for (var other in rule.constrainedRules) {
-      var otherValue = _values[other.index];
+      var otherValue;
+      // Hardened rules are implicitly bound.
+      if (other.isHardened) {
+        otherValue = other.fullySplitValue;
+      } else {
+        otherValue = _values[other.index];
+      }
+
       var constraint = rule.constrain(value, other);
 
       if (otherValue == null) {

@@ -9,7 +9,7 @@ import '../fast_hash.dart';
 
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
-abstract class Rule extends FastHash {
+class Rule extends FastHash {
   /// Rule value that splits no chunks.
   ///
   /// Every rule is required to treat this value as fully unsplit.
@@ -26,18 +26,25 @@ abstract class Rule extends FastHash {
   /// which aren't. Values range from zero to one minus this. Value zero
   /// always means "no chunks are split" and increasing values by convention
   /// mean increasingly undesirable splits.
-  int get numValues;
+  ///
+  /// By default, a rule has two values: fully unsplit and fully split.
+  int get numValues => 2;
 
   /// The rule value that forces this rule into its maximally split state.
   ///
   /// By convention, this is the highest of the range of allowed values.
   int get fullySplitValue => numValues - 1;
 
-  int get cost => Cost.normal;
+  final int cost;
 
   /// During line splitting [LineSplitter] sets this to the index of this
   /// rule in its list of rules.
   int index;
+
+  /// If `true`, the rule has been "hardened" meaning it's been placed into a
+  /// permanent "must fully split" state.
+  bool get isHardened => _isHardened;
+  bool _isHardened = false;
 
   /// The other [Rule]s that "surround" this one (and care about that fact).
   ///
@@ -69,7 +76,38 @@ abstract class Rule extends FastHash {
   /// rules.
   bool get splitsOnInnerRules => true;
 
-  bool isSplit(int value, Chunk chunk);
+  Rule([int cost]) : cost = cost ?? Cost.normal;
+
+  /// Creates a new rule that is already fully split.
+  Rule.hard() : cost = 0 {
+    // Set the cost to zero since it will always be applied, so there's no
+    // point in penalizing it.
+    //
+    // Also, this avoids doubled counting in literal blocks where there is both
+    // a split in the outer chunk containing the block and the inner hard split
+    // between the elements or statements.
+    harden();
+  }
+
+  /// Fixes this rule into a "fully split" state.
+  void harden() {
+    _isHardened = true;
+  }
+
+  /// Returns `true` if [chunk] should split when this rule has [value].
+  bool isSplit(int value, Chunk chunk) {
+    if (_isHardened) return true;
+
+    if (value == Rule.unsplit) return false;
+
+    // Let the subclass decide.
+    return isSplitAtValue(value, chunk);
+  }
+
+  /// Subclasses can override this to determine which values split which chunks.
+  ///
+  /// By default, this assumes every chunk splits.
+  bool isSplitAtValue(value, chunk) => true;
 
   /// Given that this rule has [value], determine if [other]'s value should be
   /// constrained.
@@ -145,37 +183,4 @@ abstract class Rule extends FastHash {
   Set<Rule> _allConstrainedRules;
 
   String toString() => "$id";
-}
-
-/// A rule that always splits a chunk.
-class HardSplitRule extends Rule {
-  int get numValues => 1;
-
-  /// It's always going to be applied, so there's no point in penalizing it.
-  ///
-  /// Also, this avoids doubled counting in literal blocks where there is both
-  /// a split in the outer chunk containing the block and the inner hard split
-  /// between the elements or statements.
-  int get cost => 0;
-
-  /// It's always split anyway.
-  bool get splitsOnInnerRules => false;
-
-  bool isSplit(int value, Chunk chunk) => true;
-
-  String toString() => "Hard";
-}
-
-/// A basic rule that has two states: unsplit or split.
-class SimpleRule extends Rule {
-  /// Two values: 0 is unsplit, 1 is split.
-  int get numValues => 2;
-
-  final int cost;
-
-  SimpleRule([int cost]) : cost = cost != null ? cost : Cost.normal;
-
-  bool isSplit(int value, Chunk chunk) => value != Rule.unsplit;
-
-  String toString() => "Simple${super.toString()}";
 }

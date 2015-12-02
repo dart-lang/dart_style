@@ -124,8 +124,6 @@ class SinglePositionalRule extends PositionalRule {
         splitsOnInnerRules =
             splitsOnInnerRules != null ? splitsOnInnerRules : false;
 
-  bool isSplit(int value, Chunk chunk) => value != Rule.unsplit;
-
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
@@ -194,10 +192,7 @@ class MultiplePositionalRule extends PositionalRule {
 
   String toString() => "*Pos${super.toString()}";
 
-  bool isSplit(int value, Chunk chunk) {
-    // Don't split at all.
-    if (value == Rule.unsplit) return false;
-
+  bool isSplitAtValue(int value, Chunk chunk) {
     // Split only before the first argument. Keep the entire argument list
     // together on the next line.
     if (value == 1) return chunk == _arguments.first;
@@ -298,17 +293,12 @@ class NamedRule extends ArgumentRule {
     _first = chunk;
   }
 
-  bool isSplit(int value, Chunk chunk) {
-    switch (value) {
-      case Rule.unsplit:
-        return false;
-      case 1:
-        return chunk == _first;
-      case 2:
-        return true;
-    }
+  bool isSplitAtValue(int value, Chunk chunk) {
+    // Only split before the first argument.
+    if (value == 1) return chunk == _first;
 
-    throw "unreachable";
+    // Split before every argument.
+    return true;
   }
 
   String toString() => "Named${super.toString()}";

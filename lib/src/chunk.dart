@@ -114,10 +114,6 @@ class Chunk extends Selection {
   Rule get rule => _rule;
   Rule _rule;
 
-  /// Whether this chunk is always followed by a newline or whether the line
-  /// splitter may choose to keep the next chunk on the same line.
-  bool get isHardSplit => _rule is HardSplitRule;
-
   /// Whether or not an extra blank line should be output after this chunk if
   /// it's split.
   ///
@@ -197,15 +193,6 @@ class Chunk extends Selection {
     _text += text;
   }
 
-  /// Forces this soft split to become a hard split.
-  ///
-  /// This is called on the soft splits owned by a rule that decides to harden
-  /// when it finds out another hard split occurs within its chunks.
-  void harden() {
-    _rule = new HardSplitRule();
-    spans.clear();
-  }
-
   /// Finishes off this chunk with the given [rule] and split information.
   ///
   /// This may be called multiple times on the same split since the splits
@@ -216,7 +203,7 @@ class Chunk extends Selection {
       {bool flushLeft, bool isDouble, bool space}) {
     if (flushLeft == null) flushLeft = false;
     if (space == null) space = false;
-    if (isHardSplit || rule is HardSplitRule) {
+    if (rule.isHardened) {
       // A hard split always wins.
       _rule = rule;
     } else if (_rule == null) {
@@ -271,10 +258,9 @@ class Chunk extends Selection {
 
     if (_rule == null) {
       parts.add("(no split)");
-    } else if (isHardSplit) {
-      parts.add("hard");
     } else {
       parts.add(rule.toString());
+      if (rule.isHardened) parts.add("(hard)");
 
       if (_rule.constrainedRules.isNotEmpty) {
         parts.add("-> ${_rule.constrainedRules.join(' ')}");

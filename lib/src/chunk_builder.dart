@@ -361,15 +361,15 @@ class ChunkBuilder {
     var span = new Span(openSpan.cost);
     for (var i = openSpan.start; i < end; i++) {
       var chunk = _chunks[i];
-      if (!chunk.isHardSplit) chunk.spans.add(span);
+      if (!chunk.rule.isHardened) chunk.spans.add(span);
     }
   }
 
   /// Starts a new [Rule].
   ///
-  /// If omitted, defaults to a new [SimpleRule].
+  /// If omitted, defaults to a new [Rule].
   void startRule([Rule rule]) {
-    if (rule == null) rule = new SimpleRule();
+    if (rule == null) rule = new Rule();
 
     // See if any of the rules that contain this one care if it splits.
     _rules.forEach((outer) => outer.contain(rule));
@@ -383,9 +383,9 @@ class ChunkBuilder {
   /// first operand but not get forced to split if a comment appears before the
   /// entire expression.
   ///
-  /// If [rule] is omitted, defaults to a new [SimpleRule].
+  /// If [rule] is omitted, defaults to a new [Rule].
   void startLazyRule([Rule rule]) {
-    if (rule == null) rule = new SimpleRule();
+    if (rule == null) rule = new Rule();
 
     _lazyRules.add(rule);
   }
@@ -490,7 +490,7 @@ class ChunkBuilder {
   /// `true`, the block is considered to always split.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(HardSplitRule ignoredSplit, {bool forceSplit}) {
+  ChunkBuilder endBlock(Rule ignoredSplit, {bool forceSplit}) {
     _divideChunks();
 
     // If we don't already know if the block is going to split, see if it
@@ -504,7 +504,9 @@ class ChunkBuilder {
           break;
         }
 
-        if (chunk.isHardSplit && chunk.rule != ignoredSplit) {
+        if (chunk.rule != null &&
+            chunk.rule.isHardened &&
+            chunk.rule != ignoredSplit) {
           forceSplit = true;
           break;
         }
@@ -682,7 +684,7 @@ class ChunkBuilder {
   void _writeHardSplit({bool isDouble, bool flushLeft, bool nest: false}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
-    _writeSplit(new HardSplitRule(),
+    _writeSplit(new Rule.hard(),
         flushLeft: flushLeft, isDouble: isDouble, nest: nest);
   }
 
@@ -711,11 +713,11 @@ class ChunkBuilder {
   Chunk _afterSplit() {
     var chunk = _chunks.last;
 
-    if (chunk.rule is! HardSplitRule) {
+    if (_rules.isNotEmpty) {
       _ruleChunks.putIfAbsent(rule, () => []).add(_chunks.length - 1);
     }
 
-    if (chunk.isHardSplit) _handleHardSplit();
+    if (chunk.rule.isHardened) _handleHardSplit();
 
     return chunk;
   }
@@ -733,8 +735,11 @@ class ChunkBuilder {
   /// Returns true if we can divide the chunks at [index] and line split the
   /// ones before and after that separately.
   bool _canDivideAt(int i) {
+    // Don't divide after the last chunk.
+    if (i == _chunks.length - 1) return false;
+
     var chunk = _chunks[i];
-    if (!chunk.isHardSplit) return false;
+    if (!chunk.rule.isHardened) return false;
     if (chunk.nesting.isNested) return false;
     if (chunk.isBlock) return false;
 
@@ -782,18 +787,16 @@ class ChunkBuilder {
   void _hardenRules() {
     if (_hardSplitRules.isEmpty) return;
 
-    // Harden all of the rules that are constrained by [rules] as well.
-    var hardenedRules = new Set();
     walkConstraints(rule) {
-      if (hardenedRules.contains(rule)) return;
-      hardenedRules.add(rule);
+      rule.harden();
 
       // Follow this rule's constraints, recursively.
       for (var other in _ruleChunks.keys) {
         if (other == rule) continue;
 
-        if (rule.constrain(rule.fullySplitValue, other) ==
-            other.fullySplitValue) {
+        if (!other.isHardened &&
+            rule.constrain(rule.fullySplitValue, other) ==
+                other.fullySplitValue) {
           walkConstraints(other);
         }
       }
@@ -803,10 +806,11 @@ class ChunkBuilder {
       walkConstraints(rule);
     }
 
-    // Harden every chunk that uses one of these rules.
+    // Discard spans in hardened chunks since we know for certain they will
+    // split anyway.
     for (var chunk in _chunks) {
-      if (hardenedRules.contains(chunk.rule)) {
-        chunk.harden();
+      if (chunk.rule != null && chunk.rule.isHardened) {
+        chunk.spans.clear();
       }
     }
   }

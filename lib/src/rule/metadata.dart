@@ -16,7 +16,7 @@ import 'rule.dart';
 ///
 /// Also, if the annotations split, we force the entire parameter list to fully
 /// split, both named and positional.
-class MetadataRule extends SimpleRule {
+class MetadataRule extends Rule {
   Rule _positionalRule;
   Rule _namedRule;
 

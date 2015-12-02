@@ -290,7 +290,7 @@ class ArgumentSublist {
 
   void visit(SourceVisitor visitor) {
     if (_collections.isNotEmpty) {
-      _collectionRule = new SimpleRule(Cost.splitCollections);
+      _collectionRule = new Rule(Cost.splitCollections);
     }
 
     var rule = _visitPositional(visitor);

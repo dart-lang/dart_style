@@ -80,12 +80,8 @@ class CombinatorRule extends Rule {
     _names.last.add(chunk);
   }
 
-  bool isSplit(int value, Chunk chunk) {
+  bool isSplitAtValue(int value, Chunk chunk) {
     switch (value) {
-      case Rule.unsplit:
-        // Don't split at all.
-        return false;
-
       case 1:
         // Just split at the combinators.
         return _combinators.contains(chunk);
@@ -106,11 +102,9 @@ class CombinatorRule extends Rule {
         // Split everything.
         return true;
 
-      case 4:
+      default:
         return true;
     }
-
-    throw "unreachable";
   }
 
   /// Returns `true` if [chunk] is for a combinator or a name in the

@@ -130,10 +130,10 @@ class LineSplitter {
       int firstLineIndent,
       {bool flushLeft: false})
       : chunks = chunks,
-        // Collect the set of soft rules that we need to select values for.
+        // Collect the set of rules that we need to select values for.
         rules = chunks
             .map((chunk) => chunk.rule)
-            .where((rule) => rule != null && rule is! HardSplitRule)
+            .where((rule) => rule != null)
             .toSet()
             .toList(growable: false),
         blockIndentation = blockIndentation,

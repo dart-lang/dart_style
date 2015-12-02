@@ -113,11 +113,7 @@ class SolveState {
 
   /// Gets the value to use for [rule], either the bound value or
   /// [Rule.unsplit] if it isn't bound.
-  int getValue(Rule rule) {
-    if (rule is HardSplitRule) return Rule.unsplit;
-
-    return _ruleValues.getValue(rule);
-  }
+  int getValue(Rule rule) => _ruleValues.getValue(rule);
 
   /// Returns `true` if this state is a better solution to use as the final
   /// result than [other].
@@ -437,7 +433,6 @@ class SolveState {
   /// live rules were added.
   bool _addLiveRules(Rule rule) {
     if (rule == null) return false;
-    if (rule is HardSplitRule) return false;
 
     var added = false;
     for (var constrained in rule.allConstrainedRules) {
@@ -472,7 +467,7 @@ class SolveState {
       }
 
       var rule = _splitter.chunks[i].rule;
-      if (rule != null && rule is! HardSplitRule) {
+      if (rule != null) {
         if (_ruleValues.contains(rule)) {
           boundInLine.add(rule);
         } else {

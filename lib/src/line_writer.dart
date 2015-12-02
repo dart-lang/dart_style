@@ -144,7 +144,7 @@ class LineWriter {
 
     if (debug.traceLineWriter) {
       debug.log(debug.green("\nWriting:"));
-      debug.dumpChunks(start, chunks);
+      debug.dumpChunks(0, chunks);
       debug.log();
     }
 

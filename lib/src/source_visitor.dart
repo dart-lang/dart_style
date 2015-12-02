@@ -307,7 +307,7 @@ class SourceVisitor implements AstVisitor {
       visitNodes(node.cascadeSections, between: zeroSplit);
       builder.endRule();
     } else {
-      builder.startRule(new HardSplitRule());
+      builder.startRule(new Rule.hard());
       zeroSplit();
       visitNodes(node.cascadeSections, between: zeroSplit);
       builder.endRule();
@@ -1727,7 +1727,7 @@ class SourceVisitor implements AstVisitor {
       builder.nestExpression();
 
       // This rule is ended by visitExpressionFunctionBody().
-      builder.startLazyRule(new SimpleRule(Cost.arrow));
+      builder.startLazyRule(new Rule(Cost.arrow));
     }
 
     if (parameters != null) {
@@ -1828,7 +1828,7 @@ class SourceVisitor implements AstVisitor {
     // Always use a hard rule to split the elements. The parent chunk of
     // the collection will handle the unsplit case, so this only comes
     // into play when the collection is split.
-    var rule = new HardSplitRule();
+    var rule = new Rule.hard();
     builder.startRule(rule);
 
     // If a collection contains a line comment, we assume it's a big complex
@@ -2118,7 +2118,7 @@ class SourceVisitor implements AstVisitor {
 
   /// Writes a single space split with its own rule.
   void soloSplit([int cost]) {
-    builder.startRule(new SimpleRule(cost));
+    builder.startRule(new Rule(cost));
     split();
     builder.endRule();
   }

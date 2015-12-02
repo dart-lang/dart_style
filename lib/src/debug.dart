@@ -84,10 +84,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   spans = spans.toList();
 
-  var rules = chunks
-      .map((chunk) => chunk.rule)
-      .where((rule) => rule != null && rule is! HardSplitRule)
-      .toSet();
+  var rules =
+      chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
 
   var rows = [];
 
@@ -132,13 +130,12 @@ void dumpChunks(int start, List<Chunk> chunks) {
       row.add("");
       row.add("(no rule)");
       row.add("");
-    } else if (chunk.isHardSplit) {
-      row.add("");
-      row.add("(hard)");
-      row.add("");
-    } else if (chunk.rule != null) {
+    } else {
       writeIf(chunk.rule.cost != 0, () => "\$${chunk.rule.cost}");
-      row.add(chunk.rule.toString());
+
+      var ruleString = chunk.rule.toString();
+      if (chunk.rule.isHardened) ruleString += "!";
+      row.add(ruleString);
 
       var constrainedRules =
           chunk.rule.constrainedRules.toSet().intersection(rules);
@@ -189,6 +186,33 @@ void dumpChunks(int start, List<Chunk> chunks) {
   }
 
   print(buffer.toString());
+}
+
+/// Shows all of the constraints between the rules used by [chunks].
+void dumpConstraints(List<Chunk> chunks) {
+  var rules =
+      chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
+
+  for (var rule in rules) {
+    var constrainedValues = [];
+    for (var value = 0; value < rule.numValues; value++) {
+      var constraints = [];
+      for (var other in rules) {
+        if (rule == other) continue;
+
+        var constraint = rule.constrain(value, other);
+        if (constraint != null) {
+          constraints.add("$other->$constraint");
+        }
+      }
+
+      if (constraints.isNotEmpty) {
+        constrainedValues.add("$value:(${constraints.join(' ')})");
+      }
+    }
+
+    log("$rule ${constrainedValues.join(' ')}");
+  }
 }
 
 /// Convert the line to a [String] representation.
