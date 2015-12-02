@@ -110,7 +110,7 @@ class DartFormatter {
       // Make sure we consumed all of the source.
       var token = node.endToken.next;
       if (token.type != TokenType.EOF) {
-        var error = new AnalysisError.con2(
+        var error = new AnalysisError(
             stringSource,
             token.offset,
             math.max(token.length, 1),

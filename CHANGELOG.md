@@ -5,6 +5,7 @@
 * Don't collapse states that differ by unbound rule constraints (#424).
 * Better handling for functions in method chains (#367, #398).
 * Better handling of large parameter metadata annotations (#387, #444).
+* Smarter splitting around collections in named parameters (#394).
 * Split calls if properties in a chain split (#399).
 * Don't allow splitting inside empty functions (#404).
 * Consider a rule live if it constrains a rule in the overflow line (#407).

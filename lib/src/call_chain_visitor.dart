@@ -8,6 +8,7 @@ import 'package:analyzer/analyzer.dart';
 
 import 'argument_list_visitor.dart';
 import 'rule/argument.dart';
+import 'rule/rule.dart';
 import 'source_visitor.dart';
 
 /// Helper class for [SourceVisitor] that handles visiting and writing a
@@ -307,22 +308,20 @@ class CallChainVisitor {
 
     // Don't split right after a non-empty curly-bodied function.
     if (expression is FunctionExpression) {
-      var function = expression as FunctionExpression;
+      if (expression.body is! BlockFunctionBody) return false;
 
-      if (function.body is! BlockFunctionBody) return false;
-
-      return (function.body as BlockFunctionBody).block.statements.isEmpty;
+      return (expression.body as BlockFunctionBody).block.statements.isEmpty;
     }
 
     // If the expression ends in an argument list, base the splitting on the
     // last argument.
     var argumentList;
     if (expression is MethodInvocation) {
-      argumentList = (expression as MethodInvocation).argumentList;
+      argumentList = expression.argumentList;
     } else if (expression is InstanceCreationExpression) {
-      argumentList = (expression as InstanceCreationExpression).argumentList;
+      argumentList = expression.argumentList;
     } else if (expression is FunctionExpressionInvocation) {
-      argumentList = (expression as FunctionExpressionInvocation).argumentList;
+      argumentList = expression.argumentList;
     }
 
     // Any other kind of expression always splits.
@@ -420,7 +419,7 @@ class CallChainVisitor {
     if (_ruleEnabled) return;
 
     // If the properties split, force the calls to split too.
-    var rule = new NamedRule();
+    var rule = new Rule();
     if (_propertyRule != null) _propertyRule.setNamedArgsRule(rule);
 
     if (lazy) {

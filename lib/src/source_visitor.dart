@@ -837,7 +837,7 @@ class SourceVisitor implements AstVisitor {
     }
 
     if (optionalParams.isNotEmpty) {
-      var namedRule = new NamedRule();
+      var namedRule = new NamedRule(null, 0, 0);
       if (rule != null) rule.setNamedArgsRule(namedRule);
 
       _metadataRules.last.bindNamedRule(namedRule);
@@ -847,8 +847,7 @@ class SourceVisitor implements AstVisitor {
       // Make sure multi-line default values are indented.
       builder.startBlockArgumentNesting();
 
-      namedRule
-          .beforeArguments(builder.split(space: requiredParams.isNotEmpty));
+      namedRule.beforeArgument(builder.split(space: requiredParams.isNotEmpty));
 
       // "[" or "{" for optional parameters.
       token(node.leftDelimiter);
@@ -858,7 +857,7 @@ class SourceVisitor implements AstVisitor {
 
         // Write the trailing comma.
         if (param != node.parameters.last) token(param.endToken.next);
-        if (param != optionalParams.last) split();
+        if (param != optionalParams.last) namedRule.beforeArgument(split());
       }
 
       builder.endBlockArgumentNesting();
@@ -1204,7 +1203,16 @@ class SourceVisitor implements AstVisitor {
     builder.nestExpression();
     builder.startSpan();
     visit(node.name);
-    visit(node.expression, before: soloSplit);
+
+    // Don't allow a split between a name and a collection. Instead, we want
+    // the collection itself to split, or to split before the argument.
+    if (node.expression is ListLiteral || node.expression is MapLiteral) {
+      space();
+    } else {
+      soloSplit();
+    }
+
+    visit(node.expression);
     builder.endSpan();
     builder.unnest();
   }

@@ -97,7 +97,7 @@ class SolveState {
   ///
   /// It's important to track this, because we can't allow to states to overlap
   /// if one permits more values for some unbound rule than the other does.
-  Map<Rule, List<int>> _unboundConstraints;
+  Map<Rule, Set<int>> _unboundConstraints;
 
   /// The bound rules that appear inside lines also containing unbound rules.
   ///

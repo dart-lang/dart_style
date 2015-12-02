@@ -19,3 +19,27 @@
         })).toEqual(1);
       });
     }
+>>>
+@Component(
+    selector: 'io-controller',
+    template: r'<content></content>',
+    map: const {
+      'attr': '@attr',
+      'expr': '<=>expr',
+      'once': '=>!exprOnce',
+      'ondone': '&onDone',
+      'on-optional': '&onOptional'
+    })
+class IoControllerComponent implements ScopeAware {}
+<<<
+@Component(
+    selector: 'io-controller',
+    template: r'<content></content>',
+    map: const {
+      'attr': '@attr',
+      'expr': '<=>expr',
+      'once': '=>!exprOnce',
+      'ondone': '&onDone',
+      'on-optional': '&onOptional'
+    })
+class IoControllerComponent implements ScopeAware {}

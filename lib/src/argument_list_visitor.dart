@@ -4,6 +4,8 @@
 
 library dart_style.src.argument_list_visitor;
 
+import 'dart:math' as math;
+
 import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/src/generated/scanner.dart';
 
@@ -261,16 +263,6 @@ class ArgumentSublist {
       }
     }
 
-    // If only some of the named arguments are collections, treat none of them
-    // specially. Avoids cases like:
-    //
-    //     function(
-    //         a: arg,
-    //         b: [
-    //       ...
-    //     ]);
-    if (trailingCollections < named.length) trailingCollections = 0;
-
     // Collections must all be a prefix or suffix of the argument list (and not
     // both).
     if (leadingCollections != collections.length) leadingCollections = 0;
@@ -308,68 +300,63 @@ class ArgumentSublist {
           splitsOnInnerRules: _allArguments.length > 1 &&
               !_collections.containsKey(_positional.first));
     } else {
-      // Only count the positional bodies in the positional rule.
-      var leadingPositional = _leadingCollections;
-      if (_leadingCollections == _positional.length + _named.length) {
-        leadingPositional -= _named.length;
-      }
-
-      var trailingPositional = _trailingCollections - _named.length;
+      // Only count the collections in the positional rule.
+      var leadingCollections =
+          math.min(_leadingCollections, _positional.length);
+      var trailingCollections =
+          math.max(_trailingCollections - _named.length, 0);
       rule = new MultiplePositionalRule(
-          _collectionRule, leadingPositional, trailingPositional);
+          _collectionRule, leadingCollections, trailingCollections);
     }
 
-    visitor.builder.startRule(rule);
-
-    _previousSplit =
-        visitor.builder.split(space: !_isFirstArgument(_positional.first));
-    rule.beforeArgument(_previousSplit);
-
-    // Try to not split the arguments.
-    visitor.builder.startSpan(Cost.positionalArguments);
-
-    for (var argument in _positional) {
-      _visitArgument(visitor, rule, argument);
-
-      // Positional arguments split independently.
-      if (argument != _positional.last) {
-        _previousSplit = visitor.split();
-        rule.beforeArgument(_previousSplit);
-      }
-    }
-
-    visitor.builder.endSpan();
-    visitor.builder.endRule();
-
+    _visitArguments(visitor, _positional, rule);
     return rule;
   }
 
   /// Writes the named arguments, if any.
-  void _visitNamed(SourceVisitor visitor, PositionalRule rule) {
+  void _visitNamed(SourceVisitor visitor, PositionalRule positionalRule) {
     if (_named.isEmpty) return;
 
-    var positionalRule = rule;
-    var namedRule = new NamedRule(
-        containsCollections: _leadingCollections > _positional.length ||
-            _trailingCollections > 0);
-    visitor.builder.startRule(namedRule);
+    // Only count the collections in the named rule.
+    var leadingCollections =
+        math.max(_leadingCollections - _positional.length, 0);
+    var trailingCollections = math.min(_trailingCollections, _named.length);
+    var namedRule =
+        new NamedRule(_collectionRule, leadingCollections, trailingCollections);
 
     // Let the positional args force the named ones to split.
     if (positionalRule != null) {
       positionalRule.setNamedArgsRule(namedRule);
     }
 
-    // Split before the first named argument.
-    _previousSplit =
-        visitor.builder.split(space: !_isFirstArgument(_named.first));
-    namedRule.beforeArguments(_previousSplit);
+    _visitArguments(visitor, _named, namedRule);
+  }
 
-    for (var argument in _named) {
-      _visitArgument(visitor, namedRule, argument);
+  void _visitArguments(
+      SourceVisitor visitor, List<Expression> arguments, ArgumentRule rule) {
+    visitor.builder.startRule(rule);
+
+    // Split before the first argument.
+    _previousSplit =
+        visitor.builder.split(space: !_isFirstArgument(arguments.first));
+    rule.beforeArgument(_previousSplit);
+
+    // Try to not split the positional arguments.
+    if (arguments == _positional) {
+      visitor.builder.startSpan(Cost.positionalArguments);
+    }
+
+    for (var argument in arguments) {
+      _visitArgument(visitor, rule, argument);
 
       // Write the split.
-      if (argument != _named.last) _previousSplit = visitor.split();
+      if (argument != arguments.last) {
+        _previousSplit = visitor.split();
+        rule.beforeArgument(_previousSplit);
+      }
     }
+
+    if (arguments == _positional) visitor.builder.endSpan();
 
     visitor.builder.endRule();
   }
