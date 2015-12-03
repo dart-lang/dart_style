@@ -69,7 +69,8 @@ String bold(message) => "$_bold$message$_none";
 void dumpChunks(int start, List<Chunk> chunks) {
   if (chunks.skip(start).isEmpty) return;
 
-  // Show the spans as vertical bands over their range.
+  // Show the spans as vertical bands over their range (unless there are too
+  // many).
   var spans = new Set();
   addSpans(chunks) {
     for (var chunk in chunks) {
@@ -99,23 +100,25 @@ void dumpChunks(int start, List<Chunk> chunks) {
       row.add(chunk.text);
     }
 
-    var spanBars = "";
-    for (var span in spans) {
-      if (chunk.spans.contains(span)) {
-        if (index == 0 || !chunks[index - 1].spans.contains(span)) {
-          spanBars += "╖";
+    if (spans.length <= 20) {
+      var spanBars = "";
+      for (var span in spans) {
+        if (chunk.spans.contains(span)) {
+          if (index == 0 || !chunks[index - 1].spans.contains(span)) {
+            spanBars += "╖";
+          } else {
+            spanBars += "║";
+          }
         } else {
-          spanBars += "║";
-        }
-      } else {
-        if (index > 0 && chunks[index - 1].spans.contains(span)) {
-          spanBars += "╜";
-        } else {
-          spanBars += " ";
+          if (index > 0 && chunks[index - 1].spans.contains(span)) {
+            spanBars += "╜";
+          } else {
+            spanBars += " ";
+          }
         }
       }
+      row.add(spanBars);
     }
-    row.add(spanBars);
 
     writeIf(predicate, String callback()) {
       if (predicate) {
@@ -149,6 +152,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
         () => "nest ${chunk.nesting}");
 
     writeIf(chunk.flushLeft != null && chunk.flushLeft, () => "flush");
+
+    writeIf(chunk.canDivide, () => "divide");
 
     rows.add(row);
 

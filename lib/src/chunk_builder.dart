@@ -61,9 +61,6 @@ class ChunkBuilder {
   /// written before they start.
   final _lazyRules = <Rule>[];
 
-  /// The indexes of the chunks owned by each rule (except for hard splits).
-  final _ruleChunks = <Rule, List<int>>{};
-
   /// The nested stack of spans that are currently being written.
   final _openSpans = <OpenSpan>[];
 
@@ -526,11 +523,11 @@ class ChunkBuilder {
     if (forceSplit) forceRules();
 
     // Write the split for the block contents themselves.
-    _chunks.last.applySplit(
-        rule, _nesting.indentation, _blockArgumentNesting.last,
+    var chunk = _chunks.last;
+    chunk.applySplit(rule, _nesting.indentation, _blockArgumentNesting.last,
         flushLeft: firstFlushLeft);
 
-    _afterSplit();
+    if (chunk.rule.isHardened) _handleHardSplit();
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
@@ -705,21 +702,8 @@ class ChunkBuilder {
         nest ? _nesting.nesting : new NestingLevel(),
         flushLeft: flushLeft, isDouble: isDouble, space: space);
 
-    return _afterSplit();
-  }
-
-  /// Keep tracks of which chunks are owned by which rules and handles hard
-  /// splits after a chunk has been completed.
-  Chunk _afterSplit() {
-    var chunk = _chunks.last;
-
-    if (_rules.isNotEmpty) {
-      _ruleChunks.putIfAbsent(rule, () => []).add(_chunks.length - 1);
-    }
-
-    if (chunk.rule.isHardened) _handleHardSplit();
-
-    return chunk;
+    if (_chunks.last.rule.isHardened) _handleHardSplit();
+    return _chunks.last;
   }
 
   /// Writes [text] to either the current chunk or a new one if the current
@@ -742,10 +726,6 @@ class ChunkBuilder {
     if (!chunk.rule.isHardened) return false;
     if (chunk.nesting.isNested) return false;
     if (chunk.isBlock) return false;
-
-    // Make sure we don't split the line in the middle of a rule.
-    var chunks = _ruleChunks[chunk.rule];
-    if (chunks != null && chunks.any((other) => other > i)) return false;
 
     return true;
   }
@@ -791,7 +771,7 @@ class ChunkBuilder {
       rule.harden();
 
       // Follow this rule's constraints, recursively.
-      for (var other in _ruleChunks.keys) {
+      for (var other in rule.constrainedRules) {
         if (other == rule) continue;
 
         if (!other.isHardened &&
