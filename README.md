@@ -9,20 +9,8 @@ The formatter handles indentation, inline whitespace and
 (by far the most difficult), intelligent line wrapping.
 It has no problems with nested collections, function
 expressions, long argument lists, or otherwise tricky code.
-Only white space is affected.
 
-To use the formatter, you can either run the **dartfmt** command or use the
-dart_style API.
-
-IDEs and editors that support Dart usually provide easy ways to run the
-formatter. For example, in WebStorm you can right-click a .dart file
-and then choose **Reformat with Dart Style**.
-
-**Note:** dartfmt is safe to run automatically. We encourage you to add
-it to your build scripts.
-
-The following example shows a complex expression, with most white
-space removed, and the code that results when using dartfmt.
+The formatter turns code like this:
 
 ```
 // BEFORE formatting
@@ -31,7 +19,7 @@ if (tag=='style'||tag=='script'&&(type==null||type == TYPE_JS
   tag=='link'&&(rel=='stylesheet'||rel=='import')) {}
 ```
 
-Dartfmt converts this to:
+into:
 
 ```
   // AFTER formatting
@@ -40,6 +28,9 @@ Dartfmt converts this to:
           (type == null || type == TYPE_JS || type == TYPE_DART) ||
       tag == 'link' && (rel == 'stylesheet' || rel == 'import')) {}
 ```
+
+The formatter will never break your code&mdash;you can safely invoke it
+automatically from build and presubmit scripts.
 
 ## Getting dartfmt
 
@@ -61,6 +52,10 @@ If you don't want `dartfmt` on your path, you can run it explicitly:
     $ pub global run dart_style:format ...
 
 ## Using dartfmt
+
+IDEs and editors that support Dart usually provide easy ways to run the
+formatter. For example, in WebStorm you can right-click a .dart file
+and then choose **Reformat with Dart Style**.
 
 Here's a simple example of using dartfmt on the command line:
 
