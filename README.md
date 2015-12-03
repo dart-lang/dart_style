@@ -118,7 +118,7 @@ API for formatting code. Simple usage looks like this:
 * Before sending an email, see if you are asking a
   [frequently asked question][faq].
 
-* Before filing a bug, of if you want to understand how work on the
+* Before filing a bug, or if you want to understand how work on the
   formatter is managed, see how we [track issues][].
 
 [faq]: https://github.com/dart-lang/dart_style/wiki/FAQ
