@@ -185,7 +185,17 @@ class SourceVisitor implements AstVisitor {
 
   visitBinaryExpression(BinaryExpression node) {
     builder.startSpan();
-    builder.nestExpression();
+
+    // If a binary operator sequence appears immediately after a `=>`, don't
+    // add an extra level of nesting. Instead, let the subsequent operands line
+    // up with the first, as in:
+    //
+    //     method() =>
+    //         argument &&
+    //         argument &&
+    //         argument;
+    var isArrowBody = node.parent is ExpressionFunctionBody;
+    if (!isArrowBody) builder.nestExpression();
 
     // Start lazily so we don't force the operator to split if a line comment
     // appears before the first operand.
@@ -217,7 +227,7 @@ class SourceVisitor implements AstVisitor {
 
     builder.endBlockArgumentNesting();
 
-    builder.unnest();
+    if (!isArrowBody) builder.unnest();
     builder.endSpan();
     builder.endRule();
   }
@@ -715,7 +725,10 @@ class SourceVisitor implements AstVisitor {
     // Split after the "=>", using the rule created before the parameters
     // by _visitBody().
     split();
-    builder.endRule();
+
+    // If the body is a binary operator expression, then we want to force the
+    // split at `=>` if the operators split. See visitBinaryExpression().
+    if (node.expression is! BinaryExpression) builder.endRule();
 
     if (_isInLambda(node)) builder.endSpan();
 
@@ -724,6 +737,8 @@ class SourceVisitor implements AstVisitor {
     visit(node.expression);
     builder.endSpan();
     builder.endBlockArgumentNesting();
+
+    if (node.expression is BinaryExpression) builder.endRule();
 
     token(node.semicolon);
   }

@@ -14,6 +14,7 @@
 * Better indentation of collection literals (#421, #469).
 * Only show a hidden directory once in the output (#428).
 * Allow splitting between type and variable name (#429, #439, #454).
+* Better indentation for binary operators in `=>` bodies (#434.
 * Tweak splitting around assignment (#436, #437).
 * Indent multi-line collections in default values (#441).
 * Don't drop metadata on part directives (#443).
