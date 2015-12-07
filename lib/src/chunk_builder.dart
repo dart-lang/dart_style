@@ -98,8 +98,8 @@ class ChunkBuilder {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-          _pendingWhitespace == Whitespace.spaceOrNewline ||
-          _pendingWhitespace == Whitespace.splitOrNewline;
+      _pendingWhitespace == Whitespace.spaceOrNewline ||
+      _pendingWhitespace == Whitespace.splitOrNewline;
 
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;

@@ -1,5 +1,5 @@
 name: dart_style
-version: 0.2.1-dev
+version: 0.2.1
 author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
@@ -14,6 +14,7 @@ dev_dependencies:
   async: '>=1.0.0 <=2.0.0'
   browser: '>=0.10.0 <0.11.0'
   grinder: '^0.7.2'
+  pub_semver: '^1.2.3'
   scheduled_test: '>=0.12.0 <0.13.0'
   test: '>=0.12.0 <0.13.0'
   yaml: '^2.0.0'

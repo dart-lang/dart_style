@@ -2071,7 +2071,8 @@ class SourceVisitor implements AstVisitor {
 
   /// Returns `true` if [node] is immediately contained within an anonymous
   /// [FunctionExpression].
-  bool _isInLambda(AstNode node) => node.parent is FunctionExpression &&
+  bool _isInLambda(AstNode node) =>
+      node.parent is FunctionExpression &&
       node.parent.parent is! FunctionDeclaration;
 
   /// Writes the string literal [string] to the output.
