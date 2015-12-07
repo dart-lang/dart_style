@@ -538,10 +538,15 @@ class SourceVisitor implements AstVisitor {
     // ":" if the parameters and initialization list don't all fit on one line.
     builder.startRule();
 
+    // If the redirecting constructor happens to wrap, we want to make sure
+    // the parameter list gets more deeply indented.
+    if (node.redirectedConstructor != null) builder.nestExpression();
+
     _visitBody(node.parameters, node.body, () {
       // Check for redirects or initializer lists.
       if (node.redirectedConstructor != null) {
         _visitConstructorRedirects(node);
+        builder.unnest();
       } else if (node.initializers.isNotEmpty) {
         _visitConstructorInitializers(node);
       }
@@ -549,7 +554,8 @@ class SourceVisitor implements AstVisitor {
   }
 
   void _visitConstructorRedirects(ConstructorDeclaration node) {
-    token(node.separator /* = */, before: space, after: space);
+    token(node.separator /* = */, before: space);
+    soloSplit();
     visitCommaSeparatedNodes(node.initializers);
     visit(node.redirectedConstructor);
   }
