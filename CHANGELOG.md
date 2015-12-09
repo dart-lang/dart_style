@@ -1,3 +1,8 @@
+# 0.2.2
+
+* Upgrade to analyzer 0.27.0.
+* Format configured imports and exports.
+
 # 0.2.1
 
 * `--version` command line argument (#240).

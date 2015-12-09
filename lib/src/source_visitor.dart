@@ -533,6 +533,26 @@ class SourceVisitor implements AstVisitor {
     builder.unnest();
   }
 
+  visitConfiguration(Configuration node) {
+    token(node.ifKeyword);
+    space();
+    token(node.leftParenthesis);
+    visit(node.name);
+
+    if (node.equalToken != null) {
+      builder.nestExpression();
+      space();
+      token(node.equalToken);
+      soloSplit();
+      visit(node.value);
+      builder.unnest();
+    }
+
+    token(node.rightParenthesis);
+    space();
+    visit(node.libraryUri);
+  }
+
   visitConstructorDeclaration(ConstructorDeclaration node) {
     visitMemberMetadata(node.metadata);
 
@@ -666,6 +686,17 @@ class SourceVisitor implements AstVisitor {
     builder.unnest();
   }
 
+  visitDottedName(DottedName node) {
+    for (var component in node.components) {
+      // Write the preceding ".".
+      if (component != node.components.first) {
+        token(component.beginToken.previous);
+      }
+
+      visit(component);
+    }
+  }
+
   visitDoubleLiteral(DoubleLiteral node) {
     token(node.literal);
   }
@@ -702,6 +733,8 @@ class SourceVisitor implements AstVisitor {
       token(node.keyword);
       space();
       visit(node.uri);
+
+      _visitConfigurations(node.configurations);
 
       builder.startRule(new CombinatorRule());
       visitNodes(node.combinators);
@@ -1061,6 +1094,8 @@ class SourceVisitor implements AstVisitor {
       token(node.keyword);
       space();
       visit(node.uri);
+
+      _visitConfigurations(node.configurations);
 
       if (node.asKeyword != null) {
         soloSplit();
@@ -1995,6 +2030,20 @@ class SourceVisitor implements AstVisitor {
 
     // Now write the delimiter itself.
     _writeText(rightBracket.lexeme, rightBracket.offset);
+  }
+
+  /// Visits a list of configurations in an import or export directive.
+  void _visitConfigurations(NodeList<Configuration> configurations) {
+    if (configurations.isEmpty) return;
+
+    builder.startRule();
+
+    for (var configuration in configurations) {
+      split();
+      visit(configuration);
+    }
+
+    builder.endRule();
   }
 
   /// Visits a "combinator".
