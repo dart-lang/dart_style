@@ -161,10 +161,13 @@ class SourceVisitor implements AstVisitor {
   visitAssertStatement(AssertStatement node) {
     _simpleStatement(node, () {
       token(node.assertKeyword);
-      token(node.leftParenthesis);
-      soloZeroSplit();
-      visit(node.condition);
-      token(node.rightParenthesis);
+
+      var arguments = [node.condition];
+      if (node.message != null) arguments.add(node.message);
+
+      var visitor = new ArgumentListVisitor.forArguments(
+          this, node.leftParenthesis, node.rightParenthesis, arguments);
+      visitor.visit();
     });
   }
 

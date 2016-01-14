@@ -1,5 +1,6 @@
 # 0.2.3
 
+* Support messages in assert() (#411).
 * Don't put spaces around magic generic method annotation comments (#477).
 * Always put member metadata annotations on their own line (#483).
 * Indent functions in named argument lists with non-functions (#478).

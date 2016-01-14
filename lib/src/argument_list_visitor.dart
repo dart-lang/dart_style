@@ -20,7 +20,15 @@ import 'source_visitor.dart';
 class ArgumentListVisitor {
   final SourceVisitor _visitor;
 
-  final ArgumentList _node;
+  /// The "(" before the argument list.
+  final Token _leftParenthesis;
+
+  /// The ")" after the argument list.
+  final Token _rightParenthesis;
+
+  /// All of the arguments, positional, named, and functions, in the argument
+  /// list.
+  final List<Expression> _allArguments;
 
   /// The normal arguments preceding any block function arguments.
   final ArgumentSublist _arguments;
@@ -37,7 +45,7 @@ class ArgumentListVisitor {
 
   /// Returns `true` if there is only a single positional argument.
   bool get _isSingle =>
-      _node.arguments.length == 1 && _node.arguments.single is! NamedExpression;
+      _allArguments.length == 1 && _allArguments.single is! NamedExpression;
 
   /// Whether this argument list has any collection or block function arguments.
   // TODO(rnystrom): Returning true based on collections is non-optimal. It
@@ -48,12 +56,21 @@ class ArgumentListVisitor {
       _arguments._collections.isNotEmpty || _functions != null;
 
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
+    return new ArgumentListVisitor.forArguments(
+        visitor, node.leftParenthesis, node.rightParenthesis, node.arguments);
+  }
+
+  factory ArgumentListVisitor.forArguments(
+      SourceVisitor visitor,
+      Token leftParenthesis,
+      Token rightParenthesis,
+      List<Expression> arguments) {
     // Look for a single contiguous range of block function arguments.
     var functionsStart;
     var functionsEnd;
 
-    for (var i = 0; i < node.arguments.length; i++) {
-      var argument = node.arguments[i];
+    for (var i = 0; i < arguments.length; i++) {
+      var argument = arguments[i];
       if (_isBlockFunction(argument)) {
         if (functionsStart == null) functionsStart = i;
 
@@ -88,33 +105,47 @@ class ArgumentListVisitor {
     //     }
     //         another: argument);
     if (functionsStart != null &&
-        node.arguments[0] is NamedExpression &&
-        (functionsStart > 0 || functionsEnd < node.arguments.length)) {
+        arguments[0] is NamedExpression &&
+        (functionsStart > 0 || functionsEnd < arguments.length)) {
       functionsStart = null;
     }
 
     if (functionsStart == null) {
       // No functions, so there is just a single argument list.
-      return new ArgumentListVisitor._(visitor, node,
-          new ArgumentSublist(node.arguments, node.arguments), null, null);
+      return new ArgumentListVisitor._(
+          visitor,
+          leftParenthesis,
+          rightParenthesis,
+          arguments,
+          new ArgumentSublist(arguments, arguments),
+          null,
+          null);
     }
 
     // Split the arguments into two independent argument lists with the
     // functions in the middle.
-    var argumentsBefore = node.arguments.take(functionsStart).toList();
-    var functions = node.arguments.sublist(functionsStart, functionsEnd);
-    var argumentsAfter = node.arguments.skip(functionsEnd).toList();
+    var argumentsBefore = arguments.take(functionsStart).toList();
+    var functions = arguments.sublist(functionsStart, functionsEnd);
+    var argumentsAfter = arguments.skip(functionsEnd).toList();
 
     return new ArgumentListVisitor._(
         visitor,
-        node,
-        new ArgumentSublist(node.arguments, argumentsBefore),
+        leftParenthesis,
+        rightParenthesis,
+        arguments,
+        new ArgumentSublist(arguments, argumentsBefore),
         functions,
-        new ArgumentSublist(node.arguments, argumentsAfter));
+        new ArgumentSublist(arguments, argumentsAfter));
   }
 
-  ArgumentListVisitor._(this._visitor, this._node, this._arguments,
-      this._functions, this._argumentsAfterFunctions);
+  ArgumentListVisitor._(
+      this._visitor,
+      this._leftParenthesis,
+      this._rightParenthesis,
+      this._allArguments,
+      this._arguments,
+      this._functions,
+      this._argumentsAfterFunctions);
 
   /// Builds chunks for the argument list.
   void visit() {
@@ -126,7 +157,7 @@ class ArgumentListVisitor {
     // them.
     _visitor.builder.nestExpression();
     _visitor.builder.startSpan();
-    _visitor.token(_node.leftParenthesis);
+    _visitor.token(_leftParenthesis);
 
     _arguments.visit(_visitor);
 
@@ -138,7 +169,7 @@ class ArgumentListVisitor {
       // instead of just having this little solo split here. That would try to
       // keep the parameter list with other arguments when possible, and, I
       // think, generally look nicer.
-      if (_functions.first == _node.arguments.first) {
+      if (_functions.first == _allArguments.first) {
         _visitor.soloZeroSplit();
       } else {
         _visitor.soloSplit();
@@ -150,7 +181,7 @@ class ArgumentListVisitor {
         _visitor.visit(argument);
 
         // Write the trailing comma.
-        if (argument != _node.arguments.last) {
+        if (argument != _allArguments.last) {
           _visitor.token(argument.endToken.next);
         }
       }
@@ -160,7 +191,7 @@ class ArgumentListVisitor {
       _visitor.builder.endSpan();
     }
 
-    _visitor.token(_node.rightParenthesis);
+    _visitor.token(_rightParenthesis);
 
     _visitor.builder.unnest();
 
@@ -401,8 +432,7 @@ class ArgumentSublist {
     }
 
     if (argument is NamedExpression) {
-      visitor.visitNamedArgument(
-          argument as NamedExpression, rule as NamedRule);
+      visitor.visitNamedArgument(argument, rule as NamedRule);
     } else {
       visitor.visit(argument);
     }
