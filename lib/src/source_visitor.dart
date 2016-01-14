@@ -372,7 +372,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitClassDeclaration(ClassDeclaration node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     builder.nestExpression();
     modifier(node.abstractKeyword);
@@ -427,7 +427,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       modifier(node.abstractKeyword);
@@ -554,7 +554,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {
-    visitMemberMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     modifier(node.externalKeyword);
     modifier(node.constKeyword);
@@ -714,7 +714,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitEnumDeclaration(EnumDeclaration node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     token(node.enumKeyword);
     space();
@@ -727,7 +727,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitExportDirective(ExportDirective node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.keyword);
@@ -790,7 +790,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFieldDeclaration(FieldDeclaration node) {
-    visitMemberMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       modifier(node.staticKeyword);
@@ -947,7 +947,7 @@ class SourceVisitor implements AstVisitor {
       builder.startRule();
 
       var declaration = node.variables;
-      visitDeclarationMetadata(declaration.metadata);
+      visitMetadata(declaration.metadata);
       modifier(declaration.keyword);
       visit(declaration.type, after: space);
 
@@ -1003,7 +1003,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionTypeAlias(FunctionTypeAlias node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.typedefKeyword);
@@ -1088,7 +1088,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitImportDirective(ImportDirective node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.keyword);
@@ -1193,7 +1193,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitLibraryDirective(LibraryDirective node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.keyword);
@@ -1303,7 +1303,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitPartDirective(PartDirective node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.keyword);
@@ -1313,7 +1313,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitPartOfDirective(PartOfDirective node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       token(node.keyword);
@@ -1512,7 +1512,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
       visit(node.variables);
@@ -1561,7 +1561,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
-    visitDeclarationMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     // Allow but try to avoid splitting between the type and name.
     builder.startSpan();
@@ -1624,35 +1624,17 @@ class SourceVisitor implements AstVisitor {
     if (after != null) after();
   }
 
-  /// Visit metadata annotations on directives and declarations.
+  /// Visit metadata annotations on directives, declarations, and members.
   ///
   /// These always force the annotations to be on the previous line.
-  void visitDeclarationMetadata(NodeList<Annotation> metadata) {
-    // If there are multiple annotations, they are always on their own lines,
-    // even the last.
-    if (metadata.length > 1) {
-      visitNodes(metadata, between: newline, after: newline);
-    } else {
-      visitNodes(metadata, between: space, after: newline);
-    }
-  }
-
-  /// Visit metadata annotations on members.
-  ///
-  /// These may be on the same line as the member, or on the previous.
-  void visitMemberMetadata(NodeList<Annotation> metadata) {
-    // If there are multiple annotations, they are always on their own lines,
-    // even the last.
-    if (metadata.length > 1) {
-      visitNodes(metadata, between: newline, after: newline);
-    } else {
-      visitNodes(metadata, between: space, after: spaceOrNewline);
-    }
+  void visitMetadata(NodeList<Annotation> metadata) {
+    visitNodes(metadata, between: newline, after: newline);
   }
 
   /// Visits metadata annotations on parameters and type parameters.
   ///
-  /// These are always on the same line as the parameter.
+  /// Unlike other annotations, these are allowed to stay on the same line as
+  /// the parameter.
   void visitParameterMetadata(
       NodeList<Annotation> metadata, void visitParameter()) {
     if (metadata == null || metadata.isEmpty) {
@@ -1733,7 +1715,7 @@ class SourceVisitor implements AstVisitor {
   void _visitMemberDeclaration(
       /* FunctionDeclaration|MethodDeclaration */ node,
       /* FunctionExpression|MethodDeclaration */ function) {
-    visitMemberMetadata(node.metadata);
+    visitMetadata(node.metadata);
 
     // Nest the signature in case we have to split between the return type and
     // name.
@@ -2162,13 +2144,6 @@ class SourceVisitor implements AstVisitor {
   /// Emit a two mandatory newlines.
   void twoNewlines() {
     builder.writeWhitespace(Whitespace.twoNewlines);
-  }
-
-  /// Allow either a single space or newline to be emitted before the next
-  /// non-whitespace token based on whether a newline exists in the source
-  /// between the last token and the next one.
-  void spaceOrNewline() {
-    builder.writeWhitespace(Whitespace.spaceOrNewline);
   }
 
   /// Allow either a single split or newline to be emitted before the next

@@ -98,7 +98,6 @@ class ChunkBuilder {
   /// token pair.
   bool get needsToPreserveNewlines =>
       _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-      _pendingWhitespace == Whitespace.spaceOrNewline ||
       _pendingWhitespace == Whitespace.splitOrNewline;
 
   /// The number of characters of code that can fit in a single line.
@@ -300,14 +299,6 @@ class ChunkBuilder {
     // If we didn't know how many newlines the user authored between the last
     // token and this one, now we do.
     switch (_pendingWhitespace) {
-      case Whitespace.spaceOrNewline:
-        if (numLines > 0) {
-          _pendingWhitespace = Whitespace.nestedNewline;
-        } else {
-          _pendingWhitespace = Whitespace.space;
-        }
-        break;
-
       case Whitespace.splitOrNewline:
         if (numLines > 0) {
           _pendingWhitespace = Whitespace.nestedNewline;
@@ -595,7 +586,6 @@ class ChunkBuilder {
         _writeHardSplit(isDouble: true);
         break;
 
-      case Whitespace.spaceOrNewline:
       case Whitespace.splitOrNewline:
       case Whitespace.oneOrTwoNewlines:
         // We should have pinned these down before getting here.

@@ -1,3 +1,7 @@
+# 0.2.3
+
+* Always put member metadata annotations on their own line (#483).
+
 # 0.2.2
 
 * Upgrade to analyzer 0.27.0.
