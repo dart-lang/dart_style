@@ -68,6 +68,31 @@ class ArgumentListVisitor {
       }
     }
 
+    // Edge case: If all of the arguments are named, but they aren't all
+    // functions, then don't handle the functions specially. A function with a
+    // bunch of named arguments tends to look best when they are all lined up,
+    // even the function ones (unless they are all functions).
+    //
+    // Prefers:
+    //
+    //     function(
+    //         named: () {
+    //           something();
+    //         },
+    //         another: argument);
+    //
+    // Over:
+    //
+    //     function(named: () {
+    //       something();
+    //     }
+    //         another: argument);
+    if (functionsStart != null &&
+        node.arguments[0] is NamedExpression &&
+        (functionsStart > 0 || functionsEnd < node.arguments.length)) {
+      functionsStart = null;
+    }
+
     if (functionsStart == null) {
       // No functions, so there is just a single argument list.
       return new ArgumentListVisitor._(visitor, node,
