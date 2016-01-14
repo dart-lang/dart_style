@@ -14,6 +14,9 @@ import 'rule/rule.dart';
 import 'source_code.dart';
 import 'whitespace.dart';
 
+/// Matches if the last character of a string is an identifier character.
+final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
+
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
 /// tree of [Chunk]s which can then be split into physical lines.
@@ -240,9 +243,7 @@ class ChunkBuilder {
 
         // The comment follows other text, so we need to decide if it gets a
         // space before it or not.
-        if (_needsSpaceBeforeComment(isLineComment: comment.isLineComment)) {
-          _writeText(" ");
-        }
+        if (_needsSpaceBeforeComment(comment)) _writeText(" ");
       } else {
         // The comment starts a line, so make sure it stays on its own line.
         _writeHardSplit(
@@ -614,6 +615,15 @@ class ChunkBuilder {
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 
+  /// Returns `true` if [comment] appears to be a magic generic method comment.
+  ///
+  /// Those get spaced a little differently to look more like real syntax:
+  ///
+  ///     int f/*<S, T>*/(int x) => 3;
+  bool _isGenericMethodComment(SourceComment comment) {
+    return comment.text.startsWith("/*<") || comment.text.startsWith("/*=");
+  }
+
   /// Returns `true` if a space should be output between the end of the current
   /// output and the subsequent comment which is about to be written.
   ///
@@ -626,7 +636,7 @@ class ChunkBuilder {
   /// *   The comment is a block comment immediately following a grouping
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
-  bool _needsSpaceBeforeComment({bool isLineComment}) {
+  bool _needsSpaceBeforeComment(SourceComment comment) {
     // Not at the start of the file.
     if (_chunks.isEmpty) return false;
 
@@ -637,7 +647,13 @@ class ChunkBuilder {
     if (text.endsWith("\n")) return false;
 
     // Always put a space before line comments.
-    if (isLineComment) return true;
+    if (comment.isLineComment) return true;
+
+    // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
+    if (_isGenericMethodComment(comment) &&
+        _trailingIdentifierChar.hasMatch(text)) {
+      return false;
+    }
 
     // Block comments do not get a space if following a grouping character.
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
@@ -651,6 +667,11 @@ class ChunkBuilder {
 
     // Not at the beginning of a line.
     if (!_chunks.last.canAddText) return false;
+
+    // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
+    if (_isGenericMethodComment(comments.last) && token == "(") {
+      return false;
+    }
 
     // Otherwise, it gets a space if the following token is not a delimiter or
     // the empty string, for EOF.
