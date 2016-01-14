@@ -29,8 +29,8 @@ abstract class ArgumentRule extends Rule {
 
   /// If true, then inner rules that are written will force this rule to split.
   ///
-  /// Temporarily disabled while writing collectio arguments so that they can be
-  /// multi-line without forcing the whole argument list to split.
+  /// Temporarily disabled while writing collection arguments so that they can
+  /// be multi-line without forcing the whole argument list to split.
   bool _trackInnerRules = true;
 
   /// Don't split when an inner collection rule splits.
@@ -57,119 +57,20 @@ abstract class ArgumentRule extends Rule {
     _arguments.add(chunk);
   }
 
-  /// Called before a collection argument is written.
-  ///
   /// Disables tracking inner rules while a collection argument is written.
-  void beforeCollection() {
+  void disableSplitOnInnerRules() {
     assert(_trackInnerRules == true);
     _trackInnerRules = false;
   }
 
-  /// Called after a collection argument is complete.
-  ///
   /// Re-enables tracking inner rules.
-  void afterCollection() {
+  void enableSplitOnInnerRules() {
     assert(_trackInnerRules == false);
     _trackInnerRules = true;
   }
 }
 
-/// Base class for a rule for handling positional argument lists.
-abstract class PositionalRule extends ArgumentRule {
-  /// If there are named arguments following these positional ones, this will
-  /// be their rule.
-  Rule _namedArgsRule;
-
-  /// Creates a new rule for a positional argument list.
-  ///
-  /// If [_collectionRule] is given, it is the rule used to split the collection
-  /// arguments in the list.
-  PositionalRule(
-      Rule collectionRule, int leadingCollections, int trailingCollections)
-      : super(collectionRule, leadingCollections, trailingCollections);
-
-  void addConstrainedRules(Set<Rule> rules) {
-    super.addConstrainedRules(rules);
-    if (_namedArgsRule != null) rules.add(_namedArgsRule);
-  }
-
-  void forgetUnusedRules() {
-    super.forgetUnusedRules();
-    if (_namedArgsRule != null && _namedArgsRule.index == null) {
-      _namedArgsRule = null;
-    }
-  }
-
-  /// Remembers that [rule] is the [Rule] immediately following this positional
-  /// positional argument list.
-  ///
-  /// This is normally a [NamedRule] but [PositionalRule] is also used for the
-  /// property accesses at the beginning of a call chain, in which case this
-  /// is just a [SimpleRule].
-  void setNamedArgsRule(Rule rule) {
-    _namedArgsRule = rule;
-  }
-
-  /// Constrains the named argument list to at least move to the next line if
-  /// there are any splits in the positional arguments. Prevents things like:
-  ///
-  ///      function(
-  ///          argument,
-  ///          argument, named: argument);
-  int constrain(int value, Rule other) {
-    var constrained = super.constrain(value, other);
-    if (constrained != null) return constrained;
-
-    // Handle the relationship between the positional and named args.
-    if (other == _namedArgsRule) {
-      // If the positional args are one-per-line, the named args are too.
-      if (value == fullySplitValue) return _namedArgsRule.fullySplitValue;
-
-      // Otherwise, if there is any split in the positional arguments, don't
-      // allow the named arguments on the same line as them.
-      if (value != 0) return -1;
-    }
-
-    return null;
-  }
-}
-
-/// Split rule for a call with a single positional argument (which may or may
-/// not be a collection argument.)
-class SinglePositionalRule extends PositionalRule {
-  int get numValues => 2;
-
-  /// If there is only a single non-collection argument, allow it to split
-  /// internally without forcing a split before the argument.
-  final bool splitsOnInnerRules;
-
-  /// Creates a new rule for a positional argument list.
-  ///
-  /// If [collectionRule] is given, it is the rule used to split the
-  /// collections in the list. If [splitsOnInnerRules] is `true`, then we will
-  /// split before the argument if the argument itself contains a split.
-  SinglePositionalRule(Rule collectionRule, {bool splitsOnInnerRules})
-      : super(collectionRule, 0, 0),
-        splitsOnInnerRules =
-            splitsOnInnerRules != null ? splitsOnInnerRules : false;
-
-  int constrain(int value, Rule other) {
-    var constrained = super.constrain(value, other);
-    if (constrained != null) return constrained;
-
-    if (other != _collectionRule) return null;
-
-    // If we aren't splitting any args, we can split the collection.
-    if (value == Rule.unsplit) return null;
-
-    // We are splitting before a collection, so don't let it split internally.
-    return Rule.unsplit;
-  }
-
-  String toString() => "1Pos${super.toString()}";
-}
-
-/// Split rule for a call with more than one positional argument.
+/// Rule for handling positional argument lists.
 ///
 /// The number of values is based on the number of arguments and whether or not
 /// there are bodies. The first two values are always:
@@ -186,10 +87,25 @@ class SinglePositionalRule extends PositionalRule {
 /// Finally, if there are collection arguments, there is another value that
 /// splits before all of the non-collection arguments, but does not split
 /// before the collections, so that they can split internally.
-class MultiplePositionalRule extends PositionalRule {
+class PositionalRule extends ArgumentRule {
+  /// If there are named arguments following these positional ones, this will
+  /// be their rule.
+  Rule _namedArgsRule;
+
+  /// Creates a new rule for a positional argument list.
+  ///
+  /// If [_collectionRule] is given, it is the rule used to split the collection
+  /// arguments in the list.
+  PositionalRule(
+      Rule collectionRule, int leadingCollections, int trailingCollections)
+      : super(collectionRule, leadingCollections, trailingCollections);
+
   int get numValues {
-    // Can split before any one argument, none, or all.
-    var result = 2 + _arguments.length;
+    // Can split before any one argument or none.
+    var result = _arguments.length + 1;
+
+    // If there are multiple arguments, can split before all of them.
+    if (_arguments.length > 1) result++;
 
     // When there are collection arguments, there are two ways we can split on
     // "all" arguments:
@@ -203,11 +119,17 @@ class MultiplePositionalRule extends PositionalRule {
     return result;
   }
 
-  MultiplePositionalRule(
-      Rule collectionRule, int leadingCollections, int trailingCollections)
-      : super(collectionRule, leadingCollections, trailingCollections);
+  void addConstrainedRules(Set<Rule> rules) {
+    super.addConstrainedRules(rules);
+    if (_namedArgsRule != null) rules.add(_namedArgsRule);
+  }
 
-  String toString() => "*Pos${super.toString()}";
+  void forgetUnusedRules() {
+    super.forgetUnusedRules();
+    if (_namedArgsRule != null && _namedArgsRule.index == null) {
+      _namedArgsRule = null;
+    }
+  }
 
   bool isSplitAtValue(int value, Chunk chunk) {
     // Split only before the first argument. Keep the entire argument list
@@ -240,9 +162,35 @@ class MultiplePositionalRule extends PositionalRule {
     return true;
   }
 
+  /// Remembers that [rule] is the [Rule] immediately following this positional
+  /// positional argument list.
+  ///
+  /// This is normally a [NamedRule] but [PositionalRule] is also used for the
+  /// property accesses at the beginning of a call chain, in which case this
+  /// is just a [SimpleRule].
+  void setNamedArgsRule(Rule rule) {
+    _namedArgsRule = rule;
+  }
+
+  /// Constrains the named argument list to at least move to the next line if
+  /// there are any splits in the positional arguments. Prevents things like:
+  ///
+  ///      function(
+  ///          argument,
+  ///          argument, named: argument);
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
+
+    // Handle the relationship between the positional and named args.
+    if (other == _namedArgsRule) {
+      // If the positional args are one-per-line, the named args are too.
+      if (value == fullySplitValue) return _namedArgsRule.fullySplitValue;
+
+      // Otherwise, if there is any split in the positional arguments, don't
+      // allow the named arguments on the same line as them.
+      if (value != 0) return -1;
+    }
 
     // Decide how to constrain the collection rule.
     if (other != _collectionRule) return null;
@@ -286,6 +234,8 @@ class MultiplePositionalRule extends PositionalRule {
     // them to split but indent their bodies if they do.
     return null;
   }
+
+  String toString() => "Pos${super.toString()}";
 }
 
 /// Splitting rule for a list of named arguments or parameters. Its values mean:

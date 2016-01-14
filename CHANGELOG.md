@@ -1,6 +1,10 @@
 # 0.2.3
 
 * Always put member metadata annotations on their own line (#483).
+* Force the parameter list to split if a split occurs inside a function-typed
+  parameter.
+* Don't force a split for before a single named argument if the argument itself
+  splits.
 
 # 0.2.2
 

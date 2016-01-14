@@ -856,12 +856,7 @@ class SourceVisitor implements AstVisitor {
 
     var rule;
     if (requiredParams.isNotEmpty) {
-      if (requiredParams.length > 1) {
-        rule = new MultiplePositionalRule(null, 0, 0);
-      } else {
-        rule = new SinglePositionalRule(null);
-      }
-
+      rule = new PositionalRule(null, 0, 0);
       _metadataRules.last.bindPositionalRule(rule);
 
       builder.startRule(rule);
@@ -1256,21 +1251,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitNamedExpression(NamedExpression node) {
-    builder.nestExpression();
-    builder.startSpan();
-    visit(node.name);
-
-    // Don't allow a split between a name and a collection. Instead, we want
-    // the collection itself to split, or to split before the argument.
-    if (node.expression is ListLiteral || node.expression is MapLiteral) {
-      space();
-    } else {
-      soloSplit();
-    }
-
-    visit(node.expression);
-    builder.endSpan();
-    builder.unnest();
+    visitNamedArgument(node);
   }
 
   visitNativeClause(NativeClause node) {
@@ -1663,6 +1644,31 @@ class SourceVisitor implements AstVisitor {
     // Wrap the rule around the parameter too. If it splits, we want to force
     // the annotations to split as well.
     builder.endRule();
+  }
+
+  /// Visits [node], which may be in an argument list controlled by [rule].
+  ///
+  /// This is called directly by [ArgumentListVisitor] so that it can pass in
+  /// the surrounding named argument rule. That way, this can ensure that a
+  /// split between the name and argument forces the argument list to split
+  /// too.
+  void visitNamedArgument(NamedExpression node, [NamedRule rule]) {
+    builder.nestExpression();
+    builder.startSpan();
+    visit(node.name);
+
+    // Don't allow a split between a name and a collection. Instead, we want
+    // the collection itself to split, or to split before the argument.
+    if (node.expression is ListLiteral || node.expression is MapLiteral) {
+      space();
+    } else {
+      var split = soloSplit();
+      if (rule != null) split.imply(rule);
+    }
+
+    visit(node.expression);
+    builder.endSpan();
+    builder.unnest();
   }
 
   /// Visits the `=` and the following expression in any place where an `=`
@@ -2171,10 +2177,12 @@ class SourceVisitor implements AstVisitor {
   Chunk zeroSplit() => builder.split();
 
   /// Writes a single space split with its own rule.
-  void soloSplit([int cost]) {
-    builder.startRule(new Rule(cost));
+  Rule soloSplit([int cost]) {
+    var rule = new Rule(cost);
+    builder.startRule(rule);
     split();
     builder.endRule();
+    return rule;
   }
 
   /// Writes a zero-space split with its own rule.

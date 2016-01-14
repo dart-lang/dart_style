@@ -91,7 +91,7 @@ class ArgumentListVisitor {
   ArgumentListVisitor._(this._visitor, this._node, this._arguments,
       this._functions, this._argumentsAfterFunctions);
 
-  /// Builds chunks for the call chain.
+  /// Builds chunks for the argument list.
   void visit() {
     // If there is just one positional argument, it tends to look weird to
     // split before it, so try not to.
@@ -232,8 +232,6 @@ class ArgumentSublist {
   Chunk get previousSplit => _previousSplit;
   Chunk _previousSplit;
 
-  bool get _hasMultipleArguments => _positional.length + _named.length > 1;
-
   factory ArgumentSublist(
       List<Expression> allArguments, List<Expression> arguments) {
     // Assumes named arguments follow all positional ones.
@@ -294,22 +292,13 @@ class ArgumentSublist {
     if (_positional.isEmpty) return null;
 
     // Allow splitting after "(".
-    var rule;
-    if (_positional.length == 1) {
-      rule = new SinglePositionalRule(_collectionRule,
-          splitsOnInnerRules: _allArguments.length > 1 &&
-              !_collections.containsKey(_positional.first));
-    } else {
-      // Only count the collections in the positional rule.
-      var leadingCollections =
-          math.min(_leadingCollections, _positional.length);
-      var trailingCollections =
-          math.max(_trailingCollections - _named.length, 0);
-      rule = new MultiplePositionalRule(
-          _collectionRule, leadingCollections, trailingCollections);
-    }
-
+    // Only count the collections in the positional rule.
+    var leadingCollections = math.min(_leadingCollections, _positional.length);
+    var trailingCollections = math.max(_trailingCollections - _named.length, 0);
+    var rule = new PositionalRule(
+        _collectionRule, leadingCollections, trailingCollections);
     _visitArguments(visitor, _positional, rule);
+
     return rule;
   }
 
@@ -365,26 +354,40 @@ class ArgumentSublist {
       SourceVisitor visitor, ArgumentRule rule, Expression argument) {
     // If we're about to write a collection argument, handle it specially.
     if (_collections.containsKey(argument)) {
-      if (rule != null) rule.beforeCollection();
+      rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
       visitor.beforeCollection(_collections[argument], this);
-    } else if (_hasMultipleArguments) {
-      // Edge case: If there is just a single argument, don't bump the nesting.
-      // This lets us avoid spurious indentation in cases like:
+    } else if (_allArguments.length > 1) {
+      // Edge case: Only bump the nesting if there are multiple arguments. This
+      // lets us avoid spurious indentation in cases like:
       //
       //     function(function(() {
       //       body;
       //     }));
       visitor.builder.startBlockArgumentNesting();
+    } else {
+      // Edge case: Likewise, don't force the argument to split if there is
+      // only a single one, like:
+      //
+      //     outer(inner(
+      //         longArgument));
+      rule.disableSplitOnInnerRules();
     }
 
-    visitor.visit(argument);
+    if (argument is NamedExpression) {
+      visitor.visitNamedArgument(
+          argument as NamedExpression, rule as NamedRule);
+    } else {
+      visitor.visit(argument);
+    }
 
     if (_collections.containsKey(argument)) {
-      if (rule != null) rule.afterCollection();
-    } else if (_hasMultipleArguments) {
+      rule.enableSplitOnInnerRules();
+    } else if (_allArguments.length > 1) {
       visitor.builder.endBlockArgumentNesting();
+    } else {
+      rule.enableSplitOnInnerRules();
     }
 
     // Write the trailing comma.

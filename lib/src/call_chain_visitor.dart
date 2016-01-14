@@ -207,7 +207,7 @@ class CallChainVisitor {
 
     if (splitOnTarget) {
       if (_properties.length > 1) {
-        _propertyRule = new MultiplePositionalRule(null, 0, 0);
+        _propertyRule = new PositionalRule(null, 0, 0);
         _visitor.builder.startLazyRule(_propertyRule);
       } else if (_calls.isNotEmpty) {
         _enableRule(lazy: true);
@@ -223,7 +223,7 @@ class CallChainVisitor {
       _writeCall(_properties.single);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
-        _propertyRule = new MultiplePositionalRule(null, 0, 0);
+        _propertyRule = new PositionalRule(null, 0, 0);
         _visitor.builder.startRule(_propertyRule);
       }
 

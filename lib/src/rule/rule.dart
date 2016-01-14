@@ -46,27 +46,25 @@ class Rule extends FastHash {
   bool get isHardened => _isHardened;
   bool _isHardened = false;
 
-  /// The other [Rule]s that "surround" this one (and care about that fact).
+  /// The other [Rule]s that are implied this one.
   ///
   /// In many cases, if a split occurs inside an expression, surrounding rules
   /// also want to split too. For example, a split in the middle of an argument
   /// forces the entire argument list to also split.
   ///
   /// This tracks those relationships. If this rule splits, (sets its value to
-  /// [fullySplitValue]) then all of the outer rules will also be set to their
-  /// fully split value.
+  /// [fullySplitValue]) then all of the surrounding implied rules are also set
+  /// to their fully split value.
   ///
   /// This contains all direct as well as transitive relationships. If A
   /// contains B which contains C, C's outerRules contains both B and A.
-  final Set<Rule> _outerRules = new Set<Rule>();
+  final Set<Rule> _implied = new Set<Rule>();
 
-  /// Adds [inner] as an inner rule of this rule if it cares about inner rules.
+  /// Marks [other] as implied by this one.
   ///
-  /// When an inner rule splits, it forces any surrounding outer rules to also
-  /// split.
-  void contain(Rule inner) {
-    if (!splitsOnInnerRules) return;
-    inner._outerRules.add(this);
+  /// That means that if this rule splits, then [other] is force to split too.
+  void imply(Rule other) {
+    _implied.add(other);
   }
 
   /// Whether this rule cares about rules that it contains.
@@ -119,7 +117,7 @@ class Rule extends FastHash {
   int constrain(int value, Rule other) {
     // By default, any containing rule will be fully split if this one is split.
     if (value == Rule.unsplit) return null;
-    if (_outerRules.contains(other)) return other.fullySplitValue;
+    if (_implied.contains(other)) return other.fullySplitValue;
 
     return null;
   }
@@ -140,7 +138,7 @@ class Rule extends FastHash {
   ///
   /// This removes all of those.
   void forgetUnusedRules() {
-    _outerRules.retainWhere((rule) => rule.index != null);
+    _implied.retainWhere((rule) => rule.index != null);
 
     // Clear the cached ones too.
     _constrainedRules = null;
@@ -153,7 +151,7 @@ class Rule extends FastHash {
     // after the chunks have been written and any constraints have been wired
     // up.
     if (_constrainedRules == null) {
-      _constrainedRules = _outerRules.toSet();
+      _constrainedRules = _implied.toSet();
       addConstrainedRules(_constrainedRules);
     }
 

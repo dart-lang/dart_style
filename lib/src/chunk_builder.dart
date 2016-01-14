@@ -360,7 +360,10 @@ class ChunkBuilder {
     if (rule == null) rule = new Rule();
 
     // See if any of the rules that contain this one care if it splits.
-    _rules.forEach((outer) => outer.contain(rule));
+    _rules.forEach((outer) {
+      if (!outer.splitsOnInnerRules) return;
+      rule.imply(outer);
+    });
     _rules.add(rule);
   }
 
