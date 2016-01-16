@@ -384,7 +384,11 @@ class ChunkBuilder {
 
   /// Ends the innermost rule.
   void endRule() {
-    _rules.removeLast();
+    if (_lazyRules.isNotEmpty) {
+      _lazyRules.removeLast();
+    } else {
+      _rules.removeLast();
+    }
   }
 
   /// Pre-emptively forces all of the current rules to become hard splits.

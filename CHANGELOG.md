@@ -1,3 +1,7 @@
+# 0.2.4
+
+* Better handling for long collections with comments (#484).
+
 # 0.2.3
 
 * Support messages in assert() (#411).

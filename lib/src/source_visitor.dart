@@ -1880,25 +1880,42 @@ class SourceVisitor implements AstVisitor {
 
     _startLiteralBody(leftBracket);
 
-    // Always use a hard rule to split the elements. The parent chunk of
-    // the collection will handle the unsplit case, so this only comes
-    // into play when the collection is split.
-    var rule = new Rule.hard();
-    builder.startRule(rule);
-
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
     var preserveNewlines = _containsLineComments(elements, rightBracket);
 
+    var rule;
+    var lineRule;
+    if (preserveNewlines) {
+      // Newlines are significant, so we'll explicitly write those. Elements
+      // on the same line all share an argument-list-like rule that allows
+      // splitting between zero, one, or all of them. This is faster in long
+      // lists than using individual splits after each element.
+      lineRule = new TypeArgumentRule();
+      builder.startLazyRule(lineRule);
+    } else {
+      // Newlines aren't significant, so use a hard rule to split the elements.
+      // The parent chunk of the collection will handle the unsplit case, so
+      // this only comes into play when the collection is split.
+      rule = new Rule.hard();
+      builder.startRule(rule);
+    }
+
     for (var element in elements) {
       if (element != elements.first) {
         if (preserveNewlines) {
+          // See if the next element is on the next line.
           if (_endLine(element.beginToken.previous) !=
               _startLine(element.beginToken)) {
             oneOrTwoNewlines();
+
+            // Start a new rule for the new line.
+            builder.endRule();
+            lineRule = new TypeArgumentRule();
+            builder.startLazyRule(lineRule);
           } else {
-            soloSplit();
+            lineRule.beforeArgument(split());
           }
         } else {
           builder.split(nest: false, space: true);
