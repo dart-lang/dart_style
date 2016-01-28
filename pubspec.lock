@@ -4,7 +4,7 @@ packages:
   analyzer:
     description: analyzer
     source: hosted
-    version: "0.27.0"
+    version: "0.27.1+2"
   ansicolor:
     description: ansicolor
     source: hosted
@@ -12,11 +12,11 @@ packages:
   args:
     description: args
     source: hosted
-    version: "0.13.2"
+    version: "0.13.3+1"
   async:
     description: async
     source: hosted
-    version: "1.4.0"
+    version: "1.8.0"
   barback:
     description: barback
     source: hosted
@@ -36,11 +36,7 @@ packages:
   collection:
     description: collection
     source: hosted
-    version: "1.2.0"
-  convert:
-    description: convert
-    source: hosted
-    version: "1.0.1"
+    version: "1.3.0"
   crypto:
     description: crypto
     source: hosted
@@ -52,19 +48,19 @@ packages:
   glob:
     description: glob
     source: hosted
-    version: "1.0.5"
+    version: "1.1.0"
   grinder:
     description: grinder
     source: hosted
-    version: "0.7.2"
+    version: "0.8.0+2"
   html:
     description: html
     source: hosted
-    version: "0.12.2"
+    version: "0.12.2+1"
   http:
     description: http
     source: hosted
-    version: "0.11.3+2"
+    version: "0.11.3+3"
   http_multi_server:
     description: http_multi_server
     source: hosted
@@ -72,7 +68,11 @@ packages:
   http_parser:
     description: http_parser
     source: hosted
-    version: "1.1.0"
+    version: "2.0.0"
+  js:
+    description: js
+    source: hosted
+    version: "0.6.0"
   logging:
     description: logging
     source: hosted
@@ -89,6 +89,10 @@ packages:
     description: mockable_filesystem
     source: hosted
     version: "0.0.3"
+  node_preamble:
+    description: node_preamble
+    source: hosted
+    version: "1.0.0"
   package_config:
     description: package_config
     source: hosted
@@ -112,19 +116,19 @@ packages:
   scheduled_test:
     description: scheduled_test
     source: hosted
-    version: "0.12.4+2"
+    version: "0.12.4+4"
   shelf:
     description: shelf
     source: hosted
-    version: "0.6.4+2"
+    version: "0.6.4+3"
   shelf_static:
     description: shelf_static
     source: hosted
-    version: "0.2.3+1"
+    version: "0.2.3+2"
   shelf_web_socket:
     description: shelf_web_socket
     source: hosted
-    version: "0.0.1+4"
+    version: "0.0.1+5"
   source_map_stack_trace:
     description: source_map_stack_trace
     source: hosted
@@ -140,11 +144,11 @@ packages:
   stack_trace:
     description: stack_trace
     source: hosted
-    version: "1.5.0"
+    version: "1.6.0"
   string_scanner:
     description: string_scanner
     source: hosted
-    version: "0.1.4"
+    version: "0.1.4+1"
   supports_color:
     description: supports_color
     source: hosted
@@ -152,11 +156,7 @@ packages:
   test:
     description: test
     source: hosted
-    version: "0.12.6+1"
-  typed_data:
-    description: typed_data
-    source: hosted
-    version: "1.1.1"
+    version: "0.12.8"
   unscripted:
     description: unscripted
     source: hosted
@@ -180,4 +180,4 @@ packages:
   yaml:
     description: yaml
     source: hosted
-    version: "2.1.7"
+    version: "2.1.8"

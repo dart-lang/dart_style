@@ -1,3 +1,7 @@
+# 0.2.6
+
+* Support deploying an npm package exporting a formatCode method.
+
 # 0.2.4
 
 * Better handling for long collections with comments (#484).
