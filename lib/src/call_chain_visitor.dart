@@ -94,7 +94,7 @@ class CallChainVisitor {
     var target;
 
     // Recursively walk the chain of calls and turn the tree into a list.
-    var calls = [];
+    var calls = <Expression>[];
     flatten(expression) {
       target = expression;
 
@@ -130,11 +130,13 @@ class CallChainVisitor {
     //     address.street.number
     //       .toString()
     //       .length;
-    var properties = [];
+    var properties = <Expression>[];
     if (target is SimpleIdentifier) {
       properties = calls.takeWhile((call) {
         // Step into index expressions to see what the index is on.
-        while (call is IndexExpression) call = call.target;
+        while (call is IndexExpression) {
+          call = (call as IndexExpression).target;
+        }
         return call is! MethodInvocation;
       }).toList();
     }
@@ -142,7 +144,7 @@ class CallChainVisitor {
     calls.removeRange(0, properties.length);
 
     // Separate out the block calls, if there are any.
-    var blockCalls;
+    List<Expression> blockCalls;
     var hangingCall;
 
     var inBlockCalls = false;

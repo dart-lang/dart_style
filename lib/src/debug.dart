@@ -71,10 +71,10 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   // Show the spans as vertical bands over their range (unless there are too
   // many).
-  var spans = new Set();
-  addSpans(chunks) {
+  var spanSet = new Set<Span>();
+  addSpans(List<Chunk> chunks) {
     for (var chunk in chunks) {
-      spans.addAll(chunk.spans);
+      spanSet.addAll(chunk.spans);
 
       if (chunk.isBlock) addSpans(chunk.block.chunks);
     }
@@ -82,8 +82,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   addSpans(chunks);
 
-  spans = spans.toList();
-
+  var spans = spanSet.toList();
   var rules =
       chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
 

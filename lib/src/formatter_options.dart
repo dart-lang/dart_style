@@ -32,17 +32,17 @@ class FormatterOptions {
 abstract class OutputReporter {
   /// Prints only the names of files whose contents are different from their
   /// formatted version.
-  static final dryRun = new _DryRunReporter();
+  static final OutputReporter dryRun = new _DryRunReporter();
 
   /// Prints the formatted results of each file to stdout.
-  static final print = new _PrintReporter();
+  static final OutputReporter print = new _PrintReporter();
 
   /// Prints the formatted result and selection info of each file to stdout as
   /// a JSON map.
-  static final printJson = new _PrintJsonReporter();
+  static final OutputReporter printJson = new _PrintJsonReporter();
 
   /// Overwrites each file with its formatted result.
-  static final overwrite = new _OverwriteReporter();
+  static final OutputReporter overwrite = new _OverwriteReporter();
 
   /// Describe the directory whose contents are about to be processed.
   void showDirectory(String path) {}

@@ -1,3 +1,7 @@
+# 0.2.7
+
+* Make it strong mode clean.
+
 # 0.2.6
 
 * Support deploying an npm package exporting a formatCode method.

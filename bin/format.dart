@@ -52,7 +52,7 @@ void main(List<String> args) {
       negatable: false,
       help: "Unused flag for compability with the old formatter.");
 
-  var argResults;
+  ArgResults argResults;
   try {
     argResults = parser.parse(args);
   } on FormatException catch (err) {
@@ -70,7 +70,7 @@ void main(List<String> args) {
   }
 
   // Can only preserve a selection when parsing from stdin.
-  var selection;
+  List<int> selection;
 
   if (argResults["preserve"] != null && argResults.rest.isNotEmpty) {
     usageError(parser, "Can only use --preserve when reading from stdin.");
@@ -192,7 +192,7 @@ void formatStdin(FormatterOptions options, List<int> selection) {
       var output = formatter.formatSource(source);
       options.reporter
           .afterFile(null, "<stdin>", output, changed: source != output);
-      return true;
+      return;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
       exitCode = 65; // sysexits.h: EX_DATAERR

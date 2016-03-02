@@ -14,7 +14,7 @@ import 'package:yaml/yaml.dart' as yaml;
 /// Matches the version line in dart_style's pubspec.
 final _versionPattern = new RegExp(r"^version: .*$", multiLine: true);
 
-main(args) => grind(args);
+main(List<String> args) => grind(args);
 
 @DefaultTask()
 @Task()

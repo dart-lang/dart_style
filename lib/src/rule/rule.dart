@@ -35,7 +35,8 @@ class Rule extends FastHash {
   /// By convention, this is the highest of the range of allowed values.
   int get fullySplitValue => numValues - 1;
 
-  final int cost;
+  int get cost => _cost;
+  final int _cost;
 
   /// During line splitting [LineSplitter] sets this to the index of this
   /// rule in its list of rules.
@@ -74,10 +75,10 @@ class Rule extends FastHash {
   /// rules.
   bool get splitsOnInnerRules => true;
 
-  Rule([int cost]) : cost = cost ?? Cost.normal;
+  Rule([int cost]) : _cost = cost ?? Cost.normal;
 
   /// Creates a new rule that is already fully split.
-  Rule.hard() : cost = 0 {
+  Rule.hard() : _cost = 0 {
     // Set the cost to zero since it will always be applied, so there's no
     // point in penalizing it.
     //

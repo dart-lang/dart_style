@@ -295,7 +295,7 @@ class ArgumentSublist {
         arguments.takeWhile((arg) => arg is! NamedExpression).toList();
     var named = arguments.skip(positional.length).toList();
 
-    var collections = {};
+    var collections = <Expression, Token>{};
     for (var argument in arguments) {
       var bracket = _getCollectionBracket(argument);
       if (bracket != null) collections[argument] = bracket;

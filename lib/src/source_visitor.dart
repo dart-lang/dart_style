@@ -342,10 +342,13 @@ class SourceVisitor implements AstVisitor {
     // consistent names but for now we require all sections to have the same
     // method name.
     for (var expression in sections) {
-      if (expression is! MethodInvocation) return false;
-      if (name == null) {
-        name = expression.methodName.name;
-      } else if (name != expression.methodName.name) {
+      if (expression is MethodInvocation) {
+        if (name == null) {
+          name = expression.methodName.name;
+        } else if (name != expression.methodName.name) {
+          return false;
+        }
+      } else {
         return false;
       }
     }
@@ -410,9 +413,8 @@ class SourceVisitor implements AstVisitor {
             twoNewlines();
           } else if (member is MethodDeclaration) {
             // Add a blank line after non-empty block methods.
-            var method = member as MethodDeclaration;
-            if (method.body is BlockFunctionBody) {
-              var body = method.body as BlockFunctionBody;
+            if (member.body is BlockFunctionBody) {
+              var body = member.body as BlockFunctionBody;
               needsDouble = body.block.statements.isNotEmpty;
             }
           }
@@ -492,9 +494,8 @@ class SourceVisitor implements AstVisitor {
           needsDouble = true;
         } else if (declaration is FunctionDeclaration) {
           // Add a blank line after non-empty block functions.
-          var function = declaration as FunctionDeclaration;
-          if (function.functionExpression.body is BlockFunctionBody) {
-            var body = function.functionExpression.body as BlockFunctionBody;
+          if (declaration.functionExpression.body is BlockFunctionBody) {
+            var body = declaration.functionExpression.body as BlockFunctionBody;
             needsDouble = body.block.statements.isNotEmpty;
           }
         }
@@ -1724,7 +1725,7 @@ class SourceVisitor implements AstVisitor {
   void _visitMemberDeclaration(
       /* FunctionDeclaration|MethodDeclaration */ node,
       /* FunctionExpression|MethodDeclaration */ function) {
-    visitMetadata(node.metadata);
+    visitMetadata(node.metadata as NodeList<Annotation>);
 
     // Nest the signature in case we have to split between the return type and
     // name.
@@ -2254,7 +2255,7 @@ class SourceVisitor implements AstVisitor {
 
     var tokenLine = _startLine(token);
 
-    var comments = [];
+    var comments = <SourceComment>[];
     while (comment != null) {
       var commentLine = _startLine(comment);
 

@@ -195,7 +195,7 @@ class SolveState {
         for (var value = 1; value < rule.numValues; value++) {
           var boundRules = unsplitRules.clone();
 
-          var mustSplitRules;
+          List<Rule> mustSplitRules;
           var valid = boundRules.tryBind(_splitter.rules, rule, value, (rule) {
             if (mustSplitRules == null) mustSplitRules = [];
             mustSplitRules.add(rule);
@@ -453,9 +453,9 @@ class SolveState {
   void _ensureBoundRulesInUnboundLines() {
     if (_boundRulesInUnboundLines != null) return;
 
-    _boundRulesInUnboundLines = new Set();
+    _boundRulesInUnboundLines = new Set<Rule>();
 
-    var boundInLine = new Set();
+    var boundInLine = new Set<Rule>();
     var hasUnbound = false;
 
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
@@ -528,7 +528,7 @@ class SolveState {
     _unboundConstraints = {};
 
     for (var unbound in _unboundRules) {
-      var disallowedValues;
+      Set<int> disallowedValues;
 
       for (var bound in unbound.constrainedRules) {
         if (!_boundRules.contains(bound)) continue;
@@ -552,7 +552,7 @@ class SolveState {
           }
 
           if (disallowedValues == null) {
-            disallowedValues = new Set();
+            disallowedValues = new Set<int>();
             _unboundConstraints[unbound] = disallowedValues;
           }
 
