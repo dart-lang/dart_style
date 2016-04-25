@@ -180,7 +180,7 @@ packages:
       name: scheduled_test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.5+1"
+    version: "0.12.5+4"
   shelf:
     description:
       name: shelf
@@ -198,7 +198,7 @@ packages:
       name: shelf_web_socket
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.0"
+    version: "0.2.0"
   source_map_stack_trace:
     description:
       name: source_map_stack_trace
@@ -246,7 +246,7 @@ packages:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.11+1"
+    version: "0.12.13"
   unscripted:
     description:
       name: unscripted
@@ -265,6 +265,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.9.7"
+  web_socket_channel:
+    description:
+      name: web_socket_channel
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   when:
     description:
       name: when
@@ -283,4 +289,4 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.1.8"
-sdk: ">=1.14.0 <1.16.0"
+sdk: ">=1.14.0 <1.17.0"

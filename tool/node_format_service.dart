@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:math' as math;
+
 import 'package:js/js.dart';
 
 import 'package:dart_style/dart_style.dart';
@@ -20,11 +22,14 @@ external set formatCode(Function formatter);
 void main() {
   formatCode = allowInterop((String source) {
     var formatter = new DartFormatter();
+
+    var exception;
     try {
       return new FormatResult(
           code: new DartFormatter().format(source));
-    } on FormatterException {
-      // Do nothing.
+    } on FormatterException catch (err) {
+      // Couldn't parse it as a compilation unit.
+      exception = err;
     }
 
     // Maybe it's a statement.
@@ -32,7 +37,21 @@ void main() {
       return new FormatResult(
           code: formatter.formatStatement(source));
     } on FormatterException catch (err) {
-      return new FormatResult(code: source, error: "$err");
+      // There is an error when parsing it both as a compilation unit and a
+      // statement, so we aren't sure which one the user intended. As a
+      // heuristic, we'll choose that whichever one we managed to parse more of
+      // before hitting an error is probably the right one.
+      if (_firstOffset(exception) < _firstOffset(err)) {
+        exception = err;
+      }
     }
+
+    // If we get here, it couldn't be parsed at all.
+    return new FormatResult(code: source, error: "$exception");
   });
 }
+
+/// Returns the offset of the error nearest the beginning of the file out of
+/// all the errors in [exception].
+int _firstOffset(FormatterException exception) =>
+    exception.errors.map((error) => error.offset).reduce(math.min);

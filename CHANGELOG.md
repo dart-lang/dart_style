@@ -1,6 +1,8 @@
 # 0.2.7
 
 * Make it strong mode clean.
+* When calling from JS, guess at which error to show when the code cannot be
+  parsed (#504).
 
 # 0.2.6
 
