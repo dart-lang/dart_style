@@ -86,3 +86,8 @@ function(
     argument,
     named: argument,
     another: argument);
+>>> inside string interpolation
+"${/* commentA */ 1+1 /* commentB */}";
+<<<
+"${/* commentA */ 1 +
+    1 /* commentB */}";

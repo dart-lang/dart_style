@@ -1167,7 +1167,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitInterpolationString(InterpolationString node) {
-    token(node.contents);
+    _writeStringLiteral(node.contents.lexeme, node.offset);
   }
 
   visitIsExpression(IsExpression node) {
@@ -1402,12 +1402,7 @@ class SourceVisitor implements AstVisitor {
     // preceding stuff first.
     writePrecedingCommentsAndNewlines(node.beginToken);
 
-    // Right now, the formatter does not try to do any reformatting of the
-    // contents of interpolated strings. Instead, it treats the entire thing as
-    // a single (possibly multi-line) chunk of text.
-    _writeStringLiteral(
-        _source.text.substring(node.beginToken.offset, node.endToken.end),
-        node.offset);
+    visitNodes(node.elements);
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
