@@ -106,7 +106,7 @@ class Rule extends FastHash {
   /// Subclasses can override this to determine which values split which chunks.
   ///
   /// By default, this assumes every chunk splits.
-  bool isSplitAtValue(value, chunk) => true;
+  bool isSplitAtValue(int value, Chunk chunk) => true;
 
   /// Given that this rule has [value], determine if [other]'s value should be
   /// constrained.

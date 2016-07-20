@@ -7,7 +7,7 @@ library dart_style.src.argument_list_visitor;
 import 'dart:math' as math;
 
 import 'package:analyzer/analyzer.dart';
-import 'package:analyzer/src/generated/scanner.dart';
+import 'package:analyzer/dart/ast/token.dart';
 
 import 'chunk.dart';
 import 'rule/argument.dart';

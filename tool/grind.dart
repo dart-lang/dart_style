@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:grinder/grinder.dart';
-import 'package:grinder/src/run.dart' as runner;
 import "package:node_preamble/preamble.dart" as preamble;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart' as yaml;
