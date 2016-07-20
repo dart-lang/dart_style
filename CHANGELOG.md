@@ -1,6 +1,7 @@
 # 0.2.7
 
 * Make it strong mode clean.
+* Improve indentation in non-block-bodied control flow statements (#494).
 * When calling from JS, guess at which error to show when the code cannot be
   parsed (#504).
 * Force a conditional operator to split if the condition does (#506).

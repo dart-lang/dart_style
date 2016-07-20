@@ -1042,31 +1042,31 @@ class SourceVisitor implements AstVisitor {
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
-    builder.unnest(now: false);
+    builder.unnest();
 
     visitClause(Statement clause) {
       if (clause is Block || clause is IfStatement) {
         space();
         visit(clause);
       } else {
-        // Allow splitting in an expression-bodied if even though it's against
+        // Allow splitting in a statement-bodied if even though it's against
         // the style guide. Since we can't fix the code itself to follow the
         // style guide, we should at least format it as well as we can.
-        builder.nestExpression(indent: 2, now: true);
+        builder.indent();
         builder.startRule();
 
         // If there is an else clause, always split before both the then and
         // else statements.
         if (node.elseStatement != null) {
-          builder.writeWhitespace(Whitespace.nestedNewline);
+          builder.writeWhitespace(Whitespace.newline);
         } else {
-          split();
+          builder.split(nest: false, space: true);
         }
 
         visit(clause);
 
         builder.endRule();
-        builder.unnest();
+        builder.unindent();
       }
     }
 
@@ -1830,7 +1830,7 @@ class SourceVisitor implements AstVisitor {
     if (body is ExpressionFunctionBody) builder.unnest();
   }
 
-  /// Visits the body statement of a `for` or `for in` loop.
+  /// Visits the body statement of a `for`, `for in`, or `while` loop.
   void _visitLoopBody(Statement body) {
     if (body is EmptyStatement) {
       // No space before the ";".
@@ -1839,17 +1839,17 @@ class SourceVisitor implements AstVisitor {
       space();
       visit(body);
     } else {
-      // Allow splitting in an expression-bodied for even though it's against
+      // Allow splitting in a statement-bodied loop even though it's against
       // the style guide. Since we can't fix the code itself to follow the
       // style guide, we should at least format it as well as we can.
-      builder.nestExpression(indent: 2, now: true);
+      builder.indent();
       builder.startRule();
 
-      split();
+      builder.split(nest: false, space: true);
       visit(body);
 
       builder.endRule();
-      builder.unnest();
+      builder.unindent();
     }
   }
 
