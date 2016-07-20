@@ -371,8 +371,8 @@ class ChunkBuilder {
   /// Starts a new [Rule] that comes into play *after* the next whitespace
   /// (including comments) is written.
   ///
-  /// This is used for binary operators who want to start a rule before the
-  /// first operand but not get forced to split if a comment appears before the
+  /// This is used for operators who want to start a rule before the first
+  /// operand but not get forced to split if a comment appears before the
   /// entire expression.
   ///
   /// If [rule] is omitted, defaults to a new [Rule].

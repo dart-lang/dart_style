@@ -3,7 +3,9 @@
 * Make it strong mode clean.
 * When calling from JS, guess at which error to show when the code cannot be
   parsed (#504).
+* Force a conditional operator to split if the condition does (#506).
 * Preserve trailing commas in argument and parameter lists (#509).
+* Indent initializers in multiple variable declarations.
 
 # 0.2.6
 

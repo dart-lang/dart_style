@@ -506,21 +506,22 @@ class SourceVisitor implements AstVisitor {
   visitConditionalExpression(ConditionalExpression node) {
     builder.nestExpression();
 
+    // Start lazily so we don't force the operator to split if a line comment
+    // appears before the first operand. If we split after one clause in a
+    // conditional, always split after both.
+    builder.startLazyRule();
+    visit(node.condition);
+
     // Push any block arguments all the way past the leading "?" and ":".
     builder.nestExpression(indent: Indent.block, now: true);
     builder.startBlockArgumentNesting();
     builder.unnest();
 
-    visit(node.condition);
-
     builder.startSpan();
 
-    // If we split after one clause in a conditional, always split after both.
-    builder.startRule();
     split();
     token(node.question);
     space();
-
     builder.nestExpression();
     visit(node.thenExpression);
     builder.unnest();
@@ -528,7 +529,6 @@ class SourceVisitor implements AstVisitor {
     split();
     token(node.colon);
     space();
-
     visit(node.elseExpression);
 
     builder.endRule();
@@ -1547,7 +1547,24 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     if (node.initializer == null) return;
 
-    _visitAssignment(node.equals, node.initializer);
+    // If there are multiple variables being declared, we want to nest the
+    // initializers farther so they don't line up with the variables. Bad:
+    //
+    //     var a =
+    //         aValue,
+    //         b =
+    //         bValue;
+    //
+    // Good:
+    //
+    //     var a =
+    //             aValue,
+    //         b =
+    //             bValue;
+    var hasMultipleVariables =
+        (node.parent as VariableDeclarationList).variables.length > 1;
+
+    _visitAssignment(node.equals, node.initializer, nest: hasMultipleVariables);
   }
 
   visitVariableDeclarationList(VariableDeclarationList node) {
@@ -1686,13 +1703,22 @@ class SourceVisitor implements AstVisitor {
   /// * Assignment
   /// * Variable declaration
   /// * Constructor initialization
-  void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
+  ///
+  /// If [nest] is true, an extra level of expression nesting is added after
+  /// the "=".
+  void _visitAssignment(Token equalsOperator, Expression rightHandSide,
+      {bool nest: false}) {
     space();
     token(equalsOperator);
+
+    if (nest) builder.nestExpression(now: true);
+
     soloSplit(_assignmentCost(rightHandSide));
     builder.startSpan();
     visit(rightHandSide);
     builder.endSpan();
+
+    if (nest) builder.unnest();
   }
 
   /// Visits a type parameter or type argument list.
