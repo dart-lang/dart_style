@@ -180,8 +180,8 @@ class ArgumentListVisitor {
 
         _visitor.visit(argument);
 
-        // Write the trailing comma.
-        if (argument != _allArguments.last) {
+        // Write the following comma.
+        if (argument.endToken.next.type == TokenType.COMMA) {
           _visitor.token(argument.endToken.next);
         }
       }
@@ -383,7 +383,7 @@ class ArgumentSublist {
 
     // Split before the first argument.
     _previousSplit =
-        visitor.builder.split(space: !_isFirstArgument(arguments.first));
+        visitor.builder.split(space: arguments.first != _allArguments.first);
     rule.beforeArgument(_previousSplit);
 
     // Try to not split the positional arguments.
@@ -445,15 +445,11 @@ class ArgumentSublist {
       rule.enableSplitOnInnerRules();
     }
 
-    // Write the trailing comma.
-    if (!_isLastArgument(argument)) {
+    // Write the following comma.
+    if (argument.endToken.next.type == TokenType.COMMA) {
       visitor.token(argument.endToken.next);
     }
   }
-
-  bool _isFirstArgument(Expression argument) => argument == _allArguments.first;
-
-  bool _isLastArgument(Expression argument) => argument == _allArguments.last;
 
   /// Returns the token for the left bracket if [expression] denotes a
   /// collection literal argument.

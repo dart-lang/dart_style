@@ -879,8 +879,10 @@ class SourceVisitor implements AstVisitor {
       for (var param in requiredParams) {
         visit(param);
 
-        // Write the trailing comma.
-        if (param != node.parameters.last) token(param.endToken.next);
+        // Write the following comma.
+        if (param.endToken.next.type == TokenType.COMMA) {
+          token(param.endToken.next);
+        }
 
         if (param != requiredParams.last) rule.beforeArgument(split());
       }
@@ -908,8 +910,11 @@ class SourceVisitor implements AstVisitor {
       for (var param in optionalParams) {
         visit(param);
 
-        // Write the trailing comma.
-        if (param != node.parameters.last) token(param.endToken.next);
+        // Write the following comma.
+        if (param.endToken.next.type == TokenType.COMMA) {
+          token(param.endToken.next);
+        }
+
         if (param != optionalParams.last) namedRule.beforeArgument(split());
       }
 

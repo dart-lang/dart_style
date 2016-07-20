@@ -200,3 +200,14 @@ function(
     }, () {
   ;
 });
+>>> trailing comma
+functionn(argument,argument  ,argument  ,  );
+<<<
+functionn(
+    argument, argument, argument,);
+>>> trailing comma in named argument list
+function(named: argument,another:argument,  );
+<<<
+function(
+    named: argument,
+    another: argument,);

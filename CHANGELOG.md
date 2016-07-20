@@ -3,6 +3,7 @@
 * Make it strong mode clean.
 * When calling from JS, guess at which error to show when the code cannot be
   parsed (#504).
+* Preserve trailing commas in argument and parameter lists (#509).
 
 # 0.2.6
 

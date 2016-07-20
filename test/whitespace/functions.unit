@@ -76,3 +76,11 @@ main()sync  *{var lambda = ()sync *{};}
 main() sync* {
   var lambda = () sync* {};
 }
+>>> trailing comma in single parameter list
+function(argument   ,   ) {}
+<<<
+function(argument,) {}
+>>> trailing comma in parameter list
+function(argument,argument  ,  ) {}
+<<<
+function(argument, argument,) {}
