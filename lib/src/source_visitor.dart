@@ -829,7 +829,7 @@ class SourceVisitor implements AstVisitor {
     space();
     visit(node.iterable);
     token(node.rightParenthesis);
-    builder.unnest(now: false);
+    builder.unnest();
 
     _visitLoopBody(node.body);
   }
@@ -1601,7 +1601,7 @@ class SourceVisitor implements AstVisitor {
     soloZeroSplit();
     visit(node.condition);
     token(node.rightParenthesis);
-    builder.unnest(now: false);
+    builder.unnest();
 
     _visitLoopBody(node.body);
   }
