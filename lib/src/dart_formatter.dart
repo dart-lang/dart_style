@@ -52,7 +52,7 @@ class DartFormatter {
   /// being formatted in error messages.
   String format(String source, {uri}) {
     if (uri == null) {
-      uri = "<unknown>";
+      // Do nothing.
     } else if (uri is Uri) {
       uri = uri.toString();
     } else if (uri is String) {

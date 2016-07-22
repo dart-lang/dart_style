@@ -7,6 +7,7 @@
 * Force a conditional operator to split if the condition does (#506).
 * Preserve trailing commas in argument and parameter lists (#509).
 * Indent initializers in multiple variable declarations.
+* Avoid passing an invalid Windows file URI to analyzer.
 
 # 0.2.6
 
