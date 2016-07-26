@@ -10,6 +10,7 @@
 * Remove newlines after script tags (#513).
 * Indent initializers in multiple variable declarations.
 * Avoid passing an invalid Windows file URI to analyzer.
+* Always split comma-separated sequences that contain a trailing comma.
 
 # 0.2.6
 

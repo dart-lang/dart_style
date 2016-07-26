@@ -25,7 +25,9 @@ void main() {
       new FormatterOptions(OutputReporter.overwrite, followLinks: true);
 
   test('handles directory ending in ".dart"', () {
-    d.dir('code.dart', [d.file('a.dart', unformattedSource),]).create();
+    d.dir('code.dart', [
+      d.file('a.dart', unformattedSource),
+    ]).create();
 
     schedule(() {
       var dir = new Directory(d.defaultRoot);
@@ -97,9 +99,13 @@ void main() {
   });
 
   test("doesn't follow directory symlinks by default", () {
-    d.dir('code', [d.file('a.dart', unformattedSource),]).create();
+    d.dir('code', [
+      d.file('a.dart', unformattedSource),
+    ]).create();
 
-    d.dir('target_dir', [d.file('b.dart', unformattedSource),]).create();
+    d.dir('target_dir', [
+      d.file('b.dart', unformattedSource),
+    ]).create();
 
     schedule(() {
       // Create a link to the target directory in the code directory.
@@ -114,14 +120,20 @@ void main() {
 
     d.dir('code', [
       d.file('a.dart', formattedSource),
-      d.dir('linked_dir', [d.file('b.dart', unformattedSource),])
+      d.dir('linked_dir', [
+        d.file('b.dart', unformattedSource),
+      ])
     ]).validate();
   });
 
   test("follows directory symlinks when 'followLinks' is true", () {
-    d.dir('code', [d.file('a.dart', unformattedSource),]).create();
+    d.dir('code', [
+      d.file('a.dart', unformattedSource),
+    ]).create();
 
-    d.dir('target_dir', [d.file('b.dart', unformattedSource),]).create();
+    d.dir('target_dir', [
+      d.file('b.dart', unformattedSource),
+    ]).create();
 
     schedule(() {
       // Create a link to the target directory in the code directory.
@@ -136,7 +148,9 @@ void main() {
 
     d.dir('code', [
       d.file('a.dart', formattedSource),
-      d.dir('linked_dir', [d.file('b.dart', formattedSource),])
+      d.dir('linked_dir', [
+        d.file('b.dart', formattedSource),
+      ])
     ]).validate();
   });
 
@@ -156,8 +170,9 @@ void main() {
         processDirectory(overwriteOptions, dir);
       }, 'Run formatter.');
 
-      d.dir(
-          'code', [d.file('linked_file.dart', unformattedSource),]).validate();
+      d.dir('code', [
+        d.file('linked_file.dart', unformattedSource),
+      ]).validate();
     });
 
     test("follows file symlinks when 'followLinks' is true", () {
@@ -175,7 +190,9 @@ void main() {
         processDirectory(followOptions, dir);
       }, 'running formatter');
 
-      d.dir('code', [d.file('linked_file.dart', formattedSource),]).validate();
+      d.dir('code', [
+        d.file('linked_file.dart', formattedSource),
+      ]).validate();
     });
   }
 }

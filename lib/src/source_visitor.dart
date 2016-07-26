@@ -145,6 +145,15 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    // If the argument list has a trailing comma, format it like a collection
+    // literal where each argument goes on its own line, they are indented +2,
+    // and the ")" ends up on its own line.
+    if (node.arguments.last.endToken.next.type == TokenType.COMMA) {
+      _visitCollectionLiteral(
+          null, node.leftParenthesis, node.arguments, node.rightParenthesis);
+      return;
+    }
+
     new ArgumentListVisitor(this, node).visit();
   }
 
@@ -1888,11 +1897,16 @@ class SourceVisitor implements AstVisitor {
 
   /// Visits the collection literal [node] whose body starts with [leftBracket],
   /// ends with [rightBracket] and contains [elements].
+  ///
+  /// This is also used for argument lists with a trailing comma which are
+  /// considered "collection-like". In that case, [node] is `null`.
   void _visitCollectionLiteral(TypedLiteral node, Token leftBracket,
       Iterable<AstNode> elements, Token rightBracket,
       [int cost]) {
-    modifier(node.constKeyword);
-    visit(node.typeArguments);
+    if (node != null) {
+      modifier(node.constKeyword);
+      visit(node.typeArguments);
+    }
 
     // Don't allow splitting in an empty collection.
     if (elements.isEmpty && rightBracket.precedingComments == null) {
@@ -1957,7 +1971,9 @@ class SourceVisitor implements AstVisitor {
       visit(element);
 
       // The comma after the element.
-      if (element.endToken.next.lexeme == ",") token(element.endToken.next);
+      if (element.endToken.next.type == TokenType.COMMA) {
+        token(element.endToken.next);
+      }
 
       builder.unnest();
     }
@@ -1966,6 +1982,12 @@ class SourceVisitor implements AstVisitor {
 
     // If there is a collection inside this one, it forces this one to split.
     var force = _collectionSplits.removeLast();
+
+    // If the collection has a trailing comma, the user must want it to split.
+    if (elements.isNotEmpty &&
+        elements.last.endToken.next.type == TokenType.COMMA) {
+      force = true;
+    }
 
     _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
   }

@@ -25,8 +25,7 @@ void main() {
 
     var exception;
     try {
-      return new FormatResult(
-          code: new DartFormatter().format(source));
+      return new FormatResult(code: new DartFormatter().format(source));
     } on FormatterException catch (err) {
       // Couldn't parse it as a compilation unit.
       exception = err;
@@ -34,8 +33,7 @@ void main() {
 
     // Maybe it's a statement.
     try {
-      return new FormatResult(
-          code: formatter.formatStatement(source));
+      return new FormatResult(code: formatter.formatStatement(source));
     } on FormatterException catch (err) {
       // There is an error when parsing it both as a compilation unit and a
       // statement, so we aren't sure which one the user intended. As a
