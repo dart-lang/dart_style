@@ -613,9 +613,13 @@ class ChunkBuilder {
     // Multi-line comments are always pushed to the next line.
     if (comment.contains("\n")) return false;
 
-    // If the text before the split is an open grouping character, we don't
-    // want to adhere the comment to that.
     var text = _chunks.last.text;
+
+    // A block comment following a comma probably refers to the following item.
+    if (text.endsWith(",") && comment.startsWith("/*")) return false;
+
+    // If the text before the split is an open grouping character, it looks
+    // better to keep it with the elements than with the bracket itself.
     return !text.endsWith("(") && !text.endsWith("[") && !text.endsWith("{");
   }
 

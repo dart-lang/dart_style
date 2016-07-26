@@ -33,6 +33,15 @@ foo(/* */) {}
 foo(1,/* a */ 2 /* b */  , 3);
 <<<
 foo(1, /* a */ 2 /* b */, 3);
+>>> block comment after comma follows later arg
+foo(arg, /* comment */ arg, /* comment */ arg, /* comment */ arg, /* comment */ arg);
+<<<
+foo(
+    arg,
+    /* comment */ arg,
+    /* comment */ arg,
+    /* comment */ arg,
+    /* comment */ arg);
 >>> space between block comment and other tokens
 var/**/a/**/=/**/1/**/+/**/2;
 <<<
