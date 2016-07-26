@@ -6,6 +6,7 @@
   parsed (#504).
 * Force a conditional operator to split if the condition does (#506).
 * Preserve trailing commas in argument and parameter lists (#509).
+* Remove newlines after script tags (#513).
 * Indent initializers in multiple variable declarations.
 * Avoid passing an invalid Windows file URI to analyzer.
 

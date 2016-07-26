@@ -173,7 +173,7 @@ class ChunkBuilder {
   /// previous token if there are no comments) and the next token.
   void writeComments(
       List<SourceComment> comments, int linesBeforeToken, String token) {
-    // Corner case: if we require a blank line, but there exists one between
+    // Edge case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
     //
@@ -199,8 +199,8 @@ class ChunkBuilder {
       }
     }
 
-    // Corner case: if the comments are completely inline (i.e. just a series
-    // of block comments with no newlines before, after, or between them), then
+    // Edge case: if the comments are completely inline (i.e. just a series of
+    // block comments with no newlines before, after, or between them), then
     // they will eat any pending newlines. Make sure that doesn't happen by
     // putting the pending whitespace before the first comment and moving them
     // to their own line. Turns this:

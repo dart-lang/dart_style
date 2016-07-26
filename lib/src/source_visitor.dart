@@ -1374,8 +1374,7 @@ class SourceVisitor implements AstVisitor {
     // come at the top of the file, we don't have to worry about preceding
     // comments or whitespace.
     _writeText(node.scriptTag.lexeme.trim(), node.offset);
-
-    oneOrTwoNewlines();
+    newline();
   }
 
   visitShowCombinator(ShowCombinator node) {
@@ -2277,14 +2276,13 @@ class SourceVisitor implements AstVisitor {
     }
 
     var previousLine = _endLine(token.previous);
-
-    // Corner case! The analyzer includes the "\n" in the script tag's lexeme,
-    // which means it appears to be one line later than it is. That causes a
-    // comment following it to appear to be on the same line. Fix that here by
-    // correcting the script tag's line.
-    if (token.previous.type == TokenType.SCRIPT_TAG) previousLine--;
-
     var tokenLine = _startLine(token);
+
+    // Edge case: The analyzer includes the "\n" in the script tag's lexeme,
+    // which confuses some of these calculations. We don't want to allow a
+    // blank line between the script tag and a following comment anyway, so
+    // just override the script tag's line.
+    if (token.previous.type == TokenType.SCRIPT_TAG) previousLine = tokenLine;
 
     var comments = <SourceComment>[];
     while (comment != null) {
