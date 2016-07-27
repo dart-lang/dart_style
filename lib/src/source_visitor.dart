@@ -1778,23 +1778,23 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     builder.endSpan();
 
-    // If the body is a block, we need to exit any nesting first. If it's an
-    // expression, we want to wrap the nesting around that so that the body
-    // gets nested farther.
-    if (function.body is! ExpressionFunctionBody) builder.unnest();
+    _visitBody(function.parameters, function.body, () {
+      // If the body is a block, we need to exit nesting before we hit the body
+      // indentation, but we do want to wrap it around the parameters.
+      if (function.body is! ExpressionFunctionBody) builder.unnest();
+    });
 
-    _visitBody(function.parameters, function.body);
-
+    // If it's an expression, we want to wrap the nesting around that so that
+    // the body gets nested farther.
     if (function.body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visit the given function [parameters] followed by its [body], printing a
   /// space before it if it's not empty.
   ///
-  /// If [afterParameters] is provided, it is invoked between the parameters
-  /// and body. (It's used for constructor initialization lists.)
+  /// If [beforeBody] is provided, it is invoked before the body is visited.
   void _visitBody(FormalParameterList parameters, FunctionBody body,
-      [afterParameters()]) {
+      [beforeBody()]) {
     // If the body is "=>", add an extra level of indentation around the
     // parameters and a rule that spans the parameters and the "=>". This
     // ensures that if the parameters wrap, they wrap more deeply than the "=>"
@@ -1829,10 +1829,9 @@ class SourceVisitor implements AstVisitor {
       builder.nestExpression();
       visit(parameters);
       builder.unnest();
-
-      if (afterParameters != null) afterParameters();
     }
 
+    if (beforeBody != null) beforeBody();
     visit(body);
 
     if (body is ExpressionFunctionBody) builder.unnest();
