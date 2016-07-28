@@ -253,18 +253,43 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
-    // For a block that is not a function body, just bump the indentation and
-    // keep it in the current block.
-    if (node.parent is! BlockFunctionBody) {
-      _writeBody(node.leftBracket, node.rightBracket, body: () {
-        visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
-      });
-      return;
+    // If the block is a function body, it may get expression-level indentation,
+    // so handle it specially. Otherwise, just bump the indentation and keep it
+    // in the current block.
+    if (node.parent is BlockFunctionBody) {
+      _startLiteralBody(node.leftBracket);
+    } else {
+      _beginBody(node.leftBracket);
     }
 
-    _startLiteralBody(node.leftBracket);
-    visitNodes(node.statements, between: oneOrTwoNewlines, after: newline);
-    _endLiteralBody(node.rightBracket, forceSplit: node.statements.isNotEmpty);
+    var needsDouble = true;
+    for (var statement in node.statements) {
+      if (needsDouble) {
+        twoNewlines();
+      } else {
+        oneOrTwoNewlines();
+      }
+
+      visit(statement);
+
+      needsDouble = false;
+      if (statement is FunctionDeclarationStatement) {
+        // Add a blank line after non-empty block functions.
+        var body = statement.functionDeclaration.functionExpression.body;
+        if (body is BlockFunctionBody) {
+          needsDouble = body.block.statements.isNotEmpty;
+        }
+      }
+    }
+
+    if (node.statements.isNotEmpty) newline();
+
+    if (node.parent is BlockFunctionBody) {
+      _endLiteralBody(node.rightBracket,
+          forceSplit: node.statements.isNotEmpty);
+    } else {
+      _endBody(node.rightBracket);
+    }
   }
 
   visitBlockFunctionBody(BlockFunctionBody node) {
@@ -406,38 +431,40 @@ class SourceVisitor implements AstVisitor {
     space();
 
     builder.unnest();
-    _writeBody(node.leftBracket, node.rightBracket, body: () {
-      if (node.members.isNotEmpty) {
-        for (var member in node.members) {
-          visit(member);
+    _beginBody(node.leftBracket);
 
-          if (member == node.members.last) {
-            newline();
-            break;
-          }
+    if (node.members.isNotEmpty) {
+      for (var member in node.members) {
+        visit(member);
 
-          var needsDouble = false;
-          if (member is ClassDeclaration) {
-            // Add a blank line after classes.
-            twoNewlines();
-          } else if (member is MethodDeclaration) {
-            // Add a blank line after non-empty block methods.
-            if (member.body is BlockFunctionBody) {
-              var body = member.body as BlockFunctionBody;
-              needsDouble = body.block.statements.isNotEmpty;
-            }
-          }
+        if (member == node.members.last) {
+          newline();
+          break;
+        }
 
-          if (needsDouble) {
-            twoNewlines();
-          } else {
-            // Variables and arrow-bodied members can be more tightly packed if
-            // the user wants to group things together.
-            oneOrTwoNewlines();
+        var needsDouble = false;
+        if (member is ClassDeclaration) {
+          // Add a blank line after classes.
+          twoNewlines();
+        } else if (member is MethodDeclaration) {
+          // Add a blank line after non-empty block methods.
+          if (member.body is BlockFunctionBody) {
+            var body = member.body as BlockFunctionBody;
+            needsDouble = body.block.statements.isNotEmpty;
           }
         }
+
+        if (needsDouble) {
+          twoNewlines();
+        } else {
+          // Variables and arrow-bodied members can be more tightly packed if
+          // the user wants to group things together.
+          oneOrTwoNewlines();
+        }
       }
-    });
+    }
+
+    _endBody(node.rightBracket);
   }
 
   visitClassTypeAlias(ClassTypeAlias node) {
@@ -480,33 +507,30 @@ class SourceVisitor implements AstVisitor {
 
     visitNodes(directives, between: oneOrTwoNewlines);
 
-    if (node.declarations.isNotEmpty) {
-      var needsDouble = true;
+    var needsDouble = true;
+    for (var declaration in node.declarations) {
+      // Add a blank line before classes.
+      if (declaration is ClassDeclaration) needsDouble = true;
 
-      for (var declaration in node.declarations) {
-        // Add a blank line before classes.
-        if (declaration is ClassDeclaration) needsDouble = true;
+      if (needsDouble) {
+        twoNewlines();
+      } else {
+        // Variables and arrow-bodied members can be more tightly packed if
+        // the user wants to group things together.
+        oneOrTwoNewlines();
+      }
 
-        if (needsDouble) {
-          twoNewlines();
-        } else {
-          // Variables and arrow-bodied members can be more tightly packed if
-          // the user wants to group things together.
-          oneOrTwoNewlines();
-        }
+      visit(declaration);
 
-        visit(declaration);
-
-        needsDouble = false;
-        if (declaration is ClassDeclaration) {
-          // Add a blank line after classes.
-          needsDouble = true;
-        } else if (declaration is FunctionDeclaration) {
-          // Add a blank line after non-empty block functions.
-          if (declaration.functionExpression.body is BlockFunctionBody) {
-            var body = declaration.functionExpression.body as BlockFunctionBody;
-            needsDouble = body.block.statements.isNotEmpty;
-          }
+      needsDouble = false;
+      if (declaration is ClassDeclaration) {
+        // Add a blank line after classes.
+        needsDouble = true;
+      } else if (declaration is FunctionDeclaration) {
+        // Add a blank line after non-empty block functions.
+        var body = declaration.functionExpression.body;
+        if (body is BlockFunctionBody) {
+          needsDouble = body.block.statements.isNotEmpty;
         }
       }
     }
@@ -734,9 +758,9 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     space();
 
-    _writeBody(node.leftBracket, node.rightBracket, space: true, body: () {
-      visitCommaSeparatedNodes(node.constants, between: split);
-    });
+    _beginBody(node.leftBracket, space: true);
+    visitCommaSeparatedNodes(node.constants, between: split);
+    _endBody(node.rightBracket, space: true);
   }
 
   visitExportDirective(ExportDirective node) {
@@ -2156,13 +2180,9 @@ class SourceVisitor implements AstVisitor {
     _collectionArgumentLists[leftBracket] = argumentList;
   }
 
-  /// Writes an bracket-delimited body and handles indenting and starting the
-  /// rule used to split the contents.
-  ///
-  /// If [space] is `true`, then the contents and delimiters will have a space
-  /// between then when unsplit.
-  void _writeBody(Token leftBracket, Token rightBracket,
-      {bool space: false, body()}) {
+  /// Writes the beginning of a brace-delimited body and handles indenting and
+  /// starting the rule used to split the contents.
+  void _beginBody(Token leftBracket, {bool space: false}) {
     token(leftBracket);
 
     // Indent the body.
@@ -2171,9 +2191,10 @@ class SourceVisitor implements AstVisitor {
     // Split after the bracket.
     builder.startRule();
     builder.split(isDouble: false, nest: false, space: space);
+  }
 
-    body();
-
+  /// Finishes the body started by a call to [_beginBody].
+  void _endBody(Token rightBracket, {bool space: false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       builder.unindent();
