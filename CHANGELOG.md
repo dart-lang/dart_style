@@ -10,6 +10,7 @@
 * Preserve trailing commas in argument and parameter lists (#509).
 * Split arguments preceded by comments (#511).
 * Remove newlines after script tags (#513).
+* Split before a single named argument if the argument itself splits (#514).
 * Indent initializers in multiple variable declarations.
 * Avoid passing an invalid Windows file URI to analyzer.
 * Always split comma-separated sequences that contain a trailing comma.

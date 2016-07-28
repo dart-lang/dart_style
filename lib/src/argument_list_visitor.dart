@@ -422,9 +422,9 @@ class ArgumentSublist {
       //       body;
       //     }));
       visitor.builder.startBlockArgumentNesting();
-    } else {
+    } else if (argument is! NamedExpression) {
       // Edge case: Likewise, don't force the argument to split if there is
-      // only a single one, like:
+      // only a single positional one, like:
       //
       //     outer(inner(
       //         longArgument));
@@ -441,7 +441,7 @@ class ArgumentSublist {
       rule.enableSplitOnInnerRules();
     } else if (_allArguments.length > 1) {
       visitor.builder.endBlockArgumentNesting();
-    } else {
+    } else if (argument is! NamedExpression) {
       rule.enableSplitOnInnerRules();
     }
 
