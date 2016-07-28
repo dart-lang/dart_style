@@ -1201,7 +1201,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitLabeledStatement(LabeledStatement node) {
-    visitNodes(node.labels, between: space, after: space);
+    _visitLabels(node.labels);
     visit(node.statement);
   }
 
@@ -1439,7 +1439,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSwitchCase(SwitchCase node) {
-    visitNodes(node.labels, between: space, after: space);
+    _visitLabels(node.labels);
     token(node.keyword);
     space();
     visit(node.expression);
@@ -1454,7 +1454,7 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitSwitchDefault(SwitchDefault node) {
-    visitNodes(node.labels, between: space, after: space);
+    _visitLabels(node.labels);
     token(node.keyword);
     token(node.colon);
 
@@ -1755,6 +1755,11 @@ class SourceVisitor implements AstVisitor {
     builder.unnest();
     builder.endSpan();
     builder.endRule();
+  }
+
+  /// Visits a sequence of labels before a statement or switch case.
+  void _visitLabels(NodeList<Label> labels) {
+    visitNodes(labels, between: newline, after: newline);
   }
 
   /// Visits a top-level function or method declaration.
