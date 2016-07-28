@@ -2,6 +2,7 @@
 
 * Make it strong mode clean.
 * Put labels on their own line (#43).
+* Gracefully handle IO errors when failing to overwrite a file (#473).
 * Improve indentation in non-block-bodied control flow statements (#494).
 * Better indentation on very long return types (#503).
 * When calling from JS, guess at which error to show when the code cannot be

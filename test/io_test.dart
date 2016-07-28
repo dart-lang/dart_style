@@ -34,7 +34,9 @@ void main() {
       processDirectory(overwriteOptions, dir);
     }, 'Run formatter.');
 
-    d.dir('code.dart', [d.file('a.dart', formattedSource)]).validate();
+    d.dir('code.dart', [
+      d.file('a.dart', formattedSource),
+    ]).validate();
   });
 
   test("doesn't touch unchanged files", () {
@@ -155,6 +157,24 @@ void main() {
   });
 
   if (!Platform.isWindows) {
+    // TODO(rnystrom): Figure out Windows equivalent of chmod and get this
+    // test running on Windows too.
+    test("reports error if file can not be written", () {
+      d.file('a.dart', unformattedSource).create();
+
+      schedule(() {
+        Process.runSync("chmod", ["-w", p.join(d.defaultRoot, 'a.dart')]);
+      }, 'Make file read-only.');
+
+      schedule(() {
+        var file = new File(p.join(d.defaultRoot, 'a.dart'));
+        processFile(overwriteOptions, file);
+      }, 'Run formatter.');
+
+      // Should not have been formatted.
+      d.file('a.dart', unformattedSource).validate();
+    });
+
     test("doesn't follow file symlinks by default", () {
       d.dir('code').create();
       d.file('target_file.dart', unformattedSource).create();

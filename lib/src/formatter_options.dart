@@ -116,8 +116,13 @@ class _PrintJsonReporter extends OutputReporter {
 class _OverwriteReporter extends _PrintReporter {
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     if (changed) {
-      file.writeAsStringSync(output.text);
-      print("Formatted $label");
+      try {
+        file.writeAsStringSync(output.text);
+        print("Formatted $label");
+      } on FileSystemException catch (err) {
+        stderr.writeln("Could not overwrite $label: "
+            "${err.osError.message} (error code ${err.osError.errorCode})");
+      }
     } else {
       print("Unchanged $label");
     }
