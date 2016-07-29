@@ -1,3 +1,7 @@
+# 0.2.8
+
+* Format parameter lists with trailing commas like argument lists (#447).
+
 # 0.2.7
 
 * Make it strong mode clean.

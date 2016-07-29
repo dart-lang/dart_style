@@ -879,6 +879,14 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    // If the parameter list has a trailing comma, format it like a collection
+    // literal where each parameter goes on its own line, they are indented +2,
+    // and the ")" ends up on its own line.
+    if (node.parameters.last.endToken.next.type == TokenType.COMMA) {
+      _visitTrailingCommaParameterList(node);
+      return;
+    }
+
     var requiredParams = node.parameters
         .where((param) => param is! DefaultFormalParameter)
         .toList();
@@ -1854,11 +1862,7 @@ class SourceVisitor implements AstVisitor {
       builder.startLazyRule(new Rule(Cost.arrow));
     }
 
-    if (parameters != null) {
-      builder.nestExpression();
-      visit(parameters);
-      builder.unnest();
-    }
+    if (parameters != null) visit(parameters);
 
     if (beforeBody != null) beforeBody();
     visit(body);
@@ -2018,6 +2022,77 @@ class SourceVisitor implements AstVisitor {
     }
 
     _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
+  }
+
+  /// Writes [parameters], which is assumed to have a trailing comma after the
+  /// last parameter.
+  ///
+  /// Parameter lists with trailing commas are formatted differently from
+  /// regular parameter lists. They are treated more like collection literals.
+  ///
+  /// We don't reuse [_visitCollectionLiteral] here because there are enough
+  /// weird differences around optional parameters that it's easiest just to
+  /// give them their own method.
+  void _visitTrailingCommaParameterList(FormalParameterList parameters) {
+    // Can't have a trailing comma if there are no parameters.
+    assert(parameters.parameters.isNotEmpty);
+
+    // Always split the parameters.
+    builder.startRule(new Rule.hard());
+
+    token(parameters.leftParenthesis);
+
+    // Find the parameter immediately preceding the optional parameters (if
+    // there are any).
+    FormalParameter lastRequired;
+    for (var i = 0; i < parameters.parameters.length; i++) {
+      if (parameters.parameters[i] is DefaultFormalParameter) {
+        if (i > 0) lastRequired = parameters.parameters[i - 1];
+        break;
+      }
+    }
+
+    // If all parameters are optional, put the "[" or "{" right after "(".
+    if (parameters.parameters.first is DefaultFormalParameter) {
+      token(parameters.leftDelimiter);
+    }
+
+    // Process the parameters as a separate set of chunks.
+    builder = builder.startBlock(null);
+
+    for (var parameter in parameters.parameters) {
+      builder.nestExpression();
+      visit(parameter);
+
+      // The comma after the parameter.
+      if (parameter.endToken.next.type == TokenType.COMMA) {
+        token(parameter.endToken.next);
+      }
+
+      // If the optional parameters start after this one, put the delimiter
+      // at the end of its line.
+      if (parameter == lastRequired) {
+        space();
+        token(parameters.leftDelimiter);
+        lastRequired = null;
+      }
+
+      builder.unnest();
+      newline();
+    }
+
+    // Put comments before the closing ")", "]", or "}" inside the block.
+    var firstDelimiter =
+        parameters.rightDelimiter ?? parameters.rightParenthesis;
+    writePrecedingCommentsAndNewlines(firstDelimiter);
+    builder = builder.endBlock(null, forceSplit: true);
+    builder.endRule();
+
+    // Now write the delimiter itself.
+    _writeText(firstDelimiter.lexeme, firstDelimiter.offset);
+    if (firstDelimiter != parameters.rightParenthesis) {
+      token(parameters.rightParenthesis);
+    }
   }
 
   /// Gets the cost to split at an assignment (or `:` in the case of a named

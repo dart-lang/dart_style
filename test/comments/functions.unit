@@ -127,3 +127,20 @@ main() {
 main() {
   // comment
 }
+>>> comment before "]" with trailing comma
+function([parameter,/* c */]) {;}
+<<<
+function([
+  parameter,
+  /* c */
+]) {
+  ;
+}
+>>> comment before ")" with trailing comma
+function([parameter,]/* c */) {;}
+<<<
+function([
+  parameter,
+] /* c */) {
+  ;
+}
