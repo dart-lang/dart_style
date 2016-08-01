@@ -6,7 +6,7 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.27.4-alpha.17"
+    version: "0.27.4"
   ansicolor:
     description:
       name: ansicolor
@@ -18,7 +18,7 @@ packages:
       name: args
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.4+2"
+    version: "0.13.5"
   async:
     description:
       name: async
@@ -96,7 +96,7 @@ packages:
       name: html
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.2+2"
+    version: "0.13.0"
   http:
     description:
       name: http
@@ -162,7 +162,13 @@ packages:
       name: package_config
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.1.5"
+    version: "1.0.0"
+  package_resolver:
+    description:
+      name: package_resolver
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
   path:
     description:
       name: path
@@ -216,7 +222,7 @@ packages:
       name: source_map_stack_trace
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "1.1.2"
   source_maps:
     description:
       name: source_maps

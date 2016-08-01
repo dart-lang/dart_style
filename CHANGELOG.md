@@ -1,3 +1,7 @@
+# 0.2.9
+
+* Require analyzer 0.27.4, which makes trailing commas on by default.
+
 # 0.2.8
 
 * Format parameter lists with trailing commas like argument lists (#447).

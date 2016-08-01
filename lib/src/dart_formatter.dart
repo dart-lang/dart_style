@@ -103,8 +103,6 @@ class DartFormatter {
     // Parse it.
     var parser = new Parser(stringSource, errorListener);
 
-    parser.parseTrailingCommas = true;
-
     var node;
     if (source.isCompilationUnit) {
       node = parser.parseCompilationUnit(startToken);
