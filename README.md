@@ -3,7 +3,7 @@ code. It replaces the whitespace in your program with what it deems to be the
 best formatting for it. Resulting code should follow the [Dart style guide][]
 but, moreso, should look nice to most human readers, most of the time.
 
-[dart style guide]: https://www.dartlang.org/articles/style-guide/
+[dart style guide]: https://www.dartlang.org/guides/language/effective-dart/style
 
 The formatter handles indentation, inline whitespace and
 (by far the most difficult), intelligent line wrapping.
