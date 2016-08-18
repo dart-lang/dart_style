@@ -29,8 +29,11 @@ ScheduledProcess runFormatter([List<String> args]) {
   args.insert(0, formatterPath);
 
   // Use the same package root, if there is one.
-  if (Platform.packageRoot.isNotEmpty) {
+  if (Platform.packageRoot != null && Platform.packageRoot.isNotEmpty) {
     args.insert(0, "--package-root=${Platform.packageRoot}");
+  } else if (Platform.packageConfig != null &&
+      Platform.packageConfig.isNotEmpty) {
+    args.insert(0, "--packages=${Platform.packageConfig}");
   }
 
   return new ScheduledProcess.start(Platform.executable, args);
