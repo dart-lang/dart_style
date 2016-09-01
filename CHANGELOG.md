@@ -1,3 +1,7 @@
+# 0.2.10
+
+* Always split enum declarations if they end in a trailing comma (#529). 
+
 # 0.2.9
 
 * Require analyzer 0.27.4, which makes trailing commas on by default.

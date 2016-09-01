@@ -760,6 +760,12 @@ class SourceVisitor implements AstVisitor {
 
     _beginBody(node.leftBracket, space: true);
     visitCommaSeparatedNodes(node.constants, between: split);
+
+    // If there is a trailing comma, always force the constants to split.
+    if (node.constants.last.endToken.next.type == TokenType.COMMA) {
+      builder.forceRules();
+    }
+
     _endBody(node.rightBracket, space: true);
   }
 
