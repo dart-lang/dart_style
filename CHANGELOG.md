@@ -1,5 +1,6 @@
 # 0.2.10
 
+* Handle metadata annotations before parameters with trailing commas (#520). 
 * Always split enum declarations if they end in a trailing comma (#529). 
 
 # 0.2.9

@@ -2043,6 +2043,8 @@ class SourceVisitor implements AstVisitor {
     // Can't have a trailing comma if there are no parameters.
     assert(parameters.parameters.isNotEmpty);
 
+    _metadataRules.add(new MetadataRule());
+
     // Always split the parameters.
     builder.startRule(new Rule.hard());
 
@@ -2067,7 +2069,6 @@ class SourceVisitor implements AstVisitor {
     builder = builder.startBlock(null);
 
     for (var parameter in parameters.parameters) {
-      builder.nestExpression();
       visit(parameter);
 
       // The comma after the parameter.
@@ -2083,7 +2084,6 @@ class SourceVisitor implements AstVisitor {
         lastRequired = null;
       }
 
-      builder.unnest();
       newline();
     }
 
@@ -2093,6 +2093,8 @@ class SourceVisitor implements AstVisitor {
     writePrecedingCommentsAndNewlines(firstDelimiter);
     builder = builder.endBlock(null, forceSplit: true);
     builder.endRule();
+
+    _metadataRules.removeLast();
 
     // Now write the delimiter itself.
     _writeText(firstDelimiter.lexeme, firstDelimiter.offset);
