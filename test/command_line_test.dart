@@ -210,6 +210,29 @@ void main() {
     });
   });
 
+  group("--set-exit-if-changed", () {
+    test("gives exit code 0 if there are no changes", () {
+      d.dir("code", [d.file("a.dart", formattedSource)]).create();
+
+      var process = runFormatterOnDir(["--set-exit-if-changed"]);
+      process.shouldExit(0);
+    });
+
+    test("gives exit code 1 if there are changes", () {
+      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+
+      var process = runFormatterOnDir(["--set-exit-if-changed"]);
+      process.shouldExit(1);
+    });
+
+    test("gives exit code 1 if there are changes even in dry run", () {
+      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+
+      var process = runFormatterOnDir(["--set-exit-if-changed", "--dry-run"]);
+      process.shouldExit(1);
+    });
+  });
+
   group("with no paths", () {
     test("errors on --overwrite", () {
       var process = runFormatter(["--overwrite"]);

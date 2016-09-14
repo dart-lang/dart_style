@@ -86,10 +86,10 @@ void dumpChunks(int start, List<Chunk> chunks) {
   var rules =
       chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
 
-  var rows = [];
+  var rows = <List<String>>[];
 
   addChunk(List<Chunk> chunks, String prefix, int index) {
-    var row = [];
+    var row = <String>[];
     row.add("$prefix$index:");
 
     var chunk = chunks[index];

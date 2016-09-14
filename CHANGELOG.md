@@ -2,6 +2,7 @@
 
 * Handle metadata annotations before parameters with trailing commas (#520). 
 * Always split enum declarations if they end in a trailing comma (#529). 
+* Add `--set-exit-if-changed` to set the exit code on a change (#365).
 
 # 0.2.9
 

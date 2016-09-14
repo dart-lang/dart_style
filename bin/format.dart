@@ -33,6 +33,9 @@ void main(List<String> args) {
       abbr: "n",
       negatable: false,
       help: "Show which files would be modified but make no changes.");
+  parser.addFlag("set-exit-if-changed",
+      negatable: false,
+      help: "Return exit code 1 if there are any formatting changes.");
   parser.addFlag("overwrite",
       abbr: "w",
       negatable: false,
@@ -117,6 +120,10 @@ void main(List<String> args) {
 
   if (argResults["profile"]) {
     reporter = new ProfileReporter(reporter);
+  }
+
+  if (argResults["set-exit-if-changed"]) {
+    reporter = new SetExitReporter(reporter);
   }
 
   var pageWidth;

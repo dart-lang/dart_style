@@ -129,10 +129,35 @@ class _OverwriteReporter extends _PrintReporter {
   }
 }
 
-/// A decorating reporter that reports how long it took for format each file.
-class ProfileReporter implements OutputReporter {
+/// Base clase for a reporter that decorates an inner reporter.
+abstract class _ReporterDecorator implements OutputReporter {
   final OutputReporter _inner;
 
+  _ReporterDecorator(this._inner);
+
+  void showDirectory(String path) {
+    _inner.showDirectory(path);
+  }
+
+  void showSkippedLink(String path) {
+    _inner.showSkippedLink(path);
+  }
+
+  void showHiddenPath(String path) {
+    _inner.showHiddenPath(path);
+  }
+
+  void beforeFile(File file, String label) {
+    _inner.beforeFile(file, label);
+  }
+
+  void afterFile(File file, String label, SourceCode output, {bool changed}) {
+    _inner.afterFile(file, label, output, changed: changed);
+  }
+}
+
+/// A decorating reporter that reports how long it took for format each file.
+class ProfileReporter extends _ReporterDecorator {
   /// The files that have been started but have not completed yet.
   ///
   /// Maps a file label to the time that it started being formatted.
@@ -145,7 +170,7 @@ class ProfileReporter implements OutputReporter {
   /// tracking.
   int _elided = 0;
 
-  ProfileReporter(this._inner);
+  ProfileReporter(OutputReporter inner) : super(inner);
 
   /// Show the times for the slowest files to format.
   void showProfile() {
@@ -165,25 +190,9 @@ class ProfileReporter implements OutputReporter {
     }
   }
 
-  /// Describe the directory whose contents are about to be processed.
-  void showDirectory(String path) {
-    _inner.showDirectory(path);
-  }
-
-  /// Describe the symlink at [path] that wasn't followed.
-  void showSkippedLink(String path) {
-    _inner.showSkippedLink(path);
-  }
-
-  /// Describe the hidden [path] that wasn't processed.
-  void showHiddenPath(String path) {
-    _inner.showHiddenPath(path);
-  }
-
   /// Called when [file] is about to be formatted.
   void beforeFile(File file, String label) {
-    _inner.beforeFile(file, label);
-
+    super.beforeFile(file, label);
     _ongoing[label] = new DateTime.now();
   }
 
@@ -199,6 +208,21 @@ class ProfileReporter implements OutputReporter {
       _elided++;
     }
 
-    _inner.afterFile(file, label, output, changed: changed);
+    super.afterFile(file, label, output, changed: changed);
+  }
+}
+
+/// A decorating reporter that sets the exit code to 1 if any changes are made.
+class SetExitReporter extends _ReporterDecorator {
+  SetExitReporter(OutputReporter inner) : super(inner);
+
+  /// Describe the processed file at [path] whose formatted result is [output].
+  ///
+  /// If the contents of the file are the same as the formatted output,
+  /// [changed] will be false.
+  void afterFile(File file, String label, SourceCode output, {bool changed}) {
+    if (changed) exitCode = 1;
+
+    super.afterFile(file, label, output, changed: changed);
   }
 }
