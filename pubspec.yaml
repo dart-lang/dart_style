@@ -1,13 +1,13 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 0.2.10
+version: 0.2.11
 author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
 environment:
   sdk: ">=1.8.0 <2.0.0"
 dependencies:
-  analyzer: '>=0.27.4 <=0.29.0-alpha.0'
+  analyzer: '>=0.27.4 <0.30.0'
   args: '>=0.12.1 <0.14.0'
   path: '>=1.0.0 <2.0.0'
   source_span: '>=1.1.1 <2.0.0'
