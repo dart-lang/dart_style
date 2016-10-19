@@ -1,3 +1,11 @@
+# 0.2.11+1
+
+Fix test to not depend on analyzer error message.
+
+# 0.2.11
+
+* Widen dependency on analyzer to allow 0.29.x.
+
 # 0.2.10
 
 * Handle metadata annotations before parameters with trailing commas (#520). 
