@@ -167,6 +167,9 @@ class SourceVisitor implements AstVisitor {
     builder.endSpan();
   }
 
+  // TODO(rnystrom): Type annotate once analyzer publishes a version with the
+  // new AST type.
+  // TODO(rnystrom): Test.
   visitAssertInitializer(node) {
     _simpleStatement(node, () {
       token(node.assertKeyword);
