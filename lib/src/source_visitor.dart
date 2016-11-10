@@ -603,7 +603,7 @@ class SourceVisitor implements AstVisitor {
 
     token(node.rightParenthesis);
     space();
-    visit(node.libraryUri);
+    visit(node.uri);
   }
 
   visitConstructorDeclaration(ConstructorDeclaration node) {
