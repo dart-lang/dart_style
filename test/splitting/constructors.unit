@@ -82,3 +82,14 @@ class Foo {
       : initializer =
             function(argument, arg);
 }
+>>> long assert parameter list
+class Foo {
+  Foo():assert(someLongIdentifier > anotherLongIdentifier), a = b;
+}
+<<<
+class Foo {
+  Foo()
+      : assert(someLongIdentifier >
+            anotherLongIdentifier),
+        a = b;
+}

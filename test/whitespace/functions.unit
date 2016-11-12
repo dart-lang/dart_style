@@ -21,6 +21,10 @@ int a(var x, {optional: null}) => null;
 int a(var x, [optional = null]) => null;
 <<<
 int a(var x, [optional = null]) => null;
+>>> named parameters with "="
+int a({b=null, c   =   null}) => null;
+<<<
+int a({b = null, c = null}) => null;
 >>> async
 main()
     async  {

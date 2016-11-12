@@ -69,3 +69,22 @@ class Foo {
 class Foo {
   Foo(this.bar(), baz);
 }
+>>> single short assert
+class Foo {
+  Foo():assert (  1,2);
+}
+<<<
+class Foo {
+  Foo() : assert(1, 2);
+}
+>>> multiple asserts
+class Foo {
+  Foo():assert (  1,2),assert(    true
+  )  ;
+}
+<<<
+class Foo {
+  Foo()
+      : assert(1, 2),
+        assert(true);
+}
