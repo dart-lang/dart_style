@@ -102,12 +102,6 @@ class DartFormatter {
 
     // Parse it.
     var parser = new Parser(stringSource, errorListener);
-    try {
-      parser.enableAssertInitializer = true;
-    } on NoSuchMethodError {
-      // If using a version of analyzer that doesn't have the flag, just ignore
-      // it.
-    }
 
     AstNode node;
     if (source.isCompilationUnit) {
