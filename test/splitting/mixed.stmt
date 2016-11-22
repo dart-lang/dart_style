@@ -211,3 +211,15 @@ veryLongFunction() =>
     longArgument +
     longArgument +
     longArgument;
+>>> initialize with as expression
+var longVariableName = identifierSoLongItWraps as SomeClassName;
+<<<
+var longVariableName =
+    identifierSoLongItWraps
+        as SomeClassName;
+>>> initialize with is expression
+var longVariableName = identifierSoLongItWraps is SomeClassName;
+<<<
+var longVariableName =
+    identifierSoLongItWraps
+        is SomeClassName;

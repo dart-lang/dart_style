@@ -159,11 +159,13 @@ class SourceVisitor implements AstVisitor {
 
   visitAsExpression(AsExpression node) {
     builder.startSpan();
+    builder.nestExpression();
     visit(node.expression);
     soloSplit();
     token(node.asOperator);
     space();
     visit(node.type);
+    builder.unnest();
     builder.endSpan();
   }
 
@@ -1240,12 +1242,14 @@ class SourceVisitor implements AstVisitor {
 
   visitIsExpression(IsExpression node) {
     builder.startSpan();
+    builder.nestExpression();
     visit(node.expression);
     soloSplit();
     token(node.isOperator);
     token(node.notOperator);
     space();
     visit(node.type);
+    builder.unnest();
     builder.endSpan();
   }
 

@@ -1,6 +1,7 @@
 # 0.2.12-dev
 
 * Add support for assert() in constructor initializers.
+* Correctly indent the right-hand side of `is` and `as` expressions.
 
 # 0.2.11+1
 
