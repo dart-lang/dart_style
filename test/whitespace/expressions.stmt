@@ -135,3 +135,7 @@ function(
   named: arg,
   another: arg,
 );
+>>> generic method call
+method   <int,String   ,    bool>  ();
+<<<
+method<int, String, bool>();

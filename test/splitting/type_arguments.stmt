@@ -36,3 +36,23 @@ new SomeClass<
 <<<
 new SomeClass<TypeArgument>(
     valueArgument);
+>>> split both type and value arguments
+new SomeClass<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
+<<<
+new SomeClass<
+        First,
+        Second,
+        Third,
+        Fourth,
+        Fifth,
+        Sixth,
+        Seventh,
+        Eighth>(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+    sixth,
+    seventh,
+    eighth);

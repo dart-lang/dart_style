@@ -133,7 +133,7 @@ class SourceVisitor implements AstVisitor {
   /// 4. Split between one or more positional arguments, trying to keep as many
   ///    on earlier lines as possible.
   /// 5. Split the named arguments each onto their own line.
-  visitArgumentList(ArgumentList node) {
+  visitArgumentList(ArgumentList node, {bool nestExpression: true}) {
     // Corner case: handle empty argument lists.
     if (node.arguments.isEmpty) {
       token(node.leftParenthesis);
@@ -154,7 +154,9 @@ class SourceVisitor implements AstVisitor {
       return;
     }
 
+    if (nestExpression) builder.nestExpression();
     new ArgumentListVisitor(this, node).visit();
+    if (nestExpression) builder.unnest();
   }
 
   visitAsExpression(AsExpression node) {
@@ -179,9 +181,11 @@ class SourceVisitor implements AstVisitor {
       var arguments = <Expression>[node.condition];
       if (node.message != null) arguments.add(node.message);
 
+      builder.nestExpression();
       var visitor = new ArgumentListVisitor.forArguments(
           this, node.leftParenthesis, node.rightParenthesis, arguments);
       visitor.visit();
+      builder.unnest();
     });
   }
 
@@ -1220,10 +1224,18 @@ class SourceVisitor implements AstVisitor {
     token(node.keyword);
     space();
     builder.startSpan(Cost.constructorName);
+
+    // Start the expression nesting for the argument list here, in case this
+    // is a generic constructor with type arguments. If it is, we need the type
+    // arguments to be nested too so they get indented past the arguments.
+    builder.nestExpression();
     visit(node.constructorName);
+
     builder.endSpan();
-    visit(node.argumentList);
+    visitArgumentList(node.argumentList, nestExpression: false);
     builder.endSpan();
+
+    builder.unnest();
   }
 
   visitIntegerLiteral(IntegerLiteral node) {
@@ -1315,8 +1327,22 @@ class SourceVisitor implements AstVisitor {
 
       // This will be non-null for cascade sections.
       token(node.operator);
-      token(node.methodName.token);
-      visit(node.argumentList);
+      visit(node.methodName);
+
+      // TODO(rnystrom): Currently, there are no constraints between a generic
+      // method's type arguments and arguments. That can lead to some funny
+      // splitting like:
+      //
+      //     method<VeryLongType,
+      //             AnotherTypeArgument>(argument,
+      //         argument, argument, argument);
+      //
+      // The indentation is fine, but splitting in the middle of each argument
+      // list looks kind of strange. If this ends up happening in real world
+      // code, consider putting a constraint between them.
+
+      visit(node.typeArguments);
+      visitArgumentList(node.argumentList, nestExpression: false);
 
       builder.unnest();
       builder.endSpan();
