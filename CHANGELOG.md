@@ -2,6 +2,7 @@
 
 * Add support for assert() in constructor initializers.
 * Correctly indent the right-hand side of `is` and `as` expressions.
+* Avoid splitting in index operators when possible.
 
 # 0.2.11+1
 

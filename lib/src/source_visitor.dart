@@ -1207,7 +1207,7 @@ class SourceVisitor implements AstVisitor {
       soloZeroSplit();
     }
 
-    builder.startSpan();
+    builder.startSpan(Cost.index);
     token(node.leftBracket);
     soloZeroSplit();
     visit(node.index);

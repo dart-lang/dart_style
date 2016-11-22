@@ -43,3 +43,19 @@ class IoControllerComponent implements ScopeAware {}
       'on-optional': '&onOptional'
     })
 class IoControllerComponent implements ScopeAware {}
+>>> (indent 4)
+    main() {
+      expect(matcher.match(
+              CssSelector.parse("someOtherTag.someOtherClass[someOtherAttr]")[
+                  0],
+              selectableCollector))
+          .toEqual(false);
+    }
+<<<
+    main() {
+      expect(matcher.match(
+              CssSelector
+                  .parse("someOtherTag.someOtherClass[someOtherAttr]")[0],
+              selectableCollector))
+          .toEqual(false);
+    }
