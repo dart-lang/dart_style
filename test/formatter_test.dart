@@ -137,7 +137,7 @@ void testDirectory(String name) {
   var testDir = p.dirname(currentMirrorSystem()
       .findLibrary(#dart_style.test.formatter_test)
       .uri
-      .path);
+      .toFilePath());
 
   var entries = new Directory(p.join(testDir, name))
       .listSync(recursive: true, followLinks: false);
