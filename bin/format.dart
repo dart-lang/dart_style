@@ -14,7 +14,7 @@ import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/source_code.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
-const version = "0.2.12";
+const version = "0.2.13";
 
 void main(List<String> args) {
   var parser = new ArgParser(allowTrailingOptions: true);

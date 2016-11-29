@@ -631,7 +631,7 @@ class SourceVisitor implements AstVisitor {
     // the parameter list gets more deeply indented.
     if (node.redirectedConstructor != null) builder.nestExpression();
 
-    _visitBody(node.parameters, node.body, () {
+    _visitBody(null, node.parameters, node.body, () {
       // Check for redirects or initializer lists.
       if (node.redirectedConstructor != null) {
         _visitConstructorRedirects(node);
@@ -895,7 +895,8 @@ class SourceVisitor implements AstVisitor {
     _visitLoopBody(node.body);
   }
 
-  visitFormalParameterList(FormalParameterList node) {
+  visitFormalParameterList(FormalParameterList node,
+      {bool nestExpression: true}) {
     // Corner case: empty parameter lists.
     if (node.parameters.isEmpty) {
       token(node.leftParenthesis);
@@ -922,7 +923,7 @@ class SourceVisitor implements AstVisitor {
         .where((param) => param is DefaultFormalParameter)
         .toList();
 
-    builder.nestExpression();
+    if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
 
     _metadataRules.add(new MetadataRule());
@@ -997,7 +998,7 @@ class SourceVisitor implements AstVisitor {
     _metadataRules.removeLast();
 
     token(node.rightParenthesis);
-    builder.unnest();
+    if (nestExpression) builder.unnest();
   }
 
   visitForStatement(ForStatement node) {
@@ -1067,7 +1068,20 @@ class SourceVisitor implements AstVisitor {
   }
 
   visitFunctionExpression(FunctionExpression node) {
-    _visitBody(node.parameters, node.body);
+    // TODO(rnystrom): This is working but not tested. As of 2016/11/29, the
+    // latest version of analyzer on pub does not parse generic lambdas. When
+    // a version of it that does is published, upgrade dart_style to use it and
+    // then test it:
+    //
+    //     >>> generic function expression
+    //         main() {
+    //           var generic = < T,S >(){};
+    //     }
+    //     <<<
+    //     main() {
+    //       var generic = <T, S>() {};
+    //     }
+    _visitBody(node.typeParameters, node.parameters, node.body);
   }
 
   visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
@@ -1340,7 +1354,6 @@ class SourceVisitor implements AstVisitor {
       // The indentation is fine, but splitting in the middle of each argument
       // list looks kind of strange. If this ends up happening in real world
       // code, consider putting a constraint between them.
-
       visit(node.typeArguments);
       visitArgumentList(node.argumentList, nestExpression: false);
 
@@ -1867,7 +1880,14 @@ class SourceVisitor implements AstVisitor {
     visit(node.name);
     builder.endSpan();
 
-    _visitBody(function.parameters, function.body, () {
+    TypeParameterList typeParameters;
+    if (node is FunctionDeclaration) {
+      typeParameters = node.functionExpression.typeParameters;
+    } else {
+      typeParameters = (node as MethodDeclaration).typeParameters;
+    }
+
+    _visitBody(typeParameters, function.parameters, function.body, () {
       // If the body is a block, we need to exit nesting before we hit the body
       // indentation, but we do want to wrap it around the parameters.
       if (function.body is! ExpressionFunctionBody) builder.unnest();
@@ -1882,7 +1902,8 @@ class SourceVisitor implements AstVisitor {
   /// space before it if it's not empty.
   ///
   /// If [beforeBody] is provided, it is invoked before the body is visited.
-  void _visitBody(FormalParameterList parameters, FunctionBody body,
+  void _visitBody(TypeParameterList typeParameters,
+      FormalParameterList parameters, FunctionBody body,
       [beforeBody()]) {
     // If the body is "=>", add an extra level of indentation around the
     // parameters and a rule that spans the parameters and the "=>". This
@@ -1914,7 +1935,16 @@ class SourceVisitor implements AstVisitor {
       builder.startLazyRule(new Rule(Cost.arrow));
     }
 
-    if (parameters != null) visit(parameters);
+    // Start the nesting for the parameters here, so they wrap around the
+    // type parameters too, if any.
+    builder.nestExpression();
+
+    visit(typeParameters);
+    if (parameters != null) {
+      visitFormalParameterList(parameters, nestExpression: false);
+    }
+
+    builder.unnest();
 
     if (beforeBody != null) beforeBody();
     visit(body);

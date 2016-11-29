@@ -35,3 +35,15 @@ class SomeClass<
 <<<
 class SomeClass<TypeArgument>
     extends Base {}
+>>> generic function declaration
+foo<A,B,C,D>() {}
+<<<
+foo<A, B, C, D>() {}
+>>> generic method on class
+class Foo {
+  foo<A,B,C,D>() {}
+}
+<<<
+class Foo {
+  foo<A, B, C, D>() {}
+}

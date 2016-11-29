@@ -1,3 +1,7 @@
+# 0.2.13
+
+* Support generic method *parameters* as well as arguments.  
+
 # 0.2.12
 
 * Add support for assert() in constructor initializers.
