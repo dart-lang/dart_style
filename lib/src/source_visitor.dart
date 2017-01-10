@@ -23,7 +23,7 @@ import 'whitespace.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
-class SourceVisitor implements AstVisitor {
+class SourceVisitor extends ThrowingAstVisitor {
   /// The builder for the block that is currently being visited.
   ChunkBuilder builder;
 
