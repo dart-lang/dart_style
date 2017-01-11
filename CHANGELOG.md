@@ -1,6 +1,12 @@
+# 0.2.14
+
+* Update to analyzer 0.29.3. This should make dart_style a little more resilient
+  to breaking changes in analyzer that add support for new syntax that
+  dart_style can't format yet.
+
 # 0.2.13
 
-* Support generic method *parameters* as well as arguments.  
+* Support generic method *parameters* as well as arguments.
 
 # 0.2.12
 
@@ -19,8 +25,8 @@
 
 # 0.2.10
 
-* Handle metadata annotations before parameters with trailing commas (#520). 
-* Always split enum declarations if they end in a trailing comma (#529). 
+* Handle metadata annotations before parameters with trailing commas (#520).
+* Always split enum declarations if they end in a trailing comma (#529).
 * Add `--set-exit-if-changed` to set the exit code on a change (#365).
 
 # 0.2.9
