@@ -100,3 +100,16 @@ class Foo {
   set g(value) => null;
   var h = 1;
 }
+>>> covariant field (skip: published version of analyzer doesn't support 'covariant yet')
+class Foo {
+ covariant    var bar;
+  covariant    int baz;
+@wat  covariant    int zoop;
+}
+<<<
+class Foo {
+  covariant var bar;
+  covariant int baz;
+  @wat
+  covariant int zoop;
+}

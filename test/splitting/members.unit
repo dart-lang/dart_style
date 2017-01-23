@@ -26,3 +26,14 @@ class Foo {
   VeryLongTypeAnnotation
       set veryLongSetter(v) {}
 }
+>>> do not split after "covariant" in field (at least for now) (skip: published version of analyzer doesn't support 'covariant yet')
+class Foo {
+  covariant var soMuchSoVeryLongFieldNameHere;
+  covariant VeryLongTypeAnnotation field;
+}
+<<<
+class Foo {
+  covariant var soMuchSoVeryLongFieldNameHere;
+  covariant VeryLongTypeAnnotation
+      field;
+}

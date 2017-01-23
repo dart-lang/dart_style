@@ -859,12 +859,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _simpleStatement(node, () {
       modifier(node.staticKeyword);
+      modifier(node.covariantKeyword);
       visit(node.fields);
     });
   }
 
   visitFieldFormalParameter(FieldFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
+      modifier(node.covariantKeyword);
       token(node.keyword, after: space);
       visit(node.type, after: space);
       token(node.thisKeyword);
@@ -1104,6 +1106,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
+      modifier(node.covariantKeyword);
       visit(node.returnType, after: space);
 
       // Try to keep the function's parameters with its name.
@@ -1489,6 +1492,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
+      modifier(node.covariantKeyword);
       modifier(node.keyword);
       visit(node.type, after: space);
       visit(node.identifier);

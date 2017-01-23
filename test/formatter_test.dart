@@ -186,6 +186,12 @@ void testDirectory(String name) {
           expectedOutput += lines[i] + "\n";
         }
 
+        // TODO(rnystrom): Stop skipping these tests when possible.
+        if (description.contains("(skip:")) {
+          print("skipping $description");
+          continue;
+        }
+
         test(description, () {
           var isCompilationUnit = p.extension(entry.path) == ".unit";
 

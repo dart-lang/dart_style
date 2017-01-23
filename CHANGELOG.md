@@ -1,3 +1,7 @@
+# 0.2.15
+
+* Support `covariant` modifier on methods.
+
 # 0.2.14
 
 * Update to analyzer 0.29.3. This should make dart_style a little more resilient
