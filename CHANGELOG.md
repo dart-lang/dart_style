@@ -1,3 +1,7 @@
+# 0.2.16
+
+* Don't discard type arguments on method calls with closure arguments (#582).
+
 # 0.2.15
 
 * Support `covariant` modifier on methods.

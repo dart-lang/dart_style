@@ -20,9 +20,15 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  runTest("regression/0000/0068.stmt", 14);
-
-  formatStmt("hello(world);");
+  formatUnit("""
+void fn() {
+  List<String> a;
+  // NOTICE THE TYPE PARAMETER
+  a.fold<int>(0, (memo, s) {
+    return max(memo, s.length);
+  });
+}
+""");
 }
 
 void formatStmt(String source, [int pageWidth = 80]) {

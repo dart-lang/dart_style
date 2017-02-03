@@ -6,7 +6,7 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.29.5"
+    version: "0.29.6"
   ansicolor:
     description:
       name: ansicolor
@@ -24,7 +24,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.11.3"
+    version: "1.12.0"
   barback:
     description:
       name: barback
@@ -49,6 +49,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.1.1"
+  cli_util:
+    description:
+      name: cli_util
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.1+2"
   collection:
     description:
       name: collection
@@ -72,7 +78,7 @@ packages:
       name: csslib
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.2+2"
+    version: "0.13.3+1"
   glob:
     description:
       name: glob
@@ -252,7 +258,7 @@ packages:
       name: stream_channel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.6.0"
+    version: "1.6.1"
   string_scanner:
     description:
       name: string_scanner
@@ -301,6 +307,18 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.4"
+  when:
+    description:
+      name: when
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.2.0"
+  which:
+    description:
+      name: which
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.3"
   yaml:
     description:
       name: yaml

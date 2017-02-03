@@ -410,6 +410,7 @@ class CallChainVisitor {
   void _writeBlockCall(MethodInvocation invocation) {
     _visitor.token(invocation.operator);
     _visitor.token(invocation.methodName.token);
+    _visitor.visit(invocation.typeArguments);
     _visitor.visit(invocation.argumentList);
   }
 
