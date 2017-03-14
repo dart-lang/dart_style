@@ -56,3 +56,13 @@ new SomeClass<
     sixth,
     seventh,
     eighth);
+>>> newline before typed collection should not force <> to split
+{
+  <int>[];
+  <int>[];
+}
+<<<
+{
+  <int>[];
+  <int>[];
+}

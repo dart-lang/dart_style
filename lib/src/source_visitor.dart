@@ -1834,7 +1834,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitGenericList(
       Token leftBracket, Token rightBracket, List<AstNode> nodes) {
     var rule = new TypeArgumentRule();
-    builder.startRule(rule);
+    builder.startLazyRule(rule);
     builder.startSpan();
     builder.nestExpression();
 

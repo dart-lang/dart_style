@@ -1,3 +1,8 @@
+# 0.2.17
+
+* Fix splitting in generic methods with `=>` bodies (#584).
+* Don't split after `<` when a collection is in statement position (#589).
+
 # 0.2.16
 
 * Don't discard type arguments on method calls with closure arguments (#582).
