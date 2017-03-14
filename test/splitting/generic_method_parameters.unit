@@ -52,15 +52,13 @@ lengthyMethodName<
 >>> type parameters and => body
 longFunctionName<LongTypeParameterT, LongTypeParameterS>() => body;
 <<<
-longFunctionName<
-        LongTypeParameterT,
+longFunctionName<LongTypeParameterT,
         LongTypeParameterS>() =>
     body;
 >>> type parameters, value parameters, and => body
 longFunctionName<LongTypeParameterT, LongTypeParameterS>(longParameter1, longParameter2) => body;
 <<<
-longFunctionName<
-            LongTypeParameterT,
+longFunctionName<LongTypeParameterT,
             LongTypeParameterS>(
         longParameter1,
         longParameter2) =>
