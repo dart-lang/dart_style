@@ -137,7 +137,7 @@ class ChunkBuilder {
     _emitPendingWhitespace();
     _writeText(string);
 
-    _lazyRules.forEach(startRule);
+    _lazyRules.forEach(_activateRule);
     _lazyRules.clear();
 
     _nesting.commitNesting();
@@ -360,6 +360,15 @@ class ChunkBuilder {
   void startRule([Rule rule]) {
     if (rule == null) rule = new Rule();
 
+    // If there are any pending lazy rules, start them now so that the proper
+    // stack ordering of rules is maintained.
+    _lazyRules.forEach(_activateRule);
+    _lazyRules.clear();
+
+    _activateRule(rule);
+  }
+
+  void _activateRule(Rule rule) {
     // See if any of the rules that contain this one care if it splits.
     _rules.forEach((outer) {
       if (!outer.splitsOnInnerRules) return;

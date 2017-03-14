@@ -14,13 +14,6 @@ import 'rule.dart';
 ///
 /// The values for a rule for `n` arguments are:
 ///
-/// 3 args
-/// 0 : no
-/// 1 : before arg 2
-/// 2: before arg 1
-/// 3: before arg 0
-/// 4: all
-///
 /// * `0`: No splits at all.
 /// * `1 ... n`: Split before one argument, starting from the last.
 /// * `n + 1`: Split before all arguments.
