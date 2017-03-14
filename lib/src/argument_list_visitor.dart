@@ -110,6 +110,40 @@ class ArgumentListVisitor {
       functionsStart = null;
     }
 
+    // Edge case: If all of the function arguments are named and there are
+    // other named arguments that are "=>" functions, then don't treat the
+    // block-bodied functions specially. In a mixture of the two function
+    // styles, it looks cleaner to treat them all like normal expressions so
+    // that the named arguments line up.
+    if (functionsStart != null &&
+        arguments[functionsStart] is NamedExpression) {
+      bool isArrow(NamedExpression named) {
+        var expression = named.expression;
+
+        if (expression is FunctionExpression) {
+          return expression.body is ExpressionFunctionBody;
+        }
+
+        return false;
+      }
+
+      for (var i = 0; i < functionsStart; i++) {
+        if (arguments[i] is! NamedExpression) continue;
+
+        if (isArrow(arguments[i])) {
+          functionsStart = null;
+          break;
+        }
+      }
+
+      for (var i = functionsEnd; i < arguments.length; i++) {
+        if (isArrow(arguments[i])) {
+          functionsStart = null;
+          break;
+        }
+      }
+    }
+
     if (functionsStart == null) {
       // No functions, so there is just a single argument list.
       return new ArgumentListVisitor._(

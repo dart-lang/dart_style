@@ -1,3 +1,7 @@
+# 0.2.17
+
+* Handle mixed block and arrow bodied function arguments uniformly (#500).
+
 # 0.2.16
 
 * Don't discard type arguments on method calls with closure arguments (#582).
