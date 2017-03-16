@@ -1,6 +1,7 @@
 # 0.2.17
 
 * Handle mixed block and arrow bodied function arguments uniformly (#500).
+* Don't add a spurious space after "native" (#541).
 
 # 0.2.16
 
