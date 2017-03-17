@@ -334,6 +334,9 @@ class Cost {
 
   /// Splitting before a type argument or type parameter.
   static const typeArgument = 4;
+
+  /// Split between a formal parameter name and its type.
+  static const parameterType = 4;
 }
 
 /// The in-progress state for a [Span] that has been started but has not yet

@@ -866,13 +866,17 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitFieldFormalParameter(FieldFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
+      builder.startLazyRule(new Rule(Cost.parameterType));
+      builder.nestExpression();
       modifier(node.covariantKeyword);
       token(node.keyword, after: space);
-      visit(node.type, after: space);
+      visit(node.type, after: split);
       token(node.thisKeyword);
       token(node.period);
       visit(node.identifier);
       visit(node.parameters);
+      builder.unnest();
+      builder.endRule();
     });
   }
 
@@ -1492,10 +1496,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
+      builder.startLazyRule(new Rule(Cost.parameterType));
+      builder.nestExpression();
       modifier(node.covariantKeyword);
       modifier(node.keyword);
-      visit(node.type, after: space);
+      visit(node.type, after: split);
       visit(node.identifier);
+      builder.unnest();
+      builder.endRule();
     });
   }
 

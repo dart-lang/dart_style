@@ -44,3 +44,13 @@ class A {
   longMethod(
       covariant int veryLongParameterNameWow) {}
 }
+>>> split between field type and name
+class Foo {
+  Foo(VerylongParameterType this.parameterName) {}
+}
+<<<
+class Foo {
+  Foo(
+      VerylongParameterType
+          this.parameterName) {}
+}
