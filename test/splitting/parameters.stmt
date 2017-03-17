@@ -109,3 +109,9 @@ doStuff(
     another: veryLongDefaultValue,
     third:
         alsoAQuiteLongDefaultValue}) {}
+>>> split between type and name
+doStuff(VerylongParameterType parameterName) {}
+<<<
+doStuff(
+    VerylongParameterType
+        parameterName) {}
