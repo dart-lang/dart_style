@@ -3,6 +3,8 @@
 * Handle mixed block and arrow bodied function arguments uniformly (#500).
 * Handle parenthesized and immediately invoked functions in argument lists
   like other function literals (#566).
+* Fix splitting in generic methods with `=>` bodies (#584).
+* Don't split after `<` when a collection is in statement position (#589).
 
 # 0.2.16
 
