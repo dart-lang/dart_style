@@ -1,6 +1,7 @@
 # 0.2.17
 
 * Handle mixed block and arrow bodied function arguments uniformly (#500).
+* Don't add a spurious space after "native" (#541).
 * Handle parenthesized and immediately invoked functions in argument lists
   like other function literals (#566).
 * Fix splitting in generic methods with `=>` bodies (#584).

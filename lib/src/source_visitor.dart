@@ -1378,8 +1378,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitNativeClause(NativeClause node) {
     token(node.nativeKeyword);
-    space();
-    visit(node.name);
+    visit(node.name, before: space);
   }
 
   visitNativeFunctionBody(NativeFunctionBody node) {
@@ -1387,8 +1386,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.nestExpression(now: true);
       soloSplit();
       token(node.nativeKeyword);
-      space();
-      visit(node.stringLiteral);
+      visit(node.stringLiteral, before: space);
       builder.unnest();
     });
   }
