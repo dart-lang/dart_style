@@ -370,18 +370,12 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // If the cascade sections have consistent names they can be broken
     // normally otherwise they always get their own line.
-    if (_allowInlineCascade(node.cascadeSections)) {
-      builder.startRule();
-      zeroSplit();
-      visitNodes(node.cascadeSections, between: zeroSplit);
-      builder.endRule();
-    } else {
-      builder.startRule(new Rule.hard());
-      zeroSplit();
-      visitNodes(node.cascadeSections, between: zeroSplit);
-      builder.endRule();
-    }
+    builder.startRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
 
+    zeroSplit();
+    visitNodes(node.cascadeSections, between: zeroSplit);
+
+    builder.endRule();
     builder.endBlockArgumentNesting();
     builder.unnest();
 
@@ -390,14 +384,25 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Whether a cascade should be allowed to be inline as opposed to one
   /// expression per line.
-  bool _allowInlineCascade(List<Expression> sections) {
-    if (sections.length < 2) return true;
+  bool _allowInlineCascade(CascadeExpression node) {
+    // If the receiver is an expression that makes the cascade's very low
+    // precedence confusing, force it to split. For example:
+    //
+    //     a ? b : c..d();
+    //
+    // Here, the cascade is applied to the result of the conditional, not "c".
+    if (node.target is ConditionalExpression) return false;
+    if (node.target is BinaryExpression) return false;
+    if (node.target is PrefixExpression) return false;
+    if (node.target is AwaitExpression) return false;
+
+    if (node.cascadeSections.length < 2) return true;
 
     var name;
     // We could be more forgiving about what constitutes sections with
     // consistent names but for now we require all sections to have the same
     // method name.
-    for (var expression in sections) {
+    for (var expression in node.cascadeSections) {
       if (expression is MethodInvocation) {
         if (name == null) {
           name = expression.methodName.name;

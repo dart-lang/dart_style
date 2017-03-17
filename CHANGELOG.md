@@ -5,6 +5,7 @@
   like other function literals (#566).
 * Fix splitting in generic methods with `=>` bodies (#584).
 * Don't split after `<` when a collection is in statement position (#589).
+* Force a split if the cascade target has non-obvious precedence (#590).
 
 # 0.2.16
 
