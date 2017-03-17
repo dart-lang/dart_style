@@ -236,16 +236,31 @@ class ArgumentListVisitor {
 
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
-      if (!_isValidWrappingTarget(expression.target)) return false;
-      if (expression.argumentList.arguments.length != 1) return false;
+      var invocation = expression as MethodInvocation;
+      if (!_isValidWrappingTarget(invocation.target)) return false;
+      if (invocation.argumentList.arguments.length != 1) return false;
 
-      return _isBlockFunction(expression.argumentList.arguments.single);
+      return _isBlockFunction(invocation.argumentList.arguments.single);
     }
 
     if (expression is InstanceCreationExpression) {
-      if (expression.argumentList.arguments.length != 1) return false;
+      var creation = expression as InstanceCreationExpression;
+      if (creation.argumentList.arguments.length != 1) return false;
 
-      return _isBlockFunction(expression.argumentList.arguments.single);
+      return _isBlockFunction(creation.argumentList.arguments.single);
+    }
+
+    // Allow immediately-invoked functions like "() { ... }()".
+    if (expression is FunctionExpressionInvocation) {
+      var invocation = expression as FunctionExpressionInvocation;
+      if (invocation.argumentList.arguments.isNotEmpty) return false;
+
+      expression = invocation.function;
+    }
+
+    // Unwrap parenthesized expressions.
+    while (expression is ParenthesizedExpression) {
+      expression = (expression as ParenthesizedExpression).expression;
     }
 
     // Must be a function.
