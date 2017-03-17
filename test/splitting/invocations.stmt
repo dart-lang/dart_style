@@ -138,14 +138,6 @@ object.method().method()..cascade()..cascade();
 object.method().method()
   ..cascade()
   ..cascade();
->>> unsplit cascade split method
-object.method().method().method().method()..cascade()..cascade();
-<<<
-object
-    .method()
-    .method()
-    .method()
-    .method()..cascade()..cascade();
 >>> split cascade split method
 object.method().method().method().method()..cascade()..cascade()..cascade();
 <<<
