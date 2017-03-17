@@ -34,3 +34,63 @@ foo
   ..toString(() {
     body;
   });
+>>> force split if receiver an expression where the precedence isn't obvious
+main() async {
+  // These are OK.
+  a = b..c();
+  a += b..c();
+  a.b..c();
+
+  // These are unclear.
+  a ? b : c..d();
+  a ?? b..c();
+  a && b..c();
+  a || b..c();
+  a == b..c();
+  a <= b..c();
+  a + b..c();
+  a / b..c();
+  a ^ b..c();
+  a << b..c();
+  -a..b();
+  !a..b();
+  --a..b();
+  await a..b();
+}
+<<<
+main() async {
+  // These are OK.
+  a = b..c();
+  a += b..c();
+  a.b..c();
+
+  // These are unclear.
+  a ? b : c
+    ..d();
+  a ?? b
+    ..c();
+  a && b
+    ..c();
+  a || b
+    ..c();
+  a == b
+    ..c();
+  a <= b
+    ..c();
+  a + b
+    ..c();
+  a / b
+    ..c();
+  a ^ b
+    ..c();
+  a << b
+    ..c();
+  -a
+    ..b();
+  !a
+    ..b();
+  --a
+    ..b();
+  await a
+    ..b();
+}
