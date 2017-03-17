@@ -792,8 +792,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitExportDirective(ExportDirective node) {
-    visitMetadata(node.metadata);
-
+    _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1178,8 +1177,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitImportDirective(ImportDirective node) {
-    visitMetadata(node.metadata);
-
+    _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1293,8 +1291,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitLibraryDirective(LibraryDirective node) {
-    visitMetadata(node.metadata);
-
+    _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1402,8 +1399,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitPartDirective(PartDirective node) {
-    visitMetadata(node.metadata);
-
+    _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1412,8 +1408,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitPartOfDirective(PartOfDirective node) {
-    visitMetadata(node.metadata);
-
+    _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.keyword);
       space();
@@ -1740,11 +1735,24 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (after != null) after();
   }
 
-  /// Visit metadata annotations on directives, declarations, and members.
+  /// Visit metadata annotations on declarations, and members.
   ///
   /// These always force the annotations to be on the previous line.
   void visitMetadata(NodeList<Annotation> metadata) {
     visitNodes(metadata, between: newline, after: newline);
+  }
+
+
+  /// Visit metadata annotations for a directive.
+  ///
+  /// Always force the annotations to be on a previous line.
+  void _visitDirectiveMetadata(Directive directive) {
+    // Preserve a blank line before the first directive since users (in
+    // particular the test package) sometimes use that for metadata that
+    // applies to the entire library and not the following directive itself.
+    var isFirst = directive == (directive.parent as CompilationUnit).directives.first;
+
+    visitNodes(directive.metadata, between: newline, after: isFirst ? oneOrTwoNewlines : newline);
   }
 
   /// Visits metadata annotations on parameters and type parameters.

@@ -24,6 +24,21 @@ part "part.dart";
 <<<
 @foo
 part of bar;
+>>> preserve a blank line before the first directive
+@foo
+
+import 'foo.dart';
+
+@bar
+
+import 'bar.dart';
+<<<
+@foo
+
+import 'foo.dart';
+
+@bar
+import 'bar.dart';
 >>> force newline before types
 @meta class X {}
 
