@@ -16,34 +16,13 @@ void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
   // Normal users do not do this.
   debug.traceChunkBuilder = true;
-//  debug.traceLineWriter = true;
-//  debug.traceSplitter = true;
+  debug.traceLineWriter = true;
+  debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  formatUnit("""
-void main() {
-  return new CancelableOperation.fromFuture(
-      () async {
-        // Make the underlying suite null so that the engine doesn't start running
-        // it immediately.
-        engine.suiteSink.add(loadSuite.changeSuite((runnerSuite) {
-          engine.pause();
-          return runnerSuite;
-        }));
+  runTest("regression/0000/0068.stmt", 14);
 
-        var suite = await loadSuite.suite;
-        if (canceled || suite == null) return;
-
-        debugger = new _Debugger(engine, reporter, suite);
-        await debugger.run();
-      }(), onCancel: () {
-    canceled = true;
-    // Make sure the load test finishes so the engine can close.
-    engine.resume();
-    if (debugger != null) debugger.close();
-  });
-}
-""");
+  formatStmt("hello(world);");
 }
 
 void formatStmt(String source, [int pageWidth = 80]) {
