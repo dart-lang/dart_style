@@ -4,6 +4,7 @@
 * Don't add a spurious space after "native" (#541).
 * Handle parenthesized and immediately invoked functions in argument lists
   like other function literals (#566).
+* Preserve a blank line between an annotation and the first directive (#571).
 * Fix splitting in generic methods with `=>` bodies (#584).
 * Allow splitting between a parameter name and type (#585).
 * Don't split after `<` when a collection is in statement position (#589).
