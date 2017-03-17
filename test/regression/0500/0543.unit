@@ -14,6 +14,7 @@
             selector,
             input.instructionType, // receiver mask.
             <HInstruction>[input, input], // [interceptor, receiver].
-            toStringType)..sourceInformation = node.sourceInformation;
+            toStringType)
+          ..sourceInformation = node.sourceInformation;
         return result;
       }

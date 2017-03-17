@@ -94,3 +94,33 @@ main() async {
   await a
     ..b();
 }
+>>> omit split if single section on list literal
+[1,]..addAll(more);
+<<<
+[
+  1,
+]..addAll(more);
+>>> omit split if single section on map literal
+var map = {1:2,}..addAll(more);
+<<<
+var map = {
+  1: 2,
+}..addAll(more);
+>>> omit split if single section on trailing comma call
+foo(1,)..addAll(more);
+<<<
+foo(
+  1,
+)..addAll(more);
+>>> omit split if single section on trailing comma constructor
+new Foo(1,)..addAll(more);
+<<<
+new Foo(
+  1,
+)..addAll(more);
+>>> omit split if single section on trailing comma expression call
+(foo)(1,)..addAll(more);
+<<<
+(foo)(
+  1,
+)..addAll(more);

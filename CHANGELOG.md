@@ -9,6 +9,7 @@
 * Allow splitting between a parameter name and type (#585).
 * Don't split after `<` when a collection is in statement position (#589).
 * Force a split if the cascade target has non-obvious precedence (#590).
+* Split more often if a cascade target contains a split (#591).
 
 # 0.2.16
 

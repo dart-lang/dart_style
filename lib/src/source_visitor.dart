@@ -340,6 +340,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitCascadeExpression(CascadeExpression node) {
+    // If the cascade sections have consistent names they can be broken
+    // normally otherwise they always get their own line.
+    builder.startLazyRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
+
     // If the target of the cascade is a method call (or chain of them), we
     // treat the nesting specially. Normally, you would end up with:
     //
@@ -368,11 +372,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression(indent: Indent.cascade, now: true);
     builder.startBlockArgumentNesting();
 
-    // If the cascade sections have consistent names they can be broken
-    // normally otherwise they always get their own line.
-    builder.startRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
-
-    zeroSplit();
+    if (node.cascadeSections.length > 1 || _splitBeforeOnlyCascade(node.target)) {
+      zeroSplit();
+    }
     visitNodes(node.cascadeSections, between: zeroSplit);
 
     builder.endRule();
@@ -380,6 +382,47 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.unnest();
 
     if (node.target is MethodInvocation) builder.unnest();
+  }
+
+  /// Whether the split before the ".." in a single-section cascade should be
+  /// included.
+  ///
+  /// We omit these when the target is a collection literal because it looks
+  /// a little funny to have the cascade hanging on its own line, especially
+  /// in the common "addAll()" pattern:
+  ///
+  ///     [
+  ///       1,
+  ///       2,
+  ///     ]..addAll(numbers);
+  bool _splitBeforeOnlyCascade(Expression target) {
+    // TODO(rnystrom): Consider still emitting a soft split but not starting
+    // the rule until after the target to allow code like:
+    //
+    //     ["this does", "not split"]
+    //       ..splitHere();
+    if (target is ListLiteral) return false;
+    if (target is MapLiteral) return false;
+
+    // If the target is a call with a trailing comma in the argument list,
+    // treat it like a collection literal.
+    ArgumentList arguments;
+    if (target is InvocationExpression) {
+      arguments = target.argumentList;
+    } else if (target is InstanceCreationExpression) {
+      arguments = target.argumentList;
+    }
+
+    // TODO(rnystrom): Do we want to allow an invocation where the last
+    // argument is a collection literal? Like:
+    //
+    //     foo(argument, [
+    //       element
+    //     ])..cascade();
+
+    return arguments == null ||
+        arguments.arguments.isEmpty ||
+        arguments.arguments.last.endToken.next.type != TokenType.COMMA;
   }
 
   /// Whether a cascade should be allowed to be inline as opposed to one
