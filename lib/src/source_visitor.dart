@@ -340,9 +340,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitCascadeExpression(CascadeExpression node) {
+    var splitIfOperandsSplit =
+        node.cascadeSections.length > 1 || _isCollectionLike(node.target);
+
     // If the cascade sections have consistent names they can be broken
     // normally otherwise they always get their own line.
-    builder.startLazyRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
+    if (splitIfOperandsSplit) {
+      builder.startLazyRule(
+          _allowInlineCascade(node) ? new Rule() : new Rule.hard());
+    }
 
     // If the target of the cascade is a method call (or chain of them), we
     // treat the nesting specially. Normally, you would end up with:
@@ -372,45 +378,52 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression(indent: Indent.cascade, now: true);
     builder.startBlockArgumentNesting();
 
-    if (node.cascadeSections.length > 1 || _splitBeforeOnlyCascade(node.target)) {
-      zeroSplit();
+    // If the cascade section shouldn't cause the cascade to split, end the
+    // rule early so it isn't affected by it.
+    if (!splitIfOperandsSplit) {
+      builder
+          .startRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
     }
+
+    zeroSplit();
+
+    if (!splitIfOperandsSplit) {
+      builder.endRule();
+    }
+
     visitNodes(node.cascadeSections, between: zeroSplit);
 
-    builder.endRule();
+    if (splitIfOperandsSplit) {
+      builder.endRule();
+    }
+
     builder.endBlockArgumentNesting();
     builder.unnest();
 
     if (node.target is MethodInvocation) builder.unnest();
   }
 
-  /// Whether the split before the ".." in a single-section cascade should be
-  /// included.
+  /// Whether [expression] is a collection literal, or a call with a trailing
+  /// comma in an argument list.
   ///
-  /// We omit these when the target is a collection literal because it looks
-  /// a little funny to have the cascade hanging on its own line, especially
-  /// in the common "addAll()" pattern:
+  /// In that case, when the expression is a target of a cascade, we don't
+  /// force a split before the ".." as eagerly to avoid ugly results like:
   ///
   ///     [
   ///       1,
   ///       2,
   ///     ]..addAll(numbers);
-  bool _splitBeforeOnlyCascade(Expression target) {
-    // TODO(rnystrom): Consider still emitting a soft split but not starting
-    // the rule until after the target to allow code like:
-    //
-    //     ["this does", "not split"]
-    //       ..splitHere();
-    if (target is ListLiteral) return false;
-    if (target is MapLiteral) return false;
+  bool _isCollectionLike(Expression expression) {
+    if (expression is ListLiteral) return false;
+    if (expression is MapLiteral) return false;
 
     // If the target is a call with a trailing comma in the argument list,
     // treat it like a collection literal.
     ArgumentList arguments;
-    if (target is InvocationExpression) {
-      arguments = target.argumentList;
-    } else if (target is InstanceCreationExpression) {
-      arguments = target.argumentList;
+    if (expression is InvocationExpression) {
+      arguments = expression.argumentList;
+    } else if (expression is InstanceCreationExpression) {
+      arguments = expression.argumentList;
     }
 
     // TODO(rnystrom): Do we want to allow an invocation where the last
@@ -1796,7 +1809,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitNodes(metadata, between: newline, after: newline);
   }
 
-
   /// Visit metadata annotations for a directive.
   ///
   /// Always force the annotations to be on a previous line.
@@ -1804,9 +1816,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Preserve a blank line before the first directive since users (in
     // particular the test package) sometimes use that for metadata that
     // applies to the entire library and not the following directive itself.
-    var isFirst = directive == (directive.parent as CompilationUnit).directives.first;
+    var isFirst =
+        directive == (directive.parent as CompilationUnit).directives.first;
 
-    visitNodes(directive.metadata, between: newline, after: isFirst ? oneOrTwoNewlines : newline);
+    visitNodes(directive.metadata,
+        between: newline, after: isFirst ? oneOrTwoNewlines : newline);
   }
 
   /// Visits metadata annotations on parameters and type parameters.
