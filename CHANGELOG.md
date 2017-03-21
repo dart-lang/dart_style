@@ -10,7 +10,7 @@
 * Don't split after `<` when a collection is in statement position (#589).
 * Force a split if the cascade target has non-obvious precedence (#590).
 * Split more often if a cascade target contains a split (#591).
-* Correct report unchanged formatting when reading from stdin.
+* Correctly report unchanged formatting when reading from stdin.
 
 # 0.2.16
 
