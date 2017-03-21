@@ -197,8 +197,8 @@ void formatStdin(FormatterOptions options, List<int> selection) {
           selectionStart: selectionStart,
           selectionLength: selectionLength);
       var output = formatter.formatSource(source);
-      options.reporter
-          .afterFile(null, "<stdin>", output, changed: source != output);
+      options.reporter.afterFile(null, "<stdin>", output,
+          changed: source.text != output.text);
       return;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
