@@ -124,3 +124,22 @@ new Foo(
 (foo)(
   1,
 )..addAll(more);
+>>> allow keeping collection on one line and splitting cascade
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]..cascade();
+<<<
+[1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  ..cascade();
+>>> don't force cascade to split on collection target if arg splits
+[1, 2, 3, 4]..cascade(() {;});
+<<<
+[1, 2, 3, 4]..cascade(() {
+    ;
+  });
+>>> don't force cascade to split on collection target if target and arg split
+[1,]..cascade(() {;});
+<<<
+[
+  1,
+]..cascade(() {
+    ;
+  });
