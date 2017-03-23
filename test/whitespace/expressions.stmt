@@ -89,6 +89,10 @@ new ListBox(showScrollbars: true);
 -  -1.2;
 <<<
 - -1.2;
+>>> "-" before a "--" is not joined
+-  --  foo;
+<<<
+- --foo;
 >>> multiline string inside nested blocks
 main() {
   inner() {

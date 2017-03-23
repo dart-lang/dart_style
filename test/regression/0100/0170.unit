@@ -6,3 +6,11 @@ main() {
 main() {
   print(- -2);
 }
+>>>
+main() {
+  var x = - --y;
+}
+<<<
+main() {
+  var x = - --y;
+}

@@ -1,3 +1,7 @@
+# 1.0.1
+
+* Ensure space between `-` and `--` (#170).
+
 # 1.0.0
 
 * Handle mixed block and arrow bodied function arguments uniformly (#500).
