@@ -1,6 +1,7 @@
 # 1.0.1
 
 * Ensure space between `-` and `--` (#170).
+* Preserve a blank line between enum cases (#606).
 
 # 1.0.0
 
