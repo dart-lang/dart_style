@@ -54,6 +54,16 @@ class Whitespace {
   /// less prescriptive over the user's whitespace.
   static const splitOrNewline = const Whitespace._("splitOrNewline");
 
+  /// A split or blank line (two newlines) should be output based on whether
+  /// the current token is on the same line as the previous one or not.
+  ///
+  /// This is used between enum cases, which will collapse if possible but
+  /// also allow a blank line to be preserved between cases.
+  ///
+  /// In general, we like to avoid using this because it makes the formatter
+  /// less prescriptive over the user's whitespace.
+  static const splitOrTwoNewlines = const Whitespace._("splitOrTwoNewlines");
+
   /// One or two newlines should be output based on how many newlines are
   /// present between the next token and the previous one.
   ///

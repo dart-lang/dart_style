@@ -842,7 +842,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     _beginBody(node.leftBracket, space: true);
-    visitCommaSeparatedNodes(node.constants, between: split);
+    visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
 
     // If there is a trailing comma, always force the constants to split.
     if (node.constants.last.endToken.next.type == TokenType.COMMA) {
@@ -2495,6 +2495,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// between the last token and the next one.
   void splitOrNewline() {
     builder.writeWhitespace(Whitespace.splitOrNewline);
+  }
+
+  /// Allow either a single split or newline to be emitted before the next
+  /// non-whitespace token based on whether a newline exists in the source
+  /// between the last token and the next one.
+  void splitOrTwoNewlines() {
+    builder.writeWhitespace(Whitespace.splitOrTwoNewlines);
   }
 
   /// Allow either one or two newlines to be emitted before the next

@@ -236,18 +236,16 @@ class ArgumentListVisitor {
 
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
-      var invocation = expression as MethodInvocation;
-      if (!_isValidWrappingTarget(invocation.target)) return false;
-      if (invocation.argumentList.arguments.length != 1) return false;
+      if (!_isValidWrappingTarget(expression.target)) return false;
+      if (expression.argumentList.arguments.length != 1) return false;
 
-      return _isBlockFunction(invocation.argumentList.arguments.single);
+      return _isBlockFunction(expression.argumentList.arguments.single);
     }
 
     if (expression is InstanceCreationExpression) {
-      var creation = expression as InstanceCreationExpression;
-      if (creation.argumentList.arguments.length != 1) return false;
+      if (expression.argumentList.arguments.length != 1) return false;
 
-      return _isBlockFunction(creation.argumentList.arguments.single);
+      return _isBlockFunction(expression.argumentList.arguments.single);
     }
 
     // Allow immediately-invoked functions like "() { ... }()".
