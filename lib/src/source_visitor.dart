@@ -1493,10 +1493,11 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitPrefixExpression(PrefixExpression node) {
     token(node.operator);
 
-    // Corner case: put a space between successive "-" operators so we don't
-    // inadvertently turn them into a "--" decrement operator.
-    if (node.operand is PrefixExpression &&
-        (node.operand as PrefixExpression).operator.lexeme == "-") {
+    // Edge case: put a space after "-" if the operand is "-" or "--" so we
+    // don't merge the operators.
+    var operand = node.operand;
+    if (operand is PrefixExpression &&
+        (operand.operator.lexeme == "-" || operand.operator.lexeme == "--")) {
       space();
     }
 
