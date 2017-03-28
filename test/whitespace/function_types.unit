@@ -1,0 +1,28 @@
+40 columns                              |
+>>> non-generic in typedef (skip: published version of analyzer doesn't support function types yet)
+typedef   SomeFunc=ReturnType  Function(int param,   double other);
+<<<
+typedef SomeFunc = ReturnType Function(
+    int param, double other);
+>>> generic in typedef (skip: published version of analyzer doesn't support function types yet)
+typedef Generic = T Function<T>(T param, double other);
+<<<
+typedef Generic = T Function<T>(
+    T param, double other);
+>>> no return type (skip: published version of analyzer doesn't support function types yet)
+typedef SomeFunc = Function();
+<<<
+typedef SomeFunc = Function();
+>>> nested (skip: published version of analyzer doesn't support function types yet)
+typedef SomeFunc = Function(int first, Function(int first, bool second, String third) second, String third);
+<<<
+typedef SomeFunc = Function(
+    int first,
+    Function(int first, bool second,
+            String third)
+        second,
+    String third);
+>>> without param names (skip: published version of analyzer doesn't support function types yet)
+typedef F = Function(int, bool, String);
+<<<
+typedef F = Function(int, bool, String);

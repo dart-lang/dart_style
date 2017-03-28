@@ -1181,6 +1181,25 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
   }
 
+  visitGenericFunctionType(GenericFunctionType node) {
+    visit(node.returnType, after: space);
+    token(node.functionKeyword);
+    _visitParameterSignature(node.typeParameters, node.parameters);
+  }
+
+  visitGenericTypeAlias(GenericTypeAlias node) {
+    visitNodes(node.metadata, between: newline, after: newline);
+    _simpleStatement(node, () {
+      token(node.typedefKeyword);
+      space();
+      visit(node.name);
+      space();
+      token(node.equals);
+      space();
+      visit(node.functionType);
+    });
+  }
+
   visitHideCombinator(HideCombinator node) {
     _visitCombinator(node.keyword, node.hiddenNames);
   }
@@ -1555,7 +1574,14 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.nestExpression();
       modifier(node.covariantKeyword);
       modifier(node.keyword);
-      visit(node.type, after: split);
+
+      visit(node.type);
+
+      // In function declarations and the old typedef syntax, you can have a
+      // parameter name without a type. In the new syntax, you can have a type
+      // without a name. Handle both cases.
+      if (node.type != null && node.identifier != null) split();
+
       visit(node.identifier);
       builder.unnest();
       builder.endRule();
@@ -2016,6 +2042,18 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.startLazyRule(new Rule(Cost.arrow));
     }
 
+    _visitParameterSignature(typeParameters, parameters);
+
+    if (beforeBody != null) beforeBody();
+    visit(body);
+
+    if (body is ExpressionFunctionBody) builder.unnest();
+  }
+
+  /// Visits the type parameters (if any) and formal parameters of a method
+  /// declaration, function declaration, or generic function type.
+  void _visitParameterSignature(TypeParameterList typeParameters,
+      FormalParameterList parameters) {
     // Start the nesting for the parameters here, so they wrap around the
     // type parameters too, if any.
     builder.nestExpression();
@@ -2026,11 +2064,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.unnest();
-
-    if (beforeBody != null) beforeBody();
-    visit(body);
-
-    if (body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visits the body statement of a `for`, `for in`, or `while` loop.

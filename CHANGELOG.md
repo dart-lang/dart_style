@@ -1,3 +1,7 @@
+# 1.0.2
+
+* Support new generic function typedef syntax (#563).
+
 # 1.0.1
 
 * Ensure space between `-` and `--` (#170).
