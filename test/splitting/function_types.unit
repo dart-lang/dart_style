@@ -1,0 +1,22 @@
+40 columns                              |
+>>> split type parameters (skip: published version of analyzer doesn't support function types yet)
+typedef G = T Function<TypeOne, TypeTwo, TypeThree>();
+<<<
+typedef G = T Function<TypeOne, TypeTwo,
+    TypeThree>();
+>>> split all type parameters (skip: published version of analyzer doesn't support function types yet)
+typedef G = T Function<TypeOne, TypeTwo, TypeThree, TypeFour, TypeFive, TypeSix>();
+<<<
+typedef G = T Function<
+    TypeOne,
+    TypeTwo,
+    TypeThree,
+    TypeFour,
+    TypeFive,
+    TypeSix>();
+>>> split type and value parameters (skip: published version of analyzer doesn't support function types yet)
+typedef G = T Function<TypeOne, TypeTwo, TypeThree>(TypeOne one, TypeTwo two, TypeThree three);
+<<<
+typedef G = T Function<TypeOne, TypeTwo,
+        TypeThree>(TypeOne one,
+    TypeTwo two, TypeThree three);
