@@ -2052,8 +2052,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the type parameters (if any) and formal parameters of a method
   /// declaration, function declaration, or generic function type.
-  void _visitParameterSignature(TypeParameterList typeParameters,
-      FormalParameterList parameters) {
+  void _visitParameterSignature(
+      TypeParameterList typeParameters, FormalParameterList parameters) {
     // Start the nesting for the parameters here, so they wrap around the
     // type parameters too, if any.
     builder.nestExpression();
