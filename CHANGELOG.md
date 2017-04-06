@@ -1,3 +1,7 @@
+# 1.0.3
+
+* Preserve type arguments in generic function-typed parameters (#613).
+
 # 1.0.2
 
 * Support new generic function typedef syntax (#563).

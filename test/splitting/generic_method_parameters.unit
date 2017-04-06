@@ -63,3 +63,15 @@ longFunctionName<LongTypeParameterT,
         longParameter1,
         longParameter2) =>
     body;
+>>> generic function typed parameter
+longFunctionName(String longParameterName<LongTypeParameter,
+AnotherTypeParam>(LongTypeParameter parameter, AnotherTypeParam another)) {;}
+<<<
+longFunctionName(
+    String longParameterName<
+            LongTypeParameter,
+            AnotherTypeParam>(
+        LongTypeParameter parameter,
+        AnotherTypeParam another)) {
+  ;
+}

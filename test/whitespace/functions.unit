@@ -162,3 +162,7 @@ main() {
     ;
   });
 }
+>>> generic function typed parameter
+function(int   foo  <  T  ,S >(T t, S s)) {}
+<<<
+function(int foo<T, S>(T t, S s)) {}

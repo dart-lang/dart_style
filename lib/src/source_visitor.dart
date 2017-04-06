@@ -1176,7 +1176,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       // Try to keep the function's parameters with its name.
       builder.startSpan();
       visit(node.identifier);
-      visit(node.parameters);
+      _visitParameterSignature(node.typeParameters, node.parameters);
       builder.endSpan();
     });
   }
