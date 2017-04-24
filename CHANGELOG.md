@@ -1,3 +1,7 @@
+# 1.0.4-dev
+* Ensure formatter throws an exception instead of introducing non-whitespace
+  changes.
+
 # 1.0.3
 
 * Preserve type arguments in generic function-typed parameters (#613).

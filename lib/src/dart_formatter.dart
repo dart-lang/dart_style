@@ -18,6 +18,7 @@ import 'error_listener.dart';
 import 'formatter_exception.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
+import 'string_compare.dart' as string_compare;
 
 /// Dart source code formatter.
 class DartFormatter {
@@ -128,6 +129,12 @@ class DartFormatter {
 
     // Format it.
     var visitor = new SourceVisitor(this, lineInfo, source);
-    return visitor.run(node);
+    var output = visitor.run(node);
+    if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
+      throw new FormatException('Cannot safely format file as formatting '
+          'would cause non-whitespace change(s).');
+    }
+
+    return output;
   }
 }

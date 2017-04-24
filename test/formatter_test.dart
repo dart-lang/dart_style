@@ -96,10 +96,15 @@ void main() {
             '   }'));
   });
 
-  group('line endings', () {
-    test('uses given line ending', () {
-      expect(new DartFormatter(lineEnding: "%").format("var i = 1;"),
-          equals("var i = 1;%"));
+  group("line endings", () {
+    test("uses given line ending", () {
+      // Use zero width no-break space character as the line ending. We have
+      // to use a whitespace character for the line ending as the formatter
+      // will throw an error if it accidentally makes non-whitespace changes
+      // as will occur
+      var lineEnding = "\t";
+      expect(new DartFormatter(lineEnding: lineEnding).format("var i = 1;"),
+          equals("var i = 1;\t"));
     });
 
     test('infers \\r\\n if the first newline uses that', () {
@@ -125,6 +130,14 @@ void main() {
               'second\r\n'
               'third""";'));
     });
+  });
+
+  test('throws a FormatterException on non-whitespace changes', () {
+    // Use an invalid line ending character to ensure the formatter will
+    // attempt to make non-whitespace changes.
+    var formatter = new DartFormatter(lineEnding: '%');
+    expect(() => formatter.format("var i = 1;"),
+        throwsA(new isInstanceOf<FormatException>()));
   });
 }
 
