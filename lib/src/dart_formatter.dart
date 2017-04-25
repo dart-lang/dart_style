@@ -15,7 +15,7 @@ import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/string_source.dart';
 
 import 'error_listener.dart';
-import 'formatter_exception.dart';
+import 'exceptions.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
@@ -131,8 +131,7 @@ class DartFormatter {
     var visitor = new SourceVisitor(this, lineInfo, source);
     var output = visitor.run(node);
     if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw new FormatException('Cannot safely format file as formatting '
-          'would cause non-whitespace change(s).');
+      throw new UnexpectedOutputException(source.text, output.text);
     }
 
     return output;

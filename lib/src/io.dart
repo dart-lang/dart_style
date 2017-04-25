@@ -9,7 +9,7 @@ import 'dart:io';
 import 'package:path/path.dart' as p;
 
 import 'dart_formatter.dart';
-import 'formatter_exception.dart';
+import 'exceptions.dart';
 import 'formatter_options.dart';
 import 'source_code.dart';
 
@@ -81,9 +81,13 @@ bool processFile(FormatterOptions options, File file, {String label}) {
         stdioType(stderr) == StdioType.TERMINAL;
 
     stderr.writeln(err.message(color: color));
+  } on UnexpectedOutputException catch (err) {
+    stderr.writeln('''Hit a bug in the formatter when formatting $label.
+$err
+Please report at github.com/dart-lang/dart_style/issues.''');
   } catch (err, stack) {
     stderr.writeln('''Hit a bug in the formatter when formatting $label.
-Please report at: github.com/dart-lang/dart_style/issues
+Please report at github.com/dart-lang/dart_style/issues.
 $err
 $stack''');
   }

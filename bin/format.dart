@@ -8,7 +8,7 @@ import 'dart:io';
 import 'package:args/args.dart';
 
 import 'package:dart_style/src/dart_formatter.dart';
-import 'package:dart_style/src/formatter_exception.dart';
+import 'package:dart_style/src/exceptions.dart';
 import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/source_code.dart';

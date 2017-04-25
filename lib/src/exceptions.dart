@@ -51,3 +51,22 @@ class FormatterException implements Exception {
 
   String toString() => message();
 }
+
+/// Exception thrown when the internal sanity check that only whitespace
+/// changes are made fails.
+class UnexpectedOutputException implements Exception {
+  /// The source being formatted.
+  final String _input;
+
+  /// The resulting output.
+  final String _output;
+
+  UnexpectedOutputException(this._input, this._output);
+
+  String toString() {
+    return """The formatter produced unexpected output. Input was:
+$_input
+Which formatted to:
+$_output""";
+  }
+}

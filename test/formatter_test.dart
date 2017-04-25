@@ -132,12 +132,12 @@ void main() {
     });
   });
 
-  test('throws a FormatterException on non-whitespace changes', () {
+  test('throws an UnexpectedOutputException on non-whitespace changes', () {
     // Use an invalid line ending character to ensure the formatter will
     // attempt to make non-whitespace changes.
     var formatter = new DartFormatter(lineEnding: '%');
     expect(() => formatter.format("var i = 1;"),
-        throwsA(new isInstanceOf<FormatException>()));
+        throwsA(new isInstanceOf<UnexpectedOutputException>()));
   });
 }
 

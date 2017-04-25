@@ -6,7 +6,7 @@ library dart_style.src.error_listener;
 
 import 'package:analyzer/analyzer.dart';
 
-import 'formatter_exception.dart';
+import 'exceptions.dart';
 
 /// A simple [AnalysisErrorListener] that just collects the reported errors.
 class ErrorListener implements AnalysisErrorListener {
