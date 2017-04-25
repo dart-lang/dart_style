@@ -1198,12 +1198,24 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitGenericTypeAlias(GenericTypeAlias node) {
     visitNodes(node.metadata, between: newline, after: newline);
     _simpleStatement(node, () {
+      // If the typedef's type parameters split, split after the "=" too,
+      // mainly to ensure the function's type parameters and parameters get
+      // end up on successive lines with the same indentation.
+      builder.startRule();
+
       token(node.typedefKeyword);
       space();
+
       visit(node.name);
-      space();
+
+      visit(node.typeParameters);
+      split();
+
       token(node.equals);
+      builder.endRule();
+
       space();
+
       visit(node.functionType);
     });
   }
@@ -2062,7 +2074,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// declaration, function declaration, or generic function type.
   void _visitParameterSignature(
       TypeParameterList typeParameters, FormalParameterList parameters) {
-    // Start the nesting for the parameters here, so they wrap around the
+    // Start the nesting for the parameters here, so they indent past the
     // type parameters too, if any.
     builder.nestExpression();
 

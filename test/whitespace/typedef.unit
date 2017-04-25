@@ -1,4 +1,8 @@
 40 columns                              |
+>>> old generic typedef syntax
+typedef Foo  <  T  ,S  >(T t,S s);
+<<<
+typedef Foo<T, S>(T t, S s);
 >>> non-generic in typedef (skip: published version of analyzer doesn't support function types yet)
 typedef   SomeFunc=ReturnType  Function(int param,   double other);
 <<<
@@ -26,3 +30,11 @@ typedef SomeFunc = Function(
 typedef F = Function(int, bool, String);
 <<<
 typedef F = Function(int, bool, String);
+>>> generic (skip: published version of analyzer doesn't support function types yet)
+typedef    Foo < A ,B>=Function ( A a,   B b );
+<<<
+typedef Foo<A, B> = Function(A a, B b);
+>>> generic function (skip: published version of analyzer doesn't support function types yet)
+typedef    Foo  =Function  < A ,B  >   ( A a,B b );
+<<<
+typedef Foo = Function<A, B>(A a, B b);
