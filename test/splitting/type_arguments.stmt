@@ -66,3 +66,32 @@ new SomeClass<
   <int>[];
   <int>[];
 }
+>>> type arguments on invocation expressions, all on one line
+(fn)<T, S>(1, 2);
+<<<
+(fn)<T, S>(1, 2);
+>>> type arguments on invocation, prefer to not split at type args
+(longFunction)<TypeArgument>(valueArgument);
+<<<
+(longFunction)<TypeArgument>(
+    valueArgument);
+>>> type arguments on invocation expressions split both type and value arguments
+(longFunction)<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
+<<<
+(longFunction)<
+        First,
+        Second,
+        Third,
+        Fourth,
+        Fifth,
+        Sixth,
+        Seventh,
+        Eighth>(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+    sixth,
+    seventh,
+    eighth);

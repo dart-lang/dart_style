@@ -1151,8 +1151,16 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
+    // Try to keep the entire invocation one line.
+    builder.startSpan();
+    builder.nestExpression();
+
     visit(node.function);
-    visit(node.argumentList);
+    visit(node.typeArguments);
+    visitArgumentList(node.argumentList, nestExpression: false);
+
+    builder.unnest();
+    builder.endSpan();
   }
 
   visitFunctionTypeAlias(FunctionTypeAlias node) {
