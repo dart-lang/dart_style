@@ -1,8 +1,9 @@
-# 1.0.4-dev
+# 1.0.4
 
 * Ensure formatter throws an exception instead of introducing non-whitespace
   changes. This sanity check ensures the formatter does not erase user code
   when the formatter itself contains a bug.
+* Preserve type arguments in generic typedefs (#619).
 * Preserve type arguments in function expression invocations (#621).
 
 # 1.0.3
