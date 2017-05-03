@@ -6,7 +6,7 @@ packages:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.29.9"
+    version: "0.30.0"
   ansicolor:
     description:
       name: ansicolor
@@ -30,7 +30,7 @@ packages:
       name: barback
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.15.2+9"
+    version: "0.15.2+11"
   boolean_selector:
     description:
       name: boolean_selector
@@ -60,7 +60,7 @@ packages:
       name: collection
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.13.0"
+    version: "1.14.0"
   convert:
     description:
       name: convert
@@ -78,7 +78,13 @@ packages:
       name: csslib
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.13.4"
+    version: "0.13.5"
+  front_end:
+    description:
+      name: front_end
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.1.0-alpha.4"
   glob:
     description:
       name: glob
@@ -102,7 +108,7 @@ packages:
       name: http
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.11.3+12"
+    version: "0.11.3+13"
   http_multi_server:
     description:
       name: http_multi_server
@@ -127,6 +133,12 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.6.1"
+  kernel:
+    description:
+      name: kernel
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0-alpha.1"
   logging:
     description:
       name: logging
@@ -144,7 +156,7 @@ packages:
       name: meta
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.5"
   mime:
     description:
       name: mime
@@ -240,7 +252,7 @@ packages:
       name: source_maps
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.10.3"
+    version: "0.10.4"
   source_span:
     description:
       name: source_span
@@ -282,7 +294,7 @@ packages:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.12.20+3"
+    version: "0.12.20+12"
   typed_data:
     description:
       name: typed_data
