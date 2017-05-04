@@ -35,7 +35,7 @@ class A {
     return file;
   }
 }
->>> covariant (skip: published version of analyzer doesn't support 'covariant yet')
+>>> covariant
 class A {
   pos(    covariant  int a,covariant    b  );
   opt([ covariant int a,covariant    b  ]);
@@ -49,7 +49,7 @@ class A {
   named({covariant int a, covariant b});
   fn(covariant int f(bool b));
 }
->>> covariant in initializing formal (not valid, but dartfmt should accept) (skip: published version of analyzer doesn't support 'covariant yet')
+>>> covariant in initializing formal (not valid, but dartfmt should accept)
 class A {
   A(   covariant   this.foo);
 }

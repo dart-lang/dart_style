@@ -1,4 +1,4 @@
->>> (skip: published version of analyzer doesn't support function types yet)
+>>>
 typedef F<T> = void Function(T);
 <<<
 typedef F<T> = void Function(T);

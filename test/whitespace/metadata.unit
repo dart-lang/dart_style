@@ -254,7 +254,7 @@ function(
     @Annotation
     @VeryLongMetadataAnnotation
         covariant longParameter) {}
->>> metadata on function typedef (skip: published version of analyzer doesn't support function types yet)
+>>> metadata on function typedef
 @foo typedef Fn = Function();
 <<<
 @foo

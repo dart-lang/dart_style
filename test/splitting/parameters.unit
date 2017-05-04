@@ -14,7 +14,7 @@ method(int firstArgument, int argumentTwo) => "very long body that must wrap";
 method(int firstArgument,
         int argumentTwo) =>
     "very long body that must wrap";
->>> split before "covariant" (skip: published version of analyzer doesn't support 'covariant yet')
+>>> split before "covariant"
 class A {
   longMethod(covariant parameterNameHere) {}
 }
@@ -23,7 +23,7 @@ class A {
   longMethod(
       covariant parameterNameHere) {}
 }
->>> split before "covariant" with multiple parameters (skip: published version of analyzer doesn't support 'covariant yet')
+>>> split before "covariant" with multiple parameters
 class A {
   longMethod(covariant first, second, covariant int third(parameter), fourth) {}
 }
@@ -35,14 +35,15 @@ class A {
       covariant int third(parameter),
       fourth) {}
 }
->>> never split after "covariant" (at least for now) (skip: published version of analyzer doesn't support 'covariant yet')
+>>> never split after "covariant" (at least for now)
 class A {
   longMethod(covariant int veryLongParameterNameWow) {}
 }
 <<<
 class A {
   longMethod(
-      covariant int veryLongParameterNameWow) {}
+      covariant int
+          veryLongParameterNameWow) {}
 }
 >>> split between field type and name
 class Foo {
