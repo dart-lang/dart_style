@@ -3,21 +3,21 @@
 typedef Foo  <  T  ,S  >(T t,S s);
 <<<
 typedef Foo<T, S>(T t, S s);
->>> non-generic in typedef (skip: published version of analyzer doesn't support function types yet)
+>>> non-generic in typedef
 typedef   SomeFunc=ReturnType  Function(int param,   double other);
 <<<
 typedef SomeFunc = ReturnType Function(
     int param, double other);
->>> generic in typedef (skip: published version of analyzer doesn't support function types yet)
+>>> generic in typedef
 typedef Generic = T Function<T>(T param, double other);
 <<<
 typedef Generic = T Function<T>(
     T param, double other);
->>> no return type (skip: published version of analyzer doesn't support function types yet)
+>>> no return type
 typedef SomeFunc = Function();
 <<<
 typedef SomeFunc = Function();
->>> nested (skip: published version of analyzer doesn't support function types yet)
+>>> nested
 typedef SomeFunc = Function(int first, Function(int first, bool second, String third) second, String third);
 <<<
 typedef SomeFunc = Function(
@@ -26,15 +26,15 @@ typedef SomeFunc = Function(
             String third)
         second,
     String third);
->>> without param names (skip: published version of analyzer doesn't support function types yet)
+>>> without param names
 typedef F = Function(int, bool, String);
 <<<
 typedef F = Function(int, bool, String);
->>> generic (skip: published version of analyzer doesn't support function types yet)
+>>> generic
 typedef    Foo < A ,B>=Function ( A a,   B b );
 <<<
 typedef Foo<A, B> = Function(A a, B b);
->>> generic function (skip: published version of analyzer doesn't support function types yet)
+>>> generic function
 typedef    Foo  =Function  < A ,B  >   ( A a,B b );
 <<<
 typedef Foo = Function<A, B>(A a, B b);

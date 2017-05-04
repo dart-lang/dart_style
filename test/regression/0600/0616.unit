@@ -1,4 +1,4 @@
->>> (skip: published version of analyzer doesn't support function types yet)
+>>>
 import "package:expect/expect.dart";
 int Function() x = () => 42;
 int Function(int Function()) y = (int Function() x) => x();

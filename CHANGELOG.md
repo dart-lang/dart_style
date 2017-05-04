@@ -1,3 +1,7 @@
+# 1.0.5
+
+* Support the latest version of `pkg/analyzer`.
+
 # 1.0.4
 
 * Ensure formatter throws an exception instead of introducing non-whitespace

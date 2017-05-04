@@ -1198,13 +1198,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitGenericTypeAlias(GenericTypeAlias node) {
     visitNodes(node.metadata, between: newline, after: newline);
     _simpleStatement(node, () {
+      token(node.typedefKeyword);
+      space();
+
       // If the typedef's type parameters split, split after the "=" too,
       // mainly to ensure the function's type parameters and parameters get
       // end up on successive lines with the same indentation.
       builder.startRule();
-
-      token(node.typedefKeyword);
-      space();
 
       visit(node.name);
 
