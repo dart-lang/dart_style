@@ -1,3 +1,7 @@
+# 1.0.6
+
+* Support URIs in part-of directives (#615).
+
 # 1.0.5
 
 * Support the latest version of `pkg/analyzer`.

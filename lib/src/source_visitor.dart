@@ -1516,7 +1516,11 @@ class SourceVisitor extends ThrowingAstVisitor {
       space();
       token(node.ofKeyword);
       space();
+
+      // Part-of may have either a name or a URI. Only one of these will be
+      // non-null. We visit both since visit() ignores null.
       visit(node.libraryName);
+      visit(node.uri);
     });
   }
 
