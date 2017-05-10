@@ -58,3 +58,7 @@ import 'a' if (b.c.d) 'e';
 export'a'if(b  . c=='d'   )'e';
 <<<
 export 'a' if (b.c == 'd') 'e';
+>>> part-of with uri
+part   of'uri.dart'     ;
+<<<
+part of 'uri.dart';

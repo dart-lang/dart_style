@@ -1190,8 +1190,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitGenericFunctionType(GenericFunctionType node) {
-    visit(node.returnType, after: space);
+    builder.startLazyRule();
+    builder.nestExpression();
+
+    visit(node.returnType, after: split);
     token(node.functionKeyword);
+
+    builder.unnest();
+    builder.endRule();
+
     _visitParameterSignature(node.typeParameters, node.parameters);
   }
 
@@ -1516,7 +1523,11 @@ class SourceVisitor extends ThrowingAstVisitor {
       space();
       token(node.ofKeyword);
       space();
+
+      // Part-of may have either a name or a URI. Only one of these will be
+      // non-null. We visit both since visit() ignores null.
       visit(node.libraryName);
+      visit(node.uri);
     });
   }
 
