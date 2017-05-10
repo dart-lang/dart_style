@@ -1190,8 +1190,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitGenericFunctionType(GenericFunctionType node) {
-    visit(node.returnType, after: space);
+    builder.startLazyRule();
+    builder.nestExpression();
+
+    visit(node.returnType, after: split);
     token(node.functionKeyword);
+
+    builder.unnest();
+    builder.endRule();
+
     _visitParameterSignature(node.typeParameters, node.parameters);
   }
 
