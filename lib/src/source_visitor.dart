@@ -2652,7 +2652,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         previousLine = commentLine;
       }
 
-      var text = comment.toString().trim();
+      var text = comment.lexeme.trim();
       var linesBefore = commentLine - previousLine;
       var flushLeft = _startColumn(comment) == 1;
 
