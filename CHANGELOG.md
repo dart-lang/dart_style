@@ -1,3 +1,7 @@
+# 1.0.7-dev
+
+* Fix call to analyzer API
+
 # 1.0.6
 
 * Support URIs in part-of directives (#615).
