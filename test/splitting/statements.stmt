@@ -44,3 +44,15 @@ switch (
   case 0:
     return "ok";
 }
+>>> returning long adjacent strings
+return
+   "some very long string"
+   "another continued string";
+<<<
+return
+    "some very long string"
+    "another continued string";
+>>> returning short adjacent strings
+return "foo" "bar";
+<<<
+return "foo" "bar";

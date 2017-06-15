@@ -13,7 +13,8 @@ var name = new Symbol(
 >>> adjacent string lines all split together;
 var text = "first" "second" "third" "fourth" "fifth";
 <<<
-var text = "first"
+var text =
+    "first"
     "second"
     "third"
     "fourth"
@@ -26,7 +27,8 @@ var name = "the first string"
 
 "the third string";
 <<<
-var name = "the first string"
+var name =
+    "the first string"
     "the second string"
     "the third string";
 >>> conditions, same operator

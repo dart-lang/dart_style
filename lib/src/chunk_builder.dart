@@ -740,6 +740,14 @@ class ChunkBuilder {
       return null;
     }
 
+    // If a zero-width split follows a space, make it a space split instead.
+    // This ensures that we don't leave whitespace dangling where it isn't
+    // needed.
+    if (space != true && _pendingWhitespace == Whitespace.space) {
+      _pendingWhitespace = Whitespace.none;
+      space = true;
+    }
+
     _chunks.last.applySplit(rule, _nesting.indentation,
         nest ? _nesting.nesting : new NestingLevel(),
         flushLeft: flushLeft, isDouble: isDouble, space: space);

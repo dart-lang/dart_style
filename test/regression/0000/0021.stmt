@@ -5,7 +5,8 @@
       "des citations \" "
       "avec quelques paramètres ainsi 1, 2, et 3");
 <<<
-  verify("Caractères qui doivent être échapper, par exemple barres \\ "
+  verify(
+      "Caractères qui doivent être échapper, par exemple barres \\ "
       "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
       "des citations \" "
       "avec quelques paramètres ainsi 1, 2, et 3");
@@ -29,7 +30,8 @@ var map = {
 };
 <<<
 var map = {
-  "nestedMessage": "{combinedGender,select, "
+  "nestedMessage":
+      "{combinedGender,select, "
       "other{"
       "{number,plural, "
       "=0{Personne n'avait allé à la {place}}"

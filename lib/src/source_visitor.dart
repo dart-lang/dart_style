@@ -108,8 +108,13 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitAdjacentStrings(AdjacentStrings node) {
     builder.startSpan();
-    builder.startRule();
+    var rule = new Rule();
+    builder.startRule(rule);
+
+    var chunk = zeroSplit();
+    rule.imply(chunk.rule);
     visitNodes(node.strings, between: splitOrNewline);
+
     builder.endRule();
     builder.endSpan();
   }
