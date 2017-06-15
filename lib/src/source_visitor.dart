@@ -113,10 +113,38 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var chunk = zeroSplit();
     rule.imply(chunk.rule);
-    visitNodes(node.strings, between: splitOrNewline);
+
+    visit(node.strings.first);
+    var previous = node.strings.first;
+    for (var string in node.strings.skip(1)) {
+      // Always split after a string that ends in a newline. Otherwise, indent a
+      // little bit so it's clear that the next string is a continuation rather
+      // than a new line.
+      if (_endsWithNewline(previous)) {
+        builder.writeWhitespace(Whitespace.nestedNewline);
+      } else {
+        builder.indent();
+        split();
+        builder.unindent();
+      }
+      visit(string);
+      previous = string;
+    }
 
     builder.endRule();
     builder.endSpan();
+  }
+
+  /// Returns whether [string] ends with a newline character.
+  bool _endsWithNewline(StringLiteral string) {
+    if (string is AdjacentStrings) {
+      return _endsWithNewline(string.strings.last);
+    } else if (string is StringInterpolation) {
+      var lastElement = string.elements.last;
+      return lastElement is InterpolationString && lastElement.value.endsWith("\n");
+    } else {
+      return (string as SimpleStringLiteral).value.endsWith("\n");
+    }
   }
 
   visitAnnotation(Annotation node) {
@@ -2552,6 +2580,11 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Emit a single mandatory newline.
   void newline() {
     builder.writeWhitespace(Whitespace.newline);
+  }
+
+  /// Emit a single mandatory newline that's nested at expression level.
+  void nestedNewline() {
+    builder.writeWhitespace(Whitespace.nestedNewline);
   }
 
   /// Emit a two mandatory newlines.

@@ -54,3 +54,23 @@ someMethod("""first line does not fits here
 someMethod(
     """first line does not fits here
 """);
+>>> always splits adjacent strings after newline
+someMethod("foo\n" "bar");
+<<<
+someMethod(
+    "foo\n"
+    "bar");
+>>> indents adjacent strings after non-newlines only
+someMethod(
+    "foo\n"
+    "bar"
+      "baz"
+      "bang\n"
+    "qux");
+<<<
+someMethod(
+    "foo\n"
+    "bar"
+      "baz"
+      "bang\n"
+    "qux");
