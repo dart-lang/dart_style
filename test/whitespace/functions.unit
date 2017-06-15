@@ -166,3 +166,11 @@ main() {
 function(int   foo  <  T  ,S >(T t, S s)) {}
 <<<
 function(int foo<T, S>(T t, S s)) {}
+>>> decorator-style function
+function() => decorator(() {
+  body;
+});
+<<<
+function() => decorator(() {
+  body;
+});

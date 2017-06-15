@@ -886,17 +886,35 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // If the body is a binary operator expression, then we want to force the
     // split at `=>` if the operators split. See visitBinaryExpression().
-    if (node.expression is! BinaryExpression) builder.endRule();
+    var expression = node.expression;
+    if (expression is! BinaryExpression) builder.endRule();
 
     if (_isInLambda(node)) builder.endSpan();
 
-    builder.startBlockArgumentNesting();
-    builder.startSpan();
-    visit(node.expression);
-    builder.endSpan();
-    builder.endBlockArgumentNesting();
+    // If the body is a block-formatted function invocation, don't add extra
+    // nesting to preserve normal indentation for decorators that modify the
+    // functionality of a method body:
+    //
+    //    void foo() => decorate(() {
+    //      "the body";
+    //    });
+    var isDecorator = expression is InvocationExpression &&
+        expression.argumentList.arguments.any((argument) {
+          if (argument is FunctionExpression) {
+            var body = argument.body;
+            return body is BlockFunctionBody && body.block.statements.isNotEmpty;
+          } else {
+            return false;
+          }
+        });
 
-    if (node.expression is BinaryExpression) builder.endRule();
+    if (!isDecorator) builder.startBlockArgumentNesting();
+    builder.startSpan();
+    visit(expression);
+    builder.endSpan();
+    if (!isDecorator) builder.endBlockArgumentNesting();
+
+    if (expression is BinaryExpression) builder.endRule();
 
     token(node.semicolon);
   }
