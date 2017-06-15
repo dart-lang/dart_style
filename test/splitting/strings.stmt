@@ -54,3 +54,23 @@ someMethod("""first line does not fits here
 someMethod(
     """first line does not fits here
 """);
+>>> format multiline as a block with a leading argument
+someMethod("foo", """
+  some
+  text
+""");
+<<<
+someMethod("foo", """
+  some
+  text
+""");
+>>> format multiline a block with a trailing argument
+someMethod("""
+  some
+  text
+""", "foo");
+<<<
+someMethod("""
+  some
+  text
+""", "foo");
