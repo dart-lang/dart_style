@@ -1,5 +1,7 @@
 # 1.0.7-dev
 
+* Don't add extra indentation to blocks that are wrapped in function calls
+  (#382).
 * Fix call to analyzer API
 
 # 1.0.6
