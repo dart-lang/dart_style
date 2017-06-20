@@ -1,5 +1,11 @@
 # 1.0.7-dev
 
+* Only add newlines between adjacent strings if necessary. This makes it easier
+  to tell where adjacent strings can be combined into single strings.
+* If adjacent strings do split, ensure that they're vertically aligned (#133).
+* Always add a newline after adjacent strings that end in newlines; otherwise
+  indent the next string. This makes it easier to visually distinguish separate
+  lines from continued lines (#134).
 * Fix call to analyzer API
 
 # 1.0.6
