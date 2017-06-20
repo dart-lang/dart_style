@@ -174,3 +174,55 @@ function() => decorator(() {
 function() => decorator(() {
   body;
 });
+>>> decorator-style function with long argument list
+function() => decorator(argument, argument, argument, () {
+  body;
+});
+<<<
+function() => decorator(
+    argument, argument, argument, () {
+  body;
+});
+>>> decorator-style function with long trailing argument list
+function() => decorator(() {
+  body;
+}, argument, argument, argument,
+    argument, argument);
+<<<
+function() => decorator(() {
+  body;
+}, argument, argument, argument,
+    argument, argument);
+>>> decorator-style function with long individual trailing arguments
+function() => decorator(() {
+  body;
+},
+    veryVeryVeryVeryVeryVeryLongArgument,
+    veryVeryVeryVeryVeryVeryLongArgument,
+    veryVeryVeryVeryVeryVeryLongArgument);
+<<<
+function() => decorator(() {
+  body;
+},
+    veryVeryVeryVeryVeryVeryLongArgument,
+    veryVeryVeryVeryVeryVeryLongArgument,
+    veryVeryVeryVeryVeryVeryLongArgument);
+>>> decorator-style function with long parameters
+function() => decorator((parameter, parameter, parameter) {
+  body;
+});
+<<<
+function() => decorator(
+    (parameter, parameter, parameter) {
+  body;
+});
+>>> decorator-style function with long argument list and parameters
+function() => decorator(argument, argument, argument, (parameter, parameter) {
+  body;
+});
+<<<
+function() => decorator(
+    argument, argument, argument,
+    (parameter, parameter) {
+  body;
+});
