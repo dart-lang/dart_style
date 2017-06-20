@@ -1,6 +1,7 @@
 # 1.0.7-dev
 
-* Fix call to analyzer API
+* Fix call to analyzer API.
+* Support assert in initializer list experimental syntax (#522).
 
 # 1.0.6
 
