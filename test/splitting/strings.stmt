@@ -64,7 +64,7 @@ someMethod("foo", """
   some
   text
 """);
->>> format multiline a block with a trailing argument
+>>> format multiline as a block with a trailing argument
 someMethod("""
   some
   text
@@ -74,3 +74,67 @@ someMethod("""
   some
   text
 """, "foo");
+>>> format multiline as a block with leading and trailing arguments
+someMethod(
+  "foo",
+  """
+  some
+  text
+  """,
+  "foo");
+<<<
+someMethod(
+    "foo",
+    """
+  some
+  text
+  """,
+    "foo");
+>>> format multiple multilines as blocks
+someMethod("""
+  some
+  text
+""", """
+  some
+  more
+""", """
+  even more
+""");
+<<<
+someMethod("""
+  some
+  text
+""", """
+  some
+  more
+""", """
+  even more
+""");
+>>> format multilines with other blocks as blocks
+someMethod("""
+  some
+  text
+""", () {
+  some;
+  function;
+}, [
+  "some",
+  "collection",
+  "with",
+  "many",
+  "elements"
+]);
+<<<
+someMethod("""
+  some
+  text
+""", () {
+  some;
+  function;
+}, [
+  "some",
+  "collection",
+  "with",
+  "many",
+  "elements"
+]);

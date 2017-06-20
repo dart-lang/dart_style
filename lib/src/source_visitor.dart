@@ -78,8 +78,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// the block body is indented like an expression or a statement.
   ///
   /// Before a block argument is visited, [ArgumentSublist] binds itself to the
-  /// left bracket token of each collection literal it controls. When we later
-  /// visit that literal, we use the token to find that association.
+  /// beginning token of each block it controls. When we later visit that
+  /// literal, we use the token to find that association.
   final Map<Token, ArgumentSublist> _blockArgumentLists = {};
 
   /// Initialize a newly created visitor to write source code representing
