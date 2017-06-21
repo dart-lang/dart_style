@@ -91,7 +91,8 @@ void main() {
     var formatter = new DartFormatter(indent: 3);
     expect(
         formatter.formatStatement('if (foo) {bar;}'),
-        equals('   if (foo) {\n'
+        equals(
+            '   if (foo) {\n'
             '     bar;\n'
             '   }'));
   });
@@ -123,10 +124,12 @@ void main() {
 
     test('handles Windows line endings in multiline strings', () {
       expect(
-          new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
+          new DartFormatter(lineEnding: "\r\n").formatStatement(
+              '  """first\r\n'
               'second\r\n'
               'third"""  ;'),
-          equals('"""first\r\n'
+          equals(
+              '"""first\r\n'
               'second\r\n'
               'third""";'));
     });
@@ -228,7 +231,8 @@ void testDirectory(String name) {
           // Fail with an explicit message because it's easier to read than
           // the matcher output.
           if (actualText != expected.text) {
-            fail("Formatting did not match expectation. Expected:\n"
+            fail(
+                "Formatting did not match expectation. Expected:\n"
                 "${expected.text}\nActual:\n$actualText");
           }
 

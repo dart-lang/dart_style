@@ -120,8 +120,9 @@ class _OverwriteReporter extends _PrintReporter {
         file.writeAsStringSync(output.text);
         print("Formatted $label");
       } on FileSystemException catch (err) {
-        stderr.writeln("Could not overwrite $label: "
-            "${err.osError.message} (error code ${err.osError.errorCode})");
+        stderr.writeln(
+            "Could not overwrite $label: "
+                "${err.osError.message} (error code ${err.osError.errorCode})");
       }
     } else {
       print("Unchanged $label");
