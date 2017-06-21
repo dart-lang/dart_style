@@ -6,7 +6,8 @@
 * Always add a newline after adjacent strings that end in newlines; otherwise
   indent the next string. This makes it easier to visually distinguish separate
   lines from continued lines (#134).
-* Fix call to analyzer API
+* Fix call to analyzer API.
+* Support assert in initializer list experimental syntax (#522).
 
 # 1.0.6
 

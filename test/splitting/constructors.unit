@@ -82,3 +82,28 @@ class Foo {
       : initializer =
             function(argument, arg);
 }
+>>> assert in initializer list, short
+class Foo {
+  Foo() : assert(1), assert(2);
+}
+<<<
+class Foo {
+  Foo()
+      : assert(1),
+        assert(2);
+}
+>>> assert in initializer list, long
+class Foo {
+  Foo() : assert(function(argument, argument, argument)), assert(function(argument, function(argument, argument, argument), argument));
+}
+<<<
+class Foo {
+  Foo()
+      : assert(function(argument,
+            argument, argument)),
+        assert(function(
+            argument,
+            function(argument, argument,
+                argument),
+            argument));
+}

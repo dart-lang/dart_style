@@ -208,22 +208,17 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endSpan();
   }
 
-  // TODO(rnystrom): Type annotate once analyzer publishes a version with the
-  // new AST type.
-  // TODO(rnystrom): Test.
-  visitAssertInitializer(node) {
-    _simpleStatement(node, () {
-      token(node.assertKeyword);
+  visitAssertInitializer(AssertInitializer node) {
+    token(node.assertKeyword);
 
-      var arguments = <Expression>[node.condition];
-      if (node.message != null) arguments.add(node.message);
+    var arguments = <Expression>[node.condition];
+    if (node.message != null) arguments.add(node.message);
 
-      builder.nestExpression();
-      var visitor = new ArgumentListVisitor.forArguments(
-          this, node.leftParenthesis, node.rightParenthesis, arguments);
-      visitor.visit();
-      builder.unnest();
-    });
+    builder.nestExpression();
+    var visitor = new ArgumentListVisitor.forArguments(
+        this, node.leftParenthesis, node.rightParenthesis, arguments);
+    visitor.visit();
+    builder.unnest();
   }
 
   visitAssertStatement(AssertStatement node) {
