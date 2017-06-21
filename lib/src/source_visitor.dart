@@ -68,20 +68,19 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// in unison.
   final List<MetadataRule> _metadataRules = [];
 
-  /// The mapping for collection literals that are managed by the argument
-  /// list that contains them.
+  /// The mapping for blocks that are managed by the argument list that contains
+  /// them.
   ///
-  /// When a collection literal appears inside an [ArgumentSublist], the
-  /// argument list provides a rule for the body to split to ensure that all
-  /// collections split in unison. It also tracks the chunk before the
-  /// argument that determines whether or not the collection body is indented
-  /// like an expression or a statement.
+  /// When a block expression, such as a collection literal or a multiline
+  /// string, appears inside an [ArgumentSublist], the argument list provides a
+  /// rule for the body to split to ensure that all blocks split in unison. It
+  /// also tracks the chunk before the argument that determines whether or not
+  /// the block body is indented like an expression or a statement.
   ///
-  /// Before a collection literal argument is visited, [ArgumentSublist] binds
-  /// itself to the left bracket token of each collection literal it controls.
-  /// When we later visit that literal, we use the token to find that
-  /// association.
-  final Map<Token, ArgumentSublist> _collectionArgumentLists = {};
+  /// Before a block argument is visited, [ArgumentSublist] binds itself to the
+  /// beginning token of each block it controls. When we later visit that
+  /// literal, we use the token to find that association.
+  final Map<Token, ArgumentSublist> _blockArgumentLists = {};
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -2386,9 +2385,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     // handle splitting and indenting it. If not, we'll use a default rule.
     var rule;
     var argumentChunk;
-    if (_collectionArgumentLists.containsKey(leftBracket)) {
-      var argumentList = _collectionArgumentLists[leftBracket];
-      rule = argumentList.collectionRule;
+    if (_blockArgumentLists.containsKey(leftBracket)) {
+      var argumentList = _blockArgumentLists[leftBracket];
+      rule = argumentList.blockRule;
       argumentChunk = argumentList.previousSplit;
     }
 
@@ -2470,13 +2469,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.unnest();
   }
 
-  /// Marks the collection literal that starts with [leftBracket] as being
-  /// controlled by [argumentList].
+  /// Marks the block that starts with [token] as being controlled by
+  /// [argumentList].
   ///
-  /// When the collection is visited, [argumentList] will determine the
-  /// indentation and splitting rule for the collection.
-  void beforeCollection(Token leftBracket, ArgumentSublist argumentList) {
-    _collectionArgumentLists[leftBracket] = argumentList;
+  /// When the block is visited, [argumentList] will determine the
+  /// indentation and splitting rule for the block.
+  void beforeBlock(Token token, ArgumentSublist argumentList) {
+    _blockArgumentLists[token] = argumentList;
   }
 
   /// Writes the beginning of a brace-delimited body and handles indenting and

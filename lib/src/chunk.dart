@@ -320,11 +320,11 @@ class Cost {
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;
 
-  /// Splitting the internals of collection literal arguments.
+  /// Splitting the internals of block arguments.
   ///
-  /// Used to prefer splitting at the argument boundary over splitting the
-  /// collection contents.
-  static const splitCollections = 2;
+  /// Used to prefer splitting at the argument boundary over splitting the block
+  /// contents.
+  static const splitBlocks = 2;
 
   /// Splitting on the "." in a named constructor.
   static const constructorName = 3;
