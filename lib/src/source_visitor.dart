@@ -114,23 +114,26 @@ class SourceVisitor extends ThrowingAstVisitor {
     var chunk = zeroSplit();
     rule.imply(chunk.rule);
 
+    builder.nestExpression();
     visit(node.strings.first);
     var previous = node.strings.first;
     for (var string in node.strings.skip(1)) {
-      // Always split after a string that ends in a newline. Otherwise, indent a
-      // little bit so it's clear that the next string is a continuation rather
-      // than a new line.
+      // Always split after a string that ends in a newline. Otherwise, nest
+      // further strings so it's clear that they're continuations rather than
+      // separate lines.
       if (_endsWithNewline(previous)) {
         builder.writeWhitespace(Whitespace.nestedNewline);
+        builder.unnest();
+        builder.nestExpression();
       } else {
-        builder.indent();
         split();
-        builder.unindent();
       }
+
       visit(string);
       previous = string;
     }
 
+    builder.unnest();
     builder.endRule();
     builder.endSpan();
   }
@@ -141,7 +144,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       return _endsWithNewline(string.strings.last);
     } else if (string is StringInterpolation) {
       var lastElement = string.elements.last;
-      return lastElement is InterpolationString && lastElement.value.endsWith("\n");
+      return lastElement is InterpolationString &&
+          lastElement.value.endsWith("\n");
     } else {
       return (string as SimpleStringLiteral).value.endsWith("\n");
     }

@@ -64,13 +64,13 @@ someMethod(
 someMethod(
     "foo\n"
     "bar"
-      "baz"
-      "bang\n"
+        "baz"
+        "bang\n"
     "qux");
 <<<
 someMethod(
     "foo\n"
     "bar"
-      "baz"
-      "bang\n"
+        "baz"
+        "bang\n"
     "qux");

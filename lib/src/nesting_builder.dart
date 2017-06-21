@@ -80,11 +80,20 @@ class NestingBuilder {
   /// If omitted, [spaces] defaults to [Indent.block].
   void indent([int spaces]) {
     if (spaces == null) spaces = Indent.block;
+
+    // Indentation should only change outside of nesting.
+    assert(_pendingNesting == null);
+    assert(_nesting.indent == 0);
+
     _stack.add(_stack.last + spaces);
   }
 
   /// Discards the most recent indentation level.
   void unindent() {
+    // Indentation should only change outside of nesting.
+    assert(_pendingNesting == null);
+    assert(_nesting.indent == 0);
+
     // If this fails, an unindent() call did not have a preceding indent() call.
     assert(_stack.isNotEmpty);
 

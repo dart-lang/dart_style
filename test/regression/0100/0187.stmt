@@ -15,7 +15,7 @@
           String timeUnitDropdownPlaceholder) =>
       Intl.message(
           'Deflagrate the persimmon to $numberInputFieldPlaceholder golgafrinchans per'
-            '$timeUnitDropdownPlaceholder maximum, unless we say otherwise',
+              '$timeUnitDropdownPlaceholder maximum, unless we say otherwise',
           name: 'someComplicatedHelpMessage',
           args: [numberInputFieldPlaceholder, timeUnitDropdownPlaceholder],
           examples: {
