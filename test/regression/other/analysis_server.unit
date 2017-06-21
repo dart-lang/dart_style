@@ -119,16 +119,14 @@ final ListResultDescriptor<AnalysisError> HINTS =
         files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
             valueDecoder: (String jsonPath, Object json) =>
                 jsonDecoder._decodeUnion(jsonPath, json, "type", {
-                  "add": (String jsonPath, Object json) =>
-                      new AddContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json),
-                  "change": (String jsonPath, Object json) =>
-                      new ChangeContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json),
-                  "remove": (String jsonPath, Object json) =>
-                      new RemoveContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json)
-                }));
+              "add": (String jsonPath, Object json) =>
+                  new AddContentOverlay.fromJson(jsonDecoder, jsonPath, json),
+              "change": (String jsonPath, Object json) =>
+                  new ChangeContentOverlay.fromJson(
+                      jsonDecoder, jsonPath, json),
+              "remove": (String jsonPath, Object json) =>
+                  new RemoveContentOverlay.fromJson(jsonDecoder, jsonPath, json)
+            }));
       }
 >>> (indent 2)
   main() {

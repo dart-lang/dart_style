@@ -899,14 +899,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     //      "the body";
     //    });
     var isDecorator = expression is InvocationExpression &&
-        expression.argumentList.arguments.any((argument) {
-          if (argument is FunctionExpression) {
-            var body = argument.body;
-            return body is BlockFunctionBody && body.block.statements.isNotEmpty;
-          } else {
-            return false;
-          }
-        });
+        new ArgumentListVisitor(this, expression.argumentList)
+            .hasBlockArguments;
 
     if (!isDecorator) builder.startBlockArgumentNesting();
     builder.startSpan();
