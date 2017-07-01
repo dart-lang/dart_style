@@ -4,7 +4,8 @@
 
 library dart_style.src.nesting_builder;
 
-import 'nesting_level.dart';
+import 'alignment.dart';
+import 'nesting_level/nesting_level.dart';
 import 'whitespace.dart';
 
 /// Keeps track of block indentation and expression nesting while the source
@@ -83,7 +84,7 @@ class NestingBuilder {
 
     // Indentation should only change outside of nesting.
     assert(_pendingNesting == null);
-    assert(_nesting.indent == 0);
+    assert(!_nesting.isNested);
 
     _stack.add(_stack.last + spaces);
   }
@@ -92,12 +93,19 @@ class NestingBuilder {
   void unindent() {
     // Indentation should only change outside of nesting.
     assert(_pendingNesting == null);
-    assert(_nesting.indent == 0);
+    assert(!_nesting.isNested);
 
     // If this fails, an unindent() call did not have a preceding indent() call.
     assert(_stack.isNotEmpty);
 
     _stack.removeLast();
+  }
+
+  /// Begins a new expression nesting level aligned with [alignment].
+  ///
+  /// This must be paired with a call to [unnest].
+  void align(Alignment alignment) {
+    _pendingNesting = (_pendingNesting ?? _nesting).align(alignment);
   }
 
   /// Begins a new expression nesting level [indent] deeper than the current

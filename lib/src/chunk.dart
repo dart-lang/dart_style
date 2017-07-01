@@ -5,7 +5,7 @@
 library dart_style.src.chunk;
 
 import 'fast_hash.dart';
-import 'nesting_level.dart';
+import 'nesting_level/nesting_level.dart';
 import 'rule/rule.dart';
 
 /// Tracks where a selection start or end point may appear in some piece of
@@ -177,6 +177,12 @@ class Chunk extends Selection {
 
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];
+
+  /// The number of columns between the left-hand side of the block that
+  /// contains this chunk and the left-hand side of the chunk itself.
+  ///
+  /// This is only valid during line splitting.
+  int depth;
 
   /// Creates a new chunk starting with [_text].
   Chunk(this._text);

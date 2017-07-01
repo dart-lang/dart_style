@@ -108,13 +108,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitAdjacentStrings(AdjacentStrings node) {
     builder.startSpan();
-    var rule = new Rule();
-    builder.startRule(rule);
+    builder.startRule();
 
-    var chunk = zeroSplit();
-    rule.imply(chunk.rule);
-
-    builder.nestExpression();
+    builder.alignExpression();
     visit(node.strings.first);
     var previous = node.strings.first;
     for (var string in node.strings.skip(1)) {
@@ -123,8 +119,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       // separate lines.
       if (_endsWithNewline(previous)) {
         builder.writeWhitespace(Whitespace.nestedNewline);
-        builder.unnest();
-        builder.nestExpression();
       } else {
         split();
       }

@@ -71,18 +71,16 @@ final ArgParser argParser = StrongModeOptions.addArguments(new ArgParser()
       help: 'Package root to resolve "package:" imports',
       defaultsTo: 'packages/')
   ..addOption('url-mapping',
-      help:
-          '--url-mapping=libraryUri,/path/to/library.dart uses library.dart\n'
-          'as the source for an import of of "libraryUri".',
+      help: '--url-mapping=libraryUri,/path/to/library.dart uses library.dart\n'
+            'as the source for an import of of "libraryUri".',
       allowMultiple: true,
       splitCommas: false)
   ..addFlag('use-multi-package',
       help: 'Whether to use the multi-package resolver for "package:" imports',
       defaultsTo: false)
   ..addOption('package-paths',
-      help:
-          'if using the multi-package resolver, the list of directories to\n'
-          'look for packages in.',
+      help: 'if using the multi-package resolver, the list of directories to\n'
+            'look for packages in.',
       defaultsTo: '')
   ..addOption('resources',
       help: 'Additional resources to serve', defaultsTo: '')
@@ -100,9 +98,8 @@ final ArgParser argParser = StrongModeOptions.addArguments(new ArgParser()
       help: 'Serve embedded widget with static errors and warnings.',
       defaultsTo: true)
   ..addOption('host',
-      help:
-          'Host name or address to serve files from, e.g. --host=0.0.0.0\n'
-          'to listen on all interfaces (used only when --serve is on)',
+      help: 'Host name or address to serve files from, e.g. --host=0.0.0.0\n'
+            'to listen on all interfaces (used only when --serve is on)',
       defaultsTo: 'localhost')
   ..addOption('port',
       help: 'Port to serve files from (used only when --serve is on)',
