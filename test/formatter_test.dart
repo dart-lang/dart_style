@@ -39,14 +39,12 @@ void main() {
 
   test("FormatterException describes parse errors", () {
     try {
-      new DartFormatter().format(
-          """
+      new DartFormatter().format("""
 
       var a = some error;
 
       var b = another one;
-      """,
-          uri: "my_file.dart");
+      """, uri: "my_file.dart");
 
       fail("Should throw.");
     } on FormatterException catch (err) {

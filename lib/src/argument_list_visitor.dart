@@ -370,8 +370,8 @@ class ArgumentSublist {
       blocks.clear();
     }
 
-    return new ArgumentSublist._(allArguments, positional, named, blocks,
-        leadingBlocks, trailingBlocks);
+    return new ArgumentSublist._(
+        allArguments, positional, named, blocks, leadingBlocks, trailingBlocks);
   }
 
   ArgumentSublist._(this._allArguments, this._positional, this._named,
@@ -394,8 +394,7 @@ class ArgumentSublist {
     // Only count the blocks in the positional rule.
     var leadingBlocks = math.min(_leadingBlocks, _positional.length);
     var trailingBlocks = math.max(_trailingBlocks - _named.length, 0);
-    var rule = new PositionalRule(
-        _blockRule, leadingBlocks, trailingBlocks);
+    var rule = new PositionalRule(_blockRule, leadingBlocks, trailingBlocks);
     _visitArguments(visitor, _positional, rule);
 
     return rule;
@@ -406,11 +405,9 @@ class ArgumentSublist {
     if (_named.isEmpty) return;
 
     // Only count the blocks in the named rule.
-    var leadingBlocks =
-        math.max(_leadingBlocks - _positional.length, 0);
+    var leadingBlocks = math.max(_leadingBlocks - _positional.length, 0);
     var trailingBlocks = math.min(_trailingBlocks, _named.length);
-    var namedRule =
-        new NamedRule(_blockRule, leadingBlocks, trailingBlocks);
+    var namedRule = new NamedRule(_blockRule, leadingBlocks, trailingBlocks);
 
     // Let the positional args force the named ones to split.
     if (positionalRule != null) {
