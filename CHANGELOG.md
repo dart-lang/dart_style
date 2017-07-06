@@ -1,4 +1,4 @@
-# 1.0.7-dev
+# 1.0.7
 
 * Format multiline strings as block arguments (#570).
 * Fix call to analyzer API.
