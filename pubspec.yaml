@@ -29,3 +29,6 @@ executables:
 transformers:
 - $dart2js:
     $exclude: 'test/**'
+
+dependency_overrides:
+  analyzer: 0.31.0-alpha.0
