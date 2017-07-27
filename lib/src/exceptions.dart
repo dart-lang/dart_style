@@ -35,7 +35,7 @@ class FormatterException implements Exception {
         source += " " * (error.offset + error.length - source.length);
       }
 
-      var file = new SourceFile(source, url: error.source.fullName);
+      var file = new SourceFile.fromString(source, url: error.source.fullName);
       var span = file.span(error.offset, error.offset + error.length);
       if (buffer.isNotEmpty) buffer.writeln();
       buffer.write(span.message(error.message, color: color));
