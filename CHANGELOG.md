@@ -1,3 +1,7 @@
+# 1.0.8
+
+* Support v1 of `pkg/args`.
+
 # 1.0.7
 
 * Format multiline strings as block arguments (#570).
