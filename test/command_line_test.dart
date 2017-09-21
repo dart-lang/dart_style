@@ -7,95 +7,93 @@ library dart_style.test.command_line;
 import 'dart:convert';
 
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_test.dart';
-import 'package:scheduled_test/scheduled_stream.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
 
 import 'utils.dart';
 
 void main() {
-  setUpTestSuite();
+  test("exits with 0 on success", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-  test("exits with 0 on success", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
-    var process = runFormatterOnDir();
-    process.shouldExit(0);
+    var process = await runFormatterOnDir();
+    await process.shouldExit(0);
   });
 
-  test("exits with 64 on a command line argument error", () {
-    var process = runFormatterOnDir(["-wat"]);
-    process.shouldExit(64);
+  test("exits with 64 on a command line argument error", () async {
+    var process = await runFormatterOnDir(["-wat"]);
+    await process.shouldExit(64);
   });
 
-  test("exits with 65 on a parse error", () {
-    d.dir("code", [d.file("a.dart", "herp derp i are a dart")]).create();
+  test("exits with 65 on a parse error", () async {
+    await d.dir("code", [d.file("a.dart", "herp derp i are a dart")]).create();
 
-    var process = runFormatterOnDir();
-    process.shouldExit(65);
+    var process = await runFormatterOnDir();
+    await process.shouldExit(65);
   });
 
-  test("errors if --dry-run and --overwrite are both passed", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+  test("errors if --dry-run and --overwrite are both passed", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-    var process = runFormatterOnDir(["--dry-run", "--overwrite"]);
-    process.shouldExit(64);
+    var process = await runFormatterOnDir(["--dry-run", "--overwrite"]);
+    await process.shouldExit(64);
   });
 
-  test("errors if --dry-run and --machine are both passed", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+  test("errors if --dry-run and --machine are both passed", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-    var process = runFormatterOnDir(["--dry-run", "--machine"]);
-    process.shouldExit(64);
+    var process = await runFormatterOnDir(["--dry-run", "--machine"]);
+    await process.shouldExit(64);
   });
 
-  test("errors if --machine and --overwrite are both passed", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+  test("errors if --machine and --overwrite are both passed", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-    var process = runFormatterOnDir(["--machine", "--overwrite"]);
-    process.shouldExit(64);
+    var process = await runFormatterOnDir(["--machine", "--overwrite"]);
+    await process.shouldExit(64);
   });
 
-  test("errors if --dry-run and --machine are both passed", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+  test("errors if --dry-run and --machine are both passed", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-    var process = runFormatter(["--dry-run", "--machine"]);
-    process.shouldExit(64);
+    var process = await runFormatter(["--dry-run", "--machine"]);
+    await process.shouldExit(64);
   });
 
-  test("errors if --machine and --overwrite are both passed", () {
-    d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+  test("errors if --machine and --overwrite are both passed", () async {
+    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-    var process = runFormatter(["--machine", "--overwrite"]);
-    process.shouldExit(64);
+    var process = await runFormatter(["--machine", "--overwrite"]);
+    await process.shouldExit(64);
   });
 
-  test("--version prints the version number", () {
-    var process = runFormatter(["--version"]);
+  test("--version prints the version number", () async {
+    var process = await runFormatter(["--version"]);
 
     // Match something roughly semver-like.
-    process.stdout.expect(matches(r"\d+\.\d+\.\d+.*"));
-    process.shouldExit(0);
+    expect(await process.stdout.next, matches(new RegExp(r"\d+\.\d+\.\d+.*")));
+    await process.shouldExit(0);
   });
 
-  test("only prints a hidden directory once", () {
-    d.dir('code', [
+  test("only prints a hidden directory once", () async {
+    await d.dir('code', [
       d.dir('.skip', [
         d.file('a.dart', unformattedSource),
         d.file('b.dart', unformattedSource)
       ])
     ]).create();
 
-    var process = runFormatterOnDir();
+    var process = await runFormatterOnDir();
 
-    process.stdout.expect(startsWith("Formatting directory"));
-    process.stdout.expect("Skipping hidden path ${p.join("code", ".skip")}");
-    process.shouldExit();
+    expect(await process.stdout.next, startsWith("Formatting directory"));
+    expect(await process.stdout.next,
+        "Skipping hidden path ${p.join("code", ".skip")}");
+    await process.shouldExit();
   });
 
   group("--dry-run", () {
-    test("prints names of files that would change", () {
-      d.dir("code", [
+    test("prints names of files that would change", () async {
+      await d.dir("code", [
         d.file("a_bad.dart", unformattedSource),
         d.file("b_good.dart", formattedSource),
         d.file("c_bad.dart", unformattedSource),
@@ -105,28 +103,28 @@ void main() {
       var aBad = p.join("code", "a_bad.dart");
       var cBad = p.join("code", "c_bad.dart");
 
-      var process = runFormatterOnDir(["--dry-run"]);
+      var process = await runFormatterOnDir(["--dry-run"]);
 
       // The order isn't specified.
-      process.stdout.expect(either(aBad, cBad));
-      process.stdout.expect(either(aBad, cBad));
-      process.shouldExit();
+      expect(await process.stdout.next, anyOf(aBad, cBad));
+      expect(await process.stdout.next, anyOf(aBad, cBad));
+      await process.shouldExit();
     });
 
-    test("does not modify files", () {
-      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+    test("does not modify files", () async {
+      await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-      var process = runFormatterOnDir(["--dry-run"]);
-      process.stdout.expect(p.join("code", "a.dart"));
-      process.shouldExit();
+      var process = await runFormatterOnDir(["--dry-run"]);
+      expect(await process.stdout.next, p.join("code", "a.dart"));
+      await process.shouldExit();
 
-      d.dir('code', [d.file('a.dart', unformattedSource)]).validate();
+      await d.dir('code', [d.file('a.dart', unformattedSource)]).validate();
     });
   });
 
   group("--machine", () {
-    test("writes each output as json", () {
-      d.dir("code", [
+    test("writes each output as json", () async {
+      await d.dir("code", [
         d.file("a.dart", unformattedSource),
         d.file("b.dart", unformattedSource)
       ]).create();
@@ -143,38 +141,39 @@ void main() {
         "selection": {"offset": -1, "length": -1}
       });
 
-      var process = runFormatterOnDir(["--machine"]);
+      var process = await runFormatterOnDir(["--machine"]);
 
       // The order isn't specified.
-      process.stdout.expect(either(jsonA, jsonB));
-      process.stdout.expect(either(jsonA, jsonB));
-      process.shouldExit();
+
+      expect(await process.stdout.next, anyOf(jsonA, jsonB));
+      expect(await process.stdout.next, anyOf(jsonA, jsonB));
+      await process.shouldExit();
     });
   });
 
   group("--preserve", () {
-    test("errors if given paths", () {
-      var process = runFormatter(["--preserve", "path", "another"]);
-      process.shouldExit(64);
+    test("errors if given paths", () async {
+      var process = await runFormatter(["--preserve", "path", "another"]);
+      await process.shouldExit(64);
     });
 
-    test("errors on wrong number of components", () {
-      var process = runFormatter(["--preserve", "1"]);
-      process.shouldExit(64);
+    test("errors on wrong number of components", () async {
+      var process = await runFormatter(["--preserve", "1"]);
+      await process.shouldExit(64);
 
-      process = runFormatter(["--preserve", "1:2:3"]);
-      process.shouldExit(64);
+      process = await runFormatter(["--preserve", "1:2:3"]);
+      await process.shouldExit(64);
     });
 
-    test("errors on non-integer component", () {
-      var process = runFormatter(["--preserve", "1:2.3"]);
-      process.shouldExit(64);
+    test("errors on non-integer component", () async {
+      var process = await runFormatter(["--preserve", "1:2.3"]);
+      await process.shouldExit(64);
     });
 
-    test("updates selection", () {
-      var process = runFormatter(["--preserve", "6:10", "-m"]);
-      process.writeLine(unformattedSource);
-      process.closeStdin();
+    test("updates selection", () async {
+      var process = await runFormatter(["--preserve", "6:10", "-m"]);
+      process.stdin.writeln(unformattedSource);
+      await process.stdin.close();
 
       var json = JSON.encode({
         "path": "<stdin>",
@@ -182,78 +181,79 @@ void main() {
         "selection": {"offset": 5, "length": 9}
       });
 
-      process.stdout.expect(json);
-      process.shouldExit();
+      expect(await process.stdout.next, json);
+      await process.shouldExit();
     });
   });
 
   group("--indent", () {
-    test("sets the leading indentation of the output", () {
-      var process = runFormatter(["--indent", "3"]);
-      process.writeLine("main() {'''");
-      process.writeLine("a flush left multi-line string''';}");
-      process.closeStdin();
+    test("sets the leading indentation of the output", () async {
+      var process = await runFormatter(["--indent", "3"]);
+      process.stdin.writeln("main() {'''");
+      process.stdin.writeln("a flush left multi-line string''';}");
+      await process.stdin.close();
 
-      process.stdout.expect("   main() {");
-      process.stdout.expect("     '''");
-      process.stdout.expect("a flush left multi-line string''';");
-      process.stdout.expect("   }");
-      process.shouldExit(0);
+      expect(await process.stdout.next, "   main() {");
+      expect(await process.stdout.next, "     '''");
+      expect(await process.stdout.next, "a flush left multi-line string''';");
+      expect(await process.stdout.next, "   }");
+      await process.shouldExit(0);
     });
 
-    test("errors if the indent is not a non-negative number", () {
-      var process = runFormatter(["--indent", "notanum"]);
-      process.shouldExit(64);
+    test("errors if the indent is not a non-negative number", () async {
+      var process = await runFormatter(["--indent", "notanum"]);
+      await process.shouldExit(64);
 
-      process = runFormatter(["--preserve", "-4"]);
-      process.shouldExit(64);
+      process = await runFormatter(["--preserve", "-4"]);
+      await process.shouldExit(64);
     });
   });
 
   group("--set-exit-if-changed", () {
-    test("gives exit code 0 if there are no changes", () {
-      d.dir("code", [d.file("a.dart", formattedSource)]).create();
+    test("gives exit code 0 if there are no changes", () async {
+      await d.dir("code", [d.file("a.dart", formattedSource)]).create();
 
-      var process = runFormatterOnDir(["--set-exit-if-changed"]);
-      process.shouldExit(0);
+      var process = await runFormatterOnDir(["--set-exit-if-changed"]);
+      await process.shouldExit(0);
     });
 
-    test("gives exit code 1 if there are changes", () {
-      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+    test("gives exit code 1 if there are changes", () async {
+      await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-      var process = runFormatterOnDir(["--set-exit-if-changed"]);
-      process.shouldExit(1);
+      var process = await runFormatterOnDir(["--set-exit-if-changed"]);
+      await process.shouldExit(1);
     });
 
-    test("gives exit code 1 if there are changes even in dry run", () {
-      d.dir("code", [d.file("a.dart", unformattedSource)]).create();
+    test("gives exit code 1 if there are changes even in dry run", () async {
+      await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
 
-      var process = runFormatterOnDir(["--set-exit-if-changed", "--dry-run"]);
-      process.shouldExit(1);
+      var process =
+          await runFormatterOnDir(["--set-exit-if-changed", "--dry-run"]);
+      await process.shouldExit(1);
     });
   });
 
   group("with no paths", () {
-    test("errors on --overwrite", () {
-      var process = runFormatter(["--overwrite"]);
-      process.shouldExit(64);
+    test("errors on --overwrite", () async {
+      var process = await runFormatter(["--overwrite"]);
+      await process.shouldExit(64);
     });
 
-    test("exits with 65 on parse error", () {
-      var process = runFormatter();
-      process.writeLine("herp derp i are a dart");
-      process.closeStdin();
-      process.shouldExit(65);
+    test("exits with 65 on parse error", () async {
+      var process = await runFormatter();
+      process.stdin.writeln("herp derp i are a dart");
+      await process.stdin.close();
+      await process.shouldExit(65);
     });
 
-    test("reads from stdin", () {
-      var process = runFormatter();
-      process.writeLine(unformattedSource);
-      process.closeStdin();
+    test("reads from stdin", () async {
+      var process = await runFormatter();
+      process.stdin.writeln(unformattedSource);
+      await process.stdin.close();
 
       // No trailing newline at the end.
-      process.stdout.expect(formattedSource.trimRight());
-      process.shouldExit(0);
+      expect(await process.stdout.next, formattedSource.trimRight());
+      await process.shouldExit(0);
     });
   });
 }

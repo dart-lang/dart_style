@@ -9,118 +9,99 @@ import 'dart:io';
 
 import 'package:dart_style/src/io.dart';
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test/test.dart';
 
 import 'package:dart_style/src/formatter_options.dart';
 
 import 'utils.dart';
 
 void main() {
-  setUpTestSuite();
-
   var overwriteOptions = new FormatterOptions(OutputReporter.overwrite);
 
   var followOptions =
       new FormatterOptions(OutputReporter.overwrite, followLinks: true);
 
-  test('handles directory ending in ".dart"', () {
-    d.dir('code.dart', [
+  test('handles directory ending in ".dart"', () async {
+    await d.dir('code.dart', [
       d.file('a.dart', unformattedSource),
     ]).create();
 
-    schedule(() {
-      var dir = new Directory(d.defaultRoot);
-      processDirectory(overwriteOptions, dir);
-    }, 'Run formatter.');
+    var dir = new Directory(d.sandbox);
+    processDirectory(overwriteOptions, dir);
 
-    d.dir('code.dart', [
+    await d.dir('code.dart', [
       d.file('a.dart', formattedSource),
     ]).validate();
   });
 
-  test("doesn't touch unchanged files", () {
-    d.dir('code', [
+  test("doesn't touch unchanged files", () async {
+    await d.dir('code', [
       d.file('bad.dart', unformattedSource),
       d.file('good.dart', formattedSource),
     ]).create();
 
-    modTime(String file) {
-      return new File(p.join(d.defaultRoot, 'code', file)).statSync().modified;
-    }
+    DateTime modTime(String file) =>
+        new File(p.join(d.sandbox, 'code', file)).statSync().modified;
 
-    var badBefore;
-    var goodBefore;
+    var badBefore = modTime('bad.dart');
+    var goodBefore = modTime('good.dart');
 
-    schedule(() {
-      badBefore = modTime('bad.dart');
-      goodBefore = modTime('good.dart');
+    // Wait a bit so the mod time of a formatted file will be different.
+    await new Future.delayed(new Duration(seconds: 1));
 
-      // Wait a bit so the mod time of a formatted file will be different.
-      return new Future.delayed(new Duration(seconds: 1));
-    });
+    var dir = new Directory(p.join(d.sandbox, 'code'));
+    processDirectory(overwriteOptions, dir);
 
-    schedule(() {
-      var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(overwriteOptions, dir);
+    // Should be touched.
+    var badAfter = modTime('bad.dart');
+    expect(badAfter, isNot(equals(badBefore)));
 
-      // Should be touched.
-      var badAfter = modTime('bad.dart');
-      expect(badAfter, isNot(equals(badBefore)));
-
-      // Should not be touched.
-      var goodAfter = modTime('good.dart');
-      expect(goodAfter, equals(goodBefore));
-    });
+    // Should not be touched.
+    var goodAfter = modTime('good.dart');
+    expect(goodAfter, equals(goodBefore));
   });
 
-  test("skips subdirectories whose name starts with '.'", () {
-    d.dir('code', [
+  test("skips subdirectories whose name starts with '.'", () async {
+    await d.dir('code', [
       d.dir('.skip', [d.file('a.dart', unformattedSource)])
     ]).create();
 
-    schedule(() {
-      var dir = new Directory(d.defaultRoot);
-      processDirectory(overwriteOptions, dir);
-    }, 'Run formatter.');
+    var dir = new Directory(d.sandbox);
+    processDirectory(overwriteOptions, dir);
 
-    d.dir('code', [
+    await d.dir('code', [
       d.dir('.skip', [d.file('a.dart', unformattedSource)])
     ]).validate();
   });
 
-  test("traverses the given directory even if its name starts with '.'", () {
-    d.dir('.code', [d.file('a.dart', unformattedSource)]).create();
+  test("traverses the given directory even if its name starts with '.'",
+      () async {
+    await d.dir('.code', [d.file('a.dart', unformattedSource)]).create();
 
-    schedule(() {
-      var dir = new Directory(p.join(d.defaultRoot, '.code'));
-      processDirectory(overwriteOptions, dir);
-    }, 'Run formatter.');
+    var dir = new Directory(p.join(d.sandbox, '.code'));
+    processDirectory(overwriteOptions, dir);
 
-    d.dir('.code', [d.file('a.dart', formattedSource)]).validate();
+    await d.dir('.code', [d.file('a.dart', formattedSource)]).validate();
   });
 
-  test("doesn't follow directory symlinks by default", () {
-    d.dir('code', [
+  test("doesn't follow directory symlinks by default", () async {
+    await d.dir('code', [
       d.file('a.dart', unformattedSource),
     ]).create();
 
-    d.dir('target_dir', [
+    await d.dir('target_dir', [
       d.file('b.dart', unformattedSource),
     ]).create();
 
-    schedule(() {
-      // Create a link to the target directory in the code directory.
-      new Link(p.join(d.defaultRoot, 'code', 'linked_dir'))
-          .createSync(p.join(d.defaultRoot, 'target_dir'));
-    }, 'Create symlinks.');
+    // Create a link to the target directory in the code directory.
+    new Link(p.join(d.sandbox, 'code', 'linked_dir'))
+        .createSync(p.join(d.sandbox, 'target_dir'));
 
-    schedule(() {
-      var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(overwriteOptions, dir);
-    }, 'Run formatter.');
+    var dir = new Directory(p.join(d.sandbox, 'code'));
+    processDirectory(overwriteOptions, dir);
 
-    d.dir('code', [
+    await d.dir('code', [
       d.file('a.dart', formattedSource),
       d.dir('linked_dir', [
         d.file('b.dart', unformattedSource),
@@ -128,27 +109,23 @@ void main() {
     ]).validate();
   });
 
-  test("follows directory symlinks when 'followLinks' is true", () {
-    d.dir('code', [
+  test("follows directory symlinks when 'followLinks' is true", () async {
+    await d.dir('code', [
       d.file('a.dart', unformattedSource),
     ]).create();
 
-    d.dir('target_dir', [
+    await d.dir('target_dir', [
       d.file('b.dart', unformattedSource),
     ]).create();
 
-    schedule(() {
-      // Create a link to the target directory in the code directory.
-      new Link(p.join(d.defaultRoot, 'code', 'linked_dir'))
-          .createSync(p.join(d.defaultRoot, 'target_dir'));
-    });
+    // Create a link to the target directory in the code directory.
+    new Link(p.join(d.sandbox, 'code', 'linked_dir'))
+        .createSync(p.join(d.sandbox, 'target_dir'));
 
-    schedule(() {
-      var dir = new Directory(p.join(d.defaultRoot, 'code'));
-      processDirectory(followOptions, dir);
-    }, 'running formatter');
+    var dir = new Directory(p.join(d.sandbox, 'code'));
+    processDirectory(followOptions, dir);
 
-    d.dir('code', [
+    await d.dir('code', [
       d.file('a.dart', formattedSource),
       d.dir('linked_dir', [
         d.file('b.dart', formattedSource),
@@ -159,58 +136,46 @@ void main() {
   if (!Platform.isWindows) {
     // TODO(rnystrom): Figure out Windows equivalent of chmod and get this
     // test running on Windows too.
-    test("reports error if file can not be written", () {
-      d.file('a.dart', unformattedSource).create();
+    test("reports error if file can not be written", () async {
+      await d.file('a.dart', unformattedSource).create();
 
-      schedule(() {
-        Process.runSync("chmod", ["-w", p.join(d.defaultRoot, 'a.dart')]);
-      }, 'Make file read-only.');
+      Process.runSync("chmod", ["-w", p.join(d.sandbox, 'a.dart')]);
 
-      schedule(() {
-        var file = new File(p.join(d.defaultRoot, 'a.dart'));
-        processFile(overwriteOptions, file);
-      }, 'Run formatter.');
+      var file = new File(p.join(d.sandbox, 'a.dart'));
+      processFile(overwriteOptions, file);
 
       // Should not have been formatted.
-      d.file('a.dart', unformattedSource).validate();
+      await d.file('a.dart', unformattedSource).validate();
     });
 
-    test("doesn't follow file symlinks by default", () {
-      d.dir('code').create();
-      d.file('target_file.dart', unformattedSource).create();
+    test("doesn't follow file symlinks by default", () async {
+      await d.dir('code').create();
+      await d.file('target_file.dart', unformattedSource).create();
 
-      schedule(() {
-        // Create a link to the target file in the code directory.
-        new Link(p.join(d.defaultRoot, 'code', 'linked_file.dart'))
-            .createSync(p.join(d.defaultRoot, 'target_file.dart'));
-      }, 'Create symlinks.');
+      // Create a link to the target file in the code directory.
+      new Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+          .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      schedule(() {
-        var dir = new Directory(p.join(d.defaultRoot, 'code'));
-        processDirectory(overwriteOptions, dir);
-      }, 'Run formatter.');
+      var dir = new Directory(p.join(d.sandbox, 'code'));
+      processDirectory(overwriteOptions, dir);
 
-      d.dir('code', [
+      await d.dir('code', [
         d.file('linked_file.dart', unformattedSource),
       ]).validate();
     });
 
-    test("follows file symlinks when 'followLinks' is true", () {
-      d.dir('code').create();
-      d.file('target_file.dart', unformattedSource).create();
+    test("follows file symlinks when 'followLinks' is true", () async {
+      await d.dir('code').create();
+      await d.file('target_file.dart', unformattedSource).create();
 
-      schedule(() {
-        // Create a link to the target file in the code directory.
-        new Link(p.join(d.defaultRoot, 'code', 'linked_file.dart'))
-            .createSync(p.join(d.defaultRoot, 'target_file.dart'));
-      });
+      // Create a link to the target file in the code directory.
+      new Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+          .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      schedule(() {
-        var dir = new Directory(p.join(d.defaultRoot, 'code'));
-        processDirectory(followOptions, dir);
-      }, 'running formatter');
+      var dir = new Directory(p.join(d.sandbox, 'code'));
+      processDirectory(followOptions, dir);
 
-      d.dir('code', [
+      await d.dir('code', [
         d.file('linked_file.dart', formattedSource),
       ]).validate();
     });
