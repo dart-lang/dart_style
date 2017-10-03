@@ -4,19 +4,19 @@
 
 library dart_style.test.utils;
 
+import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
 
 import 'package:path/path.dart' as p;
-import 'package:scheduled_test/descriptor.dart' as d;
-import 'package:scheduled_test/scheduled_process.dart';
-import 'package:scheduled_test/scheduled_test.dart';
+import 'package:test_descriptor/test_descriptor.dart' as d;
+import 'package:test_process/test_process.dart';
 
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
 /// Runs the command line formatter, passing it [args].
-ScheduledProcess runFormatter([List<String> args]) {
+Future<TestProcess> runFormatter([List<String> args]) {
   if (args == null) args = [];
 
   // Locate the "test" directory. Use mirrors so that this works with the test
@@ -38,29 +38,12 @@ ScheduledProcess runFormatter([List<String> args]) {
     args.insert(0, "--packages=${Platform.packageConfig}");
   }
 
-  return new ScheduledProcess.start(Platform.executable, args);
+  return TestProcess.start(Platform.executable, args);
 }
 
 /// Runs the command line formatter, passing it the test directory followed by
 /// [args].
-ScheduledProcess runFormatterOnDir([List<String> args]) {
+Future<TestProcess> runFormatterOnDir([List<String> args]) {
   if (args == null) args = [];
-  return runFormatter([d.defaultRoot]..addAll(args));
-}
-
-/// Set up the scheduled test suite.
-///
-/// Configures the unit test output and makes a sandbox directory for the
-/// scheduled tests to run in.
-void setUpTestSuite() {
-  // Make a sandbox directory for the scheduled tests to run in.
-  setUp(() {
-    var tempDir = Directory.systemTemp.createTempSync('dart_style.test.');
-    d.defaultRoot = tempDir.path;
-
-    currentSchedule.onComplete.schedule(() {
-      d.defaultRoot = null;
-      return tempDir.delete(recursive: true);
-    });
-  });
+  return runFormatter([d.sandbox]..addAll(args));
 }
