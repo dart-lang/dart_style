@@ -12,7 +12,7 @@ expressions, long argument lists, or otherwise tricky code.
 
 The formatter turns code like this:
 
-```
+```dart
 // BEFORE formatting
 if (tag=='style'||tag=='script'&&(type==null||type == TYPE_JS
       ||type==TYPE_DART)||
@@ -21,7 +21,7 @@ if (tag=='style'||tag=='script'&&(type==null||type == TYPE_JS
 
 into:
 
-```
+```dart
   // AFTER formatting
   if (tag == 'style' ||
       tag == 'script' &&
@@ -59,7 +59,7 @@ and then choose **Reformat with Dart Style**.
 
 Here's a simple example of using dartfmt on the command line:
 
-```
+```sh
 dartfmt test.dart
 ```
 
@@ -94,7 +94,7 @@ correctly formatted.
 
 The package also exposes a single dart_style library containing a programmatic
 API for formatting code. Simple usage looks like this:
-
+```dart
     import 'package:dart_style/dart_style.dart';
 
     main() {
@@ -112,7 +112,7 @@ API for formatting code. Simple usage looks like this:
         print(ex);
       }
     }
-
+```
 ## Other resources
 
 * Before sending an email, see if you are asking a
