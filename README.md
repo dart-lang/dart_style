@@ -12,7 +12,7 @@ expressions, long argument lists, or otherwise tricky code.
 
 The formatter turns code like this:
 
-```
+```dart
 // BEFORE formatting
 if (tag=='style'||tag=='script'&&(type==null||type == TYPE_JS
       ||type==TYPE_DART)||
@@ -21,12 +21,12 @@ if (tag=='style'||tag=='script'&&(type==null||type == TYPE_JS
 
 into:
 
-```
-  // AFTER formatting
-  if (tag == 'style' ||
-      tag == 'script' &&
-          (type == null || type == TYPE_JS || type == TYPE_DART) ||
-      tag == 'link' && (rel == 'stylesheet' || rel == 'import')) {}
+```dart
+// AFTER formatting
+if (tag == 'style' ||
+  tag == 'script' &&
+      (type == null || type == TYPE_JS || type == TYPE_DART) ||
+  tag == 'link' && (rel == 'stylesheet' || rel == 'import')) {}
 ```
 
 The formatter will never break your code&mdash;you can safely invoke it
@@ -59,9 +59,7 @@ and then choose **Reformat with Dart Style**.
 
 Here's a simple example of using dartfmt on the command line:
 
-```
-dartfmt test.dart
-```
+    $ dartfmt test.dart
 
 This command formats the `test.dart` file and writes the result to
 standard output.
@@ -94,25 +92,25 @@ correctly formatted.
 
 The package also exposes a single dart_style library containing a programmatic
 API for formatting code. Simple usage looks like this:
+```dart
+import 'package:dart_style/dart_style.dart';
 
-    import 'package:dart_style/dart_style.dart';
+main() {
+  var formatter = new DartFormatter();
 
-    main() {
-      var formatter = new DartFormatter();
+  try {
+    print(formatter.format("""
+    library an_entire_compilation_unit;
 
-      try {
-        print(formatter.format("""
-        library an_entire_compilation_unit;
+    class SomeClass {}
+    """));
 
-        class SomeClass {}
-        """));
-
-        print(formatter.formatStatement("aSingle(statement);"));
-      } on FormatterException catch (ex) {
-        print(ex);
-      }
-    }
-
+    print(formatter.formatStatement("aSingle(statement);"));
+  } on FormatterException catch (ex) {
+    print(ex);
+  }
+}
+```
 ## Other resources
 
 * Before sending an email, see if you are asking a
