@@ -1,3 +1,7 @@
+# 1.0.9
+
+* Updated tests. No user-facing changes.
+
 # 1.0.8
 
 * Support v1 of `pkg/args`.
