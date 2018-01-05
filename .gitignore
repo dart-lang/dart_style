@@ -3,3 +3,4 @@
 packages
 .packages
 build
+pubspec.lock
