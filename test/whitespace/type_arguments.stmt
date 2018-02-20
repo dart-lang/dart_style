@@ -15,3 +15,7 @@ new Foo<void, void Function()>();
 list.map<   void,void    Function()>();
 <<<
 list.map<void, void Function()>();
+>>> named constructor with implicit "new"
+C <  int  ,float>  .named(42);
+<<<
+C<int, float>.named(42);
