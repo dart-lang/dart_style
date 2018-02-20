@@ -7,3 +7,7 @@ new Foo<T>();
 new Foo<  A,B,   C,D>();
 <<<
 new Foo<A, B, C, D>();
+>>> named constructor with implicit "new"
+C <  int  ,float>  .named(42);
+<<<
+C<int, float>.named(42);

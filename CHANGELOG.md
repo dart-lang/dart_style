@@ -1,3 +1,7 @@
+# 1.0.10
+
+* Support optional `new`/`const` (#652).
+
 # 1.0.9
 
 * Updated tests. No user-facing changes.
