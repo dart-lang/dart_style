@@ -5,6 +5,7 @@
 library dart_style.src.call_chain_visitor;
 
 import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/token.dart';
 
 import 'argument_list_visitor.dart';
 import 'rule/argument.dart';
@@ -331,6 +332,10 @@ class CallChainVisitor {
     if (argumentList.arguments.isEmpty) return true;
 
     var argument = argumentList.arguments.last;
+
+    // If the argument list has a trailing comma, treat it like a collection.
+    if (argument.endToken.next.type == TokenType.COMMA) return false;
+
     if (argument is NamedExpression) {
       argument = (argument as NamedExpression).expression;
     }
