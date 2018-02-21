@@ -107,3 +107,47 @@ class Foo {
                 argument),
             argument));
 }
+>>> trailing commas and initializer lists
+class A {
+  A(a,):super();
+}
+<<<
+class A {
+  A(
+    a,
+  ) : super();
+}
+>>>
+class A {
+  A({a,}):super();
+}
+<<<
+class A {
+  A({
+    a,
+  }) : super();
+}
+>>>
+class A {
+  A(a,):b=1,super();
+}
+<<<
+class A {
+  A(
+    a,
+  ) : b = 1,
+      super();
+}
+>>>
+class A {
+  A({a,}):b=1,super(){;}
+}
+<<<
+class A {
+  A({
+    a,
+  }) : b = 1,
+      super() {
+    ;
+  }
+}

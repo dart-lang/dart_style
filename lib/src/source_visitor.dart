@@ -705,28 +705,48 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   void _visitConstructorInitializers(ConstructorDeclaration node) {
-    final parameters = node.parameters?.parameters;
-    final hasTraillingComma = parameters?.isNotEmpty == true &&
-        parameters?.last?.endToken?.next?.type == TokenType.COMMA;
-    final hasNamedParameters =
-        parameters?.any((parameter) => parameter.kind == ParameterKind.NAMED);
-    if (hasTraillingComma) {
-      space();
-      token(node.separator); // ":".
-      space();
+    var hasTrailingComma = node.parameters.parameters.isNotEmpty &&
+        node.parameters.parameters.last.endToken.next.type == TokenType.COMMA;
 
-      // indent by length of ') : ' or '}) : '
-      builder.indent(hasNamedParameters ? 5 : 4);
+    if (hasTrailingComma) {
+      // If there is a trailing comma in the argument list, the ")" will be on
+      // its own line, so keep the ":" with it:
+      //
+      //     Foo(
+      //       parameter,
+      //     ) : super();
+      space();
     } else {
-      // Shift the ":" forward.
+      // Shift the itself ":" forward.
       builder.indent(Indent.constructorInitializer);
-      split();
-      token(node.separator); // ":".
-      space();
 
-      // Shift everything past the ":".
-      builder.indent();
+      // If the parameters or initializers split, put the ":" on its own line.
+      split();
     }
+
+    // ":".
+    token(node.separator);
+    space();
+
+    // Try to line up the initializers with the first one that follows the ":":
+    //
+    //     Foo(notTrailing)
+    //         : initializer = value,
+    //           super(); // +2 from previous line.
+    //
+    //     Foo(
+    //       trailing,
+    //     ) : initializer = value,
+    //         super(); // +4 from previous line.
+    //
+    // This doesn't work if there is a trailing comma in an optional parameter,
+    // but we don't want to do a weird +5 alignment:
+    //
+    //     Foo({
+    //       trailing,
+    //     }) : initializer = value,
+    //         super(); // Doesn't quite line up. :(
+    builder.indent(hasTrailingComma ? 4 : 2);
 
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
@@ -739,7 +759,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.unindent();
-    if (!hasTraillingComma) builder.unindent();
+    if (!hasTrailingComma) builder.unindent();
 
     // End the rule for ":" after all of the initializers.
     builder.endRule();

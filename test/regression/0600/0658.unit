@@ -12,59 +12,19 @@ class A {
   ) : super();
 }
 >>>
-class A {
-  A({
-    int a,
+class Foo {
+  Foo({
+    Bar bar,
+    Baz baz,
   })
-      : super();
+      : assert(bar != null),
+        super(baz);
 }
 <<<
-class A {
-  A({
-    int a,
-  }) : super();
-}
->>>
-class A {
-  A(
-    int a,
-  )
-      : assert (a!=null),super();
-}
-<<<
-class A {
-  A(
-    int a,
-  ) : assert(a != null),
-      super();
-}
->>>
-class A {
-  A({
-    int a,
-  })
-      : assert (a!=null),super();
-}
-<<<
-class A {
-  A({
-    int a,
-  }) : assert(a != null),
-       super();
-}
->>>
-class A {
-  A({
-    int a,
-  })
-      : assert (a!=null),super(){ print('');}
-}
-<<<
-class A {
-  A({
-    int a,
-  }) : assert(a != null),
-       super() {
-    print('');
-  }
+class Foo {
+  Foo({
+    Bar bar,
+    Baz baz,
+  }) : assert(bar != null),
+      super(baz);
 }
