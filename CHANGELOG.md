@@ -1,6 +1,8 @@
 # 1.0.10
 
 * Support optional `new`/`const` (#652).
+* Don't split before `.` if the target expression is an argument list with a
+  trailing comma (#548, #665).
 
 # 1.0.9
 
