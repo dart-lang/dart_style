@@ -222,3 +222,20 @@ obj.outer(
       key: value,
       otherKey: otherLongValue
     }));
+>>> don't force trailing method chain to split
+function({key: value,}).method().method();
+<<<
+function({
+  key: value,
+}).method().method();
+>>> if method chain splits, split before first too
+function({key: value,}).method().method().method().method().method();
+<<<
+function({
+  key: value,
+})
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();

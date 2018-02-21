@@ -435,3 +435,20 @@ function(argument, // comment
     [
       [element]
     ]);
+>>> don't force trailing method chain to split
+function([argument,]).method().method();
+<<<
+function([
+  argument,
+]).method().method();
+>>> if method chain splits, split before first too
+function([argument,]).method().method().method().method().method();
+<<<
+function([
+  argument,
+])
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
