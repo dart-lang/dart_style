@@ -1,6 +1,7 @@
 # 1.0.10
 
 * Support optional `new`/`const` (#652).
+* Preserve metadata on for-in variables (#648).
 
 # 1.0.9
 

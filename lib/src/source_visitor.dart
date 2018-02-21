@@ -940,8 +940,16 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.forKeyword);
     space();
     token(node.leftParenthesis);
+
     if (node.loopVariable != null) {
+      // TODO(rnystrom): The formatting logic here is slightly different from
+      // how parameter metadata is handled and from how variable metadata is
+      // handled. I think what it does works better in the context of a for-in
+      // loop, but consider trying to unify this with one of the above.
+      builder.startRule();
+      visitNodes(node.loopVariable.metadata, between: split, after: split);
       visit(node.loopVariable);
+      builder.endRule();
     } else {
       visit(node.identifier);
     }

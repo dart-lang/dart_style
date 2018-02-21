@@ -259,3 +259,36 @@ function(
 <<<
 @foo
 typedef Fn = Function();
+>>> single metadata on for-in loop variable
+main() {
+  for (   @a    var i in list) {;}
+}
+<<<
+main() {
+  for (@a var i in list) {
+    ;
+  }
+}
+>>> multiple metadata on for-in loop variable
+main() {
+  for (   @a  @b    var i in list) {;}
+}
+<<<
+main() {
+  for (@a @b var i in list) {
+    ;
+  }
+}
+>>> long metadata on for-in loop variable
+main() {
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) {;}
+}
+<<<
+main() {
+  for (@Annotation
+      @VeryLongMetadataAnnotation(1, 2)
+      var i in veryLong.iterator +
+          expression) {
+    ;
+  }
+}
