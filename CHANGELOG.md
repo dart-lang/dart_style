@@ -4,6 +4,7 @@
   trailing comma (#548, #665).
 * Preserve metadata on for-in variables (#648).
 * Support optional `new`/`const` (#652).
+* Better formatting of initialization lists after trailing commas (#658).
 
 # 1.0.9
 
