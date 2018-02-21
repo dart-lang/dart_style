@@ -946,6 +946,29 @@ class SourceVisitor extends ThrowingAstVisitor {
       // how parameter metadata is handled and from how variable metadata is
       // handled. I think what it does works better in the context of a for-in
       // loop, but consider trying to unify this with one of the above.
+      //
+      // Metadata on class and variable declarations is *always* split:
+      //
+      //     @foo
+      //     class Bar {}
+      //
+      // Metadata on parameters has some complex logic to handle multiple
+      // parameters with metadata. It also indents the parameters farther than
+      // the metadata when split:
+      //
+      //     function(
+      //         @foo(long arg list...)
+      //             parameter1,
+      //         @foo
+      //             parameter2) {}
+      //
+      // For for-in variables, we allow it to not split, like parameters, but
+      // don't indent the variable when it does split:
+      //
+      //     for (
+      //         @foo
+      //         @bar
+      //         var blah in stuff) {}
       builder.startRule();
       visitNodes(node.loopVariable.metadata, between: split, after: split);
       visit(node.loopVariable);
