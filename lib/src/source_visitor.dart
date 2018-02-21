@@ -705,15 +705,28 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   void _visitConstructorInitializers(ConstructorDeclaration node) {
-    // Shift the ":" forward.
-    builder.indent(Indent.constructorInitializer);
+    final parameters = node.parameters?.parameters;
+    final hasTraillingComma = parameters?.isNotEmpty == true &&
+        parameters?.last?.endToken?.next?.type == TokenType.COMMA;
+    final hasNamedParameters =
+        parameters?.any((parameter) => parameter.kind == ParameterKind.NAMED);
+    if (hasTraillingComma) {
+      space();
+      token(node.separator); // ":".
+      space();
 
-    split();
-    token(node.separator); // ":".
-    space();
+      // indent by length of ') : ' or '}) : '
+      builder.indent(hasNamedParameters ? 5 : 4);
+    } else {
+      // Shift the ":" forward.
+      builder.indent(Indent.constructorInitializer);
+      split();
+      token(node.separator); // ":".
+      space();
 
-    // Shift everything past the ":".
-    builder.indent();
+      // Shift everything past the ":".
+      builder.indent();
+    }
 
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
@@ -726,7 +739,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.unindent();
-    builder.unindent();
+    if (!hasTraillingComma) builder.unindent();
 
     // End the rule for ":" after all of the initializers.
     builder.endRule();

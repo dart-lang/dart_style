@@ -1,0 +1,70 @@
+>>>
+class A {
+  A(
+    int a,
+  )
+      : super();
+}
+<<<
+class A {
+  A(
+    int a,
+  ) : super();
+}
+>>>
+class A {
+  A({
+    int a,
+  })
+      : super();
+}
+<<<
+class A {
+  A({
+    int a,
+  }) : super();
+}
+>>>
+class A {
+  A(
+    int a,
+  )
+      : assert (a!=null),super();
+}
+<<<
+class A {
+  A(
+    int a,
+  ) : assert(a != null),
+      super();
+}
+>>>
+class A {
+  A({
+    int a,
+  })
+      : assert (a!=null),super();
+}
+<<<
+class A {
+  A({
+    int a,
+  }) : assert(a != null),
+       super();
+}
+>>>
+class A {
+  A({
+    int a,
+  })
+      : assert (a!=null),super(){ print('');}
+}
+<<<
+class A {
+  A({
+    int a,
+  }) : assert(a != null),
+       super() {
+    print('');
+  }
+}
