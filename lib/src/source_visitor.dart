@@ -717,7 +717,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     ) : super();
       space();
 
-      var isOptional = node.parameters.parameters.last.kind != ParameterKind.REQUIRED;
+      var isOptional =
+          node.parameters.parameters.last.kind != ParameterKind.REQUIRED;
       if (node.initializers.length > 1) {
         _writeText(isOptional ? " " : "  ", node.separator.offset);
       }
@@ -738,7 +739,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       // ":".
       token(node.separator);
       space();
-
 
       // Try to line up the initializers with the first one that follows the ":":
       //
