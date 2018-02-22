@@ -135,10 +135,10 @@ class A {
 class A {
   A(
     a,
-  ) : b = 1,
-      super();
+  )   : b = 1,
+        super();
 }
->>>
+>>> extra space after ":" to line up with later initializers
 class A {
   A({a,}):b=1,super(){;}
 }
@@ -146,8 +146,19 @@ class A {
 class A {
   A({
     a,
-  }) : b = 1,
-      super() {
+  })  : b = 1,
+        super() {
     ;
   }
+}
+>>> no extra space on a single initializer, even if it splits
+class A {
+  A(a,):parameter = "some very very long param";
+}
+<<<
+class A {
+  A(
+    a,
+  ) : parameter =
+            "some very very long param";
 }
