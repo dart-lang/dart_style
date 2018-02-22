@@ -709,14 +709,16 @@ class SourceVisitor extends ThrowingAstVisitor {
         node.parameters.parameters.last.endToken.next.type == TokenType.COMMA;
 
     if (hasTrailingComma) {
-      // If there is a trailing comma in the argument list, the ")" will be on
-      // its own line, so keep the ":" with it:
+      // Since the ")", "])", or "})" on the preceding line doesn't take up
+      // much space, it looks weird to move the ":" onto it's own line. Instead,
+      // keep it and the first initializer on the current line but add enough
+      // space before it to line it up with any subsequent initializers.
       //
       //     Foo(
       //       parameter,
-      //     ) : super();
+      //     )   : field = value,
+      //           super();
       space();
-
       var isOptional =
           node.parameters.parameters.last.kind != ParameterKind.REQUIRED;
       if (node.initializers.length > 1) {
@@ -725,7 +727,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       // ":".
       token(node.separator);
-
       space();
 
       builder.indent(6);
