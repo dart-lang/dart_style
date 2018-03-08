@@ -4,7 +4,7 @@
 
 library dart_style.src.formatter_exception;
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/error/error.dart';
 import 'package:source_span/source_span.dart';
 
 /// Thrown when one or more errors occurs while parsing the code to be
