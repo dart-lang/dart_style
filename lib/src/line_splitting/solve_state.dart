@@ -5,6 +5,7 @@
 library dart_style.src.line_splitting.solve_state;
 
 import '../debug.dart' as debug;
+import '../nesting_level.dart';
 import '../rule/rule.dart';
 import '../whitespace.dart';
 import 'line_splitter.dart';
@@ -280,7 +281,7 @@ class SolveState {
   void _calculateSplits() {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
-    var usedNestingLevels = new Set();
+    var usedNestingLevels = new Set<NestingLevel>();
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
