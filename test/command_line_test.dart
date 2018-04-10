@@ -129,13 +129,13 @@ void main() {
         d.file("b.dart", unformattedSource)
       ]).create();
 
-      var jsonA = JSON.encode({
+      var jsonA = jsonEncode({
         "path": p.join("code", "a.dart"),
         "source": formattedSource,
         "selection": {"offset": -1, "length": -1}
       });
 
-      var jsonB = JSON.encode({
+      var jsonB = jsonEncode({
         "path": p.join("code", "b.dart"),
         "source": formattedSource,
         "selection": {"offset": -1, "length": -1}
@@ -175,7 +175,7 @@ void main() {
       process.stdin.writeln(unformattedSource);
       await process.stdin.close();
 
-      var json = JSON.encode({
+      var json = jsonEncode({
         "path": "<stdin>",
         "source": formattedSource,
         "selection": {"offset": 5, "length": 9}

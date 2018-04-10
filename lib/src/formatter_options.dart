@@ -101,7 +101,7 @@ class _PrintJsonReporter extends OutputReporter {
     // command line, this will never be used, which is why it's hard-coded to
     // -1, -1. If we add support for passing in a selection, put the real
     // result here.
-    print(JSON.encode({
+    print(jsonEncode({
       "path": label,
       "source": output.text,
       "selection": {
