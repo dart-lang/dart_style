@@ -1,6 +1,6 @@
 >>> (indent 2)
   inputStream
-    .transform(UTF8.decoder)
+    .transform(utf8.decoder)
     .transform(new LineSplitter())
     .listen(
       (String line) {
@@ -9,7 +9,7 @@
       onDone: () { print('file is now closed'); },
       onError: (e) { print(e.toString()); });
 <<<
-  inputStream.transform(UTF8.decoder).transform(new LineSplitter()).listen(
+  inputStream.transform(utf8.decoder).transform(new LineSplitter()).listen(
       (String line) {
     print('Got ${line.length} characters from stream');
   }, onDone: () {
