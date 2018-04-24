@@ -261,10 +261,25 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitBlock(Block node) {
-    // Don't allow splitting in an empty block.
+    // Treat empty blocks specially. In most cases, they are not allowed to
+    // split. However, an empty block as the then statement of an if with an
+    // else is always split.
     if (node.statements.isEmpty &&
         node.rightBracket.precedingComments == null) {
       token(node.leftBracket);
+
+      // Force a split when used as the then body of an if with an else:
+      //
+      //     if (condition) {
+      //     } else ...
+      if (node.parent is IfStatement) {
+        var ifStatement = node.parent as IfStatement;
+        if (ifStatement.elseStatement != null &&
+            ifStatement.thenStatement == node) {
+          newline();
+        }
+      }
+
       token(node.rightBracket);
       return;
     }

@@ -44,3 +44,17 @@ switch (
   case 0:
     return "ok";
 }
+>>> don't split empty block in if without else
+if (condition) {
+
+
+}
+<<<
+if (condition) {}
+>>> split empty block in if if there is an else
+if (condition) {} else {
+
+}
+<<<
+if (condition) {
+} else {}
