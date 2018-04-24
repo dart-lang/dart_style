@@ -1,7 +1,8 @@
-# 1.0.11-dev
+# 1.0.11
 
 * Fix cast failure when running in Dart 2.
 * Updated SDK version to 2.0.0-dev.17.0.
+* Force split in empty then block in if with an else (#680).
 
 # 1.0.10
 
