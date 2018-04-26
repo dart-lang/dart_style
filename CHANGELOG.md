@@ -1,3 +1,7 @@
+# 1.0.12
+
+* Fix another failure when running in Dart 2.
+
 # 1.0.11
 
 * Fix cast failure when running in Dart 2.
