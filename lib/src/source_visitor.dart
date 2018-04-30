@@ -589,7 +589,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.scriptTag);
 
     // Put a blank line between the library tag and the other directives.
-    var directives = node.directives;
+    Iterable<Directive> directives = node.directives;
     if (directives.isNotEmpty && directives.first is LibraryDirective) {
       visit(directives.first);
       twoNewlines();
