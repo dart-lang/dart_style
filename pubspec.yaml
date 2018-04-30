@@ -1,6 +1,6 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 1.0.12
+version: 1.0.13-dev
 author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
@@ -25,8 +25,3 @@ dev_dependencies:
 executables:
   dartfmt: format
   dartformat: format # Allow the old name for compatibility.
-# Tell the bots not to bother building the tests since they don't run in a
-# browser anyway.
-transformers:
-- $dart2js:
-    $exclude: 'test/**'
