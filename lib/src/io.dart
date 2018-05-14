@@ -78,7 +78,7 @@ bool processFile(FormatterOptions options, File file, {String label}) {
     return true;
   } on FormatterException catch (err) {
     var color = Platform.operatingSystem != "windows" &&
-        stdioType(stderr) == StdioType.TERMINAL;
+        stdioType(stderr) == StdioType.terminal;
 
     stderr.writeln(err.message(color: color));
   } on UnexpectedOutputException catch (err) {
