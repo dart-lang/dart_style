@@ -1,3 +1,7 @@
+# 1.0.14
+
+* Support metadata on enum cases (#688).
+
 # 1.0.13
 
 * Support the latest release of `package:analyzer`.
