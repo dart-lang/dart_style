@@ -292,3 +292,25 @@ main() {
     ;
   }
 }
+>>> metadata on enum cases
+enum Foo { a, @meta b, @meta1 @meta2 c}
+<<<
+enum Foo {
+  a,
+  @meta
+  b,
+  @meta1
+  @meta2
+  c
+}
+>>> preserve blank line before enum case with metadata
+enum Foo { a,
+
+@meta b}
+<<<
+enum Foo {
+  a,
+
+  @meta
+  b
+}

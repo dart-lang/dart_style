@@ -886,6 +886,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitEnumConstantDeclaration(EnumConstantDeclaration node) {
+    visitMetadata(node.metadata);
     visit(node.name);
   }
 
