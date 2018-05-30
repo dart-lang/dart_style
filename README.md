@@ -5,8 +5,8 @@ but, moreso, should look nice to most human readers, most of the time.
 
 [dart style guide]: https://www.dartlang.org/guides/language/effective-dart/style
 
-The formatter handles indentation, inline whitespace and
-(by far the most difficult), intelligent line wrapping.
+The formatter handles indentation, inline whitespace, and
+(by far the most difficult) intelligent line wrapping.
 It has no problems with nested collections, function
 expressions, long argument lists, or otherwise tricky code.
 
