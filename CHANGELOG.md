@@ -1,3 +1,8 @@
+# 1.1.0-dev
+
+* Add support for "style fixes", opt-in non-whitespace changes.
+* Add fix to convert ":" to "=" as the named parameter default value separator.
+
 # 1.0.14
 
 * Support metadata on enum cases (#688).

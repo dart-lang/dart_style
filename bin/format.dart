@@ -12,6 +12,7 @@ import 'package:dart_style/src/exceptions.dart';
 import 'package:dart_style/src/formatter_options.dart';
 import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/source_code.dart';
+import 'package:dart_style/src/style_fix.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
 const version = "1.0.14";
@@ -19,41 +20,49 @@ const version = "1.0.14";
 void main(List<String> args) {
   var parser = new ArgParser(allowTrailingOptions: true);
 
+  parser.addSeparator("Common options:");
   parser.addFlag("help",
       abbr: "h", negatable: false, help: "Shows usage information.");
   parser.addFlag("version",
       negatable: false, help: "Shows version information.");
   parser.addOption("line-length",
       abbr: "l", help: "Wrap lines longer than this.", defaultsTo: "80");
-  parser.addOption("indent",
-      abbr: "i", help: "Spaces of leading indentation.", defaultsTo: "0");
-  parser.addOption("preserve",
-      help: 'Selection to preserve, formatted as "start:length".');
-  parser.addFlag("dry-run",
-      abbr: "n",
-      negatable: false,
-      help: "Show which files would be modified but make no changes.");
-  parser.addFlag("set-exit-if-changed",
-      negatable: false,
-      help: "Return exit code 1 if there are any formatting changes.");
   parser.addFlag("overwrite",
       abbr: "w",
       negatable: false,
       help: "Overwrite input files with formatted output.");
+  parser.addFlag("dry-run",
+      abbr: "n",
+      negatable: false,
+      help: "Show which files would be modified but make no changes.");
+
+  parser.addSeparator("Non-whitespace fixes (off by default):");
+  parser.addFlag("fix", negatable: false, help: "Apply all style fixes.");
+
+  for (var fix in StyleFix.all) {
+    // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
+    parser.addFlag("fix-${fix.name}", negatable: false, help: fix.description);
+  }
+
+  parser.addSeparator("Other options:");
+  parser.addOption("indent",
+      abbr: "i", help: "Spaces of leading indentation.", defaultsTo: "0");
   parser.addFlag("machine",
       abbr: "m",
       negatable: false,
       help: "Produce machine-readable JSON output.");
-  parser.addFlag("profile",
-      negatable: false, help: "Display profile times after running.");
+  parser.addFlag("set-exit-if-changed",
+      negatable: false,
+      help: "Return exit code 1 if there are any formatting changes.");
   parser.addFlag("follow-links",
       negatable: false,
       help: "Follow links to files and directories.\n"
           "If unset, links will be ignored.");
-  parser.addFlag("transform",
-      abbr: "t",
-      negatable: false,
-      help: "Unused flag for compability with the old formatter.");
+  parser.addOption("preserve",
+      help: 'Selection to preserve, formatted as "start:length".');
+
+  parser.addFlag("profile", negatable: false, hide: true);
+  parser.addFlag("transform", abbr: "t", negatable: false, hide: true);
 
   ArgResults argResults;
   try {
@@ -74,7 +83,6 @@ void main(List<String> args) {
 
   // Can only preserve a selection when parsing from stdin.
   List<int> selection;
-
   if (argResults["preserve"] != null && argResults.rest.isNotEmpty) {
     usageError(parser, "Can only use --preserve when reading from stdin.");
   }
@@ -150,8 +158,23 @@ void main(List<String> args) {
 
   var followLinks = argResults["follow-links"];
 
+  var fixes = <StyleFix>[];
+  if (argResults["fix"]) fixes.addAll(StyleFix.all);
+  for (var fix in StyleFix.all) {
+    if (argResults["fix-${fix.name}"]) {
+      if (argResults["fix"]) {
+        usageError(parser, "--fix-${fix.name} is redundant with --fix.");
+      }
+
+      fixes.add(fix);
+    }
+  }
+
   var options = new FormatterOptions(reporter,
-      indent: indent, pageWidth: pageWidth, followLinks: followLinks);
+      indent: indent,
+      pageWidth: pageWidth,
+      followLinks: followLinks,
+      fixes: fixes);
 
   if (argResults.rest.isEmpty) {
     formatStdin(options, selection);
@@ -188,8 +211,10 @@ void formatStdin(FormatterOptions options, List<int> selection) {
 
   var input = new StringBuffer();
   stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
-    var formatter =
-        new DartFormatter(indent: options.indent, pageWidth: options.pageWidth);
+    var formatter = new DartFormatter(
+        indent: options.indent,
+        pageWidth: options.pageWidth,
+        fixes: options.fixes);
     try {
       options.reporter.beforeFile(null, "<stdin>");
       var source = new SourceCode(input.toString(),
@@ -244,7 +269,7 @@ void usageError(ArgParser parser, String error) {
 void printUsage(ArgParser parser, [String error]) {
   var output = stdout;
 
-  var message = "Reformats whitespace in Dart source files.";
+  var message = "Idiomatically formats Dart source code.";
   if (error != null) {
     message = error;
     output = stdout;
@@ -252,7 +277,10 @@ void printUsage(ArgParser parser, [String error]) {
 
   output.write("""$message
 
-Usage: dartfmt [-n|-w] [files or directories...]
+Usage:   dartfmt [options...] [files or directories...]
+
+Example: dartfmt -w .
+         Reformats every Dart file in the current directory tree.
 
 ${parser.usage}
 """);

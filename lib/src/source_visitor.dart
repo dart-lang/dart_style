@@ -19,6 +19,7 @@ import 'rule/metadata.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
+import 'style_fix.dart';
 import 'whitespace.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
@@ -831,9 +832,16 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.startSpan();
       builder.nestExpression();
 
-      // The '=' separator is preceded by a space, ":" is not.
-      if (node.separator.type == TokenType.EQ) space();
-      token(node.separator);
+      if (_formatter.fixes.contains(StyleFix.namedDefaultSeparator)) {
+        // Change the separator to "=".
+        space();
+        writePrecedingCommentsAndNewlines(node.separator);
+        _writeText("=", node.separator.offset);
+      } else {
+        // The '=' separator is preceded by a space, ":" is not.
+        if (node.separator.type == TokenType.EQ) space();
+        token(node.separator);
+      }
 
       soloSplit(_assignmentCost(node.defaultValue));
       visit(node.defaultValue);

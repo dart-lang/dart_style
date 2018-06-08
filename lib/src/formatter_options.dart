@@ -8,6 +8,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'source_code.dart';
+import 'style_fix.dart';
 
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
@@ -24,8 +25,14 @@ class FormatterOptions {
   /// Whether symlinks should be traversed when formatting a directory.
   final bool followLinks;
 
+  /// The style fixes to apply while formatting.
+  final Iterable<StyleFix> fixes;
+
   FormatterOptions(this.reporter,
-      {this.indent: 0, this.pageWidth: 80, this.followLinks: false});
+      {this.indent: 0,
+      this.pageWidth: 80,
+      this.followLinks: false,
+      this.fixes});
 }
 
 /// How the formatter reports the results it produces.
