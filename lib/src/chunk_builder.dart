@@ -200,6 +200,24 @@ class ChunkBuilder {
       }
     }
 
+    // Edge case: if the previous output was also from a call to
+    // [writeComments()] which ended with a line comment, force a newline.
+    // Normally, comments are strictly interleaved with tokens and you never
+    // get two sequences of comments in a row. However, when applying a fix
+    // that removes a token (like `new`), it's possible to get two sets of
+    // comments in a row, as in:
+    //
+    //     // a
+    //     new // b
+    //     Foo();
+    //
+    // When that happens, we need to make sure the preserve the split at the
+    // end of the first sequence of comments if there is one.
+    if (_pendingWhitespace == null) {
+      comments.first.linesBefore = 1;
+      _pendingWhitespace = Whitespace.none;
+    }
+
     // Edge case: if the comments are completely inline (i.e. just a series of
     // block comments with no newlines before, after, or between them), then
     // they will eat any pending newlines. Make sure that doesn't happen by
@@ -215,11 +233,10 @@ class ChunkBuilder {
     //     /* a */ /* b */
     //     import 'a.dart';
     if (linesBeforeToken == 0 &&
-        comments.every((comment) => comment.isInline)) {
-      if (_pendingWhitespace.minimumLines > 0) {
-        comments.first.linesBefore = _pendingWhitespace.minimumLines;
-        linesBeforeToken = 1;
-      }
+        comments.every((comment) => comment.isInline) &&
+        _pendingWhitespace.minimumLines > 0) {
+      comments.first.linesBefore = _pendingWhitespace.minimumLines;
+      linesBeforeToken = 1;
     }
 
     // Write each comment and the whitespace between them.

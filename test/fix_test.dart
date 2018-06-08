@@ -14,4 +14,5 @@ import 'utils.dart';
 void main() {
   testFile(
       "fixes/named_default_separator.unit", [StyleFix.namedDefaultSeparator]);
+  testFile("fixes/optional_new.stmt", [StyleFix.optionalNew]);
 }
