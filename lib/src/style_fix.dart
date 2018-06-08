@@ -9,10 +9,13 @@ class StyleFix {
       "named-default-separator",
       'Use "=" as the separator before named parameter default values.');
 
+  static const optionalConst = const StyleFix._(
+      "optional-const", 'Remove "const" keyword inside constant context.');
+
   static const optionalNew =
       const StyleFix._("optional-new", 'Remove "new" keyword.');
 
-  static const all = const [namedDefaultSeparator, optionalNew];
+  static const all = const [namedDefaultSeparator, optionalConst, optionalNew];
 
   final String name;
   final String description;
