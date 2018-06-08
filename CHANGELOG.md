@@ -1,7 +1,8 @@
 # 1.1.0-dev
 
 * Add support for "style fixes", opt-in non-whitespace changes.
-* Add fix to convert ":" to "=" as the named parameter default value separator.
+* Add fix to convert `:` to `=` as the named parameter default value separator.
+* Add fix to remove `new` keywords.
 
 # 1.0.14
 

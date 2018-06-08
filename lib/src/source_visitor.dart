@@ -1443,7 +1443,23 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitInstanceCreationExpression(InstanceCreationExpression node) {
     builder.startSpan();
-    token(node.keyword, after: space);
+
+    var includeKeyword = true;
+
+    if (node.keyword != null) {
+      if (node.keyword.keyword == Keyword.NEW &&
+          _formatter.fixes.contains(StyleFix.optionalNew)) {
+        includeKeyword = false;
+      }
+    }
+
+    if (includeKeyword) {
+      token(node.keyword, after: space);
+    } else {
+      // Don't lose comments before the discarded keyword, if any.
+      writePrecedingCommentsAndNewlines(node.keyword);
+    }
+
     builder.startSpan(Cost.constructorName);
 
     // Start the expression nesting for the argument list here, in case this

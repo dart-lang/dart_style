@@ -234,22 +234,39 @@ void main() {
   });
 
   group("fix", () {
-    // TODO(rnystrom): This will get more useful when other fixes are supported.
     test("--fix applies all fixes", () async {
       var process = await runFormatter(["--fix"]);
-      process.stdin.writeln("foo({a:1}) {}");
+      process.stdin.writeln("foo({a:1}) {");
+      process.stdin.writeln("  new Bar();}");
       await process.stdin.close();
 
-      expect(await process.stdout.next, "foo({a = 1}) {}");
+      expect(await process.stdout.next, "foo({a = 1}) {");
+      expect(await process.stdout.next, "  Bar();");
+      expect(await process.stdout.next, "}");
       await process.shouldExit(0);
     });
 
     test("--fix-named-default-separator", () async {
       var process = await runFormatter(["--fix-named-default-separator"]);
-      process.stdin.writeln("foo({a:1}) {}");
+      process.stdin.writeln("foo({a:1}) {");
+      process.stdin.writeln("  new Bar();}");
       await process.stdin.close();
 
-      expect(await process.stdout.next, "foo({a = 1}) {}");
+      expect(await process.stdout.next, "foo({a = 1}) {");
+      expect(await process.stdout.next, "  new Bar();");
+      expect(await process.stdout.next, "}");
+      await process.shouldExit(0);
+    });
+
+    test("--fix-optional-new", () async {
+      var process = await runFormatter(["--fix-optional-new"]);
+      process.stdin.writeln("foo({a:1}) {");
+      process.stdin.writeln("  new Bar();}");
+      await process.stdin.close();
+
+      expect(await process.stdout.next, "foo({a: 1}) {");
+      expect(await process.stdout.next, "  Bar();");
+      expect(await process.stdout.next, "}");
       await process.shouldExit(0);
     });
 
