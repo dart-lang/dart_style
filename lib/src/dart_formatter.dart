@@ -19,6 +19,7 @@ import 'exceptions.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
+import 'style_fix.dart';
 
 /// Dart source code formatter.
 class DartFormatter {
@@ -35,6 +36,8 @@ class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
+  final Set<StyleFix> fixes = new Set();
+
   /// Creates a new formatter for Dart code.
   ///
   /// If [lineEnding] is given, that will be used for any newlines in the
@@ -43,8 +46,14 @@ class DartFormatter {
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  DartFormatter({this.lineEnding, int pageWidth, this.indent: 0})
-      : this.pageWidth = (pageWidth == null) ? 80 : pageWidth;
+  ///
+  /// While formatting, also applies any of the given [fixes].
+  DartFormatter(
+      {this.lineEnding, int pageWidth, int indent, Iterable<StyleFix> fixes})
+      : pageWidth = pageWidth ?? 80,
+        indent = indent ?? 0 {
+    if (fixes != null) this.fixes.addAll(fixes);
+  }
 
   /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
@@ -130,7 +139,10 @@ class DartFormatter {
     // Format it.
     var visitor = new SourceVisitor(this, lineInfo, source);
     var output = visitor.run(node);
-    if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
+
+    // Sanity check that only whitespace was changed if that's all we expect.
+    if (fixes.isEmpty &&
+        !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
       throw new UnexpectedOutputException(source.text, output.text);
     }
 

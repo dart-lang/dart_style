@@ -233,6 +233,33 @@ void main() {
     });
   });
 
+  group("fix", () {
+    // TODO(rnystrom): This will get more useful when other fixes are supported.
+    test("--fix applies all fixes", () async {
+      var process = await runFormatter(["--fix"]);
+      process.stdin.writeln("foo({a:1}) {}");
+      await process.stdin.close();
+
+      expect(await process.stdout.next, "foo({a = 1}) {}");
+      await process.shouldExit(0);
+    });
+
+    test("--fix-named-default-separator", () async {
+      var process = await runFormatter(["--fix-named-default-separator"]);
+      process.stdin.writeln("foo({a:1}) {}");
+      await process.stdin.close();
+
+      expect(await process.stdout.next, "foo({a = 1}) {}");
+      await process.shouldExit(0);
+    });
+
+    test("errors with --fix and specific fix flag", () async {
+      var process =
+          await runFormatter(["--fix", "--fix-named-default-separator"]);
+      await process.shouldExit(64);
+    });
+  });
+
   group("with no paths", () {
     test("errors on --overwrite", () async {
       var process = await runFormatter(["--overwrite"]);
