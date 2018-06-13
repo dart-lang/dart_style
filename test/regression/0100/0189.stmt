@@ -24,8 +24,7 @@
       equals(TextDirection.RTL.value));
 <<<
   expect(
-      Bidi
-          .estimateDirectionOfText(
+      Bidi.estimateDirectionOfText(
               'CAPTCHA \u05de\u05e9\u05d5\u05db\u05dc\u05dc '
               '\u05de\u05d3\u05d9?')
           .value,

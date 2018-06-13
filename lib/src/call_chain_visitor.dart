@@ -92,11 +92,11 @@ class CallChainVisitor {
   /// operators and must be a [MethodInvocation], [PropertyAccess] or
   /// [PrefixedIdentifier].
   factory CallChainVisitor(SourceVisitor visitor, Expression node) {
-    var target;
+    Expression target;
 
     // Recursively walk the chain of calls and turn the tree into a list.
     var calls = <Expression>[];
-    flatten(expression) {
+    flatten(Expression expression) {
       target = expression;
 
       // Treat index expressions where the target is a valid call in a method
@@ -108,9 +108,13 @@ class CallChainVisitor {
       //         .property
       //         .method()[1][2];
       var call = expression;
-      while (call is IndexExpression) call = call.target;
+      while (call is IndexExpression) call = (call as IndexExpression).target;
 
-      if (call is MethodInvocation && call.target != null) {
+      if (SourceVisitor.looksLikeStaticCall(call)) {
+        // Don't include things that look like static method or constructor
+        // calls in the call chain because that tends to split up named
+        // constructors from their class.
+      } else if (call is MethodInvocation && call.target != null) {
         flatten(call.target);
         calls.add(expression);
       } else if (call is PropertyAccess && call.target != null) {
@@ -212,7 +216,7 @@ class CallChainVisitor {
       if (_properties.length > 1) {
         _propertyRule = new PositionalRule(null, 0, 0);
         _visitor.builder.startLazyRule(_propertyRule);
-      } else if (_calls.isNotEmpty) {
+      } else {
         _enableRule(lazy: true);
       }
     }
