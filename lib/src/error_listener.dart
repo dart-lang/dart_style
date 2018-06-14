@@ -20,6 +20,6 @@ class ErrorListener implements AnalysisErrorListener {
   void throwIfErrors() {
     if (_errors.isEmpty) return;
 
-    throw new FormatterException(_errors);
+    throw FormatterException(_errors);
   }
 }

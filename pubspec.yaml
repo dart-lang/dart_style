@@ -5,7 +5,7 @@ author: Dart Team <misc@dartlang.org>
 description: Opinionated, automatic Dart source code formatter.
 homepage: https://github.com/dart-lang/dart_style
 environment:
-  sdk: '>=2.0.0-dev.54.0 <2.0.0'
+  sdk: '>=2.0.0-dev.62.0 <2.0.0'
 dependencies:
   analyzer: '>0.31.2-alpha.0 <0.33.0'
   args: '>=0.12.1 <2.0.0'

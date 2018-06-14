@@ -51,32 +51,32 @@ class SourceCode {
 
   SourceCode(this.text,
       {this.uri,
-      this.isCompilationUnit: true,
+      this.isCompilationUnit = true,
       this.selectionStart,
       this.selectionLength}) {
     // Must either provide both selection bounds or neither.
     if ((selectionStart == null) != (selectionLength == null)) {
-      throw new ArgumentError(
+      throw ArgumentError(
           "Is selectionStart is provided, selectionLength must be too.");
     }
 
     if (selectionStart != null) {
       if (selectionStart < 0) {
-        throw new ArgumentError("selectionStart must be non-negative.");
+        throw ArgumentError("selectionStart must be non-negative.");
       }
 
       if (selectionStart > text.length) {
-        throw new ArgumentError("selectionStart must be within text.");
+        throw ArgumentError("selectionStart must be within text.");
       }
     }
 
     if (selectionLength != null) {
       if (selectionLength < 0) {
-        throw new ArgumentError("selectionLength must be non-negative.");
+        throw ArgumentError("selectionLength must be non-negative.");
       }
 
       if (selectionStart + selectionLength > text.length) {
-        throw new ArgumentError("selectionLength must end within text.");
+        throw ArgumentError("selectionLength must end within text.");
       }
     }
   }

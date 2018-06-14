@@ -40,7 +40,7 @@ void reformat() {
   var source = before.value;
 
   try {
-    after.value = new DartFormatter(pageWidth: width).format(source);
+    after.value = DartFormatter(pageWidth: width).format(source);
     return;
   } on FormatterException {
     // Do nothing.
@@ -48,7 +48,7 @@ void reformat() {
 
   // Maybe it's a statement.
   try {
-    after.value = new DartFormatter(pageWidth: width).formatStatement(source);
+    after.value = DartFormatter(pageWidth: width).formatStatement(source);
   } on FormatterException catch (err) {
     after.value = "Format failed:\n$err";
   }
