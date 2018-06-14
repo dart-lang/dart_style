@@ -1,5 +1,7 @@
 language: dart
 sudo: false
+env:
+  - DART_VM_OPTIONS=--preview-dart-2
 dart:
   - dev
 dart_task:
