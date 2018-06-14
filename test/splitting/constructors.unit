@@ -162,3 +162,12 @@ class A {
   ) : parameter =
             "some very very long param";
 }
+>>> split at name if necessary
+main() {
+  new VeryLongClassName.veryLongNamedConstructor();
+}
+<<<
+main() {
+  new VeryLongClassName
+      .veryLongNamedConstructor();
+}

@@ -3,6 +3,7 @@
 * Add support for "style fixes", opt-in non-whitespace changes.
 * Add fix to convert `:` to `=` as the named parameter default value separator.
 * Add fix to remove `new` keywords.
+* Uniformly format constructor invocations and other static method calls.
 
 # 1.0.14
 

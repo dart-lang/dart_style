@@ -289,3 +289,57 @@ function(
     .method()
     .method()
     .method();
+>>> if invocation looks like named constructor, don't put in chain
+Foo.named().method().method().method().method().method();
+<<<
+Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> if invocation looks like prefixed constructor, don't put in chain
+prefix.Foo().method().method().method().method().method();
+<<<
+prefix.Foo()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> if invocation looks like prefixed named constructor, don't put in chain
+prefix.Foo.named().method().method().method().method().method();
+<<<
+prefix.Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> if invocation looks like private named constructor, don't put in chain
+_Foo.named().method().method().method().method().method();
+<<<
+_Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> if invocation looks like private prefixed constructor, don't put in chain
+prefix._Foo().method().method().method().method().method();
+<<<
+prefix._Foo()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> if invocation looks like private prefixed named constructor, don't put in chain
+prefix._Foo.named().method().method().method().method().method();
+<<<
+prefix._Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();

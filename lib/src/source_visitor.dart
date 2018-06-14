@@ -22,9 +22,69 @@ import 'source_code.dart';
 import 'style_fix.dart';
 import 'whitespace.dart';
 
+final _capitalPattern = new RegExp(r"^_?[A-Z].*[a-z]");
+
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
 class SourceVisitor extends ThrowingAstVisitor {
+  /// Returns `true` if [node] is a method invocation that looks like it might
+  /// be a static method or constructor call without a `new` keyword.
+  ///
+  /// With optional `new`, we can no longer reliably identify constructor calls
+  /// statically, but we still don't want to mix named constructor calls into
+  /// a call chain like:
+  ///
+  ///     Iterable
+  ///         .generate(...)
+  ///         .toList();
+  ///
+  /// And instead prefer:
+  ///
+  ///     Iterable.generate(...)
+  ///         .toList();
+  ///
+  /// So we try to identify these calls syntactically. The heuristic we use is
+  /// that a target that's a capitalized name (possibly prefixed by "_") is
+  /// assumed to be a class.
+  ///
+  /// This has the effect of also keeping static method calls with the class,
+  /// but that tends to look pretty good too, and is certainly better than
+  /// splitting up named constructors.
+  static bool looksLikeStaticCall(Expression node) {
+    if (node is! MethodInvocation) return false;
+    var invocation = node as MethodInvocation;
+    if (invocation.target == null) return false;
+
+    // A prefixed unnamed constructor call:
+    //
+    //     prefix.Foo();
+    if (invocation.target is SimpleIdentifier &&
+        _looksLikeClassName(invocation.methodName.name)) {
+      return true;
+    }
+
+    // A prefixed or unprefixed named constructor call:
+    //
+    //     Foo.named();
+    //     prefix.Foo.named();
+    var target = invocation.target;
+    if (target is PrefixedIdentifier) {
+      target = (target as PrefixedIdentifier).identifier;
+    }
+
+    return target is SimpleIdentifier && _looksLikeClassName(target.name);
+  }
+
+  static bool _looksLikeClassName(String name) {
+    // Handle the weird lowercase corelib names.
+    if (name == "bool") return true;
+    if (name == "double") return true;
+    if (name == "int") return true;
+    if (name == "num") return true;
+
+    return _capitalPattern.hasMatch(name);
+  }
+
   /// The builder for the block that is currently being visited.
   ChunkBuilder builder;
 
@@ -1574,15 +1634,33 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitMethodInvocation(MethodInvocation node) {
     // If there's no target, this is a "bare" function call like "foo(1, 2)",
-    // or a section in a cascade. Handle this case specially.
-    if (node.target == null) {
+    // or a section in a cascade.
+    //
+    // If it looks like a constructor or static call, we want to keep the
+    // target and method together instead of including the method in the
+    // subsequent method chain. When this happens, it's important that this
+    // code here has the same rules as in [visitInstanceCreationExpression].
+    //
+    // That ensures that the way some code is formatted is not affected by the
+    // presence or absence of `new`/`const`. In particular, it means that if
+    // they run `dartfmt --fix`, and then run `dartfmt` *again*, the second run
+    // will not produce any additional changes.
+    if (node.target == null || looksLikeStaticCall(node)) {
       // Try to keep the entire method invocation one line.
-      builder.startSpan();
       builder.nestExpression();
+      builder.startSpan();
 
-      // This will be non-null for cascade sections.
+      if (node.target != null) {
+        builder.startSpan(Cost.constructorName);
+        visit(node.target);
+        soloZeroSplit();
+      }
+
+      // If target is null, this will be `..` for a cascade.
       token(node.operator);
       visit(node.methodName);
+
+      if (node.target != null) builder.endSpan();
 
       // TODO(rnystrom): Currently, there are no constraints between a generic
       // method's type arguments and arguments. That can lead to some funny
@@ -1595,11 +1673,13 @@ class SourceVisitor extends ThrowingAstVisitor {
       // The indentation is fine, but splitting in the middle of each argument
       // list looks kind of strange. If this ends up happening in real world
       // code, consider putting a constraint between them.
+      builder.nestExpression();
       visit(node.typeArguments);
       visitArgumentList(node.argumentList, nestExpression: false);
-
       builder.unnest();
+
       builder.endSpan();
+      builder.unnest();
       return;
     }
 

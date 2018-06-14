@@ -104,7 +104,11 @@ void dumpChunks(int start, List<Chunk> chunks) {
       for (var span in spans) {
         if (chunk.spans.contains(span)) {
           if (index == 0 || !chunks[index - 1].spans.contains(span)) {
-            spanBars += "╖";
+            if (span.cost == 1) {
+              spanBars += "╖";
+            } else {
+              spanBars += span.cost.toString();
+            }
           } else {
             spanBars += "║";
           }

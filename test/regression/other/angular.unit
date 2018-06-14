@@ -54,8 +54,8 @@ class IoControllerComponent implements ScopeAware {}
 <<<
     main() {
       expect(matcher.match(
-              CssSelector
-                  .parse("someOtherTag.someOtherClass[someOtherAttr]")[0],
+              CssSelector.parse(
+                  "someOtherTag.someOtherClass[someOtherAttr]")[0],
               selectableCollector))
           .toEqual(false);
     }
