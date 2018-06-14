@@ -13,7 +13,7 @@ import 'whitespace.dart';
 /// Given a series of chunks, splits them into lines and writes the result to
 /// a buffer.
 class LineWriter {
-  final _buffer = new StringBuffer();
+  final _buffer = StringBuffer();
 
   final List<Chunk> _chunks;
 
@@ -75,13 +75,13 @@ class LineWriter {
   ///
   /// When we format the anonymous lambda, [column] will be 2, not 4.
   FormatResult formatBlock(Chunk chunk, int column) {
-    var key = new _BlockKey(chunk, column);
+    var key = _BlockKey(chunk, column);
 
     // Use the cached one if we have it.
     var cached = _blockCache[key];
     if (cached != null) return cached;
 
-    var writer = new LineWriter._(
+    var writer = LineWriter._(
         chunk.block.chunks, _lineEnding, pageWidth, column, _blockCache);
 
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
@@ -97,7 +97,7 @@ class LineWriter {
   /// Since this is linear and line splitting is worse it's good to feed the
   /// line splitter smaller lists of chunks when possible.
   FormatResult writeLines(int firstLineIndent,
-      {bool isCompilationUnit: false, bool flushLeft: false}) {
+      {bool isCompilationUnit = false, bool flushLeft = false}) {
     // Now that we know what hard splits there will be, break the chunks into
     // independently splittable lines.
     var newlines = 0;
@@ -127,7 +127,7 @@ class LineWriter {
     // Be a good citizen, end with a newline.
     if (isCompilationUnit) _buffer.write(_lineEnding);
 
-    return new FormatResult(
+    return FormatResult(
         _buffer.toString(), totalCost, _selectionStart, _selectionEnd);
   }
 
@@ -149,7 +149,7 @@ class LineWriter {
     }
 
     // Run the line splitter.
-    var splitter = new LineSplitter(this, chunks, _blockIndentation, indent,
+    var splitter = LineSplitter(this, chunks, _blockIndentation, indent,
         flushLeft: flushLeft);
     var splits = splitter.apply();
 

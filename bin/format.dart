@@ -18,7 +18,7 @@ import 'package:dart_style/src/style_fix.dart';
 const version = "1.0.14";
 
 void main(List<String> args) {
-  var parser = new ArgParser(allowTrailingOptions: true);
+  var parser = ArgParser(allowTrailingOptions: true);
 
   parser.addSeparator("Common options:");
   parser.addFlag("help",
@@ -127,11 +127,11 @@ void main(List<String> args) {
   }
 
   if (argResults["profile"]) {
-    reporter = new ProfileReporter(reporter);
+    reporter = ProfileReporter(reporter);
   }
 
   if (argResults["set-exit-if-changed"]) {
-    reporter = new SetExitReporter(reporter);
+    reporter = SetExitReporter(reporter);
   }
 
   var pageWidth;
@@ -148,7 +148,7 @@ void main(List<String> args) {
 
   try {
     indent = int.parse(argResults["indent"]);
-    if (indent < 0 || indent.toInt() != indent) throw new FormatException();
+    if (indent < 0 || indent.toInt() != indent) throw FormatException();
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -170,7 +170,7 @@ void main(List<String> args) {
     }
   }
 
-  var options = new FormatterOptions(reporter,
+  var options = FormatterOptions(reporter,
       indent: indent,
       pageWidth: pageWidth,
       followLinks: followLinks,
@@ -192,7 +192,7 @@ List<int> parseSelection(String selection) {
 
   var coordinates = selection.split(":");
   if (coordinates.length != 2) {
-    throw new FormatException(
+    throw FormatException(
         'Selection should be a colon-separated pair of integers, "123:45".');
   }
 
@@ -209,15 +209,15 @@ void formatStdin(FormatterOptions options, List<int> selection) {
     selectionLength = selection[1];
   }
 
-  var input = new StringBuffer();
-  stdin.transform(new Utf8Decoder()).listen(input.write, onDone: () {
-    var formatter = new DartFormatter(
+  var input = StringBuffer();
+  stdin.transform(Utf8Decoder()).listen(input.write, onDone: () {
+    var formatter = DartFormatter(
         indent: options.indent,
         pageWidth: options.pageWidth,
         fixes: options.fixes);
     try {
       options.reporter.beforeFile(null, "<stdin>");
-      var source = new SourceCode(input.toString(),
+      var source = SourceCode(input.toString(),
           uri: "stdin",
           selectionStart: selectionStart,
           selectionLength: selectionLength);
@@ -241,7 +241,7 @@ $stack''');
 /// Formats all of the files and directories given by [paths].
 void formatPaths(FormatterOptions options, List<String> paths) {
   for (var path in paths) {
-    var directory = new Directory(path);
+    var directory = Directory(path);
     if (directory.existsSync()) {
       if (!processDirectory(options, directory)) {
         exitCode = 65;
@@ -249,7 +249,7 @@ void formatPaths(FormatterOptions options, List<String> paths) {
       continue;
     }
 
-    var file = new File(path);
+    var file = File(path);
     if (file.existsSync()) {
       if (!processFile(options, file)) {
         exitCode = 65;

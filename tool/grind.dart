@@ -11,7 +11,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart' as yaml;
 
 /// Matches the version line in dart_style's pubspec.
-final _versionPattern = new RegExp(r"^version: .*$", multiLine: true);
+final _versionPattern = RegExp(r"^version: .*$", multiLine: true);
 
 main(List<String> args) => grind(args);
 
@@ -19,7 +19,7 @@ main(List<String> args) => grind(args);
 @Task()
 validate() async {
   // Test it.
-  await new TestRunner().testAsync();
+  await TestRunner().testAsync();
 
   // Make sure it's warning clean.
   Analyzer.analyze("bin/format.dart", fatalWarnings: true);
@@ -37,16 +37,16 @@ npm() {
   var fileName = 'index.js';
 
   // Generate modified dart2js output suitable to run on node.
-  var tempFile = new File('${Directory.systemTemp.path}/temp.js');
+  var tempFile = File('${Directory.systemTemp.path}/temp.js');
 
-  Dart2js.compile(new File('tool/node_format_service.dart'),
+  Dart2js.compile(File('tool/node_format_service.dart'),
       outFile: tempFile, categories: 'all');
   var dart2jsOutput = tempFile.readAsStringSync();
-  new File('$out/$fileName').writeAsStringSync('''${preamble.getPreamble()}
+  File('$out/$fileName').writeAsStringSync('''${preamble.getPreamble()}
 self.exports = exports; // Temporary hack for Dart-JS Interop under node.
 $dart2jsOutput''');
 
-  new File('$out/package.json')
+  File('$out/package.json')
       .writeAsStringSync(const JsonEncoder.withIndent('  ').convert({
     "name": "dart-style",
     "version": pubspec["version"],
@@ -99,7 +99,7 @@ bump() async {
   // Read the version from the pubspec.
   var pubspecFile = getFile("pubspec.yaml");
   var pubspec = pubspecFile.readAsStringSync();
-  var version = new Version.parse(yaml.loadYaml(pubspec)["version"]);
+  var version = Version.parse(yaml.loadYaml(pubspec)["version"]);
 
   // Require a "-dev" version since we don't otherwise know what to bump it to.
   if (!version.isPreRelease) throw "Cannot publish non-dev version $version.";
@@ -108,7 +108,7 @@ bump() async {
   // user intended the "+4" to be discarded or not.
   if (version.build.isNotEmpty) throw "Cannot publish build version $version.";
 
-  var bumped = new Version(version.major, version.minor, version.patch);
+  var bumped = Version(version.major, version.minor, version.patch);
 
   // Update the version in the pubspec.
   pubspec = pubspec.replaceAll(_versionPattern, "version: $bumped");
@@ -117,7 +117,7 @@ bump() async {
   // Update the version constant in bin/format.dart.
   var binFormatFile = getFile("bin/format.dart");
   var binFormat = binFormatFile.readAsStringSync().replaceAll(
-      new RegExp(r'const version = "[^"]+";'), 'const version = "$bumped";');
+      RegExp(r'const version = "[^"]+";'), 'const version = "$bumped";');
   binFormatFile.writeAsStringSync(binFormat);
   log("Updated version to '$bumped'.");
 }

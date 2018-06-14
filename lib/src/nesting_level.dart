@@ -48,7 +48,7 @@ class NestingLevel extends FastHash {
 
   /// Creates a new deeper level of nesting indented [spaces] more characters
   /// that the outer level.
-  NestingLevel nest(int spaces) => new NestingLevel._(this, spaces);
+  NestingLevel nest(int spaces) => NestingLevel._(this, spaces);
 
   /// Clears the previously calculated total indent of this nesting level.
   void clearTotalUsedIndent() {

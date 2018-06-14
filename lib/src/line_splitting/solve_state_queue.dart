@@ -25,7 +25,7 @@ class SolveStateQueue {
   LineSplitter _splitter;
 
   /// List implementation of a heap.
-  List<SolveState> _queue = new List<SolveState>(_INITIAL_CAPACITY);
+  List<SolveState> _queue = List<SolveState>(_INITIAL_CAPACITY);
 
   /// Number of elements in queue.
   /// The heap is implemented in the first [_length] entries of [_queue].
@@ -50,7 +50,7 @@ class SolveStateQueue {
       var newCapacity = _queue.length * 2 + 1;
       if (newCapacity < _INITIAL_CAPACITY) newCapacity = _INITIAL_CAPACITY;
 
-      var newQueue = new List<SolveState>(newCapacity);
+      var newQueue = List<SolveState>(newCapacity);
       newQueue.setRange(0, _length, _queue);
       _queue = newQueue;
     }

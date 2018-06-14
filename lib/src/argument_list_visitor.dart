@@ -57,7 +57,7 @@ class ArgumentListVisitor {
       _arguments._blocks.isNotEmpty || _functions != null;
 
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
-    return new ArgumentListVisitor.forArguments(
+    return ArgumentListVisitor.forArguments(
         visitor, node.leftParenthesis, node.rightParenthesis, node.arguments);
   }
 
@@ -147,14 +147,8 @@ class ArgumentListVisitor {
 
     if (functionsStart == null) {
       // No functions, so there is just a single argument list.
-      return new ArgumentListVisitor._(
-          visitor,
-          leftParenthesis,
-          rightParenthesis,
-          arguments,
-          new ArgumentSublist(arguments, arguments),
-          null,
-          null);
+      return ArgumentListVisitor._(visitor, leftParenthesis, rightParenthesis,
+          arguments, ArgumentSublist(arguments, arguments), null, null);
     }
 
     // Split the arguments into two independent argument lists with the
@@ -163,14 +157,14 @@ class ArgumentListVisitor {
     var functions = arguments.sublist(functionsStart, functionsEnd);
     var argumentsAfter = arguments.skip(functionsEnd).toList();
 
-    return new ArgumentListVisitor._(
+    return ArgumentListVisitor._(
         visitor,
         leftParenthesis,
         rightParenthesis,
         arguments,
-        new ArgumentSublist(arguments, argumentsBefore),
+        ArgumentSublist(arguments, argumentsBefore),
         functions,
-        new ArgumentSublist(arguments, argumentsAfter));
+        ArgumentSublist(arguments, argumentsAfter));
   }
 
   ArgumentListVisitor._(
@@ -370,7 +364,7 @@ class ArgumentSublist {
       blocks.clear();
     }
 
-    return new ArgumentSublist._(
+    return ArgumentSublist._(
         allArguments, positional, named, blocks, leadingBlocks, trailingBlocks);
   }
 
@@ -379,7 +373,7 @@ class ArgumentSublist {
 
   void visit(SourceVisitor visitor) {
     if (_blocks.isNotEmpty) {
-      _blockRule = new Rule(Cost.splitBlocks);
+      _blockRule = Rule(Cost.splitBlocks);
     }
 
     var rule = _visitPositional(visitor);
@@ -394,7 +388,7 @@ class ArgumentSublist {
     // Only count the blocks in the positional rule.
     var leadingBlocks = math.min(_leadingBlocks, _positional.length);
     var trailingBlocks = math.max(_trailingBlocks - _named.length, 0);
-    var rule = new PositionalRule(_blockRule, leadingBlocks, trailingBlocks);
+    var rule = PositionalRule(_blockRule, leadingBlocks, trailingBlocks);
     _visitArguments(visitor, _positional, rule);
 
     return rule;
@@ -407,7 +401,7 @@ class ArgumentSublist {
     // Only count the blocks in the named rule.
     var leadingBlocks = math.max(_leadingBlocks - _positional.length, 0);
     var trailingBlocks = math.min(_trailingBlocks, _named.length);
-    var namedRule = new NamedRule(_blockRule, leadingBlocks, trailingBlocks);
+    var namedRule = NamedRule(_blockRule, leadingBlocks, trailingBlocks);
 
     // Let the positional args force the named ones to split.
     if (positionalRule != null) {

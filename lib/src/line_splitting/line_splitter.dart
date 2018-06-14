@@ -119,7 +119,7 @@ class LineSplitter {
   /// This is sorted lowest-cost first. This ensures that as soon as we find a
   /// solution that fits in the page, we know it will be the lowest cost one
   /// and can stop looking.
-  final _queue = new SolveStateQueue();
+  final _queue = SolveStateQueue();
 
   /// The lowest cost solution found so far.
   SolveState _bestSolution;
@@ -128,7 +128,7 @@ class LineSplitter {
   /// page width.
   LineSplitter(this.writer, List<Chunk> chunks, int blockIndentation,
       int firstLineIndent,
-      {bool flushLeft: false})
+      {bool flushLeft = false})
       : chunks = chunks,
         // Collect the set of rules that we need to select values for.
         rules = chunks
@@ -163,7 +163,7 @@ class LineSplitter {
   /// first line of output with.
   SplitSet apply() {
     // Start with a completely unbound, unsplit solution.
-    _queue.add(new SolveState(this, new RuleSet(rules.length)));
+    _queue.add(SolveState(this, RuleSet(rules.length)));
 
     var attempts = 0;
     while (_queue.isNotEmpty) {

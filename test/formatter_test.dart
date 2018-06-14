@@ -19,16 +19,16 @@ void main() {
   testDirectory("whitespace");
 
   test("throws a FormatterException on failed parse", () {
-    var formatter = new DartFormatter();
+    var formatter = DartFormatter();
     expect(() => formatter.format('wat?!'),
-        throwsA(new isInstanceOf<FormatterException>()));
+        throwsA(isInstanceOf<FormatterException>()));
   });
 
   test("FormatterException.message() does not throw", () {
     // This is a regression test for #358 where an error whose position is
     // past the end of the source caused FormatterException to throw.
     try {
-      new DartFormatter().format("library");
+      DartFormatter().format("library");
     } on FormatterException catch (err) {
       var message = err.message();
       expect(message, contains("Could not format"));
@@ -37,7 +37,7 @@ void main() {
 
   test("FormatterException describes parse errors", () {
     try {
-      new DartFormatter().format("""
+      DartFormatter().format("""
 
       var a = some error;
 
@@ -54,27 +54,25 @@ void main() {
   });
 
   test("adds newline to unit", () {
-    expect(new DartFormatter().format("var x = 1;"), equals("var x = 1;\n"));
+    expect(DartFormatter().format("var x = 1;"), equals("var x = 1;\n"));
   });
 
   test("adds newline to unit after trailing comment", () {
-    expect(new DartFormatter().format("library foo; //zamm"),
+    expect(DartFormatter().format("library foo; //zamm"),
         equals("library foo; //zamm\n"));
   });
 
   test("removes extra newlines", () {
-    expect(
-        new DartFormatter().format("var x = 1;\n\n\n"), equals("var x = 1;\n"));
+    expect(DartFormatter().format("var x = 1;\n\n\n"), equals("var x = 1;\n"));
   });
 
   test("does not add newline to statement", () {
-    expect(new DartFormatter().formatStatement("var x = 1;"),
-        equals("var x = 1;"));
+    expect(DartFormatter().formatStatement("var x = 1;"), equals("var x = 1;"));
   });
 
   test("fails if anything is after the statement", () {
     try {
-      new DartFormatter().formatStatement("var x = 1;;");
+      DartFormatter().formatStatement("var x = 1;;");
 
       fail("Should throw.");
     } on FormatterException catch (ex) {
@@ -84,7 +82,7 @@ void main() {
   });
 
   test('preserves initial indent', () {
-    var formatter = new DartFormatter(indent: 3);
+    var formatter = DartFormatter(indent: 3);
     expect(
         formatter.formatStatement('if (foo) {bar;}'),
         equals('   if (foo) {\n'
@@ -99,27 +97,27 @@ void main() {
       // will throw an error if it accidentally makes non-whitespace changes
       // as will occur
       var lineEnding = "\t";
-      expect(new DartFormatter(lineEnding: lineEnding).format("var i = 1;"),
+      expect(DartFormatter(lineEnding: lineEnding).format("var i = 1;"),
           equals("var i = 1;\t"));
     });
 
     test('infers \\r\\n if the first newline uses that', () {
-      expect(new DartFormatter().format("var\r\ni\n=\n1;\n"),
+      expect(DartFormatter().format("var\r\ni\n=\n1;\n"),
           equals("var i = 1;\r\n"));
     });
 
     test('infers \\n if the first newline uses that', () {
-      expect(new DartFormatter().format("var\ni\r\n=\r\n1;\r\n"),
+      expect(DartFormatter().format("var\ni\r\n=\r\n1;\r\n"),
           equals("var i = 1;\n"));
     });
 
     test('defaults to \\n if there are no newlines', () {
-      expect(new DartFormatter().format("var i =1;"), equals("var i = 1;\n"));
+      expect(DartFormatter().format("var i =1;"), equals("var i = 1;\n"));
     });
 
     test('handles Windows line endings in multiline strings', () {
       expect(
-          new DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
+          DartFormatter(lineEnding: "\r\n").formatStatement('  """first\r\n'
               'second\r\n'
               'third"""  ;'),
           equals('"""first\r\n'
@@ -131,8 +129,8 @@ void main() {
   test('throws an UnexpectedOutputException on non-whitespace changes', () {
     // Use an invalid line ending character to ensure the formatter will
     // attempt to make non-whitespace changes.
-    var formatter = new DartFormatter(lineEnding: '%');
+    var formatter = DartFormatter(lineEnding: '%');
     expect(() => formatter.format("var i = 1;"),
-        throwsA(new isInstanceOf<UnexpectedOutputException>()));
+        throwsA(isInstanceOf<UnexpectedOutputException>()));
   });
 }
