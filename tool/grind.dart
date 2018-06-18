@@ -119,5 +119,13 @@ bump() async {
   var binFormat = binFormatFile.readAsStringSync().replaceAll(
       new RegExp(r'const version = "[^"]+";'), 'const version = "$bumped";');
   binFormatFile.writeAsStringSync(binFormat);
+
+  // Update the version in the CHANGELOG.
+  var changelogFile = getFile("CHANGELOG.md");
+  var changelog = changelogFile
+      .readAsStringSync()
+      .replaceAll(version.toString(), bumped.toString());
+  changelogFile.writeAsStringSync(changelog);
+
   log("Updated version to '$bumped'.");
 }
