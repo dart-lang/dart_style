@@ -29,9 +29,9 @@ class FormatterOptions {
   final Iterable<StyleFix> fixes;
 
   FormatterOptions(this.reporter,
-      {this.indent = 0,
-      this.pageWidth = 80,
-      this.followLinks = false,
+      {this.indent: 0,
+      this.pageWidth: 80,
+      this.followLinks: false,
       this.fixes});
 }
 
@@ -39,17 +39,17 @@ class FormatterOptions {
 abstract class OutputReporter {
   /// Prints only the names of files whose contents are different from their
   /// formatted version.
-  static final OutputReporter dryRun = _DryRunReporter();
+  static final OutputReporter dryRun = new _DryRunReporter();
 
   /// Prints the formatted results of each file to stdout.
-  static final OutputReporter print = _PrintReporter();
+  static final OutputReporter print = new _PrintReporter();
 
   /// Prints the formatted result and selection info of each file to stdout as
   /// a JSON map.
-  static final OutputReporter printJson = _PrintJsonReporter();
+  static final OutputReporter printJson = new _PrintJsonReporter();
 
   /// Overwrites each file with its formatted result.
-  static final OutputReporter overwrite = _OverwriteReporter();
+  static final OutputReporter overwrite = new _OverwriteReporter();
 
   /// Describe the directory whose contents are about to be processed.
   void showDirectory(String path) {}
@@ -200,7 +200,7 @@ class ProfileReporter extends _ReporterDecorator {
   /// Called when [file] is about to be formatted.
   void beforeFile(File file, String label) {
     super.beforeFile(file, label);
-    _ongoing[label] = DateTime.now();
+    _ongoing[label] = new DateTime.now();
   }
 
   /// Describe the processed file at [path] whose formatted result is [output].
@@ -208,7 +208,7 @@ class ProfileReporter extends _ReporterDecorator {
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    var elapsed = DateTime.now().difference(_ongoing.remove(label));
+    var elapsed = new DateTime.now().difference(_ongoing.remove(label));
     if (elapsed.inMilliseconds >= 10) {
       _elapsed[label] = elapsed;
     } else {

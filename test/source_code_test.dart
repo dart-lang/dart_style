@@ -9,43 +9,44 @@ import 'package:test/test.dart';
 import 'package:dart_style/dart_style.dart';
 
 void main() {
-  var selection = SourceCode("123456;", selectionStart: 3, selectionLength: 2);
-  var noSelection = SourceCode("123456;");
+  var selection =
+      new SourceCode("123456;", selectionStart: 3, selectionLength: 2);
+  var noSelection = new SourceCode("123456;");
 
   group('constructor', () {
     test('throws on negative start', () {
       expect(() {
-        SourceCode("12345;", selectionStart: -1, selectionLength: 0);
+        new SourceCode("12345;", selectionStart: -1, selectionLength: 0);
       }, throwsArgumentError);
     });
 
     test('throws on out of bounds start', () {
       expect(() {
-        SourceCode("12345;", selectionStart: 7, selectionLength: 0);
+        new SourceCode("12345;", selectionStart: 7, selectionLength: 0);
       }, throwsArgumentError);
     });
 
     test('throws on negative length', () {
       expect(() {
-        SourceCode("12345;", selectionStart: 1, selectionLength: -1);
+        new SourceCode("12345;", selectionStart: 1, selectionLength: -1);
       }, throwsArgumentError);
     });
 
     test('throws on out of bounds length', () {
       expect(() {
-        SourceCode("12345;", selectionStart: 2, selectionLength: 5);
+        new SourceCode("12345;", selectionStart: 2, selectionLength: 5);
       }, throwsArgumentError);
     });
 
     test('throws is start is null and length is not', () {
       expect(() {
-        SourceCode("12345;", selectionStart: 0);
+        new SourceCode("12345;", selectionStart: 0);
       }, throwsArgumentError);
     });
 
     test('throws is length is null and start is not', () {
       expect(() {
-        SourceCode("12345;", selectionLength: 1);
+        new SourceCode("12345;", selectionLength: 1);
       }, throwsArgumentError);
     });
   });

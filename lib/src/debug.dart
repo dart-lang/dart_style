@@ -71,7 +71,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   // Show the spans as vertical bands over their range (unless there are too
   // many).
-  var spanSet = Set<Span>();
+  var spanSet = new Set<Span>();
   addSpans(List<Chunk> chunks) {
     for (var chunk in chunks) {
       spanSet.addAll(chunk.spans);
@@ -171,14 +171,14 @@ void dumpChunks(int start, List<Chunk> chunks) {
     addChunk(chunks, "", i);
   }
 
-  var rowWidths = List.filled(rows.first.length, 0);
+  var rowWidths = new List.filled(rows.first.length, 0);
   for (var row in rows) {
     for (var i = 0; i < row.length; i++) {
       rowWidths[i] = math.max(rowWidths[i], row[i].length);
     }
   }
 
-  var buffer = StringBuffer();
+  var buffer = new StringBuffer();
   for (var row in rows) {
     for (var i = 0; i < row.length; i++) {
       var cell = row[i].padRight(rowWidths[i]);
@@ -227,7 +227,7 @@ void dumpConstraints(List<Chunk> chunks) {
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
 void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
-  var buffer = StringBuffer();
+  var buffer = new StringBuffer();
 
   writeIndent(indent) => buffer.write(gray("| " * (indent ~/ 2)));
 

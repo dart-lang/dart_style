@@ -157,7 +157,7 @@ class CallChainVisitor {
       // See if this call is a method call whose arguments are block formatted.
       var isBlockCall = false;
       if (call is MethodInvocation) {
-        var args = ArgumentListVisitor(visitor, call.argumentList);
+        var args = new ArgumentListVisitor(visitor, call.argumentList);
         isBlockCall = args.hasBlockArguments;
       }
 
@@ -187,7 +187,7 @@ class CallChainVisitor {
       calls.remove(hangingCall);
     }
 
-    return CallChainVisitor._(
+    return new CallChainVisitor._(
         visitor, target, properties, calls, blockCalls, hangingCall);
   }
 
@@ -214,7 +214,7 @@ class CallChainVisitor {
 
     if (splitOnTarget) {
       if (_properties.length > 1) {
-        _propertyRule = PositionalRule(null, 0, 0);
+        _propertyRule = new PositionalRule(null, 0, 0);
         _visitor.builder.startLazyRule(_propertyRule);
       } else {
         _enableRule(lazy: true);
@@ -230,7 +230,7 @@ class CallChainVisitor {
       _writeCall(_properties.single);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
-        _propertyRule = PositionalRule(null, 0, 0);
+        _propertyRule = new PositionalRule(null, 0, 0);
         _visitor.builder.startRule(_propertyRule);
       }
 
@@ -432,11 +432,11 @@ class CallChainVisitor {
   }
 
   /// Creates a new method chain [Rule] if one is not already active.
-  void _enableRule({bool lazy = false}) {
+  void _enableRule({bool lazy: false}) {
     if (_ruleEnabled) return;
 
     // If the properties split, force the calls to split too.
-    var rule = Rule();
+    var rule = new Rule();
     if (_propertyRule != null) _propertyRule.setNamedArgsRule(rule);
 
     if (lazy) {

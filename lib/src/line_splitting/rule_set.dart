@@ -18,7 +18,7 @@ import '../rule/rule.dart';
 class RuleSet {
   List<int> _values;
 
-  RuleSet(int numRules) : this._(List(numRules));
+  RuleSet(int numRules) : this._(new List(numRules));
 
   RuleSet._(this._values);
 
@@ -53,7 +53,7 @@ class RuleSet {
   }
 
   /// Creates a new [RuleSet] with the same bound rule values as this one.
-  RuleSet clone() => RuleSet._(_values.toList(growable: false));
+  RuleSet clone() => new RuleSet._(_values.toList(growable: false));
 
   /// Binds [rule] to [value] then checks to see if that violates any
   /// constraints.
@@ -137,7 +137,7 @@ class SplitSet {
   int _cost;
 
   /// Creates a new empty split set for a line with [numChunks].
-  SplitSet(int numChunks) : _columns = List(numChunks - 1);
+  SplitSet(int numChunks) : _columns = new List(numChunks - 1);
 
   /// Marks the line after chunk [index] as starting at [column].
   void add(int index, int column) {

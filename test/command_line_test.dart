@@ -71,7 +71,7 @@ void main() {
     var process = await runFormatter(["--version"]);
 
     // Match something roughly semver-like.
-    expect(await process.stdout.next, matches(RegExp(r"\d+\.\d+\.\d+.*")));
+    expect(await process.stdout.next, matches(new RegExp(r"\d+\.\d+\.\d+.*")));
     await process.shouldExit(0);
   });
 

@@ -18,11 +18,11 @@ import 'package:dart_style/dart_style.dart';
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
-final _indentPattern = RegExp(r"^\(indent (\d+)\)\s*");
+final _indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
 /// Runs the command line formatter, passing it [args].
 Future<TestProcess> runFormatter([List<String> args]) {
-  args ??= [];
+  if (args == null) args = [];
 
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
@@ -33,7 +33,7 @@ Future<TestProcess> runFormatter([List<String> args]) {
 
   var formatterPath = p.normalize(p.join(testDir, "../bin/format.dart"));
 
-  args.insertAll(0, ["--preview-dart-2", formatterPath]);
+  args.insert(0, formatterPath);
 
   // Use the same package root, if there is one.
   if (Platform.packageRoot != null && Platform.packageRoot.isNotEmpty) {
@@ -62,7 +62,7 @@ void testDirectory(String name, [Iterable<StyleFix> fixes]) {
       .uri
       .toFilePath());
 
-  var entries = Directory(p.join(testDir, name))
+  var entries = new Directory(p.join(testDir, name))
       .listSync(recursive: true, followLinks: false);
   for (var entry in entries) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
@@ -87,7 +87,7 @@ void testFile(String path, [Iterable<StyleFix> fixes]) {
 void _testFile(String name, String path, Iterable<StyleFix> fixes) {
   group("$name ${p.basename(path)}", () {
     // Explicitly create a File, in case the entry is a Link.
-    var lines = File(path).readAsLinesSync();
+    var lines = new File(path).readAsLinesSync();
 
     // The first line may have a "|" to indicate the page width.
     var pageWidth;
@@ -140,7 +140,7 @@ void _testFile(String name, String path, Iterable<StyleFix> fixes) {
         var expected = _extractSelection(expectedOutput,
             isCompilationUnit: isCompilationUnit);
 
-        var formatter = DartFormatter(
+        var formatter = new DartFormatter(
             pageWidth: pageWidth, indent: leadingIndent, fixes: fixes);
 
         var actual = formatter.formatSource(inputCode);
@@ -168,14 +168,14 @@ void _testFile(String name, String path, Iterable<StyleFix> fixes) {
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
-SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
+SourceCode _extractSelection(String source, {bool isCompilationUnit: false}) {
   var start = source.indexOf("‹");
   source = source.replaceAll("‹", "");
 
   var end = source.indexOf("›");
   source = source.replaceAll("›", "");
 
-  return SourceCode(source,
+  return new SourceCode(source,
       isCompilationUnit: isCompilationUnit,
       selectionStart: start == -1 ? null : start,
       selectionLength: end == -1 ? null : end - start);

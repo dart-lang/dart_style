@@ -25,7 +25,7 @@ void main(List<String> args) {
   // Run the benchmark several times. This ensures the VM is warmed up and lets
   // us see how much variance there is.
   for (var i = 0; i <= NUM_TRIALS; i++) {
-    var start = DateTime.now();
+    var start = new DateTime.now();
 
     // For a single benchmark, format the source multiple times.
     var result;
@@ -34,7 +34,7 @@ void main(List<String> args) {
     }
 
     var elapsed =
-        DateTime.now().difference(start).inMilliseconds / FORMATS_PER_TRIAL;
+        new DateTime.now().difference(start).inMilliseconds / FORMATS_PER_TRIAL;
 
     // Keep track of the best run so far.
     if (elapsed >= best) continue;
@@ -58,7 +58,7 @@ void main(List<String> args) {
 
 String loadFile(String name) {
   var path = p.join(p.dirname(p.fromUri(Platform.script)), name);
-  return File(path).readAsStringSync();
+  return new File(path).readAsStringSync();
 }
 
 void printResult(String label, double time) {
@@ -76,6 +76,6 @@ String padLeft(input, int length) {
 }
 
 String formatSource() {
-  var formatter = DartFormatter();
+  var formatter = new DartFormatter();
   return formatter.format(source);
 }

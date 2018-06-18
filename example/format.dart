@@ -35,7 +35,7 @@ void formatUnit(String source, [int pageWidth = 80]) {
 
 void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
   try {
-    var formatter = DartFormatter(pageWidth: pageWidth);
+    var formatter = new DartFormatter(pageWidth: pageWidth);
 
     var result;
     if (isCompilationUnit) {
@@ -61,7 +61,7 @@ void drawRuler(String label, int width) {
 /// Runs the formatter test starting on [line] at [path] inside the "test"
 /// directory.
 void runTest(String path, int line) {
-  var indentPattern = RegExp(r"^\(indent (\d+)\)\s*");
+  var indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
 
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
@@ -72,7 +72,7 @@ void runTest(String path, int line) {
           .path),
       "../test");
 
-  var lines = File(p.join(testDir, path)).readAsLinesSync();
+  var lines = new File(p.join(testDir, path)).readAsLinesSync();
 
   // The first line may have a "|" to indicate the page width.
   var pageWidth = 80;
@@ -121,7 +121,8 @@ void runTest(String path, int line) {
     var expected =
         _extractSelection(expectedOutput, isCompilationUnit: isCompilationUnit);
 
-    var formatter = DartFormatter(pageWidth: pageWidth, indent: leadingIndent);
+    var formatter =
+        new DartFormatter(pageWidth: pageWidth, indent: leadingIndent);
 
     var actual = formatter.formatSource(inputCode);
 
@@ -150,14 +151,14 @@ void runTest(String path, int line) {
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
-SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
+SourceCode _extractSelection(String source, {bool isCompilationUnit: false}) {
   var start = source.indexOf("‹");
   source = source.replaceAll("‹", "");
 
   var end = source.indexOf("›");
   source = source.replaceAll("›", "");
 
-  return SourceCode(source,
+  return new SourceCode(source,
       isCompilationUnit: isCompilationUnit,
       selectionStart: start == -1 ? null : start,
       selectionLength: end == -1 ? null : end - start);

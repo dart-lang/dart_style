@@ -46,7 +46,7 @@ import 'rule.dart';
 /// the beginning of the line.
 class CombinatorRule extends Rule {
   /// The set of chunks before the combinators.
-  final Set<Chunk> _combinators = Set();
+  final Set<Chunk> _combinators = new Set();
 
   /// A list of sets of chunks prior to each name in a combinator.
   ///
@@ -72,7 +72,7 @@ class CombinatorRule extends Rule {
   /// This must be called before adding any names.
   void addCombinator(Chunk chunk) {
     _combinators.add(chunk);
-    _names.add(Set());
+    _names.add(new Set());
   }
 
   /// Adds a chunk prior to a name to the current combinator.
