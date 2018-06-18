@@ -1,4 +1,4 @@
-# 1.1.0-dev
+# 1.1.0
 
 * Add support for "style fixes", opt-in non-whitespace changes.
 * Add fix to convert `:` to `=` as the named parameter default value separator.
