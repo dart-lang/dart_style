@@ -225,7 +225,7 @@ class Chunk extends Selection {
   /// Turns this chunk into one that can contain a block of child chunks.
   void makeBlock(Chunk blockArgument) {
     assert(_block == null);
-    _block = ChunkBlock(blockArgument);
+    _block = new ChunkBlock(blockArgument);
   }
 
   /// Returns `true` if the block body owned by this chunk should be expression

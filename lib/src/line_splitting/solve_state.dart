@@ -63,7 +63,7 @@ class SolveState {
   /// There is one other set of rules that go in here. Sometimes a bound rule
   /// in the solve state constrains some other unbound rule to split. In that
   /// case, we also consider that active so we know to not leave it at zero.
-  final _liveRules = Set<Rule>();
+  final _liveRules = new Set<Rule>();
 
   /// The set of splits chosen for this state.
   SplitSet get splits => _splits;
@@ -205,7 +205,7 @@ class SolveState {
           // Make sure we don't violate the constraints of the bound rules.
           if (!valid) continue;
 
-          var state = SolveState(_splitter, boundRules);
+          var state = new SolveState(_splitter, boundRules);
 
           // If some unbound rules are constrained to split, remember that.
           if (mustSplitRules != null) {
@@ -281,7 +281,7 @@ class SolveState {
   void _calculateSplits() {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
-    var usedNestingLevels = Set<NestingLevel>();
+    var usedNestingLevels = new Set<NestingLevel>();
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
@@ -294,7 +294,7 @@ class SolveState {
       nesting.refreshTotalUsedIndent(usedNestingLevels);
     }
 
-    _splits = SplitSet(_splitter.chunks.length);
+    _splits = new SplitSet(_splitter.chunks.length);
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
@@ -354,7 +354,7 @@ class SolveState {
     // The set of spans that contain chunks that ended up splitting. We store
     // these in a set so a span's cost doesn't get double-counted if more than
     // one split occurs in it.
-    var splitSpans = Set();
+    var splitSpans = new Set();
 
     // The nesting level of the chunk that ended the previous line.
     var previousNesting;
@@ -454,9 +454,9 @@ class SolveState {
   void _ensureBoundRulesInUnboundLines() {
     if (_boundRulesInUnboundLines != null) return;
 
-    _boundRulesInUnboundLines = Set<Rule>();
+    _boundRulesInUnboundLines = new Set<Rule>();
 
-    var boundInLine = Set<Rule>();
+    var boundInLine = new Set<Rule>();
     var hasUnbound = false;
 
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
@@ -488,8 +488,8 @@ class SolveState {
   void _ensureConstraints() {
     if (_constraints != null) return;
 
-    _unboundRules = Set();
-    _boundRules = Set();
+    _unboundRules = new Set();
+    _boundRules = new Set();
 
     for (var rule in _splitter.rules) {
       if (_ruleValues.contains(rule)) {
@@ -553,7 +553,7 @@ class SolveState {
           }
 
           if (disallowedValues == null) {
-            disallowedValues = Set<int>();
+            disallowedValues = new Set<int>();
             _unboundConstraints[unbound] = disallowedValues;
           }
 
@@ -564,7 +564,7 @@ class SolveState {
   }
 
   String toString() {
-    var buffer = StringBuffer();
+    var buffer = new StringBuffer();
 
     buffer.writeAll(_splitter.rules.map((rule) {
       var valueLength = "${rule.fullySplitValue}".length;

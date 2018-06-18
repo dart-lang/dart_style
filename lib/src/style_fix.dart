@@ -5,16 +5,17 @@
 /// Enum-like class for the different syntactic fixes that can be applied while
 /// formatting.
 class StyleFix {
-  static const namedDefaultSeparator = StyleFix._("named-default-separator",
+  static const namedDefaultSeparator = const StyleFix._(
+      "named-default-separator",
       'Use "=" as the separator before named parameter default values.');
 
-  static const optionalConst = StyleFix._(
+  static const optionalConst = const StyleFix._(
       "optional-const", 'Remove "const" keyword inside constant context.');
 
   static const optionalNew =
-      StyleFix._("optional-new", 'Remove "new" keyword.');
+      const StyleFix._("optional-new", 'Remove "new" keyword.');
 
-  static const all = [namedDefaultSeparator, optionalConst, optionalNew];
+  static const all = const [namedDefaultSeparator, optionalConst, optionalNew];
 
   final String name;
   final String description;

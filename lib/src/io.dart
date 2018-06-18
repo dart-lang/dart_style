@@ -22,7 +22,7 @@ bool processDirectory(FormatterOptions options, Directory directory) {
   options.reporter.showDirectory(directory.path);
 
   var success = true;
-  var shownHiddenPaths = Set<String>();
+  var shownHiddenPaths = new Set<String>();
 
   for (var entry in directory.listSync(
       recursive: true, followLinks: options.followLinks)) {
@@ -67,12 +67,12 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 bool processFile(FormatterOptions options, File file, {String label}) {
   if (label == null) label = file.path;
 
-  var formatter = DartFormatter(
+  var formatter = new DartFormatter(
       indent: options.indent,
       pageWidth: options.pageWidth,
       fixes: options.fixes);
   try {
-    var source = SourceCode(file.readAsStringSync(), uri: file.path);
+    var source = new SourceCode(file.readAsStringSync(), uri: file.path);
     options.reporter.beforeFile(file, label);
     var output = formatter.formatSource(source);
     options.reporter
