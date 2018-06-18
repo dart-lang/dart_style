@@ -23,7 +23,7 @@ class FormatterException implements Exception {
 
     // In case we get a huge series of cascaded errors, just show the first few.
     var shownErrors = errors;
-    if (errors.length > 10) shownErrors = errors.take(10);
+    if (errors.length > 10) shownErrors = errors.take(10).toList();
 
     for (var error in shownErrors) {
       var source = error.source.contents.data;

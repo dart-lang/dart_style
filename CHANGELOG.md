@@ -5,6 +5,7 @@
 * Add fix to remove `new` keywords.
 * Add fix to remove unneeded `const` keywords.
 * Uniformly format constructor invocations and other static method calls.
+* Don't crash when showing parse errors in Dart 2 mode (#697).
 
 # 1.0.14
 
