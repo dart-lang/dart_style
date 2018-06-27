@@ -65,3 +65,7 @@ A();
 A<int>(A<int>.named());
 <<<
 A<int>(A<int>.named());
+>>> inside string interpolation
+"before ${new Foo()} after";
+<<<
+"before ${Foo()} after";

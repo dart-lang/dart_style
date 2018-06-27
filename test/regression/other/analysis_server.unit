@@ -259,3 +259,23 @@ final ListResultDescriptor<AnalysisError> HINTS =
         .variables[0]
         .name
         .staticElement;
+>>>
+main() {
+  addTestFile('''
+    library libA;
+    part "${convertPathForImport('/testA.dart')}";
+    import "dart:math";
+    /// The [^]
+    main(aaa, bbb) {}
+    ''');
+}
+<<<
+main() {
+  addTestFile('''
+    library libA;
+    part "${convertPathForImport('/testA.dart')}";
+    import "dart:math";
+    /// The [^]
+    main(aaa, bbb) {}
+    ''');
+}
