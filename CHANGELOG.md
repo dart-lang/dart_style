@@ -1,3 +1,8 @@
+# 1.1.1
+
+* Format expressions in string interpolations (#226).
+* Apply fixes inside string interpolations (#707).
+
 # 1.1.0
 
 * Add support for "style fixes", opt-in non-whitespace changes.

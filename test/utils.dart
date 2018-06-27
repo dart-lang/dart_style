@@ -18,7 +18,8 @@ import 'package:dart_style/dart_style.dart';
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
-final _indentPattern = new RegExp(r"^\(indent (\d+)\)\s*");
+final _indentPattern = new RegExp(r"\(indent (\d+)\)");
+final _fixPattern = new RegExp(r"\(fix ([a-x-]+)\)");
 
 /// Runs the command line formatter, passing it [args].
 Future<TestProcess> runFormatter([List<String> args]) {
@@ -36,10 +37,7 @@ Future<TestProcess> runFormatter([List<String> args]) {
   args.insert(0, formatterPath);
 
   // Use the same package root, if there is one.
-  if (Platform.packageRoot != null && Platform.packageRoot.isNotEmpty) {
-    args.insert(0, "--package-root=${Platform.packageRoot}");
-  } else if (Platform.packageConfig != null &&
-      Platform.packageConfig.isNotEmpty) {
+  if (Platform.packageConfig != null && Platform.packageConfig.isNotEmpty) {
     args.insert(0, "--packages=${Platform.packageConfig}");
   }
 
@@ -84,7 +82,10 @@ void testFile(String path, [Iterable<StyleFix> fixes]) {
   _testFile(p.dirname(path), p.join(testDir, path), fixes);
 }
 
-void _testFile(String name, String path, Iterable<StyleFix> fixes) {
+void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
+  var fixes = <StyleFix>[];
+  if (baseFixes != null) fixes.addAll(baseFixes);
+
   group("$name ${p.basename(path)}", () {
     // Explicitly create a File, in case the entry is a Link.
     var lines = new File(path).readAsLinesSync();
@@ -98,16 +99,23 @@ void _testFile(String name, String path, Iterable<StyleFix> fixes) {
 
     var i = 0;
     while (i < lines.length) {
-      var description = lines[i++].replaceAll(">>>", "").trim();
+      var description = lines[i++].replaceAll(">>>", "");
 
       // Let the test specify a leading indentation. This is handy for
       // regression tests which often come from a chunk of nested code.
       var leadingIndent = 0;
-      var indentMatch = _indentPattern.firstMatch(description);
-      if (indentMatch != null) {
-        leadingIndent = int.parse(indentMatch[1]);
-        description = description.substring(indentMatch.end);
-      }
+      description = description.replaceAllMapped(_indentPattern, (match) {
+        leadingIndent = int.parse(match[1]);
+        return "";
+      });
+
+      // Let the test specify fixes to apply.
+      description = description.replaceAllMapped(_fixPattern, (match) {
+        fixes.add(StyleFix.all.firstWhere((fix) => fix.name == match[1]));
+        return "";
+      });
+
+      description = description.trim();
 
       if (description == "") {
         description = "line ${i + 1}";

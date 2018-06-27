@@ -1560,12 +1560,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitInterpolationExpression(InterpolationExpression node) {
     token(node.leftBracket);
+    builder.startSpan();
     visit(node.expression);
+    builder.endSpan();
     token(node.rightBracket);
   }
 
   visitInterpolationString(InterpolationString node) {
-    token(node.contents);
+    _writeStringLiteral(node.contents);
   }
 
   visitIsExpression(IsExpression node) {
@@ -1834,24 +1836,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitSimpleStringLiteral(SimpleStringLiteral node) {
-    // Since we output the string literal manually, ensure any preceding
-    // comments are written first.
-    writePrecedingCommentsAndNewlines(node.literal);
-
-    _writeStringLiteral(node.literal.lexeme, node.offset);
+    _writeStringLiteral(node.literal);
   }
 
   visitStringInterpolation(StringInterpolation node) {
-    // Since we output the interpolated text manually, ensure we include any
-    // preceding stuff first.
-    writePrecedingCommentsAndNewlines(node.beginToken);
-
-    // Right now, the formatter does not try to do any reformatting of the
-    // contents of interpolated strings. Instead, it treats the entire thing as
-    // a single (possibly multi-line) chunk of text.
-    _writeStringLiteral(
-        _source.text.substring(node.beginToken.offset, node.endToken.end),
-        node.offset);
+    for (var element in node.elements) {
+      visit(element);
+    }
   }
 
   visitSuperConstructorInvocation(SuperConstructorInvocation node) {
@@ -2762,9 +2753,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// Splits multiline strings into separate chunks so that the line splitter
   /// can handle them correctly.
-  void _writeStringLiteral(String string, int offset) {
+  void _writeStringLiteral(Token string) {
+    // Since we output the string literal manually, ensure any preceding
+    // comments are written first.
+    writePrecedingCommentsAndNewlines(string);
+
     // Split each line of a multiline string into separate chunks.
-    var lines = string.split(_formatter.lineEnding);
+    var lines = string.lexeme.split(_formatter.lineEnding);
+    var offset = string.offset;
 
     _writeText(lines.first, offset);
     offset += lines.first.length;

@@ -138,3 +138,17 @@ someMethod("""
   "many",
   "elements"
 ]);
+>>> interpolation in multi-line does not force unneeded splits
+someMethod("foo", """
+  some text that is pretty long
+  some more text that is pretty long
+  ${    inpolate + a + thing   }
+  more text
+""");
+<<<
+someMethod("foo", """
+  some text that is pretty long
+  some more text that is pretty long
+  ${inpolate + a + thing}
+  more text
+""");

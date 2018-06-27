@@ -143,3 +143,7 @@ function(
 method   <int,String   ,    bool>  ();
 <<<
 method<int, String, bool>();
+>>> inside interpolation
+" ${   interp+olate } and ${fn  (  1 ) } end";
+<<<
+" ${interp + olate} and ${fn(1)} end";
