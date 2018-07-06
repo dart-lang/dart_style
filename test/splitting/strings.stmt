@@ -138,17 +138,31 @@ someMethod("""
   "many",
   "elements"
 ]);
->>> interpolation in multi-line does not force unneeded splits
+>>> interpolation is not split even when line is too long
+someMethod("some text that is pretty long ${    interpolate +
+a + thing   } more text");
+<<<
+someMethod(
+    "some text that is pretty long ${interpolate + a + thing} more text");
+>>> multi-line string interpolation does not split
 someMethod("foo", """
   some text that is pretty long
-  some more text that is pretty long
-  ${    inpolate + a + thing   }
-  more text
+  some more text that is pretty long ${    interpolate + a + thing   } more text
 """);
 <<<
 someMethod("foo", """
   some text that is pretty long
-  some more text that is pretty long
-  ${inpolate + a + thing}
-  more text
+  some more text that is pretty long ${interpolate + a + thing} more text
 """);
+>>> nested interpolation is not split
+someMethod("some text that is ${pretty +  'long ${    interpolate +
+a + thing   } more'} text", "another arg");
+<<<
+someMethod(
+    "some text that is ${pretty + 'long ${interpolate + a + thing} more'} text",
+    "another arg");
+>>> hard splits are not split in interpolation
+someMethod("before ${(){statement();statement();statement();}} after");
+<<<
+someMethod(
+    "before ${() { statement(); statement(); statement(); }} after");

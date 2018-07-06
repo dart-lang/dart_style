@@ -1559,11 +1559,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitInterpolationExpression(InterpolationExpression node) {
+    builder.preventSplit();
     token(node.leftBracket);
     builder.startSpan();
     visit(node.expression);
     builder.endSpan();
     token(node.rightBracket);
+    builder.endPreventSplit();
   }
 
   visitInterpolationString(InterpolationString node) {

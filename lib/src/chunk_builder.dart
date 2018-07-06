@@ -93,6 +93,17 @@ class ChunkBuilder {
   /// block.
   bool _firstFlushLeft = false;
 
+  /// The number of calls to [preventSplit()] that have not been ended by a
+  /// call to [endPreventSplit()].
+  ///
+  /// Splitting is completely disabled inside string interpolation. We do want
+  /// to fix the whitespace inside interpolation, though, so we still format
+  /// them. This tracks whether we're inside an interpolation. We can't use a
+  /// simple bool because interpolation can nest.
+  ///
+  /// When this is non-zero, splits are ignored.
+  int _preventSplitNesting = 0;
+
   /// Whether there is pending whitespace that depends on the number of
   /// newlines in the source.
   ///
@@ -501,6 +512,10 @@ class ChunkBuilder {
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
   ChunkBuilder startBlock(Chunk argumentChunk) {
+    // If we are not allowed to split at all, don't create a new block. Instead,
+    // the block contents will end up in the current chunk.
+    if (_preventSplitNesting > 0) return this;
+
     var chunk = _chunks.last;
     chunk.makeBlock(argumentChunk);
 
@@ -523,6 +538,11 @@ class ChunkBuilder {
   ///
   /// Returns the previous writer for the surrounding block.
   ChunkBuilder endBlock(Rule ignoredSplit, {bool forceSplit}) {
+    // If we are not allowed to split at all, we didn't create a new block and
+    // thus didn't create a new ChunkBuilder, so there is no builder to pop.
+    // We are still in the current one.
+    if (_preventSplitNesting > 0) return this;
+
     _divideChunks();
 
     // If we don't already know if the block is going to split, see if it
@@ -600,6 +620,15 @@ class ChunkBuilder {
         isCompilationUnit: _source.isCompilationUnit,
         selectionStart: selectionStart,
         selectionLength: selectionLength);
+  }
+
+  void preventSplit() {
+    _preventSplitNesting++;
+  }
+
+  void endPreventSplit() {
+    _preventSplitNesting--;
+    assert(_preventSplitNesting >= 0, "Mismatched calls.");
   }
 
   /// Writes the current pending [Whitespace] to the output, if any.
@@ -738,6 +767,21 @@ class ChunkBuilder {
   /// to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
   void _writeHardSplit({bool isDouble, bool flushLeft, bool nest: false}) {
+    // If we are not allowed to split at all, simply write a space. Instead of:
+    //
+    //     foo("${() {
+    //       a;
+    //       b;
+    //     }}");
+    //
+    // produces:
+    //
+    //     foo("${() { a; b; }}");
+    if (_preventSplitNesting > 0) {
+      _writeText(" ");
+      return;
+    }
+
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
     _writeSplit(new Rule.hard(),
@@ -749,7 +793,16 @@ class ChunkBuilder {
   /// Returns the chunk.
   Chunk _writeSplit(Rule rule,
       {bool flushLeft, bool isDouble, bool nest, bool space}) {
-    if (nest == null) nest = true;
+    nest ??= true;
+    space ??= false;
+
+    // If we are not allowed to split at all, don't. Returning null for the
+    // chunk is safe since the rule that uses the chunk will itself get
+    // discarded because no chunk references it.
+    if (_preventSplitNesting > 0) {
+      if (space) write(" ");
+      return null;
+    }
 
     if (_chunks.isEmpty) {
       if (flushLeft != null) _firstFlushLeft = flushLeft;

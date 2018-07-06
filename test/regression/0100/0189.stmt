@@ -11,9 +11,8 @@
   nestedSelect(currency, amount) => Intl.select(
       currency,
       {
-        "CDN": """${Intl.plural(amount,
-            one: '$amount Canadian dollar',
-            other: '$amount Canadian dollars')}""",
+        "CDN":
+            """${Intl.plural(amount, one: '$amount Canadian dollar', other: '$amount Canadian dollars')}""",
         "other": "Whatever",
       },
       name: "nestedSelect",
