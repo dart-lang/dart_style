@@ -93,14 +93,15 @@ class ChunkBuilder {
   /// block.
   bool _firstFlushLeft = false;
 
-  /// Splitting is completely disabled inside string interpolation. We do still
-  /// want to fix the whitespace inside interpolation, though, so we still
-  /// format them.
+  /// The number of calls to [preventSplit()] that have not been ended by a
+  /// call to [endPreventSplit()].
   ///
-  /// This indicates the number of calls to [preventSplit()] that have not been
-  /// ended by a call to [endPreventSplit()]. (We can't use a simple bool
-  /// because interpolation can nest.) When this is non-zero, splits are
-  /// ignored.
+  /// Splitting is completely disabled inside string interpolation. We do want
+  /// to fix the whitespace inside interpolation, though, so we still format
+  /// them. This tracks whether we're inside an interpolation. We can't use a
+  /// simple bool because interpolation can nest.
+  ///
+  /// When this is non-zero, splits are ignored.
   int _preventSplitNesting = 0;
 
   /// Whether there is pending whitespace that depends on the number of
