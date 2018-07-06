@@ -1,3 +1,7 @@
+# 1.1.2
+
+* Don't split inside string interpolations.
+
 # 1.1.1
 
 * Format expressions in string interpolations (#226).
