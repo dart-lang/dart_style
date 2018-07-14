@@ -1,3 +1,7 @@
+# 1.1.3
+
+* Set max SDK version to <3.0.0, and adjusted other dependencies.
+
 # 1.1.2
 
 * Don't split inside string interpolations.

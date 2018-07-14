@@ -1,5 +1,5 @@
 analyzer:
-  strong-mode: true
+
 linter:
   rules:
     - unawaited_futures
