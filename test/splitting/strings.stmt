@@ -161,8 +161,75 @@ a + thing   } more'} text", "another arg");
 someMethod(
     "some text that is ${pretty + 'long ${interpolate + a + thing} more'} text",
     "another arg");
->>> hard splits are not split in interpolation
+>>> hard splits are split in interpolation
 someMethod("before ${(){statement();statement();statement();}} after");
 <<<
-someMethod(
-    "before ${() { statement(); statement(); statement(); }} after");
+someMethod("before ${() {
+  statement();
+  statement();
+  statement();
+}} after");
+>>> collections split in interpolation if needed
+method(
+"b ${[1, 2, 3, 4, 5, 6]} a",
+"before ${[first, second, third, fourth, {fifth: sixth}]} after");
+<<<
+method(
+    "b ${[1, 2, 3, 4, 5, 6]} a",
+    "before ${[
+      first,
+      second,
+      third,
+      fourth,
+      {fifth: sixth}
+    ]} after");
+>>> nested multiline strings are not merged in interpolation
+"before ${"""a
+b"""} ${aft
++
+er}";
+<<<
+"before ${"""a
+b"""} ${aft + er}";
+>>> multiply-nested interpolation
+'''a
+${b +
+"""c
+${d
++ '''e
+f'''
++
+g}
+h"""
++ i}
+j ${k
++
+l}''';
+<<<
+'''a
+${b + """c
+${d + '''e
+f''' + g}
+h""" + i}
+j ${k + l}''';
+>>> nested interpolation inside function
+"before ${ () { a(); """b
+c"""; d(); }} after";
+<<<
+"before ${() {
+  a();
+  """b
+c""";
+  d();
+}} after";
+>>> comment inside interpolation
+"before ${// comment
+a
++
+b
++  // another
+c} after";
+<<<
+"before ${ // comment
+    a + b + // another
+        c} after";

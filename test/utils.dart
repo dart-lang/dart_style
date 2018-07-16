@@ -62,6 +62,8 @@ void testDirectory(String name, [Iterable<StyleFix> fixes]) {
 
   var entries = new Directory(p.join(testDir, name))
       .listSync(recursive: true, followLinks: false);
+  entries.sort((a, b) => a.path.compareTo(b.path));
+
   for (var entry in entries) {
     if (!entry.path.endsWith(".stmt") && !entry.path.endsWith(".unit")) {
       continue;
