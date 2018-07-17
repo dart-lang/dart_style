@@ -1,3 +1,9 @@
+# 1.1.3
+
+* Preserve whitespace in multi-line strings inside string interpolations (#711).
+  **Note!** This bug means that dart_style 1.1.2 may make semantics changes to
+  your strings. You should avoid that version and use 1.1.3.
+
 # 1.1.2
 
 * Don't split inside string interpolations.

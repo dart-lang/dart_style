@@ -5,10 +5,10 @@ but, moreso, should look nice to most human readers, most of the time.
 
 [dart style guide]: https://www.dartlang.org/guides/language/effective-dart/style
 
-The formatter handles indentation, inline whitespace, and
-(by far the most difficult) intelligent line wrapping.
-It has no problems with nested collections, function
-expressions, long argument lists, or otherwise tricky code.
+The formatter handles indentation, inline whitespace, and (by far the most
+difficult) intelligent line wrapping. It has no problems with nested
+collections, function expressions, long argument lists, or otherwise tricky
+code.
 
 The formatter turns code like this:
 
@@ -36,8 +36,8 @@ automatically from build and presubmit scripts.
 
 The formatter can also apply non-whitespace changes to make your code
 consistently idiomatic. You must opt into these by passing either `--fix` which
-applies all style fixes, or any of the `--fix-`-prefixed flags to apply
-specific fixes.
+applies all style fixes, or any of the `--fix-`-prefixed flags to apply specific
+fixes.
 
 For example, running with `--fix-named-default-separator` changes this:
 
@@ -57,19 +57,23 @@ greet(String name, {String title = "Captain"}) {
 
 ## Getting dartfmt
 
-Dartfmt is included in the Dart SDK, so you might want to add the SDK's bin
-directory to your system path.
+Dartfmt is included in the Dart SDK, so most users get it directly from there.
+That has the latest version of dartfmt that was available when the SDK was
+released.
 
-If you want to make sure you are running the latest version of dartfmt,
-you can [globally activate][] the package from the dart_style package
-on pub.dartlang.org, and let pub put its executable on your path:
+If you want to make sure you are running the latest version of dartfmt, you can
+[globally activate][] the package from the dart_style package on
+pub.dartlang.org:
 
     $ pub global activate dart_style
     $ dartfmt ...
 
+For this to work, you need to put pub's bin directory on your PATH before the
+Dart SDL directory. Otherwise, the SDK's dartfmt will shadow this one.
+
 [globally activate]: https://www.dartlang.org/tools/pub/cmd/pub-global.html
 
-If you don't want `dartfmt` on your path, you can run it explicitly:
+If you don't want pub to put `dartfmt` on your PATH, you can run it explicitly:
 
     $ pub global activate dart_style --no-executables
     $ pub global run dart_style:format ...
@@ -77,28 +81,27 @@ If you don't want `dartfmt` on your path, you can run it explicitly:
 ## Using dartfmt
 
 IDEs and editors that support Dart usually provide easy ways to run the
-formatter. For example, in WebStorm you can right-click a .dart file
-and then choose **Reformat with Dart Style**.
+formatter. For example, in WebStorm you can right-click a .dart file and then
+choose **Reformat with Dart Style**.
 
 Here's a simple example of using dartfmt on the command line:
 
     $ dartfmt test.dart
 
-This command formats the `test.dart` file and writes the result to
-standard output.
+This command formats the `test.dart` file and writes the result to standard
+output.
 
-Dartfmt takes a list of paths, which can point to directories or files.
-If the path is a directory, it processes every `.dart` file in that directory
-or any of its subdirectories.
-If no file or directory is specified, dartfmt reads from standard input.
+Dartfmt takes a list of paths, which can point to directories or files. If the
+path is a directory, it processes every `.dart` file in that directory or any of
+its subdirectories. If no file or directory is specified, dartfmt reads from
+standard input.
 
 By default, it formats each file and just prints the resulting code to stdout.
-If you pass `-w`, it overwrites your existing files with the
-formatted results.
+If you pass `-w`, it overwrites your existing files with the formatted results.
 
-You may pass a `-l` option to control the width of the page that it
-wraps lines to fit within, but you're strongly encouraged to keep the default
-line length of 80 columns.
+You may pass a `-l` option to control the width of the page that it wraps lines
+to fit within, but you're strongly encouraged to keep the default line length of
+80 columns.
 
 ### Validating files
 
@@ -115,6 +118,7 @@ correctly formatted.
 
 The package also exposes a single dart_style library containing a programmatic
 API for formatting code. Simple usage looks like this:
+
 ```dart
 import 'package:dart_style/dart_style.dart';
 
@@ -134,6 +138,7 @@ main() {
   }
 }
 ```
+
 ## Other resources
 
 * Before sending an email, see if you are asking a
