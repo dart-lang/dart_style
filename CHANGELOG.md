@@ -4,6 +4,8 @@
   **Note!** This bug means that dart_style 1.1.2 may make semantics changes to
   your strings. You should avoid that version and use 1.1.3.
 
+* Set max SDK version to <3.0.0, and adjusted other dependencies.
+
 # 1.1.2
 
 * Don't split inside string interpolations.
