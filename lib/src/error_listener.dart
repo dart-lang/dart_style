@@ -4,7 +4,8 @@
 
 library dart_style.src.error_listener;
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/error/error.dart';
+import 'package:analyzer/error/listener.dart';
 
 import 'exceptions.dart';
 
