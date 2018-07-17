@@ -233,3 +233,12 @@ c} after";
 "before ${ // comment
     a + b + // another
         c} after";
+>>>
+function(
+  "long string long string ${interpolated + interpolated} long string",
+  longLongLongLongObject.longLongLongLongMethod());
+<<<
+function(
+    "long string long string ${interpolated + interpolated} long string",
+    longLongLongLongObject
+        .longLongLongLongMethod());
