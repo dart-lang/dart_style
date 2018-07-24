@@ -380,4 +380,4 @@ packages:
     source: hosted
     version: "2.1.14"
 sdks:
-  dart: ">=2.0.0-dev.62.0 <=2.0.0-edge.69a15d20069891ed13e7c65a6810527b4a9f9e40"
+  dart: ">=2.0.0-dev.62.0 <=2.0.0-edge.061004e9b7add12596e200b66017cdb2a61af314"

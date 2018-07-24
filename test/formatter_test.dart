@@ -21,7 +21,7 @@ void main() {
   test("throws a FormatterException on failed parse", () {
     var formatter = new DartFormatter();
     expect(() => formatter.format('wat?!'),
-        throwsA(new isInstanceOf<FormatterException>()));
+        throwsA(new TypeMatcher<FormatterException>()));
   });
 
   test("FormatterException.message() does not throw", () {
@@ -133,6 +133,6 @@ void main() {
     // attempt to make non-whitespace changes.
     var formatter = new DartFormatter(lineEnding: '%');
     expect(() => formatter.format("var i = 1;"),
-        throwsA(new isInstanceOf<UnexpectedOutputException>()));
+        throwsA(new TypeMatcher<UnexpectedOutputException>()));
   });
 }

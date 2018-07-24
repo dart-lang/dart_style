@@ -36,13 +36,9 @@ void unindent() {
 }
 
 /// Constants for ANSI color escape codes.
-final _cyan = _color("\u001b[36m");
 final _gray = _color("\u001b[1;30m");
 final _green = _color("\u001b[32m");
-final _red = _color("\u001b[31m");
-final _magenta = _color("\u001b[35m");
 final _none = _color("\u001b[0m");
-final _noColor = _color("\u001b[39m");
 final _bold = _color("\u001b[1m");
 
 /// Prints [message] to stdout with each line correctly indented.
