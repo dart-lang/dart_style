@@ -800,10 +800,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     )   : field = value,
       //           super();
       space();
-      var isOptional =
-          node.parameters.parameters.last.kind != ParameterKind.REQUIRED;
       if (node.initializers.length > 1) {
-        _writeText(isOptional ? " " : "  ", node.separator.offset);
+        _writeText(node.parameters.parameters.last.isOptional ? " " : "  ",
+            node.separator.offset);
       }
 
       // ":".
@@ -2685,14 +2684,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// If [keyword] is `const`, begins a new constant context.
-  bool _startPossibleConstContext(Token keyword) {
+  void _startPossibleConstContext(Token keyword) {
     if (keyword != null && keyword.keyword == Keyword.CONST) {
       _constNesting++;
     }
   }
 
   /// If [keyword] is `const`, ends the current outermost constant context.
-  bool _endPossibleConstContext(Token keyword) {
+  void _endPossibleConstContext(Token keyword) {
     if (keyword != null && keyword.keyword == Keyword.CONST) {
       _constNesting--;
     }
