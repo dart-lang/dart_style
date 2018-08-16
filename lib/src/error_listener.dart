@@ -13,7 +13,12 @@ class ErrorListener implements AnalysisErrorListener {
   final _errors = <AnalysisError>[];
 
   void onError(AnalysisError error) {
-    _errors.add(error);
+    ErrorCode errorCode = error.errorCode;
+    // The fasta parser produces some semantic errors,
+    // which should be ignored by the formatter.
+    if (errorCode.type == ErrorType.SYNTACTIC_ERROR) {
+      _errors.add(error);
+    }
   }
 
   /// Throws a [FormatterException] if any errors have been reported.
