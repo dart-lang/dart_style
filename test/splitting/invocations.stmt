@@ -248,9 +248,9 @@ someVeryLongTargetFunction(
   element
 ].someLongMethod();
 >>> do not split on "." when target is map
-{"key": "value", "another": "another value"}.someLongMethod();
+<String,String>{"key": "value", "another": "another value"}.someLongMethod();
 <<<
-{
+<String, String>{
   "key": "value",
   "another": "another value"
 }.someLongMethod();
