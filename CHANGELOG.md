@@ -1,3 +1,7 @@
+# 1.1.4
+
+* Internal changes to support using the new common front end for parsing.
+
 # 1.1.3
 
 * Preserve whitespace in multi-line strings inside string interpolations (#711).
