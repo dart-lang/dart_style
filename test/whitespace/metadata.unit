@@ -248,12 +248,14 @@ function(
       longParameter2,
 ) {}
 >>> keep "covariant" with parameter
-function(@Annotation @VeryLongMetadataAnnotation covariant longParameter) {}
+class A { function(@Annotation @VeryLongMetadataAnnotation covariant longParameter) {} }
 <<<
-function(
-    @Annotation
-    @VeryLongMetadataAnnotation
-        covariant longParameter) {}
+class A {
+  function(
+      @Annotation
+      @VeryLongMetadataAnnotation
+          covariant longParameter) {}
+}
 >>> metadata on function typedef
 @foo typedef Fn = Function();
 <<<
