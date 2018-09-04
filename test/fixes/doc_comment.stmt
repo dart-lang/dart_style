@@ -1,0 +1,70 @@
+40 columns                              |
+>>> single line comment
+/** doc */ m() {}
+<<<
+/// doc
+m() {}
+>>> multiline comment
+/**
+ * multiline comment
+ * line 1
+ */
+m() {}
+<<<
+/// multiline comment
+/// line 1
+m() {}
+>>> multiline comment without star
+/**
+   multiline comment without star
+   line 1
+ */
+m() {}
+<<<
+/// multiline comment without star
+/// line 1
+m() {}
+>>> strange indent
+   /**
+  * strange indent
+    * line 1
+  */
+m() {}
+<<<
+/// strange indent
+/// line 1
+m() {}
+>>> comment on first line
+/** comment on first line
+* line 1
+*/
+m() {}
+<<<
+/// comment on first line
+/// line 1
+m() {}
+>>> empty comment
+/** */
+m() {}
+<<<
+///
+m() {}
+>>> empty multiline comment
+/**
+ */
+m() {}
+<<<
+///
+m() {}
+>>> multiline comment with sample
+/**
+ * multiline comment with sample
+ *
+ *     var a;
+ */
+m() {}
+<<<
+/// multiline comment with sample
+///
+///     var a;
+m() {}
