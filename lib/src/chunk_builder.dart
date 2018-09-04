@@ -12,6 +12,7 @@ import 'nesting_builder.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
+import 'style_fix.dart';
 import 'whitespace.dart';
 
 /// Matches if the last character of a string is an identifier character.
@@ -292,7 +293,47 @@ class ChunkBuilder {
             nest: true);
       }
 
-      _writeText(comment.text);
+      if (_formatter.fixes.contains(StyleFix.docComment) &&
+          comment.text.startsWith('/**')) {
+        var lines = comment.text.split('\n').toList();
+        if (lines.length == 1) {
+          lines.first = comment.text
+              .substring('/**'.length, comment.text.length - '*/'.length)
+              .trim();
+        } else {
+          // handle first line
+          lines.first = lines.first.substring('/**'.length);
+          if (lines.first.trim().isEmpty) lines.removeAt(0);
+
+          // handle last line
+          lines.last = lines.last.substring(0, lines.last.length - '*/'.length);
+          if (lines.last.trim().isEmpty) lines.removeLast();
+
+          // update lines by removing prefix
+          for (var i = 0; i < lines.length; i++) {
+            var line = lines[i];
+            if (line.startsWith(new RegExp(r' *\*'))) {
+              line = line.substring(line.indexOf('*') + 1);
+            } else {
+              line = line.substring(line.indexOf(new RegExp(r'\b')));
+            }
+            lines[i] = line;
+          }
+
+          // edge case with multiline empty comment
+          if (lines.isEmpty) lines.add('');
+        }
+        for (var line in lines) {
+          if (line.isNotEmpty && !line.startsWith(' ')) {
+            line = ' $line';
+          }
+          _writeText('///$line');
+          _pendingWhitespace = Whitespace.newline;
+          _emitPendingWhitespace();
+        }
+      } else {
+        _writeText(comment.text);
+      }
 
       if (comment.selectionStart != null) {
         startSelectionFromEnd(comment.text.length - comment.selectionStart);
