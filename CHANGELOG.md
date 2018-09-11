@@ -1,3 +1,7 @@
+# 1.2.0
+
+* Add `--fix-doc-comments` to turn `/** ... */` doc comments into `///` (#730).
+
 # 1.1.4
 
 * Internal changes to support using the new common front end for parsing.

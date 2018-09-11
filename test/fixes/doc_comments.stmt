@@ -68,3 +68,46 @@ m() {}
 ///
 ///     var a;
 m() {}
+>>> single line comment with "**/" as close
+/** doc **/ m() {}
+<<<
+/// doc
+m() {}
+>>> multiline comment with "**/" as close
+/**
+ * multiline comment
+ * line 1
+ **/
+m() {}
+<<<
+/// multiline comment
+/// line 1
+m() {}
+>>> does not touch longer strings of "*"
+/******* not a doc comment **/
+m() {}
+<<<
+/******* not a doc comment **/
+m() {}
+>>> does not touch "/**/"
+/**/
+m() {}
+<<<
+/**/
+m() {}
+>>> does not touch "/***/"
+/***/
+m() {}
+<<<
+/***/
+m() {}
+>>> long box of "*"
+/*******
+ * STUFF
+ *******/
+m() {}
+<<<
+/*******
+ * STUFF
+ *******/
+m() {}

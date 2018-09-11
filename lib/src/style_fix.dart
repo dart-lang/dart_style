@@ -15,14 +15,14 @@ class StyleFix {
   static const optionalNew =
       const StyleFix._("optional-new", 'Remove "new" keyword.');
 
-  static const docComment = const StyleFix._(
-      "doc-comment", 'Use triple slash for documentation comments.');
+  static const docComments = const StyleFix._(
+      "doc-comments", 'Use triple slash for documentation comments.');
 
   static const all = const [
     namedDefaultSeparator,
     optionalConst,
     optionalNew,
-    docComment,
+    docComments,
   ];
 
   final String name;

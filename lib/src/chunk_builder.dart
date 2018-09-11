@@ -18,6 +18,13 @@ import 'whitespace.dart';
 /// Matches if the last character of a string is an identifier character.
 final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
 
+/// Matches a JavaDoc-style doc comment that starts with "/**" and ends with
+/// "*/" or "**/".
+final _javaDocComment = new RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
+
+/// Matches an intermediate "*" line in the middle of a JavaDoc-style comment.
+var _javaDocLine = new RegExp(r"\s*\*(.*)");
+
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
 /// tree of [Chunk]s which can then be split into physical lines.
@@ -293,47 +300,7 @@ class ChunkBuilder {
             nest: true);
       }
 
-      if (_formatter.fixes.contains(StyleFix.docComment) &&
-          comment.text.startsWith('/**')) {
-        var lines = comment.text.split('\n').toList();
-        if (lines.length == 1) {
-          lines.first = comment.text
-              .substring('/**'.length, comment.text.length - '*/'.length)
-              .trim();
-        } else {
-          // handle first line
-          lines.first = lines.first.substring('/**'.length);
-          if (lines.first.trim().isEmpty) lines.removeAt(0);
-
-          // handle last line
-          lines.last = lines.last.substring(0, lines.last.length - '*/'.length);
-          if (lines.last.trim().isEmpty) lines.removeLast();
-
-          // update lines by removing prefix
-          for (var i = 0; i < lines.length; i++) {
-            var line = lines[i];
-            if (line.startsWith(new RegExp(r' *\*'))) {
-              line = line.substring(line.indexOf('*') + 1);
-            } else {
-              line = line.substring(line.indexOf(new RegExp(r'\b')));
-            }
-            lines[i] = line;
-          }
-
-          // edge case with multiline empty comment
-          if (lines.isEmpty) lines.add('');
-        }
-        for (var line in lines) {
-          if (line.isNotEmpty && !line.startsWith(' ')) {
-            line = ' $line';
-          }
-          _writeText('///$line');
-          _pendingWhitespace = Whitespace.newline;
-          _emitPendingWhitespace();
-        }
-      } else {
-        _writeText(comment.text);
-      }
+      _writeCommentText(comment);
 
       if (comment.selectionStart != null) {
         startSelectionFromEnd(comment.text.length - comment.selectionStart);
@@ -372,6 +339,48 @@ class ChunkBuilder {
     }
 
     preserveNewlines(linesBeforeToken);
+  }
+
+  /// Writes the text of [comment].
+  ///
+  /// If it's a JavaDoc comment that should be fixed to use `///`, fixes it.
+  void _writeCommentText(SourceComment comment) {
+    if (_formatter.fixes.contains(StyleFix.docComments)) {
+      var match = _javaDocComment.firstMatch(comment.text);
+      if (match != null) {
+        var lines = match.group(1).split("\n").toList();
+
+        // Trim the first and last lines if empty.
+        if (lines.first.trim().isEmpty) lines.removeAt(0);
+        if (lines.isNotEmpty && lines.last.trim().isEmpty) lines.removeLast();
+
+        // Remove a leading "*" from the middle lines.
+        for (var i = 0; i < lines.length; i++) {
+          var line = lines[i];
+          var match = _javaDocLine.firstMatch(line);
+          if (match != null) {
+            line = match.group(1);
+          } else {
+            line = line.trimLeft();
+          }
+          lines[i] = line;
+        }
+
+        // Don't completely eliminate an empty block comment.
+        if (lines.isEmpty) lines.add("");
+
+        for (var line in lines) {
+          if (line.isNotEmpty && !line.startsWith(" ")) line = " $line";
+          _writeText("///${line.trimRight()}");
+          _pendingWhitespace = Whitespace.newline;
+          _emitPendingWhitespace();
+        }
+
+        return;
+      }
+    }
+
+    _writeText(comment.text);
   }
 
   /// If the current pending whitespace allows some source discretion, pins
