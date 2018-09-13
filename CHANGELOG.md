@@ -1,6 +1,7 @@
 # 1.2.0
 
 * Add `--fix-doc-comments` to turn `/** ... */` doc comments into `///` (#730).
+* Remove `const` in all metadata annotations with --fix-optional-const` (#720).
 
 # 1.1.4
 

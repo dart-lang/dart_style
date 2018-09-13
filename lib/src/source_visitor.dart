@@ -184,7 +184,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.name);
     token(node.period);
     visit(node.constructorName);
+
+    // Metadata annotations are always const contexts.
+    _constNesting++;
     visit(node.arguments);
+    _constNesting--;
   }
 
   /// Visits an argument list.
@@ -2070,12 +2074,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// These always force the annotations to be on the previous line.
   void visitMetadata(NodeList<Annotation> metadata) {
-    // Metadata annotations are always const contexts.
-    _constNesting++;
-
     visitNodes(metadata, between: newline, after: newline);
-
-    _constNesting--;
   }
 
   /// Visit metadata annotations for a directive.
