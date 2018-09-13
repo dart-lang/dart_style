@@ -12,10 +12,18 @@ import 'nesting_builder.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
+import 'style_fix.dart';
 import 'whitespace.dart';
 
 /// Matches if the last character of a string is an identifier character.
 final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
+
+/// Matches a JavaDoc-style doc comment that starts with "/**" and ends with
+/// "*/" or "**/".
+final _javaDocComment = new RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
+
+/// Matches an intermediate "*" line in the middle of a JavaDoc-style comment.
+var _javaDocLine = new RegExp(r"\s*\*(.*)");
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
@@ -292,7 +300,7 @@ class ChunkBuilder {
             nest: true);
       }
 
-      _writeText(comment.text);
+      _writeCommentText(comment);
 
       if (comment.selectionStart != null) {
         startSelectionFromEnd(comment.text.length - comment.selectionStart);
@@ -331,6 +339,52 @@ class ChunkBuilder {
     }
 
     preserveNewlines(linesBeforeToken);
+  }
+
+  /// Writes the text of [comment].
+  ///
+  /// If it's a JavaDoc comment that should be fixed to use `///`, fixes it.
+  void _writeCommentText(SourceComment comment) {
+    if (!_formatter.fixes.contains(StyleFix.docComments)) {
+      _writeText(comment.text);
+      return;
+    }
+
+    // See if it's a JavaDoc comment.
+    var match = _javaDocComment.firstMatch(comment.text);
+    if (match == null) {
+      _writeText(comment.text);
+      return;
+    }
+
+    // Trim the first and last lines if empty.
+    var lines = match.group(1).split("\n").toList();
+    if (lines.first.trim().isEmpty) lines.removeAt(0);
+    if (lines.isNotEmpty && lines.last.trim().isEmpty) lines.removeLast();
+
+    // Remove a leading "*" from the middle lines.
+    for (var i = 0; i < lines.length; i++) {
+      var line = lines[i];
+      var match = _javaDocLine.firstMatch(line);
+      if (match != null) {
+        line = match.group(1);
+      } else {
+        // Note that this may remove deliberate leading whitespace. In tests on
+        // a large corpus, though, I couldn't find examples of that.
+        line = line.trimLeft();
+      }
+      lines[i] = line;
+    }
+
+    // Don't completely eliminate an empty block comment.
+    if (lines.isEmpty) lines.add("");
+
+    for (var line in lines) {
+      if (line.isNotEmpty && !line.startsWith(" ")) line = " $line";
+      _writeText("///${line.trimRight()}");
+      _pendingWhitespace = Whitespace.newline;
+      _emitPendingWhitespace();
+    }
   }
 
   /// If the current pending whitespace allows some source discretion, pins
