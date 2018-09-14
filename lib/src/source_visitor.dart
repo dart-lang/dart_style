@@ -594,38 +594,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
     _beginBody(node.leftBracket);
-
-    if (node.members.isNotEmpty) {
-      for (var member in node.members) {
-        visit(member);
-
-        if (member == node.members.last) {
-          newline();
-          break;
-        }
-
-        var needsDouble = false;
-        if (member is ClassDeclaration) {
-          // Add a blank line after classes.
-          twoNewlines();
-        } else if (member is MethodDeclaration) {
-          // Add a blank line after non-empty block methods.
-          if (member.body is BlockFunctionBody) {
-            var body = member.body as BlockFunctionBody;
-            needsDouble = body.block.statements.isNotEmpty;
-          }
-        }
-
-        if (needsDouble) {
-          twoNewlines();
-        } else {
-          // Variables and arrow-bodied members can be more tightly packed if
-          // the user wants to group things together.
-          oneOrTwoNewlines();
-        }
-      }
-    }
-
+    _visitMembers(node.members);
     _endBody(node.rightBracket);
   }
 
@@ -1693,6 +1662,45 @@ class SourceVisitor extends ThrowingAstVisitor {
     new CallChainVisitor(this, node).visit();
   }
 
+  visitMixinDeclaration(MixinDeclaration node) {
+    visitMetadata(node.metadata);
+
+    builder.nestExpression();
+    token(node.mixinKeyword);
+    space();
+    visit(node.name);
+    visit(node.typeParameters);
+
+    // If there is only a single superclass constraint, format it like an
+    // "extends" in a class.
+    if (node.onClause != null &&
+        node.onClause.superclassConstraints.length == 1) {
+      soloSplit();
+      token(node.onClause.onKeyword);
+      space();
+      visit(node.onClause.superclassConstraints.single);
+    }
+
+    builder.startRule(new CombinatorRule());
+
+    // If there are multiple superclass constraints, format them like the
+    // "implements" clause.
+    if (node.onClause != null &&
+        node.onClause.superclassConstraints.length > 1) {
+      visit(node.onClause);
+    }
+
+    visit(node.implementsClause);
+    builder.endRule();
+
+    space();
+
+    builder.unnest();
+    _beginBody(node.leftBracket);
+    _visitMembers(node.members);
+    _endBody(node.rightBracket);
+  }
+
   visitNamedExpression(NamedExpression node) {
     visitNamedArgument(node);
   }
@@ -1714,6 +1722,10 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitNullLiteral(NullLiteral node) {
     token(node.literal);
+  }
+
+  visitOnClause(OnClause node) {
+    _visitCombinator(node.onKeyword, node.superclassConstraints);
   }
 
   visitParenthesizedExpression(ParenthesizedExpression node) {
@@ -2205,6 +2217,33 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Visits a sequence of labels before a statement or switch case.
   void _visitLabels(NodeList<Label> labels) {
     visitNodes(labels, between: newline, after: newline);
+  }
+
+  /// Visits the list of members in a class or mixin declaration.
+  void _visitMembers(NodeList<ClassMember> members) {
+    for (var member in members) {
+      visit(member);
+
+      if (member == members.last) {
+        newline();
+        break;
+      }
+
+      // Add a blank line after non-empty block methods.
+      var needsDouble = false;
+      if (member is MethodDeclaration && member.body is BlockFunctionBody) {
+        var body = member.body as BlockFunctionBody;
+        needsDouble = body.block.statements.isNotEmpty;
+      }
+
+      if (needsDouble) {
+        twoNewlines();
+      } else {
+        // Variables and arrow-bodied members can be more tightly packed if
+        // the user wants to group things together.
+        oneOrTwoNewlines();
+      }
+    }
   }
 
   /// Visits a top-level function or method declaration.
