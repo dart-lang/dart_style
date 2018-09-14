@@ -21,7 +21,7 @@ void main() {
   });
 
   test("exits with 64 on a command line argument error", () async {
-    var process = await runFormatterOnDir(["-wat"]);
+    var process = await runFormatter(["-wat"]);
     await process.shouldExit(64);
   });
 
@@ -33,37 +33,32 @@ void main() {
   });
 
   test("errors if --dry-run and --overwrite are both passed", () async {
-    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
-    var process = await runFormatterOnDir(["--dry-run", "--overwrite"]);
+    var process = await runFormatter(["--dry-run", "--overwrite"]);
     await process.shouldExit(64);
   });
 
   test("errors if --dry-run and --machine are both passed", () async {
-    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
-    var process = await runFormatterOnDir(["--dry-run", "--machine"]);
-    await process.shouldExit(64);
-  });
-
-  test("errors if --machine and --overwrite are both passed", () async {
-    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
-    var process = await runFormatterOnDir(["--machine", "--overwrite"]);
-    await process.shouldExit(64);
-  });
-
-  test("errors if --dry-run and --machine are both passed", () async {
-    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
     var process = await runFormatter(["--dry-run", "--machine"]);
     await process.shouldExit(64);
   });
 
   test("errors if --machine and --overwrite are both passed", () async {
-    await d.dir("code", [d.file("a.dart", unformattedSource)]).create();
-
     var process = await runFormatter(["--machine", "--overwrite"]);
+    await process.shouldExit(64);
+  });
+
+  test("errors if --dry-run and --machine are both passed", () async {
+    var process = await runFormatter(["--dry-run", "--machine"]);
+    await process.shouldExit(64);
+  });
+
+  test("errors if --machine and --overwrite are both passed", () async {
+    var process = await runFormatter(["--machine", "--overwrite"]);
+    await process.shouldExit(64);
+  });
+
+  test("errors if --stdin-name and a path are both passed", () async {
+    var process = await runFormatter(["--stdin-name=name", "path.dart"]);
     await process.shouldExit(64);
   });
 
@@ -310,6 +305,19 @@ void main() {
       // No trailing newline at the end.
       expect(await process.stdout.next, formattedSource.trimRight());
       await process.shouldExit(0);
+    });
+
+    test("allows specifying stdin path name", () async {
+      var process = await runFormatter(["--stdin-name=some/path.dart"]);
+      process.stdin.writeln("herp");
+      await process.stdin.close();
+
+      expect(await process.stderr.next,
+          "Could not format because the source could not be parsed:");
+      expect(await process.stderr.next, "");
+      expect(await process.stderr.next, contains("some/path.dart"));
+      process.stderr.cancel();
+      await process.shouldExit(65);
     });
   });
 }
