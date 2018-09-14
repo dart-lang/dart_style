@@ -316,3 +316,8 @@ enum Foo {
   @meta
   b
 }
+>>> metadata on mixin
+@meta   mixin M {}
+<<<
+@meta
+mixin M {}
