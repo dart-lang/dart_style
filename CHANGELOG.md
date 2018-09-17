@@ -1,5 +1,6 @@
 # 1.2.0
 
+* Add `--stdin-name` to specify name shown when reading from stdin (#739).
 * Add `--fix-doc-comments` to turn `/** ... */` doc comments into `///` (#730).
 * Add support for new mixin syntax (#727).
 * Remove `const` in all metadata annotations with --fix-optional-const` (#720).

@@ -60,6 +60,10 @@ void main(List<String> args) {
           "If unset, links will be ignored.");
   parser.addOption("preserve",
       help: 'Selection to preserve, formatted as "start:length".');
+  parser.addOption("stdin-name",
+      help: "The path name to show when an error occurs in source read from "
+          "stdin.",
+      defaultsTo: "<stdin>");
 
   parser.addFlag("profile", negatable: false, hide: true);
   parser.addFlag("transform", abbr: "t", negatable: false, hide: true);
@@ -134,7 +138,7 @@ void main(List<String> args) {
     reporter = new SetExitReporter(reporter);
   }
 
-  var pageWidth;
+  int pageWidth;
   try {
     pageWidth = int.parse(argResults["line-length"]);
   } on FormatException catch (_) {
@@ -144,8 +148,7 @@ void main(List<String> args) {
         '"${argResults['line-length']}".');
   }
 
-  var indent;
-
+  int indent;
   try {
     indent = int.parse(argResults["indent"]);
     if (indent < 0 || indent.toInt() != indent) throw new FormatException();
@@ -170,6 +173,10 @@ void main(List<String> args) {
     }
   }
 
+  if (argResults.wasParsed("stdin-name") && !argResults.rest.isEmpty) {
+    usageError(parser, "Cannot pass --stdin-name when not reading from stdin.");
+  }
+
   var options = new FormatterOptions(reporter,
       indent: indent,
       pageWidth: pageWidth,
@@ -177,7 +184,7 @@ void main(List<String> args) {
       fixes: fixes);
 
   if (argResults.rest.isEmpty) {
-    formatStdin(options, selection);
+    formatStdin(options, selection, argResults["stdin-name"] as String);
   } else {
     formatPaths(options, argResults.rest);
   }
@@ -200,7 +207,7 @@ List<int> parseSelection(String selection) {
 }
 
 /// Reads input from stdin until it's closed, and the formats it.
-void formatStdin(FormatterOptions options, List<int> selection) {
+void formatStdin(FormatterOptions options, List<int> selection, String name) {
   var selectionStart = 0;
   var selectionLength = 0;
 
@@ -216,14 +223,14 @@ void formatStdin(FormatterOptions options, List<int> selection) {
         pageWidth: options.pageWidth,
         fixes: options.fixes);
     try {
-      options.reporter.beforeFile(null, "<stdin>");
+      options.reporter.beforeFile(null, name);
       var source = new SourceCode(input.toString(),
-          uri: "stdin",
+          uri: name,
           selectionStart: selectionStart,
           selectionLength: selectionLength);
       var output = formatter.formatSource(source);
-      options.reporter.afterFile(null, "<stdin>", output,
-          changed: source.text != output.text);
+      options.reporter
+          .afterFile(null, name, output, changed: source.text != output.text);
       return;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
