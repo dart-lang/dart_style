@@ -111,3 +111,49 @@ m() {}
  * STUFF
  *******/
 m() {}
+>>> nested comment
+/**
+ * Floo the grumshack.
+ *
+ * Example:
+ * ```dart
+ * /** Doc comment */
+ * var grumshack = getGrumshack();
+ * /* Do the floo */
+ * grumshack.floo();
+ * ```
+*/
+m() {}
+<<<
+/// Floo the grumshack.
+///
+/// Example:
+/// ```dart
+/// /** Doc comment */
+/// var grumshack = getGrumshack();
+/// /* Do the floo */
+/// grumshack.floo();
+/// ```
+m() {}
+>>>
+/** Does a [foo](http://example.org/*example*/doc). **/
+m() {}
+<<<
+/// Does a [foo](http://example.org/*example*/doc).
+m() {}
+>>>
+/** Does a [foo](http://example.org/*example*/doc). */
+m() {}
+<<<
+/// Does a [foo](http://example.org/*example*/doc).
+m() {}
+>>> non-leading "*"
+/**
+ * Thing.
+ Another * thing.
+*/
+m() {}
+<<<
+/// Thing.
+/// Another * thing.
+m() {}
