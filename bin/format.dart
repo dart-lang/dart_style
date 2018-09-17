@@ -173,7 +173,6 @@ void main(List<String> args) {
     }
   }
 
-  var stdinName = argResults["stdin-name"];
   if (argResults.wasParsed("stdin-name") && !argResults.rest.isEmpty) {
     usageError(parser, "Cannot pass --stdin-name when not reading from stdin.");
   }
@@ -185,7 +184,7 @@ void main(List<String> args) {
       fixes: fixes);
 
   if (argResults.rest.isEmpty) {
-    formatStdin(options, selection, stdinName);
+    formatStdin(options, selection, argResults["stdin-name"] as String);
   } else {
     formatPaths(options, argResults.rest);
   }
