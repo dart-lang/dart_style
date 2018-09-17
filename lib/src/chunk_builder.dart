@@ -22,8 +22,8 @@ final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
 /// "*/" or "**/".
 final _javaDocComment = new RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
 
-/// Matches an intermediate "*" line in the middle of a JavaDoc-style comment.
-var _javaDocLine = new RegExp(r"\s*\*(.*)");
+/// Matches the leading "*" in a line in the middle of a JavaDoc-style comment.
+var _javaDocLine = new RegExp(r"^\s*\*(.*)");
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
@@ -357,13 +357,9 @@ class ChunkBuilder {
       return;
     }
 
-    // Trim the first and last lines if empty.
-    var lines = match.group(1).split("\n").toList();
-    if (lines.first.trim().isEmpty) lines.removeAt(0);
-    if (lines.isNotEmpty && lines.last.trim().isEmpty) lines.removeLast();
-
     // Remove a leading "*" from the middle lines.
-    for (var i = 0; i < lines.length; i++) {
+    var lines = match.group(1).split("\n").toList();
+    for (var i = 1; i < lines.length - 1; i++) {
       var line = lines[i];
       var match = _javaDocLine.firstMatch(line);
       if (match != null) {
@@ -375,6 +371,10 @@ class ChunkBuilder {
       }
       lines[i] = line;
     }
+
+    // Trim the first and last lines if empty.
+    if (lines.first.trim().isEmpty) lines.removeAt(0);
+    if (lines.isNotEmpty && lines.last.trim().isEmpty) lines.removeLast();
 
     // Don't completely eliminate an empty block comment.
     if (lines.isEmpty) lines.add("");
