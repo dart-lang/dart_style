@@ -316,7 +316,7 @@ void main() {
           "Could not format because the source could not be parsed:");
       expect(await process.stderr.next, "");
       expect(await process.stderr.next, contains("some/path.dart"));
-      process.stderr.cancel();
+      await process.stderr.cancel();
       await process.shouldExit(65);
     });
   });
