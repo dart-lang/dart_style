@@ -112,6 +112,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// How many levels deep inside a constant context the visitor currently is.
   int _constNesting = 0;
 
+  /// Whether we are currently fixing a typedef declaration.
+  ///
+  /// Set to `true` while traversing the parameters of a typedef being converted
+  /// to the new syntax. The new syntax does not allow `int foo()` as a
+  /// parameter declaration, so it needs to be converted to `int Function() foo`
+  /// as part of the fix.
+  bool _insideNewTypedefFix = false;
+
   /// A stack that tracks forcing nested collections to split.
   ///
   /// Each entry corresponds to a collection currently being visited and the
@@ -1305,6 +1313,27 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitFunctionTypeAlias(FunctionTypeAlias node) {
     visitMetadata(node.metadata);
 
+
+    if (_formatter.fixes.contains(StyleFix.typedefs)) {
+      _simpleStatement(node, () {
+        token(node.typedefKeyword);
+        space();
+        visit(node.name);
+        visit(node.typeParameters);
+        space();
+        _writeText("=", node.returnType.offset);
+        space();
+        visit(node.returnType, after: space);
+        space();
+        _writeText("Function", node.name.offset);
+        // TODO(lrn): Recurse and convert function-arguments to Function typed.
+        _insideNewTypedefFix = true;
+        visit(node.parameters);
+        _insideNewTypedefFix = false;
+      });
+      return;
+    }
+
     _simpleStatement(node, () {
       token(node.typedefKeyword);
       space();
@@ -1319,12 +1348,21 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       modifier(node.covariantKeyword);
       visit(node.returnType, after: space);
-
-      // Try to keep the function's parameters with its name.
-      builder.startSpan();
-      visit(node.identifier);
-      _visitParameterSignature(node.typeParameters, node.parameters);
-      builder.endSpan();
+      if (!_insideNewTypedefFix) {
+        // Try to keep the function's parameters with its name.
+        builder.startSpan();
+        visit(node.identifier);
+        _visitParameterSignature(node.typeParameters, node.parameters);
+        builder.endSpan();
+      } else {
+        space();
+        builder.startSpan();
+        _writeText("Function", node.identifier.offset);
+        _visitParameterSignature(node.typeParameters, node.parameters);
+        builder.endSpan();
+        space();
+        visit(node.identifier);
+      }
     });
   }
 
@@ -1337,8 +1375,12 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
     builder.endRule();
-
+    // Old style function parameters or single-identifier-meaning-name
+    // cannot occur inside the `Function` type expression.
+    bool wasInsideNewTypedefFix = _insideNewTypedefFix;
+    _insideNewTypedefFix = false;
     _visitParameterSignature(node.typeParameters, node.parameters);
+    _insideNewTypedefFix = wasInsideNewTypedefFix;
   }
 
   visitGenericTypeAlias(GenericTypeAlias node) {
@@ -1836,11 +1878,16 @@ class SourceVisitor extends ThrowingAstVisitor {
       modifier(node.keyword);
 
       visit(node.type);
+      bool hasType = node.type != null;
+      if (_insideNewTypedefFix && !hasType) {
+        _writeText("dynamic", node.identifier.offset);
+        hasType = true;
+      }
 
       // In function declarations and the old typedef syntax, you can have a
       // parameter name without a type. In the new syntax, you can have a type
       // without a name. Handle both cases.
-      if (node.type != null && node.identifier != null) split();
+      if (hasType && node.identifier != null) split();
 
       visit(node.identifier);
       builder.unnest();

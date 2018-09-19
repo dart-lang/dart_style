@@ -18,11 +18,15 @@ class StyleFix {
   static const docComments = const StyleFix._(
       "doc-comments", 'Use triple slash for documentation comments.');
 
+  static const typedefs = const StyleFix._(
+      "typedefs", "Use new typedef syntax for typedefs");
+
   static const all = const [
     namedDefaultSeparator,
     optionalConst,
     optionalNew,
     docComments,
+    typedefs,
   ];
 
   final String name;
