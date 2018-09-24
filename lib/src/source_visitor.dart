@@ -1313,7 +1313,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitFunctionTypeAlias(FunctionTypeAlias node) {
     visitMetadata(node.metadata);
 
-
     if (_formatter.fixes.contains(StyleFix.typedefs)) {
       _simpleStatement(node, () {
         token(node.typedefKeyword);

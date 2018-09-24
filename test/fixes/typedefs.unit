@@ -1,0 +1,40 @@
+40 columns                              |
+>>> simple typedef
+typedef int Foo(int x);
+<<<
+typedef Foo = int Function(int x);
+>>> generic typedef
+typedef S Foo<S extends num>(S x);
+<<<
+typedef Foo<S extends num> = S Function(
+    S x);
+>>> named argument
+typedef int Foo(x);
+<<<
+typedef Foo = int Function(dynamic x);
+>>> function argument
+typedef int Foo(int callback(int x));
+<<<
+typedef Foo = int Function(
+    int Function(int x) callback);
+>>> nested Function type
+typedef int Foo(int cb(int Function(int) cb2));
+<<<
+typedef Foo = int Function(
+    int Function(
+        int Function(int) cb2) cb);
+>>> nested generic function
+typedef T Foo<T>(T cb<S>(T cb2(S x)));
+<<<
+typedef Foo<T> = T Function(
+    T Function<S>(
+        T Function(S x) cb2) cb);
+>>> new-style function type unchanged
+typedef int Foo(int Function(int) cb);
+<<<
+typedef Foo = int Function(
+    int Function(int) cb);
+>>> don't change correct typedef
+typedef Foo = int Function(int);
+<<<
+typedef Foo = int Function(int);
