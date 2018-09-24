@@ -1325,7 +1325,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(node.returnType, after: space);
         space();
         _writeText("Function", node.name.offset);
-        // TODO(lrn): Recurse and convert function-arguments to Function typed.
+        // Recursively convert function-arguments to Function typed.
         _insideNewTypedefFix = true;
         visit(node.parameters);
         _insideNewTypedefFix = false;
