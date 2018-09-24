@@ -21,14 +21,14 @@ typedef Foo = int Function(
 typedef int Foo(int cb(int Function(int) cb2));
 <<<
 typedef Foo = int Function(
-    int Function(
-        int Function(int) cb2) cb);
+    int Function(int Function(int) cb2)
+        cb);
 >>> nested generic function
 typedef T Foo<T>(T cb<S>(T cb2(S x)));
 <<<
 typedef Foo<T> = T Function(
-    T Function<S>(
-        T Function(S x) cb2) cb);
+    T Function<S>(T Function(S x) cb2)
+        cb);
 >>> new-style function type unchanged
 typedef int Foo(int Function(int) cb);
 <<<
@@ -38,3 +38,12 @@ typedef Foo = int Function(
 typedef Foo = int Function(int);
 <<<
 typedef Foo = int Function(int);
+>>> simple typedef, no types
+typedef Foo(x);
+<<<
+typedef Foo = Function(dynamic x);
+>>> nested function types, no types
+typedef Foo(foo(x));
+<<<
+typedef Foo = Function(
+    Function(dynamic x) foo);

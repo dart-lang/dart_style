@@ -1315,19 +1315,37 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (_formatter.fixes.contains(StyleFix.typedefs)) {
       _simpleStatement(node, () {
+        // Inlined visitGenericTypeAlias
         token(node.typedefKeyword);
         space();
+
+        // If the typedef's type parameters split, split after the "=" too,
+        // mainly to ensure the function's type parameters and parameters get
+        // end up on successive lines with the same indentation.
+        builder.startRule();
+
         visit(node.name);
+
         visit(node.typeParameters);
+        split();
+
+        _writeText("=", (node.returnType ?? node.name).offset);
+        builder.endRule();
+
         space();
-        _writeText("=", node.returnType.offset);
-        space();
-        visit(node.returnType, after: space);
-        space();
+
+        // Inlined visitGenericFunctionType
+        builder.startLazyRule();
+        builder.nestExpression();
+
+        visit(node.returnType, after: split);
         _writeText("Function", node.name.offset);
-        // Recursively convert function-arguments to Function typed.
+
+        builder.unnest();
+        builder.endRule();
+        // Recursively convert function-arguments to Function syntax.
         _insideNewTypedefFix = true;
-        visit(node.parameters);
+        _visitParameterSignature(null, node.parameters);
         _insideNewTypedefFix = false;
       });
       return;
@@ -1345,22 +1363,37 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
-      modifier(node.covariantKeyword);
-      visit(node.returnType, after: space);
       if (!_insideNewTypedefFix) {
+        modifier(node.covariantKeyword);
+        visit(node.returnType, after: space);
         // Try to keep the function's parameters with its name.
         builder.startSpan();
         visit(node.identifier);
         _visitParameterSignature(node.typeParameters, node.parameters);
         builder.endSpan();
       } else {
-        space();
-        builder.startSpan();
+        // In-lined from visitSimpleFormalParameter.
+        builder.startLazyRule(new Rule(Cost.parameterType));
+        builder.nestExpression();
+        modifier(node.covariantKeyword);
+
+        // In-lined vistGenericFunctionType
+        builder.startLazyRule();
+        builder.nestExpression();
+
+        visit(node.returnType, after: split);
         _writeText("Function", node.identifier.offset);
+
+        builder.unnest();
+        builder.endRule();
         _visitParameterSignature(node.typeParameters, node.parameters);
-        builder.endSpan();
-        space();
+        // End of visitGenericFunctionType
+        split();
+
         visit(node.identifier);
+        builder.unnest();
+        builder.endRule();
+        // End of visitSimpleFormalParameter
       }
     });
   }
@@ -1376,6 +1409,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endRule();
     // Old style function parameters or single-identifier-meaning-name
     // cannot occur inside the `Function` type expression.
+    // If they do anyway, retain them as an error.
     bool wasInsideNewTypedefFix = _insideNewTypedefFix;
     _insideNewTypedefFix = false;
     _visitParameterSignature(node.typeParameters, node.parameters);
