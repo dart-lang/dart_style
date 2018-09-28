@@ -1316,36 +1316,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (_formatter.fixes.contains(StyleFix.typedefs)) {
       _simpleStatement(node, () {
         // Inlined visitGenericTypeAlias
-        token(node.typedefKeyword);
-        space();
-
-        // If the typedef's type parameters split, split after the "=" too,
-        // mainly to ensure the function's type parameters and parameters get
-        // end up on successive lines with the same indentation.
-        builder.startRule();
-
-        visit(node.name);
-
-        visit(node.typeParameters);
-        split();
-
-        _writeText("=", (node.returnType ?? node.name).offset);
-        builder.endRule();
+        _writeGenericTypeAliasHeader(node.typedefKeyword, node.name,
+            node.typeParameters, null, (node.returnType ?? node.name).offset);
 
         space();
 
-        // Inlined visitGenericFunctionType
-        builder.startLazyRule();
-        builder.nestExpression();
-
-        visit(node.returnType, after: split);
-        _writeText("Function", node.name.offset);
-
-        builder.unnest();
-        builder.endRule();
         // Recursively convert function-arguments to Function syntax.
         _insideNewTypedefFix = true;
-        _visitParameterSignature(null, node.parameters);
+        _writeGenericFunctionType(
+            node.returnType, null, node.name.offset, null, node.parameters);
         _insideNewTypedefFix = false;
       });
       return;
@@ -1399,46 +1378,75 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitGenericFunctionType(GenericFunctionType node) {
+    _writeGenericFunctionType(node.returnType, node.functionKeyword, null,
+        node.typeParameters, node.parameters);
+  }
+
+  /// Writes a `Function` function type.
+  ///
+  /// Used also by a fix, so there may not be a [functionKeyword].
+  /// In that case [syntheticFunctionPosition] should be the source position
+  /// used for the inserted "Function" text.
+  void _writeGenericFunctionType(
+      AstNode returnType,
+      Token functionKeyword,
+      int functionKeywordPosition,
+      TypeParameterList typeParameters,
+      FormalParameterList parameters) {
     builder.startLazyRule();
     builder.nestExpression();
 
-    visit(node.returnType, after: split);
-    token(node.functionKeyword);
+    visit(returnType, after: split);
+    if (functionKeyword != null) {
+      token(functionKeyword);
+    } else {
+      _writeText("Function", functionKeywordPosition);
+    }
 
     builder.unnest();
     builder.endRule();
-    // Old style function parameters or single-identifier-meaning-name
-    // cannot occur inside the `Function` type expression.
-    // If they do anyway, retain them as an error.
-    bool wasInsideNewTypedefFix = _insideNewTypedefFix;
-    _insideNewTypedefFix = false;
-    _visitParameterSignature(node.typeParameters, node.parameters);
-    _insideNewTypedefFix = wasInsideNewTypedefFix;
+    _visitParameterSignature(typeParameters, parameters);
   }
 
   visitGenericTypeAlias(GenericTypeAlias node) {
     visitNodes(node.metadata, between: newline, after: newline);
     _simpleStatement(node, () {
-      token(node.typedefKeyword);
-      space();
-
-      // If the typedef's type parameters split, split after the "=" too,
-      // mainly to ensure the function's type parameters and parameters get
-      // end up on successive lines with the same indentation.
-      builder.startRule();
-
-      visit(node.name);
-
-      visit(node.typeParameters);
-      split();
-
-      token(node.equals);
-      builder.endRule();
+      _writeGenericTypeAliasHeader(node.typedefKeyword, node.name,
+          node.typeParameters, node.equals, null);
 
       space();
 
       visit(node.functionType);
     });
+  }
+
+  /// Writes the header of a new-style typedef.
+  ///
+  /// Also used by a fix so there may not be an [equals] token.
+  /// If [equals] is `null`, then [equalsPosition] must be a
+  /// position to use for the inserted text "=".
+  void _writeGenericTypeAliasHeader(Token typedefKeyword, AstNode name,
+      AstNode typeParameters, Token equals, int equalsPosition) {
+    token(typedefKeyword);
+    space();
+
+    // If the typedef's type parameters split, split after the "=" too,
+    // mainly to ensure the function's type parameters and parameters get
+    // end up on successive lines with the same indentation.
+    builder.startRule();
+
+    visit(name);
+
+    visit(typeParameters);
+    split();
+
+    if (equals != null) {
+      token(equals);
+    } else {
+      _writeText("=", equalsPosition);
+    }
+
+    builder.endRule();
   }
 
   visitHideCombinator(HideCombinator node) {
