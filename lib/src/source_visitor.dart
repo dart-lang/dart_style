@@ -1385,7 +1385,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Writes a `Function` function type.
   ///
   /// Used also by a fix, so there may not be a [functionKeyword].
-  /// In that case [syntheticFunctionPosition] should be the source position
+  /// In that case [functionKeywordPosition] should be the source position
   /// used for the inserted "Function" text.
   void _writeGenericFunctionType(
       AstNode returnType,
