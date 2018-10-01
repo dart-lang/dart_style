@@ -155,9 +155,37 @@ typedef S Foo<S extends num>(S x);
 typedef Foo<S extends num> = S Function(
     S x);
 >>> named argument
-typedef int Foo(x);
+typedef int Foo({x});
 <<<
-typedef Foo = int Function(dynamic x);
+typedef Foo = int Function({dynamic x});
+>>> optional positional argument
+typedef int Foo([x]);
+<<<
+typedef Foo = int Function([dynamic x]);
+>>> metadata and keywords
+typedef int Foo(@meta v1, final v2, var v3, /*c*/ v4);
+<<<
+typedef Foo = int Function(
+    @meta dynamic v1,
+    final dynamic v2,
+    var dynamic v3,
+    /*c*/ dynamic v4);
+>>> metadata and keywords optional positional
+typedef int Foo([@meta v1, final v2, var v3, /*c*/ v4]);
+<<<
+typedef Foo = int Function(
+    [@meta dynamic v1,
+    final dynamic v2,
+    var dynamic v3,
+    /*c*/ dynamic v4]);
+>>> metadata and keywords named
+typedef int Foo({@meta v1, final v2, var v3, /*c*/ v4});
+<<<
+typedef Foo = int Function(
+    {@meta dynamic v1,
+    final dynamic v2,
+    var dynamic v3,
+    /*c*/ dynamic v4});
 >>> function argument
 typedef int Foo(int callback(int x));
 <<<
@@ -193,3 +221,31 @@ typedef Foo(foo(x));
 <<<
 typedef Foo = Function(
     Function(dynamic x) foo);
+>>> block comments in typedef
+typedef/*0*/void/*1*/Foo/*2*/<T>/*3*/(/*4*/T/*5*/foo(/*6*/x));
+<<<
+typedef /*1*/ Foo /*2*/ <T>
+    = /*0*/ void Function /*3*/ (
+        /*4*/ T Function(
+            /*6*/ dynamic x) /*5*/ foo);
+>>> eol comments in typedef
+typedef//0
+void//1
+Foo//2
+<T>//3
+(//4
+T//5
+foo(//6
+x));
+<<<
+typedef //1
+    Foo //2
+    <T>
+    = //0
+    void Function //3
+    (
+        //4
+        T Function(
+                //6
+                dynamic x) //5
+            foo);

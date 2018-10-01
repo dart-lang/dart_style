@@ -1316,14 +1316,14 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (_formatter.fixes.contains(StyleFix.typedefs)) {
       _simpleStatement(node, () {
         // Inlined visitGenericTypeAlias
-        _writeGenericTypeAliasHeader(node.typedefKeyword, node.name,
+        _visitGenericTypeAliasHeader(node.typedefKeyword, node.name,
             node.typeParameters, null, (node.returnType ?? node.name).offset);
 
         space();
 
         // Recursively convert function-arguments to Function syntax.
         _insideNewTypedefFix = true;
-        _writeGenericFunctionType(
+        _visitGenericFunctionType(
             node.returnType, null, node.name.offset, null, node.parameters);
         _insideNewTypedefFix = false;
       });
@@ -1378,75 +1378,20 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitGenericFunctionType(GenericFunctionType node) {
-    _writeGenericFunctionType(node.returnType, node.functionKeyword, null,
+    _visitGenericFunctionType(node.returnType, node.functionKeyword, null,
         node.typeParameters, node.parameters);
-  }
-
-  /// Writes a `Function` function type.
-  ///
-  /// Used also by a fix, so there may not be a [functionKeyword].
-  /// In that case [functionKeywordPosition] should be the source position
-  /// used for the inserted "Function" text.
-  void _writeGenericFunctionType(
-      AstNode returnType,
-      Token functionKeyword,
-      int functionKeywordPosition,
-      TypeParameterList typeParameters,
-      FormalParameterList parameters) {
-    builder.startLazyRule();
-    builder.nestExpression();
-
-    visit(returnType, after: split);
-    if (functionKeyword != null) {
-      token(functionKeyword);
-    } else {
-      _writeText("Function", functionKeywordPosition);
-    }
-
-    builder.unnest();
-    builder.endRule();
-    _visitParameterSignature(typeParameters, parameters);
   }
 
   visitGenericTypeAlias(GenericTypeAlias node) {
     visitNodes(node.metadata, between: newline, after: newline);
     _simpleStatement(node, () {
-      _writeGenericTypeAliasHeader(node.typedefKeyword, node.name,
+      _visitGenericTypeAliasHeader(node.typedefKeyword, node.name,
           node.typeParameters, node.equals, null);
 
       space();
 
       visit(node.functionType);
     });
-  }
-
-  /// Writes the header of a new-style typedef.
-  ///
-  /// Also used by a fix so there may not be an [equals] token.
-  /// If [equals] is `null`, then [equalsPosition] must be a
-  /// position to use for the inserted text "=".
-  void _writeGenericTypeAliasHeader(Token typedefKeyword, AstNode name,
-      AstNode typeParameters, Token equals, int equalsPosition) {
-    token(typedefKeyword);
-    space();
-
-    // If the typedef's type parameters split, split after the "=" too,
-    // mainly to ensure the function's type parameters and parameters get
-    // end up on successive lines with the same indentation.
-    builder.startRule();
-
-    visit(name);
-
-    visit(typeParameters);
-    split();
-
-    if (equals != null) {
-      token(equals);
-    } else {
-      _writeText("=", equalsPosition);
-    }
-
-    builder.endRule();
   }
 
   visitHideCombinator(HideCombinator node) {
@@ -1918,19 +1863,24 @@ class SourceVisitor extends ThrowingAstVisitor {
       modifier(node.covariantKeyword);
       modifier(node.keyword);
 
-      visit(node.type);
       bool hasType = node.type != null;
       if (_insideNewTypedefFix && !hasType) {
-        _writeText("dynamic", node.identifier.offset);
-        hasType = true;
+        // In function declarations and the old typedef syntax, you can have a
+        // parameter name without a type. In the new syntax, you can have a type
+        // without a name. Add "dynamic" in that case.
+
+        // Ensure comments on the identifier comes before the inserted type.
+        token(node.identifier.token, before: () {
+          _writeText("dynamic", node.identifier.offset);
+          split();
+        });
+      } else {
+        visit(node.type);
+
+        if (hasType && node.identifier != null) split();
+
+        visit(node.identifier);
       }
-
-      // In function declarations and the old typedef syntax, you can have a
-      // parameter name without a type. In the new syntax, you can have a type
-      // without a name. Handle both cases.
-      if (hasType && node.identifier != null) split();
-
-      visit(node.identifier);
       builder.unnest();
       builder.endRule();
     });
@@ -2670,6 +2620,61 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (firstDelimiter != parameters.rightParenthesis) {
       token(parameters.rightParenthesis);
     }
+  }
+
+  /// Writes a `Function` function type.
+  ///
+  /// Used also by a fix, so there may not be a [functionKeyword].
+  /// In that case [functionKeywordPosition] should be the source position
+  /// used for the inserted "Function" text.
+  void _visitGenericFunctionType(
+      AstNode returnType,
+      Token functionKeyword,
+      int functionKeywordPosition,
+      TypeParameterList typeParameters,
+      FormalParameterList parameters) {
+    builder.startLazyRule();
+    builder.nestExpression();
+
+    visit(returnType, after: split);
+    if (functionKeyword != null) {
+      token(functionKeyword);
+    } else {
+      _writeText("Function", functionKeywordPosition);
+    }
+
+    builder.unnest();
+    builder.endRule();
+    _visitParameterSignature(typeParameters, parameters);
+  }
+
+  /// Writes the header of a new-style typedef.
+  ///
+  /// Also used by a fix so there may not be an [equals] token.
+  /// If [equals] is `null`, then [equalsPosition] must be a
+  /// position to use for the inserted text "=".
+  void _visitGenericTypeAliasHeader(Token typedefKeyword, AstNode name,
+      AstNode typeParameters, Token equals, int equalsPosition) {
+    token(typedefKeyword);
+    space();
+
+    // If the typedef's type parameters split, split after the "=" too,
+    // mainly to ensure the function's type parameters and parameters get
+    // end up on successive lines with the same indentation.
+    builder.startRule();
+
+    visit(name);
+
+    visit(typeParameters);
+    split();
+
+    if (equals != null) {
+      token(equals);
+    } else {
+      _writeText("=", equalsPosition);
+    }
+
+    builder.endRule();
   }
 
   /// Gets the cost to split at an assignment (or `:` in the case of a named
