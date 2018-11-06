@@ -17,4 +17,5 @@ void main() {
   testFile("fixes/doc_comments.stmt", [StyleFix.docComments]);
   testFile("fixes/optional_const.unit", [StyleFix.optionalConst]);
   testFile("fixes/optional_new.stmt", [StyleFix.optionalNew]);
+  testFile("fixes/typedefs.unit", [StyleFix.typedefs]);
 }
