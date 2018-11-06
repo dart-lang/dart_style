@@ -6,6 +6,12 @@
 /// Enum-like class for the different syntactic fixes that can be applied while
 /// formatting.
 class StyleFix {
+  static const docComments = const StyleFix._(
+      "doc-comments", 'Use triple slash for documentation comments.');
+
+  static const functionTypedefs = const StyleFix._(
+      "function-typedefs", 'Use new syntax for function type typedefs.');
+
   static const namedDefaultSeparator = const StyleFix._(
       "named-default-separator",
       'Use "=" as the separator before named parameter default values.');
@@ -16,18 +22,12 @@ class StyleFix {
   static const optionalNew =
       const StyleFix._("optional-new", 'Remove "new" keyword.');
 
-  static const docComments = const StyleFix._(
-      "doc-comments", 'Use triple slash for documentation comments.');
-
-  static const typedefs =
-      const StyleFix._("typedefs", 'Use new typedef syntax for typedefs.');
-
   static const all = const [
+    docComments,
+    functionTypedefs,
     namedDefaultSeparator,
     optionalConst,
-    optionalNew,
-    docComments,
-    typedefs,
+    optionalNew
   ];
 
   final String name;

@@ -1036,17 +1036,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitFieldFormalParameter(FieldFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
-      builder.startLazyRule(new Rule(Cost.parameterType));
-      builder.nestExpression();
-      modifier(node.covariantKeyword);
+      _beginFormalParameter(node);
       token(node.keyword, after: space);
       visit(node.type, after: split);
       token(node.thisKeyword);
       token(node.period);
       visit(node.identifier);
       visit(node.parameters);
-      builder.unnest();
-      builder.endRule();
+      _endFormalParameter(node);
     });
   }
 
@@ -1313,7 +1310,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitFunctionTypeAlias(FunctionTypeAlias node) {
     visitMetadata(node.metadata);
 
-    if (_formatter.fixes.contains(StyleFix.typedefs)) {
+    if (_formatter.fixes.contains(StyleFix.functionTypedefs)) {
       _simpleStatement(node, () {
         // Inlined visitGenericTypeAlias
         _visitGenericTypeAliasHeader(node.typedefKeyword, node.name,
@@ -1351,28 +1348,12 @@ class SourceVisitor extends ThrowingAstVisitor {
         _visitParameterSignature(node.typeParameters, node.parameters);
         builder.endSpan();
       } else {
-        // In-lined from visitSimpleFormalParameter.
-        builder.startLazyRule(new Rule(Cost.parameterType));
-        builder.nestExpression();
-        modifier(node.covariantKeyword);
-
-        // In-lined vistGenericFunctionType
-        builder.startLazyRule();
-        builder.nestExpression();
-
-        visit(node.returnType, after: split);
-        _writeText("Function", node.identifier.offset);
-
-        builder.unnest();
-        builder.endRule();
-        _visitParameterSignature(node.typeParameters, node.parameters);
-        // End of visitGenericFunctionType
+        _beginFormalParameter(node);
+        _visitGenericFunctionType(node.returnType, null, node.identifier.offset,
+            node.typeParameters, node.parameters);
         split();
-
         visit(node.identifier);
-        builder.unnest();
-        builder.endRule();
-        // End of visitSimpleFormalParameter
+        _endFormalParameter(node);
       }
     });
   }
@@ -1858,12 +1839,10 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitSimpleFormalParameter(SimpleFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
-      builder.startLazyRule(new Rule(Cost.parameterType));
-      builder.nestExpression();
-      modifier(node.covariantKeyword);
-      modifier(node.keyword);
+      _beginFormalParameter(node);
 
-      bool hasType = node.type != null;
+      modifier(node.keyword);
+      var hasType = node.type != null;
       if (_insideNewTypedefFix && !hasType) {
         // In function declarations and the old typedef syntax, you can have a
         // parameter name without a type. In the new syntax, you can have a type
@@ -1881,8 +1860,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
         visit(node.identifier);
       }
-      builder.unnest();
-      builder.endRule();
+
+      _endFormalParameter(node);
     });
   }
 
@@ -2620,6 +2599,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (firstDelimiter != parameters.rightParenthesis) {
       token(parameters.rightParenthesis);
     }
+  }
+
+  /// Begins writing a formal parameter of any kind.
+  void _beginFormalParameter(FormalParameter node) {
+    builder.startLazyRule(new Rule(Cost.parameterType));
+    builder.nestExpression();
+    modifier(node.covariantKeyword);
+  }
+
+  /// Ends writing a formal parameter of any kind.
+  void _endFormalParameter(FormalParameter node) {
+    builder.unnest();
+    builder.endRule();
   }
 
   /// Writes a `Function` function type.
