@@ -1,3 +1,8 @@
+# 1.2.1-dev
+
+* Add `--fix-function-typedefs` to convert the old typedef syntax for function
+  types to the new preferred syntax.
+
 # 1.2.0
 
 * Add `--stdin-name` to specify name shown when reading from stdin (#739).
