@@ -1,10 +1,17 @@
 // Copyright (c) 2018, the Dart project authors.  Please see the AUTHORS file
+
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
 /// Enum-like class for the different syntactic fixes that can be applied while
 /// formatting.
 class StyleFix {
+  static const docComments = const StyleFix._(
+      "doc-comments", 'Use triple slash for documentation comments.');
+
+  static const functionTypedefs = const StyleFix._(
+      "function-typedefs", 'Use new syntax for function type typedefs.');
+
   static const namedDefaultSeparator = const StyleFix._(
       "named-default-separator",
       'Use "=" as the separator before named parameter default values.');
@@ -15,14 +22,12 @@ class StyleFix {
   static const optionalNew =
       const StyleFix._("optional-new", 'Remove "new" keyword.');
 
-  static const docComments = const StyleFix._(
-      "doc-comments", 'Use triple slash for documentation comments.');
-
   static const all = const [
+    docComments,
+    functionTypedefs,
     namedDefaultSeparator,
     optionalConst,
-    optionalNew,
-    docComments,
+    optionalNew
   ];
 
   final String name;

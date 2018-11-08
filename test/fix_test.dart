@@ -15,6 +15,7 @@ void main() {
   testFile(
       "fixes/named_default_separator.unit", [StyleFix.namedDefaultSeparator]);
   testFile("fixes/doc_comments.stmt", [StyleFix.docComments]);
+  testFile("fixes/function_typedefs.unit", [StyleFix.functionTypedefs]);
   testFile("fixes/optional_const.unit", [StyleFix.optionalConst]);
   testFile("fixes/optional_new.stmt", [StyleFix.optionalNew]);
 }
