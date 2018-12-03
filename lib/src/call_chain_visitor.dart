@@ -4,7 +4,7 @@
 
 library dart_style.src.call_chain_visitor;
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import 'argument_list_visitor.dart';

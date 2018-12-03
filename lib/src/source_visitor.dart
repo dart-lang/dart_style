@@ -4,8 +4,9 @@
 
 library dart_style.src.source_visitor;
 
-import 'package:analyzer/analyzer.dart';
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/src/generated/source.dart';
 
 import 'argument_list_visitor.dart';
