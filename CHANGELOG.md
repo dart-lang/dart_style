@@ -1,4 +1,4 @@
-# 1.2.1-dev
+# 1.2.1
 
 * Add `--fix-function-typedefs` to convert the old typedef syntax for function
   types to the new preferred syntax.
