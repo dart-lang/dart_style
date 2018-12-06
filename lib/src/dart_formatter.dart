@@ -114,6 +114,7 @@ class DartFormatter {
     // Parse it.
     var parser = new Parser(stringSource, errorListener);
     parser.enableOptionalNewAndConst = true;
+    parser.enableSetLiterals = true;
 
     AstNode node;
     if (source.isCompilationUnit) {
