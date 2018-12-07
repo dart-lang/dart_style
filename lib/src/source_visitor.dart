@@ -1834,6 +1834,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     newline();
   }
 
+  visitSetLiteral(SetLiteral node) {
+    _visitCollectionLiteral(
+        node, node.leftBracket, node.elements, node.rightBracket);
+  }
+
   visitShowCombinator(ShowCombinator node) {
     _visitCombinator(node.keyword, node.shownNames);
   }

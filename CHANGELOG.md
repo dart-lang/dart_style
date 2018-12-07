@@ -1,3 +1,7 @@
+# 1.2.2
+
+* Support set literals (#751).
+
 # 1.2.1
 
 * Add `--fix-function-typedefs` to convert the old typedef syntax for function
