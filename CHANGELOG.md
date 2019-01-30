@@ -1,3 +1,7 @@
+# 1.2.3
+
+* Update `package:analyzer` constraint to `'>=0.33.0 <0.36.0'`.
+
 # 1.2.2
 
 * Support set literals (#751).
