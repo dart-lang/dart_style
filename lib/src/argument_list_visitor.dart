@@ -504,9 +504,7 @@ class ArgumentSublist {
     // TODO(rnystrom): Should we step into parenthesized expressions?
 
     if (expression is ListLiteral) return expression.leftBracket;
-    // TODO(rnystrom): should we return expression.leftBracket for sets as well?
-    if (expression is SetOrMapLiteral && !expression.isSet)
-      return expression.leftBracket;
+    if (expression is SetOrMapLiteral) return expression.leftBracket;
     if (expression is SingleStringLiteral && expression.isMultiline) {
       return expression.beginToken;
     }

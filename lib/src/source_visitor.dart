@@ -503,8 +503,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///     ]..addAll(numbers);
   bool _isCollectionLike(Expression expression) {
     if (expression is ListLiteral) return false;
-    // TODO(rnystrom): should we return false for sets as well?
-    if (expression is SetOrMapLiteral && !expression.isSet) return false;
+    if (expression is SetOrMapLiteral) return false;
 
     // If the target is a call with a trailing comma in the argument list,
     // treat it like a collection literal.
@@ -2177,18 +2176,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Don't allow a split between a name and a collection. Instead, we want
     // the collection itself to split, or to split before the argument.
-    // TODO(rnystrom): do we want the "if" test below to apply to sets as well
-    // as maps?
-    var nodeExpression = node.expression;
-    if (nodeExpression is ListLiteral ||
-        (nodeExpression is SetOrMapLiteral && nodeExpression.isSet)) {
+    if (node.expression is ListLiteral || node.expression is SetOrMapLiteral) {
       space();
     } else {
       var split = soloSplit();
       if (rule != null) split.imply(rule);
     }
 
-    visit(nodeExpression);
+    visit(node.expression);
     builder.endSpan();
     builder.unnest();
   }
@@ -2708,10 +2703,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///         new SomeBuilderClass()..method()..method();
   int _assignmentCost(Expression rightHandSide) {
     if (rightHandSide is ListLiteral) return Cost.assignBlock;
-    // TODO(rnystrom): or do we want the "if" test on the line below to apply to
-    // both maps and sets?
-    if (rightHandSide is SetOrMapLiteral && !rightHandSide.isSet)
-      return Cost.assignBlock;
+    if (rightHandSide is SetOrMapLiteral) return Cost.assignBlock;
     if (rightHandSide is CascadeExpression) return Cost.assignBlock;
 
     return Cost.assign;

@@ -311,8 +311,7 @@ class CallChainVisitor {
 
     // Don't split right after a collection literal.
     if (expression is ListLiteral) return false;
-    // TODO(rnystrom): should we return false for sets as well?
-    if (expression is SetOrMapLiteral && !expression.isSet) return false;
+    if (expression is SetOrMapLiteral) return false;
 
     // Don't split right after a non-empty curly-bodied function.
     if (expression is FunctionExpression) {
