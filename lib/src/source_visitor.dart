@@ -503,7 +503,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///     ]..addAll(numbers);
   bool _isCollectionLike(Expression expression) {
     if (expression is ListLiteral) return false;
-    if (expression is MapLiteral) return false;
+    // TODO(rnystrom): should we return false for sets as well?
+    if (expression is SetOrMapLiteral && !expression.isSet) return false;
 
     // If the target is a call with a trailing comma in the argument list,
     // treat it like a collection literal.
@@ -1048,58 +1049,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
   }
 
-  visitForEachStatement(ForEachStatement node) {
-    builder.nestExpression();
-    token(node.awaitKeyword, after: space);
-    token(node.forKeyword);
-    space();
-    token(node.leftParenthesis);
-
-    if (node.loopVariable != null) {
-      // TODO(rnystrom): The formatting logic here is slightly different from
-      // how parameter metadata is handled and from how variable metadata is
-      // handled. I think what it does works better in the context of a for-in
-      // loop, but consider trying to unify this with one of the above.
-      //
-      // Metadata on class and variable declarations is *always* split:
-      //
-      //     @foo
-      //     class Bar {}
-      //
-      // Metadata on parameters has some complex logic to handle multiple
-      // parameters with metadata. It also indents the parameters farther than
-      // the metadata when split:
-      //
-      //     function(
-      //         @foo(long arg list...)
-      //             parameter1,
-      //         @foo
-      //             parameter2) {}
-      //
-      // For for-in variables, we allow it to not split, like parameters, but
-      // don't indent the variable when it does split:
-      //
-      //     for (
-      //         @foo
-      //         @bar
-      //         var blah in stuff) {}
-      builder.startRule();
-      visitNodes(node.loopVariable.metadata, between: split, after: split);
-      visit(node.loopVariable);
-      builder.endRule();
-    } else {
-      visit(node.identifier);
-    }
-    soloSplit();
-    token(node.inKeyword);
-    space();
-    visit(node.iterable);
-    token(node.rightParenthesis);
-    builder.unnest();
-
-    _visitLoopBody(node.body);
-  }
-
   visitFormalParameterList(FormalParameterList node,
       {bool nestExpression: true}) {
     // Corner case: empty parameter lists.
@@ -1206,38 +1155,103 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (nestExpression) builder.unnest();
   }
 
-  visitForStatement(ForStatement node) {
+  visitForStatement2(ForStatement2 node) {
     builder.nestExpression();
+    token(node.awaitKeyword, after: space);
     token(node.forKeyword);
     space();
     token(node.leftParenthesis);
 
     builder.startRule();
 
-    // The initialization clause.
-    if (node.initialization != null) {
-      visit(node.initialization);
-    } else if (node.variables != null) {
-      // Nest split variables more so they aren't at the same level
-      // as the rest of the loop clauses.
-      builder.nestExpression();
+    visit(node.forLoopParts);
 
-      // Allow the variables to stay unsplit even if the clauses split.
-      builder.startRule();
+    token(node.rightParenthesis);
+    builder.endRule();
+    builder.unnest();
 
-      var declaration = node.variables;
-      visitMetadata(declaration.metadata);
-      modifier(declaration.keyword);
-      visit(declaration.type, after: space);
+    _visitLoopBody(node.body);
+  }
 
-      visitCommaSeparatedNodes(declaration.variables, between: () {
-        split();
-      });
+  visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
+    // TODO(rnystrom): The formatting logic here is slightly different from
+    // how parameter metadata is handled and from how variable metadata is
+    // handled. I think what it does works better in the context of a for-in
+    // loop, but consider trying to unify this with one of the above.
+    //
+    // Metadata on class and variable declarations is *always* split:
+    //
+    //     @foo
+    //     class Bar {}
+    //
+    // Metadata on parameters has some complex logic to handle multiple
+    // parameters with metadata. It also indents the parameters farther than
+    // the metadata when split:
+    //
+    //     function(
+    //         @foo(long arg list...)
+    //             parameter1,
+    //         @foo
+    //             parameter2) {}
+    //
+    // For for-in variables, we allow it to not split, like parameters, but
+    // don't indent the variable when it does split:
+    //
+    //     for (
+    //         @foo
+    //         @bar
+    //         var blah in stuff) {}
+    // TODO(rnystrom): we used to call builder.startRule() here, but now we call
+    // it from visitForStatement2 prior to the `(`.  Is that ok?
+    visitNodes(node.loopVariable.metadata, between: split, after: split);
+    visit(node.loopVariable);
+    // TODO(rnystrom): we used to call builder.endRule() here, but now we call
+    // it from visitForStatement2 after the `)`.  Is that ok?
 
-      builder.endRule();
-      builder.unnest();
-    }
+    _visitForEachPartsFromIn(node);
+  }
 
+  void _visitForEachPartsFromIn(ForEachParts node) {
+    soloSplit();
+    token(node.inKeyword);
+    space();
+    visit(node.iterable);
+  }
+
+  visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
+    visit(node.identifier);
+    _visitForEachPartsFromIn(node);
+  }
+
+  visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
+    // Nest split variables more so they aren't at the same level
+    // as the rest of the loop clauses.
+    builder.nestExpression();
+
+    // Allow the variables to stay unsplit even if the clauses split.
+    builder.startRule();
+
+    var declaration = node.variables;
+    visitMetadata(declaration.metadata);
+    modifier(declaration.keyword);
+    visit(declaration.type, after: space);
+
+    visitCommaSeparatedNodes(declaration.variables, between: () {
+      split();
+    });
+
+    builder.endRule();
+    builder.unnest();
+
+    _visitForPartsFromLeftSeparator(node);
+  }
+
+  visitForPartsWithExpression(ForPartsWithExpression node) {
+    visit(node.initialization);
+    _visitForPartsFromLeftSeparator(node);
+  }
+
+  void _visitForPartsFromLeftSeparator(ForParts node) {
     token(node.leftSeparator);
 
     // The condition clause.
@@ -1256,12 +1270,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       builder.endRule();
     }
-
-    token(node.rightParenthesis);
-    builder.endRule();
-    builder.unnest();
-
-    _visitLoopBody(node.body);
   }
 
   visitFunctionDeclaration(FunctionDeclaration node) {
@@ -1597,14 +1605,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitListLiteral(ListLiteral node) {
     // Corner case: Splitting inside a list looks bad if there's only one
     // element, so make those more costly.
-    var cost = node.elements.length <= 1 ? Cost.singleElementList : Cost.normal;
+    var cost =
+        node.elements2.length <= 1 ? Cost.singleElementList : Cost.normal;
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket, cost);
-  }
-
-  visitMapLiteral(MapLiteral node) {
-    _visitCollectionLiteral(
-        node, node.leftBracket, node.entries, node.rightBracket);
+        node, node.leftBracket, node.elements2, node.rightBracket, cost);
   }
 
   visitMapLiteralEntry(MapLiteralEntry node) {
@@ -1834,9 +1838,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     newline();
   }
 
-  visitSetLiteral(SetLiteral node) {
+  visitSetOrMapLiteral(SetOrMapLiteral node) {
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket);
+        node, node.leftBracket, node.elements2, node.rightBracket);
   }
 
   visitShowCombinator(ShowCombinator node) {
@@ -2173,14 +2177,18 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Don't allow a split between a name and a collection. Instead, we want
     // the collection itself to split, or to split before the argument.
-    if (node.expression is ListLiteral || node.expression is MapLiteral) {
+    // TODO(rnystrom): do we want the "if" test below to apply to sets as well
+    // as maps?
+    var nodeExpression = node.expression;
+    if (nodeExpression is ListLiteral ||
+        (nodeExpression is SetOrMapLiteral && nodeExpression.isSet)) {
       space();
     } else {
       var split = soloSplit();
       if (rule != null) split.imply(rule);
     }
 
-    visit(node.expression);
+    visit(nodeExpression);
     builder.endSpan();
     builder.unnest();
   }
@@ -2700,7 +2708,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///         new SomeBuilderClass()..method()..method();
   int _assignmentCost(Expression rightHandSide) {
     if (rightHandSide is ListLiteral) return Cost.assignBlock;
-    if (rightHandSide is MapLiteral) return Cost.assignBlock;
+    // TODO(rnystrom): or do we want the "if" test on the line below to apply to
+    // both maps and sets?
+    if (rightHandSide is SetOrMapLiteral && !rightHandSide.isSet)
+      return Cost.assignBlock;
     if (rightHandSide is CascadeExpression) return Cost.assignBlock;
 
     return Cost.assign;
