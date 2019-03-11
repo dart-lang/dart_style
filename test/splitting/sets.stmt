@@ -90,8 +90,12 @@ var s = {
 >>> const
 var set = const {"foo", "bar", "fuz", null};
 <<<
-var set =
-    const {"foo", "bar", "fuz", null};
+var set = const {
+  "foo",
+  "bar",
+  "fuz",
+  null
+};
 >>> trailing comma forces split
 var set = {"foo", "bar" , };
 <<<
