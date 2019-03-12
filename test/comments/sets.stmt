@@ -50,8 +50,9 @@ var set = <int>{
 >>> multiple inline block comments
 var set = <int>{  /* 1 */   /* 2 */   /* 3 */  };
 <<<
-var set =
-    <int>{/* 1 */ /* 2 */ /* 3 */};
+var set = <int>{
+  /* 1 */ /* 2 */ /* 3 */
+};
 >>> multiline trailing block comment
 var set = <int>{  /* comment
 */  };
