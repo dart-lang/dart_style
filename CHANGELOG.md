@@ -1,3 +1,8 @@
+# 1.2.4
+
+* Update to latest analyzer package AST API.
+* Tweak set literal formatting to follow other collection literals.
+
 # 1.2.3
 
 * Update `package:analyzer` constraint to `'>=0.33.0 <0.36.0'`.
