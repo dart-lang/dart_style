@@ -1,3 +1,8 @@
+# 1.2.5
+
+* Add support for spreads inside collections (#778).
+* Add support for `if` and `for` elements inside collections (#779).
+
 # 1.2.4
 
 * Update to latest analyzer package AST API.
