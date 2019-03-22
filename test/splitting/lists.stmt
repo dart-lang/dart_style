@@ -168,3 +168,27 @@
 
   element
 ];
+>>> a spread list literal splits an outer list even if it fits
+var list = [1, ...[2, 3], 4];
+<<<
+var list = [
+  1,
+  ...[2, 3],
+  4
+];
+>>> spread empty list does not force outer split
+var list = [1, ...[], 4];
+<<<
+var list = [1, ...[], 4];
+>>> split inside spread expression
+var list = [1, ...some + very + long + spread + expression, 3];
+<<<
+var list = [
+  1,
+  ...some +
+      very +
+      long +
+      spread +
+      expression,
+  3
+];

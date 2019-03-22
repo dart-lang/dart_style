@@ -453,7 +453,7 @@ class ArgumentSublist {
       rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
-      visitor.beforeBlock(_blocks[argument], this);
+      visitor.beforeBlock(_blocks[argument], blockRule, previousSplit);
     } else if (_allArguments.length > 1) {
       // Edge case: Only bump the nesting if there are multiple arguments. This
       // lets us avoid spurious indentation in cases like:
