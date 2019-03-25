@@ -64,22 +64,11 @@ class NestingBuilder {
   NestingLevel get currentNesting =>
       _pendingNesting != null ? _pendingNesting : _nesting;
 
-  /// The top "nesting level" that represents no expression nesting for the
-  /// current block.
-  NestingLevel get blockNesting {
-    // Walk the nesting levels until we bottom out.
-    var result = _nesting;
-    while (result.parent != null) {
-      result = result.parent;
-    }
-    return result;
-  }
-
   /// Creates a new indentation level [spaces] deeper than the current one.
   ///
   /// If omitted, [spaces] defaults to [Indent.block].
   void indent([int spaces]) {
-    if (spaces == null) spaces = Indent.block;
+    spaces ??= Indent.block;
 
     // Indentation should only change outside of nesting.
     assert(_pendingNesting == null);

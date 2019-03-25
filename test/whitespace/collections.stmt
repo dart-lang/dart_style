@@ -1,0 +1,59 @@
+40 columns                              |
+>>> empty map literal (dartbug.com/16382)
+var m = { };
+<<<
+var m = {};
+>>>
+var m = {};
+<<<
+var m = {};
+>>> generic map literal
+<   int,int  >{   };
+<<<
+<int, int>{};
+>>> generic set literal
+<   int  >{   };
+<<<
+<int>{};
+>>> list spread
+var list = [  ...  a,...b,  ...
+c];
+<<<
+var list = [...a, ...b, ...c];
+>>> map spread
+var map = {  ...  a,...b,1:2,  ...
+c};
+<<<
+var map = {...a, ...b, 1: 2, ...c};
+>>> set spread
+var set = {  ...  a,...b, 1,   ...
+c};
+<<<
+var set = {...a, ...b, 1, ...c};
+>>> list null aware spread
+var list = [  ...?  a,...?b,  ...?
+c];
+<<<
+var list = [...?a, ...?b, ...?c];
+>>> map null aware spread
+var map = {  ...?  a,...?b,1:2,  ...?
+c};
+<<<
+var map = {...?a, ...?b, 1: 2, ...?c};
+>>> set null aware spread
+var set = {  ...?  a,...?b, 1,   ...?
+c};
+<<<
+var set = {...?a, ...?b, 1, ...?c};
+>>> if
+var list = [   if   ( c    )   1    ,];
+<<<
+var list = [
+  if (c) 1,
+];
+>>> if else
+var list = [   if   ( c    )   1    else    2   ,];
+<<<
+var list = [
+  if (c) 1 else 2,
+];

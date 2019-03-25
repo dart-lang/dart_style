@@ -153,7 +153,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Before a block argument is visited, [ArgumentSublist] binds itself to the
   /// beginning token of each block it controls. When we later visit that
   /// literal, we use the token to find that association.
-  final Map<Token, ArgumentSublist> _blockArgumentLists = {};
+  ///
+  /// This mapping is also used for spread collection literals that appear
+  /// inside control flow elements to ensure that when a "then" collection
+  /// splits, the corresponding "else" one does too.
+  final Map<Token, Rule> _blockRules = {};
+  final Map<Token, Chunk> _blockPreviousChunks = {};
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -1387,6 +1392,121 @@ class SourceVisitor extends ThrowingAstVisitor {
     _visitCombinator(node.keyword, node.hiddenNames);
   }
 
+  void visitIfElement(IfElement node) {
+    // Wrap the whole thing in a single rule. If a split happens inside the
+    // condition or the then clause, we want the then and else clauses to split.
+    builder.startRule();
+
+    token(node.ifKeyword);
+    space();
+    token(node.leftParenthesis);
+    visit(node.condition);
+    token(node.rightParenthesis);
+
+    // If the body of the then or else branch is a spread of a collection
+    // literal, then we want to format those collections more like blocks than
+    // like standalone objects. In particular, if both the then and else branch
+    // are spread collection literals, we want to ensure that they both split
+    // if either splits. So this:
+    //
+    //     [
+    //       if (condition) ...[
+    //         thenClause
+    //       ] else ...[
+    //         elseClause
+    //       ]
+    //     ]
+    //
+    // And not something like this:
+    //
+    //     [
+    //       if (condition) ...[
+    //         thenClause
+    //       ] else ...[elseClause]
+    //     ]
+    //
+    // To do that, if we see that either clause is a spread collection, we
+    // create a single rule and force both collections to use it.
+    var thenSpreadBracket = _findSpreadCollectionBracket(node.thenElement);
+    var elseSpreadBracket = _findSpreadCollectionBracket(node.elseElement);
+
+    if (thenSpreadBracket != null || elseSpreadBracket != null) {
+      var spreadRule = Rule();
+      if (thenSpreadBracket != null) {
+        beforeBlock(thenSpreadBracket, spreadRule, null);
+      }
+
+      if (elseSpreadBracket != null) {
+        beforeBlock(elseSpreadBracket, spreadRule, null);
+      }
+    }
+
+    builder.nestExpression(indent: 2, now: true);
+
+    // Treat a spread of a collection literal like a block in an if statement
+    // and don't split after the "else".
+    if (thenSpreadBracket != null) {
+      space();
+    } else {
+      split();
+
+      // If the then clause is a non-spread collection or lambda, make sure the
+      // body is indented.
+      builder.startBlockArgumentNesting();
+    }
+
+    visit(node.thenElement);
+
+    if (thenSpreadBracket == null) builder.endBlockArgumentNesting();
+    builder.unnest();
+
+    if (node.elseElement != null) {
+      if (thenSpreadBracket != null) {
+        space();
+      } else {
+        split();
+      }
+
+      token(node.elseKeyword);
+
+      builder.nestExpression(indent: 2, now: true);
+
+      if (elseSpreadBracket != null) {
+        space();
+      } else {
+        split();
+
+        // If the else clause is a non-spread collection or lambda, make sure
+        // the body is indented.
+        builder.startBlockArgumentNesting();
+      }
+
+      visit(node.elseElement);
+
+      if (elseSpreadBracket == null) builder.endBlockArgumentNesting();
+      builder.unnest();
+    }
+
+    builder.endRule();
+  }
+
+  /// If [node] is a spread of a collection literal, then this returns the
+  /// token for the opening bracket of the collection, as in:
+  ///
+  ///     [ ...[a, list] ]
+  ///     //   ^
+  ///
+  /// Otherwise, returns `null`.
+  Token _findSpreadCollectionBracket(AstNode node) {
+    if (node is SpreadElement) {
+      var expression = node.expression;
+      if (expression is ListLiteral) return expression.leftBracket;
+      if (expression is SetOrMapLiteral) return expression.leftBracket;
+    }
+
+    return null;
+  }
+
   visitIfStatement(IfStatement node) {
     builder.nestExpression();
     token(node.ifKeyword);
@@ -1611,10 +1731,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitMapLiteralEntry(MapLiteralEntry node) {
+    builder.nestExpression();
     visit(node.key);
     token(node.separator);
     soloSplit();
     visit(node.value);
+    builder.unnest();
   }
 
   visitMethodDeclaration(MethodDeclaration node) {
@@ -1880,6 +2002,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitSimpleStringLiteral(SimpleStringLiteral node) {
     _writeStringLiteral(node.literal);
+  }
+
+  visitSpreadElement(SpreadElement node) {
+    token(node.spreadOperator);
+    visit(node.expression);
   }
 
   visitStringInterpolation(StringInterpolation node) {
@@ -2511,15 +2638,12 @@ class SourceVisitor extends ThrowingAstVisitor {
         }
       }
 
-      builder.nestExpression();
       visit(element);
 
       // The comma after the element.
       if (element.endToken.next.type == TokenType.COMMA) {
         token(element.endToken.next);
       }
-
-      builder.unnest();
     }
 
     builder.endRule();
@@ -2741,14 +2865,17 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _startLiteralBody(Token leftBracket) {
     token(leftBracket);
 
-    // See if this literal is associated with an argument list that wants to
-    // handle splitting and indenting it. If not, we'll use a default rule.
-    var rule;
-    var argumentChunk;
-    if (_blockArgumentLists.containsKey(leftBracket)) {
-      var argumentList = _blockArgumentLists[leftBracket];
-      rule = argumentList.blockRule;
-      argumentChunk = argumentList.previousSplit;
+    // See if this literal is associated with an argument list or if element
+    // that wants to handle splitting and indenting it. If not, we'll use a
+    // default rule.
+    Rule rule;
+    if (_blockRules.containsKey(leftBracket)) {
+      rule = _blockRules[leftBracket];
+    }
+
+    Chunk argumentChunk;
+    if (_blockPreviousChunks.containsKey(leftBracket)) {
+      argumentChunk = _blockPreviousChunks[leftBracket];
     }
 
     // Create a rule for whether or not to split the block contents.
@@ -2844,12 +2971,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Marks the block that starts with [token] as being controlled by
-  /// [argumentList].
+  /// [rule] and following [previousChunk].
   ///
-  /// When the block is visited, [argumentList] will determine the
-  /// indentation and splitting rule for the block.
-  void beforeBlock(Token token, ArgumentSublist argumentList) {
-    _blockArgumentLists[token] = argumentList;
+  /// When the block is visited, these will determine the indentation and
+  /// splitting rule for the block. These are used for handling block-like
+  /// expressions inside argument lists and spread collections inside if
+  /// elements.
+  void beforeBlock(Token token, Rule rule, [Chunk previousChunk]) {
+    _blockRules[token] = rule;
+    if (previousChunk != null) _blockPreviousChunks[token] = previousChunk;
   }
 
   /// Writes the beginning of a brace-delimited body and handles indenting and

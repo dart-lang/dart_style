@@ -32,22 +32,6 @@ x &&
     y;
 <<<
 x && y;
->>> empty map literal (dartbug.com/16382)
-var m = { };
-<<<
-var m = {};
->>>
-var m = {};
-<<<
-var m = {};
->>> generic map literal
-<   int,int  >{   };
-<<<
-<int, int>{};
->>> generic set literal
-<   int  >{   };
-<<<
-<int>{};
 >>> unqualified symbol
 var x = #foo;
 <<<
