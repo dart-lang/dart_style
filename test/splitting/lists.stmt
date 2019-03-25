@@ -192,3 +192,33 @@ var list = [
       expression,
   3
 ];
+>>> spread cascade
+var list = [1, ...thing..cascade()..another(), 4];
+<<<
+var list = [
+  1,
+  ...thing
+    ..cascade()
+    ..another(),
+  4
+];
+>>> spread lambda
+var list = [1, ...() { body; }, 4];
+<<<
+var list = [
+  1,
+  ...() {
+    body;
+  },
+  4
+];
+>>> spread immediately invoked lambda
+var list = [1, ...() sync* { yield thing; }(), 4];
+<<<
+var list = [
+  1,
+  ...() sync* {
+    yield thing;
+  }(),
+  4
+];

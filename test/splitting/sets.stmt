@@ -175,3 +175,33 @@ var set = {
 
   element
 };
+>>> spread cascade
+var set = {1, ...thing..cascade()..another(), 4};
+<<<
+var set = {
+  1,
+  ...thing
+    ..cascade()
+    ..another(),
+  4
+};
+>>> spread lambda
+var set = {1, ...() { body; }, 4};
+<<<
+var set = {
+  1,
+  ...() {
+    body;
+  },
+  4
+};
+>>> spread immediately invoked lambda
+var set = {1, ...() sync* { yield thing; }(), 4};
+<<<
+var set = {
+  1,
+  ...() sync* {
+    yield thing;
+  }(),
+  4
+};
