@@ -1159,6 +1159,45 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (nestExpression) builder.unnest();
   }
 
+  void visitForElement(ForElement node) {
+    // Treat a spread of a collection literal like a block in a for statement
+    // and don't split after the for parts.
+    var isSpreadBody = _isSpreadCollection(node.body);
+
+    builder.nestExpression();
+    token(node.awaitKeyword, after: space);
+    token(node.forKeyword);
+    space();
+    token(node.leftParenthesis);
+
+    // Start the body rule so that if the parts split, the body does too.
+    builder.startRule();
+
+    // The rule for the parts.
+    builder.startRule();
+    visit(node.forLoopParts);
+    token(node.rightParenthesis);
+    builder.endRule();
+    builder.unnest();
+
+    builder.nestExpression(indent: 2, now: true);
+
+    if (isSpreadBody) {
+      space();
+    } else {
+      split();
+
+      // If the body is a non-spread collection or lambda, indent it.
+      builder.startBlockArgumentNesting();
+    }
+
+    visit(node.body);
+
+    if (!isSpreadBody) builder.endBlockArgumentNesting();
+    builder.unnest();
+    builder.endRule();
+  }
+
   visitForStatement2(ForStatement2 node) {
     builder.nestExpression();
     token(node.awaitKeyword, after: space);
@@ -1488,23 +1527,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.endRule();
-  }
-
-  /// If [node] is a spread of a collection literal, then this returns the
-  /// token for the opening bracket of the collection, as in:
-  ///
-  ///     [ ...[a, list] ]
-  ///     //   ^
-  ///
-  /// Otherwise, returns `null`.
-  Token _findSpreadCollectionBracket(AstNode node) {
-    if (node is SpreadElement) {
-      var expression = node.expression;
-      if (expression is ListLiteral) return expression.leftBracket;
-      if (expression is SetOrMapLiteral) return expression.leftBracket;
-    }
-
-    return null;
   }
 
   visitIfStatement(IfStatement node) {
@@ -2800,6 +2822,27 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.endRule();
+  }
+
+  /// Whether [node] is a spread of a collection literal.
+  bool _isSpreadCollection(AstNode node) =>
+      _findSpreadCollectionBracket(node) != null;
+
+  /// If [node] is a spread of a collection literal, then this returns the
+  /// token for the opening bracket of the collection, as in:
+  ///
+  ///     [ ...[a, list] ]
+  ///     //   ^
+  ///
+  /// Otherwise, returns `null`.
+  Token _findSpreadCollectionBracket(AstNode node) {
+    if (node is SpreadElement) {
+      var expression = node.expression;
+      if (expression is ListLiteral) return expression.leftBracket;
+      if (expression is SetOrMapLiteral) return expression.leftBracket;
+    }
+
+    return null;
   }
 
   /// Gets the cost to split at an assignment (or `:` in the case of a named
