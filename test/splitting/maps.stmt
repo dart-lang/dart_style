@@ -160,3 +160,33 @@ var map = {
   // comment
   a: value
 };
+>>> spread cascade
+var map = {1: 1, ...thing..cascade()..another(), 4: 4};
+<<<
+var map = {
+  1: 1,
+  ...thing
+    ..cascade()
+    ..another(),
+  4: 4
+};
+>>> spread lambda
+var map = {1: 1, ...() { body; }, 4: 4};
+<<<
+var map = {
+  1: 1,
+  ...() {
+    body;
+  },
+  4: 4
+};
+>>> spread immediately invoked lambda
+var map = {1: 1, ...() sync* { yield thing; }(), 4: 4};
+<<<
+var map = {
+  1: 1,
+  ...() sync* {
+    yield thing;
+  }(),
+  4: 4
+};
