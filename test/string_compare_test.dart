@@ -57,7 +57,7 @@ void main() {
     for (var rune in whitespaceRunes) {
       expect(
           equalIgnoringWhitespace(
-              'foo${new String.fromCharCode(rune)}bar', 'foo    bar'),
+              'foo${String.fromCharCode(rune)}bar', 'foo    bar'),
           isFalse);
     }
   });

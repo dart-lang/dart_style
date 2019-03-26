@@ -16,14 +16,14 @@ import 'style_fix.dart';
 import 'whitespace.dart';
 
 /// Matches if the last character of a string is an identifier character.
-final _trailingIdentifierChar = new RegExp(r"[a-zA-Z0-9_]$");
+final _trailingIdentifierChar = RegExp(r"[a-zA-Z0-9_]$");
 
 /// Matches a JavaDoc-style doc comment that starts with "/**" and ends with
 /// "*/" or "**/".
-final _javaDocComment = new RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
+final _javaDocComment = RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
 
 /// Matches the leading "*" in a line in the middle of a JavaDoc-style comment.
-var _javaDocLine = new RegExp(r"^\s*\*(.*)");
+var _javaDocLine = RegExp(r"^\s*\*(.*)");
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
@@ -66,7 +66,7 @@ class ChunkBuilder {
   /// the hard split appears. For example, a hard split in a positional
   /// argument list needs to force the named arguments to split too, but we
   /// don't create that rule until after the positional arguments are done.
-  final _hardSplitRules = new Set<Rule>();
+  final _hardSplitRules = Set<Rule>();
 
   /// The list of rules that are waiting until the next whitespace has been
   /// written before they start.
@@ -76,7 +76,7 @@ class ChunkBuilder {
   final _openSpans = <OpenSpan>[];
 
   /// The current state.
-  final _nesting = new NestingBuilder();
+  final _nesting = NestingBuilder();
 
   /// The stack of nesting levels where block arguments may start.
   ///
@@ -438,7 +438,7 @@ class ChunkBuilder {
   ///
   /// Each call to this needs a later matching call to [endSpan].
   void startSpan([int cost = Cost.normal]) {
-    _openSpans.add(new OpenSpan(_currentChunkIndex, cost));
+    _openSpans.add(OpenSpan(_currentChunkIndex, cost));
   }
 
   /// Ends the innermost span.
@@ -450,7 +450,7 @@ class ChunkBuilder {
     if (openSpan.start == end) return;
 
     // Add the span to every chunk that can split it.
-    var span = new Span(openSpan.cost);
+    var span = Span(openSpan.cost);
     for (var i = openSpan.start; i < end; i++) {
       var chunk = _chunks[i];
       if (!chunk.rule.isHardened) chunk.spans.add(span);
@@ -461,7 +461,7 @@ class ChunkBuilder {
   ///
   /// If omitted, defaults to a new [Rule].
   void startRule([Rule rule]) {
-    if (rule == null) rule = new Rule();
+    if (rule == null) rule = Rule();
 
     // If there are any pending lazy rules, start them now so that the proper
     // stack ordering of rules is maintained.
@@ -489,7 +489,7 @@ class ChunkBuilder {
   ///
   /// If [rule] is omitted, defaults to a new [Rule].
   void startLazyRule([Rule rule]) {
-    if (rule == null) rule = new Rule();
+    if (rule == null) rule = Rule();
 
     _lazyRules.add(rule);
   }
@@ -580,8 +580,7 @@ class ChunkBuilder {
     var chunk = _chunks.last;
     chunk.makeBlock(argumentChunk);
 
-    var builder =
-        new ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
+    var builder = ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
 
     // A block always starts off indented one level.
     builder.indent();
@@ -653,7 +652,7 @@ class ChunkBuilder {
       debug.log();
     }
 
-    var writer = new LineWriter(_formatter, _chunks);
+    var writer = LineWriter(_formatter, _chunks);
     var result = writer.writeLines(_formatter.indent,
         isCompilationUnit: _source.isCompilationUnit);
 
@@ -671,7 +670,7 @@ class ChunkBuilder {
       selectionLength = selectionEnd - selectionStart;
     }
 
-    return new SourceCode(result.text,
+    return SourceCode(result.text,
         uri: _source.uri,
         isCompilationUnit: _source.isCompilationUnit,
         selectionStart: selectionStart,
@@ -822,10 +821,10 @@ class ChunkBuilder {
   /// If [flushLeft] is `true`, then the split will always cause the next line
   /// to be at column zero. Otherwise, it uses the normal indentation and
   /// nesting behavior.
-  void _writeHardSplit({bool isDouble, bool flushLeft, bool nest: false}) {
+  void _writeHardSplit({bool isDouble, bool flushLeft, bool nest = false}) {
     // A hard split overrides any other whitespace.
     _pendingWhitespace = null;
-    _writeSplit(new Rule.hard(),
+    _writeSplit(Rule.hard(),
         flushLeft: flushLeft, isDouble: isDouble, nest: nest);
   }
 
@@ -843,8 +842,8 @@ class ChunkBuilder {
       return null;
     }
 
-    _chunks.last.applySplit(rule, _nesting.indentation,
-        nest ? _nesting.nesting : new NestingLevel(),
+    _chunks.last.applySplit(
+        rule, _nesting.indentation, nest ? _nesting.nesting : NestingLevel(),
         flushLeft: flushLeft, isDouble: isDouble, space: space);
 
     if (_chunks.last.rule.isHardened) _handleHardSplit();
@@ -857,7 +856,7 @@ class ChunkBuilder {
     if (_chunks.isNotEmpty && _chunks.last.canAddText) {
       _chunks.last.appendText(text);
     } else {
-      _chunks.add(new Chunk(text));
+      _chunks.add(Chunk(text));
     }
   }
 

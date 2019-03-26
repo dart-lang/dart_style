@@ -58,7 +58,7 @@ class NestingBuilder {
 
   /// The current nesting, ignoring any pending nesting.
   NestingLevel get nesting => _nesting;
-  NestingLevel _nesting = new NestingLevel();
+  NestingLevel _nesting = NestingLevel();
 
   /// The current nesting, including any pending nesting.
   NestingLevel get currentNesting =>

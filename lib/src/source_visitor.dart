@@ -23,7 +23,7 @@ import 'source_code.dart';
 import 'style_fix.dart';
 import 'whitespace.dart';
 
-final _capitalPattern = new RegExp(r"^_?[A-Z].*[a-z]");
+final _capitalPattern = RegExp(r"^_?[A-Z].*[a-z]");
 
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
@@ -163,7 +163,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(this._formatter, this._lineInfo, this._source) {
-    builder = new ChunkBuilder(_formatter, _source);
+    builder = ChunkBuilder(_formatter, _source);
   }
 
   /// Runs the visitor on [node], formatting its contents.
@@ -216,7 +216,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// 4. Split between one or more positional arguments, trying to keep as many
   ///    on earlier lines as possible.
   /// 5. Split the named arguments each onto their own line.
-  visitArgumentList(ArgumentList node, {bool nestExpression: true}) {
+  visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
     // Corner case: handle empty argument lists.
     if (node.arguments.isEmpty) {
       token(node.leftParenthesis);
@@ -238,7 +238,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     if (nestExpression) builder.nestExpression();
-    new ArgumentListVisitor(this, node).visit();
+    ArgumentListVisitor(this, node).visit();
     if (nestExpression) builder.unnest();
   }
 
@@ -261,7 +261,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.message != null) arguments.add(node.message);
 
     builder.nestExpression();
-    var visitor = new ArgumentListVisitor.forArguments(
+    var visitor = ArgumentListVisitor.forArguments(
         this, node.leftParenthesis, node.rightParenthesis, arguments);
     visitor.visit();
     builder.unnest();
@@ -274,7 +274,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       var arguments = [node.condition];
       if (node.message != null) arguments.add(node.message);
 
-      var visitor = new ArgumentListVisitor.forArguments(
+      var visitor = ArgumentListVisitor.forArguments(
           this, node.leftParenthesis, node.rightParenthesis, arguments);
       visitor.visit();
     });
@@ -439,8 +439,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If the cascade sections have consistent names they can be broken
     // normally otherwise they always get their own line.
     if (splitIfOperandsSplit) {
-      builder.startLazyRule(
-          _allowInlineCascade(node) ? new Rule() : new Rule.hard());
+      builder.startLazyRule(_allowInlineCascade(node) ? Rule() : Rule.hard());
     }
 
     // If the target of the cascade is a method call (or chain of them), we
@@ -463,7 +462,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     //           ..cascade()
     //           ..cascade();
     if (node.target is MethodInvocation) {
-      new CallChainVisitor(this, node.target).visit(unnest: false);
+      CallChainVisitor(this, node.target).visit(unnest: false);
     } else {
       visit(node.target);
     }
@@ -474,8 +473,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If the cascade section shouldn't cause the cascade to split, end the
     // rule early so it isn't affected by it.
     if (!splitIfOperandsSplit) {
-      builder
-          .startRule(_allowInlineCascade(node) ? new Rule() : new Rule.hard());
+      builder.startRule(_allowInlineCascade(node) ? Rule() : Rule.hard());
     }
 
     zeroSplit();
@@ -598,7 +596,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.typeParameters);
     visit(node.extendsClause);
 
-    builder.startRule(new CombinatorRule());
+    builder.startRule(CombinatorRule());
     visit(node.withClause);
     visit(node.implementsClause);
     builder.endRule();
@@ -627,7 +625,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       visit(node.superclass);
 
-      builder.startRule(new CombinatorRule());
+      builder.startRule(CombinatorRule());
       visit(node.withClause);
       visit(node.implementsClause);
       builder.endRule();
@@ -977,7 +975,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       _visitConfigurations(node.configurations);
 
-      builder.startRule(new CombinatorRule());
+      builder.startRule(CombinatorRule());
       visitNodes(node.combinators);
       builder.endRule();
     });
@@ -1054,7 +1052,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitFormalParameterList(FormalParameterList node,
-      {bool nestExpression: true}) {
+      {bool nestExpression = true}) {
     // Corner case: empty parameter lists.
     if (node.parameters.isEmpty) {
       token(node.leftParenthesis);
@@ -1084,11 +1082,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
 
-    _metadataRules.add(new MetadataRule());
+    _metadataRules.add(MetadataRule());
 
     var rule;
     if (requiredParams.isNotEmpty) {
-      rule = new PositionalRule(null, 0, 0);
+      rule = PositionalRule(null, 0, 0);
       _metadataRules.last.bindPositionalRule(rule);
 
       builder.startRule(rule);
@@ -1120,7 +1118,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     if (optionalParams.isNotEmpty) {
-      var namedRule = new NamedRule(null, 0, 0);
+      var namedRule = NamedRule(null, 0, 0);
       if (rule != null) rule.setNamedArgsRule(namedRule);
 
       _metadataRules.last.bindNamedRule(namedRule);
@@ -1602,7 +1600,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(node.prefix);
       }
 
-      builder.startRule(new CombinatorRule());
+      builder.startRule(CombinatorRule());
       visitNodes(node.combinators);
       builder.endRule();
     });
@@ -1816,7 +1814,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    new CallChainVisitor(this, node).visit();
+    CallChainVisitor(this, node).visit();
   }
 
   visitMixinDeclaration(MixinDeclaration node) {
@@ -1838,7 +1836,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.onClause.superclassConstraints.single);
     }
 
-    builder.startRule(new CombinatorRule());
+    builder.startRule(CombinatorRule());
 
     // If there are multiple superclass constraints, format them like the
     // "implements" clause.
@@ -1923,7 +1921,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitPrefixedIdentifier(PrefixedIdentifier node) {
-    new CallChainVisitor(this, node).visit();
+    CallChainVisitor(this, node).visit();
   }
 
   visitPrefixExpression(PrefixExpression node) {
@@ -1947,7 +1945,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    new CallChainVisitor(this, node).visit();
+    CallChainVisitor(this, node).visit();
   }
 
   visitRedirectingConstructorInvocation(RedirectingConstructorInvocation node) {
@@ -2158,7 +2156,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitTypeParameterList(TypeParameterList node) {
-    _metadataRules.add(new MetadataRule());
+    _metadataRules.add(MetadataRule());
 
     _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
 
@@ -2347,7 +2345,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// If [nest] is true, an extra level of expression nesting is added after
   /// the "=".
   void _visitAssignment(Token equalsOperator, Expression rightHandSide,
-      {bool nest: false}) {
+      {bool nest = false}) {
     space();
     token(equalsOperator);
 
@@ -2364,7 +2362,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Visits a type parameter or type argument list.
   void _visitGenericList(
       Token leftBracket, Token rightBracket, List<AstNode> nodes) {
-    var rule = new TypeArgumentRule();
+    var rule = TypeArgumentRule();
     builder.startLazyRule(rule);
     builder.startSpan();
     builder.nestExpression();
@@ -2494,7 +2492,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.nestExpression();
 
       // This rule is ended by visitExpressionFunctionBody().
-      builder.startLazyRule(new Rule(Cost.arrow));
+      builder.startLazyRule(Rule(Cost.arrow));
     }
 
     _visitParameterSignature(typeParameters, parameters);
@@ -2630,13 +2628,13 @@ class SourceVisitor extends ThrowingAstVisitor {
       // on the same line all share an argument-list-like rule that allows
       // splitting between zero, one, or all of them. This is faster in long
       // lists than using individual splits after each element.
-      lineRule = new TypeArgumentRule();
+      lineRule = TypeArgumentRule();
       builder.startLazyRule(lineRule);
     } else {
       // Newlines aren't significant, so use a hard rule to split the elements.
       // The parent chunk of the collection will handle the unsplit case, so
       // this only comes into play when the collection is split.
-      rule = new Rule.hard();
+      rule = Rule.hard();
       builder.startRule(rule);
     }
 
@@ -2650,7 +2648,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
             // Start a new rule for the new line.
             builder.endRule();
-            lineRule = new TypeArgumentRule();
+            lineRule = TypeArgumentRule();
             builder.startLazyRule(lineRule);
           } else {
             lineRule.beforeArgument(split());
@@ -2696,10 +2694,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Can't have a trailing comma if there are no parameters.
     assert(parameters.parameters.isNotEmpty);
 
-    _metadataRules.add(new MetadataRule());
+    _metadataRules.add(MetadataRule());
 
     // Always split the parameters.
-    builder.startRule(new Rule.hard());
+    builder.startRule(Rule.hard());
 
     token(parameters.leftParenthesis);
 
@@ -2758,7 +2756,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Begins writing a formal parameter of any kind.
   void _beginFormalParameter(FormalParameter node) {
-    builder.startLazyRule(new Rule(Cost.parameterType));
+    builder.startLazyRule(Rule(Cost.parameterType));
     builder.nestExpression();
     modifier(node.covariantKeyword);
   }
@@ -3027,7 +3025,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Writes the beginning of a brace-delimited body and handles indenting and
   /// starting the rule used to split the contents.
-  void _beginBody(Token leftBracket, {bool space: false}) {
+  void _beginBody(Token leftBracket, {bool space = false}) {
     token(leftBracket);
 
     // Indent the body.
@@ -3039,7 +3037,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Finishes the body started by a call to [_beginBody].
-  void _endBody(Token rightBracket, {bool space: false}) {
+  void _endBody(Token rightBracket, {bool space = false}) {
     token(rightBracket, before: () {
       // Split before the closing bracket character.
       builder.unindent();
@@ -3133,7 +3131,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Writes a single space split with its own rule.
   Rule soloSplit([int cost]) {
-    var rule = new Rule(cost);
+    var rule = Rule(cost);
     builder.startRule(rule);
     split();
     builder.endRule();
@@ -3210,7 +3208,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         if (comment == token.precedingComments) linesBefore = 2;
       }
 
-      var sourceComment = new SourceComment(text, linesBefore,
+      var sourceComment = SourceComment(text, linesBefore,
           isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
           flushLeft: flushLeft);
 

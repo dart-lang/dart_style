@@ -17,17 +17,17 @@ import 'package:dart_style/src/formatter_options.dart';
 import 'utils.dart';
 
 void main() {
-  var overwriteOptions = new FormatterOptions(OutputReporter.overwrite);
+  var overwriteOptions = FormatterOptions(OutputReporter.overwrite);
 
   var followOptions =
-      new FormatterOptions(OutputReporter.overwrite, followLinks: true);
+      FormatterOptions(OutputReporter.overwrite, followLinks: true);
 
   test('handles directory ending in ".dart"', () async {
     await d.dir('code.dart', [
       d.file('a.dart', unformattedSource),
     ]).create();
 
-    var dir = new Directory(d.sandbox);
+    var dir = Directory(d.sandbox);
     processDirectory(overwriteOptions, dir);
 
     await d.dir('code.dart', [
@@ -42,15 +42,15 @@ void main() {
     ]).create();
 
     DateTime modTime(String file) =>
-        new File(p.join(d.sandbox, 'code', file)).statSync().modified;
+        File(p.join(d.sandbox, 'code', file)).statSync().modified;
 
     var badBefore = modTime('bad.dart');
     var goodBefore = modTime('good.dart');
 
     // Wait a bit so the mod time of a formatted file will be different.
-    await new Future.delayed(new Duration(seconds: 1));
+    await Future.delayed(Duration(seconds: 1));
 
-    var dir = new Directory(p.join(d.sandbox, 'code'));
+    var dir = Directory(p.join(d.sandbox, 'code'));
     processDirectory(overwriteOptions, dir);
 
     // Should be touched.
@@ -67,7 +67,7 @@ void main() {
       d.dir('.skip', [d.file('a.dart', unformattedSource)])
     ]).create();
 
-    var dir = new Directory(d.sandbox);
+    var dir = Directory(d.sandbox);
     processDirectory(overwriteOptions, dir);
 
     await d.dir('code', [
@@ -79,7 +79,7 @@ void main() {
       () async {
     await d.dir('.code', [d.file('a.dart', unformattedSource)]).create();
 
-    var dir = new Directory(p.join(d.sandbox, '.code'));
+    var dir = Directory(p.join(d.sandbox, '.code'));
     processDirectory(overwriteOptions, dir);
 
     await d.dir('.code', [d.file('a.dart', formattedSource)]).validate();
@@ -95,10 +95,10 @@ void main() {
     ]).create();
 
     // Create a link to the target directory in the code directory.
-    new Link(p.join(d.sandbox, 'code', 'linked_dir'))
+    Link(p.join(d.sandbox, 'code', 'linked_dir'))
         .createSync(p.join(d.sandbox, 'target_dir'));
 
-    var dir = new Directory(p.join(d.sandbox, 'code'));
+    var dir = Directory(p.join(d.sandbox, 'code'));
     processDirectory(overwriteOptions, dir);
 
     await d.dir('code', [
@@ -119,10 +119,10 @@ void main() {
     ]).create();
 
     // Create a link to the target directory in the code directory.
-    new Link(p.join(d.sandbox, 'code', 'linked_dir'))
+    Link(p.join(d.sandbox, 'code', 'linked_dir'))
         .createSync(p.join(d.sandbox, 'target_dir'));
 
-    var dir = new Directory(p.join(d.sandbox, 'code'));
+    var dir = Directory(p.join(d.sandbox, 'code'));
     processDirectory(followOptions, dir);
 
     await d.dir('code', [
@@ -141,7 +141,7 @@ void main() {
 
       Process.runSync("chmod", ["-w", p.join(d.sandbox, 'a.dart')]);
 
-      var file = new File(p.join(d.sandbox, 'a.dart'));
+      var file = File(p.join(d.sandbox, 'a.dart'));
       processFile(overwriteOptions, file);
 
       // Should not have been formatted.
@@ -153,10 +153,10 @@ void main() {
       await d.file('target_file.dart', unformattedSource).create();
 
       // Create a link to the target file in the code directory.
-      new Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+      Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
           .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      var dir = new Directory(p.join(d.sandbox, 'code'));
+      var dir = Directory(p.join(d.sandbox, 'code'));
       processDirectory(overwriteOptions, dir);
 
       await d.dir('code', [
@@ -169,10 +169,10 @@ void main() {
       await d.file('target_file.dart', unformattedSource).create();
 
       // Create a link to the target file in the code directory.
-      new Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+      Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
           .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      var dir = new Directory(p.join(d.sandbox, 'code'));
+      var dir = Directory(p.join(d.sandbox, 'code'));
       processDirectory(followOptions, dir);
 
       await d.dir('code', [

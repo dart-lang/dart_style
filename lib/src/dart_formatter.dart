@@ -37,7 +37,7 @@ class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
-  final Set<StyleFix> fixes = new Set();
+  final Set<StyleFix> fixes = Set();
 
   /// Creates a new formatter for Dart code.
   ///
@@ -69,17 +69,16 @@ class DartFormatter {
     } else if (uri is String) {
       // Do nothing.
     } else {
-      throw new ArgumentError("uri must be `null`, a Uri, or a String.");
+      throw ArgumentError("uri must be `null`, a Uri, or a String.");
     }
 
-    return formatSource(
-            new SourceCode(source, uri: uri, isCompilationUnit: true))
+    return formatSource(SourceCode(source, uri: uri, isCompilationUnit: true))
         .text;
   }
 
   /// Formats the given [source] string containing a single Dart statement.
   String formatStatement(String source) {
-    return formatSource(new SourceCode(source, isCompilationUnit: false)).text;
+    return formatSource(SourceCode(source, isCompilationUnit: false)).text;
   }
 
   /// Formats the given [source].
@@ -87,14 +86,14 @@ class DartFormatter {
   /// Returns a new [SourceCode] containing the formatted code and the resulting
   /// selection, if any.
   SourceCode formatSource(SourceCode source) {
-    var errorListener = new ErrorListener();
+    var errorListener = ErrorListener();
 
     // Tokenize the source.
-    var reader = new CharSequenceReader(source.text);
-    var stringSource = new StringSource(source.text, source.uri);
-    var scanner = new Scanner(stringSource, reader, errorListener);
+    var reader = CharSequenceReader(source.text);
+    var stringSource = StringSource(source.text, source.uri);
+    var scanner = Scanner(stringSource, reader, errorListener);
     var startToken = scanner.tokenize();
-    var lineInfo = new LineInfo(scanner.lineStarts);
+    var lineInfo = LineInfo(scanner.lineStarts);
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
@@ -112,7 +111,7 @@ class DartFormatter {
     errorListener.throwIfErrors();
 
     // Parse it.
-    var parser = new Parser(stringSource, errorListener);
+    var parser = Parser(stringSource, errorListener);
     parser.enableOptionalNewAndConst = true;
     parser.enableSetLiterals = true;
     parser.enableSpreadCollections = true;
@@ -127,27 +126,27 @@ class DartFormatter {
       // Make sure we consumed all of the source.
       var token = node.endToken.next;
       if (token.type != TokenType.EOF) {
-        var error = new AnalysisError(
+        var error = AnalysisError(
             stringSource,
             token.offset,
             math.max(token.length, 1),
             ParserErrorCode.UNEXPECTED_TOKEN,
             [token.lexeme]);
 
-        throw new FormatterException([error]);
+        throw FormatterException([error]);
       }
     }
 
     errorListener.throwIfErrors();
 
     // Format it.
-    var visitor = new SourceVisitor(this, lineInfo, source);
+    var visitor = SourceVisitor(this, lineInfo, source);
     var output = visitor.run(node);
 
     // Sanity check that only whitespace was changed if that's all we expect.
     if (fixes.isEmpty &&
         !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw new UnexpectedOutputException(source.text, output.text);
+      throw UnexpectedOutputException(source.text, output.text);
     }
 
     return output;
