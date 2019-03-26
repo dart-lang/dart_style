@@ -19,6 +19,7 @@ dev_dependencies:
   grinder: ^0.8.0
   js: ^0.6.0
   node_preamble: ^1.0.0
+  pedantic: ^1.0.0
   pub_semver: ^1.2.3
   test: ^1.2.0
   test_descriptor: ^1.0.0

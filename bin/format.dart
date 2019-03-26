@@ -173,7 +173,7 @@ void main(List<String> args) {
     }
   }
 
-  if (argResults.wasParsed("stdin-name") && !argResults.rest.isEmpty) {
+  if (argResults.wasParsed("stdin-name") && argResults.rest.isNotEmpty) {
     usageError(parser, "Cannot pass --stdin-name when not reading from stdin.");
   }
 
