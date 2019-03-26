@@ -16,7 +16,7 @@ packages:
     source: hosted
     version: "1.5.1"
   async:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: async
       url: "https://pub.dartlang.org"
@@ -114,7 +114,7 @@ packages:
     source: hosted
     version: "0.3.3"
   js:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: js
       url: "https://pub.dartlang.org"
@@ -163,7 +163,7 @@ packages:
     source: hosted
     version: "1.0.2"
   node_preamble:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: node_preamble
       url: "https://pub.dartlang.org"
