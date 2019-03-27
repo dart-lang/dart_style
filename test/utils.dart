@@ -18,8 +18,8 @@ import 'package:dart_style/dart_style.dart';
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
-final _indentPattern = new RegExp(r"\(indent (\d+)\)");
-final _fixPattern = new RegExp(r"\(fix ([a-x-]+)\)");
+final _indentPattern = RegExp(r"\(indent (\d+)\)");
+final _fixPattern = RegExp(r"\(fix ([a-x-]+)\)");
 
 /// Runs the command line formatter, passing it [args].
 Future<TestProcess> runFormatter([List<String> args]) {
@@ -60,7 +60,7 @@ void testDirectory(String name, [Iterable<StyleFix> fixes]) {
       .uri
       .toFilePath());
 
-  var entries = new Directory(p.join(testDir, name))
+  var entries = Directory(p.join(testDir, name))
       .listSync(recursive: true, followLinks: false);
   entries.sort((a, b) => a.path.compareTo(b.path));
 
@@ -90,7 +90,7 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
 
   group("$name ${p.basename(path)}", () {
     // Explicitly create a File, in case the entry is a Link.
-    var lines = new File(path).readAsLinesSync();
+    var lines = File(path).readAsLinesSync();
 
     // The first line may have a "|" to indicate the page width.
     var pageWidth;
@@ -150,7 +150,7 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
         var expected = _extractSelection(expectedOutput,
             isCompilationUnit: isCompilationUnit);
 
-        var formatter = new DartFormatter(
+        var formatter = DartFormatter(
             pageWidth: pageWidth, indent: leadingIndent, fixes: fixes);
 
         var actual = formatter.formatSource(inputCode);
@@ -178,14 +178,14 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
-SourceCode _extractSelection(String source, {bool isCompilationUnit: false}) {
+SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
   var start = source.indexOf("‹");
   source = source.replaceAll("‹", "");
 
   var end = source.indexOf("›");
   source = source.replaceAll("›", "");
 
-  return new SourceCode(source,
+  return SourceCode(source,
       isCompilationUnit: isCompilationUnit,
       selectionStart: start == -1 ? null : start,
       selectionLength: end == -1 ? null : end - start);

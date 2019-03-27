@@ -2,6 +2,7 @@
 
 * Add support for spreads inside collections (#778).
 * Add support for `if` and `for` elements inside collections (#779).
+* Require at least Dart 2.1.0.
 
 # 1.2.4
 
