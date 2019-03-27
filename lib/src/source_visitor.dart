@@ -1196,7 +1196,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endRule();
   }
 
-  visitForStatement2(ForStatement2 node) {
+  visitForStatement(ForStatement node) {
     builder.nestExpression();
     token(node.awaitKeyword, after: space);
     token(node.forKeyword);
@@ -1744,10 +1744,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitListLiteral(ListLiteral node) {
     // Corner case: Splitting inside a list looks bad if there's only one
     // element, so make those more costly.
-    var cost =
-        node.elements2.length <= 1 ? Cost.singleElementList : Cost.normal;
+    var cost = node.elements.length <= 1 ? Cost.singleElementList : Cost.normal;
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements2, node.rightBracket, cost);
+        node, node.leftBracket, node.elements, node.rightBracket, cost);
   }
 
   visitMapLiteralEntry(MapLiteralEntry node) {
@@ -1981,7 +1980,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   visitSetOrMapLiteral(SetOrMapLiteral node) {
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements2, node.rightBracket);
+        node, node.leftBracket, node.elements, node.rightBracket);
   }
 
   visitShowCombinator(ShowCombinator node) {
