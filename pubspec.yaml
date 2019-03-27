@@ -1,8 +1,10 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 1.2.5-dev
+version: 1.2.5
 author: Dart Team <misc@dartlang.org>
-description: Opinionated, automatic Dart source code formatter.
+description: >-
+  Opinionated, automatic Dart source code formatter.
+  Provides an API and a CLI tool.
 homepage: https://github.com/dart-lang/dart_style
 
 environment:
