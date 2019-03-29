@@ -1,3 +1,7 @@
+# 1.2.6
+
+* Properly format trailing commas in assertions.
+
 # 1.2.5
 
 * Add support for spreads inside collections (#778).
