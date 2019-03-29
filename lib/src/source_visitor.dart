@@ -260,6 +260,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     var arguments = <Expression>[node.condition];
     if (node.message != null) arguments.add(node.message);
 
+    // If the argument list has a trailing comma, format it like a collection
+    // literal where each argument goes on its own line, they are indented +2,
+    // and the ")" ends up on its own line.
+    if (arguments.last.endToken.next.type == TokenType.COMMA) {
+      _visitCollectionLiteral(
+          null, node.leftParenthesis, arguments, node.rightParenthesis);
+      return;
+    }
+
     builder.nestExpression();
     var visitor = ArgumentListVisitor.forArguments(
         this, node.leftParenthesis, node.rightParenthesis, arguments);
@@ -273,6 +282,15 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       var arguments = [node.condition];
       if (node.message != null) arguments.add(node.message);
+
+      // If the argument list has a trailing comma, format it like a collection
+      // literal where each argument goes on its own line, they are indented +2,
+      // and the ")" ends up on its own line.
+      if (arguments.last.endToken.next.type == TokenType.COMMA) {
+        _visitCollectionLiteral(
+            null, node.leftParenthesis, arguments, node.rightParenthesis);
+        return;
+      }
 
       var visitor = ArgumentListVisitor.forArguments(
           this, node.leftParenthesis, node.rightParenthesis, arguments);

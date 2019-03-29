@@ -28,6 +28,19 @@ assert(veryVeryVeryVeryVeryLongCondition, "long string that wraps");
 assert(
     veryVeryVeryVeryVeryLongCondition,
     "long string that wraps");
+>>> split assert with trailing comma
+assert(condition,);
+<<<
+assert(
+  condition,
+);
+>>> split assert with trailing comma and message
+assert(condition, "some message",);
+<<<
+assert(
+  condition,
+  "some message",
+);
 >>> split in do-while condition
 do {} while ("some long string that wraps");
 <<<

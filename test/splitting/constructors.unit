@@ -107,6 +107,29 @@ class Foo {
                 argument),
             argument));
 }
+>>> split assert with trailing comma
+class Foo {
+  Foo() : assert(condition,);
+}
+<<<
+class Foo {
+  Foo()
+      : assert(
+          condition,
+        );
+}
+>>> split assert with trailing comma and message
+class Foo {
+  Foo() : assert(condition, "some message",);
+}
+<<<
+class Foo {
+  Foo()
+      : assert(
+          condition,
+          "some message",
+        );
+}
 >>> trailing commas and initializer lists
 class A {
   A(a,):super();
