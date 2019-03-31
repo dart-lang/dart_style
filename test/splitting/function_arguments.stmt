@@ -201,3 +201,14 @@ longFunction(
       ;
     },
     c: argument);
+>>> avoid extra-indent for expression function as argument with trailing comma
+function(() => P(p,),a: () => A(a,),);
+<<<
+function(
+  () => P(
+    p,
+  ),
+  a: () => A(
+    a,
+  ),
+);
