@@ -803,10 +803,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     )   : field = value,
       //           super();
       space();
-      if (node.initializers.length > 1) {
-        _writeText(node.parameters.parameters.last.isOptional ? " " : "  ",
-            node.separator.offset);
-      }
+      _writeText(node.parameters.parameters.last.isOptional ? " " : "  ",
+          node.separator.offset);
 
       // ":".
       token(node.separator);
