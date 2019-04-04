@@ -1,6 +1,20 @@
 # 1.2.6
 
 * Properly format trailing commas in assertions.
+* Improve indentation of adjacent strings. This fixes a regression introduced
+  in 1.2.5 and hopefully makes adjacent strings generally look better.
+
+  Adjacent strings in argument lists now format the same regardless of whether
+  the argument list contains a trailing comma. The rule is that if the
+  argument list contains no other strings, then the adjacent strings do not
+  get extra indentation. This keeps them lined up when doing so is unlikely to
+  be confused as showing separate independent string arguments.
+
+  Previously, adjacent strings were never indented in argument lists without a
+  trailing comma and always in argument lists that did. With this change,
+  adjacent strings are still always indented in collection literals because
+  readers are likely to interpret a series of unindented lines there as showing
+  separate collection elements.
 
 # 1.2.5
 
