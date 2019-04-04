@@ -186,9 +186,72 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   visitAdjacentStrings(AdjacentStrings node) {
+    // We generally want to indent adjacent strings because it can be confusing
+    // otherwise when they appear in a list of expressions, like:
+    //
+    //     [
+    //       "one",
+    //       "two"
+    //       "three",
+    //       "four"
+    //     ]
+    //
+    // Especially when these stings are longer, it can be hard to tell that
+    // "three" is a continuation of the previous argument.
+    //
+    // However, the indentation is distracting in argument lists that don't
+    // suffer from this ambiguity:
+    //
+    //     test(
+    //         "A very long test description..."
+    //             "this indentation looks bad.", () { ... });
+    //
+    // To balance these, we omit the indentation when an adjacent string
+    // expression is the only string in an argument list.
+    var shouldNest = true;
+
+    isString(AstNode node) => node is StringLiteral || node is AdjacentStrings;
+
+    var parent = node.parent;
+    if (parent is ArgumentList) {
+      shouldNest = false;
+
+      for (var argument in parent.arguments) {
+        if (argument == node) continue;
+        if (isString(argument)) {
+          shouldNest = true;
+          break;
+        }
+      }
+    } else if (parent is Assertion) {
+      // Treat asserts like argument lists.
+      shouldNest = false;
+      if (parent.condition != node && isString(parent.condition)) {
+        shouldNest = true;
+      }
+
+      if (parent.message != node && isString(parent.message)) {
+        shouldNest = true;
+      }
+    } else if (parent is VariableDeclaration ||
+        parent is AssignmentExpression &&
+            parent.rightHandSide == node &&
+            parent.parent is ExpressionStatement) {
+      // Don't add extra indentation in a variable initializer or assignment:
+      //
+      //     var variable =
+      //         "no extra"
+      //         "indent";
+      shouldNest = false;
+    } else if (parent is NamedExpression) {
+      shouldNest = false;
+    }
+
     builder.startSpan();
     builder.startRule();
+    if (shouldNest) builder.nestExpression();
     visitNodes(node.strings, between: splitOrNewline);
+    if (shouldNest) builder.unnest();
     builder.endRule();
     builder.endSpan();
   }
