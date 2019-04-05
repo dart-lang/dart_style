@@ -210,15 +210,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     // expression is the only string in an argument list.
     var shouldNest = true;
 
-    isString(AstNode node) => node is StringLiteral || node is AdjacentStrings;
-
     var parent = node.parent;
     if (parent is ArgumentList) {
       shouldNest = false;
 
       for (var argument in parent.arguments) {
         if (argument == node) continue;
-        if (isString(argument)) {
+        if (argument is StringLiteral) {
           shouldNest = true;
           break;
         }
@@ -226,11 +224,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     } else if (parent is Assertion) {
       // Treat asserts like argument lists.
       shouldNest = false;
-      if (parent.condition != node && isString(parent.condition)) {
+      if (parent.condition != node && parent.condition is StringLiteral) {
         shouldNest = true;
       }
 
-      if (parent.message != node && isString(parent.message)) {
+      if (parent.message != node && parent.message is StringLiteral) {
         shouldNest = true;
       }
     } else if (parent is VariableDeclaration ||
@@ -243,7 +241,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       //         "no extra"
       //         "indent";
       shouldNest = false;
-    } else if (parent is NamedExpression) {
+    } else if (parent is NamedExpression || parent is ExpressionFunctionBody) {
       shouldNest = false;
     }
 

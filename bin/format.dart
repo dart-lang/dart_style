@@ -15,7 +15,7 @@ import 'package:dart_style/src/source_code.dart';
 import 'package:dart_style/src/style_fix.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
-const version = "1.2.6";
+const version = "1.2.7";
 
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
