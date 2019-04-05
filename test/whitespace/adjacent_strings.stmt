@@ -137,10 +137,36 @@ var set = {
 };
 >>> don't indent in => body
 main() => "adjacent"
-"string";
+"string"
+"another";
 <<<
 main() => "adjacent"
-    "string";
+    "string"
+    "another";
+>>> don't indent in long => body
+main() => "very very very very long adjacent"
+"string"
+"another";
+<<<
+main() =>
+    "very very very very long adjacent"
+    "string"
+    "another";
+>>> don't indent in => lambda
+function(
+  (parameter) => "string"
+  "adjacent",
+  (parameter) => "long long long long string"
+  "adjacent",
+  another);
+<<<
+function(
+    (parameter) => "string"
+        "adjacent",
+    (parameter) =>
+        "long long long long string"
+        "adjacent",
+    another);
 >>> indent in then branch of ?:
 var string = c ? "adjacent"
 "string" : "other";

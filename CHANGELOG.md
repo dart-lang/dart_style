@@ -1,3 +1,7 @@
+# 1.2.7
+
+* Improve indentation of adjacent strings inside `=>` functions.
+
 # 1.2.6
 
 * Properly format trailing commas in assertions.
