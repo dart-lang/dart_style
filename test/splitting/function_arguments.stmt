@@ -161,6 +161,18 @@ obj.outer(argument, a.b.c.fn(() {body;}));
 obj.outer(argument, a.b.c.fn(() {
   body;
 }));
+>>> do not nest because of method call with trailing comma
+function(argument, fn(a: a,));
+<<<
+function(argument, fn(
+  a: a,
+));
+>>> do not nest because of instance creation with trailing comma
+function(argument, new A(a: a,));
+<<<
+function(argument, new A(
+  a: a,
+));
 >>> do not force named args to split on positional function
 function(argument, () {;},
     named: argument, another: argument);

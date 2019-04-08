@@ -229,6 +229,18 @@ class ArgumentListVisitor {
       expression = (expression as NamedExpression).expression;
     }
 
+    // Allow instance creations and method invocations with trailing commas
+    if (expression is InstanceCreationExpression &&
+        expression.argumentList.rightParenthesis.previous.type ==
+            TokenType.COMMA) {
+      return true;
+    }
+    if (expression is MethodInvocation &&
+        expression.argumentList.rightParenthesis.previous.type ==
+            TokenType.COMMA) {
+      return true;
+    }
+
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
       if (!_isValidWrappingTarget(expression.target)) return false;
