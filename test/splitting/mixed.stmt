@@ -118,6 +118,14 @@ receiver.first([
   secondItem,
   thirdItem
 ]).second();
+>>> trailing comma inside method chain
+receiver.first(a, b, c,).second();
+<<<
+receiver.first(
+  a,
+  b,
+  c,
+).second();
 >>> list at end of method chain
 receiver.first().second([listItem, secondItem, thirdItem, fourthItem]);
 <<<

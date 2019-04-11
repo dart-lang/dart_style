@@ -157,8 +157,12 @@ class CallChainVisitor {
       // See if this call is a method call whose arguments are block formatted.
       var isBlockCall = false;
       if (call is MethodInvocation) {
-        var args = ArgumentListVisitor(visitor, call.argumentList);
-        isBlockCall = args.hasBlockArguments;
+        if (call.argumentList.endToken.previous.type == TokenType.COMMA) {
+          isBlockCall = true;
+        } else {
+          var args = ArgumentListVisitor(visitor, call.argumentList);
+          isBlockCall = args.hasBlockArguments;
+        }
       }
 
       if (isBlockCall) {
