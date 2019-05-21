@@ -6,6 +6,7 @@ library dart_style.src.dart_formatter;
 
 import 'dart:math' as math;
 
+import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/error/error.dart';
@@ -88,6 +89,12 @@ class DartFormatter {
   SourceCode formatSource(SourceCode source) {
     var errorListener = ErrorListener();
 
+    // Enable all features that are enabled by default in the current analyzer
+    // version.
+    // TODO(paulberry): consider plumbing in experiment enable flags from the
+    // command line.
+    var featureSet = FeatureSet.fromEnableFlags([]);
+
     // Tokenize the source.
     var reader = CharSequenceReader(source.text);
     var stringSource = StringSource(source.text, source.uri);
@@ -111,11 +118,9 @@ class DartFormatter {
     errorListener.throwIfErrors();
 
     // Parse it.
-    var parser = Parser(stringSource, errorListener);
+    var parser = Parser(stringSource, errorListener, featureSet: featureSet);
     parser.enableOptionalNewAndConst = true;
     parser.enableSetLiterals = true;
-    parser.enableSpreadCollections = true;
-    parser.enableControlFlowCollections = true;
 
     AstNode node;
     if (source.isCompilationUnit) {
