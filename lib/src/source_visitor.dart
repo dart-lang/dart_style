@@ -1083,11 +1083,24 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (_isInLambda(node)) builder.endSpan();
 
-    builder.startBlockArgumentNesting();
+    // If this function invocation appears in an argument list with trailing
+    // comma, don't add extra nesting to preserve normal indentation.
+    var isArgWithTrailingComma = false;
+    var parent = node.parent;
+    if (parent is FunctionExpression) {
+      var argList = parent?.parent;
+      if (argList is NamedExpression) argList = argList.parent;
+      if (argList is ArgumentList &&
+          argList.arguments.last.endToken.next.type == TokenType.COMMA) {
+        isArgWithTrailingComma = true;
+      }
+    }
+
+    if (!isArgWithTrailingComma) builder.startBlockArgumentNesting();
     builder.startSpan();
     visit(node.expression);
     builder.endSpan();
-    builder.endBlockArgumentNesting();
+    if (!isArgWithTrailingComma) builder.endBlockArgumentNesting();
 
     if (node.expression is BinaryExpression) builder.endRule();
 
