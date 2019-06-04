@@ -1088,12 +1088,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     var isArgWithTrailingComma = false;
     var parent = node.parent;
     if (parent is FunctionExpression) {
-      var argList = parent?.parent;
-      if (argList is NamedExpression) argList = argList.parent;
-      if (argList is ArgumentList &&
-          argList.arguments.last.endToken.next.type == TokenType.COMMA) {
-        isArgWithTrailingComma = true;
-      }
+      isArgWithTrailingComma = _isTrailingCommaArgument(parent);
     }
 
     if (!isArgWithTrailingComma) builder.startBlockArgumentNesting();
@@ -2911,6 +2906,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.endRule();
+  }
+
+  /// Whether [node] is an argument in an argument list with a trailing comma.
+  bool _isTrailingCommaArgument(Expression node) {
+    var parent = node.parent;
+    if (parent is NamedExpression) parent = parent.parent;
+
+    return parent is ArgumentList &&
+        parent.arguments.last.endToken.next.type == TokenType.COMMA;
   }
 
   /// Whether [node] is a spread of a collection literal.

@@ -1,3 +1,8 @@
+# 1.2.8
+
+* Better indentation of function expressions inside trailing comma argument
+  lists. (Thanks a14@!)
+
 # 1.2.7
 
 * Improve indentation of adjacent strings inside `=>` functions.

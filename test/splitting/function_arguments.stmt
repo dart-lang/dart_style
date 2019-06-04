@@ -201,14 +201,31 @@ longFunction(
       ;
     },
     c: argument);
->>> avoid extra-indent for expression function as argument with trailing comma
-function(() => P(p,),a: () => A(a,),);
+>>> no extra indent for expression function argument with trailing comma
+function(() => P(p,),a: () => [a,],);
 <<<
 function(
   () => P(
     p,
   ),
-  a: () => A(
+  a: () => [
     a,
+  ],
+);
+>>> indents body if not block style
+function(() => inner(argument1, argument2, argument3),);
+<<<
+function(
+  () => inner(
+      argument1, argument2, argument3),
+);
+>>> split in expression function parameter list argument with trailing comma
+function((parameter1, parameter2, parameter3) => P(p,),);
+<<<
+function(
+  (parameter1, parameter2,
+          parameter3) =>
+      P(
+    p,
   ),
 );
