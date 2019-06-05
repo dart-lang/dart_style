@@ -2,6 +2,7 @@
 
 * Better indentation of function expressions inside trailing comma argument
   lists. (Thanks a14@!)
+* Avoid needless indentation on chained if-else elements (#813).
 
 # 1.2.7
 
