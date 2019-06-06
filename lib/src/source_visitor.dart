@@ -1517,15 +1517,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   void visitIfElement(IfElement node) {
-    // Wrap the whole thing in a single rule. If a split happens inside the
-    // condition or the then clause, we want the then and else clauses to split.
-    builder.startRule();
-
-    token(node.ifKeyword);
-    space();
-    token(node.leftParenthesis);
-    visit(node.condition);
-    token(node.rightParenthesis);
+    // Treat a chain of if-else elements as a single unit so that we don't
+    // unnecessarily indent each subsequent section of the chain.
+    var ifElements = [
+      for (CollectionElement thisNode = node;
+          thisNode is IfElement;
+          thisNode = (thisNode as IfElement).elseElement)
+        thisNode as IfElement
+    ];
 
     // If the body of the then or else branch is a spread of a collection
     // literal, then we want to format those collections more like blocks than
@@ -1551,65 +1550,80 @@ class SourceVisitor extends ThrowingAstVisitor {
     //
     // To do that, if we see that either clause is a spread collection, we
     // create a single rule and force both collections to use it.
-    var thenSpreadBracket = _findSpreadCollectionBracket(node.thenElement);
-    var elseSpreadBracket = _findSpreadCollectionBracket(node.elseElement);
-
-    if (thenSpreadBracket != null || elseSpreadBracket != null) {
-      var spreadRule = Rule();
-      if (thenSpreadBracket != null) {
-        beforeBlock(thenSpreadBracket, spreadRule, null);
-      }
-
-      if (elseSpreadBracket != null) {
-        beforeBlock(elseSpreadBracket, spreadRule, null);
+    var spreadRule = Rule();
+    var spreadBrackets = <CollectionElement, Token>{};
+    for (var element in ifElements) {
+      var spreadBracket = _findSpreadCollectionBracket(element.thenElement);
+      if (spreadBracket != null) {
+        spreadBrackets[element] = spreadBracket;
+        beforeBlock(spreadBracket, spreadRule, null);
       }
     }
 
-    builder.nestExpression(indent: 2, now: true);
-
-    // Treat a spread of a collection literal like a block in an if statement
-    // and don't split after the "else".
-    if (thenSpreadBracket != null) {
-      space();
-    } else {
-      split();
-
-      // If the then clause is a non-spread collection or lambda, make sure the
-      // body is indented.
-      builder.startBlockArgumentNesting();
+    var elseSpreadBracket =
+        _findSpreadCollectionBracket(ifElements.last.elseElement);
+    if (elseSpreadBracket != null) {
+      spreadBrackets[ifElements.last.elseElement] = elseSpreadBracket;
+      beforeBlock(elseSpreadBracket, spreadRule, null);
     }
 
-    visit(node.thenElement);
-
-    if (thenSpreadBracket == null) builder.endBlockArgumentNesting();
-    builder.unnest();
-
-    if (node.elseElement != null) {
-      if (thenSpreadBracket != null) {
-        space();
-      } else {
-        split();
-      }
-
-      token(node.elseKeyword);
-
+    visitChild(CollectionElement element, CollectionElement child) {
       builder.nestExpression(indent: 2, now: true);
 
-      if (elseSpreadBracket != null) {
+      // Treat a spread of a collection literal like a block in an if statement
+      // and don't split after the "else".
+      var isSpread = spreadBrackets.containsKey(element);
+      if (isSpread) {
         space();
       } else {
         split();
 
-        // If the else clause is a non-spread collection or lambda, make sure
-        // the body is indented.
+        // If the then clause is a non-spread collection or lambda, make sure the
+        // body is indented.
         builder.startBlockArgumentNesting();
       }
 
-      visit(node.elseElement);
+      visit(child);
 
-      if (elseSpreadBracket == null) builder.endBlockArgumentNesting();
+      if (!isSpread) builder.endBlockArgumentNesting();
       builder.unnest();
     }
+
+    // Wrap the whole thing in a single rule. If a split happens inside the
+    // condition or the then clause, we want the then and else clauses to split.
+    builder.startRule();
+
+    for (var element in ifElements) {
+      // The condition.
+      token(element.ifKeyword);
+      space();
+      token(element.leftParenthesis);
+      visit(element.condition);
+      token(element.rightParenthesis);
+
+      visitChild(element, element.thenElement);
+
+      // Handle this element's "else" keyword and prepare to write the element,
+      // but don't write it. It will either be the next element in [ifElements]
+      // or the final else element handled after the loop.
+      if (element.elseElement != null) {
+        if (spreadBrackets.containsKey(element)) {
+          space();
+        } else {
+          split();
+        }
+
+        token(node.elseKeyword);
+
+        // If there is another if element in the chain, put a space between
+        // it and this "else".
+        if (element != ifElements.last) space();
+      }
+    }
+
+    // Handle the final trailing else if there is one.
+    var lastElse = ifElements.last.elseElement;
+    if (lastElse != null) visitChild(lastElse, lastElse);
 
     builder.endRule();
   }

@@ -215,3 +215,102 @@ var list = [
       thatNeedsToSplit)
     thing
 ];
+>>> chained if-else
+var list = [if (condition1) thing1 else if (condition2) thing2];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+];
+>>> chained if-else with else at end
+var list = [if (condition1) thing1 else if (condition2) thing2 else thing3];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else
+    thing3
+];
+>>> long chained if-else
+var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else if (condition3)
+    thing3
+];
+>>> long chained if-else with else at end
+var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3 else thing4];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else if (condition3)
+    thing3
+  else
+    thing4
+];
+>>> chained if-else with spread and unspread collections
+var list = [
+  if (condition1) ...[
+    spreadList
+  ] else if (condition2)
+    [notSpread]
+  else if (condition3)
+    thing1
+  else ...{
+    spreadSet
+  }
+];
+<<<
+var list = [
+  if (condition1) ...[
+    spreadList
+  ] else if (condition2)
+    [notSpread]
+  else if (condition3)
+    thing1
+  else ...{
+    spreadSet
+  }
+];
+>>> nested chained if-else
+var list = [
+  if (condition1)
+    if (condition2) a else b
+  else if (condition4)
+    if (condition5) c
+    else if (condition6) d else e
+  else if (condition7)
+    if (condition8) ...[f]
+    else if (condition9) [g] else ...{h}
+];
+<<<
+var list = [
+  if (condition1)
+    if (condition2) a else b
+  else if (condition4)
+    if (condition5)
+      c
+    else if (condition6)
+      d
+    else
+      e
+  else if (condition7)
+    if (condition8) ...[
+      f
+    ] else if (condition9)
+      [g]
+    else ...{
+      h
+    }
+];
