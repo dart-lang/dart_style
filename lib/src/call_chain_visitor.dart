@@ -108,7 +108,9 @@ class CallChainVisitor {
       //         .property
       //         .method()[1][2];
       var call = expression;
-      while (call is IndexExpression) call = (call as IndexExpression).target;
+      while (call is IndexExpression) {
+        call = (call as IndexExpression).target;
+      }
 
       if (SourceVisitor.looksLikeStaticCall(call)) {
         // Don't include things that look like static method or constructor
@@ -180,7 +182,9 @@ class CallChainVisitor {
     }
 
     if (blockCalls != null) {
-      for (var blockCall in blockCalls) calls.remove(blockCall);
+      for (var blockCall in blockCalls) {
+        calls.remove(blockCall);
+      }
     }
 
     if (hangingCall != null) {

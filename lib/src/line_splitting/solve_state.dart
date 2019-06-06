@@ -420,7 +420,9 @@ class SolveState {
     });
 
     // Add the costs for the spans containing splits.
-    for (var span in splitSpans) cost += span.cost;
+    for (var span in splitSpans) {
+      cost += span.cost;
+    }
 
     // Finish the last line.
     endLine(_splitter.chunks.length);

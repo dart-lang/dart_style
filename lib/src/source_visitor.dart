@@ -1519,12 +1519,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitIfElement(IfElement node) {
     // Treat a chain of if-else elements as a single unit so that we don't
     // unnecessarily indent each subsequent section of the chain.
-    var ifElements = <IfElement>[];
-    for (CollectionElement thisNode = node;
-        thisNode is IfElement;
-        thisNode = (thisNode as IfElement).elseElement) {
-      ifElements.add(thisNode);
-    }
+    var ifElements = [
+      for (CollectionElement thisNode = node;
+          thisNode is IfElement;
+          thisNode = (thisNode as IfElement).elseElement)
+        thisNode as IfElement
+    ];
 
     // If the body of the then or else branch is a spread of a collection
     // literal, then we want to format those collections more like blocks than
