@@ -1,3 +1,7 @@
+# 1.2.9
+
+* Support `package:analyzer` `0.37.0`.
+
 # 1.2.8
 
 * Better indentation of function expressions inside trailing comma argument
