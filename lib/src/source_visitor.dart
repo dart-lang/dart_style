@@ -1162,9 +1162,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     var requiredParams = node.parameters
         .where((param) => param is! DefaultFormalParameter)
         .toList();
-    var optionalParams = node.parameters
-        .where((param) => param is DefaultFormalParameter)
-        .toList();
+    var optionalParams =
+        node.parameters.whereType<DefaultFormalParameter>().toList();
 
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
