@@ -503,6 +503,16 @@ class ArgumentSublist {
       return expression.beginToken;
     }
 
+    // instance creation or method invocation with trailing comma are like block
+    if (expression is InstanceCreationExpression &&
+        expression.argumentList.endToken.previous.type == TokenType.COMMA) {
+      return expression.argumentList.beginToken;
+    }
+    if (expression is MethodInvocation &&
+        expression.argumentList.endToken.previous.type == TokenType.COMMA) {
+      return expression.argumentList.beginToken;
+    }
+
     // Not a collection literal.
     return null;
   }
