@@ -343,3 +343,56 @@ prefix._Foo.named()
     .method()
     .method()
     .method();
+>>> invocations in method chain
+someReceiverObject.method1().method2().method3()(argument)
+.method4().method5().method6();
+<<<
+someReceiverObject
+    .method1()
+    .method2()
+    .method3()(argument)
+    .method4()
+    .method5()
+    .method6();
+>>> chained invocations
+someReceiverObject.method1().method2().method3()
+(argument)(argument)<T, R>(argument, argument, argument, argument, argument)(argument)
+.method4().method5().method6();
+<<<
+someReceiverObject
+    .method1()
+    .method2()
+    .method3()(argument)(argument)
+        <T, R>(
+            argument,
+            argument,
+            argument,
+            argument,
+            argument)(argument)
+    .method4()
+    .method5()
+    .method6();
+>>> "!" stays with operand before method call
+verylongIdentifier!.longIdentifier().another()!.aThird()!;
+<<<
+verylongIdentifier!
+    .longIdentifier()
+    .another()!
+    .aThird()!;
+>>> "!" stays with operand before property access
+verylongIdentifier!.longIdentifier.another!.aThird!;
+<<<
+verylongIdentifier!
+    .longIdentifier.another!.aThird!;
+>>> "!" stays with operand before property access
+verylongIdentifier!.longIdentifier.another!.aThird!.longerPropertyChain;
+<<<
+verylongIdentifier!
+    .longIdentifier
+    .another!
+    .aThird!
+    .longerPropertyChain;
+>>> do not split null-asserted chained calls if not needed
+compiler!.a().b()!.c.d();
+<<<
+compiler!.a().b()!.c.d();

@@ -135,3 +135,21 @@ method<int, String, bool>();
 " ${   interp+olate } and ${fn  (  1 ) } end";
 <<<
 " ${interp + olate} and ${fn(1)} end";
+>>> simple null assertion
+obj ! ;
+<<<
+obj!;
+>>> trailing method
+obj . method() ! ;
+<<<
+obj.method()!;
+>>> trailing property
+obj . prop ! ;
+<<<
+obj.prop!;
+>>> null assertion in method chain
+obj ! . getter ! . method ( arg ) ! + 3;
+// TODO: ![ and !(
+<<<
+obj!.getter!.method(arg)! + 3;
+// TODO: ![ and !(

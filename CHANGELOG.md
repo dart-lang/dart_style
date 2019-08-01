@@ -1,3 +1,8 @@
+# 1.3.0
+
+* Format null assertion operators.
+* Better formatting for invocation expressions inside method call chains.
+
 # 1.2.9
 
 * Support `package:analyzer` `0.37.0`.

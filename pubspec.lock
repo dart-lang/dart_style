@@ -28,7 +28,7 @@ packages:
       name: async
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "2.2.0"
+    version: "2.3.0"
   boolean_selector:
     dependency: transitive
     description:
@@ -98,7 +98,7 @@ packages:
       name: grinder
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.8.3"
+    version: "0.8.3+1"
   html:
     dependency: transitive
     description:
@@ -182,7 +182,7 @@ packages:
       name: node_preamble
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.4.4"
+    version: "1.4.6"
   package_config:
     dependency: transitive
     description:
@@ -203,7 +203,7 @@ packages:
       name: path
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.6.2"
+    version: "1.6.4"
   pedantic:
     dependency: "direct dev"
     description:
@@ -301,7 +301,7 @@ packages:
       name: string_scanner
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.4"
+    version: "1.0.5"
   term_glyph:
     dependency: transitive
     description:
@@ -357,21 +357,21 @@ packages:
       name: vm_service_lib
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.21.0"
+    version: "3.22.2+1"
   watcher:
     dependency: transitive
     description:
       name: watcher
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.9.7+10"
+    version: "0.9.7+12"
   web_socket_channel:
     dependency: transitive
     description:
       name: web_socket_channel
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.13"
+    version: "1.0.14"
   yaml:
     dependency: "direct dev"
     description:

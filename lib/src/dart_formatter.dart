@@ -93,7 +93,7 @@ class DartFormatter {
     // version.
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
-    var featureSet = FeatureSet.fromEnableFlags([]);
+    var featureSet = FeatureSet.fromEnableFlags(["non-nullable"]);
 
     // Tokenize the source.
     var reader = CharSequenceReader(source.text);
