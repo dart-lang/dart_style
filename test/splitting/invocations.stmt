@@ -209,6 +209,14 @@ someReceiverObject.property1.property2
     .property4
     .property5
     .property6;
+>>> index on block calls
+receiver.method(() {;})[0].block(() {;})[1];
+<<<
+receiver.method(() {
+  ;
+})[0].block(() {
+  ;
+})[1];
 >>> target splits more deeply than method chain
 someTargetFunction(argument, argument, argument).method().method();
 <<<
@@ -396,3 +404,11 @@ verylongIdentifier!
 compiler!.a().b()!.c.d();
 <<<
 compiler!.a().b()!.c.d();
+>>> null-aware in block calls
+compiler!.a(() {;})!.b(() {;})!;
+<<<
+compiler!.a(() {
+  ;
+})!.b(() {
+  ;
+})!;

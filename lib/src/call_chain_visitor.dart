@@ -33,7 +33,7 @@ import 'source_visitor.dart';
 /// This means visiting the AST from top down visits the selectors from right
 /// to left. It's easier to format that if we organize them as a linear series
 /// of selectors from left to right. Further, we want to organize it into a
-/// two-tier hierarchy. We have an outer list of method calls and propery
+/// two-tier hierarchy. We have an outer list of method calls and property
 /// accesses. Then each of those may have one or more postfix selectors
 /// attached: indexers, null-assertions, or invocations. This mirrors how they
 /// are formatted.
@@ -251,7 +251,7 @@ class CallChainVisitor {
       _disableRule();
 
       for (var blockCall in _blockCalls) {
-        blockCall.writeBlockCall(_visitor);
+        blockCall.write(this);
       }
 
       // If there is a hanging call after the last block, write it without any
@@ -481,13 +481,6 @@ class _MethodSelector extends _Selector {
     visitor._visitor
         .visitArgumentList(_node.argumentList, nestExpression: false);
     visitor._visitor.builder.unnest();
-  }
-
-  void writeBlockCall(SourceVisitor visitor) {
-    visitor.token(_node.operator);
-    visitor.token(_node.methodName.token);
-    visitor.visit(_node.typeArguments);
-    visitor.visit(_node.argumentList);
   }
 }
 
