@@ -13,8 +13,30 @@ import 'rule/rule.dart';
 import 'source_visitor.dart';
 
 /// Helper class for [SourceVisitor] that handles visiting and writing a
-/// chained series of method invocations, property accesses, and/or prefix
-/// expressions. In other words, anything using the "." operator.
+/// chained series of "selectors": method invocations, property accesses,
+/// prefixed identifiers, index expressions, and null-assertion operators.
+///
+/// In the AST, selectors are nested bottom up such that this expression:
+///
+///     obj.a(1)[2].c(3)
+///
+/// Is structured like:
+///
+///           .c()
+///           /  \
+///          []   3
+///         /  \
+///       .a()  2
+///       /  \
+///     obj   1
+///
+/// This means visiting the AST from top down visits the selectors from right
+/// to left. It's easier to format that if we organize them as a linear series
+/// of selectors from left to right. Further, we want to organize it into a
+/// two-tier hierarchy. We have an outer list of method calls and property
+/// accesses. Then each of those may have one or more postfix selectors
+/// attached: indexers, null-assertions, or invocations. This mirrors how they
+/// are formatted.
 class CallChainVisitor {
   final SourceVisitor _visitor;
 
@@ -24,15 +46,15 @@ class CallChainVisitor {
   /// [PrefixedIdentifier].
   final Expression _target;
 
-  /// The list of dotted names ([PropertyAccess] and [PrefixedIdentifier] at
+  /// The list of dotted names ([PropertyAccess] and [PrefixedIdentifier]) at
   /// the start of the call chain.
   ///
   /// This will be empty if the [_target] is not a [SimpleIdentifier].
-  final List<Expression> _properties;
+  final List<_Selector> _properties;
 
   /// The mixed method calls and property accesses in the call chain in the
-  /// order that they appear in the source.
-  final List<Expression> _calls;
+  /// order that they appear in the source reading from left to right.
+  final List<_Selector> _calls;
 
   /// The method calls containing block function literals that break the method
   /// chain and escape its indentation.
@@ -59,7 +81,7 @@ class CallChainVisitor {
   ///         })
   ///         .d()
   ///         .e();
-  final List<Expression> _blockCalls;
+  final List<_MethodSelector> _blockCalls;
 
   /// If there is one or more block calls and a single chained expression after
   /// that, this will be that expression.
@@ -74,7 +96,7 @@ class CallChainVisitor {
   /// need to split before its `.` and this accommodates the common pattern of
   /// a trailing `toList()` or `toSet()` after a series of higher-order methods
   /// on an iterable.
-  final Expression _hangingCall;
+  final _MethodSelector _hangingCall;
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -86,49 +108,17 @@ class CallChainVisitor {
   /// rule used to split between them.
   PositionalRule _propertyRule;
 
-  /// Creates a new call chain visitor for [visitor] starting with [node].
+  /// Creates a new call chain visitor for [visitor] for the method chain
+  /// contained in [node].
   ///
   /// The [node] is the outermost expression containing the chained "."
   /// operators and must be a [MethodInvocation], [PropertyAccess] or
   /// [PrefixedIdentifier].
   factory CallChainVisitor(SourceVisitor visitor, Expression node) {
-    Expression target;
-
-    // Recursively walk the chain of calls and turn the tree into a list.
-    var calls = <Expression>[];
-    flatten(Expression expression) {
-      target = expression;
-
-      // Treat index expressions where the target is a valid call in a method
-      // chain as being part of the call. Handles cases like:
-      //
-      //     receiver
-      //         .property
-      //         .property[0]
-      //         .property
-      //         .method()[1][2];
-      var call = expression;
-      while (call is IndexExpression) {
-        call = (call as IndexExpression).target;
-      }
-
-      if (SourceVisitor.looksLikeStaticCall(call)) {
-        // Don't include things that look like static method or constructor
-        // calls in the call chain because that tends to split up named
-        // constructors from their class.
-      } else if (call is MethodInvocation && call.target != null) {
-        flatten(call.target);
-        calls.add(expression);
-      } else if (call is PropertyAccess && call.target != null) {
-        flatten(call.target);
-        calls.add(expression);
-      } else if (call is PrefixedIdentifier) {
-        flatten(call.prefix);
-        calls.add(expression);
-      }
-    }
-
-    flatten(node);
+    // Flatten the call chain tree to a list of selectors with postfix
+    // expressions.
+    var calls = <_Selector>[];
+    var target = _unwrapTarget(node, calls);
 
     // An expression that starts with a series of dotted names gets treated a
     // little specially. We don't force leading properties to split with the
@@ -137,35 +127,22 @@ class CallChainVisitor {
     //     address.street.number
     //       .toString()
     //       .length;
-    var properties = <Expression>[];
-    if (target is SimpleIdentifier) {
-      properties = calls.takeWhile((call) {
-        // Step into index expressions to see what the index is on.
-        while (call is IndexExpression) {
-          call = (call as IndexExpression).target;
-        }
-        return call is! MethodInvocation;
-      }).toList();
+    var properties = <_Selector>[];
+    if (_unwrapNullAssertion(target) is SimpleIdentifier) {
+      properties = calls.takeWhile((call) => call.isProperty).toList();
     }
 
     calls.removeRange(0, properties.length);
 
     // Separate out the block calls, if there are any.
-    List<Expression> blockCalls;
-    var hangingCall;
+    List<_MethodSelector> blockCalls;
+    _MethodSelector hangingCall;
 
     var inBlockCalls = false;
     for (var call in calls) {
-      // See if this call is a method call whose arguments are block formatted.
-      var isBlockCall = false;
-      if (call is MethodInvocation) {
-        var args = ArgumentListVisitor(visitor, call.argumentList);
-        isBlockCall = args.hasBlockArguments;
-      }
-
-      if (isBlockCall) {
+      if (call.isBlockCall(visitor)) {
         inBlockCalls = true;
-        if (blockCalls == null) blockCalls = [];
+        blockCalls ??= [];
         blockCalls.add(call);
       } else if (inBlockCalls) {
         // We found a non-block call after a block call.
@@ -231,7 +208,7 @@ class CallChainVisitor {
     // before one ".", or before all of them.
     if (_properties.length == 1) {
       _visitor.soloZeroSplit();
-      _writeCall(_properties.single);
+      _properties.single.write(this);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
         _propertyRule = PositionalRule(null, 0, 0);
@@ -240,7 +217,7 @@ class CallChainVisitor {
 
       for (var property in _properties) {
         _propertyRule.beforeArgument(_visitor.zeroSplit());
-        _writeCall(property);
+        property.write(this);
       }
 
       _visitor.builder.endRule();
@@ -261,7 +238,7 @@ class CallChainVisitor {
     for (var call in _calls) {
       _enableRule();
       _visitor.zeroSplit();
-      _writeCall(call);
+      call.write(this);
     }
 
     if (_calls.length > 1) _visitor.builder.endBlockArgumentNesting();
@@ -274,14 +251,12 @@ class CallChainVisitor {
       _disableRule();
 
       for (var blockCall in _blockCalls) {
-        _writeBlockCall(blockCall);
+        blockCall.write(this);
       }
 
       // If there is a hanging call after the last block, write it without any
       // split before the ".".
-      if (_hangingCall != null) {
-        _writeCall(_hangingCall);
-      }
+      _hangingCall?.write(this);
     }
 
     _disableRule();
@@ -356,38 +331,16 @@ class CallChainVisitor {
     return _forcesSplit(argument);
   }
 
-  /// Writes [call], which must be one of the supported expression types.
-  void _writeCall(Expression call) {
-    if (call is IndexExpression) {
-      _visitor.builder.nestExpression();
-      _writeCall(call.target);
-      _visitor.finishIndexExpression(call);
-      _visitor.builder.unnest();
-    } else if (call is MethodInvocation) {
-      _writeInvocation(call);
-    } else if (call is PropertyAccess) {
-      _visitor.token(call.operator);
-      _visitor.visit(call.propertyName);
-    } else if (call is PrefixedIdentifier) {
-      _visitor.token(call.period);
-      _visitor.visit(call.identifier);
-    } else {
-      // Unexpected type.
-      assert(false);
-    }
-  }
-
-  void _writeInvocation(MethodInvocation invocation) {
-    _visitor.token(invocation.operator);
-    _visitor.token(invocation.methodName.token);
-
+  /// Called when a [_MethodSelector] has written its name and is about to
+  /// write the argument list.
+  void _beforeMethodArguments(_MethodSelector selector) {
     // If we don't have any block calls, stop the rule after the last method
     // call name, but before its arguments. This allows unsplit chains where
     // the last argument list wraps, like:
     //
     //     foo().bar().baz(
     //         argument, list);
-    if (_blockCalls == null && _calls.isNotEmpty && invocation == _calls.last) {
+    if (_blockCalls == null && _calls.isNotEmpty && selector == _calls.last) {
       _disableRule();
     }
 
@@ -413,18 +366,6 @@ class CallChainVisitor {
         _target is SimpleIdentifier) {
       _endSpan();
     }
-
-    _visitor.builder.nestExpression();
-    _visitor.visit(invocation.typeArguments);
-    _visitor.visitArgumentList(invocation.argumentList, nestExpression: false);
-    _visitor.builder.unnest();
-  }
-
-  void _writeBlockCall(MethodInvocation invocation) {
-    _visitor.token(invocation.operator);
-    _visitor.token(invocation.methodName.token);
-    _visitor.visit(invocation.typeArguments);
-    _visitor.visit(invocation.argumentList);
   }
 
   /// If a [Rule] for the method chain is currently active, ends it.
@@ -459,4 +400,191 @@ class CallChainVisitor {
     _visitor.builder.endSpan();
     _spanEnded = true;
   }
+}
+
+/// One "selector" in a method call chain.
+///
+/// Each selector is a method call or property access. It may be followed by
+/// one or more postfix expressions, which can be index expressions or
+/// null-assertion operators. These are not treated like their own selectors
+/// because the formatter attaches them to the previous method call or property
+/// access:
+///
+///     receiver
+///         .method(arg)[index]
+///         .another()!
+///         .third();
+abstract class _Selector {
+  /// The series of index and/or null-assertion postfix selectors that follow
+  /// and are attached to this one.
+  ///
+  /// Elements in this list will either be [IndexExpression] or
+  /// [PostfixExpression].
+  final List<Expression> _postfixes = [];
+
+  /// Whether this selector is a property access as opposed to a method call.
+  bool get isProperty => true;
+
+  /// Whether this selector is a method call whose arguments are block
+  /// formatted.
+  bool isBlockCall(SourceVisitor visitor) => false;
+
+  /// Write the selector portion of the expression wrapped by this [_Selector]
+  /// using [visitor], followed by any postfix selectors.
+  void write(CallChainVisitor visitor) {
+    writeSelector(visitor);
+
+    // Write any trailing index and null-assertion operators.
+    visitor._visitor.builder.nestExpression();
+    for (var postfix in _postfixes) {
+      if (postfix is FunctionExpressionInvocation) {
+        // Allow splitting between the invocations if needed.
+        visitor._visitor.soloZeroSplit();
+
+        visitor._visitor.visit(postfix.typeArguments);
+        visitor._visitor.visitArgumentList(postfix.argumentList);
+      } else if (postfix is IndexExpression) {
+        visitor._visitor.finishIndexExpression(postfix);
+      } else if (postfix is PostfixExpression) {
+        assert(postfix.operator.type == TokenType.BANG);
+        visitor._visitor.token(postfix.operator);
+      } else {
+        // Unexpected type.
+        assert(false);
+      }
+    }
+    visitor._visitor.builder.unnest();
+  }
+
+  /// Subclasses implement this to write their selector.
+  void writeSelector(CallChainVisitor visitor);
+}
+
+class _MethodSelector extends _Selector {
+  final MethodInvocation _node;
+
+  _MethodSelector(this._node);
+
+  bool get isProperty => false;
+
+  bool isBlockCall(SourceVisitor visitor) =>
+      ArgumentListVisitor(visitor, _node.argumentList).hasBlockArguments;
+
+  void writeSelector(CallChainVisitor visitor) {
+    visitor._visitor.token(_node.operator);
+    visitor._visitor.token(_node.methodName.token);
+
+    visitor._beforeMethodArguments(this);
+
+    visitor._visitor.builder.nestExpression();
+    visitor._visitor.visit(_node.typeArguments);
+    visitor._visitor
+        .visitArgumentList(_node.argumentList, nestExpression: false);
+    visitor._visitor.builder.unnest();
+  }
+}
+
+class _PrefixedSelector extends _Selector {
+  final PrefixedIdentifier _node;
+
+  _PrefixedSelector(this._node);
+
+  void writeSelector(CallChainVisitor visitor) {
+    visitor._visitor.token(_node.period);
+    visitor._visitor.visit(_node.identifier);
+  }
+}
+
+class _PropertySelector extends _Selector {
+  final PropertyAccess _node;
+
+  _PropertySelector(this._node);
+
+  void writeSelector(CallChainVisitor visitor) {
+    visitor._visitor.token(_node.operator);
+    visitor._visitor.visit(_node.propertyName);
+  }
+}
+
+/// If [expression] is a null-assertion operator, returns its operand.
+Expression _unwrapNullAssertion(Expression expression) {
+  if (expression is PostfixExpression &&
+      expression.operator.type == TokenType.BANG) {
+    return expression.operand;
+  }
+
+  return expression;
+}
+
+/// Given [node], which is the outermost expression for some call chain,
+/// recursively traverses the selectors to fill in the list of [calls].
+///
+/// Returns the remaining target expression that precedes the method chain.
+/// For example, given:
+///
+///     foo.bar()!.baz[0][1].bang()
+///
+/// This returns `foo` and fills calls with:
+///
+///     selector  postfixes
+///     --------  ---------
+///     .bar()    !
+///     .baz      [0], [1]
+///     .bang()
+Expression _unwrapTarget(Expression node, List<_Selector> calls) {
+  // Don't include things that look like static method or constructor
+  // calls in the call chain because that tends to split up named
+  // constructors from their class.
+  if (SourceVisitor.looksLikeStaticCall(node)) return node;
+
+  // Selectors.
+  if (node is MethodInvocation && node.target != null) {
+    return _unwrapSelector(node.target, _MethodSelector(node), calls);
+  }
+
+  if (node is PropertyAccess && node.target != null) {
+    return _unwrapSelector(node.target, _PropertySelector(node), calls);
+  }
+
+  if (node is PrefixedIdentifier) {
+    return _unwrapSelector(node.prefix, _PrefixedSelector(node), calls);
+  }
+
+  // Postfix expressions.
+  if (node is IndexExpression) {
+    return _unwrapPostfix(node, node.target, calls);
+  }
+
+  if (node is FunctionExpressionInvocation) {
+    return _unwrapPostfix(node, node.function, calls);
+  }
+
+  if (node is PostfixExpression && node.operator.type == TokenType.BANG) {
+    return _unwrapPostfix(node, node.operand, calls);
+  }
+
+  // Otherwise, it isn't a selector so we're done.
+  return node;
+}
+
+Expression _unwrapPostfix(
+    Expression node, Expression target, List<_Selector> calls) {
+  target = _unwrapTarget(target, calls);
+
+  // If we don't have a preceding selector to hang the postfix expression off
+  // of, don't unwrap it and leave it attached to the target expression. For
+  // example:
+  //
+  //     (list + another)[index]
+  if (calls.isEmpty) return node;
+
+  calls.last._postfixes.add(node);
+  return target;
+}
+
+Expression _unwrapSelector(
+    Expression target, _Selector selector, List<_Selector> calls) {
+  target = _unwrapTarget(target, calls);
+  calls.add(selector);
+  return target;
 }
