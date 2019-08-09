@@ -5,6 +5,7 @@
 library dart_style.src.source_visitor;
 
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/src/generated/source.dart';
@@ -1102,7 +1103,183 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.semicolon);
   }
 
+  /// A period (`.`) token constructed to replace the given [operator].
+  ///
+  /// Offset, comments, and previous/next links are all preserved.
+  static Token _period(Token operator) =>
+      Token(TokenType.PERIOD, operator.offset, operator.precedingComments)
+        ..previous = operator.previous
+        ..next = operator.next;
+
+  static Expression _realTargetOf(Expression expression) {
+    if (expression is PropertyAccess) {
+      return expression.realTarget;
+    } else if (expression is MethodInvocation) {
+      return expression.realTarget;
+    } else if (expression is IndexExpression) {
+      return expression.realTarget;
+    }
+    throw UnimplementedError('Unhandled ${expression.runtimeType}'
+        '($expression)');
+  }
+
+  /// Recursively insert [cascadeTarget] (the LHS of the cascade) into the
+  /// LHS of the assignment expression that used to be the cascade's RHS.
+  static Expression _insertCascadeTargetIntoExpression(
+      Expression expression, Expression cascadeTarget) {
+    // Base case: We've recursed as deep as possible.
+    if (expression == cascadeTarget) return cascadeTarget;
+
+    // Otherwise, copy `expression` and recurse into its LHS.
+    var expressionTarget = _realTargetOf(expression);
+    if (expression is PropertyAccess) {
+      return astFactory.propertyAccess(
+          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
+          // If we've reached the end, replace the `..` operator with `.`
+          expressionTarget == cascadeTarget
+              ? _period(expression.operator)
+              : expression.operator,
+          expression.propertyName);
+    } else if (expression is MethodInvocation) {
+      return astFactory.methodInvocation(
+          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
+          // If we've reached the end, replace the `..` operator with `.`
+          expressionTarget == cascadeTarget
+              ? _period(expression.operator)
+              : expression.operator,
+          expression.methodName,
+          expression.typeArguments,
+          expression.argumentList);
+    } else if (expression is IndexExpression) {
+      return astFactory.indexExpressionForTarget(
+          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
+          expression.leftBracket,
+          expression.index,
+          expression.rightBracket);
+    }
+    throw UnimplementedError('Unhandled ${expression.runtimeType}'
+        '($expression)');
+  }
+
+  /// Parenthesize the target of the given statement's expression (assumed to
+  /// be a CascadeExpression) before removing the cascade.
+  void _fixCascadeByParenthesizingTarget(ExpressionStatement statement) {
+    CascadeExpression cascade = statement.expression;
+    assert(cascade.cascadeSections.length == 1);
+
+    // Write any leading comments and whitespace immediately, as they should
+    // precede the new opening parenthesis, but then prevent them from being
+    // written again after the parenthesis.
+    writePrecedingCommentsAndNewlines(cascade.target.beginToken);
+    _suppressPrecedingCommentsAndNewLines.add(cascade.target.beginToken);
+
+    final newTarget = astFactory.parenthesizedExpression(
+        Token(TokenType.OPEN_PAREN, 0)
+          ..previous = statement.beginToken.previous
+          ..next = cascade.target.beginToken,
+        cascade.target,
+        Token(TokenType.CLOSE_PAREN, 0)
+          ..previous = cascade.target.endToken
+          ..next = statement.semicolon);
+
+    // Finally, we can revisit a clone of this ExpressionStatement to actually
+    // remove the cascade.
+    visit(astFactory.expressionStatement(
+        astFactory.cascadeExpression(newTarget, cascade.cascadeSections),
+        statement.semicolon));
+  }
+
+  void _removeCascade(ExpressionStatement statement) {
+    final CascadeExpression cascade = statement.expression;
+    final subexpression = cascade.cascadeSections.single;
+    builder.nestExpression();
+
+    if (subexpression is AssignmentExpression) {
+      // CascadeExpression("leftHandSide", "..",
+      //     AssignmentExpression("target", "=", "rightHandSide"))
+      //
+      // transforms to
+      //
+      // AssignmentExpression(
+      //     PropertyAccess("leftHandSide", ".", "target"),
+      //     "=",
+      //     "rightHandSide")
+      visit(astFactory.assignmentExpression(
+          _insertCascadeTargetIntoExpression(
+              subexpression.leftHandSide, cascade.target),
+          subexpression.operator,
+          subexpression.rightHandSide));
+    } else if (subexpression is MethodInvocation ||
+        subexpression is PropertyAccess) {
+      // CascadeExpression("leftHandSide", "..",
+      //     MethodInvocation("target", ".", "methodName", ...))
+      //
+      // transforms to
+      //
+      // MethodInvocation(
+      //     PropertyAccess("leftHandSide", ".", "target"),
+      //     ".",
+      //     "methodName", ...)
+      //
+      // And similarly for PropertyAccess expressions.
+      visit(_insertCascadeTargetIntoExpression(subexpression, cascade.target));
+    } else {
+      throw StateError(
+          '--fix-single-cascade-statements: subexpression of cascade '
+          '"$cascade" has unhandled type ${subexpression.runtimeType}');
+    }
+
+    token(statement.semicolon);
+    builder.unnest();
+  }
+
+  /// Remove any unnecessary single cascade from the given expression statement,
+  /// which is assumed to contain a [CascadeExpression].
+  ///
+  /// Returns true after applying the fix, which involves visiting the nested
+  /// expression. Callers must visit the nested expression themselves
+  /// if-and-only-if this method returns false.
+  bool _fixSingleCascadeStatement(ExpressionStatement statement) {
+    final CascadeExpression cascade = statement.expression;
+    if (cascade.cascadeSections.length != 1) return false;
+
+    final subexpression = cascade.cascadeSections.single;
+
+    if (cascade.target is AsExpression ||
+        cascade.target is AwaitExpression ||
+        cascade.target is BinaryExpression ||
+        cascade.target is PrefixExpression) {
+      // In these cases, the cascade target needs to be parenthesized before
+      // removing the cascade, otherwise the semantics will change.
+      _fixCascadeByParenthesizingTarget(statement);
+      return true;
+    } else if (cascade.target is IndexExpression ||
+        cascade.target is InstanceCreationExpression ||
+        cascade.target is MethodInvocation ||
+        cascade.target is ParenthesizedExpression ||
+        cascade.target is PrefixedIdentifier ||
+        cascade.target is PropertyAccess ||
+        cascade.target is SimpleIdentifier) {
+      // OK to simply remove the cascade.
+      _removeCascade(statement);
+      return true;
+    } else {
+      // Refuse to attempt fixing cases which haven't been well-tested.
+      // To fix this error, add the type to one of the above lists, after
+      // checking whether parentheses are needed for this case or not.
+      throw StateError(
+          '--fix-single-cascade-statements: TARGET of cascade "$cascade" '
+          'has unhandled type ${cascade.target.runtimeType}');
+    }
+  }
+
   visitExpressionStatement(ExpressionStatement node) {
+    if (_formatter.fixes.contains(StyleFix.singleCascadeStatements) &&
+        node.expression is CascadeExpression &&
+        _fixSingleCascadeStatement(node)) {
+      return;
+    }
+
     _simpleStatement(node, () {
       visit(node.expression);
     });
@@ -3271,6 +3448,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (after != null) after();
   }
 
+  /// Comments and new lines attached to tokens added here will be suppressed
+  /// from the output.
+  Set<Token> _suppressPrecedingCommentsAndNewLines = {};
+
   /// Writes all formatted whitespace and comments that appear before [token].
   bool writePrecedingCommentsAndNewlines(Token token) {
     var comment = token.precedingComments;
@@ -3283,6 +3464,15 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
 
       return false;
+    }
+
+    // Hack: Suppress comments from indicated tokens.
+    if (_suppressPrecedingCommentsAndNewLines.contains(token)) return false;
+
+    if (token.previous == null) {
+      throw StateError(
+          'Writing comments preceding `$token` but previous token is null; '
+          'next token is ${token.next}.');
     }
 
     var previousLine = _endLine(token.previous);

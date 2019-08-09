@@ -21,12 +21,16 @@ class StyleFix {
   static const optionalNew =
       StyleFix._("optional-new", 'Remove "new" keyword.');
 
+  static const singleCascadeStatements = StyleFix._("single-cascade-statements",
+      "Remove unnecessary single cascades from expression statements.");
+
   static const all = [
     docComments,
     functionTypedefs,
     namedDefaultSeparator,
     optionalConst,
-    optionalNew
+    optionalNew,
+    singleCascadeStatements,
   ];
 
   final String name;
