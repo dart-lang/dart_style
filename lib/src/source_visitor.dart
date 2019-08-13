@@ -94,17 +94,21 @@ class SourceVisitor extends ThrowingAstVisitor {
     const lowerA = 97;
     const lowerZ = 122;
 
-    var firstChar = name.codeUnitAt(0);
+    var start = 0;
+    var firstChar = name.codeUnitAt(start++);
 
     // It can be private.
-    if (firstChar == underscore) firstChar = name.codeUnitAt(1);
+    if (firstChar == underscore) {
+      if (name.length == 1) return false;
+      firstChar = name.codeUnitAt(start++);
+    }
 
     // It must start with a capital letter.
     if (firstChar < capitalA || firstChar > capitalZ) return false;
 
     // And have at least one lowercase letter in it. Otherwise it could be a
     // SCREAMING_CAPS constant.
-    for (var i = 0; i < name.length; i++) {
+    for (var i = start; i < name.length; i++) {
       var char = name.codeUnitAt(i);
       if (char >= lowerA && char <= lowerZ) return true;
     }
