@@ -23,8 +23,6 @@ import 'source_code.dart';
 import 'style_fix.dart';
 import 'whitespace.dart';
 
-final _capitalPattern = RegExp(r"^_?[A-Z].*[a-z]");
-
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
 class SourceVisitor extends ThrowingAstVisitor {
@@ -76,6 +74,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     return target is SimpleIdentifier && _looksLikeClassName(target.name);
   }
 
+  /// Whether [name] appears to be a type name.
+  ///
+  /// Type names begin with a capital letter and contain at least one lowercase
+  /// letter (so that we can distinguish them from SCREAMING_CAPS constants).
   static bool _looksLikeClassName(String name) {
     // Handle the weird lowercase corelib names.
     if (name == "bool") return true;
@@ -83,7 +85,35 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (name == "int") return true;
     if (name == "num") return true;
 
-    return _capitalPattern.hasMatch(name);
+    // TODO(rnystrom): A simpler implementation is to test against the regex
+    // "_?[A-Z].*?[a-z]". However, that currently has much worse performance on
+    // AOT: https://github.com/dart-lang/sdk/issues/37785.
+    const underscore = 95;
+    const capitalA = 65;
+    const capitalZ = 90;
+    const lowerA = 97;
+    const lowerZ = 122;
+
+    var start = 0;
+    var firstChar = name.codeUnitAt(start++);
+
+    // It can be private.
+    if (firstChar == underscore) {
+      if (name.length == 1) return false;
+      firstChar = name.codeUnitAt(start++);
+    }
+
+    // It must start with a capital letter.
+    if (firstChar < capitalA || firstChar > capitalZ) return false;
+
+    // And have at least one lowercase letter in it. Otherwise it could be a
+    // SCREAMING_CAPS constant.
+    for (var i = start; i < name.length; i++) {
+      var char = name.codeUnitAt(i);
+      if (char >= lowerA && char <= lowerZ) return true;
+    }
+
+    return false;
   }
 
   /// The builder for the block that is currently being visited.
