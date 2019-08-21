@@ -3,7 +3,7 @@ code. It replaces the whitespace in your program with what it deems to be the
 best formatting for it. Resulting code should follow the [Dart style guide][]
 but, moreso, should look nice to most human readers, most of the time.
 
-[dart style guide]: https://www.dartlang.org/guides/language/effective-dart/style
+[dart style guide]: https://dart.dev/guides/language/effective-dart/style
 
 The formatter handles indentation, inline whitespace, and (by far the most
 difficult) intelligent line wrapping. It has no problems with nested
@@ -63,7 +63,7 @@ released.
 
 If you want to make sure you are running the latest version of dartfmt, you can
 [globally activate][] the package from the dart_style package on
-pub.dartlang.org:
+pub.dev:
 
     $ pub global activate dart_style
     $ dartfmt ...
@@ -71,7 +71,7 @@ pub.dartlang.org:
 For this to work, you need to put pub's bin directory on your PATH before the
 Dart SDL directory. Otherwise, the SDK's dartfmt will shadow this one.
 
-[globally activate]: https://www.dartlang.org/tools/pub/cmd/pub-global.html
+[globally activate]: https://dart.dev/tools/pub/cmd/pub-global
 
 If you don't want pub to put `dartfmt` on your PATH, you can run it explicitly:
 
