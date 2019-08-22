@@ -47,3 +47,8 @@ class Foo {
 class Foo {
   foo<A, B, C, D>() {}
 }
+>>> split type parameters
+class Foo extends GenericBaseClass<TypeParameter> {}
+<<<
+class Foo extends GenericBaseClass<
+    TypeParameter> {}

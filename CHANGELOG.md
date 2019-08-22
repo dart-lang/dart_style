@@ -1,3 +1,7 @@
+# 1.3.0
+
+* Add support for formatting extension methods (#830).
+
 # 1.2.10
 
 * Format null assertion operators.

@@ -113,3 +113,13 @@ class Foo {
   @wat
   covariant int zoop;
 }
+>>> blank line before and after class
+var x = 1;
+class A {}
+var y = 2;
+<<<
+var x = 1;
+
+class A {}
+
+var y = 2;

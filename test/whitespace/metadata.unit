@@ -321,3 +321,8 @@ enum Foo {
 <<<
 @meta
 mixin M {}
+>>> metadata on extension
+@meta extension A on B {}
+<<<
+@meta
+extension A on B {}

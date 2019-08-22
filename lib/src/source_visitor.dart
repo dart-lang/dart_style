@@ -761,8 +761,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var needsDouble = true;
     for (var declaration in node.declarations) {
-      // Add a blank line before classes.
-      if (declaration is ClassDeclaration) needsDouble = true;
+      var hasBody = declaration is ClassDeclaration ||
+          declaration is ExtensionDeclaration;
+
+      // Add a blank line before declarations with bodies.
+      if (hasBody) needsDouble = true;
 
       if (needsDouble) {
         twoNewlines();
@@ -775,8 +778,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(declaration);
 
       needsDouble = false;
-      if (declaration is ClassDeclaration) {
-        // Add a blank line after classes.
+      if (hasBody) {
+        // Add a blank line after declarations with bodies.
         needsDouble = true;
       } else if (declaration is FunctionDeclaration) {
         // Add a blank line after non-empty block functions.
@@ -1143,6 +1146,26 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.extendsKeyword);
     space();
     visit(node.superclass);
+  }
+
+  void visitExtensionDeclaration(ExtensionDeclaration node) {
+    visitMetadata(node.metadata);
+
+    builder.nestExpression();
+    token(node.extensionKeyword);
+    space();
+    visit(node.name);
+    visit(node.typeParameters);
+    soloSplit();
+    token(node.onKeyword);
+    space();
+    visit(node.extendedType);
+    space();
+    builder.unnest();
+
+    _beginBody(node.leftBracket);
+    _visitMembers(node.members);
+    _endBody(node.rightBracket);
   }
 
   visitFieldDeclaration(FieldDeclaration node) {
