@@ -761,8 +761,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var needsDouble = true;
     for (var declaration in node.declarations) {
-      // Add a blank line before classes.
-      if (declaration is ClassDeclaration) needsDouble = true;
+      var hasClassBody = declaration is ClassDeclaration ||
+          declaration is ExtensionDeclaration;
+
+      // Add a blank line before declarations with class-like bodies.
+      if (hasClassBody) needsDouble = true;
 
       if (needsDouble) {
         twoNewlines();
@@ -775,8 +778,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(declaration);
 
       needsDouble = false;
-      if (declaration is ClassDeclaration) {
-        // Add a blank line after classes.
+      if (hasClassBody) {
+        // Add a blank line after declarations with class-like bodies.
         needsDouble = true;
       } else if (declaration is FunctionDeclaration) {
         // Add a blank line after non-empty block functions.
@@ -1143,6 +1146,32 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.extendsKeyword);
     space();
     visit(node.superclass);
+  }
+
+  void visitExtensionDeclaration(ExtensionDeclaration node) {
+    visitMetadata(node.metadata);
+
+    builder.nestExpression();
+    token(node.extensionKeyword);
+
+    // Don't put a space after `extension` if the extension is unnamed. That
+    // way, generic unnamed extensions format like `extension<T> on ...`.
+    if (node.name != null) {
+      space();
+      visit(node.name);
+    }
+
+    visit(node.typeParameters);
+    soloSplit();
+    token(node.onKeyword);
+    space();
+    visit(node.extendedType);
+    space();
+    builder.unnest();
+
+    _beginBody(node.leftBracket);
+    _visitMembers(node.members);
+    _endBody(node.rightBracket);
   }
 
   visitFieldDeclaration(FieldDeclaration node) {

@@ -93,12 +93,16 @@ class DartFormatter {
     // version.
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
-    var featureSet = FeatureSet.fromEnableFlags(["non-nullable"]);
+    var featureSet = FeatureSet.fromEnableFlags([
+      "extension-methods",
+      "non-nullable",
+    ]);
 
     // Tokenize the source.
     var reader = CharSequenceReader(source.text);
     var stringSource = StringSource(source.text, source.uri);
     var scanner = Scanner(stringSource, reader, errorListener);
+    scanner.configureFeatures(featureSet);
     var startToken = scanner.tokenize();
     var lineInfo = LineInfo(scanner.lineStarts);
 
