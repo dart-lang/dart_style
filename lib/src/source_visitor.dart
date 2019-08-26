@@ -761,11 +761,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var needsDouble = true;
     for (var declaration in node.declarations) {
-      var hasBody = declaration is ClassDeclaration ||
+      var hasClassBody = declaration is ClassDeclaration ||
           declaration is ExtensionDeclaration;
 
-      // Add a blank line before declarations with bodies.
-      if (hasBody) needsDouble = true;
+      // Add a blank line before declarations with class-like bodies.
+      if (hasClassBody) needsDouble = true;
 
       if (needsDouble) {
         twoNewlines();
@@ -778,8 +778,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(declaration);
 
       needsDouble = false;
-      if (hasBody) {
-        // Add a blank line after declarations with bodies.
+      if (hasClassBody) {
+        // Add a blank line after declarations with class-like bodies.
         needsDouble = true;
       } else if (declaration is FunctionDeclaration) {
         // Add a blank line after non-empty block functions.
@@ -1153,8 +1153,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.nestExpression();
     token(node.extensionKeyword);
-    space();
-    visit(node.name);
+
+    // Don't put a space after `extension` if the extension is unnamed. That
+    // way, generic unnamed extensions format like `extension<T> on ...`.
+    if (node.name != null) {
+      space();
+      visit(node.name);
+    }
+
     visit(node.typeParameters);
     soloSplit();
     token(node.onKeyword);

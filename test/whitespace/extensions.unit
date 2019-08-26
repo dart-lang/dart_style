@@ -106,3 +106,15 @@ var x = 1;
 extension A on B {}
 
 var y = 2;
+>>> generic extension
+extension   A    <  T  ,  S > on B{}
+<<<
+extension A<T, S> on B {}
+>>> unnamed extension
+extension    on   B{}
+<<<
+extension on B {}
+>>> unnamed generic extension
+extension   <  T  ,  S  >    on   B{}
+<<<
+extension<T, S> on B {}
