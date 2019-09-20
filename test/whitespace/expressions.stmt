@@ -19,6 +19,10 @@ identifier as TypeName;
 identifier     is    TypeName;
 <<<
 identifier is TypeName;
+>>> nullable is
+identifier     is    TypeName   ?;
+<<<
+identifier is TypeName?;
 >>> is!
 var d=obj is!SomeType;
 <<<

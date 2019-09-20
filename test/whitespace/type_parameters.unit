@@ -7,3 +7,7 @@ class Foo<T> {}
 class Foo<  A,B,   C,D> {}
 <<<
 class Foo<A, B, C, D> {}
+>>> nullable in bounds
+class A<T extends   int   ?  > {}
+<<<
+class A<T extends int?> {}

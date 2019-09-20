@@ -249,3 +249,7 @@ typedef //1
                 //6
                 dynamic x) //5
             foo);
+>>> nullable old style function-typed formal
+typedef Foo(foo()?);
+<<<
+typedef Foo = Function(Function()? foo);
