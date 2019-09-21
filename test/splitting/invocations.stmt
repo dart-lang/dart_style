@@ -400,11 +400,25 @@ verylongIdentifier!
     .another!
     .aThird!
     .longerPropertyChain;
+>>> "!" stays with operand before index
+verylongIdentifier![i]![j].longIdentifier[i][j].another[i]![j].aThird!;
+<<<
+verylongIdentifier![i]![j]
+    .longIdentifier[i][j]
+    .another[i]![j]
+    .aThird!;
+>>> "!" stays with operand before call
+verylongIdentifier!(i)!(j).longIdentifier(i)(j).another(i)!(j).aThird!;
+<<<
+verylongIdentifier!(i)!(j)
+    .longIdentifier(i)(j)
+    .another(i)!(j)
+    .aThird!;
 >>> do not split null-asserted chained calls if not needed
 compiler!.a().b()!.c.d();
 <<<
 compiler!.a().b()!.c.d();
->>> null-aware in block calls
+>>> null-assert in block calls
 compiler!.a(() {;})!.b(() {;})!;
 <<<
 compiler!.a(() {

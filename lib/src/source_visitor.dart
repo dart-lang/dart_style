@@ -2355,6 +2355,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Allow but try to avoid splitting between the type and name.
     builder.startSpan();
 
+    modifier(node.lateKeyword);
     modifier(node.keyword);
     visit(node.type, after: soloSplit);
 

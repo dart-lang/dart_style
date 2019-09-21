@@ -153,7 +153,9 @@ obj . prop ! ;
 obj.prop!;
 >>> null assertion in method chain
 obj ! . getter ! . method ( arg ) ! + 3;
-// TODO: ![ and !(
 <<<
 obj!.getter!.method(arg)! + 3;
-// TODO: ![ and !(
+>>> null assertion before index and call operators
+obj ! [ index ] ! ( call ) ! + 3;
+<<<
+obj![index]!(call)! + 3;
