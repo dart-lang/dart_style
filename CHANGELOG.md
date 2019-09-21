@@ -1,6 +1,7 @@
 # 1.3.0
 
 * Add support for formatting extension methods (#830).
+* Format the `late` modifier.
 
 # 1.2.10
 

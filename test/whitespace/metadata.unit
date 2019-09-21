@@ -326,3 +326,23 @@ mixin M {}
 <<<
 @meta
 extension A on B {}
+>>> metadata on late declarations
+@meta late int a;
+class B {
+  @meta late int c;
+  method() {
+    @meta late int d;
+  }
+}
+<<<
+@meta
+late int a;
+
+class B {
+  @meta
+  late int c;
+  method() {
+    @meta
+    late int d;
+  }
+}

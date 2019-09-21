@@ -123,3 +123,25 @@ var x = 1;
 class A {}
 
 var y = 2;
+>>> late fields
+class Foo {
+static    late    final int i;
+static    late   int i;
+static    late   var i;
+covariant    late   var i;
+covariant    late   int i;
+    late    final int i;
+    late   int i;
+    late   var i;
+}
+<<<
+class Foo {
+  static late final int i;
+  static late int i;
+  static late var i;
+  covariant late var i;
+  covariant late int i;
+  late final int i;
+  late int i;
+  late var i;
+}

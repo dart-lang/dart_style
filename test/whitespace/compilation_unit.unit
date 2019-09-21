@@ -134,3 +134,11 @@ get e => null;
 set f(value) {}
 set g(value) => null;
 var h = 1;
+>>> late top level variables
+late    final int i;
+late   int i;
+late   var i;
+<<<
+late final int i;
+late int i;
+late var i;
