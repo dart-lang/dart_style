@@ -1541,11 +1541,13 @@ class SourceVisitor extends ThrowingAstVisitor {
         builder.startSpan();
         visit(node.identifier);
         _visitParameterSignature(node.typeParameters, node.parameters);
+        token(node.question);
         builder.endSpan();
       } else {
         _beginFormalParameter(node);
         _visitGenericFunctionType(node.returnType, null, node.identifier.offset,
             node.typeParameters, node.parameters);
+        token(node.question);
         split();
         visit(node.identifier);
         _endFormalParameter(node);
@@ -1556,6 +1558,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitGenericFunctionType(GenericFunctionType node) {
     _visitGenericFunctionType(node.returnType, node.functionKeyword, null,
         node.typeParameters, node.parameters);
+    token(node.question);
   }
 
   visitGenericTypeAlias(GenericTypeAlias node) {
@@ -2303,6 +2306,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitTypeName(TypeName node) {
     visit(node.name);
     visit(node.typeArguments);
+    token(node.question);
   }
 
   visitTypeParameter(TypeParameter node) {

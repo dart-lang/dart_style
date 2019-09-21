@@ -166,3 +166,7 @@ main() {
 function(int   foo  <  T  ,S >(T t, S s)) {}
 <<<
 function(int foo<T, S>(T t, S s)) {}
+>>> nullable old style function typed parameter
+function(int? callback()?) {}
+<<<
+function(int? callback()?) {}

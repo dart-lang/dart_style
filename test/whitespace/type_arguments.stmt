@@ -19,3 +19,7 @@ list.map<void, void Function()>();
 C <  int  ,float>  .named(42);
 <<<
 C<int, float>.named(42);
+>>> nullable type argument
+Map<  int  ?  , List<String  ?  > ? >();
+<<<
+Map<int?, List<String?>?>();

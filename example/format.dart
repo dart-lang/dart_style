@@ -20,9 +20,7 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  runTest("regression/0000/0068.stmt", 14);
-
-  formatStmt("hello(world);");
+  formatStmt("a is int????;");
 }
 
 void formatStmt(String source, [int pageWidth = 80]) {
