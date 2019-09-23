@@ -253,3 +253,9 @@ typedef //1
 typedef Foo(foo()?);
 <<<
 typedef Foo = Function(Function()? foo);
+>>> required parameters
+typedef Foo({required a, required b()});
+<<<
+typedef Foo = Function(
+    {required dynamic a,
+    required Function() b});

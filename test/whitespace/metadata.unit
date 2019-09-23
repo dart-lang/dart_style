@@ -256,6 +256,15 @@ class A {
       @VeryLongMetadataAnnotation
           covariant longParameter) {}
 }
+>>> keep "required" with parameter
+class A { function({@Annotation @VeryLongMetadataAnnotation required longParameter}) {} }
+<<<
+class A {
+  function(
+      {@Annotation
+      @VeryLongMetadataAnnotation
+          required longParameter}) {}
+}
 >>> metadata on function typedef
 @foo typedef Fn = Function();
 <<<
