@@ -143,3 +143,28 @@ new Foo(
 ]..cascade(() {
     ;
   });
+>>> allow same-line cascades to mix null-aware
+list
+  ?..add("baz")
+  ..add("bar");
+<<<
+list?..add("baz")..add("bar");
+>>> mixed
+foo?..a()..b()..c();
+<<<
+foo
+  ?..a()
+  ..b()
+  ..c();
+>>> null-aware getter
+foo?..baz..baz;
+<<<
+foo
+  ?..baz
+  ..baz;
+>>> null-aware setter
+foo?..baz = 3..baz=5;
+<<<
+foo
+  ?..baz = 3
+  ..baz = 5;
