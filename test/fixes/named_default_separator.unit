@@ -34,3 +34,13 @@ foo(
 
         // c
         1}) {}
+>>> on required parameter
+class A {
+foo({required int b: 1, required c(): f}) {}
+}
+<<<
+class A {
+  foo(
+      {required int b = 1,
+      required c() = f}) {}
+}

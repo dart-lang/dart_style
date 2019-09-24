@@ -3,6 +3,7 @@
 * Add support for formatting extension methods (#830).
 * Format `?` in types.
 * Format the `late` modifier.
+* Format the `required` modifier.
 * Better formatting of empty spread collections (#831).
 
 # 1.2.10

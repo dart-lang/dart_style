@@ -170,3 +170,35 @@ function(int foo<T, S>(T t, S s)) {}
 function(int? callback()?) {}
 <<<
 function(int? callback()?) {}
+>>> required parameters
+class A {
+f({   required    int a,required   b}) {}
+}
+<<<
+class A {
+  f({required int a, required b}) {}
+}
+>>> required covariant
+class A {
+f({   required    covariant   int a}) {}
+}
+<<<
+class A {
+  f({required covariant int a}) {}
+}
+>>> required function-typed formal
+class A {
+f({   required    callback()}) {}
+}
+<<<
+class A {
+  f({required callback()}) {}
+}
+>>> required initializing formal
+class A {
+A({   required    this.b}) {}
+}
+<<<
+class A {
+  A({required this.b}) {}
+}

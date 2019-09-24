@@ -45,6 +45,47 @@ class A {
       covariant int
           veryLongParameterNameWow) {}
 }
+>>> split before "required"
+class A {
+  longMethod({required parameterNameHere}) {}
+}
+<<<
+class A {
+  longMethod(
+      {required parameterNameHere}) {}
+}
+>>> split before "required" with multiple parameters
+class A {
+  longMethod({required first, second, required int third(parameter), fourth}) {}
+}
+<<<
+class A {
+  longMethod(
+      {required first,
+      second,
+      required int third(parameter),
+      fourth}) {}
+}
+>>> never split after "required" (at least for now)
+class A {
+  longMethod({required int veryLongParameterNameWow}) {}
+}
+<<<
+class A {
+  longMethod(
+      {required int
+          veryLongParameterNameWow}) {}
+}
+>>> don't split between "required" and "covariant"
+class A {
+  longMethod({required covariant int veryLongParameterNameWow}) {}
+}
+<<<
+class A {
+  longMethod(
+      {required covariant int
+          veryLongParameterNameWow}) {}
+}
 >>> split between field type and name
 class Foo {
   Foo(VerylongParameterType this.parameterName) {}

@@ -1534,6 +1534,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
       if (!_insideNewTypedefFix) {
+        modifier(node.requiredKeyword);
         modifier(node.covariantKeyword);
         visit(node.returnType, after: space);
         // Try to keep the function's parameters with its name.
@@ -2920,6 +2921,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _beginFormalParameter(FormalParameter node) {
     builder.startLazyRule(Rule(Cost.parameterType));
     builder.nestExpression();
+    modifier(node.requiredKeyword);
     modifier(node.covariantKeyword);
   }
 
