@@ -280,6 +280,12 @@ new Foo(() {
 (function)(() {
   ;
 }).someLongMethod();
+>>> do not split on "." when target is parenthesized unsplittable
+((([element,]))).someLongMethod();
+<<<
+((([
+  element,
+]))).someLongMethod();
 >>> trailing comma argument list does not force trailing method chain to split
 function(argument,).method().method();
 <<<
