@@ -314,3 +314,99 @@ var list = [
       h
     }
 ];
+>>> empty then spread not treated like block
+var list = [
+  if (condition) ...[] else ...[a,]
+];
+<<<
+var list = [
+  if (condition)
+    ...[]
+  else ...[
+    a,
+  ]
+];
+>>> empty else spread not treated like block
+var list = [
+  if (condition) ...[a,] else ...[]
+];
+<<<
+var list = [
+  if (condition) ...[
+    a,
+  ] else
+    ...[]
+];
+>>> empty then spread does not split
+var list = [
+  if (condition) ...[] else veryLongIdentifier
+];
+<<<
+var list = [
+  if (condition)
+    ...[]
+  else
+    veryLongIdentifier
+];
+>>> empty else spread does not split
+var list = [
+  if (condition) veryLongIdentifier else ...[]
+];
+<<<
+var list = [
+  if (condition)
+    veryLongIdentifier
+  else
+    ...[]
+];
+>>> empty then spread with comment treated like block
+var list = [
+  if (condition) ...[// c
+  ] else ...[a,]
+];
+<<<
+var list = [
+  if (condition) ...[
+    // c
+  ] else ...[
+    a,
+  ]
+];
+>>> empty else spread with comment treated like block
+var list = [
+  if (condition) ...[a,] else ...[// c
+  ]
+];
+<<<
+var list = [
+  if (condition) ...[
+    a,
+  ] else ...[
+    // c
+  ]
+];
+>>> empty then spread with comment splits
+var list = [
+  if (condition) ...[// c
+  ] else veryLongIdentifier
+];
+<<<
+var list = [
+  if (condition) ...[
+    // c
+  ] else
+    veryLongIdentifier
+];
+>>> empty else spread with comment splits
+var list = [
+  if (condition) veryLongIdentifier else ...[// c
+  ]
+];
+<<<
+var list = [
+  if (condition)
+    veryLongIdentifier
+  else ...[
+    // c
+  ]
+];
