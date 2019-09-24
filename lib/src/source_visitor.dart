@@ -457,8 +457,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Treat empty blocks specially. In most cases, they are not allowed to
     // split. However, an empty block as the then statement of an if with an
     // else is always split.
-    if (node.statements.isEmpty &&
-        node.rightBracket.precedingComments == null) {
+    if (_isEmptyCollection(node.statements, node.rightBracket)) {
       token(node.leftBracket);
 
       // Force a split when used as the then body of an if with an else:
@@ -2762,7 +2761,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Don't allow splitting in an empty collection.
-    if (elements.isEmpty && rightBracket.precedingComments == null) {
+    if (_isEmptyCollection(elements, rightBracket)) {
       token(leftBracket);
       token(rightBracket);
       return;
@@ -2998,8 +2997,16 @@ class SourceVisitor extends ThrowingAstVisitor {
   bool _isSpreadCollection(AstNode node) =>
       _findSpreadCollectionBracket(node) != null;
 
-  /// If [node] is a spread of a collection literal, then this returns the
-  /// token for the opening bracket of the collection, as in:
+  /// Whether the collection literal or block containing [nodes] and
+  /// terminated by [rightBracket] is empty or not.
+  ///
+  /// An empty collection must have no elements or comments inside. Collections
+  /// like that are treated specially because they cannot be split inside.
+  bool _isEmptyCollection(Iterable<AstNode> nodes, Token rightBracket) =>
+      nodes.isEmpty && rightBracket.precedingComments == null;
+
+  /// If [node] is a spread of a non-empty collection literal, then this
+  /// returns the token for the opening bracket of the collection, as in:
   ///
   ///     [ ...[a, list] ]
   ///     //   ^
@@ -3008,8 +3015,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   Token _findSpreadCollectionBracket(AstNode node) {
     if (node is SpreadElement) {
       var expression = node.expression;
-      if (expression is ListLiteral) return expression.leftBracket;
-      if (expression is SetOrMapLiteral) return expression.leftBracket;
+      if (expression is ListLiteral) {
+        if (!_isEmptyCollection(expression.elements, expression.rightBracket)) {
+          return expression.leftBracket;
+        }
+      } else if (expression is SetOrMapLiteral) {
+        if (!_isEmptyCollection(expression.elements, expression.rightBracket)) {
+          return expression.leftBracket;
+        }
+      }
     }
 
     return null;
