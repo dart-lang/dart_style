@@ -5,6 +5,7 @@
 * Format the `late` modifier.
 * Format the `required` modifier.
 * Better formatting of empty spread collections (#831).
+* Don't force split before `.` when the target is parenthesized (#704).
 
 # 1.2.10
 

@@ -284,9 +284,13 @@ class CallChainVisitor {
   bool _forcesSplit(Expression expression) {
     // TODO(rnystrom): Other cases we may want to consider handling and
     // recursing into:
-    // * ParenthesizedExpression.
     // * The right operand in an infix operator call.
     // * The body of a `=>` function.
+
+    // Unwrap parentheses.
+    while (expression is ParenthesizedExpression) {
+      expression = (expression as ParenthesizedExpression).expression;
+    }
 
     // Don't split right after a collection literal.
     if (expression is ListLiteral) return false;
