@@ -1,3 +1,6 @@
+# 1.3.2
+* Restore the code that publishes the dart-style npm package.
+
 # 1.3.0
 
 * Add support for formatting extension methods (#830).
