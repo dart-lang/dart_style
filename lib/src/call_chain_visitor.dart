@@ -96,7 +96,7 @@ class CallChainVisitor {
   /// need to split before its `.` and this accommodates the common pattern of
   /// a trailing `toList()` or `toSet()` after a series of higher-order methods
   /// on an iterable.
-  final _MethodSelector _hangingCall;
+  final _Selector _hangingCall;
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -136,7 +136,7 @@ class CallChainVisitor {
 
     // Separate out the block calls, if there are any.
     List<_MethodSelector> blockCalls;
-    _MethodSelector hangingCall;
+    _Selector hangingCall;
 
     var inBlockCalls = false;
     for (var call in calls) {
