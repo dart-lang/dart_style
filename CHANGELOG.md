@@ -1,5 +1,10 @@
 # 1.3.2
+
 * Restore the code that publishes the dart-style npm package.
+
+# 1.3.1
+
+* Fix crash in formatting complex method chains (#855).
 
 # 1.3.0
 
