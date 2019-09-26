@@ -1,3 +1,7 @@
+# 1.3.1
+
+* Fix crash in formatting complex method chains (#855).
+
 # 1.3.0
 
 * Add support for formatting extension methods (#830).
