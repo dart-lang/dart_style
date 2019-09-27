@@ -17,7 +17,6 @@ dependencies:
   source_span: ^1.4.0
 
 dev_dependencies:
-  async: '>=1.0.0 <=3.0.0'
   grinder: ^0.8.0
   js: ^0.6.0
   node_preamble: ^1.0.0
