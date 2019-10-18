@@ -207,7 +207,7 @@ class ArgumentListVisitor {
         _visitor.visit(argument);
 
         // Write the following comma.
-        if (argument.endToken.next.type == TokenType.COMMA) {
+        if (_visitor.hasCommaAfter(argument)) {
           _visitor.token(argument.endToken.next);
         }
       }
@@ -480,7 +480,7 @@ class ArgumentSublist {
     }
 
     // Write the following comma.
-    if (argument.endToken.next.type == TokenType.COMMA) {
+    if (visitor.hasCommaAfter(argument)) {
       visitor.token(argument.endToken.next);
     }
   }

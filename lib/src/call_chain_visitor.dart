@@ -321,7 +321,7 @@ class CallChainVisitor {
     var argument = argumentList.arguments.last;
 
     // If the argument list has a trailing comma, treat it like a collection.
-    if (argument.endToken.next.type == TokenType.COMMA) return false;
+    if (_visitor.hasCommaAfter(argument)) return false;
 
     if (argument is NamedExpression) {
       argument = (argument as NamedExpression).expression;

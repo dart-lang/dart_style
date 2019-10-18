@@ -167,9 +167,19 @@ function(int   foo  <  T  ,S >(T t, S s)) {}
 <<<
 function(int foo<T, S>(T t, S s)) {}
 >>> nullable old style function typed parameter
-function(int? callback()?) {}
+function(int? callback()    ?  ) {}
 <<<
 function(int? callback()?) {}
+>>> nullable old style function typed parameter with trailing comma
+function(int? f()?  ,p) {}
+<<<
+function(int? f()?, p) {}
+>>> nullable old style function typed parameter with trailing comma
+function(int? callback()   ?   ,    ) {}
+<<<
+function(
+  int? callback()?,
+) {}
 >>> required parameters
 class A {
 f({   required    int a,required   b}) {}
