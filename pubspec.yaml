@@ -11,7 +11,7 @@ environment:
   sdk: '>=2.3.0 <3.0.0'
 
 dependencies:
-  analyzer: ^0.38.3
+  analyzer: '>=0.38.3 <0.40.0'
   args: ^1.0.0
   path: ^1.0.0
   source_span: ^1.4.0
