@@ -168,7 +168,7 @@ typedef int Foo(@meta v1, final v2, var v3, /*c*/ v4);
 typedef Foo = int Function(
     @meta dynamic v1,
     final dynamic v2,
-    var dynamic v3,
+    dynamic v3,
     /*c*/ dynamic v4);
 >>> metadata and keywords optional positional
 typedef int Foo([@meta v1, final v2, var v3, /*c*/ v4]);
@@ -176,7 +176,7 @@ typedef int Foo([@meta v1, final v2, var v3, /*c*/ v4]);
 typedef Foo = int Function(
     [@meta dynamic v1,
     final dynamic v2,
-    var dynamic v3,
+    dynamic v3,
     /*c*/ dynamic v4]);
 >>> metadata and keywords named
 typedef int Foo({@meta v1, final v2, var v3, /*c*/ v4});
@@ -184,7 +184,7 @@ typedef int Foo({@meta v1, final v2, var v3, /*c*/ v4});
 typedef Foo = int Function(
     {@meta dynamic v1,
     final dynamic v2,
-    var dynamic v3,
+    dynamic v3,
     /*c*/ dynamic v4});
 >>> function argument
 typedef int Foo(int callback(int x));
@@ -259,3 +259,13 @@ typedef Foo({required a, required b()});
 typedef Foo = Function(
     {required dynamic a,
     required Function() b});
+>>> issue #826
+typedef void MyFunction(var parameter);
+<<<
+typedef MyFunction = void Function(
+    dynamic parameter);
+>>> issue #826 with comment
+typedef void MyFunction(/* comment */ var parameter);
+<<<
+typedef MyFunction = void Function(
+    /* comment */ dynamic parameter);

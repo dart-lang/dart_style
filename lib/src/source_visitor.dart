@@ -2332,9 +2332,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
 
-      modifier(node.keyword);
       var hasType = node.type != null;
       if (_insideNewTypedefFix && !hasType) {
+        // Parameters can use "var" instead of "dynamic". Since we are inserting
+        // "dynamic" in that case, remove the "var".
+        if (node.keyword != null) {
+          if (node.keyword.type != Keyword.VAR) {
+            modifier(node.keyword);
+          } else {
+            // Keep any comment attached to "var".
+            writePrecedingCommentsAndNewlines(node.keyword);
+          }
+        }
+
         // In function declarations and the old typedef syntax, you can have a
         // parameter name without a type. In the new syntax, you can have a type
         // without a name. Add "dynamic" in that case.
@@ -2345,6 +2355,7 @@ class SourceVisitor extends ThrowingAstVisitor {
           split();
         });
       } else {
+        modifier(node.keyword);
         visit(node.type);
 
         if (hasType && node.identifier != null) split();
