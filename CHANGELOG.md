@@ -1,3 +1,7 @@
+# 1.3.4
+
+* Add `--fix-single-cascade-statements`.
+
 # 1.3.3
 
 * Support `package:analyzer` `0.39.0`.
