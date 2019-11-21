@@ -1,5 +1,6 @@
 # 1.3.4
 
+* Add `--fix-single-cascade-statements`.
 * Correctly handle `var` in `--fix-function-typedefs` (#826).
 
 # 1.3.3
