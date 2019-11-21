@@ -191,6 +191,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   final Map<Token, Rule> _blockRules = {};
   final Map<Token, Chunk> _blockPreviousChunks = {};
 
+  /// Comments and new lines attached to tokens added here are suppressed
+  /// from the output.
+  Set<Token> _suppressPrecedingCommentsAndNewLines = {};
+
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(this._formatter, this._lineInfo, this._source) {
@@ -1205,7 +1209,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     writePrecedingCommentsAndNewlines(cascade.target.beginToken);
     _suppressPrecedingCommentsAndNewLines.add(cascade.target.beginToken);
 
-    final newTarget = astFactory.parenthesizedExpression(
+    var newTarget = astFactory.parenthesizedExpression(
         Token(TokenType.OPEN_PAREN, 0)
           ..previous = statement.beginToken.previous
           ..next = cascade.target.beginToken,
@@ -1222,8 +1226,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   void _removeCascade(ExpressionStatement statement) {
-    final CascadeExpression cascade = statement.expression;
-    final subexpression = cascade.cascadeSections.single;
+    var cascade = statement.expression as CascadeExpression;
+    var subexpression = cascade.cascadeSections.single;
     builder.nestExpression();
 
     if (subexpression is AssignmentExpression) {
@@ -1256,9 +1260,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       // And similarly for PropertyAccess expressions.
       visit(_insertCascadeTargetIntoExpression(subexpression, cascade.target));
     } else {
-      throw StateError(
+      throw UnsupportedError(
           '--fix-single-cascade-statements: subexpression of cascade '
-          '"$cascade" has unhandled type ${subexpression.runtimeType}');
+          '"$cascade" has unsupported type ${subexpression.runtimeType}.');
     }
 
     token(statement.semicolon);
@@ -1272,36 +1276,42 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// expression. Callers must visit the nested expression themselves
   /// if-and-only-if this method returns false.
   bool _fixSingleCascadeStatement(ExpressionStatement statement) {
-    final CascadeExpression cascade = statement.expression;
+    var cascade = statement.expression as CascadeExpression;
     if (cascade.cascadeSections.length != 1) return false;
 
-    final subexpression = cascade.cascadeSections.single;
-
-    if (cascade.target is AsExpression ||
-        cascade.target is AwaitExpression ||
-        cascade.target is BinaryExpression ||
-        cascade.target is PrefixExpression) {
+    var target = cascade.target;
+    if (target is AsExpression ||
+        target is AwaitExpression ||
+        target is BinaryExpression ||
+        target is ConditionalExpression ||
+        target is IsExpression ||
+        target is PostfixExpression ||
+        target is PrefixExpression) {
       // In these cases, the cascade target needs to be parenthesized before
       // removing the cascade, otherwise the semantics will change.
       _fixCascadeByParenthesizingTarget(statement);
       return true;
-    } else if (cascade.target is IndexExpression ||
-        cascade.target is InstanceCreationExpression ||
-        cascade.target is MethodInvocation ||
-        cascade.target is ParenthesizedExpression ||
-        cascade.target is PrefixedIdentifier ||
-        cascade.target is PropertyAccess ||
-        cascade.target is SimpleIdentifier) {
+    } else if (target is BooleanLiteral ||
+        target is FunctionExpression ||
+        target is IndexExpression ||
+        target is InstanceCreationExpression ||
+        target is IntegerLiteral ||
+        target is ListLiteral ||
+        target is NullLiteral ||
+        target is MethodInvocation ||
+        target is ParenthesizedExpression ||
+        target is PrefixedIdentifier ||
+        target is PropertyAccess ||
+        target is SimpleIdentifier ||
+        target is StringLiteral ||
+        target is ThisExpression) {
       // OK to simply remove the cascade.
       _removeCascade(statement);
       return true;
     } else {
-      // Refuse to attempt fixing cases which haven't been well-tested.
-      // To fix this error, add the type to one of the above lists, after
-      // checking whether parentheses are needed for this case or not.
-      throw StateError(
-          '--fix-single-cascade-statements: TARGET of cascade "$cascade" '
-          'has unhandled type ${cascade.target.runtimeType}');
+      // If we get here, some new syntax was added to the language that the fix
+      // does not yet support. Leave it as is.
+      return false;
     }
   }
 
@@ -3532,10 +3542,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (after != null) after();
   }
 
-  /// Comments and new lines attached to tokens added here will be suppressed
-  /// from the output.
-  Set<Token> _suppressPrecedingCommentsAndNewLines = {};
-
   /// Writes all formatted whitespace and comments that appear before [token].
   bool writePrecedingCommentsAndNewlines(Token token) {
     var comment = token.precedingComments;
@@ -3550,14 +3556,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       return false;
     }
 
-    // Hack: Suppress comments from indicated tokens.
+    // If the token's comments are being moved by a fix, do not write them here.
     if (_suppressPrecedingCommentsAndNewLines.contains(token)) return false;
-
-    if (token.previous == null) {
-      throw StateError(
-          'Writing comments preceding `$token` but previous token is null; '
-          'next token is ${token.next}.');
-    }
 
     var previousLine = _endLine(token.previous);
     var tokenLine = _startLine(token);
