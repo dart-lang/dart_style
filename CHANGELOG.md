@@ -1,3 +1,7 @@
+# 1.3.4
+
+* Correctly handle `var` in `--fix-function-typedefs` (#826).
+
 # 1.3.3
 
 * Support `package:analyzer` `0.39.0`.
