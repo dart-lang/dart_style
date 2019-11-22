@@ -2,6 +2,7 @@
 
 * Add `--fix-single-cascade-statements`.
 * Correctly handle `var` in `--fix-function-typedefs` (#826).
+* Preserve leading indentation in fixed doc comments (#821).
 
 # 1.3.3
 
