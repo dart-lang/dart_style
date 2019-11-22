@@ -1,8 +1,7 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.chunk_builder;
+import 'dart:math' as math;
 
 import 'chunk.dart';
 import 'dart_formatter.dart';
@@ -23,7 +22,10 @@ final _trailingIdentifierChar = RegExp(r"[a-zA-Z0-9_]$");
 final _javaDocComment = RegExp(r"^/\*\*([^*/][\s\S]*?)\*?\*/$");
 
 /// Matches the leading "*" in a line in the middle of a JavaDoc-style comment.
-var _javaDocLine = RegExp(r"^\s*\*(.*)");
+final _javaDocLine = RegExp(r"^\s*\*(.*)");
+
+/// Matches spaces at the beginning of as string.
+final _leadingIndentation = RegExp(r"^(\s*)");
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
@@ -357,31 +359,44 @@ class ChunkBuilder {
       return;
     }
 
-    // Remove a leading "*" from the middle lines.
     var lines = match.group(1).split("\n").toList();
-    for (var i = 1; i < lines.length - 1; i++) {
-      var line = lines[i];
-      var match = _javaDocLine.firstMatch(line);
-      if (match != null) {
-        line = match.group(1);
-      } else {
-        // Note that this may remove deliberate leading whitespace. In tests on
-        // a large corpus, though, I couldn't find examples of that.
-        line = line.trimLeft();
+    var leastIndentation = comment.text.length;
+
+    for (var i = 0; i < lines.length; i++) {
+      // Trim trailing whitespace and turn any all-whitespace lines to "".
+      var line = lines[i].trimRight();
+
+      // Remove any leading "*" from the middle lines.
+      if (i > 0 && i < lines.length - 1) {
+        var match = _javaDocLine.firstMatch(line);
+        if (match != null) {
+          line = match.group(1);
+        }
       }
+
+      // Find the line with the least indentation.
+      if (line.isNotEmpty) {
+        var indentation = _leadingIndentation.firstMatch(line).group(1).length;
+        leastIndentation = math.min(leastIndentation, indentation);
+      }
+
       lines[i] = line;
     }
 
     // Trim the first and last lines if empty.
-    if (lines.first.trim().isEmpty) lines.removeAt(0);
-    if (lines.isNotEmpty && lines.last.trim().isEmpty) lines.removeLast();
+    if (lines.first.isEmpty) lines.removeAt(0);
+    if (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
 
     // Don't completely eliminate an empty block comment.
     if (lines.isEmpty) lines.add("");
 
     for (var line in lines) {
-      if (line.isNotEmpty && !line.startsWith(" ")) line = " $line";
-      _writeText("///${line.trimRight()}");
+      _writeText("///");
+      if (line.isNotEmpty) {
+        // Discard any indentation shared by all lines.
+        line = line.substring(leastIndentation);
+        _writeText(" $line");
+      }
       _pendingWhitespace = Whitespace.newline;
       _emitPendingWhitespace();
     }

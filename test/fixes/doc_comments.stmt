@@ -157,3 +157,39 @@ m() {}
 /// Thing.
 /// Another * thing.
 m() {}
+>>> missing "*" but indented (#821)
+/**
+This is an ugly dartdoc comment that contains a code block.
+
+    class Foo {
+      final int x;
+      Foo(this.x);
+    }
+
+The formatting gets messed up by `dartfmt --fix-doc-comments`.
+*/
+m() {}
+<<<
+/// This is an ugly dartdoc comment that contains a code block.
+///
+///     class Foo {
+///       final int x;
+///       Foo(this.x);
+///     }
+///
+/// The formatting gets messed up by `dartfmt --fix-doc-comments`.
+m() {}
+>>> strip leading indentation shared by all lines
+/**    4
+   3
+  *     5
+ *  2
+       7 */
+m() {}
+<<<
+///   4
+///  3
+///    5
+/// 2
+///      7
+m() {}
