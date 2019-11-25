@@ -138,7 +138,7 @@ class A {
 class A {
   A(
     a,
-  ) : super();
+  )   : super();
 }
 >>>
 class A {
@@ -148,7 +148,7 @@ class A {
 class A {
   A({
     a,
-  }) : super();
+  })  : super();
 }
 >>>
 class A {
@@ -174,7 +174,7 @@ class A {
     ;
   }
 }
->>> no extra space on a single initializer, even if it splits
+>>> extra space on a single initializer, even if it splits
 class A {
   A(a,):parameter = "some very very long param";
 }
@@ -182,8 +182,20 @@ class A {
 class A {
   A(
     a,
-  ) : parameter =
+  )   : parameter =
             "some very very long param";
+}
+>>> extra space on a single initializer with super containing trailing comma
+class A {
+  A({a,}):super(a: a,);
+}
+<<<
+class A {
+  A({
+    a,
+  })  : super(
+          a: a,
+        );
 }
 >>> split at name if necessary
 main() {

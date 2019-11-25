@@ -9,7 +9,7 @@ class A {
 class A {
   A(
     int a,
-  ) : super();
+  )   : super();
 }
 >>>
 class Foo {
