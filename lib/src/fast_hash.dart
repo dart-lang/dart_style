@@ -17,5 +17,6 @@ abstract class FastHash {
   /// innocuous and prevents ids from growing without bound.
   final int id = _nextId = (_nextId + 1) & 0x0fffffff;
 
+  @override
   int get hashCode => id;
 }

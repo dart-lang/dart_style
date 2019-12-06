@@ -143,7 +143,7 @@ class LineWriter {
     var chunks = _chunks.sublist(start, end);
 
     if (debug.traceLineWriter) {
-      debug.log(debug.green("\nWriting:"));
+      debug.log(debug.green('\nWriting:'));
       debug.dumpChunks(0, chunks);
       debug.log();
     }
@@ -155,7 +155,7 @@ class LineWriter {
 
     // Write the indentation of the first line.
     if (!flushLeft) {
-      _buffer.write(" " * (indent + _blockIndentation));
+      _buffer.write(' ' * (indent + _blockIndentation));
     }
 
     // Write each chunk with the appropriate splits between them.
@@ -192,9 +192,9 @@ class LineWriter {
         _buffer.write(_lineEnding);
         if (chunk.isDouble) _buffer.write(_lineEnding);
 
-        _buffer.write(" " * (splits.getColumn(i)));
+        _buffer.write(' ' * (splits.getColumn(i)));
       } else {
-        if (chunk.spaceWhenUnsplit) _buffer.write(" ");
+        if (chunk.spaceWhenUnsplit) _buffer.write(' ');
       }
     }
 
@@ -209,7 +209,7 @@ class LineWriter {
     for (var blockChunk in chunk.block.chunks) {
       _writeChunk(blockChunk);
 
-      if (blockChunk.spaceWhenUnsplit) _buffer.write(" ");
+      if (blockChunk.spaceWhenUnsplit) _buffer.write(' ');
 
       // Recurse into the block.
       _writeChunksUnsplit(blockChunk);
@@ -246,11 +246,13 @@ class _BlockKey {
 
   _BlockKey(this.chunk, this.column);
 
+  @override
   bool operator ==(other) {
     if (other is! _BlockKey) return false;
     return chunk == other.chunk && column == other.column;
   }
 
+  @override
   int get hashCode => chunk.hashCode ^ column.hashCode;
 }
 

@@ -34,16 +34,19 @@ abstract class ArgumentRule extends Rule {
   bool _trackInnerRules = true;
 
   /// Don't split when an inner collection rule splits.
+  @override
   bool get splitsOnInnerRules => _trackInnerRules;
 
   ArgumentRule(this._collectionRule, this._leadingCollections,
       this._trailingCollections);
 
+  @override
   void addConstrainedRules(Set<Rule> rules) {
     super.addConstrainedRules(rules);
     if (_collectionRule != null) rules.add(_collectionRule);
   }
 
+  @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
     if (_collectionRule != null && _collectionRule.index == null) {
@@ -100,6 +103,7 @@ class PositionalRule extends ArgumentRule {
       Rule collectionRule, int leadingCollections, int trailingCollections)
       : super(collectionRule, leadingCollections, trailingCollections);
 
+  @override
   int get numValues {
     // Can split before any one argument or none.
     var result = _arguments.length + 1;
@@ -119,11 +123,13 @@ class PositionalRule extends ArgumentRule {
     return result;
   }
 
+  @override
   void addConstrainedRules(Set<Rule> rules) {
     super.addConstrainedRules(rules);
     if (_namedArgsRule != null) rules.add(_namedArgsRule);
   }
 
+  @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
     if (_namedArgsRule != null && _namedArgsRule.index == null) {
@@ -131,6 +137,7 @@ class PositionalRule extends ArgumentRule {
     }
   }
 
+  @override
   bool isSplitAtValue(int value, Chunk chunk) {
     // Split only before the first argument. Keep the entire argument list
     // together on the next line.
@@ -178,6 +185,7 @@ class PositionalRule extends ArgumentRule {
   ///      function(
   ///          argument,
   ///          argument, named: argument);
+  @override
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
@@ -235,7 +243,8 @@ class PositionalRule extends ArgumentRule {
     return null;
   }
 
-  String toString() => "Pos${super.toString()}";
+  @override
+  String toString() => 'Pos${super.toString()}';
 }
 
 /// Splitting rule for a list of named arguments or parameters. Its values mean:
@@ -244,12 +253,14 @@ class PositionalRule extends ArgumentRule {
 /// * Split only before first argument.
 /// * Split before all arguments.
 class NamedRule extends ArgumentRule {
+  @override
   int get numValues => 3;
 
   NamedRule(
       Rule collectionRule, int leadingCollections, int trailingCollections)
       : super(collectionRule, leadingCollections, trailingCollections);
 
+  @override
   bool isSplitAtValue(int value, Chunk chunk) {
     // Move all arguments to the second line as a unit.
     if (value == 1) return chunk == _arguments.first;
@@ -258,6 +269,7 @@ class NamedRule extends ArgumentRule {
     return true;
   }
 
+  @override
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
@@ -281,5 +293,6 @@ class NamedRule extends ArgumentRule {
     return null;
   }
 
-  String toString() => "Named${super.toString()}";
+  @override
+  String toString() => 'Named${super.toString()}';
 }

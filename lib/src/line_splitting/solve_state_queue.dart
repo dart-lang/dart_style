@@ -114,7 +114,7 @@ class SolveStateQueue {
 
     // The way SolveStates are expanded should guarantee that we never generate
     // the exact same state twice. Getting here implies that that failed.
-    throw "unreachable";
+    throw 'unreachable';
   }
 
   /// Determines if any already enqueued state overlaps [state].

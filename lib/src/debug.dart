@@ -21,14 +21,14 @@ bool traceSplitter = false;
 
 bool useAnsiColors = false;
 
-const unicodeSection = "\u00a7";
-const unicodeMidDot = "\u00b7";
+const unicodeSection = '\u00a7';
+const unicodeMidDot = '\u00b7';
 
 /// The whitespace prefixing each line of output.
-String _indent = "";
+String _indent = '';
 
 void indent() {
-  _indent = "  $_indent";
+  _indent = '  $_indent';
 }
 
 void unindent() {
@@ -36,29 +36,29 @@ void unindent() {
 }
 
 /// Constants for ANSI color escape codes.
-final _gray = _color("\u001b[1;30m");
-final _green = _color("\u001b[32m");
-final _none = _color("\u001b[0m");
-final _bold = _color("\u001b[1m");
+final _gray = _color('\u001b[1;30m');
+final _green = _color('\u001b[32m');
+final _none = _color('\u001b[0m');
+final _bold = _color('\u001b[1m');
 
 /// Prints [message] to stdout with each line correctly indented.
 void log([message]) {
   if (message == null) {
-    print("");
+    print('');
     return;
   }
 
-  print(_indent + message.toString().replaceAll("\n", "\n$_indent"));
+  print(_indent + message.toString().replaceAll('\n', '\n$_indent'));
 }
 
 /// Wraps [message] in gray ANSI escape codes if enabled.
-String gray(message) => "$_gray$message$_none";
+String gray(message) => '$_gray$message$_none';
 
 /// Wraps [message] in green ANSI escape codes if enabled.
-String green(message) => "$_green$message$_none";
+String green(message) => '$_green$message$_none';
 
 /// Wraps [message] in bold ANSI escape codes if enabled.
-String bold(message) => "$_bold$message$_none";
+String bold(message) => '$_bold$message$_none';
 
 /// Prints [chunks] to stdout, one chunk per line, with detailed information
 /// about each chunk.
@@ -67,8 +67,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   // Show the spans as vertical bands over their range (unless there are too
   // many).
-  var spanSet = Set<Span>();
-  addSpans(List<Chunk> chunks) {
+  var spanSet = <Span>{};
+  void addSpans(List<Chunk> chunks) {
     for (var chunk in chunks) {
       spanSet.addAll(chunk.spans);
 
@@ -84,9 +84,9 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   var rows = <List<String>>[];
 
-  addChunk(List<Chunk> chunks, String prefix, int index) {
+  void addChunk(List<Chunk> chunks, String prefix, int index) {
     var row = <String>[];
-    row.add("$prefix$index:");
+    row.add('$prefix$index:');
 
     var chunk = chunks[index];
     if (chunk.text.length > 70) {
@@ -96,46 +96,46 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
 
     if (spans.length <= 20) {
-      var spanBars = "";
+      var spanBars = '';
       for (var span in spans) {
         if (chunk.spans.contains(span)) {
           if (index == 0 || !chunks[index - 1].spans.contains(span)) {
             if (span.cost == 1) {
-              spanBars += "╖";
+              spanBars += '╖';
             } else {
               spanBars += span.cost.toString();
             }
           } else {
-            spanBars += "║";
+            spanBars += '║';
           }
         } else {
           if (index > 0 && chunks[index - 1].spans.contains(span)) {
-            spanBars += "╜";
+            spanBars += '╜';
           } else {
-            spanBars += " ";
+            spanBars += ' ';
           }
         }
       }
       row.add(spanBars);
     }
 
-    writeIf(predicate, String callback()) {
+    void writeIf(predicate, String Function() callback) {
       if (predicate) {
         row.add(callback());
       } else {
-        row.add("");
+        row.add('');
       }
     }
 
     if (chunk.rule == null) {
-      row.add("");
-      row.add("(no rule)");
-      row.add("");
+      row.add('');
+      row.add('(no rule)');
+      row.add('');
     } else {
-      writeIf(chunk.rule.cost != 0, () => "\$${chunk.rule.cost}");
+      writeIf(chunk.rule.cost != 0, () => '\$${chunk.rule.cost}');
 
       var ruleString = chunk.rule.toString();
-      if (chunk.rule.isHardened) ruleString += "!";
+      if (chunk.rule.isHardened) ruleString += '!';
       row.add(ruleString);
 
       var constrainedRules =
@@ -145,26 +145,26 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
 
     writeIf(chunk.indent != null && chunk.indent != 0,
-        () => "indent ${chunk.indent}");
+        () => 'indent ${chunk.indent}');
 
     writeIf(chunk.nesting != null && chunk.nesting.indent != 0,
-        () => "nest ${chunk.nesting}");
+        () => 'nest ${chunk.nesting}');
 
-    writeIf(chunk.flushLeft != null && chunk.flushLeft, () => "flush");
+    writeIf(chunk.flushLeft != null && chunk.flushLeft, () => 'flush');
 
-    writeIf(chunk.canDivide, () => "divide");
+    writeIf(chunk.canDivide, () => 'divide');
 
     rows.add(row);
 
     if (chunk.isBlock) {
       for (var j = 0; j < chunk.block.chunks.length; j++) {
-        addChunk(chunk.block.chunks, "$prefix$index.", j);
+        addChunk(chunk.block.chunks, '$prefix$index.', j);
       }
     }
   }
 
   for (var i = start; i < chunks.length; i++) {
-    addChunk(chunks, "", i);
+    addChunk(chunks, '', i);
   }
 
   var rowWidths = List.filled(rows.first.length, 0);
@@ -182,7 +182,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
       if (i != 1) cell = gray(cell);
 
       buffer.write(cell);
-      buffer.write("  ");
+      buffer.write('  ');
     }
 
     buffer.writeln();
@@ -205,7 +205,7 @@ void dumpConstraints(List<Chunk> chunks) {
 
         var constraint = rule.constrain(value, other);
         if (constraint != null) {
-          constraints.add("$other->$constraint");
+          constraints.add('$other->$constraint');
         }
       }
 
@@ -225,12 +225,12 @@ void dumpConstraints(List<Chunk> chunks) {
 void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
   var buffer = StringBuffer();
 
-  writeIndent(indent) => buffer.write(gray("| " * (indent ~/ 2)));
+  void writeIndent(indent) => buffer.write(gray('| ' * (indent ~/ 2)));
 
-  writeChunksUnsplit(List<Chunk> chunks) {
+  void writeChunksUnsplit(List<Chunk> chunks) {
     for (var chunk in chunks) {
       buffer.write(chunk.text);
-      if (chunk.spaceWhenUnsplit) buffer.write(" ");
+      if (chunk.spaceWhenUnsplit) buffer.write(' ');
 
       // Recurse into the block.
       if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
@@ -251,7 +251,7 @@ void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
     } else {
       if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
 
-      if (chunk.spaceWhenUnsplit) buffer.write(" ");
+      if (chunk.spaceWhenUnsplit) buffer.write(' ');
     }
   }
 
@@ -259,4 +259,4 @@ void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
   log(buffer);
 }
 
-String _color(String ansiEscape) => useAnsiColors ? ansiEscape : "";
+String _color(String ansiEscape) => useAnsiColors ? ansiEscape : '';

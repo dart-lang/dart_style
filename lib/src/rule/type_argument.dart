@@ -24,8 +24,10 @@ class TypeArgumentRule extends Rule {
   /// The chunks prior to each positional type argument.
   final List<Chunk> _arguments = [];
 
+  @override
   int get cost => Cost.typeArgument;
 
+  @override
   int get numValues => _arguments.length == 1 ? 2 : _arguments.length + 2;
 
   /// Remembers [chunk] as containing the split that occurs right before a type
@@ -34,6 +36,7 @@ class TypeArgumentRule extends Rule {
     _arguments.add(chunk);
   }
 
+  @override
   bool isSplit(int value, Chunk chunk) {
     // Don't split at all.
     if (value == Rule.unsplit) return false;
@@ -46,5 +49,6 @@ class TypeArgumentRule extends Rule {
     return chunk == _arguments[_arguments.length - value];
   }
 
-  String toString() => "TypeArg${super.toString()}";
+  @override
+  String toString() => 'TypeArg${super.toString()}';
 }

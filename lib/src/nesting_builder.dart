@@ -61,8 +61,7 @@ class NestingBuilder {
   NestingLevel _nesting = NestingLevel();
 
   /// The current nesting, including any pending nesting.
-  NestingLevel get currentNesting =>
-      _pendingNesting != null ? _pendingNesting : _nesting;
+  NestingLevel get currentNesting => _pendingNesting ?? _nesting;
 
   /// Creates a new indentation level [spaces] deeper than the current one.
   ///
@@ -97,7 +96,7 @@ class NestingBuilder {
   ///
   /// If [indent] is omitted, defaults to [Indent.expression].
   void nest([int indent]) {
-    if (indent == null) indent = Indent.expression;
+    indent ??= Indent.expression;
 
     if (_pendingNesting != null) {
       _pendingNesting = _pendingNesting.nest(indent);

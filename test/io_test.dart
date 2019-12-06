@@ -136,10 +136,10 @@ void main() {
   if (!Platform.isWindows) {
     // TODO(rnystrom): Figure out Windows equivalent of chmod and get this
     // test running on Windows too.
-    test("reports error if file can not be written", () async {
+    test('reports error if file can not be written', () async {
       await d.file('a.dart', unformattedSource).create();
 
-      Process.runSync("chmod", ["-w", p.join(d.sandbox, 'a.dart')]);
+      Process.runSync('chmod', ['-w', p.join(d.sandbox, 'a.dart')]);
 
       var file = File(p.join(d.sandbox, 'a.dart'));
       processFile(overwriteOptions, file);

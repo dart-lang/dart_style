@@ -71,8 +71,9 @@ class NestingLevel extends FastHash {
     if (usedNesting.contains(this)) _totalUsedIndent += indent;
   }
 
+  @override
   String toString() {
     if (_parent == null) return indent.toString();
-    return "$parent:$indent";
+    return '$parent:$indent';
   }
 }

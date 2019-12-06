@@ -37,7 +37,7 @@ class SourceCode {
   ///
   /// If there is no selection, returns an empty string.
   String get selectedText {
-    if (selectionStart == null) return "";
+    if (selectionStart == null) return '';
     return text.substring(selectionStart, selectionStart + selectionLength);
   }
 
@@ -45,7 +45,7 @@ class SourceCode {
   ///
   /// If there is no selection, returns an empty string.
   String get textAfterSelection {
-    if (selectionStart == null) return "";
+    if (selectionStart == null) return '';
     return text.substring(selectionStart + selectionLength);
   }
 
@@ -57,26 +57,26 @@ class SourceCode {
     // Must either provide both selection bounds or neither.
     if ((selectionStart == null) != (selectionLength == null)) {
       throw ArgumentError(
-          "Is selectionStart is provided, selectionLength must be too.");
+          'Is selectionStart is provided, selectionLength must be too.');
     }
 
     if (selectionStart != null) {
       if (selectionStart < 0) {
-        throw ArgumentError("selectionStart must be non-negative.");
+        throw ArgumentError('selectionStart must be non-negative.');
       }
 
       if (selectionStart > text.length) {
-        throw ArgumentError("selectionStart must be within text.");
+        throw ArgumentError('selectionStart must be within text.');
       }
     }
 
     if (selectionLength != null) {
       if (selectionLength < 0) {
-        throw ArgumentError("selectionLength must be non-negative.");
+        throw ArgumentError('selectionLength must be non-negative.');
       }
 
       if (selectionStart + selectionLength > text.length) {
-        throw ArgumentError("selectionLength must end within text.");
+        throw ArgumentError('selectionLength must end within text.');
       }
     }
   }

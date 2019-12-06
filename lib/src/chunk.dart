@@ -68,6 +68,7 @@ abstract class Selection {
 /// block-based [indent] and expression-wrapping-based [nesting].
 class Chunk extends Selection {
   /// The literal text output for the chunk.
+  @override
   String get text => _text;
   String _text;
 
@@ -123,7 +124,7 @@ class Chunk extends Selection {
   ///
   /// However, this getter does not expose that. It will return `false` if the
   /// chunk is still indeterminate.
-  bool get isDouble => _isDouble != null ? _isDouble : false;
+  bool get isDouble => _isDouble ?? false;
   bool _isDouble;
 
   /// If `true`, then the line after this chunk should always be at column
@@ -201,14 +202,13 @@ class Chunk extends Selection {
   /// combine that information into a single split.
   void applySplit(Rule rule, int indent, NestingLevel nesting,
       {bool flushLeft, bool isDouble, bool space}) {
-    if (flushLeft == null) flushLeft = false;
-    if (space == null) space = false;
+    flushLeft ??= false;
+    space ??= false;
     if (rule.isHardened) {
       // A hard split always wins.
       _rule = rule;
-    } else if (_rule == null) {
-      // If the chunk hasn't been initialized yet, just inherit the rule.
-      _rule = rule;
+    } else {
+      _rule ??= rule;
     }
 
     // Last split settings win.
@@ -219,7 +219,7 @@ class Chunk extends Selection {
     _spaceWhenUnsplit = space;
 
     // Pin down the double state, if given and we haven't already.
-    if (_isDouble == null) _isDouble = isDouble;
+    _isDouble ??= isDouble;
   }
 
   /// Turns this chunk into one that can contain a block of child chunks.
@@ -230,7 +230,7 @@ class Chunk extends Selection {
 
   /// Returns `true` if the block body owned by this chunk should be expression
   /// indented given a set of rule values provided by [getValue].
-  bool indentBlock(int getValue(Rule rule)) {
+  bool indentBlock(int Function(Rule) getValue) {
     if (_block == null) return false;
     if (_block.argument == null) return false;
 
@@ -246,28 +246,29 @@ class Chunk extends Selection {
     _canDivide = canDivide;
   }
 
+  @override
   String toString() {
     var parts = [];
 
     if (text.isNotEmpty) parts.add(text);
 
-    if (_indent != null) parts.add("indent:$_indent");
-    if (spaceWhenUnsplit == true) parts.add("space");
-    if (_isDouble == true) parts.add("double");
-    if (_flushLeft == true) parts.add("flush");
+    if (_indent != null) parts.add('indent:$_indent');
+    if (spaceWhenUnsplit == true) parts.add('space');
+    if (_isDouble == true) parts.add('double');
+    if (_flushLeft == true) parts.add('flush');
 
     if (_rule == null) {
-      parts.add("(no split)");
+      parts.add('(no split)');
     } else {
       parts.add(rule.toString());
-      if (rule.isHardened) parts.add("(hard)");
+      if (rule.isHardened) parts.add('(hard)');
 
       if (_rule.constrainedRules.isNotEmpty) {
         parts.add("-> ${_rule.constrainedRules.join(' ')}");
       }
     }
 
-    return parts.join(" ");
+    return parts.join(' ');
   }
 }
 
@@ -343,16 +344,16 @@ class Cost {
 /// been completed.
 class OpenSpan {
   /// Index of the first chunk contained in this span.
-  int get start => _start;
-  int _start;
+  final int start;
 
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.
   final int cost;
 
-  OpenSpan(this._start, this.cost);
+  OpenSpan(this.start, this.cost);
 
-  String toString() => "OpenSpan($start, \$$cost)";
+  @override
+  String toString() => 'OpenSpan($start, \$$cost)';
 }
 
 /// Delimits a range of chunks that must end up on the same line to avoid an
@@ -371,13 +372,15 @@ class Span extends FastHash {
 
   Span(this.cost);
 
-  String toString() => "$id\$$cost";
+  @override
+  String toString() => '$id\$$cost';
 }
 
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
 class SourceComment extends Selection {
   /// The text of the comment, including `//`, `/*`, and `*/`.
+  @override
   final String text;
 
   /// The number of newlines between the comment or token preceding this comment

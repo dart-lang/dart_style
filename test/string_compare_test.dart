@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 library dart_style.test.string_compare_test;
 
 import 'package:test/test.dart';
@@ -10,21 +10,21 @@ import 'package:test/test.dart';
 import 'package:dart_style/src/string_compare.dart';
 
 void main() {
-  test("whitespace at end of string", () {
+  test('whitespace at end of string', () {
     expect(equalIgnoringWhitespace('foo bar\n', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('foo bar', 'foo bar\n'), isTrue);
     expect(equalIgnoringWhitespace('foo bar \n', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('foo bar', 'foo bar \n'), isTrue);
   });
 
-  test("whitespace at start of string", () {
+  test('whitespace at start of string', () {
     expect(equalIgnoringWhitespace('\nfoo bar', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('\n foo bar', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('foo bar', '\nfoo bar'), isTrue);
     expect(equalIgnoringWhitespace('foo bar', '\n foo bar'), isTrue);
   });
 
-  test("whitespace in the middle of string", () {
+  test('whitespace in the middle of string', () {
     expect(equalIgnoringWhitespace('foobar', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('foo bar', 'foobar'), isTrue);
     expect(equalIgnoringWhitespace('foo\tbar', 'foobar'), isTrue);
@@ -33,12 +33,12 @@ void main() {
     expect(equalIgnoringWhitespace('foobar', 'foo\nbar'), isTrue);
   });
 
-  test("wdentical strings", () {
+  test('wdentical strings', () {
     expect(equalIgnoringWhitespace('foo bar', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('', ''), isTrue);
   });
 
-  test("test unicode whitespace characters", () {
+  test('test unicode whitespace characters', () {
     // Dart sources only allow ascii whitespace code points so we
     // should not consider the following strings equal.
     var whitespaceRunes = [
@@ -62,7 +62,7 @@ void main() {
     }
   });
 
-  test("different strings", () {
+  test('different strings', () {
     expect(equalIgnoringWhitespace('foo bar', 'Foo bar'), isFalse);
     expect(equalIgnoringWhitespace('foo bar', 'foo bars'), isFalse);
     expect(equalIgnoringWhitespace('foo bars', 'foo bar'), isFalse);

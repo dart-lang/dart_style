@@ -73,6 +73,7 @@ abstract class OutputReporter {
 /// Prints only the names of files whose contents are different from their
 /// formatted version.
 class _DryRunReporter extends OutputReporter {
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     // Only show the changed files.
     if (changed) print(label);
@@ -81,18 +82,22 @@ class _DryRunReporter extends OutputReporter {
 
 /// Prints the formatted results of each file to stdout.
 class _PrintReporter extends OutputReporter {
+  @override
   void showDirectory(String path) {
-    print("Formatting directory $path:");
+    print('Formatting directory $path:');
   }
 
+  @override
   void showSkippedLink(String path) {
-    print("Skipping link $path");
+    print('Skipping link $path');
   }
 
+  @override
   void showHiddenPath(String path) {
-    print("Skipping hidden path $path");
+    print('Skipping hidden path $path');
   }
 
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     // Don't add an extra newline.
     stdout.write(output.text);
@@ -102,6 +107,7 @@ class _PrintReporter extends OutputReporter {
 /// Prints the formatted result and selection info of each file to stdout as a
 /// JSON map.
 class _PrintJsonReporter extends OutputReporter {
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     // TODO(rnystrom): Put an empty selection in here to remain compatible with
     // the old formatter. Since there's no way to pass a selection on the
@@ -109,11 +115,11 @@ class _PrintJsonReporter extends OutputReporter {
     // -1, -1. If we add support for passing in a selection, put the real
     // result here.
     print(jsonEncode({
-      "path": label,
-      "source": output.text,
-      "selection": {
-        "offset": output.selectionStart != null ? output.selectionStart : -1,
-        "length": output.selectionLength != null ? output.selectionLength : -1
+      'path': label,
+      'source': output.text,
+      'selection': {
+        'offset': output.selectionStart ?? -1,
+        'length': output.selectionLength ?? -1
       }
     }));
   }
@@ -121,17 +127,18 @@ class _PrintJsonReporter extends OutputReporter {
 
 /// Overwrites each file with its formatted result.
 class _OverwriteReporter extends _PrintReporter {
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     if (changed) {
       try {
         file.writeAsStringSync(output.text);
-        print("Formatted $label");
+        print('Formatted $label');
       } on FileSystemException catch (err) {
-        stderr.writeln("Could not overwrite $label: "
-            "${err.osError.message} (error code ${err.osError.errorCode})");
+        stderr.writeln('Could not overwrite $label: '
+            '${err.osError.message} (error code ${err.osError.errorCode})');
       }
     } else {
-      print("Unchanged $label");
+      print('Unchanged $label');
     }
   }
 }
@@ -142,22 +149,27 @@ abstract class _ReporterDecorator implements OutputReporter {
 
   _ReporterDecorator(this._inner);
 
+  @override
   void showDirectory(String path) {
     _inner.showDirectory(path);
   }
 
+  @override
   void showSkippedLink(String path) {
     _inner.showSkippedLink(path);
   }
 
+  @override
   void showHiddenPath(String path) {
     _inner.showHiddenPath(path);
   }
 
+  @override
   void beforeFile(File file, String label) {
     _inner.beforeFile(file, label);
   }
 
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     _inner.afterFile(file, label, output, changed: changed);
   }
@@ -188,16 +200,17 @@ class ProfileReporter extends _ReporterDecorator {
     files.sort((a, b) => _elapsed[b].compareTo(_elapsed[a]));
 
     for (var file in files) {
-      print("${_elapsed[file]}: $file");
+      print('${_elapsed[file]}: $file');
     }
 
     if (_elided >= 1) {
       var s = _elided > 1 ? 's' : '';
-      print("...$_elided more file$s each took less than 10ms.");
+      print('...$_elided more file$s each took less than 10ms.');
     }
   }
 
   /// Called when [file] is about to be formatted.
+  @override
   void beforeFile(File file, String label) {
     super.beforeFile(file, label);
     _ongoing[label] = DateTime.now();
@@ -207,6 +220,7 @@ class ProfileReporter extends _ReporterDecorator {
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     var elapsed = DateTime.now().difference(_ongoing.remove(label));
     if (elapsed.inMilliseconds >= 10) {
@@ -227,6 +241,7 @@ class SetExitReporter extends _ReporterDecorator {
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
+  @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     if (changed) exitCode = 1;
 
