@@ -2,6 +2,9 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+@JS()
+library node_format_service;
+
 import 'dart:math' as math;
 
 import 'package:js/js.dart';
@@ -45,7 +48,7 @@ void main() {
     }
 
     // If we get here, it couldn't be parsed at all.
-    return FormatResult(code: source, error: "$exception");
+    return FormatResult(code: source, error: '$exception');
   });
 }
 

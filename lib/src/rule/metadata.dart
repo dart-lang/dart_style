@@ -34,6 +34,7 @@ class MetadataRule extends Rule {
 
   /// Constrains the surrounding argument list rules to fully split if the
   /// metadata does.
+  @override
   int constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
@@ -48,11 +49,13 @@ class MetadataRule extends Rule {
     return null;
   }
 
+  @override
   void addConstrainedRules(Set<Rule> rules) {
     if (_positionalRule != null) rules.add(_positionalRule);
     if (_namedRule != null) rules.add(_namedRule);
   }
 
+  @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
     if (_positionalRule != null && _positionalRule.index == null) {

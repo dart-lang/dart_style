@@ -4,6 +4,7 @@
 
 library dart_style.src.line_splitting.solve_state;
 
+import '../chunk.dart';
 import '../debug.dart' as debug;
 import '../nesting_level.dart';
 import '../rule/rule.dart';
@@ -63,7 +64,7 @@ class SolveState {
   /// There is one other set of rules that go in here. Sometimes a bound rule
   /// in the solve state constrains some other unbound rule to split. In that
   /// case, we also consider that active so we know to not leave it at zero.
-  final _liveRules = Set<Rule>();
+  final _liveRules = <Rule>{};
 
   /// The set of splits chosen for this state.
   SplitSet get splits => _splits;
@@ -176,7 +177,7 @@ class SolveState {
 
     // The way SolveStates are expanded should guarantee that we never generate
     // the exact same state twice. Getting here implies that that failed.
-    throw "unreachable";
+    throw 'unreachable';
   }
 
   /// Enqueues more solve states to consider based on this one.
@@ -198,7 +199,7 @@ class SolveState {
 
           List<Rule> mustSplitRules;
           var valid = boundRules.tryBind(_splitter.rules, rule, value, (rule) {
-            if (mustSplitRules == null) mustSplitRules = [];
+            mustSplitRules ??= [];
             mustSplitRules.add(rule);
           });
 
@@ -281,7 +282,7 @@ class SolveState {
   void _calculateSplits() {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
-    var usedNestingLevels = Set<NestingLevel>();
+    var usedNestingLevels = <NestingLevel>{};
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
@@ -331,7 +332,7 @@ class SolveState {
     var foundOverflowRules = false;
     var start = 0;
 
-    endLine(int end) {
+    void endLine(int end) {
       // Track lines that went over the length. It is only rules contained in
       // long lines that we may want to split.
       if (length > _splitter.writer.pageWidth) {
@@ -354,7 +355,7 @@ class SolveState {
     // The set of spans that contain chunks that ended up splitting. We store
     // these in a set so a span's cost doesn't get double-counted if more than
     // one split occurs in it.
-    var splitSpans = Set();
+    var splitSpans = <Span>{};
 
     // The nesting level of the chunk that ended the previous line.
     var previousNesting;
@@ -456,9 +457,9 @@ class SolveState {
   void _ensureBoundRulesInUnboundLines() {
     if (_boundRulesInUnboundLines != null) return;
 
-    _boundRulesInUnboundLines = Set<Rule>();
+    _boundRulesInUnboundLines = <Rule>{};
 
-    var boundInLine = Set<Rule>();
+    var boundInLine = <Rule>{};
     var hasUnbound = false;
 
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
@@ -490,8 +491,8 @@ class SolveState {
   void _ensureConstraints() {
     if (_constraints != null) return;
 
-    _unboundRules = Set();
-    _boundRules = Set();
+    _unboundRules = <Rule>{};
+    _boundRules = <Rule>{};
 
     for (var rule in _splitter.rules) {
       if (_ruleValues.contains(rule)) {
@@ -555,7 +556,7 @@ class SolveState {
           }
 
           if (disallowedValues == null) {
-            disallowedValues = Set<int>();
+            disallowedValues = <int>{};
             _unboundConstraints[unbound] = disallowedValues;
           }
 
@@ -565,15 +566,16 @@ class SolveState {
     }
   }
 
+  @override
   String toString() {
     var buffer = StringBuffer();
 
     buffer.writeAll(_splitter.rules.map((rule) {
-      var valueLength = "${rule.fullySplitValue}".length;
+      var valueLength = '${rule.fullySplitValue}'.length;
 
-      var value = "?";
+      var value = '?';
       if (_ruleValues.contains(rule)) {
-        value = "${_ruleValues.getValue(rule)}";
+        value = '${_ruleValues.getValue(rule)}';
       }
 
       value = value.padLeft(valueLength);
@@ -584,13 +586,13 @@ class SolveState {
       }
 
       return value;
-    }), " ");
+    }), ' ');
 
-    buffer.write("   \$${splits.cost}");
+    buffer.write('   \$${splits.cost}');
 
-    if (overflowChars > 0) buffer.write(" (${overflowChars} over)");
-    if (!_isComplete) buffer.write(" (incomplete)");
-    if (splits == null) buffer.write(" invalid");
+    if (overflowChars > 0) buffer.write(' (${overflowChars} over)');
+    if (!_isComplete) buffer.write(' (incomplete)');
+    if (splits == null) buffer.write(' invalid');
 
     return buffer.toString();
   }

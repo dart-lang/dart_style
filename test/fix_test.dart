@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-@TestOn("vm")
+@TestOn('vm')
 library dart_style.test.fix_test;
 
 import 'package:test/test.dart';
@@ -13,11 +13,11 @@ import 'utils.dart';
 
 void main() {
   testFile(
-      "fixes/named_default_separator.unit", [StyleFix.namedDefaultSeparator]);
-  testFile("fixes/doc_comments.stmt", [StyleFix.docComments]);
-  testFile("fixes/function_typedefs.unit", [StyleFix.functionTypedefs]);
-  testFile("fixes/optional_const.unit", [StyleFix.optionalConst]);
-  testFile("fixes/optional_new.stmt", [StyleFix.optionalNew]);
-  testFile("fixes/single_cascade_statements.stmt",
+      'fixes/named_default_separator.unit', [StyleFix.namedDefaultSeparator]);
+  testFile('fixes/doc_comments.stmt', [StyleFix.docComments]);
+  testFile('fixes/function_typedefs.unit', [StyleFix.functionTypedefs]);
+  testFile('fixes/optional_const.unit', [StyleFix.optionalConst]);
+  testFile('fixes/optional_new.stmt', [StyleFix.optionalNew]);
+  testFile('fixes/single_cascade_statements.stmt',
       [StyleFix.singleCascadeStatements]);
 }

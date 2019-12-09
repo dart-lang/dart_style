@@ -59,7 +59,7 @@ class Rule extends FastHash {
   ///
   /// This contains all direct as well as transitive relationships. If A
   /// contains B which contains C, C's outerRules contains both B and A.
-  final Set<Rule> _implied = Set<Rule>();
+  final Set<Rule> _implied = <Rule>{};
 
   /// Marks [other] as implied by this one.
   ///
@@ -165,14 +165,14 @@ class Rule extends FastHash {
   /// on, directly or indirectly, including itself.
   Set<Rule> get allConstrainedRules {
     if (_allConstrainedRules == null) {
-      visit(Rule rule) {
+      void visit(Rule rule) {
         if (_allConstrainedRules.contains(rule)) return;
 
         _allConstrainedRules.add(rule);
         rule.constrainedRules.forEach(visit);
       }
 
-      _allConstrainedRules = Set();
+      _allConstrainedRules = {};
       visit(this);
     }
 
@@ -181,5 +181,6 @@ class Rule extends FastHash {
 
   Set<Rule> _allConstrainedRules;
 
-  String toString() => "$id";
+  @override
+  String toString() => '$id';
 }

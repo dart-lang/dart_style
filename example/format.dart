@@ -20,7 +20,7 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  formatStmt("a is int????;");
+  formatStmt('a is int????;');
 }
 
 void formatStmt(String source, [int pageWidth = 80]) {
@@ -42,9 +42,9 @@ void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
       result = formatter.formatStatement(source);
     }
 
-    drawRuler("before", pageWidth);
+    drawRuler('before', pageWidth);
     print(source);
-    drawRuler("after", pageWidth);
+    drawRuler('after', pageWidth);
     print(result);
   } on FormatterException catch (error) {
     print(error.message());
@@ -52,14 +52,14 @@ void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
 }
 
 void drawRuler(String label, int width) {
-  var padding = " " * (width - label.length - 1);
-  print("$label:$padding|");
+  var padding = ' ' * (width - label.length - 1);
+  print('$label:$padding|');
 }
 
 /// Runs the formatter test starting on [line] at [path] inside the "test"
 /// directory.
 void runTest(String path, int line) {
-  var indentPattern = RegExp(r"^\(indent (\d+)\)\s*");
+  var indentPattern = RegExp(r'^\(indent (\d+)\)\s*');
 
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
@@ -68,20 +68,20 @@ void runTest(String path, int line) {
           .findLibrary(#dart_style.example.format)
           .uri
           .path),
-      "../test");
+      '../test');
 
   var lines = File(p.join(testDir, path)).readAsLinesSync();
 
   // The first line may have a "|" to indicate the page width.
   var pageWidth = 80;
-  if (lines[0].endsWith("|")) {
-    pageWidth = lines[0].indexOf("|");
+  if (lines[0].endsWith('|')) {
+    pageWidth = lines[0].indexOf('|');
     lines = lines.skip(1).toList();
   }
 
   var i = 0;
   while (i < lines.length) {
-    var description = lines[i++].replaceAll(">>>", "").trim();
+    var description = lines[i++].replaceAll('>>>', '').trim();
 
     // Let the test specify a leading indentation. This is handy for
     // regression tests which often come from a chunk of nested code.
@@ -92,26 +92,26 @@ void runTest(String path, int line) {
       description = description.substring(indentMatch.end);
     }
 
-    if (description == "") {
-      description = "line ${i + 1}";
+    if (description == '') {
+      description = 'line ${i + 1}';
     } else {
-      description = "line ${i + 1}: $description";
+      description = 'line ${i + 1}: $description';
     }
     var startLine = i + 1;
 
-    var input = "";
-    while (!lines[i].startsWith("<<<")) {
-      input += lines[i++] + "\n";
+    var input = '';
+    while (!lines[i].startsWith('<<<')) {
+      input += lines[i++] + '\n';
     }
 
-    var expectedOutput = "";
-    while (++i < lines.length && !lines[i].startsWith(">>>")) {
-      expectedOutput += lines[i] + "\n";
+    var expectedOutput = '';
+    while (++i < lines.length && !lines[i].startsWith('>>>')) {
+      expectedOutput += lines[i] + '\n';
     }
 
     if (line != startLine) continue;
 
-    var isCompilationUnit = p.extension(path) == ".unit";
+    var isCompilationUnit = p.extension(path) == '.unit';
 
     var inputCode =
         _extractSelection(input, isCompilationUnit: isCompilationUnit);
@@ -127,19 +127,19 @@ void runTest(String path, int line) {
     // Statements from the formatter (correctly) don't have that, so add
     // one to line up with the expected result.
     var actualText = actual.text;
-    if (!isCompilationUnit) actualText += "\n";
+    if (!isCompilationUnit) actualText += '\n';
 
-    print("$path $description");
-    drawRuler("before", pageWidth);
+    print('$path $description');
+    drawRuler('before', pageWidth);
     print(input);
     if (actualText == expected.text) {
-      drawRuler("result", pageWidth);
+      drawRuler('result', pageWidth);
       print(actualText);
     } else {
-      print("FAIL");
-      drawRuler("expected", pageWidth);
+      print('FAIL');
+      drawRuler('expected', pageWidth);
       print(expected.text);
-      drawRuler("actual", pageWidth);
+      drawRuler('actual', pageWidth);
       print(actualText);
     }
   }
@@ -149,11 +149,11 @@ void runTest(String path, int line) {
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
 SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
-  var start = source.indexOf("‹");
-  source = source.replaceAll("‹", "");
+  var start = source.indexOf('‹');
+  source = source.replaceAll('‹', '');
 
-  var end = source.indexOf("›");
-  source = source.replaceAll("›", "");
+  var end = source.indexOf('›');
+  source = source.replaceAll('›', '');
 
   return SourceCode(source,
       isCompilationUnit: isCompilationUnit,

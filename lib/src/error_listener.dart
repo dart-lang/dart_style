@@ -13,6 +13,7 @@ import 'exceptions.dart';
 class ErrorListener implements AnalysisErrorListener {
   final _errors = <AnalysisError>[];
 
+  @override
   void onError(AnalysisError error) {
     // Fasta produces some semantic errors, which we want to ignore so that
     // users can format code containing static errors.

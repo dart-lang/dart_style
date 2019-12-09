@@ -26,33 +26,33 @@ class Indent {
 /// encountered to avoid trailing whitespace.
 class Whitespace {
   /// No whitespace.
-  static const none = Whitespace._("none");
+  static const none = Whitespace._('none');
 
   /// A single non-breaking space.
-  static const space = Whitespace._("space");
+  static const space = Whitespace._('space');
 
   /// A single newline.
-  static const newline = Whitespace._("newline");
+  static const newline = Whitespace._('newline');
 
   /// A single newline that takes into account the current expression nesting
   /// for the next line.
-  static const nestedNewline = Whitespace._("nestedNewline");
+  static const nestedNewline = Whitespace._('nestedNewline');
 
   /// A single newline with all indentation eliminated at the beginning of the
   /// next line.
   ///
   /// Used for subsequent lines in a multiline string.
-  static const newlineFlushLeft = Whitespace._("newlineFlushLeft");
+  static const newlineFlushLeft = Whitespace._('newlineFlushLeft');
 
   /// Two newlines, a single blank line of separation.
-  static const twoNewlines = Whitespace._("twoNewlines");
+  static const twoNewlines = Whitespace._('twoNewlines');
 
   /// A split or newline should be output based on whether the current token is
   /// on the same line as the previous one or not.
   ///
   /// In general, we like to avoid using this because it makes the formatter
   /// less prescriptive over the user's whitespace.
-  static const splitOrNewline = Whitespace._("splitOrNewline");
+  static const splitOrNewline = Whitespace._('splitOrNewline');
 
   /// A split or blank line (two newlines) should be output based on whether
   /// the current token is on the same line as the previous one or not.
@@ -62,14 +62,14 @@ class Whitespace {
   ///
   /// In general, we like to avoid using this because it makes the formatter
   /// less prescriptive over the user's whitespace.
-  static const splitOrTwoNewlines = Whitespace._("splitOrTwoNewlines");
+  static const splitOrTwoNewlines = Whitespace._('splitOrTwoNewlines');
 
   /// One or two newlines should be output based on how many newlines are
   /// present between the next token and the previous one.
   ///
   /// In general, we like to avoid using this because it makes the formatter
   /// less prescriptive over the user's whitespace.
-  static const oneOrTwoNewlines = Whitespace._("oneOrTwoNewlines");
+  static const oneOrTwoNewlines = Whitespace._('oneOrTwoNewlines');
 
   final String name;
 
@@ -92,5 +92,6 @@ class Whitespace {
 
   const Whitespace._(this.name);
 
+  @override
   String toString() => name;
 }

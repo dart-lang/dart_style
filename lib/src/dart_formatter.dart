@@ -38,7 +38,7 @@ class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
-  final Set<StyleFix> fixes = Set();
+  final Set<StyleFix> fixes = {};
 
   /// Creates a new formatter for Dart code.
   ///
@@ -70,7 +70,7 @@ class DartFormatter {
     } else if (uri is String) {
       // Do nothing.
     } else {
-      throw ArgumentError("uri must be `null`, a Uri, or a String.");
+      throw ArgumentError('uri must be `null`, a Uri, or a String.');
     }
 
     return formatSource(SourceCode(source, uri: uri, isCompilationUnit: true))
@@ -94,8 +94,8 @@ class DartFormatter {
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
     var featureSet = FeatureSet.fromEnableFlags([
-      "extension-methods",
-      "non-nullable",
+      'extension-methods',
+      'non-nullable',
     ]);
 
     // Tokenize the source.
@@ -113,9 +113,9 @@ class DartFormatter {
       if (scanner.lineStarts.length > 1 &&
           scanner.lineStarts[1] >= 2 &&
           source.text[scanner.lineStarts[1] - 2] == '\r') {
-        lineEnding = "\r\n";
+        lineEnding = '\r\n';
       } else {
-        lineEnding = "\n";
+        lineEnding = '\n';
       }
     }
 

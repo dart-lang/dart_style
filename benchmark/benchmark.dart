@@ -16,8 +16,8 @@ const FORMATS_PER_TRIAL = 30;
 /// Note, these files use ".txt" because while they can be *parsed* correctly,
 /// they don't resolve without error. That's OK because the formatter doesn't
 /// care about that.
-final source = loadFile("before.dart.txt");
-final expected = loadFile("after.dart.txt");
+final source = loadFile('before.dart.txt');
+final expected = loadFile('after.dart.txt');
 
 void main(List<String> args) {
   var best = 99999999.0;
@@ -43,7 +43,7 @@ void main(List<String> args) {
     // Sanity check to make sure the output is what we expect and to make sure
     // the VM doesn't optimize "dead" code away.
     if (result != expected) {
-      print("Incorrect output:\n$result");
+      print('Incorrect output:\n$result');
       exit(1);
     }
 
@@ -53,7 +53,7 @@ void main(List<String> args) {
     printResult("Run ${padLeft('#$i', 3)}", elapsed);
   }
 
-  printResult("Best   ", best);
+  printResult('Best   ', best);
 }
 
 String loadFile(String name) {
@@ -62,14 +62,14 @@ String loadFile(String name) {
 }
 
 void printResult(String label, double time) {
-  print("$label: ${padLeft(time.toStringAsFixed(2), 4)}ms "
+  print('$label: ${padLeft(time.toStringAsFixed(2), 4)}ms '
       "${'=' * ((time * 5).toInt())}");
 }
 
 String padLeft(input, int length) {
   var result = input.toString();
   if (result.length < length) {
-    result = " " * (length - result.length) + result;
+    result = ' ' * (length - result.length) + result;
   }
 
   return result;

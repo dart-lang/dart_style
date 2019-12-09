@@ -22,7 +22,7 @@ bool processDirectory(FormatterOptions options, Directory directory) {
   options.reporter.showDirectory(directory.path);
 
   var success = true;
-  var shownHiddenPaths = Set<String>();
+  var shownHiddenPaths = <String>{};
 
   for (var entry in directory.listSync(
       recursive: true, followLinks: options.followLinks)) {
@@ -33,13 +33,13 @@ bool processDirectory(FormatterOptions options, Directory directory) {
       continue;
     }
 
-    if (entry is! File || !entry.path.endsWith(".dart")) continue;
+    if (entry is! File || !entry.path.endsWith('.dart')) continue;
 
     // If the path is in a subdirectory starting with ".", ignore it.
     var parts = p.split(relative);
     var hiddenIndex;
     for (var i = 0; i < parts.length; i++) {
-      if (parts[i].startsWith(".")) {
+      if (parts[i].startsWith('.')) {
         hiddenIndex = i;
         break;
       }
@@ -65,7 +65,7 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 ///
 /// Returns `true` if successful or `false` if an error occurred.
 bool processFile(FormatterOptions options, File file, {String label}) {
-  if (label == null) label = file.path;
+  label ??= file.path;
 
   var formatter = DartFormatter(
       indent: options.indent,
@@ -79,7 +79,7 @@ bool processFile(FormatterOptions options, File file, {String label}) {
         .afterFile(file, label, output, changed: source.text != output.text);
     return true;
   } on FormatterException catch (err) {
-    var color = Platform.operatingSystem != "windows" &&
+    var color = Platform.operatingSystem != 'windows' &&
         stdioType(stderr) == StdioType.terminal;
 
     stderr.writeln(err.message(color: color));

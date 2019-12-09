@@ -43,7 +43,7 @@ class RuleSet {
 
   /// Invokes [callback] for each rule in [rules] with the rule's value, which
   /// will be `null` if it is not bound.
-  void forEach(List<Rule> rules, callback(Rule rule, int value)) {
+  void forEach(List<Rule> rules, void Function(Rule, int) callback) {
     var i = 0;
     for (var rule in rules) {
       var value = _values[i];
@@ -63,7 +63,8 @@ class RuleSet {
   ///
   /// If an unbound rule gets constrained to `-1` (meaning it must split, but
   /// can split any way it wants), invokes [onSplitRule] with it.
-  bool tryBind(List<Rule> rules, Rule rule, int value, onSplitRule(Rule rule)) {
+  bool tryBind(
+      List<Rule> rules, Rule rule, int value, void Function(Rule) onSplitRule) {
     assert(!rule.isHardened);
 
     _values[rule.index] = value;
@@ -118,8 +119,8 @@ class RuleSet {
     return true;
   }
 
-  String toString() =>
-      _values.map((value) => value == null ? "?" : value).join(" ");
+  @override
+  String toString() => _values.map((value) => value ?? '?').join(' ');
 }
 
 /// For each chunk, this tracks if it has been split and, if so, what the
@@ -130,7 +131,7 @@ class RuleSet {
 /// not split. This had about a 10% perf improvement over using a [Set] of
 /// splits.
 class SplitSet {
-  List<int> _columns;
+  final List<int> _columns;
 
   /// The cost of the solution that led to these splits.
   int get cost => _cost;
@@ -159,14 +160,15 @@ class SplitSet {
     _cost = cost;
   }
 
+  @override
   String toString() {
     var result = [];
     for (var i = 0; i < _columns.length; i++) {
       if (_columns[i] != null) {
-        result.add("$i:${_columns[i]}");
+        result.add('$i:${_columns[i]}');
       }
     }
 
-    return result.join(" ");
+    return result.join(' ');
   }
 }

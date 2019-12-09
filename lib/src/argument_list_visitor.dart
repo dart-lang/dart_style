@@ -73,7 +73,7 @@ class ArgumentListVisitor {
     for (var i = 0; i < arguments.length; i++) {
       var argument = arguments[i];
       if (_isBlockFunction(argument)) {
-        if (functionsStart == null) functionsStart = i;
+        functionsStart ??= i;
 
         // The functions must be one contiguous section.
         if (functionsEnd != null && functionsEnd != i) {

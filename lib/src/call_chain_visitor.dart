@@ -182,7 +182,7 @@ class CallChainVisitor {
   /// to force a cascade after a method chain to be more deeply nested than
   /// the methods.
   void visit({bool unnest}) {
-    if (unnest == null) unnest = true;
+    unnest ??= true;
 
     _visitor.builder.nestExpression();
 
@@ -469,11 +469,14 @@ class _MethodSelector extends _Selector {
 
   _MethodSelector(this._node);
 
+  @override
   bool get isProperty => false;
 
+  @override
   bool isBlockCall(SourceVisitor visitor) =>
       ArgumentListVisitor(visitor, _node.argumentList).hasBlockArguments;
 
+  @override
   void writeSelector(CallChainVisitor visitor) {
     visitor._visitor.token(_node.operator);
     visitor._visitor.token(_node.methodName.token);
@@ -493,6 +496,7 @@ class _PrefixedSelector extends _Selector {
 
   _PrefixedSelector(this._node);
 
+  @override
   void writeSelector(CallChainVisitor visitor) {
     visitor._visitor.token(_node.period);
     visitor._visitor.visit(_node.identifier);
@@ -504,6 +508,7 @@ class _PropertySelector extends _Selector {
 
   _PropertySelector(this._node);
 
+  @override
   void writeSelector(CallChainVisitor visitor) {
     visitor._visitor.token(_node.operator);
     visitor._visitor.visit(_node.propertyName);

@@ -15,58 +15,58 @@ import 'package:dart_style/src/source_code.dart';
 import 'package:dart_style/src/style_fix.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
-const version = "1.3.3";
+const version = '1.3.3';
 
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
-  parser.addSeparator("Common options:");
-  parser.addFlag("help",
-      abbr: "h", negatable: false, help: "Shows usage information.");
-  parser.addFlag("version",
-      negatable: false, help: "Shows version information.");
-  parser.addOption("line-length",
-      abbr: "l", help: "Wrap lines longer than this.", defaultsTo: "80");
-  parser.addFlag("overwrite",
-      abbr: "w",
+  parser.addSeparator('Common options:');
+  parser.addFlag('help',
+      abbr: 'h', negatable: false, help: 'Shows usage information.');
+  parser.addFlag('version',
+      negatable: false, help: 'Shows version information.');
+  parser.addOption('line-length',
+      abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
+  parser.addFlag('overwrite',
+      abbr: 'w',
       negatable: false,
-      help: "Overwrite input files with formatted output.");
-  parser.addFlag("dry-run",
-      abbr: "n",
+      help: 'Overwrite input files with formatted output.');
+  parser.addFlag('dry-run',
+      abbr: 'n',
       negatable: false,
-      help: "Show which files would be modified but make no changes.");
+      help: 'Show which files would be modified but make no changes.');
 
-  parser.addSeparator("Non-whitespace fixes (off by default):");
-  parser.addFlag("fix", negatable: false, help: "Apply all style fixes.");
+  parser.addSeparator('Non-whitespace fixes (off by default):');
+  parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
 
   for (var fix in StyleFix.all) {
     // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
-    parser.addFlag("fix-${fix.name}", negatable: false, help: fix.description);
+    parser.addFlag('fix-${fix.name}', negatable: false, help: fix.description);
   }
 
-  parser.addSeparator("Other options:");
-  parser.addOption("indent",
-      abbr: "i", help: "Spaces of leading indentation.", defaultsTo: "0");
-  parser.addFlag("machine",
-      abbr: "m",
+  parser.addSeparator('Other options:');
+  parser.addOption('indent',
+      abbr: 'i', help: 'Spaces of leading indentation.', defaultsTo: '0');
+  parser.addFlag('machine',
+      abbr: 'm',
       negatable: false,
-      help: "Produce machine-readable JSON output.");
-  parser.addFlag("set-exit-if-changed",
+      help: 'Produce machine-readable JSON output.');
+  parser.addFlag('set-exit-if-changed',
       negatable: false,
-      help: "Return exit code 1 if there are any formatting changes.");
-  parser.addFlag("follow-links",
+      help: 'Return exit code 1 if there are any formatting changes.');
+  parser.addFlag('follow-links',
       negatable: false,
-      help: "Follow links to files and directories.\n"
-          "If unset, links will be ignored.");
-  parser.addOption("preserve",
+      help: 'Follow links to files and directories.\n'
+          'If unset, links will be ignored.');
+  parser.addOption('preserve',
       help: 'Selection to preserve, formatted as "start:length".');
-  parser.addOption("stdin-name",
-      help: "The path name to show when an error occurs in source read from "
-          "stdin.",
-      defaultsTo: "<stdin>");
+  parser.addOption('stdin-name',
+      help: 'The path name to show when an error occurs in source read from '
+          'stdin.',
+      defaultsTo: '<stdin>');
 
-  parser.addFlag("profile", negatable: false, hide: true);
-  parser.addFlag("transform", abbr: "t", negatable: false, hide: true);
+  parser.addFlag('profile', negatable: false, hide: true);
+  parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
 
   ArgResults argResults;
   try {
@@ -75,24 +75,24 @@ void main(List<String> args) {
     usageError(parser, err.message);
   }
 
-  if (argResults["help"]) {
+  if (argResults['help']) {
     printUsage(parser);
     return;
   }
 
-  if (argResults["version"]) {
+  if (argResults['version']) {
     print(version);
     return;
   }
 
   // Can only preserve a selection when parsing from stdin.
   List<int> selection;
-  if (argResults["preserve"] != null && argResults.rest.isNotEmpty) {
-    usageError(parser, "Can only use --preserve when reading from stdin.");
+  if (argResults['preserve'] != null && argResults.rest.isNotEmpty) {
+    usageError(parser, 'Can only use --preserve when reading from stdin.');
   }
 
   try {
-    selection = parseSelection(argResults["preserve"]);
+    selection = parseSelection(argResults['preserve']);
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -100,47 +100,47 @@ void main(List<String> args) {
         '"${argResults['preserve']}".');
   }
 
-  if (argResults["dry-run"] && argResults["overwrite"]) {
+  if (argResults['dry-run'] && argResults['overwrite']) {
     usageError(
-        parser, "Cannot use --dry-run and --overwrite at the same time.");
+        parser, 'Cannot use --dry-run and --overwrite at the same time.');
   }
 
-  checkForReporterCollision(String chosen, String other) {
+  void checkForReporterCollision(String chosen, String other) {
     if (!argResults[other]) return;
 
-    usageError(parser, "Cannot use --$chosen and --$other at the same time.");
+    usageError(parser, 'Cannot use --$chosen and --$other at the same time.');
   }
 
   var reporter = OutputReporter.print;
-  if (argResults["dry-run"]) {
-    checkForReporterCollision("dry-run", "overwrite");
-    checkForReporterCollision("dry-run", "machine");
+  if (argResults['dry-run']) {
+    checkForReporterCollision('dry-run', 'overwrite');
+    checkForReporterCollision('dry-run', 'machine');
 
     reporter = OutputReporter.dryRun;
-  } else if (argResults["overwrite"]) {
-    checkForReporterCollision("overwrite", "machine");
+  } else if (argResults['overwrite']) {
+    checkForReporterCollision('overwrite', 'machine');
 
     if (argResults.rest.isEmpty) {
       usageError(parser,
-          "Cannot use --overwrite without providing any paths to format.");
+          'Cannot use --overwrite without providing any paths to format.');
     }
 
     reporter = OutputReporter.overwrite;
-  } else if (argResults["machine"]) {
+  } else if (argResults['machine']) {
     reporter = OutputReporter.printJson;
   }
 
-  if (argResults["profile"]) {
+  if (argResults['profile']) {
     reporter = ProfileReporter(reporter);
   }
 
-  if (argResults["set-exit-if-changed"]) {
+  if (argResults['set-exit-if-changed']) {
     reporter = SetExitReporter(reporter);
   }
 
   int pageWidth;
   try {
-    pageWidth = int.parse(argResults["line-length"]);
+    pageWidth = int.parse(argResults['line-length']);
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -150,7 +150,7 @@ void main(List<String> args) {
 
   int indent;
   try {
-    indent = int.parse(argResults["indent"]);
+    indent = int.parse(argResults['indent']);
     if (indent < 0 || indent.toInt() != indent) throw FormatException();
   } on FormatException catch (_) {
     usageError(
@@ -159,22 +159,22 @@ void main(List<String> args) {
         '"${argResults['indent']}".');
   }
 
-  var followLinks = argResults["follow-links"];
+  var followLinks = argResults['follow-links'];
 
   var fixes = <StyleFix>[];
-  if (argResults["fix"]) fixes.addAll(StyleFix.all);
+  if (argResults['fix']) fixes.addAll(StyleFix.all);
   for (var fix in StyleFix.all) {
-    if (argResults["fix-${fix.name}"]) {
-      if (argResults["fix"]) {
-        usageError(parser, "--fix-${fix.name} is redundant with --fix.");
+    if (argResults['fix-${fix.name}']) {
+      if (argResults['fix']) {
+        usageError(parser, '--fix-${fix.name} is redundant with --fix.');
       }
 
       fixes.add(fix);
     }
   }
 
-  if (argResults.wasParsed("stdin-name") && argResults.rest.isNotEmpty) {
-    usageError(parser, "Cannot pass --stdin-name when not reading from stdin.");
+  if (argResults.wasParsed('stdin-name') && argResults.rest.isNotEmpty) {
+    usageError(parser, 'Cannot pass --stdin-name when not reading from stdin.');
   }
 
   var options = FormatterOptions(reporter,
@@ -184,12 +184,12 @@ void main(List<String> args) {
       fixes: fixes);
 
   if (argResults.rest.isEmpty) {
-    formatStdin(options, selection, argResults["stdin-name"] as String);
+    formatStdin(options, selection, argResults['stdin-name'] as String);
   } else {
     formatPaths(options, argResults.rest);
   }
 
-  if (argResults["profile"]) {
+  if (argResults['profile']) {
     (reporter as ProfileReporter).showProfile();
   }
 }
@@ -197,7 +197,7 @@ void main(List<String> args) {
 List<int> parseSelection(String selection) {
   if (selection == null) return null;
 
-  var coordinates = selection.split(":");
+  var coordinates = selection.split(':');
   if (coordinates.length != 2) {
     throw FormatException(
         'Selection should be a colon-separated pair of integers, "123:45".');
@@ -276,13 +276,13 @@ void usageError(ArgParser parser, String error) {
 void printUsage(ArgParser parser, [String error]) {
   var output = stdout;
 
-  var message = "Idiomatically formats Dart source code.";
+  var message = 'Idiomatically formats Dart source code.';
   if (error != null) {
     message = error;
     output = stdout;
   }
 
-  output.write("""$message
+  output.write('''$message
 
 Usage:   dartfmt [options...] [files or directories...]
 
@@ -290,5 +290,5 @@ Example: dartfmt -w .
          Reformats every Dart file in the current directory tree.
 
 ${parser.usage}
-""");
+''');
 }

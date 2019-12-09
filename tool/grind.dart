@@ -11,29 +11,29 @@ import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart' as yaml;
 
 /// Matches the version line in dart_style's pubspec.
-final _versionPattern = RegExp(r"^version: .*$", multiLine: true);
+final _versionPattern = RegExp(r'^version: .*$', multiLine: true);
 
-main(List<String> args) => grind(args);
+void main(List<String> args) => grind(args);
 
 @DefaultTask()
 @Task()
-validate() async {
+Future<void> validate() async {
   // Test it.
   await TestRunner().testAsync();
 
   // Make sure it's warning clean.
-  Analyzer.analyze("bin/format.dart", fatalWarnings: true);
+  Analyzer.analyze('bin/format.dart', fatalWarnings: true);
 
   // Format it.
-  Dart.run("bin/format.dart", arguments: ["-w", "."]);
+  Dart.run('bin/format.dart', arguments: ['-w', '.']);
 }
 
 @Task('Publish to npm')
-npm() {
+void npm() {
   var out = 'dist';
 
-  var pubspec = yaml.loadYaml(getFile("pubspec.yaml").readAsStringSync());
-  var homepage = pubspec["homepage"];
+  var pubspec = yaml.loadYaml(getFile('pubspec.yaml').readAsStringSync());
+  var homepage = pubspec['homepage'];
   var fileName = 'index.js';
 
   // Generate modified dart2js output suitable to run on node.
@@ -48,17 +48,17 @@ $dart2jsOutput''');
 
   File('$out/package.json')
       .writeAsStringSync(const JsonEncoder.withIndent('  ').convert({
-    "name": "dart-style",
-    "version": pubspec["version"],
-    "description": pubspec["description"],
-    "main": fileName,
-    "typings": "dart-style.d.ts",
-    "scripts": {"test": "echo \"Error: no test specified\" && exit 1"},
-    "repository": {"type": "git", "url": "git+$homepage"},
-    "author": pubspec["author"],
-    "license": "BSD",
-    "bugs": {"url": "$homepage/issues"},
-    "homepage": homepage
+    'name': 'dart-style',
+    'version': pubspec['version'],
+    'description': pubspec['description'],
+    'main': fileName,
+    'typings': 'dart-style.d.ts',
+    'scripts': {'test': 'echo "Error: no test specified" && exit 1'},
+    'repository': {'type': 'git', 'url': 'git+$homepage'},
+    'author': pubspec['author'],
+    'license': 'BSD',
+    'bugs': {'url': '$homepage/issues'},
+    'homepage': homepage
   }));
   run('npm', arguments: ['publish', out]);
 }
@@ -95,33 +95,33 @@ $dart2jsOutput''');
 ///         pub lish
 @Task()
 @Depends(validate)
-bump() async {
+Future<void> bump() async {
   // Read the version from the pubspec.
-  var pubspecFile = getFile("pubspec.yaml");
+  var pubspecFile = getFile('pubspec.yaml');
   var pubspec = pubspecFile.readAsStringSync();
-  var version = Version.parse(yaml.loadYaml(pubspec)["version"]);
+  var version = Version.parse(yaml.loadYaml(pubspec)['version']);
 
   // Require a "-dev" version since we don't otherwise know what to bump it to.
-  if (!version.isPreRelease) throw "Cannot publish non-dev version $version.";
+  if (!version.isPreRelease) throw 'Cannot publish non-dev version $version.';
 
   // Don't allow versions like "1.2.3-dev+4" because it's not clear if the
   // user intended the "+4" to be discarded or not.
-  if (version.build.isNotEmpty) throw "Cannot publish build version $version.";
+  if (version.build.isNotEmpty) throw 'Cannot publish build version $version.';
 
   var bumped = Version(version.major, version.minor, version.patch);
 
   // Update the version in the pubspec.
-  pubspec = pubspec.replaceAll(_versionPattern, "version: $bumped");
+  pubspec = pubspec.replaceAll(_versionPattern, 'version: $bumped');
   pubspecFile.writeAsStringSync(pubspec);
 
   // Update the version constant in bin/format.dart.
-  var binFormatFile = getFile("bin/format.dart");
+  var binFormatFile = getFile('bin/format.dart');
   var binFormat = binFormatFile.readAsStringSync().replaceAll(
       RegExp(r'const version = "[^"]+";'), 'const version = "$bumped";');
   binFormatFile.writeAsStringSync(binFormat);
 
   // Update the version in the CHANGELOG.
-  var changelogFile = getFile("CHANGELOG.md");
+  var changelogFile = getFile('CHANGELOG.md');
   var changelog = changelogFile
       .readAsStringSync()
       .replaceAll(version.toString(), bumped.toString());

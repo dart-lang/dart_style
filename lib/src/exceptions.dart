@@ -19,7 +19,7 @@ class FormatterException implements Exception {
   /// Creates a human-friendly representation of the analysis errors.
   String message({bool color}) {
     var buffer = StringBuffer();
-    buffer.writeln("Could not format because the source could not be parsed:");
+    buffer.writeln('Could not format because the source could not be parsed:');
 
     // In case we get a huge series of cascaded errors, just show the first few.
     var shownErrors = errors;
@@ -32,7 +32,7 @@ class FormatterException implements Exception {
       // the error position will go past the end of the source. In that case,
       // just pad the source with spaces so we can report it nicely.
       if (error.offset + error.length > source.length) {
-        source += " " * (error.offset + error.length - source.length);
+        source += ' ' * (error.offset + error.length - source.length);
       }
 
       var file = SourceFile.fromString(source, url: error.source.fullName);
@@ -43,12 +43,13 @@ class FormatterException implements Exception {
 
     if (shownErrors.length != errors.length) {
       buffer.writeln();
-      buffer.write("(${errors.length - shownErrors.length} more errors...)");
+      buffer.write('(${errors.length - shownErrors.length} more errors...)');
     }
 
     return buffer.toString();
   }
 
+  @override
   String toString() => message();
 }
 
@@ -63,10 +64,11 @@ class UnexpectedOutputException implements Exception {
 
   UnexpectedOutputException(this._input, this._output);
 
+  @override
   String toString() {
-    return """The formatter produced unexpected output. Input was:
+    return '''The formatter produced unexpected output. Input was:
 $_input
 Which formatted to:
-$_output""";
+$_output''';
   }
 }

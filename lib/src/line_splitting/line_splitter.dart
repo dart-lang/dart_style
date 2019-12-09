@@ -178,8 +178,8 @@ class LineSplitter {
       }
 
       if (debug.traceSplitter) {
-        var best = state == _bestSolution ? " (best)" : "";
-        debug.log("$state$best");
+        var best = state == _bestSolution ? ' (best)' : '';
+        debug.log('$state$best');
         debug.dumpLines(chunks, firstLineIndent, state.splits);
         debug.log();
       }
@@ -191,7 +191,7 @@ class LineSplitter {
     }
 
     if (debug.traceSplitter) {
-      debug.log("$_bestSolution (winner)");
+      debug.log('$_bestSolution (winner)');
       debug.dumpLines(chunks, firstLineIndent, _bestSolution.splits);
       debug.log();
     }

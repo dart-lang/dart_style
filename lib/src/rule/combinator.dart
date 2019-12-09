@@ -46,7 +46,7 @@ import 'rule.dart';
 /// the beginning of the line.
 class CombinatorRule extends Rule {
   /// The set of chunks before the combinators.
-  final Set<Chunk> _combinators = Set();
+  final _combinators = <Chunk>{};
 
   /// A list of sets of chunks prior to each name in a combinator.
   ///
@@ -54,6 +54,7 @@ class CombinatorRule extends Rule {
   /// inner set is the set of names for that combinator.
   final List<Set<Chunk>> _names = [];
 
+  @override
   int get numValues {
     var count = 2; // No wrapping, or wrap just before each combinator.
 
@@ -72,7 +73,7 @@ class CombinatorRule extends Rule {
   /// This must be called before adding any names.
   void addCombinator(Chunk chunk) {
     _combinators.add(chunk);
-    _names.add(Set());
+    _names.add({});
   }
 
   /// Adds a chunk prior to a name to the current combinator.
@@ -80,6 +81,7 @@ class CombinatorRule extends Rule {
     _names.last.add(chunk);
   }
 
+  @override
   bool isSplitAtValue(int value, Chunk chunk) {
     switch (value) {
       case 1:
@@ -113,5 +115,6 @@ class CombinatorRule extends Rule {
     return _combinators.contains(chunk) || _names[combinator].contains(chunk);
   }
 
-  String toString() => "Comb${super.toString()}";
+  @override
+  String toString() => 'Comb${super.toString()}';
 }
