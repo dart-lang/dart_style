@@ -800,7 +800,7 @@ class ChunkBuilder {
     }
 
     // Block comments do not get a space if following a grouping character.
-    return !text.endsWith('') && !text.endsWith('') && !text.endsWith('');
+    return !text.endsWith('(') && !text.endsWith('[') && !text.endsWith('{');
   }
 
   /// Returns `true` if a space should be output after the last comment which
