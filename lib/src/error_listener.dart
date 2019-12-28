@@ -6,6 +6,7 @@ library dart_style.src.error_listener;
 
 import 'package:analyzer/error/error.dart';
 import 'package:analyzer/error/listener.dart';
+import 'package:analyzer/source/line_info.dart';
 import 'package:analyzer/src/dart/error/syntactic_errors.dart';
 
 import 'exceptions.dart';
@@ -25,6 +26,22 @@ class ErrorListener implements AnalysisErrorListener {
 
     final needSemiColonPositions = _errors.map((e) => e.offset + e.length);
     final code = _errors[0].source.contents.data;
+
+    final lineNoSet = <int>{};
+    final lineInfo = LineInfo.fromContent(code);
+    // each line can have exactly one auto ';' insertion.
+    final isMoreThanOneSemiColonErrorInSameLine =
+        needSemiColonPositions.any((pos) {
+      final lineNumber = lineInfo.getLocation(pos - 1).lineNumber;
+      final isAlreadyAddSemi = lineNoSet.contains(lineNumber);
+      lineNoSet.add(lineNumber);
+      return isAlreadyAddSemi;
+    });
+
+    if (isMoreThanOneSemiColonErrorInSameLine) {
+      return null;
+    }
+
     var curr = 0;
     return needSemiColonPositions
             .map((i) => code.substring(curr, curr = i) + ';')
