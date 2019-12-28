@@ -146,6 +146,18 @@ class DartFormatter {
       }
     }
 
+    var autoInsertMissingSemiColonCode =
+        errorListener.autoInsertMissingSemiColonCode;
+
+    if (autoInsertMissingSemiColonCode != null) {
+      var retrySourceCode = SourceCode(autoInsertMissingSemiColonCode,
+          uri: source.uri,
+          isCompilationUnit: source.isCompilationUnit,
+          selectionLength: source.selectionLength,
+          selectionStart: source.selectionStart);
+      return formatSource(retrySourceCode);
+    }
+
     errorListener.throwIfErrors();
 
     // Format it.

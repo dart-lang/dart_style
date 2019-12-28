@@ -6,12 +6,31 @@ library dart_style.src.error_listener;
 
 import 'package:analyzer/error/error.dart';
 import 'package:analyzer/error/listener.dart';
+import 'package:analyzer/src/dart/error/syntactic_errors.dart';
 
 import 'exceptions.dart';
 
 /// A simple [AnalysisErrorListener] that just collects the reported errors.
 class ErrorListener implements AnalysisErrorListener {
   final _errors = <AnalysisError>[];
+
+  String get autoInsertMissingSemiColonCode {
+    bool isMissingSemiColonError(AnalysisError error) =>
+        error.errorCode == ParserErrorCode.EXPECTED_TOKEN &&
+        error.message.contains("';'");
+
+    if (_errors.isEmpty || !_errors.every(isMissingSemiColonError)) {
+      return null;
+    }
+
+    final needSemiColonPositions = _errors.map((e) => e.offset + e.length);
+    final code = _errors[0].source.contents.data;
+    var curr = 0;
+    return needSemiColonPositions
+            .map((i) => code.substring(curr, curr = i) + ';')
+            .join() +
+        code.substring(curr);
+  }
 
   @override
   void onError(AnalysisError error) {
