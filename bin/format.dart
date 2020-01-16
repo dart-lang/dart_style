@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-
 import 'package:dart_style/src/dart_formatter.dart';
 import 'package:dart_style/src/exceptions.dart';
 import 'package:dart_style/src/formatter_options.dart';
@@ -20,11 +19,19 @@ const version = '1.3.3';
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
+  var verbose = args.contains('-v') || args.contains('--verbose');
+  var hide = !verbose;
+
   parser.addSeparator('Common options:');
   parser.addFlag('help',
-      abbr: 'h', negatable: false, help: 'Shows usage information.');
+      abbr: 'h',
+      negatable: false,
+      help:
+          'Shows this usage information.  Add --verbose to show hidden options.');
   parser.addFlag('version',
       negatable: false, help: 'Shows version information.');
+  parser.addFlag('verbose',
+      abbr: 'v', negatable: false, help: 'Verbose output.');
   parser.addOption('line-length',
       abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
   parser.addFlag('overwrite',
@@ -44,26 +51,35 @@ void main(List<String> args) {
     parser.addFlag('fix-${fix.name}', negatable: false, help: fix.description);
   }
 
-  parser.addSeparator('Other options:');
+  if (verbose) {
+    parser.addSeparator('Other options:');
+  }
   parser.addOption('indent',
-      abbr: 'i', help: 'Spaces of leading indentation.', defaultsTo: '0');
+      abbr: 'i',
+      help: 'Spaces of leading indentation.',
+      defaultsTo: '0',
+      hide: hide);
   parser.addFlag('machine',
       abbr: 'm',
       negatable: false,
-      help: 'Produce machine-readable JSON output.');
+      help: 'Produce machine-readable JSON output.',
+      hide: hide);
   parser.addFlag('set-exit-if-changed',
       negatable: false,
-      help: 'Return exit code 1 if there are any formatting changes.');
+      help: 'Return exit code 1 if there are any formatting changes.',
+      hide: hide);
   parser.addFlag('follow-links',
       negatable: false,
       help: 'Follow links to files and directories.\n'
-          'If unset, links will be ignored.');
+          'If unset, links will be ignored.',
+      hide: hide);
   parser.addOption('preserve',
-      help: 'Selection to preserve, formatted as "start:length".');
+      help: 'Selection to preserve, formatted as "start:length".', hide: hide);
   parser.addOption('stdin-name',
       help: 'The path name to show when an error occurs in source read from '
           'stdin.',
-      defaultsTo: '<stdin>');
+      defaultsTo: '<stdin>',
+      hide: hide);
 
   parser.addFlag('profile', negatable: false, hide: true);
   parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
