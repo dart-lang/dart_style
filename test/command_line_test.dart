@@ -70,6 +70,29 @@ void main() {
     await process.shouldExit(0);
   });
 
+  test('--help', () async {
+    var process = await runFormatter(['--help']);
+    await expectLater(
+        process.stdout, emits('Idiomatically formats Dart source code.'));
+    await expectLater(process.stdout, emits(''));
+    await expectLater(process.stdout,
+        emits('Usage:   dartfmt [options...] [files or directories...]'));
+    await expectLater(process.stdout, neverEmits('Other options:'));
+    await process.shouldExit(0);
+  });
+
+  test('--help --verbose', () async {
+    var process = await runFormatter(['--help', '--verbose']);
+    await expectLater(
+        process.stdout, emits('Idiomatically formats Dart source code.'));
+    await expectLater(process.stdout, emits(''));
+    await expectLater(process.stdout,
+        emits('Usage:   dartfmt [options...] [files or directories...]'));
+    await expectLater(process.stdout, emitsThrough('Other options:'));
+    await expectLater(process.stdout, emits(startsWith('-i, --indent')));
+    await process.shouldExit(0);
+  });
+
   test('only prints a hidden directory once', () async {
     await d.dir('code', [
       d.dir('.skip', [
