@@ -1,11 +1,9 @@
-# 1.3.5
-* Add `--verbose` to hide advanced options in `--help` output
-
 # 1.3.4
 
 * Add `--fix-single-cascade-statements`.
 * Correctly handle `var` in `--fix-function-typedefs` (#826).
 * Preserve leading indentation in fixed doc comments (#821).
+* Add `--verbose` to hide advanced options in `--help` output
 
 # 1.3.3
 
