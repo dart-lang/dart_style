@@ -130,12 +130,20 @@ class _OverwriteReporter extends _PrintReporter {
   @override
   void afterFile(File file, String label, SourceCode output, {bool changed}) {
     if (changed) {
+      // Write to a temporary file first, then rename it on top of the
+      // original. This ensures that, if the program is interrupted during the
+      // write, the original file's contents stay intact.
+      File tmpFile = File(file.path + '.tmp');
       try {
-        file.writeAsStringSync(output.text);
+        tmpFile.writeAsStringSync(output.text);
+        tmpFile.renameSync(file.path);
         print('Formatted $label');
       } on FileSystemException catch (err) {
         stderr.writeln('Could not overwrite $label: '
             '${err.osError.message} (error code ${err.osError.errorCode})');
+        try {
+          tmpFile.deleteSync();
+        } on FileSystemException {}
       }
     } else {
       print('Unchanged $label');
