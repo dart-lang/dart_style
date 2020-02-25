@@ -7,16 +7,14 @@ library dart_style.src.dart_formatter;
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/error/error.dart';
-import 'package:analyzer/src/dart/scanner/reader.dart';
 import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/generated/parser.dart';
-import 'package:analyzer/src/generated/source.dart';
 import 'package:analyzer/src/string_source.dart';
 
-import 'error_listener.dart';
 import 'exceptions.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
@@ -87,8 +85,6 @@ class DartFormatter {
   /// Returns a new [SourceCode] containing the formatted code and the resulting
   /// selection, if any.
   SourceCode formatSource(SourceCode source) {
-    var errorListener = ErrorListener();
-
     // Enable all features that are enabled by default in the current analyzer
     // version.
     // TODO(paulberry): consider plumbing in experiment enable flags from the
@@ -98,46 +94,69 @@ class DartFormatter {
       'non-nullable',
     ]);
 
-    // Tokenize the source.
-    var reader = CharSequenceReader(source.text);
-    var stringSource = StringSource(source.text, source.uri);
-    var scanner = Scanner(stringSource, reader, errorListener);
-    scanner.configureFeatures(featureSet);
-    var startToken = scanner.tokenize();
-    var lineInfo = LineInfo(scanner.lineStarts);
+    var inputOffset = 0;
+    var text = source.text;
+    var unitSourceCode = source;
+    if (!source.isCompilationUnit) {
+      var prefix = 'void foo() { ';
+      inputOffset = prefix.length;
+      text = '$prefix$text }';
+      unitSourceCode = SourceCode(
+        text,
+        uri: source.uri,
+        isCompilationUnit: false,
+        selectionStart: source.selectionStart != null
+            ? source.selectionStart + inputOffset
+            : null,
+        selectionLength: source.selectionLength,
+      );
+    }
+
+    // Parse it.
+    var parseResult = parseString(
+      content: text,
+      featureSet: featureSet,
+      path: source.uri,
+      throwIfDiagnostics: false,
+    );
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
     if (lineEnding == null) {
       // If the first newline is "\r\n", use that. Otherwise, use "\n".
-      if (scanner.lineStarts.length > 1 &&
-          scanner.lineStarts[1] >= 2 &&
-          source.text[scanner.lineStarts[1] - 2] == '\r') {
+      var lineStarts = parseResult.lineInfo.lineStarts;
+      if (lineStarts.length > 1 &&
+          lineStarts[1] >= 2 &&
+          text[lineStarts[1] - 2] == '\r') {
         lineEnding = '\r\n';
       } else {
         lineEnding = '\n';
       }
     }
 
-    errorListener.throwIfErrors();
-
-    // Parse it.
-    var parser = Parser(stringSource, errorListener, featureSet: featureSet);
-    parser.enableOptionalNewAndConst = true;
-    parser.enableSetLiterals = true;
+    // Throw if there are syntactic errors.
+    var syntacticErrors = parseResult.errors.where((error) {
+      return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
+    }).toList();
+    if (syntacticErrors.isNotEmpty) {
+      throw FormatterException(syntacticErrors);
+    }
 
     AstNode node;
     if (source.isCompilationUnit) {
-      node = parser.parseCompilationUnit(startToken);
+      node = parseResult.unit;
     } else {
-      node = parser.parseStatement(startToken);
+      var function = parseResult.unit.declarations[0] as FunctionDeclaration;
+      var body = function.functionExpression.body as BlockFunctionBody;
+      node = body.block.statements[0];
 
       // Make sure we consumed all of the source.
       var token = node.endToken.next;
-      if (token.type != TokenType.EOF) {
+      if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
+        var stringSource = StringSource(text, source.uri);
         var error = AnalysisError(
             stringSource,
-            token.offset,
+            token.offset - inputOffset,
             math.max(token.length, 1),
             ParserErrorCode.UNEXPECTED_TOKEN,
             [token.lexeme]);
@@ -146,10 +165,9 @@ class DartFormatter {
       }
     }
 
-    errorListener.throwIfErrors();
-
     // Format it.
-    var visitor = SourceVisitor(this, lineInfo, source);
+    var lineInfo = parseResult.lineInfo;
+    var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
     var output = visitor.run(node);
 
     // Sanity check that only whitespace was changed if that's all we expect.
