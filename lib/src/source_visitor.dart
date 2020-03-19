@@ -2413,7 +2413,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // come at the top of the file, we don't have to worry about preceding
     // comments or whitespace.
     _writeText(node.scriptTag.lexeme.trim(), node.offset);
-    newline();
+    twoNewlines();
   }
 
   @override
