@@ -72,15 +72,27 @@ var list = [
       body;
     }
 ];
->>> nested for doesn't split if it fits
+>>> split if child is for
 var l = [for (a in b) for (c in d) t];
 <<<
-var l = [for (a in b) for (c in d) t];
->>> split collection before nested for
-var list = [for (a in b) for (c in d) longThing];
+var l = [
+  for (a in b)
+    for (c in d) t
+];
+>>> split if child is if
+var list = [
+  for (var a in b) if (c) d
+];
 <<<
 var list = [
-  for (a in b) for (c in d) longThing
+  for (var a in b)
+    if (c) d
+];
+>>> split collection before body
+var list = [for (a in b) longThingThatIsLong];
+<<<
+var list = [
+  for (a in b) longThingThatIsLong
 ];
 >>> just split outer for
 var list = [for (a in b) for (c in d) longThingThatIsLong];
@@ -88,6 +100,30 @@ var list = [for (a in b) for (c in d) longThingThatIsLong];
 var list = [
   for (a in b)
     for (c in d) longThingThatIsLong
+];
+>>> nested list inside for element
+var list = [for (var a in b) [c]];
+<<<
+var list = [
+  for (var a in b) [c]
+];
+>>> nested spread list inside for element
+var list = [for (var a in b) ...[c]];
+<<<
+var list = [
+  for (var a in b) ...[c]
+];
+>>> nested if inside list
+var l = [for (var a in b) [if (c) d]];
+<<<
+var l = [
+  for (var a in b) [if (c) d]
+];
+>>> nested for inside list
+var l = [for (a in b) [for (c in d) e]];
+<<<
+var l = [
+  for (a in b) [for (c in d) e]
 ];
 >>> split in for-in type
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) body];

@@ -168,15 +168,18 @@ var map = {
       body;
     }
 };
->>> nested if doesn't split if it fits
+>>> nested if splits outer
 var map = {if (c) if (d) thing: 1};
-<<<
-var map = {if (c) if (d) thing: 1};
->>> split collection before nested if
-var map = {if (c) if (d) fairlyLongThingHere: 1};
 <<<
 var map = {
-  if (c) if (d) fairlyLongThingHere: 1
+  if (c)
+    if (d) thing: 1
+};
+>>> split collection before body
+var map = {if (c) fairlyLongThingHere: 1};
+<<<
+var map = {
+  if (c) fairlyLongThingHere: 1
 };
 >>> just split outer if
 var map = {if (condition) if (another) longThingThatIsLong: 1};

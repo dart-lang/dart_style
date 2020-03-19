@@ -72,15 +72,18 @@ var set = {
       body;
     }
 };
->>> nested for doesn't split if it fits
+>>> nested for splits outer for
 var s = {for (a in b) for (c in d) t};
 <<<
-var s = {for (a in b) for (c in d) t};
->>> split collection before nested for
-var set = {for (a in b) for (c in d) longThing};
+var s = {
+  for (a in b)
+    for (c in d) t
+};
+>>> split collection before body
+var set = {for (a in b) longThingThatIsLong};
 <<<
 var set = {
-  for (a in b) for (c in d) longThing
+  for (a in b) longThingThatIsLong
 };
 >>> just split outer for
 var set = {for (a in b) for (c in d) longThingThatIsLong};

@@ -168,15 +168,18 @@ var set = {
       body;
     }
 };
->>> nested if doesn't split if it fits
+>>> nested if splits outer
 var set = {if (c) if (d) thing};
-<<<
-var set = {if (c) if (d) thing};
->>> split collection before nested if
-var set = {if (c) if (d) fairlyLongThingHere};
 <<<
 var set = {
-  if (c) if (d) fairlyLongThingHere
+  if (c)
+    if (d) thing
+};
+>>> split collection before body
+var set = {if (c) longThingHereThatIsLong};
+<<<
+var set = {
+  if (c) longThingHereThatIsLong
 };
 >>> just split outer if
 var set = {if (condition) if (another) longThingHereThatIsLong};

@@ -117,6 +117,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     return false;
   }
 
+  static bool _isControlFlowElement(AstNode node) =>
+      node is IfElement || node is ForElement;
+
   /// The builder for the block that is currently being visited.
   ChunkBuilder builder;
 
@@ -1561,6 +1564,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (!isSpreadBody) builder.endBlockArgumentNesting();
     builder.unnest();
+
+    // If a control flow element is nested inside another, force the outer one
+    // to split.
+    if (_isControlFlowElement(node.body)) builder.forceRules();
+
     builder.endRule();
   }
 
@@ -1867,7 +1875,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       beforeBlock(elseSpreadBracket, spreadRule, null);
     }
 
-    @override
     void visitChild(CollectionElement element, CollectionElement child) {
       builder.nestExpression(indent: 2, now: true);
 
@@ -1894,6 +1901,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // condition or the then clause, we want the then and else clauses to split.
     builder.startRule();
 
+    var hasInnerControlFlow = false;
     for (var element in ifElements) {
       // The condition.
       token(element.ifKeyword);
@@ -1903,6 +1911,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(element.rightParenthesis);
 
       visitChild(element, element.thenElement);
+      if (_isControlFlowElement(element.thenElement)) {
+        hasInnerControlFlow = true;
+      }
 
       // Handle this element's "else" keyword and prepare to write the element,
       // but don't write it. It will either be the next element in [ifElements]
@@ -1924,8 +1935,17 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Handle the final trailing else if there is one.
     var lastElse = ifElements.last.elseElement;
-    if (lastElse != null) visitChild(lastElse, lastElse);
+    if (lastElse != null) {
+      visitChild(lastElse, lastElse);
 
+      if (_isControlFlowElement(lastElse)) {
+        hasInnerControlFlow = true;
+      }
+    }
+
+    // If a control flow element is nested inside another, force the outer one
+    // to split.
+    if (hasInnerControlFlow) builder.forceRules();
     builder.endRule();
   }
 
