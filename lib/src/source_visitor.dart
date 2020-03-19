@@ -1899,7 +1899,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Wrap the whole thing in a single rule. If a split happens inside the
     // condition or the then clause, we want the then and else clauses to split.
-    builder.startRule();
+    builder.startLazyRule();
 
     var hasInnerControlFlow = false;
     for (var element in ifElements) {
