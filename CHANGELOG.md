@@ -4,6 +4,7 @@
 * Correctly handle `var` in `--fix-function-typedefs` (#826).
 * Preserve leading indentation in fixed doc comments (#821).
 * Add `--verbose` to hide advanced options in `--help` output
+* Always place a blank line after script tags (#782).
 
 # 1.3.3
 
