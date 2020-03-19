@@ -4,6 +4,7 @@
 library foo;
 <<<
 #!script
+
 library foo;
 >>> multiple lines between script and library
 #!script
@@ -13,12 +14,14 @@ library foo;
 library foo;
 <<<
 #!script
+
 library foo;
 >>> one line between script and import
 #!script
 import 'foo';
 <<<
 #!script
+
 import 'foo';
 >>> multiple lines between script and import
 #!script
@@ -28,12 +31,14 @@ import 'foo';
 import 'foo';
 <<<
 #!script
+
 import 'foo';
 >>> one line between script and line comment
 #!script
 // comment
 <<<
 #!script
+
 // comment
 >>> multiple lines between script and line comment
 #!script
@@ -43,12 +48,14 @@ import 'foo';
 // comment
 <<<
 #!script
+
 // comment
 >>> one line between script and block comment
 #!script
 /* comment */
 <<<
 #!script
+
 /* comment */
 >>> multiple lines between script and block comment
 #!script
@@ -58,4 +65,39 @@ import 'foo';
 /* comment */
 <<<
 #!script
+
 /* comment */
+>>> one line between script and class
+#!script
+class C {}
+<<<
+#!script
+
+class C {}
+>>> multiple lines between script and class
+#!script
+
+
+
+class C {}
+<<<
+#!script
+
+class C {}
+>>> one line between script and variable
+#!script
+var x;
+<<<
+#!script
+
+var x;
+>>> multiple lines between script and variable
+#!script
+
+
+
+var x;
+<<<
+#!script
+
+var x;
