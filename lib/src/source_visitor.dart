@@ -1303,7 +1303,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     } else {
       throw UnsupportedError(
           '--fix-single-cascade-statements: subexpression of cascade '
-              '"$cascade" has unsupported type ${subexpression.runtimeType}.');
+          '"$cascade" has unsupported type ${subexpression.runtimeType}.');
     }
 
     token(statement.semicolon);
@@ -1455,7 +1455,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         .where((param) => param is! DefaultFormalParameter)
         .toList();
     var optionalParams =
-    node.parameters.whereType<DefaultFormalParameter>().toList();
+        node.parameters.whereType<DefaultFormalParameter>().toList();
 
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
@@ -1829,8 +1829,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // unnecessarily indent each subsequent section of the chain.
     var ifElements = [
       for (CollectionElement thisNode = node;
-      thisNode is IfElement;
-      thisNode = (thisNode as IfElement).elseElement)
+          thisNode is IfElement;
+          thisNode = (thisNode as IfElement).elseElement)
         thisNode as IfElement
     ];
 
@@ -1869,7 +1869,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     var elseSpreadBracket =
-    _findSpreadCollectionBracket(ifElements.last.elseElement);
+        _findSpreadCollectionBracket(ifElements.last.elseElement);
     if (elseSpreadBracket != null) {
       spreadBrackets[ifElements.last.elseElement] = elseSpreadBracket;
       beforeBlock(elseSpreadBracket, spreadRule, null);
@@ -3043,8 +3043,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// and followed by the given functions.
   void visitNodes(Iterable<AstNode> nodes,
       {void Function() before,
-        void Function() between,
-        void Function() after}) {
+      void Function() between,
+      void Function() after}) {
     if (nodes == null || nodes.isEmpty) return;
 
     if (before != null) before();
@@ -3565,7 +3565,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// [FunctionExpression].
   bool _isInLambda(AstNode node) =>
       node.parent is FunctionExpression &&
-          node.parent.parent is! FunctionDeclaration;
+      node.parent.parent is! FunctionDeclaration;
 
   /// Writes the string literal [string] to the output.
   ///
