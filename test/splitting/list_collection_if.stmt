@@ -190,15 +190,27 @@ var list = [
       body;
     }
 ];
->>> nested if doesn't split if it fits
+>>> split if child is if
 var list = [if (c) if (d) thing];
-<<<
-var list = [if (c) if (d) thing];
->>> split collection before nested if
-var list = [if (c) if (d) fairlyLongThingHere];
 <<<
 var list = [
-  if (c) if (d) fairlyLongThingHere
+  if (c)
+    if (d) thing
+];
+>>> split if child is for
+var list = [
+  if (a) for (var b in c) thing
+];
+<<<
+var list = [
+  if (a)
+    for (var b in c) thing
+];
+>>> split collection before body
+var list = [if (c) longThingHereThatIsLong];
+<<<
+var list = [
+  if (c) longThingHereThatIsLong
 ];
 >>> just split outer if
 var list = [if (condition) if (another) longThingHereThatIsLong];
@@ -206,6 +218,32 @@ var list = [if (condition) if (another) longThingHereThatIsLong];
 var list = [
   if (condition)
     if (another) longThingHereThatIsLong
+];
+>>> nested list inside if element
+var list = [if (a) [b]];
+<<<
+var list = [
+  if (a) [b]
+];
+>>> nested spread list inside if element
+var list = [if (a) ...[b]];
+<<<
+var list = [
+  if (a) ...[b]
+];
+>>> nested if inside list
+var list = [if (a) [if (b) c]];
+<<<
+var list = [
+  if (a) [if (b) c]
+];
+>>> nested for inside list
+var l = [
+  if (a) [for (var b in c) d]
+];
+<<<
+var l = [
+  if (a) [for (var b in c) d]
 ];
 >>> split inside condition
 var list = [if (veryLongCondition + thatNeedsToSplit) thing];

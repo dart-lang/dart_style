@@ -3,7 +3,8 @@
 * Add `--fix-single-cascade-statements`.
 * Correctly handle `var` in `--fix-function-typedefs` (#826).
 * Preserve leading indentation in fixed doc comments (#821).
-* Add `--verbose` to hide advanced options in `--help` output
+* Add `--verbose` to hide advanced options in `--help` output.
+* Split outer nested control flow elements (#869).
 
 # 1.3.3
 
