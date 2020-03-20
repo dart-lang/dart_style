@@ -7,6 +7,7 @@
 * Add `--verbose` to hide advanced options in `--help` output.
 * Split outer nested control flow elements (#869).
 * Always place a blank line after script tags (#782).
+* Don't add unneeded splits on if elements near comments (#888).
 
 # 1.3.3
 
