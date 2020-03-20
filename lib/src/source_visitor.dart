@@ -2698,9 +2698,16 @@ class SourceVisitor extends ThrowingAstVisitor {
     // possible, we split after *every* declaration so that each is on its own
     // line.
     builder.startRule();
-    visitCommaSeparatedNodes(node.variables, between: split);
-    builder.endRule();
 
+    // If there are multiple declarations split across lines, then we want any
+    // blocks in the initializers to indent past the variables.
+    if (node.variables.length > 1) builder.startBlockArgumentNesting();
+
+    visitCommaSeparatedNodes(node.variables, between: split);
+
+    if (node.variables.length > 1) builder.endBlockArgumentNesting();
+
+    builder.endRule();
     _endPossibleConstContext(node.keyword);
   }
 

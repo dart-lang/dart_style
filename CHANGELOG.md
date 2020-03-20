@@ -8,6 +8,7 @@
 * Split outer nested control flow elements (#869).
 * Always place a blank line after script tags (#782).
 * Don't add unneeded splits on if elements near comments (#888).
+* Indent blocks in initializers of multiple-variable declarations.
 
 # 1.3.3
 

@@ -72,3 +72,10 @@ var x = new XXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
 <<<
 var x =
     new XXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
+>>> nest blocks when variables split
+SomeType a = () {;}, b;
+<<<
+SomeType a = () {
+      ;
+    },
+    b;
