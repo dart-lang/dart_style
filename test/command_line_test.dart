@@ -81,8 +81,8 @@ void main() {
     await process.shouldExit(0);
   });
 
-  test('--help --verbose', () async {
-    var process = await runFormatter(['--help', '--verbose']);
+  test('--help -v', () async {
+    var process = await runFormatter(['--help', '-v']);
     await expectLater(
         process.stdout, emits('Idiomatically formats Dart source code.'));
     await expectLater(process.stdout, emits(''));
@@ -91,6 +91,13 @@ void main() {
     await expectLater(process.stdout, emitsThrough('Other options:'));
     await expectLater(process.stdout, emits(startsWith('-i, --indent')));
     await process.shouldExit(0);
+  });
+
+  test('-v is only allowed for --help', () async {
+    var process = await runFormatter(['-v']);
+    await expectLater(process.stdout,
+        emits(contains('Could not find an option or flag "-v".')));
+    await process.shouldExit(64);
   });
 
   test('only prints a hidden directory once', () async {

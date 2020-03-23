@@ -19,19 +19,19 @@ const version = '1.3.3';
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
-  var verbose = args.contains('-v') || args.contains('--verbose');
-  var hide = !verbose;
+  var showAllOptions = false;
+  if (args.contains('--help')) {
+    args = args.toList();
+    showAllOptions = args.remove('-v');
+  }
 
   parser.addSeparator('Common options:');
   parser.addFlag('help',
       abbr: 'h',
       negatable: false,
-      help:
-          'Shows this usage information.  Add --verbose to show hidden options.');
+      help: 'Shows this usage information. Add -v to show hidden options.');
   parser.addFlag('version',
       negatable: false, help: 'Shows version information.');
-  parser.addFlag('verbose',
-      abbr: 'v', negatable: false, help: 'Verbose output.');
   parser.addOption('line-length',
       abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
   parser.addFlag('overwrite',
@@ -51,35 +51,36 @@ void main(List<String> args) {
     parser.addFlag('fix-${fix.name}', negatable: false, help: fix.description);
   }
 
-  if (verbose) {
+  if (showAllOptions) {
     parser.addSeparator('Other options:');
   }
   parser.addOption('indent',
       abbr: 'i',
       help: 'Spaces of leading indentation.',
       defaultsTo: '0',
-      hide: hide);
+      hide: !showAllOptions);
   parser.addFlag('machine',
       abbr: 'm',
       negatable: false,
       help: 'Produce machine-readable JSON output.',
-      hide: hide);
+      hide: !showAllOptions);
   parser.addFlag('set-exit-if-changed',
       negatable: false,
       help: 'Return exit code 1 if there are any formatting changes.',
-      hide: hide);
+      hide: !showAllOptions);
   parser.addFlag('follow-links',
       negatable: false,
       help: 'Follow links to files and directories.\n'
           'If unset, links will be ignored.',
-      hide: hide);
+      hide: !showAllOptions);
   parser.addOption('preserve',
-      help: 'Selection to preserve, formatted as "start:length".', hide: hide);
+      help: 'Selection to preserve, formatted as "start:length".',
+      hide: !showAllOptions);
   parser.addOption('stdin-name',
       help: 'The path name to show when an error occurs in source read from '
           'stdin.',
       defaultsTo: '<stdin>',
-      hide: hide);
+      hide: !showAllOptions);
 
   parser.addFlag('profile', negatable: false, hide: true);
   parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
