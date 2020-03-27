@@ -2,87 +2,18 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:args/args.dart';
-import 'package:dart_style/src/dart_formatter.dart';
-import 'package:dart_style/src/exceptions.dart';
-import 'package:dart_style/src/formatter_options.dart';
+import 'package:dart_style/src/cli/formatter_options.dart';
+import 'package:dart_style/src/cli/options.dart';
 import 'package:dart_style/src/io.dart';
-import 'package:dart_style/src/source_code.dart';
 import 'package:dart_style/src/style_fix.dart';
-
-// Note: The following line of code is modified by tool/grind.dart.
-const version = '1.3.3';
 
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
-  var verbose = args.contains('-v') || args.contains('--verbose');
-  var hide = !verbose;
-
-  parser.addSeparator('Common options:');
-  parser.addFlag('help',
-      abbr: 'h',
-      negatable: false,
-      help:
-          'Shows this usage information.  Add --verbose to show hidden options.');
-  parser.addFlag('version',
-      negatable: false, help: 'Shows version information.');
-  parser.addFlag('verbose',
-      abbr: 'v', negatable: false, help: 'Verbose output.');
-  parser.addOption('line-length',
-      abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
-  parser.addFlag('overwrite',
-      abbr: 'w',
-      negatable: false,
-      help: 'Overwrite input files with formatted output.');
-  parser.addFlag('dry-run',
-      abbr: 'n',
-      negatable: false,
-      help: 'Show which files would be modified but make no changes.');
-
-  parser.addSeparator('Non-whitespace fixes (off by default):');
-  parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
-
-  for (var fix in StyleFix.all) {
-    // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
-    parser.addFlag('fix-${fix.name}', negatable: false, help: fix.description);
-  }
-
-  if (verbose) {
-    parser.addSeparator('Other options:');
-  }
-  parser.addOption('indent',
-      abbr: 'i',
-      help: 'Spaces of leading indentation.',
-      defaultsTo: '0',
-      hide: hide);
-  parser.addFlag('machine',
-      abbr: 'm',
-      negatable: false,
-      help: 'Produce machine-readable JSON output.',
-      hide: hide);
-  parser.addFlag('set-exit-if-changed',
-      negatable: false,
-      help: 'Return exit code 1 if there are any formatting changes.',
-      hide: hide);
-  parser.addFlag('follow-links',
-      negatable: false,
-      help: 'Follow links to files and directories.\n'
-          'If unset, links will be ignored.',
-      hide: hide);
-  parser.addOption('preserve',
-      help: 'Selection to preserve, formatted as "start:length".', hide: hide);
-  parser.addOption('stdin-name',
-      help: 'The path name to show when an error occurs in source read from '
-          'stdin.',
-      defaultsTo: '<stdin>',
-      hide: hide);
-
-  parser.addFlag('profile', negatable: false, hide: true);
-  parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
+  defineOptions(parser);
 
   ArgResults argResults;
   try {
@@ -97,7 +28,7 @@ void main(List<String> args) {
   }
 
   if (argResults['version']) {
-    print(version);
+    print(dartStyleVersion);
     return;
   }
 
@@ -108,7 +39,7 @@ void main(List<String> args) {
   }
 
   try {
-    selection = parseSelection(argResults['preserve']);
+    selection = parseSelection(argResults, 'preserve');
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -207,79 +138,6 @@ void main(List<String> args) {
 
   if (argResults['profile']) {
     (reporter as ProfileReporter).showProfile();
-  }
-}
-
-List<int> parseSelection(String selection) {
-  if (selection == null) return null;
-
-  var coordinates = selection.split(':');
-  if (coordinates.length != 2) {
-    throw FormatException(
-        'Selection should be a colon-separated pair of integers, "123:45".');
-  }
-
-  return coordinates.map((coord) => coord.trim()).map(int.parse).toList();
-}
-
-/// Reads input from stdin until it's closed, and the formats it.
-void formatStdin(FormatterOptions options, List<int> selection, String name) {
-  var selectionStart = 0;
-  var selectionLength = 0;
-
-  if (selection != null) {
-    selectionStart = selection[0];
-    selectionLength = selection[1];
-  }
-
-  var input = StringBuffer();
-  stdin.transform(Utf8Decoder()).listen(input.write, onDone: () {
-    var formatter = DartFormatter(
-        indent: options.indent,
-        pageWidth: options.pageWidth,
-        fixes: options.fixes);
-    try {
-      options.reporter.beforeFile(null, name);
-      var source = SourceCode(input.toString(),
-          uri: name,
-          selectionStart: selectionStart,
-          selectionLength: selectionLength);
-      var output = formatter.formatSource(source);
-      options.reporter
-          .afterFile(null, name, output, changed: source.text != output.text);
-      return;
-    } on FormatterException catch (err) {
-      stderr.writeln(err.message());
-      exitCode = 65; // sysexits.h: EX_DATAERR
-    } catch (err, stack) {
-      stderr.writeln('''Hit a bug in the formatter when formatting stdin.
-Please report at: github.com/dart-lang/dart_style/issues
-$err
-$stack''');
-      exitCode = 70; // sysexits.h: EX_SOFTWARE
-    }
-  });
-}
-
-/// Formats all of the files and directories given by [paths].
-void formatPaths(FormatterOptions options, List<String> paths) {
-  for (var path in paths) {
-    var directory = Directory(path);
-    if (directory.existsSync()) {
-      if (!processDirectory(options, directory)) {
-        exitCode = 65;
-      }
-      continue;
-    }
-
-    var file = File(path);
-    if (file.existsSync()) {
-      if (!processFile(options, file)) {
-        exitCode = 65;
-      }
-    } else {
-      stderr.writeln('No file or directory found at "$path".');
-    }
   }
 }
 

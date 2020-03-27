@@ -13,11 +13,26 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
-  test('exits with 0 on success', () async {
-    await d.dir('code', [d.file('a.dart', unformattedSource)]).create();
+  test('formats a directory', () async {
+    await d.dir('code', [
+      d.file('a.dart', unformattedSource),
+      d.file('b.dart', formattedSource),
+      d.file('c.dart', unformattedSource)
+    ]).create();
 
     var process = await runFormatterOnDir();
+    await expectLater(
+        process.stdout, emits(startsWith('Formatting directory')));
+
+    // Prints the formatting result.
+    await expectLater(process.stdout, emits(formattedOutput));
+    await expectLater(process.stdout, emits(formattedOutput));
+    await expectLater(process.stdout, emits(formattedOutput));
     await process.shouldExit(0);
+
+    // Does not overwrite by default.
+    await d.dir('code', [d.file('a.dart', unformattedSource)]).validate();
+    await d.dir('code', [d.file('c.dart', unformattedSource)]).validate();
   });
 
   test('exits with 64 on a command line argument error', () async {
@@ -77,19 +92,6 @@ void main() {
     await expectLater(process.stdout, emits(''));
     await expectLater(process.stdout,
         emits('Usage:   dartfmt [options...] [files or directories...]'));
-    await expectLater(process.stdout, neverEmits('Other options:'));
-    await process.shouldExit(0);
-  });
-
-  test('--help --verbose', () async {
-    var process = await runFormatter(['--help', '--verbose']);
-    await expectLater(
-        process.stdout, emits('Idiomatically formats Dart source code.'));
-    await expectLater(process.stdout, emits(''));
-    await expectLater(process.stdout,
-        emits('Usage:   dartfmt [options...] [files or directories...]'));
-    await expectLater(process.stdout, emitsThrough('Other options:'));
-    await expectLater(process.stdout, emits(startsWith('-i, --indent')));
     await process.shouldExit(0);
   });
 
@@ -222,7 +224,7 @@ void main() {
       var process = await runFormatter(['--indent', 'notanum']);
       await process.shouldExit(64);
 
-      process = await runFormatter(['--preserve', '-4']);
+      process = await runFormatter(['--indent', '-4']);
       await process.shouldExit(64);
     });
   });
@@ -326,7 +328,7 @@ void main() {
       await process.stdin.close();
 
       // No trailing newline at the end.
-      expect(await process.stdout.next, formattedSource.trimRight());
+      expect(await process.stdout.next, formattedOutput);
       await process.shouldExit(0);
     });
 

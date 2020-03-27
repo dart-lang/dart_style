@@ -18,6 +18,10 @@ import 'package:dart_style/dart_style.dart';
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
 
+/// The same as formatted source but without a trailing newline because
+/// [TestProcess] filters those when it strips command line output into lines.
+const formattedOutput = 'void main() => print("hello");';
+
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
 

@@ -12,7 +12,7 @@ import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
-import 'package:dart_style/src/formatter_options.dart';
+import 'package:dart_style/src/cli/formatter_options.dart';
 
 import 'utils.dart';
 

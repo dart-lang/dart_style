@@ -7,8 +7,11 @@ library dart_style.src.formatter_options;
 import 'dart:convert';
 import 'dart:io';
 
-import 'source_code.dart';
-import 'style_fix.dart';
+import '../source_code.dart';
+import '../style_fix.dart';
+
+// Note: The following line of code is modified by tool/grind.dart.
+const dartStyleVersion = '1.3.3';
 
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
