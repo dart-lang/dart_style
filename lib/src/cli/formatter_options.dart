@@ -4,20 +4,19 @@
 
 library dart_style.src.formatter_options;
 
-import 'dart:convert';
 import 'dart:io';
 
 import '../source_code.dart';
 import '../style_fix.dart';
+import 'output.dart';
+import 'show.dart';
+import 'summary.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
 const dartStyleVersion = '1.3.3';
 
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
-  /// The [OutputReporter] used to show the formatting results.
-  final OutputReporter reporter;
-
   /// The number of spaces of indentation to prefix the output with.
   final int indent;
 
@@ -31,223 +30,69 @@ class FormatterOptions {
   /// The style fixes to apply while formatting.
   final Iterable<StyleFix> fixes;
 
-  FormatterOptions(this.reporter,
+  /// Which affected files should be shown.
+  final Show show;
+
+  /// Where formatted code should be output.
+  final Output output;
+
+  final Summary summary;
+
+  /// Sets the exit code to 1 if any changes are made.
+  final bool setExitIfChanged;
+
+  FormatterOptions(
       {this.indent = 0,
       this.pageWidth = 80,
       this.followLinks = false,
-      this.fixes});
-}
-
-/// How the formatter reports the results it produces.
-abstract class OutputReporter {
-  /// Prints only the names of files whose contents are different from their
-  /// formatted version.
-  static final OutputReporter dryRun = _DryRunReporter();
-
-  /// Prints the formatted results of each file to stdout.
-  static final OutputReporter print = _PrintReporter();
-
-  /// Prints the formatted result and selection info of each file to stdout as
-  /// a JSON map.
-  static final OutputReporter printJson = _PrintJsonReporter();
-
-  /// Overwrites each file with its formatted result.
-  static final OutputReporter overwrite = _OverwriteReporter();
-
-  /// Describe the directory whose contents are about to be processed.
-  void showDirectory(String path) {}
-
-  /// Describe the symlink at [path] that wasn't followed.
-  void showSkippedLink(String path) {}
-
-  /// Describe the hidden [path] that wasn't processed.
-  void showHiddenPath(String path) {}
+      this.fixes,
+      this.show = Show.changed,
+      this.output = Output.write,
+      this.summary = Summary.none,
+      this.setExitIfChanged = false});
 
   /// Called when [file] is about to be formatted.
-  void beforeFile(File file, String label) {}
+  void beforeFile(File file, String label) {
+    summary.beforeFile(file, label);
+  }
 
-  /// Describe the processed file at [path] whose formatted result is [output].
+  /// Describe the processed file at [path] with formatted [result]s.
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
-  void afterFile(File file, String label, SourceCode output, {bool changed});
-}
+  void afterFile(File file, String displayPath, SourceCode result,
+      {bool changed}) {
+    summary.afterFile(this, file, displayPath, result, changed: changed);
 
-/// Prints only the names of files whose contents are different from their
-/// formatted version.
-class _DryRunReporter extends OutputReporter {
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    // Only show the changed files.
-    if (changed) print(label);
-  }
-}
-
-/// Prints the formatted results of each file to stdout.
-class _PrintReporter extends OutputReporter {
-  @override
-  void showDirectory(String path) {
-    print('Formatting directory $path:');
-  }
-
-  @override
-  void showSkippedLink(String path) {
-    print('Skipping link $path');
-  }
-
-  @override
-  void showHiddenPath(String path) {
-    print('Skipping hidden path $path');
-  }
-
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    // Don't add an extra newline.
-    stdout.write(output.text);
-  }
-}
-
-/// Prints the formatted result and selection info of each file to stdout as a
-/// JSON map.
-class _PrintJsonReporter extends OutputReporter {
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    // TODO(rnystrom): Put an empty selection in here to remain compatible with
-    // the old formatter. Since there's no way to pass a selection on the
-    // command line, this will never be used, which is why it's hard-coded to
-    // -1, -1. If we add support for passing in a selection, put the real
-    // result here.
-    print(jsonEncode({
-      'path': label,
-      'source': output.text,
-      'selection': {
-        'offset': output.selectionStart ?? -1,
-        'length': output.selectionLength ?? -1
-      }
-    }));
-  }
-}
-
-/// Overwrites each file with its formatted result.
-class _OverwriteReporter extends _PrintReporter {
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
+    // Save the results to disc.
+    var overwritten = false;
     if (changed) {
-      try {
-        file.writeAsStringSync(output.text);
-        print('Formatted $label');
-      } on FileSystemException catch (err) {
-        stderr.writeln('Could not overwrite $label: '
-            '${err.osError.message} (error code ${err.osError.errorCode})');
-      }
-    } else {
-      print('Unchanged $label');
+      overwritten = output.writeFile(file, displayPath, result);
     }
+
+    // Show the user.
+    if (show.file(displayPath, changed: changed, overwritten: overwritten)) {
+      output.showFile(displayPath, result);
+    }
+
+    // Set the exit code.
+    if (setExitIfChanged && changed) exitCode = 1;
   }
-}
 
-/// Base clase for a reporter that decorates an inner reporter.
-abstract class _ReporterDecorator implements OutputReporter {
-  final OutputReporter _inner;
-
-  _ReporterDecorator(this._inner);
-
-  @override
+  /// Describes the directory whose contents are about to be processed.
   void showDirectory(String path) {
-    _inner.showDirectory(path);
+    if (output != Output.json) {
+      show.directory(path);
+    }
   }
 
-  @override
+  /// Describes the symlink at [path] that wasn't followed.
   void showSkippedLink(String path) {
-    _inner.showSkippedLink(path);
+    show.skippedLink(path);
   }
 
-  @override
+  /// Describes the hidden [path] that wasn't processed.
   void showHiddenPath(String path) {
-    _inner.showHiddenPath(path);
-  }
-
-  @override
-  void beforeFile(File file, String label) {
-    _inner.beforeFile(file, label);
-  }
-
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    _inner.afterFile(file, label, output, changed: changed);
-  }
-}
-
-/// A decorating reporter that reports how long it took for format each file.
-class ProfileReporter extends _ReporterDecorator {
-  /// The files that have been started but have not completed yet.
-  ///
-  /// Maps a file label to the time that it started being formatted.
-  final Map<String, DateTime> _ongoing = {};
-
-  /// The elapsed time it took to format each completed file.
-  final Map<String, Duration> _elapsed = {};
-
-  /// The number of files that completed so fast that they aren't worth
-  /// tracking.
-  int _elided = 0;
-
-  ProfileReporter(OutputReporter inner) : super(inner);
-
-  /// Show the times for the slowest files to format.
-  void showProfile() {
-    // Everything should be done.
-    assert(_ongoing.isEmpty);
-
-    var files = _elapsed.keys.toList();
-    files.sort((a, b) => _elapsed[b].compareTo(_elapsed[a]));
-
-    for (var file in files) {
-      print('${_elapsed[file]}: $file');
-    }
-
-    if (_elided >= 1) {
-      var s = _elided > 1 ? 's' : '';
-      print('...$_elided more file$s each took less than 10ms.');
-    }
-  }
-
-  /// Called when [file] is about to be formatted.
-  @override
-  void beforeFile(File file, String label) {
-    super.beforeFile(file, label);
-    _ongoing[label] = DateTime.now();
-  }
-
-  /// Describe the processed file at [path] whose formatted result is [output].
-  ///
-  /// If the contents of the file are the same as the formatted output,
-  /// [changed] will be false.
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    var elapsed = DateTime.now().difference(_ongoing.remove(label));
-    if (elapsed.inMilliseconds >= 10) {
-      _elapsed[label] = elapsed;
-    } else {
-      _elided++;
-    }
-
-    super.afterFile(file, label, output, changed: changed);
-  }
-}
-
-/// A decorating reporter that sets the exit code to 1 if any changes are made.
-class SetExitReporter extends _ReporterDecorator {
-  SetExitReporter(OutputReporter inner) : super(inner);
-
-  /// Describe the processed file at [path] whose formatted result is [output].
-  ///
-  /// If the contents of the file are the same as the formatted output,
-  /// [changed] will be false.
-  @override
-  void afterFile(File file, String label, SourceCode output, {bool changed}) {
-    if (changed) exitCode = 1;
-
-    super.afterFile(file, label, output, changed: changed);
+    show.hiddenPath(path);
   }
 }

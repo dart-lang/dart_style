@@ -17,10 +17,8 @@ import 'package:dart_style/src/cli/formatter_options.dart';
 import 'utils.dart';
 
 void main() {
-  var overwriteOptions = FormatterOptions(OutputReporter.overwrite);
-
-  var followOptions =
-      FormatterOptions(OutputReporter.overwrite, followLinks: true);
+  var overwriteOptions = FormatterOptions();
+  var followOptions = FormatterOptions(followLinks: true);
 
   test('handles directory ending in ".dart"', () async {
     await d.dir('code.dart', [

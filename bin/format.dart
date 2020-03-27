@@ -7,6 +7,9 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:dart_style/src/cli/formatter_options.dart';
 import 'package:dart_style/src/cli/options.dart';
+import 'package:dart_style/src/cli/output.dart';
+import 'package:dart_style/src/cli/show.dart';
+import 'package:dart_style/src/cli/summary.dart';
 import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/style_fix.dart';
 
@@ -32,19 +35,11 @@ void main(List<String> args) {
     return;
   }
 
-  // Can only preserve a selection when parsing from stdin.
   List<int> selection;
-  if (argResults['preserve'] != null && argResults.rest.isNotEmpty) {
-    usageError(parser, 'Can only use --preserve when reading from stdin.');
-  }
-
   try {
     selection = parseSelection(argResults, 'preserve');
-  } on FormatException catch (_) {
-    usageError(
-        parser,
-        '--preserve must be a colon-separated pair of integers, was '
-        '"${argResults['preserve']}".');
+  } on FormatException catch (exception) {
+    usageError(parser, exception.message);
   }
 
   if (argResults['dry-run'] && argResults['overwrite']) {
@@ -58,12 +53,16 @@ void main(List<String> args) {
     usageError(parser, 'Cannot use --$chosen and --$other at the same time.');
   }
 
-  var reporter = OutputReporter.print;
+  var show = Show.overwrite;
+  var summary = Summary.none;
+  var output = Output.show;
+  var setExitIfChanged = false;
   if (argResults['dry-run']) {
     checkForReporterCollision('dry-run', 'overwrite');
     checkForReporterCollision('dry-run', 'machine');
 
-    reporter = OutputReporter.dryRun;
+    show = Show.dryRun;
+    output = Output.none;
   } else if (argResults['overwrite']) {
     checkForReporterCollision('overwrite', 'machine');
 
@@ -72,18 +71,14 @@ void main(List<String> args) {
           'Cannot use --overwrite without providing any paths to format.');
     }
 
-    reporter = OutputReporter.overwrite;
+    output = Output.write;
   } else if (argResults['machine']) {
-    reporter = OutputReporter.printJson;
+    output = Output.json;
   }
 
-  if (argResults['profile']) {
-    reporter = ProfileReporter(reporter);
-  }
+  if (argResults['profile']) summary = Summary.profile();
 
-  if (argResults['set-exit-if-changed']) {
-    reporter = SetExitReporter(reporter);
-  }
+  setExitIfChanged = argResults['set-exit-if-changed'];
 
   int pageWidth;
   try {
@@ -124,11 +119,15 @@ void main(List<String> args) {
     usageError(parser, 'Cannot pass --stdin-name when not reading from stdin.');
   }
 
-  var options = FormatterOptions(reporter,
+  var options = FormatterOptions(
       indent: indent,
       pageWidth: pageWidth,
       followLinks: followLinks,
-      fixes: fixes);
+      fixes: fixes,
+      show: show,
+      output: output,
+      summary: summary,
+      setExitIfChanged: setExitIfChanged);
 
   if (argResults.rest.isEmpty) {
     formatStdin(options, selection, argResults['stdin-name'] as String);
@@ -136,9 +135,7 @@ void main(List<String> args) {
     formatPaths(options, argResults.rest);
   }
 
-  if (argResults['profile']) {
-    (reporter as ProfileReporter).showProfile();
-  }
+  options.summary.show();
 }
 
 /// Prints [error] and usage help then exits with exit code 64.
