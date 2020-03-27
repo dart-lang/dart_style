@@ -27,8 +27,6 @@ final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
 
 /// Runs the command line formatter, passing it [args].
 Future<TestProcess> runFormatter([List<String> args]) {
-  args ??= [];
-
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
   var testDir = p.dirname(currentMirrorSystem()
@@ -37,22 +35,36 @@ Future<TestProcess> runFormatter([List<String> args]) {
       .toFilePath());
 
   var formatterPath = p.normalize(p.join(testDir, '../bin/format.dart'));
-
-  args.insert(0, formatterPath);
-
-  // Use the same package root, if there is one.
-  if (Platform.packageConfig != null && Platform.packageConfig.isNotEmpty) {
-    args.insert(0, '--packages=${Platform.packageConfig}');
-  }
-
-  return TestProcess.start(Platform.executable, args);
+  return TestProcess.start(Platform.executable, [formatterPath, ...?args],
+      workingDirectory: d.sandbox);
 }
 
 /// Runs the command line formatter, passing it the test directory followed by
 /// [args].
 Future<TestProcess> runFormatterOnDir([List<String> args]) {
-  args ??= [];
-  return runFormatter([d.sandbox, ...args]);
+  return runFormatter(['.', ...?args]);
+}
+
+/// Runs the test shell for the [Command]-based formatter, passing it [args].
+Future<TestProcess> runCommand([List<String> args]) {
+  // Locate the "test" directory. Use mirrors so that this works with the test
+  // package, which loads this suite into an isolate.
+  var testDir = p.dirname(currentMirrorSystem()
+      .findLibrary(#dart_style.test.utils)
+      .uri
+      .toFilePath());
+
+  var formatterPath =
+      p.normalize(p.join(testDir, '../tool/command_shell.dart'));
+  return TestProcess.start(
+      Platform.executable, [formatterPath, 'format', ...?args],
+      workingDirectory: d.sandbox);
+}
+
+/// Runs the test shell for the [Command]-based formatter, passing it the test
+/// directory followed by [args].
+Future<TestProcess> runCommandOnDir([List<String> args]) {
+  return runCommand(['.', ...?args]);
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].

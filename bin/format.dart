@@ -16,7 +16,7 @@ import 'package:dart_style/src/style_fix.dart';
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
-  defineOptions(parser);
+  defineOptions(parser, oldCli: true);
 
   ArgResults argResults;
   try {

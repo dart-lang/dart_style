@@ -5,22 +5,54 @@ import 'package:args/args.dart';
 
 import '../style_fix.dart';
 
-void defineOptions(ArgParser parser) {
+void defineOptions(ArgParser parser, {bool oldCli = false}) {
   parser.addSeparator('Common options:');
 
-  // Command implicitly adds "--help", so we only need to manually add it for
-  // the old CLI.
-  parser.addFlag('help',
-      abbr: 'h', negatable: false, help: 'Shows this usage information.');
+  if (oldCli) {
+    // Command implicitly adds "--help", so we only need to manually add it for
+    // the old CLI.
+    parser.addFlag('help',
+        abbr: 'h', negatable: false, help: 'Shows this usage information.');
 
-  parser.addFlag('overwrite',
-      abbr: 'w',
-      negatable: false,
-      help: 'Overwrite input files with formatted output.');
-  parser.addFlag('dry-run',
-      abbr: 'n',
-      negatable: false,
-      help: 'Show which files would be modified but make no changes.');
+    parser.addFlag('overwrite',
+        abbr: 'w',
+        negatable: false,
+        help: 'Overwrite input files with formatted output.');
+    parser.addFlag('dry-run',
+        abbr: 'n',
+        negatable: false,
+        help: 'Show which files would be modified but make no changes.');
+  } else {
+    parser.addOption('output',
+        abbr: 'o',
+        help: 'Where formatted output should be written.',
+        allowed: ['write', 'show', 'json', 'none'],
+        allowedHelp: {
+          'write': 'Overwrite formatted files on disc.',
+          'show': 'Print code to terminal.',
+          'json': 'Print code and selection as JSON',
+          'none': 'Discard.'
+        },
+        defaultsTo: 'write');
+    parser.addOption('show',
+        help: 'Which filenames to print.',
+        allowed: ['all', 'changed', 'none'],
+        allowedHelp: {
+          'all': 'All visited files and directories.',
+          'changed': 'Only the names of files whose formatting is changed.',
+          'none': 'No file names or directories.',
+        },
+        defaultsTo: 'changed');
+    parser.addOption('summary',
+        help: 'Summary shown after formatting completes.',
+        allowed: ['line', 'profile', 'none'],
+        allowedHelp: {
+          'line': 'Single line summary.',
+          'profile': 'Tracks how long it took for format each file.',
+          'none': 'No summary.'
+        },
+        defaultsTo: 'line');
+  }
 
   parser.addSeparator('Non-whitespace fixes (off by default):');
   parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
@@ -36,10 +68,12 @@ void defineOptions(ArgParser parser) {
       abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
   parser.addOption('indent',
       abbr: 'i', help: 'Spaces of leading indentation.', defaultsTo: '0');
-  parser.addFlag('machine',
-      abbr: 'm',
-      negatable: false,
-      help: 'Produce machine-readable JSON output.');
+  if (oldCli) {
+    parser.addFlag('machine',
+        abbr: 'm',
+        negatable: false,
+        help: 'Produce machine-readable JSON output.');
+  }
   parser.addFlag('set-exit-if-changed',
       negatable: false,
       help: 'Return exit code 1 if there are any formatting changes.');
@@ -52,15 +86,18 @@ void defineOptions(ArgParser parser) {
 
   parser.addSeparator('Options when formatting from stdin:');
 
-  parser.addOption('preserve',
+  parser.addOption(oldCli ? 'preserve' : 'selection',
       help: 'Selection to preserve formatted as "start:length".');
   parser.addOption('stdin-name',
       help: 'The path name to show when an error occurs.',
       defaultsTo: '<stdin>');
-  parser.addFlag('profile', negatable: false, hide: true);
 
-  // Ancient no longer used flag.
-  parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
+  if (oldCli) {
+    parser.addFlag('profile', negatable: false, hide: true);
+
+    // Ancient no longer used flag.
+    parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
+  }
 }
 
 List<int> parseSelection(ArgResults argResults, String optionName) {

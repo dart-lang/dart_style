@@ -5,6 +5,12 @@ import 'package:path/path.dart' as p;
 
 /// Which file paths should be printed.
 abstract class Show {
+  /// No files.
+  static const Show none = _NoneShow();
+
+  /// All traversed files.
+  static const Show all = _AllShow();
+
   /// Only files whose formatting changed.
   static const Show changed = _ChangedShow();
 
@@ -27,7 +33,7 @@ abstract class Show {
   /// Describes a file that was processed.
   ///
   /// Returns whether or not this file should be displayed.
-  bool file(String path, {bool changed, bool overwritten}) => false;
+  bool file(String path, {bool changed, bool overwritten}) => true;
 
   /// Describes the directory whose contents are about to be processed.
   void directory(String path) {}
@@ -44,6 +50,25 @@ abstract class Show {
     } else {
       print('Changed $path');
     }
+  }
+}
+
+class _NoneShow extends Show {
+  const _NoneShow() : super._();
+}
+
+class _AllShow extends Show {
+  const _AllShow() : super._();
+
+  @override
+  bool file(String path, {bool changed, bool overwritten}) {
+    if (changed) {
+      _showFileChange(path, overwritten: overwritten);
+    } else {
+      print('Unchanged $path');
+    }
+
+    return true;
   }
 }
 
