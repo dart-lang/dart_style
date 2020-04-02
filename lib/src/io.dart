@@ -4,14 +4,76 @@
 
 library dart_style.src.io;
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'cli/formatter_options.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
-import 'formatter_options.dart';
 import 'source_code.dart';
+
+/// Reads input from stdin until it's closed, and the formats it.
+void formatStdin(FormatterOptions options, List<int> selection, String name) {
+  var selectionStart = 0;
+  var selectionLength = 0;
+
+  if (selection != null) {
+    selectionStart = selection[0];
+    selectionLength = selection[1];
+  }
+
+  var input = StringBuffer();
+  stdin.transform(Utf8Decoder()).listen(input.write, onDone: () {
+    var formatter = DartFormatter(
+        indent: options.indent,
+        pageWidth: options.pageWidth,
+        fixes: options.fixes);
+    try {
+      options.beforeFile(null, name);
+      var source = SourceCode(input.toString(),
+          uri: name,
+          selectionStart: selectionStart,
+          selectionLength: selectionLength);
+      var output = formatter.formatSource(source);
+      options.afterFile(null, name, output,
+          changed: source.text != output.text);
+      return;
+    } on FormatterException catch (err) {
+      stderr.writeln(err.message());
+      exitCode = 65; // sysexits.h: EX_DATAERR
+    } catch (err, stack) {
+      stderr.writeln('''Hit a bug in the formatter when formatting stdin.
+Please report at: github.com/dart-lang/dart_style/issues
+$err
+$stack''');
+      exitCode = 70; // sysexits.h: EX_SOFTWARE
+    }
+  });
+}
+
+/// Formats all of the files and directories given by [paths].
+void formatPaths(FormatterOptions options, List<String> paths) {
+  for (var path in paths) {
+    var directory = Directory(path);
+    if (directory.existsSync()) {
+      if (!processDirectory(options, directory)) {
+        exitCode = 65;
+      }
+      continue;
+    }
+
+    var file = File(path);
+    if (file.existsSync()) {
+      if (!processFile(options, file)) {
+        exitCode = 65;
+      }
+    } else {
+      stderr.writeln('No file or directory found at "$path".');
+    }
+  }
+}
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
@@ -19,24 +81,27 @@ import 'source_code.dart';
 /// Returns `true` if successful or `false` if an error occurred in any of the
 /// files.
 bool processDirectory(FormatterOptions options, Directory directory) {
-  options.reporter.showDirectory(directory.path);
+  options.showDirectory(directory.path);
 
   var success = true;
   var shownHiddenPaths = <String>{};
 
-  for (var entry in directory.listSync(
-      recursive: true, followLinks: options.followLinks)) {
-    var relative = p.relative(entry.path, from: directory.path);
+  var entries =
+      directory.listSync(recursive: true, followLinks: options.followLinks);
+  entries.sort((a, b) => a.path.compareTo(b.path));
+
+  for (var entry in entries) {
+    var displayPath = options.show.displayPath(directory.path, entry.path);
 
     if (entry is Link) {
-      options.reporter.showSkippedLink(relative);
+      options.showSkippedLink(displayPath);
       continue;
     }
 
     if (entry is! File || !entry.path.endsWith('.dart')) continue;
 
     // If the path is in a subdirectory starting with ".", ignore it.
-    var parts = p.split(relative);
+    var parts = p.split(p.relative(entry.path, from: directory.path));
     var hiddenIndex;
     for (var i = 0; i < parts.length; i++) {
       if (parts[i].startsWith('.')) {
@@ -50,12 +115,12 @@ bool processDirectory(FormatterOptions options, Directory directory) {
       // show the directory name once instead of once for each file.
       var hiddenPath = p.joinAll(parts.take(hiddenIndex + 1));
       if (shownHiddenPaths.add(hiddenPath)) {
-        options.reporter.showHiddenPath(hiddenPath);
+        options.showHiddenPath(hiddenPath);
       }
       continue;
     }
 
-    if (!processFile(options, entry, label: relative)) success = false;
+    if (!processFile(options, entry, displayPath: displayPath)) success = false;
   }
 
   return success;
@@ -64,8 +129,8 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 /// Runs the formatter on [file].
 ///
 /// Returns `true` if successful or `false` if an error occurred.
-bool processFile(FormatterOptions options, File file, {String label}) {
-  label ??= file.path;
+bool processFile(FormatterOptions options, File file, {String displayPath}) {
+  displayPath ??= file.path;
 
   var formatter = DartFormatter(
       indent: options.indent,
@@ -73,10 +138,10 @@ bool processFile(FormatterOptions options, File file, {String label}) {
       fixes: options.fixes);
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);
-    options.reporter.beforeFile(file, label);
+    options.beforeFile(file, displayPath);
     var output = formatter.formatSource(source);
-    options.reporter
-        .afterFile(file, label, output, changed: source.text != output.text);
+    options.afterFile(file, displayPath, output,
+        changed: source.text != output.text);
     return true;
   } on FormatterException catch (err) {
     var color = Platform.operatingSystem != 'windows' &&
@@ -84,11 +149,11 @@ bool processFile(FormatterOptions options, File file, {String label}) {
 
     stderr.writeln(err.message(color: color));
   } on UnexpectedOutputException catch (err) {
-    stderr.writeln('''Hit a bug in the formatter when formatting $label.
+    stderr.writeln('''Hit a bug in the formatter when formatting $displayPath.
 $err
 Please report at github.com/dart-lang/dart_style/issues.''');
   } catch (err, stack) {
-    stderr.writeln('''Hit a bug in the formatter when formatting $label.
+    stderr.writeln('''Hit a bug in the formatter when formatting $displayPath.
 Please report at github.com/dart-lang/dart_style/issues.
 $err
 $stack''');

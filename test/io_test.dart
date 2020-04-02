@@ -12,15 +12,13 @@ import 'package:path/path.dart' as p;
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test/test.dart';
 
-import 'package:dart_style/src/formatter_options.dart';
+import 'package:dart_style/src/cli/formatter_options.dart';
 
 import 'utils.dart';
 
 void main() {
-  var overwriteOptions = FormatterOptions(OutputReporter.overwrite);
-
-  var followOptions =
-      FormatterOptions(OutputReporter.overwrite, followLinks: true);
+  var overwriteOptions = FormatterOptions();
+  var followOptions = FormatterOptions(followLinks: true);
 
   test('handles directory ending in ".dart"', () async {
     await d.dir('code.dart', [

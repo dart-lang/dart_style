@@ -114,11 +114,12 @@ Future<void> bump() async {
   pubspec = pubspec.replaceAll(_versionPattern, 'version: $bumped');
   pubspecFile.writeAsStringSync(pubspec);
 
-  // Update the version constant in bin/format.dart.
-  var binFormatFile = getFile('bin/format.dart');
-  var binFormat = binFormatFile.readAsStringSync().replaceAll(
-      RegExp(r'const version = "[^"]+";'), 'const version = "$bumped";');
-  binFormatFile.writeAsStringSync(binFormat);
+  // Update the version constant in formatter_options.dart.
+  var versionFile = getFile('lib/src/cli/formatter_options.dart');
+  var versionSource = versionFile.readAsStringSync().replaceAll(
+      RegExp(r'const dartStyleVersion = "[^"]+";'),
+      'const dartStyleVersion = "$bumped";');
+  versionFile.writeAsStringSync(versionSource);
 
   // Update the version in the CHANGELOG.
   var changelogFile = getFile('CHANGELOG.md');
