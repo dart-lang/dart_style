@@ -7,7 +7,7 @@ description: >-
 homepage: https://github.com/dart-lang/dart_style
 
 environment:
-  sdk: '>=2.3.0 <3.0.0'
+  sdk: '>=2.7.0 <3.0.0'
 
 dependencies:
   analyzer: ">=0.39.5 <0.40.0"
