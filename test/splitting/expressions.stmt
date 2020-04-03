@@ -132,11 +132,11 @@ identifier[longArgument][longArgument]
         [longArgument][longArgument]
     [longArgument];
 >>> null-aware indexes
-identifier?.[longArgument][longArgument]?.[longArgument][longArgument]?.[longArgument];
+identifier?[longArgument][longArgument]?[longArgument][longArgument]?[longArgument];
 <<<
-identifier?.[longArgument][longArgument]
-        ?.[longArgument][longArgument]
-    ?.[longArgument];
+identifier?[longArgument][longArgument]
+        ?[longArgument][longArgument]
+    ?[longArgument];
 >>> is
 verylongIdentifier.property is LongTypeName;
 <<<

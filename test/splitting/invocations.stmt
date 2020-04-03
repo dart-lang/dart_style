@@ -434,11 +434,11 @@ compiler!.a(() {
 })!;
 >>> null-aware index
 receiver.property1.property2
-        .property3?.[0][1]?.[2]
-    .method1()?.[0][1]?.[2]
+        .property3?[0][1]?[2]
+    .method1()?[0][1]?[2]
     .method2();
 <<<
 receiver.property1.property2
-    .property3?.[0][1]?.[2]
-    .method1()?.[0][1]?.[2]
+    .property3?[0][1]?[2]
+    .method1()?[0][1]?[2]
     .method2();
