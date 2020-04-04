@@ -15,6 +15,18 @@ obj.setter = 3;
 obj..[subscript] = 3;
 <<<
 obj[subscript] = 3;
+>>>
+obj?..[subscript] = 3;
+<<<
+obj?[subscript] = 3;
+>>>
+obj..index[subscript] = 3;
+<<<
+obj.index[subscript] = 3;
+>>>
+obj..index?[subscript] = 3;
+<<<
+obj.index?[subscript] = 3;
 >>> targets that don't need parentheses
 {
   null..method();

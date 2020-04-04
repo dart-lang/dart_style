@@ -9,6 +9,7 @@
 * Always place a blank line after script tags (#782).
 * Don't add unneeded splits on if elements near comments (#888).
 * Indent blocks in initializers of multiple-variable declarations.
+* Update the null-aware subscript syntax from `?.[]` to `?[]`.
 
 # 1.3.3
 

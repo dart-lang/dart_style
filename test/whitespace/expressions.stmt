@@ -160,6 +160,6 @@ obj ! [ index ] ! ( call ) ! + 3;
 <<<
 obj![index]!(call)! + 3;
 >>> null-aware index expressions
-obj   ?.[  foo];
+obj   ?[  foo];
 <<<
-obj?.[foo];
+obj?[foo];

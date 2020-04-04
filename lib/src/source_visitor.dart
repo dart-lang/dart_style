@@ -1180,11 +1180,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.semicolon);
   }
 
-  /// A period (`.`) token constructed to replace the given [operator].
+  /// Synthesize a token with [type] to replace the given [operator].
   ///
   /// Offset, comments, and previous/next links are all preserved.
-  static Token _period(Token operator) =>
-      Token(TokenType.PERIOD, operator.offset, operator.precedingComments)
+  static Token _synthesizeToken(TokenType type, Token operator) =>
+      Token(type, operator.offset, operator.precedingComments)
         ..previous = operator.previous
         ..next = operator.next;
 
@@ -1214,7 +1214,7 @@ class SourceVisitor extends ThrowingAstVisitor {
           _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
           // If we've reached the end, replace the `..` operator with `.`
           expressionTarget == cascadeTarget
-              ? _period(expression.operator)
+              ? _synthesizeToken(TokenType.PERIOD, expression.operator)
               : expression.operator,
           expression.propertyName);
     } else if (expression is MethodInvocation) {
@@ -1222,17 +1222,28 @@ class SourceVisitor extends ThrowingAstVisitor {
           _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
           // If we've reached the end, replace the `..` operator with `.`
           expressionTarget == cascadeTarget
-              ? _period(expression.operator)
+              ? _synthesizeToken(TokenType.PERIOD, expression.operator)
               : expression.operator,
           expression.methodName,
           expression.typeArguments,
           expression.argumentList);
     } else if (expression is IndexExpression) {
-      return astFactory.indexExpressionForTarget(
-          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
-          expression.leftBracket,
-          expression.index,
-          expression.rightBracket);
+      var question = expression.question;
+
+      // A null-aware cascade treats the `?` in `?..` as part of the token, but
+      // for a non-cascade index, it is a separate `?` token.
+      if (expression.period != null &&
+          expression.period.type == TokenType.QUESTION_PERIOD_PERIOD) {
+        question = _synthesizeToken(TokenType.QUESTION, expression.period);
+      }
+
+      return astFactory.indexExpressionForTarget2(
+          target: _insertCascadeTargetIntoExpression(
+              expressionTarget, cascadeTarget),
+          question: question,
+          leftBracket: expression.leftBracket,
+          index: expression.index,
+          rightBracket: expression.rightBracket);
     }
     throw UnimplementedError('Unhandled ${expression.runtimeType}'
         '($expression)');
@@ -2061,6 +2072,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.startSpan(Cost.index);
+    token(node.question);
     token(node.leftBracket);
     soloZeroSplit();
     visit(node.index);
