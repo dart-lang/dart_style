@@ -117,8 +117,8 @@ Future<void> bump() async {
   // Update the version constant in formatter_options.dart.
   var versionFile = getFile('lib/src/cli/formatter_options.dart');
   var versionSource = versionFile.readAsStringSync().replaceAll(
-      RegExp(r'const dartStyleVersion = "[^"]+";'),
-      'const dartStyleVersion = "$bumped";');
+      RegExp(r"const dartStyleVersion = '[^']+';"),
+      "const dartStyleVersion = '$bumped';");
   versionFile.writeAsStringSync(versionSource);
 
   // Update the version in the CHANGELOG.
