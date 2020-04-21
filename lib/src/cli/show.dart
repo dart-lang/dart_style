@@ -14,6 +14,9 @@ abstract class Show {
   /// Only files whose formatting changed.
   static const Show changed = _ChangedShow();
 
+  /// The legacy dartfmt output style when not overwriting files.
+  static const Show legacy = _LegacyShow();
+
   /// The legacy dartfmt output style when overwriting files.
   static const Show overwrite = _OverwriteShow();
 
@@ -53,13 +56,7 @@ abstract class Show {
   }
 }
 
-class _NoneShow extends Show {
-  const _NoneShow() : super._();
-}
-
-class _AllShow extends Show {
-  const _AllShow() : super._();
-
+mixin _ShowFileMixin on Show {
   @override
   bool file(String path, {bool changed, bool overwritten}) {
     if (changed) {
@@ -72,25 +69,10 @@ class _AllShow extends Show {
   }
 }
 
-class _ChangedShow extends Show {
-  const _ChangedShow() : super._();
-
-  @override
-  bool file(String path, {bool changed, bool overwritten}) {
-    if (changed) _showFileChange(path, overwritten: overwritten);
-    return changed;
-  }
-}
-
-class _OverwriteShow extends Show {
-  const _OverwriteShow() : super._();
-
+mixin _LegacyMixin on Show {
   @override
   String displayPath(String directory, String file) =>
       p.relative(file, from: directory);
-
-  @override
-  bool file(String path, {bool changed, bool overwritten}) => true;
 
   @override
   void directory(String directory) {
@@ -106,6 +88,32 @@ class _OverwriteShow extends Show {
   void hiddenPath(String path) {
     print('Skipping hidden path $path');
   }
+}
+
+class _NoneShow extends Show {
+  const _NoneShow() : super._();
+}
+
+class _AllShow extends Show with _ShowFileMixin {
+  const _AllShow() : super._();
+}
+
+class _ChangedShow extends Show {
+  const _ChangedShow() : super._();
+
+  @override
+  bool file(String path, {bool changed, bool overwritten}) {
+    if (changed) _showFileChange(path, overwritten: overwritten);
+    return changed;
+  }
+}
+
+class _LegacyShow extends Show with _LegacyMixin {
+  const _LegacyShow() : super._();
+}
+
+class _OverwriteShow extends Show with _ShowFileMixin, _LegacyMixin {
+  const _OverwriteShow() : super._();
 }
 
 class _DryRunShow extends Show {

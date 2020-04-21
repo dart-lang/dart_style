@@ -53,7 +53,7 @@ void main(List<String> args) {
     usageError(parser, 'Cannot use --$chosen and --$other at the same time.');
   }
 
-  var show = Show.overwrite;
+  var show = Show.legacy;
   var summary = Summary.none;
   var output = Output.show;
   var setExitIfChanged = false;
@@ -71,6 +71,7 @@ void main(List<String> args) {
           'Cannot use --overwrite without providing any paths to format.');
     }
 
+    show = Show.overwrite;
     output = Output.write;
   } else if (argResults['machine']) {
     output = Output.json;
