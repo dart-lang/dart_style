@@ -13,6 +13,8 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() {
+  compileFormatterExecutable();
+
   test('formats a directory', () async {
     await d.dir('code', [
       d.file('a.dart', unformattedSource),
