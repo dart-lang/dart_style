@@ -53,8 +53,7 @@ void compileFormatterExecutable() {
 /// subsequent tests and to clean up the executable.
 void compileCommandExecutable() {
   setUpAll(() async {
-    _commandExecutablePath =
-        await _compileSnapshot('tool/command_shell.dart');
+    _commandExecutablePath = await _compileSnapshot('tool/command_shell.dart');
   });
 
   tearDownAll(() async {
