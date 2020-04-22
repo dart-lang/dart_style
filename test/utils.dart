@@ -33,42 +33,45 @@ String _commandExecutablePath;
 String _formatterExecutablePath;
 
 /// Compiles format.dart to a native executable for tests to use.
+///
+/// Calls [setupAll()] and [tearDownAll()] to coordinate this when the
+/// subsequent tests and to clean up the executable.
 void compileFormatterExecutable() {
   setUpAll(() async {
-    _formatterExecutablePath = await _compileExecutable('bin/format.dart');
+    _formatterExecutablePath = await _compileSnapshot('bin/format.dart');
   });
 
   tearDownAll(() async {
-    await _deleteExecutable(_formatterExecutablePath);
+    await _deleteSnapshot(_formatterExecutablePath);
     _formatterExecutablePath = null;
   });
 }
 
 /// Compiles command_shell.dart to a native executable for tests to use.
+///
+/// Calls [setupAll()] and [tearDownAll()] to coordinate this when the
+/// subsequent tests and to clean up the executable.
 void compileCommandExecutable() {
   setUpAll(() async {
     _commandExecutablePath =
-        await _compileExecutable('tool/command_shell.dart');
+        await _compileSnapshot('tool/command_shell.dart');
   });
 
   tearDownAll(() async {
-    await _deleteExecutable(_commandExecutablePath);
+    await _deleteSnapshot(_commandExecutablePath);
     _commandExecutablePath = null;
   });
 }
 
-/// Compile the Dart [script] to a native executable.
+/// Compile the Dart [script] to an app-JIT snapshot.
 ///
 /// We do this instead of spawning the script from source each time because it's
 /// much faster when the same script needs to be run several times.
-Future<String> _compileExecutable(String script) async {
+Future<String> _compileSnapshot(String script) async {
   var scriptName = p.basename(script);
   var tempDir =
       await Directory.systemTemp.createTemp(p.withoutExtension(scriptName));
-  var executable = p.join(tempDir.path, '$scriptName.aot');
-
-  var dart2Native =
-      p.join(p.dirname(Platform.resolvedExecutable), 'dart2native');
+  var snapshot = p.join(tempDir.path, '$scriptName.snapshot');
 
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
@@ -78,8 +81,12 @@ Future<String> _compileExecutable(String script) async {
       .toFilePath());
   var scriptPath = p.normalize(p.join(p.dirname(testDir), script));
 
-  var compileResult = await Process.run(
-      dart2Native, [scriptPath, '--output', executable]);
+  var compileResult = await Process.run(Platform.resolvedExecutable, [
+    '--snapshot-kind=app-jit',
+    '--snapshot=$snapshot',
+    scriptPath,
+    '--help'
+  ]);
 
   if (compileResult.exitCode != 0) {
     fail('Could not compile $scriptName to a snapshot (exit code '
@@ -87,14 +94,14 @@ Future<String> _compileExecutable(String script) async {
         '${compileResult.stderr}');
   }
 
-  return executable;
+  return snapshot;
 }
 
-/// Attempts to delete to temporary directory created for [executable] by
-/// [_createSnapshot()].
-Future<void> _deleteExecutable(String executable) async {
+/// Attempts to delete to temporary directory created for [snapshot] by
+/// [_compileSnapshot()].
+Future<void> _deleteSnapshot(String snapshot) async {
   try {
-    await Directory(p.dirname(executable)).delete(recursive: true);
+    await Directory(p.dirname(snapshot)).delete(recursive: true);
   } on IOException {
     // Do nothing if we failed to delete it. The OS will eventually clean it
     // up.
@@ -107,7 +114,8 @@ Future<TestProcess> runFormatter([List<String> args]) {
     fail('Must call createFormatterExecutable() before running commands.');
   }
 
-  return TestProcess.start(_formatterExecutablePath, args ?? <String>[],
+  return TestProcess.start(
+      Platform.resolvedExecutable, [_formatterExecutablePath, ...?args],
       workingDirectory: d.sandbox);
 }
 
@@ -123,7 +131,8 @@ Future<TestProcess> runCommand([List<String> args]) {
     fail('Must call createCommandExecutable() before running commands.');
   }
 
-  return TestProcess.start(_commandExecutablePath, ['format', ...?args],
+  return TestProcess.start(
+      Platform.resolvedExecutable, [_commandExecutablePath, 'format', ...?args],
       workingDirectory: d.sandbox);
 }
 
@@ -137,6 +146,7 @@ Future<TestProcess> runCommandOnDir([List<String> args]) {
 void testDirectory(String name, [Iterable<StyleFix> fixes]) {
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
+  // TODO(rnystrom): Investigate using Isolate.resolvePackageUri instead.
   var testDir = p.dirname(currentMirrorSystem()
       .findLibrary(#dart_style.test.utils)
       .uri
