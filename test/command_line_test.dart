@@ -37,6 +37,28 @@ void main() {
     await d.dir('code', [d.file('c.dart', unformattedSource)]).validate();
   });
 
+  test('Overwrites files', () async {
+    await d.dir('code', [
+      d.file('a.dart', unformattedSource),
+      d.file('b.dart', formattedSource),
+      d.file('c.dart', unformattedSource)
+    ]).create();
+
+    var process = await runFormatterOnDir(['--overwrite']);
+    await expectLater(
+        process.stdout, emits(startsWith('Formatting directory')));
+
+    // Prints whether each file was changed.
+    await expectLater(process.stdout, emits('Formatted code/a.dart'));
+    await expectLater(process.stdout, emits('Unchanged code/b.dart'));
+    await expectLater(process.stdout, emits('Formatted code/c.dart'));
+    await process.shouldExit(0);
+
+    // Overwrites the files.
+    await d.dir('code', [d.file('a.dart', formattedSource)]).validate();
+    await d.dir('code', [d.file('c.dart', formattedSource)]).validate();
+  });
+
   test('exits with 64 on a command line argument error', () async {
     var process = await runFormatter(['-wat']);
     await process.shouldExit(64);
@@ -166,7 +188,6 @@ void main() {
       var process = await runFormatterOnDir(['--machine']);
 
       // The order isn't specified.
-
       expect(await process.stdout.next, anyOf(jsonA, jsonB));
       expect(await process.stdout.next, anyOf(jsonA, jsonB));
       await process.shouldExit();

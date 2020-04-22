@@ -1,3 +1,7 @@
+# 1.3.5-dev
+
+* Restore command line output accidentally removed in 1.3.4.
+
 # 1.3.4
 
 * Add `--fix-single-cascade-statements`.
