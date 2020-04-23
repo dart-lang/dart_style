@@ -89,8 +89,7 @@ void defineOptions(ArgParser parser, {bool oldCli = false}) {
   parser.addOption(oldCli ? 'preserve' : 'selection',
       help: 'Selection to preserve formatted as "start:length".');
   parser.addOption('stdin-name',
-      help: 'The path name to show when an error occurs.',
-      defaultsTo: '<stdin>');
+      help: 'The path name to show when an error occurs.', defaultsTo: 'stdin');
 
   if (oldCli) {
     parser.addFlag('profile', negatable: false, hide: true);

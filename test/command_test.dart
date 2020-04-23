@@ -21,8 +21,8 @@ void main() {
     ]).create();
 
     var process = await runCommandOnDir();
-    expect(await process.stdout.next, 'Formatted code/a.dart');
-    expect(await process.stdout.next, 'Formatted code/c.dart');
+    expect(await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+    expect(await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
     expect(await process.stdout.next,
         startsWith(r'Formatted 3 files (2 changed)'));
     await process.shouldExit(0);
@@ -41,9 +41,11 @@ void main() {
       d.file('c.dart', unformattedSource)
     ]).create();
 
-    var process = await runCommand(['code/subdir', 'code/c.dart']);
-    expect(await process.stdout.next, 'Formatted code/subdir/a.dart');
-    expect(await process.stdout.next, 'Formatted code/c.dart');
+    var process =
+        await runCommand([p.join('code', 'subdir'), p.join('code', 'c.dart')]);
+    expect(await process.stdout.next,
+        'Formatted ${p.join('code', 'subdir', 'a.dart')}');
+    expect(await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
     expect(await process.stdout.next,
         startsWith(r'Formatted 2 files (2 changed)'));
     await process.shouldExit(0);
@@ -79,9 +81,12 @@ void main() {
       ]).create();
 
       var process = await runCommandOnDir(['--show=all']);
-      expect(await process.stdout.next, 'Formatted code/a.dart');
-      expect(await process.stdout.next, 'Unchanged code/b.dart');
-      expect(await process.stdout.next, 'Formatted code/c.dart');
+      expect(
+          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+      expect(
+          await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
+      expect(
+          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
       expect(await process.stdout.next,
           startsWith(r'Formatted 3 files (2 changed)'));
       await process.shouldExit(0);
@@ -108,8 +113,10 @@ void main() {
       ]).create();
 
       var process = await runCommandOnDir(['--show=changed']);
-      expect(await process.stdout.next, 'Formatted code/a.dart');
-      expect(await process.stdout.next, 'Formatted code/c.dart');
+      expect(
+          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+      expect(
+          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
       expect(await process.stdout.next,
           startsWith(r'Formatted 3 files (2 changed)'));
       await process.shouldExit(0);
@@ -142,9 +149,11 @@ void main() {
         ]).create();
 
         var process = await runCommandOnDir(['--output=show', '--show=all']);
-        expect(await process.stdout.next, 'Changed code/a.dart');
+        expect(
+            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next, formattedOutput);
-        expect(await process.stdout.next, 'Unchanged code/b.dart');
+        expect(
+            await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
         expect(await process.stdout.next, formattedOutput);
         expect(await process.stdout.next,
             startsWith(r'Formatted 2 files (1 changed)'));
@@ -162,7 +171,8 @@ void main() {
 
         var process =
             await runCommandOnDir(['--output=show', '--show=changed']);
-        expect(await process.stdout.next, 'Changed code/a.dart');
+        expect(
+            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next, formattedOutput);
         expect(await process.stdout.next,
             startsWith(r'Formatted 2 files (1 changed)'));
@@ -214,8 +224,10 @@ void main() {
         ]).create();
 
         var process = await runCommandOnDir(['--output=none', '--show=all']);
-        expect(await process.stdout.next, 'Changed code/a.dart');
-        expect(await process.stdout.next, 'Unchanged code/b.dart');
+        expect(
+            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
+        expect(
+            await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
         expect(await process.stdout.next,
             startsWith(r'Formatted 2 files (1 changed)'));
         await process.shouldExit(0);
@@ -232,7 +244,8 @@ void main() {
 
         var process =
             await runCommandOnDir(['--output=none', '--show=changed']);
-        expect(await process.stdout.next, 'Changed code/a.dart');
+        expect(
+            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next,
             startsWith(r'Formatted 2 files (1 changed)'));
         await process.shouldExit(0);
@@ -251,7 +264,8 @@ void main() {
       ]).create();
 
       var process = await runCommandOnDir(['--summary=line']);
-      expect(await process.stdout.next, 'Formatted code/a.dart');
+      expect(
+          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
       expect(await process.stdout.next,
           matches(r'Formatted 2 files \(1 changed\) in \d+\.\d+ seconds.'));
       await process.shouldExit(0);
@@ -402,7 +416,7 @@ void main() {
       await process.stdin.close();
 
       var json = jsonEncode({
-        'path': '<stdin>',
+        'path': 'stdin',
         'source': formattedSource,
         'selection': {'offset': 5, 'length': 9}
       });
@@ -443,14 +457,15 @@ void main() {
     });
 
     test('allows specifying stdin path name', () async {
-      var process = await runCommand(['--stdin-name=some/path.dart']);
+      var path = p.join('some', 'path.dart');
+      var process = await runCommand(['--stdin-name=$path']);
       process.stdin.writeln('herp');
       await process.stdin.close();
 
       expect(await process.stderr.next,
           'Could not format because the source could not be parsed:');
       expect(await process.stderr.next, '');
-      expect(await process.stderr.next, contains('some/path.dart'));
+      expect(await process.stderr.next, contains(path));
       await process.stderr.cancel();
       await process.shouldExit(65);
     });

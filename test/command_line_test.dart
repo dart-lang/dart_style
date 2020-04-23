@@ -49,9 +49,12 @@ void main() {
         process.stdout, emits(startsWith('Formatting directory')));
 
     // Prints whether each file was changed.
-    await expectLater(process.stdout, emits('Formatted code/a.dart'));
-    await expectLater(process.stdout, emits('Unchanged code/b.dart'));
-    await expectLater(process.stdout, emits('Formatted code/c.dart'));
+    await expectLater(
+        process.stdout, emits('Formatted ${p.join('code', 'a.dart')}'));
+    await expectLater(
+        process.stdout, emits('Unchanged ${p.join('code', 'b.dart')}'));
+    await expectLater(
+        process.stdout, emits('Formatted ${p.join('code', 'c.dart')}'));
     await process.shouldExit(0);
 
     // Overwrites the files.
@@ -219,7 +222,7 @@ void main() {
       await process.stdin.close();
 
       var json = jsonEncode({
-        'path': '<stdin>',
+        'path': 'stdin',
         'source': formattedSource,
         'selection': {'offset': 5, 'length': 9}
       });
@@ -356,14 +359,15 @@ void main() {
     });
 
     test('allows specifying stdin path name', () async {
-      var process = await runFormatter(['--stdin-name=some/path.dart']);
+      var path = p.join('some', 'path.dart');
+      var process = await runFormatter(['--stdin-name=$path']);
       process.stdin.writeln('herp');
       await process.stdin.close();
 
       expect(await process.stderr.next,
           'Could not format because the source could not be parsed:');
       expect(await process.stderr.next, '');
-      expect(await process.stderr.next, contains('some/path.dart'));
+      expect(await process.stderr.next, contains(path));
       await process.stderr.cancel();
       await process.shouldExit(65);
     });
