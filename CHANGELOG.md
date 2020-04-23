@@ -1,4 +1,4 @@
-# 1.3.5-dev
+# 1.3.5
 
 * Restore command line output accidentally removed in 1.3.4.
 
