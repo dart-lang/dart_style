@@ -1,3 +1,9 @@
+# 1.3.6
+
+* Change the path used in error messages when reading from stdin from "<stdin>"
+  to "stdin". The former crashes on Windows since it is not a valid Windows
+  pathname. To get the old behavior, pass `--stdin-name=<stdin>`.  
+
 # 1.3.5
 
 * Restore command line output accidentally removed in 1.3.4.
