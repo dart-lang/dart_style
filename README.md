@@ -69,7 +69,7 @@ pub.dev:
     $ dartfmt ...
 
 For this to work, you need to put pub's bin directory on your PATH before the
-Dart SDL directory. Otherwise, the SDK's dartfmt will shadow this one.
+Dart SDK directory. Otherwise, the SDK's dartfmt will shadow this one.
 
 [globally activate]: https://dart.dev/tools/pub/cmd/pub-global
 
