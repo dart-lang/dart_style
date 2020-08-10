@@ -24,8 +24,8 @@ class FormatCommand extends Command {
   String get invocation =>
       '${runner.executableName} $name [options...] <files or directories...>';
 
-  FormatCommand() {
-    defineOptions(argParser, oldCli: false);
+  FormatCommand({bool verbose = false}) {
+    defineOptions(argParser, oldCli: false, verbose: verbose);
   }
 
   @override
@@ -73,6 +73,11 @@ class FormatCommand extends Command {
     // If the user wants JSON output, default to no summary.
     if (!argResults.wasParsed('summary') && output == Output.json) {
       summary = Summary.none;
+    }
+
+    // Can't use --verbose with anything but --help.
+    if (argResults['verbose'] && !argResults['help']) {
+      usageException('Can only use --verbose with --help.');
     }
 
     // Can't use any summary with JSON output.

@@ -11,13 +11,16 @@ import 'package:dart_style/src/cli/format_command.dart';
 ///
 /// This enables tests to spawn this executable in order to verify the output
 /// it prints.
-void main(List<String> command) async {
+void main(List<String> arguments) async {
   var runner =
       CommandRunner('dartfmt', 'Idiomatically formats Dart source code.');
-  runner.addCommand(FormatCommand());
+  runner.argParser.addFlag('verbose',
+      abbr: 'v', negatable: false, help: 'Show verbose help.');
+  runner.addCommand(FormatCommand(
+      verbose: arguments.contains('-v') || arguments.contains('--verbose')));
 
   try {
-    await runner.runCommand(runner.parse(command));
+    await runner.runCommand(runner.parse(arguments));
   } on UsageException catch (exception) {
     stderr.writeln(exception);
     exit(64);

@@ -280,11 +280,33 @@ void main() {
     await process.shouldExit(0);
   });
 
-  test('--help', () async {
-    var process = await runCommand(['--help']);
-    expect(
-        await process.stdout.next, 'Idiomatically formats Dart source code.');
-    await process.shouldExit(0);
+  group('--help', () {
+    test('non-verbose shows description and common options', () async {
+      var process = await runCommand(['--help']);
+      expect(
+          await process.stdout.next, 'Idiomatically formats Dart source code.');
+      await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
+      await expectLater(process.stdout, neverEmits(contains('--summary')));
+      await process.shouldExit(0);
+    });
+
+    test('verbose shows description and all options', () async {
+      var process = await runCommand(['--help', '--verbose']);
+      expect(
+          await process.stdout.next, 'Idiomatically formats Dart source code.');
+      await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
+      await expectLater(process.stdout, emitsThrough(contains('--show')));
+      await expectLater(process.stdout, emitsThrough(contains('--summary')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
+      await process.shouldExit(0);
+    });
+  });
+
+  test('--verbose errors if not used with --help', () async {
+    var process = await runCommandOnDir(['--verbose']);
+    expect(await process.stderr.next, 'Can only use --verbose with --help.');
+    await process.shouldExit(64);
   });
 
   group('fix', () {

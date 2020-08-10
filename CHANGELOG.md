@@ -1,3 +1,7 @@
+# 1.3.7
+
+* Split help into verbose and non-verbose lists (#938).
+
 # 1.3.6
 
 * Change the path used in error messages when reading from stdin from "<stdin>"
