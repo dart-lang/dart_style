@@ -16,7 +16,8 @@ import 'package:dart_style/src/style_fix.dart';
 void main(List<String> args) {
   var parser = ArgParser(allowTrailingOptions: true);
 
-  defineOptions(parser, oldCli: true);
+  defineOptions(parser,
+      oldCli: true, verbose: args.contains('--verbose') || args.contains('-v'));
 
   ArgResults argResults;
   try {
@@ -33,6 +34,10 @@ void main(List<String> args) {
   if (argResults['version']) {
     print(dartStyleVersion);
     return;
+  }
+
+  if (argResults['verbose'] && !argResults['help']) {
+    usageError(parser, 'Can only use --verbose with --help.');
   }
 
   List<int> selection;

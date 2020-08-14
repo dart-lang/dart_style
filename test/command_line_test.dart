@@ -112,14 +112,38 @@ void main() {
     await process.shouldExit(0);
   });
 
-  test('--help', () async {
-    var process = await runFormatter(['--help']);
-    await expectLater(
-        process.stdout, emits('Idiomatically formats Dart source code.'));
-    await expectLater(process.stdout, emits(''));
-    await expectLater(process.stdout,
-        emits('Usage:   dartfmt [options...] [files or directories...]'));
-    await process.shouldExit(0);
+  group('--help', () {
+    test('non-verbose shows description and common options', () async {
+      var process = await runFormatter(['--help']);
+      await expectLater(
+          process.stdout, emits('Idiomatically formats Dart source code.'));
+      await expectLater(process.stdout, emits(''));
+      await expectLater(process.stdout,
+          emits('Usage:   dartfmt [options...] [files or directories...]'));
+      await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
+      await expectLater(process.stdout, neverEmits(contains('--set-exit-if-changed')));
+      await process.shouldExit(0);
+    });
+
+    test('verbose shows description and all options', () async {
+      var process = await runFormatter(['--help', '--verbose']);
+      await expectLater(
+          process.stdout, emits('Idiomatically formats Dart source code.'));
+      await expectLater(process.stdout, emits(''));
+      await expectLater(process.stdout,
+          emits('Usage:   dartfmt [options...] [files or directories...]'));
+      await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
+      await expectLater(process.stdout, emitsThrough(contains('--set-exit-if-changed')));
+      await process.shouldExit(0);
+    });
+  });
+
+  test('--verbose errors if not used with --help', () async {
+    var process = await runFormatterOnDir(['--verbose']);
+    expect(await process.stdout.next, 'Can only use --verbose with --help.');
+    await process.shouldExit(64);
   });
 
   test('only prints a hidden directory once', () async {

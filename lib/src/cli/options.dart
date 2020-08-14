@@ -5,15 +5,27 @@ import 'package:args/args.dart';
 
 import '../style_fix.dart';
 
-void defineOptions(ArgParser parser, {bool oldCli = false}) {
-  parser.addSeparator('Common options:');
+void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
+  if (oldCli) {
+    // The Command class implicitly adds "--help", so we only need to manually
+    // add it for the old CLI.
+    parser.addFlag('help',
+        abbr: 'h',
+        negatable: false,
+        help: 'Show this usage information.\n'
+            '(pass "--verbose" or "-v" to see all options)');
+    // Always make verbose hidden since the help text for --help explains it.
+    parser.addFlag('verbose', abbr: 'v', negatable: false, hide: true);
+  } else {
+    parser.addFlag('verbose',
+        abbr: 'v',
+        negatable: false,
+        help: 'Show all options and flags with --help.');
+  }
+
+  if (verbose) parser.addSeparator('Common options:');
 
   if (oldCli) {
-    // Command implicitly adds "--help", so we only need to manually add it for
-    // the old CLI.
-    parser.addFlag('help',
-        abbr: 'h', negatable: false, help: 'Shows this usage information.');
-
     parser.addFlag('overwrite',
         abbr: 'w',
         negatable: false,
@@ -42,7 +54,8 @@ void defineOptions(ArgParser parser, {bool oldCli = false}) {
           'changed': 'Only the names of files whose formatting is changed.',
           'none': 'No file names or directories.',
         },
-        defaultsTo: 'changed');
+        defaultsTo: 'changed',
+        hide: !verbose);
     parser.addOption('summary',
         help: 'Summary shown after formatting completes.',
         allowed: ['line', 'profile', 'none'],
@@ -51,45 +64,56 @@ void defineOptions(ArgParser parser, {bool oldCli = false}) {
           'profile': 'Tracks how long it took for format each file.',
           'none': 'No summary.'
         },
-        defaultsTo: 'line');
+        defaultsTo: 'line',
+        hide: !verbose);
   }
 
-  parser.addSeparator('Non-whitespace fixes (off by default):');
+  if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
   parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
 
   for (var fix in StyleFix.all) {
     // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
-    parser.addFlag('fix-${fix.name}', negatable: false, help: fix.description);
+    parser.addFlag('fix-${fix.name}',
+        negatable: false, help: fix.description, hide: !verbose);
   }
 
-  parser.addSeparator('Other options:');
+  if (verbose) parser.addSeparator('Other options:');
 
   parser.addOption('line-length',
       abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
   parser.addOption('indent',
-      abbr: 'i', help: 'Spaces of leading indentation.', defaultsTo: '0');
+      abbr: 'i',
+      help: 'Spaces of leading indentation.',
+      defaultsTo: '0',
+      hide: !verbose);
   if (oldCli) {
     parser.addFlag('machine',
         abbr: 'm',
         negatable: false,
-        help: 'Produce machine-readable JSON output.');
+        help: 'Produce machine-readable JSON output.',
+        hide: !verbose);
   }
   parser.addFlag('set-exit-if-changed',
       negatable: false,
-      help: 'Return exit code 1 if there are any formatting changes.');
+      help: 'Return exit code 1 if there are any formatting changes.',
+      hide: !verbose);
   parser.addFlag('follow-links',
       negatable: false,
       help: 'Follow links to files and directories.\n'
-          'If unset, links will be ignored.');
+          'If unset, links will be ignored.',
+      hide: !verbose);
   parser.addFlag('version',
-      negatable: false, help: 'Show version information.');
+      negatable: false, help: 'Show dart_style version.', hide: !verbose);
 
-  parser.addSeparator('Options when formatting from stdin:');
+  if (verbose) parser.addSeparator('Options when formatting from stdin:');
 
   parser.addOption(oldCli ? 'preserve' : 'selection',
-      help: 'Selection to preserve formatted as "start:length".');
+      help: 'Selection to preserve formatted as "start:length".',
+      hide: !verbose);
   parser.addOption('stdin-name',
-      help: 'The path name to show when an error occurs.', defaultsTo: 'stdin');
+      help: 'The path name to show when an error occurs.',
+      defaultsTo: 'stdin',
+      hide: !verbose);
 
   if (oldCli) {
     parser.addFlag('profile', negatable: false, hide: true);
