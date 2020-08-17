@@ -848,6 +848,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
     visit(node.elseExpression);
 
+    // If conditional expressions are directly nested, force them all to split.
+    // This line here forces the child, which implicitly forces the surrounding
+    // parent rules to split too.
+    if (node.parent is ConditionalExpression) builder.forceRules();
+
     builder.endRule();
     builder.endSpan();
     builder.endBlockArgumentNesting();
@@ -1721,19 +1726,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     var oldConstNesting = _constNesting;
     _constNesting = 0;
 
-    // TODO(rnystrom): This is working but not tested. As of 2016/11/29, the
-    // latest version of analyzer on pub does not parse generic lambdas. When
-    // a version of it that does is published, upgrade dart_style to use it and
-    // then test it:
-    //
-    //     >>> generic function expression
-    //         main() {
-    //           var generic = < T,S >(){};
-    //     }
-    //     <<<
-    //     main() {
-    //       var generic = <T, S>() {};
-    //     }
     _visitBody(node.typeParameters, node.parameters, node.body);
 
     _constNesting = oldConstNesting;

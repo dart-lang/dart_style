@@ -163,3 +163,7 @@ obj![index]!(call)! + 3;
 obj   ?[  foo];
 <<<
 obj?[foo];
+>>> generic function expression
+var generic = < T,S >(){};
+<<<
+var generic = <T, S>() {};

@@ -70,6 +70,26 @@ var kind = element != null ? argument : secondArgumentThatIsReallyLong;
 var kind = element != null
     ? argument
     : secondArgumentThatIsReallyLong;
+>>> split all conditionals when nested
+var kind = a ? b ? c : d : e;
+<<<
+var kind = a
+    ? b
+        ? c
+        : d
+    : e;
+>>> split all conditionals when nested
+var kind = a ? b : c ? d : e;
+<<<
+var kind = a
+    ? b
+    : c
+        ? d
+        : e;
+>>> don't split conditionals when indirectly nested
+var kind = a ? b : (c ? d : e);
+<<<
+var kind = a ? b : (c ? d : e);
 >>> split operator chain around block
 first + second + () {body;} + third + fourth;
 <<<
