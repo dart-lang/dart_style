@@ -1,6 +1,7 @@
 # 1.3.7
 
 * Split help into verbose and non-verbose lists (#938).
+* Don't crash when non-ASCII whitespace is trimmed (#901).
 
 # 1.3.6
 

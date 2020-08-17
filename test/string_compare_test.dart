@@ -39,26 +39,26 @@ void main() {
   });
 
   test('test unicode whitespace characters', () {
-    // Dart sources only allow ascii whitespace code points so we
-    // should not consider the following strings equal.
+    // The formatter strips all Unicode whitespace characters from the end of
+    // comment lines, so treat those as whitespace too.
     var whitespaceRunes = [
-      0x00A0,
-      0x1680,
-      0x180E,
+      0x0020,
+      0x0085,
+      0x00a0,
       0x2000,
-      0x200A,
+      0x200a,
       0x2028,
       0x2029,
-      0x202F,
-      0x205F,
+      0x202f,
+      0x205f,
       0x3000,
-      0xFEFF
+      0xfeff
     ];
     for (var rune in whitespaceRunes) {
       expect(
           equalIgnoringWhitespace(
               'foo${String.fromCharCode(rune)}bar', 'foo    bar'),
-          isFalse);
+          isTrue);
     }
   });
 

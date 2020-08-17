@@ -24,6 +24,7 @@ const formattedOutput = 'void main() => print("hello");';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
+final _unicodePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 
 /// If tool/command_shell.dart has been compiled to a snapshot, this is the path
 /// to it.
@@ -226,6 +227,10 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
         expectedOutput += lines[i] + '\n';
       }
 
+      // Unescape special Unicode escape markers.
+      input = _unescapeUnicode(input);
+      expectedOutput = _unescapeUnicode(expectedOutput);
+
       // TODO(rnystrom): Stop skipping these tests when possible.
       if (description.contains('(skip:')) {
         print('skipping $description');
@@ -240,6 +245,7 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
 
         var expected = _extractSelection(expectedOutput,
             isCompilationUnit: isCompilationUnit);
+        var expectedText = expected.text;
 
         var formatter = DartFormatter(
             pageWidth: pageWidth, indent: leadingIndent, fixes: fixes);
@@ -254,9 +260,9 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
 
         // Fail with an explicit message because it's easier to read than
         // the matcher output.
-        if (actualText != expected.text) {
+        if (actualText != expectedText) {
           fail('Formatting did not match expectation. Expected:\n'
-              '${expected.text}\nActual:\n$actualText');
+              '$expectedText\nActual:\n$actualText');
         }
 
         expect(actual.selectionStart, equals(expected.selectionStart));
@@ -280,4 +286,16 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
       isCompilationUnit: isCompilationUnit,
       selectionStart: start == -1 ? null : start,
       selectionLength: end == -1 ? null : end - start);
+}
+
+/// Turn the special Unicode escape marker syntax used in the tests into real
+/// Unicode characters.
+///
+/// This does not use Dart's own string escape sequences so that we don't
+/// accidentally modify the Dart code being formatted.
+String _unescapeUnicode(String input) {
+  return input.replaceAllMapped(_unicodePattern, (match) {
+    var codePoint = int.parse(match[1], radix: 16);
+    return String.fromCharCode(codePoint);
+  });
 }

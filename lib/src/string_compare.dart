@@ -1,8 +1,24 @@
-library dart_style.src.string_compare;
-
 /// Returns `true` if [c] represents a whitespace code unit allowed in Dart
 /// source code.
-bool _isWhitespace(int c) => (c <= 0x000D && c >= 0x0009) || c == 0x0020;
+///
+/// This follows the same rules as `String.trim()` because that's what dartfmt
+/// uses to trim trailing whitespace.
+bool _isWhitespace(int c) {
+  // Not using a set or something more elegant because this code is on the hot
+  // path and this large expression is significantly faster than a set lookup.
+  return c >= 0x0009 && c <= 0x000d || // Control characters.
+      c == 0x0020 || // SPACE.
+      c == 0x0085 || // Control characters.
+      c == 0x00a0 || // NO-BREAK SPACE.
+      c == 0x1680 || // OGHAM SPACE MARK.
+      c >= 0x2000 && c <= 0x200a || // EN QUAD..HAIR SPACE.
+      c == 0x2028 || // LINE SEPARATOR.
+      c == 0x2029 || // PARAGRAPH SEPARATOR.
+      c == 0x202f || // NARROW NO-BREAK SPACE.
+      c == 0x205f || // MEDIUM MATHEMATICAL SPACE.
+      c == 0x3000 || // IDEOGRAPHIC SPACE.
+      c == 0xfeff; // ZERO WIDTH NO_BREAK SPACE.
+}
 
 /// Returns the index of the next non-whitespace character.
 ///
