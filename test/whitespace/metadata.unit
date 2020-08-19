@@ -355,3 +355,29 @@ class B {
     late int d;
   }
 }
+>>> on external variable
+@meta  external var x;
+<<<
+@meta
+external var x;
+>>> on external field
+class C {
+  @meta  external static   var  x;
+  @meta  external var x;
+}
+<<<
+class C {
+  @meta
+  external static var x;
+  @meta
+  external var x;
+}
+>>> on abstract field
+class C {
+  @meta  abstract var x;
+}
+<<<
+class C {
+  @meta
+  abstract var x;
+}

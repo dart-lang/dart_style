@@ -29,3 +29,8 @@ dev_dependencies:
 executables:
   dartfmt: format
   dartformat: format # Allow the old name for compatibility.
+
+# TODO(rnystrom): Remove this and change the normal dependency on analyzer to
+# this when a version of test that supports analyzer-0.40.0 is published.
+dependency_overrides:
+  analyzer: ^0.40.0

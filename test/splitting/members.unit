@@ -26,7 +26,7 @@ class Foo {
   VeryLongTypeAnnotation
       set veryLongSetter(v) {}
 }
->>> do not split after "covariant" in field (at least for now)
+>>> do not split after "covariant" in field
 class Foo {
   covariant var soMuchSoVeryLongFieldNameHere;
   covariant VeryLongTypeAnnotation field;
@@ -35,5 +35,27 @@ class Foo {
 class Foo {
   covariant var soMuchSoVeryLongFieldNameHere;
   covariant VeryLongTypeAnnotation
+      field;
+}
+>>> do not split after "external" in field
+class Foo {
+  external var soMuchSoVeryLongFieldNameHere;
+  external SuperLongTypeAnnotation field;
+}
+<<<
+class Foo {
+  external var soMuchSoVeryLongFieldNameHere;
+  external SuperLongTypeAnnotation
+      field;
+}
+>>> do not split after "abstract" in field
+class Foo {
+  abstract var soMuchSoVeryLongFieldNameHere;
+  abstract SuperLongTypeAnnotation field;
+}
+<<<
+class Foo {
+  abstract var soMuchSoVeryLongFieldNameHere;
+  abstract SuperLongTypeAnnotation
       field;
 }
