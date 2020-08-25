@@ -1,7 +1,8 @@
 language: dart
 
 dart:
-  - 2.10.0
+#  - 2.10.0
+# Disabling stable for now since we rely on a null safety version of test.
   - dev
 
 dart_task:
