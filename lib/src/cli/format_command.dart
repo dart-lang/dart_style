@@ -18,7 +18,7 @@ class FormatCommand extends Command {
   String get name => 'format';
 
   @override
-  String get description => 'Idiomatically formats Dart source code.';
+  String get description => 'Idiomatically format Dart source code.';
 
   @override
   String get invocation =>

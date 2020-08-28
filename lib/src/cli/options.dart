@@ -37,17 +37,17 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
   } else {
     parser.addOption('output',
         abbr: 'o',
-        help: 'Where formatted output should be written.',
+        help: 'Set where to write formatted output.',
         allowed: ['write', 'show', 'json', 'none'],
         allowedHelp: {
-          'write': 'Overwrite formatted files on disc.',
+          'write': 'Overwrite formatted files on disk.',
           'show': 'Print code to terminal.',
-          'json': 'Print code and selection as JSON',
-          'none': 'Discard.'
+          'json': 'Print code and selection as JSON.',
+          'none': 'Discard output.'
         },
         defaultsTo: 'write');
     parser.addOption('show',
-        help: 'Which filenames to print.',
+        help: 'Set which filenames to print.',
         allowed: ['all', 'changed', 'none'],
         allowedHelp: {
           'all': 'All visited files and directories.',
@@ -57,11 +57,11 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
         defaultsTo: 'changed',
         hide: !verbose);
     parser.addOption('summary',
-        help: 'Summary shown after formatting completes.',
+        help: 'Show the specified summary after formatting.',
         allowed: ['line', 'profile', 'none'],
         allowedHelp: {
-          'line': 'Single line summary.',
-          'profile': 'Tracks how long it took for format each file.',
+          'line': 'Single-line summary.',
+          'profile': 'How long it took for format each file.',
           'none': 'No summary.'
         },
         defaultsTo: 'line',
@@ -83,7 +83,7 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
       abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
   parser.addOption('indent',
       abbr: 'i',
-      help: 'Spaces of leading indentation.',
+      help: 'Add this many spaces of leading indentation.',
       defaultsTo: '0',
       hide: !verbose);
   if (oldCli) {
@@ -108,7 +108,7 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
   if (verbose) parser.addSeparator('Options when formatting from stdin:');
 
   parser.addOption(oldCli ? 'preserve' : 'selection',
-      help: 'Selection to preserve formatted as "start:length".',
+      help: 'Track selection (given as "start:length") through formatting.',
       hide: !verbose);
   parser.addOption('stdin-name',
       help: 'The path name to show when an error occurs.',
