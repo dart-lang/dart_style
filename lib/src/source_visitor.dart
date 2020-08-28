@@ -1425,7 +1425,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
+      modifier(node.externalKeyword);
       modifier(node.staticKeyword);
+      modifier(node.abstractKeyword);
       modifier(node.covariantKeyword);
       visit(node.fields);
     });
@@ -2613,6 +2615,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitMetadata(node.metadata);
 
     _simpleStatement(node, () {
+      modifier(node.externalKeyword);
       visit(node.variables);
     });
   }

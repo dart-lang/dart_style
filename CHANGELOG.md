@@ -3,6 +3,7 @@
 * Split help into verbose and non-verbose lists (#938).
 * Don't crash when non-ASCII whitespace is trimmed (#901).
 * Split all conditional expressions (`?:`) when they are nested (#927).
+* Handle `external` and `abstract` fields and variables (#946).
 
 # 1.3.6
 

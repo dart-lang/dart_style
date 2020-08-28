@@ -145,3 +145,15 @@ class Foo {
   late int i;
   late var i;
 }
+>>> abstract fields
+class Foo {
+abstract  covariant     var  a  , b   ;
+    abstract    final   int   c;
+  abstract   int i;
+}
+<<<
+class Foo {
+  abstract covariant var a, b;
+  abstract final int c;
+  abstract int i;
+}

@@ -1,10 +1,4 @@
 40 columns                              |
->>> external
- external
-void
-printToConsole(line);
-<<<
-external void printToConsole(line);
 >>> nested functions
 x(){y(){z(){}}}
 <<<
