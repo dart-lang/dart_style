@@ -153,7 +153,7 @@ void usageError(ArgParser parser, String error) {
 void printUsage(ArgParser parser, [String error]) {
   var output = stdout;
 
-  var message = 'Idiomatically formats Dart source code.';
+  var message = 'Idiomatically format Dart source code.';
   if (error != null) {
     message = error;
     output = stdout;

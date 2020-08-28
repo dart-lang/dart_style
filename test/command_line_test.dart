@@ -116,7 +116,7 @@ void main() {
     test('non-verbose shows description and common options', () async {
       var process = await runFormatter(['--help']);
       await expectLater(
-          process.stdout, emits('Idiomatically formats Dart source code.'));
+          process.stdout, emits('Idiomatically format Dart source code.'));
       await expectLater(process.stdout, emits(''));
       await expectLater(process.stdout,
           emits('Usage:   dartfmt [options...] [files or directories...]'));
@@ -130,7 +130,7 @@ void main() {
     test('verbose shows description and all options', () async {
       var process = await runFormatter(['--help', '--verbose']);
       await expectLater(
-          process.stdout, emits('Idiomatically formats Dart source code.'));
+          process.stdout, emits('Idiomatically format Dart source code.'));
       await expectLater(process.stdout, emits(''));
       await expectLater(process.stdout,
           emits('Usage:   dartfmt [options...] [files or directories...]'));

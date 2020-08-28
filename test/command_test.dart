@@ -284,7 +284,7 @@ void main() {
     test('non-verbose shows description and common options', () async {
       var process = await runCommand(['--help']);
       expect(
-          await process.stdout.next, 'Idiomatically formats Dart source code.');
+          await process.stdout.next, 'Idiomatically format Dart source code.');
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await expectLater(process.stdout, neverEmits(contains('--summary')));
@@ -294,7 +294,7 @@ void main() {
     test('verbose shows description and all options', () async {
       var process = await runCommand(['--help', '--verbose']);
       expect(
-          await process.stdout.next, 'Idiomatically formats Dart source code.');
+          await process.stdout.next, 'Idiomatically format Dart source code.');
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, emitsThrough(contains('--show')));
       await expectLater(process.stdout, emitsThrough(contains('--summary')));
