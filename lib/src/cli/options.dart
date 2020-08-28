@@ -111,7 +111,7 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
       help: 'Track selection (given as "start:length") through formatting.',
       hide: !verbose);
   parser.addOption('stdin-name',
-      help: 'The path name to show when an error occurs.',
+      help: 'Use this path in error messages when input is read from stdin.',
       defaultsTo: 'stdin',
       hide: !verbose);
 
