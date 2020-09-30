@@ -4,7 +4,6 @@
 
 library dart_style.test.utils;
 
-import 'dart:async';
 import 'dart:io';
 import 'dart:mirrors';
 
