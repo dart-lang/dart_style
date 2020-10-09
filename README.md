@@ -111,8 +111,8 @@ formatter prints the paths of the files whose contents would change if the
 formatter were run normally. If it prints no output, then everything is already
 correctly formatted.
 
-[presubmit script]: http://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
-[commit hook]: http://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
+[presubmit script]: https://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
+[commit hook]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
 
 ## Using the dart_style API
 
