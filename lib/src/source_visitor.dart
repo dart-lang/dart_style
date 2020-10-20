@@ -1443,6 +1443,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.period);
       visit(node.identifier);
       visit(node.parameters);
+      token(node.question);
       _endFormalParameter(node);
     });
   }

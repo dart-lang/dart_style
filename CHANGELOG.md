@@ -1,3 +1,7 @@
+# 1.3.8
+
+* Preserve `?` in initializing formal function-typed parameters (#960).
+
 # 1.3.7
 
 * Split help into verbose and non-verbose lists (#938).
