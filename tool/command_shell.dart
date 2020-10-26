@@ -13,7 +13,7 @@ import 'package:dart_style/src/cli/format_command.dart';
 /// it prints.
 void main(List<String> arguments) async {
   var runner =
-      CommandRunner('dartfmt', 'Idiomatically format Dart source code.');
+      CommandRunner<int>('dartfmt', 'Idiomatically format Dart source code.');
   runner.argParser.addFlag('verbose',
       abbr: 'v', negatable: false, help: 'Show verbose help.');
   runner.addCommand(FormatCommand(
