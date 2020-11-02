@@ -1931,7 +1931,7 @@ class SourceVisitor extends ThrowingAstVisitor {
           split();
         }
 
-        token(node.elseKeyword);
+        token(element.elseKeyword);
 
         // If there is another if element in the chain, put a space between
         // it and this "else".
