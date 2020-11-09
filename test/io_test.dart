@@ -4,7 +4,6 @@
 
 library dart_style.test.io;
 
-import 'dart:async';
 import 'dart:io';
 
 import 'package:dart_style/src/io.dart';
