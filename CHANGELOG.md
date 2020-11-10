@@ -1,3 +1,7 @@
+# 1.3.9
+
+* Don't duplicate comments on chained if elements (#966).
+
 # 1.3.8
 
 * Preserve `?` in initializing formal function-typed parameters (#960).
