@@ -23,7 +23,7 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
         help: 'Show all options and flags with --help.');
   }
 
-  if (verbose) parser.addSeparator('Common options:');
+  if (verbose) parser.addSeparator('Output options:');
 
   if (oldCli) {
     parser.addFlag('overwrite',
@@ -68,6 +68,10 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
         hide: !verbose);
   }
 
+  parser.addFlag('set-exit-if-changed',
+      negatable: false,
+      help: 'Return exit code 1 if there are any formatting changes.');
+
   if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
   parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
 
@@ -93,10 +97,6 @@ void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
         help: 'Produce machine-readable JSON output.',
         hide: !verbose);
   }
-  parser.addFlag('set-exit-if-changed',
-      negatable: false,
-      help: 'Return exit code 1 if there are any formatting changes.',
-      hide: !verbose);
   parser.addFlag('follow-links',
       negatable: false,
       help: 'Follow links to files and directories.\n'
