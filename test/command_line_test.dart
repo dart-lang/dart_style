@@ -121,9 +121,9 @@ void main() {
       await expectLater(process.stdout,
           emits('Usage:   dartfmt [options...] [files or directories...]'));
       await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
-      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await expectLater(
-          process.stdout, neverEmits(contains('--set-exit-if-changed')));
+          process.stdout, emitsThrough(contains('--set-exit-if-changed')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await process.shouldExit(0);
     });
 
@@ -135,9 +135,9 @@ void main() {
       await expectLater(process.stdout,
           emits('Usage:   dartfmt [options...] [files or directories...]'));
       await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
-      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await expectLater(
           process.stdout, emitsThrough(contains('--set-exit-if-changed')));
+      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await process.shouldExit(0);
     });
   });
