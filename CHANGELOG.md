@@ -1,3 +1,7 @@
+# 1.3.10
+
+* Allow analyzer version 0.41.x.
+
 # 1.3.9
 
 * Don't duplicate comments on chained if elements (#966).
