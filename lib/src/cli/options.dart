@@ -5,7 +5,8 @@ import 'package:args/args.dart';
 
 import '../style_fix.dart';
 
-void defineOptions(ArgParser parser, {bool oldCli = false, verbose = false}) {
+void defineOptions(ArgParser parser,
+    {bool oldCli = false, bool verbose = false}) {
   if (oldCli) {
     // The Command class implicitly adds "--help", so we only need to manually
     // add it for the old CLI.
