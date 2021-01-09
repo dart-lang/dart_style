@@ -894,7 +894,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Make the rule for the ":" span both the preceding parameter list and
     // the entire initialization list. This ensures that we split before the
     // ":" if the parameters and initialization list don't all fit on one line.
-    builder.startRule();
+    if (node.initializers.isNotEmpty) builder.startRule();
 
     // If the redirecting constructor happens to wrap, we want to make sure
     // the parameter list gets more deeply indented.
@@ -907,6 +907,9 @@ class SourceVisitor extends ThrowingAstVisitor {
         builder.unnest();
       } else if (node.initializers.isNotEmpty) {
         _visitConstructorInitializers(node);
+
+        // End the rule for ":" after all of the initializers.
+        builder.endRule();
       }
     });
   }
@@ -987,9 +990,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unindent();
     if (!hasTrailingComma) builder.unindent();
-
-    // End the rule for ":" after all of the initializers.
-    builder.endRule();
   }
 
   @override

@@ -1,3 +1,7 @@
+# 1.3.11
+
+* Fix performance issue with constructors that have no initializer list.
+
 # 1.3.10
 
 * Allow analyzer version 0.41.x.
