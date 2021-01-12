@@ -1,3 +1,7 @@
+# 1.3.11
+
+* Remove use of deprecated analyzer API and List constructor.
+
 # 1.3.10
 
 * Allow analyzer version 0.41.x.
