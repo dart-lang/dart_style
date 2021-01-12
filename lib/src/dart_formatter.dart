@@ -14,6 +14,7 @@ import 'package:analyzer/error/error.dart';
 import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/generated/parser.dart';
 import 'package:analyzer/src/string_source.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
 import 'source_code.dart';
@@ -89,10 +90,8 @@ class DartFormatter {
     // version.
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
-    var featureSet = FeatureSet.fromEnableFlags([
-      'extension-methods',
-      'non-nullable',
-    ]);
+    var featureSet = FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: Version(2, 10, 0), flags: ['non-nullable']);
 
     var inputOffset = 0;
     var text = source.text;
