@@ -18,7 +18,7 @@ import '../rule/rule.dart';
 class RuleSet {
   List<int> _values;
 
-  RuleSet(int numRules) : this._(List(numRules));
+  RuleSet(int numRules) : this._(List.filled(numRules, null));
 
   RuleSet._(this._values);
 
@@ -138,7 +138,7 @@ class SplitSet {
   int _cost;
 
   /// Creates a new empty split set for a line with [numChunks].
-  SplitSet(int numChunks) : _columns = List(numChunks - 1);
+  SplitSet(int numChunks) : _columns = List.filled(numChunks - 1, null);
 
   /// Marks the line after chunk [index] as starting at [column].
   void add(int index, int column) {

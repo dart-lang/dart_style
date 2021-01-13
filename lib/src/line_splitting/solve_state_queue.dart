@@ -20,12 +20,12 @@ class SolveStateQueue {
   /// Initial capacity of a queue when created, or when added to after a [clear].
   /// Number can be any positive value. Picking a size that gives a whole
   /// number of "tree levels" in the heap is only done for aesthetic reasons.
-  static const int _INITIAL_CAPACITY = 7;
+  static const int _initialCapacity = 7;
 
   LineSplitter _splitter;
 
   /// List implementation of a heap.
-  List<SolveState> _queue = List<SolveState>(_INITIAL_CAPACITY);
+  List<SolveState> _queue = List<SolveState>.filled(_initialCapacity, null);
 
   /// Number of elements in queue.
   /// The heap is implemented in the first [_length] entries of [_queue].
@@ -48,9 +48,9 @@ class SolveStateQueue {
 
     if (_length == _queue.length) {
       var newCapacity = _queue.length * 2 + 1;
-      if (newCapacity < _INITIAL_CAPACITY) newCapacity = _INITIAL_CAPACITY;
+      if (newCapacity < _initialCapacity) newCapacity = _initialCapacity;
 
-      var newQueue = List<SolveState>(newCapacity);
+      var newQueue = List<SolveState>.filled(newCapacity, null);
       newQueue.setRange(0, _length, _queue);
       _queue = newQueue;
     }
