@@ -1,6 +1,7 @@
 # 1.3.11
 
 * Remove use of deprecated analyzer API and List constructor.
+* Fix performance issue with constructors that have no initializer list.
 
 # 1.3.10
 

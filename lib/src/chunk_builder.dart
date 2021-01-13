@@ -488,10 +488,10 @@ class ChunkBuilder {
 
   void _activateRule(Rule rule) {
     // See if any of the rules that contain this one care if it splits.
-    _rules.forEach((outer) {
-      if (!outer.splitsOnInnerRules) return;
+    for (var outer in _rules) {
+      if (!outer.splitsOnInnerRules) continue;
       rule.imply(outer);
-    });
+    }
     _rules.add(rule);
   }
 
@@ -658,6 +658,8 @@ class ChunkBuilder {
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode end() {
+    assert(_rules.isEmpty);
+
     _writeHardSplit();
     _divideChunks();
 
