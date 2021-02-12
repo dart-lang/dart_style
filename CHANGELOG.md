@@ -1,3 +1,7 @@
+# 1.3.13
+
+- Allow the latest version of `package:analyzer`.
+
 # 1.3.12
 
 - Allow the latest versions of `package:args` and `package:pub_semver`.
