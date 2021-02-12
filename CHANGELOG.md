@@ -1,3 +1,7 @@
+# 1.3.14
+
+- Correctly bump versions and allow a wider range of SDKs/analyzer versions.
+
 # 1.3.13
 
 - Allow the latest version of `package:analyzer`.
