@@ -297,6 +297,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitAnnotation(Annotation node) {
     token(node.atSign);
     visit(node.name);
+    visit(node.typeArguments);
     token(node.period);
     visit(node.constructorName);
 

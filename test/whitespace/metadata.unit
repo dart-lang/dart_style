@@ -381,3 +381,23 @@ class C {
   @meta
   abstract var x;
 }
+>>> annotation with type arguments
+@A<int,String>()int x;
+<<<
+@A<int, String>()
+int x;
+>>>
+@prefix.A<int,String>()int x;
+<<<
+@prefix.A<int, String>()
+int x;
+>>>
+@A<int,String>.constructor()int x;
+<<<
+@A<int, String>.constructor()
+int x;
+>>>
+@prefix.A<int,String>.constructor()int x;
+<<<
+@prefix.A<int, String>.constructor()
+int x;

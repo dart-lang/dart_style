@@ -1,0 +1,9 @@
+40 columns                              |
+>>> blet
+@veryLongPrefix.VeryLongClassName<VeryLongTypeArgument, OtherVeryLongTypeArgument>(veryLongArgument, otherVeryLongArgument, thirdVeryLongArgument) int i = 0;
+<<<
+@veryLongPrefix.VeryLongClassName<VeryLongTypeArgument, OtherVeryLongTypeArgument>(
+    veryLongArgument,
+    otherVeryLongArgument,
+    thirdVeryLongArgument)
+int i = 0;
