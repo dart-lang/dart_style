@@ -297,14 +297,20 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitAnnotation(Annotation node) {
     token(node.atSign);
     visit(node.name);
+
+    builder.nestExpression();
     visit(node.typeArguments);
     token(node.period);
     visit(node.constructorName);
 
-    // Metadata annotations are always const contexts.
-    _constNesting++;
-    visit(node.arguments);
-    _constNesting--;
+    if (node.arguments != null) {
+      // Metadata annotations are always const contexts.
+      _constNesting++;
+      visitArgumentList(node.arguments, nestExpression: false);
+      _constNesting--;
+    }
+
+    builder.unnest();
   }
 
   /// Visits an argument list.
