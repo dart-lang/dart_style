@@ -1,3 +1,7 @@
+# 1.3.14
+
+* Add support for generic annotations.
+
 # 1.3.13
 
 - Allow the latest version of `package:analyzer`.
