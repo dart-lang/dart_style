@@ -1,6 +1,8 @@
 # 1.3.14
 
 * Add support for generic annotations.
+* `FormatCommand.run()` now returns the value set in `exitCode` during
+  formatting.
 
 # 1.3.13
 
