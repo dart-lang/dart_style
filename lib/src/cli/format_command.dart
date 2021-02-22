@@ -156,6 +156,8 @@ class FormatCommand extends Command<int> {
       options.summary.show();
     }
 
-    return 0;
+    // Return the exitCode explicitly for tools which embed dart_style
+    // and set their own exitCode.
+    return exitCode;
   }
 }
