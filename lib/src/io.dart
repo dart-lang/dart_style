@@ -14,8 +14,8 @@ import 'dart_formatter.dart';
 import 'exceptions.dart';
 import 'source_code.dart';
 
-/// Reads input from stdin until it's closed, and the formats it.
-void formatStdin(FormatterOptions options, List<int> selection, String name) {
+/// Reads and formats input from stdin until closed.
+void formatStdin(FormatterOptions options, List<int>? selection, String name) {
   var selectionStart = 0;
   var selectionLength = 0;
 
@@ -129,7 +129,7 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 /// Runs the formatter on [file].
 ///
 /// Returns `true` if successful or `false` if an error occurred.
-bool processFile(FormatterOptions options, File file, {String displayPath}) {
+bool processFile(FormatterOptions options, File file, {String? displayPath}) {
   displayPath ??= file.path;
 
   var formatter = DartFormatter(

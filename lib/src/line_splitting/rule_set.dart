@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_splitting.rule_set;
-
 import '../rule/rule.dart';
 
 /// An optimized data structure for storing a set of values for some rules.
@@ -16,7 +13,7 @@ import '../rule/rule.dart';
 /// Internally, this then just stores the values in a sparse list whose indices
 /// are the indices of the rules.
 class RuleSet {
-  List<int> _values;
+  List<int?> _values;
 
   RuleSet(int numRules) : this._(List.filled(numRules, null));
 
@@ -27,7 +24,7 @@ class RuleSet {
     // Treat hardened rules as implicitly bound.
     if (rule.isHardened) return true;
 
-    return _values[rule.index] != null;
+    return _values[rule.index!] != null;
   }
 
   /// Gets the bound value for [rule] or [Rule.unsplit] if it is not bound.
@@ -35,7 +32,7 @@ class RuleSet {
     // Hardened rules are implicitly bound.
     if (rule.isHardened) return rule.fullySplitValue;
 
-    var value = _values[rule.index];
+    var value = _values[rule.index!];
     if (value != null) return value;
 
     return Rule.unsplit;
@@ -67,7 +64,7 @@ class RuleSet {
       List<Rule> rules, Rule rule, int value, void Function(Rule) onSplitRule) {
     assert(!rule.isHardened);
 
-    _values[rule.index] = value;
+    _values[rule.index!] = value;
 
     // Test this rule against the other rules being bound.
     for (var other in rule.constrainedRules) {
@@ -76,7 +73,7 @@ class RuleSet {
       if (other.isHardened) {
         otherValue = other.fullySplitValue;
       } else {
-        otherValue = _values[other.index];
+        otherValue = _values[other.index!];
       }
 
       var constraint = rule.constrain(value, other);
@@ -127,18 +124,17 @@ class RuleSet {
 /// chosen column is for the following line.
 ///
 /// Internally, this uses a list where each element corresponds to the column
-/// of the chunk at that index in the chunk list, or `null` if that chunk did
-/// not split. This had about a 10% perf improvement over using a [Set] of
-/// splits.
+/// of the chunk at that index in the chunk list, or `-1` if that chunk did not
+/// split. This had about a 10% perf improvement over using a [Set] of splits.
 class SplitSet {
   final List<int> _columns;
 
   /// The cost of the solution that led to these splits.
   int get cost => _cost;
-  int _cost;
+  late final int _cost;
 
   /// Creates a new empty split set for a line with [numChunks].
-  SplitSet(int numChunks) : _columns = List.filled(numChunks - 1, null);
+  SplitSet(int numChunks) : _columns = List.filled(numChunks - 1, -1);
 
   /// Marks the line after chunk [index] as starting at [column].
   void add(int index, int column) {
@@ -147,7 +143,7 @@ class SplitSet {
 
   /// Returns `true` if the chunk at [splitIndex] should be split.
   bool shouldSplitAt(int index) =>
-      index < _columns.length && _columns[index] != null;
+      index < _columns.length && _columns[index] != -1;
 
   /// Gets the zero-based starting column for the chunk at [index].
   int getColumn(int index) => _columns[index];
@@ -156,7 +152,6 @@ class SplitSet {
   ///
   /// This can only be called once.
   void setCost(int cost) {
-    assert(_cost == null);
     _cost = cost;
   }
 
@@ -164,7 +159,7 @@ class SplitSet {
   String toString() {
     var result = [];
     for (var i = 0; i < _columns.length; i++) {
-      if (_columns[i] != null) {
+      if (_columns[i] != -1) {
         result.add('$i:${_columns[i]}');
       }
     }

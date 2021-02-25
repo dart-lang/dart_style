@@ -1,9 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.chunk;
-
 import 'fast_hash.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
@@ -16,13 +13,13 @@ abstract class Selection {
 
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
-  int get selectionStart => _selectionStart;
-  int _selectionStart;
+  int? get selectionStart => _selectionStart;
+  int? _selectionStart;
 
   /// The offset from the beginning of [text] where the selection ends, or
   /// `null` if the selection does not start within this chunk.
-  int get selectionEnd => _selectionEnd;
-  int _selectionEnd;
+  int? get selectionEnd => _selectionEnd;
+  int? _selectionEnd;
 
   /// Sets [selectionStart] to be [start] characters into [text].
   void startSelection(int start) {
@@ -77,8 +74,8 @@ class Chunk extends Selection {
   ///
   /// For top level chunks that are not inside any block, this also includes
   /// leading indentation.
-  int get indent => _indent;
-  int _indent;
+  int? get indent => _indent;
+  int? _indent;
 
   /// The expression nesting level following this chunk.
   ///
@@ -91,12 +88,14 @@ class Chunk extends Selection {
   ///         argument, anotherFunction(argument,
   ///             argument));
   NestingLevel get nesting => _nesting;
-  NestingLevel _nesting;
+  late NestingLevel _nesting;
 
   /// If this chunk marks the beginning of a block, this contains the child
   /// chunks and other data about that nested block.
-  ChunkBlock get block => _block;
-  ChunkBlock _block;
+  ///
+  /// This should only be accessed when [isBlock] is `true`.
+  ChunkBlock get block => _block!;
+  ChunkBlock? _block;
 
   /// Whether this chunk has a [block].
   bool get isBlock => _block != null;
@@ -112,8 +111,8 @@ class Chunk extends Selection {
   /// The [Rule] that controls when a split should occur after this chunk.
   ///
   /// Multiple splits may share a [Rule].
-  Rule get rule => _rule;
-  Rule _rule;
+  Rule? get rule => _rule;
+  Rule? _rule;
 
   /// Whether or not an extra blank line should be output after this chunk if
   /// it's split.
@@ -125,7 +124,7 @@ class Chunk extends Selection {
   /// However, this getter does not expose that. It will return `false` if the
   /// chunk is still indeterminate.
   bool get isDouble => _isDouble ?? false;
-  bool _isDouble;
+  bool? _isDouble;
 
   /// If `true`, then the line after this chunk should always be at column
   /// zero regardless of any indentation or expression nesting.
@@ -139,7 +138,7 @@ class Chunk extends Selection {
   bool get flushLeftAfter {
     if (!isBlock) return _flushLeft;
 
-    return _block.chunks.last.flushLeftAfter;
+    return block.chunks.last.flushLeftAfter;
   }
 
   /// Whether this chunk should append an extra space if it does not split.
@@ -150,13 +149,10 @@ class Chunk extends Selection {
 
   /// Whether this chunk marks the end of a range of chunks that can be line
   /// split independently of the following chunks.
-  bool get canDivide {
-    // Have to call markDivide() before accessing this.
-    assert(_canDivide != null);
-    return _canDivide;
-  }
-
-  bool _canDivide;
+  ///
+  /// You must call markDivide() before accessing this.
+  bool get canDivide => _canDivide;
+  late final bool _canDivide;
 
   /// The number of characters in this chunk when unsplit.
   int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
@@ -166,10 +162,10 @@ class Chunk extends Selection {
   /// Does not include this chunk's own length, just the length of its child
   /// block chunks (recursively).
   int get unsplitBlockLength {
-    if (_block == null) return 0;
+    if (!isBlock) return 0;
 
     var length = 0;
-    for (var chunk in _block.chunks) {
+    for (var chunk in block.chunks) {
       length += chunk.length + chunk.unsplitBlockLength;
     }
 
@@ -201,7 +197,7 @@ class Chunk extends Selection {
   /// preserved whitespace often overlap. When that happens, this has logic to
   /// combine that information into a single split.
   void applySplit(Rule rule, int indent, NestingLevel nesting,
-      {bool flushLeft, bool isDouble, bool space}) {
+      {bool? flushLeft, bool? isDouble, bool? space}) {
     flushLeft ??= false;
     space ??= false;
     if (rule.isHardened) {
@@ -223,7 +219,7 @@ class Chunk extends Selection {
   }
 
   /// Turns this chunk into one that can contain a block of child chunks.
-  void makeBlock(Chunk blockArgument) {
+  void makeBlock(Chunk? blockArgument) {
     assert(_block == null);
     _block = ChunkBlock(blockArgument);
   }
@@ -231,18 +227,16 @@ class Chunk extends Selection {
   /// Returns `true` if the block body owned by this chunk should be expression
   /// indented given a set of rule values provided by [getValue].
   bool indentBlock(int Function(Rule) getValue) {
-    if (_block == null) return false;
-    if (_block.argument == null) return false;
+    if (!isBlock) return false;
 
-    return _block.argument.rule
-        .isSplit(getValue(_block.argument.rule), _block.argument);
+    var argument = block.argument;
+    if (argument == null) return false;
+
+    return argument.rule!.isSplit(getValue(argument.rule!), argument);
   }
 
   // Mark whether this chunk can divide the range of chunks.
-  void markDivide(canDivide) {
-    // Should only do this once.
-    assert(_canDivide == null);
-
+  void markDivide(bool canDivide) {
     _canDivide = canDivide;
   }
 
@@ -257,14 +251,15 @@ class Chunk extends Selection {
     if (_isDouble == true) parts.add('double');
     if (_flushLeft == true) parts.add('flush');
 
-    if (_rule == null) {
+    var rule = _rule;
+    if (rule == null) {
       parts.add('(no split)');
     } else {
       parts.add(rule.toString());
       if (rule.isHardened) parts.add('(hard)');
 
-      if (_rule.constrainedRules.isNotEmpty) {
-        parts.add("-> ${_rule.constrainedRules.join(' ')}");
+      if (rule.constrainedRules.isNotEmpty) {
+        parts.add("-> ${rule.constrainedRules.join(' ')}");
       }
     }
 
@@ -280,7 +275,7 @@ class ChunkBlock {
   ///
   /// That chunk is owned by the argument list and if it splits, this collection
   /// may need extra expression-level indentation.
-  final Chunk argument;
+  final Chunk? argument;
 
   /// The child chunks in this block.
   final List<Chunk> chunks = [];
@@ -403,5 +398,5 @@ class SourceComment extends Selection {
   bool get isInline => linesBefore == 0 && !isLineComment;
 
   SourceComment(this.text, this.linesBefore,
-      {this.isLineComment, this.flushLeft});
+      {required this.isLineComment, required this.flushLeft});
 }

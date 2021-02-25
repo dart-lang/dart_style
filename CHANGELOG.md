@@ -1,3 +1,7 @@
+# 2.0.0
+
+* Migrate to null safety.
+
 # 1.3.14
 
 * Add support for generic annotations.

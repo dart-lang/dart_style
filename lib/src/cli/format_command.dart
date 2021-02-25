@@ -22,7 +22,7 @@ class FormatCommand extends Command<int> {
 
   @override
   String get invocation =>
-      '${runner.executableName} $name [options...] <files or directories...>';
+      '${runner!.executableName} $name [options...] <files or directories...>';
 
   FormatCommand({bool verbose = false}) {
     defineOptions(argParser, oldCli: false, verbose: verbose);
@@ -30,6 +30,8 @@ class FormatCommand extends Command<int> {
 
   @override
   Future<int> run() async {
+    var argResults = this.argResults!;
+
     if (argResults['version']) {
       print(dartStyleVersion);
       return 0;
@@ -39,14 +41,14 @@ class FormatCommand extends Command<int> {
       'all': Show.all,
       'changed': Show.changed,
       'none': Show.none
-    }[argResults['show']];
+    }[argResults['show']]!;
 
     var output = const {
       'write': Output.write,
       'show': Output.show,
       'none': Output.none,
       'json': Output.json,
-    }[argResults['output']];
+    }[argResults['output']]!;
 
     var summary = Summary.none;
     switch (argResults['summary'] as String) {
@@ -114,7 +116,7 @@ class FormatCommand extends Command<int> {
       }
     }
 
-    List<int> selection;
+    List<int>? selection;
     try {
       selection = parseSelection(argResults, 'selection');
     } on FormatException catch (exception) {

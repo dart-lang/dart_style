@@ -1,19 +1,16 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.rule.argument;
-
 import '../chunk.dart';
 import 'rule.dart';
 
 /// Base class for a rule that handles argument or parameter lists.
 abstract class ArgumentRule extends Rule {
   /// The chunks prior to each positional argument.
-  final List<Chunk> _arguments = [];
+  final List<Chunk?> _arguments = [];
 
   /// The rule used to split collections in the argument list, if any.
-  Rule _collectionRule;
+  Rule? _collectionRule;
 
   /// The number of leading collection arguments.
   ///
@@ -43,20 +40,18 @@ abstract class ArgumentRule extends Rule {
   @override
   void addConstrainedRules(Set<Rule> rules) {
     super.addConstrainedRules(rules);
-    if (_collectionRule != null) rules.add(_collectionRule);
+    if (_collectionRule != null) rules.add(_collectionRule!);
   }
 
   @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
-    if (_collectionRule != null && _collectionRule.index == null) {
-      _collectionRule = null;
-    }
+    if (_collectionRule?.index == null) _collectionRule = null;
   }
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
-  void beforeArgument(Chunk chunk) {
+  void beforeArgument(Chunk? chunk) {
     _arguments.add(chunk);
   }
 
@@ -93,14 +88,14 @@ abstract class ArgumentRule extends Rule {
 class PositionalRule extends ArgumentRule {
   /// If there are named arguments following these positional ones, this will
   /// be their rule.
-  Rule _namedArgsRule;
+  Rule? _namedArgsRule;
 
   /// Creates a new rule for a positional argument list.
   ///
   /// If [_collectionRule] is given, it is the rule used to split the collection
   /// arguments in the list.
   PositionalRule(
-      Rule collectionRule, int leadingCollections, int trailingCollections)
+      Rule? collectionRule, int leadingCollections, int trailingCollections)
       : super(collectionRule, leadingCollections, trailingCollections);
 
   @override
@@ -126,15 +121,13 @@ class PositionalRule extends ArgumentRule {
   @override
   void addConstrainedRules(Set<Rule> rules) {
     super.addConstrainedRules(rules);
-    if (_namedArgsRule != null) rules.add(_namedArgsRule);
+    if (_namedArgsRule != null) rules.add(_namedArgsRule!);
   }
 
   @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
-    if (_namedArgsRule != null && _namedArgsRule.index == null) {
-      _namedArgsRule = null;
-    }
+    if (_namedArgsRule?.index == null) _namedArgsRule = null;
   }
 
   @override
@@ -186,14 +179,14 @@ class PositionalRule extends ArgumentRule {
   ///          argument,
   ///          argument, named: argument);
   @override
-  int constrain(int value, Rule other) {
+  int? constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
     // Handle the relationship between the positional and named args.
     if (other == _namedArgsRule) {
       // If the positional args are one-per-line, the named args are too.
-      if (value == fullySplitValue) return _namedArgsRule.fullySplitValue;
+      if (value == fullySplitValue) return _namedArgsRule!.fullySplitValue;
 
       // Otherwise, if there is any split in the positional arguments, don't
       // allow the named arguments on the same line as them.
@@ -257,7 +250,7 @@ class NamedRule extends ArgumentRule {
   int get numValues => 3;
 
   NamedRule(
-      Rule collectionRule, int leadingCollections, int trailingCollections)
+      Rule? collectionRule, int leadingCollections, int trailingCollections)
       : super(collectionRule, leadingCollections, trailingCollections);
 
   @override
@@ -270,7 +263,7 @@ class NamedRule extends ArgumentRule {
   }
 
   @override
-  int constrain(int value, Rule other) {
+  int? constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 

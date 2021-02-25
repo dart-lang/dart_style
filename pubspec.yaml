@@ -1,16 +1,16 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 1.3.14
+version: 2.0.0-dev
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
 repository: https://github.com/dart-lang/dart_style
 
 environment:
-  sdk: '>=2.11.99 <3.0.0'
+  sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  analyzer: ^1.0.0
+  analyzer: ^1.1.0
   args: '>=1.0.0 <3.0.0'
   path: ^1.0.0
   pub_semver: '>=1.4.4 <3.0.0'
@@ -19,11 +19,13 @@ dependencies:
 dev_dependencies:
   grinder: ^0.9.0-nullsafety.0
   js: ^0.6.0
-  node_preamble: ^1.0.0
+  # TODO(rnystrom): Disabled for now because node_preamble is not migrated yet
+  # and publishing to npm hasn't been used in a while.
+  #  node_preamble: ^1.0.0
   pedantic: ^1.0.0
   test: ^1.16.0
-  test_descriptor: ^1.0.0
-  test_process: ^1.0.0
+  test_descriptor: ^2.0.0
+  test_process: ^2.0.0
   yaml: '>=2.0.0 <4.0.0'
 
 executables:

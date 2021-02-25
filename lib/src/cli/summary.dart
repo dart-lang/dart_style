@@ -22,15 +22,19 @@ class Summary {
   const Summary._();
 
   /// Called when [file] is about to be formatted.
-  void beforeFile(File file, String displayPath) {}
+  ///
+  /// If stdin is being formatted, then [file] is `null`.
+  void beforeFile(File? file, String displayPath) {}
 
   /// Describe the processed file at [path] whose formatted result is [output].
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
-  void afterFile(FormatterOptions options, File file, String displayPath,
+  ///
+  /// If stdin is being formatted, then [file] is `null`.
+  void afterFile(FormatterOptions options, File? file, String displayPath,
       SourceCode output,
-      {bool changed}) {}
+      {required bool changed}) {}
 
   void show() {}
 }
@@ -52,9 +56,9 @@ class _LineSummary extends Summary {
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
   @override
-  void afterFile(FormatterOptions options, File file, String displayPath,
+  void afterFile(FormatterOptions options, File? file, String displayPath,
       SourceCode output,
-      {bool changed}) {
+      {required bool changed}) {
     _files++;
     if (changed) _changed++;
   }
@@ -96,7 +100,7 @@ class _ProfileSummary implements Summary {
     assert(_ongoing.isEmpty);
 
     var files = _elapsed.keys.toList();
-    files.sort((a, b) => _elapsed[b].compareTo(_elapsed[a]));
+    files.sort((a, b) => _elapsed[b]!.compareTo(_elapsed[a]!));
 
     for (var file in files) {
       print('${_elapsed[file]}: $file');
@@ -110,7 +114,7 @@ class _ProfileSummary implements Summary {
 
   /// Called when [file] is about to be formatted.
   @override
-  void beforeFile(File file, String displayPath) {
+  void beforeFile(File? file, String displayPath) {
     _ongoing[displayPath] = DateTime.now();
   }
 
@@ -119,10 +123,10 @@ class _ProfileSummary implements Summary {
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
   @override
-  void afterFile(FormatterOptions options, File file, String displayPath,
+  void afterFile(FormatterOptions options, File? file, String displayPath,
       SourceCode output,
-      {bool changed}) {
-    var elapsed = DateTime.now().difference(_ongoing.remove(displayPath));
+      {required bool changed}) {
+    var elapsed = DateTime.now().difference(_ongoing.remove(displayPath)!);
     if (elapsed.inMilliseconds >= 10) {
       _elapsed[displayPath] = elapsed;
     } else {

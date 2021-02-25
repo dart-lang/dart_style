@@ -1,9 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_writer;
-
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
@@ -35,19 +32,19 @@ class LineWriter {
   ///
   /// This will be `null` if there is no selection or the writer hasn't reached
   /// the beginning of the selection yet.
-  int _selectionStart;
+  int? _selectionStart;
 
   /// The offset in [_buffer] where the selection ends in the formatted code.
   ///
   /// This will be `null` if there is no selection or the writer hasn't reached
   /// the end of the selection yet.
-  int _selectionEnd;
+  int? _selectionEnd;
 
   /// The number of characters that have been written to the output.
   int get length => _buffer.length;
 
   LineWriter(DartFormatter formatter, this._chunks)
-      : _lineEnding = formatter.lineEnding,
+      : _lineEnding = formatter.lineEnding!,
         pageWidth = formatter.pageWidth,
         _blockIndentation = 0,
         _blockCache = {};
@@ -114,7 +111,7 @@ class LineWriter {
 
       // Get ready for the next line.
       newlines = chunk.isDouble ? 2 : 1;
-      indent = chunk.indent;
+      indent = chunk.indent!;
       flushLeft = chunk.flushLeft;
       start = i + 1;
     }
@@ -134,7 +131,7 @@ class LineWriter {
   /// Takes the chunks from [start] to [end] with leading [indent], removes
   /// them, and runs the [LineSplitter] on them.
   int _completeLine(int newlines, int indent, int start, int end,
-      {bool flushLeft}) {
+      {required bool flushLeft}) {
     // Write the newlines required by the previous line.
     for (var j = 0; j < newlines; j++) {
       _buffer.write(_lineEnding);
@@ -175,11 +172,11 @@ class LineWriter {
           // If this block contains one of the selection markers, tell the
           // writer where it ended up in the final output.
           if (block.selectionStart != null) {
-            _selectionStart = length + block.selectionStart;
+            _selectionStart = length + block.selectionStart!;
           }
 
           if (block.selectionEnd != null) {
-            _selectionEnd = length + block.selectionEnd;
+            _selectionEnd = length + block.selectionEnd!;
           }
 
           _buffer.write(block.text);
@@ -220,11 +217,11 @@ class LineWriter {
   /// contains a selection marker.
   void _writeChunk(Chunk chunk) {
     if (chunk.selectionStart != null) {
-      _selectionStart = length + chunk.selectionStart;
+      _selectionStart = length + chunk.selectionStart!;
     }
 
     if (chunk.selectionEnd != null) {
-      _selectionEnd = length + chunk.selectionEnd;
+      _selectionEnd = length + chunk.selectionEnd!;
     }
 
     _buffer.write(chunk.text);
@@ -269,13 +266,13 @@ class FormatResult {
   /// if it was contained within this split list of chunks.
   ///
   /// Otherwise, this is `null`.
-  final int selectionStart;
+  final int? selectionStart;
 
   /// Where in the resulting buffer the selection end point should appear if it
   /// was contained within this split list of chunks.
   ///
   /// Otherwise, this is `null`.
-  final int selectionEnd;
+  final int? selectionEnd;
 
   FormatResult(this.text, this.cost, this.selectionStart, this.selectionEnd);
 }

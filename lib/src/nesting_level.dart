@@ -24,8 +24,8 @@ import 'fast_hash.dart';
 class NestingLevel extends FastHash {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
-  NestingLevel get parent => _parent;
-  NestingLevel _parent;
+  NestingLevel? get parent => _parent;
+  NestingLevel? _parent;
 
   /// The number of characters that this nesting level is indented relative to
   /// the containing level.
@@ -37,8 +37,8 @@ class NestingLevel extends FastHash {
   /// its parents, after determining which nesting levels are actually used.
   ///
   /// This is only valid during line splitting.
-  int get totalUsedIndent => _totalUsedIndent;
-  int _totalUsedIndent;
+  int get totalUsedIndent => _totalUsedIndent!;
+  int? _totalUsedIndent;
 
   bool get isNested => _parent != null;
 
@@ -53,22 +53,25 @@ class NestingLevel extends FastHash {
   /// Clears the previously calculated total indent of this nesting level.
   void clearTotalUsedIndent() {
     _totalUsedIndent = null;
-    if (_parent != null) _parent.clearTotalUsedIndent();
+    _parent?.clearTotalUsedIndent();
   }
 
   /// Calculates the total amount of indentation from this nesting level and
   /// all of its parents assuming only [usedNesting] levels are in use.
   void refreshTotalUsedIndent(Set<NestingLevel> usedNesting) {
-    if (_totalUsedIndent != null) return;
+    var totalIndent = _totalUsedIndent;
+    if (totalIndent != null) return;
 
-    _totalUsedIndent = 0;
+    totalIndent = 0;
 
     if (_parent != null) {
-      _parent.refreshTotalUsedIndent(usedNesting);
-      _totalUsedIndent += _parent.totalUsedIndent;
+      _parent!.refreshTotalUsedIndent(usedNesting);
+      totalIndent += _parent!.totalUsedIndent;
     }
 
-    if (usedNesting.contains(this)) _totalUsedIndent += indent;
+    if (usedNesting.contains(this)) totalIndent += indent;
+
+    _totalUsedIndent = totalIndent;
   }
 
   @override

@@ -28,7 +28,7 @@ class FormatterOptions {
   final bool followLinks;
 
   /// The style fixes to apply while formatting.
-  final Iterable<StyleFix> fixes;
+  final List<StyleFix> fixes;
 
   /// Which affected files should be shown.
   final Show show;
@@ -45,14 +45,17 @@ class FormatterOptions {
       {this.indent = 0,
       this.pageWidth = 80,
       this.followLinks = false,
-      this.fixes,
+      Iterable<StyleFix>? fixes,
       this.show = Show.changed,
       this.output = Output.write,
       this.summary = Summary.none,
-      this.setExitIfChanged = false});
+      this.setExitIfChanged = false})
+      : fixes = [...?fixes];
 
   /// Called when [file] is about to be formatted.
-  void beforeFile(File file, String label) {
+  ///
+  /// If stdin is being formatted, then [file] is `null`.
+  void beforeFile(File? file, String label) {
     summary.beforeFile(file, label);
   }
 
@@ -60,8 +63,10 @@ class FormatterOptions {
   ///
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
-  void afterFile(File file, String displayPath, SourceCode result,
-      {bool changed}) {
+  ///
+  /// If stdin is being formatted, then [file] is `null`.
+  void afterFile(File? file, String displayPath, SourceCode result,
+      {required bool changed}) {
     summary.afterFile(this, file, displayPath, result, changed: changed);
 
     // Save the results to disc.

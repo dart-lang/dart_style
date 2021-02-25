@@ -1,7 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
 import 'dart:io';
 
 import 'package:args/args.dart';
@@ -40,7 +39,7 @@ void main(List<String> args) {
     usageError(parser, 'Can only use --verbose with --help.');
   }
 
-  List<int> selection;
+  List<int>? selection;
   try {
     selection = parseSelection(argResults, 'preserve');
   } on FormatException catch (exception) {
@@ -145,12 +144,12 @@ void main(List<String> args) {
 }
 
 /// Prints [error] and usage help then exits with exit code 64.
-void usageError(ArgParser parser, String error) {
+Never usageError(ArgParser parser, String error) {
   printUsage(parser, error);
   exit(64);
 }
 
-void printUsage(ArgParser parser, [String error]) {
+void printUsage(ArgParser parser, [String? error]) {
   var output = stdout;
 
   var message = 'Idiomatically format Dart source code.';

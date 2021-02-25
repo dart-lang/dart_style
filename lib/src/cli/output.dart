@@ -24,7 +24,9 @@ class Output {
   const Output._();
 
   /// Write the file to disc.
-  bool writeFile(File file, String displayPath, SourceCode result) => false;
+  ///
+  /// If stdin is being formatted, then [file] is `null`.
+  bool writeFile(File? file, String displayPath, SourceCode result) => false;
 
   /// Print the file to the terminal in some way.
   void showFile(String path, SourceCode result) {}
@@ -34,12 +36,12 @@ class _WriteOutput extends Output {
   const _WriteOutput() : super._();
 
   @override
-  bool writeFile(File file, String displayPath, SourceCode result) {
+  bool writeFile(File? file, String displayPath, SourceCode result) {
     try {
-      file.writeAsStringSync(result.text);
+      file!.writeAsStringSync(result.text);
     } on FileSystemException catch (err) {
       stderr.writeln('Could not overwrite $displayPath: '
-          '${err.osError.message} (error code ${err.osError.errorCode})');
+          '${err.osError!.message} (error code ${err.osError!.errorCode})');
     }
 
     return true;

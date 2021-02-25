@@ -36,7 +36,8 @@ abstract class Show {
   /// Describes a file that was processed.
   ///
   /// Returns whether or not this file should be displayed.
-  bool file(String path, {bool changed, bool overwritten}) => true;
+  bool file(String path, {required bool changed, required bool overwritten}) =>
+      true;
 
   /// Describes the directory whose contents are about to be processed.
   void directory(String path) {}
@@ -47,7 +48,7 @@ abstract class Show {
   /// Describes the hidden [path] that wasn't processed.
   void hiddenPath(String path) {}
 
-  void _showFileChange(String path, {bool overwritten}) {
+  void _showFileChange(String path, {required bool overwritten}) {
     if (overwritten) {
       print('Formatted $path');
     } else {
@@ -58,7 +59,7 @@ abstract class Show {
 
 mixin _ShowFileMixin on Show {
   @override
-  bool file(String path, {bool changed, bool overwritten}) {
+  bool file(String path, {required bool changed, required bool overwritten}) {
     if (changed) {
       _showFileChange(path, overwritten: overwritten);
     } else {
@@ -102,7 +103,7 @@ class _ChangedShow extends Show {
   const _ChangedShow() : super._();
 
   @override
-  bool file(String path, {bool changed, bool overwritten}) {
+  bool file(String path, {required bool changed, required bool overwritten}) {
     if (changed) _showFileChange(path, overwritten: overwritten);
     return changed;
   }
@@ -124,7 +125,7 @@ class _DryRunShow extends Show {
       p.relative(file, from: directory);
 
   @override
-  bool file(String path, {bool changed, bool overwritten}) {
+  bool file(String path, {required bool changed, required bool overwritten}) {
     if (changed) print(path);
     return true;
   }

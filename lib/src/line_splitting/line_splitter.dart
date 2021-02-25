@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_splitting.line_splitter;
-
 import '../chunk.dart';
 import '../debug.dart' as debug;
 import '../line_writer.dart';
@@ -121,9 +118,6 @@ class LineSplitter {
   /// and can stop looking.
   final _queue = SolveStateQueue();
 
-  /// The lowest cost solution found so far.
-  SolveState _bestSolution;
-
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
   LineSplitter(this.writer, List<Chunk> chunks, int blockIndentation,
@@ -133,7 +127,7 @@ class LineSplitter {
         // Collect the set of rules that we need to select values for.
         rules = chunks
             .map((chunk) => chunk.rule)
-            .where((rule) => rule != null)
+            .whereType<Rule>()
             .toSet()
             .toList(growable: false),
         blockIndentation = blockIndentation,
@@ -165,20 +159,22 @@ class LineSplitter {
     // Start with a completely unbound, unsplit solution.
     _queue.add(SolveState(this, RuleSet(rules.length)));
 
+    SolveState? bestSolution;
+
     var attempts = 0;
     while (_queue.isNotEmpty) {
       var state = _queue.removeFirst();
 
-      if (state.isBetterThan(_bestSolution)) {
-        _bestSolution = state;
+      if (state.isBetterThan(bestSolution)) {
+        bestSolution = state;
 
         // Since we sort solutions by cost the first solution we find that
         // fits is the winner.
-        if (_bestSolution.overflowChars == 0) break;
+        if (bestSolution.overflowChars == 0) break;
       }
 
       if (debug.traceSplitter) {
-        var best = state == _bestSolution ? ' (best)' : '';
+        var best = state == bestSolution ? ' (best)' : '';
         debug.log('$state$best');
         debug.dumpLines(chunks, firstLineIndent, state.splits);
         debug.log();
@@ -191,12 +187,12 @@ class LineSplitter {
     }
 
     if (debug.traceSplitter) {
-      debug.log('$_bestSolution (winner)');
-      debug.dumpLines(chunks, firstLineIndent, _bestSolution.splits);
+      debug.log('$bestSolution (winner)');
+      debug.dumpLines(chunks, firstLineIndent, bestSolution!.splits);
       debug.log();
     }
 
-    return _bestSolution.splits;
+    return bestSolution!.splits;
   }
 
   void enqueue(SolveState state) {

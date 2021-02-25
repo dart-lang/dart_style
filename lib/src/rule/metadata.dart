@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.rule.metadata;
-
 import 'argument.dart';
 import 'rule.dart';
 
@@ -17,8 +14,8 @@ import 'rule.dart';
 /// Also, if the annotations split, we force the entire parameter list to fully
 /// split, both named and positional.
 class MetadataRule extends Rule {
-  Rule _positionalRule;
-  Rule _namedRule;
+  Rule? _positionalRule;
+  Rule? _namedRule;
 
   /// Remembers that [rule] is the [PositionalRule] used by the argument list
   /// containing the parameter metadata using this rule.
@@ -35,7 +32,7 @@ class MetadataRule extends Rule {
   /// Constrains the surrounding argument list rules to fully split if the
   /// metadata does.
   @override
-  int constrain(int value, Rule other) {
+  int? constrain(int value, Rule other) {
     var constrained = super.constrain(value, other);
     if (constrained != null) return constrained;
 
@@ -43,27 +40,22 @@ class MetadataRule extends Rule {
     if (value == Rule.unsplit) return null;
 
     // Otherwise, they have to split.
-    if (other == _positionalRule) return _positionalRule.fullySplitValue;
-    if (other == _namedRule) return _namedRule.fullySplitValue;
+    if (other == _positionalRule) return _positionalRule!.fullySplitValue;
+    if (other == _namedRule) return _namedRule!.fullySplitValue;
 
     return null;
   }
 
   @override
   void addConstrainedRules(Set<Rule> rules) {
-    if (_positionalRule != null) rules.add(_positionalRule);
-    if (_namedRule != null) rules.add(_namedRule);
+    if (_positionalRule != null) rules.add(_positionalRule!);
+    if (_namedRule != null) rules.add(_namedRule!);
   }
 
   @override
   void forgetUnusedRules() {
     super.forgetUnusedRules();
-    if (_positionalRule != null && _positionalRule.index == null) {
-      _positionalRule = null;
-    }
-
-    if (_namedRule != null && _namedRule.index == null) {
-      _namedRule = null;
-    }
+    if (_positionalRule?.index == null) _positionalRule = null;
+    if (_namedRule?.index == null) _namedRule = null;
   }
 }

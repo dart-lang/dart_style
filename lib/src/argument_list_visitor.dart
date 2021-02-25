@@ -1,9 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.argument_list_visitor;
-
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/ast/ast.dart';
@@ -36,12 +33,12 @@ class ArgumentListVisitor {
   /// The contiguous list of block function arguments, if any.
   ///
   /// Otherwise, this is `null`.
-  final List<Expression> _functions;
+  final List<Expression>? _functions;
 
   /// If there are block function arguments, this is the arguments after them.
   ///
   /// Otherwise, this is `null`.
-  final ArgumentSublist _argumentsAfterFunctions;
+  final ArgumentSublist? _argumentsAfterFunctions;
 
   /// Returns `true` if there is only a single positional argument.
   bool get _isSingle =>
@@ -129,16 +126,17 @@ class ArgumentListVisitor {
       }
 
       for (var i = 0; i < functionsStart; i++) {
-        if (arguments[i] is! NamedExpression) continue;
+        var argument = arguments[i];
+        if (argument is! NamedExpression) continue;
 
-        if (isArrow(arguments[i])) {
+        if (isArrow(argument)) {
           functionsStart = null;
           break;
         }
       }
 
       for (var i = functionsEnd; i < arguments.length; i++) {
-        if (isArrow(arguments[i])) {
+        if (isArrow(arguments[i] as NamedExpression)) {
           functionsStart = null;
           break;
         }
@@ -174,7 +172,10 @@ class ArgumentListVisitor {
       this._allArguments,
       this._arguments,
       this._functions,
-      this._argumentsAfterFunctions);
+      this._argumentsAfterFunctions) {
+    assert(_functions == null || _argumentsAfterFunctions != null,
+        'If _functions is passed, _argumentsAfterFunctions must be too.');
+  }
 
   /// Builds chunks for the argument list.
   void visit() {
@@ -189,20 +190,21 @@ class ArgumentListVisitor {
 
     _visitor.builder.endSpan();
 
-    if (_functions != null) {
+    var functions = _functions;
+    if (functions != null) {
       // TODO(rnystrom): It might look better to treat the parameter list of the
       // first function as if it were an argument in the preceding argument list
       // instead of just having this little solo split here. That would try to
       // keep the parameter list with other arguments when possible, and, I
       // think, generally look nicer.
-      if (_functions.first == _allArguments.first) {
+      if (functions.first == _allArguments.first) {
         _visitor.soloZeroSplit();
       } else {
         _visitor.soloSplit();
       }
 
-      for (var argument in _functions) {
-        if (argument != _functions.first) _visitor.space();
+      for (var argument in functions) {
+        if (argument != functions.first) _visitor.space();
 
         _visitor.visit(argument);
 
@@ -213,7 +215,7 @@ class ArgumentListVisitor {
       }
 
       _visitor.builder.startSpan();
-      _argumentsAfterFunctions.visit(_visitor);
+      _argumentsAfterFunctions!.visit(_visitor);
       _visitor.builder.endSpan();
     }
 
@@ -225,9 +227,7 @@ class ArgumentListVisitor {
   /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
   /// block body.
   static bool _isBlockFunction(Expression expression) {
-    if (expression is NamedExpression) {
-      expression = (expression as NamedExpression).expression;
-    }
+    if (expression is NamedExpression) expression = expression.expression;
 
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
@@ -245,39 +245,37 @@ class ArgumentListVisitor {
 
     // Allow immediately-invoked functions like "() { ... }()".
     if (expression is FunctionExpressionInvocation) {
-      var invocation = expression as FunctionExpressionInvocation;
-      if (invocation.argumentList.arguments.isNotEmpty) return false;
+      if (expression.argumentList.arguments.isNotEmpty) return false;
 
-      expression = invocation.function;
+      expression = expression.function;
     }
 
     // Unwrap parenthesized expressions.
     while (expression is ParenthesizedExpression) {
-      expression = (expression as ParenthesizedExpression).expression;
+      expression = expression.expression;
     }
 
     // Must be a function.
     if (expression is! FunctionExpression) return false;
 
     // With a curly body.
-    var function = expression as FunctionExpression;
-    if (function.body is! BlockFunctionBody) return false;
+    if (expression.body is! BlockFunctionBody) return false;
 
     // That isn't empty.
-    var body = function.body as BlockFunctionBody;
+    var body = expression.body as BlockFunctionBody;
     return body.block.statements.isNotEmpty ||
         body.block.rightBracket.precedingComments != null;
   }
 
   /// Returns `true` if [expression] is a valid method invocation target for
   /// an invocation that wraps a function literal argument.
-  static bool _isValidWrappingTarget(Expression expression) {
+  static bool _isValidWrappingTarget(Expression? expression) {
     // Allow bare function calls.
     if (expression == null) return true;
 
     // Allow property accesses.
     while (expression is PropertyAccess) {
-      expression = (expression as PropertyAccess).target;
+      expression = expression.target;
     }
 
     if (expression is PrefixedIdentifier) return true;
@@ -318,12 +316,12 @@ class ArgumentSublist {
   final int _trailingBlocks;
 
   /// The rule used to split the bodies of all block arguments.
-  Rule get blockRule => _blockRule;
-  Rule _blockRule;
+  Rule? get blockRule => _blockRule;
+  Rule? _blockRule;
 
   /// The most recent chunk that split before an argument.
-  Chunk get previousSplit => _previousSplit;
-  Chunk _previousSplit;
+  Chunk? get previousSplit => _previousSplit;
+  Chunk? _previousSplit;
 
   factory ArgumentSublist(
       List<Expression> allArguments, List<Expression> arguments) {
@@ -381,7 +379,7 @@ class ArgumentSublist {
   }
 
   /// Writes the positional arguments, if any.
-  PositionalRule _visitPositional(SourceVisitor visitor) {
+  PositionalRule? _visitPositional(SourceVisitor visitor) {
     if (_positional.isEmpty) return null;
 
     // Allow splitting after "(".
@@ -395,7 +393,7 @@ class ArgumentSublist {
   }
 
   /// Writes the named arguments, if any.
-  void _visitNamed(SourceVisitor visitor, PositionalRule positionalRule) {
+  void _visitNamed(SourceVisitor visitor, PositionalRule? positionalRule) {
     if (_named.isEmpty) return;
 
     // Only count the blocks in the named rule.
@@ -443,11 +441,12 @@ class ArgumentSublist {
   void _visitArgument(
       SourceVisitor visitor, ArgumentRule rule, Expression argument) {
     // If we're about to write a block argument, handle it specially.
-    if (_blocks.containsKey(argument)) {
+    var argumentBlock = _blocks[argument];
+    if (argumentBlock != null) {
       rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
-      visitor.beforeBlock(_blocks[argument], blockRule, previousSplit);
+      visitor.beforeBlock(argumentBlock, blockRule!, previousSplit);
     } else if (_allArguments.length > 1) {
       // Edge case: Only bump the nesting if there are multiple arguments. This
       // lets us avoid spurious indentation in cases like:
@@ -471,7 +470,7 @@ class ArgumentSublist {
       visitor.visit(argument);
     }
 
-    if (_blocks.containsKey(argument)) {
+    if (argumentBlock != null) {
       rule.enableSplitOnInnerRules();
     } else if (_allArguments.length > 1) {
       visitor.builder.endBlockArgumentNesting();
@@ -490,9 +489,9 @@ class ArgumentSublist {
   ///
   /// Block-formatted arguments can get special indentation to make them look
   /// more statement-like.
-  static Token _blockToken(Expression expression) {
+  static Token? _blockToken(Expression expression) {
     if (expression is NamedExpression) {
-      expression = (expression as NamedExpression).expression;
+      expression = expression.expression;
     }
 
     // TODO(rnystrom): Should we step into parenthesized expressions?

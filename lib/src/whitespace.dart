@@ -71,6 +71,10 @@ class Whitespace {
   /// less prescriptive over the user's whitespace.
   static const oneOrTwoNewlines = Whitespace._('oneOrTwoNewlines');
 
+  /// A hard split was just written whose whitespace takes precedence over any
+  /// previous pending whitespace.
+  static const afterHardSplit = Whitespace._('afterHardSplit');
+
   final String name;
 
   /// Gets the minimum number of newlines contained in this whitespace.

@@ -10,7 +10,7 @@ class SourceCode {
   /// The [uri] where the source code is from.
   ///
   /// Used in error messages if the code cannot be parsed.
-  final String uri;
+  final String? uri;
 
   /// The Dart source code text.
   final String text;
@@ -20,10 +20,10 @@ class SourceCode {
 
   /// The offset in [text] where the selection begins, or `null` if there is
   /// no selection.
-  final int selectionStart;
+  final int? selectionStart;
 
   /// The number of selected characters or `null` if there is no selection.
-  final int selectionLength;
+  final int? selectionLength;
 
   /// Gets the source code before the beginning of the selection.
   ///
@@ -38,7 +38,7 @@ class SourceCode {
   /// If there is no selection, returns an empty string.
   String get selectedText {
     if (selectionStart == null) return '';
-    return text.substring(selectionStart, selectionStart + selectionLength);
+    return text.substring(selectionStart!, selectionStart! + selectionLength!);
   }
 
   /// Gets the source code following the selection.
@@ -46,7 +46,7 @@ class SourceCode {
   /// If there is no selection, returns an empty string.
   String get textAfterSelection {
     if (selectionStart == null) return '';
-    return text.substring(selectionStart + selectionLength);
+    return text.substring(selectionStart! + selectionLength!);
   }
 
   SourceCode(this.text,
@@ -61,21 +61,21 @@ class SourceCode {
     }
 
     if (selectionStart != null) {
-      if (selectionStart < 0) {
+      if (selectionStart! < 0) {
         throw ArgumentError('selectionStart must be non-negative.');
       }
 
-      if (selectionStart > text.length) {
+      if (selectionStart! > text.length) {
         throw ArgumentError('selectionStart must be within text.');
       }
     }
 
     if (selectionLength != null) {
-      if (selectionLength < 0) {
+      if (selectionLength! < 0) {
         throw ArgumentError('selectionLength must be non-negative.');
       }
 
-      if (selectionStart + selectionLength > text.length) {
+      if (selectionStart! + selectionLength! > text.length) {
         throw ArgumentError('selectionLength must end within text.');
       }
     }

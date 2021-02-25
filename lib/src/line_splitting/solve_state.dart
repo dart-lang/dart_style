@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_splitting.solve_state;
-
 import '../chunk.dart';
 import '../debug.dart' as debug;
 import '../nesting_level.dart';
@@ -31,12 +28,12 @@ class SolveState {
   /// The set of [Rule]s that are bound by [_ruleValues].
   ///
   /// Cached by [_ensureConstraints] for use by [_ensureUnboundConstraints].
-  Set<Rule> _boundRules;
+  late Set<Rule> _boundRules;
 
   /// The set of [Rule]s that are not bound by [_ruleValues].
   ///
   /// Cached by [_ensureConstraints] for use by [_ensureUnboundConstraints].
-  Set<Rule> _unboundRules;
+  late Set<Rule> _unboundRules;
 
   /// The unbound rules in this state that can be bound to produce new more
   /// refined states.
@@ -68,12 +65,12 @@ class SolveState {
 
   /// The set of splits chosen for this state.
   SplitSet get splits => _splits;
-  SplitSet _splits;
+  late final SplitSet _splits;
 
   /// The number of characters that do not fit inside the page with this set of
   /// splits.
   int get overflowChars => _overflowChars;
-  int _overflowChars;
+  int _overflowChars = 0;
 
   /// Whether we can treat this state as a complete solution by leaving its
   /// unbound rules unsplit.
@@ -86,7 +83,7 @@ class SolveState {
 
   /// The constraints the bound rules in this state have on the remaining
   /// unbound rules.
-  Map<Rule, int> _constraints;
+  late final Map<Rule, int> _constraints = _initConstraints();
 
   /// The unbound rule values that are disallowed because they would place
   /// invalid constraints on the currently bound values.
@@ -99,14 +96,16 @@ class SolveState {
   ///
   /// It's important to track this, because we can't allow to states to overlap
   /// if one permits more values for some unbound rule than the other does.
-  Map<Rule, Set<int>> _unboundConstraints;
+  late final Map<Rule, Set<int>> _unboundConstraints =
+      _initUnboundConstraints();
 
   /// The bound rules that appear inside lines also containing unbound rules.
   ///
   /// By appearing in the same line, it means these bound rules may affect the
   /// results of binding those unbound rules. This is used to tell if two
   /// states may diverge by binding unbound rules or not.
-  Set<Rule> _boundRulesInUnboundLines;
+  late final Set<Rule> _boundRulesInUnboundLines =
+      _initBoundRulesInUnboundLines();
 
   SolveState(this._splitter, this._ruleValues) {
     _calculateSplits();
@@ -119,7 +118,7 @@ class SolveState {
 
   /// Returns `true` if this state is a better solution to use as the final
   /// result than [other].
-  bool isBetterThan(SolveState other) {
+  bool isBetterThan(SolveState? other) {
     // If this state contains an unbound rule that we know can't be left
     // unsplit, we can't pick this as a solution.
     if (!_isComplete) return false;
@@ -197,10 +196,10 @@ class SolveState {
         for (var value = 1; value < rule.numValues; value++) {
           var boundRules = unsplitRules.clone();
 
-          List<Rule> mustSplitRules;
+          List<Rule>? mustSplitRules;
           var valid = boundRules.tryBind(_splitter.rules, rule, value, (rule) {
             mustSplitRules ??= [];
-            mustSplitRules.add(rule);
+            mustSplitRules!.add(rule);
           });
 
           // Make sure we don't violate the constraints of the bound rules.
@@ -211,7 +210,7 @@ class SolveState {
           // If some unbound rules are constrained to split, remember that.
           if (mustSplitRules != null) {
             state._isComplete = false;
-            state._liveRules.addAll(mustSplitRules);
+            state._liveRules.addAll(mustSplitRules!);
           }
 
           _splitter.enqueue(state);
@@ -236,8 +235,6 @@ class SolveState {
   bool _isOverlapping(SolveState other) {
     // Lines that contain both bound and unbound rules must have the same
     // bound values.
-    _ensureBoundRulesInUnboundLines();
-    other._ensureBoundRulesInUnboundLines();
     if (_boundRulesInUnboundLines.length !=
         other._boundRulesInUnboundLines.length) {
       return false;
@@ -250,23 +247,19 @@ class SolveState {
       }
     }
 
-    _ensureConstraints();
-    other._ensureConstraints();
     if (_constraints.length != other._constraints.length) return false;
 
     for (var rule in _constraints.keys) {
       if (_constraints[rule] != other._constraints[rule]) return false;
     }
 
-    _ensureUnboundConstraints();
-    other._ensureUnboundConstraints();
     if (_unboundConstraints.length != other._unboundConstraints.length) {
       return false;
     }
 
     for (var rule in _unboundConstraints.keys) {
-      var disallowed = _unboundConstraints[rule];
-      var otherDisallowed = other._unboundConstraints[rule];
+      var disallowed = _unboundConstraints[rule]!;
+      var otherDisallowed = other._unboundConstraints[rule]!;
 
       if (disallowed.length != otherDisallowed.length) return false;
       for (var value in disallowed) {
@@ -285,7 +278,7 @@ class SolveState {
     var usedNestingLevels = <NestingLevel>{};
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
-      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
+      if (chunk.rule!.isSplit(getValue(chunk.rule!), chunk)) {
         usedNestingLevels.add(chunk.nesting);
         chunk.nesting.clearTotalUsedIndent();
       }
@@ -298,11 +291,11 @@ class SolveState {
     _splits = SplitSet(_splitter.chunks.length);
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
-      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
+      if (chunk.rule!.isSplit(getValue(chunk.rule!), chunk)) {
         var indent = 0;
         if (!chunk.flushLeftAfter) {
           // Add in the chunk's indent.
-          indent = _splitter.blockIndentation + chunk.indent;
+          indent = _splitter.blockIndentation + chunk.indent!;
 
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;
@@ -318,13 +311,9 @@ class SolveState {
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of rules.
   void _calculateCost() {
-    assert(_splits != null);
-
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    _overflowChars = 0;
-
     var length = _splitter.firstLineIndent;
 
     // The unbound rules in use by the current line. This will be null after
@@ -435,7 +424,7 @@ class SolveState {
   ///
   /// Only does this if [rule] is a valid soft rule. Returns `true` if any new
   /// live rules were added.
-  bool _addLiveRules(Rule rule) {
+  bool _addLiveRules(Rule? rule) {
     if (rule == null) return false;
 
     var added = false;
@@ -449,22 +438,19 @@ class SolveState {
     return added;
   }
 
-  /// Lazily initializes the [_boundInUnboundLines], which is needed to compare
+  /// Used to lazy initialize [_boundInUnboundLines], which is needed to compare
   /// two states for overlap.
   ///
   /// We do this lazily because the calculation is a bit slow, and is only
   /// needed when we have two states with the same score.
-  void _ensureBoundRulesInUnboundLines() {
-    if (_boundRulesInUnboundLines != null) return;
-
-    _boundRulesInUnboundLines = <Rule>{};
-
+  Set<Rule> _initBoundRulesInUnboundLines() {
+    var rules = <Rule>{};
     var boundInLine = <Rule>{};
     var hasUnbound = false;
 
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       if (splits.shouldSplitAt(i)) {
-        if (hasUnbound) _boundRulesInUnboundLines.addAll(boundInLine);
+        if (hasUnbound) rules.addAll(boundInLine);
 
         boundInLine.clear();
         hasUnbound = false;
@@ -480,17 +466,16 @@ class SolveState {
       }
     }
 
-    if (hasUnbound) _boundRulesInUnboundLines.addAll(boundInLine);
+    if (hasUnbound) rules.addAll(boundInLine);
+    return rules;
   }
 
-  /// Lazily initializes the [_constraints], which is needed to compare two
-  /// states for overlap.
+  /// Used to lazy initializes the [_constraints], which is needed to compare
+  /// two states for overlap.
   ///
   /// We do this lazily because the calculation is a bit slow, and is only
   /// needed when we have two states with the same score.
-  void _ensureConstraints() {
-    if (_constraints != null) return;
-
+  Map<Rule, int> _initConstraints() {
     _unboundRules = <Rule>{};
     _boundRules = <Rule>{};
 
@@ -502,7 +487,7 @@ class SolveState {
       }
     }
 
-    _constraints = {};
+    var constraints = <Rule, int>{};
 
     for (var bound in _boundRules) {
       for (var unbound in bound.constrainedRules) {
@@ -511,28 +496,24 @@ class SolveState {
         var value = _ruleValues.getValue(bound);
         var constraint = bound.constrain(value, unbound);
         if (constraint != null) {
-          _constraints[unbound] = constraint;
+          constraints[unbound] = constraint;
         }
       }
     }
+
+    return constraints;
   }
 
-  /// Lazily initializes the [_unboundConstraints], which is needed to compare
-  /// two states for overlap.
+  /// Used to lazy initialize the [_unboundConstraints], which is needed to
+  /// compare two states for overlap.
   ///
   /// We do this lazily because the calculation is a bit slow, and is only
   /// needed when we have two states with the same score.
-  void _ensureUnboundConstraints() {
-    if (_unboundConstraints != null) return;
-
-    // _ensureConstraints should be called first which initializes these.
-    assert(_boundRules != null);
-    assert(_unboundRules != null);
-
-    _unboundConstraints = {};
-
+  Map<Rule, Set<int>> _initUnboundConstraints() {
+    var unboundConstraints = <Rule, Set<int>>{};
     for (var unbound in _unboundRules) {
-      Set<int> disallowedValues;
+      // Lazily create and add the set to the constraints only if needed.
+      late final disallowedValues = unboundConstraints[unbound] = {};
 
       for (var bound in unbound.constrainedRules) {
         if (!_boundRules.contains(bound)) continue;
@@ -555,15 +536,12 @@ class SolveState {
             continue;
           }
 
-          if (disallowedValues == null) {
-            disallowedValues = <int>{};
-            _unboundConstraints[unbound] = disallowedValues;
-          }
-
           disallowedValues.add(value);
         }
       }
     }
+
+    return unboundConstraints;
   }
 
   @override
@@ -592,7 +570,6 @@ class SolveState {
 
     if (overflowChars > 0) buffer.write(' (${overflowChars} over)');
     if (!_isComplete) buffer.write(' (incomplete)');
-    if (splits == null) buffer.write(' invalid');
 
     return buffer.toString();
   }

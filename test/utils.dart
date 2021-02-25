@@ -27,10 +27,10 @@ final _unicodePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 
 /// If tool/command_shell.dart has been compiled to a snapshot, this is the path
 /// to it.
-String _commandExecutablePath;
+String? _commandExecutablePath;
 
 /// If bin/format.dart has been compiled to a snapshot, this is the path to it.
-String _formatterExecutablePath;
+String? _formatterExecutablePath;
 
 /// Compiles format.dart to a native executable for tests to use.
 ///
@@ -42,7 +42,7 @@ void compileFormatterExecutable() {
   });
 
   tearDownAll(() async {
-    await _deleteSnapshot(_formatterExecutablePath);
+    await _deleteSnapshot(_formatterExecutablePath!);
     _formatterExecutablePath = null;
   });
 }
@@ -57,7 +57,7 @@ void compileCommandExecutable() {
   });
 
   tearDownAll(() async {
-    await _deleteSnapshot(_commandExecutablePath);
+    await _deleteSnapshot(_commandExecutablePath!);
     _commandExecutablePath = null;
   });
 }
@@ -108,41 +108,41 @@ Future<void> _deleteSnapshot(String snapshot) async {
 }
 
 /// Runs the command line formatter, passing it [args].
-Future<TestProcess> runFormatter([List<String> args]) {
+Future<TestProcess> runFormatter([List<String>? args]) {
   if (_formatterExecutablePath == null) {
     fail('Must call createFormatterExecutable() before running commands.');
   }
 
   return TestProcess.start(
-      Platform.resolvedExecutable, [_formatterExecutablePath, ...?args],
+      Platform.resolvedExecutable, [_formatterExecutablePath!, ...?args],
       workingDirectory: d.sandbox);
 }
 
 /// Runs the command line formatter, passing it the test directory followed by
 /// [args].
-Future<TestProcess> runFormatterOnDir([List<String> args]) {
+Future<TestProcess> runFormatterOnDir([List<String>? args]) {
   return runFormatter(['.', ...?args]);
 }
 
 /// Runs the test shell for the [Command]-based formatter, passing it [args].
-Future<TestProcess> runCommand([List<String> args]) {
+Future<TestProcess> runCommand([List<String>? args]) {
   if (_commandExecutablePath == null) {
     fail('Must call createCommandExecutable() before running commands.');
   }
 
-  return TestProcess.start(
-      Platform.resolvedExecutable, [_commandExecutablePath, 'format', ...?args],
+  return TestProcess.start(Platform.resolvedExecutable,
+      [_commandExecutablePath!, 'format', ...?args],
       workingDirectory: d.sandbox);
 }
 
 /// Runs the test shell for the [Command]-based formatter, passing it the test
 /// directory followed by [args].
-Future<TestProcess> runCommandOnDir([List<String> args]) {
+Future<TestProcess> runCommandOnDir([List<String>? args]) {
   return runCommand(['.', ...?args]);
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
-void testDirectory(String name, [Iterable<StyleFix> fixes]) {
+void testDirectory(String name, [Iterable<StyleFix>? fixes]) {
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
   // TODO(rnystrom): Investigate using Isolate.resolvePackageUri instead.
@@ -164,7 +164,7 @@ void testDirectory(String name, [Iterable<StyleFix> fixes]) {
   }
 }
 
-void testFile(String path, [Iterable<StyleFix> fixes]) {
+void testFile(String path, [Iterable<StyleFix>? fixes]) {
   // Locate the "test" directory. Use mirrors so that this works with the test
   // package, which loads this suite into an isolate.
   var testDir = p.dirname(currentMirrorSystem()
@@ -175,9 +175,8 @@ void testFile(String path, [Iterable<StyleFix> fixes]) {
   _testFile(p.dirname(path), p.join(testDir, path), fixes);
 }
 
-void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
-  var fixes = <StyleFix>[];
-  if (baseFixes != null) fixes.addAll(baseFixes);
+void _testFile(String name, String path, Iterable<StyleFix>? baseFixes) {
+  var fixes = [...?baseFixes];
 
   group('$name ${p.basename(path)}', () {
     // Explicitly create a File, in case the entry is a Link.
@@ -198,7 +197,7 @@ void _testFile(String name, String path, Iterable<StyleFix> baseFixes) {
       // regression tests which often come from a chunk of nested code.
       var leadingIndent = 0;
       description = description.replaceAllMapped(_indentPattern, (match) {
-        leadingIndent = int.parse(match[1]);
+        leadingIndent = int.parse(match[1]!);
         return '';
       });
 
@@ -294,7 +293,7 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
 /// accidentally modify the Dart code being formatted.
 String _unescapeUnicode(String input) {
   return input.replaceAllMapped(_unicodePattern, (match) {
-    var codePoint = int.parse(match[1], radix: 16);
+    var codePoint = int.parse(match[1]!, radix: 16);
     return String.fromCharCode(codePoint);
   });
 }

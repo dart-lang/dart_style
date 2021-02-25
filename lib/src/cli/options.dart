@@ -124,7 +124,7 @@ void defineOptions(ArgParser parser,
   }
 }
 
-List<int> parseSelection(ArgResults argResults, String optionName) {
+List<int>? parseSelection(ArgResults argResults, String optionName) {
   var option = argResults[optionName];
   if (option == null) return null;
 
