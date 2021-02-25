@@ -7,14 +7,14 @@ packages:
       name: _fe_analyzer_shared
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "16.0.0"
+    version: "17.0.0"
   analyzer:
     dependency: "direct main"
     description:
       name: analyzer
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.0.0"
+    version: "1.1.0"
   args:
     dependency: "direct main"
     description:
@@ -119,7 +119,7 @@ packages:
       name: io
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.4"
+    version: "0.3.5"
   js:
     dependency: "direct dev"
     description:
@@ -156,7 +156,7 @@ packages:
     source: hosted
     version: "1.0.0"
   node_preamble:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: node_preamble
       url: "https://pub.dartlang.org"
@@ -280,7 +280,7 @@ packages:
       name: test
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "1.16.3"
+    version: "1.16.4"
   test_api:
     dependency: transitive
     description:
@@ -294,7 +294,7 @@ packages:
       name: test_core
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "0.3.13"
+    version: "0.3.14"
   test_descriptor:
     dependency: "direct dev"
     description:
@@ -350,6 +350,6 @@ packages:
       name: yaml
       url: "https://pub.dartlang.org"
     source: hosted
-    version: "3.0.0"
+    version: "3.1.0"
 sdks:
   dart: ">=2.12.0-0.0 <3.0.0"
