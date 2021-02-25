@@ -51,7 +51,7 @@ class NestingBuilder {
   ///
   /// Here, if we discard the expression nesting before we reach the "{", then
   /// it won't get indented as it should.
-  NestingLevel _pendingNesting;
+  NestingLevel? _pendingNesting;
 
   /// The current number of characters of block indentation.
   int get indentation => _stack.last;
@@ -66,7 +66,7 @@ class NestingBuilder {
   /// Creates a new indentation level [spaces] deeper than the current one.
   ///
   /// If omitted, [spaces] defaults to [Indent.block].
-  void indent([int spaces]) {
+  void indent([int? spaces]) {
     spaces ??= Indent.block;
 
     // Indentation should only change outside of nesting.
@@ -95,11 +95,11 @@ class NestingBuilder {
   /// if the previous line has a lower level of nesting.
   ///
   /// If [indent] is omitted, defaults to [Indent.expression].
-  void nest([int indent]) {
+  void nest([int? indent]) {
     indent ??= Indent.expression;
 
     if (_pendingNesting != null) {
-      _pendingNesting = _pendingNesting.nest(indent);
+      _pendingNesting = _pendingNesting!.nest(indent);
     } else {
       _pendingNesting = _nesting.nest(indent);
     }
@@ -108,7 +108,7 @@ class NestingBuilder {
   /// Discards the most recent level of expression nesting.
   void unnest() {
     if (_pendingNesting != null) {
-      _pendingNesting = _pendingNesting.parent;
+      _pendingNesting = _pendingNesting!.parent;
     } else {
       _pendingNesting = _nesting.parent;
     }
@@ -121,7 +121,7 @@ class NestingBuilder {
   void commitNesting() {
     if (_pendingNesting == null) return;
 
-    _nesting = _pendingNesting;
+    _nesting = _pendingNesting!;
     _pendingNesting = null;
   }
 }

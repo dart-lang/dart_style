@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_splitting.line_splitter;
-
 import '../chunk.dart';
 import '../debug.dart' as debug;
 import '../line_writer.dart';
@@ -122,7 +119,7 @@ class LineSplitter {
   final _queue = SolveStateQueue();
 
   /// The lowest cost solution found so far.
-  SolveState _bestSolution;
+  SolveState? _bestSolution;
 
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
@@ -133,7 +130,7 @@ class LineSplitter {
         // Collect the set of rules that we need to select values for.
         rules = chunks
             .map((chunk) => chunk.rule)
-            .where((rule) => rule != null)
+            .whereType<Rule>()
             .toSet()
             .toList(growable: false),
         blockIndentation = blockIndentation,
@@ -174,7 +171,7 @@ class LineSplitter {
 
         // Since we sort solutions by cost the first solution we find that
         // fits is the winner.
-        if (_bestSolution.overflowChars == 0) break;
+        if (_bestSolution!.overflowChars == 0) break;
       }
 
       if (debug.traceSplitter) {
@@ -192,11 +189,11 @@ class LineSplitter {
 
     if (debug.traceSplitter) {
       debug.log('$_bestSolution (winner)');
-      debug.dumpLines(chunks, firstLineIndent, _bestSolution.splits);
+      debug.dumpLines(chunks, firstLineIndent, _bestSolution!.splits);
       debug.log();
     }
 
-    return _bestSolution.splits;
+    return _bestSolution!.splits;
   }
 
   void enqueue(SolveState state) {

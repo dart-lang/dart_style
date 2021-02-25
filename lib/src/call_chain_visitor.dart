@@ -1,9 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.call_chain_visitor;
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
@@ -81,7 +78,7 @@ class CallChainVisitor {
   ///         })
   ///         .d()
   ///         .e();
-  final List<_MethodSelector> _blockCalls;
+  final List<_MethodSelector>? _blockCalls;
 
   /// If there is one or more block calls and a single chained expression after
   /// that, this will be that expression.
@@ -96,7 +93,7 @@ class CallChainVisitor {
   /// need to split before its `.` and this accommodates the common pattern of
   /// a trailing `toList()` or `toSet()` after a series of higher-order methods
   /// on an iterable.
-  final _Selector _hangingCall;
+  final _Selector? _hangingCall;
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -106,7 +103,7 @@ class CallChainVisitor {
 
   /// After the properties are visited (if there are any), this will be the
   /// rule used to split between them.
-  PositionalRule _propertyRule;
+  PositionalRule? _propertyRule;
 
   /// Creates a new call chain visitor for [visitor] for the method chain
   /// contained in [node].
@@ -135,15 +132,15 @@ class CallChainVisitor {
     calls.removeRange(0, properties.length);
 
     // Separate out the block calls, if there are any.
-    List<_MethodSelector> blockCalls;
-    _Selector hangingCall;
+    List<_MethodSelector>? blockCalls;
+    _Selector? hangingCall;
 
     var inBlockCalls = false;
     for (var call in calls) {
       if (call.isBlockCall(visitor)) {
         inBlockCalls = true;
         blockCalls ??= [];
-        blockCalls.add(call);
+        blockCalls.add(call as _MethodSelector);
       } else if (inBlockCalls) {
         // We found a non-block call after a block call.
         if (call == calls.last) {
@@ -181,7 +178,7 @@ class CallChainVisitor {
   /// created for the call chain and the caller must end it. Used by cascades
   /// to force a cascade after a method chain to be more deeply nested than
   /// the methods.
-  void visit({bool unnest}) {
+  void visit({bool? unnest}) {
     unnest ??= true;
 
     _visitor.builder.nestExpression();
@@ -216,7 +213,7 @@ class CallChainVisitor {
       }
 
       for (var property in _properties) {
-        _propertyRule.beforeArgument(_visitor.zeroSplit());
+        _propertyRule!.beforeArgument(_visitor.zeroSplit());
         property.write(this);
       }
 
@@ -250,7 +247,7 @@ class CallChainVisitor {
       _visitor.zeroSplit();
       _disableRule();
 
-      for (var blockCall in _blockCalls) {
+      for (var blockCall in _blockCalls!) {
         blockCall.write(this);
       }
 
@@ -289,7 +286,7 @@ class CallChainVisitor {
 
     // Unwrap parentheses.
     while (expression is ParenthesizedExpression) {
-      expression = (expression as ParenthesizedExpression).expression;
+      expression = expression.expression;
     }
 
     // Don't split right after a collection literal.
@@ -305,7 +302,7 @@ class CallChainVisitor {
 
     // If the expression ends in an argument list, base the splitting on the
     // last argument.
-    ArgumentList argumentList;
+    ArgumentList? argumentList;
     if (expression is MethodInvocation) {
       argumentList = expression.argumentList;
     } else if (expression is InstanceCreationExpression) {
@@ -324,7 +321,7 @@ class CallChainVisitor {
     if (_visitor.hasCommaAfter(argument)) return false;
 
     if (argument is NamedExpression) {
-      argument = (argument as NamedExpression).expression;
+      argument = argument.expression;
     }
 
     // TODO(rnystrom): This logic is similar (but not identical) to
@@ -386,7 +383,7 @@ class CallChainVisitor {
 
     // If the properties split, force the calls to split too.
     var rule = Rule();
-    if (_propertyRule != null) _propertyRule.setNamedArgsRule(rule);
+    _propertyRule?.setNamedArgsRule(rule);
 
     if (lazy) {
       _visitor.builder.startLazyRule(rule);
@@ -548,11 +545,11 @@ Expression _unwrapTarget(Expression node, List<_Selector> calls) {
 
   // Selectors.
   if (node is MethodInvocation && node.target != null) {
-    return _unwrapSelector(node.target, _MethodSelector(node), calls);
+    return _unwrapSelector(node.target!, _MethodSelector(node), calls);
   }
 
   if (node is PropertyAccess && node.target != null) {
-    return _unwrapSelector(node.target, _PropertySelector(node), calls);
+    return _unwrapSelector(node.target!, _PropertySelector(node), calls);
   }
 
   if (node is PrefixedIdentifier) {
@@ -561,7 +558,7 @@ Expression _unwrapTarget(Expression node, List<_Selector> calls) {
 
   // Postfix expressions.
   if (node is IndexExpression) {
-    return _unwrapPostfix(node, node.target, calls);
+    return _unwrapPostfix(node, node.target!, calls);
   }
 
   if (node is FunctionExpressionInvocation) {

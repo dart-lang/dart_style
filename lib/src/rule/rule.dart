@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.rule.rule;
-
 import '../chunk.dart';
 import '../fast_hash.dart';
 
@@ -40,7 +38,7 @@ class Rule extends FastHash {
 
   /// During line splitting [LineSplitter] sets this to the index of this
   /// rule in its list of rules.
-  int index;
+  int? index;
 
   /// If `true`, the rule has been "hardened" meaning it's been placed into a
   /// permanent "must fully split" state.
@@ -75,7 +73,7 @@ class Rule extends FastHash {
   /// rules.
   bool get splitsOnInnerRules => true;
 
-  Rule([int cost]) : _cost = cost ?? Cost.normal;
+  Rule([int? cost]) : _cost = cost ?? Cost.normal;
 
   /// Creates a new rule that is already fully split.
   Rule.hard() : _cost = 0 {
@@ -114,8 +112,8 @@ class Rule extends FastHash {
   /// Allows relationships between rules like "if I split, then this should
   /// split too". Returns a non-negative value to force [other] to take that
   /// value. Returns -1 to allow [other] to take any non-zero value. Returns
-  /// null to not constrain other.
-  int constrain(int value, Rule other) {
+  /// `null` to not constrain other.
+  int? constrain(int value, Rule other) {
     // By default, any containing rule will be fully split if this one is split.
     if (value == Rule.unsplit) return null;
     if (_implied.contains(other)) return other.fullySplitValue;
@@ -151,35 +149,40 @@ class Rule extends FastHash {
     // Lazy initialize this on first use. Note: Assumes this is only called
     // after the chunks have been written and any constraints have been wired
     // up.
-    if (_constrainedRules == null) {
-      _constrainedRules = _implied.toSet();
-      addConstrainedRules(_constrainedRules);
-    }
+    var rules = _constrainedRules;
+    if (rules != null) return rules;
 
-    return _constrainedRules;
+    rules = _implied.toSet();
+    addConstrainedRules(rules);
+    _constrainedRules = rules;
+    return rules;
   }
 
-  Set<Rule> _constrainedRules;
+  Set<Rule>? _constrainedRules;
 
   /// The transitive closure of all of the rules this rule places constraints
   /// on, directly or indirectly, including itself.
   Set<Rule> get allConstrainedRules {
-    if (_allConstrainedRules == null) {
-      void visit(Rule rule) {
-        if (_allConstrainedRules.contains(rule)) return;
+    var rules = _allConstrainedRules;
+    if (rules != null) return rules;
 
-        _allConstrainedRules.add(rule);
-        rule.constrainedRules.forEach(visit);
-      }
-
-      _allConstrainedRules = {};
-      visit(this);
-    }
-
-    return _allConstrainedRules;
+    rules = {};
+    _traverseConstraints(rules, this);
+    _allConstrainedRules = rules;
+    return rules;
   }
 
-  Set<Rule> _allConstrainedRules;
+  /// Traverses the constraint graph of [rule] adding everything to [rules].
+  void _traverseConstraints(Set<Rule> rules, Rule rule) {
+    if (rules.contains(rule)) return;
+
+    rules.add(rule);
+    for (var rule in rule.constrainedRules) {
+      _traverseConstraints(rules, rule);
+    }
+  }
+
+  Set<Rule>? _allConstrainedRules;
 
   @override
   String toString() => '$id';

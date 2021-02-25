@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.line_splitting.solve_state_queue;
-
 import 'line_splitter.dart';
 import 'solve_state.dart';
 
@@ -22,10 +19,10 @@ class SolveStateQueue {
   /// number of "tree levels" in the heap is only done for aesthetic reasons.
   static const int _initialCapacity = 7;
 
-  LineSplitter _splitter;
+  late final LineSplitter _splitter;
 
   /// List implementation of a heap.
-  List<SolveState> _queue = List<SolveState>.filled(_initialCapacity, null);
+  List<SolveState?> _queue = List.filled(_initialCapacity, null);
 
   /// Number of elements in queue.
   /// The heap is implemented in the first [_length] entries of [_queue].
@@ -34,9 +31,6 @@ class SolveStateQueue {
   bool get isNotEmpty => _length != 0;
 
   void bindSplitter(LineSplitter splitter) {
-    // Only do this once.
-    assert(_splitter == null);
-
     _splitter = splitter;
   }
 
@@ -50,7 +44,7 @@ class SolveStateQueue {
       var newCapacity = _queue.length * 2 + 1;
       if (newCapacity < _initialCapacity) newCapacity = _initialCapacity;
 
-      var newQueue = List<SolveState>.filled(newCapacity, null);
+      var newQueue = List<SolveState?>.filled(newCapacity, null);
       newQueue.setRange(0, _length, _queue);
       _queue = newQueue;
     }
@@ -62,12 +56,12 @@ class SolveStateQueue {
     assert(_length > 0);
 
     // Remove the highest priority state.
-    var result = _queue[0];
+    var result = _queue[0]!;
     _length--;
 
     // Fill the gap with the one at the end of the list and re-heapify.
     if (_length > 0) {
-      var last = _queue[_length];
+      var last = _queue[_length]!;
       _queue[_length] = null;
       _bubbleDown(last, 0);
     }
@@ -135,7 +129,7 @@ class SolveStateQueue {
     // also have lower priority.
     do {
       var index = position - 1;
-      var enqueued = _queue[index];
+      var enqueued = _queue[index]!;
 
       var comparison = _compareScore(enqueued, state);
 
@@ -185,7 +179,7 @@ class SolveStateQueue {
   void _bubbleUp(SolveState element, int index) {
     while (index > 0) {
       var parentIndex = (index - 1) ~/ 2;
-      var parent = _queue[parentIndex];
+      var parent = _queue[parentIndex]!;
 
       if (_compare(element, parent) > 0) break;
 
@@ -205,8 +199,8 @@ class SolveStateQueue {
 
     while (rightChildIndex < _length) {
       var leftChildIndex = rightChildIndex - 1;
-      var leftChild = _queue[leftChildIndex];
-      var rightChild = _queue[rightChildIndex];
+      var leftChild = _queue[leftChildIndex]!;
+      var rightChild = _queue[rightChildIndex]!;
 
       var comparison = _compare(leftChild, rightChild);
       var minChildIndex;
@@ -234,7 +228,7 @@ class SolveStateQueue {
 
     var leftChildIndex = rightChildIndex - 1;
     if (leftChildIndex < _length) {
-      var child = _queue[leftChildIndex];
+      var child = _queue[leftChildIndex]!;
       var comparison = _compare(element, child);
 
       if (comparison > 0) {

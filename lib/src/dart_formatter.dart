@@ -1,9 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.dart_formatter;
-
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
@@ -29,7 +26,7 @@ class DartFormatter {
   /// If not explicitly provided, this is inferred from the source text. If the
   /// first newline is `\r\n` (Windows), it will use that. Otherwise, it uses
   /// Unix-style line endings (`\n`).
-  String lineEnding;
+  String? lineEnding;
 
   /// The number of characters allowed in a single line.
   final int pageWidth;
@@ -37,7 +34,7 @@ class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
-  final Set<StyleFix> fixes = {};
+  final Set<StyleFix> fixes;
 
   /// Creates a new formatter for Dart code.
   ///
@@ -50,11 +47,10 @@ class DartFormatter {
   ///
   /// While formatting, also applies any of the given [fixes].
   DartFormatter(
-      {this.lineEnding, int pageWidth, int indent, Iterable<StyleFix> fixes})
+      {this.lineEnding, int? pageWidth, int? indent, Iterable<StyleFix>? fixes})
       : pageWidth = pageWidth ?? 80,
-        indent = indent ?? 0 {
-    if (fixes != null) this.fixes.addAll(fixes);
-  }
+        indent = indent ?? 0,
+        fixes = {...?fixes};
 
   /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
@@ -106,7 +102,7 @@ class DartFormatter {
         uri: source.uri,
         isCompilationUnit: false,
         selectionStart: source.selectionStart != null
-            ? source.selectionStart + inputOffset
+            ? source.selectionStart! + inputOffset
             : null,
         selectionLength: source.selectionLength,
       );
@@ -151,7 +147,7 @@ class DartFormatter {
       node = body.block.statements[0];
 
       // Make sure we consumed all of the source.
-      var token = node.endToken.next;
+      var token = node.endToken.next!;
       if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
         var stringSource = StringSource(text, source.uri);
         var error = AnalysisError(

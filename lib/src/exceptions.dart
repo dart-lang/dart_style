@@ -17,7 +17,7 @@ class FormatterException implements Exception {
   const FormatterException(this.errors);
 
   /// Creates a human-friendly representation of the analysis errors.
-  String message({bool color}) {
+  String message({bool? color}) {
     var buffer = StringBuffer();
     buffer.writeln('Could not format because the source could not be parsed:');
 

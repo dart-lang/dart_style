@@ -1,9 +1,6 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.example.format;
-
 import 'dart:io';
 import 'dart:mirrors';
 
@@ -31,7 +28,8 @@ void formatUnit(String source, [int pageWidth = 80]) {
   runFormatter(source, pageWidth, isCompilationUnit: true);
 }
 
-void runFormatter(String source, int pageWidth, {bool isCompilationUnit}) {
+void runFormatter(String source, int pageWidth,
+    {required bool isCompilationUnit}) {
   try {
     var formatter = DartFormatter(pageWidth: pageWidth);
 
@@ -88,7 +86,7 @@ void runTest(String path, int line) {
     var leadingIndent = 0;
     var indentMatch = indentPattern.firstMatch(description);
     if (indentMatch != null) {
-      leadingIndent = int.parse(indentMatch[1]);
+      leadingIndent = int.parse(indentMatch[1]!);
       description = description.substring(indentMatch.end);
     }
 

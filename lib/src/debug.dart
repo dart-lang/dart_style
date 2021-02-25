@@ -3,12 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Internal debugging utilities.
-library dart_style.src.debug;
-
 import 'dart:math' as math;
 
 import 'chunk.dart';
 import 'line_splitting/rule_set.dart';
+import 'rule/rule.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;
@@ -127,19 +126,19 @@ void dumpChunks(int start, List<Chunk> chunks) {
       }
     }
 
-    if (chunk.rule == null) {
+    var rule = chunk.rule;
+    if (rule == null) {
       row.add('');
       row.add('(no rule)');
       row.add('');
     } else {
-      writeIf(chunk.rule.cost != 0, () => '\$${chunk.rule.cost}');
+      writeIf(rule.cost != 0, () => '\$${rule.cost}');
 
-      var ruleString = chunk.rule.toString();
-      if (chunk.rule.isHardened) ruleString += '!';
+      var ruleString = rule.toString();
+      if (rule.isHardened) ruleString += '!';
       row.add(ruleString);
 
-      var constrainedRules =
-          chunk.rule.constrainedRules.toSet().intersection(rules);
+      var constrainedRules = rule.constrainedRules.toSet().intersection(rules);
       writeIf(constrainedRules.isNotEmpty,
           () => "-> ${constrainedRules.join(" ")}");
     }
@@ -147,10 +146,9 @@ void dumpChunks(int start, List<Chunk> chunks) {
     writeIf(chunk.indent != null && chunk.indent != 0,
         () => 'indent ${chunk.indent}');
 
-    writeIf(chunk.nesting != null && chunk.nesting.indent != 0,
-        () => 'nest ${chunk.nesting}');
+    writeIf(chunk.nesting?.indent != 0, () => 'nest ${chunk.nesting}');
 
-    writeIf(chunk.flushLeft != null && chunk.flushLeft, () => 'flush');
+    writeIf(chunk.flushLeft, () => 'flush');
 
     writeIf(chunk.canDivide, () => 'divide');
 
@@ -193,8 +191,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
 /// Shows all of the constraints between the rules used by [chunks].
 void dumpConstraints(List<Chunk> chunks) {
-  var rules =
-      chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
+  var rules = chunks.map((chunk) => chunk.rule).whereType<Rule>().toSet();
 
   for (var rule in rules) {
     var constrainedValues = [];
