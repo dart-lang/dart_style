@@ -172,7 +172,10 @@ class ArgumentListVisitor {
       this._allArguments,
       this._arguments,
       this._functions,
-      this._argumentsAfterFunctions);
+      this._argumentsAfterFunctions) {
+    assert(_functions == null || _argumentsAfterFunctions != null,
+        'If _functions is passed, _argumentsAfterFunctions must be too.');
+  }
 
   /// Builds chunks for the argument list.
   void visit() {
@@ -187,20 +190,21 @@ class ArgumentListVisitor {
 
     _visitor.builder.endSpan();
 
-    if (_functions != null) {
+    var functions = _functions;
+    if (functions != null) {
       // TODO(rnystrom): It might look better to treat the parameter list of the
       // first function as if it were an argument in the preceding argument list
       // instead of just having this little solo split here. That would try to
       // keep the parameter list with other arguments when possible, and, I
       // think, generally look nicer.
-      if (_functions!.first == _allArguments.first) {
+      if (functions.first == _allArguments.first) {
         _visitor.soloZeroSplit();
       } else {
         _visitor.soloSplit();
       }
 
-      for (var argument in _functions!) {
-        if (argument != _functions!.first) _visitor.space();
+      for (var argument in functions) {
+        if (argument != functions.first) _visitor.space();
 
         _visitor.visit(argument);
 
@@ -437,11 +441,12 @@ class ArgumentSublist {
   void _visitArgument(
       SourceVisitor visitor, ArgumentRule rule, Expression argument) {
     // If we're about to write a block argument, handle it specially.
-    if (_blocks.containsKey(argument)) {
+    var argumentBlock = _blocks[argument];
+    if (argumentBlock != null) {
       rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
-      visitor.beforeBlock(_blocks[argument]!, blockRule!, previousSplit);
+      visitor.beforeBlock(argumentBlock, blockRule!, previousSplit);
     } else if (_allArguments.length > 1) {
       // Edge case: Only bump the nesting if there are multiple arguments. This
       // lets us avoid spurious indentation in cases like:
@@ -465,7 +470,7 @@ class ArgumentSublist {
       visitor.visit(argument);
     }
 
-    if (_blocks.containsKey(argument)) {
+    if (argumentBlock != null) {
       rule.enableSplitOnInnerRules();
     } else if (_allArguments.length > 1) {
       visitor.builder.endBlockArgumentNesting();

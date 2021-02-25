@@ -884,7 +884,7 @@ class ChunkBuilder {
 
     var chunk = _chunks[i];
     if (!chunk.rule!.isHardened) return false;
-    if (chunk.nesting!.isNested) return false;
+    if (chunk.nesting.isNested) return false;
     if (chunk.isBlock) return false;
 
     return true;

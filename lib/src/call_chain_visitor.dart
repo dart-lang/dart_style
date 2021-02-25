@@ -242,12 +242,13 @@ class CallChainVisitor {
 
     // If there are block calls, end the chain and write those without any
     // extra indentation.
-    if (_blockCalls != null) {
+    var blockCalls = _blockCalls;
+    if (blockCalls != null) {
       _enableRule();
       _visitor.zeroSplit();
       _disableRule();
 
-      for (var blockCall in _blockCalls!) {
+      for (var blockCall in blockCalls) {
         blockCall.write(this);
       }
 

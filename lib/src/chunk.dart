@@ -87,8 +87,8 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  NestingLevel? get nesting => _nesting;
-  NestingLevel? _nesting;
+  NestingLevel get nesting => _nesting;
+  late NestingLevel _nesting;
 
   /// If this chunk marks the beginning of a block, this contains the child
   /// chunks and other data about that nested block.
@@ -251,14 +251,15 @@ class Chunk extends Selection {
     if (_isDouble == true) parts.add('double');
     if (_flushLeft == true) parts.add('flush');
 
-    if (_rule == null) {
+    var rule = _rule;
+    if (rule == null) {
       parts.add('(no split)');
     } else {
-      parts.add(rule!.toString());
-      if (rule!.isHardened) parts.add('(hard)');
+      parts.add(rule.toString());
+      if (rule.isHardened) parts.add('(hard)');
 
-      if (rule!.constrainedRules.isNotEmpty) {
-        parts.add("-> ${rule!.constrainedRules.join(' ')}");
+      if (rule.constrainedRules.isNotEmpty) {
+        parts.add("-> ${rule.constrainedRules.join(' ')}");
       }
     }
 
