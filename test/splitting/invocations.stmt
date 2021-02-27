@@ -159,6 +159,20 @@ object
     .method()
       ..x = 1
       ..y = 2;
+>>> cascade index
+object..[index]..method()..[index]=value;
+<<<
+object
+  ..[index]
+  ..method()
+  ..[index] = value;
+>>> null-aware cascade index
+object?..[index]..method()..[index]=value;
+<<<
+object
+  ?..[index]
+  ..method()
+  ..[index] = value;
 >>> conditional invocation
 object?.method().method()?.method().method();
 <<<

@@ -2879,7 +2879,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
 
     token(leftBracket);
-    rule.beforeArgument(zeroSplit()!);
+    rule.beforeArgument(zeroSplit());
 
     for (var node in nodes) {
       visit(node);
@@ -2887,7 +2887,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       // Write the trailing comma.
       if (node != nodes.last) {
         token(node.endToken.next);
-        rule.beforeArgument(split()!);
+        rule.beforeArgument(split());
       }
     }
 
@@ -3493,13 +3493,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitCombinator(Token keyword, Iterable<AstNode> nodes) {
     // Allow splitting before the keyword.
     var rule = builder.rule as CombinatorRule;
-    rule.addCombinator(split()!);
+    rule.addCombinator(split());
 
     builder.nestExpression();
     token(keyword);
 
-    rule.addName(split()!);
-    visitCommaSeparatedNodes(nodes, between: () => rule.addName(split()!));
+    rule.addName(split());
+    visitCommaSeparatedNodes(nodes, between: () => rule.addName(split()));
 
     builder.unnest();
   }
@@ -3665,12 +3665,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Writes a single space split owned by the current rule.
   ///
   /// Returns the chunk the split was applied to.
-  Chunk? split() => builder.split(space: true);
+  Chunk split() => builder.split(space: true);
 
   /// Writes a zero-space split owned by the current rule.
   ///
   /// Returns the chunk the split was applied to.
-  Chunk? zeroSplit() => builder.split();
+  Chunk zeroSplit() => builder.split();
 
   /// Writes a single space split with its own rule.
   Rule soloSplit([int? cost]) {

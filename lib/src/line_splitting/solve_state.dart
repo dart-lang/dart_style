@@ -279,8 +279,8 @@ class SolveState {
     for (var i = 0; i < _splitter.chunks.length - 1; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule!.isSplit(getValue(chunk.rule!), chunk)) {
-        usedNestingLevels.add(chunk.nesting);
-        chunk.nesting.clearTotalUsedIndent();
+        usedNestingLevels.add(chunk.nesting!);
+        chunk.nesting!.clearTotalUsedIndent();
       }
     }
 
@@ -298,7 +298,7 @@ class SolveState {
           indent = _splitter.blockIndentation + chunk.indent!;
 
           // And any expression nesting.
-          indent += chunk.nesting.totalUsedIndent;
+          indent += chunk.nesting!.totalUsedIndent;
 
           if (chunk.indentBlock(getValue)) indent += Indent.expression;
         }
@@ -385,9 +385,10 @@ class SolveState {
         // But there are a couple of squirrely cases where it's hard to prevent
         // by construction. Instead, this outlaws it by penalizing it very
         // heavily if it happens to get this far.
+        var totalIndent = chunk.nesting!.totalUsedIndent;
         if (previousNesting != null &&
-            chunk.nesting.totalUsedIndent != 0 &&
-            chunk.nesting.totalUsedIndent == previousNesting.totalUsedIndent &&
+            totalIndent != 0 &&
+            totalIndent == previousNesting.totalUsedIndent &&
             !identical(chunk.nesting, previousNesting)) {
           _overflowChars += 10000;
         }

@@ -181,7 +181,7 @@ class ChunkBuilder {
   /// If [nest] is `false`, ignores any current expression nesting. Otherwise,
   /// uses the current nesting level. If unsplit, it expands to a space if
   /// [space] is `true`.
-  Chunk? split({bool? flushLeft, bool? isDouble, bool? nest, bool? space}) {
+  Chunk split({bool? flushLeft, bool? isDouble, bool? nest, bool? space}) {
     space ??= false;
 
     // If we are not allowed to split at all, don't. Returning null for the
@@ -189,7 +189,7 @@ class ChunkBuilder {
     // discarded because no chunk references it.
     if (_preventSplitNesting > 0) {
       if (space) _pendingWhitespace = Whitespace.space;
-      return null;
+      return Chunk.dummy();
     }
 
     return _writeSplit(_rules.last,
@@ -847,15 +847,14 @@ class ChunkBuilder {
   /// Ends the current chunk (if any) with the given split information.
   ///
   /// Returns the chunk.
-  Chunk? _writeSplit(Rule rule,
+  Chunk _writeSplit(Rule rule,
       {bool? flushLeft, bool? isDouble, bool? nest, bool? space}) {
     nest ??= true;
     space ??= false;
 
     if (_chunks.isEmpty) {
       if (flushLeft != null) _firstFlushLeft = flushLeft;
-
-      return null;
+      return Chunk.dummy();
     }
 
     _chunks.last.applySplit(
@@ -884,7 +883,7 @@ class ChunkBuilder {
 
     var chunk = _chunks[i];
     if (!chunk.rule!.isHardened) return false;
-    if (chunk.nesting.isNested) return false;
+    if (chunk.nesting!.isNested) return false;
     if (chunk.isBlock) return false;
 
     return true;
