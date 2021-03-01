@@ -87,8 +87,8 @@ class Chunk extends Selection {
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  NestingLevel get nesting => _nesting;
-  late NestingLevel _nesting;
+  NestingLevel? get nesting => _nesting;
+  NestingLevel? _nesting;
 
   /// If this chunk marks the beginning of a block, this contains the child
   /// chunks and other data about that nested block.
@@ -178,6 +178,12 @@ class Chunk extends Selection {
   /// Creates a new chunk starting with [_text].
   Chunk(this._text);
 
+  /// Creates a dummy chunk.
+  ///
+  /// This is returned in some places by [ChunkBuilder] when there is no useful
+  /// chunk to yield and it will not end up being used by the caller anyway.
+  Chunk.dummy() : _text = '(dummy)';
+
   /// Discard the split for the chunk and put it back into the state where more
   /// text can be appended.
   void allowText() {
@@ -232,7 +238,14 @@ class Chunk extends Selection {
     var argument = block.argument;
     if (argument == null) return false;
 
-    return argument.rule!.isSplit(getValue(argument.rule!), argument);
+    var rule = argument.rule;
+
+    // There may be no rule if the block occurs inside a string interpolation.
+    // In that case, it's not clear if anything will look particularly nice, but
+    // expression nesting is probably marginally better.
+    if (rule == null) return true;
+
+    return rule.isSplit(getValue(rule), argument);
   }
 
   // Mark whether this chunk can divide the range of chunks.

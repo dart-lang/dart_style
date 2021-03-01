@@ -558,7 +558,7 @@ Expression _unwrapTarget(Expression node, List<_Selector> calls) {
   }
 
   // Postfix expressions.
-  if (node is IndexExpression) {
+  if (node is IndexExpression && node.target != null) {
     return _unwrapPostfix(node, node.target!, calls);
   }
 
