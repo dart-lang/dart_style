@@ -146,7 +146,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     writeIf(chunk.indent != null && chunk.indent != 0,
         () => 'indent ${chunk.indent}');
 
-    writeIf(chunk.nesting.indent != 0, () => 'nest ${chunk.nesting}');
+    writeIf(chunk.nesting?.indent != 0, () => 'nest ${chunk.nesting}');
 
     writeIf(chunk.flushLeft, () => 'flush');
 
