@@ -3,6 +3,10 @@
 var a=1+2/(3*-b~/4);
 <<<
 var a = 1 + 2 / (3 * -b ~/ 4);
+>>> triple-shift
+a>>>=1>>>-2>>>3;
+<<<
+a >>>= 1 >>> -2 >>> 3;
 >>> conditional operator
 var c=!condition==a>b;
 <<<
