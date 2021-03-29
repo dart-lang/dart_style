@@ -569,7 +569,7 @@ class SolveState {
 
     buffer.write('   \$${splits.cost}');
 
-    if (overflowChars > 0) buffer.write(' (${overflowChars} over)');
+    if (overflowChars > 0) buffer.write(' ($overflowChars over)');
     if (!_isComplete) buffer.write(' (incomplete)');
 
     return buffer.toString();
