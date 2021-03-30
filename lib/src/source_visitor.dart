@@ -1819,7 +1819,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       space();
 
-      visit(node.functionType);
+      visit(node.type);
     });
   }
 

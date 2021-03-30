@@ -1,6 +1,7 @@
 # 2.0.1
 
 * Support triple-shift `>>>` and `>>>=` operators (#992).
+* Support non-function type aliases (#993).
 
 # 2.0.0
 

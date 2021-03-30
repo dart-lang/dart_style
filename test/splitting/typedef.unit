@@ -61,3 +61,29 @@ typedef LongfunctionType<First, Second,
         Second second,
         Third third,
         Fourth fourth);
+>>> non-function split type parameters
+typedef G = SomeType<TypeOne, TypeTwo, TypeThree>;
+<<<
+typedef G = SomeType<TypeOne, TypeTwo,
+    TypeThree>;
+>>> non-function split all type parameters
+typedef G = SomeType<TypeOne, TypeTwo, TypeThree, TypeFour, TypeFive, TypeSix>;
+<<<
+typedef G = SomeType<
+    TypeOne,
+    TypeTwo,
+    TypeThree,
+    TypeFour,
+    TypeFive,
+    TypeSix>;
+>>> non-function generic typedef parameters on one line
+typedef Foo<T, S> = SomeType;
+<<<
+typedef Foo<T, S> = SomeType;
+>>> non-function generic typedef parameters that split
+typedef LongGenericType<First, Second, Third, Fourth, Fifth, Sixth> = AnotherType<First, Second, Third, Fourth>;
+<<<
+typedef LongGenericType<First, Second,
+        Third, Fourth, Fifth, Sixth>
+    = AnotherType<First, Second, Third,
+        Fourth>;
