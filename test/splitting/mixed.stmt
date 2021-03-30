@@ -170,12 +170,12 @@ longName +
     longName -
     longName;
 >>> mixed shift operators
-longName >> longName << longName >> longName << longName;
+longName >> longName << longName >> longName >>> longName;
 <<<
 longName >>
     longName <<
     longName >>
-    longName <<
+    longName >>>
     longName;
 >>> mixture of same and different precedence
 veryLongIdentifier + veryLongIdentifier / veryLongIdentifier *
