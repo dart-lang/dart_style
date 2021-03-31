@@ -38,3 +38,16 @@ typedef Foo<A, B> = Function(A a, B b);
 typedef    Foo  =Function  < A ,B  >   ( A a,B b );
 <<<
 typedef Foo = Function<A, B>(A a, B b);
+>>>
+typedef    Foo   =   Bar;
+<<<
+typedef Foo = Bar;
+>>> non-function typedef
+typedef   Json  =  Map <   String ,  Object  ? >   ;
+<<<
+typedef Json = Map<String, Object?>;
+>>> non-function generic typedef
+typedef   Hash  <  K  extends  List <  T > ,  V  >  =  Map < K ,  V >   ;
+<<<
+typedef Hash<K extends List<T>, V>
+    = Map<K, V>;

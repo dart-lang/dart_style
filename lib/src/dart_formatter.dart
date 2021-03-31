@@ -88,7 +88,11 @@ class DartFormatter {
     // command line.
     var featureSet = FeatureSet.fromEnableFlags2(
         sdkLanguageVersion: Version(2, 13, 0),
-        flags: ['non-nullable', 'generic-metadata', 'triple-shift']);
+        flags: [
+          'generic-metadata',
+          'nonfunction-type-aliases',
+          'triple-shift'
+        ]);
 
     var inputOffset = 0;
     var text = source.text;
