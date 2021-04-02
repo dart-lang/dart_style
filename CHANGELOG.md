@@ -2,6 +2,7 @@
 
 * Support triple-shift `>>>` and `>>>=` operators (#992).
 * Support non-function type aliases (#993).
+* Less indentation on nested `?:` (#713, #722).
 
 # 2.0.0
 

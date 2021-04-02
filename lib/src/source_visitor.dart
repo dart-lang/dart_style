@@ -821,9 +821,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitConditionalExpression(ConditionalExpression node) {
-    // Don't nest if this expression is the else leg of another ternary
-    final shouldNest = !(node.parent is ConditionalExpression &&
-        (node.parent as ConditionalExpression).elseExpression == node);
+    // Flatten else-if style chained conditionals.
+    var shouldNest = node.parent is! ConditionalExpression ||
+        (node.parent as ConditionalExpression).elseExpression != node;
     if (shouldNest) builder.nestExpression();
 
     // Start lazily so we don't force the operator to split if a line comment
