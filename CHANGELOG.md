@@ -3,6 +3,7 @@
 * Support triple-shift `>>>` and `>>>=` operators (#992).
 * Support non-function type aliases (#993).
 * Less indentation on nested `?:` (#713, #722).
+* Correct constructor initializer indentation after `required` (#1010).
 
 # 2.0.0
 

@@ -940,8 +940,12 @@ class SourceVisitor extends ThrowingAstVisitor {
       //           super();
       space();
       if (node.initializers.length > 1) {
-        _writeText(node.parameters.parameters.last.isOptional ? ' ' : '  ',
-            node.separator!.offset);
+        var padding = '  ';
+        if (node.parameters.parameters.last.isNamed ||
+            node.parameters.parameters.last.isOptionalPositional) {
+          padding = ' ';
+        }
+        _writeText(padding, node.separator!.offset);
       }
 
       // ":".
