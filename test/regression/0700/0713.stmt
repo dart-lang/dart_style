@@ -6,7 +6,7 @@ String type = status == 'OK'
 String type = status == 'OK'
     ? 'notices'
     : status == 'NO'
-    ? 'warnings'
-    : status == 'BAD'
-    ? 'errors'
-    : '';
+        ? 'warnings'
+        : status == 'BAD'
+            ? 'errors'
+            : '';

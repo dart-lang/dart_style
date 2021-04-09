@@ -7,6 +7,6 @@ class C {
   int get currentAngleDigits => _currentSunAngleDeg < 0
       ? 1
       : _currentSunAngleDeg < 10
-      ? 2
-      : 3;
+          ? 2
+          : 3;
 }

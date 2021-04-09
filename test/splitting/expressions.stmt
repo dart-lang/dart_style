@@ -84,8 +84,8 @@ var kind = a ? b : c ? d : e;
 var kind = a
     ? b
     : c
-    ? d
-    : e;
+        ? d
+        : e;
 >>> don't split conditionals when indirectly nested
 var kind = a ? b : (c ? d : e);
 <<<
@@ -132,8 +132,8 @@ identifier
         ? someParticularlyLongOperand
         : someParticularlyLongOperand
     : identifier
-    ? someParticularlyLongOperand
-    : someParticularlyLongOperand;
+        ? someParticularlyLongOperand
+        : someParticularlyLongOperand;
 >>> index expressions can split after "["
 verylongIdentifier[someParticularlyLongArgument];
 <<<

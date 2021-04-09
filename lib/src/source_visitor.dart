@@ -821,10 +821,14 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitConditionalExpression(ConditionalExpression node) {
+    // TODO(rnystrom): Consider revisiting whether users prefer this after 2.13.
+    /*
     // Flatten else-if style chained conditionals.
     var shouldNest = node.parent is! ConditionalExpression ||
         (node.parent as ConditionalExpression).elseExpression != node;
     if (shouldNest) builder.nestExpression();
+    */
+    builder.nestExpression();
 
     // Start lazily so we don't force the operator to split if a line comment
     // appears before the first operand. If we split after one clause in a
@@ -859,7 +863,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endRule();
     builder.endSpan();
     builder.endBlockArgumentNesting();
+
+    // TODO(rnystrom): Consider revisiting whether users prefer this after 2.13.
+    /*
     if (shouldNest) builder.unnest();
+    */
+    builder.unnest();
   }
 
   @override
