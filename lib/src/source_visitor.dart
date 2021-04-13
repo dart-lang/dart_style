@@ -676,22 +676,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (node.cascadeSections.length < 2) return true;
 
-    var name;
-    // We could be more forgiving about what constitutes sections with
-    // consistent names but for now we require all sections to have the same
-    // method name.
-    for (var expression in node.cascadeSections) {
-      if (expression is MethodInvocation) {
-        if (name == null) {
-          name = expression.methodName.name;
-        } else if (name != expression.methodName.name) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
-    return true;
+    return false;
   }
 
   @override
