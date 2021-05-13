@@ -14,7 +14,9 @@ list
   ..add("baz")
   ..add("bar");
 <<<
-list..add("baz")..add("bar");
+list
+  ..add("baz")
+  ..add("bar");
 >>> cascades indent contained blocks (and force multi-line) multiple cascades get their own line when method names are different
 foo..fooBar()..toString();
 <<<
@@ -148,7 +150,9 @@ list
   ?..add("baz")
   ..add("bar");
 <<<
-list?..add("baz")..add("bar");
+list
+  ?..add("baz")
+  ..add("bar");
 >>> mixed
 foo?..a()..b()..c();
 <<<

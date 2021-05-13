@@ -131,7 +131,9 @@ avian
 >>> unsplit cascade unsplit method
 object.method().method()..c()..c();
 <<<
-object.method().method()..c()..c();
+object.method().method()
+  ..c()
+  ..c();
 >>> split cascade unsplit method
 object.method().method()..cascade()..cascade();
 <<<
