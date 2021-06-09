@@ -144,3 +144,35 @@ function([
 ] /* c */) {
   ;
 }
+>>>
+function(
+    /* comment */ int a, int b, int c,
+    [direction]) {
+  ;
+}
+<<<
+function(
+    /* comment */ int a, int b, int c,
+    [direction]) {
+  ;
+}
+>>>
+function(
+    /* comment */ int a, int b, int c) {
+  ;
+}
+<<<
+function(
+    /* comment */ int a, int b, int c) {
+  ;
+}
+>>>
+function(
+    /* comment */ int a, int b, int c, int d) {
+  ;
+}
+<<<
+function(/* comment */ int a, int b,
+    int c, int d) {
+  ;
+}

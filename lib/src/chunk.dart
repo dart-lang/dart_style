@@ -384,6 +384,20 @@ class Span extends FastHash {
   String toString() => '$id\$$cost';
 }
 
+enum CommentType {
+  /// A `///` or `/**` doc comment.
+  doc,
+
+  /// A non-doc line comment.
+  line,
+
+  /// A `/* ... */` comment that should be on its own line.
+  block,
+
+  /// A `/* ... */` comment that can share a line with other code.
+  inlineBlock,
+}
+
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
 class SourceComment extends Selection {
@@ -391,14 +405,14 @@ class SourceComment extends Selection {
   @override
   final String text;
 
+  /// What kind of comment this is.
+  final CommentType type;
+
   /// The number of newlines between the comment or token preceding this comment
   /// and the beginning of this one.
   ///
   /// Will be zero if the comment is a trailing one.
   int linesBefore;
-
-  /// Whether this comment is a line comment.
-  final bool isLineComment;
 
   /// Whether this comment starts at column one in the source.
   ///
@@ -407,9 +421,6 @@ class SourceComment extends Selection {
   /// re-indented.
   final bool flushLeft;
 
-  /// Whether this comment is an inline block comment.
-  bool get isInline => linesBefore == 0 && !isLineComment;
-
-  SourceComment(this.text, this.linesBefore,
-      {required this.isLineComment, required this.flushLeft});
+  SourceComment(this.text, this.type, this.linesBefore,
+      {required this.flushLeft});
 }

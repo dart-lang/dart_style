@@ -3770,8 +3770,17 @@ class SourceVisitor extends ThrowingAstVisitor {
         if (comment == token.precedingComments) linesBefore = 2;
       }
 
-      var sourceComment = SourceComment(text, linesBefore,
-          isLineComment: comment.type == TokenType.SINGLE_LINE_COMMENT,
+      var type = CommentType.block;
+      if (text.startsWith('///') && !text.startsWith('////') ||
+      text.startsWith('/**')) {
+        type = CommentType.doc;
+      } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
+        type = CommentType.line;
+      } else if (commentLine == previousLine || commentLine == tokenLine) {
+        type = CommentType.inlineBlock;
+      }
+
+      var sourceComment = SourceComment(text, type, linesBefore,
           flushLeft: flushLeft);
 
       // If this comment contains either of the selection endpoints, mark them
