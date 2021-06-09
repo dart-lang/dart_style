@@ -3772,7 +3772,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
-      text.startsWith('/**')) {
+          text.startsWith('/**')) {
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
@@ -3780,8 +3780,8 @@ class SourceVisitor extends ThrowingAstVisitor {
         type = CommentType.inlineBlock;
       }
 
-      var sourceComment = SourceComment(text, type, linesBefore,
-          flushLeft: flushLeft);
+      var sourceComment =
+          SourceComment(text, type, linesBefore, flushLeft: flushLeft);
 
       // If this comment contains either of the selection endpoints, mark them
       // in the comment.
