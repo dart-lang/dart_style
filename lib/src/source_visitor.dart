@@ -564,39 +564,21 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitCascadeExpression(CascadeExpression node) {
+    // Whether a split in the cascade target expression forces the cascade to
+    // move to the next line. It looks weird to move the cascade down if the
+    // target expression is a collection, so we don't:
+    //
+    //     var list = [
+    //       stuff
+    //     ]
+    //       ..add(more);
     var splitIfOperandsSplit =
         node.cascadeSections.length > 1 || _isCollectionLike(node.target);
-
-    // If the cascade sections have consistent names they can be broken
-    // normally otherwise they always get their own line.
     if (splitIfOperandsSplit) {
       builder.startLazyRule(_allowInlineCascade(node) ? Rule() : Rule.hard());
     }
 
-    // If the target of the cascade is a method call (or chain of them), we
-    // treat the nesting specially. Normally, you would end up with:
-    //
-    //     receiver
-    //           .method()
-    //           .method()
-    //       ..cascade()
-    //       ..cascade();
-    //
-    // This is logical, since the method chain is an operand of the cascade
-    // expression, so it's more deeply nested. But it looks wrong, so we leave
-    // the method chain's nesting active until after the cascade sections to
-    // force the *cascades* to be deeper because it looks better:
-    //
-    //     receiver
-    //         .method()
-    //         .method()
-    //           ..cascade()
-    //           ..cascade();
-    if (node.target is MethodInvocation) {
-      CallChainVisitor(this, node.target).visit(unnest: false);
-    } else {
-      visit(node.target);
-    }
+    visit(node.target);
 
     builder.nestExpression(indent: Indent.cascade, now: true);
     builder.startBlockArgumentNesting();
@@ -621,8 +603,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.endBlockArgumentNesting();
     builder.unnest();
-
-    if (node.target is MethodInvocation) builder.unnest();
   }
 
   /// Whether [expression] is a collection literal, or a call with a trailing
@@ -674,8 +654,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.target is PrefixExpression) return false;
     if (node.target is AwaitExpression) return false;
 
+    // Only allow a single cascade to be inline.
     if (node.cascadeSections.length < 2) return true;
-
     return false;
   }
 
