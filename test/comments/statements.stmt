@@ -55,3 +55,32 @@ while (true) {
 while (true) {
   // comment
 }
+>>>
+main() {
+  /* comment */ statement;
+}
+<<<
+main() {
+  /* comment */ statement;
+}
+>>>
+main() {
+  code;
+
+  /* comment */ statement;
+}
+<<<
+main() {
+  code;
+
+  /* comment */ statement;
+}
+>>>
+main() {
+  while (b)
+  /*unreachable*/ {}
+}
+<<<
+main() {
+  while (b) /*unreachable*/ {}
+}
