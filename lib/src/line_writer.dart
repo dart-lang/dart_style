@@ -84,7 +84,8 @@ class LineWriter {
     // TODO(rnystrom): Passing in an initial indent here is hacky. The
     // LineWriter ensures all but the first chunk have a block indent, and this
     // handles the first chunk. Do something cleaner.
-    var result = writer.writeLines(Indent.block, flushLeft: chunk.flushLeft);
+    var result = writer.writeLines(chunk.block.indent ? Indent.block : 0,
+        flushLeft: chunk.flushLeft);
     return _blockCache[key] = result;
   }
 

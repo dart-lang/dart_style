@@ -591,14 +591,12 @@ class ChunkBuilder {
   /// Starts a new block as a child of the current chunk.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock(Chunk? argumentChunk) {
+  ChunkBuilder startBlock(Chunk? argumentChunk, {bool indent = true}) {
     var chunk = _chunks.last;
-    chunk.makeBlock(argumentChunk);
+    chunk.makeBlock(argumentChunk, indent: indent);
 
     var builder = ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
-
-    // A block always starts off indented one level.
-    builder.indent();
+    if (indent) builder.indent();
 
     return builder;
   }
