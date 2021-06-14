@@ -1,3 +1,7 @@
+# 2.0.2-dev
+
+* Don't unnecessarily split argument lists with `/* */` comments (#837).
+
 # 2.0.1
 
 * Support triple-shift `>>>` and `>>>=` operators (#992).

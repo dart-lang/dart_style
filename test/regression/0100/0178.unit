@@ -6,8 +6,7 @@ void main() {
 }
 <<<
 import 'dart:async';
-/* soup */
-import 'dart:io';
+/* soup */ import 'dart:io';
 
 void main() {
   print('hi');

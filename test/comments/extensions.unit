@@ -33,9 +33,7 @@ extension A on B {
 extension A on B {
   /* comment */}
 <<<
-extension A on B {
-  /* comment */
-}
+extension A on B {/* comment */}
 >>> inline block comment
 extension A on B {  /* comment */  }
 <<<

@@ -253,8 +253,7 @@ class ChunkBuilder {
     // Edge case: if the comments are completely inline (i.e. just a series of
     // block comments with no newlines before, after, or between them), then
     // they will eat any pending newlines. Make sure that doesn't happen by
-    // putting the pending whitespace before the first comment and moving them
-    // to their own line. Turns this:
+    // putting the pending whitespace before the first comment. Turns this:
     //
     //     library foo; /* a */ /* b */ import 'a.dart';
     //
@@ -262,13 +261,11 @@ class ChunkBuilder {
     //
     //     library foo;
     //
-    //     /* a */ /* b */
-    //     import 'a.dart';
+    //     /* a */ /* b */ import 'a.dart';
     if (linesBeforeToken == 0 &&
-        comments.every((comment) => comment.isInline) &&
-        _pendingWhitespace.minimumLines > 0) {
+        _pendingWhitespace.minimumLines > comments.first.linesBefore &&
+        comments.every((comment) => comment.type == CommentType.inlineBlock)) {
       comments.first.linesBefore = _pendingWhitespace.minimumLines;
-      linesBeforeToken = 1;
     }
 
     // Write each comment and the whitespace between them.
@@ -284,10 +281,11 @@ class ChunkBuilder {
       }
       _emitPendingWhitespace();
 
-      if (comment.linesBefore == 0) {
+      // See if the comment should follow text on the current line.
+      if (comment.linesBefore == 0 || comment.type == CommentType.inlineBlock) {
         // If we're sitting on a split, move the comment before it to adhere it
         // to the preceding text.
-        if (_shouldMoveCommentBeforeSplit(comment.text)) {
+        if (_shouldMoveCommentBeforeSplit(comment)) {
           _chunks.last.allowText();
         }
 
@@ -295,7 +293,7 @@ class ChunkBuilder {
         // space before it or not.
         if (_needsSpaceBeforeComment(comment)) _writeText(' ');
       } else {
-        // The comment starts a line, so make sure it stays on its own line.
+        // The comment is not inline, so start a new line.
         _writeHardSplit(
             flushLeft: comment.flushLeft,
             isDouble: comment.linesBefore > 1,
@@ -741,17 +739,23 @@ class ChunkBuilder {
 
   /// Returns `true` if the last chunk is a split that should be moved after the
   /// comment that is about to be written.
-  bool _shouldMoveCommentBeforeSplit(String comment) {
+  bool _shouldMoveCommentBeforeSplit(SourceComment comment) {
     // Not if there is nothing before it.
     if (_chunks.isEmpty) return false;
 
+    // Don't move a comment to a preceding line.
+    if (comment.linesBefore != 0) return false;
+
     // Multi-line comments are always pushed to the next line.
-    if (comment.contains('\n')) return false;
+    if (comment.type == CommentType.doc) return false;
+    if (comment.type == CommentType.block) return false;
 
     var text = _chunks.last.text;
 
     // A block comment following a comma probably refers to the following item.
-    if (text.endsWith(',') && comment.startsWith('/*')) return false;
+    if (text.endsWith(',') && comment.type == CommentType.inlineBlock) {
+      return false;
+    }
 
     // If the text before the split is an open grouping character, it looks
     // better to keep it with the elements than with the bracket itself.
@@ -786,13 +790,11 @@ class ChunkBuilder {
     // Not at the start of a line.
     if (!_chunks.last.canAddText) return false;
 
-    var text = _chunks.last.text;
-    if (text.endsWith('\n')) return false;
-
     // Always put a space before line comments.
-    if (comment.isLineComment) return true;
+    if (comment.type == CommentType.line) return true;
 
     // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
+    var text = _chunks.last.text;
     if (_isGenericMethodComment(comment) &&
         _trailingIdentifierChar.hasMatch(text)) {
       return false;
