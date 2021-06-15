@@ -588,7 +588,9 @@ class ChunkBuilder {
 
   /// Starts a new block as a child of the current chunk.
   ///
-  /// Nested blocks are handled using their own independent [LineWriter].
+  /// Nested blocks are handled using their own independent [LineWriter]. If
+  /// [indent] is `false` then the first line of the block will not get a level
+  /// of leading indentation. Otherwise it does.
   ChunkBuilder startBlock(Chunk? argumentChunk, {bool indent = true}) {
     var chunk = _chunks.last;
     chunk.makeBlock(argumentChunk, indent: indent);

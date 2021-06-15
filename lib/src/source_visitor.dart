@@ -634,15 +634,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// To handle that, we don't put the last section in the block and instead
   /// format it with the surrounding expression. So, from the formatter's
-  /// view, a cascade like:
-  ///
-  ///     var x = someLeadingExpression
-  ///       ..firstCascade()
-  ///       ..secondCascade()
-  ///       ..thirdCascade()
-  ///       ..fourthCascade();
-  ///
-  /// Is formatted like:
+  /// view, the above casade is formatted like:
   ///
   ///     var x = someLeadingExpression
   ///       [ begin block ]
@@ -665,7 +657,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     zeroSplit();
 
     // If there are comments before the first section, keep them outside of the
-    // block.
+    // block. That way code like:
+    //
+    //     receiver // comment
+    //       ..cascade();
+    //
+    // Keeps the comment on the first line.
     var firstCommentToken = node.cascadeSections.first.beginToken;
     writePrecedingCommentsAndNewlines(firstCommentToken);
     _suppressPrecedingCommentsAndNewLines.add(firstCommentToken);
