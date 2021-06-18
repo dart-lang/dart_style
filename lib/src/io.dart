@@ -1,9 +1,7 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-
-library dart_style.src.io;
-
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -15,7 +13,7 @@ import 'exceptions.dart';
 import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
-void formatStdin(FormatterOptions options, List<int>? selection, String name) {
+Future<void> formatStdin(FormatterOptions options, List<int>? selection, String name) async {
   var selectionStart = 0;
   var selectionLength = 0;
 
@@ -24,6 +22,7 @@ void formatStdin(FormatterOptions options, List<int>? selection, String name) {
     selectionLength = selection[1];
   }
 
+  var completer = Completer<void>();
   var input = StringBuffer();
   stdin.transform(Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = DartFormatter(
@@ -50,7 +49,11 @@ $err
 $stack''');
       exitCode = 70; // sysexits.h: EX_SOFTWARE
     }
+
+    completer.complete();
   });
+
+  return completer.future;
 }
 
 /// Formats all of the files and directories given by [paths].
