@@ -152,7 +152,7 @@ class FormatCommand extends Command<int> {
         setExitIfChanged: setExitIfChanged);
 
     if (argResults.rest.isEmpty) {
-      formatStdin(options, selection, stdinName);
+      await formatStdin(options, selection, stdinName);
     } else {
       formatPaths(options, argResults.rest);
       options.summary.show();

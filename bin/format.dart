@@ -12,7 +12,7 @@ import 'package:dart_style/src/cli/summary.dart';
 import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/style_fix.dart';
 
-void main(List<String> args) {
+void main(List<String> args) async {
   var parser = ArgParser(allowTrailingOptions: true);
 
   defineOptions(parser,
@@ -135,7 +135,7 @@ void main(List<String> args) {
       setExitIfChanged: setExitIfChanged);
 
   if (argResults.rest.isEmpty) {
-    formatStdin(options, selection, argResults['stdin-name'] as String);
+    await formatStdin(options, selection, argResults['stdin-name'] as String);
   } else {
     formatPaths(options, argResults.rest);
   }
