@@ -13,7 +13,8 @@ import 'exceptions.dart';
 import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
-Future<void> formatStdin(FormatterOptions options, List<int>? selection, String name) async {
+Future<void> formatStdin(
+    FormatterOptions options, List<int>? selection, String name) async {
   var selectionStart = 0;
   var selectionLength = 0;
 
