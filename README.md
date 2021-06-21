@@ -55,13 +55,47 @@ greet(String name, {String title = "Captain"}) {
 }
 ```
 
-## Getting dartfmt
+## Using the formatter
 
-Dartfmt is included in the Dart SDK, so most users get it directly from there.
-That has the latest version of dartfmt that was available when the SDK was
-released.
+The formatter is part of the unified [`dart`][] developer tool included in the
+Dart SDK, so most users get it directly from there. That has the latest version
+of the formatter that was available when the SDK was released.
 
-If you want to make sure you are running the latest version of dartfmt, you can
+[`dart`]: https://dart.dev/tools/dart-tool
+
+IDEs and editors that support Dart usually provide easy ways to run the
+formatter. For example, in WebStorm you can right-click a .dart file and then
+choose **Reformat with Dart Style**.
+
+Here's a simple example of using the formatter on the command line:
+
+    $ dart format test.dart
+
+This command formats the `test.dart` file and writes the result to the
+file.
+
+`dart format` takes a list of paths, which can point to directories or files. If
+the path is a directory, it processes every `.dart` file in that directory or
+any of its subdirectories.
+
+By default, it formats each file and write the formatting changes to the files.
+If you pass `--output show`, it prints the formatted code to stdout.
+
+You may pass a `-l` option to control the width of the page that it wraps lines
+to fit within, but you're strongly encouraged to keep the default line length of
+80 columns.
+
+### Validating files
+
+If you want to use the formatter in something like a [presubmit script][] or
+[commit hook][], you can pass flags to omit writing formatting changes to disk
+and to update the exit code to indicate success/failure:
+
+    $ dart format --output=none --set-exit-if-changed .
+
+## Running other versions of the formatter CLI command
+
+If you need to run a different version of the formatter, you can
 [globally activate][] the package from the dart_style package on
 pub.dev:
 
@@ -77,42 +111,6 @@ If you don't want pub to put `dartfmt` on your PATH, you can run it explicitly:
 
     $ pub global activate dart_style --no-executables
     $ pub global run dart_style:format ...
-
-## Using dartfmt
-
-IDEs and editors that support Dart usually provide easy ways to run the
-formatter. For example, in WebStorm you can right-click a .dart file and then
-choose **Reformat with Dart Style**.
-
-Here's a simple example of using dartfmt on the command line:
-
-    $ dartfmt test.dart
-
-This command formats the `test.dart` file and writes the result to standard
-output.
-
-Dartfmt takes a list of paths, which can point to directories or files. If the
-path is a directory, it processes every `.dart` file in that directory or any of
-its subdirectories. If no file or directory is specified, dartfmt reads from
-standard input.
-
-By default, it formats each file and just prints the resulting code to stdout.
-If you pass `-w`, it overwrites your existing files with the formatted results.
-
-You may pass a `-l` option to control the width of the page that it wraps lines
-to fit within, but you're strongly encouraged to keep the default line length of
-80 columns.
-
-### Validating files
-
-If you want to use the formatter in something like a [presubmit script][] or
-[commit hook][], you can use the `-n` dry run option. If you specify `-n`, the
-formatter prints the paths of the files whose contents would change if the
-formatter were run normally. If it prints no output, then everything is already
-correctly formatted.
-
-[presubmit script]: https://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
-[commit hook]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
 
 ## Using the dart_style API
 
