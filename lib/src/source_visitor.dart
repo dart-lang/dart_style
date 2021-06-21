@@ -564,39 +564,27 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitCascadeExpression(CascadeExpression node) {
+    // Optimized path if we know the cascade will split.
+    if (node.cascadeSections.length > 1) {
+      _visitSplitCascade(node);
+      return;
+    }
+
+    // Whether a split in the cascade target expression forces the cascade to
+    // move to the next line. It looks weird to move the cascade down if the
+    // target expression is a collection, so we don't:
+    //
+    //     var list = [
+    //       stuff
+    //     ]
+    //       ..add(more);
     var splitIfOperandsSplit =
         node.cascadeSections.length > 1 || _isCollectionLike(node.target);
-
-    // If the cascade sections have consistent names they can be broken
-    // normally otherwise they always get their own line.
     if (splitIfOperandsSplit) {
       builder.startLazyRule(_allowInlineCascade(node) ? Rule() : Rule.hard());
     }
 
-    // If the target of the cascade is a method call (or chain of them), we
-    // treat the nesting specially. Normally, you would end up with:
-    //
-    //     receiver
-    //           .method()
-    //           .method()
-    //       ..cascade()
-    //       ..cascade();
-    //
-    // This is logical, since the method chain is an operand of the cascade
-    // expression, so it's more deeply nested. But it looks wrong, so we leave
-    // the method chain's nesting active until after the cascade sections to
-    // force the *cascades* to be deeper because it looks better:
-    //
-    //     receiver
-    //         .method()
-    //         .method()
-    //           ..cascade()
-    //           ..cascade();
-    if (node.target is MethodInvocation) {
-      CallChainVisitor(this, node.target).visit(unnest: false);
-    } else {
-      visit(node.target);
-    }
+    visit(node.target);
 
     builder.nestExpression(indent: Indent.cascade, now: true);
     builder.startBlockArgumentNesting();
@@ -621,8 +609,87 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.endBlockArgumentNesting();
     builder.unnest();
+  }
 
-    if (node.target is MethodInvocation) builder.unnest();
+  /// Format the cascade using a nested block instead of a single inline
+  /// expression.
+  ///
+  /// If the cascade has multiple sections, we know each section will be on its
+  /// own line and we know there will be at least one trailing section following
+  /// a preceding one. That let's us treat all of the earlier sections as a
+  /// separate block like we do with collections and functions, instead of a
+  /// monolithic expression. Using a block in turn makes big cascades much
+  /// faster to format (like 10x) since the block formatting is memoized and
+  /// each cascade section in it is formatted independently.
+  ///
+  /// The tricky part is that block formatting assumes the entire line will be
+  /// part of the block. This is not true of the last section in a cascade,
+  /// which may have other trailing code, like the `;` here:
+  ///
+  ///     var x = someLeadingExpression
+  ///       ..firstCascade()
+  ///       ..secondCascade()
+  ///       ..thirdCascade()
+  ///       ..fourthCascade();
+  ///
+  /// To handle that, we don't put the last section in the block and instead
+  /// format it with the surrounding expression. So, from the formatter's
+  /// view, the above casade is formatted like:
+  ///
+  ///     var x = someLeadingExpression
+  ///       [ begin block ]
+  ///       ..firstCascade()
+  ///       ..secondCascade()
+  ///       ..thirdCascade()
+  ///       [ end block ]
+  ///       ..fourthCascade();
+  ///
+  /// This somewhere between clever and hacky, but it works and allows cascades
+  /// of essentially unbounded length to be formatted quickly.
+  void _visitSplitCascade(CascadeExpression node) {
+    // Rule to split before the first `..`.
+    builder.startLazyRule(Rule.hard());
+    visit(node.target);
+
+    builder.nestExpression(indent: Indent.cascade, now: true);
+    builder.startBlockArgumentNesting();
+
+    zeroSplit();
+
+    // If there are comments before the first section, keep them outside of the
+    // block. That way code like:
+    //
+    //     receiver // comment
+    //       ..cascade();
+    //
+    // Keeps the comment on the first line.
+    var firstCommentToken = node.cascadeSections.first.beginToken;
+    writePrecedingCommentsAndNewlines(firstCommentToken);
+    _suppressPrecedingCommentsAndNewLines.add(firstCommentToken);
+
+    // Process the inner cascade sections as a separate block. This way the
+    // entire cascade expression isn't line split as a single monolithic unit,
+    // which is very slow.
+    builder = builder.startBlock(null, indent: false);
+
+    for (var i = 0; i < node.cascadeSections.length - 1; i++) {
+      if (i > 0) newline();
+      visit(node.cascadeSections[i]);
+    }
+
+    // Put comments before the last section inside the block.
+    var lastCommentToken = node.cascadeSections.last.beginToken;
+    writePrecedingCommentsAndNewlines(lastCommentToken);
+    _suppressPrecedingCommentsAndNewLines.add(lastCommentToken);
+
+    builder = builder.endBlock(null, forceSplit: true);
+
+    // The last section is outside of the block.
+    visit(node.cascadeSections.last);
+
+    builder.endRule();
+    builder.endBlockArgumentNesting();
+    builder.unnest();
   }
 
   /// Whether [expression] is a collection literal, or a call with a trailing
@@ -660,9 +727,13 @@ class SourceVisitor extends ThrowingAstVisitor {
         !hasCommaAfter(arguments.arguments.last);
   }
 
-  /// Whether a cascade should be allowed to be inline as opposed to one
-  /// expression per line.
+  /// Whether a cascade should be allowed to be inline as opposed to moving the
+  /// section to the next line.
   bool _allowInlineCascade(CascadeExpression node) {
+    // Cascades with multiple sections are handled elsewhere and are never
+    // inline.
+    assert(node.cascadeSections.length == 1);
+
     // If the receiver is an expression that makes the cascade's very low
     // precedence confusing, force it to split. For example:
     //
@@ -674,23 +745,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.target is PrefixExpression) return false;
     if (node.target is AwaitExpression) return false;
 
-    if (node.cascadeSections.length < 2) return true;
-
-    var name;
-    // We could be more forgiving about what constitutes sections with
-    // consistent names but for now we require all sections to have the same
-    // method name.
-    for (var expression in node.cascadeSections) {
-      if (expression is MethodInvocation) {
-        if (name == null) {
-          name = expression.methodName.name;
-        } else if (name != expression.methodName.name) {
-          return false;
-        }
-      } else {
-        return false;
-      }
-    }
     return true;
   }
 

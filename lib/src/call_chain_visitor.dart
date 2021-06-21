@@ -173,14 +173,7 @@ class CallChainVisitor {
       this._blockCalls, this._hangingCall);
 
   /// Builds chunks for the call chain.
-  ///
-  /// If [unnest] is `false` than this will not close the expression nesting
-  /// created for the call chain and the caller must end it. Used by cascades
-  /// to force a cascade after a method chain to be more deeply nested than
-  /// the methods.
-  void visit({bool? unnest}) {
-    unnest ??= true;
-
+  void visit() {
     _visitor.builder.nestExpression();
 
     // Try to keep the entire method invocation one line.
@@ -259,8 +252,7 @@ class CallChainVisitor {
 
     _disableRule();
     _endSpan();
-
-    if (unnest) _visitor.builder.unnest();
+    _visitor.builder.unnest();
   }
 
   /// Returns `true` if the method chain should split if a split occurs inside

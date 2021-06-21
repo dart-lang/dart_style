@@ -131,7 +131,9 @@ avian
 >>> unsplit cascade unsplit method
 object.method().method()..c()..c();
 <<<
-object.method().method()..c()..c();
+object.method().method()
+  ..c()
+  ..c();
 >>> split cascade unsplit method
 object.method().method()..cascade()..cascade();
 <<<
@@ -146,9 +148,9 @@ object
     .method()
     .method()
     .method()
-      ..cascade()
-      ..cascade()
-      ..cascade();
+  ..cascade()
+  ..cascade()
+  ..cascade();
 >>> cascade setters on method chain
 object.method().method().method().method()..x=1..y=2;
 <<<
@@ -157,8 +159,8 @@ object
     .method()
     .method()
     .method()
-      ..x = 1
-      ..y = 2;
+  ..x = 1
+  ..y = 2;
 >>> cascade index
 object..[index]..method()..[index]=value;
 <<<

@@ -225,9 +225,9 @@ class Chunk extends Selection {
   }
 
   /// Turns this chunk into one that can contain a block of child chunks.
-  void makeBlock(Chunk? blockArgument) {
+  void makeBlock(Chunk? blockArgument, {required bool indent}) {
     assert(_block == null);
-    _block = ChunkBlock(blockArgument);
+    _block = ChunkBlock(blockArgument, indent);
   }
 
   /// Returns `true` if the block body owned by this chunk should be expression
@@ -290,10 +290,13 @@ class ChunkBlock {
   /// may need extra expression-level indentation.
   final Chunk? argument;
 
+  /// Whether the first chunk should have a level of indentation before it.
+  final bool indent;
+
   /// The child chunks in this block.
   final List<Chunk> chunks = [];
 
-  ChunkBlock(this.argument);
+  ChunkBlock(this.argument, this.indent);
 }
 
 /// Constants for the cost heuristics used to determine which set of splits is
