@@ -24,8 +24,7 @@ import 'fast_hash.dart';
 class NestingLevel extends FastHash {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
-  NestingLevel? get parent => _parent;
-  final NestingLevel? _parent;
+  final NestingLevel? parent;
 
   /// The number of characters that this nesting level is indented relative to
   /// the containing level.
@@ -40,13 +39,13 @@ class NestingLevel extends FastHash {
   int get totalUsedIndent => _totalUsedIndent!;
   int? _totalUsedIndent;
 
-  bool get isNested => _parent != null;
+  bool get isNested => parent != null;
 
   NestingLevel()
-      : _parent = null,
+      : parent = null,
         indent = 0;
 
-  NestingLevel._(this._parent, this.indent);
+  NestingLevel._(this.parent, this.indent);
 
   /// Creates a new deeper level of nesting indented [spaces] more characters
   /// that the outer level.
@@ -55,7 +54,7 @@ class NestingLevel extends FastHash {
   /// Clears the previously calculated total indent of this nesting level.
   void clearTotalUsedIndent() {
     _totalUsedIndent = null;
-    _parent?.clearTotalUsedIndent();
+    parent?.clearTotalUsedIndent();
   }
 
   /// Calculates the total amount of indentation from this nesting level and
@@ -66,9 +65,9 @@ class NestingLevel extends FastHash {
 
     totalIndent = 0;
 
-    if (_parent != null) {
-      _parent!.refreshTotalUsedIndent(usedNesting);
-      totalIndent += _parent!.totalUsedIndent;
+    if (parent != null) {
+      parent!.refreshTotalUsedIndent(usedNesting);
+      totalIndent += parent!.totalUsedIndent;
     }
 
     if (usedNesting.contains(this)) totalIndent += indent;
@@ -78,7 +77,7 @@ class NestingLevel extends FastHash {
 
   @override
   String toString() {
-    if (_parent == null) return indent.toString();
+    if (parent == null) return indent.toString();
     return '$parent:$indent';
   }
 }
