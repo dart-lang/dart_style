@@ -5,6 +5,7 @@
 * Always split cascades with multiple sections (#1006).
 * Don't indent cascades farther than their receiver method chains.
 * Optimize line splitting cascades (#811).
+* Split empty catch blocks with finally clauses (#1029).
 
 # 2.0.1
 

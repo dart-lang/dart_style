@@ -25,7 +25,7 @@ class NestingLevel extends FastHash {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
   NestingLevel? get parent => _parent;
-  NestingLevel? _parent;
+  final NestingLevel? _parent;
 
   /// The number of characters that this nesting level is indented relative to
   /// the containing level.
@@ -42,7 +42,9 @@ class NestingLevel extends FastHash {
 
   bool get isNested => _parent != null;
 
-  NestingLevel() : indent = 0;
+  NestingLevel()
+      : _parent = null,
+        indent = 0;
 
   NestingLevel._(this._parent, this.indent);
 

@@ -478,19 +478,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // else is always split.
     if (_isEmptyCollection(node.statements, node.rightBracket)) {
       token(node.leftBracket);
-
-      // Force a split when used as the then body of an if with an else:
-      //
-      //     if (condition) {
-      //     } else ...
-      if (node.parent is IfStatement) {
-        var ifStatement = node.parent as IfStatement;
-        if (ifStatement.elseStatement != null &&
-            ifStatement.thenStatement == node) {
-          newline();
-        }
-      }
-
+      if (_splitEmptyBlock(node)) newline();
       token(node.rightBracket);
       return;
     }
@@ -2034,7 +2022,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.rightParenthesis);
     builder.unnest();
 
-    @override
     void visitClause(Statement clause) {
       if (clause is Block || clause is IfStatement) {
         space();
@@ -3416,6 +3403,31 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// like that are treated specially because they cannot be split inside.
   bool _isEmptyCollection(Iterable<AstNode> nodes, Token rightBracket) =>
       nodes.isEmpty && rightBracket.precedingComments == null;
+
+  /// Whether [node] should be forced to split even if completely empty.
+  ///
+  /// Most empty blocks format as `{}` but in a couple of cases where there is
+  /// a subsequent block, we split the previous one.
+  bool _splitEmptyBlock(Block node) {
+    // Force a split when used as the then body of an if with an else:
+    //
+    //     if (condition) {
+    //     } else ...
+    if (node.parent is IfStatement) {
+      var ifStatement = node.parent as IfStatement;
+      return ifStatement.elseStatement != null &&
+          ifStatement.thenStatement == node;
+    }
+
+    // Force a split in an empty catch if there is a finally:
+    if (node.parent is CatchClause && node.parent!.parent is TryStatement) {
+      var tryStatement = node.parent!.parent as TryStatement;
+      return tryStatement.finallyBlock != null &&
+          tryStatement.catchClauses.any((clause) => clause.body == node);
+    }
+
+    return false;
+  }
 
   /// If [node] is a spread of a non-empty collection literal, then this
   /// returns the token for the opening bracket of the collection, as in:
