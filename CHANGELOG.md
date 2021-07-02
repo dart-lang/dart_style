@@ -1,4 +1,4 @@
-# 2.0.2-dev
+# 2.0.2
 
 * Don't unnecessarily split argument lists with `/* */` comments (#837).
 * Return correct exit code from `FormatCommand` when formatting stdin (#1035).
