@@ -100,3 +100,11 @@ try {
 } finally {
   ;
 }
+>>> split leading empty catches if there are multiple
+try {;} catch (err1) {} catch (err2) {} catch (err3) {}
+<<<
+try {
+  ;
+} catch (err1) {
+} catch (err2) {
+} catch (err3) {}
