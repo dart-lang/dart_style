@@ -316,7 +316,7 @@ class ArgumentSublist {
   final int _trailingBlocks;
 
   /// The rule used to split the bodies of all block arguments.
-  Rule? get blockRule => _blockRule;
+  Rule get blockRule => _blockRule!;
   Rule? _blockRule;
 
   /// The most recent chunk that split before an argument.
@@ -446,7 +446,7 @@ class ArgumentSublist {
       rule.disableSplitOnInnerRules();
 
       // Tell it to use the rule we've already created.
-      visitor.beforeBlock(argumentBlock, blockRule!, previousSplit);
+      visitor.beforeBlock(argumentBlock, blockRule, previousSplit);
     } else if (_allArguments.length > 1) {
       // Edge case: Only bump the nesting if there are multiple arguments. This
       // lets us avoid spurious indentation in cases like:

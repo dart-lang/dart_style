@@ -1,0 +1,17 @@
+>>>
+void main() {
+  try {
+    doSomething();
+  } on Exception catch (e) {} finally {
+    cleanupSomething();
+  }
+}
+<<<
+void main() {
+  try {
+    doSomething();
+  } on Exception catch (e) {
+  } finally {
+    cleanupSomething();
+  }
+}

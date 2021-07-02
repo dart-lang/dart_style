@@ -71,3 +71,32 @@ if (condition) {} else {
 <<<
 if (condition) {
 } else {}
+>>> split empty catch if there is a finally
+try {;} catch (err) {} finally {;}
+<<<
+try {
+  ;
+} catch (err) {
+} finally {
+  ;
+}
+>>> split empty on if there is a finally
+try {;} on Exception {} finally {;}
+<<<
+try {
+  ;
+} on Exception {
+} finally {
+  ;
+}
+>>> split all empty catches if there is a finally
+try {;} catch (err1) {} catch (err2) {} catch (err3) {} finally {;}
+<<<
+try {
+  ;
+} catch (err1) {
+} catch (err2) {
+} catch (err3) {
+} finally {
+  ;
+}
