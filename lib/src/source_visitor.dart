@@ -3423,12 +3423,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     // after it:
     if (node.parent is CatchClause && node.parent!.parent is TryStatement) {
       var tryStatement = node.parent!.parent as TryStatement;
-      if (tryStatement.finallyBlock != null) {
-        return tryStatement.catchClauses.any((clause) => clause.body == node);
-      } else {
-        return tryStatement.catchClauses.any((clause) => clause.body == node) &&
-            node != tryStatement.catchClauses.last.body;
-      }
+
+      // Split the catch if there is something after it, a finally or another
+      // catch.
+      return tryStatement.finallyBlock != null ||
+          node != tryStatement.catchClauses.last.body;
     }
 
     return false;
