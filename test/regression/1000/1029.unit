@@ -15,3 +15,20 @@ void main() {
     cleanupSomething();
   }
 }
+>>>
+void main() {
+  try {
+    doSomething();
+  } on FooException {} on BarException {
+    doSomething();
+  }
+}
+<<<
+void main() {
+  try {
+    doSomething();
+  } on FooException {
+  } on BarException {
+    doSomething();
+  }
+}

@@ -3419,11 +3419,15 @@ class SourceVisitor extends ThrowingAstVisitor {
           ifStatement.thenStatement == node;
     }
 
-    // Force a split in an empty catch if there is a finally:
+    // Force a split in an empty catch if there is a finally or other catch
+    // after it:
     if (node.parent is CatchClause && node.parent!.parent is TryStatement) {
       var tryStatement = node.parent!.parent as TryStatement;
-      return tryStatement.finallyBlock != null &&
-          tryStatement.catchClauses.any((clause) => clause.body == node);
+
+      // Split the catch if there is something after it, a finally or another
+      // catch.
+      return tryStatement.finallyBlock != null ||
+          node != tryStatement.catchClauses.last.body;
     }
 
     return false;
