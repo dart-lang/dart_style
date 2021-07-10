@@ -5,7 +5,7 @@ on:
   push:
     branches: [ master ]
   pull_request:
-    branches: [ master ]
+    branches: [ master, bump-2.0.2 ]
   schedule:
     - cron: "0 0 * * 0"
 
