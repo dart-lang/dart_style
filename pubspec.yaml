@@ -31,7 +31,3 @@ dev_dependencies:
 executables:
   dartfmt: format
   dartformat: format # Allow the old name for compatibility.
-
-# For CI - remove before commiting!
-dependency_overrides:
-  analyzer: ^2.0.0
