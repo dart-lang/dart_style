@@ -2991,8 +2991,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// The two AST node types are very similar but, alas, share no common
   /// interface type in analyzer, hence the dynamic typing.
-  void _visitMemberDeclaration(
-      /* FunctionDeclaration|MethodDeclaration */ node,
+  void _visitMemberDeclaration(/* FunctionDeclaration|MethodDeclaration */ node,
       /* FunctionExpression|MethodDeclaration */ function) {
     visitMetadata(node.metadata as NodeList<Annotation>);
 
