@@ -7,6 +7,7 @@
 * Optimize line splitting cascades (#811).
 * Split empty catch blocks with finally clauses (#1029).
 * Split empty catch blocks with catches after them.
+* Allow the latest version of `package:analyzer`.
 
 # 2.0.1
 
