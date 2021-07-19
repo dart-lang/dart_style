@@ -39,7 +39,6 @@ Future<void> formatStdin(
       var output = formatter.formatSource(source);
       options.afterFile(null, name, output,
           changed: source.text != output.text);
-      return;
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
       exitCode = 65; // sysexits.h: EX_DATAERR
