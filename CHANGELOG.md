@@ -1,3 +1,7 @@
+# 2.0.3
+
+* Fix hang when reading from stdin (https://github.com/dart-lang/sdk/issues/46600).
+
 # 2.0.2
 
 * Don't unnecessarily split argument lists with `/* */` comments (#837).
