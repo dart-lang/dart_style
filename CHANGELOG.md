@@ -1,4 +1,4 @@
-# 2.0.4-dev
+# 2.1.0-dev
 
 * Support generic function references and constructor tear-offs (#1028).
 
