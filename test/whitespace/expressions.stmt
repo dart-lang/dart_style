@@ -171,3 +171,19 @@ obj?[foo];
 var generic = < T,S >(){};
 <<<
 var generic = <T, S>() {};
+>>> generic method instantiation
+void main() => id  < int   > ;
+<<<
+void main() => id<int>;
+>>> generic method instantiation
+void main() => id  < int , String  , bool   > ;
+<<<
+void main() => id<int, String, bool>;
+>>> generic constructor tear-off
+var x = Class  < int  >;
+<<<
+var x = Class<int>;
+>>> generic name constructor tear-off
+var x = Class  < int  > . named;
+<<<
+var x = Class<int>.named;

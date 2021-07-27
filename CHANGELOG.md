@@ -1,3 +1,7 @@
+# 2.1.0-dev
+
+* Support generic function references and constructor tear-offs (#1028).
+
 # 2.0.3
 
 * Fix hang when reading from stdin (https://github.com/dart-lang/sdk/issues/46600).
