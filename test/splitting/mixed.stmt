@@ -223,11 +223,3 @@ var longVariableName = identifierSoLongItWraps is SomeClassName;
 var longVariableName =
     identifierSoLongItWraps
         is SomeClassName;
->>> generic function reference nested inside expression
-veryLongFunction(argument, ConstructorTearOff<First, Second, Third, Fourth>, argument);
-<<<
-veryLongFunction(
-    argument,
-    ConstructorTearOff<First, Second,
-        Third, Fourth>,
-    argument);

@@ -1,3 +1,8 @@
+# 2.1.1
+
+* Republish 2.0.3 as 2.1.1 in order to avoid users getting 2.1.0, which has a
+  bad dependency constraint (#1051).
+
 # 2.1.0
 
 * Support generic function references and constructor tear-offs (#1028).
