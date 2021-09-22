@@ -1806,6 +1806,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitFunctionReference(FunctionReference node) {
+    visit(node.function);
+    visit(node.typeArguments);
+  }
+
+  @override
   void visitFunctionTypeAlias(FunctionTypeAlias node) {
     visitMetadata(node.metadata);
 

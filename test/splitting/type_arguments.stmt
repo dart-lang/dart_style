@@ -95,3 +95,42 @@ new SomeClass<
     sixth,
     seventh,
     eighth);
+>>> generic instantiation all fit on one line
+Foo<A,B,C,D>;
+<<<
+Foo<A, B, C, D>;
+>>> generic instantiation split between args
+LongClassName<First, Second, Third, Fourth>;
+<<<
+LongClassName<First, Second, Third,
+    Fourth>;
+>>> generic instantiation split before first if needed
+LongClassName<FirstTypeArgumentIsTooLong, Second>;
+<<<
+LongClassName<
+    FirstTypeArgumentIsTooLong, Second>;
+>>> generic instantiation split in middle if fit in two lines
+LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh>;
+<<<
+LongClassName<First, Second, Third,
+    Fourth, Fifth, Sixth, Seventh>;
+>>> generic instantiation split one per line if they don't fit in two lines
+LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>;
+<<<
+LongClassName<
+    First,
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+    Sixth,
+    Seventh,
+    Eighth>;
+>>> generic instantiation indent nested type arguments
+LongClassName<First, Inner<Second, Third, Fourth, Fifth, Sixth, Seventh>, Eighth>;
+<<<
+LongClassName<
+    First,
+    Inner<Second, Third, Fourth, Fifth,
+        Sixth, Seventh>,
+    Eighth>;

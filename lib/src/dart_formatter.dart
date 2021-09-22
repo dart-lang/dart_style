@@ -89,6 +89,7 @@ class DartFormatter {
     var featureSet = FeatureSet.fromEnableFlags2(
         sdkLanguageVersion: Version(2, 13, 0),
         flags: [
+          'constructor-tearoffs',
           'generic-metadata',
           'nonfunction-type-aliases',
           'triple-shift'
