@@ -125,7 +125,7 @@ void defineOptions(ArgParser parser,
 }
 
 List<int>? parseSelection(ArgResults argResults, String optionName) {
-  var option = argResults[optionName];
+  var option = argResults[optionName] as String?;
   if (option == null) return null;
 
   // Can only preserve a selection when parsing from stdin.

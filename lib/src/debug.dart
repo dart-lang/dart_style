@@ -222,7 +222,7 @@ void dumpConstraints(List<Chunk> chunks) {
 void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
   var buffer = StringBuffer();
 
-  void writeIndent(indent) => buffer.write(gray('| ' * (indent ~/ 2)));
+  void writeIndent(int indent) => buffer.write(gray('| ' * (indent ~/ 2)));
 
   void writeChunksUnsplit(List<Chunk> chunks) {
     for (var chunk in chunks) {

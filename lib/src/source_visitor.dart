@@ -1,6 +1,8 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/token.dart';
@@ -3499,8 +3501,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// This only looks for comments at the element boundary. Comments within an
   /// element are ignored.
   bool _containsLineComments(Iterable<AstNode> elements, Token rightBracket) {
-    bool hasLineCommentBefore(token) {
-      var comment = token.precedingComments;
+    bool hasLineCommentBefore(Token token) {
+      Token? comment = token.precedingComments;
       for (; comment != null; comment = comment.next) {
         if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
       }

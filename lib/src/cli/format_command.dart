@@ -78,7 +78,7 @@ class FormatCommand extends Command<int> {
     }
 
     // Can't use --verbose with anything but --help.
-    if (argResults['verbose'] && !argResults['help']) {
+    if (argResults['verbose'] && !(argResults['help'] as bool)) {
       usageException('Can only use --verbose with --help.');
     }
 

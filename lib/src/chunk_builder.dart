@@ -932,7 +932,7 @@ class ChunkBuilder {
   void _hardenRules() {
     if (_hardSplitRules.isEmpty) return;
 
-    void walkConstraints(rule) {
+    void walkConstraints(Rule rule) {
       rule.harden();
 
       // Follow this rule's constraints, recursively.
