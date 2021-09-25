@@ -8,8 +8,9 @@ import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/error/error.dart';
+// ignore: implementation_imports
 import 'package:analyzer/src/dart/scanner/scanner.dart';
-import 'package:analyzer/src/generated/parser.dart';
+// ignore: implementation_imports
 import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 

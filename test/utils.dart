@@ -7,12 +7,11 @@ library dart_style.test.utils;
 import 'dart:io';
 import 'dart:mirrors';
 
+import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
-
-import 'package:dart_style/dart_style.dart';
 
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';
@@ -183,7 +182,7 @@ void _testFile(String name, String path, Iterable<StyleFix>? baseFixes) {
     var lines = File(path).readAsLinesSync();
 
     // The first line may have a "|" to indicate the page width.
-    var pageWidth;
+    int? pageWidth;
     if (lines[0].endsWith('|')) {
       pageWidth = lines[0].indexOf('|');
       lines = lines.skip(1).toList();

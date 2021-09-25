@@ -105,7 +105,7 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 
     // If the path is in a subdirectory starting with ".", ignore it.
     var parts = p.split(p.relative(entry.path, from: directory.path));
-    var hiddenIndex;
+    int? hiddenIndex;
     for (var i = 0; i < parts.length; i++) {
       if (parts[i].startsWith('.')) {
         hiddenIndex = i;

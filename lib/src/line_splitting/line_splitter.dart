@@ -120,17 +120,15 @@ class LineSplitter {
 
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
-  LineSplitter(this.writer, List<Chunk> chunks, int blockIndentation,
-      int firstLineIndent,
+  LineSplitter(
+      this.writer, this.chunks, this.blockIndentation, int firstLineIndent,
       {bool flushLeft = false})
-      : chunks = chunks,
-        // Collect the set of rules that we need to select values for.
+      : // Collect the set of rules that we need to select values for.
         rules = chunks
             .map((chunk) => chunk.rule)
             .whereType<Rule>()
             .toSet()
             .toList(growable: false),
-        blockIndentation = blockIndentation,
         firstLineIndent = flushLeft ? 0 : firstLineIndent + blockIndentation {
     _queue.bindSplitter(this);
 

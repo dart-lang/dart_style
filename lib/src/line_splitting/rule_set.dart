@@ -68,7 +68,7 @@ class RuleSet {
 
     // Test this rule against the other rules being bound.
     for (var other in rule.constrainedRules) {
-      var otherValue;
+      int? otherValue;
       // Hardened rules are implicitly bound.
       if (other.isHardened) {
         otherValue = other.fullySplitValue;

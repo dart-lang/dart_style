@@ -7,9 +7,8 @@ library node_format_service;
 
 import 'dart:math' as math;
 
-import 'package:js/js.dart';
-
 import 'package:dart_style/dart_style.dart';
+import 'package:js/js.dart';
 
 @JS()
 @anonymous
@@ -26,7 +25,7 @@ void main() {
   formatCode = allowInterop((String source) {
     var formatter = DartFormatter();
 
-    var exception;
+    FormatterException exception;
     try {
       return FormatResult(code: DartFormatter().format(source));
     } on FormatterException catch (err) {

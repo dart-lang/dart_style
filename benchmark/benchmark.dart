@@ -6,12 +6,11 @@ library dart_style.benchmark.benchmark;
 
 import 'dart:io';
 
+import 'package:dart_style/dart_style.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:dart_style/dart_style.dart';
-
-const NUM_TRIALS = 100;
-const FORMATS_PER_TRIAL = 30;
+const _numTrials = 100;
+const _formatsPerTrial = 30;
 
 /// Note, these files use ".txt" because while they can be *parsed* correctly,
 /// they don't resolve without error. That's OK because the formatter doesn't
@@ -24,17 +23,17 @@ void main(List<String> args) {
 
   // Run the benchmark several times. This ensures the VM is warmed up and lets
   // us see how much variance there is.
-  for (var i = 0; i <= NUM_TRIALS; i++) {
+  for (var i = 0; i <= _numTrials; i++) {
     var start = DateTime.now();
 
     // For a single benchmark, format the source multiple times.
-    var result;
-    for (var j = 0; j < FORMATS_PER_TRIAL; j++) {
+    String? result;
+    for (var j = 0; j < _formatsPerTrial; j++) {
       result = formatSource();
     }
 
     var elapsed =
-        DateTime.now().difference(start).inMilliseconds / FORMATS_PER_TRIAL;
+        DateTime.now().difference(start).inMilliseconds / _formatsPerTrial;
 
     // Keep track of the best run so far.
     if (elapsed >= best) continue;

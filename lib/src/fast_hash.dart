@@ -9,7 +9,7 @@ library dart_style.src.fast_hash;
 abstract class FastHash {
   static int _nextId = 0;
 
-  /// A semi-unique numeric indentifier for the object.
+  /// A semi-unique numeric identifier for the object.
   ///
   /// This is useful for debugging and also speeds up using the object in hash
   /// sets. Ids are *semi*-unique because they may wrap around in long running
@@ -18,5 +18,6 @@ abstract class FastHash {
   final int id = _nextId = (_nextId + 1) & 0x0fffffff;
 
   @override
+  // ignore: hash_and_equals
   int get hashCode => id;
 }

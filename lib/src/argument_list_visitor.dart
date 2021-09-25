@@ -64,8 +64,8 @@ class ArgumentListVisitor {
       Token rightParenthesis,
       List<Expression> arguments) {
     // Look for a single contiguous range of block function arguments.
-    var functionsStart;
-    var functionsEnd;
+    int? functionsStart;
+    int? functionsEnd;
 
     for (var i = 0; i < arguments.length; i++) {
       var argument = arguments[i];
@@ -104,7 +104,7 @@ class ArgumentListVisitor {
     //         another: argument);
     if (functionsStart != null &&
         arguments[0] is NamedExpression &&
-        (functionsStart > 0 || functionsEnd < arguments.length)) {
+        (functionsStart > 0 || functionsEnd! < arguments.length)) {
       functionsStart = null;
     }
 
@@ -125,7 +125,7 @@ class ArgumentListVisitor {
         return false;
       }
 
-      for (var i = 0; i < functionsStart; i++) {
+      for (var i = 0; i < functionsStart!; i++) {
         var argument = arguments[i];
         if (argument is! NamedExpression) continue;
 
@@ -135,7 +135,7 @@ class ArgumentListVisitor {
         }
       }
 
-      for (var i = functionsEnd; i < arguments.length; i++) {
+      for (var i = functionsEnd!; i < arguments.length; i++) {
         if (isArrow(arguments[i] as NamedExpression)) {
           functionsStart = null;
           break;
@@ -153,7 +153,7 @@ class ArgumentListVisitor {
     // functions in the middle.
     var argumentsBefore = arguments.take(functionsStart).toList();
     var functions = arguments.sublist(functionsStart, functionsEnd);
-    var argumentsAfter = arguments.skip(functionsEnd).toList();
+    var argumentsAfter = arguments.skip(functionsEnd!).toList();
 
     return ArgumentListVisitor._(
         visitor,

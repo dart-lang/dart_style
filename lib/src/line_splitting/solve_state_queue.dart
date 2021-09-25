@@ -203,8 +203,8 @@ class SolveStateQueue {
       var rightChild = _queue[rightChildIndex]!;
 
       var comparison = _compare(leftChild, rightChild);
-      var minChildIndex;
-      var minChild;
+      int minChildIndex;
+      SolveState minChild;
 
       if (comparison < 0) {
         minChild = leftChild;
