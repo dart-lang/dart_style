@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/src/generated/source.dart';
+import 'package:dart_style/src/io.dart';
 
 import 'argument_list_visitor.dart';
 import 'call_chain_visitor.dart';
@@ -191,6 +192,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Comments and new lines attached to tokens added here are suppressed
   /// from the output.
   final Set<Token> _suppressPrecedingCommentsAndNewLines = {};
+
+  late final String? _currentPackage = packageForUri(_source.uri);
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
@@ -931,7 +934,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     token(node.rightParenthesis);
     space();
-    visit(node.uri);
+    _visitUri(node.uri);
   }
 
   @override
@@ -1190,7 +1193,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _simpleStatement(node, () {
       token(node.keyword);
       space();
-      visit(node.uri);
+      _visitUri(node.uri);
 
       _visitConfigurations(node.configurations);
 
@@ -2082,7 +2085,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _simpleStatement(node, () {
       token(node.keyword);
       space();
-      visit(node.uri);
+      _visitUri(node.uri);
 
       _visitConfigurations(node.configurations);
 
@@ -2098,6 +2101,68 @@ class SourceVisitor extends ThrowingAstVisitor {
       visitNodes(node.combinators);
       builder.endRule();
     });
+  }
+
+  void _visitUri(StringLiteral uriLiteral) {
+    if (_formatter.fixes.contains(StyleFix.uriShorthand)) {
+      var uri = Uri.parse(uriLiteral.stringValue!);
+
+      String? result;
+      if (uri.scheme == 'package' &&
+          uri.pathSegments.length > 1 &&
+          uri.path.endsWith('.dart')) {
+        var packageName = uri.pathSegments.first;
+        var packageShortName = packageName.split('.').last;
+
+        var path = uri.pathSegments.skip(1).join('/');
+        // Remove ".dart".
+        path = path.substring(0, path.length - 5);
+
+        if (packageShortName == path) {
+          // package:name/name.dart -> name
+          // package:dotted.name/name.dart -> name
+          result = packageName;
+        } else if (packageName == _currentPackage) {
+          // TODO: The issue uses "/" here but the proposal says ":". Using
+          // "/" to match relative paths below.
+          result = '/$path';
+        } else {
+          // package:name/path.dart -> name:path
+          result = '$packageName:$path';
+        }
+
+        // TODO: Detect if package is same as current package and use ":path".
+        // package:current_package/path.dart -> :path
+      } else if (uri.scheme == 'dart') {
+        result = 'dart:${uri.path}';
+      } else if (uri.scheme == '' && uri.path.endsWith('.dart')) {
+        // Shorthand for relative imports.
+
+        // TODO: This is described in the issue, but not the proposal.
+
+        var path = uri.path;
+        // Remove ".dart".
+        path = path.substring(0, path.length - 5);
+
+        if (!path.startsWith('.')) {
+          // TODO: If path is in root directory, should just do "/".
+          path = './$path';
+        }
+
+        result = path;
+      } else {
+        // No shorthand.
+      }
+
+      if (result != null) {
+        writePrecedingCommentsAndNewlines(uriLiteral.beginToken);
+        _writeText(result, uriLiteral.offset);
+      } else {
+        visit(uriLiteral);
+      }
+    } else {
+      visit(uriLiteral);
+    }
   }
 
   @override
@@ -2411,7 +2476,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _simpleStatement(node, () {
       token(node.keyword);
       space();
-      visit(node.uri);
+      _visitUri(node.uri);
     });
   }
 
@@ -2427,7 +2492,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       // Part-of may have either a name or a URI. Only one of these will be
       // non-null. We visit both since visit() ignores null.
       visit(node.libraryName);
-      visit(node.uri);
+      if (node.uri != null) _visitUri(node.uri!);
     });
   }
 

@@ -5,12 +5,44 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:package_config/package_config.dart';
 import 'package:path/path.dart' as p;
 
 import 'cli/formatter_options.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
 import 'source_code.dart';
+
+/// Gets the name of the package that contains [uri] or `null` if it is not in
+/// a package.
+String? packageForUri(String? uri) {
+  if (uri == null) return null;
+
+  if (!Uri.parse(uri).isAbsolute) {
+    uri = p.url.normalize(p.url.join(Directory.current.uri.toString(), uri));
+  }
+
+  var dir = p.url.dirname(p.fromUri(uri));
+
+  // TODO: Could cache some of this work for performance.
+
+  // Find the package config containing this file in order to determine what
+  // package the file is in.
+  while (Directory(p.fromUri(dir)).existsSync()) {
+    var configFile =
+        File(p.join(p.fromUri(dir), '.dart_tool', 'package_config.json'));
+    if (configFile.existsSync()) {
+      var packageConfig = PackageConfig.parseBytes(configFile.readAsBytesSync(),
+          Uri.file(p.fromUri(p.url.join(dir, '.dart_tool'))));
+
+      return packageConfig.packageOf(Uri.parse(uri))?.name;
+    }
+
+    dir = p.url.dirname(dir);
+  }
+
+  return null;
+}
 
 /// Reads and formats input from stdin until closed.
 Future<void> formatStdin(
