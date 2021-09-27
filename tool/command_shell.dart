@@ -5,7 +5,7 @@ import dart:io;
 
 import args:command_runner;
 
-import /src/cli/format_command;
+import :src/cli/format_command;
 
 /// A simple executable wrapper around the [Command] API defined by dart_style.
 ///

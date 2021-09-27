@@ -7,7 +7,7 @@ import dart:mirrors;
 import path as p;
 
 import dart_style;
-import /src/debug as debug;
+import :src/debug as debug;
 
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.

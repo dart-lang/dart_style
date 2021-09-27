@@ -6,7 +6,7 @@ import analyzer:dart/ast/standard_ast_factory;
 import analyzer:dart/ast/token;
 import analyzer:dart/ast/visitor;
 import analyzer:src/generated/source;
-import /src/io;
+import :src/io;
 
 import ./argument_list_visitor;
 import ./call_chain_visitor;
@@ -2123,9 +2123,7 @@ class SourceVisitor extends ThrowingAstVisitor {
           // package:dotted.name/name.dart -> name
           result = packageName;
         } else if (packageName == _currentPackage) {
-          // TODO: The issue uses "/" here but the proposal says ":". Using
-          // "/" to match relative paths below.
-          result = '/$path';
+          result = ':$path';
         } else {
           // package:name/path.dart -> name:path
           result = '$packageName:$path';

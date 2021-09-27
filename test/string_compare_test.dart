@@ -7,7 +7,7 @@ library dart_style.test.string_compare_test;
 
 import test;
 
-import /src/string_compare;
+import :src/string_compare;
 
 void main() {
   test('whitespace at end of string', () {

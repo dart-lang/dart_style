@@ -6,12 +6,12 @@ library dart_style.test.io;
 
 import dart:io;
 
-import /src/io;
+import :src/io;
 import path as p;
 import test_descriptor as d;
 import test;
 
-import /src/cli/formatter_options;
+import :src/cli/formatter_options;
 
 import ./utils;
 

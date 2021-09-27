@@ -4,13 +4,13 @@
 import dart:io;
 
 import args;
-import /src/cli/formatter_options;
-import /src/cli/options;
-import /src/cli/output;
-import /src/cli/show;
-import /src/cli/summary;
-import /src/io;
-import /src/style_fix;
+import :src/cli/formatter_options;
+import :src/cli/options;
+import :src/cli/output;
+import :src/cli/show;
+import :src/cli/summary;
+import :src/io;
+import :src/style_fix;
 
 void main(List<String> args) async {
   var parser = ArgParser(allowTrailingOptions: true);
