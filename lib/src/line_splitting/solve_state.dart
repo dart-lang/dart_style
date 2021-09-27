@@ -347,7 +347,7 @@ class SolveState {
     var splitSpans = <Span>{};
 
     // The nesting level of the chunk that ended the previous line.
-    var previousNesting;
+    NestingLevel? previousNesting;
 
     for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];

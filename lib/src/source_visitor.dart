@@ -1,11 +1,13 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+// ignore_for_file: avoid_dynamic_calls
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/src/generated/source.dart';
+import 'package:analyzer/source/line_info.dart';
 
 import 'argument_list_visitor.dart';
 import 'call_chain_visitor.dart';
@@ -809,10 +811,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitComment(Comment node) => null;
+  void visitComment(Comment node) {}
 
   @override
-  void visitCommentReference(CommentReference node) => null;
+  void visitCommentReference(CommentReference node) {}
 
   @override
   void visitCompilationUnit(CompilationUnit node) {
@@ -1538,7 +1540,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _metadataRules.add(MetadataRule());
 
-    var rule;
+    PositionalRule? rule;
     if (requiredParams.isNotEmpty) {
       rule = PositionalRule(null, 0, 0);
       _metadataRules.last.bindPositionalRule(rule);
@@ -3198,8 +3200,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // probably broke the elements into lines deliberately, so preserve those.
     var preserveNewlines = _containsLineComments(elements, rightBracket);
 
-    var rule;
-    var lineRule;
+    Rule? rule;
+    late TypeArgumentRule lineRule;
     if (preserveNewlines) {
       // Newlines are significant, so we'll explicitly write those. Elements
       // on the same line all share an argument-list-like rule that allows
@@ -3499,8 +3501,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// This only looks for comments at the element boundary. Comments within an
   /// element are ignored.
   bool _containsLineComments(Iterable<AstNode> elements, Token rightBracket) {
-    bool hasLineCommentBefore(token) {
-      var comment = token.precedingComments;
+    bool hasLineCommentBefore(Token token) {
+      Token? comment = token.precedingComments;
       for (; comment != null; comment = comment.next) {
         if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
       }

@@ -4,10 +4,9 @@
 import 'dart:io';
 import 'dart:mirrors';
 
-import 'package:path/path.dart' as p;
-
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/debug.dart' as debug;
+import 'package:path/path.dart' as p;
 
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
@@ -33,7 +32,7 @@ void runFormatter(String source, int pageWidth,
   try {
     var formatter = DartFormatter(pageWidth: pageWidth);
 
-    var result;
+    String result;
     if (isCompilationUnit) {
       result = formatter.format(source);
     } else {

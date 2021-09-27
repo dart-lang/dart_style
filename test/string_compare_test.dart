@@ -5,9 +5,8 @@
 @TestOn('vm')
 library dart_style.test.string_compare_test;
 
-import 'package:test/test.dart';
-
 import 'package:dart_style/src/string_compare.dart';
+import 'package:test/test.dart';
 
 void main() {
   test('whitespace at end of string', () {

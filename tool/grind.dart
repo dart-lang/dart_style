@@ -99,7 +99,7 @@ Future<void> bump() async {
   // Read the version from the pubspec.
   var pubspecFile = getFile('pubspec.yaml');
   var pubspec = pubspecFile.readAsStringSync();
-  var version = Version.parse(yaml.loadYaml(pubspec)['version']);
+  var version = Version.parse((yaml.loadYaml(pubspec) as Map)['version']);
 
   // Require a "-dev" version since we don't otherwise know what to bump it to.
   if (!version.isPreRelease) throw 'Cannot publish non-dev version $version.';

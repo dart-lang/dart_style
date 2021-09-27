@@ -1,6 +1,6 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 2.2.0
+version: 2.2.1-dev
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
@@ -22,7 +22,7 @@ dev_dependencies:
   # TODO(rnystrom): Disabled for now because node_preamble is not migrated yet
   # and publishing to npm hasn't been used in a while.
   #  node_preamble: ^1.0.0
-  pedantic: ^1.0.0
+  lints: ^1.0.0
   test: ^1.16.8
   test_descriptor: ^2.0.0
   test_process: ^2.0.0

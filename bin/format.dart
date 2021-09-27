@@ -35,7 +35,7 @@ void main(List<String> args) async {
     return;
   }
 
-  if (argResults['verbose'] && !argResults['help']) {
+  if (argResults['verbose'] && !(argResults['help'] as bool)) {
     usageError(parser, 'Can only use --verbose with --help.');
   }
 
@@ -52,7 +52,7 @@ void main(List<String> args) async {
   }
 
   void checkForReporterCollision(String chosen, String other) {
-    if (!argResults[other]) return;
+    if (!(argResults[other] as bool)) return;
 
     usageError(parser, 'Cannot use --$chosen and --$other at the same time.');
   }

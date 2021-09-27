@@ -312,7 +312,7 @@ class ChunkBuilder {
 
       // Make sure there is at least one newline after a line comment and allow
       // one or two after a block comment that has nothing after it.
-      var linesAfter;
+      int linesAfter;
       if (i < comments.length - 1) {
         linesAfter = comments[i + 1].linesBefore;
       } else {
@@ -431,6 +431,8 @@ class ChunkBuilder {
         } else {
           _pendingWhitespace = Whitespace.newline;
         }
+        break;
+      default:
         break;
     }
   }
@@ -670,8 +672,8 @@ class ChunkBuilder {
     var result = writer.writeLines(_formatter.indent,
         isCompilationUnit: _source.isCompilationUnit);
 
-    var selectionStart;
-    var selectionLength;
+    int? selectionStart;
+    int? selectionLength;
     if (_source.selectionStart != null) {
       selectionStart = result.selectionStart;
       var selectionEnd = result.selectionEnd;
@@ -733,6 +735,8 @@ class ChunkBuilder {
       case Whitespace.oneOrTwoNewlines:
         // We should have pinned these down before getting here.
         assert(false);
+        break;
+      default:
         break;
     }
 
@@ -928,7 +932,7 @@ class ChunkBuilder {
   void _hardenRules() {
     if (_hardSplitRules.isEmpty) return;
 
-    void walkConstraints(rule) {
+    void walkConstraints(Rule rule) {
       rule.harden();
 
       // Follow this rule's constraints, recursively.
