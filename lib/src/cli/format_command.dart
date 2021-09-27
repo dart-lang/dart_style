@@ -1,17 +1,17 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:io';
+import dart:io;
 
-import 'package:args/command_runner.dart';
+import args:command_runner;
 
-import '../io.dart';
-import '../style_fix.dart';
-import 'formatter_options.dart';
-import 'options.dart';
-import 'output.dart';
-import 'show.dart';
-import 'summary.dart';
+import ../io;
+import ../style_fix;
+import ./formatter_options;
+import ./options;
+import ./output;
+import ./show;
+import ./summary;
 
 class FormatCommand extends Command<int> {
   @override

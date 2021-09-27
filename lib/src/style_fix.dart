@@ -24,8 +24,8 @@ class StyleFix {
   static const singleCascadeStatements = StyleFix._('single-cascade-statements',
       'Remove unnecessary single cascades from expression statements.');
 
-  static const uriShorthand = StyleFix._('uri-shorthand',
-      'Convert URIs in directives to shorthand syntax.');
+  static const uriShorthand = StyleFix._(
+      'uri-shorthand', 'Convert URIs in directives to shorthand syntax.');
 
   static const all = [
     docComments,

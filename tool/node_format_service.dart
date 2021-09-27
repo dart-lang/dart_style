@@ -5,11 +5,11 @@
 @JS()
 library node_format_service;
 
-import 'dart:math' as math;
+import dart:math as math;
 
-import 'package:js/js.dart';
+import js;
 
-import 'package:dart_style/dart_style.dart';
+import dart_style;
 
 @JS()
 @anonymous

@@ -1,8 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../chunk.dart';
-import 'rule.dart';
+import ../chunk;
+import ./rule;
 
 /// Base class for a rule that handles argument or parameter lists.
 abstract class ArgumentRule extends Rule {

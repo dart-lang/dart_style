@@ -1,26 +1,26 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/standard_ast_factory.dart';
-import 'package:analyzer/dart/ast/token.dart';
-import 'package:analyzer/dart/ast/visitor.dart';
-import 'package:analyzer/src/generated/source.dart';
-import 'package:dart_style/src/io.dart';
+import analyzer:dart/ast/ast;
+import analyzer:dart/ast/standard_ast_factory;
+import analyzer:dart/ast/token;
+import analyzer:dart/ast/visitor;
+import analyzer:src/generated/source;
+import /src/io;
 
-import 'argument_list_visitor.dart';
-import 'call_chain_visitor.dart';
-import 'chunk.dart';
-import 'chunk_builder.dart';
-import 'dart_formatter.dart';
-import 'rule/argument.dart';
-import 'rule/combinator.dart';
-import 'rule/metadata.dart';
-import 'rule/rule.dart';
-import 'rule/type_argument.dart';
-import 'source_code.dart';
-import 'style_fix.dart';
-import 'whitespace.dart';
+import ./argument_list_visitor;
+import ./call_chain_visitor;
+import ./chunk;
+import ./chunk_builder;
+import ./dart_formatter;
+import ./rule/argument;
+import ./rule/combinator;
+import ./rule/metadata;
+import ./rule/rule;
+import ./rule/type_argument;
+import ./source_code;
+import ./style_fix;
+import ./whitespace;
 
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].

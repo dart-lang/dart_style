@@ -4,8 +4,8 @@
 
 library dart_style.src.rule.combinator;
 
-import '../chunk.dart';
-import 'rule.dart';
+import ../chunk;
+import ./rule;
 
 /// Handles a list of "combinators".
 ///

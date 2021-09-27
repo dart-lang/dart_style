@@ -1,15 +1,15 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:math' as math;
+import dart:math as math;
 
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/token.dart';
+import analyzer:dart/ast/ast;
+import analyzer:dart/ast/token;
 
-import 'chunk.dart';
-import 'rule/argument.dart';
-import 'rule/rule.dart';
-import 'source_visitor.dart';
+import ./chunk;
+import ./rule/argument;
+import ./rule/rule;
+import ./source_visitor;
 
 /// Helper class for [SourceVisitor] that handles visiting and writing an
 /// [ArgumentList], including all of the special code needed to handle

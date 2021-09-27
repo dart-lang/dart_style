@@ -4,8 +4,8 @@
 
 library dart_style.src.nesting_builder;
 
-import 'nesting_level.dart';
-import 'whitespace.dart';
+import ./nesting_level;
+import ./whitespace;
 
 /// Keeps track of block indentation and expression nesting while the source
 /// code is being visited and the chunks are being built.

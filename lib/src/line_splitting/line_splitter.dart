@@ -1,13 +1,13 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../chunk.dart';
-import '../debug.dart' as debug;
-import '../line_writer.dart';
-import '../rule/rule.dart';
-import 'rule_set.dart';
-import 'solve_state.dart';
-import 'solve_state_queue.dart';
+import ../chunk;
+import ../debug as debug;
+import ../line_writer;
+import ../rule/rule;
+import ./rule_set;
+import ./solve_state;
+import ./solve_state_queue;
 
 /// To ensure the solver doesn't go totally pathological on giant code, we cap
 /// it at a fixed number of attempts.

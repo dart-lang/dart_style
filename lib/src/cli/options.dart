@@ -1,9 +1,9 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'package:args/args.dart';
+import args;
 
-import '../style_fix.dart';
+import ../style_fix;
 
 void defineOptions(ArgParser parser,
     {bool oldCli = false, bool verbose = false}) {

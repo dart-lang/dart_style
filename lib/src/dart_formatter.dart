@@ -1,23 +1,23 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:math' as math;
+import dart:math as math;
 
-import 'package:analyzer/dart/analysis/features.dart';
-import 'package:analyzer/dart/analysis/utilities.dart';
-import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/token.dart';
-import 'package:analyzer/error/error.dart';
-import 'package:analyzer/src/dart/scanner/scanner.dart';
-import 'package:analyzer/src/generated/parser.dart';
-import 'package:analyzer/src/string_source.dart';
-import 'package:pub_semver/pub_semver.dart';
+import analyzer:dart/analysis/features;
+import analyzer:dart/analysis/utilities;
+import analyzer:dart/ast/ast;
+import analyzer:dart/ast/token;
+import analyzer:error/error;
+import analyzer:src/dart/scanner/scanner;
+import analyzer:src/generated/parser;
+import analyzer:src/string_source;
+import pub_semver;
 
-import 'exceptions.dart';
-import 'source_code.dart';
-import 'source_visitor.dart';
-import 'string_compare.dart' as string_compare;
-import 'style_fix.dart';
+import ./exceptions;
+import ./source_code;
+import ./source_visitor;
+import ./string_compare as string_compare;
+import ./style_fix;
 
 /// Dart source code formatter.
 class DartFormatter {

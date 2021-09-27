@@ -4,13 +4,13 @@
 
 library dart_style.src.formatter_options;
 
-import 'dart:io';
+import dart:io;
 
-import '../source_code.dart';
-import '../style_fix.dart';
-import 'output.dart';
-import 'show.dart';
-import 'summary.dart';
+import ../source_code;
+import ../style_fix;
+import ./output;
+import ./show;
+import ./summary;
 
 // Note: The following line of code is modified by tool/grind.dart.
 const dartStyleVersion = '2.2.0';

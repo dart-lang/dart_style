@@ -4,9 +4,9 @@
 
 library dart_style.test.source_code_test;
 
-import 'package:test/test.dart';
+import test;
 
-import 'package:dart_style/dart_style.dart';
+import dart_style;
 
 void main() {
   var selection = SourceCode('123456;', selectionStart: 3, selectionLength: 2);

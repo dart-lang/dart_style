@@ -5,11 +5,11 @@
 @TestOn('vm')
 library dart_style.test.fix_test;
 
-import 'package:test/test.dart';
+import test;
 
-import 'package:dart_style/dart_style.dart';
+import dart_style;
 
-import 'utils.dart';
+import ./utils;
 
 void main() {
   testFile(

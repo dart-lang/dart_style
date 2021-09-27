@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Internal debugging utilities.
-import 'dart:math' as math;
+import dart:math as math;
 
-import 'chunk.dart';
-import 'line_splitting/rule_set.dart';
-import 'rule/rule.dart';
+import ./chunk;
+import ./line_splitting/rule_set;
+import ./rule/rule;
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;

@@ -1,8 +1,8 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'line_splitter.dart';
-import 'solve_state.dart';
+import ./line_splitter;
+import ./solve_state;
 
 /// A priority queue of [SolveStates] to consider while line splitting.
 ///

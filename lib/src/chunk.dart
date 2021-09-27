@@ -1,9 +1,9 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'fast_hash.dart';
-import 'nesting_level.dart';
-import 'rule/rule.dart';
+import ./fast_hash;
+import ./nesting_level;
+import ./rule/rule;
 
 /// Tracks where a selection start or end point may appear in some piece of
 /// text.

@@ -4,7 +4,7 @@
 
 library dart_style.src.nesting_level;
 
-import 'fast_hash.dart';
+import ./fast_hash;
 
 /// A single level of expression nesting.
 ///

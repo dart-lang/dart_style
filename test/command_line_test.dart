@@ -4,13 +4,13 @@
 
 library dart_style.test.command_line;
 
-import 'dart:convert';
+import dart:convert;
 
-import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
+import path as p;
+import test_descriptor as d;
+import test;
 
-import 'utils.dart';
+import ./utils;
 
 void main() {
   compileFormatterExecutable();

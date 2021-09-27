@@ -1,13 +1,13 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:io';
-import 'dart:mirrors';
+import dart:io;
+import dart:mirrors;
 
-import 'package:path/path.dart' as p;
+import path as p;
 
-import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/debug.dart' as debug;
+import dart_style;
+import /src/debug as debug;
 
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.

@@ -4,11 +4,11 @@
 
 library dart_style.benchmark.benchmark;
 
-import 'dart:io';
+import dart:io;
 
-import 'package:path/path.dart' as p;
+import path as p;
 
-import 'package:dart_style/dart_style.dart';
+import dart_style;
 
 const NUM_TRIALS = 100;
 const FORMATS_PER_TRIAL = 30;

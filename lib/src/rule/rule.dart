@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import '../chunk.dart';
-import '../fast_hash.dart';
+import ../chunk;
+import ../fast_hash;
 
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.

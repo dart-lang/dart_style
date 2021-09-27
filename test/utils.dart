@@ -4,15 +4,15 @@
 
 library dart_style.test.utils;
 
-import 'dart:io';
-import 'dart:mirrors';
+import dart:io;
+import dart:mirrors;
 
-import 'package:path/path.dart' as p;
-import 'package:test/test.dart';
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test_process/test_process.dart';
+import path as p;
+import test;
+import test_descriptor as d;
+import test_process;
 
-import 'package:dart_style/dart_style.dart';
+import dart_style;
 
 const unformattedSource = 'void  main()  =>  print("hello") ;';
 const formattedSource = 'void main() => print("hello");\n';

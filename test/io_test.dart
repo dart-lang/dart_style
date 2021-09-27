@@ -4,16 +4,16 @@
 
 library dart_style.test.io;
 
-import 'dart:io';
+import dart:io;
 
-import 'package:dart_style/src/io.dart';
-import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
+import /src/io;
+import path as p;
+import test_descriptor as d;
+import test;
 
-import 'package:dart_style/src/cli/formatter_options.dart';
+import /src/cli/formatter_options;
 
-import 'utils.dart';
+import ./utils;
 
 void main() {
   var overwriteOptions = FormatterOptions();

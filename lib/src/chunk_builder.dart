@@ -1,18 +1,18 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:math' as math;
+import dart:math as math;
 
-import 'chunk.dart';
-import 'dart_formatter.dart';
-import 'debug.dart' as debug;
-import 'line_writer.dart';
-import 'nesting_builder.dart';
-import 'nesting_level.dart';
-import 'rule/rule.dart';
-import 'source_code.dart';
-import 'style_fix.dart';
-import 'whitespace.dart';
+import ./chunk;
+import ./dart_formatter;
+import ./debug as debug;
+import ./line_writer;
+import ./nesting_builder;
+import ./nesting_level;
+import ./rule/rule;
+import ./source_code;
+import ./style_fix;
+import ./whitespace;
 
 /// Matches if the last character of a string is an identifier character.
 final _trailingIdentifierChar = RegExp(r'[a-zA-Z0-9_]$');

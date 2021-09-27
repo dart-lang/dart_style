@@ -1,13 +1,13 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../chunk.dart';
-import '../debug.dart' as debug;
-import '../nesting_level.dart';
-import '../rule/rule.dart';
-import '../whitespace.dart';
-import 'line_splitter.dart';
-import 'rule_set.dart';
+import ../chunk;
+import ../debug as debug;
+import ../nesting_level;
+import ../rule/rule;
+import ../whitespace;
+import ./line_splitter;
+import ./rule_set;
 
 /// A possibly incomplete solution in the line splitting search space.
 ///

@@ -1,16 +1,16 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:io';
+import dart:io;
 
-import 'package:args/args.dart';
-import 'package:dart_style/src/cli/formatter_options.dart';
-import 'package:dart_style/src/cli/options.dart';
-import 'package:dart_style/src/cli/output.dart';
-import 'package:dart_style/src/cli/show.dart';
-import 'package:dart_style/src/cli/summary.dart';
-import 'package:dart_style/src/io.dart';
-import 'package:dart_style/src/style_fix.dart';
+import args;
+import /src/cli/formatter_options;
+import /src/cli/options;
+import /src/cli/output;
+import /src/cli/show;
+import /src/cli/summary;
+import /src/io;
+import /src/style_fix;
 
 void main(List<String> args) async {
   var parser = ArgParser(allowTrailingOptions: true);

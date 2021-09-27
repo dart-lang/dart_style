@@ -2,13 +2,13 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'dart:convert';
+import dart:convert;
 
-import 'package:path/path.dart' as p;
-import 'package:test_descriptor/test_descriptor.dart' as d;
-import 'package:test/test.dart';
+import path as p;
+import test_descriptor as d;
+import test;
 
-import 'utils.dart';
+import ./utils;
 
 void main() {
   compileCommandExecutable();

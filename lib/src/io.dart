@@ -1,17 +1,17 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:async';
-import 'dart:convert';
-import 'dart:io';
+import dart:async;
+import dart:convert;
+import dart:io;
 
-import 'package:package_config/package_config.dart';
-import 'package:path/path.dart' as p;
+import package_config;
+import path as p;
 
-import 'cli/formatter_options.dart';
-import 'dart_formatter.dart';
-import 'exceptions.dart';
-import 'source_code.dart';
+import ./cli/formatter_options;
+import ./dart_formatter;
+import ./exceptions;
+import ./source_code;
 
 /// Gets the name of the package that contains [uri] or `null` if it is not in
 /// a package.
