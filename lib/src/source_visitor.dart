@@ -2284,8 +2284,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     //
     // That ensures that the way some code is formatted is not affected by the
     // presence or absence of `new`/`const`. In particular, it means that if
-    // they run `dartfmt --fix`, and then run `dartfmt` *again*, the second run
-    // will not produce any additional changes.
+    // they run `dart format --fix`, and then run `dart format` *again*, the
+    // second run will not produce any additional changes.
     if (node.target == null || looksLikeStaticCall(node)) {
       // Try to keep the entire method invocation one line.
       builder.nestExpression();

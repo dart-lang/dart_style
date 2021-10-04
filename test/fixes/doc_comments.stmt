@@ -166,7 +166,7 @@ This is an ugly dartdoc comment that contains a code block.
       Foo(this.x);
     }
 
-The formatting gets messed up by `dartfmt --fix-doc-comments`.
+The formatting gets messed up by `dart format --fix-doc-comments`.
 */
 m() {}
 <<<
@@ -177,7 +177,7 @@ m() {}
 ///       Foo(this.x);
 ///     }
 ///
-/// The formatting gets messed up by `dartfmt --fix-doc-comments`.
+/// The formatting gets messed up by `dart format --fix-doc-comments`.
 m() {}
 >>> strip leading indentation shared by all lines
 /**    4
