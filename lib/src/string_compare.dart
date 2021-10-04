@@ -1,8 +1,8 @@
 /// Returns `true` if [c] represents a whitespace code unit allowed in Dart
 /// source code.
 ///
-/// This follows the same rules as `String.trim()` because that's what dartfmt
-/// uses to trim trailing whitespace.
+/// This follows the same rules as `String.trim()` because that's what
+/// dart_style uses to trim trailing whitespace.
 bool _isWhitespace(int c) {
   // Not using a set or something more elegant because this code is on the hot
   // path and this large expression is significantly faster than a set lookup.
