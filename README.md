@@ -99,17 +99,9 @@ If you need to run a different version of the formatter, you can
 [globally activate][] the package from the dart_style package on
 pub.dev:
 
-    $ pub global activate dart_style
-    $ dartfmt ...
-
-For this to work, you need to put pub's bin directory on your PATH before the
-Dart SDK directory. Otherwise, the SDK's dartfmt will shadow this one.
-
 [globally activate]: https://dart.dev/tools/pub/cmd/pub-global
 
-If you don't want pub to put `dartfmt` on your PATH, you can run it explicitly:
-
-    $ pub global activate dart_style --no-executables
+    $ pub global activate dart_style
     $ pub global run dart_style:format ...
 
 ## Using the dart_style API

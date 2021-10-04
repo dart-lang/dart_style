@@ -49,7 +49,7 @@ class A {
   named({covariant int a, covariant b});
   fn(covariant int f(bool b));
 }
->>> covariant in initializing formal (not valid, but dartfmt should accept)
+>>> covariant in initializing formal (not valid, but dart format should accept)
 class A {
   A(   covariant   this.foo);
 }
