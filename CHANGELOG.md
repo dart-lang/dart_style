@@ -1,4 +1,6 @@
 # 2.2.1-dev
+* Require `package:analyzer` version `2.6.0`.
+* Use `NamedType` instead of `TypeName`.
 
 # 2.2.0
 
