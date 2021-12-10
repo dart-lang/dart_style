@@ -113,7 +113,7 @@ API for formatting code. Simple usage looks like this:
 import 'package:dart_style/dart_style.dart';
 
 main() {
-  var formatter = new DartFormatter();
+  final formatter = DartFormatter();
 
   try {
     print(formatter.format("""
