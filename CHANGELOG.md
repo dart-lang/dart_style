@@ -1,4 +1,5 @@
 # 2.2.1-dev
+
 * Require `package:analyzer` version `2.6.0`.
 * Use `NamedType` instead of `TypeName`.
 
@@ -82,7 +83,7 @@
 
 * Change the path used in error messages when reading from stdin from "<stdin>"
   to "stdin". The former crashes on Windows since it is not a valid Windows
-  pathname. To get the old behavior, pass `--stdin-name=<stdin>`.  
+  pathname. To get the old behavior, pass `--stdin-name=<stdin>`.
 
 # 1.3.5
 
