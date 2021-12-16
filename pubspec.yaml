@@ -27,9 +27,6 @@ dev_dependencies:
   test_process: ^2.0.0
   yaml: ">=2.0.0 <4.0.0"
 
-dependency_overrides:
-  analyzer: ^3.0.0
-
 executables:
   dartfmt: format
   dartformat: format # Allow the old name for compatibility.
