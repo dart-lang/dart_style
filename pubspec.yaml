@@ -1,6 +1,6 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 2.2.1-dev
+version: 2.2.1
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
