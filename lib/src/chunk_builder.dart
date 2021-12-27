@@ -819,8 +819,10 @@ class ChunkBuilder {
     // Not at the beginning of a line.
     if (!_chunks.last.canAddText) return false;
 
-    // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
-    if (_isGenericMethodComment(comments.last) && token == '(') {
+    // Magic generic method comments like "Foo/*<T>*/" and
+    // comments inside a generic like "Foo<X/*<Y>*/>" don't get spaces.
+    if (_isGenericMethodComment(comments.last) &&
+        (token == '(' || token == '>')) {
       return false;
     }
 

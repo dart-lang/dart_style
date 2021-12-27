@@ -51,3 +51,7 @@ void foo/*<S>*/(var /*=S*/ x) {
 void foo/*<S>*/(var/*=S*/ x) {
   var/*=S*/ y = x;
 }
+>>> comment inside generic 
+final A<B/*<C>*/> foo;
+<<<
+final A<B/*<C>*/> foo;
