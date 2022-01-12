@@ -88,13 +88,13 @@ class DartFormatter {
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
     var featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, 13, 0),
-        flags: [
-          'constructor-tearoffs',
-          'generic-metadata',
-          'nonfunction-type-aliases',
-          'triple-shift'
-        ]);
+      sdkLanguageVersion: Version(2, 17, 0),
+      flags: [
+        'enhanced-enums',
+        'named-arguments-anywhere',
+        'super-parameters',
+      ],
+    );
 
     var inputOffset = 0;
     var text = source.text;
