@@ -4,10 +4,11 @@
 // ignore_for_file: avoid_dynamic_calls
 
 import 'package:analyzer/dart/ast/ast.dart';
-import 'package:analyzer/dart/ast/standard_ast_factory.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
+// ignore: implementation_imports
+import 'package:analyzer/src/clients/dart_style/rewrite_cascade.dart';
 
 import 'argument_list_visitor.dart';
 import 'call_chain_visitor.dart';
@@ -1245,74 +1246,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.semicolon);
   }
 
-  /// Synthesize a token with [type] to replace the given [operator].
-  ///
-  /// Offset, comments, and previous/next links are all preserved.
-  static Token _synthesizeToken(TokenType type, Token operator) =>
-      Token(type, operator.offset, operator.precedingComments)
-        ..previous = operator.previous
-        ..next = operator.next;
-
-  static Expression _realTargetOf(Expression expression) {
-    if (expression is PropertyAccess) {
-      return expression.realTarget;
-    } else if (expression is MethodInvocation) {
-      return expression.realTarget!;
-    } else if (expression is IndexExpression) {
-      return expression.realTarget;
-    }
-    throw UnimplementedError('Unhandled ${expression.runtimeType}'
-        '($expression)');
-  }
-
-  /// Recursively insert [cascadeTarget] (the LHS of the cascade) into the
-  /// LHS of the assignment expression that used to be the cascade's RHS.
-  static Expression _insertCascadeTargetIntoExpression(
-      Expression expression, Expression cascadeTarget) {
-    // Base case: We've recursed as deep as possible.
-    if (expression == cascadeTarget) return cascadeTarget;
-
-    // Otherwise, copy `expression` and recurse into its LHS.
-    var expressionTarget = _realTargetOf(expression);
-    if (expression is PropertyAccess) {
-      return astFactory.propertyAccess(
-          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
-          // If we've reached the end, replace the `..` operator with `.`
-          expressionTarget == cascadeTarget
-              ? _synthesizeToken(TokenType.PERIOD, expression.operator)
-              : expression.operator,
-          expression.propertyName);
-    } else if (expression is MethodInvocation) {
-      return astFactory.methodInvocation(
-          _insertCascadeTargetIntoExpression(expressionTarget, cascadeTarget),
-          // If we've reached the end, replace the `..` operator with `.`
-          expressionTarget == cascadeTarget
-              ? _synthesizeToken(TokenType.PERIOD, expression.operator!)
-              : expression.operator,
-          expression.methodName,
-          expression.typeArguments,
-          expression.argumentList);
-    } else if (expression is IndexExpression) {
-      var question = expression.question;
-
-      // A null-aware cascade treats the `?` in `?..` as part of the token, but
-      // for a non-cascade index, it is a separate `?` token.
-      if (expression.period?.type == TokenType.QUESTION_PERIOD_PERIOD) {
-        question = _synthesizeToken(TokenType.QUESTION, expression.period!);
-      }
-
-      return astFactory.indexExpressionForTarget2(
-          target: _insertCascadeTargetIntoExpression(
-              expressionTarget, cascadeTarget),
-          question: question,
-          leftBracket: expression.leftBracket,
-          index: expression.index,
-          rightBracket: expression.rightBracket);
-    }
-    throw UnimplementedError('Unhandled ${expression.runtimeType}'
-        '($expression)');
-  }
-
   /// Parenthesize the target of the given statement's expression (assumed to
   /// be a CascadeExpression) before removing the cascade.
   void _fixCascadeByParenthesizingTarget(ExpressionStatement statement) {
@@ -1325,20 +1258,14 @@ class SourceVisitor extends ThrowingAstVisitor {
     writePrecedingCommentsAndNewlines(cascade.target.beginToken);
     _suppressPrecedingCommentsAndNewLines.add(cascade.target.beginToken);
 
-    var newTarget = astFactory.parenthesizedExpression(
-        Token(TokenType.OPEN_PAREN, 0)
-          ..previous = statement.beginToken.previous
-          ..next = cascade.target.beginToken,
-        cascade.target,
-        Token(TokenType.CLOSE_PAREN, 0)
-          ..previous = cascade.target.endToken
-          ..next = statement.semicolon);
-
     // Finally, we can revisit a clone of this ExpressionStatement to actually
     // remove the cascade.
-    visit(astFactory.expressionStatement(
-        astFactory.cascadeExpression(newTarget, cascade.cascadeSections),
-        statement.semicolon));
+    visit(
+      fixCascadeByParenthesizingTarget(
+        expressionStatement: statement,
+        cascadeExpression: cascade,
+      ),
+    );
   }
 
   void _removeCascade(ExpressionStatement statement) {
@@ -1346,7 +1273,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     var subexpression = cascade.cascadeSections.single;
     builder.nestExpression();
 
-    if (subexpression is AssignmentExpression) {
+    if (subexpression is AssignmentExpression ||
+        subexpression is MethodInvocation ||
+        subexpression is PropertyAccess) {
       // CascadeExpression("leftHandSide", "..",
       //     AssignmentExpression("target", "=", "rightHandSide"))
       //
@@ -1356,13 +1285,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     PropertyAccess("leftHandSide", ".", "target"),
       //     "=",
       //     "rightHandSide")
-      visit(astFactory.assignmentExpression(
-          _insertCascadeTargetIntoExpression(
-              subexpression.leftHandSide, cascade.target),
-          subexpression.operator,
-          subexpression.rightHandSide));
-    } else if (subexpression is MethodInvocation ||
-        subexpression is PropertyAccess) {
+      //
       // CascadeExpression("leftHandSide", "..",
       //     MethodInvocation("target", ".", "methodName", ...))
       //
@@ -1374,7 +1297,12 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     "methodName", ...)
       //
       // And similarly for PropertyAccess expressions.
-      visit(_insertCascadeTargetIntoExpression(subexpression, cascade.target));
+      visit(
+        insertCascadeTargetIntoExpression(
+          expression: subexpression,
+          cascadeTarget: cascade.target,
+        ),
+      );
     } else {
       throw UnsupportedError(
           '--fix-single-cascade-statements: subexpression of cascade '
