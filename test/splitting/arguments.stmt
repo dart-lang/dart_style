@@ -216,3 +216,134 @@ fn(
   named: argument,
   another: argument,
 );
+>>> many arguments mixed named
+method(first, name1: second, third, name2: fourth, name3: fifth, sixth,
+seventh, name4: eighth, ninth, tenth);
+<<<
+method(
+    first,
+    name1: second,
+    third,
+    name2: fourth,
+    name3: fifth,
+    sixth,
+    seventh,
+    name4: eighth,
+    ninth,
+    tenth);
+>>> wrap before first argument, named first
+longFunctionIsLoooooooooooooong(name: argument, argument);
+<<<
+longFunctionIsLoooooooooooooong(
+    name: argument, argument);
+>>> named first
+function(name: firstArg * second, third * fourthAndLongest);
+<<<
+function(
+    name: firstArg * second,
+    third * fourthAndLongest);
+>>> arguments, nested
+someFunctionOne(someArgument,
+someFunctionTwo(name1: argument, argument, name2: argument),
+someFunctionTwo(argument, name: argument, argument),
+someArgument, someArgument);
+<<<
+someFunctionOne(
+    someArgument,
+    someFunctionTwo(
+        name1: argument,
+        argument,
+        name2: argument),
+    someFunctionTwo(
+        argument,
+        name: argument,
+        argument),
+    someArgument,
+    someArgument);
+>>> keep mixed positional and named on first line
+foo(arg, foo: arg, 1, bar: 2);
+<<<
+foo(arg, foo: arg, 1, bar: 2);
+>>> treat mixed named and positional as all named
+reallyLongMethod(argument, foo: first, second);
+<<<
+reallyLongMethod(
+    argument, foo: first, second);
+>>>
+reallyLongMethod(argument, argument, foo: first, bar: second, third);
+<<<
+reallyLongMethod(
+    argument,
+    argument,
+    foo: first,
+    bar: second,
+    third);
+>>>
+reallyLongMethod(leadingNamed: first, second, baz: third);
+<<<
+reallyLongMethod(
+    leadingNamed: first,
+    second,
+    baz: third);
+>>> trailing collections are indented in mixed named/positional arguments
+function(argument, a: argument, argument, b: argument,
+[element, element, element, element],
+c: {'key': value, 'other key': value, 'third key': value});
+<<<
+function(
+    argument,
+    a: argument,
+    argument,
+    b: argument,
+    [
+      element,
+      element,
+      element,
+      element
+    ],
+    c: {
+      'key': value,
+      'other key': value,
+      'third key': value
+    });
+>>> all trailing collections
+function([element, element], name: [element, element], {'key': value, 'other key': value, 'third key': value});
+<<<
+function([
+  element,
+  element
+], name: [
+  element,
+  element
+], {
+  'key': value,
+  'other key': value,
+  'third key': value
+});
+>>> non-collection non-preceding argument forces all collections to indent
+function([element, element, element, element], name: argument,
+{'key': value, 'other key': value, 'third key': value}, () {;});
+<<<
+function(
+    [
+      element,
+      element,
+      element,
+      element
+    ],
+    name: argument,
+    {
+      'key': value,
+      'other key': value,
+      'third key': value
+    }, () {
+  ;
+});
+>>> trailing comma with mixed named
+fn(argument,name: argument  ,argument  ,  );
+<<<
+fn(
+  argument,
+  name: argument,
+  argument,
+);

@@ -233,6 +233,30 @@ method(
       element
     ],
     c: third);
+>>> mixed named and positional forces nesting
+method(a:first,[element, element, element, element],c:third);
+<<<
+method(
+    a: first,
+    [
+      element,
+      element,
+      element,
+      element
+    ],
+    c: third);
+>>> mixed named and positional forces nesting
+method(a:first,b:[element, element, element, element],third);
+<<<
+method(
+    a: first,
+    b: [
+      element,
+      element,
+      element,
+      element
+    ],
+    third);
 >>> nothing but named list args does not nest
 longFunctionName(a: [element, element, element, element],
 b: [element, element, element, element], c: [element, element, element, element]);

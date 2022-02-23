@@ -201,6 +201,54 @@ longFunction(
       ;
     },
     c: argument);
+>>> named args anywhere with leading non-function
+{
+  longFunction(argument, b: () {;}, c: () {;});
+  longFunction(a: argument, () {;}, c: () {;});
+  longFunction(a: argument, b: () {;}, () {;});
+}
+<<<
+{
+  longFunction(argument, b: () {
+    ;
+  }, c: () {
+    ;
+  });
+  longFunction(a: argument, () {
+    ;
+  }, c: () {
+    ;
+  });
+  longFunction(a: argument, b: () {
+    ;
+  }, () {
+    ;
+  });
+}
+>>> named args anywhere with trailing non-function
+{
+  longFunction(() {;}, b: () {;}, c: argument);
+  longFunction(a: () {;}, () {;}, c: argument);
+  longFunction(a: () {;}, b: () {;}, argument);
+}
+<<<
+{
+  longFunction(() {
+    ;
+  }, b: () {
+    ;
+  }, c: argument);
+  longFunction(a: () {
+    ;
+  }, () {
+    ;
+  }, c: argument);
+  longFunction(a: () {
+    ;
+  }, b: () {
+    ;
+  }, argument);
+}
 >>> no extra indent for expression function argument with trailing comma
 function(() => P(p,),a: () => [a,],);
 <<<
@@ -229,3 +277,63 @@ function(
     p,
   ),
 );
+>>> unsplit named arguments with trailing positional closure
+function(a: argument, b: argument, () {;});
+<<<
+function(a: argument, b: argument, () {
+  ;
+});
+>>> split named arguments with trailing positional closure
+function(a: argument, b: argument, c: argument, () {;});
+<<<
+function(
+    a: argument,
+    b: argument,
+    c: argument, () {
+  ;
+});
+>>> unsingle split leading positional, named arguments with trailing positional closure
+function(argument, b: argument, () {;});
+<<<
+function(argument, b: argument, () {
+  ;
+});
+>>> single split leading positional, named arguments with trailing positional closure
+function(argument, b: argument, c: argument, () {;});
+<<<
+function(argument,
+    b: argument, c: argument, () {
+  ;
+});
+>>> split leading positional, named arguments with trailing positional closure
+function(argument, argument, argument, argument, argument, b: argument, c: argument, d: argument, () {;});
+<<<
+function(argument, argument, argument,
+    argument, argument,
+    b: argument,
+    c: argument,
+    d: argument, () {
+  ;
+});
+>>> multiple trailing positional closures
+function(argument, b: argument, c: argument, () {;}, () {;});
+<<<
+function(argument,
+    b: argument, c: argument, () {
+  ;
+}, () {
+  ;
+});
+>>> mixed named and positional trailing closures
+function(argument, b: argument, c: argument, () {;}, d: () {;}, () {;}, e: () {;});
+<<<
+function(argument,
+    b: argument, c: argument, () {
+  ;
+}, d: () {
+  ;
+}, () {
+  ;
+}, e: () {
+  ;
+});
