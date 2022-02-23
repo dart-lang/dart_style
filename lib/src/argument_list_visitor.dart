@@ -294,11 +294,15 @@ class ArgumentSublist {
   /// The full argument list from the AST.
   final List<Expression> _allArguments;
 
-  /// The leading positional arguments, in order.
+  /// If all positional arguments occur before all named arguments, then this
+  /// contains the positional arguments, in order. Otherwise (there are no
+  /// positional arguments or they are interleaved with named ones), this is
+  /// empty.
   final List<Expression> _positional;
 
-  /// The named arguments, in order, and any positional arguments that follow
-  /// at least one named argument.
+  /// The named arguments, in order. If there are any named arguments that occur
+  /// before positional arguments, then all arguments are treated as named and
+  /// end up in this list.
   final List<Expression> _named;
 
   /// Maps each block argument, excluding functions, to the first token for that
