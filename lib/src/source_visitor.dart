@@ -1297,12 +1297,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     "methodName", ...)
       //
       // And similarly for PropertyAccess expressions.
-      visit(
-        insertCascadeTargetIntoExpression(
-          expression: subexpression,
-          cascadeTarget: cascade.target,
-        ),
-      );
+      visit(insertCascadeTargetIntoExpression(
+          expression: subexpression, cascadeTarget: cascade.target));
     } else {
       throw UnsupportedError(
           '--fix-single-cascade-statements: subexpression of cascade '
