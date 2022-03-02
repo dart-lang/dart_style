@@ -1171,6 +1171,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (arguments != null) {
       builder.nestExpression();
       visit(arguments.typeArguments);
+
+      var constructor = arguments.constructorSelector;
+      if (constructor != null) {
+        token(constructor.period);
+        visit(constructor.name);
+      }
+
       visitArgumentList(arguments.argumentList, nestExpression: false);
       builder.unnest();
     }
