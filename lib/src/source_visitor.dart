@@ -2585,6 +2585,21 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitSuperFormalParameter(SuperFormalParameter node) {
+    visitParameterMetadata(node.metadata, () {
+      _beginFormalParameter(node);
+      token(node.keyword, after: space);
+      visit(node.type, after: split);
+      token(node.superKeyword);
+      token(node.period);
+      visit(node.identifier);
+      visit(node.parameters);
+      token(node.question);
+      _endFormalParameter(node);
+    });
+  }
+
+  @override
   void visitSwitchCase(SwitchCase node) {
     _visitLabels(node.labels);
     token(node.keyword);

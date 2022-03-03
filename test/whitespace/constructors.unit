@@ -69,3 +69,25 @@ class Foo {
 class Foo {
   Foo(this.bar(), baz);
 }
+>>> "super." parameters
+class Foo {
+  Foo(super . a, int  super  . b  , int  super . bar());
+  Foo.optional([  super . a, int  super  . b   =  123 , int  super . bar()  ]);
+  Foo.named({ required   super . a, int  super  . b  : 123 ,  required int  super . bar()  });
+  Foo.other(  final   int  super.x,   super.bar()  ?  );
+}
+<<<
+class Foo {
+  Foo(super.a, int super.b,
+      int super.bar());
+  Foo.optional(
+      [super.a,
+      int super.b = 123,
+      int super.bar()]);
+  Foo.named(
+      {required super.a,
+      int super.b: 123,
+      required int super.bar()});
+  Foo.other(
+      final int super.x, super.bar()?);
+}
