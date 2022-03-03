@@ -1,6 +1,7 @@
 # 2.2.2
 
 * Format named arguments anywhere (#1072).
+* Format "super." parameters (#1091).
 
 # 2.2.1
 

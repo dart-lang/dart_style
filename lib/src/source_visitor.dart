@@ -802,7 +802,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.equals);
       space();
 
-      visit(node.superclass2);
+      visit(node.superclass);
 
       builder.startRule(CombinatorRule());
       visit(node.withClause);
@@ -1068,7 +1068,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitConstructorName(ConstructorName node) {
-    visit(node.type2);
+    visit(node.type);
     token(node.period);
     visit(node.name);
   }
@@ -1373,7 +1373,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     soloSplit();
     token(node.extendsKeyword);
     space();
-    visit(node.superclass2);
+    visit(node.superclass);
   }
 
   @override
@@ -1999,7 +1999,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitImplementsClause(ImplementsClause node) {
-    _visitCombinator(node.implementsKeyword, node.interfaces2);
+    _visitCombinator(node.implementsKeyword, node.interfaces);
   }
 
   @override
@@ -2264,18 +2264,18 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If there is only a single superclass constraint, format it like an
     // "extends" in a class.
     var onClause = node.onClause;
-    if (onClause != null && onClause.superclassConstraints2.length == 1) {
+    if (onClause != null && onClause.superclassConstraints.length == 1) {
       soloSplit();
       token(onClause.onKeyword);
       space();
-      visit(onClause.superclassConstraints2.single);
+      visit(onClause.superclassConstraints.single);
     }
 
     builder.startRule(CombinatorRule());
 
     // If there are multiple superclass constraints, format them like the
     // "implements" clause.
-    if (onClause != null && onClause.superclassConstraints2.length > 1) {
+    if (onClause != null && onClause.superclassConstraints.length > 1) {
       visit(onClause);
     }
 
@@ -2326,7 +2326,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitOnClause(OnClause node) {
-    _visitCombinator(node.onKeyword, node.superclassConstraints2);
+    _visitCombinator(node.onKeyword, node.superclassConstraints);
   }
 
   @override
@@ -2526,6 +2526,21 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitSuperExpression(SuperExpression node) {
     token(node.superKeyword);
+  }
+
+  @override
+  void visitSuperFormalParameter(SuperFormalParameter node) {
+    visitParameterMetadata(node.metadata, () {
+      _beginFormalParameter(node);
+      token(node.keyword, after: space);
+      visit(node.type, after: split);
+      token(node.superKeyword);
+      token(node.period);
+      visit(node.identifier);
+      visit(node.parameters);
+      token(node.question);
+      _endFormalParameter(node);
+    });
   }
 
   @override
@@ -2730,7 +2745,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitWithClause(WithClause node) {
-    _visitCombinator(node.withKeyword, node.mixinTypes2);
+    _visitCombinator(node.withKeyword, node.mixinTypes);
   }
 
   @override

@@ -209,6 +209,15 @@ class Foo {
 class Foo {
   Foo(@bar this.field);
 }
+>>> metadata on "super." parameter
+class Foo {
+  Foo(@bar super.field, [  @foo()   @baz   super.another  ]);
+}
+<<<
+class Foo {
+  Foo(@bar super.field,
+      [@foo() @baz super.another]);
+}
 >>> metadata on function-typed formal parameter
 withReturnType(@foo @bar int fn(@foo param)) {}
 withoutReturnType(@foo @bar fn(@foo param)) {}
