@@ -802,7 +802,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.equals);
       space();
 
-      visit(node.superclass2);
+      visit(node.superclass);
 
       builder.startRule(CombinatorRule());
       visit(node.withClause);
@@ -834,11 +834,12 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var needsDouble = true;
     for (var declaration in node.declarations) {
-      var hasClassBody = declaration is ClassDeclaration ||
+      var hasBody = declaration is ClassDeclaration ||
+          declaration is EnumDeclaration ||
           declaration is ExtensionDeclaration;
 
-      // Add a blank line before declarations with class-like bodies.
-      if (hasClassBody) needsDouble = true;
+      // Add a blank line before types with bodies.
+      if (hasBody) needsDouble = true;
 
       if (needsDouble) {
         twoNewlines();
@@ -851,8 +852,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(declaration);
 
       needsDouble = false;
-      if (hasClassBody) {
-        // Add a blank line after declarations with class-like bodies.
+      if (hasBody) {
+        // Add a blank line after types declarations with bodies.
         needsDouble = true;
       } else if (declaration is FunctionDeclaration) {
         // Add a blank line after non-empty block functions.
@@ -1068,7 +1069,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitConstructorName(ConstructorName node) {
-    visit(node.type2);
+    visit(node.type);
     token(node.period);
     visit(node.name);
   }
@@ -1165,24 +1166,79 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitEnumConstantDeclaration(EnumConstantDeclaration node) {
     visitMetadata(node.metadata);
     visit(node.name);
+
+    var arguments = node.arguments;
+    if (arguments != null) {
+      builder.nestExpression();
+      visit(arguments.typeArguments);
+
+      var constructor = arguments.constructorSelector;
+      if (constructor != null) {
+        token(constructor.period);
+        visit(constructor.name);
+      }
+
+      visitArgumentList(arguments.argumentList, nestExpression: false);
+      builder.unnest();
+    }
   }
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
     visitMetadata(node.metadata);
 
+    builder.nestExpression();
     token(node.enumKeyword);
     space();
     visit(node.name);
+    visit(node.typeParameters);
+
+    builder.startRule(CombinatorRule());
+    visit(node.withClause);
+    visit(node.implementsClause);
+    builder.endRule();
     space();
+
+    builder.unnest();
 
     _beginBody(node.leftBracket, space: true);
     visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
 
     // If there is a trailing comma, always force the constants to split.
-    if (hasCommaAfter(node.constants.last)) {
+    Token? trailingComma = _commaAfter(node.constants.last);
+    if (trailingComma != null) {
       builder.forceRules();
     }
+
+    // The ";" after the constants, which may occur after a trailing comma.
+    Token afterConstants = node.constants.last.endToken.next!;
+    Token? semicolon;
+    if (afterConstants.type == TokenType.SEMICOLON) {
+      semicolon = node.constants.last.endToken.next!;
+    } else if (trailingComma != null &&
+        trailingComma.next!.type == TokenType.SEMICOLON) {
+      semicolon = afterConstants.next!;
+    }
+
+    if (semicolon != null) {
+      // If there is both a trailing comma and a semicolon, move the semicolon
+      // to the next line. This doesn't look great but it's less bad than being
+      // next to the comma.
+      // TODO(rnystrom): If the formatter starts making non-whitespace changes
+      // like adding/removing trailing commas, then it should fix this too.
+      if (trailingComma != null) newline();
+
+      token(semicolon);
+
+      // Always split the constants if they end in ";", even if there aren't
+      // any members.
+      builder.forceRules();
+
+      // Put a blank line between the constants and members.
+      if (node.members.isNotEmpty) twoNewlines();
+    }
+
+    _visitMembers(node.members);
 
     _endBody(node.rightBracket, space: true);
   }
@@ -1373,7 +1429,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     soloSplit();
     token(node.extendsKeyword);
     space();
-    visit(node.superclass2);
+    visit(node.superclass);
   }
 
   @override
@@ -1999,7 +2055,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitImplementsClause(ImplementsClause node) {
-    _visitCombinator(node.implementsKeyword, node.interfaces2);
+    _visitCombinator(node.implementsKeyword, node.interfaces);
   }
 
   @override
@@ -2264,18 +2320,18 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If there is only a single superclass constraint, format it like an
     // "extends" in a class.
     var onClause = node.onClause;
-    if (onClause != null && onClause.superclassConstraints2.length == 1) {
+    if (onClause != null && onClause.superclassConstraints.length == 1) {
       soloSplit();
       token(onClause.onKeyword);
       space();
-      visit(onClause.superclassConstraints2.single);
+      visit(onClause.superclassConstraints.single);
     }
 
     builder.startRule(CombinatorRule());
 
     // If there are multiple superclass constraints, format them like the
     // "implements" clause.
-    if (onClause != null && onClause.superclassConstraints2.length > 1) {
+    if (onClause != null && onClause.superclassConstraints.length > 1) {
       visit(onClause);
     }
 
@@ -2326,7 +2382,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitOnClause(OnClause node) {
-    _visitCombinator(node.onKeyword, node.superclassConstraints2);
+    _visitCombinator(node.onKeyword, node.superclassConstraints);
   }
 
   @override
@@ -2730,7 +2786,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitWithClause(WithClause node) {
-    _visitCombinator(node.withKeyword, node.mixinTypes2);
+    _visitCombinator(node.withKeyword, node.mixinTypes);
   }
 
   @override

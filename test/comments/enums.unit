@@ -52,3 +52,24 @@ enum A {
   // comment
   B
 }
+>>> ensure blank line above doc comments
+enum Foo {/// doc
+a,/// doc
+b;/// doc
+var x = 1;
+/// doc
+void y() {}}
+<<<
+enum Foo {
+  /// doc
+  a,
+
+  /// doc
+  b;
+
+  /// doc
+  var x = 1;
+
+  /// doc
+  void y() {}
+}

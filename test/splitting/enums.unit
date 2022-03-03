@@ -17,3 +17,29 @@ enum Primate {
   GORILLA,
   ORANGUTAN,
 }
+>>> wrapped argument lists in values
+enum Args {
+firstEnumValue(longArgument,anotherArgument),
+secondEnumValue(longArgument,anotherArgument,aThirdArgument,theLastOne),
+thirdGenericOne<FirstTypeArgument,
+SecondTypeArgument<NestedTypeArgument,AnotherNestedTypeArgument>,
+LastTypeArgument>(namedArgument: firstValue,anotherNamed:argumentValue)
+}
+<<<
+enum Args {
+  firstEnumValue(
+      longArgument, anotherArgument),
+  secondEnumValue(
+      longArgument,
+      anotherArgument,
+      aThirdArgument,
+      theLastOne),
+  thirdGenericOne<
+          FirstTypeArgument,
+          SecondTypeArgument<
+              NestedTypeArgument,
+              AnotherNestedTypeArgument>,
+          LastTypeArgument>(
+      namedArgument: firstValue,
+      anotherNamed: argumentValue)
+}

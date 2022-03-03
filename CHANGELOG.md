@@ -1,6 +1,7 @@
 # 2.2.2
 
 * Format named arguments anywhere (#1072).
+* Format enhanced enums (#1075).
 
 # 2.2.1
 
