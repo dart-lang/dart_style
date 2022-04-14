@@ -1,3 +1,7 @@
+# 2.2.3
+
+- Allow the latest version of `package:analyzer`.
+
 # 2.2.2
 
 * Format named arguments anywhere (#1072).
