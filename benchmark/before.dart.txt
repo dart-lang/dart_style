@@ -133,10 +133,10 @@ class BacktrackingSolver {
   /// packages.
   final _forceLatest = new Set<String>();
 
-  /// The set of packages whose dependecy is being overridden by the root
+  /// The set of packages whose dependency is being overridden by the root
   /// package, keyed by the name of the package.
   ///
-  /// Any dependency on a package that appears in this map will be overriden
+  /// Any dependency on a package that appears in this map will be overridden
   /// to use the one here.
   final _overrides = new Map<String, PackageDep>();
 
@@ -274,8 +274,8 @@ class BacktrackingSolver {
   /// Generates a map containing all of the known available versions for each
   /// package in [packages].
   ///
-  /// The version list may not always be complete. The the package is the root
-  /// root package, or its a package that we didn't unlock while solving
+  /// The version list may not always be complete. The package is the root
+  /// root package, or it's a package that we didn't unlock while solving
   /// because we weren't trying to upgrade it, we will just know the current
   /// version.
   Map<String, List<Version>> _getAvailableVersions(List<PackageId> packages) {
@@ -301,7 +301,7 @@ class BacktrackingSolver {
   /// package, to the set of versions to consider for solutions.
   ///
   /// The first item in the list will be the currently selected version of that
-  /// package. Subsequent items will be tried if it the current selection fails.
+  /// package. Subsequent items will be tried if the current selection fails.
   /// Returns the first selected version.
   PackageId select(VersionQueue versions) {
     _selected.add(versions);
@@ -309,7 +309,7 @@ class BacktrackingSolver {
     return versions.current;
   }
 
-  /// Returns the the currently selected id for the package [name] or `null` if
+  /// Returns the currently selected id for the package [name] or `null` if
   /// no concrete version has been selected for that package yet.
   PackageId getSelected(String name) {
     // Always prefer the root package.
@@ -645,7 +645,7 @@ class Traverser {
 
   /// Traverses the references that [depender] depends on, stored in [deps].
   ///
-  /// Desctructively modifies [deps]. Completes to a list of packages if the
+  /// Destructively modifies [deps]. Completes to a list of packages if the
   /// traversal is complete. Completes it to an error if a failure occurred.
   /// Otherwise, recurses.
   Future<List<PackageId>> _traverseDeps(PackageId depender,
