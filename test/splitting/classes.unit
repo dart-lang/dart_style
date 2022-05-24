@@ -129,3 +129,8 @@ class SomeVeryLongClass extends A with Mixin implements Interface {}
 class SomeVeryLongClass extends A
     with Mixin
     implements Interface {}
+>>> don't split empty body
+class TooLongClassName extends Another {}
+<<<
+class TooLongClassName
+    extends Another {}

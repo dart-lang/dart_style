@@ -8,6 +8,9 @@ import '../fast_hash.dart';
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
 class Rule extends FastHash {
+  /// The rule used for dummy chunks.
+  static final Rule dummy = Rule.hard();
+
   /// Rule value that splits no chunks.
   ///
   /// Every rule is required to treat this value as fully unsplit.

@@ -455,7 +455,8 @@ function(
 function(argument, // comment
 [[element]]);
 <<<
-function(argument, // comment
+function(
+    argument, // comment
     [
       [element]
     ]);

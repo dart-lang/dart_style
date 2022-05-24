@@ -276,11 +276,11 @@ class SolveState {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
     var usedNestingLevels = <NestingLevel>{};
-    for (var i = 0; i < _splitter.chunks.length - 1; i++) {
+    for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
-      if (chunk.rule!.isSplit(getValue(chunk.rule!), chunk)) {
-        usedNestingLevels.add(chunk.nesting!);
-        chunk.nesting!.clearTotalUsedIndent();
+      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
+        usedNestingLevels.add(chunk.nesting);
+        chunk.nesting.clearTotalUsedIndent();
       }
     }
 
@@ -289,18 +289,20 @@ class SolveState {
     }
 
     _splits = SplitSet(_splitter.chunks.length);
-    for (var i = 0; i < _splitter.chunks.length - 1; i++) {
+    for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
-      if (chunk.rule!.isSplit(getValue(chunk.rule!), chunk)) {
+      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
         var indent = 0;
-        if (!chunk.flushLeftAfter) {
+        if (!chunk.flushLeft) {
           // Add in the chunk's indent.
-          indent = _splitter.blockIndentation + chunk.indent!;
+          indent = _splitter.blockIndentation + chunk.indent;
 
           // And any expression nesting.
-          indent += chunk.nesting!.totalUsedIndent;
+          indent += chunk.nesting.totalUsedIndent;
 
-          if (chunk.indentBlock(getValue)) indent += Indent.expression;
+          if (i > 0 && _splitter.chunks[i - 1].indentBlock(getValue)) {
+            indent += Indent.expression;
+          }
         }
 
         _splits.add(i, indent);
@@ -314,7 +316,7 @@ class SolveState {
     // Calculate the length of each line and apply the cost of any spans that
     // get split.
     var cost = 0;
-    var length = _splitter.firstLineIndent;
+    var length = 0;
 
     // The unbound rules in use by the current line. This will be null after
     // the first long line has completed.
@@ -352,21 +354,10 @@ class SolveState {
     for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
 
-      length += chunk.text.length;
-
-      // Ignore the split after the last chunk.
-      if (i == _splitter.chunks.length - 1) break;
-
       if (_splits.shouldSplitAt(i)) {
         endLine(i);
 
         splitSpans.addAll(chunk.spans);
-
-        // Include the cost of the nested block.
-        if (chunk.isBlock) {
-          cost +=
-              _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
-        }
 
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
@@ -385,7 +376,7 @@ class SolveState {
         // But there are a couple of squirrely cases where it's hard to prevent
         // by construction. Instead, this outlaws it by penalizing it very
         // heavily if it happens to get this far.
-        var totalIndent = chunk.nesting!.totalUsedIndent;
+        var totalIndent = chunk.nesting.totalUsedIndent;
         if (previousNesting != null &&
             totalIndent != 0 &&
             totalIndent == previousNesting.totalUsedIndent &&
@@ -399,9 +390,20 @@ class SolveState {
         length = _splits.getColumn(i);
       } else {
         if (chunk.spaceWhenUnsplit) length++;
+      }
 
-        // Include the nested block inline, if any.
-        length += chunk.unsplitBlockLength;
+      length += chunk.text.length;
+
+      if (chunk.isBlock) {
+        if (_splits.shouldSplitAt(i + 1)) {
+          // Include the cost of the nested block.
+          cost += _splitter.writer
+              .formatBlock(chunk, _splits.getColumn(i + 1))
+              .cost;
+        } else {
+          // Include the nested block inline, if any.
+          length += chunk.unsplitBlockLength;
+        }
       }
     }
 
@@ -439,8 +441,8 @@ class SolveState {
     return added;
   }
 
-  /// Used to lazy initialize [_boundInUnboundLines], which is needed to compare
-  /// two states for overlap.
+  /// Used to lazy initialize [_boundRulesInUnboundLines], which is needed to
+  /// compare two states for overlap.
   ///
   /// We do this lazily because the calculation is a bit slow, and is only
   /// needed when we have two states with the same score.
@@ -449,7 +451,7 @@ class SolveState {
     var boundInLine = <Rule>{};
     var hasUnbound = false;
 
-    for (var i = 0; i < _splitter.chunks.length - 1; i++) {
+    for (var i = 0; i < _splitter.chunks.length; i++) {
       if (splits.shouldSplitAt(i)) {
         if (hasUnbound) rules.addAll(boundInLine);
 
@@ -458,12 +460,10 @@ class SolveState {
       }
 
       var rule = _splitter.chunks[i].rule;
-      if (rule != null) {
-        if (_ruleValues.contains(rule)) {
-          boundInLine.add(rule);
-        } else {
-          hasUnbound = true;
-        }
+      if (_ruleValues.contains(rule)) {
+        boundInLine.add(rule);
+      } else {
+        hasUnbound = true;
       }
     }
 

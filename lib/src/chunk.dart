@@ -42,16 +42,17 @@ abstract class Selection {
   }
 }
 
-/// A chunk of non-breaking output text terminated by a hard or soft newline.
+/// A chunk of non-breaking output text that may begin on a newline.
 ///
-/// Chunks are created by [LineWriter] and fed into [LineSplitter]. Each
-/// contains some text, along with the data needed to tell how the next line
-/// should be formatted and how desireable it is to split after the chunk.
+/// Chunks are created by [ChunkBuilder] and fed into [LineSplitter]. Each
+/// contains the data describing where the chunk should appear when starting a
+/// new line, how desireable it is to split, and the subsequent text for that
+/// line.
 ///
-/// Line splitting after chunks comes in a few different forms.
+/// Line splitting before a chunk comes in a few different forms.
 ///
 /// *   A "hard" split is a mandatory newline. The formatted output will contain
-///     at least one newline after the chunk's text.
+///     at least one newline before the chunk's text.
 /// *   A "soft" split is a discretionary newline. If a line doesn't fit within
 ///     the page width, one or more soft splits may be turned into newlines to
 ///     wrap the line to fit within the bounds. If a soft split is not turned
@@ -61,8 +62,8 @@ abstract class Selection {
 ///     blank line in the output. Hard or soft splits may be doubled. This is
 ///     determined by [isDouble].
 ///
-/// A split controls the leading spacing of the subsequent line, both
-/// block-based [indent] and expression-wrapping-based [nesting].
+/// A split controls the leading spacing of the line before the chunk's text,
+/// both block-based [indent] and expression-wrapping-based [nesting].
 class Chunk extends Selection {
   /// The literal text output for the chunk.
   @override
@@ -74,21 +75,19 @@ class Chunk extends Selection {
   ///
   /// For top level chunks that are not inside any block, this also includes
   /// leading indentation.
-  int? get indent => _indent;
-  int? _indent;
+  final int indent;
 
-  /// The expression nesting level following this chunk.
+  /// The expression nesting level preceding this chunk.
   ///
   /// This is used to determine how much to increase the indentation when a
-  /// line starts after this chunk. A single statement may be indented multiple
+  /// line starts at this chunk. A single statement may be indented multiple
   /// times if the splits occur in more deeply nested expressions, for example:
   ///
   ///     // 40 columns                           |
   ///     someFunctionName(argument, argument,
   ///         argument, anotherFunction(argument,
   ///             argument));
-  NestingLevel? get nesting => _nesting;
-  NestingLevel? _nesting;
+  final NestingLevel nesting;
 
   /// If this chunk marks the beginning of a block, this contains the child
   /// chunks and other data about that nested block.
@@ -100,52 +99,28 @@ class Chunk extends Selection {
   /// Whether this chunk has a [block].
   bool get isBlock => _block != null;
 
-  /// Whether it's valid to add more text to this chunk or not.
-  ///
-  /// Chunks are built up by adding text and then "capped off" by having their
-  /// split information set by calling [handleSplit]. Once the latter has been
-  /// called, no more text should be added to the chunk since it would appear
-  /// *before* the split.
-  bool get canAddText => _rule == null;
-
-  /// The [Rule] that controls when a split should occur after this chunk.
+  /// The [Rule] that controls when a split should occur before this chunk.
   ///
   /// Multiple splits may share a [Rule].
-  Rule? get rule => _rule;
-  Rule? _rule;
+  final Rule rule;
 
-  /// Whether or not an extra blank line should be output after this chunk if
-  /// it's split.
-  ///
-  /// Internally, this can be either `true`, `false`, or `null`. The latter is
-  /// an indeterminate state that lets later modifications to the split decide
-  /// whether it should be double or not.
-  ///
-  /// However, this getter does not expose that. It will return `false` if the
-  /// chunk is still indeterminate.
-  bool get isDouble => _isDouble ?? false;
-  bool? _isDouble;
+  /// Whether or not an extra blank line should be output before this chunk if
+  /// it splits.
+  bool get isDouble => _isDouble;
+  bool _isDouble;
 
-  /// If `true`, then the line after this chunk should always be at column
-  /// zero regardless of any indentation or expression nesting.
+  /// If `true`, then the line beginning with this chunk should always be at
+  /// column zero regardless of any indentation or expression nesting.
   ///
   /// Used for multi-line strings and commented out code.
   bool get flushLeft => _flushLeft;
-  bool _flushLeft = false;
+  bool _flushLeft;
 
-  /// If `true`, then the line after this chunk and its contained block should
-  /// be flush left.
-  bool get flushLeftAfter {
-    if (!isBlock) return _flushLeft;
-
-    return block.chunks.last.flushLeftAfter;
-  }
-
-  /// Whether this chunk should append an extra space if it does not split.
+  /// Whether this chunk should prepend an extra space if it does not split.
   ///
-  /// This is `true`, for example, in a chunk that ends with a ",".
+  /// This is `true`, for example, in a chunk following a ",".
   bool get spaceWhenUnsplit => _spaceWhenUnsplit;
-  bool _spaceWhenUnsplit = false;
+  bool _spaceWhenUnsplit;
 
   /// Whether this chunk marks the end of a range of chunks that can be line
   /// split independently of the following chunks.
@@ -155,7 +130,7 @@ class Chunk extends Selection {
   late final bool _canDivide;
 
   /// The number of characters in this chunk when unsplit.
-  int get length => _text.length + (spaceWhenUnsplit ? 1 : 0);
+  int get length => (_spaceWhenUnsplit ? 1 : 0) + _text.length;
 
   /// The unsplit length of all of this chunk's block contents.
   ///
@@ -175,59 +150,49 @@ class Chunk extends Selection {
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];
 
-  /// Creates a new chunk starting with [_text].
-  Chunk(this._text);
+  /// Creates a new empty chunk with the given split properties.
+  Chunk(this.rule, this.indent, this.nesting,
+      {required bool space, required bool flushLeft, required bool isDouble})
+      : _text = '',
+        _flushLeft = flushLeft,
+        _isDouble = isDouble,
+        _spaceWhenUnsplit = space;
 
   /// Creates a dummy chunk.
   ///
   /// This is returned in some places by [ChunkBuilder] when there is no useful
   /// chunk to yield and it will not end up being used by the caller anyway.
-  Chunk.dummy() : _text = '(dummy)';
+  Chunk.dummy()
+      : _text = '(dummy)',
+        rule = Rule.dummy,
+        indent = 0,
+        nesting = NestingLevel(),
+        _spaceWhenUnsplit = false,
+        _flushLeft = false,
+        _isDouble = false;
 
-  /// Discard the split for the chunk and put it back into the state where more
-  /// text can be appended.
-  void allowText() {
-    _rule = null;
-  }
-
-  /// Append [text] to the end of the split's text.
+  /// Append [text] to the end of the chunk's text.
   void appendText(String text) {
-    assert(canAddText);
     _text += text;
   }
 
-  /// Finishes off this chunk with the given [rule] and split information.
-  ///
-  /// This may be called multiple times on the same split since the splits
-  /// produced by walking the source and the splits coming from comments and
-  /// preserved whitespace often overlap. When that happens, this has logic to
-  /// combine that information into a single split.
-  void applySplit(Rule rule, int indent, NestingLevel nesting,
-      {bool? flushLeft, bool? isDouble, bool? space}) {
-    flushLeft ??= false;
-    space ??= false;
-    if (rule.isHardened) {
-      // A hard split always wins.
-      _rule = rule;
-    } else {
-      _rule ??= rule;
-    }
+  /// Updates the split information for a previously created chunk in response
+  /// to a split from a comment.
+  void updateSplit({bool? flushLeft, bool isDouble = false, bool? space}) {
+    assert(text.isEmpty);
 
-    // Last split settings win.
-    _flushLeft = flushLeft;
-    _nesting = nesting;
-    _indent = indent;
+    if (flushLeft != null) _flushLeft = flushLeft;
 
-    _spaceWhenUnsplit = space;
+    // Don't discard an already known blank newline, but do potentially add one.
+    if (isDouble) _isDouble = true;
 
-    // Pin down the double state, if given and we haven't already.
-    _isDouble ??= isDouble;
+    if (space != null) _spaceWhenUnsplit = space;
   }
 
   /// Turns this chunk into one that can contain a block of child chunks.
-  void makeBlock(Chunk? blockArgument, {required bool indent}) {
+  void makeBlock(Chunk? blockArgument) {
     assert(_block == null);
-    _block = ChunkBlock(blockArgument, indent);
+    _block = ChunkBlock(blockArgument);
   }
 
   /// Returns `true` if the block body owned by this chunk should be expression
@@ -243,7 +208,7 @@ class Chunk extends Selection {
     // There may be no rule if the block occurs inside a string interpolation.
     // In that case, it's not clear if anything will look particularly nice, but
     // expression nesting is probably marginally better.
-    if (rule == null) return true;
+    if (rule == Rule.dummy) return true;
 
     return rule.isSplit(getValue(rule), argument);
   }
@@ -257,26 +222,17 @@ class Chunk extends Selection {
   String toString() {
     var parts = [];
 
-    if (text.isNotEmpty) parts.add(text);
+    parts.add('indent:$indent');
+    if (spaceWhenUnsplit) parts.add('space');
+    if (isDouble) parts.add('double');
+    if (flushLeft) parts.add('flush');
+    parts.add('$rule${rule.isHardened ? '!' : ''}');
 
-    if (_indent != null) parts.add('indent:$_indent');
-    if (spaceWhenUnsplit == true) parts.add('space');
-    if (_isDouble == true) parts.add('double');
-    if (_flushLeft == true) parts.add('flush');
-
-    var rule = _rule;
-    if (rule == null) {
-      parts.add('(no split)');
-    } else {
-      parts.add(rule.toString());
-      if (rule.isHardened) parts.add('(hard)');
-
-      if (rule.constrainedRules.isNotEmpty) {
-        parts.add("-> ${rule.constrainedRules.join(' ')}");
-      }
+    if (rule.constrainedRules.isNotEmpty) {
+      parts.add("-> ${rule.constrainedRules.join(' ')}");
     }
 
-    return parts.join(' ');
+    return '[${parts.join(' ')}] `$text`';
   }
 }
 
@@ -290,13 +246,10 @@ class ChunkBlock {
   /// may need extra expression-level indentation.
   final Chunk? argument;
 
-  /// Whether the first chunk should have a level of indentation before it.
-  final bool indent;
-
   /// The child chunks in this block.
   final List<Chunk> chunks = [];
 
-  ChunkBlock(this.argument, this.indent);
+  ChunkBlock(this.argument);
 }
 
 /// Constants for the cost heuristics used to determine which set of splits is

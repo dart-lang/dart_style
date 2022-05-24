@@ -73,3 +73,13 @@ enum Foo {
   /// doc
   void y() {}
 }
+>>> line comment after last
+enum Foo {
+  a,
+  b // comment
+}
+<<<
+enum Foo {
+  a,
+  b // comment
+}
