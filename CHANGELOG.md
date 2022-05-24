@@ -1,4 +1,4 @@
-# 2.2.3-dev
+# 2.2.4-dev
 
 * Refactor Chunk to store split before text instead of after. This mostly does
   not affect the visible behavior of the formatter, but a few edge cases are
@@ -18,6 +18,10 @@
     to be misformatted.
 
   * Remove blank lines after a line comment at the end of a body.
+
+# 2.2.3
+
+* Allow the latest version of `package:analyzer`.
 
 # 2.2.2
 
