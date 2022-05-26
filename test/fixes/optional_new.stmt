@@ -39,6 +39,14 @@ A();
 // a
 // b
 A();
+>>>
+var x = // 1
+new // 2
+Foo();
+<<<
+var x = // 1
+    // 2
+    Foo();
 >>> merge surrounding comments
 {
   /* a */ new /* b */ A();

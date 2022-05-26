@@ -61,7 +61,7 @@ const _maxAttempts = 5000;
 /// We start off with a [SolveState] where all rules are unbound (which
 /// implicitly treats them as unsplit). For a given solve state, we can produce
 /// a set of expanded states that takes some of the rules in the first long
-/// line and bind them to split values. This always produces new solve states
+/// line and binds them to split values. This always produces new solve states
 /// with higher cost (but often fewer overflow characters) than the parent
 /// state.
 ///
@@ -108,9 +108,6 @@ class LineSplitter {
   /// column based on where the block appears.
   final int blockIndentation;
 
-  /// The starting column of the first line.
-  final int firstLineIndent;
-
   /// The queue of solve states to explore further.
   ///
   /// This is sorted lowest-cost first. This ensures that as soon as we find a
@@ -120,16 +117,13 @@ class LineSplitter {
 
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
-  LineSplitter(
-      this.writer, this.chunks, this.blockIndentation, int firstLineIndent,
-      {bool flushLeft = false})
+  LineSplitter(this.writer, this.chunks, this.blockIndentation)
       : // Collect the set of rules that we need to select values for.
         rules = chunks
             .map((chunk) => chunk.rule)
             .whereType<Rule>()
             .toSet()
-            .toList(growable: false),
-        firstLineIndent = flushLeft ? 0 : firstLineIndent + blockIndentation {
+            .toList(growable: false) {
     _queue.bindSplitter(this);
 
     // Store the rule's index in the rule so we can get from a chunk to a rule
@@ -150,9 +144,6 @@ class LineSplitter {
   ///
   /// Returns a [SplitSet] that defines where each split occurs and the
   /// indentation of each line.
-  ///
-  /// [firstLineIndent] is the number of characters of whitespace to prefix the
-  /// first line of output with.
   SplitSet apply() {
     // Start with a completely unbound, unsplit solution.
     _queue.add(SolveState(this, RuleSet(rules.length)));
@@ -174,7 +165,7 @@ class LineSplitter {
       if (debug.traceSplitter) {
         var best = state == bestSolution ? ' (best)' : '';
         debug.log('$state$best');
-        debug.dumpLines(chunks, firstLineIndent, state.splits);
+        debug.dumpLines(chunks, state.splits);
         debug.log();
       }
 
@@ -186,7 +177,7 @@ class LineSplitter {
 
     if (debug.traceSplitter) {
       debug.log('$bestSolution (winner)');
-      debug.dumpLines(chunks, firstLineIndent, bestSolution!.splits);
+      debug.dumpLines(chunks, bestSolution!.splits);
       debug.log();
     }
 

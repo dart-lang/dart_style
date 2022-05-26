@@ -134,9 +134,9 @@ class SplitSet {
   late final int _cost;
 
   /// Creates a new empty split set for a line with [numChunks].
-  SplitSet(int numChunks) : _columns = List.filled(numChunks - 1, -1);
+  SplitSet(int numChunks) : _columns = List.filled(numChunks, -1);
 
-  /// Marks the line after chunk [index] as starting at [column].
+  /// Marks the chunk at [index] as starting at [column].
   void add(int index, int column) {
     _columns[index] = column;
   }

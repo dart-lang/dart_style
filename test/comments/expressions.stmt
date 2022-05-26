@@ -95,3 +95,9 @@ function(
     argument,
     named: argument,
     another: argument);
+>>> block comment with newline before
+someVeryLongFunctionName(argumentName: true
+/* comment */);
+<<<
+someVeryLongFunctionName(
+    argumentName: true /* comment */);

@@ -479,7 +479,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Treat empty blocks specially. In most cases, they are not allowed to
     // split. However, an empty block as the then statement of an if with an
     // else is always split.
-    if (_isEmptyCollection(node.statements, node.rightBracket)) {
+    if (_isEmptyBody(node.statements, node.rightBracket)) {
       token(node.leftBracket);
       if (_splitEmptyBlock(node)) newline();
       token(node.rightBracket);
@@ -495,22 +495,18 @@ class SourceVisitor extends ThrowingAstVisitor {
       _beginBody(node.leftBracket);
     }
 
-    var needsDouble = true;
+    var whitespace = Whitespace.newline;
     for (var statement in node.statements) {
-      if (needsDouble) {
-        twoNewlines();
-      } else {
-        oneOrTwoNewlines();
-      }
+      builder.writeWhitespace(whitespace);
 
       visit(statement);
 
-      needsDouble = false;
+      whitespace = Whitespace.oneOrTwoNewlines;
       if (statement is FunctionDeclarationStatement) {
         // Add a blank line after non-empty block functions.
         var body = statement.functionDeclaration.functionExpression.body;
-        if (body is BlockFunctionBody) {
-          needsDouble = body.block.statements.isNotEmpty;
+        if (body is BlockFunctionBody && body.block.statements.isNotEmpty) {
+          whitespace = Whitespace.twoNewlines;
         }
       }
     }
@@ -638,14 +634,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// This somewhere between clever and hacky, but it works and allows cascades
   /// of essentially unbounded length to be formatted quickly.
   void _visitSplitCascade(CascadeExpression node) {
-    // Rule to split before the first `..`.
+    // Rule to split the block.
     builder.startLazyRule(Rule.hard());
     visit(node.target);
 
     builder.nestExpression(indent: Indent.cascade, now: true);
     builder.startBlockArgumentNesting();
-
-    zeroSplit();
 
     // If there are comments before the first section, keep them outside of the
     // block. That way code like:
@@ -661,10 +655,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Process the inner cascade sections as a separate block. This way the
     // entire cascade expression isn't line split as a single monolithic unit,
     // which is very slow.
-    builder = builder.startBlock(null, indent: false);
+    builder = builder.startBlock();
 
     for (var i = 0; i < node.cascadeSections.length - 1; i++) {
-      if (i > 0) newline();
+      newline();
       visit(node.cascadeSections[i]);
     }
 
@@ -783,9 +777,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _beginBody(node.leftBracket);
-    _visitMembers(node.members);
-    _endBody(node.rightBracket);
+    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -1201,7 +1193,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
 
-    _beginBody(node.leftBracket, space: true);
+    _beginBody(node.leftBracket);
+    builder.split(nest: false, space: true);
+
     visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
 
     // If there is a trailing comma, always force the constants to split.
@@ -1239,8 +1233,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     _visitMembers(node.members);
-
-    _endBody(node.rightBracket, space: true);
+    _endBody(node.rightBracket, split: true);
   }
 
   @override
@@ -1453,10 +1446,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.extendedType);
     space();
     builder.unnest();
-
-    _beginBody(node.leftBracket);
-    _visitMembers(node.members);
-    _endBody(node.rightBracket);
+    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -2341,9 +2331,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _beginBody(node.leftBracket);
-    _visitMembers(node.members);
-    _endBody(node.rightBracket);
+    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -2965,27 +2953,21 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the list of members in a class or mixin declaration.
   void _visitMembers(NodeList<ClassMember> members) {
+    var whitespace = Whitespace.none;
     for (var member in members) {
+      if (whitespace != Whitespace.none) builder.writeWhitespace(whitespace);
       visit(member);
 
-      if (member == members.last) {
-        newline();
-        break;
-      }
+      whitespace = Whitespace.oneOrTwoNewlines;
 
       // Add a blank line after non-empty block methods.
-      var needsDouble = false;
       if (member is MethodDeclaration && member.body is BlockFunctionBody) {
-        var body = member.body as BlockFunctionBody;
-        needsDouble = body.block.statements.isNotEmpty;
-      }
-
-      if (needsDouble) {
-        twoNewlines();
-      } else {
         // Variables and arrow-bodied members can be more tightly packed if
         // the user wants to group things together.
-        oneOrTwoNewlines();
+        var body = member.body as BlockFunctionBody;
+        if (body.block.statements.isNotEmpty) {
+          whitespace = Whitespace.twoNewlines;
+        }
       }
     }
   }
@@ -3173,9 +3155,24 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Don't allow splitting in an empty collection.
-    if (_isEmptyCollection(elements, rightBracket)) {
+    if (_isEmptyBody(elements, rightBracket)) {
       token(leftBracket);
       token(rightBracket);
+      return;
+    }
+
+    // TODO(rnystrom): There's similar special case code for function bodies
+    // containing only comments. Consider refactoring and unifying.
+    // Handle empty collections with comments but no members.
+    if (elements.isEmpty) {
+      _startLiteralBody(leftBracket);
+
+      var rule = Rule.hard();
+      builder.startRule(rule);
+      builder.split(nest: false);
+      builder.endRule();
+
+      _endLiteralBody(rightBracket, ignoredRule: rule);
       return;
     }
 
@@ -3190,50 +3187,48 @@ class SourceVisitor extends ThrowingAstVisitor {
     _startLiteralBody(leftBracket);
     if (node != null) _startPossibleConstContext(node.constKeyword);
 
+    // Use a hard split to split the elements. The parent chunk of the
+    // collection will handle the unsplit case, so this only comes into play
+    // when the collection is split.
+    var rule = Rule.hard();
+    builder.startRule(rule);
+
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
-    var preserveNewlines = _containsLineComments(elements, rightBracket);
-
-    Rule? rule;
-    late TypeArgumentRule lineRule;
-    if (preserveNewlines) {
+    if (_containsLineComments(elements, rightBracket)) {
       // Newlines are significant, so we'll explicitly write those. Elements
       // on the same line all share an argument-list-like rule that allows
       // splitting between zero, one, or all of them. This is faster in long
       // lists than using individual splits after each element.
-      lineRule = TypeArgumentRule();
+      var lineRule = TypeArgumentRule();
       builder.startLazyRule(lineRule);
-    } else {
-      // Newlines aren't significant, so use a hard rule to split the elements.
-      // The parent chunk of the collection will handle the unsplit case, so
-      // this only comes into play when the collection is split.
-      rule = Rule.hard();
-      builder.startRule(rule);
-    }
 
-    for (var element in elements) {
-      if (element != elements.first) {
-        if (preserveNewlines) {
-          // See if the next element is on the next line.
-          if (_endLine(element.beginToken.previous!) !=
-              _startLine(element.beginToken)) {
-            oneOrTwoNewlines();
+      for (var element in elements) {
+        // See if the next element is on the next line.
+        if (_endLine(element.beginToken.previous!) !=
+            _startLine(element.beginToken)) {
+          oneOrTwoNewlines();
 
-            // Start a new rule for the new line.
-            builder.endRule();
-            lineRule = TypeArgumentRule();
-            builder.startLazyRule(lineRule);
-          } else {
-            lineRule.beforeArgument(split());
-          }
+          // Start a new rule for the new line.
+          builder.endRule();
+          lineRule = TypeArgumentRule();
+          builder.startLazyRule(lineRule);
         } else {
-          builder.split(nest: false, space: true);
+          lineRule.beforeArgument(split());
         }
+
+        visit(element);
+        _writeCommaAfter(element);
       }
 
-      visit(element);
-      _writeCommaAfter(element);
+      builder.endRule();
+    } else {
+      for (var element in elements) {
+        builder.split(nest: false, space: element != elements.first);
+        visit(element);
+        _writeCommaAfter(element);
+      }
     }
 
     builder.endRule();
@@ -3284,9 +3279,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Process the parameters as a separate set of chunks.
-    builder = builder.startBlock(null);
+    builder = builder.startBlock();
+    builder.indent();
 
     for (var parameter in parameters.parameters) {
+      newline();
       visit(parameter);
       _writeCommaAfter(parameter);
 
@@ -3297,14 +3294,16 @@ class SourceVisitor extends ThrowingAstVisitor {
         token(parameters.leftDelimiter);
         lastRequired = null;
       }
-
-      newline();
     }
 
     // Put comments before the closing ")", "]", or "}" inside the block.
     var firstDelimiter =
         parameters.rightDelimiter ?? parameters.rightParenthesis;
-    writePrecedingCommentsAndNewlines(firstDelimiter);
+    if (firstDelimiter.precedingComments != null) {
+      newline();
+      writePrecedingCommentsAndNewlines(firstDelimiter);
+    }
+
     builder = builder.endBlock(null, forceSplit: true);
     builder.endRule();
 
@@ -3403,7 +3402,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// An empty collection must have no elements or comments inside. Collections
   /// like that are treated specially because they cannot be split inside.
-  bool _isEmptyCollection(Iterable<AstNode> nodes, Token rightBracket) =>
+  bool _isEmptyBody(Iterable<AstNode> nodes, Token rightBracket) =>
       nodes.isEmpty && rightBracket.precedingComments == null;
 
   /// Whether [node] should be forced to split even if completely empty.
@@ -3446,11 +3445,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node is SpreadElement) {
       var expression = node.expression;
       if (expression is ListLiteral) {
-        if (!_isEmptyCollection(expression.elements, expression.rightBracket)) {
+        if (!_isEmptyBody(expression.elements, expression.rightBracket)) {
           return expression.leftBracket;
         }
       } else if (expression is SetOrMapLiteral) {
-        if (!_isEmptyCollection(expression.elements, expression.rightBracket)) {
+        if (!_isEmptyBody(expression.elements, expression.rightBracket)) {
           return expression.leftBracket;
         }
       }
@@ -3528,11 +3527,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     var rule = _blockRules[leftBracket];
     var argumentChunk = _blockPreviousChunks[leftBracket];
 
+    // TODO(rnystrom): This rule is only used for the chunk with the closing
+    // delimiter since the literal body child chunks have their own rule. Is
+    // there a cleaner way to handle this?
     // Create a rule for whether or not to split the block contents.
     builder.startRule(rule);
 
     // Process the collection contents as a separate set of chunks.
     builder = builder.startBlock(argumentChunk);
+    builder.indent();
   }
 
   /// Ends the literal body started by a call to [_startLiteralBody()].
@@ -3632,25 +3635,53 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (previousChunk != null) _blockPreviousChunks[token] = previousChunk;
   }
 
+  /// Writes the brace-delimited body containing [members].
+  void _visitTypeBody(
+      Token leftBracket, NodeList<ClassMember> members, Token rightBracket) {
+    // Don't allow splitting in an empty body.
+    if (_isEmptyBody(members, rightBracket)) {
+      token(leftBracket);
+      token(rightBracket);
+      return;
+    }
+
+    // Handle empty bodies with comments but no members.
+    if (members.isEmpty) {
+      _beginBody(leftBracket);
+      builder.split(nest: false);
+      _endBody(rightBracket);
+      return;
+    }
+
+    _beginBody(leftBracket);
+    newline();
+    _visitMembers(members);
+    newline();
+    _endBody(rightBracket);
+  }
+
   /// Writes the beginning of a brace-delimited body and handles indenting and
   /// starting the rule used to split the contents.
-  void _beginBody(Token leftBracket, {bool space = false}) {
+  void _beginBody(Token leftBracket) {
     token(leftBracket);
 
     // Indent the body.
     builder.indent();
 
-    // Split after the bracket.
+    // Create a rule for splitting before each node inside the body.
     builder.startRule();
-    builder.split(isDouble: false, nest: false, space: space);
   }
 
   /// Finishes the body started by a call to [_beginBody].
-  void _endBody(Token rightBracket, {bool space = false}) {
+  ///
+  /// If [split] is `true`, then inserts a split before the `{`. This is to
+  /// allow single-line enum declarations.
+  void _endBody(Token rightBracket, {bool split = false}) {
     token(rightBracket, before: () {
-      // Split before the closing bracket character.
       builder.unindent();
-      builder.split(nest: false, space: space);
+
+      // Split before the closing bracket character.
+      if (split) builder.split(nest: false, space: true);
     });
 
     builder.endRule();
@@ -3679,9 +3710,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     offset += lines.first.length;
 
     for (var line in lines.skip(1)) {
-      builder.writeWhitespace(Whitespace.newlineFlushLeft);
+      builder.writeWhitespace(Whitespace.newline, flushLeft: true, nest: true);
       offset++;
-      _writeText(line, offset);
+      _writeText(line, offset, mergeEmptySplits: false);
       offset += line.length;
     }
   }
@@ -3716,7 +3747,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Emit a non-breaking space.
   void space() {
-    builder.writeWhitespace(Whitespace.space);
+    builder.writeSpace();
   }
 
   /// Emit a single mandatory newline.
@@ -3844,7 +3875,13 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
-          text.startsWith('/**')) {
+          text.startsWith('/**') && text != '/**/') {
+        // TODO(rnystrom): Check that the comment isn't '/**/' because some of
+        // the dart_style tests use that to mean inline block comments. While
+        // refactoring the Chunk representation to move splits to the front of
+        // Chunk, I want to preserve the current test behavior. The fact that
+        // those tests pass with the old representation is a buggy quirk of the
+        // comment handling.
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
@@ -3883,8 +3920,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// the original source.
   ///
   /// Also outputs the selection endpoints if needed.
-  void _writeText(String text, int offset) {
-    builder.write(text);
+  void _writeText(String text, int offset, {bool mergeEmptySplits = true}) {
+    builder.write(text, mergeEmptySplits: mergeEmptySplits);
 
     // If this text contains either of the selection endpoints, mark them in
     // the chunk.

@@ -78,8 +78,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
   addSpans(chunks);
 
   var spans = spanSet.toList();
-  var rules =
-      chunks.map((chunk) => chunk.rule).where((rule) => rule != null).toSet();
+  var rules = chunks.map((chunk) => chunk.rule).toSet();
 
   var rows = <List<String>>[];
 
@@ -88,35 +87,6 @@ void dumpChunks(int start, List<Chunk> chunks) {
     row.add('$prefix$index:');
 
     var chunk = chunks[index];
-    if (chunk.text.length > 70) {
-      row.add(chunk.text.substring(0, 70));
-    } else {
-      row.add(chunk.text);
-    }
-
-    if (spans.length <= 20) {
-      var spanBars = '';
-      for (var span in spans) {
-        if (chunk.spans.contains(span)) {
-          if (index == 0 || !chunks[index - 1].spans.contains(span)) {
-            if (span.cost == 1) {
-              spanBars += '╖';
-            } else {
-              spanBars += span.cost.toString();
-            }
-          } else {
-            spanBars += '║';
-          }
-        } else {
-          if (index > 0 && chunks[index - 1].spans.contains(span)) {
-            spanBars += '╜';
-          } else {
-            spanBars += ' ';
-          }
-        }
-      }
-      row.add(spanBars);
-    }
 
     void writeIf(predicate, String Function() callback) {
       if (predicate) {
@@ -127,30 +97,56 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
 
     var rule = chunk.rule;
-    if (rule == null) {
-      row.add('');
-      row.add('(no rule)');
-      row.add('');
-    } else {
-      writeIf(rule.cost != 0, () => '\$${rule.cost}');
+    writeIf(rule.cost != 0, () => '\$${rule.cost}');
 
-      var ruleString = rule.toString();
-      if (rule.isHardened) ruleString += '!';
-      row.add(ruleString);
+    var ruleString = rule.toString();
+    if (rule.isHardened) ruleString += '!';
+    row.add(ruleString);
 
-      var constrainedRules = rule.constrainedRules.toSet().intersection(rules);
-      writeIf(constrainedRules.isNotEmpty,
-          () => "-> ${constrainedRules.join(" ")}");
+    var constrainedRules = rule.constrainedRules.toSet().intersection(rules);
+    writeIf(
+        constrainedRules.isNotEmpty, () => "-> ${constrainedRules.join(" ")}");
+
+    var properties = [
+      if (chunk.flushLeft) 'fl',
+      if (chunk.isDouble) '2x',
+      if (chunk.spaceWhenUnsplit) 'sp',
+      if (chunk.canDivide) 'dv',
+    ].join(' ');
+    row.add(properties);
+
+    writeIf(chunk.indent != 0, () => 'indent ${chunk.indent}');
+    writeIf(chunk.nesting.indent != 0, () => 'nest ${chunk.nesting}');
+
+    if (spans.length <= 20) {
+      var spanBars = '';
+      for (var span in spans) {
+        if (chunk.spans.contains(span)) {
+          if (index == 0 || !chunks[index - 1].spans.contains(span)) {
+            if (span.cost == 1) {
+              spanBars += '╓';
+            } else {
+              spanBars += span.cost.toString();
+            }
+          } else {
+            spanBars += '║';
+          }
+        } else {
+          if (index > 0 && chunks[index - 1].spans.contains(span)) {
+            spanBars += '╙';
+          } else {
+            spanBars += ' ';
+          }
+        }
+      }
+      row.add(spanBars);
     }
 
-    writeIf(chunk.indent != null && chunk.indent != 0,
-        () => 'indent ${chunk.indent}');
-
-    writeIf(chunk.nesting?.indent != 0, () => 'nest ${chunk.nesting}');
-
-    writeIf(chunk.flushLeft, () => 'flush');
-
-    writeIf(chunk.canDivide, () => 'divide');
+    if (chunk.text.length > 70) {
+      row.add(chunk.text.substring(0, 70));
+    } else {
+      row.add(chunk.text);
+    }
 
     rows.add(row);
 
@@ -175,9 +171,11 @@ void dumpChunks(int start, List<Chunk> chunks) {
   var buffer = StringBuffer();
   for (var row in rows) {
     for (var i = 0; i < row.length; i++) {
+      if (rowWidths[i] == 0) continue;
+
       var cell = row[i].padRight(rowWidths[i]);
 
-      if (i != 1) cell = gray(cell);
+      if (i != row.length - 1) cell = gray(cell);
 
       buffer.write(cell);
       buffer.write('  ');
@@ -219,40 +217,38 @@ void dumpConstraints(List<Chunk> chunks) {
 ///
 /// It will determine how best to split it into multiple lines of output and
 /// return a single string that may contain one or more newline characters.
-void dumpLines(List<Chunk> chunks, int firstLineIndent, SplitSet splits) {
+void dumpLines(List<Chunk> chunks, SplitSet splits) {
   var buffer = StringBuffer();
-
-  void writeIndent(int indent) => buffer.write(gray('| ' * (indent ~/ 2)));
 
   void writeChunksUnsplit(List<Chunk> chunks) {
     for (var chunk in chunks) {
-      buffer.write(chunk.text);
       if (chunk.spaceWhenUnsplit) buffer.write(' ');
+      buffer.write(chunk.text);
 
       // Recurse into the block.
       if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
     }
   }
 
-  writeIndent(firstLineIndent);
-
-  for (var i = 0; i < chunks.length - 1; i++) {
+  for (var i = 0; i < chunks.length; i++) {
     var chunk = chunks[i];
-    buffer.write(chunk.text);
 
     if (splits.shouldSplitAt(i)) {
       for (var j = 0; j < (chunk.isDouble ? 2 : 1); j++) {
         buffer.writeln();
-        writeIndent(splits.getColumn(i));
+        buffer.write(gray('| ' * (splits.getColumn(i) ~/ 2)));
       }
-    } else {
-      if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
+    } else if (chunk.spaceWhenUnsplit) {
+      buffer.write(' ');
+    }
 
-      if (chunk.spaceWhenUnsplit) buffer.write(' ');
+    buffer.write(chunk.text);
+
+    if (chunk.isBlock && !splits.shouldSplitAt(i)) {
+      writeChunksUnsplit(chunk.block.chunks);
     }
   }
 
-  buffer.write(chunks.last.text);
   log(buffer);
 }
 

@@ -7,3 +7,29 @@
 """""" '''''';
 <<<
 """""" '''''';
+>>> blank lines in multi-line string
+'''
+
+
+two before
+
+one
+
+
+two
+
+
+''';
+<<<
+'''
+
+
+two before
+
+one
+
+
+two
+
+
+''';

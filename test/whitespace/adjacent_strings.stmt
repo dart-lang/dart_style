@@ -256,3 +256,7 @@ function(
       "string"
       "more",
 );
+>>> inside interpolation
+var x = '${"a" "b"}';
+<<<
+var x = '${"a" "b"}';

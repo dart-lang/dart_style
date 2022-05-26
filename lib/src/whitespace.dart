@@ -28,21 +28,8 @@ class Whitespace {
   /// No whitespace.
   static const none = Whitespace._('none');
 
-  /// A single non-breaking space.
-  static const space = Whitespace._('space');
-
   /// A single newline.
   static const newline = Whitespace._('newline');
-
-  /// A single newline that takes into account the current expression nesting
-  /// for the next line.
-  static const nestedNewline = Whitespace._('nestedNewline');
-
-  /// A single newline with all indentation eliminated at the beginning of the
-  /// next line.
-  ///
-  /// Used for subsequent lines in a multiline string.
-  static const newlineFlushLeft = Whitespace._('newlineFlushLeft');
 
   /// Two newlines, a single blank line of separation.
   static const twoNewlines = Whitespace._('twoNewlines');
@@ -71,18 +58,12 @@ class Whitespace {
   /// less prescriptive over the user's whitespace.
   static const oneOrTwoNewlines = Whitespace._('oneOrTwoNewlines');
 
-  /// A hard split was just written whose whitespace takes precedence over any
-  /// previous pending whitespace.
-  static const afterHardSplit = Whitespace._('afterHardSplit');
-
   final String name;
 
   /// Gets the minimum number of newlines contained in this whitespace.
   int get minimumLines {
     switch (this) {
       case Whitespace.newline:
-      case Whitespace.nestedNewline:
-      case Whitespace.newlineFlushLeft:
       case Whitespace.oneOrTwoNewlines:
         return 1;
 

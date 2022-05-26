@@ -227,7 +227,8 @@ typedef/*0*/void/*1*/Foo/*2*/<T>/*3*/(/*4*/T/*5*/foo(/*6*/x));
 typedef /*1*/ Foo /*2*/ <T>
     = /*0*/ void Function /*3*/ (
         /*4*/ T Function(
-            /*6*/ dynamic x) /*5*/ foo);
+                /*6*/ dynamic x) /*5*/
+            foo);
 >>> eol comments in typedef
 typedef//0
 void//1

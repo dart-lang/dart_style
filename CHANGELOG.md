@@ -1,6 +1,27 @@
+# 2.2.4-dev
+
+* Refactor Chunk to store split before text instead of after. This mostly does
+  not affect the visible behavior of the formatter, but a few edge cases are
+  handled slightly differently. These are all bug fixes where the previous
+  behavior was unintentional. The changes are:
+
+  * Consistently discard blank lines between a `{` or `[` and a subsequent
+    comment. It used to do this before the `{` in type bodies, but not switch
+    bodies, optional parameter sections, or named parameter sections.
+
+  * Don't allow splitting an empty class body.
+
+  * Allow splitting after an inline block comment in some places where it makes
+    sense.
+
+  * Don't allow a line comment in an argument list to cause preceding arguments
+    to be misformatted.
+
+  * Remove blank lines after a line comment at the end of a body.
+
 # 2.2.3
 
-- Allow the latest version of `package:analyzer`.
+* Allow the latest version of `package:analyzer`.
 
 # 2.2.2
 
