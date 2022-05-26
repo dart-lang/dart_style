@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import 'argument_list_visitor.dart';
+import 'ast_extensions.dart';
 import 'rule/argument.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';
@@ -311,7 +312,7 @@ class CallChainVisitor {
     var argument = argumentList.arguments.last;
 
     // If the argument list has a trailing comma, treat it like a collection.
-    if (_visitor.hasCommaAfter(argument)) return false;
+    if (argument.hasCommaAfter) return false;
 
     if (argument is NamedExpression) {
       argument = argument.expression;
@@ -534,7 +535,7 @@ Expression _unwrapTarget(Expression node, List<_Selector> calls) {
   // Don't include things that look like static method or constructor
   // calls in the call chain because that tends to split up named
   // constructors from their class.
-  if (SourceVisitor.looksLikeStaticCall(node)) return node;
+  if (node.looksLikeStaticCall) return node;
 
   // Selectors.
   if (node is MethodInvocation && node.target != null) {
