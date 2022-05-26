@@ -6,6 +6,7 @@ import 'dart:math' as math;
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import 'ast_extensions.dart';
 import 'chunk.dart';
 import 'rule/argument.dart';
 import 'rule/rule.dart';
@@ -131,7 +132,7 @@ class ArgumentListVisitor {
         _visitor.visit(argument);
 
         // Write the following comma.
-        if (_visitor.hasCommaAfter(argument)) {
+        if (argument.hasCommaAfter) {
           _visitor.token(argument.endToken.next);
         }
       }
@@ -480,7 +481,7 @@ class ArgumentSublist {
     }
 
     // Write the following comma.
-    if (visitor.hasCommaAfter(argument)) {
+    if (argument.hasCommaAfter) {
       visitor.token(argument.endToken.next);
     }
   }
