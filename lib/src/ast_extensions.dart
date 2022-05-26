@@ -19,7 +19,6 @@ extension AstNodeExtensions on AstNode {
     return null;
   }
 
-  // TODO: Define this on Iterable<AstNode> too?
   /// Whether there is a comma token immediately following this.
   bool get hasCommaAfter => commaAfter != null;
 
