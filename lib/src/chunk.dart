@@ -220,17 +220,15 @@ class Chunk extends Selection {
 
   @override
   String toString() {
-    var parts = [];
-
-    parts.add('indent:$indent');
-    if (spaceWhenUnsplit) parts.add('space');
-    if (isDouble) parts.add('double');
-    if (flushLeft) parts.add('flush');
-    parts.add('$rule${rule.isHardened ? '!' : ''}');
-
-    if (rule.constrainedRules.isNotEmpty) {
-      parts.add("-> ${rule.constrainedRules.join(' ')}");
-    }
+    var parts = [
+      'indent:$indent',
+      if (spaceWhenUnsplit) 'space',
+      if (isDouble) 'double',
+      if (flushLeft) 'flush',
+      '$rule${rule.isHardened ? '!' : ''}',
+      if (rule.constrainedRules.isNotEmpty)
+        "-> ${rule.constrainedRules.join(' ')}"
+    ];
 
     return '[${parts.join(' ')}] `$text`';
   }

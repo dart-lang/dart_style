@@ -149,6 +149,17 @@ class ChunkBuilder {
   ///
   /// If we didn't do this here, we'd have to call [nestExpression] after the
   /// first token of practically every grammar production.
+  ///
+  /// If [mergeEmptySplits] is `true`, the default, then any pending split
+  /// information will be combined with a previously created split if no text
+  /// has been written since. This generally comes into play when text is
+  /// written after a comment. The comment may leave some pending split
+  /// information while [SourceVisitor] may have also created a split and we
+  /// want to combine those.
+  ///
+  /// It is only `false` when writing the contents of a multiline string. There,
+  /// we may *want* to have a series of empty chunks because those represent
+  /// empty lines in the multiline string.
   void write(String string, {bool mergeEmptySplits = true}) {
     _emitPendingWhitespace(mergeEmptySplits: mergeEmptySplits);
     _writeText(string);
