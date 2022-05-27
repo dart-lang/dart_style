@@ -5,6 +5,7 @@
 library dart_style.src.rule.type_argument;
 
 import '../chunk.dart';
+import '../constants.dart';
 import 'rule.dart';
 
 /// Rule for splitting a list of type arguments or type parameters. Type
