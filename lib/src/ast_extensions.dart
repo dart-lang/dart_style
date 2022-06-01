@@ -22,6 +22,22 @@ extension AstNodeExtensions on AstNode {
   /// Whether there is a comma token immediately following this.
   bool get hasCommaAfter => commaAfter != null;
 
+  /// Whether this node is a statement or member with a braced body that isn't
+  /// empty.
+  ///
+  /// Used to determine if a blank line should be inserted after the node.
+  bool get hasNonEmptyBody {
+    AstNode? body;
+    var node = this;
+    if (node is MethodDeclaration) {
+      body = node.body;
+    } else if (node is FunctionDeclarationStatement) {
+      body = node.functionDeclaration.functionExpression.body;
+    }
+
+    return body is BlockFunctionBody && body.block.statements.isNotEmpty;
+  }
+
   bool get isControlFlowElement => this is IfElement || this is ForElement;
 
   /// Whether this is immediately contained within an anonymous

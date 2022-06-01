@@ -1,5 +1,9 @@
 # 2.2.4-dev
 
+* Unify how brace-delimited syntax is formatted. This is mostly an internal
+  refactoring, but slightly changes how a type body containing only an inline
+  block comment is formatted.
+
 * Refactor Chunk to store split before text instead of after. This mostly does
   not affect the visible behavior of the formatter, but a few edge cases are
   handled slightly differently. These are all bug fixes where the previous
