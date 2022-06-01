@@ -3604,8 +3604,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
   }
 
-  /// Whether there is a blank line between the last written token and the next
-  /// one to be written, including comments.
+  /// The number of newlines between the last written token and the next one to
+  /// be written, including comments.
+  ///
+  /// Zero means "on the same line", one means "on subsequent lines", etc.
   int get _linesBeforeNextToken {
     var previous = _lastToken;
     var next = previous.next!;
