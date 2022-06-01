@@ -4,6 +4,7 @@
 import 'dart:math' as math;
 
 import 'chunk.dart';
+import 'constants.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
 import 'line_writer.dart';
@@ -12,7 +13,6 @@ import 'nesting_level.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
 import 'style_fix.dart';
-import 'whitespace.dart';
 
 /// Matches if the last character of a string is an identifier character.
 final _trailingIdentifierChar = RegExp(r'[a-zA-Z0-9_]$');
@@ -45,13 +45,11 @@ class ChunkBuilder {
 
   final List<Chunk> _chunks;
 
-  /// The whitespace that should be written to [_chunks] before the next
-  ///  non-whitespace token.
+  /// The number of newlines that should be written before the next
+  /// non-whitespace token.
   ///
-  /// This ensures that changes to indentation and nesting also apply to the
-  /// most recent split, even if the visitor "creates" the split before changing
-  /// indentation or nesting.
-  Whitespace _pendingWhitespace = Whitespace.none;
+  /// This will always be 0, 1, or 2.
+  int _pendingNewlines = 0;
 
   /// Whether a non-breaking space should be written before the next text.
   bool _pendingSpace = false;
@@ -108,17 +106,6 @@ class ChunkBuilder {
   /// When this is non-zero, splits are ignored.
   int _preventSplitNesting = 0;
 
-  /// Whether there is pending whitespace that depends on the number of
-  /// newlines in the source.
-  ///
-  /// This is used to avoid calculating the newlines between tokens unless
-  /// actually needed since doing so is slow when done between every single
-  /// token pair.
-  bool get needsToPreserveNewlines =>
-      _pendingWhitespace == Whitespace.oneOrTwoNewlines ||
-      _pendingWhitespace == Whitespace.splitOrTwoNewlines ||
-      _pendingWhitespace == Whitespace.splitOrNewline;
-
   /// The number of characters of code that can fit in a single line.
   int get pageWidth => _formatter.pageWidth;
 
@@ -171,10 +158,18 @@ class ChunkBuilder {
     _afterComment = false;
   }
 
-  /// Writes a [WhitespaceChunk] of [type].
-  void writeWhitespace(Whitespace type,
-      {bool flushLeft = false, bool nest = false}) {
-    _pendingWhitespace = type;
+  /// Writes one or two hard newlines.
+  ///
+  /// Doesn't immediately write them. That way line breaking is correctly
+  /// interleaved with any comments that appear before the next token.
+  ///
+  /// If [isDouble] is `true`, inserts an extra blank line. If [flushLeft] is
+  /// `true`, the next line will start at column 1 and ignore indentation and
+  /// nesting. If [nest] is `true` then the next line will use expression
+  /// nesting.
+  void writeNewline(
+      {bool isDouble = false, bool flushLeft = false, bool nest = false}) {
+    _pendingNewlines = isDouble ? 2 : 1;
     _pendingFlushLeft = flushLeft;
     _pendingNested = nest;
   }
@@ -194,7 +189,7 @@ class ChunkBuilder {
     // chunk is safe since the rule that uses the chunk will itself get
     // discarded because no chunk references it.
     if (_preventSplitNesting > 0) {
-      _pendingWhitespace = Whitespace.none;
+      _pendingNewlines = 0;
       _pendingNested = false;
 
       if (space) _pendingSpace = true;
@@ -203,12 +198,9 @@ class ChunkBuilder {
 
     // If a hard split after a comment is already pending, then prefer that over
     // a soft split.
-    if (_pendingWhitespace.minimumLines > 0) {
-      return Chunk.dummy();
-    }
+    if (_pendingNewlines > 0) return Chunk.dummy();
 
-    return _writeSplit(
-        isHard: false, isDouble: false, nest: nest, space: space);
+    return _writeSplit(isHard: false, nest: nest, space: space);
   }
 
   /// Outputs the series of [comments] and associated whitespace that appear
@@ -233,14 +225,13 @@ class ChunkBuilder {
     // Normally, a blank line is required after `library`, but since there is
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
-    if (_pendingWhitespace == Whitespace.twoNewlines &&
-        comments.first.linesBefore < 2) {
+    if (_pendingNewlines == 2 && comments.first.linesBefore < 2) {
       if (linesBeforeToken > 1) {
-        writeWhitespace(Whitespace.newline);
+        writeNewline();
       } else {
         for (var i = 1; i < comments.length; i++) {
           if (comments[i].linesBefore > 1) {
-            writeWhitespace(Whitespace.newline);
+            writeNewline();
             break;
           }
         }
@@ -260,9 +251,9 @@ class ChunkBuilder {
     //
     // When that happens, we need to make sure to preserve the split at the end
     // of the first sequence of comments if there is one.
-    if (_afterComment && _pendingWhitespace != Whitespace.none) {
+    if (_afterComment && _pendingNewlines > 0) {
       comments.first.linesBefore = 1;
-      writeWhitespace(Whitespace.none);
+      _pendingNewlines = 0;
     }
 
     // Edge case: if the comments are completely inline (i.e. just a series of
@@ -278,16 +269,14 @@ class ChunkBuilder {
     //
     //     /* a */ /* b */ import 'a.dart';
     if (linesBeforeToken == 0 &&
-        _pendingWhitespace.minimumLines > comments.first.linesBefore &&
+        _pendingNewlines > comments.first.linesBefore &&
         comments.every((comment) => comment.type == CommentType.inlineBlock)) {
-      comments.first.linesBefore = _pendingWhitespace.minimumLines;
+      comments.first.linesBefore = _pendingNewlines;
     }
 
     // Write each comment and the whitespace between them.
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
-
-      preserveNewlines(comment.linesBefore);
 
       // See if the comment should follow text on the current line.
       var chunk = _chunkForComment(comment, token);
@@ -302,13 +291,11 @@ class ChunkBuilder {
         }
       } else {
         // Split before the comment if it starts a line.
-        if (_pendingWhitespace == Whitespace.none) {
+        if (_pendingNewlines == 0) {
           if (comment.linesBefore > 0 &&
               (_afterComment || comment.type != CommentType.inlineBlock)) {
-            writeWhitespace(
-                _needsBlankLineBeforeComment(comment)
-                    ? Whitespace.twoNewlines
-                    : Whitespace.newline,
+            writeNewline(
+                isDouble: _needsBlankLineBeforeComment(comment),
                 flushLeft: comment.flushLeft,
                 nest: true);
           } else if (_chunks.isNotEmpty) {
@@ -351,19 +338,14 @@ class ChunkBuilder {
       }
 
       if (linesAfter > 0) {
-        writeWhitespace(
-            _pendingWhitespace == Whitespace.twoNewlines || linesAfter > 1
-                ? Whitespace.twoNewlines
-                : Whitespace.newline,
-            nest: true);
+        writeNewline(
+            isDouble: _pendingNewlines == 2 || linesAfter > 1, nest: true);
       }
     }
 
     // If the comment has text following it (aside from a grouping character),
     // it needs a trailing space.
     _pendingSpace = _needsSpaceAfterComment(comments.last, token);
-
-    preserveNewlines(linesBeforeToken);
     _afterComment = true;
   }
 
@@ -422,38 +404,8 @@ class ChunkBuilder {
         _writeText(' $line', chunk);
       }
 
-      writeWhitespace(Whitespace.newline);
+      writeNewline();
       _emitPendingWhitespace();
-    }
-  }
-
-  /// If the current pending whitespace allows some source discretion, pins
-  /// that down given that the source contains [numLines] newlines at that
-  /// point and writes any needed split.
-  void preserveNewlines(int numLines) {
-    switch (_pendingWhitespace) {
-      case Whitespace.splitOrNewline:
-        if (numLines > 0) {
-          _writeSplit(nest: true);
-        } else {
-          split(space: true);
-        }
-        break;
-
-      case Whitespace.splitOrTwoNewlines:
-        if (numLines > 1) {
-          _writeSplit(isDouble: true, nest: true);
-        } else {
-          split(space: true);
-        }
-        break;
-
-      case Whitespace.oneOrTwoNewlines:
-        _writeSplit(isDouble: numLines > 1, nest: false);
-        break;
-
-      default:
-        break;
     }
   }
 
@@ -739,9 +691,9 @@ class ChunkBuilder {
   /// any ambiguous whitespace into a concrete choice.
   void _emitPendingWhitespace(
       {bool isDouble = false, bool mergeEmptySplits = true}) {
-    if (_pendingWhitespace == Whitespace.none) return;
+    if (_pendingNewlines == 0) return;
 
-    if (_pendingWhitespace == Whitespace.twoNewlines) isDouble = true;
+    if (_pendingNewlines == 2) isDouble = true;
     _writeSplit(
         isDouble: isDouble,
         nest: _pendingNested,
@@ -838,7 +790,7 @@ class ChunkBuilder {
     // Not at the beginning of a line.
     if (_chunks.last.text.isEmpty) return false;
 
-    if (_pendingWhitespace != Whitespace.none) return false;
+    if (_pendingNewlines > 0) return false;
 
     // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
     if (_isGenericMethodComment(comment) && token == '(') {
@@ -903,7 +855,7 @@ class ChunkBuilder {
           isHard: isHard, isDouble: isDouble, space: space);
     }
 
-    _pendingWhitespace = Whitespace.none;
+    _pendingNewlines = 0;
     _pendingNested = false;
 
     if (chunk.rule.isHardened) _handleHardSplit();

@@ -15,6 +15,7 @@ import 'ast_extensions.dart';
 import 'call_chain_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
+import 'constants.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
@@ -23,7 +24,6 @@ import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
 import 'style_fix.dart';
-import 'whitespace.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
@@ -38,6 +38,13 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// The source being formatted.
   final SourceCode _source;
+
+  /// The most recently written token.
+  ///
+  /// This is used to determine how many lines are between a pair of tokens in
+  /// the original source in places where a user can control whether or not a
+  /// blank line or newline is left in the output.
+  late Token _lastToken;
 
   /// `true` if the visitor has written past the beginning of the selection in
   /// the original source text.
@@ -406,18 +413,24 @@ class SourceVisitor extends ThrowingAstVisitor {
       _beginBody(node.leftBracket);
     }
 
-    var whitespace = Whitespace.newline;
+    var forceBlankLine = false;
     for (var statement in node.statements) {
-      builder.writeWhitespace(whitespace);
+      if (statement == node.statements.first) {
+        newline();
+      } else if (forceBlankLine) {
+        twoNewlines();
+      } else {
+        oneOrTwoNewlines();
+      }
 
       visit(statement);
 
-      whitespace = Whitespace.oneOrTwoNewlines;
+      forceBlankLine = false;
       if (statement is FunctionDeclarationStatement) {
         // Add a blank line after non-empty block functions.
         var body = statement.functionDeclaration.functionExpression.body;
         if (body is BlockFunctionBody && body.block.statements.isNotEmpty) {
-          whitespace = Whitespace.twoNewlines;
+          forceBlankLine = true;
         }
       }
     }
@@ -846,7 +859,7 @@ class SourceVisitor extends ThrowingAstVisitor {
             node.parameters.parameters.last.isOptionalPositional) {
           padding = ' ';
         }
-        _writeText(padding, node.separator!.offset);
+        _writeText(padding, node.separator!);
       }
 
       // ":".
@@ -946,7 +959,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         // Change the separator to "=".
         space();
         writePrecedingCommentsAndNewlines(node.separator!);
-        _writeText('=', node.separator!.offset);
+        _writeText('=', node.separator!);
       } else {
         // The '=' separator is preceded by a space, ":" is not.
         if (node.separator!.type == TokenType.EQ) space();
@@ -1644,15 +1657,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (_formatter.fixes.contains(StyleFix.functionTypedefs)) {
       _simpleStatement(node, () {
         // Inlined visitGenericTypeAlias
-        _visitGenericTypeAliasHeader(node.typedefKeyword, node.name,
-            node.typeParameters, null, (node.returnType ?? node.name).offset);
+        _visitGenericTypeAliasHeader(
+            node.typedefKeyword,
+            node.name,
+            node.typeParameters,
+            null,
+            (node.returnType ?? node.name).beginToken);
 
         space();
 
         // Recursively convert function-arguments to Function syntax.
         _insideNewTypedefFix = true;
         _visitGenericFunctionType(
-            node.returnType, null, node.name.offset, null, node.parameters);
+            node.returnType, null, node.name.token, null, node.parameters);
         _insideNewTypedefFix = false;
       });
       return;
@@ -1683,7 +1700,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         builder.endSpan();
       } else {
         _beginFormalParameter(node);
-        _visitGenericFunctionType(node.returnType, null, node.identifier.offset,
+        _visitGenericFunctionType(node.returnType, null, node.identifier.token,
             node.typeParameters, node.parameters);
         token(node.question);
         split();
@@ -1868,7 +1885,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         // If there is an else clause, always split before both the then and
         // else statements.
         if (node.elseStatement != null) {
-          builder.writeWhitespace(Whitespace.newline);
+          builder.writeNewline();
         } else {
           builder.split(nest: false, space: true);
         }
@@ -2331,7 +2348,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // formatter ensures it gets a newline after it. Since the script tag must
     // come at the top of the file, we don't have to worry about preceding
     // comments or whitespace.
-    _writeText(node.scriptTag.lexeme.trim(), node.offset);
+    _writeText(node.scriptTag.lexeme.trim(), node.scriptTag);
     twoNewlines();
   }
 
@@ -2370,7 +2387,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
         // Ensure comments on the identifier comes before the inserted type.
         token(node.identifier!.token, before: () {
-          _writeText('dynamic', node.identifier!.offset);
+          _writeText('dynamic', node.identifier!.token);
           split();
         });
       } else {
@@ -2807,12 +2824,19 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the list of members in a class or mixin declaration.
   void _visitMembers(NodeList<ClassMember> members) {
-    var whitespace = Whitespace.none;
+    var forceBlankLine = false;
     for (var member in members) {
-      if (whitespace != Whitespace.none) builder.writeWhitespace(whitespace);
+      if (member == members.first) {
+        // No separator.
+      } else if (forceBlankLine) {
+        twoNewlines();
+      } else {
+        oneOrTwoNewlines();
+      }
+
       visit(member);
 
-      whitespace = Whitespace.oneOrTwoNewlines;
+      forceBlankLine = false;
 
       // Add a blank line after non-empty block methods.
       if (member is MethodDeclaration && member.body is BlockFunctionBody) {
@@ -2820,7 +2844,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         // the user wants to group things together.
         var body = member.body as BlockFunctionBody;
         if (body.block.statements.isNotEmpty) {
-          whitespace = Whitespace.twoNewlines;
+          forceBlankLine = true;
         }
       }
     }
@@ -3164,7 +3188,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _metadataRules.removeLast();
 
     // Now write the delimiter itself.
-    _writeText(firstDelimiter.lexeme, firstDelimiter.offset);
+    _writeText(firstDelimiter.lexeme, firstDelimiter);
     if (firstDelimiter != parameters.rightParenthesis) {
       token(parameters.rightParenthesis);
     }
@@ -3192,7 +3216,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitGenericFunctionType(
       AstNode? returnType,
       Token? functionKeyword,
-      int? functionKeywordPosition,
+      Token? positionToken,
       TypeParameterList? typeParameters,
       FormalParameterList parameters) {
     builder.startLazyRule();
@@ -3202,7 +3226,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (functionKeyword != null) {
       token(functionKeyword);
     } else {
-      _writeText('Function', functionKeywordPosition!);
+      _writeText('Function', positionToken!);
     }
 
     builder.unnest();
@@ -3216,7 +3240,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// If [equals] is `null`, then [equalsPosition] must be a
   /// position to use for the inserted text "=".
   void _visitGenericTypeAliasHeader(Token typedefKeyword, AstNode name,
-      AstNode? typeParameters, Token? equals, int? equalsPosition) {
+      AstNode? typeParameters, Token? equals, Token? positionToken) {
     token(typedefKeyword);
     space();
 
@@ -3233,7 +3257,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (equals != null) {
       token(equals);
     } else {
-      _writeText('=', equalsPosition!);
+      _writeText('=', positionToken!);
     }
 
     builder.endRule();
@@ -3366,7 +3390,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endRule();
 
     // Now write the delimiter itself.
-    _writeText(rightBracket.lexeme, rightBracket.offset);
+    _writeText(rightBracket.lexeme, rightBracket);
   }
 
   /// Visits a list of configurations in an import or export directive.
@@ -3510,13 +3534,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     var lines = string.lexeme.split(_formatter.lineEnding!);
     var offset = string.offset;
 
-    _writeText(lines.first, offset);
+    _writeText(lines.first, string, offset: offset);
     offset += lines.first.length;
 
     for (var line in lines.skip(1)) {
-      builder.writeWhitespace(Whitespace.newline, flushLeft: true, nest: true);
+      builder.writeNewline(flushLeft: true, nest: true);
       offset++;
-      _writeText(line, offset, mergeEmptySplits: false);
+      _writeText(line, string, offset: offset, mergeEmptySplits: false);
       offset += line.length;
     }
   }
@@ -3539,33 +3563,59 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Emit a single mandatory newline.
   void newline() {
-    builder.writeWhitespace(Whitespace.newline);
+    builder.writeNewline();
   }
 
   /// Emit a two mandatory newlines.
   void twoNewlines() {
-    builder.writeWhitespace(Whitespace.twoNewlines);
+    builder.writeNewline(isDouble: true);
   }
 
   /// Allow either a single split or newline to be emitted before the next
   /// non-whitespace token based on whether a newline exists in the source
   /// between the last token and the next one.
   void splitOrNewline() {
-    builder.writeWhitespace(Whitespace.splitOrNewline);
+    if (_linesBeforeNextToken > 0) {
+      builder.writeNewline(nest: true);
+    } else {
+      split();
+    }
   }
 
   /// Allow either a single split or newline to be emitted before the next
-  /// non-whitespace token based on whether a newline exists in the source
+  /// non-whitespace token based on whether any blank lines exist in the source
   /// between the last token and the next one.
   void splitOrTwoNewlines() {
-    builder.writeWhitespace(Whitespace.splitOrTwoNewlines);
+    if (_linesBeforeNextToken > 1) {
+      twoNewlines();
+    } else {
+      split();
+    }
   }
 
   /// Allow either one or two newlines to be emitted before the next
-  /// non-whitespace token based on whether more than one newline exists in the
-  /// source between the last token and the next one.
+  /// non-whitespace token based on whether any blank lines exist in the source
+  /// between the last token and the next one.
   void oneOrTwoNewlines() {
-    builder.writeWhitespace(Whitespace.oneOrTwoNewlines);
+    if (_linesBeforeNextToken > 1) {
+      twoNewlines();
+    } else {
+      newline();
+    }
+  }
+
+  /// The number of newlines between the last written token and the next one to
+  /// be written, including comments.
+  ///
+  /// Zero means "on the same line", one means "on subsequent lines", etc.
+  int get _linesBeforeNextToken {
+    var previous = _lastToken;
+    var next = previous.next!;
+    if (next.precedingComments != null) {
+      next = next.precedingComments!;
+    }
+
+    return _startLine(next) - _endLine(previous);
   }
 
   /// Writes a single space split owned by the current rule.
@@ -3607,7 +3657,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (before != null) before();
 
-    _writeText(token.lexeme, token.offset);
+    _writeText(token.lexeme, token);
 
     if (after != null) after();
   }
@@ -3618,13 +3668,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // For performance, avoid calculating newlines between tokens unless
     // actually needed.
-    if (comment == null) {
-      if (builder.needsToPreserveNewlines) {
-        builder.preserveNewlines(_startLine(token) - _endLine(token.previous!));
-      }
-
-      return false;
-    }
+    if (comment == null) return false;
 
     // If the token's comments are being moved by a fix, do not write them here.
     if (_suppressPrecedingCommentsAndNewLines.contains(token)) return false;
@@ -3703,11 +3747,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     return comments.first.linesBefore > 0;
   }
 
-  /// Write [text] to the current chunk, given that it starts at [offset] in
-  /// the original source.
+  /// Write [text] to the current chunk, derived from [token].
   ///
   /// Also outputs the selection endpoints if needed.
-  void _writeText(String text, int offset, {bool mergeEmptySplits = true}) {
+  ///
+  /// Usually, [text] is simply [token]'s lexeme, but for fixes, multi-line
+  /// strings, or a couple of other cases, it will be different.
+  ///
+  /// If [offset] is given, uses that for calculating selection location.
+  /// Otherwise, uses the offset of [token].
+  void _writeText(String text, Token token,
+      {int? offset, bool mergeEmptySplits = true}) {
+    offset ??= token.offset;
+
     builder.write(text, mergeEmptySplits: mergeEmptySplits);
 
     // If this text contains either of the selection endpoints, mark them in
@@ -3721,6 +3773,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (end != null) {
       builder.endSelectionFromEnd(text.length - end);
     }
+
+    _lastToken = token;
   }
 
   /// Returns the number of characters past [offset] in the source where the

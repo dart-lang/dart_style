@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../chunk.dart';
+import '../constants.dart';
 import '../fast_hash.dart';
 
 /// A constraint that determines the different ways a related set of chunks may
