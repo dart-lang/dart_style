@@ -404,45 +404,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    // If the block is a function body, it may get expression-level indentation,
-    // so handle it specially. Otherwise, just bump the indentation and keep it
-    // in the current block.
-    if (node.parent is BlockFunctionBody) {
-      _startLiteralBody(node.leftBracket);
-    } else {
-      _beginBody(node.leftBracket);
-    }
-
-    var forceBlankLine = false;
-    for (var statement in node.statements) {
-      if (statement == node.statements.first) {
-        newline();
-      } else if (forceBlankLine) {
-        twoNewlines();
-      } else {
-        oneOrTwoNewlines();
-      }
-
-      visit(statement);
-
-      forceBlankLine = false;
-      if (statement is FunctionDeclarationStatement) {
-        // Add a blank line after non-empty block functions.
-        var body = statement.functionDeclaration.functionExpression.body;
-        if (body is BlockFunctionBody && body.block.statements.isNotEmpty) {
-          forceBlankLine = true;
-        }
-      }
-    }
-
-    if (node.statements.isNotEmpty) newline();
-
-    if (node.parent is BlockFunctionBody) {
-      _endLiteralBody(node.rightBracket,
-          forceSplit: node.statements.isNotEmpty);
-    } else {
-      _endBody(node.rightBracket);
-    }
+    _visitBody(node.leftBracket, node.statements, node.rightBracket);
   }
 
   @override
@@ -591,7 +553,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     writePrecedingCommentsAndNewlines(lastCommentToken);
     _suppressPrecedingCommentsAndNewLines.add(lastCommentToken);
 
-    builder = builder.endBlock(null, forceSplit: true);
+    builder = builder.endBlock();
 
     // The last section is outside of the block.
     visit(node.cascadeSections.last);
@@ -645,7 +607,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -818,7 +780,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // the parameter list gets more deeply indented.
     if (node.redirectedConstructor != null) builder.nestExpression();
 
-    _visitBody(null, node.parameters, node.body, () {
+    _visitFunctionBody(null, node.parameters, node.body, () {
       // Check for redirects or initializer lists.
       if (node.redirectedConstructor != null) {
         _visitConstructorRedirects(node);
@@ -1060,8 +1022,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
 
-    _beginBody(node.leftBracket);
-    builder.split(nest: false, space: true);
+    var rule = _beginBody(node.leftBracket, space: true);
 
     visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
 
@@ -1091,16 +1052,19 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       token(semicolon);
 
-      // Always split the constants if they end in ";", even if there aren't
-      // any members.
-      builder.forceRules();
-
       // Put a blank line between the constants and members.
       if (node.members.isNotEmpty) twoNewlines();
     }
 
-    _visitMembers(node.members);
-    _endBody(node.rightBracket, split: true);
+    _visitBodyContents(node.members);
+
+    builder.endRule();
+
+    _endBody(rule, node.rightBracket,
+        space: true,
+        forceSplit: semicolon != null ||
+            trailingComma != null ||
+            node.members.isNotEmpty);
   }
 
   @override
@@ -1313,7 +1277,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.extendedType);
     space();
     builder.unnest();
-    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -1625,7 +1589,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     var oldConstNesting = _constNesting;
     _constNesting = 0;
 
-    _visitBody(node.typeParameters, node.parameters, node.body);
+    _visitFunctionBody(node.typeParameters, node.parameters, node.body);
 
     _constNesting = oldConstNesting;
   }
@@ -2202,7 +2166,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _visitTypeBody(node.leftBracket, node.members, node.rightBracket);
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
   }
 
   @override
@@ -2498,16 +2462,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.expression);
     token(node.rightParenthesis);
     space();
-    token(node.leftBracket);
     builder.unnest();
-    builder.indent();
-    newline();
 
+    var rule = _beginBody(node.leftBracket);
     visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
-    token(node.rightBracket, before: () {
-      builder.unindent();
-      newline();
-    });
+    _endBody(rule, node.rightBracket, forceSplit: true);
   }
 
   @override
@@ -2822,29 +2781,18 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitNodes(labels, between: newline, after: newline);
   }
 
-  /// Visits the list of members in a class or mixin declaration.
-  void _visitMembers(NodeList<ClassMember> members) {
-    var forceBlankLine = false;
-    for (var member in members) {
-      if (member == members.first) {
-        // No separator.
-      } else if (forceBlankLine) {
-        twoNewlines();
-      } else {
-        oneOrTwoNewlines();
-      }
+  /// Visits the members in a type declaration or the statements in a block.
+  void _visitBodyContents(List<AstNode> nodes) {
+    for (var node in nodes) {
+      visit(node);
 
-      visit(member);
-
-      forceBlankLine = false;
-
-      // Add a blank line after non-empty block methods.
-      if (member is MethodDeclaration && member.body is BlockFunctionBody) {
-        // Variables and arrow-bodied members can be more tightly packed if
-        // the user wants to group things together.
-        var body = member.body as BlockFunctionBody;
-        if (body.block.statements.isNotEmpty) {
-          forceBlankLine = true;
+      // If the node has a non-empty braced body, then require a blank line
+      // between it and the next node.
+      if (node != nodes.last) {
+        if (node.hasNonEmptyBody) {
+          twoNewlines();
+        } else {
+          oneOrTwoNewlines();
         }
       }
     }
@@ -2877,7 +2825,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       typeParameters = (node as MethodDeclaration).typeParameters;
     }
 
-    _visitBody(typeParameters, function.parameters, function.body, () {
+    _visitFunctionBody(typeParameters, function.parameters, function.body, () {
       // If the body is a block, we need to exit nesting before we hit the body
       // indentation, but we do want to wrap it around the parameters.
       if (function.body is! ExpressionFunctionBody) builder.unnest();
@@ -2892,7 +2840,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// space before it if it's not empty.
   ///
   /// If [beforeBody] is provided, it is invoked before the body is visited.
-  void _visitBody(TypeParameterList? typeParameters,
+  void _visitFunctionBody(TypeParameterList? typeParameters,
       FormalParameterList? parameters, FunctionBody body,
       [void Function()? beforeBody]) {
     // If the body is "=>", add an extra level of indentation around the
@@ -3016,7 +2964,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// This is also used for argument lists with a trailing comma which are
   /// considered "collection-like". In that case, [node] is `null`.
   void _visitCollectionLiteral(TypedLiteral? node, Token leftBracket,
-      Iterable<AstNode> elements, Token rightBracket,
+      List<AstNode> elements, Token rightBracket,
       [int? cost]) {
     if (node != null) {
       // See if `const` should be removed.
@@ -3032,25 +2980,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.typeArguments);
     }
 
-    // Don't allow splitting in an empty collection.
-    if (elements.isEmptyBody(rightBracket)) {
-      token(leftBracket);
-      token(rightBracket);
-      return;
-    }
-
-    // TODO(rnystrom): There's similar special case code for function bodies
-    // containing only comments. Consider refactoring and unifying.
-    // Handle empty collections with comments but no members.
+    // Handle empty collections, with or without comments.
     if (elements.isEmpty) {
-      _startLiteralBody(leftBracket);
-
-      var rule = Rule.hard();
-      builder.startRule(rule);
-      builder.split(nest: false);
-      builder.endRule();
-
-      _endLiteralBody(rightBracket, ignoredRule: rule);
+      _visitBody(leftBracket, elements, rightBracket);
       return;
     }
 
@@ -3062,14 +2994,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Add this collection to the stack.
     _collectionSplits.add(false);
 
-    _startLiteralBody(leftBracket);
+    var rule = _beginBody(leftBracket);
     if (node != null) _startPossibleConstContext(node.constKeyword);
-
-    // Use a hard split to split the elements. The parent chunk of the
-    // collection will handle the unsplit case, so this only comes into play
-    // when the collection is split.
-    var rule = Rule.hard();
-    builder.startRule(rule);
 
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
@@ -3118,7 +3044,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (elements.hasCommaAfter) force = true;
 
     if (node != null) _endPossibleConstContext(node.constKeyword);
-    _endLiteralBody(rightBracket, ignoredRule: rule, forceSplit: force);
+    _endBody(rule, rightBracket, forceSplit: force);
   }
 
   /// Writes [parameters], which is assumed to have a trailing comma after the
@@ -3182,7 +3108,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
-    builder = builder.endBlock(null, forceSplit: true);
+    builder = builder.endBlock();
     builder.endRule();
 
     _metadataRules.removeLast();
@@ -3347,44 +3273,53 @@ class SourceVisitor extends ThrowingAstVisitor {
     return hasLineCommentBefore(rightBracket);
   }
 
-  /// Begins writing a literal body: a collection or block-bodied function
-  /// expression.
+  /// Begins writing a bracket-delimited body whose contents are a nested
+  /// block chunk.
   ///
-  /// Writes the delimiter and then creates the [Rule] that handles splitting
-  /// the body.
-  void _startLiteralBody(Token leftBracket) {
+  /// If [space] is `true`, writes a space after [leftBracket] when not split.
+  ///
+  /// Writes the delimiter (with a space after it when unsplit if [space] is
+  /// `true`), then creates and returns the [Rule] that handles splitting the
+  /// body.
+  Rule _beginBody(Token leftBracket, {bool space = false}) {
     token(leftBracket);
-
-    // See if this literal is associated with an argument list or if element
-    // that wants to handle splitting and indenting it. If not, we'll use a
-    // default rule.
-    var rule = _blockRules[leftBracket];
-    var argumentChunk = _blockPreviousChunks[leftBracket];
 
     // TODO(rnystrom): This rule is only used for the chunk with the closing
     // delimiter since the literal body child chunks have their own rule. Is
     // there a cleaner way to handle this?
-    // Create a rule for whether or not to split the block contents.
-    builder.startRule(rule);
 
-    // Process the collection contents as a separate set of chunks.
-    builder = builder.startBlock(argumentChunk);
+    // Create a rule for whether or not to split the block contents. If this
+    // literal is associated with an argument list or if element that wants to
+    // handle splitting and indenting it, use its rule. Otherwise, use a
+    // default rule.
+    builder.startRule(_blockRules[leftBracket]);
+
+    // Process the contents as a separate set of chunks.
+    builder = builder.startBlock(_blockPreviousChunks[leftBracket]);
     builder.indent();
+
+    // Create a hard split for the contents. The parent chunk of the body
+    // handles the unsplit case, so this only comes into play when the body
+    // splits.
+    var rule = Rule.hard();
+    builder.startRule(rule);
+    builder.split(nest: false, space: space);
+    return rule;
   }
 
-  /// Ends the literal body started by a call to [_startLiteralBody()].
+  /// Ends the body started by a call to [_beginBody()].
   ///
-  /// If [forceSplit] is `true`, forces the body to split. If [ignoredRule] is
-  /// given, ignores that rule inside the body when determining if it should
-  /// split.
-  void _endLiteralBody(Token rightBracket,
-      {Rule? ignoredRule, bool? forceSplit}) {
-    forceSplit ??= false;
-
+  /// [bodyRule] is the [Rule] returned by the previous call to [_beginBody()].
+  /// If [space] is `true`, writes a space before the closing bracket when not
+  /// split. If [forceSplit] is `true`, forces the body to split.
+  void _endBody(Rule bodyRule, Token rightBracket,
+      {bool space = false, bool forceSplit = false}) {
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    builder = builder.endBlock(ignoredRule,
+    builder = builder.endBlock(
+        bodyRule: bodyRule,
+        space: space,
         forceSplit: hasLeadingNewline || forceSplit);
 
     builder.endRule();
@@ -3469,56 +3404,18 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (previousChunk != null) _blockPreviousChunks[token] = previousChunk;
   }
 
-  /// Writes the brace-delimited body containing [members].
-  void _visitTypeBody(
-      Token leftBracket, NodeList<ClassMember> members, Token rightBracket) {
+  /// Writes the brace-delimited body containing [nodes].
+  void _visitBody(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
     // Don't allow splitting in an empty body.
-    if (members.isEmptyBody(rightBracket)) {
+    if (nodes.isEmptyBody(rightBracket)) {
       token(leftBracket);
       token(rightBracket);
       return;
     }
 
-    // Handle empty bodies with comments but no members.
-    if (members.isEmpty) {
-      _beginBody(leftBracket);
-      builder.split(nest: false);
-      _endBody(rightBracket);
-      return;
-    }
-
-    _beginBody(leftBracket);
-    newline();
-    _visitMembers(members);
-    newline();
-    _endBody(rightBracket);
-  }
-
-  /// Writes the beginning of a brace-delimited body and handles indenting and
-  /// starting the rule used to split the contents.
-  void _beginBody(Token leftBracket) {
-    token(leftBracket);
-
-    // Indent the body.
-    builder.indent();
-
-    // Create a rule for splitting before each node inside the body.
-    builder.startRule();
-  }
-
-  /// Finishes the body started by a call to [_beginBody].
-  ///
-  /// If [split] is `true`, then inserts a split before the `{`. This is to
-  /// allow single-line enum declarations.
-  void _endBody(Token rightBracket, {bool split = false}) {
-    token(rightBracket, before: () {
-      builder.unindent();
-
-      // Split before the closing bracket character.
-      if (split) builder.split(nest: false, space: true);
-    });
-
-    builder.endRule();
+    var rule = _beginBody(leftBracket);
+    _visitBodyContents(nodes);
+    _endBody(rule, rightBracket, forceSplit: nodes.isNotEmpty);
   }
 
   /// Writes the string literal [string] to the output.

@@ -581,12 +581,14 @@ class ChunkBuilder {
   ///
   /// Forces the chunk that owns the block to split if it can tell that the
   /// block contents will always split. It does that by looking for hard splits
-  /// in the block. If [ignoredSplit] is given, that rule will be ignored
-  /// when determining if a block contains a hard split. If [forceSplit] is
-  /// `true`, the block is considered to always split.
+  /// in the block. If [bodyRule] is given, that rule will be ignored when
+  /// determining if a block contains a hard split. If [space] is `true`, the
+  /// split at the end of the block will get a space when unsplit. If
+  /// [forceSplit] is `true`, the block always splits.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(Rule? ignoredSplit, {required bool forceSplit}) {
+  ChunkBuilder endBlock(
+      {Rule? bodyRule, bool space = false, bool forceSplit = true}) {
     _divideChunks();
 
     // If the last chunk ends with a comment that wants a newline after it,
@@ -609,23 +611,22 @@ class ChunkBuilder {
         // code), then force the collection to split.
         if (chunk != _chunks.first &&
             chunk.rule.isHardened &&
-            chunk.rule != ignoredSplit) {
+            chunk.rule != bodyRule) {
           forceSplit = true;
           break;
         }
       }
     }
 
-    if (forceSplit) {
-      forceRules();
-    }
+    if (forceSplit) forceRules();
 
-    _parent!._endChildBlock(forceSplit: forceSplit);
-    return _parent!;
+    var parent = _parent!;
+    parent._endChildBlock(space: space, forceSplit: forceSplit);
+    return parent;
   }
 
   /// Finishes off the last chunk in a child block of this parent.
-  void _endChildBlock({required bool forceSplit}) {
+  void _endChildBlock({required bool space, required bool forceSplit}) {
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
     if (forceSplit) forceRules();
@@ -633,7 +634,7 @@ class ChunkBuilder {
     // Start a new chunk for the code after the block contents. The split at
     // the beginning of this chunk also determines whether the preceding block
     // splits and, if so, how it is indented.
-    _startChunk(_blockArgumentNesting.last, isHard: false);
+    _startChunk(_blockArgumentNesting.last, isHard: false, space: space);
 
     if (rule.isHardened) _handleHardSplit();
   }

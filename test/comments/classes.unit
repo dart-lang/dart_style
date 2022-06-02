@@ -33,7 +33,9 @@ class A {
 class A {
   /* comment */}
 <<<
-class A {/* comment */}
+class A {
+  /* comment */
+}
 >>> inline block comment
 class A {  /* comment */  }
 <<<
