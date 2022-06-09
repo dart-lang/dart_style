@@ -7,36 +7,26 @@ import 'dart:io';
 import '../source_code.dart';
 
 /// Where formatted code results should go.
-class Output {
+enum Output {
   /// Overwrite files on disc.
-  static const Output write = _WriteOutput();
+  write,
 
   /// Print the code to the terminal as human-friendly text.
-  static const Output show = _ShowOutput();
+  show,
 
   /// Print the code to the terminal as JSON.
-  static const Output json = _JsonOutput();
+  json,
 
   /// Do nothing. (Used when the user just wants the list of files that would
   /// be changed.)
-  static const Output none = Output._();
-
-  const Output._();
+  none;
 
   /// Write the file to disc.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  bool writeFile(File? file, String displayPath, SourceCode result) => false;
-
-  /// Print the file to the terminal in some way.
-  void showFile(String path, SourceCode result) {}
-}
-
-class _WriteOutput extends Output {
-  const _WriteOutput() : super._();
-
-  @override
   bool writeFile(File? file, String displayPath, SourceCode result) {
+    if (this != Output.write) return false;
+
     try {
       file!.writeAsStringSync(result.text);
     } on FileSystemException catch (err) {
@@ -46,35 +36,35 @@ class _WriteOutput extends Output {
 
     return true;
   }
-}
 
-class _ShowOutput extends Output {
-  const _ShowOutput() : super._();
-
-  @override
+  /// Print the file to the terminal in some way.
   void showFile(String path, SourceCode result) {
-    // Don't add an extra newline.
-    stdout.write(result.text);
-  }
-}
+    switch (this) {
+      case Output.show:
+        // Don't add an extra newline.
+        stdout.write(result.text);
+        break;
 
-class _JsonOutput extends Output {
-  const _JsonOutput() : super._();
+      case Output.json:
+        // TODO(rnystrom): Put an empty selection in here to remain compatible with
+        // the old formatter. Since there's no way to pass a selection on the
+        // command line, this will never be used, which is why it's hard-coded to
+        // -1, -1. If we add support for passing in a selection, put the real
+        // result here.
+        print(jsonEncode({
+          'path': path,
+          'source': result.text,
+          'selection': {
+            'offset': result.selectionStart ?? -1,
+            'length': result.selectionLength ?? -1
+          }
+        }));
+        break;
 
-  @override
-  void showFile(String path, SourceCode result) {
-    // TODO(rnystrom): Put an empty selection in here to remain compatible with
-    // the old formatter. Since there's no way to pass a selection on the
-    // command line, this will never be used, which is why it's hard-coded to
-    // -1, -1. If we add support for passing in a selection, put the real
-    // result here.
-    print(jsonEncode({
-      'path': path,
-      'source': result.text,
-      'selection': {
-        'offset': result.selectionStart ?? -1,
-        'length': result.selectionLength ?? -1
-      }
-    }));
+      case Output.write:
+      case Output.none:
+        // Do nothing.
+        break;
+    }
   }
 }

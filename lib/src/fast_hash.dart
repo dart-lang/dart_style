@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.src.fast_hash;
-
 /// A mixin for classes with identity equality that need to be frequently
 /// hashed.
 abstract class FastHash {

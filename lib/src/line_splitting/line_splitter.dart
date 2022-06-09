@@ -119,11 +119,8 @@ class LineSplitter {
   /// page width.
   LineSplitter(this.writer, this.chunks, this.blockIndentation)
       : // Collect the set of rules that we need to select values for.
-        rules = chunks
-            .map((chunk) => chunk.rule)
-            .whereType<Rule>()
-            .toSet()
-            .toList(growable: false) {
+        rules =
+            chunks.map((chunk) => chunk.rule).toSet().toList(growable: false) {
     _queue.bindSplitter(this);
 
     // Store the rule's index in the rule so we can get from a chunk to a rule
@@ -146,9 +143,8 @@ class LineSplitter {
   /// indentation of each line.
   SplitSet apply() {
     // Start with a completely unbound, unsplit solution.
-    _queue.add(SolveState(this, RuleSet(rules.length)));
-
-    SolveState? bestSolution;
+    var bestSolution = SolveState(this, RuleSet(rules.length));
+    _queue.add(bestSolution);
 
     var attempts = 0;
     while (_queue.isNotEmpty) {
@@ -177,11 +173,11 @@ class LineSplitter {
 
     if (debug.traceSplitter) {
       debug.log('$bestSolution (winner)');
-      debug.dumpLines(chunks, bestSolution!.splits);
+      debug.dumpLines(chunks, bestSolution.splits);
       debug.log();
     }
 
-    return bestSolution!.splits;
+    return bestSolution.splits;
   }
 
   void enqueue(SolveState state) {

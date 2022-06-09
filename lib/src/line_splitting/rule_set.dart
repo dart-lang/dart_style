@@ -157,13 +157,9 @@ class SplitSet {
 
   @override
   String toString() {
-    var result = [];
-    for (var i = 0; i < _columns.length; i++) {
-      if (_columns[i] != -1) {
-        result.add('$i:${_columns[i]}');
-      }
-    }
-
-    return result.join(' ');
+    return [
+      for (var i = 0; i < _columns.length; i++)
+        if (_columns[i] != -1) '$i:${_columns[i]}'
+    ].join(' ');
   }
 }
