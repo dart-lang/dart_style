@@ -118,13 +118,10 @@ class SolveState {
 
   /// Returns `true` if this state is a better solution to use as the final
   /// result than [other].
-  bool isBetterThan(SolveState? other) {
+  bool isBetterThan(SolveState other) {
     // If this state contains an unbound rule that we know can't be left
     // unsplit, we can't pick this as a solution.
     if (!_isComplete) return false;
-
-    // Anything is better than nothing.
-    if (other == null) return true;
 
     // Prefer the solution that fits the most in the page.
     if (overflowChars != other.overflowChars) {

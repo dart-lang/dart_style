@@ -87,20 +87,16 @@ class FormatCommand extends Command<int> {
       usageException('Cannot print a summary with JSON output.');
     }
 
-    int pageWidth;
-    try {
-      pageWidth = int.parse(argResults['line-length']);
-    } on FormatException catch (_) {
-      usageException('--line-length must be an integer, was '
-          '"${argResults['line-length']}".');
-    }
+    var pageWidth = int.tryParse(argResults['line-length']) ??
+        usageException('--line-length must be an integer, was '
+            '"${argResults['line-length']}".');
 
-    int indent;
-    try {
-      indent = int.parse(argResults['indent']);
-      if (indent < 0 || indent.toInt() != indent) throw FormatException();
-    } on FormatException catch (_) {
-      usageException('--indent must be a non-negative integer, was '
+    var indent = int.tryParse(argResults['indent']) ??
+        usageException('--indent must be an integer, was '
+            '"${argResults['indent']}".');
+
+    if (indent < 0) {
+      usageException('--indent must be non-negative, was '
           '"${argResults['indent']}".');
     }
 

@@ -7,7 +7,6 @@ import 'dart:math' as math;
 
 import 'chunk.dart';
 import 'line_splitting/rule_set.dart';
-import 'rule/rule.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;
@@ -189,12 +188,12 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
 /// Shows all of the constraints between the rules used by [chunks].
 void dumpConstraints(List<Chunk> chunks) {
-  var rules = chunks.map((chunk) => chunk.rule).whereType<Rule>().toSet();
+  var rules = chunks.map((chunk) => chunk.rule).toSet();
 
   for (var rule in rules) {
-    var constrainedValues = [];
+    var constrainedValues = <String>[];
     for (var value = 0; value < rule.numValues; value++) {
-      var constraints = [];
+      var constraints = <String>[];
       for (var other in rules) {
         if (rule == other) continue;
 
