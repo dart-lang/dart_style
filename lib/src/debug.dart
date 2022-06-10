@@ -70,7 +70,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     for (var chunk in chunks) {
       spanSet.addAll(chunk.spans);
 
-      if (chunk.isBlock) addSpans(chunk.block.chunks);
+      if (chunk is BlockChunk) addSpans(chunk.children);
     }
   }
 
@@ -82,10 +82,16 @@ void dumpChunks(int start, List<Chunk> chunks) {
   var rows = <List<String>>[];
 
   void addChunk(List<Chunk> chunks, String prefix, int index) {
+    var chunk = chunks[index];
+
+    if (chunk is BlockChunk) {
+      for (var j = 0; j < chunk.children.length; j++) {
+        addChunk(chunk.children, '$prefix$index.', j);
+      }
+    }
+
     var row = <String>[];
     row.add('$prefix$index:');
-
-    var chunk = chunks[index];
 
     void writeIf(predicate, String Function() callback) {
       if (predicate) {
@@ -148,12 +154,6 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
 
     rows.add(row);
-
-    if (chunk.isBlock) {
-      for (var j = 0; j < chunk.block.chunks.length; j++) {
-        addChunk(chunk.block.chunks, '$prefix$index.', j);
-      }
-    }
   }
 
   for (var i = start; i < chunks.length; i++) {
@@ -222,10 +222,11 @@ void dumpLines(List<Chunk> chunks, SplitSet splits) {
   void writeChunksUnsplit(List<Chunk> chunks) {
     for (var chunk in chunks) {
       if (chunk.spaceWhenUnsplit) buffer.write(' ');
-      buffer.write(chunk.text);
 
       // Recurse into the block.
-      if (chunk.isBlock) writeChunksUnsplit(chunk.block.chunks);
+      if (chunk is BlockChunk) writeChunksUnsplit(chunk.children);
+
+      buffer.write(chunk.text);
     }
   }
 
@@ -241,11 +242,11 @@ void dumpLines(List<Chunk> chunks, SplitSet splits) {
       buffer.write(' ');
     }
 
-    buffer.write(chunk.text);
-
-    if (chunk.isBlock && !splits.shouldSplitAt(i)) {
-      writeChunksUnsplit(chunk.block.chunks);
+    if (chunk is BlockChunk && !splits.shouldSplitAt(i)) {
+      writeChunksUnsplit(chunk.children);
     }
+
+    buffer.write(chunk.text);
   }
 
   log(buffer);

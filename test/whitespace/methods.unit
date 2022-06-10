@@ -57,3 +57,19 @@ class A {
 class A {
   A(covariant this.foo);
 }
+>>> discard trailing newlines in method body
+class Foo {
+  bar() {
+    baz();
+
+
+
+
+  }
+}
+<<<
+class Foo {
+  bar() {
+    baz();
+  }
+}

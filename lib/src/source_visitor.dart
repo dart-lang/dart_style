@@ -541,7 +541,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Process the inner cascade sections as a separate block. This way the
     // entire cascade expression isn't line split as a single monolithic unit,
     // which is very slow.
-    builder = builder.startBlock();
+    builder = builder.startBlock(indent: false);
 
     for (var i = 0; i < node.cascadeSections.length - 1; i++) {
       newline();
@@ -1022,7 +1022,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
 
-    var rule = _beginBody(node.leftBracket, space: true);
+    _beginBody(node.leftBracket, space: true);
 
     visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
 
@@ -1058,10 +1058,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _visitBodyContents(node.members);
 
-    builder.endRule();
-
-    _endBody(rule, node.rightBracket,
-        space: true,
+    _endBody(node.rightBracket,
         forceSplit: semicolon != null ||
             trailingComma != null ||
             node.members.isNotEmpty);
@@ -2464,9 +2461,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
     builder.unnest();
 
-    var rule = _beginBody(node.leftBracket);
+    _beginBody(node.leftBracket);
     visitNodes(node.members, between: oneOrTwoNewlines, after: newline);
-    _endBody(rule, node.rightBracket, forceSplit: true);
+    _endBody(node.rightBracket, forceSplit: true);
   }
 
   @override
@@ -2994,7 +2991,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Add this collection to the stack.
     _collectionSplits.add(false);
 
-    var rule = _beginBody(leftBracket);
+    _beginBody(leftBracket);
     if (node != null) _startPossibleConstContext(node.constKeyword);
 
     // If a collection contains a line comment, we assume it's a big complex
@@ -3035,8 +3032,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
-    builder.endRule();
-
     // If there is a collection inside this one, it forces this one to split.
     var force = _collectionSplits.removeLast();
 
@@ -3044,7 +3039,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (elements.hasCommaAfter) force = true;
 
     if (node != null) _endPossibleConstContext(node.constKeyword);
-    _endBody(rule, rightBracket, forceSplit: force);
+    _endBody(rightBracket, forceSplit: force);
   }
 
   /// Writes [parameters], which is assumed to have a trailing comma after the
@@ -3084,7 +3079,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Process the parameters as a separate set of chunks.
     builder = builder.startBlock();
-    builder.indent();
 
     for (var parameter in parameters.parameters) {
       newline();
@@ -3279,14 +3273,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// If [space] is `true`, writes a space after [leftBracket] when not split.
   ///
   /// Writes the delimiter (with a space after it when unsplit if [space] is
-  /// `true`), then creates and returns the [Rule] that handles splitting the
-  /// body.
-  Rule _beginBody(Token leftBracket, {bool space = false}) {
+  /// `true`).
+  void _beginBody(Token leftBracket, {bool space = false}) {
     token(leftBracket);
-
-    // TODO(rnystrom): This rule is only used for the chunk with the closing
-    // delimiter since the literal body child chunks have their own rule. Is
-    // there a cleaner way to handle this?
 
     // Create a rule for whether or not to split the block contents. If this
     // literal is associated with an argument list or if element that wants to
@@ -3295,32 +3284,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startRule(_blockRules[leftBracket]);
 
     // Process the contents as a separate set of chunks.
-    builder = builder.startBlock(_blockPreviousChunks[leftBracket]);
-    builder.indent();
-
-    // Create a hard split for the contents. The parent chunk of the body
-    // handles the unsplit case, so this only comes into play when the body
-    // splits.
-    var rule = Rule.hard();
-    builder.startRule(rule);
-    builder.split(nest: false, space: space);
-    return rule;
+    builder = builder.startBlock(
+        argumentChunk: _blockPreviousChunks[leftBracket], space: space);
   }
 
   /// Ends the body started by a call to [_beginBody()].
   ///
-  /// [bodyRule] is the [Rule] returned by the previous call to [_beginBody()].
   /// If [space] is `true`, writes a space before the closing bracket when not
   /// split. If [forceSplit] is `true`, forces the body to split.
-  void _endBody(Rule bodyRule, Token rightBracket,
-      {bool space = false, bool forceSplit = false}) {
+  void _endBody(Token rightBracket, {bool forceSplit = false}) {
     // Put comments before the closing delimiter inside the block.
     var hasLeadingNewline = writePrecedingCommentsAndNewlines(rightBracket);
 
-    builder = builder.endBlock(
-        bodyRule: bodyRule,
-        space: space,
-        forceSplit: hasLeadingNewline || forceSplit);
+    builder = builder.endBlock(forceSplit: hasLeadingNewline || forceSplit);
 
     builder.endRule();
 
@@ -3413,9 +3389,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    var rule = _beginBody(leftBracket);
+    _beginBody(leftBracket);
     _visitBodyContents(nodes);
-    _endBody(rule, rightBracket, forceSplit: nodes.isNotEmpty);
+    _endBody(rightBracket, forceSplit: nodes.isNotEmpty);
   }
 
   /// Writes the string literal [string] to the output.

@@ -157,3 +157,16 @@ class Foo {
   abstract final int c;
   abstract int i;
 }
+>>> discard trailing newlines in body
+class Foo {
+  bar() {}
+
+
+
+
+
+}
+<<<
+class Foo {
+  bar() {}
+}

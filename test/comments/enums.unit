@@ -39,7 +39,7 @@ enum A {
 
   /* comment */
 }
->>> remove blank line before beginning of body
+>>> remove blank lines before beginning of body
 enum A {
 
 
@@ -51,6 +51,19 @@ enum A {
 enum A {
   // comment
   B
+}
+>>> remove blank lines after end of body
+enum A {
+  B
+  // comment
+
+
+
+}
+<<<
+enum A {
+  B
+  // comment
 }
 >>> ensure blank line above doc comments
 enum Foo {/// doc

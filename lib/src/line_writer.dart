@@ -67,7 +67,7 @@ class LineWriter {
   ///     }
   ///
   /// When we format the function expression's body, [column] will be 2, not 4.
-  FormatResult formatBlock(Chunk chunk, int column) {
+  FormatResult formatBlock(BlockChunk chunk, int column) {
     var key = _BlockKey(chunk, column);
 
     // Use the cached one if we have it.
@@ -75,7 +75,7 @@ class LineWriter {
     if (cached != null) return cached;
 
     var writer = LineWriter._(
-        chunk.block.chunks, _lineEnding, pageWidth, column, _blockCache);
+        chunk.children, _lineEnding, pageWidth, column, _blockCache);
     return _blockCache[key] = writer.writeLines();
   }
 
@@ -128,6 +128,32 @@ class LineWriter {
     for (var i = 0; i < chunks.length; i++) {
       var chunk = chunks[i];
 
+      // Write the block chunk's children first.
+      if (chunk is BlockChunk) {
+        if (!splits.shouldSplitAt(i)) {
+          // This block didn't split (which implies none of the child blocks
+          // of that block split either, recursively), so write them all inline.
+          _writeChunksUnsplit(chunk);
+        } else {
+          _buffer.write(_lineEnding);
+
+          // Include the formatted block contents.
+          var block = formatBlock(chunk, splits.getColumn(i));
+
+          // If this block contains one of the selection markers, tell the
+          // writer where it ended up in the final output.
+          if (block.selectionStart != null) {
+            _selectionStart = length + block.selectionStart!;
+          }
+
+          if (block.selectionEnd != null) {
+            _selectionEnd = length + block.selectionEnd!;
+          }
+
+          _buffer.write(block.text);
+        }
+      }
+
       if (splits.shouldSplitAt(i)) {
         // Don't write an initial single newline at the beginning of the output.
         // If this is for a block, then the newline will be written before
@@ -144,49 +170,20 @@ class LineWriter {
       }
 
       _writeChunk(chunk);
-
-      if (chunk.isBlock) {
-        // The block children of this chunk are followed by the next chunk. If
-        // the block splits, then we will also split before that next chunk.
-        // That means the chunk after this one determines whether the block
-        // contents are split.
-        if (!splits.shouldSplitAt(i + 1)) {
-          // This block didn't split (which implies none of the child blocks
-          // of that block split either, recursively), so write them all inline.
-          _writeChunksUnsplit(chunk);
-        } else {
-          _buffer.write(_lineEnding);
-
-          // Include the formatted block contents.
-          var block = formatBlock(chunk, splits.getColumn(i + 1));
-
-          // If this block contains one of the selection markers, tell the
-          // writer where it ended up in the final output.
-          if (block.selectionStart != null) {
-            _selectionStart = length + block.selectionStart!;
-          }
-
-          if (block.selectionEnd != null) {
-            _selectionEnd = length + block.selectionEnd!;
-          }
-
-          _buffer.write(block.text);
-        }
-      }
     }
 
     return splits.cost;
   }
 
-  /// Writes the block chunks of [chunk] (and any child chunks of them,
+  /// Writes the block chunks of [block] (and any child chunks of them,
   /// recursively) without any splitting.
-  void _writeChunksUnsplit(Chunk chunk) {
-    for (var blockChunk in chunk.block.chunks) {
-      if (blockChunk.spaceWhenUnsplit) _buffer.write(' ');
-      _writeChunk(blockChunk);
+  void _writeChunksUnsplit(BlockChunk block) {
+    for (var chunk in block.children) {
+      if (chunk.spaceWhenUnsplit) _buffer.write(' ');
+      _writeChunk(chunk);
 
       // Recurse into the block.
-      if (blockChunk.isBlock) _writeChunksUnsplit(blockChunk);
+      if (chunk is BlockChunk) _writeChunksUnsplit(chunk);
     }
   }
 

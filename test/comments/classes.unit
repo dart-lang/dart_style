@@ -107,12 +107,23 @@ class Foo {
   /// doc
   var b = 2;
 }
->>> remove blank line before beginning of body
+>>> remove blank lines before beginning of body
 class A {
 
 
 
   // comment
+}
+<<<
+class A {
+  // comment
+}
+>>> remove blank lines after end of body
+class A {
+  // comment
+
+
+
 }
 <<<
 class A {

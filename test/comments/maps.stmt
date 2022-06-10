@@ -94,12 +94,23 @@ var map = {
   // comment
   'foo': 1
 };
->>> remove blank line before beginning of body
+>>> remove blank lines before beginning of body
 var map = {
 
 
 
   // comment
+};
+<<<
+var map = {
+  // comment
+};
+>>> remove blank lines after end of body
+var map = {
+  // comment
+
+
+
 };
 <<<
 var map = {

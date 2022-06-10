@@ -280,3 +280,35 @@ enum E {
   c(123),
   ;
 }
+>>> discard trailing newlines in body
+enum E {
+  a,
+
+
+
+
+
+}
+<<<
+enum E {
+  a,
+}
+>>> discard trailing newlines in body
+enum E {
+  a;
+
+
+
+  bar() {}
+
+
+
+
+
+}
+<<<
+enum E {
+  a;
+
+  bar() {}
+}
