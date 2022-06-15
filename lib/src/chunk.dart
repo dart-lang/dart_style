@@ -172,6 +172,9 @@ class Chunk extends Selection {
 
   /// Returns `true` if this chunk is a block whose children should be
   /// expression indented given a set of rule values provided by [getValue].
+  ///
+  /// [getValue] takes a [Rule] and returns the chosen split state value for
+  /// that [Rule].
   bool indentBlock(int Function(Rule) getValue) => false;
 
   // Mark whether this chunk can divide the range of chunks.
@@ -250,8 +253,6 @@ class BlockChunk extends Chunk {
     return length;
   }
 
-  /// Returns `true` if the block body owned by this chunk should be expression
-  /// indented given a set of rule values provided by [getValue].
   @override
   bool indentBlock(int Function(Rule) getValue) {
     var argument = this.argument;
