@@ -89,16 +89,6 @@ class Chunk extends Selection {
   ///             argument));
   final NestingLevel nesting;
 
-  /// If this chunk marks the beginning of a block, this contains the child
-  /// chunks and other data about that nested block.
-  ///
-  /// This should only be accessed when [isBlock] is `true`.
-  ChunkBlock get block => _block!;
-  ChunkBlock? _block;
-
-  /// Whether this chunk has a [block].
-  bool get isBlock => _block != null;
-
   /// The [Rule] that controls when a split should occur before this chunk.
   ///
   /// Multiple splits may share a [Rule].
@@ -136,16 +126,7 @@ class Chunk extends Selection {
   ///
   /// Does not include this chunk's own length, just the length of its child
   /// block chunks (recursively).
-  int get unsplitBlockLength {
-    if (!isBlock) return 0;
-
-    var length = 0;
-    for (var chunk in block.chunks) {
-      length += chunk.length + chunk.unsplitBlockLength;
-    }
-
-    return length;
-  }
+  int get unsplitBlockLength => 0;
 
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];
@@ -189,29 +170,12 @@ class Chunk extends Selection {
     if (space != null) _spaceWhenUnsplit = space;
   }
 
-  /// Turns this chunk into one that can contain a block of child chunks.
-  void makeBlock(Chunk? blockArgument) {
-    assert(_block == null);
-    _block = ChunkBlock(blockArgument);
-  }
-
-  /// Returns `true` if the block body owned by this chunk should be expression
-  /// indented given a set of rule values provided by [getValue].
-  bool indentBlock(int Function(Rule) getValue) {
-    if (!isBlock) return false;
-
-    var argument = block.argument;
-    if (argument == null) return false;
-
-    var rule = argument.rule;
-
-    // There may be no rule if the block occurs inside a string interpolation.
-    // In that case, it's not clear if anything will look particularly nice, but
-    // expression nesting is probably marginally better.
-    if (rule == Rule.dummy) return true;
-
-    return rule.isSplit(getValue(rule), argument);
-  }
+  /// Returns `true` if this chunk is a block whose children should be
+  /// expression indented given a set of rule values provided by [getValue].
+  ///
+  /// [getValue] takes a [Rule] and returns the chosen split state value for
+  /// that [Rule].
+  bool indentBlock(int Function(Rule) getValue) => false;
 
   // Mark whether this chunk can divide the range of chunks.
   void markDivide(bool canDivide) {
@@ -234,9 +198,33 @@ class Chunk extends Selection {
   }
 }
 
-/// The child chunks owned by a chunk that begins a "block" -- an actual block
-/// statement, function expression, or collection literal.
-class ChunkBlock {
+/// A [Chunk] containing a list of nested "child" chunks that are formatted
+/// independently of the surrounding chunks.
+///
+/// This is used for blocks, function expressions, collection literals, etc.
+/// Basically, anywhere we have a delimited body of code whose formatting
+/// doesn't depend on how the surrounding code is formatted except to determine
+/// indentation.
+///
+/// This chunk's own text is the closing delimiter of the block, so its
+/// children come before itself. For example, given this code:
+///
+///     main() {
+///       var list = [
+///         element,
+///       ];
+///     }
+///
+/// It is organized into a tree of chunks like so:
+///
+///    - Chunk           "main() {"
+///    - BlockChunk
+///      |- Chunk          "var list = ["
+///      |- BlockChunk
+///      |  |- Chunk         "element,"
+///      |  '- (text)      "];"
+///      '- (text)       "}"
+class BlockChunk extends Chunk {
   /// If this block is for a collection literal in an argument list, this will
   /// be the chunk preceding this literal argument.
   ///
@@ -245,9 +233,39 @@ class ChunkBlock {
   final Chunk? argument;
 
   /// The child chunks in this block.
-  final List<Chunk> chunks = [];
+  final List<Chunk> children = [];
 
-  ChunkBlock(this.argument);
+  BlockChunk(this.argument, super.rule, super.indent, super.nesting,
+      {required super.space, required super.flushLeft})
+      : super(isDouble: false);
+
+  /// The unsplit length of all of this chunk's block contents.
+  ///
+  /// Does not include this chunk's own length, just the length of its child
+  /// block chunks (recursively).
+  @override
+  int get unsplitBlockLength {
+    var length = 0;
+    for (var chunk in children) {
+      length += chunk.length + chunk.unsplitBlockLength;
+    }
+
+    return length;
+  }
+
+  @override
+  bool indentBlock(int Function(Rule) getValue) {
+    var argument = this.argument;
+    if (argument == null) return false;
+
+    // There may be no rule if the block occurs inside a string interpolation.
+    // In that case, it's not clear if anything will look particularly nice, but
+    // expression nesting is probably marginally better.
+    var rule = argument.rule;
+    if (rule == Rule.dummy) return true;
+
+    return rule.isSplit(getValue(rule), argument);
+  }
 }
 
 /// The in-progress state for a [Span] that has been started but has not yet

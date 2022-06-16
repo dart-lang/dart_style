@@ -118,3 +118,16 @@ extension on B {}
 extension   <  T  ,  S  >    on   B{}
 <<<
 extension<T, S> on B {}
+>>> discard trailing newlines in body
+extension A on B {
+  bar() {}
+
+
+
+
+
+}
+<<<
+extension A on B {
+  bar() {}
+}

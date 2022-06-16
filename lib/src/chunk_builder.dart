@@ -567,28 +567,43 @@ class ChunkBuilder {
     _blockArgumentNesting.removeLast();
   }
 
-  /// Starts a new block as a child of the current chunk.
+  /// Starts a new block chunk and returns the [ChunkBuilder] for it.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock([Chunk? argumentChunk]) {
-    var chunk = _chunks.last;
-    chunk.makeBlock(argumentChunk);
+  ChunkBuilder startBlock(
+      {Chunk? argumentChunk, bool indent = true, bool space = false}) {
+    // Start a block chunk for the block. It will contain the chunks for the
+    // contents of the block, and its own text will be the closing block
+    // delimiter.
+    var chunk = BlockChunk(argumentChunk, _rules.last, _nesting.indentation,
+        _blockArgumentNesting.last,
+        space: space, flushLeft: _pendingFlushLeft);
+    _chunks.add(chunk);
+    _pendingFlushLeft = false;
 
-    return ChunkBuilder._(this, _formatter, _source, chunk.block.chunks);
+    var builder = ChunkBuilder._(this, _formatter, _source, chunk.children);
+
+    if (indent) builder.indent();
+
+    // Create a hard split for the contents. The rule on the parent BlockChunk
+    // determines whether the body is split or not. This hard rule is only when
+    // the block's contents are split.
+    var rule = Rule.hard();
+    builder.startRule(rule);
+    builder.split(nest: false, space: space);
+
+    return builder;
   }
 
   /// Ends this [ChunkBuilder], which must have been created by [startBlock()].
   ///
   /// Forces the chunk that owns the block to split if it can tell that the
   /// block contents will always split. It does that by looking for hard splits
-  /// in the block. If [bodyRule] is given, that rule will be ignored when
-  /// determining if a block contains a hard split. If [space] is `true`, the
-  /// split at the end of the block will get a space when unsplit. If
+  /// in the block that aren't for top level elements in the block. If
   /// [forceSplit] is `true`, the block always splits.
   ///
   /// Returns the previous writer for the surrounding block.
-  ChunkBuilder endBlock(
-      {Rule? bodyRule, bool space = false, bool forceSplit = true}) {
+  ChunkBuilder endBlock({bool forceSplit = true}) {
     _divideChunks();
 
     // If the last chunk ends with a comment that wants a newline after it,
@@ -606,37 +621,21 @@ class ChunkBuilder {
           break;
         }
 
-        // If there are any hardened splits in the chunks (aside from the first
-        // one which is always a hard split since it is the beginning of the
-        // code), then force the collection to split.
-        if (chunk != _chunks.first &&
-            chunk.rule.isHardened &&
-            chunk.rule != bodyRule) {
+        // If there are any hardened splits in the chunks (aside from ones
+        // using the initial hard rule created by [startBlock()] which are for
+        // the top level elements in the block), then force the block to split.
+        if (chunk.rule.isHardened && chunk.rule != _rules.first) {
           forceSplit = true;
           break;
         }
       }
     }
 
-    if (forceSplit) forceRules();
-
-    var parent = _parent!;
-    parent._endChildBlock(space: space, forceSplit: forceSplit);
-    return parent;
-  }
-
-  /// Finishes off the last chunk in a child block of this parent.
-  void _endChildBlock({required bool space, required bool forceSplit}) {
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
-    if (forceSplit) forceRules();
-
-    // Start a new chunk for the code after the block contents. The split at
-    // the beginning of this chunk also determines whether the preceding block
-    // splits and, if so, how it is indented.
-    _startChunk(_blockArgumentNesting.last, isHard: false, space: space);
-
-    if (rule.isHardened) _handleHardSplit();
+    var parent = _parent!;
+    if (forceSplit) parent.forceRules();
+    return parent;
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
@@ -902,9 +901,9 @@ class ChunkBuilder {
     if (!chunk.rule.isHardened) return false;
     if (chunk.nesting.isNested) return false;
 
-    // If the previous chunk is a block, then this chunk determines whether the
-    // block contents split, so don't separate it from the block.
-    if (i > 0 && _chunks[i - 1].isBlock) return false;
+    // If the chunk is the ending delimiter of a block, then don't separate it
+    // and its children from the preceding beginning of the block.
+    if (_chunks[i] is BlockChunk) return false;
 
     return true;
   }

@@ -126,12 +126,23 @@ extension A on B {
   /// doc
   b() => 2;
 }
->>> remove blank line before beginning of body
+>>> remove blank lines before beginning of body
 extension A on B {
 
 
 
   // comment
+}
+<<<
+extension A on B {
+  // comment
+}
+>>> remove blank lines after end of body
+extension A on B {
+  // comment
+
+
+
 }
 <<<
 extension A on B {
