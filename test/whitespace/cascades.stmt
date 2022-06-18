@@ -8,7 +8,10 @@
 <<<
 "foo"
   ..toString(
-      argument, argument, argument);
+    argument,
+    argument,
+    argument
+  );
 >>> multiple cascades get the same line when the method names are the same
 list
   ..add("baz")

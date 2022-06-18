@@ -52,7 +52,8 @@ var y = #foo.bar.baz;
 throw new FormatException("This is a long exception message.");
 <<<
 throw new FormatException(
-    "This is a long exception message.");
+  "This is a long exception message."
+);
 >>>
 assert(false);
 <<<
@@ -100,7 +101,8 @@ string""");
 main() {
   inner() {
     function("""
-string""");
+string"""
+    );
   }
 }
 >>> null coalescing operator

@@ -6,9 +6,10 @@ function(
     "string");
 <<<
 function(
-    notString,
-    "adjacent"
-    "string");
+  notString,
+  "adjacent"
+  "string"
+);
 >>> do not indent adjacent strings if other args are not strings
 function(
     notString,
@@ -28,10 +29,11 @@ function(
     "string");
 <<<
 function(
-    "string",
-    notString,
-    "adjacent"
-        "string");
+  "string",
+  notString,
+  "adjacent"
+      "string"
+);
 >>> do indent adjacent strings if other arg is string
 function(
     "string",
@@ -53,10 +55,11 @@ function(
     "string");
 <<<
 function(
-    "${str}${ing}",
-    notString,
-    "adjacent"
-        "string");
+  "${str}${ing}",
+  notString,
+  "adjacent"
+      "string"
+);
 >>> do indent adjacent strings if other arg is adjacent string
 function(
     "adjacent"
@@ -66,11 +69,12 @@ function(
     "string");
 <<<
 function(
-    "adjacent"
-        "string",
-    notString,
-    "adjacent"
-        "string");
+  "adjacent"
+      "string",
+  notString,
+  "adjacent"
+      "string"
+);
 >>> always indent adjacent strings in list
 var list = [
   "adjacent"
@@ -161,12 +165,13 @@ function(
   another);
 <<<
 function(
-    (parameter) => "string"
-        "adjacent",
-    (parameter) =>
-        "long long long long string"
-        "adjacent",
-    another);
+  (parameter) => "string"
+      "adjacent",
+  (parameter) =>
+      "long long long long string"
+      "adjacent",
+  another
+);
 >>> indent in then branch of ?:
 var string = c ? "adjacent"
 "string" : "other";
@@ -204,9 +209,10 @@ function(
     "${str}${ing}");
 <<<
 function(
-    "adjacent"
-        "string",
-    "${str}${ing}");
+  "adjacent"
+      "string",
+  "${str}${ing}"
+);
 >>> another adjacent string counts as a string
 function(
     "adjacent"
@@ -215,10 +221,11 @@ function(
     "adjacent");
 <<<
 function(
-    "adjacent"
-        "string",
-    "another"
-        "adjacent");
+  "adjacent"
+      "string",
+  "another"
+      "adjacent"
+);
 >>> do not indent adjacent strings in assert if other args are not strings
 assert(
     condition,
@@ -226,9 +233,10 @@ assert(
     "string");
 <<<
 assert(
-    condition,
-    "adjacent"
-    "string");
+  condition,
+  "adjacent"
+  "string"
+);
 >>> don't need extra indentation inside named arguments
 function(named: "adjacent"
 "string",
@@ -237,11 +245,12 @@ another: "adjacent"
 "more");
 <<<
 function(
-    named: "adjacent"
-        "string",
-    another: "adjacent"
-        "string"
-        "more");
+  named: "adjacent"
+      "string",
+  another: "adjacent"
+      "string"
+      "more"
+);
 >>> don't need extra indentation inside named arguments
 function(named: "adjacent"
 "string",
