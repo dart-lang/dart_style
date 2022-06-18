@@ -1,10 +1,14 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'package:dart_style/src/constants.dart';
+import 'package:dart_style/src/rule/rule.dart';
+
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
 import 'line_splitting/line_splitter.dart';
+import 'line_splitting/rule_set.dart';
 
 /// Given a series of chunks, splits them into lines and writes the result to
 /// a buffer.
@@ -50,7 +54,8 @@ class LineWriter {
 
   /// Creates a line writer for a block.
   LineWriter._(this._chunks, this._lineEnding, this.pageWidth,
-      this._blockIndentation, this._blockCache);
+      this._blockIndentation, this._blockCache) {
+  }
 
   /// Gets the results of formatting the child block of [chunk] at starting
   /// [column].
@@ -130,27 +135,12 @@ class LineWriter {
 
       // Write the block chunk's children first.
       if (chunk is BlockChunk) {
-        if (!splits.shouldSplitAt(i)) {
+        if (splits.shouldSplitAt(i)) {
+          _writeSplitBlock(chunk, splits.getColumn(i));
+        } else {
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
-          _writeChunksUnsplit(chunk);
-        } else {
-          _buffer.write(_lineEnding);
-
-          // Include the formatted block contents.
-          var block = formatBlock(chunk, splits.getColumn(i));
-
-          // If this block contains one of the selection markers, tell the
-          // writer where it ended up in the final output.
-          if (block.selectionStart != null) {
-            _selectionStart = length + block.selectionStart!;
-          }
-
-          if (block.selectionEnd != null) {
-            _selectionEnd = length + block.selectionEnd!;
-          }
-
-          _buffer.write(block.text);
+          _writeUnsplitBlock(chunk, _blockIndentation);
         }
       }
 
@@ -164,7 +154,7 @@ class LineWriter {
           if (chunk.isDouble) _buffer.write(_lineEnding);
         }
 
-        _buffer.write(' ' * (splits.getColumn(i)));
+        _buffer.write(' ' * splits.getColumn(i));
       } else {
         if (chunk.spaceWhenUnsplit) _buffer.write(' ');
       }
@@ -175,16 +165,55 @@ class LineWriter {
     return splits.cost;
   }
 
-  /// Writes the block chunks of [block] (and any child chunks of them,
-  /// recursively) without any splitting.
-  void _writeChunksUnsplit(BlockChunk block) {
+  // TODO: Update doc.
+  /// Writes the children of [block] (and any child chunks of them, recursively)
+  /// without any splitting.
+  void _writeUnsplitBlock(BlockChunk block, int column) {
     for (var chunk in block.children) {
-      if (chunk.spaceWhenUnsplit) _buffer.write(' ');
-      _writeChunk(chunk);
+      if (chunk is BlockChunk && chunk.rule.isHardened) {
+        // Even though the surrounding block didn't split, this chunk's
+        // children did.
+        _writeSplitBlock(chunk, column + block.indent);
 
-      // Recurse into the block.
-      if (chunk is BlockChunk) _writeChunksUnsplit(chunk);
+        // Don't write an initial single newline at the beginning of the output.
+        // If this is for a block, then the newline will be written before
+        // writing the block. If it's the top level output, then it shouldn't
+        // have an extra leading newline.
+        if (_buffer.isNotEmpty) {
+          _buffer.write(_lineEnding);
+          if (chunk.isDouble) _buffer.write(_lineEnding);
+        }
+
+        _buffer.write(' ' * (column + block.indent));
+
+      } else {
+        if (chunk.spaceWhenUnsplit) _buffer.write(' ');
+
+        // Recurse into the block.
+        if (chunk is BlockChunk) _writeUnsplitBlock(chunk, column);
+      }
+
+      _writeChunk(chunk);
     }
+  }
+
+  void _writeSplitBlock(BlockChunk chunk, int column) {
+    _buffer.write(_lineEnding);
+
+    // Include the formatted block contents.
+    var block = formatBlock(chunk, column);
+
+    // If this block contains one of the selection markers, tell the
+    // writer where it ended up in the final output.
+    if (block.selectionStart != null) {
+      _selectionStart = length + block.selectionStart!;
+    }
+
+    if (block.selectionEnd != null) {
+      _selectionEnd = length + block.selectionEnd!;
+    }
+
+    _buffer.write(block.text);
   }
 
   /// Writes [chunk] to the output and updates the selection if the chunk

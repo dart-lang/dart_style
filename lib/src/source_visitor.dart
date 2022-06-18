@@ -240,29 +240,50 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// 5. Split the named arguments each onto their own line.
   @override
   void visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
-    // Corner case: handle empty argument lists.
+    // Handle empty collections, with or without comments.
     if (node.arguments.isEmpty) {
-      token(node.leftParenthesis);
-
-      // If there is a comment inside the parens, do allow splitting before it.
-      if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
-
-      token(node.rightParenthesis);
+      _visitBody(node.leftParenthesis, node.arguments, node.rightParenthesis);
       return;
     }
 
-    // If the argument list has a trailing comma, format it like a collection
-    // literal where each argument goes on its own line, they are indented +2,
-    // and the ")" ends up on its own line.
-    if (node.arguments.hasCommaAfter) {
-      _visitCollectionLiteral(
-          null, node.leftParenthesis, node.arguments, node.rightParenthesis);
-      return;
+    _beginBody(node.leftParenthesis);
+
+    for (var argument in node.arguments) {
+      builder.split(nest: false, space: argument != node.arguments.first);
+      visit(argument);
+      _writeCommaAfter(argument);
     }
 
-    if (nestExpression) builder.nestExpression();
-    ArgumentListVisitor(this, node).visit();
-    if (nestExpression) builder.unnest();
+    // If the collection has a trailing comma, the user must want it to split.
+    // TODO: Shouldn't preserve original trailing comma.
+    _endBody(node.rightParenthesis, forceSplit: node.arguments.hasCommaAfter);
+
+
+
+
+    // // Corner case: handle empty argument lists.
+    // if (node.arguments.isEmpty) {
+    //   token(node.leftParenthesis);
+    //
+    //   // If there is a comment inside the parens, do allow splitting before it.
+    //   if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
+    //
+    //   token(node.rightParenthesis);
+    //   return;
+    // }
+
+    // // If the argument list has a trailing comma, format it like a collection
+    // // literal where each argument goes on its own line, they are indented +2,
+    // // and the ")" ends up on its own line.
+    // if (node.arguments.hasCommaAfter) {
+    //   _visitCollectionLiteral(
+    //       null, node.leftParenthesis, node.arguments, node.rightParenthesis);
+    //   return;
+    // }
+    //
+    // if (nestExpression) builder.nestExpression();
+    // ArgumentListVisitor(this, node).visit();
+    // if (nestExpression) builder.unnest();
   }
 
   @override
@@ -2056,7 +2077,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // element, so make those more costly.
     var cost = node.elements.length <= 1 ? Cost.singleElementList : Cost.normal;
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket, cost);
+        node, node.leftBracket, node.elements, node.rightBracket,
+        cost: cost, useLineCommentsToFormat: true);
   }
 
   @override
@@ -2316,7 +2338,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
     _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket);
+        node, node.leftBracket, node.elements, node.rightBracket,
+        useLineCommentsToFormat: true);
   }
 
   @override
@@ -2962,7 +2985,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// considered "collection-like". In that case, [node] is `null`.
   void _visitCollectionLiteral(TypedLiteral? node, Token leftBracket,
       List<AstNode> elements, Token rightBracket,
-      [int? cost]) {
+      {int? cost, bool useLineCommentsToFormat = false}) {
     if (node != null) {
       // See if `const` should be removed.
       if (node.constKeyword != null &&
@@ -2997,7 +3020,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
-    if (_containsLineComments(elements, rightBracket)) {
+    if (useLineCommentsToFormat &&
+        _containsLineComments(elements, rightBracket)) {
       // Newlines are significant, so we'll explicitly write those. Elements
       // on the same line all share an argument-list-like rule that allows
       // splitting between zero, one, or all of them. This is faster in long

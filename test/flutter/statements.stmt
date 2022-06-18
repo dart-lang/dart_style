@@ -1,0 +1,44 @@
+>>> unsplit argument list with trailing closure
+test('description', () {;});
+<<<
+test('description', () {
+  ;
+});
+>>> unsplit argument list with leading closure
+test('description', () {;}, skip: true);
+<<<
+test('description', () {
+  ;
+}, skip: true);
+>>> unsplit indented argument list
+/*block*/ {
+  test('description', () {;});
+  after();
+}
+<<<
+/*block*/ {
+  test('description', () {
+    ;
+  });
+  after();
+}
+>>> unsplit multiple indented argument list
+{
+  one();
+  {
+    two();
+    test('description', () {;});
+    after();
+  }
+}
+<<<
+{
+  one();
+  {
+    two();
+    test('description', () {
+      ;
+    });
+    after();
+  }
+}

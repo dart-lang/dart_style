@@ -5,6 +5,8 @@
 /// Internal debugging utilities.
 import 'dart:math' as math;
 
+import 'package:dart_style/src/rule/rule.dart';
+
 import 'chunk.dart';
 import 'line_splitting/rule_set.dart';
 
@@ -105,7 +107,11 @@ void dumpChunks(int start, List<Chunk> chunks) {
     writeIf(rule.cost != 0, () => '\$${rule.cost}');
 
     var ruleString = rule.toString();
-    if (rule.isHardened) ruleString += '!';
+    if (rule is BlockRule) {
+      ruleString += 'b';
+    } else if (rule.isHardened) {
+      ruleString += '!';
+    }
     row.add(ruleString);
 
     var constrainedRules = rule.constrainedRules.toSet().intersection(rules);

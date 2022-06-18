@@ -1,0 +1,300 @@
+>>> (indent 2)
+  // packages/flutter/test/rendering/layer_annotations_test.dart:882
+  return pairwiseCompare<AnnotationEntry<int>, AnnotationEntry<int>>(
+    list,
+    (AnnotationEntry<int> a, AnnotationEntry<int> b) {
+      ;
+    },
+    'equal to',
+  );
+<<<
+  // packages/flutter/test/rendering/layer_annotations_test.dart:882
+  return pairwiseCompare<AnnotationEntry<int>, AnnotationEntry<int>>(
+    list,
+    (AnnotationEntry<int> a, AnnotationEntry<int> b) {
+      ;
+    },
+    'equal to',
+  );
+>>> (indent 2)
+  // packages/flutter/test/material/typography_test.dart:33
+  final Matcher isSanFranciscoDisplayFont = predicate((TextStyle s) {
+    ;
+  }, 'Uses SF Display font');
+<<<
+  // packages/flutter/test/material/typography_test.dart:33
+  final Matcher isSanFranciscoDisplayFont = predicate((TextStyle s) {
+    ;
+  }, 'Uses SF Display font');
+>>> (indent 2)
+  // packages/flutter/test/widgets/automatic_keep_alive_test.dart:52
+  return List<Widget>.generate(
+    100,
+    (int index) {
+      ;
+    },
+    growable: false,
+  );
+<<<
+  // packages/flutter/test/widgets/automatic_keep_alive_test.dart:52
+  return List<Widget>.generate(
+    100,
+    (int index) {
+      ;
+    },
+    growable: false,
+  );
+>>> (indent 2)
+  // packages/flutter/lib/src/foundation/consolidate_response.dart:78
+  subscription = response.listen((List<int> chunk) {
+    ;
+  }, onDone: () {
+    ;
+  }, onError: completer.completeError, cancelOnError: true);
+<<<
+  // packages/flutter/lib/src/foundation/consolidate_response.dart:78
+  subscription = response.listen((List<int> chunk) {
+    ;
+  }, onDone: () {
+    ;
+  }, onError: completer.completeError, cancelOnError: true);
+>>> (indent 2)
+  // packages/flutter/lib/src/foundation/_isolates_io.dart:87
+  final R result = await Timeline.timeSync(
+    configuration.debugLabel,
+    () async {
+      ;
+    },
+    flow: Flow.step(configuration.flowId),
+  );
+<<<
+  // packages/flutter/lib/src/foundation/_isolates_io.dart:87
+  final R result = await Timeline.timeSync(
+    configuration.debugLabel,
+    () async {
+      ;
+    },
+    flow: Flow.step(configuration.flowId),
+  );
+>>> (indent 4)
+    // dev/benchmarks/macrobenchmarks/lib/src/web/bench_text_layout.dart:164
+    profile.record('layout', () {
+      ;
+    }, reported: true);
+<<<
+    // dev/benchmarks/macrobenchmarks/lib/src/web/bench_text_layout.dart:164
+    profile.record('layout', () {
+      ;
+    }, reported: true);
+>>> (indent 4)
+    // packages/flutter_web_plugins/lib/src/plugin_event_channel.dart:136
+    subscription = controller.stream.listen((dynamic event) {
+      ;
+    }, onError: (dynamic error) {
+      ;
+    });
+<<<
+    // packages/flutter_web_plugins/lib/src/plugin_event_channel.dart:136
+    subscription = controller.stream.listen((dynamic event) {
+      ;
+    }, onError: (dynamic error) {
+      ;
+    });
+>>> (indent 4)
+    // packages/flutter_web_plugins/lib/src/plugin_registry.dart:144
+    ui.channelBuffers.push(channel, message, (ByteData? reply) {
+      ;
+    });
+<<<
+    // packages/flutter_web_plugins/lib/src/plugin_registry.dart:144
+    ui.channelBuffers.push(channel, message, (ByteData? reply) {
+      ;
+    });
+>>> (indent 4) Hand-formatted code doesn't look right.
+    // packages/flutter_goldens_client/lib/skia_client.dart:368
+    await io.HttpOverrides.runWithHttpOverrides<Future<void>>(() async {
+      ;
+    },
+      SkiaGoldHttpOverrides(),
+    );
+<<<
+    // packages/flutter_goldens_client/lib/skia_client.dart:368
+    await io.HttpOverrides.runWithHttpOverrides<Future<void>>(() async {
+        ;
+      },
+      SkiaGoldHttpOverrides(),
+    );
+>>> (indent 4)
+    // packages/flutter/test/widgets/custom_multi_child_layout_test.dart:28
+    expect(() {
+      ;
+    }, returnsNormally);
+<<<
+    // packages/flutter/test/widgets/custom_multi_child_layout_test.dart:28
+    expect(() {
+      ;
+    }, returnsNormally);
+>>> (indent 4)
+    // packages/flutter/lib/src/painting/image_provider.dart:330
+    _createErrorHandlerAndKey(
+      configuration,
+      (T key, ImageErrorListener errorHandler) {
+        ;
+      },
+      (T? key, Object exception, StackTrace? stack) async {
+        ;
+      },
+    );
+<<<
+    // packages/flutter/lib/src/painting/image_provider.dart:330
+    _createErrorHandlerAndKey(
+      configuration,
+      (T key, ImageErrorListener errorHandler) {
+        ;
+      },
+      (T? key, Object exception, StackTrace? stack) async {
+        ;
+      },
+    );
+>>> (indent 4) Hand-formatted code doesn't look right.
+    // packages/flutter/lib/src/material/scaffold.dart:274
+    controller = ScaffoldFeatureController<SnackBar, SnackBarClosedReason>._(
+      // We provide a fallback key so that if back-to-back snackbars happen to
+      // match in structure, material ink splashes and highlights don't survive
+      // from one to the next.
+      snackBar.withAnimation(_snackBarController!, fallbackKey: UniqueKey()),
+      Completer<SnackBarClosedReason>(),
+        () {
+          assert(_snackBars.first == controller);
+          hideCurrentSnackBar();
+        },
+      null, // SnackBar doesn't use a builder function so setState()...
+    );
+<<<
+    // packages/flutter/lib/src/material/scaffold.dart:274
+    controller = ScaffoldFeatureController<SnackBar, SnackBarClosedReason>._(
+      // We provide a fallback key so that if back-to-back snackbars happen to
+      // match in structure, material ink splashes and highlights don't survive
+      // from one to the next.
+      snackBar.withAnimation(_snackBarController!, fallbackKey: UniqueKey()),
+      Completer<SnackBarClosedReason>(),
+      () {
+        assert(_snackBars.first == controller);
+        hideCurrentSnackBar();
+      },
+      null, // SnackBar doesn't use a builder function so setState()...
+    );
+>>> (indent 6)
+      // examples/api/lib/widgets/animated_list/animated_list.0.dart:151
+      _animatedList!.removeItem(
+        index,
+        (BuildContext context, Animation<double> animation) {
+          ;
+        },
+      );
+<<<
+      // examples/api/lib/widgets/animated_list/animated_list.0.dart:151
+      _animatedList!.removeItem(
+        index,
+        (BuildContext context, Animation<double> animation) {
+          ;
+        },
+      );
+>>> (indent 6)
+      // packages/flutter/lib/src/scheduler/binding.dart:79
+      Timeline.timeSync(
+        debugLabel ?? 'Scheduled Task',
+        () {
+          ;
+        },
+        flow: flow != null ? Flow.step(flow!.id) : null,
+      );
+<<<
+      // packages/flutter/lib/src/scheduler/binding.dart:79
+      Timeline.timeSync(
+        debugLabel ?? 'Scheduled Task',
+        () {
+          ;
+        },
+        flow: flow != null ? Flow.step(flow!.id) : null,
+      );
+>>> (indent 6)
+      // packages/flutter/lib/src/painting/image_cache.dart:303
+      return _LiveImage(
+        completer,
+        () {
+          ;
+        },
+      );
+<<<
+      // packages/flutter/lib/src/painting/image_cache.dart:303
+      return _LiveImage(
+        completer,
+        () {
+          ;
+        },
+      );
+>>> (indent 6)
+      // packages/flutter/lib/src/rendering/list_wheel_viewport.dart:910
+      context.pushClipRect(
+        needsCompositing,
+        offset,
+        centerRect,
+        (PaintingContext context, Offset offset) {
+          context.pushTransform(
+            needsCompositing,
+            offset,
+            _magnifyTransform(),
+            (PaintingContext context, Offset offset) {
+              ;
+            },
+          );
+        },
+      );
+<<<
+      // packages/flutter/lib/src/rendering/list_wheel_viewport.dart:910
+      context.pushClipRect(
+        needsCompositing,
+        offset,
+        centerRect,
+        (PaintingContext context, Offset offset) {
+          context.pushTransform(
+            needsCompositing,
+            offset,
+            _magnifyTransform(),
+            (PaintingContext context, Offset offset) {
+              ;
+            },
+          );
+        },
+      );
+>>> (indent 6)
+      // packages/flutter/lib/src/widgets/async.dart:134
+      _subscription = widget.stream!.listen((T data) {
+        setState(() {
+          _summary = widget.afterData(_summary, data);
+        });
+      }, onError: (Object error, StackTrace stackTrace) {
+        setState(() {
+          _summary = widget.afterError(_summary, error, stackTrace);
+        });
+      }, onDone: () {
+        setState(() {
+          _summary = widget.afterDone(_summary);
+        });
+      });
+<<<
+      // packages/flutter/lib/src/widgets/async.dart:134
+      _subscription = widget.stream!.listen((T data) {
+        setState(() {
+          _summary = widget.afterData(_summary, data);
+        });
+      }, onError: (Object error, StackTrace stackTrace) {
+        setState(() {
+          _summary = widget.afterError(_summary, error, stackTrace);
+        });
+      }, onDone: () {
+        setState(() {
+          _summary = widget.afterDone(_summary);
+        });
+      });

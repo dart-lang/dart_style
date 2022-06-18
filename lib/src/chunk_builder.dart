@@ -588,7 +588,7 @@ class ChunkBuilder {
     // Create a hard split for the contents. The rule on the parent BlockChunk
     // determines whether the body is split or not. This hard rule is only when
     // the block's contents are split.
-    var rule = Rule.hard();
+    var rule = BlockRule();
     builder.startRule(rule);
     builder.split(nest: false, space: space);
 
@@ -610,6 +610,8 @@ class ChunkBuilder {
     // then force the block contents to split.
     forceSplit |= _pendingNested;
 
+    // TODO: Look for BlockRule here?
+    /*
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
     if (!forceSplit) {
@@ -630,6 +632,7 @@ class ChunkBuilder {
         }
       }
     }
+    */
 
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.

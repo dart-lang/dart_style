@@ -297,9 +297,7 @@ class SolveState {
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;
 
-          if (_splitter.chunks[i].indentBlock(getValue)) {
-            indent += Indent.expression;
-          }
+          if (chunk.indentBlock(getValue)) indent += Indent.expression;
         }
 
         _splits.add(i, indent);
@@ -395,6 +393,8 @@ class SolveState {
           cost +=
               _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
         } else {
+          // TODO: Update this to handle that unsplit blocks may still contain
+          // split children.
           // Include the nested block inline, if any.
           length += chunk.unsplitBlockLength;
         }
