@@ -97,8 +97,8 @@ const c = [const A(), () => const B(() { const C(); }), const D()];
 const c = [
   A(),
   () => const B(() {
-        const C();
-      }),
+    const C();
+  }),
   D()
 ];
 >>> do not remove erroneous new

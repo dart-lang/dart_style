@@ -18,29 +18,31 @@ foo({a// b
  // c
  :1}) {}
 <<<
-foo(
-    {a // b
+foo({a // b
 
-    // c
-    = 1}) {}
+  // c
+  = 1
+}) {}
 >>> preserves line comments after
 foo({a   :    // b
 
   // c
 1}) {}
 <<<
-foo(
-    {a = // b
+foo({
+  a = // b
 
-        // c
-        1}) {}
+      // c
+      1
+}) {}
 >>> on required parameter
 class A {
 foo({required int b: 1, required c(): f}) {}
 }
 <<<
 class A {
-  foo(
-      {required int b = 1,
-      required c() = f}) {}
+  foo({
+    required int b = 1,
+    required c() = f
+  }) {}
 }
