@@ -1348,6 +1348,65 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
+    // TODO: Almost entirely copied from _visitTrailingCommaParameterList().
+    _metadataRules.add(MetadataRule());
+
+    builder.startRule();
+
+    token(node.leftParenthesis);
+
+    // Find the parameter immediately preceding the optional parameters (if
+    // there are any).
+    FormalParameter? lastRequired;
+    for (var i = 0; i < node.parameters.length; i++) {
+      if (node.parameters[i] is DefaultFormalParameter) {
+        if (i > 0) lastRequired = node.parameters[i - 1];
+        break;
+      }
+    }
+
+    // If all parameters are optional, put the "[" or "{" right after "(".
+    if (lastRequired == null) {
+      token(node.leftDelimiter);
+    }
+
+    // Process the parameters as a separate set of chunks.
+    builder = builder.startBlock();
+
+    for (var parameter in node.parameters) {
+      split();
+      visit(parameter);
+      _writeCommaAfter(parameter);
+
+      // If the optional parameters start after this one, put the delimiter
+      // at the end of its line.
+      if (parameter == lastRequired) {
+        space();
+        token(node.leftDelimiter);
+        lastRequired = null;
+      }
+    }
+
+    // Put comments before the closing ")", "]", or "}" inside the block.
+    var firstDelimiter =
+        node.rightDelimiter ?? node.rightParenthesis;
+    if (firstDelimiter.precedingComments != null) {
+      split();
+      writePrecedingCommentsAndNewlines(firstDelimiter);
+    }
+
+    builder = builder.endBlock(forceSplit: false);
+    builder.endRule();
+
+    _metadataRules.removeLast();
+
+    // Now write the delimiter itself.
+    _writeText(firstDelimiter.lexeme, firstDelimiter);
+    if (firstDelimiter != node.rightParenthesis) {
+      token(node.rightParenthesis);
+    }
+
+    /*
     var requiredParams = node.parameters
         .where((param) => param is! DefaultFormalParameter)
         .toList();
@@ -1422,6 +1481,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     token(node.rightParenthesis);
     if (nestExpression) builder.unnest();
+    */
   }
 
   @override

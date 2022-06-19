@@ -163,8 +163,11 @@ function(
 }
 <<<
 function(
-    /* comment */ int a, int b, int c,
-    [direction]) {
+  /* comment */ int a,
+  int b,
+  int c, [
+  direction
+]) {
   ;
 }
 >>>
@@ -174,7 +177,10 @@ function(
 }
 <<<
 function(
-    /* comment */ int a, int b, int c) {
+  /* comment */ int a,
+  int b,
+  int c
+) {
   ;
 }
 >>>
@@ -183,8 +189,12 @@ function(
   ;
 }
 <<<
-function(/* comment */ int a, int b,
-    int c, int d) {
+function(
+  /* comment */ int a,
+  int b,
+  int c,
+  int d
+) {
   ;
 }
 >>> blank line before comment at beginning of optional parameters
@@ -193,10 +203,10 @@ function([
   // comment
   a]) {;}
 <<<
-function(
-    [
-    // comment
-    a]) {
+function([
+  // comment
+  a
+]) {
   ;
 }
 >>> blank line before comment at beginning of named parameters
@@ -205,10 +215,10 @@ function({
   // comment
   a}) {;}
 <<<
-function(
-    {
-    // comment
-    a}) {
+function({
+  // comment
+  a
+}) {
   ;
 }
 >>> blank line before comment at beginning of trailing comma optional parameters

@@ -1,3 +1,4 @@
+40 columns                              |
 >>> unsplit argument list with trailing closure
 test('description', () {;});
 <<<
@@ -42,3 +43,14 @@ test('description', () {
     after();
   }
 }
+>>> unsplit positional parameter list
+f(int p1, String p2) {}
+<<<
+f(int p1, String p2) {}
+>>> split positional parameter list
+function(int parameter1, String parameter2) {}
+<<<
+function(
+  int parameter1,
+  String parameter2
+) {}

@@ -77,9 +77,11 @@ comment */argument);
 <<<
 main() {
   inner() {
-    function(/*
+    function(
+      /*
 comment */
-        argument);
+      argument
+    );
   }
 }
 >>> line doc comments are indented even if flush left

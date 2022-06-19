@@ -4,16 +4,18 @@ someMethod(argument1, argument2, // comment
 argument3);
 <<<
 someMethod(
-    argument1,
-    argument2, // comment
-    argument3);
+  argument1,
+  argument2, // comment
+  argument3
+);
 >>> trailing line comment after non-split
 someMethod(argument1, argument2 // comment
 );
 <<<
 someMethod(
-    argument1, argument2 // comment
-    );
+  argument1,
+  argument2 // comment
+);
 >>> inside list literal
 ['item' // comment
 ];
@@ -37,11 +39,12 @@ foo(1, /* a */ 2 /* b */, 3);
 foo(arg, /* comment */ arg, /* comment */ arg, /* comment */ arg, /* comment */ arg);
 <<<
 foo(
-    arg,
-    /* comment */ arg,
-    /* comment */ arg,
-    /* comment */ arg,
-    /* comment */ arg);
+  arg,
+  /* comment */ arg,
+  /* comment */ arg,
+  /* comment */ arg,
+  /* comment */ arg
+);
 >>> space between block comment and other tokens
 var/**/a/**/=/**/1/**/+/**/2;
 <<<
@@ -73,9 +76,10 @@ a
 someFunction(//
 someExtremelyLongArgumentName).clamp();
 <<<
-someFunction(//
-        someExtremelyLongArgumentName)
-    .clamp();
+someFunction(
+  //
+  someExtremelyLongArgumentName
+).clamp();
 >>> line comment before binary operator
 {
   // comment
@@ -91,13 +95,15 @@ function(argument, //
     argument, named: argument, another: argument);
 <<<
 function(
-    argument, //
-    argument,
-    named: argument,
-    another: argument);
+  argument, //
+  argument,
+  named: argument,
+  another: argument
+);
 >>> block comment with newline before
 someVeryLongFunctionName(argumentName: true
 /* comment */);
 <<<
 someVeryLongFunctionName(
-    argumentName: true /* comment */);
+  argumentName: true /* comment */
+);

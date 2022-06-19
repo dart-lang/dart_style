@@ -611,7 +611,8 @@ class ChunkBuilder {
     forceSplit |= _pendingNested;
 
     // TODO: Look for BlockRule here?
-    /*
+    // TODO: This isn't correct for closures inside argument lists. Sometimes,
+    // those should not force the surrounding argument list to split.
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
     if (!forceSplit) {
@@ -632,7 +633,6 @@ class ChunkBuilder {
         }
       }
     }
-    */
 
     // If there is a hard newline within the block, force the surrounding rule
     // for it so that we apply that constraint.
