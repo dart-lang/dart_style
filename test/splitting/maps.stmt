@@ -173,13 +173,9 @@ var map = {
 >>> spread lambda
 var map = {1: 1, ...() { body; }, 4: 4};
 <<<
-var map = {
-  1: 1,
-  ...() {
-    body;
-  },
-  4: 4
-};
+var map = {1: 1, ...() {
+  body;
+}, 4: 4};
 >>> spread immediately invoked lambda
 var map = {1: 1, ...() sync* { yield thing; }(), 4: 4};
 <<<

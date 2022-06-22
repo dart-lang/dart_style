@@ -18,32 +18,45 @@ longFunctionName(() {
 >>> trailing functions do not nest
 longFunctionName(argument, argument, argument, argument, () {;}, () {;});
 <<<
-longFunctionName(argument, argument,
-    argument, argument, () {
-  ;
-}, () {
-  ;
-});
+longFunctionName(
+  argument,
+  argument,
+  argument,
+  argument,
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> leading functions do not nest
 longFunctionName(() {;}, () {;}, argument, argument, argument, argument);
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-}, argument, argument, argument,
-    argument);
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  argument,
+  argument,
+  argument,
+  argument
+);
 >>> arg between functions forces nesting
 longFunctionName(() {;}, argument, () {;});
 <<<
 longFunctionName(
-    () {
-      ;
-    },
-    argument,
-    () {
-      ;
-    });
+  () {
+    ;
+  },
+  argument,
+  () {
+    ;
+  }
+);
 >>> unsplit leading args
 longFunctionName(arg, arg, () {;}, () {;});
 <<<
@@ -56,35 +69,48 @@ longFunctionName(arg, arg, () {
 longFunctionName(argument, argument, argument, () {;}, () {;});
 <<<
 longFunctionName(
-    argument, argument, argument, () {
-  ;
-}, () {
-  ;
-});
+  argument,
+  argument,
+  argument,
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> split in middle of leading args
 longFunctionName(argument, argument, argument, argument, () {;}, () {;});
 <<<
-longFunctionName(argument, argument,
-    argument, argument, () {
-  ;
-}, () {
-  ;
-});
+longFunctionName(
+  argument,
+  argument,
+  argument,
+  argument,
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> split before all leading args
 longFunctionName(argument, argument, argument, argument, argument, argument,
 () {;}, () {;});
 <<<
 longFunctionName(
-    argument,
-    argument,
-    argument,
-    argument,
-    argument,
-    argument, () {
-  ;
-}, () {
-  ;
-});
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  () {
+    ;
+  }, () {
+    ;
+  }
+);
 >>> unsplit trailing args
 longFunctionName(() {;}, () {;}, argument, argument);
 <<<
@@ -96,37 +122,50 @@ longFunctionName(() {
 >>> split before trailing args
 longFunctionName(() {;}, () {;} /* very very long comment */, argument, argument);
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-} /* very very long comment */,
-    argument, argument);
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  } /* very very long comment */,
+  argument,
+  argument
+);
 >>> split in middle of trailing args
 longFunctionName(() {;}, () {;}, argument, argument, argument, argument);
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-}, argument, argument, argument,
-    argument);
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  argument,
+  argument,
+  argument,
+  argument
+);
 >>> split before all trailing args
 longFunctionName(() {;}, () {;}, argument, argument, argument, argument,
 argument, argument, argument);
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-},
-    argument,
-    argument,
-    argument,
-    argument,
-    argument,
-    argument,
-    argument);
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argument
+);
 >>> functions with named arguments
 longFunctionName(() {;}, a: () {;}, b: () {;});
 <<<
@@ -140,27 +179,37 @@ longFunctionName(() {
 >>> do not nest because of nested 1-arg fn
 outer(inner(() {body;}));
 <<<
-outer(inner(() {
-  body;
-}));
+outer(
+  inner(() {
+    body;
+  })
+);
 >>> do not nest because of nested many-arg fn
 outer(argument, inner(() {body;}));
 <<<
-outer(argument, inner(() {
-  body;
-}));
+outer(
+  argument,
+  inner(() {
+    body;
+  })
+);
 >>> do not nest because of nested 1-arg method call
 obj.outer(a.b.c.fn(() {body;}));
 <<<
-obj.outer(a.b.c.fn(() {
-  body;
-}));
+obj.outer(
+  a.b.c.fn(() {
+    body;
+  })
+);
 >>> do not nest because of nested many-arg method call
 obj.outer(argument, a.b.c.fn(() {body;}));
 <<<
-obj.outer(argument, a.b.c.fn(() {
-  body;
-}));
+obj.outer(
+  argument,
+  a.b.c.fn(() {
+    body;
+  })
+);
 >>> do not force named args to split on positional function
 function(argument, () {;},
     named: argument, another: argument);
@@ -172,35 +221,48 @@ function(argument, () {
 longFunction(argument, argument, argument, argument, argument,
 () {;}, () {;}, argument, argument, argument, argument, argument);
 <<<
-longFunction(argument, argument,
-    argument, argument, argument, () {
-  ;
-}, () {
-  ;
-}, argument, argument, argument,
-    argument, argument);
+longFunction(
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  argument,
+  argument,
+  argument,
+  argument,
+  argument
+);
 >>> all named args with leading non-function forces functions to indent
 longFunction(a: argument, b: () {;}, c: () {;});
 <<<
 longFunction(
-    a: argument,
-    b: () {
-      ;
-    },
-    c: () {
-      ;
-    });
+  a: argument,
+  b: () {
+    ;
+  },
+  c: () {
+    ;
+  }
+);
 >>> all named args with trailing non-function forces functions to indent
 longFunction(a: () {;}, b: () {;}, c: argument);
 <<<
 longFunction(
-    a: () {
-      ;
-    },
-    b: () {
-      ;
-    },
-    c: argument);
+  a: () {
+    ;
+  },
+  b: () {
+    ;
+  },
+  c: argument
+);
 >>> named args anywhere with leading non-function
 {
   longFunction(argument, b: () {;}, c: () {;});
@@ -265,15 +327,19 @@ function(() => inner(argument1, argument2, argument3),);
 <<<
 function(
   () => inner(
-      argument1, argument2, argument3),
+    argument1,
+    argument2,
+    argument3
+  ),
 );
 >>> split in expression function parameter list argument with trailing comma
 function((parameter1, parameter2, parameter3) => P(p,),);
 <<<
 function(
-  (parameter1, parameter2,
-          parameter3) =>
-      P(
+  (parameter1,
+    parameter2,
+    parameter3
+  ) => P(
     p,
   ),
 );
@@ -289,9 +355,11 @@ function(a: argument, b: argument, c: argument, () {;});
 function(
     a: argument,
     b: argument,
-    c: argument, () {
-  ;
-});
+    c: argument,
+    () {
+    ;
+  }
+);
 >>> unsingle split leading positional, named arguments with trailing positional closure
 function(argument, b: argument, () {;});
 <<<
@@ -301,39 +369,61 @@ function(argument, b: argument, () {
 >>> single split leading positional, named arguments with trailing positional closure
 function(argument, b: argument, c: argument, () {;});
 <<<
-function(argument,
-    b: argument, c: argument, () {
-  ;
-});
+function(
+  argument,
+  b: argument,
+  c: argument,
+  () {
+    ;
+  }
+);
 >>> split leading positional, named arguments with trailing positional closure
 function(argument, argument, argument, argument, argument, b: argument, c: argument, d: argument, () {;});
 <<<
-function(argument, argument, argument,
-    argument, argument,
-    b: argument,
-    c: argument,
-    d: argument, () {
-  ;
-});
+function(
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  b: argument,
+  c: argument,
+  d: argument,
+  () {
+    ;
+  }
+);
 >>> multiple trailing positional closures
 function(argument, b: argument, c: argument, () {;}, () {;});
 <<<
-function(argument,
-    b: argument, c: argument, () {
-  ;
-}, () {
-  ;
-});
+function(
+  argument,
+  b: argument,
+  c: argument,
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> mixed named and positional trailing closures
 function(argument, b: argument, c: argument, () {;}, d: () {;}, () {;}, e: () {;});
 <<<
-function(argument,
-    b: argument, c: argument, () {
-  ;
-}, d: () {
-  ;
-}, () {
-  ;
-}, e: () {
-  ;
-});
+function(
+  argument,
+  b: argument,
+  c: argument,
+  () {
+    ;
+  },
+  d: () {
+    ;
+  },
+  () {
+    ;
+  },
+  e: () {
+    ;
+  }
+);

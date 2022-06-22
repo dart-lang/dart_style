@@ -188,13 +188,9 @@ var set = {
 >>> spread lambda
 var set = {1, ...() { body; }, 4};
 <<<
-var set = {
-  1,
-  ...() {
-    body;
-  },
-  4
-};
+var set = {1, ...() {
+  body;
+}, 4};
 >>> spread immediately invoked lambda
 var set = {1, ...() sync* { yield thing; }(), 4};
 <<<

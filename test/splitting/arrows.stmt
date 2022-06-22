@@ -2,8 +2,9 @@
 >>> do not split after "("
 doSomethingWithFn((argument) => functionBodyTooLong());
 <<<
-doSomethingWithFn((argument) =>
-    functionBodyTooLong());
+doSomethingWithFn(
+  (argument) => functionBodyTooLong()
+);
 >>> newline before fn expression should not force => to split
 {
   () => one;

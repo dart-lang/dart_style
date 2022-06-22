@@ -3,7 +3,8 @@
 sendPort.send({'type': 'error', 'error': 'oops'});
 <<<
 sendPort.send(
-    {'type': 'error', 'error': 'oops'});
+  {'type': 'error', 'error': 'oops'}
+);
 >>> prefers to wrap before "."
 new Future.sync(() => callback('msg')).then(
     (result) => replyTo.send()).catchError((error) {});
@@ -21,30 +22,46 @@ someFunctionName(argument, argument, argument,
     someOtherFunction(argument, argument, arg));
 <<<
 someFunctionName(
+  argument,
+  argument,
+  argument,
+  someOtherFunction(
     argument,
     argument,
-    argument,
-    someOtherFunction(
-        argument, argument, arg));
+    arg
+  )
+);
 >>> does not extra indent when multiple levels of nesting happen on one line
 someFunctionName(argument, argument, argument,
     some(other(function(argument, argument, arg))));
 <<<
 someFunctionName(
-    argument,
-    argument,
-    argument,
-    some(other(function(
-        argument, argument, arg))));
+  argument,
+  argument,
+  argument,
+  some(
+    other(
+      function(
+        argument,
+        argument,
+        arg
+      )
+    )
+  )
+);
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
 <<<
 callSomeMethod(
-    innerFunction(
-        argument, argument, argument),
+  innerFunction(
     argument,
     argument,
-    argument);
+    argument
+  ),
+  argument,
+  argument,
+  argument
+);
 >>> function inside a collection
 [item, obj.method(argument).method(argument).method(() {body;}).another().another()];
 <<<
@@ -63,34 +80,40 @@ callSomeMethod(
 function(argument, obj.method(argument).method(argument).method(() {body;}).another().another());
 <<<
 function(
-    argument,
-    obj
-        .method(argument)
-        .method(argument)
-        .method(() {
-          body;
-        })
-        .another()
-        .another());
+  argument,
+  obj
+      .method(argument)
+      .method(argument)
+      .method(() {
+        body;
+      })
+      .another()
+      .another()
+);
 >>> unnested function inside nested expression
 function(argument, function(() {;}));
 <<<
-function(argument, function(() {
-  ;
-}));
+function(
+  argument,
+  function(() {
+    ;
+  })
+);
 >>> nested function inside nested expression
 function(argument, function(() {;}, argument, () {;}));
 <<<
 function(
+  argument,
+  function(
+    () {
+      ;
+    },
     argument,
-    function(
-        () {
-          ;
-        },
-        argument,
-        () {
-          ;
-        }));
+    () {
+      ;
+    }
+  )
+);
 >>> wrap before =>
 receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier);
 <<<
@@ -113,20 +136,24 @@ receiver.firstMethod().next(
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
-receiver.first([
-  listItem,
-  secondItem,
-  thirdItem
-]).second();
+receiver.first(
+  [
+    listItem,
+    secondItem,
+    thirdItem
+  ]
+).second();
 >>> list at end of method chain
 receiver.first().second([listItem, secondItem, thirdItem, fourthItem]);
 <<<
-receiver.first().second([
-  listItem,
-  secondItem,
-  thirdItem,
-  fourthItem
-]);
+receiver.first().second(
+  [
+    listItem,
+    secondItem,
+    thirdItem,
+    fourthItem
+  ]
+);
 >>> binary operators in ascending precedence
 {
   b___________________ || a______________ && a______________ == a______________ > a______________ + a______________;
@@ -227,7 +254,12 @@ var longVariableName =
 veryLongFunction(argument, ConstructorTearOff<First, Second, Third, Fourth>, argument);
 <<<
 veryLongFunction(
-    argument,
-    ConstructorTearOff<First, Second,
-        Third, Fourth>,
-    argument);
+  argument,
+  ConstructorTearOff<
+    First,
+    Second,
+    Third,
+    Fourth
+  >,
+  argument
+);

@@ -27,9 +27,11 @@ veryLongMethodCall(›veryLongArgumentName);
 <<<
 main() {
   veryLongMethodCall(
-      ‹veryLongArgumentName);
+    ‹veryLongArgumentName
+  );
   veryLongMethodCall(›
-      veryLongArgumentName);
+    veryLongArgumentName
+  );
 }
 >>> in soft space split whitespace
 main() {shortCall(argument, ‹  argument);

@@ -3,13 +3,15 @@
 var name = new Symbol("the first string" "the second");
 <<<
 var name = new Symbol(
-    "the first string" "the second");
+  "the first string" "the second"
+);
 >>> space-separated adjacent strings are split if they don't fit
 var name = new Symbol("the first very long string" "the second very longstring");
 <<<
 var name = new Symbol(
-    "the first very long string"
-    "the second very longstring");
+  "the first very long string"
+  "the second very longstring"
+);
 >>> adjacent string lines all split together;
 var text = "first" "second" "third" "fourth" "fifth";
 <<<
@@ -104,8 +106,8 @@ first +
 someFunction(someExtremelyLongArgumentName).clamp();
 <<<
 someFunction(
-        someExtremelyLongArgumentName)
-    .clamp();
+  someExtremelyLongArgumentName
+).clamp();
 >>> wrap inside parenthesized
 (someVerylongIdentifier * someVerylongIdentifier);
 <<<
@@ -137,6 +139,7 @@ identifier
 >>> index expressions can split after "["
 verylongIdentifier[someParticularlyLongArgument];
 <<<
+// TODO: How should index operators be formatted?
 verylongIdentifier[
     someParticularlyLongArgument];
 >>> index arguments nest

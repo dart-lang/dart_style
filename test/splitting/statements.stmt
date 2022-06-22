@@ -7,7 +7,8 @@ assert("some short string");
 assert("some very long string that wraps");
 <<<
 assert(
-    "some very long string that wraps");
+  "some very long string that wraps"
+);
 >>> single-line assert with message
 assert(true, "blah");
 <<<
@@ -16,18 +17,22 @@ assert(true, "blah");
 assert(true, "looong string that wraps");
 <<<
 assert(
-    true, "looong string that wraps");
+  true,
+  "looong string that wraps"
+);
 >>> split assert with message after first
 assert(veryLongCondition, "long string that wraps");
 <<<
 assert(veryLongCondition,
-    "long string that wraps");
+  "long string that wraps"
+);
 >>> split assert with message at both
 assert(veryVeryVeryVeryVeryLongCondition, "long string that wraps");
 <<<
 assert(
-    veryVeryVeryVeryVeryLongCondition,
-    "long string that wraps");
+  veryVeryVeryVeryVeryLongCondition,
+  "long string that wraps"
+);
 >>> split assert with trailing comma
 assert(condition,);
 <<<

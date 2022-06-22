@@ -5,15 +5,20 @@ class Foo {
 }
 <<<
 class Foo {
-  Foo(this.first, this.second,
-      this.third, this.fourth);
+  Foo(
+    this.first,
+    this.second,
+    this.third,
+    this.fourth
+  );
 }
 >>> indent parameters more if body is a wrapped =>
 method(int firstArgument, int argumentTwo) => "very long body that must wrap";
 <<<
-method(int firstArgument,
-        int argumentTwo) =>
-    "very long body that must wrap";
+method(
+  int firstArgument,
+  int argumentTwo
+) => "very long body that must wrap";
 >>> split before "covariant"
 class A {
   longMethod(covariant parameterNameHere) {}
@@ -21,7 +26,8 @@ class A {
 <<<
 class A {
   longMethod(
-      covariant parameterNameHere) {}
+    covariant parameterNameHere
+  ) {}
 }
 >>> split before "covariant" with multiple parameters
 class A {
@@ -30,10 +36,11 @@ class A {
 <<<
 class A {
   longMethod(
-      covariant first,
-      second,
-      covariant int third(parameter),
-      fourth) {}
+    covariant first,
+    second,
+    covariant int third(parameter),
+    fourth
+  ) {}
 }
 >>> never split after "covariant" (at least for now)
 class A {
@@ -42,8 +49,9 @@ class A {
 <<<
 class A {
   longMethod(
-      covariant int
-          veryLongParameterNameWow) {}
+    covariant int
+        veryLongParameterNameWow
+  ) {}
 }
 >>> split before "required"
 class A {
@@ -51,8 +59,9 @@ class A {
 }
 <<<
 class A {
-  longMethod(
-      {required parameterNameHere}) {}
+  longMethod({
+    required parameterNameHere
+  }) {}
 }
 >>> split before "required" with multiple parameters
 class A {
@@ -60,11 +69,12 @@ class A {
 }
 <<<
 class A {
-  longMethod(
-      {required first,
-      second,
-      required int third(parameter),
-      fourth}) {}
+  longMethod({
+    required first,
+    second,
+    required int third(parameter),
+    fourth
+  }) {}
 }
 >>> never split after "required" (at least for now)
 class A {
@@ -72,9 +82,10 @@ class A {
 }
 <<<
 class A {
-  longMethod(
-      {required int
-          veryLongParameterNameWow}) {}
+  longMethod({
+    required int
+        veryLongParameterNameWow
+  }) {}
 }
 >>> don't split between "required" and "covariant"
 class A {
@@ -82,9 +93,10 @@ class A {
 }
 <<<
 class A {
-  longMethod(
-      {required covariant int
-          veryLongParameterNameWow}) {}
+  longMethod({
+    required covariant int
+        veryLongParameterNameWow
+  }) {}
 }
 >>> split between field type and name
 class Foo {
@@ -93,6 +105,7 @@ class Foo {
 <<<
 class Foo {
   Foo(
-      VerylongParameterType
-          this.parameterName) {}
+    VerylongParameterType
+        this.parameterName
+  ) {}
 }

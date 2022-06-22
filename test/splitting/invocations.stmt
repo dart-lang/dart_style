@@ -21,8 +21,8 @@ return call({'type': type, 'id': id})
 compiler
     .run(script)
     .then((_) {
-  body;
-});
+      body;
+    });
 <<<
 compiler.run(script).then((_) {
   body;
@@ -70,8 +70,8 @@ compiler
     .somethingLong()
     .somethingLong()
     .somethingLong((_) {
-  body;
-}).a();
+      body;
+    }).a();
 >>> nest calls one more than target
 someVeryLongExpression = someVeryLongExpression.someLongMethod();
 <<<
@@ -237,28 +237,38 @@ receiver.method(() {
 someTargetFunction(argument, argument, argument).method().method();
 <<<
 someTargetFunction(
-        argument, argument, argument)
+      argument,
+      argument,
+      argument
+    )
     .method()
     .method();
 >>> splitting the target forces methods to split
 someVeryLongTargetFunction(argument, argument).one().two();
 <<<
 someVeryLongTargetFunction(
-        argument, argument)
+      argument,
+      argument
+    )
     .one()
     .two();
 >>> target splits more deeply than property chain
 someTargetFunction(argument, argument, argument).property.property;
 <<<
 someTargetFunction(
-        argument, argument, argument)
+      argument,
+      argument,
+      argument
+    )
     .property
     .property;
 >>> splitting the target forces methods to split
 someVeryLongTargetFunction(argument, argument).one.two;
 <<<
 someVeryLongTargetFunction(
-        argument, argument)
+      argument,
+      argument
+    )
     .one
     .two;
 >>> do not split on "." when target is list
@@ -314,7 +324,7 @@ function(argument,).method().method().method().method().method();
 function(
   argument,
 )
-    .method()
+    .method() // TODO: Not sure about this.
     .method()
     .method()
     .method()
@@ -394,11 +404,12 @@ someReceiverObject
     .method2()
     .method3()(argument)(argument)
         <T, R>(
-            argument,
-            argument,
-            argument,
-            argument,
-            argument)(argument)
+          argument,
+          argument,
+          argument,
+          argument,
+          argument
+        )(argument)
     .method4()
     .method5()
     .method6();
