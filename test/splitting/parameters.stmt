@@ -120,8 +120,7 @@ doStuff([
   parameter =
       veryLongDefaultValueThatSplits,
   another = veryLongDefaultValue,
-  third =
-      alsoQuiteLongDefaultValue
+  third = alsoQuiteLongDefaultValue
 ]) {}
 >>> split on named value
 doStuff({parameter: veryLongDefaultValueThatSplits, another:
@@ -131,13 +130,18 @@ doStuff({
   parameter:
       veryLongDefaultValueThatSplits,
   another: veryLongDefaultValue,
-  third:
-      alsoAQuiteLongDefaultValue
+  third: alsoAQuiteLongDefaultValue
 }) {}
 >>> split between type and name
 doStuff(VerylongParameterType parameterName) {}
 <<<
 doStuff(
+  VerylongParameterType parameterName
+) {}
+>>> split between type and name
+doStuff(VerylongParameterType longParameterName) {}
+<<<
+doStuff(
   VerylongParameterType
-      parameterName
+      longParameterName
 ) {}
