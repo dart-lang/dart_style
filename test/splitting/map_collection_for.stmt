@@ -96,8 +96,10 @@ var map = {
 var map = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) 1: body};
 <<<
 var map = {
-  for (LongGenericTypeName<TypeArg,
-      AnotherTypeArgument> a in b)
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a in b)
     1: body
 };
 >>> split in for-in expression
@@ -112,8 +114,10 @@ var map = {
 var map = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) 1: body};
 <<<
 var map = {
-  for (LongGenericTypeName<TypeArg,
-          AnotherTypeArgument> a = 0;
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a = 0;
       a < 1;
       a++)
     1: body

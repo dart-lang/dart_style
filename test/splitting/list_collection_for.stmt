@@ -129,8 +129,10 @@ var l = [
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) body];
 <<<
 var list = [
-  for (LongGenericTypeName<TypeArg,
-      AnotherTypeArgument> a in b)
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a in b)
     body
 ];
 >>> split in for-in expression
@@ -145,8 +147,10 @@ var list = [
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body];
 <<<
 var list = [
-  for (LongGenericTypeName<TypeArg,
-          AnotherTypeArgument> a = 0;
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a = 0;
       a < 1;
       a++)
     body

@@ -137,10 +137,17 @@ receiver.firstMethod().next(
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
 receiver.first(
+  [listItem, secondItem, thirdItem]
+).second();
+>>> list inside method chain
+receiver.first([listItem, secondItem, thirdItem, fourthItem]).second();
+<<<
+receiver.first(
   [
     listItem,
     secondItem,
-    thirdItem
+    thirdItem,
+    fourthItem
   ]
 ).second();
 >>> list at end of method chain

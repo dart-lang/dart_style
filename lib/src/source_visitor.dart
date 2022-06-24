@@ -1584,12 +1584,18 @@ class SourceVisitor extends ThrowingAstVisitor {
     //         var blah in stuff) {}
     // TODO(rnystrom): we used to call builder.startRule() here, but now we call
     // it from visitForStatement2 prior to the `(`.  Is that ok?
+    builder.nestExpression();
+    builder.startBlockArgumentNesting();
+
     visitNodes(node.loopVariable.metadata, between: split, after: split);
     visit(node.loopVariable);
     // TODO(rnystrom): we used to call builder.endRule() here, but now we call
     // it from visitForStatement2 after the `)`.  Is that ok?
 
     _visitForEachPartsFromIn(node);
+
+    builder.endBlockArgumentNesting();
+    builder.unnest();
   }
 
   void _visitForEachPartsFromIn(ForEachParts node) {
@@ -1609,6 +1615,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
     // Nest split variables more so they aren't at the same level
     // as the rest of the loop clauses.
+    builder.startBlockArgumentNesting();
     builder.nestExpression();
 
     // Allow the variables to stay unsplit even if the clauses split.
@@ -1624,6 +1631,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
 
     builder.endRule();
+    builder.endBlockArgumentNesting();
     builder.unnest();
 
     _visitForPartsFromLeftSeparator(node);

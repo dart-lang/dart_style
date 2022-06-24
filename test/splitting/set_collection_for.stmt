@@ -96,8 +96,10 @@ var set = {
 var set = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) body};
 <<<
 var set = {
-  for (LongGenericTypeName<TypeArg,
-      AnotherTypeArgument> a in b)
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a in b)
     body
 };
 >>> split in for-in expression
@@ -112,8 +114,10 @@ var set = {
 var set = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body};
 <<<
 var set = {
-  for (LongGenericTypeName<TypeArg,
-          AnotherTypeArgument> a = 0;
+  for (LongGenericTypeName<
+        TypeArg,
+        AnotherTypeArgument
+      > a = 0;
       a < 1;
       a++)
     body
