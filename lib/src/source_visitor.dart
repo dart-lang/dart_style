@@ -6,6 +6,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:analyzer/source/line_info.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/dart_style/rewrite_cascade.dart';
@@ -1340,6 +1341,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
+    // TODO: Get rid of this and add/remove trailing commas as needed.
     // If the parameter list has a trailing comma, format it like a collection
     // literal where each parameter goes on its own line, they are indented +2,
     // and the ")" ends up on its own line.
@@ -2415,8 +2417,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
 
-      var hasType = node.type != null;
-      if (_insideNewTypedefFix && !hasType) {
+      var type = node.type;
+      if (_insideNewTypedefFix && type == null) {
         // Parameters can use "var" instead of "dynamic". Since we are inserting
         // "dynamic" in that case, remove the "var".
         if (node.keyword != null) {
@@ -2439,10 +2441,16 @@ class SourceVisitor extends ThrowingAstVisitor {
         });
       } else {
         modifier(node.keyword);
-        visit(node.type);
-
-        if (hasType && node.identifier != null) split();
-
+        visit(type);
+        if (node.identifier != null && type != null) {
+          if (type is GenericFunctionType) {
+            // Don't split after function types. Instead, keep the variable
+            // name right after the `)`.
+            space();
+          } else {
+            split();
+          }
+        }
         visit(node.identifier);
       }
 
