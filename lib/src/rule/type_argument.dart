@@ -6,6 +6,8 @@ import '../chunk.dart';
 import '../constants.dart';
 import 'rule.dart';
 
+// TODO: Only used for splitting elements in comment-marked collection literals.
+// Decide if this should be removed or renamed.
 /// Rule for splitting a list of type arguments or type parameters. Type
 /// parameters split a little differently from normal value argument lists. In
 /// particular, this tries harder to avoid splitting before the first type

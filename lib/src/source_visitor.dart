@@ -2831,29 +2831,18 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Visits a type parameter or type argument list.
   void _visitGenericList(
       Token leftBracket, Token rightBracket, List<AstNode> nodes) {
-    var rule = TypeArgumentRule();
-    builder.startLazyRule(rule);
-    builder.startSpan();
-    builder.nestExpression();
-
-    token(leftBracket);
-    rule.beforeArgument(zeroSplit());
+    // TODO: This is simplified from _visitCollectionLiteral. Refactor? Or reuse
+    // this code elsewhere?
+    _beginBody(leftBracket);
 
     for (var node in nodes) {
+      builder.split(nest: false, space: node != nodes.first);
       visit(node);
-
-      // Write the trailing comma.
-      if (node != nodes.last) {
-        token(node.endToken.next);
-        rule.beforeArgument(split());
-      }
+      _writeCommaAfter(node);
     }
 
-    token(rightBracket);
-
-    builder.unnest();
-    builder.endSpan();
-    builder.endRule();
+    // If the collection has a trailing comma, the user must want it to split.
+    _endBody(rightBracket, forceSplit: nodes.hasCommaAfter);
   }
 
   /// Visits a sequence of labels before a statement or switch case.
@@ -3082,6 +3071,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // probably broke the elements into lines deliberately, so preserve those.
     if (useLineCommentsToFormat &&
         _containsLineComments(elements, rightBracket)) {
+      // TODO: Should this keeping using TypeArgumentRule or can it be
+      // simplified?
       // Newlines are significant, so we'll explicitly write those. Elements
       // on the same line all share an argument-list-like rule that allows
       // splitting between zero, one, or all of them. This is faster in long
