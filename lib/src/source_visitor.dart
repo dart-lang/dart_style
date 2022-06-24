@@ -1373,13 +1373,16 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Process the parameters as a separate set of chunks.
     builder = builder.startBlock();
 
+    var spaceWhenUnsplit = true;
     for (var parameter in node.parameters) {
-      split();
+      builder.split(space: spaceWhenUnsplit);
       visit(parameter);
       _writeCommaAfter(parameter);
 
       // If the optional parameters start after this one, put the delimiter
-      // at the end of its line.
+      // at the end of its line. If we don't split, don't put a space after
+      // the delimiter.
+      spaceWhenUnsplit = parameter != lastRequired;
       if (parameter == lastRequired) {
         space();
         token(node.leftDelimiter);
