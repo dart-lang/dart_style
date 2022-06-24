@@ -2762,28 +2762,11 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// the parameter.
   void visitParameterMetadata(
       NodeList<Annotation> metadata, void Function() visitParameter) {
-    if (metadata.isEmpty) {
-      visitParameter();
-      return;
-    }
-
     // Split before all of the annotations or none.
     builder.startLazyRule(_metadataRules.last);
 
-    visitNodes(metadata, between: split, after: () {
-      // Don't nest until right before the last metadata. Ensures we only
-      // indent the parameter and not any of the metadata:
-      //
-      //     function(
-      //         @LongAnnotation
-      //         @LongAnnotation
-      //             indentedParameter) {}
-      builder.nestExpression(now: true);
-      split();
-    });
+    visitNodes(metadata, between: split, after: split);
     visitParameter();
-
-    builder.unnest();
 
     // Wrap the rule around the parameter too. If it splits, we want to force
     // the annotations to split as well.
