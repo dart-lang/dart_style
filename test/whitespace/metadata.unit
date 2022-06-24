@@ -182,8 +182,8 @@ typedef void DatabaseCallback(database);
 typedef void DatabaseCallback(database);
 >>> comment between metadata
 @DomName('DatabaseCallback') // deprecated
-  @Experimental()
-      typedef void DatabaseCallback(database);
+@Experimental()
+typedef void DatabaseCallback(database);
 <<<
 @DomName(
   'DatabaseCallback'
@@ -216,17 +216,21 @@ class Foo {
 }
 <<<
 class Foo {
-  Foo(@bar super.field,
-      [@foo() @baz super.another]);
+  Foo(
+    @bar super.field, [
+    @foo() @baz super.another
+  ]);
 }
 >>> metadata on function-typed formal parameter
 withReturnType(@foo @bar int fn(@foo param)) {}
 withoutReturnType(@foo @bar fn(@foo param)) {}
 <<<
 withReturnType(
-    @foo @bar int fn(@foo param)) {}
+  @foo @bar int fn(@foo param)
+) {}
 withoutReturnType(
-    @foo @bar fn(@foo param)) {}
+  @foo @bar fn(@foo param)
+) {}
 >>> metadata on default formal parameter
 positional([@foo bar]) {}
 named({@foo bar}) {}
@@ -237,9 +241,10 @@ named({@foo bar}) {}
 function(@Annotation @VeryLongMetadataAnnotation longParameter) {}
 <<<
 function(
-    @Annotation
-    @VeryLongMetadataAnnotation
-        longParameter) {}
+  @Annotation
+  @VeryLongMetadataAnnotation
+  longParameter
+) {}
 >>> unsplit with trailing commas
 function(@Annotation longParameter,@Annotation @Other longParameter2,) {}
 <<<
@@ -255,25 +260,27 @@ function(
   @Annotation
   @Other
   @Third
-      longParameter2,
+  longParameter2,
 ) {}
 >>> keep "covariant" with parameter
 class A { function(@Annotation @VeryLongMetadataAnnotation covariant longParameter) {} }
 <<<
 class A {
   function(
-      @Annotation
-      @VeryLongMetadataAnnotation
-          covariant longParameter) {}
+    @Annotation
+    @VeryLongMetadataAnnotation
+    covariant longParameter
+  ) {}
 }
 >>> keep "required" with parameter
 class A { function({@Annotation @VeryLongMetadataAnnotation required longParameter}) {} }
 <<<
 class A {
-  function(
-      {@Annotation
-      @VeryLongMetadataAnnotation
-          required longParameter}) {}
+  function({
+    @Annotation
+    @VeryLongMetadataAnnotation
+    required longParameter
+  }) {}
 }
 >>> metadata on function typedef
 @foo typedef Fn = Function();

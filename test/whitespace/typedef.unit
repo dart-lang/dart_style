@@ -7,12 +7,16 @@ typedef Foo<T, S>(T t, S s);
 typedef   SomeFunc=ReturnType  Function(int param,   double other);
 <<<
 typedef SomeFunc = ReturnType Function(
-    int param, double other);
+  int param,
+  double other
+);
 >>> generic in typedef
 typedef Generic = T Function<T>(T param, double other);
 <<<
 typedef Generic = T Function<T>(
-    T param, double other);
+  T param,
+  double other
+);
 >>> no return type
 typedef SomeFunc = Function();
 <<<
@@ -21,11 +25,14 @@ typedef SomeFunc = Function();
 typedef SomeFunc = Function(int first, Function(int first, bool second, String third) second, String third);
 <<<
 typedef SomeFunc = Function(
+  int first,
+  Function(
     int first,
-    Function(int first, bool second,
-            String third)
-        second,
-    String third);
+    bool second,
+    String third
+  ) second,
+  String third
+);
 >>> without param names
 typedef F = Function(int, bool, String);
 <<<

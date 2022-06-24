@@ -101,8 +101,7 @@ string""");
 main() {
   inner() {
     function("""
-string"""
-    );
+string""");
   }
 }
 >>> null coalescing operator
