@@ -571,13 +571,18 @@ class ChunkBuilder {
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
   ChunkBuilder startBlock(
-      {Chunk? argumentChunk, bool indent = true, bool space = false}) {
+      {Chunk? argumentChunk,
+      bool indent = true,
+      bool space = false,
+      bool splitParentBlock = true}) {
     // Start a block chunk for the block. It will contain the chunks for the
     // contents of the block, and its own text will be the closing block
     // delimiter.
     var chunk = BlockChunk(argumentChunk, _rules.last, _nesting.indentation,
         _blockArgumentNesting.last,
-        space: space, flushLeft: _pendingFlushLeft);
+        space: space,
+        flushLeft: _pendingFlushLeft,
+        splitParentBlock: splitParentBlock);
     _chunks.add(chunk);
     _pendingFlushLeft = false;
 
@@ -606,39 +611,42 @@ class ChunkBuilder {
   ChunkBuilder endBlock({bool forceSplit = true}) {
     _divideChunks();
 
+    // If the block splits then force the surrounding rule for it so that we
+    // apply that constraint.
+    var parent = _parent!;
+    if (forceSplit || _blockShouldSplit()) parent.forceRules();
+    return parent;
+  }
+
+  /// Returns true if the block being built by this [ChunkBuilder] should be
+  /// forced to split because of the length or splits in its contents.
+  bool _blockShouldSplit() {
     // If the last chunk ends with a comment that wants a newline after it,
     // then force the block contents to split.
-    forceSplit |= _pendingNested;
+    if (_pendingNested) return true;
 
     // TODO: Look for BlockRule here?
     // TODO: This isn't correct for closures inside argument lists. Sometimes,
     // those should not force the surrounding argument list to split.
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
-    if (!forceSplit) {
-      var length = 0;
-      for (var chunk in _chunks) {
-        length += chunk.length + chunk.unsplitBlockLength;
-        if (length > _formatter.pageWidth) {
-          forceSplit = true;
-          break;
-        }
+    var length = 0;
+    for (var chunk in _chunks) {
+      length += chunk.length + chunk.unsplitBlockLength;
+      if (length > _formatter.pageWidth) return true;
 
-        // If there are any hardened splits in the chunks (aside from ones
-        // using the initial hard rule created by [startBlock()] which are for
-        // the top level elements in the block), then force the block to split.
-        if (chunk.rule.isHardened && chunk.rule != _rules.first) {
-          forceSplit = true;
-          break;
-        }
-      }
+      // If the chunk isn't itself split, it doesn't split the block.
+      if (!chunk.rule.isHardened) continue;
+
+      // If the split is really the implicit split separating block elements,
+      // then that doesn't split the block since it only comes into play after
+      // we've determined that the block should split.
+      if (chunk.rule == _rules.first) continue;
+
+      return true;
     }
 
-    // If there is a hard newline within the block, force the surrounding rule
-    // for it so that we apply that constraint.
-    var parent = _parent!;
-    if (forceSplit) parent.forceRules();
-    return parent;
+    return false;
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output

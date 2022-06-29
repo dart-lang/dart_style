@@ -110,6 +110,20 @@ class SourceVisitor extends ThrowingAstVisitor {
   final Map<Token, Rule> _blockRules = {};
   final Map<Token, Chunk> _blockPreviousChunks = {};
 
+  /// Open bracket tokens for closure block bodies that appear in argument lists
+  /// in a position where the closure should not force the surrounding argument
+  /// list to split.
+  ///
+  /// For example, in:
+  ///
+  ///     test('description', () {
+  ///       expect(1, 2);
+  ///     });
+  ///
+  /// This will contain the `{` token for the closure.
+  // TODO: Have visitBlock() check this when calling beginBlock().
+  final Set<Token> _unsplitBlockArguments = {};
+
   /// Comments and new lines attached to tokens added here are suppressed
   /// from the output.
   final Set<Token> _suppressPrecedingCommentsAndNewLines = {};
@@ -241,6 +255,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// 5. Split the named arguments each onto their own line.
   @override
   void visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
+    // TODO: Get rid of nestExpression parameter.
+
     // Handle empty collections, with or without comments.
     if (node.arguments.isEmpty) {
       _visitBody(node.leftParenthesis, node.arguments, node.rightParenthesis);
@@ -249,18 +265,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _beginBody(node.leftParenthesis);
 
-    for (var argument in node.arguments) {
-      builder.split(nest: false, space: argument != node.arguments.first);
-      visit(argument);
-      _writeCommaAfter(argument);
-    }
+    ArgumentListVisitor(this, node.arguments).visit();
 
     // If the collection has a trailing comma, the user must want it to split.
     // TODO: Shouldn't preserve original trailing comma.
     _endBody(node.rightParenthesis, forceSplit: node.arguments.hasCommaAfter);
-
-
-
 
     // // Corner case: handle empty argument lists.
     // if (node.arguments.isEmpty) {
@@ -317,7 +326,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.nestExpression();
-    var visitor = ArgumentListVisitor.forArguments(
+    var visitor = ArgumentListVisitorOld.forArguments(
         this, node.leftParenthesis, node.rightParenthesis, arguments);
     visitor.visit();
     builder.unnest();
@@ -340,7 +349,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         return;
       }
 
-      var visitor = ArgumentListVisitor.forArguments(
+      var visitor = ArgumentListVisitorOld.forArguments(
           this, node.leftParenthesis, node.rightParenthesis, arguments);
       visitor.visit();
     });
@@ -1379,7 +1388,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var parameter in node.parameters) {
       builder.split(space: spaceWhenUnsplit);
       visit(parameter);
-      _writeCommaAfter(parameter);
+      writeCommaAfter(parameter);
 
       // If the optional parameters start after this one, put the delimiter
       // at the end of its line. If we don't split, don't put a space after
@@ -1393,8 +1402,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Put comments before the closing ")", "]", or "}" inside the block.
-    var firstDelimiter =
-        node.rightDelimiter ?? node.rightParenthesis;
+    var firstDelimiter = node.rightDelimiter ?? node.rightParenthesis;
     if (firstDelimiter.precedingComments != null) {
       split();
       writePrecedingCommentsAndNewlines(firstDelimiter);
@@ -2783,7 +2791,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits [node], which may be in an argument list controlled by [rule].
   ///
-  /// This is called directly by [ArgumentListVisitor] so that it can pass in
+  /// This is called directly by [ArgumentListVisitorOld] so that it can pass in
   /// the surrounding named argument rule. That way, this can ensure that a
   /// split between the name and argument forces the argument list to split
   /// too.
@@ -2840,7 +2848,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var node in nodes) {
       builder.split(nest: false, space: node != nodes.first);
       visit(node);
-      _writeCommaAfter(node);
+      writeCommaAfter(node);
     }
 
     // If the collection has a trailing comma, the user must want it to split.
@@ -3097,7 +3105,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         }
 
         visit(element);
-        _writeCommaAfter(element);
+        writeCommaAfter(element);
       }
 
       builder.endRule();
@@ -3105,7 +3113,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       for (var element in elements) {
         builder.split(nest: false, space: element != elements.first);
         visit(element);
-        _writeCommaAfter(element);
+        writeCommaAfter(element);
       }
     }
 
@@ -3160,7 +3168,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var parameter in parameters.parameters) {
       newline();
       visit(parameter);
-      _writeCommaAfter(parameter);
+      writeCommaAfter(parameter);
 
       // If the optional parameters start after this one, put the delimiter
       // at the end of its line.
@@ -3351,7 +3359,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// Writes the delimiter (with a space after it when unsplit if [space] is
   /// `true`).
-  void _beginBody(Token leftBracket, {bool space = false}) {
+  void _beginBody(Token leftBracket,
+      {bool space = false, bool splitParentBlock = true}) {
     token(leftBracket);
 
     // Create a rule for whether or not to split the block contents. If this
@@ -3362,7 +3371,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Process the contents as a separate set of chunks.
     builder = builder.startBlock(
-        argumentChunk: _blockPreviousChunks[leftBracket], space: space);
+        argumentChunk: _blockPreviousChunks[leftBracket],
+        space: space,
+        splitParentBlock: splitParentBlock);
   }
 
   /// Ends the body started by a call to [_beginBody()].
@@ -3496,7 +3507,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Write the comma token following [node], if there is one.
-  void _writeCommaAfter(AstNode node) {
+  void writeCommaAfter(AstNode node) {
     token(node.commaAfter);
   }
 

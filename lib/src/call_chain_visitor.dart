@@ -465,7 +465,7 @@ class _MethodSelector extends _Selector {
 
   @override
   bool isBlockCall(SourceVisitor visitor) =>
-      ArgumentListVisitor(visitor, _node.argumentList).hasBlockArguments;
+      ArgumentListVisitorOld(visitor, _node.argumentList).hasBlockArguments;
 
   @override
   void writeSelector(CallChainVisitor visitor) {

@@ -30,6 +30,8 @@ abstract class ArgumentRule extends Rule {
   /// be multi-line without forcing the whole argument list to split.
   bool _trackInnerRules = true;
 
+  // TODO: Is this all still needed? Now that collections are always in
+  // separate blocks, the rules for them are not directly connected.
   /// Don't split when an inner collection rule splits.
   @override
   bool get splitsOnInnerRules => _trackInnerRules;

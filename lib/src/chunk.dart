@@ -232,11 +232,26 @@ class BlockChunk extends Chunk {
   /// may need extra expression-level indentation.
   final Chunk? argument;
 
+  /// Whether splitting this block's contents should cause a surrounding
+  /// parent block to split.
+  ///
+  /// This is generally true. For example, splitting a list literal inside
+  /// another list literal always causes the outer one to split. But in some
+  /// cases, like closures in argument lists, the closure may be split without
+  /// forcing the outer one, as in:
+  ///
+  ///     test('description', () {
+  ///       expect(1, 2);
+  ///     });
+  final bool splitParentBlock;
+
   /// The child chunks in this block.
   final List<Chunk> children = [];
 
   BlockChunk(this.argument, super.rule, super.indent, super.nesting,
-      {required super.space, required super.flushLeft})
+      {required super.space,
+      required super.flushLeft,
+      required this.splitParentBlock})
       : super(isDouble: false);
 
   /// The unsplit length of all of this chunk's block contents.

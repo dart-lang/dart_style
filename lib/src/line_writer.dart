@@ -54,8 +54,7 @@ class LineWriter {
 
   /// Creates a line writer for a block.
   LineWriter._(this._chunks, this._lineEnding, this.pageWidth,
-      this._blockIndentation, this._blockCache) {
-  }
+      this._blockIndentation, this._blockCache);
 
   /// Gets the results of formatting the child block of [chunk] at starting
   /// [column].
@@ -185,7 +184,6 @@ class LineWriter {
         }
 
         _buffer.write(' ' * (column + block.indent));
-
       } else {
         if (chunk.spaceWhenUnsplit) _buffer.write(' ');
 

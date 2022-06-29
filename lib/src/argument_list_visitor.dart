@@ -13,10 +13,197 @@ import 'rule/argument.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';
 
+class ArgumentListVisitor {
+  final SourceVisitor _visitor;
+  final List<Expression> _arguments;
+
+  /// If the argument list contains any closures that should not cause the
+  /// argument to split, this is the index of the first one. Otherwise -1.
+  final int _firstBlockFunction;
+
+  /// If the argument list contains any closures that should not cause the
+  /// argument to split, this is the index of the last one. Otherwise -1.
+  final int _lastBlockFunction;
+
+  factory ArgumentListVisitor(
+      SourceVisitor visitor, List<Expression> arguments) {
+    var functionRange = _contiguousFunctions(arguments);
+
+    return ArgumentListVisitor._(
+        visitor, arguments, functionRange[0], functionRange[1]);
+  }
+
+  ArgumentListVisitor._(this._visitor, this._arguments,
+      this._firstBlockFunction, this._lastBlockFunction);
+
+  void visit() {
+    // TODO: If an argument is within the function range, then add the closure's
+    // `{` to SourceVisitor's _unsplitBlockArguments set.
+
+    for (var argument in _arguments) {
+      _visitor.builder.split(nest: false, space: argument != _arguments.first);
+      _visitor.visit(argument);
+      _visitor.writeCommaAfter(argument);
+    }
+  }
+
+  /// Look for a single contiguous range of block function [arguments] that
+  /// should receive special formatting.
+  ///
+  /// Returns a list of (start, end] indexes if found, otherwise returns
+  /// `[-1, -1]`.
+  static List<int> _contiguousFunctions(List<Expression> arguments) {
+    var functionsStart = -1;
+    var functionsEnd = -1;
+
+    // Find the range of block function arguments, if any.
+    for (var i = 0; i < arguments.length; i++) {
+      var argument = arguments[i];
+      if (_isBlockFunction(argument)) {
+        if (functionsStart == -1) functionsStart = i;
+
+        // The functions must be one contiguous section.
+        if (functionsEnd != -1 && functionsEnd != i) return const [-1, -1];
+
+        functionsEnd = i + 1;
+      }
+    }
+
+    if (functionsStart == -1) return const [-1, -1];
+
+    // TODO: Should this edge case apply?
+    /*
+    // Edge case: If all of the arguments are named, but they aren't all
+    // functions, then don't handle the functions specially. A function with a
+    // bunch of named arguments tends to look best when they are all lined up,
+    // even the function ones (unless they are all functions).
+    //
+    // Prefers:
+    //
+    //     function(
+    //         named: () {
+    //           something();
+    //         },
+    //         another: argument);
+    //
+    // Over:
+    //
+    //     function(named: () {
+    //       something();
+    //     },
+    //         another: argument);
+    if (_isAllNamed(arguments) &&
+        (functionsStart > 0 || functionsEnd < arguments.length)) {
+      return null;
+    }
+    */
+
+    // TODO: Should this edge case apply?
+    /*
+    // Edge case: If all of the function arguments are named and there are
+    // other named arguments that are "=>" functions, then don't treat the
+    // block-bodied functions specially. In a mixture of the two function
+    // styles, it looks cleaner to treat them all like normal expressions so
+    // that the named arguments line up.
+    if (_isAllNamed(arguments.sublist(functionsStart, functionsEnd))) {
+      bool isNamedArrow(Expression expression) {
+        if (expression is! NamedExpression) return false;
+        expression = expression.expression;
+
+        return expression is FunctionExpression &&
+            expression.body is ExpressionFunctionBody;
+      }
+
+      for (var i = 0; i < functionsStart; i++) {
+        if (isNamedArrow(arguments[i])) return null;
+      }
+
+      for (var i = functionsEnd; i < arguments.length; i++) {
+        if (isNamedArrow(arguments[i])) return null;
+      }
+    }
+    */
+
+    return [functionsStart, functionsEnd];
+  }
+
+  /*
+  /// Returns `true` if every expression in [arguments] is named.
+  static bool _isAllNamed(List<Expression> arguments) =>
+      arguments.every((argument) => argument is NamedExpression);
+  */
+
+  /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
+  /// block body.
+  static bool _isBlockFunction(Expression expression) {
+    if (expression is NamedExpression) expression = expression.expression;
+
+    // TODO: Should any of these edge cases apply?
+    /*
+    // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
+    if (expression is MethodInvocation) {
+      if (!_isValidWrappingTarget(expression.target)) return false;
+      if (expression.argumentList.arguments.length != 1) return false;
+
+      return _isBlockFunction(expression.argumentList.arguments.single);
+    }
+
+    if (expression is InstanceCreationExpression) {
+      if (expression.argumentList.arguments.length != 1) return false;
+
+      return _isBlockFunction(expression.argumentList.arguments.single);
+    }
+
+    // Allow immediately-invoked functions like "() { ... }()".
+    if (expression is FunctionExpressionInvocation) {
+      if (expression.argumentList.arguments.isNotEmpty) return false;
+
+      expression = expression.function;
+    }
+
+    // Unwrap parenthesized expressions.
+    while (expression is ParenthesizedExpression) {
+      expression = expression.expression;
+    }
+    */
+
+    // Must be a function.
+    if (expression is! FunctionExpression) return false;
+
+    // With a block body.
+    if (expression.body is! BlockFunctionBody) return false;
+
+    // That isn't empty.
+    var body = expression.body as BlockFunctionBody;
+    return body.block.statements.isNotEmpty ||
+        body.block.rightBracket.precedingComments != null;
+  }
+
+  /*
+  /// Returns `true` if [expression] is a valid method invocation target for
+  /// an invocation that wraps a function literal argument.
+  static bool _isValidWrappingTarget(Expression? expression) {
+    // Allow bare function calls.
+    if (expression == null) return true;
+
+    // Allow property accesses.
+    while (expression is PropertyAccess) {
+      expression = expression.target;
+    }
+
+    if (expression is PrefixedIdentifier) return true;
+    if (expression is SimpleIdentifier) return true;
+
+    return false;
+  }
+  */
+}
+
 /// Helper class for [SourceVisitor] that handles visiting and writing an
 /// [ArgumentList], including all of the special code needed to handle
 /// block-formatted arguments.
-class ArgumentListVisitor {
+// TODO: Eliminate this.
+class ArgumentListVisitorOld {
   final SourceVisitor _visitor;
 
   /// The "(" before the argument list.
@@ -55,12 +242,12 @@ class ArgumentListVisitor {
   bool get hasBlockArguments =>
       _arguments._blocks.isNotEmpty || _functions != null;
 
-  factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
-    return ArgumentListVisitor.forArguments(
+  factory ArgumentListVisitorOld(SourceVisitor visitor, ArgumentList node) {
+    return ArgumentListVisitorOld.forArguments(
         visitor, node.leftParenthesis, node.rightParenthesis, node.arguments);
   }
 
-  factory ArgumentListVisitor.forArguments(
+  factory ArgumentListVisitorOld.forArguments(
       SourceVisitor visitor,
       Token leftParenthesis,
       Token rightParenthesis,
@@ -69,8 +256,14 @@ class ArgumentListVisitor {
 
     if (functionRange == null) {
       // No functions, so there is just a single argument list.
-      return ArgumentListVisitor._(visitor, leftParenthesis, rightParenthesis,
-          arguments, ArgumentSublist(arguments, arguments), null, null);
+      return ArgumentListVisitorOld._(
+          visitor,
+          leftParenthesis,
+          rightParenthesis,
+          arguments,
+          ArgumentSublist(arguments, arguments),
+          null,
+          null);
     }
 
     // Split the arguments into two independent argument lists with the
@@ -79,7 +272,7 @@ class ArgumentListVisitor {
     var functions = arguments.sublist(functionRange[0], functionRange[1]);
     var argumentsAfter = arguments.skip(functionRange[1]).toList();
 
-    return ArgumentListVisitor._(
+    return ArgumentListVisitorOld._(
         visitor,
         leftParenthesis,
         rightParenthesis,
@@ -89,7 +282,7 @@ class ArgumentListVisitor {
         ArgumentSublist(arguments, argumentsAfter));
   }
 
-  ArgumentListVisitor._(
+  ArgumentListVisitorOld._(
       this._visitor,
       this._leftParenthesis,
       this._rightParenthesis,
@@ -292,6 +485,7 @@ class ArgumentListVisitor {
 /// when an argument list has block functions in the middle, the arguments
 /// before and after the functions are treated as separate independent lists.
 /// In that case, there will be two of these.
+// TODO: Eliminate this.
 class ArgumentSublist {
   /// The full argument list from the AST.
   final List<Expression> _allArguments;
