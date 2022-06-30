@@ -121,7 +121,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///     });
   ///
   /// This will contain the `{` token for the closure.
-  // TODO: Have visitBlock() check this when calling beginBlock().
   final Set<Token> _unsplitBlockArguments = {};
 
   /// Comments and new lines attached to tokens added here are suppressed
@@ -435,7 +434,10 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    _visitBody(node.leftBracket, node.statements, node.rightBracket);
+    // If this block is for a function expression in an argument list that
+    // shouldn't split the argument list, then don't.
+    _visitBody(node.leftBracket, node.statements, node.rightBracket,
+        splitParentBlock: !_unsplitBlockArguments.contains(node.leftBracket));
   }
 
   @override
@@ -3456,6 +3458,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.unnest();
   }
 
+  // TODO: Remove.
   /// Marks the block that starts with [token] as being controlled by
   /// [rule] and following [previousChunk].
   ///
@@ -3468,8 +3471,16 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (previousChunk != null) _blockPreviousChunks[token] = previousChunk;
   }
 
+  // TODO: Is there a cleaner way to plumb this from ArgumentListVisitor over
+  // to visitBlock()?
+  // TODO: Doc.
+  void blockClosureInArgumentList(Token token) {
+    _unsplitBlockArguments.add(token);
+  }
+
   /// Writes the brace-delimited body containing [nodes].
-  void _visitBody(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
+  void _visitBody(Token leftBracket, List<AstNode> nodes, Token rightBracket,
+      {bool splitParentBlock = true}) {
     // Don't allow splitting in an empty body.
     if (nodes.isEmptyBody(rightBracket)) {
       token(leftBracket);
@@ -3477,7 +3488,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    _beginBody(leftBracket);
+    _beginBody(leftBracket, splitParentBlock: splitParentBlock);
     _visitBodyContents(nodes);
     _endBody(rightBracket, forceSplit: nodes.isNotEmpty);
   }

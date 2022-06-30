@@ -643,6 +643,11 @@ class ChunkBuilder {
       // we've determined that the block should split.
       if (chunk.rule == _rules.first) continue;
 
+      // If the chunk is a block for a closure that shouldn't cause the
+      // surrounding argument list to split, then ignore that the block itself
+      // is split.
+      if (chunk is BlockChunk && !chunk.splitParentBlock) continue;
+
       return true;
     }
 

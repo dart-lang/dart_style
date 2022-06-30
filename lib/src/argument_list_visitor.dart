@@ -17,30 +17,26 @@ class ArgumentListVisitor {
   final SourceVisitor _visitor;
   final List<Expression> _arguments;
 
-  /// If the argument list contains any closures that should not cause the
-  /// argument to split, this is the index of the first one. Otherwise -1.
-  final int _firstBlockFunction;
+  /// For each argument in the argument list, stores the `{` token for any
+  /// block closure arguments that should not cause the argument list to split.
+  ///
+  /// For all other arguments, stores `null`. If no arguments should get block
+  /// formatting, the list is empty.
+  final List<Token?> _blockFunctions = [];
 
-  /// If the argument list contains any closures that should not cause the
-  /// argument to split, this is the index of the last one. Otherwise -1.
-  final int _lastBlockFunction;
-
-  factory ArgumentListVisitor(
-      SourceVisitor visitor, List<Expression> arguments) {
-    var functionRange = _contiguousFunctions(arguments);
-
-    return ArgumentListVisitor._(
-        visitor, arguments, functionRange[0], functionRange[1]);
+  ArgumentListVisitor(this._visitor, this._arguments) {
+    var blockFunctions = _findBlockFunctions();
+    if (blockFunctions != null) _blockFunctions.addAll(blockFunctions);
   }
 
-  ArgumentListVisitor._(this._visitor, this._arguments,
-      this._firstBlockFunction, this._lastBlockFunction);
-
   void visit() {
-    // TODO: If an argument is within the function range, then add the closure's
-    // `{` to SourceVisitor's _unsplitBlockArguments set.
+    for (var i = 0; i < _arguments.length; i++) {
+      var blockToken = _blockFunctions.isEmpty ? null : _blockFunctions[i];
+      if (blockToken != null) {
+        _visitor.blockClosureInArgumentList(blockToken);
+      }
 
-    for (var argument in _arguments) {
+      var argument = _arguments[i];
       _visitor.builder.split(nest: false, space: argument != _arguments.first);
       _visitor.visit(argument);
       _visitor.writeCommaAfter(argument);
@@ -50,26 +46,32 @@ class ArgumentListVisitor {
   /// Look for a single contiguous range of block function [arguments] that
   /// should receive special formatting.
   ///
-  /// Returns a list of (start, end] indexes if found, otherwise returns
-  /// `[-1, -1]`.
-  static List<int> _contiguousFunctions(List<Expression> arguments) {
-    var functionsStart = -1;
-    var functionsEnd = -1;
+  /// If there are some, returns a list of `Token?` for each argument where the
+  /// token is `null` if the corresponding argument is not a block closure and
+  /// is the `{` token if it is.
+  List<Token?>? _findBlockFunctions() {
+    var tokens = <Token?>[];
+    var hasBlocks = false;
 
     // Find the range of block function arguments, if any.
-    for (var i = 0; i < arguments.length; i++) {
-      var argument = arguments[i];
-      if (_isBlockFunction(argument)) {
-        if (functionsStart == -1) functionsStart = i;
+    for (var i = 0; i < _arguments.length; i++) {
+      var argument = _arguments[i];
+      var token = _blockFunctionToken(argument);
+      tokens.add(token);
 
-        // The functions must be one contiguous section.
-        if (functionsEnd != -1 && functionsEnd != i) return const [-1, -1];
-
-        functionsEnd = i + 1;
+      // The functions must be one contiguous section.
+      if (token != null) {
+        if (hasBlocks) {
+          // If we already found blocks, and this one is a block but the
+          // previous one isn't, then the blocks are non-contiguous.
+          if (i > 0 && tokens[i - 1] == null) return null;
+        } else {
+          hasBlocks = true;
+        }
       }
     }
 
-    if (functionsStart == -1) return const [-1, -1];
+    if (!hasBlocks) return null;
 
     // TODO: Should this edge case apply?
     /*
@@ -124,7 +126,7 @@ class ArgumentListVisitor {
     }
     */
 
-    return [functionsStart, functionsEnd];
+    return tokens;
   }
 
   /*
@@ -133,9 +135,9 @@ class ArgumentListVisitor {
       arguments.every((argument) => argument is NamedExpression);
   */
 
-  /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
-  /// block body.
-  static bool _isBlockFunction(Expression expression) {
+  /// Returns the `{` [Token] if [expression] is a [FunctionExpression] with a
+  /// non-empty block body.
+  Token? _blockFunctionToken(Expression expression) {
     if (expression is NamedExpression) expression = expression.expression;
 
     // TODO: Should any of these edge cases apply?
@@ -168,15 +170,19 @@ class ArgumentListVisitor {
     */
 
     // Must be a function.
-    if (expression is! FunctionExpression) return false;
+    if (expression is! FunctionExpression) return null;
 
     // With a block body.
-    if (expression.body is! BlockFunctionBody) return false;
+    var body = expression.body;
+    if (body is! BlockFunctionBody) return null;
 
     // That isn't empty.
-    var body = expression.body as BlockFunctionBody;
-    return body.block.statements.isNotEmpty ||
-        body.block.rightBracket.precedingComments != null;
+    if (body.block.statements.isEmpty &&
+        body.block.rightBracket.precedingComments == null) {
+      return null;
+    }
+
+    return body.block.leftBracket;
   }
 
   /*
