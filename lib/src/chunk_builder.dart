@@ -630,10 +630,14 @@ class ChunkBuilder {
     // those should not force the surrounding argument list to split.
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
-    var length = 0;
+    // var length = 0;
     for (var chunk in _chunks) {
-      length += chunk.length + chunk.unsplitBlockLength;
-      if (length > _formatter.pageWidth) return true;
+      // TODO: Commented out since this does the wrong thing if there are
+      // closures, since the length of the closure body should not force it to
+      // split. Either get this working again or remove it completely if it
+      // doesn't regress perf too much.
+      // length += chunk.length + chunk.unsplitBlockLength;
+      // if (length > _formatter.pageWidth) return true;
 
       // If the chunk isn't itself split, it doesn't split the block.
       if (!chunk.rule.isHardened) continue;

@@ -18,7 +18,12 @@ class CostCalculator {
   final LineSplitter _splitter;
   final RuleSet _ruleValues;
   final SplitSet _splits;
-  final Set<Rule> _liveRules;
+
+  /// The set of rules that appear in the first line that doesn't fit in the
+  /// page width, populated while calculating the cost.
+  final Set<Rule> liveRules = {};
+
+  int _cost = 0;
 
   /// The total number of overflow characters in all overflowing lines.
   int get overflowChars => _overflowChars;
@@ -39,33 +44,28 @@ class CostCalculator {
   /// like this yet.
   var _foundOverflowRules = false;
 
-  CostCalculator(
-      this._splitter, this._ruleValues, this._splits, this._liveRules);
+  /// The set of spans that contain chunks that ended up splitting. We store
+  /// these in a set so a span's cost doesn't get double-counted if more than
+  /// one split occurs in it.
+  final Set<Span> _splitSpans = {};
+
+  CostCalculator(this._splitter, this._ruleValues, this._splits);
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of rules.
-  ///
-  /// Returns the cost.
-  int calculate() {
-    // Calculate the length of each line and apply the cost of any spans that
-    // get split.
-    var cost = 0;
-
-    // The set of spans that contain chunks that ended up splitting. We store
-    // these in a set so a span's cost doesn't get double-counted if more than
-    // one split occurs in it.
-    var splitSpans = <Span>{};
-
+  void calculate() {
     // The nesting level of the chunk that ended the previous line.
     NestingLevel? previousNesting;
 
+    // Write each chunk with the appropriate splits between them.
     for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
 
       if (_splits.shouldSplitAt(i)) {
-        _endLine(i);
-
-        splitSpans.addAll(chunk.spans);
+        // Add the costs for the spans containing splits.
+        for (var span in chunk.spans) {
+          if (_splitSpans.add(span)) _cost += span.cost;
+        }
 
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
@@ -95,22 +95,26 @@ class CostCalculator {
         previousNesting = chunk.nesting;
 
         // Start the new line.
+        _endLine(i);
         _column = _splits.getColumn(i);
       } else {
         if (chunk.spaceWhenUnsplit) _column++;
       }
 
+      // Write the block chunk's children first.
       if (chunk is BlockChunk) {
         if (_splits.shouldSplitAt(i)) {
-          // Include the cost of the nested block.
-          cost +=
-              _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
+          _traverseSplitBlock(chunk, _splits.getColumn(i));
         } else {
-          // TODO: Update this to handle that unsplit blocks may still contain
-          // split children.
-          // Include the nested block inline, if any.
-          _column += chunk.unsplitBlockLength;
+          // This block didn't split (which implies none of the child blocks
+          // of that block split either, recursively), so write them all inline.
+          _traverseUnsplitBlock(chunk, _splitter.blockIndentation);
         }
+      }
+
+      if (_splits.shouldSplitAt(i)) {
+        _endLine(i);
+        _column = _splits.getColumn(i);
       }
 
       _column += chunk.text.length;
@@ -118,17 +122,40 @@ class CostCalculator {
 
     // Add the costs for the rules that have any splits.
     _ruleValues.forEach(_splitter.rules, (rule, value) {
-      if (value != Rule.unsplit) cost += rule.cost;
+      if (value != Rule.unsplit) _cost += rule.cost;
     });
-
-    // Add the costs for the spans containing splits.
-    for (var span in splitSpans) {
-      cost += span.cost;
-    }
 
     // Finish the last line.
     _endLine(_splitter.chunks.length);
-    return cost;
+
+    // Store the final cost in the SplitSet.
+    _splits.setCost(_cost);
+  }
+
+  void _traverseUnsplitBlock(BlockChunk block, int column) {
+    for (var chunk in block.children) {
+      if (chunk is BlockChunk && chunk.rule.isHardened) {
+        // Even though the surrounding block didn't split, this chunk's
+        // children did.
+        _traverseSplitBlock(chunk, column + block.indent);
+        // TODO: We probably need to end the line here, which I think means
+        // keeping track of the index of the outermost chunk that got us here.
+
+        _column = column + block.indent;
+      } else {
+        if (chunk.spaceWhenUnsplit) _column++;
+
+        // Recurse into the block.
+        if (chunk is BlockChunk) _traverseUnsplitBlock(chunk, column);
+      }
+
+      _column += chunk.text.length;
+    }
+  }
+
+  void _traverseSplitBlock(BlockChunk chunk, int column) {
+    // Include the cost of the block.
+    _cost += _splitter.writer.formatBlock(chunk, column).cost;
   }
 
   void _endLine(int end) {
@@ -162,7 +189,7 @@ class CostCalculator {
     for (var constrained in rule.allConstrainedRules) {
       if (_ruleValues.contains(constrained)) continue;
 
-      _liveRules.add(constrained);
+      liveRules.add(constrained);
       added = true;
     }
 

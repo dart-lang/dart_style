@@ -61,16 +61,14 @@ class SolveState {
   /// There is one other set of rules that go in here. Sometimes a bound rule
   /// in the solve state constrains some other unbound rule to split. In that
   /// case, we also consider that active so we know to not leave it at zero.
-  final _liveRules = <Rule>{};
+  final Set<Rule> _liveRules;
 
   /// The set of splits chosen for this state.
-  SplitSet get splits => _splits;
-  late final SplitSet _splits;
+  final SplitSet splits;
 
   /// The number of characters that do not fit inside the page with this set of
   /// splits.
-  int get overflowChars => _overflowChars;
-  int _overflowChars = 0;
+  final int overflowChars;
 
   /// Whether we can treat this state as a complete solution by leaving its
   /// unbound rules unsplit.
@@ -107,15 +105,17 @@ class SolveState {
   late final Set<Rule> _boundRulesInUnboundLines =
       _initBoundRulesInUnboundLines();
 
-  SolveState(this._splitter, this._ruleValues) {
-    _calculateSplits();
+  factory SolveState(LineSplitter splitter, RuleSet ruleValues) {
+    var splits = _calculateSplits(splitter, ruleValues);
+    var calculator = CostCalculator(splitter, ruleValues, splits);
+    calculator.calculate();
 
-    // TODO: Make _overflowChars final and call this in factory ctor.
-    var calculator =
-        CostCalculator(_splitter, _ruleValues, _splits, _liveRules);
-    _splits.setCost(calculator.calculate());
-    _overflowChars = calculator.overflowChars;
+    return SolveState._(splitter, ruleValues, splits, calculator.overflowChars,
+        calculator.liveRules);
   }
+
+  SolveState._(this._splitter, this._ruleValues, this.splits,
+      this.overflowChars, this._liveRules);
 
   /// Gets the value to use for [rule], either the bound value or
   /// [Rule.unsplit] if it isn't bound.
@@ -274,13 +274,13 @@ class SolveState {
 
   /// Calculates the [SplitSet] for this solve state, assuming any unbound
   /// rules are set to zero.
-  void _calculateSplits() {
+  static SplitSet _calculateSplits(LineSplitter splitter, RuleSet ruleValues) {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
     var usedNestingLevels = <NestingLevel>{};
-    for (var i = 0; i < _splitter.chunks.length; i++) {
-      var chunk = _splitter.chunks[i];
-      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
+    for (var i = 0; i < splitter.chunks.length; i++) {
+      var chunk = splitter.chunks[i];
+      if (chunk.rule.isSplit(ruleValues.getValue(chunk.rule), chunk)) {
         usedNestingLevels.add(chunk.nesting);
         chunk.nesting.clearTotalUsedIndent();
       }
@@ -290,24 +290,28 @@ class SolveState {
       nesting.refreshTotalUsedIndent(usedNestingLevels);
     }
 
-    _splits = SplitSet(_splitter.chunks.length);
-    for (var i = 0; i < _splitter.chunks.length; i++) {
-      var chunk = _splitter.chunks[i];
-      if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
+    var splits = SplitSet(splitter.chunks.length);
+    for (var i = 0; i < splitter.chunks.length; i++) {
+      var chunk = splitter.chunks[i];
+      if (chunk.rule.isSplit(ruleValues.getValue(chunk.rule), chunk)) {
         var indent = 0;
         if (!chunk.flushLeft) {
           // Add in the chunk's indent.
-          indent = _splitter.blockIndentation + chunk.indent;
+          indent = splitter.blockIndentation + chunk.indent;
 
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;
 
-          if (chunk.indentBlock(getValue)) indent += Indent.expression;
+          if (chunk.indentBlock(ruleValues.getValue)) {
+            indent += Indent.expression;
+          }
         }
 
-        _splits.add(i, indent);
+        splits.add(i, indent);
       }
     }
+
+    return splits;
   }
 
   /// Used to lazy initialize [_boundRulesInUnboundLines], which is needed to

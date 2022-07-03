@@ -119,15 +119,6 @@ class Chunk extends Selection {
   bool get canDivide => _canDivide;
   late final bool _canDivide;
 
-  /// The number of characters in this chunk when unsplit.
-  int get length => (_spaceWhenUnsplit ? 1 : 0) + _text.length;
-
-  /// The unsplit length of all of this chunk's block contents.
-  ///
-  /// Does not include this chunk's own length, just the length of its child
-  /// block chunks (recursively).
-  int get unsplitBlockLength => 0;
-
   /// The [Span]s that contain this chunk.
   final spans = <Span>[];
 
@@ -253,20 +244,6 @@ class BlockChunk extends Chunk {
       required super.flushLeft,
       required this.splitParentBlock})
       : super(isDouble: false);
-
-  /// The unsplit length of all of this chunk's block contents.
-  ///
-  /// Does not include this chunk's own length, just the length of its child
-  /// block chunks (recursively).
-  @override
-  int get unsplitBlockLength {
-    var length = 0;
-    for (var chunk in children) {
-      length += chunk.length + chunk.unsplitBlockLength;
-    }
-
-    return length;
-  }
 
   @override
   bool indentBlock(int Function(Rule) getValue) {

@@ -1,14 +1,10 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'package:dart_style/src/constants.dart';
-import 'package:dart_style/src/rule/rule.dart';
-
 import 'chunk.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;
 import 'line_splitting/line_splitter.dart';
-import 'line_splitting/rule_set.dart';
 
 /// Given a series of chunks, splits them into lines and writes the result to
 /// a buffer.
