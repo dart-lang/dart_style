@@ -6,6 +6,7 @@ import '../chunk.dart';
 import '../constants.dart';
 import '../fast_hash.dart';
 
+// TODO: Not actually used. Delete?
 // TODO: Document.
 // TODO: Where should this go?
 class BlockRule extends Rule {

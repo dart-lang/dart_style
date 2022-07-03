@@ -1,11 +1,11 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../chunk.dart';
 import '../constants.dart';
 import '../debug.dart' as debug;
 import '../nesting_level.dart';
 import '../rule/rule.dart';
+import 'cost_calculator.dart';
 import 'line_splitter.dart';
 import 'rule_set.dart';
 
@@ -109,7 +109,12 @@ class SolveState {
 
   SolveState(this._splitter, this._ruleValues) {
     _calculateSplits();
-    _calculateCost();
+
+    // TODO: Make _overflowChars final and call this in factory ctor.
+    var calculator =
+        CostCalculator(_splitter, _ruleValues, _splits, _liveRules);
+    _splits.setCost(calculator.calculate());
+    _overflowChars = calculator.overflowChars;
   }
 
   /// Gets the value to use for [rule], either the bound value or
@@ -303,138 +308,6 @@ class SolveState {
         _splits.add(i, indent);
       }
     }
-  }
-
-  /// Evaluates the cost (i.e. the relative "badness") of splitting the line
-  /// into [lines] physical lines based on the current set of rules.
-  void _calculateCost() {
-    // Calculate the length of each line and apply the cost of any spans that
-    // get split.
-    var cost = 0;
-    var length = 0;
-
-    // The unbound rules in use by the current line. This will be null after
-    // the first long line has completed.
-    var foundOverflowRules = false;
-    var start = 0;
-
-    void endLine(int end) {
-      // Track lines that went over the length. It is only rules contained in
-      // long lines that we may want to split.
-      if (length > _splitter.writer.pageWidth) {
-        _overflowChars += length - _splitter.writer.pageWidth;
-
-        // Only try rules that are in the first long line, since we know at
-        // least one of them *will* be split.
-        if (!foundOverflowRules) {
-          for (var i = start; i < end; i++) {
-            if (_addLiveRules(_splitter.chunks[i].rule)) {
-              foundOverflowRules = true;
-            }
-          }
-        }
-      }
-
-      start = end;
-    }
-
-    // The set of spans that contain chunks that ended up splitting. We store
-    // these in a set so a span's cost doesn't get double-counted if more than
-    // one split occurs in it.
-    var splitSpans = <Span>{};
-
-    // The nesting level of the chunk that ended the previous line.
-    NestingLevel? previousNesting;
-
-    for (var i = 0; i < _splitter.chunks.length; i++) {
-      var chunk = _splitter.chunks[i];
-
-      if (_splits.shouldSplitAt(i)) {
-        endLine(i);
-
-        splitSpans.addAll(chunk.spans);
-
-        // Do not allow sequential lines to have the same indentation but for
-        // different reasons. In other words, don't allow different expressions
-        // to claim the same nesting level on subsequent lines.
-        //
-        // A contrived example would be:
-        //
-        //     function(inner(
-        //         argument), second(
-        //         another);
-        //
-        // For the most part, we prevent this by the constraints on splits.
-        // For example, the above can't happen because the split before
-        // "argument", forces the split before "second".
-        //
-        // But there are a couple of squirrely cases where it's hard to prevent
-        // by construction. Instead, this outlaws it by penalizing it very
-        // heavily if it happens to get this far.
-        var totalIndent = chunk.nesting.totalUsedIndent;
-        if (previousNesting != null &&
-            totalIndent != 0 &&
-            totalIndent == previousNesting.totalUsedIndent &&
-            !identical(chunk.nesting, previousNesting)) {
-          _overflowChars += 10000;
-        }
-
-        previousNesting = chunk.nesting;
-
-        // Start the new line.
-        length = _splits.getColumn(i);
-      } else {
-        if (chunk.spaceWhenUnsplit) length++;
-      }
-
-      if (chunk is BlockChunk) {
-        if (_splits.shouldSplitAt(i)) {
-          // Include the cost of the nested block.
-          cost +=
-              _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
-        } else {
-          // TODO: Update this to handle that unsplit blocks may still contain
-          // split children.
-          // Include the nested block inline, if any.
-          length += chunk.unsplitBlockLength;
-        }
-      }
-
-      length += chunk.text.length;
-    }
-
-    // Add the costs for the rules that have any splits.
-    _ruleValues.forEach(_splitter.rules, (rule, value) {
-      if (value != Rule.unsplit) cost += rule.cost;
-    });
-
-    // Add the costs for the spans containing splits.
-    for (var span in splitSpans) {
-      cost += span.cost;
-    }
-
-    // Finish the last line.
-    endLine(_splitter.chunks.length);
-
-    _splits.setCost(cost);
-  }
-
-  /// Adds [rule] and all of the rules it constrains to the set of [_liveRules].
-  ///
-  /// Only does this if [rule] is a valid soft rule. Returns `true` if any new
-  /// live rules were added.
-  bool _addLiveRules(Rule? rule) {
-    if (rule == null) return false;
-
-    var added = false;
-    for (var constrained in rule.allConstrainedRules) {
-      if (_ruleValues.contains(constrained)) continue;
-
-      _liveRules.add(constrained);
-      added = true;
-    }
-
-    return added;
   }
 
   /// Used to lazy initialize [_boundRulesInUnboundLines], which is needed to
