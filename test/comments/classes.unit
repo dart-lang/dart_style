@@ -190,9 +190,10 @@ class Bar {}
 >>> inline before type parameter
 class Foo</* comment */T> {}
 <<<
-class Foo< /* comment */ T> {}
->>> TODO(rnystrom): Ideally, would split before the comment, not after.
+class Foo</* comment */ T> {}
+>>>
 class Foo< /* comment */TypeParameter> {}
 <<<
-class Foo< /* comment */
-    TypeParameter> {}
+class Foo<
+  /* comment */ TypeParameter
+> {}

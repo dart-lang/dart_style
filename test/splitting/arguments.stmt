@@ -187,23 +187,19 @@ reallyLongMethod(
 >>> avoid splitting before single positional argument
 someLongReceiver.veryLongMethod(argument);
 <<<
-someLongReceiver
-    .veryLongMethod(argument);
+someLongReceiver.veryLongMethod(
+  argument
+);
 >>> multiple nested collections
 method(function([veryLongElement, veryLongElement], [veryLongElement, veryLongElement]), argument);
 <<<
 method(
   function(
-    [
-      veryLongElement,
-      veryLongElement
-    ],
-    [
-      veryLongElement,
-      veryLongElement
-    ]
+    [veryLongElement, veryLongElement],
+    [veryLongElement, veryLongElement]
   ),
-  argument);
+  argument
+);
 >>> trailing collections are not indented
 function(argument, argument, argument, argument,
 [element, element, element, element],
@@ -214,12 +210,7 @@ function(
   argument,
   argument,
   argument,
-  [
-    element,
-    element,
-    element,
-    element
-  ],
+  [element, element, element, element],
   {
     'key': value,
     'other key': value,
@@ -230,12 +221,7 @@ function(
 function([element, element, element, element], {'key': value, 'other key': value, 'third key': value});
 <<<
 function(
-  [
-    element,
-    element,
-    element,
-    element
-  ],
+  [element, element, element, element],
   {
     'key': value,
     'other key': value,
@@ -247,19 +233,14 @@ function([element, element, element, element], argument,
 {'key': value, 'other key': value, 'third key': value}, () {;});
 <<<
 function(
-    [
-      element,
-      element,
-      element,
-      element
-    ],
-    argument,
-    {
-      'key': value,
-      'other key': value,
-      'third key': value
-    },
-    () {
+  [element, element, element, element],
+  argument,
+  {
+    'key': value,
+    'other key': value,
+    'third key': value
+  },
+  () {
     ;
   }
 );
@@ -369,12 +350,7 @@ function(
   a: argument,
   argument,
   b: argument,
-  [
-    element,
-    element,
-    element,
-    element
-  ],
+  [element, element, element, element],
   c: {
     'key': value,
     'other key': value,
@@ -385,14 +361,8 @@ function(
 function([element, element], name: [element, element], {'key': value, 'other key': value, 'third key': value});
 <<<
 function(
-  [
-    element,
-    element
-  ],
-  name: [
-    element,
-    element
-  ],
+  [element, element],
+  name: [element, element],
   {
     'key': value,
     'other key': value,
@@ -404,12 +374,7 @@ function([element, element, element, element], name: argument,
 {'key': value, 'other key': value, 'third key': value}, () {;});
 <<<
 function(
-  [
-    element,
-    element,
-    element,
-    element
-  ],
+  [element, element, element, element],
   name: argument,
   {
     'key': value,

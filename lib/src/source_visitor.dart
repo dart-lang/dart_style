@@ -3249,24 +3249,15 @@ class SourceVisitor extends ThrowingAstVisitor {
       AstNode? typeParameters, Token? equals, Token? positionToken) {
     token(typedefKeyword);
     space();
-
-    // If the typedef's type parameters split, split after the "=" too,
-    // mainly to ensure the function's type parameters and parameters get
-    // end up on successive lines with the same indentation.
-    builder.startRule();
-
     visit(name);
-
     visit(typeParameters);
-    split();
+    space();
 
     if (equals != null) {
       token(equals);
     } else {
       _writeText('=', positionToken!);
     }
-
-    builder.endRule();
   }
 
   /// Whether [node] should be forced to split even if completely empty.

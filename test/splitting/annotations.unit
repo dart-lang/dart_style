@@ -86,7 +86,8 @@ int i = 0;
 <<<
 @veryLongPrefix.VeryLongClassName<
   VeryLongTypeArgument,
-  OtherVeryLongTypeArgument>(
+  OtherVeryLongTypeArgument
+>(
   veryLongArgument,
   otherVeryLongArgument,
   thirdVeryLongArgument
@@ -109,10 +110,7 @@ int i = 0;
 @Aaaaaaaaa<Bbbbbbbbbbb<Ccccccccccc,Ddddddddddd>,Eeeeeeeee<Fffffffff,Ggggggggg>>() int i = 0;
 <<<
 @Aaaaaaaaa<
-  Bbbbbbbbbbb<
-    Ccccccccccc,
-    Ddddddddddd
-  >,
+  Bbbbbbbbbbb<Ccccccccccc, Ddddddddddd>,
   Eeeeeeeee<Fffffffff, Ggggggggg>
 >()
 int i = 0;

@@ -47,8 +47,11 @@ typedef X = void Function(dynamic y);
 >>> split type parameters
 typedef G = T Function<TypeOne, TypeTwo, TypeThree>();
 <<<
-typedef G = T Function<TypeOne, TypeTwo,
-    TypeThree>();
+typedef G = T Function<
+  TypeOne,
+  TypeTwo,
+  TypeThree
+>();
 >>> split all type parameters
 typedef G = T Function<TypeOne, TypeTwo, TypeThree, TypeFour, TypeFive, TypeSix>();
 <<<
@@ -163,8 +166,7 @@ typedef SomeFunc = Function(
     int first,
     bool second,
     String third
-  )
-  second,
+  ) second,
   String third
 );
 >>> without param names
@@ -234,8 +236,7 @@ typedef Foo = int Function(
 typedef int Foo(int cb(int Function(int) cb2));
 <<<
 typedef Foo = int Function(
-  int Function(int Function(int) cb2)
-  cb
+  int Function(int Function(int) cb2) cb
 );
 >>> nested generic function
 typedef T Foo<T>(T cb<S>(T cb2(S x)));
@@ -266,12 +267,13 @@ typedef Foo = Function(
 >>> block comments in typedef
 typedef/*0*/void/*1*/Foo/*2*/<T>/*3*/(/*4*/T/*5*/foo(/*6*/x));
 <<<
-typedef /*1*/ Foo /*2*/ <T>
-    = /*0*/ void Function /*3*/ (
-      /*4*/ T Function(
-        /*6*/ dynamic x) /*5*/
-        foo
-      );
+typedef /*1*/ Foo /*2*/ <T> = /*0*/ void
+    Function /*3*/ (
+  /*4*/ T Function(
+    /*6*/ dynamic x
+  ) /*5*/
+      foo
+);
 >>> eol comments in typedef
 typedef//0
 void//1
@@ -284,17 +286,16 @@ x));
 <<<
 typedef //1
     Foo //2
-    <T>
-    = //0
+    <T> = //0
     void Function //3
     (
-      //4
-      T Function(
-        //6
-        dynamic x
-      ) //5
+  //4
+  T Function(
+    //6
+    dynamic x
+  ) //5
       foo
-    );
+);
 >>> nullable old style function-typed formal
 typedef Foo(foo()?);
 <<<

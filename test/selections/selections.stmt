@@ -57,8 +57,9 @@ foo("$fi‹rst", "$sec›ond");
 someMethod(argument /* long com‹ment that wraps */, other /* last com›ment */);
 <<<
 someMethod(
-    argument /* long com‹ment that wraps */,
-    other /* last com›ment */);
+  argument /* long com‹ment that wraps */,
+  other /* last com›ment */
+);
 >>> before comments
 1  ‹  /* */ +  ›  /* */ 2;
 <<<
