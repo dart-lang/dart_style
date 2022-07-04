@@ -56,5 +56,7 @@ typedef Json = Map<String, Object?>;
 >>> non-function generic typedef
 typedef   Hash  <  K  extends  List <  T > ,  V  >  =  Map < K ,  V >   ;
 <<<
-typedef Hash<K extends List<T>, V>
-    = Map<K, V>;
+typedef Hash<
+  K extends List<T>,
+  V
+> = Map<K, V>;

@@ -108,7 +108,7 @@ class CostCalculator {
         } else {
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
-          _traverseUnsplitBlock(chunk, _splitter.blockIndentation);
+          _traverseUnsplitBlock(i, chunk, _splitter.blockIndentation);
         }
       }
 
@@ -132,21 +132,20 @@ class CostCalculator {
     _splits.setCost(_cost);
   }
 
-  void _traverseUnsplitBlock(BlockChunk block, int column) {
+  void _traverseUnsplitBlock(int outermostChunkIndex, BlockChunk block, int column) {
     for (var chunk in block.children) {
       if (chunk is BlockChunk && chunk.rule.isHardened) {
         // Even though the surrounding block didn't split, this chunk's
         // children did.
         _traverseSplitBlock(chunk, column + block.indent);
-        // TODO: We probably need to end the line here, which I think means
-        // keeping track of the index of the outermost chunk that got us here.
+        _endLine(outermostChunkIndex);
 
         _column = column + block.indent;
       } else {
         if (chunk.spaceWhenUnsplit) _column++;
 
         // Recurse into the block.
-        if (chunk is BlockChunk) _traverseUnsplitBlock(chunk, column);
+        if (chunk is BlockChunk) _traverseUnsplitBlock(outermostChunkIndex, chunk, column);
       }
 
       _column += chunk.text.length;

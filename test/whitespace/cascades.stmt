@@ -35,10 +35,9 @@ foo
 >>> cascades indent contained blocks (and force multi-line)
 "foo"..toString(() {body;});
 <<<
-"foo"
-  ..toString(() {
-    body;
-  });
+"foo"..toString(() {
+  body;
+});
 >>> force split if receiver an expression where the precedence isn't obvious
 main() async {
   // These are OK.
@@ -138,16 +137,16 @@ new Foo(
 [1, 2, 3, 4]..cascade(() {;});
 <<<
 [1, 2, 3, 4]..cascade(() {
-    ;
-  });
+  ;
+});
 >>> don't force cascade to split on collection target if target and arg split
 [1,]..cascade(() {;});
 <<<
 [
   1,
 ]..cascade(() {
-    ;
-  });
+  ;
+});
 >>> allow same-line cascades to mix null-aware
 list
   ?..add("baz")
