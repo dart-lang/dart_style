@@ -476,8 +476,7 @@ class _MethodSelector extends _Selector {
 
     visitor._visitor.builder.nestExpression();
     visitor._visitor.visit(_node.typeArguments);
-    visitor._visitor
-        .visitArgumentList(_node.argumentList, nestExpression: false);
+    visitor._visitor.visitArgumentList(_node.argumentList);
     visitor._visitor.builder.unnest();
   }
 }

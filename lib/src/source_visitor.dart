@@ -233,13 +233,14 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.arguments != null) {
       // Metadata annotations are always const contexts.
       _constNesting++;
-      visitArgumentList(node.arguments!, nestExpression: false);
+      visitArgumentList(node.arguments!);
       _constNesting--;
     }
 
     builder.unnest();
   }
 
+  // TODO: Update doc.
   /// Visits an argument list.
   ///
   /// This is a bit complex to handle the rules for formatting positional and
@@ -252,9 +253,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///    on earlier lines as possible.
   /// 5. Split the named arguments each onto their own line.
   @override
-  void visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
-    // TODO: Get rid of nestExpression parameter.
-
+  void visitArgumentList(ArgumentList node) {
     // Handle empty collections, with or without comments.
     if (node.arguments.isEmpty) {
       _visitBody(node.leftParenthesis, node.arguments, node.rightParenthesis);
@@ -268,30 +267,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If the collection has a trailing comma, the user must want it to split.
     // TODO: Shouldn't preserve original trailing comma.
     _endBody(node.rightParenthesis, forceSplit: node.arguments.hasCommaAfter);
-
-    // // Corner case: handle empty argument lists.
-    // if (node.arguments.isEmpty) {
-    //   token(node.leftParenthesis);
-    //
-    //   // If there is a comment inside the parens, do allow splitting before it.
-    //   if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
-    //
-    //   token(node.rightParenthesis);
-    //   return;
-    // }
-
-    // // If the argument list has a trailing comma, format it like a collection
-    // // literal where each argument goes on its own line, they are indented +2,
-    // // and the ")" ends up on its own line.
-    // if (node.arguments.hasCommaAfter) {
-    //   _visitCollectionLiteral(
-    //       null, node.leftParenthesis, node.arguments, node.rightParenthesis);
-    //   return;
-    // }
-    //
-    // if (nestExpression) builder.nestExpression();
-    // ArgumentListVisitor(this, node).visit();
-    // if (nestExpression) builder.unnest();
   }
 
   @override
@@ -309,48 +284,27 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitAssertInitializer(AssertInitializer node) {
-    token(node.assertKeyword);
-
-    var arguments = <Expression>[node.condition];
-    if (node.message != null) arguments.add(node.message!);
-
-    // If the argument list has a trailing comma, format it like a collection
-    // literal where each argument goes on its own line, they are indented +2,
-    // and the ")" ends up on its own line.
-    if (arguments.hasCommaAfter) {
-      _visitCollectionLiteral(
-          null, node.leftParenthesis, arguments, node.rightParenthesis);
-      return;
-    }
-
-    builder.nestExpression();
-    var visitor = ArgumentListVisitorOld.forArguments(
-        this, node.leftParenthesis, node.rightParenthesis, arguments);
-    visitor.visit();
-    builder.unnest();
+    _visitAssertion(node);
   }
 
   @override
   void visitAssertStatement(AssertStatement node) {
     _simpleStatement(node, () {
-      token(node.assertKeyword);
-
-      var arguments = [node.condition];
-      if (node.message != null) arguments.add(node.message!);
-
-      // If the argument list has a trailing comma, format it like a collection
-      // literal where each argument goes on its own line, they are indented +2,
-      // and the ")" ends up on its own line.
-      if (arguments.hasCommaAfter) {
-        _visitCollectionLiteral(
-            null, node.leftParenthesis, arguments, node.rightParenthesis);
-        return;
-      }
-
-      var visitor = ArgumentListVisitorOld.forArguments(
-          this, node.leftParenthesis, node.rightParenthesis, arguments);
-      visitor.visit();
+      _visitAssertion(node);
     });
+  }
+
+  void _visitAssertion(Assertion node) {
+    token(node.assertKeyword);
+
+    var arguments = <Expression>[node.condition];
+    if (node.message != null) arguments.add(node.message!);
+
+    _beginBody(node.leftParenthesis);
+    ArgumentListVisitor(this, arguments).visit();
+    // If the collection has a trailing comma, the user must want it to split.
+    // TODO: Shouldn't preserve original trailing comma.
+    _endBody(node.rightParenthesis, forceSplit: arguments.hasCommaAfter);
   }
 
   @override
@@ -1031,7 +985,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(constructor.name);
       }
 
-      visitArgumentList(arguments.argumentList, nestExpression: false);
+      visitArgumentList(arguments.argumentList);
       builder.unnest();
     }
   }
@@ -1702,7 +1656,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visit(node.function);
     visit(node.typeArguments);
-    visitArgumentList(node.argumentList, nestExpression: false);
+    visitArgumentList(node.argumentList);
 
     builder.unnest();
     builder.endSpan();
@@ -2079,7 +2033,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _startPossibleConstContext(node.keyword);
 
     builder.endSpan();
-    visitArgumentList(node.argumentList, nestExpression: false);
+    visitArgumentList(node.argumentList);
     builder.endSpan();
 
     _endPossibleConstContext(node.keyword);
@@ -2222,7 +2176,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       // code, consider putting a constraint between them.
       builder.nestExpression();
       visit(node.typeArguments);
-      visitArgumentList(node.argumentList, nestExpression: false);
+      visitArgumentList(node.argumentList);
       builder.unnest();
 
       builder.endSpan();

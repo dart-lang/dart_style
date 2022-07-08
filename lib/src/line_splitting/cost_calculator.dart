@@ -132,20 +132,22 @@ class CostCalculator {
     _splits.setCost(_cost);
   }
 
-  void _traverseUnsplitBlock(int outermostChunkIndex, BlockChunk block, int column) {
+  void _traverseUnsplitBlock(int chunkIndex, BlockChunk block, int column) {
     for (var chunk in block.children) {
       if (chunk is BlockChunk && chunk.rule.isHardened) {
         // Even though the surrounding block didn't split, this chunk's
         // children did.
         _traverseSplitBlock(chunk, column + block.indent);
-        _endLine(outermostChunkIndex);
+        _endLine(chunkIndex);
 
         _column = column + block.indent;
       } else {
         if (chunk.spaceWhenUnsplit) _column++;
 
         // Recurse into the block.
-        if (chunk is BlockChunk) _traverseUnsplitBlock(outermostChunkIndex, chunk, column);
+        if (chunk is BlockChunk) {
+          _traverseUnsplitBlock(chunkIndex, chunk, column);
+        }
       }
 
       _column += chunk.text.length;
