@@ -9,9 +9,6 @@ abstract class ArgumentRule extends Rule {
   /// The chunks prior to each positional argument.
   final List<Chunk?> _arguments = [];
 
-  /// The rule used to split collections in the argument list, if any.
-  Rule? _collectionRule;
-
   /// The number of leading collection arguments.
   ///
   /// This and [_trailingCollections] cannot both be positive. If every
@@ -34,20 +31,7 @@ abstract class ArgumentRule extends Rule {
   @override
   bool get splitsOnInnerRules => _trackInnerRules;
 
-  ArgumentRule(this._collectionRule, this._leadingCollections,
-      this._trailingCollections);
-
-  @override
-  void addConstrainedRules(Set<Rule> rules) {
-    super.addConstrainedRules(rules);
-    if (_collectionRule != null) rules.add(_collectionRule!);
-  }
-
-  @override
-  void forgetUnusedRules() {
-    super.forgetUnusedRules();
-    if (_collectionRule?.index == null) _collectionRule = null;
-  }
+  ArgumentRule._(this._leadingCollections, this._trailingCollections);
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
@@ -86,17 +70,27 @@ abstract class ArgumentRule extends Rule {
 /// splits before all of the non-collection arguments, but does not split
 /// before the collections, so that they can split internally.
 class PositionalRule extends ArgumentRule {
-  /// If there are named arguments following these positional ones, this will
-  /// be their rule.
-  Rule? _namedArgsRule;
-
   /// Creates a new rule for a positional argument list.
   ///
-  /// If [_collectionRule] is given, it is the rule used to split the collection
+  /// If [collectionRule] is given, it is the rule used to split the collection
   /// arguments in the list.
-  PositionalRule(
-      Rule? collectionRule, int leadingCollections, int trailingCollections)
-      : super(collectionRule, leadingCollections, trailingCollections);
+  PositionalRule(Rule? collectionRule,
+      {required int argumentCount,
+      int leadingCollections = 0,
+      int trailingCollections = 0})
+      : super._(leadingCollections, trailingCollections) {
+    // Splitting before the first argument, so don't let the collections split
+    // internally.
+    if (leadingCollections > 0) {
+      addConstraint(1, collectionRule!, Rule.unsplit);
+    }
+
+    // Only split before the non-collection arguments. This case only comes
+    // into play when we do want to split the collection, so force that here.
+    if (leadingCollections > 0 || trailingCollections > 0) {
+      addConstraint(argumentCount + 1, collectionRule!, 1);
+    }
+  }
 
   @override
   int get numValues {
@@ -116,18 +110,6 @@ class PositionalRule extends ArgumentRule {
     if (_leadingCollections > 0 || _trailingCollections > 0) result++;
 
     return result;
-  }
-
-  @override
-  void addConstrainedRules(Set<Rule> rules) {
-    super.addConstrainedRules(rules);
-    if (_namedArgsRule != null) rules.add(_namedArgsRule!);
-  }
-
-  @override
-  void forgetUnusedRules() {
-    super.forgetUnusedRules();
-    if (_namedArgsRule?.index == null) _namedArgsRule = null;
   }
 
   @override
@@ -162,78 +144,19 @@ class PositionalRule extends ArgumentRule {
     return true;
   }
 
-  /// Remembers that [rule] is the [Rule] immediately following this positional
-  /// positional argument list.
+  /// Builds any constraints from this positional argument rule onto the [rule]
+  /// used for the subsequent named arguments in the same argument list.
   ///
-  /// This is normally a [NamedRule] but [PositionalRule] is also used for the
-  /// property accesses at the beginning of a call chain, in which case this
+  /// The [rule] is normally a [NamedRule] but [PositionalRule] is also used for
+  /// the property accesses at the beginning of a call chain, in which case this
   /// is just a [SimpleRule].
-  void setNamedArgsRule(Rule rule) {
-    _namedArgsRule = rule;
-  }
+  void addNamedArgsConstraints(Rule rule) {
+    // If the positional args are one-per-line, the named args are too.
+    constrainWhenFullySplit(rule);
 
-  /// Constrains the named argument list to at least move to the next line if
-  /// there are any splits in the positional arguments. Prevents things like:
-  ///
-  ///      function(
-  ///          argument,
-  ///          argument, named: argument);
-  @override
-  int? constrain(int value, Rule other) {
-    var constrained = super.constrain(value, other);
-    if (constrained != null) return constrained;
-
-    // Handle the relationship between the positional and named args.
-    if (other == _namedArgsRule) {
-      // If the positional args are one-per-line, the named args are too.
-      if (value == fullySplitValue) return _namedArgsRule!.fullySplitValue;
-
-      // Otherwise, if there is any split in the positional arguments, don't
-      // allow the named arguments on the same line as them.
-      if (value != 0) return -1;
-    }
-
-    // Decide how to constrain the collection rule.
-    if (other != _collectionRule) return null;
-
-    // If all of the collections are in the named arguments, [_collectionRule]
-    // will not be null, but we don't have to handle it.
-    if (_leadingCollections == 0 && _trailingCollections == 0) return null;
-
-    // If we aren't splitting any args, we can split the collection.
-    if (value == Rule.unsplit) return null;
-
-    // Split only before the first argument.
-    if (value == 1) {
-      if (_leadingCollections > 0) {
-        // We are splitting before a collection, so don't let it split
-        // internally.
-        return Rule.unsplit;
-      } else {
-        // The split is outside of the collections so they can split or not.
-        return null;
-      }
-    }
-
-    // Split before a single argument. If it's in the middle of the collection
-    // arguments, don't allow them to split.
-    if (value <= _arguments.length) {
-      var argument = _arguments.length - value + 1;
-      if (argument < _leadingCollections ||
-          argument >= _arguments.length - _trailingCollections) {
-        return Rule.unsplit;
-      }
-
-      return null;
-    }
-
-    // Only split before the non-collection arguments. This case only comes into
-    // play when we do want to split the collection, so force that here.
-    if (value == _arguments.length + 1) return 1;
-
-    // Split before all of the arguments, even the collections. We'll allow
-    // them to split but indent their bodies if they do.
-    return null;
+    // Otherwise, if there is any split in the positional arguments, don't
+    // allow the named arguments on the same line as them.
+    addRangeConstraint(1, fullySplitValue, rule, Rule.mustSplit);
   }
 
   @override
@@ -251,7 +174,13 @@ class NamedRule extends ArgumentRule {
 
   NamedRule(
       Rule? collectionRule, int leadingCollections, int trailingCollections)
-      : super(collectionRule, leadingCollections, trailingCollections);
+      : super._(leadingCollections, trailingCollections) {
+    if (leadingCollections > 0 || trailingCollections > 0) {
+      // Split only before the first argument. Don't allow the collections to
+      // split.
+      addConstraint(1, collectionRule!, Rule.unsplit);
+    }
+  }
 
   @override
   bool isSplitAtValue(int value, Chunk chunk) {
@@ -260,30 +189,6 @@ class NamedRule extends ArgumentRule {
 
     // Otherwise, split before all arguments.
     return true;
-  }
-
-  @override
-  int? constrain(int value, Rule other) {
-    var constrained = super.constrain(value, other);
-    if (constrained != null) return constrained;
-
-    // Decide how to constrain the collection rule.
-    if (other != _collectionRule) return null;
-
-    // If all of the collections are in the named arguments, [_collectionRule]
-    // will not be null, but we don't have to handle it.
-    if (_leadingCollections == 0 && _trailingCollections == 0) return null;
-
-    // If we aren't splitting any args, we can split the collection.
-    if (value == Rule.unsplit) return null;
-
-    // Split only before the first argument. Don't allow the collections to
-    // split.
-    if (value == 1) return Rule.unsplit;
-
-    // Split before all of the arguments, even the collections. We'll allow
-    // them to split but indent their bodies if they do.
-    return null;
   }
 
   @override

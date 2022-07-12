@@ -19,7 +19,6 @@ import 'constants.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
-import 'rule/metadata.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
@@ -88,7 +87,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// for all of the metadata annotations on parameters in that list is pushed
   /// onto this stack. We reuse this rule for all annotations so that they split
   /// in unison.
-  final List<MetadataRule> _metadataRules = [];
+  final List<Rule> _metadataRules = [];
 
   /// The mapping for blocks that are managed by the argument list that contains
   /// them.
@@ -597,12 +596,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.name);
     visit(node.typeParameters);
     visit(node.extendsClause);
-
-    builder.startRule(CombinatorRule());
-    visit(node.withClause);
-    visit(node.implementsClause);
-    builder.endRule();
-
+    _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
     space();
 
@@ -625,11 +619,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       space();
 
       visit(node.superclass);
-
-      builder.startRule(CombinatorRule());
-      visit(node.withClause);
-      visit(node.implementsClause);
-      builder.endRule();
+      _visitClauses(node.withClause, node.implementsClause);
     });
   }
 
@@ -1013,11 +1003,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
     visit(node.name);
     visit(node.typeParameters);
-
-    builder.startRule(CombinatorRule());
-    visit(node.withClause);
-    visit(node.implementsClause);
-    builder.endRule();
+    _visitClauses(node.withClause, node.implementsClause);
     space();
 
     builder.unnest();
@@ -1073,10 +1059,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.uri);
 
       _visitConfigurations(node.configurations);
-
-      builder.startRule(CombinatorRule());
-      visitNodes(node.combinators);
-      builder.endRule();
+      _visitCombinators(node.combinators);
     });
   }
 
@@ -1336,12 +1319,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
 
-    _metadataRules.add(MetadataRule());
+    _metadataRules.add(Rule());
 
     PositionalRule? rule;
     if (requiredParams.isNotEmpty) {
-      rule = PositionalRule(null, 0, 0);
-      _metadataRules.last.bindPositionalRule(rule);
+      rule = PositionalRule(null, argumentCount: requiredParams.length);
+      _metadataRules.last.constrainWhenFullySplit(rule);
 
       builder.startRule(rule);
       if (node.isFunctionExpressionBody) {
@@ -1369,9 +1352,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (optionalParams.isNotEmpty) {
       var namedRule = NamedRule(null, 0, 0);
-      if (rule != null) rule.setNamedArgsRule(namedRule);
-
-      _metadataRules.last.bindNamedRule(namedRule);
+      _metadataRules.last.constrainWhenFullySplit(namedRule);
+      if (rule != null) rule.addNamedArgsConstraints(namedRule);
 
       builder.startRule(namedRule);
 
@@ -1898,9 +1880,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(node.prefix);
       }
 
-      builder.startRule(CombinatorRule());
-      visitNodes(node.combinators);
-      builder.endRule();
+      _visitCombinators(node.combinators);
     });
   }
 
@@ -2527,7 +2507,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitTypeParameterList(TypeParameterList node) {
-    _metadataRules.add(MetadataRule());
+    _metadataRules.add(Rule());
 
     _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
 
@@ -2713,7 +2693,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       space();
     } else {
       var split = soloSplit();
-      if (rule != null) split.imply(rule);
+      if (rule != null) split.constrainWhenSplit(rule);
     }
 
     visit(node.expression);
@@ -2743,6 +2723,22 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endSpan();
 
     if (nest) builder.unnest();
+  }
+
+  /// Visits the "with" and "implements" clauses in a type declaration.
+  void _visitClauses(
+      WithClause? withClause, ImplementsClause? implementsClause) {
+    builder.startRule(CombinatorRule());
+    visit(withClause);
+    visit(implementsClause);
+    builder.endRule();
+  }
+
+  /// Visits a list of combinators in a directive.
+  void _visitCombinators(NodeList<Combinator> combinators) {
+    builder.startRule(CombinatorRule());
+    visitNodes(combinators);
+    builder.endRule();
   }
 
   /// Visits a type parameter or type argument list.
@@ -3055,7 +3051,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Can't have a trailing comma if there are no parameters.
     assert(parameters.parameters.isNotEmpty);
 
-    _metadataRules.add(MetadataRule());
+    _metadataRules.add(Rule());
 
     // Always split the parameters.
     builder.startRule(Rule.hard());
@@ -3502,7 +3498,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   Chunk zeroSplit() => builder.split();
 
   /// Writes a single space split with its own rule.
-  Rule soloSplit([int? cost]) {
+  Rule soloSplit([int cost = Cost.normal]) {
     var rule = Rule(cost);
     builder.startRule(rule);
     split();
