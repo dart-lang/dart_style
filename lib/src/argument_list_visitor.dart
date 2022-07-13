@@ -389,7 +389,10 @@ class ArgumentSublist {
     // Only count the blocks in the positional rule.
     var leadingBlocks = math.min(_leadingBlocks, _positional.length);
     var trailingBlocks = math.max(_trailingBlocks - _named.length, 0);
-    var rule = PositionalRule(_blockRule, leadingBlocks, trailingBlocks);
+    var rule = PositionalRule(_blockRule,
+        argumentCount: _positional.length,
+        leadingCollections: leadingBlocks,
+        trailingCollections: trailingBlocks);
     _visitArguments(visitor, _positional, rule);
 
     return rule;
@@ -406,7 +409,7 @@ class ArgumentSublist {
 
     // Let the positional args force the named ones to split.
     if (positionalRule != null) {
-      positionalRule.setNamedArgsRule(namedRule);
+      positionalRule.addNamedArgsConstraints(namedRule);
     }
 
     _visitArguments(visitor, _named, namedRule);

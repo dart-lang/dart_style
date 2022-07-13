@@ -186,7 +186,7 @@ class CallChainVisitor {
 
     if (splitOnTarget) {
       if (_properties.length > 1) {
-        _propertyRule = PositionalRule(null, 0, 0);
+        _propertyRule = PositionalRule(null, argumentCount: _properties.length);
         _visitor.builder.startLazyRule(_propertyRule);
       } else {
         _enableRule(lazy: true);
@@ -202,7 +202,7 @@ class CallChainVisitor {
       _properties.single.write(this);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
-        _propertyRule = PositionalRule(null, 0, 0);
+        _propertyRule = PositionalRule(null, argumentCount: _properties.length);
         _visitor.builder.startRule(_propertyRule);
       }
 
@@ -377,7 +377,7 @@ class CallChainVisitor {
 
     // If the properties split, force the calls to split too.
     var rule = Rule();
-    _propertyRule?.setNamedArgsRule(rule);
+    _propertyRule?.addNamedArgsConstraints(rule);
 
     if (lazy) {
       _visitor.builder.startLazyRule(rule);
