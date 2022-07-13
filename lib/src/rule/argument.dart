@@ -79,16 +79,32 @@ class PositionalRule extends ArgumentRule {
       int leadingCollections = 0,
       int trailingCollections = 0})
       : super._(leadingCollections, trailingCollections) {
-    // Splitting before the first argument, so don't let the collections split
-    // internally.
-    if (leadingCollections > 0) {
-      addConstraint(1, collectionRule!, Rule.unsplit);
-    }
+    if (collectionRule != null) {
+      // Don't split inside collections if there are leading collections and
+      // we split before the first argument.
+      if (leadingCollections > 0) {
+        addConstraint(1, collectionRule, Rule.unsplit);
+      }
 
-    // Only split before the non-collection arguments. This case only comes
-    // into play when we do want to split the collection, so force that here.
-    if (leadingCollections > 0 || trailingCollections > 0) {
-      addConstraint(argumentCount + 1, collectionRule!, 1);
+      // If we're only splitting before the non-collection arguments, the
+      // intent is to split inside the collections, so force that here.
+      if (leadingCollections > 0 || trailingCollections > 0) {
+        addConstraint(argumentCount + 1, collectionRule, 1);
+      }
+
+      // Split before a single argument. If it's in the middle of the collection
+      // arguments, don't allow them to split.
+      for (var argument = 0; argument < leadingCollections; argument++) {
+        var value = argumentCount - argument + 1;
+        addConstraint(value, collectionRule, Rule.unsplit);
+      }
+
+      for (var argument = argumentCount - trailingCollections;
+          argument < argumentCount;
+          argument++) {
+        var value = argumentCount - argument + 1;
+        addConstraint(value, collectionRule, Rule.unsplit);
+      }
     }
   }
 
