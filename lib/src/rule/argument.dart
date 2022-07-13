@@ -72,8 +72,12 @@ abstract class ArgumentRule extends Rule {
 class PositionalRule extends ArgumentRule {
   /// Creates a new rule for a positional argument list.
   ///
+  /// [argumentCount] is the number of arguments that will be added to the rule
+  /// by later calls to [beforeArgument()].
+  ///
   /// If [collectionRule] is given, it is the rule used to split the collection
-  /// arguments in the list.
+  /// arguments in the list. It must be provided if [leadingCollections] or
+  /// [trailingCollections] is non-zero.
   PositionalRule(Rule? collectionRule,
       {required int argumentCount,
       int leadingCollections = 0,
@@ -188,6 +192,14 @@ class NamedRule extends ArgumentRule {
   @override
   int get numValues => 3;
 
+  /// Creates a new rule for a named argument list.
+  ///
+  /// [argumentCount] is the number of arguments that will be added to the rule
+  /// by later calls to [beforeArgument()].
+  ///
+  /// If [collectionRule] is given, it is the rule used to split the collection
+  /// arguments in the list. It must be provided if [leadingCollections] or
+  /// [trailingCollections] is non-zero.
   NamedRule(
       Rule? collectionRule, int leadingCollections, int trailingCollections)
       : super._(leadingCollections, trailingCollections) {

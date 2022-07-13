@@ -23,6 +23,7 @@ class Rule extends FastHash {
   static const mustSplit = -1;
 
   /// Rule constraint that means the rule must split to its fully split value.
+  ///
   /// This is used instead of the actual full split value because at the point
   /// that the constraint is added, the Rule may not have all of the chunks it
   /// needs to correctly calculate [numValues].
