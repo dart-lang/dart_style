@@ -1298,7 +1298,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // TODO: Almost entirely copied from _visitTrailingCommaParameterList().
-    _metadataRules.add(MetadataRule());
+    _metadataRules.add(Rule());
 
     builder.startRule();
 
