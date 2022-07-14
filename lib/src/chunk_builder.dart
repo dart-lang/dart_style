@@ -462,7 +462,7 @@ class ChunkBuilder {
     // See if any of the rules that contain this one care if it splits.
     for (var outer in _rules) {
       if (!outer.splitsOnInnerRules) continue;
-      rule.imply(outer);
+      rule.constrainWhenSplit(outer);
     }
     _rules.add(rule);
   }

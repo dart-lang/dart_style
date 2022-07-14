@@ -29,6 +29,13 @@ class Rule extends FastHash {
   /// It disallows [unsplit] but allows any other value.
   static const mustSplit = -1;
 
+  /// Rule constraint that means the rule must split to its fully split value.
+  ///
+  /// This is used instead of the actual full split value because at the point
+  /// that the constraint is added, the Rule may not have all of the chunks it
+  /// needs to correctly calculate [numValues].
+  static const _fullSplitConstraint = -2;
+
   /// The number of different states this rule can be in.
   ///
   /// Each state determines which set of chunks using this rule are split and
@@ -56,26 +63,22 @@ class Rule extends FastHash {
   bool get isHardened => _isHardened;
   bool _isHardened = false;
 
-  /// The other [Rule]s that are implied this one.
+  /// The constraints that this rule implies about other rule values.
   ///
   /// In many cases, if a split occurs inside an expression, surrounding rules
   /// also want to split too. For example, a split in the middle of an argument
   /// forces the entire argument list to also split.
   ///
-  /// This tracks those relationships. If this rule splits, (sets its value to
-  /// [fullySplitValue]) then all of the surrounding implied rules are also set
-  /// to their fully split value.
+  /// Also, there are sometimes more bespoke constraints between rules. For
+  /// example, positional and named arguments in an argument list each have
+  /// their own rules, but the way the positional arguments split restricts the
+  /// way the named rules are allowed to split.
   ///
-  /// This contains all direct as well as transitive relationships. If A
-  /// contains B which contains C, C's outerRules contains both B and A.
-  final Set<Rule> _implied = <Rule>{};
-
-  /// Marks [other] as implied by this one.
-  ///
-  /// That means that if this rule splits, then [other] is force to split too.
-  void imply(Rule other) {
-    _implied.add(other);
-  }
+  /// This tracks those relationships. Each key is a rule whose values can be
+  /// constrained by this rule. The entry values are a list of [_Constraint]
+  /// objects. Each specifies that when this rule has a value within a certain
+  /// range, the constrained rule's value must be a certain given value.
+  final Map<Rule, List<_Constraint>> _constraints = {};
 
   /// Whether this rule cares about rules that it contains.
   ///
@@ -84,7 +87,7 @@ class Rule extends FastHash {
   /// rules.
   bool get splitsOnInnerRules => true;
 
-  Rule([int? cost]) : _cost = cost ?? Cost.normal;
+  Rule([this._cost = Cost.normal]);
 
   /// Creates a new rule that is already fully split.
   Rule.hard() : _cost = 0 {
@@ -127,16 +130,48 @@ class Rule extends FastHash {
   int? constrain(int value, Rule other) {
     // By default, any containing rule will be fully split if this one is split.
     if (value == Rule.unsplit) return null;
-    if (_implied.contains(other)) return other.fullySplitValue;
+
+    var constrained = _constraints[other];
+    if (constrained == null) return null;
+
+    for (var constraint in constrained) {
+      if (value >= constraint.min && value <= constraint.max) {
+        if (constraint.otherValue == _fullSplitConstraint) {
+          return other.fullySplitValue;
+        }
+
+        return constraint.otherValue;
+      }
+    }
 
     return null;
   }
 
-  /// A protected method for subclasses to add the rules that they constrain
-  /// to [rules].
-  ///
-  /// Called by [Rule] the first time [constrainedRules] is accessed.
-  void addConstrainedRules(Set<Rule> rules) {}
+  /// When this rule has [value], constrains [other] to [otherValue].
+  void addConstraint(int value, Rule other, int otherValue) {
+    addRangeConstraint(value, value, other, otherValue);
+  }
+
+  /// When this rule's value is between [min] and [max] (inclusive), constrains
+  /// [other] to [otherValue].
+  void addRangeConstraint(int min, int max, Rule other, int otherValue) {
+    _constraints
+        .putIfAbsent(other, () => [])
+        .add(_Constraint(min, max, otherValue));
+  }
+
+  /// Constrains [other] to its fully split value when this rule is split in
+  /// any way.
+  void constrainWhenSplit(Rule other) {
+    // We want the constraint to apply to any non-zero value, so use an
+    // arbitrary but sufficiently large number.
+    addRangeConstraint(1, 100000, other, _fullSplitConstraint);
+  }
+
+  /// Constrains [other] to its fully split value when this rule is fully split.
+  void constrainWhenFullySplit(Rule other) {
+    addConstraint(fullySplitValue, other, _fullSplitConstraint);
+  }
 
   /// Discards constraints on any rule that doesn't have an index.
   ///
@@ -148,28 +183,14 @@ class Rule extends FastHash {
   ///
   /// This removes all of those.
   void forgetUnusedRules() {
-    _implied.retainWhere((rule) => rule.index != null);
+    _constraints.removeWhere((rule, _) => rule.index == null);
 
     // Clear the cached ones too.
-    _constrainedRules = null;
     _allConstrainedRules = null;
   }
 
   /// The other [Rule]s that this rule places immediate constraints on.
-  Set<Rule> get constrainedRules {
-    // Lazy initialize this on first use. Note: Assumes this is only called
-    // after the chunks have been written and any constraints have been wired
-    // up.
-    var rules = _constrainedRules;
-    if (rules != null) return rules;
-
-    rules = _implied.toSet();
-    addConstrainedRules(rules);
-    _constrainedRules = rules;
-    return rules;
-  }
-
-  Set<Rule>? _constrainedRules;
+  Iterable<Rule> get constrainedRules => _constraints.keys;
 
   /// The transitive closure of all of the rules this rule places constraints
   /// on, directly or indirectly, including itself.
@@ -197,4 +218,35 @@ class Rule extends FastHash {
 
   @override
   String toString() => '$id';
+}
+
+/// Describes a value constraint that one [Rule] places on another rule's
+/// values.
+///
+/// If the first rule's selected value is within [min], [max] (inclusive), then
+/// the other rule's value is forced to be [otherValue].
+class _Constraint {
+  /// The minimum of the range of values that rule can have to enable the
+  /// constraint.
+  final int min;
+
+  /// The maximum of the range of values that rule can have to enable the
+  /// constraint.
+  final int max;
+
+  /// When this constraint applies, then this is the value the other rule must
+  /// have.
+  ///
+  /// If this is [_fullSplitConstraint], then forces the other rule to its
+  /// fully split value. We don't just eagerly store the fully split value in
+  /// here because some rules incrementally build the list of Chunks that are
+  /// used to determine the the number of values the rule can take and thus its
+  /// fully split value isn't known when the rule is created and its
+  /// constraints are wired up. In particular, when using [TypeArgumentRule]
+  /// for the elements in a collection literal with comments used to control
+  /// splitting, it's not easy to eagerly calculate the number of values each
+  /// rule will end up having.
+  final int otherValue;
+
+  _Constraint(this.min, this.max, this.otherValue);
 }
