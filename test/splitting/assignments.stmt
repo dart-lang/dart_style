@@ -26,9 +26,9 @@ variable = longFunctionIsLooooooooooooooong(argument, argument);
 <<<
 variable =
     longFunctionIsLooooooooooooooong(
-      argument,
-      argument
-    );
+  argument,
+  argument
+);
 >>> initializer doesn't fit one line, cannot be split
 variableName = thisIsReallyQuiteAVeryLongVariableName;
 <<<

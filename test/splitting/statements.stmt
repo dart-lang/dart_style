@@ -23,7 +23,8 @@ assert(
 >>> split assert with message after first
 assert(veryLongCondition, "long string that wraps");
 <<<
-assert(veryLongCondition,
+assert(
+  veryLongCondition,
   "long string that wraps"
 );
 >>> split assert with message at both

@@ -78,8 +78,7 @@ Function([
 Function(VerylongParameterType parameterName) f;
 <<<
 Function(
-  VerylongParameterType
-      parameterName
+  VerylongParameterType parameterName
 ) f;
 >>> split in function type and on variable name
 Function(VeryVeryVeryVeryLongParameterType) veryLongVariableName;

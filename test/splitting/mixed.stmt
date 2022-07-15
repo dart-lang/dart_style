@@ -41,11 +41,7 @@ someFunctionName(
   argument,
   some(
     other(
-      function(
-        argument,
-        argument,
-        arg
-      )
+      function(argument, argument, arg)
     )
   )
 );
@@ -118,21 +114,25 @@ function(
 receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(
-    (parameter) =>
-        longIdentifier ==
-        veryLongIdentifier);
+  (parameter) =>
+      longIdentifier ==
+      veryLongIdentifier
+);
 >>> wrap after =>
 receiver.firstMethod().next(() => veryveryveryverylongIdentifier == veryLongIdentifier);
 <<<
-receiver.firstMethod().next(() =>
-    veryveryveryverylongIdentifier ==
-    veryLongIdentifier);
+receiver.firstMethod().next(
+  () =>
+      veryveryveryverylongIdentifier ==
+      veryLongIdentifier
+);
 >>> wrap at nested binary operator
 receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(
-    longIdentifier ==
-        veryLongIdentifier);
+  longIdentifier ==
+      veryLongIdentifier
+);
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<

@@ -904,7 +904,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         token(node.separator);
       }
 
-      soloSplit(_assignmentCost(node.defaultValue!));
+      soloSplit(Cost.assign);
       visit(node.defaultValue);
 
       builder.unnest();
@@ -2573,9 +2573,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitTypeParameterList(TypeParameterList node) {
     _metadataRules.add(Rule());
-
     _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
-
     _metadataRules.removeLast();
   }
 
@@ -2584,6 +2582,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.name);
     if (node.initializer == null) return;
 
+    // TODO: _visitAssignment() used to only nest the target expression if
+    // hasMultipleVariables was true. In other cases and other calls, it
+    // wouldn't. Doesn't seem to be needed any more but leaving this here for
+    // now just in case.
+    /*
     // If there are multiple variables being declared, we want to nest the
     // initializers farther so they don't line up with the variables. Bad:
     //
@@ -2600,9 +2603,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     //             bValue;
     var hasMultipleVariables =
         (node.parent as VariableDeclarationList).variables.length > 1;
+    */
 
-    _visitAssignment(node.equals!, node.initializer!,
-        nest: hasMultipleVariables);
+    _visitAssignment(node.equals!, node.initializer!);
   }
 
   @override
@@ -2758,19 +2761,16 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// If [nest] is true, an extra level of expression nesting is added after
   /// the "=".
-  void _visitAssignment(Token equalsOperator, Expression rightHandSide,
-      {bool nest = false}) {
+  void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
     space();
     token(equalsOperator);
 
-    if (nest) builder.nestExpression(now: true);
-
-    soloSplit(_assignmentCost(rightHandSide));
+    builder.nestExpression(now: true);
+    soloSplit(Cost.assign);
     builder.startSpan();
     visit(rightHandSide);
     builder.endSpan();
-
-    if (nest) builder.unnest();
+    builder.unnest();
   }
 
   /// Visits the "with" and "implements" clauses in a type declaration.
@@ -3237,37 +3237,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     return false;
-  }
-
-  /// Gets the cost to split at an assignment (or `:` in the case of a named
-  /// default value) with the given [rightHandSide].
-  ///
-  /// "Block-like" expressions (collections and cascades) bind a bit tighter
-  /// because it looks better to have code like:
-  ///
-  ///     var list = [
-  ///       element,
-  ///       element,
-  ///       element
-  ///     ];
-  ///
-  ///     var builder = new SomeBuilderClass()
-  ///       ..method()
-  ///       ..method();
-  ///
-  /// over:
-  ///
-  ///     var list =
-  ///         [element, element, element];
-  ///
-  ///     var builder =
-  ///         new SomeBuilderClass()..method()..method();
-  int _assignmentCost(Expression rightHandSide) {
-    if (rightHandSide is ListLiteral) return Cost.assignBlock;
-    if (rightHandSide is SetOrMapLiteral) return Cost.assignBlock;
-    if (rightHandSide is CascadeExpression) return Cost.assignBlock;
-
-    return Cost.assign;
   }
 
   /// Returns `true` if the collection withs [elements] delimited by
