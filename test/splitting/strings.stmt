@@ -54,27 +54,33 @@ someMethod("""first line does not fits here
 someMethod(
   """first line does not fits here
 """
-  );
+);
 >>> format multiline as a block with a leading argument
 someMethod("foo", """
   some
   text
 """);
 <<<
-someMethod("foo", """
+someMethod(
+  "foo",
+  """
   some
   text
-""");
+"""
+);
 >>> format multiline as a block with a trailing argument
 someMethod("""
   some
   text
 """, "foo");
 <<<
-someMethod("""
+someMethod(
+  """
   some
   text
-""", "foo");
+""",
+  "foo"
+);
 >>> format multiline as a block with leading and trailing arguments
 someMethod(
   "foo",
@@ -116,7 +122,7 @@ someMethod(
   """
   even more
 """
-  );
+);
 >>> format multilines with other blocks as blocks
 someMethod("""
   some
@@ -162,10 +168,13 @@ someMethod("foo", """
   some more text that is pretty long ${    interpolate + a + thing   } more text
 """);
 <<<
-someMethod("foo", """
+someMethod(
+  "foo",
+  """
   some text that is pretty long
   some more text that is pretty long ${interpolate + a + thing} more text
-""");
+"""
+);
 >>> nested interpolation is not split
 someMethod("some text that is ${pretty +  'long ${    interpolate +
 a + thing   } more'} text", "another arg");
