@@ -574,15 +574,20 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.catchKeyword);
       space();
       token(node.leftParenthesis);
-      visit(node.exceptionParameter);
+      visit(node.exceptionParameter2);
       token(node.comma, after: space);
-      visit(node.stackTraceParameter);
+      visit(node.stackTraceParameter2);
       token(node.rightParenthesis);
       space();
     } else {
       space();
     }
     visit(node.body);
+  }
+
+  @override
+  visitCatchClauseParameter(CatchClauseParameter node) {
+    token(node.name);
   }
 
   @override
@@ -593,7 +598,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.abstractKeyword);
     token(node.classKeyword);
     space();
-    visit(node.name);
+    token(node.name2);
     visit(node.typeParameters);
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
@@ -612,7 +617,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       modifier(node.abstractKeyword);
       token(node.typedefKeyword);
       space();
-      visit(node.name);
+      token(node.name2);
       visit(node.typeParameters);
       space();
       token(node.equals);
@@ -759,7 +764,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.factoryKeyword);
     visit(node.returnType);
     token(node.period);
-    visit(node.name);
+    token(node.name2);
 
     // Make the rule for the ":" span both the preceding parameter list and
     // the entire initialization list. This ensures that we split before the
@@ -897,7 +902,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitDeclaredIdentifier(DeclaredIdentifier node) {
     modifier(node.keyword);
     visit(node.type, after: space);
-    visit(node.identifier);
+    token(node.name);
   }
 
   @override
@@ -976,7 +981,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitEnumConstantDeclaration(EnumConstantDeclaration node) {
     visitMetadata(node.metadata);
-    visit(node.name);
+    token(node.name2);
 
     var arguments = node.arguments;
     if (arguments != null) {
@@ -1001,7 +1006,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
     token(node.enumKeyword);
     space();
-    visit(node.name);
+    token(node.name2);
     visit(node.typeParameters);
     _visitClauses(node.withClause, node.implementsClause);
     space();
@@ -1054,7 +1059,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitExportDirective(ExportDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.exportKeyword);
       space();
       visit(node.uri);
 
@@ -1245,9 +1250,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Don't put a space after `extension` if the extension is unnamed. That
     // way, generic unnamed extensions format like `extension<T> on ...`.
-    if (node.name != null) {
+    if (node.name2 != null) {
       space();
-      visit(node.name);
+      token(node.name2);
     }
 
     visit(node.typeParameters);
@@ -1281,7 +1286,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.type, after: split);
       token(node.thisKeyword);
       token(node.period);
-      visit(node.identifier);
+      token(node.name);
       visit(node.parameters);
       token(node.question);
       _endFormalParameter(node);
@@ -1602,17 +1607,17 @@ class SourceVisitor extends ThrowingAstVisitor {
         // Inlined visitGenericTypeAlias
         _visitGenericTypeAliasHeader(
             node.typedefKeyword,
-            node.name,
+            node.name2,
             node.typeParameters,
             null,
-            (node.returnType ?? node.name).beginToken);
+            node.returnType?.beginToken ?? node.name2);
 
         space();
 
         // Recursively convert function-arguments to Function syntax.
         _insideNewTypedefFix = true;
         _visitGenericFunctionType(
-            node.returnType, null, node.name.token, null, node.parameters);
+            node.returnType, null, node.name2, null, node.parameters);
         _insideNewTypedefFix = false;
       });
       return;
@@ -1622,7 +1627,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.typedefKeyword);
       space();
       visit(node.returnType, after: space);
-      visit(node.name);
+      token(node.name2);
       visit(node.typeParameters);
       visit(node.parameters);
     });
@@ -1637,17 +1642,17 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(node.returnType, after: space);
         // Try to keep the function's parameters with its name.
         builder.startSpan();
-        visit(node.identifier);
+        token(node.name);
         _visitParameterSignature(node.typeParameters, node.parameters);
         token(node.question);
         builder.endSpan();
       } else {
         _beginFormalParameter(node);
-        _visitGenericFunctionType(node.returnType, null, node.identifier.token,
+        _visitGenericFunctionType(node.returnType, null, node.name,
             node.typeParameters, node.parameters);
         token(node.question);
         split();
-        visit(node.identifier);
+        token(node.name);
         _endFormalParameter(node);
       }
     });
@@ -1664,7 +1669,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitGenericTypeAlias(GenericTypeAlias node) {
     visitNodes(node.metadata, between: newline, after: newline);
     _simpleStatement(node, () {
-      _visitGenericTypeAliasHeader(node.typedefKeyword, node.name,
+      _visitGenericTypeAliasHeader(node.typedefKeyword, node.name2,
           node.typeParameters, node.equals, null);
 
       space();
@@ -1866,7 +1871,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitImportDirective(ImportDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.importKeyword);
       space();
       visit(node.uri);
 
@@ -2015,7 +2020,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitLibraryDirective(LibraryDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.libraryKeyword);
       space();
       visit(node.name);
     });
@@ -2116,7 +2121,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
     token(node.mixinKeyword);
     space();
-    visit(node.name);
+    token(node.name2);
     visit(node.typeParameters);
 
     // If there is only a single superclass constraint, format it like an
@@ -2198,7 +2203,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitPartDirective(PartDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.partKeyword);
       space();
       visit(node.uri);
     });
@@ -2208,7 +2213,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitPartOfDirective(PartOfDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
-      token(node.keyword);
+      token(node.partKeyword);
       space();
       token(node.ofKeyword);
       space();
@@ -2327,17 +2332,17 @@ class SourceVisitor extends ThrowingAstVisitor {
         // without a name. Add "dynamic" in that case.
 
         // Ensure comments on the identifier comes before the inserted type.
-        token(node.identifier!.token, before: () {
-          _writeText('dynamic', node.identifier!.token);
+        token(node.name, before: () {
+          _writeText('dynamic', node.name!);
           split();
         });
       } else {
         modifier(node.keyword);
         visit(node.type);
 
-        if (hasType && node.identifier != null) split();
+        if (hasType && node.name != null) split();
 
-        visit(node.identifier);
+        token(node.name);
       }
 
       _endFormalParameter(node);
@@ -2392,7 +2397,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.type, after: split);
       token(node.superKeyword);
       token(node.period);
-      visit(node.identifier);
+      token(node.name);
       visit(node.parameters);
       token(node.question);
       _endFormalParameter(node);
@@ -2499,7 +2504,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitTypeParameter(TypeParameter node) {
     visitParameterMetadata(node.metadata, () {
-      visit(node.name);
+      token(node.name2);
       token(node.extendsKeyword, before: space, after: space);
       visit(node.bound);
     });
@@ -2516,7 +2521,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitVariableDeclaration(VariableDeclaration node) {
-    visit(node.name);
+    token(node.name2);
     if (node.initializer == null) return;
 
     // If there are multiple variables being declared, we want to nest the
@@ -3155,7 +3160,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Also used by a fix so there may not be an [equals] token.
   /// If [equals] is `null`, then [equalsPosition] must be a
   /// position to use for the inserted text "=".
-  void _visitGenericTypeAliasHeader(Token typedefKeyword, AstNode name,
+  void _visitGenericTypeAliasHeader(Token typedefKeyword, Token name,
       AstNode? typeParameters, Token? equals, Token? positionToken) {
     token(typedefKeyword);
     space();
@@ -3165,7 +3170,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // end up on successive lines with the same indentation.
     builder.startRule();
 
-    visit(name);
+    token(name);
 
     visit(typeParameters);
     split();
