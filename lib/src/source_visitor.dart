@@ -2813,7 +2813,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.returnType, after: soloSplit);
     modifier(node.propertyKeyword);
     if (node is MethodDeclaration) modifier(node.operatorKeyword);
-    visit(node.name);
+    token(node.name2);
     builder.endSpan();
 
     TypeParameterList? typeParameters;
