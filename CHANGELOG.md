@@ -23,7 +23,7 @@
 
   * Remove blank lines after a line comment at the end of a body.
 
-  * Require `package:analyzer` version `4.4.0`.
+* Require `package:analyzer` version `4.4.0`.
 
 # 2.2.3
 
