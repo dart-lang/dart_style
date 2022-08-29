@@ -75,6 +75,7 @@ void defineOptions(ArgParser parser,
 
   if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
   parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
+  parser.addFlag('flutter-tool-cli', negatable: false, help: 'Sent when used inside the flutter-tool.');
 
   for (var fix in StyleFix.all) {
     // TODO(rnystrom): Allow negating this if used in concert with "--fix"?

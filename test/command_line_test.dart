@@ -65,6 +65,11 @@ void main() {
     await process.shouldExit(64);
   });
 
+  test('command line argument error from flutter tool', () async {
+    var process = await runFormatter(['--fix', '--flutter-tool-cli']);
+    await process.shouldExit(64);
+  });
+
   test('exits with 65 on a parse error', () async {
     await d.dir('code', [d.file('a.dart', 'herp derp i are a dart')]).create();
 

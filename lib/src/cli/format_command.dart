@@ -122,9 +122,9 @@ class FormatCommand extends Command<int> {
     var followLinks = argResults['follow-links'];
     var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
 
-    // If stdin isn't connected to a pipe, then the user is not passing
+    // If stdin isn't connected to a pipe (or invoked from the flutter-tool), then the user is not passing
     // anything to stdin, so let them know they made a mistake.
-    if (argResults.rest.isEmpty && stdin.hasTerminal) {
+    if (argResults.rest.isEmpty && (stdin.hasTerminal || argResults['flutter-tool-cli'] as bool)) {
       usageException('Missing paths to code to format.');
     }
 
