@@ -66,7 +66,7 @@ class UnexpectedOutputException implements Exception {
   String toString() {
     return '''The formatter produced unexpected output. Input was:
 $_input
-Which formatted to:
+Which was formatted to:
 $_output''';
   }
 }
