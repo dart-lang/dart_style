@@ -216,12 +216,12 @@ void _testFile(String name, String path, Iterable<StyleFix>? baseFixes) {
 
       var input = '';
       while (!lines[i].startsWith('<<<')) {
-        input += lines[i++] + '\n';
+        input += '${lines[i++]}\n';
       }
 
       var expectedOutput = '';
       while (++i < lines.length && !lines[i].startsWith('>>>')) {
-        expectedOutput += lines[i] + '\n';
+        expectedOutput += '${lines[i]}\n';
       }
 
       // Unescape special Unicode escape markers.

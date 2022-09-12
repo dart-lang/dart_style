@@ -100,12 +100,12 @@ void runTest(String path, int line) {
 
     var input = '';
     while (!lines[i].startsWith('<<<')) {
-      input += lines[i++] + '\n';
+      input += '${lines[i++]}\n';
     }
 
     var expectedOutput = '';
     while (++i < lines.length && !lines[i].startsWith('>>>')) {
-      expectedOutput += lines[i] + '\n';
+      expectedOutput += '${lines[i]}\n';
     }
 
     if (line != startLine) continue;
