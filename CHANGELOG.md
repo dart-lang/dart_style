@@ -1,29 +1,22 @@
-# 2.2.4-dev
+# 2.2.4
 
 * Unify how brace-delimited syntax is formatted. This is mostly an internal
   refactoring, but slightly changes how a type body containing only an inline
   block comment is formatted.
-
 * Refactor Chunk to store split before text instead of after. This mostly does
   not affect the visible behavior of the formatter, but a few edge cases are
   handled slightly differently. These are all bug fixes where the previous
   behavior was unintentional. The changes are:
-
-  * Consistently discard blank lines between a `{` or `[` and a subsequent
-    comment. It used to do this before the `{` in type bodies, but not switch
-    bodies, optional parameter sections, or named parameter sections.
-
-  * Don't allow splitting an empty class body.
-
-  * Allow splitting after an inline block comment in some places where it makes
-    sense.
-
-  * Don't allow a line comment in an argument list to cause preceding arguments
-    to be misformatted.
-
-  * Remove blank lines after a line comment at the end of a body.
-
-* Require `package:analyzer` version `4.4.0`.
+* Consistently discard blank lines between a `{` or `[` and a subsequent
+  comment. It used to do this before the `{` in type bodies, but not switch
+  bodies, optional parameter sections, or named parameter sections.
+* Don't allow splitting an empty class body.
+* Allow splitting after an inline block comment in some places where it makes
+  sense.
+* Don't allow a line comment in an argument list to cause preceding arguments
+  to be misformatted.
+* Remove blank lines after a line comment at the end of a body.
+* Require `package:analyzer` `>=4.4.0 <6.0.0`. 
 
 # 2.2.3
 
