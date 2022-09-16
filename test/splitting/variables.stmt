@@ -32,13 +32,15 @@ var variableName =
 >>> long function call initializer
 var variableName = functionName(first, second);
 <<<
-var variableName =
-    functionName(first, second);
+var variableName = functionName(
+  first,
+  second
+);
 >>> long binary expression initializer
 int variableName = argument * argument + argument;
 <<<
-int variableName =
-    argument * argument + argument;
+int variableName = argument * argument +
+    argument;
 >>> lots of variables with no initializers
 var variableA, variableB, variableC, variableD;
 <<<

@@ -44,5 +44,5 @@ variableName = functionName(
 >>> long binary expression initializer
 variableName = argument * argument + argument;
 <<<
-variableName =
-    argument * argument + argument;
+variableName = argument * argument +
+    argument;

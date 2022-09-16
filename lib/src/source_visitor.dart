@@ -2763,13 +2763,30 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
     space();
     token(equalsOperator);
-
-    builder.nestExpression(now: true);
     soloSplit(Cost.assign);
-    builder.startSpan();
+
+    // Don't wrap the right hand side in a span. This allows initializers that
+    // are collections or function calls to split inside the body, like:
+    //
+    //    variable = function(
+    //        argument
+    //    );
+    //
+    // Which is what we want. It also means that other expressions won't try to
+    // adhere together, as in:
+    //
+    //    variable = argument +
+    //        argument;
+    //
+    // Instead of:
+    //
+    //    variable =
+    //        argument + argument;
+    //
+    // That's OK. We prefer that because it's consistent with the above where
+    // the style tries pretty hard to keep something on the same line as the
+    // "=".
     visit(rightHandSide);
-    builder.endSpan();
-    builder.unnest();
   }
 
   /// Visits the "with" and "implements" clauses in a type declaration.
