@@ -1342,7 +1342,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Put comments before the closing ")", "]", or "}" inside the block.
     var firstDelimiter = node.rightDelimiter ?? node.rightParenthesis;
     if (firstDelimiter.precedingComments != null) {
-      split();
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
