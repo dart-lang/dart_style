@@ -336,7 +336,8 @@ function(
 function((parameter1, parameter2, parameter3) => P(p,),);
 <<<
 function(
-  (parameter1,
+  (
+    parameter1,
     parameter2,
     parameter3
   ) => P(

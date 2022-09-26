@@ -1970,10 +1970,10 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.startSpan(Cost.index);
     token(node.question);
-    token(node.leftBracket);
-    soloZeroSplit();
+    _beginBody(node.leftBracket);
+    zeroSplit();
     visit(node.index);
-    token(node.rightBracket);
+    _endBody(node.rightBracket);
     builder.endSpan();
   }
 

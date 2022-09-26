@@ -139,15 +139,17 @@ identifier
 >>> index expressions can split after "["
 verylongIdentifier[someParticularlyLongArgument];
 <<<
-// TODO: How should index operators be formatted?
 verylongIdentifier[
-    someParticularlyLongArgument];
+  someParticularlyLongArgument
+];
 >>> index arguments nest
 verylongIdentifier[someParticularlyLongArgument[someParticularlyLongArgument]];
 <<<
 verylongIdentifier[
-    someParticularlyLongArgument[
-        someParticularlyLongArgument]];
+  someParticularlyLongArgument[
+    someParticularlyLongArgument
+  ]
+];
 >>> successive index arguments
 identifier[longArgument][longArgument][longArgument][longArgument][longArgument];
 <<<
