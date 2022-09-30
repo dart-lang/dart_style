@@ -212,7 +212,7 @@ enum E
   List<int> get getter => 3;
   int operator +(other) => 3;
   const E([String parameter])
-      : field = parameter;
+    : field = parameter;
   const E.named({String parameter});
 }
 >>> argument lists in values

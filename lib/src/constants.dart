@@ -61,7 +61,4 @@ class Indent {
 
   /// The number of spaces in a single level of expression nesting.
   static const expression = 4;
-
-  /// The ":" on a wrapped constructor initialization list.
-  static const constructorInitializer = 4;
 }

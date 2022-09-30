@@ -29,12 +29,14 @@ class Rule extends FastHash {
   /// It disallows [unsplit] but allows any other value.
   static const mustSplit = -1;
 
+  // TODO: This is pretty annoying. If we can get to a point where all rules
+  // eagerly know their number of values, then it can be eliminated.
   /// Rule constraint that means the rule must split to its fully split value.
   ///
   /// This is used instead of the actual full split value because at the point
   /// that the constraint is added, the Rule may not have all of the chunks it
   /// needs to correctly calculate [numValues].
-  static const _fullSplitConstraint = -2;
+  static const fullSplitConstraint = -2;
 
   /// The number of different states this rule can be in.
   ///
@@ -80,12 +82,12 @@ class Rule extends FastHash {
   /// range, the constrained rule's value must be a certain given value.
   final Map<Rule, List<_Constraint>> _constraints = {};
 
-  /// Whether this rule cares about rules that it contains.
+  /// What constraint should be applied to this rule if an inner rule splits.
   ///
-  /// If `true` then inner rules will constrain this one and force it to split
-  /// when they split. Otherwise, it can split independently of any contained
-  /// rules.
-  bool get splitsOnInnerRules => true;
+  /// If `null`, then it can split independently of any contained rules.
+  /// Otherwise, if an inner rule splits, then it constrains this rule to the
+  /// returned value.
+  int? get splitOnInnerRules => fullSplitConstraint;
 
   Rule([this._cost = Cost.normal]);
 
@@ -120,13 +122,20 @@ class Rule extends FastHash {
   /// By default, this assumes every chunk splits.
   bool isSplitAtValue(int value, Chunk chunk) => true;
 
+  /// How much extra indentation should be applied before [chunk] when this
+  /// rule has [value].
+  ///
+  /// In almost all cases, indentation does not depend on split information, but
+  /// constructor initializers are (unfortunately) special.
+  int chunkIndent(int value, Chunk chunk) => 0;
+
   /// Given that this rule has [value], determine if [other]'s value should be
   /// constrained.
   ///
   /// Allows relationships between rules like "if I split, then this should
   /// split too". Returns a non-negative value to force [other] to take that
-  /// value. Returns -1 to allow [other] to take any non-zero value. Returns
-  /// `null` to not constrain other.
+  /// value. Returns [mustSplit] to allow [other] to take any non-zero value.
+  /// Returns `null` to not constrain other.
   int? constrain(int value, Rule other) {
     // By default, any containing rule will be fully split if this one is split.
     if (value == Rule.unsplit) return null;
@@ -136,7 +145,7 @@ class Rule extends FastHash {
 
     for (var constraint in constrained) {
       if (value >= constraint.min && value <= constraint.max) {
-        if (constraint.otherValue == _fullSplitConstraint) {
+        if (constraint.otherValue == fullSplitConstraint) {
           return other.fullySplitValue;
         }
 
@@ -160,17 +169,11 @@ class Rule extends FastHash {
         .add(_Constraint(min, max, otherValue));
   }
 
-  /// Constrains [other] to its fully split value when this rule is split in
-  /// any way.
-  void constrainWhenSplit(Rule other) {
+  /// Constrains [other] when this rule is split in any way.
+  void constrainWhenSplit(Rule other, [int split = fullSplitConstraint]) {
     // We want the constraint to apply to any non-zero value, so use an
     // arbitrary but sufficiently large number.
-    addRangeConstraint(1, 100000, other, _fullSplitConstraint);
-  }
-
-  /// Constrains [other] to its fully split value when this rule is fully split.
-  void constrainWhenFullySplit(Rule other) {
-    addConstraint(fullySplitValue, other, _fullSplitConstraint);
+    addRangeConstraint(1, 100000, other, split);
   }
 
   /// Discards constraints on any rule that doesn't have an index.

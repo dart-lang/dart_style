@@ -89,10 +89,10 @@ class Foo {
 <<<
 class Foo {
   Foo()
-  : initializer = function(
-      argument,
-      arg
-    );
+    : initializer = function(
+        argument,
+        arg
+      );
 }
 >>> assert in initializer list, short
 class Foo {
@@ -192,8 +192,8 @@ class A {
 class A {
   A({
     a,
-  }): b = 1,
-      super() {
+  }) : b = 1,
+       super() {
     ;
   }
 }
@@ -206,7 +206,7 @@ class A {
   A(
     a,
   ) : parameter =
-            "some very very long param";
+          "some very very long param";
 }
 >>> split at name if necessary
 main() {

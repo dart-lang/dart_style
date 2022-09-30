@@ -29,9 +29,11 @@ abstract class ArgumentRule extends Rule {
 
   // TODO: Is this all still needed? Now that collections are always in
   // separate blocks, the rules for them are not directly connected.
+  // TODO: If this isn't needed, then fullSplitConstraint can be private again.
   /// Don't split when an inner collection rule splits.
   @override
-  bool get splitsOnInnerRules => _trackInnerRules;
+  int? get splitOnInnerRules =>
+      _trackInnerRules ? Rule.fullSplitConstraint : null;
 
   ArgumentRule._(this._leadingCollections, this._trailingCollections);
 
@@ -174,7 +176,7 @@ class PositionalRule extends ArgumentRule {
   /// is just a [SimpleRule].
   void addNamedArgsConstraints(Rule rule) {
     // If the positional args are one-per-line, the named args are too.
-    constrainWhenFullySplit(rule);
+    addConstraint(fullySplitValue, rule, Rule.fullSplitConstraint);
 
     // Otherwise, if there is any split in the positional arguments, don't
     // allow the named arguments on the same line as them.

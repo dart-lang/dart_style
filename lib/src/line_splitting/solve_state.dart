@@ -293,11 +293,14 @@ class SolveState {
     var splits = SplitSet(splitter.chunks.length);
     for (var i = 0; i < splitter.chunks.length; i++) {
       var chunk = splitter.chunks[i];
-      if (chunk.rule.isSplit(ruleValues.getValue(chunk.rule), chunk)) {
+      var value = ruleValues.getValue(chunk.rule);
+      if (chunk.rule.isSplit(value, chunk)) {
         var indent = 0;
         if (!chunk.flushLeft) {
           // Add in the chunk's indent.
-          indent = splitter.blockIndentation + chunk.indent;
+          indent = splitter.blockIndentation +
+              chunk.indent +
+              chunk.rule.chunkIndent(value, chunk);
 
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;

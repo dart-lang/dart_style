@@ -19,6 +19,7 @@ import 'constants.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
+import 'rule/initializer.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
@@ -284,6 +285,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitAssertInitializer(AssertInitializer node) {
     _visitAssertion(node);
+
+    // Force the initializer list to split if there are any asserts in it.
+    // Since they are statement-like, it looks weird to keep them inline.
+    builder.forceRules();
   }
 
   @override
@@ -756,13 +761,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     // the parameter list gets more deeply indented.
     if (node.redirectedConstructor != null) builder.nestExpression();
 
-    _visitFunctionBody(null, node.parameters, node.body, () {
+    _visitFunctionBody(null, node.parameters, node.body, (parameterRule) {
       // Check for redirects or initializer lists.
       if (node.redirectedConstructor != null) {
         _visitConstructorRedirects(node);
         builder.unnest();
       } else if (node.initializers.isNotEmpty) {
-        _visitConstructorInitializers(node);
+        _visitConstructorInitializers(node, parameterRule);
 
         // End the rule for ":" after all of the initializers.
         builder.endRule();
@@ -777,78 +782,35 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.redirectedConstructor);
   }
 
-  void _visitConstructorInitializers(ConstructorDeclaration node) {
-    var hasTrailingComma = node.parameters.parameters.hasCommaAfter;
+  void _visitConstructorInitializers(
+      ConstructorDeclaration node, Rule? parameterRule) {
+    builder.indent();
 
-    if (hasTrailingComma) {
-      // Since the ")", "])", or "})" on the preceding line doesn't take up
-      // much space, it looks weird to move the ":" onto it's own line. Instead,
-      // keep it and the first initializer on the current line but add enough
-      // space before it to line it up with any subsequent initializers.
-      //
-      //     Foo(
-      //       parameter,
-      //     )   : field = value,
-      //           super();
-      space();
-      if (node.initializers.length > 1) {
-        var padding = '  ';
-        if (node.parameters.parameters.last.isNamed ||
-            node.parameters.parameters.last.isOptionalPositional) {
-          padding = ' ';
-        }
-        _writeText(padding, node.separator!);
-      }
+    var initializerRule = InitializerRule(parameterRule,
+        hasRightDelimiter: node.parameters.rightDelimiter != null);
+    builder.startRule(initializerRule);
 
-      // ":".
-      token(node.separator);
-      space();
+    // ":".
+    initializerRule.bindColon(split());
+    token(node.separator);
+    space();
 
-      builder.indent(6);
-    } else {
-      // Shift the itself ":" forward.
-      builder.indent(Indent.constructorInitializer);
-
-      // If the parameters or initializers split, put the ":" on its own line.
-      split();
-
-      // ":".
-      token(node.separator);
-      space();
-
-      // Try to line up the initializers with the first one that follows the ":":
-      //
-      //     Foo(notTrailing)
-      //         : initializer = value,
-      //           super(); // +2 from previous line.
-      //
-      //     Foo(
-      //       trailing,
-      //     ) : initializer = value,
-      //         super(); // +4 from previous line.
-      //
-      // This doesn't work if there is a trailing comma in an optional parameter,
-      // but we don't want to do a weird +5 alignment:
-      //
-      //     Foo({
-      //       trailing,
-      //     }) : initializer = value,
-      //         super(); // Doesn't quite line up. :(
-      builder.indent(2);
-    }
+    builder.indent();
 
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
         // Preceding comma.
         token(node.initializers[i].beginToken.previous);
-        newline();
+        split();
       }
 
       node.initializers[i].accept(this);
     }
 
+    builder.endRule();
+
     builder.unindent();
-    if (!hasTrailingComma) builder.unindent();
+    builder.unindent();
   }
 
   @override
@@ -1275,7 +1237,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitFormalParameterList(FormalParameterList node,
+  Rule? visitFormalParameterList(FormalParameterList node,
       {bool nestExpression = true}) {
     // Corner case: empty parameter lists.
     if (node.parameters.isEmpty) {
@@ -1285,22 +1247,13 @@ class SourceVisitor extends ThrowingAstVisitor {
       if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
 
       token(node.rightParenthesis);
-      return;
+      return null;
     }
 
-    // TODO: Get rid of this and add/remove trailing commas as needed.
-    // If the parameter list has a trailing comma, format it like a collection
-    // literal where each parameter goes on its own line, they are indented +2,
-    // and the ")" ends up on its own line.
-    if (node.parameters.hasCommaAfter) {
-      _visitTrailingCommaParameterList(node);
-      return;
-    }
-
-    // TODO: Almost entirely copied from _visitTrailingCommaParameterList().
     _metadataRules.add(Rule());
 
-    builder.startRule();
+    var parameterRule = Rule();
+    builder.startRule(parameterRule);
 
     token(node.leftParenthesis);
 
@@ -1345,7 +1298,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
-    builder = builder.endBlock(forceSplit: false);
+    // TODO: Instead of forcing split here, add or remove trailing comma as
+    // needed.
+    builder = builder.endBlock(forceSplit: node.parameters.hasCommaAfter);
     builder.endRule();
 
     _metadataRules.removeLast();
@@ -1356,81 +1311,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.rightParenthesis);
     }
 
-    /*
-    var requiredParams = node.parameters
-        .where((param) => param is! DefaultFormalParameter)
-        .toList();
-    var optionalParams =
-        node.parameters.whereType<DefaultFormalParameter>().toList();
-
-    if (nestExpression) builder.nestExpression();
-    token(node.leftParenthesis);
-
-    _metadataRules.add(Rule());
-
-    PositionalRule? rule;
-    if (requiredParams.isNotEmpty) {
-      rule = PositionalRule(null, argumentCount: requiredParams.length);
-      _metadataRules.last.constrainWhenFullySplit(rule);
-
-      builder.startRule(rule);
-      if (node.isFunctionExpressionBody) {
-        // Don't allow splitting before the first argument (i.e. right after
-        // the bare "(" in a lambda. Instead, just stuff a null chunk in there
-        // to avoid confusing the arg rule.
-        rule.beforeArgument(null);
-      } else {
-        // Split before the first argument.
-        rule.beforeArgument(zeroSplit());
-      }
-
-      builder.startSpan();
-
-      for (var param in requiredParams) {
-        visit(param);
-        _writeCommaAfter(param);
-
-        if (param != requiredParams.last) rule.beforeArgument(split());
-      }
-
-      builder.endSpan();
-      builder.endRule();
-    }
-
-    if (optionalParams.isNotEmpty) {
-      var namedRule = NamedRule(null, 0, 0);
-      _metadataRules.last.constrainWhenFullySplit(namedRule);
-      if (rule != null) rule.addNamedArgsConstraints(namedRule);
-
-      builder.startRule(namedRule);
-
-      // Make sure multi-line default values are indented.
-      builder.startBlockArgumentNesting();
-
-      namedRule.beforeArgument(builder.split(space: requiredParams.isNotEmpty));
-
-      // "[" or "{" for optional parameters.
-      token(node.leftDelimiter);
-
-      for (var param in optionalParams) {
-        visit(param);
-        _writeCommaAfter(param);
-
-        if (param != optionalParams.last) namedRule.beforeArgument(split());
-      }
-
-      builder.endBlockArgumentNesting();
-      builder.endRule();
-
-      // "]" or "}" for optional parameters.
-      token(node.rightDelimiter);
-    }
-
-    _metadataRules.removeLast();
-
-    token(node.rightParenthesis);
-    if (nestExpression) builder.unnest();
-    */
+    return parameterRule;
   }
 
   @override
@@ -2737,6 +2618,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startSpan();
     visit(node.name);
 
+    // TODO: Still needed?
     // Don't allow a split between a name and a collection. Instead, we want
     // the collection itself to split, or to split before the argument.
     if (node.expression is ListLiteral || node.expression is SetOrMapLiteral) {
@@ -2871,7 +2753,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       typeParameters = (node as MethodDeclaration).typeParameters;
     }
 
-    _visitFunctionBody(typeParameters, function.parameters, function.body, () {
+    _visitFunctionBody(typeParameters, function.parameters, function.body, (_) {
       // If the body is a block, we need to exit nesting before we hit the body
       // indentation, but we do want to wrap it around the parameters.
       if (function.body is! ExpressionFunctionBody) builder.unnest();
@@ -2888,7 +2770,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// If [beforeBody] is provided, it is invoked before the body is visited.
   void _visitFunctionBody(TypeParameterList? typeParameters,
       FormalParameterList? parameters, FunctionBody body,
-      [void Function()? beforeBody]) {
+      [void Function(Rule? parameterRule)? beforeBody]) {
+    // TODO: This shouldn't be needed once we have Flutter style formatting
+    // for parameter lists.
     // If the body is "=>", add an extra level of indentation around the
     // parameters and a rule that spans the parameters and the "=>". This
     // ensures that if the parameters wrap, they wrap more deeply than the "=>"
@@ -2919,9 +2803,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.startLazyRule(Rule(Cost.arrow));
     }
 
-    _visitParameterSignature(typeParameters, parameters);
+    var parameterRule = _visitParameterSignature(typeParameters, parameters);
 
-    if (beforeBody != null) beforeBody();
+    if (beforeBody != null) beforeBody(parameterRule);
     visit(body);
 
     if (body is ExpressionFunctionBody) builder.unnest();
@@ -2929,18 +2813,24 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the type parameters (if any) and formal parameters of a method
   /// declaration, function declaration, or generic function type.
-  void _visitParameterSignature(
+  ///
+  /// If a rule was created for the parameters, returns it.
+  Rule? _visitParameterSignature(
       TypeParameterList? typeParameters, FormalParameterList? parameters) {
     // Start the nesting for the parameters here, so they indent past the
     // type parameters too, if any.
     builder.nestExpression();
 
     visit(typeParameters);
+
+    Rule? rule;
     if (parameters != null) {
-      visitFormalParameterList(parameters, nestExpression: false);
+      rule = visitFormalParameterList(parameters, nestExpression: false);
     }
 
     builder.unnest();
+
+    return rule;
   }
 
   /// Visits the body statement of a `for`, `for in`, or `while` loop.
@@ -3092,78 +2982,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (node != null) _endPossibleConstContext(node.constKeyword);
     _endBody(rightBracket, forceSplit: force);
-  }
-
-  /// Writes [parameters], which is assumed to have a trailing comma after the
-  /// last parameter.
-  ///
-  /// Parameter lists with trailing commas are formatted differently from
-  /// regular parameter lists. They are treated more like collection literals.
-  ///
-  /// We don't reuse [_visitCollectionLiteral] here because there are enough
-  /// weird differences around optional parameters that it's easiest just to
-  /// give them their own method.
-  void _visitTrailingCommaParameterList(FormalParameterList parameters) {
-    // Can't have a trailing comma if there are no parameters.
-    assert(parameters.parameters.isNotEmpty);
-
-    _metadataRules.add(Rule());
-
-    // Always split the parameters.
-    builder.startRule(Rule.hard());
-
-    token(parameters.leftParenthesis);
-
-    // Find the parameter immediately preceding the optional parameters (if
-    // there are any).
-    FormalParameter? lastRequired;
-    for (var i = 0; i < parameters.parameters.length; i++) {
-      if (parameters.parameters[i] is DefaultFormalParameter) {
-        if (i > 0) lastRequired = parameters.parameters[i - 1];
-        break;
-      }
-    }
-
-    // If all parameters are optional, put the "[" or "{" right after "(".
-    if (parameters.parameters.first is DefaultFormalParameter) {
-      token(parameters.leftDelimiter);
-    }
-
-    // Process the parameters as a separate set of chunks.
-    builder = builder.startBlock();
-
-    for (var parameter in parameters.parameters) {
-      newline();
-      visit(parameter);
-      writeCommaAfter(parameter);
-
-      // If the optional parameters start after this one, put the delimiter
-      // at the end of its line.
-      if (parameter == lastRequired) {
-        space();
-        token(parameters.leftDelimiter);
-        lastRequired = null;
-      }
-    }
-
-    // Put comments before the closing ")", "]", or "}" inside the block.
-    var firstDelimiter =
-        parameters.rightDelimiter ?? parameters.rightParenthesis;
-    if (firstDelimiter.precedingComments != null) {
-      newline();
-      writePrecedingCommentsAndNewlines(firstDelimiter);
-    }
-
-    builder = builder.endBlock();
-    builder.endRule();
-
-    _metadataRules.removeLast();
-
-    // Now write the delimiter itself.
-    _writeText(firstDelimiter.lexeme, firstDelimiter);
-    if (firstDelimiter != parameters.rightParenthesis) {
-      token(parameters.rightParenthesis);
-    }
   }
 
   /// Begins writing a formal parameter of any kind.

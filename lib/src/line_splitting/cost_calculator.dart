@@ -67,6 +67,8 @@ class CostCalculator {
           if (_splitSpans.add(span)) _cost += span.cost;
         }
 
+        // TODO: Is this still needed with Flutter style formatting since it
+        // tends to put delimiteres between lines?
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
         // to claim the same nesting level on subsequent lines.

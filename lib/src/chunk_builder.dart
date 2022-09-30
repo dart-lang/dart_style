@@ -461,8 +461,10 @@ class ChunkBuilder {
   void _activateRule(Rule rule) {
     // See if any of the rules that contain this one care if it splits.
     for (var outer in _rules) {
-      if (!outer.splitsOnInnerRules) continue;
-      rule.constrainWhenSplit(outer);
+      var constraint = outer.splitOnInnerRules;
+      if (constraint == null) continue;
+
+      rule.constrainWhenSplit(outer, constraint);
     }
     _rules.add(rule);
   }
@@ -951,7 +953,7 @@ class ChunkBuilder {
 
     // If the current rule doesn't care, it will "eat" the hard split and no
     // others will care either.
-    if (!_rules.last.splitsOnInnerRules) return;
+    if (_rules.last.splitOnInnerRules == null) return;
 
     // Start with the innermost rule. This will traverse the other rules it
     // constrains.
@@ -973,8 +975,7 @@ class ChunkBuilder {
         if (other == rule) continue;
 
         if (!other.isHardened &&
-            rule.constrain(rule.fullySplitValue, other) ==
-                other.fullySplitValue) {
+            rule.constrain(rule.fullySplitValue, other) != Rule.unsplit) {
           walkConstraints(other);
         }
       }
