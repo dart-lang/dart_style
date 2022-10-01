@@ -11,7 +11,7 @@ import 'show.dart';
 import 'summary.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
-const dartStyleVersion = '2.2.4';
+const dartStyleVersion = '2.2.5-dev';
 
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
