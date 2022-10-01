@@ -2462,11 +2462,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.name);
     if (node.initializer == null) return;
 
-    // TODO: _visitAssignment() used to only nest the target expression if
-    // hasMultipleVariables was true. In other cases and other calls, it
-    // wouldn't. Doesn't seem to be needed any more but leaving this here for
-    // now just in case.
-    /*
     // If there are multiple variables being declared, we want to nest the
     // initializers farther so they don't line up with the variables. Bad:
     //
@@ -2483,9 +2478,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     //             bValue;
     var hasMultipleVariables =
         (node.parent as VariableDeclarationList).variables.length > 1;
-    */
 
-    _visitAssignment(node.equals!, node.initializer!);
+    _visitAssignment(node.equals!, node.initializer!,
+        nest: hasMultipleVariables);
   }
 
   @override
@@ -2642,9 +2637,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// If [nest] is true, an extra level of expression nesting is added after
   /// the "=".
-  void _visitAssignment(Token equalsOperator, Expression rightHandSide) {
+  void _visitAssignment(Token equalsOperator, Expression rightHandSide,
+      {bool nest = false}) {
     space();
     token(equalsOperator);
+
+    if (nest) builder.nestExpression(now: true);
+
     soloSplit(Cost.assign);
 
     // Don't wrap the right hand side in a span. This allows initializers that
@@ -2669,6 +2668,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // the style tries pretty hard to keep something on the same line as the
     // "=".
     visit(rightHandSide);
+
+    if (nest) builder.unnest();
   }
 
   /// Visits the "with" and "implements" clauses in a type declaration.
