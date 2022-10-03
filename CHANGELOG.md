@@ -1,3 +1,7 @@
+# 2.2.5-dev
+
+* Require `package:analyzer` `^5.1.0`.
+
 # 2.2.4
 
 * Unify how brace-delimited syntax is formatted. This is mostly an internal
