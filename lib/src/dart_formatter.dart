@@ -88,11 +88,9 @@ class DartFormatter {
     // TODO(paulberry): consider plumbing in experiment enable flags from the
     // command line.
     var featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: Version(2, 17, 0),
+      sdkLanguageVersion: Version(2, 19, 0),
       flags: [
-        'enhanced-enums',
-        'named-arguments-anywhere',
-        'super-parameters',
+        'unnamed-libraries',
       ],
     );
 

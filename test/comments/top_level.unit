@@ -185,6 +185,10 @@ b.c;
 <<<
 library a. //
     b.c;
+>>> comment within unnamed library
+library/* c */;
+<<<
+library /* c */;
 >>> inline block comment between different kinds of directives
 library a; /* comment */ import 'b.dart';
 <<<

@@ -1,6 +1,7 @@
 # 2.2.5-dev
 
 * Require `package:analyzer` `^5.1.0`.
+* Format unnamed libraries.
 
 # 2.2.4
 
