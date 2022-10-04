@@ -2021,8 +2021,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.libraryKeyword);
-      space();
-      visit(node.name2);
+      if (node.name2 != null) {
+        space();
+        visit(node.name2);
+      }
     });
   }
 
