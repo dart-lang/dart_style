@@ -1250,10 +1250,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Don't put a space after `extension` if the extension is unnamed. That
     // way, generic unnamed extensions format like `extension<T> on ...`.
-    if (node.name != null) {
-      space();
-      token(node.name);
-    }
+    token(node.name, before: space);
 
     visit(node.typeParameters);
     soloSplit();
@@ -2022,8 +2019,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _simpleStatement(node, () {
       token(node.libraryKeyword);
       if (node.name2 != null) {
-        space();
-        visit(node.name2);
+        visit(node.name2, before: space);
       }
     });
   }
