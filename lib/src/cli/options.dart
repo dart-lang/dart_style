@@ -85,7 +85,10 @@ void defineOptions(ArgParser parser,
   if (verbose) parser.addSeparator('Other options:');
 
   parser.addOption('line-length',
-      abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
+      abbr: 'l',
+      help: 'Wrap lines longer than this.',
+      defaultsTo: '80',
+      hide: true);
   parser.addOption('indent',
       abbr: 'i',
       help: 'Add this many spaces of leading indentation.',
