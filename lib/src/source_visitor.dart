@@ -574,9 +574,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.catchKeyword);
       space();
       token(node.leftParenthesis);
-      visit(node.exceptionParameter2);
+      visit(node.exceptionParameter);
       token(node.comma, after: space);
-      visit(node.stackTraceParameter2);
+      visit(node.stackTraceParameter);
       token(node.rightParenthesis);
       space();
     } else {

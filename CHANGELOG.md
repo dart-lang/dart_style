@@ -2,6 +2,7 @@
 
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
+* Require Dart 2.18.
 
 # 2.2.4
 
