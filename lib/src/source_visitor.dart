@@ -1556,7 +1556,18 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    _visitMemberDeclaration(node, node.functionExpression);
+    _visitFunctionOrMethodDeclaration(
+      metadata: node.metadata,
+      externalKeyword: node.externalKeyword,
+      propertyKeyword: node.propertyKeyword,
+      modifierKeyword: null,
+      operatorKeyword: null,
+      name: node.name,
+      returnType: node.returnType,
+      typeParameters: node.functionExpression.typeParameters,
+      formalParameters: node.functionExpression.parameters,
+      body: node.functionExpression.body,
+    );
   }
 
   @override
@@ -2054,7 +2065,18 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    _visitMemberDeclaration(node, node);
+    _visitFunctionOrMethodDeclaration(
+      metadata: node.metadata,
+      externalKeyword: node.externalKeyword,
+      propertyKeyword: node.propertyKeyword,
+      modifierKeyword: node.modifierKeyword,
+      operatorKeyword: node.operatorKeyword,
+      name: node.name,
+      returnType: node.returnType,
+      typeParameters: node.typeParameters,
+      formalParameters: node.parameters,
+      body: node.body,
+    );
   }
 
   @override
@@ -2795,41 +2817,41 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Visits a top-level function or method declaration.
-  ///
-  /// The two AST node types are very similar but, alas, share no common
-  /// interface type in analyzer, hence the dynamic typing.
-  void _visitMemberDeclaration(/* FunctionDeclaration|MethodDeclaration */ node,
-      /* FunctionExpression|MethodDeclaration */ function) {
-    visitMetadata(node.metadata as NodeList<Annotation>);
+  void _visitFunctionOrMethodDeclaration({
+    required NodeList<Annotation> metadata,
+    required Token? externalKeyword,
+    required Token? propertyKeyword,
+    required Token? modifierKeyword,
+    required Token? operatorKeyword,
+    required Token name,
+    required TypeAnnotation? returnType,
+    required TypeParameterList? typeParameters,
+    required FormalParameterList? formalParameters,
+    required FunctionBody body,
+  }) {
+    visitMetadata(metadata);
 
     // Nest the signature in case we have to split between the return type and
     // name.
     builder.nestExpression();
     builder.startSpan();
-    modifier(node.externalKeyword);
-    if (node is MethodDeclaration) modifier(node.modifierKeyword);
-    visit(node.returnType, after: soloSplit);
-    modifier(node.propertyKeyword);
-    if (node is MethodDeclaration) modifier(node.operatorKeyword);
-    token(node.name2);
+    modifier(externalKeyword);
+    modifier(modifierKeyword);
+    visit(returnType, after: soloSplit);
+    modifier(propertyKeyword);
+    modifier(operatorKeyword);
+    token(name);
     builder.endSpan();
 
-    TypeParameterList? typeParameters;
-    if (node is FunctionDeclaration) {
-      typeParameters = node.functionExpression.typeParameters;
-    } else {
-      typeParameters = (node as MethodDeclaration).typeParameters;
-    }
-
-    _visitFunctionBody(typeParameters, function.parameters, function.body, () {
+    _visitFunctionBody(typeParameters, formalParameters, body, () {
       // If the body is a block, we need to exit nesting before we hit the body
       // indentation, but we do want to wrap it around the parameters.
-      if (function.body is! ExpressionFunctionBody) builder.unnest();
+      if (body is! ExpressionFunctionBody) builder.unnest();
     });
 
     // If it's an expression, we want to wrap the nesting around that so that
     // the body gets nested farther.
-    if (function.body is ExpressionFunctionBody) builder.unnest();
+    if (body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visit the given function [parameters] followed by its [body], printing a
