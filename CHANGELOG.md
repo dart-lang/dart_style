@@ -3,6 +3,7 @@
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
 * Require Dart 2.18.
+* Use typed `_visitFunctionOrMethodDeclaration` instead of dynamically typed.
 
 # 2.2.4
 
