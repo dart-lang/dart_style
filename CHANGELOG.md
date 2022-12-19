@@ -4,6 +4,10 @@
 * Format unnamed libraries.
 * Require Dart 2.18.
 * Use typed `_visitFunctionOrMethodDeclaration` instead of dynamically typed.
+* Fix metadata test to not fail when record syntax makes whitespace between
+  metadata annotation names and `(` significant ([sdk#50769][]).
+
+[sdk#50769]: https://github.com/dart-lang/sdk/issues/50769
 
 # 2.2.4
 

@@ -280,7 +280,7 @@ class A {
 @foo
 typedef Fn = Function();
 >>> metadata on non-function typedef
-@foo typedef Hash< @a  K, @b  (  1  )  V  >  =  Map < K ,  V >   ;
+@foo typedef Hash< @a  K, @b(  1  )  V  >  =  Map < K ,  V >   ;
 <<<
 @foo
 typedef Hash<@a K, @b(1) V> = Map<K, V>;
