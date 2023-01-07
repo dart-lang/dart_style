@@ -1,3 +1,30 @@
+**WARNING: This is an *experimental* branch of dart_style. Do not run it on
+anything you care about without backing up first. It may trash your code.**
+
+This is an experiment that changes all of dart_style's formatting to better
+reflect the style used by the Flutter framework and many Flutter users. Very
+roughly, it formats all argument lists the way that you get when you put
+trailing commas on them, like:
+
+```dart
+function(
+  argument,
+  argument,
+  argument
+);
+```
+
+There are many many other formatting changes throughout the language in order
+to look consistent with that style. It touches almost everything: constructor
+initializers, type arguments, closures in argument lists, etc.
+
+If the experiment reaches a point where its output looks reasonable, then the
+next step is to run it on the Flutter repo and other corpora of code and
+discuss with the community about whether this is the  direction we want the
+formatter to go in.
+
+---
+
 The dart_style package defines an automatic, opinionated formatter for Dart
 code. It replaces the whitespace in your program with what it deems to be the
 best formatting for it. Resulting code should follow the [Dart style guide][]
