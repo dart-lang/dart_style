@@ -3127,9 +3127,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Unlike other collections, records don't force outer ones to split.
     if (node is! RecordLiteral) {
       // Force all of the surrounding collections to split.
-      for (var i = 0; i < _collectionSplits.length; i++) {
-        _collectionSplits[i] = true;
-      }
+      _collectionSplits.fillRange(0, _collectionSplits.length, true);
 
       // Add this collection to the stack.
       _collectionSplits.add(false);
