@@ -1326,7 +1326,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     PositionalRule? rule;
     if (requiredParams.isNotEmpty) {
       rule = PositionalRule(null, argumentCount: requiredParams.length);
-      _metadataRules.last.constrainWhenFullySplit(rule);
 
       builder.startRule(rule);
       if (node.isFunctionExpressionBody) {
@@ -1354,7 +1353,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (optionalParams.isNotEmpty) {
       var namedRule = NamedRule(null, 0, 0);
-      _metadataRules.last.constrainWhenFullySplit(namedRule);
       if (rule != null) rule.addNamedArgsConstraints(namedRule);
 
       builder.startRule(namedRule);
