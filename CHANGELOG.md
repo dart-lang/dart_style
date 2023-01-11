@@ -1,5 +1,7 @@
 # 2.2.5-dev
 
+* Format record expressions and record type annotations.
+* Better indentation of multiline function types inside type argument lists. 
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
 * Require Dart 2.18.

@@ -1,0 +1,50 @@
+40 columns                              |
+>>> empty
+(   )  x;
+<<<
+() x;
+>>> single positional field
+(  int  , ) x;
+<<<
+(int,) x;
+>>> single named field
+( { int  n  }  )  x;
+<<<
+({int n}) x;
+>>> named positional fields
+( int  value  ,  String  label) x;
+<<<
+(int value, String label) x;
+>>> unnamed positional fields
+( int    ,  String   ) x;
+<<<
+(int, String) x;
+>>> named fields
+(  {  int  value  ,  String  label  } ) x;
+<<<
+({int value, String label}) x;
+>>> named positional field trailing comma
+( int  value  ,  String  label  , ) x;
+<<<
+(
+  int value,
+  String label,
+) x;
+>>> unnamed positional fields trailing comma
+( int    ,  String   ,  ) x;
+<<<
+(
+  int,
+  String,
+) x;
+>>> named fields trailing comma
+(  {  int  value  ,  String  label  ,  } ) x;
+<<<
+({
+  int value,
+  String label,
+}) x;
+>>> nullable record type
+(  int  ,   bool  )   ?  x;
+<<<
+(int, bool)? x;

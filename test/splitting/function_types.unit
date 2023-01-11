@@ -96,3 +96,95 @@ Function<Argument>(String)
             Function<Argument>(int)
         Function<Argument>(bool)
     longVariable;
+>>> trailing comma
+Function(first, second,) f;
+<<<
+Function(
+  first,
+  second,
+) f;
+>>> split inside type argument
+GenericClass<Function(first, second, third, fourth, fifth)> f;
+<<<
+GenericClass<
+    Function(first, second, third,
+        fourth, fifth)> f;
+>>> trailing comma split inside type argumennt
+GenericClass<Function(first, second,)> f;
+<<<
+GenericClass<
+    Function(
+      first,
+      second,
+    )> f;
+>>> inside parameter list
+outer(Function(first, second, third, fourth, fifth) fn) {;}
+<<<
+outer(
+    Function(first, second, third,
+            fourth, fifth)
+        fn) {
+  ;
+}
+>>> trailing comma inside parameter list
+outer(Function(first,) fn) {;}
+<<<
+outer(
+    Function(
+      first,
+    ) fn) {
+  ;
+}
+>>> optional parameter trailing comma inside parameter list
+outer(Function([first,]) fn) {;}
+<<<
+outer(
+    Function([
+      first,
+    ]) fn) {
+  ;
+}
+>>> named parameter trailing comma inside parameter list
+outer(Function({int first,}) fn) {;}
+<<<
+outer(
+    Function({
+      int first,
+    }) fn) {
+  ;
+}
+>>> field formal parameter trailing comma inside parameter list
+class C { C(Function(first,) this.fn) {;} }
+<<<
+class C {
+  C(
+      Function(
+        first,
+      ) this.fn) {
+    ;
+  }
+}
+>>> inside trailing comma parameter list
+outer(Function(first, second, third, fourth, fifth) fn,) {;}
+<<<
+outer(
+  Function(first, second, third, fourth,
+          fifth)
+      fn,
+) {
+  ;
+}
+>>> trailing comma inside trailing comma parameter list
+outer(Function(first, second, third, fourth, fifth,) fn,) {;}
+<<<
+outer(
+  Function(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+  ) fn,
+) {
+  ;
+}

@@ -451,7 +451,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     //     ]
     //       ..add(more);
     var splitIfOperandsSplit =
-        node.cascadeSections.length > 1 || node.target.isCollectionLike;
+        node.cascadeSections.length > 1 || !node.target.isCollectionLike;
     if (splitIfOperandsSplit) {
       builder.startLazyRule(node.allowInline ? Rule() : Rule.hard());
     }
@@ -1280,7 +1280,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
       token(node.keyword, after: space);
-      visit(node.type, after: split);
+      visit(node.type);
+      _separatorBetweenTypeAndVariable(node.type);
       token(node.thisKeyword);
       token(node.period);
       token(node.name);
@@ -1338,6 +1339,8 @@ class SourceVisitor extends ThrowingAstVisitor {
         rule.beforeArgument(zeroSplit());
       }
 
+      // Make sure record and function type parameter lists are indented.
+      builder.startBlockArgumentNesting();
       builder.startSpan();
 
       for (var param in requiredParams) {
@@ -1347,6 +1350,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         if (param != requiredParams.last) rule.beforeArgument(split());
       }
 
+      builder.endBlockArgumentNesting();
       builder.endSpan();
       builder.endRule();
     }
@@ -1357,7 +1361,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
       builder.startRule(namedRule);
 
-      // Make sure multi-line default values are indented.
+      // Make sure multi-line default values, record types, and inner function
+      // types are indented.
       builder.startBlockArgumentNesting();
 
       namedRule.beforeArgument(builder.split(space: requiredParams.isNotEmpty));
@@ -2294,6 +2299,110 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitRecordLiteral(RecordLiteral node) {
+    modifier(node.constKeyword);
+    _visitCollectionLiteral(
+        node, node.leftParenthesis, node.fields, node.rightParenthesis);
+  }
+
+  @override
+  void visitRecordTypeAnnotation(RecordTypeAnnotation node) {
+    var namedFields = node.namedFields;
+
+    // Handle empty record types specially.
+    if (node.positionalFields.isEmpty && namedFields == null) {
+      token(node.leftParenthesis);
+
+      // If there is a comment inside the parens, do allow splitting before it.
+      if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
+
+      token(node.rightParenthesis);
+      return;
+    }
+
+    _metadataRules.add(Rule());
+    token(node.leftParenthesis);
+    builder.startRule();
+
+    // If all parameters are named, put the "{" right after "(".
+    if (node.positionalFields.isEmpty) {
+      token(namedFields!.leftBracket);
+    }
+
+    // Process the parameters as a separate set of chunks.
+    builder = builder.startBlock();
+
+    // Write the positional fields.
+    for (var field in node.positionalFields) {
+      builder.split(nest: false, space: field != node.positionalFields.first);
+      visit(field);
+      _writeCommaAfter(field);
+    }
+
+    // Then the named fields.
+    var firstClosingDelimiter = node.rightParenthesis;
+    if (namedFields != null) {
+      if (node.positionalFields.isNotEmpty) {
+        space();
+        token(namedFields.leftBracket);
+      }
+
+      for (var field in namedFields.fields) {
+        builder.split(nest: false, space: field != namedFields.fields.first);
+        visit(field);
+        _writeCommaAfter(field);
+      }
+
+      firstClosingDelimiter = namedFields.rightBracket;
+    }
+
+    // Put comments before the closing ")" or "}" inside the block.
+    if (firstClosingDelimiter.precedingComments != null) {
+      newline();
+      writePrecedingCommentsAndNewlines(firstClosingDelimiter);
+    }
+
+    // If there is a trailing comma, then force the record type to split. But
+    // don't force if there is only a single positional element because then
+    // the trailing comma is actually mandatory.
+    bool force;
+    if (namedFields == null) {
+      force = node.positionalFields.length > 1 &&
+          node.positionalFields.last.hasCommaAfter;
+    } else {
+      force = namedFields.fields.last.hasCommaAfter;
+    }
+
+    builder = builder.endBlock(forceSplit: force);
+    builder.endRule();
+    _metadataRules.removeLast();
+
+    // Now write the delimiter(s) themselves.
+    _writeText(firstClosingDelimiter.lexeme, firstClosingDelimiter);
+    if (namedFields != null) token(node.rightParenthesis);
+
+    token(node.question);
+  }
+
+  @override
+  void visitRecordTypeAnnotationNamedField(
+      RecordTypeAnnotationNamedField node) {
+    visitParameterMetadata(node.metadata, () {
+      visit(node.type);
+      token(node.name, before: space);
+    });
+  }
+
+  @override
+  void visitRecordTypeAnnotationPositionalField(
+      RecordTypeAnnotationPositionalField node) {
+    visitParameterMetadata(node.metadata, () {
+      visit(node.type);
+      token(node.name, before: space);
+    });
+  }
+
+  @override
   void visitRethrowExpression(RethrowExpression node) {
     token(node.rethrowKeyword);
   }
@@ -2332,8 +2441,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
 
-      var hasType = node.type != null;
-      if (_insideNewTypedefFix && !hasType) {
+      if (_insideNewTypedefFix && node.type == null) {
         // Parameters can use "var" instead of "dynamic". Since we are inserting
         // "dynamic" in that case, remove the "var".
         if (node.keyword != null) {
@@ -2356,10 +2464,9 @@ class SourceVisitor extends ThrowingAstVisitor {
         });
       } else {
         modifier(node.keyword);
+
         visit(node.type);
-
-        if (hasType && node.name != null) split();
-
+        if (node.name != null) _separatorBetweenTypeAndVariable(node.type);
         token(node.name);
       }
 
@@ -2572,7 +2679,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     modifier(node.lateKeyword);
     modifier(node.keyword);
-    visit(node.type, after: soloSplit);
+    visit(node.type);
+    _separatorBetweenTypeAndVariable(node.type, isSolo: true);
 
     builder.endSpan();
 
@@ -2775,18 +2883,30 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(leftBracket);
     rule.beforeArgument(zeroSplit());
 
+    // Set the block nesting in case an argument is a function type with a
+    // trailing comma or a record type.
+    builder.startBlockArgumentNesting();
+
     for (var node in nodes) {
       visit(node);
 
-      // Write the trailing comma.
+      // Write the comma separator.
       if (node != nodes.last) {
-        token(node.endToken.next);
+        var comma = node.endToken.next;
+
+        // TODO(rnystrom): There is a bug in analyzer where the end token of a
+        // nullable record type is the ")" and not the "?". This works around
+        // that. Remove that's fixed.
+        if (comma?.lexeme == '?') comma = comma?.next;
+
+        token(comma);
         rule.beforeArgument(split());
       }
     }
 
     token(rightBracket);
 
+    builder.endBlockArgumentNesting();
     builder.unnest();
     builder.endSpan();
     builder.endRule();
@@ -2979,10 +3099,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// This is also used for argument lists with a trailing comma which are
   /// considered "collection-like". In that case, [node] is `null`.
-  void _visitCollectionLiteral(TypedLiteral? node, Token leftBracket,
+  void _visitCollectionLiteral(Literal? node, Token leftBracket,
       List<AstNode> elements, Token rightBracket,
       [int? cost]) {
-    if (node != null) {
+    if (node is TypedLiteral) {
       // See if `const` should be removed.
       if (node.constKeyword != null &&
           _constNesting > 0 &&
@@ -3002,16 +3122,17 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    // Force all of the surrounding collections to split.
-    for (var i = 0; i < _collectionSplits.length; i++) {
-      _collectionSplits[i] = true;
+    // Unlike other collections, records don't force outer ones to split.
+    if (node is! RecordLiteral) {
+      // Force all of the surrounding collections to split.
+      _collectionSplits.fillRange(0, _collectionSplits.length, true);
+
+      // Add this collection to the stack.
+      _collectionSplits.add(false);
     }
 
-    // Add this collection to the stack.
-    _collectionSplits.add(false);
-
     _beginBody(leftBracket);
-    if (node != null) _startPossibleConstContext(node.constKeyword);
+    if (node is TypedLiteral) _startPossibleConstContext(node.constKeyword);
 
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
@@ -3051,13 +3172,20 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
+    var force = false;
+
     // If there is a collection inside this one, it forces this one to split.
-    var force = _collectionSplits.removeLast();
+    if (node is! RecordLiteral) {
+      force = _collectionSplits.removeLast();
+    }
 
     // If the collection has a trailing comma, the user must want it to split.
-    if (elements.hasCommaAfter) force = true;
+    // (Unless it's a single-element record literal, in which case the trailing
+    // comma is required for disambiguation.)
+    var isSingleElementRecord = node is RecordLiteral && elements.length == 1;
+    if (elements.hasCommaAfter && !isSingleElementRecord) force = true;
 
-    if (node != null) _endPossibleConstContext(node.constKeyword);
+    if (node is TypedLiteral) _endPossibleConstContext(node.constKeyword);
     _endBody(rightBracket, forceSplit: force);
   }
 
@@ -3200,6 +3328,39 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.endRule();
+  }
+
+  /// Writes the separator between a type annotation and a variable or
+  /// parameter. If the preceding type annotation ends in a delimited list of
+  /// elements that have block formatting, then we don't split between the
+  /// type annotation and parameter name, as in:
+  ///
+  ///     Function(
+  ///       int,
+  ///     ) variable;
+  ///
+  /// Otherwise, we can.
+  void _separatorBetweenTypeAndVariable(TypeAnnotation? type,
+      {bool isSolo = false}) {
+    if (type == null) return;
+
+    var isBlockType = false;
+    if (type is GenericFunctionType) {
+      // Function types get block-like formatting if they have a trailing comma.
+      isBlockType = type.parameters.parameters.isNotEmpty &&
+          type.parameters.parameters.last.hasCommaAfter;
+    } else if (type is RecordTypeAnnotation) {
+      // Record types always have block-like formatting.
+      isBlockType = true;
+    }
+
+    if (isBlockType) {
+      space();
+    } else if (isSolo) {
+      soloSplit();
+    } else {
+      split();
+    }
   }
 
   /// Whether [node] should be forced to split even if completely empty.
