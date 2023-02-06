@@ -796,6 +796,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.uri);
   }
 
+  @override
   void visitConstantPattern(ConstantPattern node) {
     token(node.constKeyword, after: space);
     visit(node.expression);
@@ -2448,6 +2449,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
   }
 
+  @override
   void visitRelationalPattern(RelationalPattern node) {
     token(node.operator);
     space();
@@ -2787,6 +2789,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
   }
 
+  @override
   void visitWhenClause(WhenClause node) {
     builder.startRule();
     split();
