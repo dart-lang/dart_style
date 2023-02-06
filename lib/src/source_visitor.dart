@@ -392,6 +392,47 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitBinaryPattern(BinaryPattern node) {
+    builder.startSpan();
+    builder.nestExpression(now: true);
+
+    // Start lazily so we don't force the operator to split if a line comment
+    // appears before the first operand.
+    builder.startLazyRule();
+
+    // Flatten out a tree/chain of the same precedence. If we split on this
+    // precedence level, we will break all of them.
+    var precedence = node.operator.type.precedence;
+
+    @override
+    void traverse(DartPattern p) {
+      if (p is BinaryPattern && p.operator.type.precedence == precedence) {
+        traverse(p.leftOperand);
+
+        space();
+        token(p.operator);
+
+        split();
+        traverse(p.rightOperand);
+      } else {
+        visit(p);
+      }
+    }
+
+    // Blocks as operands to infix patterns should always nest like regular
+    // operands.
+    builder.startBlockArgumentNesting();
+
+    traverse(node);
+
+    builder.endBlockArgumentNesting();
+
+    builder.unnest();
+    builder.endSpan();
+    builder.endRule();
+  }
+
+  @override
   void visitBlock(Block node) {
     // Treat empty blocks specially. In most cases, they are not allowed to
     // split. However, an empty block as the then statement of an if with an
@@ -753,6 +794,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.rightParenthesis);
     space();
     visit(node.uri);
+  }
+
+  void visitConstantPattern(ConstantPattern node) {
+    token(node.constKeyword, after: space);
+    visit(node.expression);
   }
 
   @override
@@ -1774,12 +1820,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var hasInnerControlFlow = false;
     for (var element in ifElements) {
-      // The condition.
-      token(element.ifKeyword);
-      space();
-      token(element.leftParenthesis);
-      visit(element.condition);
-      token(element.rightParenthesis);
+      _visitIfCondition(element.ifKeyword, element.leftParenthesis,
+          element.condition, element.caseClause, element.rightParenthesis);
 
       visitChild(element, element.thenElement);
       if (element.thenElement.isControlFlowElement) {
@@ -1822,13 +1864,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitIfStatement(IfStatement node) {
-    builder.nestExpression();
-    token(node.ifKeyword);
-    space();
-    token(node.leftParenthesis);
-    visit(node.condition);
-    token(node.rightParenthesis);
-    builder.unnest();
+    _visitIfCondition(node.ifKeyword, node.leftParenthesis, node.condition,
+        node.caseClause, node.rightParenthesis);
 
     void visitClause(Statement clause) {
       if (clause is Block || clause is IfStatement) {
@@ -2223,6 +2260,15 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitParenthesizedPattern(ParenthesizedPattern node) {
+    builder.nestExpression();
+    token(node.leftParenthesis);
+    visit(node.pattern);
+    builder.unnest();
+    token(node.rightParenthesis);
+  }
+
+  @override
   void visitPartDirective(PartDirective node) {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
@@ -2402,6 +2448,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     });
   }
 
+  void visitRelationalPattern(RelationalPattern node) {
+    token(node.operator);
+    space();
+    visit(node.operand);
+  }
+
   @override
   void visitRethrowExpression(RethrowExpression node) {
     token(node.rethrowKeyword);
@@ -2549,6 +2601,30 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitSwitchDefault(SwitchDefault node) {
     _visitLabels(node.labels);
     token(node.keyword);
+    token(node.colon);
+
+    builder.indent();
+    // TODO(rnystrom): Allow inline cases?
+    newline();
+
+    visitNodes(node.statements, between: oneOrTwoNewlines);
+    builder.unindent();
+  }
+
+  @override
+  void visitSwitchPatternCase(SwitchPatternCase node) {
+    _visitLabels(node.labels);
+
+    token(node.keyword);
+    space();
+
+    builder.startBlockArgumentNesting();
+    builder.nestExpression();
+    visit(node.guardedPattern.pattern);
+    builder.unnest();
+    builder.endBlockArgumentNesting();
+
+    visit(node.guardedPattern.whenClause);
     token(node.colon);
 
     builder.indent();
@@ -2709,6 +2785,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     _simpleStatement(node, () {
       visit(node.variables);
     });
+  }
+
+  void visitWhenClause(WhenClause node) {
+    builder.startRule();
+    split();
+    token(node.whenKeyword);
+    space();
+    builder.startBlockArgumentNesting();
+    builder.nestExpression();
+    visit(node.expression);
+    builder.unnest();
+    builder.endBlockArgumentNesting();
+    builder.endRule();
   }
 
   @override
@@ -3328,6 +3417,45 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.endRule();
+  }
+
+  /// Visits the `if (<expr> [case <pattern> [when <expr>]])` header of an if
+  /// statement or element.
+  void _visitIfCondition(Token ifKeyword, Token leftParenthesis,
+      AstNode condition, CaseClause? caseClause, Token rightParenthesis) {
+    builder.nestExpression();
+    token(ifKeyword);
+    space();
+    token(leftParenthesis);
+
+    if (caseClause != null) {
+      // Wrap the rule for splitting before "case" around the value expression
+      // so that if the value splits, we split before "case" too.
+      builder.startRule();
+
+      // Nest the condition so that it indents deeper than the case clause.
+      builder.nestExpression();
+    }
+
+    visit(condition);
+
+    // If-case clause.
+    if (caseClause != null) {
+      split();
+      token(caseClause.caseKeyword);
+      space();
+      builder.startBlockArgumentNesting();
+      builder.nestExpression();
+      visit(caseClause.guardedPattern.pattern);
+      builder.unnest();
+      builder.endBlockArgumentNesting();
+      builder.endRule();
+      visit(caseClause.guardedPattern.whenClause);
+    }
+
+    token(rightParenthesis);
+    if (caseClause != null) builder.unnest();
+    builder.unnest();
   }
 
   /// Writes the separator between a type annotation and a variable or

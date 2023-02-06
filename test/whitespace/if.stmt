@@ -89,3 +89,7 @@ if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another, arg);
+>>> if-case
+if (   obj   case   123   ||   constant   ) {}
+<<<
+if (obj case 123 || constant) {}
