@@ -39,3 +39,76 @@ if (object
         expressionThatSplits) {
   ;
 }
+>>> split in cast
+if (object case veryLongConstant as VeryLongType) {;}
+<<<
+if (object
+    case veryLongConstant
+        as VeryLongType) {
+  ;
+}
+>>> split in qualified name
+if (object case veryLongPrefix.longIdentifierName) {;}
+<<<
+if (object
+    case veryLongPrefix
+        .longIdentifierName) {
+  ;
+}
+>>> prefer to split in first part prefixed qualified name
+if (object case longPrefix.longType.longIdentifierName) {;}
+<<<
+if (object
+    case longPrefix
+        .longType.longIdentifierName) {
+  ;
+}
+>>> split just at second part of prefixed qualified name
+if (object case longPrefix.veryLongType.longIdentifierName) {;}
+<<<
+if (object
+    case longPrefix.veryLongType
+        .longIdentifierName) {
+  ;
+}
+>>> split both parts of prefixed qualified name
+if (object case veryLongPrefixIdentifier.veryLongType.longIdentifierName) {;}
+<<<
+if (object
+    case veryLongPrefixIdentifier
+        .veryLongType
+        .longIdentifierName) {
+  ;
+}
+>>> no split after "var"
+if (obj case var thisIsReallyQuiteAVeryLongVariableName) {;}
+<<<
+if (obj
+    case var thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+>>> no split after "final"
+if (obj case final thisIsReallyQuiteAVeryLongVariableName) {;}
+<<<
+if (obj
+    case final thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+>>> no split between "final" and type
+if (obj case final ThisIsReallyQuiteAVeryLongTypeName variable) {;}
+<<<
+if (obj
+    case final ThisIsReallyQuiteAVeryLongTypeName
+        variable) {
+  ;
+}
+>>> split between type and name
+if (obj case SomeLongTypeName longVariableName) {
+  ;
+}
+<<<
+if (obj
+    case SomeLongTypeName
+        longVariableName) {
+  ;
+}

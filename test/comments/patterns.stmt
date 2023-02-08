@@ -67,6 +67,58 @@ if (obj
     ) {
   ;
 }
+>>> before "as"
+if (obj case constant // c
+as Type) {;}
+<<<
+if (obj
+    case constant // c
+        as Type) {
+  ;
+}
+>>> after "as"
+if (obj case constant as // c
+Type) {;}
+<<<
+if (obj
+    case constant as // c
+        Type) {
+  ;
+}
+>>> before null-check (looks weird, but user should move comment)
+if (obj case pattern // c
+?) {;}
+<<<
+if (obj
+    case pattern // c
+        ?) {
+  ;
+}
+>>> after null-check (looks weird, but user should move comment)
+if (obj case pattern? // c
+) {;}
+<<<
+if (obj case pattern? // c
+    ) {
+  ;
+}
+>>> before null-assert (looks weird, but user should move comment)
+if (obj case pattern // c
+!) {;}
+<<<
+if (obj
+    case pattern // c
+        !) {
+  ;
+}
+>>> after null-assert (looks weird, but user should move comment)
+if (obj case pattern! // c
+) {;}
+<<<
+if (obj case pattern! // c
+    ) {
+  ;
+}
 >>> inside parenthesized
 if (obj case ( // c
 pattern)) {;}
@@ -74,5 +126,60 @@ pattern)) {;}
 if (obj
     case ( // c
         pattern)) {
+  ;
+}
+>>> in qualified name
+if (obj case qualified // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .name) {
+  ;
+}
+>>> in prefixed qualified name
+if (obj case qualified // c
+.prefixed // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .prefixed // c
+        .name) {
+  ;
+}
+>>> before "var"
+if (obj case // c
+var x) {;}
+<<<
+if (obj
+    case // c
+        var x) {
+  ;
+}
+>>> after "var"
+if (obj case var // c
+x) {;}
+<<<
+if (obj
+    case var // c
+        x) {
+  ;
+}
+>>> after variable (looks weird, but user should move comment)
+if (obj case var x // c
+) {;}
+<<<
+if (obj case var x // c
+    ) {
+  ;
+}
+>>> after type
+if (obj case List<int> // c
+x) {;}
+<<<
+if (obj
+    case List<int> // c
+        x) {
   ;
 }
