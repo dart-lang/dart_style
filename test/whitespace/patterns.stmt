@@ -1,0 +1,33 @@
+40 columns                              |
+>>> logic
+if (o case 1   ||  2   &&  3  ) {}
+<<<
+if (o case 1 || 2 && 3) {}
+>>> logic as subpattern
+if (o case 1   &&  (  2   ||  3   )  ) {}
+<<<
+if (o case 1 && (2 || 3)) {}
+>>> relational
+switch (obj) {
+  case   ==   other:
+  case   !=   other:
+  case   <   other:
+  case   <=   other:
+  case   >   other:
+  case   >=   other:
+    body;
+}
+<<<
+switch (obj) {
+  case == other:
+  case != other:
+  case < other:
+  case <= other:
+  case > other:
+  case >= other:
+    body;
+}
+>>> relational as subpattern
+if (o case  >  1  &&  <   2 && (  ==   3 )) {}
+<<<
+if (o case > 1 && < 2 && (== 3)) {}
