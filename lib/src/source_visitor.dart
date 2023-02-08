@@ -359,11 +359,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     // appears before the first operand.
     builder.startLazyRule();
 
-    // Flatten out a tree/chain of the same precedence. If we split on this
-    // precedence level, we will break all of them.
+    // Flatten out a tree/chain of the same precedence. If we need to split on
+    // any of them, we split on all of them.
     var precedence = node.operator.type.precedence;
 
-    @override
     void traverse(Expression e) {
       if (e is BinaryExpression && e.operator.type.precedence == precedence) {
         traverse(e.leftOperand);
@@ -400,11 +399,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     // appears before the first operand.
     builder.startLazyRule();
 
-    // Flatten out a tree/chain of the same precedence. If we split on this
-    // precedence level, we will break all of them.
+    // Flatten out a tree/chain of the same precedence. If we need to split on
+    // any of them, we split on all of them.
     var precedence = node.operator.type.precedence;
 
-    @override
     void traverse(DartPattern p) {
       if (p is BinaryPattern && p.operator.type.precedence == precedence) {
         traverse(p.leftOperand);
@@ -2592,7 +2590,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.colon);
 
     builder.indent();
-    // TODO(rnystrom): Allow inline cases?
     newline();
 
     visitNodes(node.statements, between: oneOrTwoNewlines);
@@ -2606,7 +2603,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.colon);
 
     builder.indent();
-    // TODO(rnystrom): Allow inline cases?
     newline();
 
     visitNodes(node.statements, between: oneOrTwoNewlines);
@@ -2630,7 +2626,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.colon);
 
     builder.indent();
-    // TODO(rnystrom): Allow inline cases?
     newline();
 
     visitNodes(node.statements, between: oneOrTwoNewlines);
