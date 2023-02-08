@@ -90,10 +90,6 @@ class DartFormatter {
     var featureSet = FeatureSet.fromEnableFlags2(
       sdkLanguageVersion: Version(2, 19, 0),
       flags: [
-        // TODO(rnystrom): This breaks existing switch cases containing constant
-        // expressions that aren't valid patterns. See:
-        // https://github.com/dart-lang/dart_style/issues/1164
-        'patterns',
         'records',
         'unnamed-libraries',
       ],
