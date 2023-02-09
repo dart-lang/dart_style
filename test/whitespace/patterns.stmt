@@ -105,3 +105,99 @@ switch (obj) {
   case final (int, String) name:
     ok;
 }
+>>> list
+switch (obj) {
+case  [  ]  :
+case  <  int  >  [  ]  :
+case  [  _  ]  :
+case  [  _  ,  ]  :
+case  [  _  ,  _  ]  :
+case  [  ...  ]  :
+case  [  ...  _  ]  :
+case  [  _  ,  ...  ]  :
+case  [  ...  ,  _  ]  :
+case  [  ...  ,  ]  :
+  ok;
+}
+<<<
+switch (obj) {
+  case []:
+  case <int>[]:
+  case [_]:
+  case [
+      _,
+    ]:
+  case [_, _]:
+  case [...]:
+  case [..._]:
+  case [_, ...]:
+  case [..., _]:
+  case [
+      ...,
+    ]:
+    ok;
+}
+>>> map
+switch (obj) {
+case  {  }  :
+case  <  int  ,  String  >  {  }  :
+case  {  k  :  _  }  :
+case  {  k  :  _  ,  }  :
+case  {  k  :  1  ,  m  :  2  }  :
+case  {  ...  }  :
+case  {  k  :  _  ,  ...  }  :
+  ok;
+}
+<<<
+switch (obj) {
+  case {}:
+  case <int, String>{}:
+  case {k: _}:
+  case {
+      k: _,
+    }:
+  case {k: 1, m: 2}:
+  case {...}:
+  case {k: _, ...}:
+    ok;
+}
+>>> record
+switch (obj) {
+  case  (  )  :
+  case  (  value  ,  )  :
+  case  (  first  ,  second  ,  third  )  :
+  case  (  first  :  1  ,  2  ,  third  :  3  )  :
+  case  (  :  var  x  ,  :  var  y  )  :
+}
+<<<
+switch (obj) {
+  case ():
+  case (value,):
+  case (first, second, third):
+  case (first: 1, 2, third: 3):
+  case (:var x, :var y):
+}
+>>> constant collections
+switch (obj) {
+case  const  [  ]  :
+case  const  <  int  >  [  ]  :
+case  const  [  1  ,  2  ]  :
+case  const  {  }  :
+case  const  <  int  >  {  }  :
+case  const  {  1  ,  2  }  :
+case  const  <  int  ,  String  >  {  }  :
+case  const  {  1  :  's'  ,  2  :  't'  }  :
+  ok;
+}
+<<<
+switch (obj) {
+  case const []:
+  case const <int>[]:
+  case const [1, 2]:
+  case const {}:
+  case const <int>{}:
+  case const {1, 2}:
+  case const <int, String>{}:
+  case const {1: 's', 2: 't'}:
+    ok;
+}

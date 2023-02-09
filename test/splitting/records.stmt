@@ -171,3 +171,28 @@ longFunctionName(
       element,
       element
     ));
+>>> don't allow splitting between field name and record
+var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
+<<<
+var record = (
+  argument,
+  argument,
+  argument,
+  recordFieldName: (
+    veryLongElement__________,
+  )
+);
+>>> don't allow splitting between argument name and record
+longFunctionName(argument, argument, argument, argument, argument, argument,
+argumentName: (veryLongElement__________,));
+<<<
+longFunctionName(
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argumentName: (
+      veryLongElement__________,
+    ));

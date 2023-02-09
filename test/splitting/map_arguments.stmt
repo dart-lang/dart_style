@@ -239,3 +239,18 @@ function({
     .method()
     .method()
     .method();
+>>> don't allow splitting between name and list
+longFunctionName(argument, argument, argument, argument, argument, argument, argumentName: {a: element, b: element, c: element});
+<<<
+longFunctionName(
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argumentName: {
+      a: element,
+      b: element,
+      c: element
+    });

@@ -183,3 +183,128 @@ if (obj
         x) {
   ;
 }
+>>> indent line comment inside list
+if (obj case [
+ // c
+]) {;}
+<<<
+if (obj
+    case [
+      // c
+    ]) {
+  ;
+}
+>>> line comment on opening line of list
+if (obj case [// c
+]) {;}
+<<<
+if (obj
+    case [
+      // c
+    ]) {
+  ;
+}
+>>> indented block comment in list
+if (obj case [
+  /* comment */
+]){;}
+<<<
+if (obj
+    case [
+      /* comment */
+    ]) {
+  ;
+}
+>>> inline block comment in list
+if (obj case [  /* comment */  e  ]){;}
+<<<
+if (obj case [/* comment */ e]) {
+  ;
+}
+>>> line comment between list items
+if (obj case ['a', // comment
+  'b']){;}
+<<<
+if (obj
+    case [
+      'a', // comment
+      'b'
+    ]) {
+  ;
+}
+>>> indent line comment inside map
+if (obj case {
+ // c
+}) {;}
+<<<
+if (obj
+    case {
+      // c
+    }) {
+  ;
+}
+>>> line comment on opening line of map
+if (obj case {// c
+}) {;}
+<<<
+if (obj
+    case {
+      // c
+    }) {
+  ;
+}
+>>> indented block comment in map
+if (obj case {
+  /* comment */
+}){;}
+<<<
+if (obj
+    case {
+      /* comment */
+    }) {
+  ;
+}
+>>> inline block comment in map
+if (obj case {  /* comment */  k: v  }){;}
+<<<
+if (obj case {/* comment */ k: v}) {
+  ;
+}
+>>> line comment between map items
+if (obj case {k: 'a', // comment
+  m: 'b'}){;}
+<<<
+if (obj
+    case {
+      k: 'a', // comment
+      m: 'b'
+    }) {
+  ;
+}
+>>> empty record pattern block comment
+if (obj case (  /* comment */  )) {;}
+<<<
+if (obj case (/* comment */)) {
+  ;
+}
+>>> empty record pattern line comment
+if (obj case (  // comment
+)) {;}
+<<<
+if (obj
+    case (
+      // comment
+    )) {
+  ;
+}
+>>> record line comment between fields
+if (obj case ( first , // comment
+second)){;}
+<<<
+if (obj
+    case (
+      first, // comment
+      second
+    )) {
+  ;
+}

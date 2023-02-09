@@ -112,3 +112,388 @@ if (obj
         longVariableName) {
   ;
 }
+>>> unsplit list
+if (obj case [1, ...var x, 3]) {;}
+<<<
+if (obj case [1, ...var x, 3]) {
+  ;
+}
+>>> if it splits anywhere, it splits at every element
+if (obj case [first,second,third,fourth]) {;}
+<<<
+if (obj
+    case [
+      first,
+      second,
+      third,
+      fourth
+    ]) {
+  ;
+}
+>>> split in element forces list to split
+if (obj case [first,secondLongPattern ||thirdLongPattern]) {;}
+<<<
+if (obj
+    case [
+      first,
+      secondLongPattern ||
+          thirdLongPattern
+    ]) {
+  ;
+}
+>>> a trailing comma forces a split
+if (obj case [1,]) {;}
+<<<
+if (obj
+    case [
+      1,
+    ]) {
+  ;
+}
+>>> does not split after "..."
+if (obj case [...firstPattern || secondLongPattern]) {;}
+<<<
+if (obj
+    case [
+      ...firstPattern ||
+          secondLongPattern
+    ]) {
+  ;
+}
+>>> nested list patterns don't force outer to split
+if (obj case [[1, 2], [[3]]]) {;}
+<<<
+if (obj case [[1, 2], [[3]]]) {
+  ;
+}
+>>> list constant in list pattern doesn't force pattern to split
+if (obj case [const [1, 2]]) {;}
+<<<
+if (obj case [const [1, 2]]) {
+  ;
+}
+>>> preserve newlines in list containing a line comment
+if (obj case [
+  // yeah
+  a,b,c,
+  d,e,f,
+]) {;}
+<<<
+if (obj
+    case [
+      // yeah
+      a, b, c,
+      d, e, f,
+    ]) {
+  ;
+}
+>>> split in type argument but not body
+if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[e]) {;}
+<<<
+if (obj
+    case <Map<VeryLongTypeArgument,
+        VeryLongTypeArgument>>[e]) {
+  ;
+}
+>>> split in type argument and body
+if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[element]) {;}
+<<<
+if (obj
+    case <Map<VeryLongTypeArgument,
+        VeryLongTypeArgument>>[
+      element
+    ]) {
+  ;
+}
+>>> unsplit map
+if (obj case {k: 1, m: 3, ...}) {;}
+<<<
+if (obj case {k: 1, m: 3, ...}) {
+  ;
+}
+>>> if it splits anywhere, it splits at every element
+if (obj case {first: 1,second: 2,third: 3}) {;}
+<<<
+if (obj
+    case {
+      first: 1,
+      second: 2,
+      third: 3
+    }) {
+  ;
+}
+>>> split in value forces map to split
+if (obj case {k: first, m: secondLongPattern ||thirdLongPattern}) {;}
+<<<
+if (obj
+    case {
+      k: first,
+      m: secondLongPattern ||
+          thirdLongPattern
+    }) {
+  ;
+}
+>>> a trailing comma forces a split
+if (obj case {k:1,}) {;}
+<<<
+if (obj
+    case {
+      k: 1,
+    }) {
+  ;
+}
+>>> nested map patterns don't force outer to split
+if (obj case {a: {k: 1}, m: [{k: 3}]}) {;}
+<<<
+if (obj case {a: {k: 1}, m: [{k: 3}]}) {
+  ;
+}
+>>> map constant in map pattern doesn't force pattern to split
+if (obj case {k: const {1: 2}}) {;}
+<<<
+if (obj case {k: const {1: 2}}) {
+  ;
+}
+>>> preserve newlines in maps containing a line comment
+if (obj case {
+  // yeah
+  a:1,b:2,c:3,
+  d:4,e:5,f:6,
+}) {;}
+<<<
+if (obj
+    case {
+      // yeah
+      a: 1, b: 2, c: 3,
+      d: 4, e: 5, f: 6,
+    }) {
+  ;
+}
+>>> single-element records don't have to split
+if (obj case (pattern,)) {;}
+<<<
+if (obj case (pattern,)) {
+  ;
+}
+>>> single-element records can split after ","
+if (obj case (veryLongRecordField____________,)) {;}
+<<<
+if (obj
+    case (
+      veryLongRecordField____________,
+    )) {
+  ;
+}
+>>> split single-element named record
+if (obj case (longFieldName: longRecordFieldValu)) {;}
+<<<
+if (obj
+    case (
+      longFieldName: longRecordFieldValu
+    )) {
+  ;
+}
+>>> split single-element named record at name
+if (obj case (longFieldName: veryLongRecordFieldValue)) {;}
+<<<
+if (obj
+    case (
+      longFieldName:
+          veryLongRecordFieldValue
+    )) {
+  ;
+}
+>>> split single-element record with inferred name
+if (obj case (:var veryLongInferredFieldName_____)) {;}
+<<<
+if (obj
+    case (
+      :var veryLongInferredFieldName_____
+    )) {
+  ;
+}
+>>> split before inferred field name
+if (obj case (:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
+<<<
+if (obj
+    case (
+      :var firstLongInferredFieldName,
+      :var secondLongInferredName
+    )) {
+  ;
+}
+>>> don't split between name and list subpattern
+if (obj case (longFieldName: [first, second, third])) {;}
+<<<
+if (obj
+    case (
+      longFieldName: [
+        first,
+        second,
+        third
+      ]
+    )) {
+  ;
+}
+>>> don't split between name and map subpattern
+if (obj case (longFieldName: {first: 1, second: 2})) {;}
+<<<
+if (obj
+    case (
+      longFieldName: {
+        first: 1,
+        second: 2
+      }
+    )) {
+  ;
+}
+>>> don't split between name and record subpattern
+if (obj case (longFieldName: (first: 1, second: 2))) {;}
+<<<
+if (obj
+    case (
+      longFieldName: (
+        first: 1,
+        second: 2
+      )
+    )) {
+  ;
+}
+>>> don't split between name and constant list
+if (obj case (longFieldName: const [first, second, third])) {;}
+<<<
+if (obj
+    case (
+      longFieldName: const [
+        first,
+        second,
+        third
+      ]
+    )) {
+  ;
+}
+>>> don't split between name and constant map
+if (obj case (longFieldName: const {first: 1, second: 2})) {;}
+<<<
+if (obj
+    case (
+      longFieldName: const {
+        first: 1,
+        second: 2
+      }
+    )) {
+  ;
+}
+>>> don't split between name and const record
+if (obj case (longFieldName: const (first: 1, second: 2))) {;}
+<<<
+if (obj
+    case (
+      longFieldName: const (
+        first: 1,
+        second: 2
+      )
+    )) {
+  ;
+}
+>>> if any field splits, all do
+if (obj case (first, second, third, fourth, fifth)) {;}
+<<<
+if (obj
+    case (
+      first,
+      second,
+      third,
+      fourth,
+      fifth
+    )) {
+  ;
+}
+>>> don't force outer record to split
+if (obj case ((a,), (b, c))) {;}
+<<<
+if (obj case ((a,), (b, c))) {
+  ;
+}
+>>> nested split record
+if (obj case (first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
+    eleventh))) {;}
+<<<
+if (obj
+    case (
+      first,
+      (second, third, fourth),
+      fifth,
+      (
+        sixth,
+        seventh,
+        eighth,
+        nine,
+        tenth,
+        eleventh
+      )
+    )) {
+  ;
+}
+>>> preserve newlines in records containing a line comment
+if (obj case (
+  // yeah
+  a,b,c,
+  d,e,f,
+)) {;}
+<<<
+if (obj
+    case (
+      // yeah
+      a, b, c,
+      d, e, f,
+    )) {
+  ;
+}
+>>> split list constant in pattern
+if (obj case const [element, element, element, element]) {;}
+<<<
+if (obj
+    case const [
+      element,
+      element,
+      element,
+      element
+    ]) {
+  ;
+}
+>>> split map constant in pattern
+if (obj case const {a: element, b: element, c: element}) {;}
+<<<
+if (obj
+    case const {
+      a: element,
+      b: element,
+      c: element
+    }) {
+  ;
+}
+>>> split set constant in pattern
+if (obj case const {element, element, element, element}) {;}
+<<<
+if (obj
+    case const {
+      element,
+      element,
+      element,
+      element
+    }) {
+  ;
+}
+>>> split record constant in pattern
+if (obj case const (element, element, element, element)) {;}
+<<<
+if (obj
+    case const (
+      element,
+      element,
+      element,
+      element
+    )) {
+  ;
+}

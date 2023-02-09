@@ -255,7 +255,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // and the ")" ends up on its own line.
     if (node.arguments.hasCommaAfter) {
       _visitCollectionLiteral(
-          null, node.leftParenthesis, node.arguments, node.rightParenthesis);
+          node.leftParenthesis, node.arguments, node.rightParenthesis);
       return;
     }
 
@@ -289,7 +289,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // and the ")" ends up on its own line.
     if (arguments.hasCommaAfter) {
       _visitCollectionLiteral(
-          null, node.leftParenthesis, arguments, node.rightParenthesis);
+          node.leftParenthesis, arguments, node.rightParenthesis);
       return;
     }
 
@@ -313,7 +313,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       // and the ")" ends up on its own line.
       if (arguments.hasCommaAfter) {
         _visitCollectionLiteral(
-            null, node.leftParenthesis, arguments, node.rightParenthesis);
+            node.leftParenthesis, arguments, node.rightParenthesis);
         return;
       }
 
@@ -2108,12 +2108,37 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Corner case: Splitting inside a list looks bad if there's only one
     // element, so make those more costly.
     var cost = node.elements.length <= 1 ? Cost.singleElementList : Cost.normal;
-    _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket, cost);
+    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
+        constKeyword: node.constKeyword,
+        typeArguments: node.typeArguments,
+        splitOuterCollection: true,
+        cost: cost);
+  }
+
+  @override
+  void visitListPattern(ListPattern node) {
+    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
+        typeArguments: node.typeArguments);
   }
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
+    builder.nestExpression();
+    visit(node.key);
+    token(node.separator);
+    soloSplit();
+    visit(node.value);
+    builder.unnest();
+  }
+
+  @override
+  void visitMapPattern(MapPattern node) {
+    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
+        typeArguments: node.typeArguments);
+  }
+
+  @override
+  void visitMapPatternEntry(MapPatternEntry node) {
     builder.nestExpression();
     visit(node.key);
     token(node.separator);
@@ -2232,7 +2257,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    visitNamedArgument(node);
+    visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
 
   @override
@@ -2373,7 +2398,34 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitRecordLiteral(RecordLiteral node) {
     modifier(node.constKeyword);
     _visitCollectionLiteral(
-        node, node.leftParenthesis, node.fields, node.rightParenthesis);
+        node.leftParenthesis, node.fields, node.rightParenthesis,
+        isRecord: true);
+  }
+
+  @override
+  void visitRecordPattern(RecordPattern node) {
+    _visitCollectionLiteral(
+        node.leftParenthesis, node.fields, node.rightParenthesis,
+        isRecord: true);
+  }
+
+  @override
+  void visitRecordPatternField(RecordPatternField node) {
+    var fieldName = node.fieldName;
+    if (fieldName != null) {
+      var name = fieldName.name;
+      if (name != null) {
+        visitNamedNode(fieldName.name!, fieldName.colon, node.pattern);
+      } else {
+        // Named field with inferred name, like:
+        //
+        //     var (:x) = (x: 1);
+        token(fieldName.colon);
+        visit(node.pattern);
+      }
+    } else {
+      visit(node.pattern);
+    }
   }
 
   @override
@@ -2486,6 +2538,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitRestPatternElement(RestPatternElement node) {
+    token(node.operator);
+    visit(node.pattern);
+  }
+
+  @override
   void visitReturnStatement(ReturnStatement node) {
     _simpleStatement(node, () {
       token(node.returnKeyword);
@@ -2505,8 +2563,10 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
-    _visitCollectionLiteral(
-        node, node.leftBracket, node.elements, node.rightBracket);
+    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
+        constKeyword: node.constKeyword,
+        typeArguments: node.typeArguments,
+        splitOuterCollection: true);
   }
 
   @override
@@ -2642,11 +2702,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.keyword);
     space();
 
+    builder.indent();
     builder.startBlockArgumentNesting();
     builder.nestExpression();
     visit(node.guardedPattern.pattern);
     builder.unnest();
     builder.endBlockArgumentNesting();
+    builder.unindent();
 
     visit(node.guardedPattern.whenClause);
     token(node.colon);
@@ -2927,20 +2989,31 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// split between the name and argument forces the argument list to split
   /// too.
   void visitNamedArgument(NamedExpression node, [NamedRule? rule]) {
+    visitNamedNode(
+        node.name.label.token, node.name.colon, node.expression, rule);
+  }
+
+  /// Visits syntax of the form `identifier: <node>`: a named argument or a
+  /// named record field.
+  void visitNamedNode(Token name, Token colon, AstNode node,
+      [NamedRule? rule]) {
     builder.nestExpression();
     builder.startSpan();
-    visit(node.name);
+    token(name);
+    token(colon);
 
     // Don't allow a split between a name and a collection. Instead, we want
     // the collection itself to split, or to split before the argument.
-    if (node.expression is ListLiteral || node.expression is SetOrMapLiteral) {
+    if (node is ListLiteral ||
+        node is SetOrMapLiteral ||
+        node is RecordLiteral) {
       space();
     } else {
       var split = soloSplit();
       if (rule != null) split.constrainWhenSplit(rule);
     }
 
-    visit(node.expression);
+    visit(node);
     builder.endSpan();
     builder.unnest();
   }
@@ -3207,26 +3280,67 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
   }
 
-  /// Visits the collection literal [node] whose body starts with [leftBracket],
+  /// Visits the construct whose body starts with [leftBracket],
   /// ends with [rightBracket] and contains [elements].
   ///
-  /// This is also used for argument lists with a trailing comma which are
-  /// considered "collection-like". In that case, [node] is `null`.
-  void _visitCollectionLiteral(Literal? node, Token leftBracket,
-      List<AstNode> elements, Token rightBracket,
-      [int? cost]) {
-    if (node is TypedLiteral) {
-      // See if `const` should be removed.
-      if (node.constKeyword != null &&
-          _constNesting > 0 &&
-          _formatter.fixes.contains(StyleFix.optionalConst)) {
-        // Don't lose comments before the discarded keyword, if any.
-        writePrecedingCommentsAndNewlines(node.constKeyword!);
-      } else {
-        modifier(node.constKeyword);
+  /// This is used for collection literals, collection patterns, and argument
+  /// lists with a trailing comma which are considered "collection-like".
+  ///
+  /// If [splitOuterCollection] is `true` then this collection forces any
+  /// surrounding collections to split even if this one doesn't. We do this for
+  /// collection literals, but not other collection-like constructs.
+  void _visitCollectionLiteral(
+      Token leftBracket, List<AstNode> elements, Token rightBracket,
+      {Token? constKeyword,
+      TypeArgumentList? typeArguments,
+      int? cost,
+      bool splitOuterCollection = false,
+      bool isRecord = false}) {
+    // See if `const` should be removed.
+    if (constKeyword != null &&
+        _constNesting > 0 &&
+        _formatter.fixes.contains(StyleFix.optionalConst)) {
+      // Don't lose comments before the discarded keyword, if any.
+      writePrecedingCommentsAndNewlines(constKeyword);
+    } else {
+      modifier(constKeyword);
+    }
+
+    // Don't use the normal type argument list formatting code because we don't
+    // want to allow splitting before the "<" since there is no preceding
+    // identifier and it looks weird to have a "<" hanging by itself. Prevents:
+    //
+    //   var list = <
+    //       LongTypeName<
+    //           TypeArgument,
+    //           TypeArgument>>[];
+    if (typeArguments != null) {
+      builder.startSpan();
+      builder.nestExpression();
+      token(typeArguments.leftBracket);
+      builder.startRule(Rule(Cost.typeArgument));
+
+      for (var typeArgument in typeArguments.arguments) {
+        visit(typeArgument);
+
+        // Write the comma separator.
+        if (typeArgument != typeArguments.arguments.last) {
+          var comma = typeArgument.endToken.next;
+
+          // TODO(rnystrom): There is a bug in analyzer where the end token of a
+          // nullable record type is the ")" and not the "?". This works around
+          // that. Remove that's fixed.
+          if (comma?.lexeme == '?') comma = comma?.next;
+
+          token(comma);
+          split();
+        }
       }
 
-      visit(node.typeArguments);
+      token(typeArguments.rightBracket);
+      builder.endRule();
+      builder.unnest();
+      builder.endSpan();
     }
 
     // Handle empty collections, with or without comments.
@@ -3236,7 +3350,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Unlike other collections, records don't force outer ones to split.
-    if (node is! RecordLiteral) {
+    if (splitOuterCollection) {
       // Force all of the surrounding collections to split.
       _collectionSplits.fillRange(0, _collectionSplits.length, true);
 
@@ -3245,7 +3359,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     _beginBody(leftBracket);
-    if (node is TypedLiteral) _startPossibleConstContext(node.constKeyword);
+    _startPossibleConstContext(constKeyword);
 
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
@@ -3285,20 +3399,19 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
-    var force = false;
-
     // If there is a collection inside this one, it forces this one to split.
-    if (node is! RecordLiteral) {
+    var force = false;
+    if (splitOuterCollection) {
       force = _collectionSplits.removeLast();
     }
 
     // If the collection has a trailing comma, the user must want it to split.
     // (Unless it's a single-element record literal, in which case the trailing
     // comma is required for disambiguation.)
-    var isSingleElementRecord = node is RecordLiteral && elements.length == 1;
+    var isSingleElementRecord = isRecord && elements.length == 1;
     if (elements.hasCommaAfter && !isSingleElementRecord) force = true;
 
-    if (node is TypedLiteral) _endPossibleConstContext(node.constKeyword);
+    _endPossibleConstContext(constKeyword);
     _endBody(rightBracket, forceSplit: force);
   }
 

@@ -134,3 +134,29 @@ LongClassName<
     Inner<Second, Third, Fourth, Fifth,
         Sixth, Seventh>,
     Eighth>;
+>>> split in inner type argument list forces outer to split
+LongClassName<First, Inner<
+    Second, Third, Fourth, Fifth>>;
+<<<
+LongClassName<
+    First,
+    Inner<Second, Third, Fourth,
+        Fifth>>;
+>>> don't split after "<" in list literal
+var list = <Inner<First, Second, Third, Fourth, Fifth>, Sixth>[];
+<<<
+var list = <Inner<First, Second, Third,
+        Fourth, Fifth>,
+    Sixth>[];
+>>> don't split after "<" in set literal
+var set = <Inner<First, Second, Third, Fourth, Fifth>, Sixth>{};
+<<<
+var set = <Inner<First, Second, Third,
+        Fourth, Fifth>,
+    Sixth>{};
+>>> don't split after "<" in map literal
+var map = <First, Inner<Second, Third, Fourth, Fifth, Sixth>>{};
+<<<
+var map = <First,
+    Inner<Second, Third, Fourth, Fifth,
+        Sixth>>{};
