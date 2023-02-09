@@ -71,7 +71,7 @@ enum Show {
   /// Describes the directory whose contents are about to be processed.
   void directory(String path) {
     if (this == Show.legacy || this == Show.overwrite) {
-      print('Formatting directory $directory:');
+      print('Formatting directory $path:');
     }
   }
 
