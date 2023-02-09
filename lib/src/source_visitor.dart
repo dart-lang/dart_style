@@ -602,6 +602,19 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitCastPattern(CastPattern node) {
+    builder.startSpan();
+    builder.nestExpression();
+    visit(node.pattern);
+    soloSplit();
+    token(node.asToken);
+    space();
+    visit(node.type);
+    builder.unnest();
+    builder.endSpan();
+  }
+
+  @override
   void visitCatchClause(CatchClause node) {
     token(node.onKeyword, after: space);
     visit(node.exceptionType);
@@ -947,6 +960,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitDeclaredIdentifier(DeclaredIdentifier node) {
     modifier(node.keyword);
     visit(node.type, after: space);
+    token(node.name);
+  }
+
+  @override
+  void visitDeclaredVariablePattern(DeclaredVariablePattern node) {
+    modifier(node.keyword);
+    visit(node.type, after: soloSplit);
     token(node.name);
   }
 
@@ -2300,6 +2320,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitPostfixPattern(PostfixPattern node) {
+    visit(node.operand);
+    token(node.operator);
+  }
+
+  @override
   void visitPrefixedIdentifier(PrefixedIdentifier node) {
     CallChainVisitor(this, node).visit();
   }
@@ -3443,7 +3469,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(caseClause.caseKeyword);
       space();
       builder.startBlockArgumentNesting();
-      builder.nestExpression();
+      builder.nestExpression(now: true);
       visit(caseClause.guardedPattern.pattern);
       builder.unnest();
       builder.endBlockArgumentNesting();

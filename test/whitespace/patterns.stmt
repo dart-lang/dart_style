@@ -31,3 +31,77 @@ switch (obj) {
 if (o case  >  1  &&  <   2 && (  ==   3 )) {}
 <<<
 if (o case > 1 && < 2 && (== 3)) {}
+>>> cast
+if (o case   1   as   List < int > ?  ) {}
+<<<
+if (o case 1 as List<int>?) {}
+>>> null-check
+if (o case pattern  ?  ) {}
+<<<
+if (o case pattern?) {}
+>>> null-assert
+if (o case pattern  !  ) {}
+<<<
+if (o case pattern!) {}
+>>> simple constants
+switch (obj) {
+case  true  :
+case  false  :
+case  null  :
+case  123  :
+case  12.34  :
+case  -  123  :
+case  -  12.34  :
+case  'string'  :
+case  's$tr${  ing  }'  :
+case  #symbol  :
+  ok;
+}
+<<<
+switch (obj) {
+  case true:
+  case false:
+  case null:
+  case 123:
+  case 12.34:
+  case -123:
+  case -12.34:
+  case 'string':
+  case 's$tr${ing}':
+  case #symbol:
+    ok;
+}
+>>> identifiers
+switch (obj) {
+case  _  :
+case  name  :
+case  qualified  .  name  :
+case  prefixed  .  qualified  .  name  :
+  ok;
+}
+<<<
+switch (obj) {
+  case _:
+  case name:
+  case qualified.name:
+  case prefixed.qualified.name:
+    ok;
+}
+>>> variables
+switch (obj) {
+case  int  ?  _  :
+case  List < String >  name  :
+case  var  name  :
+case  final  name  :
+case  final  (  int  ,  String  )  name  :
+  ok;
+}
+<<<
+switch (obj) {
+  case int? _:
+  case List<String> name:
+  case var name:
+  case final name:
+  case final (int, String) name:
+    ok;
+}
