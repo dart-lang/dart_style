@@ -2411,9 +2411,18 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRecordPatternField(RecordPatternField node) {
-    var name = node.fieldName;
-    if (name != null) {
-      visitNamedNode(name.name!, name.colon, node.pattern);
+    var fieldName = node.fieldName;
+    if (fieldName != null) {
+      var name = fieldName.name;
+      if (name != null) {
+        visitNamedNode(fieldName.name!, fieldName.colon, node.pattern);
+      } else {
+        // Named field with inferred name, like:
+        //
+        //     var (:x) = (x: 1);
+        token(fieldName.colon);
+        visit(node.pattern);
+      }
     } else {
       visit(node.pattern);
     }

@@ -303,6 +303,25 @@ if (obj
     )) {
   ;
 }
+>>> split single-element record with inferred name
+if (obj case (:var veryLongInferredFieldName_____)) {;}
+<<<
+if (obj
+    case (
+      :var veryLongInferredFieldName_____
+    )) {
+  ;
+}
+>>> split before inferred field name
+if (obj case (:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
+<<<
+if (obj
+    case (
+      :var firstLongInferredFieldName,
+      :var secondLongInferredName
+    )) {
+  ;
+}
 >>> don't split between name and list subpattern
 if (obj case (longFieldName: [first, second, third])) {;}
 <<<

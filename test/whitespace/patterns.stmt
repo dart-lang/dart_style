@@ -167,6 +167,7 @@ switch (obj) {
   case  (  value  ,  )  :
   case  (  first  ,  second  ,  third  )  :
   case  (  first  :  1  ,  2  ,  third  :  3  )  :
+  case  (  :  var  x  ,  :  var  y  )  :
 }
 <<<
 switch (obj) {
@@ -174,6 +175,7 @@ switch (obj) {
   case (value,):
   case (first, second, third):
   case (first: 1, 2, third: 3):
+  case (:var x, :var y):
 }
 >>> constant collections
 switch (obj) {
