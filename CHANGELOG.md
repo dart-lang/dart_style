@@ -1,5 +1,7 @@
 # 2.2.5-dev
 
+* Format patterns and related features.
+* Don't split after `<` in collection literals.
 * Format record expressions and record type annotations.
 * Better indentation of multiline function types inside type argument lists. 
 * Require `package:analyzer` `^5.1.0`.
