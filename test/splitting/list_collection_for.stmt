@@ -181,3 +181,25 @@ var list = [
           thatDoesNotFit)
     body
 ];
+>>> pattern for-in expression split in pattern
+var list = [
+for (var (longIdentifier && anotherLongOne) in obj) element
+];
+<<<
+var list = [
+  for (var (longIdentifier &&
+      anotherLongOne) in obj)
+    element
+];
+>>> pattern for-in expression split in pattern
+var list = [
+for (var (longIdentifier && anotherLongOne) = obj; cond; inc) element
+];
+<<<
+var list = [
+  for (var (longIdentifier &&
+          anotherLongOne) = obj;
+      cond;
+      inc)
+    element
+];

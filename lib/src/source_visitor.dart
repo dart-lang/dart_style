@@ -324,6 +324,11 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitAssignedVariablePattern(AssignedVariablePattern node) {
+    token(node.name);
+  }
+
+  @override
   void visitAssignmentExpression(AssignmentExpression node) {
     builder.nestExpression();
 
@@ -1572,6 +1577,16 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
+    builder.startBlockArgumentNesting();
+    token(node.keyword);
+    space();
+    visit(node.pattern);
+    builder.endBlockArgumentNesting();
+    _visitForEachPartsFromIn(node);
+  }
+
+  @override
   void visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
     // Nest split variables more so they aren't at the same level
     // as the rest of the loop clauses.
@@ -1598,6 +1613,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitForPartsWithExpression(ForPartsWithExpression node) {
     visit(node.initialization);
+    _visitForPartsFromLeftSeparator(node);
+  }
+
+  @override
+  void visitForPartsWithPattern(ForPartsWithPattern node) {
+    builder.startBlockArgumentNesting();
+    visit(node.variables);
+    builder.endBlockArgumentNesting();
     _visitForPartsFromLeftSeparator(node);
   }
 
@@ -2368,6 +2391,30 @@ class SourceVisitor extends ThrowingAstVisitor {
       visit(node.libraryName);
       visit(node.uri);
     });
+  }
+
+  @override
+  void visitPatternAssignment(PatternAssignment node) {
+    visit(node.pattern);
+    _visitAssignment(node.equals, node.expression);
+  }
+
+  @override
+  void visitPatternVariableDeclaration(PatternVariableDeclaration node) {
+    visitMetadata(node.metadata);
+    builder.nestExpression();
+    token(node.keyword);
+    space();
+    visit(node.pattern);
+    _visitAssignment(node.equals, node.expression);
+    builder.unnest();
+  }
+
+  @override
+  void visitPatternVariableDeclarationStatement(
+      PatternVariableDeclarationStatement node) {
+    visit(node.declaration);
+    token(node.semicolon);
   }
 
   @override

@@ -21,15 +21,3 @@ foo();
   a:
   foo();
 }
->>> late local variables
-{
-  late    final int i;
-  late   int i;
-  late   var i;
-}
-<<<
-{
-  late final int i;
-  late int i;
-  late var i;
-}

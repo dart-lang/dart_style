@@ -1,0 +1,30 @@
+>>> late local variables
+{
+  late    final int i;
+  late   int i;
+  late   var i;
+}
+<<<
+{
+  late final int i;
+  late int i;
+  late var i;
+}
+>>> pattern variable declaration
+{
+  var  (  a  &&  b  )  =  o;
+  var  (  a  as  int  ,  String  ?  b  )  = o;
+  var  (  :  inferred  )  = o;
+  final  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  final  {  'k'  :  _  ,  ...  } = o;
+  var  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  var (a && b) = o;
+  var (a as int, String? b) = o;
+  var (:inferred) = o;
+  final [a!, Foo(:b), ...] = o;
+  final {'k': _, ...} = o;
+  var Foo(prop: value, :inferred) = o;
+}

@@ -1,0 +1,6 @@
+40 columns                              |
+>>> on pattern variable, moves to own line
+@meta var (x, y) = o;
+<<<
+@meta
+var (x, y) = o;

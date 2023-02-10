@@ -36,3 +36,107 @@ variableName = argument * argument + argument;
 <<<
 variableName =
     argument * argument + argument;
+>>> prefer to split at "=" instead of pattern
+(longIdentifier && anotherOne) = longValue;
+<<<
+(longIdentifier && anotherOne) =
+    longValue;
+>>> split in infix pattern
+(veryLongIdentifier && anotherAlsoLongOne) = value;
+<<<
+(veryLongIdentifier &&
+    anotherAlsoLongOne) = value;
+>>> split in list pattern
+[first, second, third, fourth, fifth, sixth] = value;
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth
+] = value;
+>>> split in map pattern
+{first: second, third: fourth, fifth: sixth} = value;
+<<<
+{
+  first: second,
+  third: fourth,
+  fifth: sixth
+} = value;
+>>> split in record pattern
+(first, second, third, fourth, fifth, sixth) = value;
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth
+) = value;
+>>> split in object pattern
+Foo(:first, :second, :third, :fourth, :fifth) = value;
+<<<
+Foo(
+  :first,
+  :second,
+  :third,
+  :fourth,
+  :fifth
+) = value;
+>>> split in value
+(first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(first, second, third) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> expression split in both
+(veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(veryLongIdentifier &&
+        anotherAlsoLongOne) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> collection-like split in both
+(first, second, third, fourth, fifth, sixth) = (first, second, third, fourth, fifth);
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth
+) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);
+>>> expression split in pattern, collection-like in value
+(veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+(veryLongIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);
+>>> expression split in pattern, collection-like in value
+(veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+(veryLongIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);

@@ -79,3 +79,104 @@ SomeType a = () {
       ;
     },
     b;
+>>> prefer to split at "=" instead of pattern
+var (longIdentifier && anotherOne) = value;
+<<<
+var (longIdentifier && anotherOne) =
+    value;
+>>> split in infix pattern
+var (longIdentifier && anotherAlsoLongOne) = value;
+<<<
+var (longIdentifier &&
+    anotherAlsoLongOne) = value;
+>>> split in list pattern
+var [first, second, third, fourth, fifth] = value;
+<<<
+var [
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+] = value;
+>>> split in map pattern
+var {first: second, third: fourth, fifth: sixth} = value;
+<<<
+var {
+  first: second,
+  third: fourth,
+  fifth: sixth
+} = value;
+>>> split in record pattern
+var (first, second, third, fourth, fifth) = value;
+<<<
+var (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+) = value;
+>>> split in object pattern
+var Foo(:first, :second, :third, :fourth, :fifth) = value;
+<<<
+var Foo(
+  :first,
+  :second,
+  :third,
+  :fourth,
+  :fifth
+) = value;
+>>> split in value
+var (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+var (first, second, third) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> expression split in both
+var (longIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+var (longIdentifier &&
+        anotherAlsoLongOne) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> collection-like split in both
+var (first, second, third, fourth, fifth) = (first, second, third, fourth, fifth);
+<<<
+var (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);
+>>> expression split in pattern, collection-like in value
+var (longIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+var (longIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);
+>>> expression split in pattern, collection-like in value
+var (longIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+var (longIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth
+);

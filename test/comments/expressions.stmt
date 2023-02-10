@@ -101,3 +101,17 @@ someVeryLongFunctionName(argumentName: true
 <<<
 someVeryLongFunctionName(
     argumentName: true /* comment */);
+>>> in delimited pattern in pattern assignment
+(x,// c
+y) = o;
+<<<
+(
+  x, // c
+  y
+) = o;
+>>> in infix pattern in pattern assignment
+(x &&// c
+y) = o;
+<<<
+(x && // c
+    y) = o;
