@@ -24,8 +24,7 @@ switch (obj) {
   case < other:
   case <= other:
   case > other:
-  case >= other:
-    body;
+  case >= other: body;
 }
 >>> relational as subpattern
 if (o case  >  1  &&  <   2 && (  ==   3 )) {}
@@ -68,8 +67,7 @@ switch (obj) {
   case -12.34:
   case 'string':
   case 's$tr${ing}':
-  case #symbol:
-    ok;
+  case #symbol: ok;
 }
 >>> identifiers
 switch (obj) {
@@ -84,8 +82,7 @@ switch (obj) {
   case _:
   case name:
   case qualified.name:
-  case prefixed.qualified.name:
-    ok;
+  case prefixed.qualified.name: ok;
 }
 >>> variables
 switch (obj) {
@@ -102,8 +99,7 @@ switch (obj) {
   case List<String> name:
   case var name:
   case final name:
-  case final (int, String) name:
-    ok;
+  case final (int, String) name: ok;
 }
 >>> list
 switch (obj) {
@@ -158,8 +154,7 @@ switch (obj) {
     }:
   case {k: 1, m: 2}:
   case {...}:
-  case {k: _, ...}:
-    ok;
+  case {k: _, ...}: ok;
 }
 >>> record
 switch (obj) {
@@ -168,6 +163,7 @@ switch (obj) {
   case  (  first  ,  second  ,  third  )  :
   case  (  first  :  1  ,  2  ,  third  :  3  )  :
   case  (  :  var  x  ,  :  var  y  )  :
+    ok;
 }
 <<<
 switch (obj) {
@@ -175,7 +171,7 @@ switch (obj) {
   case (value,):
   case (first, second, third):
   case (first: 1, 2, third: 3):
-  case (:var x, :var y):
+  case (:var x, :var y): ok;
 }
 >>> object
 switch (obj) {
@@ -220,8 +216,7 @@ switch (obj) {
   case const <int>{}:
   case const {1, 2}:
   case const <int, String>{}:
-  case const {1: 's', 2: 't'}:
-    ok;
+  case const {1: 's', 2: 't'}: ok;
 }
 >>> constant constructor
 switch (obj) {
@@ -252,6 +247,5 @@ ok;
 <<<
 switch (obj) {
   case const (1):
-  case const (-foo * bar):
-    ok;
+  case const (-foo * bar): ok;
 }

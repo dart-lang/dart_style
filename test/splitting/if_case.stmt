@@ -35,7 +35,7 @@ if (veryLongExpression +
     case someCase) {
   ;
 }
->>> if value expression block splits then case but guard doesn't have to
+>>> if value expression block splits then case splits but guard doesn't have to
 if (veryLongExpression + anotherVeryLongOne case someCase when true) {;}
 <<<
 if (veryLongExpression +
