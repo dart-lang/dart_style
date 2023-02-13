@@ -195,6 +195,28 @@ switch (obj) {
   case Foo<int, String>(:var x, :var y):
     ok;
 }
+>>> object
+switch (obj) {
+case  Foo  (  )  :
+case  Foo  (  getter  :  pattern  )  :
+case  Foo  (  getter  :  pattern  ,  )  :
+case  Foo  (  a  :  1  ,  b  :  2  ,  c  :  3  )  :
+case  Foo  (  :  var  x  ,  :  var  y  )  :
+case  Foo  <  int  ,  String  >  (  :  var  x  ,  :  var  y  )  :
+ok;
+}
+<<<
+switch (obj) {
+  case Foo():
+  case Foo(getter: pattern):
+  case Foo(
+      getter: pattern,
+    ):
+  case Foo(a: 1, b: 2, c: 3):
+  case Foo(:var x, :var y):
+  case Foo<int, String>(:var x, :var y):
+    ok;
+}
 >>> constant collections
 switch (obj) {
 case  const  [  ]  :
