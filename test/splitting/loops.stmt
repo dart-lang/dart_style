@@ -111,3 +111,85 @@ while (condition) somethingMuchLonger(i);
 <<<
 while (condition)
   somethingMuchLonger(i);
+>>> pattern for-in expression split in pattern
+for (var (longIdentifier && anotherLongOne) in obj) {;}
+<<<
+for (var (longIdentifier &&
+    anotherLongOne) in obj) {
+  ;
+}
+>>> pattern for-in block split in pattern
+for (var [longIdentifier, anotherLongOne] in obj) {;}
+<<<
+for (var [
+      longIdentifier,
+      anotherLongOne
+    ] in obj) {
+  ;
+}
+>>> pattern for-in split in value
+for (var (first, second, third) in longValueExpression + anotherOperand +
+aThirdOperand) {;}
+<<<
+for (var (first, second, third)
+    in longValueExpression +
+        anotherOperand +
+        aThirdOperand) {
+  ;
+}
+>>> pattern for-in split in both
+for (var (longIdentifier && anotherAlsoLongOne) in longValueExpression +
+anotherOperand + aThirdOperand) {;}
+<<<
+for (var (longIdentifier &&
+        anotherAlsoLongOne)
+    in longValueExpression +
+        anotherOperand +
+        aThirdOperand) {
+  ;
+}
+>>> pattern for expression split in pattern
+for (var (longIdentifier && anotherLongOne) = obj; cond; inc) {;}
+<<<
+for (var (longIdentifier &&
+        anotherLongOne) = obj;
+    cond;
+    inc) {
+  ;
+}
+>>> pattern for-in block split in pattern
+for (var [longIdentifier, anotherLongOne] = obj; cond; inc) {;}
+<<<
+for (var [
+      longIdentifier,
+      anotherLongOne
+    ] = obj;
+    cond;
+    inc) {
+  ;
+}
+>>> pattern for-in split in value
+for (var (first, second, third) = longValueExpression + anotherOperand +
+aThirdOperand; cond; inc) {;}
+<<<
+for (var (first, second, third) =
+        longValueExpression +
+            anotherOperand +
+            aThirdOperand;
+    cond;
+    inc) {
+  ;
+}
+>>> pattern for-in split in both
+for (var (longIdentifier && anotherAlsoLongOne) = longValueExpression +
+anotherOperand + aThirdOperand; cond; inc) {;}
+<<<
+for (var (longIdentifier &&
+            anotherAlsoLongOne) =
+        longValueExpression +
+            anotherOperand +
+            aThirdOperand;
+    cond;
+    inc) {
+  ;
+}

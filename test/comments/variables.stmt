@@ -1,0 +1,40 @@
+40 columns                              |
+>>> inline after "var"
+var /* int */ x;
+<<<
+var /* int */ x;
+>>> trailing line comment
+var x; // x
+<<<
+var x; // x
+>>> multiple variable declaration list
+var x /* X */, y;
+<<<
+var x /* X */, y;
+>>> always place newline after multi-line block comment
+/*
+*/ var i = value;
+<<<
+/*
+*/
+var i = value;
+>>> after keyword in pattern variable
+var // c
+(x, y) = o;
+<<<
+var // c
+    (x, y) = o;
+>>> in delimited pattern in pattern variable
+var (x,// c
+y) = o;
+<<<
+var (
+  x, // c
+  y
+) = o;
+>>> in infix pattern in pattern assignment
+var (x &&// c
+y) = o;
+<<<
+var (x && // c
+    y) = o;
