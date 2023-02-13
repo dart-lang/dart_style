@@ -347,3 +347,15 @@ fn(
   name: argument,
   argument,
 );
+>>> preserve line breaks in trailing comma argument list with line comment
+function(// yeah
+first, second, third,
+fourth, fifth,
+sixth,);
+<<<
+function(
+  // yeah
+  first, second, third,
+  fourth, fifth,
+  sixth,
+);

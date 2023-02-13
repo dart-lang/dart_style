@@ -308,3 +308,67 @@ if (obj
     )) {
   ;
 }
+>>> empty object pattern block comment
+if (obj case Foo(  /* comment */  )) {;}
+<<<
+if (obj case Foo(/* comment */)) {
+  ;
+}
+>>> empty object pattern line comment (looks weird, but user should move comment)
+if (obj case Foo(  // comment
+)) {;}
+<<<
+if (obj
+    case Foo(
+      // comment
+    )) {
+  ;
+}
+>>> object line comment between arguments
+if (obj case Foo( first , // comment
+second)){;}
+<<<
+if (obj
+    case Foo(
+      first, // comment
+      second
+    )) {
+  ;
+}
+>>> empty const constructor line comment (looks weird, but user should move comment)
+if (obj case const Foo(  // comment
+)) {;}
+<<<
+if (obj
+    case const Foo(// comment
+        )) {
+  ;
+}
+>>> const constructor line comment between arguments
+if (obj case const Foo( first , // comment
+second)){;}
+<<<
+if (obj
+    case const Foo(
+        first, // comment
+        second)) {
+  ;
+}
+>>> after "(" in parenthesized constant
+if (obj case const ( // comment
+expression)){;}
+<<<
+if (obj
+    case const ( // comment
+        expression)) {
+  ;
+}
+>>> after expression in parenthesized constant (looks weird, but user should move comment)
+if (obj case const ( expression // comment
+)){;}
+<<<
+if (obj
+    case const (expression // comment
+        )) {
+  ;
+}
