@@ -46,17 +46,6 @@ do {} while ("some long string that wraps");
 <<<
 do {} while (
     "some long string that wraps");
->>> split in switch value
-switch ("a long string that must wrap") {
-  case 0:
-    return "ok";
-}
-<<<
-switch (
-    "a long string that must wrap") {
-  case 0:
-    return "ok";
-}
 >>> don't split empty block in if without else
 if (condition) {
 
