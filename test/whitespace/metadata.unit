@@ -250,7 +250,8 @@ function(
 function(@Annotation longParameter,@Annotation @Other @Third longParameter2,) {}
 <<<
 function(
-  @Annotation longParameter,
+  @Annotation
+      longParameter,
   @Annotation
   @Other
   @Third
