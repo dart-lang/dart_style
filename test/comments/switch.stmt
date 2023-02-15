@@ -46,15 +46,13 @@ switch (n) {
 >>> line comment at end of statement does not force split
 switch (n) {
   case 0: zero; // comment
-  case 1: one; one; // comment
+  case 1: one; // comment
   case 2: two; // comment
 }
 <<<
 switch (n) {
   case 0: zero; // comment
-  case 1:
-    one;
-    one; // comment
+  case 1: one; // comment
   case 2: two; // comment
 }
 >>> keeps one blank line around  case comments in switch expression

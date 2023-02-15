@@ -1,7 +1,9 @@
 # 2.2.5-dev
 
 * Format patterns and related features.
-* Allow switch statement case bodies on the same line as the case.
+* Allow switch statements where all case bodies are on the same line as the
+  case when they all fit.
+* Fix bug where parameter metadata wouldn't always split when it should.
 * Don't split after `<` in collection literals.
 * Format record expressions and record type annotations.
 * Better indentation of multiline function types inside type argument lists. 

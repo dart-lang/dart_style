@@ -154,7 +154,8 @@ switch (obj) {
     }:
   case {k: 1, m: 2}:
   case {...}:
-  case {k: _, ...}: ok;
+  case {k: _, ...}:
+    ok;
 }
 >>> record
 switch (obj) {

@@ -31,7 +31,7 @@ switch (obj) {
   case 1:
   case 2: a();
 }
->>> single-statement case can stay on one line
+>>> single-statement cases can stay on one line
 switch (obj) {
   case 1: a();
   case 2: b();
@@ -61,7 +61,7 @@ switch (obj) {
     d();
     e();
 }
->>> can mix split and unsplit cases
+>>> any split case forces all cases to split
 switch (obj) {
   case 1: a(); b();
   case 2: c();
@@ -73,11 +73,13 @@ switch (obj) {
   case 1:
     a();
     b();
-  case 2: c();
+  case 2:
+    c();
   case 3:
     d();
     e();
-  default: f();
+  default:
+    f();
 }
 >>> long body statement splits after ":"
 switch (obj) {
@@ -89,8 +91,10 @@ switch (obj) {
 switch (obj) {
   case 1:
     longExpression + thatMustSplit;
-  case 2: b();
-  default: c();
+  case 2:
+    b();
+  default:
+    c();
 }
 >>> split in body statement splits after ":"
 switch (obj) {
@@ -103,8 +107,10 @@ switch (obj) {
   case 1:
     longExpression +
         thatMustSplitAndAgain;
-  case 2: b();
-  default: c();
+  case 2:
+    b();
+  default:
+    c();
 }
 >>> pattern and guard on same line
 switch (obj) {
