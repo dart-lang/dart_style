@@ -949,9 +949,10 @@ class ChunkBuilder {
     return true;
   }
 
-  /// For each non-hardened rule, find the range of chunks that share it. We
-  /// must ensure that those chunks are all split together so that they don't
-  /// try to pick different values for the same rule.
+  /// For each non-hardened rule, find the range of chunks that share it.
+  ///
+  /// We must ensure that those chunks are all split together so that they
+  /// don't try to pick different values for the same rule.
   ///
   /// Returns a list of `[low, high]` ranges.
   ///
