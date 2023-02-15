@@ -1,6 +1,7 @@
 # 2.2.5-dev
 
 * Format record expressions and record type annotations.
+* Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`
 * Better indentation of multiline function types inside type argument lists. 
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
