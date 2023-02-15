@@ -4,6 +4,7 @@
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
@@ -83,25 +84,11 @@ class DartFormatter {
   /// Returns a new [SourceCode] containing the formatted code and the resulting
   /// selection, if any.
   SourceCode formatSource(SourceCode source) {
-    // Enable all features that are enabled by default in the current analyzer
-    // version.
-    // TODO(paulberry): consider plumbing in experiment enable flags from the
-    // command line.
-    var featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: Version(2, 19, 0),
-      flags: [
-        // TODO(rnystrom): This breaks existing switch cases containing constant
-        // expressions that aren't valid patterns. See:
-        // https://github.com/dart-lang/dart_style/issues/1164
-        'patterns',
-        'records',
-        'unnamed-libraries',
-      ],
-    );
-
     var inputOffset = 0;
     var text = source.text;
     var unitSourceCode = source;
+
+    // If we're parsing a single statement, wrap the source in a fake function.
     if (!source.isCompilationUnit) {
       var prefix = 'void foo() { ';
       inputOffset = prefix.length;
@@ -118,12 +105,19 @@ class DartFormatter {
     }
 
     // Parse it.
-    var parseResult = parseString(
-      content: text,
-      featureSet: featureSet,
-      path: source.uri,
-      throwIfDiagnostics: false,
-    );
+    var parseResult = _parse(text, source.uri, patterns: true);
+
+    // If we couldn't parse it with patterns enabled, it may be because of
+    // one of the breaking syntax changes to switch cases. Try parsing it
+    // again without patterns.
+    if (parseResult.errors.isNotEmpty) {
+      var withoutPatternsResult = _parse(text, source.uri, patterns: false);
+
+      // If we succeeded this time, use this parse instead.
+      if (withoutPatternsResult.errors.isEmpty) {
+        parseResult = withoutPatternsResult;
+      }
+    }
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
@@ -182,5 +176,46 @@ class DartFormatter {
     }
 
     return output;
+  }
+
+  /// Parse [source] from [uri].
+  ///
+  /// If [patterns] is `true`, the parse at the latest language version
+  /// which supports patterns and treats switch cases as patterns. If `false`,
+  /// then parses using an older language version where switch cases are
+  /// constant expressions.
+  ///
+  // TODO(rnystrom): This is a pretty big hack. Up until now, every language
+  // version was a strict syntactic superset of all previous versions. That let
+  // the formatter parse every file at the latest language version without
+  // having to detect each file's actual version, which requires digging around
+  // in the file system for package configs and looking for "@dart" comments in
+  // files. It also means the library API that parses arbitrary strings doesn't
+  // have to worry about what version the code should be interpreted as.
+  //
+  // But with patterns, a small number of switch cases are no longer
+  // syntactically valid. Breakage from this is very rare. Instead of adding
+  // the machinery to detect language versions (which is likely to be slow and
+  // brittle), we just try parsing everything with patterns enabled. When a
+  // parse error occurs, we try parsing it again with pattern disabled. If that
+  // happens to parse without error, then we use that result instead.
+  ParseStringResult _parse(String source, String? uri, {required bool patterns}) {
+    // Enable all features that are enabled by default in the current analyzer
+    // version.
+    var featureSet = FeatureSet.fromEnableFlags2(
+      sdkLanguageVersion: Version(2, 19, 0),
+      flags: [
+        if (patterns) 'patterns',
+        'records',
+        'unnamed-libraries',
+      ],
+    );
+
+    return parseString(
+      content: source,
+      featureSet: featureSet,
+      path: uri,
+      throwIfDiagnostics: false,
+    );
   }
 }
