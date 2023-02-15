@@ -84,10 +84,11 @@ class DartFormatter {
   /// Returns a new [SourceCode] containing the formatted code and the resulting
   /// selection, if any.
   SourceCode formatSource(SourceCode source) {
-    // If we're parsing a single statement, wrap the source in a fake function.
     var inputOffset = 0;
     var text = source.text;
     var unitSourceCode = source;
+
+    // If we're parsing a single statement, wrap the source in a fake function.
     if (!source.isCompilationUnit) {
       var prefix = 'void foo() { ';
       inputOffset = prefix.length;

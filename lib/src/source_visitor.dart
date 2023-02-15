@@ -3163,8 +3163,10 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Visits an infix operator-like AST node: a binary operator expression, or
   /// binary pattern.
   ///
-  /// Applies the same formatting to all. In particular, it flattens out a
-  /// series of the same operator precedence so that if one splits, they all do.
+  /// In a tree of binary AST nodes, all operators at the same precedence are
+  /// treated as a single chain of operators that either all split or none do.
+  /// Operands within those (which may themselves be chains of higher
+  /// precedence binary operators) are then formatted independently.
   ///
   /// [T] is the type of node being visited and [destructureNode] is a callback
   /// that takes one of those and yields the operands and operator. We need
