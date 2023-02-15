@@ -25,3 +25,15 @@ mixin M1 on UnaryNum {
 mixin M<   A  ,B  >on   C  implements    D{ }
 <<<
 mixin M<A, B> on C implements D {}
+>>> mixin modifiers
+mixin  M1 {}
+base  mixin M2 {}
+interface  mixin M3 {}
+final  mixin M4 {}
+sealed  mixin M5 {}
+<<<
+mixin M1 {}
+base mixin M2 {}
+interface mixin M3 {}
+final mixin M4 {}
+sealed mixin M5 {}

@@ -596,6 +596,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.nestExpression();
     modifier(node.abstractKeyword);
+    modifier(node.baseKeyword);
+    modifier(node.interfaceKeyword);
+    modifier(node.finalKeyword);
+    modifier(node.sealedKeyword);
+    modifier(node.mixinKeyword);
     token(node.classKeyword);
     space();
     token(node.name);
@@ -615,6 +620,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _simpleStatement(node, () {
       modifier(node.abstractKeyword);
+      modifier(node.baseKeyword);
+      modifier(node.interfaceKeyword);
+      modifier(node.finalKeyword);
+      modifier(node.sealedKeyword);
+      modifier(node.mixinKeyword);
       token(node.typedefKeyword);
       space();
       token(node.name);
@@ -2142,6 +2152,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitMetadata(node.metadata);
 
     builder.nestExpression();
+    modifier(node.baseKeyword);
+    modifier(node.interfaceKeyword);
+    modifier(node.finalKeyword);
+    modifier(node.sealedKeyword);
     token(node.mixinKeyword);
     space();
     token(node.name);

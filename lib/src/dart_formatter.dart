@@ -90,7 +90,9 @@ class DartFormatter {
     var featureSet = FeatureSet.fromEnableFlags2(
       sdkLanguageVersion: Version(2, 19, 0),
       flags: [
+        'class-modifiers',
         'records',
+        'sealed-class',
         'unnamed-libraries',
       ],
     );
