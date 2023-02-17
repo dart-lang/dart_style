@@ -93,6 +93,9 @@ and to update the exit code to indicate success/failure:
 
     $ dart format --output=none --set-exit-if-changed .
 
+[presubmit script]: https://www.chromium.org/developers/how-tos/depottools/presubmit-scripts
+[commit hook]: https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks
+
 ## Running other versions of the formatter CLI command
 
 If you need to run a different version of the formatter, you can
