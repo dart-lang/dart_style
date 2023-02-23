@@ -55,7 +55,39 @@ switch (n) {
   case 1: one; // comment
   case 2: two; // comment
 }
->>> keeps one blank line around  case comments in switch expression
+>>> line comment indentation
+switch (n) {
+  // before first
+  case 0: zero;
+  // between
+  case 1: one;
+  // after last
+}
+<<<
+switch (n) {
+  // before first
+  case 0: zero;
+  // between
+  case 1: one;
+  // after last
+}
+>>> line comment in empty cases
+switch (n) {
+  case 0: // comment 0
+  case 1:
+    // comment 1
+  case 2:
+    // comment 2
+}
+<<<
+switch (n) {
+  case 0: // comment 0
+  case 1:
+  // comment 1
+  case 2:
+  // comment 2
+}
+>>> keeps one blank line around case comments in switch expression
 e = switch (n) {
 
 
