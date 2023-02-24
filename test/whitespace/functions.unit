@@ -72,6 +72,22 @@ main()sync  *{var lambda = ()sync *{};}
 main() sync* {
   var lambda = () sync* {};
 }
+>>> sync* function with arrow body
+main()sync  *  =>  [];
+<<<
+main() sync* => [];
+>>> sync* getter with arrow body
+Iterable get main  sync  *  =>  [];
+<<<
+Iterable get main sync* => [];
+>>> async* function with arrow body
+main()async  *  =>  [];
+<<<
+main() async* => [];
+>>> async* getter with arrow body
+Stream get main  async  *  =>  [];
+<<<
+Stream get main async* => [];
 >>> trailing comma in single parameter list
 function(parameter   ,   ) {;}
 <<<
