@@ -60,6 +60,23 @@ class ChunkBuilder {
   /// Whether the next chunk should be flush left.
   bool _pendingFlushLeft = false;
 
+  /// Whether subsequent hard splits should be allowed to divide for line
+  /// splitting.
+  ///
+  /// Most rules used by multiple chunks will never have a hard split on a
+  /// chunk between two chunks using that rule. That means when we see a hard
+  /// split, we can line split the chunks before and after it independently.
+  ///
+  /// However, there are a couple of places where a single rule spans
+  /// multiple chunks where hard splits also appear interleaved between them.
+  /// Currently, that's the rule for splitting switch case bodies, and the
+  /// rule for parameter list metadata.
+  ///
+  /// In those circumstances, we mark the chunk with the hard split as not
+  /// being allowed to divide. That way, all of the chunks using the rule are
+  /// split together.
+  bool _pendingPreventDivide = false;
+
   /// Whether the most recently written output was a comment.
   bool _afterComment = false;
 
@@ -156,6 +173,7 @@ class ChunkBuilder {
 
     _nesting.commitNesting();
     _afterComment = false;
+    _pendingPreventDivide = false;
   }
 
   /// Writes one or two hard newlines.
@@ -168,10 +186,14 @@ class ChunkBuilder {
   /// nesting. If [nest] is `true` then the next line will use expression
   /// nesting.
   void writeNewline(
-      {bool isDouble = false, bool flushLeft = false, bool nest = false}) {
+      {bool isDouble = false,
+      bool flushLeft = false,
+      bool nest = false,
+      bool preventDivide = false}) {
     _pendingNewlines = isDouble ? 2 : 1;
     _pendingFlushLeft = flushLeft;
     _pendingNested = nest;
+    _pendingPreventDivide |= preventDivide;
   }
 
   /// Writes a space before the subsequent non-whitespace text.
@@ -855,10 +877,14 @@ class ChunkBuilder {
           isHard: isHard, isDouble: isDouble, space: space);
     }
 
+    if (chunk.rule.isHardened) {
+      _handleHardSplit();
+
+      if (_pendingPreventDivide) chunk.preventDivide();
+    }
+
     _pendingNewlines = 0;
     _pendingNested = false;
-
-    if (chunk.rule.isHardened) _handleHardSplit();
     return chunk;
   }
 
@@ -891,23 +917,6 @@ class ChunkBuilder {
     return chunk;
   }
 
-  /// Returns true if we can divide the chunks at [index] and line split the
-  /// ones before and after that separately.
-  bool _canDivideAt(int i) {
-    // Don't divide at the first chunk.
-    if (i == 0) return false;
-
-    var chunk = _chunks[i];
-    if (!chunk.rule.isHardened) return false;
-    if (chunk.nesting.isNested) return false;
-
-    // If the chunk is the ending delimiter of a block, then don't separate it
-    // and its children from the preceding beginning of the block.
-    if (_chunks[i] is BlockChunk) return false;
-
-    return true;
-  }
-
   /// Pre-processes the chunks after they are done being written by the visitor
   /// but before they are run through the line splitter.
   ///
@@ -918,11 +927,29 @@ class ChunkBuilder {
     // splits, along with all of the other rules they constrain.
     _hardenRules();
 
-    // Now that we know where all of the divided chunk sections are, mark the
-    // chunks.
     for (var i = 0; i < _chunks.length; i++) {
-      _chunks[i].markDivide(_canDivideAt(i));
+      var chunk = _chunks[i];
+      if (!_canDivide(chunk)) chunk.preventDivide();
     }
+  }
+
+  /// Returns true if we can divide the chunks at [index] and line split the
+  /// ones before and after that separately.
+  bool _canDivide(Chunk chunk) {
+    // Don't divide at the first chunk.
+    if (chunk == _chunks.first) return false;
+
+    // Can't divide soft rules.
+    if (!chunk.rule.isHardened) return false;
+
+    // Can't divide in the middle of expression nesting.
+    if (chunk.nesting.isNested) return false;
+
+    // If the chunk is the ending delimiter of a block, then don't separate it
+    // and its children from the preceding beginning of the block.
+    if (chunk is BlockChunk) return false;
+
+    return true;
   }
 
   /// Hardens the active rules when a hard split occurs within them.

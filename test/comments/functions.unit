@@ -235,3 +235,17 @@ function({
 }) {
   ;
 }
+>>> metadata in trailing comma parameter list splits together even with comment
+function(@Annotation longParameter,
+  // Comment.
+@Annotation @Other @Third longParameter2,) {}
+<<<
+function(
+  @Annotation
+      longParameter,
+  // Comment.
+  @Annotation
+  @Other
+  @Third
+      longParameter2,
+) {}

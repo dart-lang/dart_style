@@ -1,16 +1,4 @@
 40 columns                              |
->>> inline after "var"
-var /* int */ x;
-<<<
-var /* int */ x;
->>> trailing line comment
-var x; // x
-<<<
-var x; // x
->>> multiple variable declaration list
-var x /* X */, y;
-<<<
-var x /* X */, y;
 >>> continue with line comment
 while (true) {
   continue // comment
@@ -37,13 +25,6 @@ do // comment
     {
   ;
 } while (true);
->>> always place newline after multi-line block comment
-/*
-*/ var i = value;
-<<<
-/*
-*/
-var i = value;
 >>> remove blank lines before beginning of block
 while (true) {
 
@@ -94,41 +75,4 @@ main() {
 <<<
 main() {
   while (b) /*unreachable*/ {}
-}
->>> blank lines before comments in switch
-main() {
-  switch (n) {
-
-
-    // comment
-    case 0:
-
-
-
-    // comment
-
-
-
-    case 1:
-      ;
-
-
-    // comment
-
-
-  }
-}
-<<<
-main() {
-  switch (n) {
-    // comment
-    case 0:
-
-    // comment
-
-    case 1:
-      ;
-
-    // comment
-  }
 }

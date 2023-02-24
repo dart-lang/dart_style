@@ -5,36 +5,14 @@ import '../chunk.dart';
 import 'rule.dart';
 
 /// Base class for a rule that handles argument or parameter lists.
-abstract class ArgumentRule extends Rule {
+abstract class ArgumentRule extends SplitContainingRule {
   /// The chunks prior to each positional argument.
   final List<Chunk?> _arguments = [];
-
-  /// If true, then inner rules that are written will force this rule to split.
-  ///
-  /// Temporarily disabled while writing collection arguments so that they can
-  /// be multi-line without forcing the whole argument list to split.
-  bool _trackInnerRules = true;
-
-  /// Don't split when an inner collection rule splits.
-  @override
-  bool get splitsOnInnerRules => _trackInnerRules;
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
   void beforeArgument(Chunk? chunk) {
     _arguments.add(chunk);
-  }
-
-  /// Disables tracking inner rules while a collection argument is written.
-  void disableSplitOnInnerRules() {
-    assert(_trackInnerRules == true);
-    _trackInnerRules = false;
-  }
-
-  /// Re-enables tracking inner rules.
-  void enableSplitOnInnerRules() {
-    assert(_trackInnerRules == false);
-    _trackInnerRules = true;
   }
 }
 

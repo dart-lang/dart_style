@@ -213,6 +213,31 @@ class Rule extends FastHash {
   String toString() => '$id';
 }
 
+/// A rule that may contain splits which don't force it to split.
+class SplitContainingRule extends Rule {
+  /// If true, then inner rules that are written will force this rule to split.
+  ///
+  /// Temporarily disabled while writing collection arguments so that they can
+  /// be multi-line without forcing the whole argument list to split.
+  bool _trackInnerRules = true;
+
+  /// Don't split when an inner collection rule splits.
+  @override
+  bool get splitsOnInnerRules => _trackInnerRules;
+
+  /// Disables tracking inner rules while a collection argument is written.
+  void disableSplitOnInnerRules() {
+    assert(_trackInnerRules == true);
+    _trackInnerRules = false;
+  }
+
+  /// Re-enables tracking inner rules.
+  void enableSplitOnInnerRules() {
+    assert(_trackInnerRules == false);
+    _trackInnerRules = true;
+  }
+}
+
 /// Describes a value constraint that one [Rule] places on another rule's
 /// values.
 ///

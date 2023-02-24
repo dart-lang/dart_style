@@ -207,3 +207,21 @@ var record = (first: 1, 2, third: 3);
 var record = const   (  1 ,   2 );
 <<<
 var record = const (1, 2);
+>>> pattern assignment
+{
+  (  a  &&  b  )  =  o;
+  (  a  as  int  ,  b  )  = o;
+  (  :  inferred  ) = o;
+  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  {  'k'  :  _  ,  ...  } = o;
+  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  (a && b) = o;
+  (a as int, b) = o;
+  (:inferred) = o;
+  [a!, Foo(:b), ...] = o;
+  {'k': _, ...} = o;
+  Foo(prop: value, :inferred) = o;
+}

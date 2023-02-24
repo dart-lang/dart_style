@@ -80,10 +80,10 @@ class NestingBuilder {
     assert(_pendingNesting == null);
     assert(_nesting.indent == 0);
 
+    _stack.removeLast();
+
     // If this fails, an unindent() call did not have a preceding indent() call.
     assert(_stack.isNotEmpty);
-
-    _stack.removeLast();
   }
 
   /// Begins a new expression nesting level [indent] deeper than the current

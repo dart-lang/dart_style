@@ -205,3 +205,18 @@ var set = {
   }(),
   4
 };
+>>> don't allow splitting between argument name and set
+longFunctionName(argument, argument, argument, argument, argument, argument, argumentName: {element, element, element});
+<<<
+longFunctionName(
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+    argumentName: {
+      element,
+      element,
+      element
+    });
