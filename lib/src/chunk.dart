@@ -115,7 +115,7 @@ class Chunk extends Selection {
   /// Whether this chunk marks the end of a range of chunks that can be line
   /// split independently of the following chunks.
   bool get canDivide => _canDivide;
-  late bool _canDivide = true;
+  bool _canDivide = true;
 
   /// The number of characters in this chunk when unsplit.
   int get length => (_spaceWhenUnsplit ? 1 : 0) + _text.length;
