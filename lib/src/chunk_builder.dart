@@ -60,6 +60,23 @@ class ChunkBuilder {
   /// Whether the next chunk should be flush left.
   bool _pendingFlushLeft = false;
 
+  /// Whether subsequent hard splits should be allowed to divide for line
+  /// splitting.
+  ///
+  /// Most rules used by multiple chunks will never have a hard split on a
+  /// chunk between two chunks using that rule. That means when we see a hard
+  /// split, we can line split the chunks before and after it independently.
+  ///
+  /// However, there are a couple of places where a single rule spans
+  /// multiple chunks where hard splits also appear interleaved between them.
+  /// Currently, that's the rule for splitting switch case bodies, and the
+  /// rule for parameter list metadata.
+  ///
+  /// In those circumstances, we mark the chunk with the hard split as not
+  /// being allowed to divide. That way, all of the chunks using the rule are
+  /// split together.
+  bool _pendingPreventDivide = false;
+
   /// Whether the most recently written output was a comment.
   bool _afterComment = false;
 
@@ -156,6 +173,7 @@ class ChunkBuilder {
 
     _nesting.commitNesting();
     _afterComment = false;
+    _pendingPreventDivide = false;
   }
 
   /// Writes one or two hard newlines.
@@ -168,10 +186,14 @@ class ChunkBuilder {
   /// nesting. If [nest] is `true` then the next line will use expression
   /// nesting.
   void writeNewline(
-      {bool isDouble = false, bool flushLeft = false, bool nest = false}) {
+      {bool isDouble = false,
+      bool flushLeft = false,
+      bool nest = false,
+      bool preventDivide = false}) {
     _pendingNewlines = isDouble ? 2 : 1;
     _pendingFlushLeft = flushLeft;
     _pendingNested = nest;
+    _pendingPreventDivide |= preventDivide;
   }
 
   /// Writes a space before the subsequent non-whitespace text.
@@ -855,10 +877,14 @@ class ChunkBuilder {
           isHard: isHard, isDouble: isDouble, space: space);
     }
 
+    if (chunk.rule.isHardened) {
+      _handleHardSplit();
+
+      if (_pendingPreventDivide) chunk.preventDivide();
+    }
+
     _pendingNewlines = 0;
     _pendingNested = false;
-
-    if (chunk.rule.isHardened) _handleHardSplit();
     return chunk;
   }
 
@@ -901,32 +927,9 @@ class ChunkBuilder {
     // splits, along with all of the other rules they constrain.
     _hardenRules();
 
-    var ruleRanges = _calculateRuleRanges();
-
     for (var i = 0; i < _chunks.length; i++) {
       var chunk = _chunks[i];
-      var canDivide = _canDivide(chunk);
-
-      if (canDivide) {
-        // Don't divide in the middle of a rule.
-        //
-        // This rarely comes into play since few rules can have hard splits
-        // between their chunks while not also being hardened themselves. But
-        // rules for paramater metadata and switch case bodies can.
-        for (var range in ruleRanges) {
-          // Example:
-          // Chunk index: 0 1 2 3 4 5
-          // Rule:            a   a    [2, 4]
-          // Divide:        | |     |
-          //                1 2     5
-          if (i > range[0] && i < range[1]) {
-            canDivide = false;
-            break;
-          }
-        }
-      }
-
-      chunk.markDivide(canDivide);
+      if (!_canDivide(chunk)) chunk.preventDivide();
     }
   }
 
@@ -947,61 +950,6 @@ class ChunkBuilder {
     if (chunk is BlockChunk) return false;
 
     return true;
-  }
-
-  /// For each non-hardened rule, find the range of chunks that share it.
-  ///
-  /// We must ensure that those chunks are all split together so that they
-  /// don't try to pick different values for the same rule.
-  ///
-  /// Returns a list of `[low, high]` ranges.
-  ///
-  /// Very few rules actually allow a hard split in between chunks sharing that
-  /// rule (as of today just switch case bodies and parameter metadata). To
-  /// avoid returning a huge list of mostly useless ranges, we only return
-  /// ranges for rules that contain at least one hard split between their first
-  /// and last chunks.
-  List<List<int>> _calculateRuleRanges() {
-    var ruleStarts = <Rule, int>{};
-    var ruleRanges = <Rule, List<int>>{};
-    var lastHardSplit = -1;
-    var usefulRanges = <Rule, List<int>>{};
-
-    for (var i = 0; i < _chunks.length; i++) {
-      var rule = _chunks[i].rule;
-      if (!rule.isHardened) {
-        var start = ruleStarts[rule];
-        if (start == null) {
-          // This is the first chunk using this rule. Don't create a range yet
-          // until we see it used by another chunk, since most rules are only
-          // used for a single chunk.
-          ruleStarts[rule] = i;
-        } else {
-          // This rule now spans at least two chunks, so create a range. The
-          // low end is the first index using this rule rule.
-          var range = ruleRanges.putIfAbsent(rule, () => [start, 0]);
-
-          // Keep updating the high end of the range as long we continue to find
-          // the rule.
-          range[1] = i;
-
-          // If we encounter a hard split within this rule's range, keep the
-          // range.
-          if (lastHardSplit > range[0] && lastHardSplit < range[1]) {
-            usefulRanges[rule] = range;
-          }
-        }
-      } else {
-        lastHardSplit = i;
-      }
-    }
-
-    // TODO(rnystrom): There is probably something more efficient we can do.
-    // We could merge overlapping ranges in the list into larger ones. Or maybe
-    // during chunk building, when a Rule sets `splitsOnInnerRules` to `false`
-    // and we write a hard chunk, we can mark that hard chunk as not splittable.
-
-    return usefulRanges.values.toList();
   }
 
   /// Hardens the active rules when a hard split occurs within them.

@@ -87,6 +87,21 @@ switch (n) {
   case 2:
   // comment 2
 }
+>>> bodies all split or don't together even with comment in the middle
+switch (n) {
+  case 0: longBodyExpression + thatForcesSplit;
+  // comment
+  case 1: c;
+}
+<<<
+switch (n) {
+  case 0:
+    longBodyExpression +
+        thatForcesSplit;
+  // comment
+  case 1:
+    c;
+}
 >>> keeps one blank line around case comments in switch expression
 e = switch (n) {
 

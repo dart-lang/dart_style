@@ -199,7 +199,8 @@ class DartFormatter {
   // brittle), we just try parsing everything with patterns enabled. When a
   // parse error occurs, we try parsing it again with pattern disabled. If that
   // happens to parse without error, then we use that result instead.
-  ParseStringResult _parse(String source, String? uri, {required bool patterns}) {
+  ParseStringResult _parse(String source, String? uri,
+      {required bool patterns}) {
     // Enable all features that are enabled by default in the current analyzer
     // version.
     var featureSet = FeatureSet.fromEnableFlags2(

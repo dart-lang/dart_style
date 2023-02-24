@@ -114,10 +114,8 @@ class Chunk extends Selection {
 
   /// Whether this chunk marks the end of a range of chunks that can be line
   /// split independently of the following chunks.
-  ///
-  /// You must call markDivide() before accessing this.
   bool get canDivide => _canDivide;
-  late final bool _canDivide;
+  bool _canDivide = true;
 
   /// The number of characters in this chunk when unsplit.
   int get length => (_spaceWhenUnsplit ? 1 : 0) + _text.length;
@@ -177,9 +175,12 @@ class Chunk extends Selection {
   /// that [Rule].
   bool indentBlock(int Function(Rule) getValue) => false;
 
-  // Mark whether this chunk can divide the range of chunks.
-  void markDivide(bool canDivide) {
-    _canDivide = canDivide;
+  /// Prevent the line splitter from diving at this chunk.
+  ///
+  /// This should be called on any chunk where line splitting choices before
+  /// and after this chunk relate to each other.
+  void preventDivide() {
+    _canDivide = false;
   }
 
   @override
