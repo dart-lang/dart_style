@@ -1,6 +1,7 @@
 # 2.2.5-dev
 
 * Format patterns and related features.
+* Handle `sync*` and `async*` functions with `=>` bodies.
 * Allow switch statements where all case bodies are on the same line as the
   case when they all fit.
 * Fix bug where parameter metadata wouldn't always split when it should.

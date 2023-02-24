@@ -1071,8 +1071,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Space after the parameter list.
     space();
 
-    // The "async" or "sync" keyword.
-    token(node.keyword, after: space);
+    // The "async" or "sync" keyword and "*".
+    token(node.keyword);
+    token(node.star);
+    if (node.keyword != null || node.star != null) space();
 
     // Try to keep the "(...) => " with the start of the body for anonymous
     // functions.
@@ -1507,6 +1509,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
     builder.startBlockArgumentNesting();
+    visitNodes(node.metadata, between: split, after: split);
     token(node.keyword);
     space();
     visit(node.pattern);
@@ -1524,7 +1527,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startRule();
 
     var declaration = node.variables;
-    visitMetadata(declaration.metadata);
+    visitNodes(declaration.metadata, between: split, after: split);
     modifier(declaration.keyword);
     visit(declaration.type, after: space);
 
@@ -1547,8 +1550,18 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitForPartsWithPattern(ForPartsWithPattern node) {
     builder.startBlockArgumentNesting();
-    visit(node.variables);
+    builder.nestExpression();
+
+    var declaration = node.variables;
+    visitNodes(declaration.metadata, between: split, after: split);
+    token(declaration.keyword);
+    space();
+    visit(declaration.pattern);
+    _visitAssignment(declaration.equals, declaration.expression);
+
+    builder.unnest();
     builder.endBlockArgumentNesting();
+
     _visitForPartsFromLeftSeparator(node);
   }
 
@@ -2714,7 +2727,10 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visitCommaSeparatedNodes(node.cases, between: split);
 
-    var hasTrailingComma = node.cases.last.commaAfter != null;
+    // A switch with no cases isn't syntactically valid, but handle it
+    // gracefully instead of crashing.
+    var hasTrailingComma =
+        node.cases.isNotEmpty && node.cases.last.commaAfter != null;
     _endBody(node.rightBracket, forceSplit: hasTrailingComma);
   }
 
