@@ -7,6 +7,7 @@
 * Fix bug where parameter metadata wouldn't always split when it should.
 * Don't split after `<` in collection literals.
 * Format record expressions and record type annotations.
+* Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`
 * Better indentation of multiline function types inside type argument lists. 
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
