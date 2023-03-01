@@ -206,6 +206,7 @@ class DartFormatter {
     var featureSet = FeatureSet.fromEnableFlags2(
       sdkLanguageVersion: Version(2, 19, 0),
       flags: [
+        'inline-class',
         'class-modifiers',
         if (patterns) 'patterns',
         'records',

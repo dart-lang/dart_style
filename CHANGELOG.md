@@ -8,7 +8,8 @@
 * Don't split after `<` in collection literals.
 * Format record expressions and record type annotations.
 * Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`
-* Better indentation of multiline function types inside type argument lists. 
+* Handle `inline class` syntax.
+* Better indentation of multiline function types inside type argument lists.
 * Require `package:analyzer` `^5.1.0`.
 * Format unnamed libraries.
 * Require Dart 2.18.
@@ -36,7 +37,7 @@
 * Don't allow a line comment in an argument list to cause preceding arguments
   to be misformatted.
 * Remove blank lines after a line comment at the end of a body.
-* Require `package:analyzer` `>=4.4.0 <6.0.0`. 
+* Require `package:analyzer` `>=4.4.0 <6.0.0`.
 
 # 2.2.3
 
