@@ -588,7 +588,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.finalKeyword);
     modifier(node.sealedKeyword);
     modifier(node.mixinKeyword);
-    modifier((node as dynamic).inlineKeyword);
+    modifier(node.inlineKeyword);
     token(node.classKeyword);
     space();
     token(node.name);
