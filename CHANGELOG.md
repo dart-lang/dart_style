@@ -1,4 +1,4 @@
-# 2.2.5-dev
+# 2.3.0-dev
 
 * Format patterns and related features.
 * Handle `sync*` and `async*` functions with `=>` bodies.
@@ -9,14 +9,18 @@
 * Format record expressions and record type annotations.
 * Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`
 * Better indentation of multiline function types inside type argument lists. 
-* Require `package:analyzer` `^5.1.0`.
-* Format unnamed libraries.
-* Require Dart 2.18.
 * Use typed `_visitFunctionOrMethodDeclaration` instead of dynamically typed.
 * Fix metadata test to not fail when record syntax makes whitespace between
   metadata annotation names and `(` significant ([sdk#50769][]).
+* Require Dart 2.19.
+* Require `package:analyzer` `^5.1.0`.
 
 [sdk#50769]: https://github.com/dart-lang/sdk/issues/50769
+
+# 2.2.5
+
+* Format unnamed libraries.
+* Require Dart 2.17.
 
 # 2.2.4
 
