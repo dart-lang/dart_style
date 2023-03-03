@@ -1,23 +1,34 @@
-# 2.2.5-dev
+# 2.3.0-dev
+
+## New language features
 
 * Format patterns and related features.
+* Format record expressions and record type annotations.
+* Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`.
+* Format `inline class` declarations.
+* Format unnamed libraries.
+
+## Bug fixes and style changes
+
 * Handle `sync*` and `async*` functions with `=>` bodies.
-* Allow switch statements where all case bodies are on the same line as the
-  case when they all fit.
 * Fix bug where parameter metadata wouldn't always split when it should.
 * Don't split after `<` in collection literals.
-* Format record expressions and record type annotations.
-* Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`
-* Handle `inline class` syntax.
-* Better indentation of multiline function types inside type argument lists.
-* Require `package:analyzer` `^5.1.0`.
-* Format unnamed libraries.
-* Require Dart 2.18.
+* Better indentation of multiline function types inside type argument lists. 
+
+## Internal changes
+
 * Use typed `_visitFunctionOrMethodDeclaration` instead of dynamically typed.
 * Fix metadata test to not fail when record syntax makes whitespace between
   metadata annotation names and `(` significant ([sdk#50769][]).
+* Require Dart 2.19.
+* Require `package:analyzer` `^5.7.0`.
 
 [sdk#50769]: https://github.com/dart-lang/sdk/issues/50769
+
+# 2.2.5
+
+* Format unnamed libraries.
+* Require Dart 2.17.
 
 # 2.2.4
 
