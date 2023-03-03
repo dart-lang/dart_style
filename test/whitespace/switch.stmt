@@ -71,10 +71,12 @@ switch (foo) {
 switch (foo) {
   case 1:
   case 2:
-  case 3: body;
+  case 3:
+    body;
 
   case 4:
-  default: body;
+  default:
+    body;
 }
 >>> require at least one newline between statements in a default
 switch (foo) {default:a();b();c();}
@@ -131,7 +133,8 @@ switch (foo) {case 0:case 1:case 2:body();}
 switch (foo) {
   case 0:
   case 1:
-  case 2: body();
+  case 2:
+    body();
 }
 >>> allow an extra newline between non-empty cases
 switch (foo) {case 0: body();
@@ -141,10 +144,12 @@ switch (foo) {case 0: body();
 }
 <<<
 switch (foo) {
-  case 0: body();
+  case 0:
+    body();
 
   case 1:
-  case 2: body();
+  case 2:
+    body();
 }
 >>> collapse any other newlines in a case
 switch (foo) {
@@ -168,7 +173,8 @@ switch (foo) {
 switch (foo) {
   case 0:
   case 1:
-  case 2: body();
+  case 2:
+    body();
 }
 >>> indentation
 switch (fruit) {
@@ -212,16 +218,6 @@ switch (fruit) {
   default:
     break;
 }
->>> without breaks
-switch (obj) {
-case  1 :  print('one');
-case  2 :  print('two');
-}
-<<<
-switch (obj) {
-  case 1: print('one');
-  case 2: print('two');
-}
 >>> switch expression
 var x = switch  (  obj  )  {
 1  =>  'one'  ,  var  two  =>  'two'
@@ -260,6 +256,7 @@ switch (obj) {
   case 's'.length:
   case 1 is int:
   case 1 is! int:
+    body;
 }
 <<<
 switch (obj) {
@@ -290,6 +287,7 @@ switch (obj) {
   case 's'.length:
   case 1 is int:
   case 1 is! int:
+    body;
 }
 >>> empty switch expression (error but handle gracefully)
 var x = switch(y) {};

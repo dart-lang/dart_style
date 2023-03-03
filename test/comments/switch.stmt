@@ -27,7 +27,8 @@ switch (n) {
 
   // comment
 
-  case 1: body;
+  case 1:
+    body;
 
   // comment
 }
@@ -39,9 +40,11 @@ switch (n) {
 }
 <<<
 switch (n) {
-  case 0: zero;
+  case 0:
+    zero;
   // comment
-  case 1: one;
+  case 1:
+    one;
 }
 >>> line comment at end of statement does not force split
 switch (n) {
@@ -51,9 +54,12 @@ switch (n) {
 }
 <<<
 switch (n) {
-  case 0: zero; // comment
-  case 1: one; // comment
-  case 2: two; // comment
+  case 0:
+    zero; // comment
+  case 1:
+    one; // comment
+  case 2:
+    two; // comment
 }
 >>> line comment indentation
 switch (n) {
@@ -66,9 +72,11 @@ switch (n) {
 <<<
 switch (n) {
   // before first
-  case 0: zero;
+  case 0:
+    zero;
   // between
-  case 1: one;
+  case 1:
+    one;
   // after last
 }
 >>> line comment in empty cases
@@ -86,21 +94,6 @@ switch (n) {
   // comment 1
   case 2:
   // comment 2
-}
->>> bodies all split or don't together even with comment in the middle
-switch (n) {
-  case 0: longBodyExpression + thatForcesSplit;
-  // comment
-  case 1: c;
-}
-<<<
-switch (n) {
-  case 0:
-    longBodyExpression +
-        thatForcesSplit;
-  // comment
-  case 1:
-    c;
 }
 >>> keeps one blank line around case comments in switch expression
 e = switch (n) {
