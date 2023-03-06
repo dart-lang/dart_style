@@ -5,6 +5,7 @@
 * Format patterns and related features.
 * Format record expressions and record type annotations.
 * Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`.
+* Format `inline class` declarations.
 * Format unnamed libraries.
 
 ## Bug fixes and style changes
@@ -20,7 +21,7 @@
 * Fix metadata test to not fail when record syntax makes whitespace between
   metadata annotation names and `(` significant ([sdk#50769][]).
 * Require Dart 2.19.
-* Require `package:analyzer` `^5.1.0`.
+* Require `package:analyzer` `^5.7.0`.
 
 [sdk#50769]: https://github.com/dart-lang/sdk/issues/50769
 
@@ -47,7 +48,7 @@
 * Don't allow a line comment in an argument list to cause preceding arguments
   to be misformatted.
 * Remove blank lines after a line comment at the end of a body.
-* Require `package:analyzer` `>=4.4.0 <6.0.0`. 
+* Require `package:analyzer` `>=4.4.0 <6.0.0`.
 
 # 2.2.3
 
