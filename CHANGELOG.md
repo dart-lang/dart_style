@@ -1,4 +1,4 @@
-# 2.3.0-dev
+# 2.3.0
 
 ## New language features
 
