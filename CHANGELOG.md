@@ -1,3 +1,9 @@
+# 2.3.1-dev
+
+* Hide `--fix` and related options in `--help`. The options are still there and
+  supported, but are no longer shown by default. Eventually, we would like all
+  users to move to using `dart fix` instead of `dart format --fix`.
+
 # 2.3.0
 
 ## New language features
