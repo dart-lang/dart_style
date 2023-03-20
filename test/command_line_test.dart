@@ -121,7 +121,6 @@ void main() {
       await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
       await expectLater(
           process.stdout, emitsThrough(contains('--set-exit-if-changed')));
-      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await process.shouldExit(0);
     });
 

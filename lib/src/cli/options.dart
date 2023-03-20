@@ -74,10 +74,10 @@ void defineOptions(ArgParser parser,
       help: 'Return exit code 1 if there are any formatting changes.');
 
   if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
-  parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
+  parser.addFlag('fix',
+      negatable: false, help: 'Apply all style fixes.', hide: !verbose);
 
   for (var fix in StyleFix.all) {
-    // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
     parser.addFlag('fix-${fix.name}',
         negatable: false, help: fix.description, hide: !verbose);
   }

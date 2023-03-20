@@ -286,7 +286,6 @@ void main() {
       expect(
           await process.stdout.next, 'Idiomatically format Dart source code.');
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
-      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await expectLater(process.stdout, neverEmits(contains('--summary')));
       await process.shouldExit(0);
     });
