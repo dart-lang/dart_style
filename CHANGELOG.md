@@ -3,6 +3,8 @@
 * Hide `--fix` and related options in `--help`. The options are still there and
   supported, but are no longer shown by default. Eventually, we would like all
   users to move to using `dart fix` instead of `dart format --fix`.
+* Don't format `sealed`, `interface`, and `final` keywords on mixin
+  declarations. The proposal was updated to no longer support them.
 
 # 2.3.0
 
