@@ -444,6 +444,11 @@ enum Foo {
 <<<
 @meta
 mixin M {}
+>>> metadata on mixin
+@meta  base   mixin M {}
+<<<
+@meta
+base mixin M {}
 >>> metadata on extension
 @meta extension A on B {}
 <<<

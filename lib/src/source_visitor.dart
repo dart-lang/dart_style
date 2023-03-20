@@ -2215,9 +2215,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.nestExpression();
     modifier(node.baseKeyword);
-    modifier(node.interfaceKeyword);
-    modifier(node.finalKeyword);
-    modifier(node.sealedKeyword);
     token(node.mixinKeyword);
     space();
     token(node.name);
