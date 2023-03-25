@@ -289,7 +289,7 @@ switch (obj) {
   case 1 is! int:
     body;
 }
->>> empty switch expression (error but handle gracefully)
+>>> empty switch expression
 var x = switch(y) {};
 <<<
-var x = switch (y) {  };
+var x = switch (y) {};
