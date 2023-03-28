@@ -145,3 +145,85 @@ e = switch (n) {
   1 => one, // comment
   2 => two // comment
 };
+>>> line comment
+switch (e) {
+  // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> line comment on opening line
+switch (e) { // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> indented block comment
+switch (e) {
+  /* comment */
+}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> block comment with trailing newline
+switch (e) {/* comment */
+}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> block comment with leading newline
+switch (e) {
+  /* comment */}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> inline block comment
+switch (e) {  /* comment */  }
+<<<
+switch (e) {/* comment */}
+>>> line comment
+e = switch (n) {
+  // comment
+};
+<<<
+e = switch (n) {
+  // comment
+};
+>>> line comment on opening line
+e = switch (n) { // comment
+};
+<<<
+e = switch (n) {
+  // comment
+};
+>>> indented block comment
+e = switch (n) {
+  /* comment */
+};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> block comment with trailing newline
+e = switch (n) {/* comment */
+};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> block comment with leading newline
+e = switch (n) {
+  /* comment */};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> inline block comment
+e = switch (n) {  /* comment */  };
+<<<
+e = switch (n) {/* comment */};

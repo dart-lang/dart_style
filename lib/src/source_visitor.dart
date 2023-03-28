@@ -2723,7 +2723,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSwitchExpression(SwitchExpression node) {
-    if (node.cases.isEmpty) {
+    if (node.cases.isEmptyBody(node.rightBracket)) {
       // Don't allow splitting an empty switch expression.
       _visitSwitchValue(node.switchKeyword, node.leftParenthesis,
           node.expression, node.rightParenthesis);
@@ -2744,11 +2744,12 @@ class SourceVisitor extends ThrowingAstVisitor {
         node.rightParenthesis);
 
     token(node.leftBracket);
-    builder = builder.startBlock(space: true);
+    builder = builder.startBlock(space: node.cases.isNotEmpty);
 
     visitCommaSeparatedNodes(node.cases, between: split);
 
-    var hasTrailingComma = node.cases.last.commaAfter != null;
+    var hasTrailingComma =
+        node.cases.isNotEmpty && node.cases.last.commaAfter != null;
     _endBody(node.rightBracket, forceSplit: hasTrailingComma);
   }
 
@@ -2795,13 +2796,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitSwitchStatement(SwitchStatement node) {
     _visitSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
-    if (node.members.isEmpty) {
-      // Don't allow splitting an empty switch statement.
-      token(node.leftBracket);
-      token(node.rightBracket);
-      return;
-    }
-
     _beginBody(node.leftBracket);
     for (var member in node.members) {
       _visitLabels(member.labels);
@@ -2849,8 +2843,10 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
-    newline();
-    _endBody(node.rightBracket, forceSplit: true);
+    if (node.members.isNotEmpty) {
+      newline();
+    }
+    _endBody(node.rightBracket, forceSplit: node.members.isNotEmpty);
   }
 
   /// Visits the `switch (expr)` part of a switch statement or expression.
