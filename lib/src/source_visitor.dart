@@ -2795,6 +2795,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // Write the "||" operands up to the last one.
     for (var i = 0; i < orBranches.length - 1; i++) {
+      // Note that orBranches will always have one more element than orTokens.
       visit(orBranches[i]);
       space();
       token(orTokens[i]);
