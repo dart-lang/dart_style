@@ -149,33 +149,33 @@ e = switch (obj) {
 };
 >>> expression split in pattern
 e = switch (obj) {
-  veryVeryLongPattern || reallyMustSplit => body
+  veryVeryLongPattern && reallyMustSplit => body
 };
 <<<
 e = switch (obj) {
-  veryVeryLongPattern ||
+  veryVeryLongPattern &&
         reallyMustSplit =>
     body
 };
 >>> expression split in pattern forces guard to split
 e = switch (obj) {
-  veryVeryLongPattern || reallyMustSplitHere when true => body
+  veryVeryLongPattern && reallyMustSplitHere when true => body
 };
 <<<
 e = switch (obj) {
-  veryVeryLongPattern ||
+  veryVeryLongPattern &&
           reallyMustSplitHere
       when true =>
     body
 };
 >>> expression split in pattern, expression split in guard
 e = switch (obj) {
-  veryVeryLongPattern || reallyMustSplitToo when veryLongCondition
+  veryVeryLongPattern && reallyMustSplitToo when veryLongCondition
   || anotherLongCondition => body
 };
 <<<
 e = switch (obj) {
-  veryVeryLongPattern ||
+  veryVeryLongPattern &&
           reallyMustSplitToo
       when veryLongCondition ||
           anotherLongCondition =>
@@ -183,15 +183,73 @@ e = switch (obj) {
 };
 >>> expression split in pattern, block split in guard
 e = switch (obj) {
+  veryLongPattern && reallyMustSplitAgain when [element,] => body
+};
+<<<
+e = switch (obj) {
+  veryLongPattern &&
+          reallyMustSplitAgain
+      when [
+        element,
+      ] =>
+    body
+};
+>>> outermost logic-or patterns are indented like parallel cases
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplit => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplit =>
+    body
+};
+>>> outermost logic-or split does not force guard to split
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitHere when true => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitHere when true =>
+    body
+};
+>>> outermost logic-or split in pattern, expression split in guard
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitToo when veryLongCondition
+  || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitToo
+      when veryLongCondition ||
+          anotherLongCondition =>
+    body
+};
+>>> outermost logic-or split in pattern, block split in guard
+e = switch (obj) {
   veryLongPattern || reallyMustSplitAgain when [element,] => body
 };
 <<<
 e = switch (obj) {
   veryLongPattern ||
-          reallyMustSplitAgain
+  reallyMustSplitAgain
       when [
         element,
       ] =>
+    body
+};
+>>> nested logic-or operands are indented
+e = switch (obj) {
+  Foo(veryVeryLongPattern || reallyMustSplit) => body
+};
+<<<
+e = switch (obj) {
+  Foo(
+    veryVeryLongPattern ||
+        reallyMustSplit
+  ) =>
     body
 };
 >>> block split in pattern
@@ -244,3 +302,67 @@ e = switch (obj) {
       ] =>
     body
 };
+>>> unsplit pattern with trailing comma argument list body
+e = switch (obj) {
+  pattern => function(argument, argument,)
+};
+<<<
+e = switch (obj) {
+  pattern => function(
+      argument,
+      argument,
+    )
+};
+>>> don't indent || patterns when outermost in switch expression
+e = switch (obj) {
+  oneConstant || twoConstant || threeConstant => body
+};
+<<<
+e = switch (obj) {
+  oneConstant ||
+  twoConstant ||
+  threeConstant =>
+    body
+};
+>>> do indent || patterns when nested inside pattern
+e = switch (obj) {
+  [oneConstant || twoConstant || threeConstant] => body
+};
+<<<
+e = switch (obj) {
+  [
+    oneConstant ||
+        twoConstant ||
+        threeConstant
+  ] =>
+    body
+};
+>>> split pattern with trailing comma argument list body
+e = switch (obj) {
+  pattern || anotherPattern || aThirdOne => function(argument, argument,)
+};
+<<<
+e = switch (obj) {
+  pattern ||
+  anotherPattern ||
+  aThirdOne =>
+    function(
+      argument,
+      argument,
+    )
+};
+>>> trailing comma argument list body with switch inside => function body
+longFunctionName(veryLongParameter) => switch (obj) {
+  oneConstant || twoConstant || threeConstant => function(argument, argument,)
+};
+<<<
+longFunctionName(veryLongParameter) =>
+    switch (obj) {
+      oneConstant ||
+      twoConstant ||
+      threeConstant =>
+        function(
+          argument,
+          argument,
+        )
+    };

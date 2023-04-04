@@ -2755,25 +2755,72 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSwitchExpressionCase(SwitchExpressionCase node) {
+    // If the pattern is a series of `||` patterns, then flatten them out and
+    // format them like empty cases with fallthrough in a switch statement
+    // instead of like a single indented binary pattern. Prefer:
+    //
+    //   e = switch (obj) {
+    //     constant1 ||
+    //     constant2 ||
+    //     constant3 =>
+    //       body
+    //   };
+    //
+    // Instead of:
+    //
+    //   e = switch (obj) {
+    //     constant1 ||
+    //        constant2 ||
+    //        constant3 =>
+    //       body
+    //   };
+    var orBranches = <DartPattern>[];
+    var orTokens = <Token>[];
+
+    void flattenOr(DartPattern e) {
+      if (e is! LogicalOrPattern) {
+        orBranches.add(e);
+      } else {
+        flattenOr(e.leftOperand);
+        orTokens.add(e.operator);
+        flattenOr(e.rightOperand);
+      }
+    }
+
+    flattenOr(node.guardedPattern.pattern);
+
     // Wrap the rule for splitting after "=>" around the pattern so that a
     // split in the pattern forces the expression to move to the next line too.
     builder.startLazyRule();
 
-    // Wrap the expression's nesting around the pattern too so that a split in
+    // Write the "||" operands up to the last one.
+    for (var i = 0; i < orBranches.length - 1; i++) {
+      // Note that orBranches will always have one more element than orTokens.
+      visit(orBranches[i]);
+      space();
+      token(orTokens[i]);
+      split();
+    }
+
+    // Wrap the expression's nesting around the final pattern so that a split in
     // the pattern is indented farther then the body expression. Used +2 indent
     // because switch expressions are block-like, similar to how we split the
     // bodies of if and for elements in collections.
     builder.nestExpression(indent: Indent.block);
 
     var whenClause = node.guardedPattern.whenClause;
-    if (whenClause == null) {
-      visit(node.guardedPattern.pattern);
-    } else {
+    if (whenClause != null) {
       // Wrap the when clause rule around the pattern so that if the pattern
       // splits then we split before "when" too.
       builder.startRule();
       builder.nestExpression(indent: Indent.block);
-      visit(node.guardedPattern.pattern);
+    }
+
+    // Write the last pattern in the "||" chain. If the case pattern isn't an
+    // "||" pattern at all, this writes the one pattern.
+    visit(orBranches.last);
+
+    if (whenClause != null) {
       split();
       builder.startBlockArgumentNesting();
       _visitWhenClause(whenClause);
@@ -2785,10 +2832,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
     token(node.arrow);
     split();
-
     builder.endRule();
 
+    builder.startBlockArgumentNesting();
     visit(node.expression);
+    builder.endBlockArgumentNesting();
+
     builder.unnest();
   }
 

@@ -266,3 +266,14 @@ switch (obj) {
       ]:
     body;
 }
+>>> indent || patterns when outermost in switch statement (as opposed to expr)
+switch (obj) {
+  case oneConstant || twoConstant || threeConstant: body;
+}
+<<<
+switch (obj) {
+  case oneConstant ||
+        twoConstant ||
+        threeConstant:
+    body;
+}
