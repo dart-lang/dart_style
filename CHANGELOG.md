@@ -6,6 +6,7 @@
 * Don't indent `||` pattern operands in switch expression cases.  
 * Don't format `sealed`, `interface`, and `final` keywords on mixin
   declarations. The proposal was updated to no longer support them.
+* Give records block-like formatting in argument lists (#1205).
 
 # 2.3.0
 
