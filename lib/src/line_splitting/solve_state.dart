@@ -343,7 +343,7 @@ class SolveState {
     // The set of spans that contain chunks that ended up splitting. We store
     // these in a set so a span's cost doesn't get double-counted if more than
     // one split occurs in it.
-    var splitSpans = <Span>{};
+    var splitSpans = <Span>[];
 
     // The nesting level of the chunk that ended the previous line.
     NestingLevel? previousNesting;
@@ -354,7 +354,12 @@ class SolveState {
       if (_splits.shouldSplitAt(i)) {
         endLine(i);
 
-        splitSpans.addAll(chunk.spans);
+        for (var span in chunk.spans) {
+          if (span.mark()) {
+            splitSpans.add(span);
+            cost += span.cost;
+          }
+        }
 
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
@@ -410,7 +415,7 @@ class SolveState {
 
     // Add the costs for the spans containing splits.
     for (var span in splitSpans) {
-      cost += span.cost;
+      span.unmark();
     }
 
     // Finish the last line.
