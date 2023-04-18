@@ -424,9 +424,25 @@ class SourceVisitor extends ThrowingAstVisitor {
     //       stuff
     //     ]
     //       ..add(more);
-    var splitIfOperandsSplit =
-        node.cascadeSections.length > 1 || !node.target.isCollectionLike;
-    if (splitIfOperandsSplit) {
+    var target = node.target;
+    var splitIfTargetSplits = true;
+    if (node.cascadeSections.length > 1) {
+      // Always split if there are multiple cascade sections.
+    } else if (target is ListLiteral ||
+        target is RecordLiteral ||
+        target is SetOrMapLiteral) {
+      splitIfTargetSplits = false;
+    } else if (target is InvocationExpression) {
+      // If the target is a call with a trailing comma in the argument list,
+      // treat it like a collection literal.
+      splitIfTargetSplits = !target.argumentList.arguments.hasCommaAfter;
+    } else if (target is InstanceCreationExpression) {
+      // If the target is a call with a trailing comma in the argument list,
+      // treat it like a collection literal.
+      splitIfTargetSplits = !target.argumentList.arguments.hasCommaAfter;
+    }
+
+    if (splitIfTargetSplits) {
       builder.startLazyRule(node.allowInline ? Rule() : Rule.hard());
     }
 
@@ -437,21 +453,17 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // If the cascade section shouldn't cause the cascade to split, end the
     // rule early so it isn't affected by it.
-    if (!splitIfOperandsSplit) {
+    if (!splitIfTargetSplits) {
       builder.startRule(node.allowInline ? Rule() : Rule.hard());
     }
 
     zeroSplit();
 
-    if (!splitIfOperandsSplit) {
-      builder.endRule();
-    }
+    if (!splitIfTargetSplits) builder.endRule();
 
     visitNodes(node.cascadeSections, between: zeroSplit);
 
-    if (splitIfOperandsSplit) {
-      builder.endRule();
-    }
+    if (splitIfTargetSplits) builder.endRule();
 
     builder.endBlockArgumentNesting();
     builder.unnest();
