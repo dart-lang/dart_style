@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'fast_hash.dart';
-import 'marking_schemes.dart';
+import 'marking_scheme.dart';
 
 /// A single level of expression nesting.
 ///
@@ -20,7 +20,7 @@ import 'marking_schemes.dart';
 /// indented relative to the outer expression. It's almost always
 /// [Indent.expression], but cascades are special magic snowflakes and use
 /// [Indent.cascade].
-class NestingLevel extends FastHash with MarkingScheme1 {
+class NestingLevel extends FastHash with MarkingScheme {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
   final NestingLevel? parent;
