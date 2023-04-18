@@ -88,8 +88,11 @@ class SolveStateQueue {
 
   /// Compares the overflow and cost of [a] to [b].
   int _compareScore(SolveState a, SolveState b) {
-    if (a.splits.cost != b.splits.cost) {
-      return a.splits.cost.compareTo(b.splits.cost);
+    int aCost = a.splits.cost;
+    int bCost = b.splits.cost;
+    if (aCost != bCost) {
+      if (aCost < bCost) return -1;
+      return 1;
     }
 
     return a.overflowChars.compareTo(b.overflowChars);
