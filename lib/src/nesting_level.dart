@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'fast_hash.dart';
+import 'marking_schemes.dart';
 
 /// A single level of expression nesting.
 ///
@@ -19,7 +20,7 @@ import 'fast_hash.dart';
 /// indented relative to the outer expression. It's almost always
 /// [Indent.expression], but cascades are special magic snowflakes and use
 /// [Indent.cascade].
-class NestingLevel extends FastHash {
+class NestingLevel extends FastHash with MarkingScheme1 {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
   final NestingLevel? parent;
@@ -56,19 +57,19 @@ class NestingLevel extends FastHash {
   }
 
   /// Calculates the total amount of indentation from this nesting level and
-  /// all of its parents assuming only [usedNesting] levels are in use.
-  void refreshTotalUsedIndent(Set<NestingLevel> usedNesting) {
+  /// all of its parents assuming only marked levels are in use.
+  void refreshTotalUsedIndent() {
     var totalIndent = _totalUsedIndent;
     if (totalIndent != null) return;
 
     totalIndent = 0;
 
     if (parent != null) {
-      parent!.refreshTotalUsedIndent(usedNesting);
+      parent!.refreshTotalUsedIndent();
       totalIndent += parent!.totalUsedIndent;
     }
 
-    if (usedNesting.contains(this)) totalIndent += indent;
+    if (isMarked()) totalIndent += indent;
 
     _totalUsedIndent = totalIndent;
   }
