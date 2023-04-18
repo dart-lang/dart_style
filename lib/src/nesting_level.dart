@@ -20,6 +20,10 @@ import 'marking_scheme.dart';
 /// indented relative to the outer expression. It's almost always
 /// [Indent.expression], but cascades are special magic snowflakes and use
 /// [Indent.cascade].
+///
+/// NestingLEvels can be marked during processing in an algorithm but should be
+/// left unmarked when the algorithm finishes to make marking work in subsequent
+/// calls.
 class NestingLevel extends FastHash with MarkingScheme {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.

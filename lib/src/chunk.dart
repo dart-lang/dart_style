@@ -295,6 +295,10 @@ class OpenSpan {
 /// This is a wrapper around the cost so that spans have unique identities.
 /// This way we can correctly avoid paying the cost multiple times if the same
 /// span is split by multiple chunks.
+///
+/// Spans can be marked during processing in an algorithm but should be left
+/// unmarked when the algorithm finishes to make marking work in subsequent
+/// calls.
 class Span extends FastHash with MarkingScheme {
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.

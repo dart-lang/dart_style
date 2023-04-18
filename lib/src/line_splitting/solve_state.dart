@@ -346,9 +346,10 @@ class SolveState {
       start = end;
     }
 
-    // The set of spans that contain chunks that ended up splitting. We store
-    // these in a set so a span's cost doesn't get double-counted if more than
-    // one split occurs in it.
+    // The list of spans that contain chunks that ended up splitting. These are
+    // made unique by marking the spans during the run, adding them to this list
+    // to be able to unmark them again. We have to keep track of uniqueness to
+    // avoid double-counted if more than one split occurs in it.
     var splitSpans = <Span>[];
 
     // The nesting level of the chunk that ended the previous line.
@@ -419,7 +420,7 @@ class SolveState {
       if (value != Rule.unsplit) cost += rule.cost;
     });
 
-    // Add the costs for the spans containing splits.
+    // Unmark spans again so they're ready for another run.
     for (var span in splitSpans) {
       span.unmark();
     }
