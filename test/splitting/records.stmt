@@ -150,27 +150,27 @@ var record = (
 
   element
 );
->>> unlike collections, records do not do block-like formatting in arguments
+>>> format like a block in an argument list
 longFunctionName((element, element), (element, element, element, element));
 <<<
-longFunctionName(
-    (element, element),
-    (
-      element,
-      element,
-      element,
-      element
-    ));
->>> unlike collections, records do not do block-like formatting in arguments
+longFunctionName((
+  element,
+  element
+), (
+  element,
+  element,
+  element,
+  element
+));
+>>> format like a block in an argument list
 longFunctionName((element, element, element, element));
 <<<
-longFunctionName(
-    (
-      element,
-      element,
-      element,
-      element
-    ));
+longFunctionName((
+  element,
+  element,
+  element,
+  element
+));
 >>> don't allow splitting between field name and record
 var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
 <<<
