@@ -6,6 +6,7 @@
 * Don't indent `||` pattern operands in switch expression cases.  
 * Don't format `sealed`, `interface`, and `final` keywords on mixin
   declarations. The proposal was updated to no longer support them.
+* Don't split before a single-section cascade following a record literal.
 
 # 2.3.0
 

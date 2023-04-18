@@ -108,6 +108,13 @@ var map = {1:2,}..addAll(more);
 var map = {
   1: 2,
 }..addAll(more);
+>>> omit split if single section on record literal
+(1,2,)..addAll(more);
+<<<
+(
+  1,
+  2,
+)..addAll(more);
 >>> omit split if single section on trailing comma call
 foo(1,)..addAll(more);
 <<<

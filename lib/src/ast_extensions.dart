@@ -88,40 +88,6 @@ extension AstIterableExtensions on Iterable<AstNode> {
 }
 
 extension ExpressionExtensions on Expression {
-  /// Whether [expression] is a collection literal, or a call with a trailing
-  /// comma in an argument list.
-  ///
-  /// In that case, when the expression is a target of a cascade, we don't
-  /// force a split before the ".." as eagerly to avoid ugly results like:
-  ///
-  ///     [
-  ///       1,
-  ///       2,
-  ///     ]..addAll(numbers);
-  bool get isCollectionLike {
-    var expression = this;
-    if (expression is ListLiteral) return true;
-    if (expression is SetOrMapLiteral) return true;
-
-    // If the target is a call with a trailing comma in the argument list,
-    // treat it like a collection literal.
-    ArgumentList? arguments;
-    if (expression is InvocationExpression) {
-      arguments = expression.argumentList;
-    } else if (expression is InstanceCreationExpression) {
-      arguments = expression.argumentList;
-    }
-
-    // TODO(rnystrom): Do we want to allow an invocation where the last
-    // argument is a collection literal? Like:
-    //
-    //     foo(argument, [
-    //       element
-    //     ])..cascade();
-
-    return arguments != null && arguments.arguments.hasCommaAfter;
-  }
-
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
     var parent = this.parent;
