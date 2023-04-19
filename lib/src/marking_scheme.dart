@@ -3,18 +3,18 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// A mixin for marking classes.
-mixin MarkingScheme {
-  int _markingFlag = 0;
+mixin Markable {
+  bool _isMarked = false;
 
   bool mark() {
-    if (_markingFlag != 0) return false;
-    _markingFlag = 1;
+    if (_isMarked) return false;
+    _isMarked = true;
     return true;
   }
 
-  bool isMarked() => _markingFlag != 0;
+  bool get isMarked => _isMarked;
 
   void unmark() {
-    _markingFlag = 0;
+    _isMarked = false;
   }
 }

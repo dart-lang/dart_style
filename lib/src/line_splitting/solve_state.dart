@@ -349,7 +349,7 @@ class SolveState {
     // The list of spans that contain chunks that ended up splitting. These are
     // made unique by marking the spans during the run, adding them to this list
     // to be able to unmark them again. We have to keep track of uniqueness to
-    // avoid double-counted if more than one split occurs in it.
+    // avoid double-counting if more than one split occurs in it.
     var splitSpans = <Span>[];
 
     // The nesting level of the chunk that ended the previous line.

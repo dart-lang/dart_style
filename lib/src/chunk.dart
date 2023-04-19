@@ -299,7 +299,7 @@ class OpenSpan {
 /// Spans can be marked during processing in an algorithm but should be left
 /// unmarked when the algorithm finishes to make marking work in subsequent
 /// calls.
-class Span extends FastHash with MarkingScheme {
+class Span extends FastHash with Markable {
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.
   final int cost;
