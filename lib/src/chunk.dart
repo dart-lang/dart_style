@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'fast_hash.dart';
+import 'marking_scheme.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
 
@@ -294,7 +295,11 @@ class OpenSpan {
 /// This is a wrapper around the cost so that spans have unique identities.
 /// This way we can correctly avoid paying the cost multiple times if the same
 /// span is split by multiple chunks.
-class Span extends FastHash {
+///
+/// Spans can be marked during processing in an algorithm but should be left
+/// unmarked when the algorithm finishes to make marking work in subsequent
+/// calls.
+class Span extends FastHash with Markable {
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.
   final int cost;

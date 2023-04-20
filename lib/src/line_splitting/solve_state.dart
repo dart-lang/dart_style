@@ -272,17 +272,23 @@ class SolveState {
   void _calculateSplits() {
     // Figure out which expression nesting levels got split and need to be
     // assigned columns.
-    var usedNestingLevels = <NestingLevel>{};
+    var usedNestingLevels = <NestingLevel>[];
     for (var i = 0; i < _splitter.chunks.length; i++) {
       var chunk = _splitter.chunks[i];
       if (chunk.rule.isSplit(getValue(chunk.rule), chunk)) {
-        usedNestingLevels.add(chunk.nesting);
-        chunk.nesting.clearTotalUsedIndent();
+        var nesting = chunk.nesting;
+        if (nesting.mark()) {
+          usedNestingLevels.add(nesting);
+          nesting.clearTotalUsedIndent();
+        }
       }
     }
 
     for (var nesting in usedNestingLevels) {
-      nesting.refreshTotalUsedIndent(usedNestingLevels);
+      nesting.refreshTotalUsedIndent();
+    }
+    for (var nesting in usedNestingLevels) {
+      nesting.unmark();
     }
 
     _splits = SplitSet(_splitter.chunks.length);
@@ -340,10 +346,11 @@ class SolveState {
       start = end;
     }
 
-    // The set of spans that contain chunks that ended up splitting. We store
-    // these in a set so a span's cost doesn't get double-counted if more than
-    // one split occurs in it.
-    var splitSpans = <Span>{};
+    // The list of spans that contain chunks that ended up splitting. These are
+    // made unique by marking the spans during the run, adding them to this list
+    // to be able to unmark them again. We have to keep track of uniqueness to
+    // avoid double-counting if more than one split occurs in it.
+    var splitSpans = <Span>[];
 
     // The nesting level of the chunk that ended the previous line.
     NestingLevel? previousNesting;
@@ -354,7 +361,12 @@ class SolveState {
       if (_splits.shouldSplitAt(i)) {
         endLine(i);
 
-        splitSpans.addAll(chunk.spans);
+        for (var span in chunk.spans) {
+          if (span.mark()) {
+            splitSpans.add(span);
+            cost += span.cost;
+          }
+        }
 
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
@@ -408,9 +420,9 @@ class SolveState {
       if (value != Rule.unsplit) cost += rule.cost;
     });
 
-    // Add the costs for the spans containing splits.
+    // Unmark spans again so they're ready for another run.
     for (var span in splitSpans) {
-      cost += span.cost;
+      span.unmark();
     }
 
     // Finish the last line.
