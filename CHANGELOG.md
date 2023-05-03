@@ -1,4 +1,4 @@
-# 2.3.1-dev
+# 2.3.1
 
 * Hide `--fix` and related options in `--help`. The options are still there and
   supported, but are no longer shown by default. Eventually, we would like all
