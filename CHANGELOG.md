@@ -1,3 +1,7 @@
+# 2.3.2-dev
+
+* Don't force split on a line comment before a switch expression case (#1215).
+
 # 2.3.1
 
 * Hide `--fix` and related options in `--help`. The options are still there and
