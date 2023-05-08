@@ -60,23 +60,6 @@ class ChunkBuilder {
   /// Whether the next chunk should be flush left.
   bool _pendingFlushLeft = false;
 
-  /// Whether subsequent hard splits should be allowed to divide for line
-  /// splitting.
-  ///
-  /// Most rules used by multiple chunks will never have a hard split on a
-  /// chunk between two chunks using that rule. That means when we see a hard
-  /// split, we can line split the chunks before and after it independently.
-  ///
-  /// However, there are a couple of places where a single rule spans
-  /// multiple chunks where hard splits also appear interleaved between them.
-  /// Currently, that's the rule for splitting switch case bodies, and the
-  /// rule for parameter list metadata.
-  ///
-  /// In those circumstances, we mark the chunk with the hard split as not
-  /// being allowed to divide. That way, all of the chunks using the rule are
-  /// split together.
-  bool _pendingPreventDivide = false;
-
   /// Whether the most recently written output was a comment.
   bool _afterComment = false;
 
@@ -173,7 +156,6 @@ class ChunkBuilder {
 
     _nesting.commitNesting();
     _afterComment = false;
-    _pendingPreventDivide = false;
   }
 
   /// Writes one or two hard newlines.
@@ -186,14 +168,10 @@ class ChunkBuilder {
   /// nesting. If [nest] is `true` then the next line will use expression
   /// nesting.
   void writeNewline(
-      {bool isDouble = false,
-      bool flushLeft = false,
-      bool nest = false,
-      bool preventDivide = false}) {
+      {bool isDouble = false, bool flushLeft = false, bool nest = false}) {
     _pendingNewlines = isDouble ? 2 : 1;
     _pendingFlushLeft = flushLeft;
     _pendingNested = nest;
-    _pendingPreventDivide |= preventDivide;
   }
 
   /// Writes a space before the subsequent non-whitespace text.
@@ -877,11 +855,7 @@ class ChunkBuilder {
           isHard: isHard, isDouble: isDouble, space: space);
     }
 
-    if (chunk.rule.isHardened) {
-      _handleHardSplit();
-
-      if (_pendingPreventDivide) chunk.preventDivide();
-    }
+    if (chunk.rule.isHardened) _handleHardSplit();
 
     _pendingNewlines = 0;
     _pendingNested = false;

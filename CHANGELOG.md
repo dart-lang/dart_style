@@ -1,3 +1,10 @@
+# 2.3.2-dev
+
+* Don't indent parameters that have metadata annotations. Instead, align them
+  with the metadata and other parameters.
+* Allow metadata annotations on parameters to split independently of annotations
+  on other parameters (#1212).
+
 # 2.3.1
 
 * Hide `--fix` and related options in `--help`. The options are still there and

@@ -81,14 +81,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// split.
   final List<bool> _collectionSplits = [];
 
-  /// The stack of current rules for handling parameter metadata.
-  ///
-  /// Each time a parameter (or type parameter) list is begun, a single rule
-  /// for all of the metadata annotations on parameters in that list is pushed
-  /// onto this stack. We reuse this rule for all annotations so that they split
-  /// in unison.
-  final List<Rule> _metadataRules = [];
-
   /// The mapping for blocks that are managed by the argument list that contains
   /// them.
   ///
@@ -1345,8 +1337,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);
 
-    _metadataRules.add(Rule());
-
     PositionalRule? rule;
     if (requiredParams.isNotEmpty) {
       rule = PositionalRule(null, argumentCount: requiredParams.length);
@@ -1406,8 +1396,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       // "]" or "}" for optional parameters.
       token(node.rightDelimiter);
     }
-
-    _metadataRules.removeLast();
 
     token(node.rightParenthesis);
     if (nestExpression) builder.unnest();
@@ -2509,7 +2497,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    _metadataRules.add(Rule());
     token(node.leftParenthesis);
     builder.startRule();
 
@@ -2564,7 +2551,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder = builder.endBlock(forceSplit: force);
     builder.endRule();
-    _metadataRules.removeLast();
 
     // Now write the delimiter(s) themselves.
     _writeText(firstClosingDelimiter.lexeme, firstClosingDelimiter);
@@ -2985,11 +2971,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitTypeParameterList(TypeParameterList node) {
-    _metadataRules.add(Rule());
-
     _visitGenericList(node.leftBracket, node.rightBracket, node.typeParameters);
-
-    _metadataRules.removeLast();
   }
 
   @override
@@ -3137,23 +3119,11 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    // Split before all of the annotations or none.
-    builder.startLazyRule(_metadataRules.last);
+    // Split before all of the annotations on this parameter or none of them.
+    builder.startLazyRule();
 
-    visitNodes(metadata, between: split, after: () {
-      // Don't nest until right before the last metadata. Ensures we only
-      // indent the parameter and not any of the metadata:
-      //
-      //     function(
-      //         @LongAnnotation
-      //         @LongAnnotation
-      //             indentedParameter) {}
-      builder.nestExpression(now: true);
-      split();
-    });
+    visitNodes(metadata, between: split, after: split);
     visitParameter();
-
-    builder.unnest();
 
     // Wrap the rule around the parameter too. If it splits, we want to force
     // the annotations to split as well.
@@ -3674,8 +3644,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Can't have a trailing comma if there are no parameters.
     assert(parameters.parameters.isNotEmpty);
 
-    _metadataRules.add(Rule());
-
     // Always split the parameters.
     builder.startRule(Rule.hard());
 
@@ -3700,7 +3668,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder = builder.startBlock();
 
     for (var parameter in parameters.parameters) {
-      builder.writeNewline(preventDivide: true);
+      builder.writeNewline();
       visit(parameter);
       _writeCommaAfter(parameter);
 
@@ -3717,14 +3685,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     var firstDelimiter =
         parameters.rightDelimiter ?? parameters.rightParenthesis;
     if (firstDelimiter.precedingComments != null) {
-      builder.writeNewline(preventDivide: true);
+      builder.writeNewline();
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
     builder = builder.endBlock();
     builder.endRule();
-
-    _metadataRules.removeLast();
 
     // Now write the delimiter itself.
     _writeText(firstDelimiter.lexeme, firstDelimiter);
