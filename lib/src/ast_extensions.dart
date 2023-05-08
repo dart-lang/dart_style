@@ -38,6 +38,10 @@ extension AstNodeExtensions on AstNode {
     return body is BlockFunctionBody && body.block.statements.isNotEmpty;
   }
 
+  /// Whether this node is a bracket-delimited collection literal.
+  bool get isCollectionLiteral =>
+      this is ListLiteral || this is RecordLiteral || this is SetOrMapLiteral;
+
   bool get isControlFlowElement => this is IfElement || this is ForElement;
 
   /// Whether this is immediately contained within an anonymous

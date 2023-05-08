@@ -1,3 +1,7 @@
+# 2.3.2-dev
+
+* Don't split before `.` following a record literal (#1213).
+
 # 2.3.1
 
 * Hide `--fix` and related options in `--help`. The options are still there and
