@@ -145,6 +145,18 @@ e = switch (n) {
   1 => one, // comment
   2 => two // comment
 };
+>>> line comment before case with guard does not force split
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};
+<<<
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};
 >>> line comment
 switch (e) {
   // comment
