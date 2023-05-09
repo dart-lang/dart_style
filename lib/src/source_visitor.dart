@@ -420,9 +420,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     var splitIfTargetSplits = true;
     if (node.cascadeSections.length > 1) {
       // Always split if there are multiple cascade sections.
-    } else if (target is ListLiteral ||
-        target is RecordLiteral ||
-        target is SetOrMapLiteral) {
+    } else if (target.isCollectionLiteral) {
       splitIfTargetSplits = false;
     } else if (target is InvocationExpression) {
       // If the target is a call with a trailing comma in the argument list,
@@ -2810,7 +2808,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (whenClause != null) {
       // Wrap the when clause rule around the pattern so that if the pattern
       // splits then we split before "when" too.
-      builder.startRule();
+      builder.startLazyRule();
       builder.nestExpression(indent: Indent.block);
     }
 
