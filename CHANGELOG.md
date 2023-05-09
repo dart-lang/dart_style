@@ -1,5 +1,6 @@
 # 2.3.2-dev
 
+* Don't split before `.` following a record literal (#1213).
 * Don't force split on a line comment before a switch expression case (#1215).
 
 # 2.3.1

@@ -428,9 +428,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     var splitIfTargetSplits = true;
     if (node.cascadeSections.length > 1) {
       // Always split if there are multiple cascade sections.
-    } else if (target is ListLiteral ||
-        target is RecordLiteral ||
-        target is SetOrMapLiteral) {
+    } else if (target.isCollectionLiteral) {
       splitIfTargetSplits = false;
     } else if (target is InvocationExpression) {
       // If the target is a call with a trailing comma in the argument list,

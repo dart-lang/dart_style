@@ -278,6 +278,16 @@ someVeryLongTargetFunction(
   "key": "value",
   "another": "another value"
 }.someLongMethod();
+>>> do not split on "." when target is record
+(element, element, element, element, element).someLongMethod();
+<<<
+(
+  element,
+  element,
+  element,
+  element,
+  element
+).someLongMethod();
 >>> do not split on "." when target is function literal passed to method
 method(() {;}).someLongMethod();
 <<<
