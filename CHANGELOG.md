@@ -1,5 +1,9 @@
 # 2.3.2-dev
 
+* Don't indent parameters that have metadata annotations. Instead, align them
+  with the metadata and other parameters.
+* Allow metadata annotations on parameters to split independently of annotations
+  on other parameters (#1212).
 * Don't split before `.` following a record literal (#1213).
 * Don't force split on a line comment before a switch expression case (#1215).
 

@@ -17,10 +17,8 @@ class MyComponent {
   Object secondArgument;
 
   MyComponent(
-      @Inject(const MyFirstArgument())
-          this.firstArgument,
+      @Inject(const MyFirstArgument()) this.firstArgument,
       @Inject(const MySuperDuperLongNamedArgument())
-          this.superDuperLongNamedArgument, // LOOK AT ME
-      @Inject(const MySecondArgument())
-          this.secondArgument);
+      this.superDuperLongNamedArgument, // LOOK AT ME
+      @Inject(const MySecondArgument()) this.secondArgument);
 }
