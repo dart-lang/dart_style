@@ -2822,7 +2822,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (whenClause != null) {
       // Wrap the when clause rule around the pattern so that if the pattern
       // splits then we split before "when" too.
-      builder.startRule();
+      builder.startLazyRule();
       builder.nestExpression(indent: Indent.block);
     }
 
