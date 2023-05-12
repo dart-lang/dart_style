@@ -1,27 +1,74 @@
-# 2.2.4-dev
+# 2.3.2-dev
+
+* Don't indent parameters that have metadata annotations. Instead, align them
+  with the metadata and other parameters.
+* Allow metadata annotations on parameters to split independently of annotations
+  on other parameters (#1212).
+* Don't split before `.` following a record literal (#1213).
+* Don't force split on a line comment before a switch expression case (#1215).
+
+# 2.3.1
+
+* Hide `--fix` and related options in `--help`. The options are still there and
+  supported, but are no longer shown by default. Eventually, we would like all
+  users to move to using `dart fix` instead of `dart format --fix`.
+* Don't indent `||` pattern operands in switch expression cases.  
+* Don't format `sealed`, `interface`, and `final` keywords on mixin
+  declarations. The proposal was updated to no longer support them.
+* Don't split before a single-section cascade following a record literal.
+* Give records block-like formatting in argument lists (#1205).
+
+# 2.3.0
+
+## New language features
+
+* Format patterns and related features.
+* Format record expressions and record type annotations.
+* Format class modifiers `base`, `final`, `interface`, `mixin`, and `sealed`.
+* Format `inline class` declarations.
+* Format unnamed libraries.
+
+## Bug fixes and style changes
+
+* Handle `sync*` and `async*` functions with `=>` bodies.
+* Fix bug where parameter metadata wouldn't always split when it should.
+* Don't split after `<` in collection literals.
+* Better indentation of multiline function types inside type argument lists. 
+
+## Internal changes
+
+* Use typed `_visitFunctionOrMethodDeclaration` instead of dynamically typed.
+* Fix metadata test to not fail when record syntax makes whitespace between
+  metadata annotation names and `(` significant ([sdk#50769][]).
+* Require Dart 2.19.
+* Require `package:analyzer` `^5.7.0`.
+
+[sdk#50769]: https://github.com/dart-lang/sdk/issues/50769
+
+# 2.2.5
+
+* Format unnamed libraries.
+* Require Dart 2.17.
+
+# 2.2.4
 
 * Unify how brace-delimited syntax is formatted. This is mostly an internal
   refactoring, but slightly changes how a type body containing only an inline
   block comment is formatted.
-
 * Refactor Chunk to store split before text instead of after. This mostly does
   not affect the visible behavior of the formatter, but a few edge cases are
   handled slightly differently. These are all bug fixes where the previous
   behavior was unintentional. The changes are:
-
-  * Consistently discard blank lines between a `{` or `[` and a subsequent
-    comment. It used to do this before the `{` in type bodies, but not switch
-    bodies, optional parameter sections, or named parameter sections.
-
-  * Don't allow splitting an empty class body.
-
-  * Allow splitting after an inline block comment in some places where it makes
-    sense.
-
-  * Don't allow a line comment in an argument list to cause preceding arguments
-    to be misformatted.
-
-  * Remove blank lines after a line comment at the end of a body.
+* Consistently discard blank lines between a `{` or `[` and a subsequent
+  comment. It used to do this before the `{` in type bodies, but not switch
+  bodies, optional parameter sections, or named parameter sections.
+* Don't allow splitting an empty class body.
+* Allow splitting after an inline block comment in some places where it makes
+  sense.
+* Don't allow a line comment in an argument list to cause preceding arguments
+  to be misformatted.
+* Remove blank lines after a line comment at the end of a body.
+* Require `package:analyzer` `>=4.4.0 <6.0.0`.
 
 # 2.2.3
 

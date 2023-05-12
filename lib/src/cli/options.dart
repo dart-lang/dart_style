@@ -74,10 +74,10 @@ void defineOptions(ArgParser parser,
       help: 'Return exit code 1 if there are any formatting changes.');
 
   if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
-  parser.addFlag('fix', negatable: false, help: 'Apply all style fixes.');
+  parser.addFlag('fix',
+      negatable: false, help: 'Apply all style fixes.', hide: !verbose);
 
   for (var fix in StyleFix.all) {
-    // TODO(rnystrom): Allow negating this if used in concert with "--fix"?
     parser.addFlag('fix-${fix.name}',
         negatable: false, help: fix.description, hide: !verbose);
   }
@@ -85,7 +85,10 @@ void defineOptions(ArgParser parser,
   if (verbose) parser.addSeparator('Other options:');
 
   parser.addOption('line-length',
-      abbr: 'l', help: 'Wrap lines longer than this.', defaultsTo: '80');
+      abbr: 'l',
+      help: 'Wrap lines longer than this.',
+      defaultsTo: '80',
+      hide: true);
   parser.addOption('indent',
       abbr: 'i',
       help: 'Add this many spaces of leading indentation.',

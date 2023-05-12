@@ -48,6 +48,36 @@ switch (foo) {
 
     c();
 }
+>>> remove newlines between empty cases
+switch (foo) {
+  case 1:
+
+
+  case 2:
+
+  case 3:
+
+    body;
+
+  case 4:
+
+
+  default:
+
+
+    body;
+}
+<<<
+switch (foo) {
+  case 1:
+  case 2:
+  case 3:
+    body;
+
+  case 4:
+  default:
+    body;
+}
 >>> require at least one newline between statements in a default
 switch (foo) {default:a();b();c();}
 <<<
@@ -106,8 +136,8 @@ switch (foo) {
   case 2:
     body();
 }
->>> allow an extra newline between cases
-switch (foo) {case 0:
+>>> allow an extra newline between non-empty cases
+switch (foo) {case 0: body();
 
   case 1:
   case 2:body();
@@ -115,6 +145,7 @@ switch (foo) {case 0:
 <<<
 switch (foo) {
   case 0:
+    body();
 
   case 1:
   case 2:
@@ -141,9 +172,7 @@ switch (foo) {
 <<<
 switch (foo) {
   case 0:
-
   case 1:
-
   case 2:
     body();
 }
@@ -189,3 +218,78 @@ switch (fruit) {
   default:
     break;
 }
+>>> switch expression
+var x = switch  (  obj  )  {
+1  =>  'one'  ,  var  two  =>  'two'
+};
+<<<
+var x = switch (obj) {
+  1 => 'one',
+  var two => 'two'
+};
+>>> handle cases that are not valid patterns
+switch (obj) {
+  case {1, 2}:
+  case -pi:
+  case !true:
+  case ~1:
+  case 1 != 2:
+  case 1 == 2:
+  case 1 & 2:
+  case 1 | 2:
+  case 1 ^ 2:
+  case 1 ~/ 2:
+  case 1 >> 2:
+  case 1 >>> 2:
+  case 1 << 2:
+  case 1 + 2:
+  case 1 - 2:
+  case 1 * 2:
+  case 1 / 2:
+  case 1 % 2:
+  case 1 < 2:
+  case 1 <= 2:
+  case 1 > 2:
+  case 1 >= 2:
+  case 1 ?? 2:
+  case true ? 1 : 2:
+  case 's'.length:
+  case 1 is int:
+  case 1 is! int:
+    body;
+}
+<<<
+switch (obj) {
+  case {1, 2}:
+  case -pi:
+  case !true:
+  case ~1:
+  case 1 != 2:
+  case 1 == 2:
+  case 1 & 2:
+  case 1 | 2:
+  case 1 ^ 2:
+  case 1 ~/ 2:
+  case 1 >> 2:
+  case 1 >>> 2:
+  case 1 << 2:
+  case 1 + 2:
+  case 1 - 2:
+  case 1 * 2:
+  case 1 / 2:
+  case 1 % 2:
+  case 1 < 2:
+  case 1 <= 2:
+  case 1 > 2:
+  case 1 >= 2:
+  case 1 ?? 2:
+  case true ? 1 : 2:
+  case 's'.length:
+  case 1 is int:
+  case 1 is! int:
+    body;
+}
+>>> empty switch expression
+var x = switch(y) {};
+<<<
+var x = switch (y) {};

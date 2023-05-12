@@ -23,3 +23,7 @@ C<int, float>.named(42);
 Map<  int  ?  , List<String  ?  > ? >();
 <<<
 Map<int?, List<String?>?>();
+>>> record type type argument
+Set < ( int  x  ,  String  ,  {  bool   b,  int  i  } )>();
+<<<
+Set<(int x, String, {bool b, int i})>();

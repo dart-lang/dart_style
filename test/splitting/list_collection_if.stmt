@@ -448,3 +448,40 @@ var list = [
     // c
   ]
 ];
+>>> collection if-case
+var list = [
+if (veryLongExpression + anotherVeryLongOne case someCaseConstant || anotherCaseConstant) element
+];
+<<<
+var list = [
+  if (veryLongExpression +
+          anotherVeryLongOne
+      case someCaseConstant ||
+          anotherCaseConstant)
+    element
+];
+>>> collection if-case with guard
+var list = [
+if (veryLongExpression + anotherVeryLongOne case someCase when someGuardCondition || otherCondition) element
+];
+<<<
+var list = [
+  if (veryLongExpression +
+          anotherVeryLongOne
+      case someCase
+      when someGuardCondition ||
+          otherCondition)
+    element
+];
+>>> block formatted pattern in if-case
+var list = [
+if (expression case const [element,]) element
+];
+<<<
+var list = [
+  if (expression
+      case const [
+        element,
+      ])
+    element
+];

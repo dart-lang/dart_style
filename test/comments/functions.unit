@@ -245,3 +245,16 @@ function({
 }) {
   ;
 }
+>>> splitting in none parameter's metadata doesn't force others to split
+function(@Annotation longParameter,
+  // Comment.
+@Annotation @Other @Third longParameter2,) {}
+<<<
+function(
+  @Annotation longParameter,
+  // Comment.
+  @Annotation
+  @Other
+  @Third
+  longParameter2,
+) {}

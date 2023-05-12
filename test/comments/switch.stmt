@@ -1,0 +1,241 @@
+40 columns                              |
+>>> blank lines before comments in switch
+switch (n) {
+
+
+  // comment
+  case 0:
+
+
+
+  // comment
+
+
+
+  case 1:
+    body;
+
+
+  // comment
+
+
+}
+<<<
+switch (n) {
+  // comment
+  case 0:
+
+  // comment
+
+  case 1:
+    body;
+
+  // comment
+}
+>>> line comment between cases does not force them to split
+switch (n) {
+  case 0: zero;
+  // comment
+  case 1: one;
+}
+<<<
+switch (n) {
+  case 0:
+    zero;
+  // comment
+  case 1:
+    one;
+}
+>>> line comment at end of statement does not force split
+switch (n) {
+  case 0: zero; // comment
+  case 1: one; // comment
+  case 2: two; // comment
+}
+<<<
+switch (n) {
+  case 0:
+    zero; // comment
+  case 1:
+    one; // comment
+  case 2:
+    two; // comment
+}
+>>> line comment indentation
+switch (n) {
+  // before first
+  case 0: zero;
+  // between
+  case 1: one;
+  // after last
+}
+<<<
+switch (n) {
+  // before first
+  case 0:
+    zero;
+  // between
+  case 1:
+    one;
+  // after last
+}
+>>> line comment in empty cases
+switch (n) {
+  case 0: // comment 0
+  case 1:
+    // comment 1
+  case 2:
+    // comment 2
+}
+<<<
+switch (n) {
+  case 0: // comment 0
+  case 1:
+  // comment 1
+  case 2:
+  // comment 2
+}
+>>> keeps one blank line around case comments in switch expression
+e = switch (n) {
+
+
+  // comment
+  0 => a,
+  // comment
+
+
+  1 => b
+
+
+  // comment
+
+
+};
+<<<
+e = switch (n) {
+  // comment
+  0 => a,
+  // comment
+
+  1 => b
+
+  // comment
+};
+>>> line comment between cases does not force them to split
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 => one
+};
+<<<
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 => one
+};
+>>> line comment at end of case does not force split
+e = switch (n) {
+  0 => zero, // comment
+  1 => one, // comment
+  2 => two // comment
+};
+<<<
+e = switch (n) {
+  0 => zero, // comment
+  1 => one, // comment
+  2 => two // comment
+};
+>>> line comment before case with guard does not force split
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};
+<<<
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};
+>>> line comment
+switch (e) {
+  // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> line comment on opening line
+switch (e) { // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> indented block comment
+switch (e) {
+  /* comment */
+}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> block comment with trailing newline
+switch (e) {/* comment */
+}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> block comment with leading newline
+switch (e) {
+  /* comment */}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> inline block comment
+switch (e) {  /* comment */  }
+<<<
+switch (e) {/* comment */}
+>>> line comment
+e = switch (n) {
+  // comment
+};
+<<<
+e = switch (n) {
+  // comment
+};
+>>> line comment on opening line
+e = switch (n) { // comment
+};
+<<<
+e = switch (n) {
+  // comment
+};
+>>> indented block comment
+e = switch (n) {
+  /* comment */
+};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> block comment with trailing newline
+e = switch (n) {/* comment */
+};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> block comment with leading newline
+e = switch (n) {
+  /* comment */};
+<<<
+e = switch (n) {
+  /* comment */
+};
+>>> inline block comment
+e = switch (n) {  /* comment */  };
+<<<
+e = switch (n) {/* comment */};

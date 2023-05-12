@@ -188,3 +188,41 @@ var x = Class<int>;
 var x = Class  < int  > . named;
 <<<
 var x = Class<int>.named;
+>>> empty record
+var record = (   );
+<<<
+var record = ();
+>>> single-element records don't split after ","
+var record = (   value  ,  );
+<<<
+var record = (value,);
+>>> multi-element record
+var record = (   first  ,  second  ,  third  );
+<<<
+var record = (first, second, third);
+>>> named record fields
+var record = (   first  :  1  ,  2 ,  third : 3 );
+<<<
+var record = (first: 1, 2, third: 3);
+>>> const record
+var record = const   (  1 ,   2 );
+<<<
+var record = const (1, 2);
+>>> pattern assignment
+{
+  (  a  &&  b  )  =  o;
+  (  a  as  int  ,  b  )  = o;
+  (  :  inferred  ) = o;
+  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  {  'k'  :  _  ,  ...  } = o;
+  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  (a && b) = o;
+  (a as int, b) = o;
+  (:inferred) = o;
+  [a!, Foo(:b), ...] = o;
+  {'k': _, ...} = o;
+  Foo(prop: value, :inferred) = o;
+}

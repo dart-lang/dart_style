@@ -170,3 +170,81 @@ class Foo {
 class Foo {
   bar() {}
 }
+>>> class modifiers
+class C1 {}
+base  class C2 {}
+interface  class C3 {}
+final  class C4 {}
+sealed  class C5 {}
+abstract  class C6 {}
+abstract  base  class C7 {}
+abstract  interface  class C8 {}
+abstract  final  class C9 {}
+mixin  class C10 {}
+base  mixin  class C11 {}
+abstract  mixin  class C12 {}
+abstract  base  mixin  class C13 {}
+<<<
+class C1 {}
+
+base class C2 {}
+
+interface class C3 {}
+
+final class C4 {}
+
+sealed class C5 {}
+
+abstract class C6 {}
+
+abstract base class C7 {}
+
+abstract interface class C8 {}
+
+abstract final class C9 {}
+
+mixin class C10 {}
+
+base mixin class C11 {}
+
+abstract mixin class C12 {}
+
+abstract base mixin class C13 {}
+>>> mixin application modifiers
+class C1 = Object with Mixin;
+base  class C2 = Object with Mixin;
+interface  class C3 = Object with Mixin;
+final  class C4 = Object with Mixin;
+sealed  class C5 = Object with Mixin;
+abstract  class C6 = Object with Mixin;
+abstract  base  class C7 = Object with Mixin;
+abstract interface  class C8 = Object with Mixin;
+abstract  final  class C9 = Object with Mixin;
+mixin  class C10 = Object with Mixin;
+base  mixin  class C11 = Object with Mixin;
+abstract  mixin  class C12 = Object with Mixin;
+abstract  base  mixin  class C13 = Object with Mixin;
+<<<
+class C1 = Object with Mixin;
+base class C2 = Object with Mixin;
+interface class C3 = Object with Mixin;
+final class C4 = Object with Mixin;
+sealed class C5 = Object with Mixin;
+abstract class C6 = Object with Mixin;
+abstract base class C7 = Object
+    with Mixin;
+abstract interface class C8 = Object
+    with Mixin;
+abstract final class C9 = Object
+    with Mixin;
+mixin class C10 = Object with Mixin;
+base mixin class C11 = Object
+    with Mixin;
+abstract mixin class C12 = Object
+    with Mixin;
+abstract base mixin class C13 = Object
+    with Mixin;
+>>> inline classes
+inline  class C {}
+<<<
+inline class C {}

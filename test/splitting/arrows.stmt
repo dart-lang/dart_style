@@ -15,3 +15,31 @@ doSomethingWithFn(
   () => one;
   () => two;
 }
+>>> indent entire block body
+SomeLongFunctionName(
+  (longParameterName______) =>
+      <LongTypeArgument>[
+    longListElement,
+  ],
+);
+<<<
+SomeLongFunctionName(
+  (longParameterName______) =>
+      <LongTypeArgument>[
+    longListElement,
+  ],
+);
+>>>
+SomeLongFunctionName(
+  (longParameterName______) =>
+      switch (value) {
+    constant => body,
+  },
+);
+<<<
+SomeLongFunctionName(
+  (longParameterName______) =>
+      switch (value) {
+    constant => body,
+  },
+);

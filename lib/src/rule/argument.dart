@@ -9,18 +9,6 @@ abstract class ArgumentRule extends Rule {
   /// The chunks prior to each positional argument.
   final List<Chunk?> _arguments = [];
 
-  /// The number of leading collection arguments.
-  ///
-  /// This and [_trailingCollections] cannot both be positive. If every
-  /// argument is a collection, this will be [_arguments.length] and
-  /// [_trailingCollections] will be 0.
-  final int _leadingCollections;
-
-  /// The number of trailing collections.
-  ///
-  /// This and [_leadingCollections] cannot both be positive.
-  final int _trailingCollections;
-
   /// If true, then inner rules that are written will force this rule to split.
   ///
   /// Temporarily disabled while writing collection arguments so that they can
@@ -34,8 +22,6 @@ abstract class ArgumentRule extends Rule {
   @override
   int? get splitOnInnerRules =>
       _trackInnerRules ? Rule.fullSplitConstraint : null;
-
-  ArgumentRule._(this._leadingCollections, this._trailingCollections);
 
   /// Remembers [chunk] as containing the split that occurs right before an
   /// argument in the list.
@@ -74,6 +60,18 @@ abstract class ArgumentRule extends Rule {
 /// splits before all of the non-collection arguments, but does not split
 /// before the collections, so that they can split internally.
 class PositionalRule extends ArgumentRule {
+  /// The number of leading collection arguments.
+  ///
+  /// This and [_trailingCollections] cannot both be positive. If every
+  /// argument is a collection, this will be [_arguments.length] and
+  /// [_trailingCollections] will be 0.
+  final int _leadingCollections;
+
+  /// The number of trailing collections.
+  ///
+  /// This and [_leadingCollections] cannot both be positive.
+  final int _trailingCollections;
+
   /// Creates a new rule for a positional argument list.
   ///
   /// [argumentCount] is the number of arguments that will be added to the rule
@@ -86,33 +84,32 @@ class PositionalRule extends ArgumentRule {
       {required int argumentCount,
       int leadingCollections = 0,
       int trailingCollections = 0})
-      : super._(leadingCollections, trailingCollections) {
-    if (collectionRule != null) {
-      // Don't split inside collections if there are leading collections and
-      // we split before the first argument.
-      if (leadingCollections > 0) {
-        addConstraint(1, collectionRule, Rule.unsplit);
-      }
+      : _leadingCollections = leadingCollections,
+        _trailingCollections = trailingCollections {
+    // Don't split inside collections if there are leading collections and
+    // we split before the first argument.
+    if (leadingCollections > 0) {
+      addConstraint(1, collectionRule!, Rule.unsplit);
+    }
 
-      // If we're only splitting before the non-collection arguments, the
-      // intent is to split inside the collections, so force that here.
-      if (leadingCollections > 0 || trailingCollections > 0) {
-        addConstraint(argumentCount + 1, collectionRule, 1);
-      }
+    // If we're only splitting before the non-collection arguments, the
+    // intent is to split inside the collections, so force that here.
+    if (leadingCollections > 0 || trailingCollections > 0) {
+      addConstraint(argumentCount + 1, collectionRule!, 1);
+    }
 
-      // Split before a single argument. If it's in the middle of the collection
-      // arguments, don't allow them to split.
-      for (var argument = 0; argument < leadingCollections; argument++) {
-        var value = argumentCount - argument + 1;
-        addConstraint(value, collectionRule, Rule.unsplit);
-      }
+    // Split before a single argument. If it's in the middle of the collection
+    // arguments, don't allow them to split.
+    for (var argument = 0; argument < leadingCollections; argument++) {
+      var value = argumentCount - argument + 1;
+      addConstraint(value, collectionRule!, Rule.unsplit);
+    }
 
-      for (var argument = argumentCount - trailingCollections;
-          argument < argumentCount;
-          argument++) {
-        var value = argumentCount - argument + 1;
-        addConstraint(value, collectionRule, Rule.unsplit);
-      }
+    for (var argument = argumentCount - trailingCollections;
+        argument < argumentCount;
+        argument++) {
+      var value = argumentCount - argument + 1;
+      addConstraint(value, collectionRule!, Rule.unsplit);
     }
   }
 
@@ -205,8 +202,7 @@ class NamedRule extends ArgumentRule {
   /// arguments in the list. It must be provided if [leadingCollections] or
   /// [trailingCollections] is non-zero.
   NamedRule(
-      Rule? collectionRule, int leadingCollections, int trailingCollections)
-      : super._(leadingCollections, trailingCollections) {
+      Rule? collectionRule, int leadingCollections, int trailingCollections) {
     if (leadingCollections > 0 || trailingCollections > 0) {
       // Split only before the first argument. Don't allow the collections to
       // split.

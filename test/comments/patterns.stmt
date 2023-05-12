@@ -1,0 +1,374 @@
+40 columns                              |
+>>> before first operand of logic
+if (obj case // c
+pattern || otherPattern) {;}
+<<<
+if (obj
+    case // c
+        pattern || otherPattern) {
+  ;
+}
+>>> before first operand of nested logic
+if (obj case pattern || // c
+otherPattern && thirdLongPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern &&
+            thirdLongPattern) {
+  ;
+}
+>>> after left logic operand (looks weird, but user should move comment)
+if (obj case pattern // c
+|| otherPattern) {;}
+<<<
+if (obj
+    case pattern // c
+        ||
+        otherPattern) {
+  ;
+}
+>>> after logic operator
+if (obj case pattern || // c
+otherPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern) {
+  ;
+}
+>>> after right logic operand
+if (obj case somePattern || otherPattern // c
+) {;}
+<<<
+if (obj
+    case somePattern ||
+        otherPattern // c
+    ) {
+  ;
+}
+>>> after relational operator
+if (obj case <= // c
+someConstant + anotherLongConstant) {;}
+<<<
+if (obj
+    case <= // c
+        someConstant +
+            anotherLongConstant) {
+  ;
+}
+>>> after relational operand
+if (obj case <= someConstant + anotherLongConstant // c
+) {;}
+<<<
+if (obj
+    case <= someConstant +
+        anotherLongConstant // c
+    ) {
+  ;
+}
+>>> before "as"
+if (obj case constant // c
+as Type) {;}
+<<<
+if (obj
+    case constant // c
+        as Type) {
+  ;
+}
+>>> after "as"
+if (obj case constant as // c
+Type) {;}
+<<<
+if (obj
+    case constant as // c
+        Type) {
+  ;
+}
+>>> before null-check (looks weird, but user should move comment)
+if (obj case pattern // c
+?) {;}
+<<<
+if (obj
+    case pattern // c
+        ?) {
+  ;
+}
+>>> after null-check (looks weird, but user should move comment)
+if (obj case pattern? // c
+) {;}
+<<<
+if (obj case pattern? // c
+    ) {
+  ;
+}
+>>> before null-assert (looks weird, but user should move comment)
+if (obj case pattern // c
+!) {;}
+<<<
+if (obj
+    case pattern // c
+        !) {
+  ;
+}
+>>> after null-assert (looks weird, but user should move comment)
+if (obj case pattern! // c
+) {;}
+<<<
+if (obj case pattern! // c
+    ) {
+  ;
+}
+>>> inside parenthesized
+if (obj case ( // c
+pattern)) {;}
+<<<
+if (obj
+    case ( // c
+        pattern)) {
+  ;
+}
+>>> in qualified name
+if (obj case qualified // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .name) {
+  ;
+}
+>>> in prefixed qualified name
+if (obj case qualified // c
+.prefixed // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .prefixed // c
+        .name) {
+  ;
+}
+>>> before "var"
+if (obj case // c
+var x) {;}
+<<<
+if (obj
+    case // c
+        var x) {
+  ;
+}
+>>> after "var"
+if (obj case var // c
+x) {;}
+<<<
+if (obj
+    case var // c
+        x) {
+  ;
+}
+>>> after variable (looks weird, but user should move comment)
+if (obj case var x // c
+) {;}
+<<<
+if (obj case var x // c
+    ) {
+  ;
+}
+>>> after type
+if (obj case List<int> // c
+x) {;}
+<<<
+if (obj
+    case List<int> // c
+        x) {
+  ;
+}
+>>> indent line comment inside list
+if (obj case [
+ // c
+]) {;}
+<<<
+if (obj
+    case [
+      // c
+    ]) {
+  ;
+}
+>>> line comment on opening line of list
+if (obj case [// c
+]) {;}
+<<<
+if (obj
+    case [
+      // c
+    ]) {
+  ;
+}
+>>> indented block comment in list
+if (obj case [
+  /* comment */
+]){;}
+<<<
+if (obj
+    case [
+      /* comment */
+    ]) {
+  ;
+}
+>>> inline block comment in list
+if (obj case [  /* comment */  e  ]){;}
+<<<
+if (obj case [/* comment */ e]) {
+  ;
+}
+>>> line comment between list items
+if (obj case ['a', // comment
+  'b']){;}
+<<<
+if (obj
+    case [
+      'a', // comment
+      'b'
+    ]) {
+  ;
+}
+>>> indent line comment inside map
+if (obj case {
+ // c
+}) {;}
+<<<
+if (obj
+    case {
+      // c
+    }) {
+  ;
+}
+>>> line comment on opening line of map
+if (obj case {// c
+}) {;}
+<<<
+if (obj
+    case {
+      // c
+    }) {
+  ;
+}
+>>> indented block comment in map
+if (obj case {
+  /* comment */
+}){;}
+<<<
+if (obj
+    case {
+      /* comment */
+    }) {
+  ;
+}
+>>> inline block comment in map
+if (obj case {  /* comment */  k: v  }){;}
+<<<
+if (obj case {/* comment */ k: v}) {
+  ;
+}
+>>> line comment between map items
+if (obj case {k: 'a', // comment
+  m: 'b'}){;}
+<<<
+if (obj
+    case {
+      k: 'a', // comment
+      m: 'b'
+    }) {
+  ;
+}
+>>> empty record pattern block comment
+if (obj case (  /* comment */  )) {;}
+<<<
+if (obj case (/* comment */)) {
+  ;
+}
+>>> empty record pattern line comment
+if (obj case (  // comment
+)) {;}
+<<<
+if (obj
+    case (
+      // comment
+    )) {
+  ;
+}
+>>> record line comment between fields
+if (obj case ( first , // comment
+second)){;}
+<<<
+if (obj
+    case (
+      first, // comment
+      second
+    )) {
+  ;
+}
+>>> empty object pattern block comment
+if (obj case Foo(  /* comment */  )) {;}
+<<<
+if (obj case Foo(/* comment */)) {
+  ;
+}
+>>> empty object pattern line comment (looks weird, but user should move comment)
+if (obj case Foo(  // comment
+)) {;}
+<<<
+if (obj
+    case Foo(
+      // comment
+    )) {
+  ;
+}
+>>> object line comment between arguments
+if (obj case Foo( first , // comment
+second)){;}
+<<<
+if (obj
+    case Foo(
+      first, // comment
+      second
+    )) {
+  ;
+}
+>>> empty const constructor line comment (looks weird, but user should move comment)
+if (obj case const Foo(  // comment
+)) {;}
+<<<
+if (obj
+    case const Foo(// comment
+        )) {
+  ;
+}
+>>> const constructor line comment between arguments
+if (obj case const Foo( first , // comment
+second)){;}
+<<<
+if (obj
+    case const Foo(
+        first, // comment
+        second)) {
+  ;
+}
+>>> after "(" in parenthesized constant
+if (obj case const ( // comment
+expression)){;}
+<<<
+if (obj
+    case const ( // comment
+        expression)) {
+  ;
+}
+>>> after expression in parenthesized constant (looks weird, but user should move comment)
+if (obj case const ( expression // comment
+)){;}
+<<<
+if (obj
+    case const (expression // comment
+        )) {
+  ;
+}

@@ -877,10 +877,10 @@ class ChunkBuilder {
           isHard: isHard, isDouble: isDouble, space: space);
     }
 
+    if (chunk.rule.isHardened) _handleHardSplit();
+
     _pendingNewlines = 0;
     _pendingNested = false;
-
-    if (chunk.rule.isHardened) _handleHardSplit();
     return chunk;
   }
 
@@ -913,23 +913,6 @@ class ChunkBuilder {
     return chunk;
   }
 
-  /// Returns true if we can divide the chunks at [index] and line split the
-  /// ones before and after that separately.
-  bool _canDivideAt(int i) {
-    // Don't divide at the first chunk.
-    if (i == 0) return false;
-
-    var chunk = _chunks[i];
-    if (!chunk.rule.isHardened) return false;
-    if (chunk.nesting.isNested) return false;
-
-    // If the chunk is the ending delimiter of a block, then don't separate it
-    // and its children from the preceding beginning of the block.
-    if (_chunks[i] is BlockChunk) return false;
-
-    return true;
-  }
-
   /// Pre-processes the chunks after they are done being written by the visitor
   /// but before they are run through the line splitter.
   ///
@@ -940,11 +923,29 @@ class ChunkBuilder {
     // splits, along with all of the other rules they constrain.
     _hardenRules();
 
-    // Now that we know where all of the divided chunk sections are, mark the
-    // chunks.
     for (var i = 0; i < _chunks.length; i++) {
-      _chunks[i].markDivide(_canDivideAt(i));
+      var chunk = _chunks[i];
+      if (!_canDivide(chunk)) chunk.preventDivide();
     }
+  }
+
+  /// Returns true if we can divide the chunks at [index] and line split the
+  /// ones before and after that separately.
+  bool _canDivide(Chunk chunk) {
+    // Don't divide at the first chunk.
+    if (chunk == _chunks.first) return false;
+
+    // Can't divide soft rules.
+    if (!chunk.rule.isHardened) return false;
+
+    // Can't divide in the middle of expression nesting.
+    if (chunk.nesting.isNested) return false;
+
+    // If the chunk is the ending delimiter of a block, then don't separate it
+    // and its children from the preceding beginning of the block.
+    if (chunk is BlockChunk) return false;
+
+    return true;
   }
 
   /// Hardens the active rules when a hard split occurs within them.

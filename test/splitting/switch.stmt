@@ -1,0 +1,279 @@
+40 columns                              |
+>>> expression split in value
+switch ("a long string that must wrap") {
+  case 0:
+    return "ok";
+}
+<<<
+switch (
+    "a long string that must wrap") {
+  case 0:
+    return "ok";
+}
+>>> block split in value
+switch ([1,]) {
+  case 0:
+    return "ok";
+}
+<<<
+switch ([
+  1,
+]) {
+  case 0:
+    return "ok";
+}
+>>> empty cases always get their own line
+switch (obj) {
+  case 1:
+  case 2:
+    a();
+}
+<<<
+switch (obj) {
+  case 1:
+  case 2:
+    a();
+}
+>>> single-statement cases split
+switch (obj) {
+  case 1: a();
+  case 2: b();
+  default: c();
+}
+<<<
+switch (obj) {
+  case 1:
+    a();
+  case 2:
+    b();
+  default:
+    c();
+}
+>>> multiple statement cases split
+switch (obj) {
+  case 1: a(); b();
+  case 2: c(); d();
+  default: d(); e();
+}
+<<<
+switch (obj) {
+  case 1:
+    a();
+    b();
+  case 2:
+    c();
+    d();
+  default:
+    d();
+    e();
+}
+>>> cases always split
+switch (obj) {
+  case 1: a(); b();
+  case 2: c();
+  case 3: d(); e();
+  default: f();
+}
+<<<
+switch (obj) {
+  case 1:
+    a();
+    b();
+  case 2:
+    c();
+  case 3:
+    d();
+    e();
+  default:
+    f();
+}
+>>> long body statement splits after ":"
+switch (obj) {
+  case 1: longExpression + thatMustSplit;
+  case 2: b();
+  default: c();
+}
+<<<
+switch (obj) {
+  case 1:
+    longExpression + thatMustSplit;
+  case 2:
+    b();
+  default:
+    c();
+}
+>>> split in body statement splits after ":"
+switch (obj) {
+  case 1: longExpression + thatMustSplitAndAgain;
+  case 2: b();
+  default: c();
+}
+<<<
+switch (obj) {
+  case 1:
+    longExpression +
+        thatMustSplitAndAgain;
+  case 2:
+    b();
+  default:
+    c();
+}
+>>> pattern and guard on same line
+switch (obj) {
+  case constant when condition: body;
+}
+<<<
+switch (obj) {
+  case constant when condition:
+    body;
+}
+>>> pattern and guard on same line, split after ":"
+switch (obj) {
+  case constant when condition: longBody;
+}
+<<<
+switch (obj) {
+  case constant when condition:
+    longBody;
+}
+>>> prefer to split guard before case
+switch (obj) {
+  case veryLongConstant when longCondition: body;
+}
+<<<
+switch (obj) {
+  case veryLongConstant
+      when longCondition:
+    body;
+}
+>>> no split in pattern, expression split in guard
+switch (obj) {
+  case longConstant when condition || anotherCondition: body;
+}
+<<<
+switch (obj) {
+  case longConstant
+      when condition ||
+          anotherCondition:
+    body;
+}
+>>> no split in pattern, block split in guard
+switch (obj) {
+  case constant when [element,]: body;
+}
+<<<
+switch (obj) {
+  case constant
+      when [
+        element,
+      ]:
+    body;
+}
+>>> expression split in pattern
+switch (obj) {
+  case veryLongPattern || reallyMustSplit: body;
+}
+<<<
+switch (obj) {
+  case veryLongPattern ||
+        reallyMustSplit:
+    body;
+}
+>>> expression split in pattern forces guard to split
+switch (obj) {
+  case veryLongPattern || reallyMustSplit when true: body;
+}
+<<<
+switch (obj) {
+  case veryLongPattern ||
+          reallyMustSplit
+      when true:
+    body;
+}
+>>> expression split in pattern, expression split in guard
+switch (obj) {
+  case veryLongPattern || reallyMustSplit when veryLongCondition
+  || anotherLongCondition: body;
+}
+<<<
+switch (obj) {
+  case veryLongPattern ||
+          reallyMustSplit
+      when veryLongCondition ||
+          anotherLongCondition:
+    body;
+}
+>>> expression split in pattern, block split in guard
+switch (obj) {
+  case veryLongPattern || reallyMustSplit when [element,]: body;
+}
+<<<
+switch (obj) {
+  case veryLongPattern ||
+          reallyMustSplit
+      when [
+        element,
+      ]:
+    body;
+}
+>>> block split in pattern
+switch (obj) {
+  case [element,]: body;
+}
+<<<
+switch (obj) {
+  case [
+      element,
+    ]:
+    body;
+}
+>>> block split in pattern forces guard to split
+switch (obj) {
+  case [element,] when true: body;
+}
+<<<
+switch (obj) {
+  case [
+        element,
+      ]
+      when true:
+    body;
+}
+>>> block split in pattern, expression split in guard
+switch (obj) {
+  case [element,] when longCondition || anotherLongCondition: body;
+}
+<<<
+switch (obj) {
+  case [
+        element,
+      ]
+      when longCondition ||
+          anotherLongCondition:
+    body;
+}
+>>> block split in pattern, block split in guard
+switch (obj) {
+  case [element,] when [element,]: body;
+}
+<<<
+switch (obj) {
+  case [
+        element,
+      ]
+      when [
+        element,
+      ]:
+    body;
+}
+>>> indent || patterns when outermost in switch statement (as opposed to expr)
+switch (obj) {
+  case oneConstant || twoConstant || threeConstant: body;
+}
+<<<
+switch (obj) {
+  case oneConstant ||
+        twoConstant ||
+        threeConstant:
+    body;
+}

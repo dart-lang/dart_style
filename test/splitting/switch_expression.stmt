@@ -1,0 +1,368 @@
+40 columns                              |
+>>> all one line
+e = switch (c) { 0 => a, 1 => b };
+<<<
+e = switch (c) { 0 => a, 1 => b };
+>>> one case per line
+e = switch (c) { 0 => first, 1 => second };
+<<<
+e = switch (c) {
+  0 => first,
+  1 => second
+};
+>>> split some cases at "=>" but not all
+e = switch (c) {
+  first => a,
+  second => veryLongExpression + thatSplits,
+  third => c
+};
+<<<
+e = switch (c) {
+  first => a,
+  second =>
+    veryLongExpression + thatSplits,
+  third => c
+};
+>>> trailing comma forces split
+e = switch (c) { 0 => a, 1 => b, };
+<<<
+e = switch (c) {
+  0 => a,
+  1 => b,
+};
+>>> discards newlines between cases
+e = switch (obj) {
+
+
+  0 => a,
+
+
+  1 => b,
+
+
+
+  2 => c
+
+
+};
+<<<
+e = switch (obj) {
+  0 => a,
+  1 => b,
+  2 => c
+};
+>>> expression split in value
+e = switch ("a long string that must wrap") {
+  0 => "ok"
+};
+<<<
+e = switch (
+    "a long string that must wrap") {
+  0 => "ok"
+};
+>>> block split in value doesn't force body to split
+e = switch ([1,]) {
+  0 => "ok"
+};
+<<<
+e = switch ([
+  1,
+]) {
+  0 => "ok"
+};
+>>> long body expression does not force split after "=>"
+e = switch (obj) {
+  1 => veryLongExpression + thatStillMustSplit
+};
+<<<
+e = switch (obj) {
+  1 => veryLongExpression +
+      thatStillMustSplit
+};
+>>> prefer to split after "=>" then in body
+e = switch (obj) {
+  longConstant => longExpression + thatMustSplit
+};
+<<<
+e = switch (obj) {
+  longConstant =>
+    longExpression + thatMustSplit
+};
+>>> split after "=>" and in body
+e = switch (obj) {
+  longConstant => veryLongLongExpression + thatMustSplit
+};
+<<<
+e = switch (obj) {
+  longConstant =>
+    veryLongLongExpression +
+        thatMustSplit
+};
+>>> pattern and guard on same line
+e = switch (obj) {
+  constant when condition => body
+};
+<<<
+e = switch (obj) {
+  constant when condition => body
+};
+>>> pattern and guard on same line, split after "=>"
+e = switch (obj) {
+  constant when condition => veryLongBody
+};
+<<<
+e = switch (obj) {
+  constant when condition =>
+    veryLongBody
+};
+>>> prefer to split at "=>" before guard
+e = switch (obj) {
+  veryLongConstant when longCondition => body
+};
+<<<
+e = switch (obj) {
+  veryLongConstant when longCondition =>
+    body
+};
+>>> no split in pattern, expression split in guard
+e = switch (obj) {
+  longConstant when veryLongCondition || anotherCondition => body
+};
+<<<
+e = switch (obj) {
+  longConstant
+      when veryLongCondition ||
+          anotherCondition =>
+    body
+};
+>>> no split in pattern, block split in guard
+e = switch (obj) {
+  constant when [element,] => body
+};
+<<<
+e = switch (obj) {
+  constant
+      when [
+        element,
+      ] =>
+    body
+};
+>>> expression split in pattern
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplit => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+        reallyMustSplit =>
+    body
+};
+>>> expression split in pattern forces guard to split
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplitHere when true => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+          reallyMustSplitHere
+      when true =>
+    body
+};
+>>> expression split in pattern, expression split in guard
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplitToo when veryLongCondition
+  || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+          reallyMustSplitToo
+      when veryLongCondition ||
+          anotherLongCondition =>
+    body
+};
+>>> expression split in pattern, block split in guard
+e = switch (obj) {
+  veryLongPattern && reallyMustSplitAgain when [element,] => body
+};
+<<<
+e = switch (obj) {
+  veryLongPattern &&
+          reallyMustSplitAgain
+      when [
+        element,
+      ] =>
+    body
+};
+>>> outermost logic-or patterns are indented like parallel cases
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplit => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplit =>
+    body
+};
+>>> outermost logic-or split does not force guard to split
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitHere when true => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitHere when true =>
+    body
+};
+>>> outermost logic-or split in pattern, expression split in guard
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitToo when veryLongCondition
+  || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitToo
+      when veryLongCondition ||
+          anotherLongCondition =>
+    body
+};
+>>> outermost logic-or split in pattern, block split in guard
+e = switch (obj) {
+  veryLongPattern || reallyMustSplitAgain when [element,] => body
+};
+<<<
+e = switch (obj) {
+  veryLongPattern ||
+  reallyMustSplitAgain
+      when [
+        element,
+      ] =>
+    body
+};
+>>> nested logic-or operands are indented
+e = switch (obj) {
+  Foo(veryVeryLongPattern || reallyMustSplit) => body
+};
+<<<
+e = switch (obj) {
+  Foo(
+    veryVeryLongPattern ||
+        reallyMustSplit
+  ) =>
+    body
+};
+>>> block split in pattern
+e = switch (obj) {
+  [element,] => body
+};
+<<<
+e = switch (obj) {
+  [
+    element,
+  ] =>
+    body
+};
+>>> block split in pattern forces guard to split
+e = switch (obj) {
+  [element,] when true => body
+};
+<<<
+e = switch (obj) {
+  [
+    element,
+  ]
+      when true =>
+    body
+};
+>>> block split in pattern, expression split in guard
+e = switch (obj) {
+  [element,] when longCondition || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  [
+    element,
+  ]
+      when longCondition ||
+          anotherLongCondition =>
+    body
+};
+>>> block split in pattern, block split in guard
+e = switch (obj) {
+  [element,] when [element,] => body
+};
+<<<
+e = switch (obj) {
+  [
+    element,
+  ]
+      when [
+        element,
+      ] =>
+    body
+};
+>>> unsplit pattern with trailing comma argument list body
+e = switch (obj) {
+  pattern => function(argument, argument,)
+};
+<<<
+e = switch (obj) {
+  pattern => function(
+      argument,
+      argument,
+    )
+};
+>>> don't indent || patterns when outermost in switch expression
+e = switch (obj) {
+  oneConstant || twoConstant || threeConstant => body
+};
+<<<
+e = switch (obj) {
+  oneConstant ||
+  twoConstant ||
+  threeConstant =>
+    body
+};
+>>> do indent || patterns when nested inside pattern
+e = switch (obj) {
+  [oneConstant || twoConstant || threeConstant] => body
+};
+<<<
+e = switch (obj) {
+  [
+    oneConstant ||
+        twoConstant ||
+        threeConstant
+  ] =>
+    body
+};
+>>> split pattern with trailing comma argument list body
+e = switch (obj) {
+  pattern || anotherPattern || aThirdOne => function(argument, argument,)
+};
+<<<
+e = switch (obj) {
+  pattern ||
+  anotherPattern ||
+  aThirdOne =>
+    function(
+      argument,
+      argument,
+    )
+};
+>>> trailing comma argument list body with switch inside => function body
+longFunctionName(veryLongParameter) => switch (obj) {
+  oneConstant || twoConstant || threeConstant => function(argument, argument,)
+};
+<<<
+longFunctionName(veryLongParameter) =>
+    switch (obj) {
+      oneConstant ||
+      twoConstant ||
+      threeConstant =>
+        function(
+          argument,
+          argument,
+        )
+    };

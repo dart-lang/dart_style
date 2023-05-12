@@ -25,3 +25,7 @@ mixin M1 on UnaryNum {
 mixin M<   A  ,B  >on   C  implements    D{ }
 <<<
 mixin M<A, B> on C implements D {}
+>>> base modifier
+base  mixin M {}
+<<<
+base mixin M {}

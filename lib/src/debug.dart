@@ -78,9 +78,6 @@ void dumpChunks(int start, List<Chunk> chunks) {
 
   addSpans(chunks);
 
-  var spans = spanSet.toList();
-  var rules = chunks.map((chunk) => chunk.rule).toSet();
-
   var rows = <List<String>>[];
 
   void addChunk(List<Chunk> chunks, String prefix, int index) {
@@ -114,6 +111,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     }
     row.add(ruleString);
 
+    var rules = chunks.map((chunk) => chunk.rule).toSet();
     var constrainedRules = rule.constrainedRules.toSet().intersection(rules);
     writeIf(
         constrainedRules.isNotEmpty, () => "-> ${constrainedRules.join(" ")}");
@@ -129,29 +127,35 @@ void dumpChunks(int start, List<Chunk> chunks) {
     writeIf(chunk.indent != 0, () => 'indent ${chunk.indent}');
     writeIf(chunk.nesting.indent != 0, () => 'nest ${chunk.nesting}');
 
+    var spans = spanSet.toList();
     if (spans.length <= 20) {
       var spanBars = '';
       for (var span in spans) {
         if (chunk.spans.contains(span)) {
-          if (index == 0 || !chunks[index - 1].spans.contains(span)) {
+          if (index == chunks.length - 1 ||
+              !chunks[index + 1].spans.contains(span)) {
+            // This is the last chunk with the span.
+            spanBars += '╙';
+          } else {
+            spanBars += '║';
+          }
+        } else {
+          // If the next chunk has this span, then show it bridging this chunk
+          // and the next because a split between them breaks the span.
+          if (index < chunks.length - 1 &&
+              chunks[index + 1].spans.contains(span)) {
             if (span.cost == 1) {
               spanBars += '╓';
             } else {
               spanBars += span.cost.toString();
             }
-          } else {
-            spanBars += '║';
-          }
-        } else {
-          if (index > 0 && chunks[index - 1].spans.contains(span)) {
-            spanBars += '╙';
-          } else {
-            spanBars += ' ';
           }
         }
       }
       row.add(spanBars);
     }
+
+    row.add(chunk.spans.map((span) => span.id).join(' '));
 
     if (chunk.text.length > 70) {
       row.add(chunk.text.substring(0, 70));

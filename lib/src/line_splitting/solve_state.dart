@@ -9,6 +9,9 @@ import 'cost_calculator.dart';
 import 'line_splitter.dart';
 import 'rule_set.dart';
 
+// TODO: Re-apply optimizations from https://github.com/dart-lang/dart_style/commit/e7ce3a2b06101200341d1e95a4660670667238d9
+// to this and CostCalculator.dart.
+
 /// A possibly incomplete solution in the line splitting search space.
 ///
 /// A single [SolveState] binds some subset of the rules to values while

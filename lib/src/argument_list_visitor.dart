@@ -653,13 +653,18 @@ class ArgumentSublist {
 
       // Tell it to use the rule we've already created.
       visitor.beforeBlock(argumentBlock, blockRule, previousSplit);
-    } else if (_allArguments.length > 1) {
+    } else if (_allArguments.length > 1 ||
+        _allArguments.first is RecordLiteral) {
       // Edge case: Only bump the nesting if there are multiple arguments. This
       // lets us avoid spurious indentation in cases like:
       //
       //     function(function(() {
       //       body;
       //     }));
+      //
+      // Do bump the nesting if the single argument is a record because records
+      // are formatted like regular values when they appear in argument lists
+      // even though they internally get block-like formatting.
       visitor.builder.startBlockArgumentNesting();
     } else if (argument is! NamedExpression) {
       // Edge case: Likewise, don't force the argument to split if there is
@@ -671,14 +676,16 @@ class ArgumentSublist {
     }
 
     if (argument is NamedExpression) {
-      visitor.visitNamedArgument(argument, rule as NamedRule);
+      visitor.visitNamedNode(argument.name.label.token, argument.name.colon,
+          argument.expression, rule as NamedRule);
     } else {
       visitor.visit(argument);
     }
 
     if (argumentBlock != null) {
       rule.enableSplitOnInnerRules();
-    } else if (_allArguments.length > 1) {
+    } else if (_allArguments.length > 1 ||
+        _allArguments.first is RecordLiteral) {
       visitor.builder.endBlockArgumentNesting();
     } else if (argument is! NamedExpression) {
       rule.enableSplitOnInnerRules();
@@ -734,6 +741,7 @@ class ArgumentSublist {
     // TODO(rnystrom): Should we step into parenthesized expressions?
 
     if (expression is ListLiteral) return expression.leftBracket;
+    if (expression is RecordLiteral) return expression.leftParenthesis;
     if (expression is SetOrMapLiteral) return expression.leftBracket;
     if (expression is SingleStringLiteral && expression.isMultiline) {
       return expression.beginToken;
