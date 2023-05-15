@@ -99,10 +99,13 @@ Foo(
 >>> split in value
 (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
 <<<
-(first, second, third) =
-    longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+(
+  first,
+  second,
+  third
+) = longValueExpression +
+    anotherOperand +
+    aThirdOperand;
 >>> expression split in both
 (veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
 <<<

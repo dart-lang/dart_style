@@ -134,3 +134,67 @@ class TooLongClassName extends Another {}
 <<<
 class TooLongClassName
     extends Another {}
+>>>
+class SomeClass extends C<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    extends C<
+      VeryLongTypeArgumentName
+    > {}
+>>>
+class SomeClass extends BaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    extends BaseClass<
+      VeryLongTypeArgumentName
+    > {}
+>>>
+class SomeClass extends VeryLongBaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    extends VeryLongBaseClass<
+      VeryLongTypeArgumentName
+    > {}
+>>>
+class SomeClass with C<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    with C<VeryLongTypeArgumentName> {}
+>>>
+class SomeClass with BaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    with
+        BaseClass<
+          VeryLongTypeArgumentName
+        > {}
+>>>
+class SomeClass with VeryLongBaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    with
+        VeryLongBaseClass<
+          VeryLongTypeArgumentName
+        > {}
+>>>
+class SomeClass implements C<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    implements
+        C<VeryLongTypeArgumentName> {}
+>>>
+class SomeClass implements BaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    implements
+        BaseClass<
+          VeryLongTypeArgumentName
+        > {}
+>>>
+class SomeClass implements VeryLongBaseClass<VeryLongTypeArgumentName> {}
+<<<
+class SomeClass
+    implements
+        VeryLongBaseClass<
+          VeryLongTypeArgumentName
+        > {}

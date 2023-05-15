@@ -1196,10 +1196,18 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitExtendsClause(ExtendsClause node) {
-    soloSplit();
+    // If a type argument in the supertype splits, then split before "extends"
+    // too.
+    builder.startRule();
+    builder.startBlockArgumentNesting();
+    split();
+
     token(node.extendsKeyword);
     space();
     visit(node.superclass);
+
+    builder.endBlockArgumentNesting();
+    builder.endRule();
   }
 
   @override
@@ -1214,10 +1222,19 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.name, before: space);
 
     visit(node.typeParameters);
-    soloSplit();
+
+    // If a type argument in the on type splits, then split before "on" too.
+    builder.startRule();
+    builder.startBlockArgumentNesting();
+
+    split();
     token(node.onKeyword);
     space();
     visit(node.extendedType);
+
+    builder.endBlockArgumentNesting();
+    builder.endRule();
+
     space();
     builder.unnest();
     _visitBody(node.leftBracket, node.members, node.rightBracket);
@@ -2019,7 +2036,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
         constKeyword: node.constKeyword,
         typeArguments: node.typeArguments,
-        useLineCommentsToFormat: true,
         splitOuterCollection: true,
         cost: cost);
   }
@@ -2031,7 +2047,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       node.elements,
       node.rightBracket,
       typeArguments: node.typeArguments,
-      useLineCommentsToFormat: true,
     );
   }
 
@@ -2064,7 +2079,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitMapPattern(MapPattern node) {
     _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
-        typeArguments: node.typeArguments, useLineCommentsToFormat: true);
+        typeArguments: node.typeArguments);
   }
 
   @override
@@ -2198,8 +2213,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.startSpan();
 
       token(importPrefix.name);
-      token(importPrefix.period);
       soloZeroSplit();
+      token(importPrefix.period);
     }
 
     token(node.name2);
@@ -2274,8 +2289,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // this comment should be removed.
     visit(node.type);
     _visitCollectionLiteral(
-        node.leftParenthesis, node.fields, node.rightParenthesis,
-        useLineCommentsToFormat: true);
+        node.leftParenthesis, node.fields, node.rightParenthesis);
   }
 
   @override
@@ -2425,14 +2439,14 @@ class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.constKeyword);
     _visitCollectionLiteral(
         node.leftParenthesis, node.fields, node.rightParenthesis,
-        useLineCommentsToFormat: true, isRecord: true);
+        isRecord: true);
   }
 
   @override
   void visitRecordPattern(RecordPattern node) {
     _visitCollectionLiteral(
         node.leftParenthesis, node.fields, node.rightParenthesis,
-        useLineCommentsToFormat: true, isRecord: true);
+        isRecord: true);
   }
 
   @override
@@ -2571,7 +2585,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
         constKeyword: node.constKeyword,
         typeArguments: node.typeArguments,
-        useLineCommentsToFormat: true,
         splitOuterCollection: true);
   }
 
@@ -3491,7 +3504,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       {Token? constKeyword,
       TypeArgumentList? typeArguments,
       int? cost,
-      bool useLineCommentsToFormat = false,
       bool splitOuterCollection = false,
       bool isRecord = false}) {
     // See if `const` should be removed.
@@ -3504,42 +3516,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       modifier(constKeyword);
     }
 
-    // Don't use the normal type argument list formatting code because we don't
-    // want to allow splitting before the "<" since there is no preceding
-    // identifier and it looks weird to have a "<" hanging by itself. Prevents:
-    //
-    //   var list = <
-    //       LongTypeName<
-    //           TypeArgument,
-    //           TypeArgument>>[];
-    if (typeArguments != null) {
-      builder.startSpan();
-      builder.nestExpression();
-      token(typeArguments.leftBracket);
-      builder.startRule(Rule(Cost.typeArgument));
-
-      for (var typeArgument in typeArguments.arguments) {
-        visit(typeArgument);
-
-        // Write the comma separator.
-        if (typeArgument != typeArguments.arguments.last) {
-          var comma = typeArgument.endToken.next;
-
-          // TODO(rnystrom): There is a bug in analyzer where the end token of a
-          // nullable record type is the ")" and not the "?". This works around
-          // that. Remove that's fixed.
-          if (comma?.lexeme == '?') comma = comma?.next;
-
-          token(comma);
-          split();
-        }
-      }
-
-      token(typeArguments.rightBracket);
-      builder.endRule();
-      builder.unnest();
-      builder.endSpan();
-    }
+    visit(typeArguments);
 
     // Handle empty collections, with or without comments.
     if (elements.isEmpty) {
@@ -3562,8 +3539,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
-    if (useLineCommentsToFormat &&
-        _containsLineComments(elements, rightBracket)) {
+    if (_containsLineComments(elements, rightBracket)) {
       // TODO: Should this keeping using TypeArgumentRule or can it be
       // simplified?
       // Newlines are significant, so we'll explicitly write those. Elements
@@ -3879,11 +3855,14 @@ class SourceVisitor extends ThrowingAstVisitor {
     rule.addCombinator(split());
 
     builder.nestExpression();
+    builder.startBlockArgumentNesting();
+
     token(keyword);
 
     rule.addName(split());
     visitCommaSeparatedNodes(nodes, between: () => rule.addName(split()));
 
+    builder.endBlockArgumentNesting();
     builder.unnest();
   }
 

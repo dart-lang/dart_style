@@ -3,7 +3,8 @@
 someLongFunctionName__________________(() x) {}
 <<<
 someLongFunctionName__________________(
-    () x) {}
+  () x
+) {}
 >>> unsplit short single positional field
 (TypeName,) x;
 <<<
@@ -12,16 +13,18 @@ someLongFunctionName__________________(
 function((VeryLongTypeName____________,) x) {;}
 <<<
 function(
-    (VeryLongTypeName____________,) x) {
+  (VeryLongTypeName____________,) x
+) {
   ;
 }
 >>> split single positional field
 function((VeryLongTypeName___________________,) param) {;}
 <<<
 function(
-    (
-      VeryLongTypeName___________________,
-    ) param) {
+  (
+    VeryLongTypeName___________________,
+  ) param
+) {
   ;
 }
 >>> prefer to split between type and variable
@@ -110,24 +113,26 @@ function(
 Map<String, (TypeName,TypeName,TypeName,TypeName)> map;
 <<<
 Map<
-    String,
-    (
-      TypeName,
-      TypeName,
-      TypeName,
-      TypeName
-    )> map;
+  String,
+  (
+    TypeName,
+    TypeName,
+    TypeName,
+    TypeName
+  )
+> map;
 >>> inside parameter list
 function((TypeName, TypeName, TypeName, TypeName, TypeName) record) {;}
 <<<
 function(
-    (
-      TypeName,
-      TypeName,
-      TypeName,
-      TypeName,
-      TypeName
-    ) record) {
+  (
+    TypeName,
+    TypeName,
+    TypeName,
+    TypeName,
+    TypeName
+  ) record
+) {
   ;
 }
 >>> single positional trailing comma inside parameter list
@@ -140,9 +145,10 @@ function((TypeName,) record) {
 function(({TypeName param,}) record) {;}
 <<<
 function(
-    ({
-      TypeName param,
-    }) record) {
+  ({
+    TypeName param,
+  }) record
+) {
   ;
 }
 >>> field formal parameter trailing comma inside parameter list
@@ -150,10 +156,11 @@ class C { C((TypeName,TypeName,) this.record) {;} }
 <<<
 class C {
   C(
-      (
-        TypeName,
-        TypeName,
-      ) this.record) {
+    (
+      TypeName,
+      TypeName,
+    ) this.record
+  ) {
     ;
   }
 }

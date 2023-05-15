@@ -340,8 +340,9 @@ if (obj case const Foo(  // comment
 )) {;}
 <<<
 if (obj
-    case const Foo(// comment
-        )) {
+    case const Foo(
+      // comment
+    )) {
   ;
 }
 >>> const constructor line comment between arguments
@@ -350,8 +351,9 @@ second)){;}
 <<<
 if (obj
     case const Foo(
-        first, // comment
-        second)) {
+      first, // comment
+      second
+    )) {
   ;
 }
 >>> after "(" in parenthesized constant

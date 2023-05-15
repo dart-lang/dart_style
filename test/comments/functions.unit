@@ -142,8 +142,7 @@ main() {
 function([parameter,/* c */]) {;}
 <<<
 function([
-  parameter,
-  /* c */
+  parameter, /* c */
 ]) {
   ;
 }

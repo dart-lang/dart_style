@@ -63,6 +63,7 @@ class Foo {
 >>> split type parameters
 class Foo extends GenericBaseClass<TypeParameter> {}
 <<<
-class Foo extends GenericBaseClass<
-  TypeParameter
-> {}
+class Foo
+    extends GenericBaseClass<
+      TypeParameter
+    > {}

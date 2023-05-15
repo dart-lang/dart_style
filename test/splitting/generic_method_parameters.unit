@@ -76,10 +76,8 @@ longFunctionName<LongTypeParameterT, LongTypeParameterS>(longParameter1, longPar
 longFunctionName<
   LongTypeParameterT,
   LongTypeParameterS
->(
-  longParameter1,
-  longParameter2
-) => body;
+>(longParameter1, longParameter2) =>
+    body;
 >>> generic function typed parameter
 longFunctionName(String longParameterName<LongTypeParameter,
 AnotherTypeParam>(LongTypeParameter parameter, AnotherTypeParam another)) {;}

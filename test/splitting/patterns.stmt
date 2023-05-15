@@ -191,18 +191,24 @@ if (obj
 if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[e]) {;}
 <<<
 if (obj
-    case <Map<VeryLongTypeArgument,
-        VeryLongTypeArgument>>[e]) {
+    case <
+      Map<
+        VeryLongTypeArgument,
+        VeryLongTypeArgument
+      >
+    >[e]) {
   ;
 }
 >>> split in type argument and body
 if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[element]) {;}
 <<<
 if (obj
-    case <Map<VeryLongTypeArgument,
-        VeryLongTypeArgument>>[
-      element
-    ]) {
+    case <
+      Map<
+        VeryLongTypeArgument,
+        VeryLongTypeArgument
+      >
+    >[element]) {
   ;
 }
 >>> unsplit map
@@ -501,8 +507,12 @@ if (obj
 if (obj case const Foo(element, element, element, element)) {;}
 <<<
 if (obj
-    case const Foo(element, element,
-        element, element)) {
+    case const Foo(
+      element,
+      element,
+      element,
+      element
+    )) {
   ;
 }
 >>> single-element objects with trailing commas split
@@ -690,20 +700,21 @@ if (obj
 if (obj case LongClassName<First, Second>()) {;}
 <<<
 if (obj
-    case LongClassName<First,
-        Second>()) {
+    case LongClassName<
+      First,
+      Second
+    >()) {
   ;
 }
 >>> split in type argument and body
 if (obj case LongClassName<First, Second, Third>(first: 1, second: 2, third: 3)) {;}
 <<<
 if (obj
-    case LongClassName<First, Second,
-        Third>(
-      first: 1,
-      second: 2,
-      third: 3
-    )) {
+    case LongClassName<
+      First,
+      Second,
+      Third
+    >(first: 1, second: 2, third: 3)) {
   ;
 }
 >>> split in parenthesized constant expression

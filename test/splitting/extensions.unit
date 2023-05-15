@@ -19,15 +19,17 @@ extension Extension<
 >>>
 extension Extension on C<VeryLongTypeArgumentName> {}
 <<<
-extension Extension on C<
-  VeryLongTypeArgumentName
-> {}
+extension Extension
+    on C<
+      VeryLongTypeArgumentName
+    > {}
 >>>
 extension Extension on BaseClass<VeryLongTypeArgumentName> {}
 <<<
-extension Extension on BaseClass<
-  VeryLongTypeArgumentName
-> {}
+extension Extension
+    on BaseClass<
+      VeryLongTypeArgumentName
+    > {}
 >>>
 extension Extension on VeryLongBaseClass<VeryLongTypeArgumentName> {}
 <<<

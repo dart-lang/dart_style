@@ -196,12 +196,7 @@ LongClassName<First, Inner<
 <<<
 LongClassName<
   First,
-  Inner<
-    Second,
-    Third,
-    Fourth,
-    Fifth
-  >
+  Inner<Second, Third, Fourth, Fifth>
 >;
 >>> don't split after "<" in list literal
 var list = <Inner<First, Second, Third, Fourth, Fifth>, Sixth>[];
