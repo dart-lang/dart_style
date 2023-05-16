@@ -9,8 +9,6 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/dart_style/rewrite_cascade.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/dart/ast/ast.dart' as src_ast;
 
 import 'argument_list_visitor.dart';
 import 'ast_extensions.dart';
@@ -2254,24 +2252,22 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitNamedType(NamedType node) {
-    final importPrefix = node.importPrefix;
+    var importPrefix = node.importPrefix;
     if (importPrefix != null) {
-      // TODO(scheglov) This is wrong, we should not create nodes here.
-      // But I don't see how to change CallChainVisitor() to work with tokens.
-      // So, I will leave it to the maintainers to figure this out.
-      visit(
-        src_ast.PrefixedIdentifierImpl(
-          prefix: src_ast.SimpleIdentifierImpl(importPrefix.name),
-          period: importPrefix.period,
-          identifier: src_ast.SimpleIdentifierImpl(node.name2),
-        ),
-      );
-    } else {
-      token(node.name2);
+      builder.startSpan();
+
+      token(importPrefix.name);
+      soloZeroSplit();
+      token(importPrefix.period);
     }
 
+    token(node.name2);
     visit(node.typeArguments);
     token(node.question);
+
+    if (importPrefix != null) {
+      builder.endSpan();
+    }
   }
 
   @override
