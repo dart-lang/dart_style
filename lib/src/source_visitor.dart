@@ -1043,8 +1043,8 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     token(node.functionDefinition); // "=>".
 
-    // Split after the "=>", using the rule created before the parameters
-    // by _visitBody().
+    // Split after the "=>".
+    builder.startRule(Rule(Cost.arrow));
     split();
 
     // If the body is a binary operator expression, then we want to force the
@@ -3349,6 +3349,9 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(name);
     builder.endSpan();
 
+    // TODO: I think this can be simplified to just unconditionally unnesting
+    // before the body is visited. But I want to get the regression tests
+    // passing first to make sure that's true.
     _visitFunctionBody(typeParameters, formalParameters, body, (_) {
       // If the body is a block, we need to exit nesting before we hit the body
       // indentation, but we do want to wrap it around the parameters.
@@ -3367,39 +3370,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitFunctionBody(TypeParameterList? typeParameters,
       FormalParameterList? parameters, FunctionBody body,
       [void Function(Rule? parameterRule)? beforeBody]) {
-    // TODO: This shouldn't be needed once we have Flutter style formatting
-    // for parameter lists.
-    // If the body is "=>", add an extra level of indentation around the
-    // parameters and a rule that spans the parameters and the "=>". This
-    // ensures that if the parameters wrap, they wrap more deeply than the "=>"
-    // does, as in:
-    //
-    //     someFunction(parameter,
-    //             parameter, parameter) =>
-    //         "the body";
-    //
-    // Also, it ensures that if the parameters wrap, we split at the "=>" too
-    // to avoid:
-    //
-    //     someFunction(parameter,
-    //         parameter) => function(
-    //         argument);
-    //
-    // This is confusing because it looks like those two lines are at the same
-    // level when they are actually unrelated. Splitting at "=>" forces:
-    //
-    //     someFunction(parameter,
-    //             parameter) =>
-    //         function(
-    //             argument);
-    if (body is ExpressionFunctionBody) {
-      builder.nestExpression();
-
-      // This rule is ended by visitExpressionFunctionBody().
-      builder.startLazyRule(Rule(Cost.arrow));
-    }
-
     var parameterRule = _visitParameterSignature(typeParameters, parameters);
+
+    if (body is ExpressionFunctionBody) builder.nestExpression();
 
     if (beforeBody != null) beforeBody(parameterRule);
     visit(body);

@@ -18,7 +18,17 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  formatStmt('a is int????;');
+  formatStmt('''
+  function(
+    (
+      parameter1,
+      parameter2,
+      parameter3
+    ) => P(
+      p,
+    ),
+  );
+''', 40);
 }
 
 void formatStmt(String source, [int pageWidth = 80]) {

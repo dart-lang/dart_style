@@ -20,9 +20,7 @@ extension Extension<
 extension Extension on C<VeryLongTypeArgumentName> {}
 <<<
 extension Extension
-    on C<
-      VeryLongTypeArgumentName
-    > {}
+    on C<VeryLongTypeArgumentName> {}
 >>>
 extension Extension on BaseClass<VeryLongTypeArgumentName> {}
 <<<

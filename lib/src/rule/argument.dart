@@ -42,6 +42,7 @@ abstract class ArgumentRule extends Rule {
   }
 }
 
+// TODO: This shouldn't be needed any more.
 /// Rule for handling positional argument lists.
 ///
 /// The number of values is based on the number of arguments and whether or not
@@ -184,6 +185,7 @@ class PositionalRule extends ArgumentRule {
   String toString() => 'Pos${super.toString()}';
 }
 
+// TODO: This shouldn't be needed any more.
 /// Splitting rule for a list of named arguments or parameters. Its values mean:
 ///
 /// * Do not split at all.

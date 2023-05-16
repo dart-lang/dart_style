@@ -143,6 +143,25 @@ class Rule extends FastHash {
     var constrained = _constraints[other];
     if (constrained == null) return null;
 
+    // Verify that there aren't conflicting constraints.
+    // TODO: Worth keeping around for debugging?
+    // int? solution;
+    // for (var constraint in constrained) {
+    //   if (value >= constraint.min && value <= constraint.max) {
+    //     int? thisSolution;
+    //     if (constraint.otherValue == fullSplitConstraint) {
+    //       thisSolution = other.fullySplitValue;
+    //     } else {
+    //       thisSolution = constraint.otherValue;
+    //     }
+    //
+    //     if (solution != null && solution != thisSolution) {
+    //       throw '!';
+    //     }
+    //     solution = thisSolution;
+    //   }
+    // }
+
     for (var constraint in constrained) {
       if (value >= constraint.min && value <= constraint.max) {
         if (constraint.otherValue == fullSplitConstraint) {
