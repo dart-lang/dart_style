@@ -1813,7 +1813,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     var hasInnerControlFlow = false;
     for (var element in ifElements) {
       _visitIfCondition(element.ifKeyword, element.leftParenthesis,
-          element.condition, element.caseClause, element.rightParenthesis);
+          element.expression, element.caseClause, element.rightParenthesis);
 
       visitChild(element, element.thenElement);
       if (element.thenElement.isControlFlowElement) {
@@ -1856,7 +1856,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitIfStatement(IfStatement node) {
-    _visitIfCondition(node.ifKeyword, node.leftParenthesis, node.condition,
+    _visitIfCondition(node.ifKeyword, node.leftParenthesis, node.expression,
         node.caseClause, node.rightParenthesis);
 
     void visitClause(Statement clause) {
@@ -2252,9 +2252,22 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitNamedType(NamedType node) {
-    visit(node.name);
+    var importPrefix = node.importPrefix;
+    if (importPrefix != null) {
+      builder.startSpan();
+
+      token(importPrefix.name);
+      soloZeroSplit();
+      token(importPrefix.period);
+    }
+
+    token(node.name2);
     visit(node.typeArguments);
     token(node.question);
+
+    if (importPrefix != null) {
+      builder.endSpan();
+    }
   }
 
   @override
