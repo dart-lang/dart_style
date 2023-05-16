@@ -153,13 +153,13 @@ class DartFormatter {
       var token = node.endToken.next!;
       if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
         var stringSource = StringSource(text, source.uri);
-        var error = AnalysisError(
-            stringSource,
-            token.offset - inputOffset,
-            math.max(token.length, 1),
-            ParserErrorCode.UNEXPECTED_TOKEN,
-            [token.lexeme]);
-
+        var error = AnalysisError.tmp(
+            source: stringSource,
+            offset: token.offset - inputOffset,
+            length: math.max(token.length, 1),
+            errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
+            arguments: [token.lexeme],
+        );
         throw FormatterException([error]);
       }
     }
