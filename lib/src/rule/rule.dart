@@ -6,13 +6,6 @@ import '../chunk.dart';
 import '../constants.dart';
 import '../fast_hash.dart';
 
-// TODO: Not actually used. Delete?
-// TODO: Document.
-// TODO: Where should this go?
-class BlockRule extends Rule {
-  BlockRule() : super.hard();
-}
-
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
 class Rule extends FastHash {

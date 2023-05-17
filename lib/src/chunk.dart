@@ -181,7 +181,7 @@ class Chunk extends Selection {
       if (spaceWhenUnsplit) 'space',
       if (isDouble) 'double',
       if (flushLeft) 'flush',
-      '$rule${rule is BlockRule ? 'b' : rule.isHardened ? '!' : ''}',
+      '$rule${rule.isHardened ? '!' : ''}',
       if (rule.constrainedRules.isNotEmpty)
         "-> ${rule.constrainedRules.join(' ')}"
     ];

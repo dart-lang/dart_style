@@ -138,7 +138,7 @@ class CallChainVisitor {
 
     var inBlockCalls = false;
     for (var call in calls) {
-      if (call.isBlockCall(visitor)) {
+      if (call.isBlockCall) {
         inBlockCalls = true;
         blockCalls ??= [];
         blockCalls.add(call as _MethodSelector);
@@ -421,7 +421,7 @@ abstract class _Selector {
 
   /// Whether this selector is a method call whose arguments are block
   /// formatted.
-  bool isBlockCall(SourceVisitor visitor) => false;
+  bool get isBlockCall => false;
 
   /// Write the selector portion of the expression wrapped by this [_Selector]
   /// using [visitor], followed by any postfix selectors.
@@ -463,8 +463,7 @@ class _MethodSelector extends _Selector {
   bool get isProperty => false;
 
   @override
-  bool isBlockCall(SourceVisitor visitor) =>
-      hasBlockArguments(_node.argumentList);
+  bool get isBlockCall => hasBlockArguments(_node.argumentList);
 
   @override
   void writeSelector(CallChainVisitor visitor) {

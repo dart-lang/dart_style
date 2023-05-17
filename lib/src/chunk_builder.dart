@@ -595,8 +595,7 @@ class ChunkBuilder {
     // Create a hard split for the contents. The rule on the parent BlockChunk
     // determines whether the body is split or not. This hard rule is only when
     // the block's contents are split.
-    var rule = BlockRule();
-    builder.startRule(rule);
+    builder.startRule(Rule.hard());
     builder.split(nest: false, space: space);
 
     return builder;
