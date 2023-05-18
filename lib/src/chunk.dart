@@ -217,6 +217,8 @@ class Chunk extends Selection {
 ///      |  '- (text)      "];"
 ///      '- (text)       "}"
 class BlockChunk extends Chunk {
+  // TODO: It doesn't look like this and everything relying on it is used
+  // anymore. Remove once I'm sure it's not needed.
   /// If this block is for a collection literal in an argument list, this will
   /// be the chunk preceding this literal argument.
   ///

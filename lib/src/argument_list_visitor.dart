@@ -1,18 +1,211 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:math' as math;
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
-import 'ast_extensions.dart';
-import 'chunk.dart';
-import 'constants.dart';
-import 'rule/argument.dart';
-import 'rule/rule.dart';
-import 'source_visitor.dart';
+// TODO: Eliminate this or simplify it more.
+bool hasBlockArguments(ArgumentList node) {
+  var functionRange = _contiguousFunctions(node.arguments);
+  if (functionRange != null) return true;
 
+  var arguments = node.arguments;
+
+  var blocks = <Expression, Token>{};
+  for (var argument in arguments) {
+    var bracket = _blockToken(argument);
+    if (bracket != null) blocks[argument] = bracket;
+  }
+
+  // Count the leading arguments that are blocks.
+  var leadingBlocks = 0;
+  for (var argument in arguments) {
+    if (!blocks.containsKey(argument)) break;
+    leadingBlocks++;
+  }
+
+  // Count the trailing arguments that are blocks.
+  var trailingBlocks = 0;
+  if (leadingBlocks != arguments.length) {
+    for (var argument in arguments.reversed) {
+      if (!blocks.containsKey(argument)) break;
+      trailingBlocks++;
+    }
+  }
+
+  // Blocks must all be a prefix or suffix of the argument list (and not
+  // both).
+  if (leadingBlocks != blocks.length) leadingBlocks = 0;
+  if (trailingBlocks != blocks.length) trailingBlocks = 0;
+
+  // Ignore any blocks in the middle of the argument list.
+  if (leadingBlocks == 0 && trailingBlocks == 0) blocks.clear();
+
+  return blocks.isNotEmpty;
+}
+
+/// Look for a single contiguous range of block function [arguments] that
+/// should receive special formatting.
+///
+/// Returns a list of (start, end] indexes if found, otherwise returns `null`.
+List<int>? _contiguousFunctions(List<Expression> arguments) {
+  int? functionsStart;
+  var functionsEnd = -1;
+
+  // Find the range of block function arguments, if any.
+  for (var i = 0; i < arguments.length; i++) {
+    var argument = arguments[i];
+    if (_isBlockFunction(argument)) {
+      functionsStart ??= i;
+
+      // The functions must be one contiguous section.
+      if (functionsEnd != -1 && functionsEnd != i) return null;
+
+      functionsEnd = i + 1;
+    }
+  }
+
+  if (functionsStart == null) return null;
+
+  // Edge case: If all of the arguments are named, but they aren't all
+  // functions, then don't handle the functions specially. A function with a
+  // bunch of named arguments tends to look best when they are all lined up,
+  // even the function ones (unless they are all functions).
+  //
+  // Prefers:
+  //
+  //     function(
+  //         named: () {
+  //           something();
+  //         },
+  //         another: argument);
+  //
+  // Over:
+  //
+  //     function(named: () {
+  //       something();
+  //     },
+  //         another: argument);
+  if (_isAllNamed(arguments) &&
+      (functionsStart > 0 || functionsEnd < arguments.length)) {
+    return null;
+  }
+
+  // Edge case: If all of the function arguments are named and there are
+  // other named arguments that are "=>" functions, then don't treat the
+  // block-bodied functions specially. In a mixture of the two function
+  // styles, it looks cleaner to treat them all like normal expressions so
+  // that the named arguments line up.
+  if (_isAllNamed(arguments.sublist(functionsStart, functionsEnd))) {
+    bool isNamedArrow(Expression expression) {
+      if (expression is! NamedExpression) return false;
+      expression = expression.expression;
+
+      return expression is FunctionExpression &&
+          expression.body is ExpressionFunctionBody;
+    }
+
+    for (var i = 0; i < functionsStart; i++) {
+      if (isNamedArrow(arguments[i])) return null;
+    }
+
+    for (var i = functionsEnd; i < arguments.length; i++) {
+      if (isNamedArrow(arguments[i])) return null;
+    }
+  }
+
+  return [functionsStart, functionsEnd];
+}
+
+/// Returns `true` if every expression in [arguments] is named.
+bool _isAllNamed(List<Expression> arguments) =>
+    arguments.every((argument) => argument is NamedExpression);
+
+/// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
+/// block body.
+bool _isBlockFunction(Expression expression) {
+  if (expression is NamedExpression) expression = expression.expression;
+
+  // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
+  if (expression is MethodInvocation) {
+    if (!_isValidWrappingTarget(expression.target)) return false;
+    if (expression.argumentList.arguments.length != 1) return false;
+
+    return _isBlockFunction(expression.argumentList.arguments.single);
+  }
+
+  if (expression is InstanceCreationExpression) {
+    if (expression.argumentList.arguments.length != 1) return false;
+
+    return _isBlockFunction(expression.argumentList.arguments.single);
+  }
+
+  // Allow immediately-invoked functions like "() { ... }()".
+  if (expression is FunctionExpressionInvocation) {
+    if (expression.argumentList.arguments.isNotEmpty) return false;
+
+    expression = expression.function;
+  }
+
+  // Unwrap parenthesized expressions.
+  while (expression is ParenthesizedExpression) {
+    expression = expression.expression;
+  }
+
+  // Must be a function.
+  if (expression is! FunctionExpression) return false;
+
+  // With a curly body.
+  if (expression.body is! BlockFunctionBody) return false;
+
+  // That isn't empty.
+  var body = expression.body as BlockFunctionBody;
+  return body.block.statements.isNotEmpty ||
+      body.block.rightBracket.precedingComments != null;
+}
+
+/// Returns `true` if [expression] is a valid method invocation target for
+/// an invocation that wraps a function literal argument.
+bool _isValidWrappingTarget(Expression? expression) {
+  // Allow bare function calls.
+  if (expression == null) return true;
+
+  // Allow property accesses.
+  while (expression is PropertyAccess) {
+    expression = expression.target;
+  }
+
+  if (expression is PrefixedIdentifier) return true;
+  if (expression is SimpleIdentifier) return true;
+
+  return false;
+}
+
+/// If [expression] can be formatted as a block, returns the token that opens
+/// the block, such as a collection's bracket.
+///
+/// Block-formatted arguments can get special indentation to make them look
+/// more statement-like.
+Token? _blockToken(Expression expression) {
+  if (expression is NamedExpression) {
+    expression = expression.expression;
+  }
+
+  // TODO(rnystrom): Should we step into parenthesized expressions?
+
+  if (expression is ListLiteral) return expression.leftBracket;
+  if (expression is RecordLiteral) return expression.leftParenthesis;
+  if (expression is SetOrMapLiteral) return expression.leftBracket;
+  if (expression is SingleStringLiteral && expression.isMultiline) {
+    return expression.beginToken;
+  }
+
+  // Not a collection literal.
+  return null;
+}
+
+// TODO: Delete this once I'm sure there's nothing to harvest from it.
+/*
 class ArgumentListVisitor {
   final SourceVisitor _visitor;
   final List<Expression> _arguments;
@@ -205,158 +398,12 @@ class ArgumentListVisitor {
   */
 }
 
-// TODO: Eliminate this or simplify it more.
-bool hasBlockArguments(ArgumentList node) {
-  var functionRange = _contiguousFunctions(node.arguments);
-  if (functionRange != null) return true;
-
-  return ArgumentSublist(node.arguments, node.arguments)._blocks.isNotEmpty;
-}
-
-/// Look for a single contiguous range of block function [arguments] that
-/// should receive special formatting.
-///
-/// Returns a list of (start, end] indexes if found, otherwise returns `null`.
-List<int>? _contiguousFunctions(List<Expression> arguments) {
-  int? functionsStart;
-  var functionsEnd = -1;
-
-  // Find the range of block function arguments, if any.
-  for (var i = 0; i < arguments.length; i++) {
-    var argument = arguments[i];
-    if (_isBlockFunction(argument)) {
-      functionsStart ??= i;
-
-      // The functions must be one contiguous section.
-      if (functionsEnd != -1 && functionsEnd != i) return null;
-
-      functionsEnd = i + 1;
-    }
-  }
-
-  if (functionsStart == null) return null;
-
-  // Edge case: If all of the arguments are named, but they aren't all
-  // functions, then don't handle the functions specially. A function with a
-  // bunch of named arguments tends to look best when they are all lined up,
-  // even the function ones (unless they are all functions).
-  //
-  // Prefers:
-  //
-  //     function(
-  //         named: () {
-  //           something();
-  //         },
-  //         another: argument);
-  //
-  // Over:
-  //
-  //     function(named: () {
-  //       something();
-  //     },
-  //         another: argument);
-  if (_isAllNamed(arguments) &&
-      (functionsStart > 0 || functionsEnd < arguments.length)) {
-    return null;
-  }
-
-  // Edge case: If all of the function arguments are named and there are
-  // other named arguments that are "=>" functions, then don't treat the
-  // block-bodied functions specially. In a mixture of the two function
-  // styles, it looks cleaner to treat them all like normal expressions so
-  // that the named arguments line up.
-  if (_isAllNamed(arguments.sublist(functionsStart, functionsEnd))) {
-    bool isNamedArrow(Expression expression) {
-      if (expression is! NamedExpression) return false;
-      expression = expression.expression;
-
-      return expression is FunctionExpression &&
-          expression.body is ExpressionFunctionBody;
-    }
-
-    for (var i = 0; i < functionsStart; i++) {
-      if (isNamedArrow(arguments[i])) return null;
-    }
-
-    for (var i = functionsEnd; i < arguments.length; i++) {
-      if (isNamedArrow(arguments[i])) return null;
-    }
-  }
-
-  return [functionsStart, functionsEnd];
-}
-
-/// Returns `true` if every expression in [arguments] is named.
-bool _isAllNamed(List<Expression> arguments) =>
-    arguments.every((argument) => argument is NamedExpression);
-
-/// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
-/// block body.
-bool _isBlockFunction(Expression expression) {
-  if (expression is NamedExpression) expression = expression.expression;
-
-  // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
-  if (expression is MethodInvocation) {
-    if (!_isValidWrappingTarget(expression.target)) return false;
-    if (expression.argumentList.arguments.length != 1) return false;
-
-    return _isBlockFunction(expression.argumentList.arguments.single);
-  }
-
-  if (expression is InstanceCreationExpression) {
-    if (expression.argumentList.arguments.length != 1) return false;
-
-    return _isBlockFunction(expression.argumentList.arguments.single);
-  }
-
-  // Allow immediately-invoked functions like "() { ... }()".
-  if (expression is FunctionExpressionInvocation) {
-    if (expression.argumentList.arguments.isNotEmpty) return false;
-
-    expression = expression.function;
-  }
-
-  // Unwrap parenthesized expressions.
-  while (expression is ParenthesizedExpression) {
-    expression = expression.expression;
-  }
-
-  // Must be a function.
-  if (expression is! FunctionExpression) return false;
-
-  // With a curly body.
-  if (expression.body is! BlockFunctionBody) return false;
-
-  // That isn't empty.
-  var body = expression.body as BlockFunctionBody;
-  return body.block.statements.isNotEmpty ||
-      body.block.rightBracket.precedingComments != null;
-}
-
-/// Returns `true` if [expression] is a valid method invocation target for
-/// an invocation that wraps a function literal argument.
-bool _isValidWrappingTarget(Expression? expression) {
-  // Allow bare function calls.
-  if (expression == null) return true;
-
-  // Allow property accesses.
-  while (expression is PropertyAccess) {
-    expression = expression.target;
-  }
-
-  if (expression is PrefixedIdentifier) return true;
-  if (expression is SimpleIdentifier) return true;
-
-  return false;
-}
-
 /// A range of arguments from a complete argument list.
 ///
 /// One of these typically covers all of the arguments in an invocation. But,
 /// when an argument list has block functions in the middle, the arguments
 /// before and after the functions are treated as separate independent lists.
 /// In that case, there will be two of these.
-// TODO: Eliminate this.
 class ArgumentSublist {
   /// The full argument list from the AST.
   final List<Expression> _allArguments;
@@ -396,10 +443,6 @@ class ArgumentSublist {
 
   factory ArgumentSublist(
       List<Expression> allArguments, List<Expression> arguments) {
-    var argumentLists = _splitArgumentLists(arguments);
-    var positional = argumentLists[0];
-    var named = argumentLists[1];
-
     var blocks = <Expression, Token>{};
     for (var argument in arguments) {
       var bracket = _blockToken(argument);
@@ -430,12 +473,10 @@ class ArgumentSublist {
     // Ignore any blocks in the middle of the argument list.
     if (leadingBlocks == 0 && trailingBlocks == 0) blocks.clear();
 
-    return ArgumentSublist._(
-        allArguments, positional, named, blocks, leadingBlocks, trailingBlocks);
+    return ArgumentSublist._(blocks);
   }
 
-  ArgumentSublist._(this._allArguments, this._positional, this._named,
-      this._blocks, this._leadingBlocks, this._trailingBlocks);
+  ArgumentSublist._(this._blocks);
 
   void visit(SourceVisitor visitor) {
     if (_blocks.isNotEmpty) {
@@ -561,58 +602,5 @@ class ArgumentSublist {
       visitor.token(argument.endToken.next);
     }
   }
-
-  /// Splits [arguments] into two lists: the list of leading positional
-  /// arguments and the list of trailing named arguments.
-  ///
-  /// If positional arguments are interleaved with the named arguments then
-  /// all arguments are treat as named since that provides simpler, consistent
-  /// output.
-  ///
-  /// Returns a list of two lists: the positional arguments then the named ones.
-  static List<List<Expression>> _splitArgumentLists(
-      List<Expression> arguments) {
-    var positional = <Expression>[];
-    var named = <Expression>[];
-    var inNamed = false;
-    for (var argument in arguments) {
-      if (argument is NamedExpression) {
-        inNamed = true;
-      } else if (inNamed) {
-        // Got a positional argument after a named one.
-        return [[], arguments];
-      }
-
-      if (inNamed) {
-        named.add(argument);
-      } else {
-        positional.add(argument);
-      }
-    }
-
-    return [positional, named];
-  }
-
-  /// If [expression] can be formatted as a block, returns the token that opens
-  /// the block, such as a collection's bracket.
-  ///
-  /// Block-formatted arguments can get special indentation to make them look
-  /// more statement-like.
-  static Token? _blockToken(Expression expression) {
-    if (expression is NamedExpression) {
-      expression = expression.expression;
-    }
-
-    // TODO(rnystrom): Should we step into parenthesized expressions?
-
-    if (expression is ListLiteral) return expression.leftBracket;
-    if (expression is RecordLiteral) return expression.leftParenthesis;
-    if (expression is SetOrMapLiteral) return expression.leftBracket;
-    if (expression is SingleStringLiteral && expression.isMultiline) {
-      return expression.beginToken;
-    }
-
-    // Not a collection literal.
-    return null;
-  }
 }
+*/

@@ -96,7 +96,7 @@ longFunctionName(
   argument,
   argument,
   argument,
-  {key: value,otherKey: otherLongValue}
+  {key: value, otherKey: otherLongValue}
 );
 >>> split before all leading args
 longFunctionName(argument, argument, argument, argument, argument, argument,

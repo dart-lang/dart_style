@@ -107,7 +107,8 @@ longFunctionName(
   argument,
   () {
     ;
-  }, () {
+  },
+  () {
     ;
   }
 );
@@ -169,13 +170,17 @@ longFunctionName(
 >>> functions with named arguments
 longFunctionName(() {;}, a: () {;}, b: () {;});
 <<<
-longFunctionName(() {
-  ;
-}, a: () {
-  ;
-}, b: () {
-  ;
-});
+longFunctionName(
+  () {
+    ;
+  },
+  a: () {
+    ;
+  },
+  b: () {
+    ;
+  }
+);
 >>> do not nest because of nested 1-arg fn
 outer(inner(() {body;}));
 <<<
@@ -264,53 +269,77 @@ longFunction(
   c: argument
 );
 >>> named args anywhere with leading non-function
-{
-  longFunction(argument, b: () {;}, c: () {;});
-  longFunction(a: argument, () {;}, c: () {;});
-  longFunction(a: argument, b: () {;}, () {;});
-}
+longFunction(argument, b: () {;}, c: () {;});
 <<<
-{
-  longFunction(argument, b: () {
+longFunction(
+  argument,
+  b: () {
     ;
-  }, c: () {
+  },
+  c: () {
     ;
-  });
-  longFunction(a: argument, () {
+  }
+);
+>>> named args anywhere with leading non-function
+longFunction(a: argument, () {;}, c: () {;});
+<<<
+longFunction(
+  a: argument,
+  () {
     ;
-  }, c: () {
+  },
+  c: () {
     ;
-  });
-  longFunction(a: argument, b: () {
+  }
+);
+>>> named args anywhere with leading non-function
+longFunction(a: argument, b: () {;}, () {;});
+<<<
+longFunction(
+  a: argument,
+  b: () {
     ;
-  }, () {
+  },
+  () {
     ;
-  });
-}
+  }
+);
 >>> named args anywhere with trailing non-function
-{
-  longFunction(() {;}, b: () {;}, c: argument);
-  longFunction(a: () {;}, () {;}, c: argument);
-  longFunction(a: () {;}, b: () {;}, argument);
-}
+longFunction(() {;}, b: () {;}, c: argument);
 <<<
-{
-  longFunction(() {
+longFunction(
+  () {
     ;
-  }, b: () {
+  },
+  b: () {
     ;
-  }, c: argument);
-  longFunction(a: () {
+  },
+  c: argument
+);
+>>> named args anywhere with trailing non-function
+longFunction(a: () {;}, () {;}, c: argument);
+<<<
+longFunction(
+  a: () {
     ;
-  }, () {
+  },
+  () {
     ;
-  }, c: argument);
-  longFunction(a: () {
+  },
+  c: argument
+);
+>>> named args anywhere with trailing non-function
+longFunction(a: () {;}, b: () {;}, argument);
+<<<
+longFunction(
+  a: () {
     ;
-  }, b: () {
+  },
+  b: () {
     ;
-  }, argument);
-}
+  },
+  argument
+);
 >>> no extra indent for expression function argument with trailing comma
 function(() => P(p,),a: () => [a,],);
 <<<
@@ -354,10 +383,10 @@ function(a: argument, b: argument, () {
 function(a: argument, b: argument, c: argument, () {;});
 <<<
 function(
-    a: argument,
-    b: argument,
-    c: argument,
-    () {
+  a: argument,
+  b: argument,
+  c: argument,
+  () {
     ;
   }
 );

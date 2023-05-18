@@ -150,8 +150,15 @@ var record = (
 
   element
 );
->>> format like a block in an argument list
+>>> format on one line in an argument list
 longFunctionName((element, element), (element, element, element, element));
+<<<
+longFunctionName(
+  (element, element),
+  (element, element, element, element)
+);
+>>> format like a block in an argument list
+longFunctionName((element, element), (element, element, element, element, element));
 <<<
 longFunctionName((
   element,
@@ -160,12 +167,20 @@ longFunctionName((
   element,
   element,
   element,
+  element,
   element
 ));
->>> format like a block in an argument list
+>>> format on one line in an argument list
 longFunctionName((element, element, element, element));
 <<<
+longFunctionName(
+  (element, element, element, element)
+);
+>>> format like a block in an argument list
+longFunctionName((element, element, element, element, element));
+<<<
 longFunctionName((
+  element,
   element,
   element,
   element,
@@ -187,12 +202,13 @@ longFunctionName(argument, argument, argument, argument, argument, argument,
 argumentName: (veryLongElement__________,));
 <<<
 longFunctionName(
-    argument,
-    argument,
-    argument,
-    argument,
-    argument,
-    argument,
-    argumentName: (
-      veryLongElement__________,
-    ));
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argumentName: (
+    veryLongElement__________,
+  )
+);

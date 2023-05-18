@@ -10,7 +10,6 @@ import 'package:analyzer/source/line_info.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/dart_style/rewrite_cascade.dart';
 
-import 'argument_list_visitor.dart';
 import 'ast_extensions.dart';
 import 'call_chain_visitor.dart';
 import 'chunk.dart';
@@ -101,6 +100,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   final Map<Token, Rule> _blockRules = {};
   final Map<Token, Chunk> _blockPreviousChunks = {};
 
+  // TODO: Not used anymore?
   /// Open bracket tokens for closure block bodies that appear in argument lists
   /// in a position where the closure should not force the surrounding argument
   /// list to split.
@@ -252,13 +252,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    _beginBody(node.leftParenthesis);
-
-    ArgumentListVisitor(this, node.arguments).visit();
-
-    // If the collection has a trailing comma, the user must want it to split.
-    // TODO: Shouldn't preserve original trailing comma.
-    _endBody(node.rightParenthesis, forceSplit: node.arguments.hasCommaAfter);
+    _visitArgumentList(
+        node.leftParenthesis, node.arguments, node.rightParenthesis);
   }
 
   @override
@@ -293,14 +288,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   void _visitAssertion(Assertion node) {
     token(node.assertKeyword);
 
-    var arguments = <Expression>[node.condition];
-    if (node.message != null) arguments.add(node.message!);
+    var arguments = [node.condition, if (node.message != null) node.message!];
 
-    _beginBody(node.leftParenthesis);
-    ArgumentListVisitor(this, arguments).visit();
-    // If the collection has a trailing comma, the user must want it to split.
-    // TODO: Shouldn't preserve original trailing comma.
-    _endBody(node.rightParenthesis, forceSplit: arguments.hasCommaAfter);
+    _visitArgumentList(node.leftParenthesis, arguments, node.rightParenthesis);
   }
 
   @override
@@ -3114,6 +3104,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endRule();
   }
 
+  // TODO: Get rid of unused NamedRule parameter.
   /// Visits [node], which may be in an argument list controlled by [rule].
   ///
   /// This is called directly by [ArgumentListVisitorOld] so that it can pass in
@@ -3149,6 +3140,108 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node);
     builder.endSpan();
     builder.unnest();
+  }
+
+  void _visitArgumentList(Token leftParenthesis, List<Expression> arguments,
+      Token rightParenthesis) {
+    // Create a rule for whether or not to split the block contents.
+    var rule = ArgumentListRule();
+    _beginBody(leftParenthesis, rule: rule);
+
+    // TODO: A function call might contain a block-formatted argument, but the
+    // function call itself may be an argument in a surrounding call. When that
+    // happens, the outer function should be forced to split. We don't want:
+    //
+    //    outer(inner([
+    //      element
+    //    ]));
+
+    // See if any of the arguments can be block formatted. A potential
+    // block-formatted argument is one whose expression is bracket delimited:
+    // a block-bodied function expression or collection literal. We also require
+    // any non-block arguments to only appear as a prefix or suffix of the
+    // argument list. That avoids "losing" an argument in the middle of a series
+    // of blocks, like:
+    //
+    //     function([
+    //       element,
+    //     ], no, [
+    //       element,
+    //     ]);
+    bool isBlockArgument(Expression argument) {
+      if (argument is FunctionExpression &&
+          argument.body is BlockFunctionBody) {
+        return true;
+      } else if (argument is ListLiteral ||
+          argument is SetOrMapLiteral ||
+          argument is RecordLiteral) {
+        return true;
+      }
+
+      return false;
+    }
+
+    var areBlocksContiguous = true;
+    var hasBlock = false;
+    var hasNonBlockAfterBlock = false;
+    for (var argument in arguments) {
+      if (isBlockArgument(argument)) {
+        if (hasNonBlockAfterBlock) {
+          // We found a non-block argument interleaved in the block arguments
+          // so don't block format any of them.
+          areBlocksContiguous = false;
+          break;
+        } else {
+          hasBlock = true;
+        }
+      } else if (hasBlock) {
+        hasNonBlockAfterBlock = true;
+      }
+    }
+
+    // TODO: This logic is similar to code in ArgumentListVisitor, but the
+    // latter has a lot more heuristics and subleties. Decide if any of those
+    // should be kept.
+
+    for (var argument in arguments) {
+      rule.enableSplitOnInnerRules();
+      // TODO: This may need some tuning.
+      // TODO: Use if-case.
+      if (areBlocksContiguous) {
+        // TODO: Note that we don't recurse into named expressions. This is
+        // deliberate to disable block formatted on named arguments so that
+        // the name doesn't disappear in the middle of the argument list like:
+        //
+        //     function([
+        //       element
+        //     ], easyToMiss: [
+        //       element
+        //     ]);
+        // We could allow the *first* argument to be named and still a block
+        // since that name is hard to miss. Decide what rule we want here.
+        if (argument is FunctionExpression &&
+            argument.body is BlockFunctionBody) {
+          rule.disableSplitOnInnerRules();
+
+          var body = argument.body as BlockFunctionBody;
+          // TODO: Do this for collection literals too. We should support
+          // block formatting those as well but it's not currently supported
+          // and the tests were migrated to assume we didn't want that.
+          _unsplitBlockArguments.add(body.block.leftBracket);
+        } else if (argument is ListLiteral ||
+            argument is SetOrMapLiteral ||
+            argument is RecordLiteral) {
+          rule.disableSplitOnInnerRules();
+        }
+      }
+
+      builder.split(nest: false, space: argument != arguments.first);
+      visit(argument);
+      writeCommaAfter(argument);
+    }
+
+    // TODO: Shouldn't look for trailing comma to force split.
+    _endBody(rightParenthesis, forceSplit: arguments.hasCommaAfter);
   }
 
   /// Visits the `=` and the following expression in any place where an `=`
@@ -3478,7 +3571,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       TypeArgumentList? typeArguments,
       int? cost,
       bool splitOuterCollection = false,
-      bool isRecord = false}) {
+      bool isRecord = false,
+      bool useLineCommentsToFormat = true}) {
     // See if `const` should be removed.
     if (constKeyword != null &&
         _constNesting > 0 &&
@@ -3512,7 +3606,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
-    if (_containsLineComments(elements, rightBracket)) {
+    if (useLineCommentsToFormat &&
+        _containsLineComments(elements, rightBracket)) {
       // TODO: Should this keeping using TypeArgumentRule or can it be
       // simplified?
       // Newlines are significant, so we'll explicitly write those. Elements
@@ -3768,14 +3863,14 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Writes the delimiter (with a space after it when unsplit if [space] is
   /// `true`).
   void _beginBody(Token leftBracket,
-      {bool space = false, bool splitParentBlock = true}) {
+      {Rule? rule, bool space = false, bool splitParentBlock = true}) {
     token(leftBracket);
 
     // Create a rule for whether or not to split the block contents. If this
     // literal is associated with an argument list or if element that wants to
     // handle splitting and indenting it, use its rule. Otherwise, use a
     // default rule.
-    builder.startRule(_blockRules[leftBracket]);
+    builder.startRule(rule ?? _blockRules[leftBracket]);
 
     // Process the contents as a separate set of chunks.
     builder = builder.startBlock(
@@ -3878,13 +3973,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   void beforeBlock(Token token, Rule rule, [Chunk? previousChunk]) {
     _blockRules[token] = rule;
     if (previousChunk != null) _blockPreviousChunks[token] = previousChunk;
-  }
-
-  // TODO: Is there a cleaner way to plumb this from ArgumentListVisitor over
-  // to visitBlock()?
-  // TODO: Doc.
-  void blockClosureInArgumentList(Token token) {
-    _unsplitBlockArguments.add(token);
   }
 
   /// Writes the brace-delimited body containing [nodes].

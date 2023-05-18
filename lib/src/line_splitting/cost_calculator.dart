@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../chunk.dart';
-import '../nesting_level.dart';
 import '../rule/rule.dart';
 import 'line_splitter.dart';
 import 'rule_set.dart';
@@ -21,7 +20,7 @@ class CostCalculator {
 
   /// The set of rules that appear in the first line that doesn't fit in the
   /// page width, populated while calculating the cost.
-  final Set<Rule> liveRules = {};
+  final Set<Rule> _liveRules = {};
 
   int _cost = 0;
 
@@ -53,9 +52,14 @@ class CostCalculator {
 
   /// Evaluates the cost (i.e. the relative "badness") of splitting the line
   /// into [lines] physical lines based on the current set of rules.
-  void calculate() {
+  ///
+  /// Returns the set of rules that are live.
+  Set<Rule> calculate() {
+    // TODO: Remove once I'm sure it's not needed.
+    /*
     // The nesting level of the chunk that ended the previous line.
     NestingLevel? previousNesting;
+    */
 
     // Write each chunk with the appropriate splits between them.
     for (var i = 0; i < _splitter.chunks.length; i++) {
@@ -67,8 +71,8 @@ class CostCalculator {
           if (_splitSpans.add(span)) _cost += span.cost;
         }
 
-        // TODO: Is this still needed with Flutter style formatting since it
-        // tends to put delimiteres between lines?
+        // TODO: Delete this once I'm sure it's not needed.
+        /*
         // Do not allow sequential lines to have the same indentation but for
         // different reasons. In other words, don't allow different expressions
         // to claim the same nesting level on subsequent lines.
@@ -95,10 +99,7 @@ class CostCalculator {
         }
 
         previousNesting = chunk.nesting;
-
-        // Start the new line.
-        _endLine(i);
-        _column = _splits.getColumn(i);
+        */
       } else {
         if (chunk.spaceWhenUnsplit) _column++;
       }
@@ -108,13 +109,12 @@ class CostCalculator {
         if (_splits.shouldSplitAt(i)) {
           _traverseSplitBlock(chunk, _splits.getColumn(i));
         } else {
-          // This block didn't split (which implies none of the child blocks
-          // of that block split either, recursively), so write them all inline.
           _traverseUnsplitBlock(i, chunk, _splitter.blockIndentation);
         }
       }
 
       if (_splits.shouldSplitAt(i)) {
+        // Start the new line.
         _endLine(i);
         _column = _splits.getColumn(i);
       }
@@ -128,31 +128,33 @@ class CostCalculator {
     });
 
     // Finish the last line.
-    _endLine(_splitter.chunks.length);
+    _endLine(_splitter.chunks.length - 1);
 
     // Store the final cost in the SplitSet.
     _splits.setCost(_cost);
+
+    return _liveRules;
   }
 
   void _traverseUnsplitBlock(int chunkIndex, BlockChunk block, int column) {
-    for (var chunk in block.children) {
-      if (chunk is BlockChunk && chunk.rule.isHardened) {
+    for (var child in block.children) {
+      if (child is BlockChunk && child.rule.isHardened) {
         // Even though the surrounding block didn't split, this chunk's
         // children did.
-        _traverseSplitBlock(chunk, column + block.indent);
-        _endLine(chunkIndex);
+        _traverseSplitBlock(child, column + block.indent);
 
+        _endLine(chunkIndex);
         _column = column + block.indent;
       } else {
-        if (chunk.spaceWhenUnsplit) _column++;
+        if (child.spaceWhenUnsplit) _column++;
 
         // Recurse into the block.
-        if (chunk is BlockChunk) {
-          _traverseUnsplitBlock(chunkIndex, chunk, column);
+        if (child is BlockChunk) {
+          _traverseUnsplitBlock(chunkIndex, child, column);
         }
       }
 
-      _column += chunk.text.length;
+      _column += child.text.length;
     }
   }
 
@@ -170,7 +172,14 @@ class CostCalculator {
       // Only try rules that are in the first long line, since we know at
       // least one of them *will* be split.
       if (!_foundOverflowRules) {
-        for (var i = _start; i < end; i++) {
+        // TODO: This used to be "< end" (and the final call to _endLine() was
+        // _endLine(_splitter.chunks.length);
+        // That did't include the current split chunk itself, which meant that
+        // chunk's rule wasn't considered "live". Adding 1 fixes that, but I'm
+        // not sure how the code was correct before. Also, with this fix, are
+        // we unnecessarily adding rules to the live set that weren't added
+        // before and harming perf?
+        for (var i = _start; i <= end; i++) {
           if (_addLiveRules(_splitter.chunks[i].rule)) {
             _foundOverflowRules = true;
           }
@@ -192,7 +201,7 @@ class CostCalculator {
     for (var constrained in rule.allConstrainedRules) {
       if (_ruleValues.contains(constrained)) continue;
 
-      liveRules.add(constrained);
+      _liveRules.add(constrained);
       added = true;
     }
 

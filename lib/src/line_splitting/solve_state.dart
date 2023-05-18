@@ -111,10 +111,10 @@ class SolveState {
   factory SolveState(LineSplitter splitter, RuleSet ruleValues) {
     var splits = _calculateSplits(splitter, ruleValues);
     var calculator = CostCalculator(splitter, ruleValues, splits);
-    calculator.calculate();
+    var liveRules = calculator.calculate();
 
-    return SolveState._(splitter, ruleValues, splits, calculator.overflowChars,
-        calculator.liveRules);
+    return SolveState._(
+        splitter, ruleValues, splits, calculator.overflowChars, liveRules);
   }
 
   SolveState._(this._splitter, this._ruleValues, this.splits,
