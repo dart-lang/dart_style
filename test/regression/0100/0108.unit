@@ -217,7 +217,8 @@ async.Future<List<dom.StyleElement>> call(String tag, List<String> cssUrls, {Typ
         async.Future.wait((DDC$RT.cast(
             cssUrls.map((url) => _styleElement(
                 tag,
-                (DDC$RT.cast(url, String, key: "Cast failed: package:angular/core_dom/component_css_loader.dart:17:65")),
+                (DDC$RT.cast(url, String,
+                    key: "Cast failed: package:angular/core_dom/component_css_loader.dart:17:65")),
                 type)),
             DDC$RT.type((Iterable<Future<dynamic>> _) {}),
             key: "Cast failed: package:angular/core_dom/component_css_loader.dart:17:25"))),
