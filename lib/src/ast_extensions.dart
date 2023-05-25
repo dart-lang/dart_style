@@ -44,9 +44,13 @@ extension AstNodeExtensions on AstNode {
 
   bool get isControlFlowElement => this is IfElement || this is ForElement;
 
+  // TODO: Better name.
+  // TODO: Include switch expressions?
   /// Whether this node is an expression or pattern with an explicitly
   /// delimited collection-like body.
   bool get isDelimited {
+    // TODO: Should we treat empty ones (without comments inside) differently?
+
     if (this is ListLiteral ||
         this is SetOrMapLiteral ||
         this is RecordLiteral) {
@@ -65,6 +69,22 @@ extension AstNodeExtensions on AstNode {
     var node = this;
     if (node is ConstantPattern) {
       return node.expression.isDelimited;
+    }
+
+    return false;
+  }
+
+  // TODO: Better name.
+  // TODO: Can this be unified with `isDelimited`?
+  /// Whether this node is an expression or pattern with a delimited
+  /// collection-like body or a function call with an argument list.
+  bool get isDelimitedOrCall {
+    if (isDelimited) return true;
+
+    var node = this;
+    // TODO: Only targetless ones?
+    if (node is MethodInvocation) {
+      return true;
     }
 
     return false;

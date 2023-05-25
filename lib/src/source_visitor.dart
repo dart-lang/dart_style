@@ -1007,21 +1007,27 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.star);
     if (node.keyword != null || node.star != null) space();
 
-    // Try to keep the "(...) => " with the start of the body for anonymous
-    // functions.
-    if (node.isFunctionExpressionBody) builder.startSpan();
-
     token(node.functionDefinition); // "=>".
 
-    // Split after the "=>".
-    builder.startRule(Rule(Cost.arrow));
-    split();
+    if (node.expression.isDelimitedOrCall) {
+      // Don't allow a split between `=>` and a collection. Instead, we want
+      // the collection itself to split.
+      // TODO: Write tests for this.
+      space();
+    } else {
+      // Split after the "=>".
+      builder.nestExpression(now: true);
+      builder.startRule(Rule(Cost.arrow));
+      split();
+    }
 
+    // TODO: See if the logic around binary operators can be simplified.
     // If the body is a binary operator expression, then we want to force the
     // split at `=>` if the operators split. See visitBinaryExpression().
-    if (node.expression is! BinaryExpression) builder.endRule();
-
-    if (node.isFunctionExpressionBody) builder.endSpan();
+    if (node.expression is! BinaryExpression &&
+        !node.expression.isDelimitedOrCall) {
+      builder.endRule();
+    }
 
     // If this function invocation appears in an argument list with trailing
     // comma, don't add extra nesting to preserve normal indentation.
@@ -1032,12 +1038,17 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     if (!isArgWithTrailingComma) builder.startBlockArgumentNesting();
-    builder.startSpan();
     visit(node.expression);
-    builder.endSpan();
     if (!isArgWithTrailingComma) builder.endBlockArgumentNesting();
 
-    if (node.expression is BinaryExpression) builder.endRule();
+    if (!node.expression.isDelimitedOrCall) {
+      builder.unnest();
+    }
+
+    if (node.expression is BinaryExpression &&
+        !node.expression.isDelimitedOrCall) {
+      builder.endRule();
+    }
 
     token(node.semicolon);
   }
@@ -1253,7 +1264,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       return null;
     }
 
-    var parameterRule = Rule();
+    var parameterRule = Rule(Cost.parameterList);
     builder.startRule(parameterRule);
 
     token(node.leftParenthesis);
@@ -2174,7 +2185,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    visitNamedNode(node.name.label.token, node.name.colon, node.expression);
+    _visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
 
   @override
@@ -2324,7 +2335,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (fieldName != null) {
       var name = fieldName.name;
       if (name != null) {
-        visitNamedNode(fieldName.name!, fieldName.colon, node.pattern);
+        _visitNamedNode(fieldName.name!, fieldName.colon, node.pattern);
       } else {
         // Named field with inferred name, like:
         //
@@ -3093,12 +3104,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// split between the name and argument forces the argument list to split
   /// too.
   void visitNamedArgument(NamedExpression node) {
-    visitNamedNode(node.name.label.token, node.name.colon, node.expression);
+    _visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
 
   /// Visits syntax of the form `identifier: <node>`: a named argument or a
   /// named record field.
-  void visitNamedNode(Token name, Token colon, AstNode node) {
+  void _visitNamedNode(Token name, Token colon, AstNode node) {
     builder.nestExpression();
     builder.startSpan();
     token(name);
@@ -3390,7 +3401,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       Token leftBracket, Token rightBracket, List<AstNode> nodes) {
     // TODO: This is simplified from _visitCollectionLiteral. Refactor? Or reuse
     // this code elsewhere?
-    _beginBody(leftBracket);
+    _beginBody(leftBracket, rule: Rule(Cost.typeParameterList));
 
     // Set the block nesting in case an argument is a function type with a
     // trailing comma or a record type.
@@ -3450,9 +3461,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   }) {
     visitMetadata(metadata);
 
-    // Nest the signature in case we have to split between the return type and
-    // name.
-    builder.nestExpression();
     builder.startSpan();
     modifier(externalKeyword);
     modifier(modifierKeyword);
@@ -3462,18 +3470,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(name);
     builder.endSpan();
 
-    // TODO: I think this can be simplified to just unconditionally unnesting
-    // before the body is visited. But I want to get the regression tests
-    // passing first to make sure that's true.
-    _visitFunctionBody(typeParameters, formalParameters, body, (_) {
-      // If the body is a block, we need to exit nesting before we hit the body
-      // indentation, but we do want to wrap it around the parameters.
-      if (body is! ExpressionFunctionBody) builder.unnest();
-    });
-
-    // If it's an expression, we want to wrap the nesting around that so that
-    // the body gets nested farther.
-    if (body is ExpressionFunctionBody) builder.unnest();
+    _visitFunctionBody(typeParameters, formalParameters, body);
   }
 
   /// Visit the given function [parameters] followed by its [body], printing a
@@ -3485,12 +3482,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       [void Function(Rule? parameterRule)? beforeBody]) {
     var parameterRule = _visitParameterSignature(typeParameters, parameters);
 
-    if (body is ExpressionFunctionBody) builder.nestExpression();
-
     if (beforeBody != null) beforeBody(parameterRule);
     visit(body);
-
-    if (body is ExpressionFunctionBody) builder.unnest();
   }
 
   /// Visits the type parameters (if any) and formal parameters of a method
@@ -3694,7 +3687,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Begins writing a formal parameter of any kind.
   void _beginFormalParameter(FormalParameter node) {
-    builder.startLazyRule(Rule(Cost.parameterType));
+    builder.startLazyRule(Rule(Cost.typeAnnotation));
     builder.nestExpression();
     modifier(node.requiredKeyword);
     modifier(node.covariantKeyword);
@@ -3717,7 +3710,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       Token? positionToken,
       TypeParameterList? typeParameters,
       FormalParameterList parameters) {
-    builder.startLazyRule();
+    builder.startLazyRule(Rule(Cost.typeAnnotation));
     builder.nestExpression();
 
     visit(returnType, after: split);

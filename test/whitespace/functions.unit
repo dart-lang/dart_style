@@ -149,13 +149,12 @@ function(parameter,parameter,) => veryLongBodyThatWraps(argument, argument, argu
 function(
   parameter,
   parameter,
-) =>
-    veryLongBodyThatWraps(
-      argument,
-      argument,
-      argument,
-      argument
-    );
+) => veryLongBodyThatWraps(
+  argument,
+  argument,
+  argument,
+  argument
+);
 >>> trailing comma with wrap at =>
 function(parameter,parameter,) /* comment */ => "a very very long string";
 <<<

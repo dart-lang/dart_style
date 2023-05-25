@@ -15,8 +15,9 @@ new Future.sync(() => callback('msg'))
 >>>
 Stream readInput(AssetId id) => future((input) => input.read());
 <<<
-Stream readInput(AssetId id) =>
-    future((input) => input.read());
+Stream readInput(AssetId id) => future(
+  (input) => input.read()
+);
 >>> nested expression indentation
 someFunctionName(argument, argument, argument,
     someOtherFunction(argument, argument, arg));

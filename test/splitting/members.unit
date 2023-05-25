@@ -15,7 +15,7 @@ class Foo {
 <<<
 class Foo {
   VeryLongTypeAnnotation
-      get veryLongGetter => null;
+  get veryLongGetter => null;
 }
 >>> can split on setter
 class Foo {
@@ -24,7 +24,7 @@ class Foo {
 <<<
 class Foo {
   VeryLongTypeAnnotation
-      set veryLongSetter(v) {}
+  set veryLongSetter(v) {}
 }
 >>> do not split after "covariant" in field
 class Foo {

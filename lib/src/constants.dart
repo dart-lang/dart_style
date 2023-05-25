@@ -25,17 +25,20 @@ class Cost {
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;
 
+  /// Splitting a formal parameter list.
+  static const parameterList = 2;
+
   /// Splitting on the "." in a named constructor.
   static const constructorName = 4;
 
   /// Splitting a `[...]` index operator.
   static const index = 4;
 
-  /// Splitting before a type argument or type parameter.
-  static const typeArgument = 4;
+  /// Splitting a type parameter list.
+  static const typeParameterList = 2;
 
-  /// Split between a formal parameter name and its type.
-  static const parameterType = 4;
+  /// Split between a type annotation and the annotated thing.
+  static const typeAnnotation = 4;
 }
 
 /// Constants for the number of spaces for various kinds of indentation.

@@ -35,9 +35,10 @@ foo
 >>> cascades indent contained blocks (and force multi-line)
 "foo"..toString(() {body;});
 <<<
-"foo"..toString(() {
-  body;
-});
+"foo"
+  ..toString(() {
+    body;
+  });
 >>> force split if receiver an expression where the precedence isn't obvious
 main() async {
   // These are OK.

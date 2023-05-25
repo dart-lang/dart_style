@@ -4,3 +4,54 @@ myFunction() => argument + anotherArgument;
 <<<
 myFunction() =>
     argument + anotherArgument;
+>>> don't indent list body
+function() => [longElement, longElement, longElement];
+<<<
+function() => [
+  longElement,
+  longElement,
+  longElement
+];
+>>> don't indent map body
+function() => {1: longElement, 2: longElement, 3: longElement};
+<<<
+function() => {
+  1: longElement,
+  2: longElement,
+  3: longElement
+};
+>>> don't indent set body
+function() => {longElement, longElement, longElement};
+<<<
+function() => {
+  longElement,
+  longElement,
+  longElement
+};
+>>> don't indent record body
+function() => (longElement, longElement, longElement);
+<<<
+function() => (
+  longElement,
+  longElement,
+  longElement
+);
+>>> don't indent function call body
+function() => call(longElement, longElement, longElement);
+<<<
+function() => call(
+  longElement,
+  longElement,
+  longElement
+);
+>>> don't indent function call body when parameters split
+function(longParameter, anotherParameter) => call(longElement, longElement, longElement);
+<<<
+function(
+  longParameter,
+  anotherParameter
+) => call(
+  longElement,
+  longElement,
+  longElement
+);
