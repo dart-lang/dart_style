@@ -3132,57 +3132,70 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   void _visitArgumentList(Token leftParenthesis, List<Expression> arguments,
       Token rightParenthesis) {
-    // TODO: A function call might contain a block-formatted argument, but the
-    // function call itself may be an argument in a surrounding call. When that
-    // happens, the outer function should be forced to split. We don't want:
-    //
-    //    outer(inner([
-    //      element
-    //    ]));
+    if (_tryVisitBlockArgumentList(
+        leftParenthesis, arguments, rightParenthesis)) {
+      return;
+    }
 
-    // Allow one collection or block function expression to have block-like
-    // formatting, as in:
-    //
-    //     function([
-    //       element
-    //     ]);
-    //
-    // If there are multiple block-like arguments, then we don't allow any of
-    // them to have this special formatting. This is because Flutter doesn't
-    // seem to do that and because if that's allowed, it's not clear how to
-    // handle the case where some of the block-like arguments need to split and
-    // others don't.
+    // No argument that needs special block argument handling, so format the
+    // argument list like a regular body.
+    _beginBody(leftParenthesis);
+
+    for (var argument in arguments) {
+      builder.split(nest: false, space: argument != arguments.first);
+      visit(argument);
+      writeCommaAfter(argument);
+    }
+
+    // TODO: Shouldn't look for trailing comma to force split.
+    _endBody(rightParenthesis, forceSplit: arguments.hasCommaAfter);
+  }
+
+  /// If [arguments] is an argument list with a single argument that should
+  /// have block formatting, then formats it using block formatting and returns
+  /// `true`. Otherwise returns `false`.
+  ///
+  /// We allow one collection or block function expression to have block-like
+  /// formatting, as in:
+  ///
+  ///     function([
+  ///       element
+  ///     ]);
+  ///
+  /// If there are multiple block-like arguments, then we don't allow any of
+  /// them to have this special formatting. This is because Flutter doesn't
+  /// seem to do that and because if that's allowed, it's not clear how to
+  /// handle the case where some of the block-like arguments need to split and
+  /// others don't.
+  bool _tryVisitBlockArgumentList(Token leftParenthesis,
+      List<Expression> arguments, Token rightParenthesis) {
     Expression? blockArgument;
     Token? blockDelimiter;
 
     for (var argument in arguments) {
-      Token? delimiter;
-
-      var argumentExpression = argument;
-      if (argumentExpression is NamedExpression) {
-        argumentExpression = argumentExpression.expression;
+      // Unwrap named arguments.
+      var expression = argument;
+      if (expression is NamedExpression) {
+        expression = expression.expression;
       }
 
-      if (argumentExpression is FunctionExpression &&
-          argumentExpression.body is BlockFunctionBody) {
-        delimiter =
-            (argumentExpression.body as BlockFunctionBody).block.leftBracket;
-      } else if (argumentExpression is ListLiteral) {
-        delimiter = argumentExpression.leftBracket;
-      } else if (argumentExpression is SetOrMapLiteral) {
-        delimiter = argumentExpression.leftBracket;
-      } else if (argumentExpression is RecordLiteral) {
-        delimiter = argumentExpression.leftParenthesis;
-      }
+      var (isBlock, delimiter) = switch (expression) {
+        FunctionExpression(:BlockFunctionBody body) => (
+            true,
+            body.block.leftBracket
+          ),
+        ListLiteral(:var leftBracket) => (true, leftBracket),
+        SetOrMapLiteral(:var leftBracket) => (true, leftBracket),
+        RecordLiteral(:var leftParenthesis) => (true, leftParenthesis),
+        // Allow multi-line strings to have block formatting.
+        SimpleStringLiteral(isMultiline: true) => (true, null),
+        StringInterpolation(isMultiline: true) => (true, null),
+        _ => (false, null)
+      };
 
-      if (delimiter != null) {
+      if (isBlock) {
         // If we found multiple, then don't give any of them block formatting.
-        if (blockArgument != null) {
-          // Only allow a single one.
-          blockArgument = null;
-          blockDelimiter = null;
-          break;
-        }
+        if (blockArgument != null) return false;
 
         // We found one.
         blockArgument = argument;
@@ -3190,89 +3203,81 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
-    if (blockDelimiter != null) {
-      // If there is a block argument, then we need to handle the argument
-      // list and all of its arguments together instead of putting the arguments
-      // as children of a BlockChunk for the argument list. That way, we can
-      // have a single rule that controls how the argument list and the block
-      // argument splits.
-      ArgumentListRule rule;
-      if (blockArgument is FunctionExpression) {
-        rule = FunctionArgumentListRule();
+    if (blockArgument == null) return false;
 
-        // Track the argument list rule so that we can indent the function's
-        // parameters and body based on whether the argument list splits.
-        _blockFunctionRules[blockArgument.parameters!.leftParenthesis] = rule;
-        _blockFunctionRules[blockDelimiter] = rule;
-      } else {
-        rule = CollectionArgumentListRule();
+    // If there is a block argument, then we need to handle the argument
+    // list and all of its arguments together instead of putting the arguments
+    // as children of a BlockChunk for the argument list. That way, we can
+    // have a single rule that controls how the argument list and the block
+    // argument splits.
+    ArgumentListRule rule;
+    if (blockArgument is FunctionExpression) {
+      rule = FunctionArgumentListRule();
 
-        // Let the argument list control whether the collection splits.
-        _blockCollectionRules[blockDelimiter] = rule;
-      }
-
-      builder.startRule(rule);
-      builder.nestExpression(indent: Indent.argumentList);
-      builder.startBlockArgumentNesting();
-      token(leftParenthesis);
-
-      for (var argument in arguments) {
-        // Allow the block argument to split without forcing the argument list
-        // to split.
-        if (argument == blockArgument) {
-          rule.disableSplitOnInnerRules();
-        } else {
-          rule.enableSplitOnInnerRules();
-        }
-
-        builder.split(space: argument != arguments.first);
-
-        // Prefer to split the entire argument list and keep the block argument
-        // together. Prefer:
-        //
-        // ```
-        // function(
-        //   [element, element, element]
-        // );
-        // ```
-        //
-        // Over:
-        //
-        // ```
-        // function([
-        //   element,
-        //   element,
-        //   element
-        // ]);
-        // ```
-        if (argument == blockArgument) builder.startSpan();
-
-        visit(argument);
-        writeCommaAfter(argument);
-
-        if (argument == blockArgument) builder.endSpan();
-      }
-
-      rule.bindRightParenthesis(zeroSplit());
-      token(rightParenthesis);
-
-      builder.endBlockArgumentNesting();
-      builder.unnest();
-      builder.endRule();
+      // Track the argument list rule so that we can indent the function's
+      // parameters and body based on whether the argument list splits.
+      _blockFunctionRules[blockArgument.parameters!.leftParenthesis] = rule;
+      _blockFunctionRules[
+          (blockArgument.body as BlockFunctionBody).block.leftBracket] = rule;
+    } else if (blockArgument is SimpleStringLiteral ||
+        blockArgument is StringInterpolation) {
+      rule = FunctionArgumentListRule();
     } else {
-      // No argument that needs special block argument handling, so format the
-      // argument list like a regular body.
-      _beginBody(leftParenthesis);
+      rule = CollectionArgumentListRule();
 
-      for (var argument in arguments) {
-        builder.split(nest: false, space: argument != arguments.first);
-        visit(argument);
-        writeCommaAfter(argument);
+      // Let the argument list control whether the collection splits.
+      _blockCollectionRules[blockDelimiter!] = rule;
+    }
+
+    builder.startRule(rule);
+    builder.nestExpression(indent: Indent.argumentList);
+    builder.startBlockArgumentNesting();
+    token(leftParenthesis);
+
+    for (var argument in arguments) {
+      // Allow the block argument to split without forcing the argument list
+      // to split.
+      if (argument == blockArgument) {
+        rule.disableSplitOnInnerRules();
+      } else {
+        rule.enableSplitOnInnerRules();
       }
 
-      // TODO: Shouldn't look for trailing comma to force split.
-      _endBody(rightParenthesis, forceSplit: arguments.hasCommaAfter);
+      builder.split(space: argument != arguments.first);
+
+      // Prefer to split the entire argument list and keep the block argument
+      // together. Prefer:
+      //
+      // ```
+      // function(
+      //   [element, element, element]
+      // );
+      // ```
+      //
+      // Over:
+      //
+      // ```
+      // function([
+      //   element,
+      //   element,
+      //   element
+      // ]);
+      // ```
+      if (argument == blockArgument) builder.startSpan();
+
+      visit(argument);
+      writeCommaAfter(argument);
+
+      if (argument == blockArgument) builder.endSpan();
     }
+
+    rule.bindRightParenthesis(zeroSplit());
+    token(rightParenthesis);
+
+    builder.endBlockArgumentNesting();
+    builder.unnest();
+    builder.endRule();
+    return true;
   }
 
   /// Visits the `=` and the following expression in any place where an `=`

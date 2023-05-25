@@ -144,16 +144,3 @@ class CollectionArgumentListRule extends ArgumentListRule {
 ///     );
 ///     ```
 class FunctionArgumentListRule extends ArgumentListRule {}
-
-// TODO: Remove.
-/// Base class for a rule that handles argument or parameter lists.
-abstract class ArgumentRule extends Rule with TrackInnerRulesMixin {
-  /// The chunks prior to each positional argument.
-  final List<Chunk?> _arguments = [];
-
-  /// Remembers [chunk] as containing the split that occurs right before an
-  /// argument in the list.
-  void beforeArgument(Chunk? chunk) {
-    _arguments.add(chunk);
-  }
-}

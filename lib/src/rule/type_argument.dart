@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../chunk.dart';
-import '../constants.dart';
 import 'rule.dart';
 
 // TODO: Only used for splitting elements in comment-marked collection literals.
