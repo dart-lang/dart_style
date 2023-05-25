@@ -48,3 +48,7 @@
 (  int  ,   bool  )   ?  x;
 <<<
 (int, bool)? x;
+>>> empty nullable record type
+(  )  ?   x;
+<<<
+()? x;

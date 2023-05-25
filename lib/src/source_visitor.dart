@@ -2443,6 +2443,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       if (node.rightParenthesis.precedingComments != null) soloZeroSplit();
 
       token(node.rightParenthesis);
+      token(node.question);
       return;
     }
 

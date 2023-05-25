@@ -6,6 +6,8 @@
   on other parameters (#1212).
 * Don't split before `.` following a record literal (#1213).
 * Don't force split on a line comment before a switch expression case (#1215).
+* Require `package:analyzer` `^5.12.0`.
+* Preserve `?` on nullable empty record types (#1224).
 
 # 2.3.1
 
