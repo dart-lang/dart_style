@@ -113,8 +113,14 @@ compiler.property
 >>> split between a pair of properties
 avian.bovine.canine.equine.feline.piscine.orycteropodian.camelid;
 <<<
-avian.bovine.canine.equine.feline
-    .piscine.orycteropodian.camelid;
+avian
+    .bovine
+    .canine
+    .equine
+    .feline
+    .piscine
+    .orycteropodian
+    .camelid;
 >>> split before all properties if they don't fit on two lines
 avian.bovine.canine.equine.feline.piscine.orycteropodian.camelid
 .rangiferine;
@@ -434,7 +440,9 @@ verylongIdentifier!
 verylongIdentifier!.longIdentifier.another!.aThird!;
 <<<
 verylongIdentifier!
-    .longIdentifier.another!.aThird!;
+    .longIdentifier
+    .another!
+    .aThird!;
 >>> "!" stays with operand before property access
 verylongIdentifier!.longIdentifier.another!.aThird!.longerPropertyChain;
 <<<
@@ -475,7 +483,9 @@ receiver.property1.property2
     .method1()?[0][1]?[2]
     .method2();
 <<<
-receiver.property1.property2
+receiver
+    .property1
+    .property2
     .property3?[0][1]?[2]
     .method1()?[0][1]?[2]
     .method2();

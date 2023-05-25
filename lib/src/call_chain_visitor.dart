@@ -6,7 +6,6 @@ import 'package:analyzer/dart/ast/token.dart';
 
 import 'argument_list_visitor.dart';
 import 'ast_extensions.dart';
-import 'rule/argument.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';
 
@@ -104,7 +103,7 @@ class CallChainVisitor {
 
   /// After the properties are visited (if there are any), this will be the
   /// rule used to split between them.
-  PositionalRule? _propertyRule;
+  Rule? _propertyRule;
 
   /// Creates a new call chain visitor for [visitor] for the method chain
   /// contained in [node].
@@ -186,7 +185,7 @@ class CallChainVisitor {
 
     if (splitOnTarget) {
       if (_properties.length > 1) {
-        _propertyRule = PositionalRule(null, argumentCount: _properties.length);
+        _propertyRule = Rule();
         _visitor.builder.startLazyRule(_propertyRule);
       } else {
         _enableRule(lazy: true);
@@ -195,19 +194,19 @@ class CallChainVisitor {
 
     _visitor.visit(_target);
 
-    // Leading properties split like positional arguments: either not at all,
-    // before one ".", or before all of them.
+    // Leading properties all split or none do, but can not split even if the
+    // method calls do.
     if (_properties.length == 1) {
       _visitor.soloZeroSplit();
       _properties.single.write(this);
     } else if (_properties.length > 1) {
       if (!splitOnTarget) {
-        _propertyRule = PositionalRule(null, argumentCount: _properties.length);
+        _propertyRule = Rule();
         _visitor.builder.startRule(_propertyRule);
       }
 
       for (var property in _properties) {
-        _propertyRule!.beforeArgument(_visitor.zeroSplit());
+        _visitor.zeroSplit();
         property.write(this);
       }
 
@@ -376,7 +375,7 @@ class CallChainVisitor {
 
     // If the properties split, force the calls to split too.
     var rule = Rule();
-    _propertyRule?.addNamedArgsConstraints(rule);
+    _propertyRule?.constrainWhenSplit(rule);
 
     if (lazy) {
       _visitor.builder.startLazyRule(rule);

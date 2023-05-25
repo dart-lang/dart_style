@@ -142,25 +142,21 @@ receiver.first(
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem, fourthItem]).second();
 <<<
-receiver.first(
-  [
-    listItem,
-    secondItem,
-    thirdItem,
-    fourthItem
-  ]
-).second();
+receiver.first([
+  listItem,
+  secondItem,
+  thirdItem,
+  fourthItem
+]).second();
 >>> list at end of method chain
 receiver.first().second([listItem, secondItem, thirdItem, fourthItem]);
 <<<
-receiver.first().second(
-  [
-    listItem,
-    secondItem,
-    thirdItem,
-    fourthItem
-  ]
-);
+receiver.first().second([
+  listItem,
+  secondItem,
+  thirdItem,
+  fourthItem
+]);
 >>> binary operators in ascending precedence
 {
   b___________________ || a______________ && a______________ == a______________ > a______________ + a______________;

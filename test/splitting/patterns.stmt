@@ -60,14 +60,16 @@ if (object case longPrefix.longType.longIdentifierName) {;}
 <<<
 if (object
     case longPrefix
-        .longType.longIdentifierName) {
+        .longType
+        .longIdentifierName) {
   ;
 }
 >>> split just at second part of prefixed qualified name
 if (object case longPrefix.veryLongType.longIdentifierName) {;}
 <<<
 if (object
-    case longPrefix.veryLongType
+    case longPrefix
+        .veryLongType
         .longIdentifierName) {
   ;
 }

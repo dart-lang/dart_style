@@ -3092,15 +3092,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// the surrounding named argument rule. That way, this can ensure that a
   /// split between the name and argument forces the argument list to split
   /// too.
-  void visitNamedArgument(NamedExpression node, [NamedRule? rule]) {
-    visitNamedNode(
-        node.name.label.token, node.name.colon, node.expression, rule);
+  void visitNamedArgument(NamedExpression node) {
+    visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
 
   /// Visits syntax of the form `identifier: <node>`: a named argument or a
   /// named record field.
-  void visitNamedNode(Token name, Token colon, AstNode node,
-      [NamedRule? rule]) {
+  void visitNamedNode(Token name, Token colon, AstNode node) {
     builder.nestExpression();
     builder.startSpan();
     token(name);
@@ -3113,8 +3111,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.isDelimited) {
       space();
     } else {
-      var split = soloSplit();
-      if (rule != null) split.constrainWhenSplit(rule);
+      soloSplit();
     }
 
     visit(node);
