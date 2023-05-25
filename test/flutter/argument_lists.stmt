@@ -1,0 +1,81 @@
+40 columns                              |
+>>>
+longFunctionName(
+  element__element__element,
+  [element,element,element,element,element,],
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  [
+    element,
+    element,
+    element,
+    element,
+    element,
+  ],
+  element__element
+);
+>>>
+longFunction(
+    a: argument,
+        () {
+      ;
+    },
+    c: () {
+      ;
+    }
+);
+<<<
+longFunction(
+  a: argument,
+  () {
+    ;
+  },
+  c: () {
+    ;
+  }
+);
+>>>
+longFunctionName(
+  element__element__element,
+  () {;},
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  () {
+    ;
+  },
+  element__element
+);
+>>>
+longFunctionName((element, element, element, element));
+<<<
+longFunctionName(
+  (element, element, element, element)
+);
+>>>
+longFunctionName(
+  element__element__element,
+  [element],
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  [element],
+  element__element
+);
+>>>
+longFunctionName([
+  element__element__element,
+  element__element
+]);
+<<<
+longFunctionName([
+  element__element__element,
+  element__element
+]);

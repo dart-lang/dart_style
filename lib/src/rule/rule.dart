@@ -235,6 +235,34 @@ class Rule extends FastHash {
   String toString() => '$id';
 }
 
+/// Mixin that can be applied to [Rule] classes to give them the ability to
+/// enable and disable [splitOnInnerRules].
+mixin TrackInnerRulesMixin implements Rule {
+  /// If true, then inner rules that are written will force this rule to split.
+  ///
+  /// Temporarily disabled while writing collection arguments so that they can
+  /// be multi-line without forcing the whole argument list to split.
+  bool _trackInnerRules = true;
+
+  // TODO: Is this all still needed? Now that collections are always in
+  // separate blocks, the rules for them are not directly connected.
+  // TODO: If this isn't needed, then fullSplitConstraint can be private again.
+  /// Don't split when an inner collection rule splits.
+  @override
+  int? get splitOnInnerRules =>
+      _trackInnerRules ? Rule.fullSplitConstraint : null;
+
+  /// Disables tracking inner rules while a collection argument is written.
+  void disableSplitOnInnerRules() {
+    _trackInnerRules = false;
+  }
+
+  /// Enables tracking inner rules.
+  void enableSplitOnInnerRules() {
+    _trackInnerRules = true;
+  }
+}
+
 /// Describes a value constraint that one [Rule] places on another rule's
 /// values.
 ///

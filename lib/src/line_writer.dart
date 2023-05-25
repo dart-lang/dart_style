@@ -133,6 +133,7 @@ class LineWriter {
         if (splits.shouldSplitAt(i)) {
           _writeSplitBlock(chunk, splits.getColumn(i));
         } else {
+          // TODO: This comment isn't right.
           // This block didn't split (which implies none of the child blocks
           // of that block split either, recursively), so write them all inline.
           _writeUnsplitBlock(chunk, _blockIndentation);
@@ -149,6 +150,7 @@ class LineWriter {
           if (chunk.isDouble) _buffer.write(_lineEnding);
         }
 
+        // TODO: Optimize?
         _buffer.write(' ' * splits.getColumn(i));
       } else {
         if (chunk.spaceWhenUnsplit) _buffer.write(' ');

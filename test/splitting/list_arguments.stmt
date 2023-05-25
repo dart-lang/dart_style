@@ -15,6 +15,20 @@ longFunctionName(
   [element, element, element, element],
   [element, element, element, element]
 );
+>>> if list must split, can be block-like
+longFunctionName([element, element, element, element, element], [element, element, element, element], [element, element, element, element]);
+<<<
+longFunctionName(
+  [
+    element,
+    element,
+    element,
+    element,
+    element
+  ],
+  [element, element, element, element],
+  [element, element, element, element]
+);
 >>> trailing lists do not nest
 longFunctionName(argument, argument, argument, argument, [element, element, element, element], [element, element, element, element]);
 <<<
@@ -200,16 +214,12 @@ longFunctionName(
 >>> named args before and after list forces nesting
 method(a:first,b:[element, element, element, element],c:third);
 <<<
-method(
-  a: first,
-  b: [
-    element,
-    element,
-    element,
-    element
-  ],
-  c: third
-);
+method(a: first, b: [
+  element,
+  element,
+  element,
+  element
+], c: third);
 >>> mixed named and positional forces nesting
 method(a:first,[element, element, element, element],c:third);
 <<<
@@ -221,16 +231,12 @@ method(
 >>> mixed named and positional forces nesting
 method(a:first,b:[element, element, element, element],third);
 <<<
-method(
-  a: first,
-  b: [
-    element,
-    element,
-    element,
-    element
-  ],
-  third
-);
+method(a: first, b: [
+  element,
+  element,
+  element,
+  element
+], third);
 >>> nothing but named list args does not nest
 longFunctionName(a: [element, element, element, element],
 b: [element, element, element, element], c: [element, element, element, element]);
@@ -450,19 +456,15 @@ function(
 >>> don't force trailing method chain to split
 function([argument,]).method().method();
 <<<
-function(
-  [
-    argument,
-  ]
-).method().method();
+function([
+  argument,
+]).method().method();
 >>> if method chain splits, split before first too
 function([argument,]).method().method().method().method().method();
 <<<
-function(
-  [
-    argument,
-  ]
-) // TODO: Not sure about this.
+function([
+  argument,
+]) // TODO: Not sure about this.
     .method()
     .method()
     .method()

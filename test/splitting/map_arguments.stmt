@@ -1,15 +1,18 @@
 40 columns                              |
+>>> can be block-like
+method({key: longValue, otherKey: otherLongValue});
+<<<
+method({
+  key: longValue,
+  otherKey: otherLongValue
+});
 >>> args before and after map forces nesting
 method(first,{key: value, otherKey: otherLongValue},third);
 <<<
-method(
-  first,
-  {
-    key: value,
-    otherKey: otherLongValue
-  },
-  third
-);
+method(first, {
+  key: value,
+  otherKey: otherLongValue
+}, third);
 >>> nothing but map args does not nest
 longFunctionName({key: value, otherKey: otherLongValue},
 {key: value, otherKey: otherLongValue}, {key: value, otherKey: otherLongValue});
@@ -114,14 +117,10 @@ longFunctionName(
 >>> unsplit trailing args
 longFunctionName({key: value, otherKey: otherLongValue}, argument, argument);
 <<<
-longFunctionName(
-  {
-    key: value,
-    otherKey: otherLongValue
-  },
-  argument,
-  argument
-);
+longFunctionName({
+  key: value,
+  otherKey: otherLongValue
+}, argument, argument);
 >>> split before trailing args
 longFunctionName({key: value, otherKey: otherValue} /* very very long comment */,
 argument, argument);
@@ -279,11 +278,9 @@ obj.outer(
 >>> don't force trailing method chain to split
 function({key: value,}).method().method();
 <<<
-function(
-  {
-    key: value,
-  }
-).method().method();
+function({
+  key: value,
+}).method().method();
 >>> if method chain splits, split before first too
 function({key: value,}).method().method().method().method().method();
 <<<

@@ -160,16 +160,16 @@ longFunctionName(
 >>> format like a block in an argument list
 longFunctionName((element, element), (element, element, element, element, element));
 <<<
-longFunctionName((
-  element,
-  element
-), (
-  element,
-  element,
-  element,
-  element,
-  element
-));
+longFunctionName(
+  (element, element),
+  (
+    element,
+    element,
+    element,
+    element,
+    element
+  )
+);
 >>> format on one line in an argument list
 longFunctionName((element, element, element, element));
 <<<

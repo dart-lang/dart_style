@@ -44,6 +44,32 @@ extension AstNodeExtensions on AstNode {
 
   bool get isControlFlowElement => this is IfElement || this is ForElement;
 
+  /// Whether this node is an expression or pattern with an explicitly
+  /// delimited collection-like body.
+  bool get isDelimited {
+    if (this is ListLiteral ||
+        this is SetOrMapLiteral ||
+        this is RecordLiteral) {
+      return true;
+    }
+
+    if (this is ListPattern ||
+        this is MapPattern ||
+        this is ObjectPattern ||
+        this is RecordPattern) {
+      return true;
+    }
+
+    // Constant patterns whose body is a delimited expression are also
+    // delimited.
+    var node = this;
+    if (node is ConstantPattern) {
+      return node.expression.isDelimited;
+    }
+
+    return false;
+  }
+
   /// Whether this is immediately contained within an anonymous
   /// [FunctionExpression].
   bool get isFunctionExpressionBody =>

@@ -8,13 +8,17 @@ method(first, () {
 >>> nothing but function args does not nest
 longFunctionName(() {;}, () {;}, () {;});
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-}, () {
-  ;
-});
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> trailing functions do not nest
 longFunctionName(argument, argument, argument, argument, () {;}, () {;});
 <<<
@@ -60,11 +64,16 @@ longFunctionName(
 >>> unsplit leading args
 longFunctionName(arg, arg, () {;}, () {;});
 <<<
-longFunctionName(arg, arg, () {
-  ;
-}, () {
-  ;
-});
+longFunctionName(
+  arg,
+  arg,
+  () {
+    ;
+  },
+  () {
+    ;
+  }
+);
 >>> split before leading args
 longFunctionName(argument, argument, argument, () {;}, () {;});
 <<<
@@ -115,11 +124,16 @@ longFunctionName(
 >>> unsplit trailing args
 longFunctionName(() {;}, () {;}, argument, argument);
 <<<
-longFunctionName(() {
-  ;
-}, () {
-  ;
-}, argument, argument);
+longFunctionName(
+  () {
+    ;
+  },
+  () {
+    ;
+  },
+  argument,
+  argument
+);
 >>> split before trailing args
 longFunctionName(() {;}, () {;} /* very very long comment */, argument, argument);
 <<<

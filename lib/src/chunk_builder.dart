@@ -147,15 +147,16 @@ class ChunkBuilder {
   /// It is only `false` when writing the contents of a multiline string. There,
   /// we may *want* to have a series of empty chunks because those represent
   /// empty lines in the multiline string.
-  void write(String string, {bool mergeEmptySplits = true}) {
+  Chunk write(String string, {bool mergeEmptySplits = true}) {
     _emitPendingWhitespace(mergeEmptySplits: mergeEmptySplits);
-    _writeText(string);
+    var chunk = _writeText(string);
 
     _lazyRules.forEach(_activateRule);
     _lazyRules.clear();
 
     _nesting.commitNesting();
     _afterComment = false;
+    return chunk;
   }
 
   /// Writes one or two hard newlines.
@@ -573,18 +574,13 @@ class ChunkBuilder {
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
   ChunkBuilder startBlock(
-      {Chunk? argumentChunk,
-      bool indent = true,
-      bool space = false,
-      bool splitParentBlock = true}) {
+      {Rule? indentRule, bool indent = true, bool space = false}) {
     // Start a block chunk for the block. It will contain the chunks for the
     // contents of the block, and its own text will be the closing block
     // delimiter.
-    var chunk = BlockChunk(argumentChunk, _rules.last, _nesting.indentation,
-        _blockArgumentNesting.last,
-        space: space,
-        flushLeft: _pendingFlushLeft,
-        splitParentBlock: splitParentBlock);
+    var chunk = BlockChunk(
+        _rules.last, _nesting.indentation, _blockArgumentNesting.last,
+        space: space, flushLeft: _pendingFlushLeft, indentRule: indentRule);
     _chunks.add(chunk);
     _pendingFlushLeft = false;
 
@@ -626,9 +622,6 @@ class ChunkBuilder {
     // then force the block contents to split.
     if (_pendingNested) return true;
 
-    // TODO: Look for BlockRule here?
-    // TODO: This isn't correct for closures inside argument lists. Sometimes,
-    // those should not force the surrounding argument list to split.
     // If we don't already know if the block is going to split, see if it
     // contains any hard splits or is longer than a page.
     // var length = 0;
@@ -641,19 +634,10 @@ class ChunkBuilder {
       // if (length > _formatter.pageWidth) return true;
 
       // If the chunk isn't itself split, it doesn't split the block.
-      if (!chunk.rule.isHardened) continue;
-
       // If the split is really the implicit split separating block elements,
       // then that doesn't split the block since it only comes into play after
       // we've determined that the block should split.
-      if (chunk.rule == _rules.first) continue;
-
-      // If the chunk is a block for a closure that shouldn't cause the
-      // surrounding argument list to split, then ignore that the block itself
-      // is split.
-      if (chunk is BlockChunk && !chunk.splitParentBlock) continue;
-
-      return true;
+      if (chunk.rule.isHardened && chunk.rule != _rules.first) return true;
     }
 
     return false;
@@ -885,7 +869,7 @@ class ChunkBuilder {
 
   /// Writes [text] to either the current chunk or a new one if the current
   /// chunk is complete.
-  void _writeText(String text, [Chunk? chunk]) {
+  Chunk _writeText(String text, [Chunk? chunk]) {
     if (chunk == null) {
       if (_chunks.isEmpty) {
         _startChunk(NestingLevel(), isHard: true);
@@ -898,6 +882,7 @@ class ChunkBuilder {
     _pendingSpace = false;
 
     chunk.appendText(text);
+    return chunk;
   }
 
   Chunk _startChunk(NestingLevel nesting,

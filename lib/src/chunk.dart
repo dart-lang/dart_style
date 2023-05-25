@@ -159,13 +159,6 @@ class Chunk extends Selection {
     if (space != null) _spaceWhenUnsplit = space;
   }
 
-  /// Returns `true` if this chunk is a block whose children should be
-  /// expression indented given a set of rule values provided by [getValue].
-  ///
-  /// [getValue] takes a [Rule] and returns the chosen split state value for
-  /// that [Rule].
-  bool indentBlock(int Function(Rule) getValue) => false;
-
   /// Prevent the line splitter from diving at this chunk.
   ///
   /// This should be called on any chunk where line splitting choices before
@@ -217,50 +210,36 @@ class Chunk extends Selection {
 ///      |  '- (text)      "];"
 ///      '- (text)       "}"
 class BlockChunk extends Chunk {
-  // TODO: It doesn't look like this and everything relying on it is used
-  // anymore. Remove once I'm sure it's not needed.
-  /// If this block is for a collection literal in an argument list, this will
-  /// be the chunk preceding this literal argument.
-  ///
-  /// That chunk is owned by the argument list and if it splits, this collection
-  /// may need extra expression-level indentation.
-  final Chunk? argument;
-
-  /// Whether splitting this block's contents should cause a surrounding
-  /// parent block to split.
-  ///
-  /// This is generally true. For example, splitting a list literal inside
-  /// another list literal always causes the outer one to split. But in some
-  /// cases, like closures in argument lists, the closure may be split without
-  /// forcing the outer one, as in:
-  ///
-  ///     test('description', () {
-  ///       expect(1, 2);
-  ///     });
-  final bool splitParentBlock;
-
   /// The child chunks in this block.
   final List<Chunk> children = [];
 
-  BlockChunk(this.argument, super.rule, super.indent, super.nesting,
-      {required super.space,
-      required super.flushLeft,
-      required this.splitParentBlock})
+  /// Rule for the expression surrounding this block that determines whether
+  /// the block needs additional indentation when the rule splits.
+  ///
+  /// If this block is a function expression body inside a surrounding argument
+  /// list with block-like formatting, this is the rule for the argument list.
+  /// The way the argument list splits determines if the body of the function
+  /// literal needs to be indented or not:
+  ///
+  /// ```
+  /// // No indent:
+  /// function(argumentThatMaySplit, () {
+  ///   body;
+  /// });
+  ///
+  /// // Indent:
+  /// function(
+  ///   argumentThatMaySplit,
+  ///   () {
+  ///     body;
+  ///   }
+  /// );
+  /// ```
+  final Rule? indentRule;
+
+  BlockChunk(super.rule, super.indent, super.nesting,
+      {required super.space, required super.flushLeft, this.indentRule})
       : super(isDouble: false);
-
-  @override
-  bool indentBlock(int Function(Rule) getValue) {
-    var argument = this.argument;
-    if (argument == null) return false;
-
-    // There may be no rule if the block occurs inside a string interpolation.
-    // In that case, it's not clear if anything will look particularly nice, but
-    // expression nesting is probably marginally better.
-    var rule = argument.rule;
-    if (rule == Rule.dummy) return true;
-
-    return rule.isSplit(getValue(rule), argument);
-  }
 }
 
 /// The in-progress state for a [Span] that has been started but has not yet

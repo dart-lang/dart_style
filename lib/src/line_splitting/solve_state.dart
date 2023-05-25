@@ -1,6 +1,7 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import '../chunk.dart';
 import '../constants.dart';
 import '../debug.dart' as debug;
 import '../nesting_level.dart';
@@ -308,8 +309,12 @@ class SolveState {
           // And any expression nesting.
           indent += chunk.nesting.totalUsedIndent;
 
-          if (chunk.indentBlock(ruleValues.getValue)) {
-            indent += Indent.expression;
+          if (chunk is BlockChunk) {
+            var indentRule = chunk.indentRule;
+            if (indentRule != null &&
+                ruleValues.getValue(indentRule) != Rule.unsplit) {
+              indent += Indent.block;
+            }
           }
         }
 

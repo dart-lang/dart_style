@@ -17,6 +17,7 @@ void main() {
   // them once the other tests are passing and the formatter is working as
   // desired.
   // testDirectory('regression');
+  testDirectory('flutter');
   testDirectory('selections');
   testDirectory('splitting');
   testDirectory('whitespace');

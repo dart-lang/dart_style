@@ -22,21 +22,8 @@ class Cost {
   /// Splitting after a "=".
   static const assign = 2;
 
-  /// Splitting before the first argument when it happens to be a function
-  /// expression with a block body.
-  static const firstBlockArgument = 2;
-
-  /// The series of positional arguments.
-  static const positionalArguments = 2;
-
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;
-
-  /// Splitting the internals of block arguments.
-  ///
-  /// Used to prefer splitting at the argument boundary over splitting the block
-  /// contents.
-  static const splitBlocks = 2;
 
   /// Splitting on the "." in a named constructor.
   static const constructorName = 4;
@@ -61,4 +48,10 @@ class Indent {
 
   /// The number of spaces in a single level of expression nesting.
   static const expression = 4;
+
+  /// Argument lists get no indentation because the final `)` shouldn't be
+  /// indented.
+  ///
+  /// The arguments on preceding lines get +2 indentation on a per-chunk basis.
+  static const argumentList = 0;
 }
