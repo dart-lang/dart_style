@@ -10,17 +10,16 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-void main() {
-  testDirectory('comments');
+void main() async {
+  await testDirectory('comments');
   print('TODO: Migrate regression tests.');
   // TODO: Don't want to hand migrate these, so want to wait to auto-migrate
   // them once the other tests are passing and the formatter is working as
   // desired.
-  // testDirectory('regression');
-  testDirectory('flutter');
-  testDirectory('selections');
-  testDirectory('splitting');
-  testDirectory('whitespace');
+  // await testDirectory('regression');
+  await testDirectory('selections');
+  await testDirectory('splitting');
+  await testDirectory('whitespace');
 
   test('throws a FormatterException on failed parse', () {
     var formatter = DartFormatter();
