@@ -3,14 +3,14 @@
 var name = new Symbol("the first string" "the second");
 <<<
 var name = new Symbol(
-  "the first string" "the second"
+  "the first string" "the second",
 );
 >>> space-separated adjacent strings are split if they don't fit
 var name = new Symbol("the first very long string" "the second very longstring");
 <<<
 var name = new Symbol(
   "the first very long string"
-  "the second very longstring"
+  "the second very longstring",
 );
 >>> adjacent string lines all split together;
 var text = "first" "second" "third" "fourth" "fifth";
@@ -106,8 +106,9 @@ first +
 someFunction(someExtremelyLongArgumentName).clamp();
 <<<
 someFunction(
-  someExtremelyLongArgumentName
-).clamp();
+  someExtremelyLongArgumentName,
+)
+    .clamp();
 >>> wrap inside parenthesized
 (someVerylongIdentifier * someVerylongIdentifier);
 <<<

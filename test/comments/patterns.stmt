@@ -228,7 +228,7 @@ if (obj case ['a', // comment
 if (obj
     case [
       'a', // comment
-      'b'
+      'b',
     ]) {
   ;
 }
@@ -277,7 +277,7 @@ if (obj case {k: 'a', // comment
 if (obj
     case {
       k: 'a', // comment
-      m: 'b'
+      m: 'b',
     }) {
   ;
 }
@@ -304,7 +304,7 @@ second)){;}
 if (obj
     case (
       first, // comment
-      second
+      second,
     )) {
   ;
 }
@@ -331,7 +331,7 @@ second)){;}
 if (obj
     case Foo(
       first, // comment
-      second
+      second,
     )) {
   ;
 }
@@ -352,7 +352,7 @@ second)){;}
 if (obj
     case const Foo(
       first, // comment
-      second
+      second,
     )) {
   ;
 }

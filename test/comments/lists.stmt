@@ -65,7 +65,7 @@ var list = ['a', // comment
 <<<
 var list = [
   'a', // comment
-  'b'
+  'b',
 ];
 >>> line comments after last item
 var list = ['a' // 1
@@ -73,7 +73,7 @@ var list = ['a' // 1
 ];
 <<<
 var list = [
-  'a' // 1
+  'a', // 1
   // 2
 ];
 >>> line comments after trailing comma

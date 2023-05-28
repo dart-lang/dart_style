@@ -124,17 +124,13 @@ switch (obj) {
   case []:
   case <int>[]:
   case [_]:
-  case [
-      _,
-    ]:
+  case [_]:
   case [_, _]:
   case [...]:
   case [..._]:
   case [_, ...]:
   case [..., _]:
-  case [
-      ...,
-    ]:
+  case [...]:
     ok;
 }
 >>> map
@@ -153,9 +149,7 @@ switch (obj) {
   case {}:
   case <int, String>{}:
   case {k: _}:
-  case {
-      k: _,
-    }:
+  case {k: _}:
   case {k: 1, m: 2}:
   case {...}:
   case {k: _, ...}:
@@ -193,9 +187,7 @@ ok;
 switch (obj) {
   case Foo():
   case Foo(getter: pattern):
-  case Foo(
-      getter: pattern,
-    ):
+  case Foo(getter: pattern):
   case Foo(a: 1, b: 2, c: 3):
   case Foo(:var x, :var y):
   case Foo<int, String>(:var x, :var y):
@@ -215,9 +207,7 @@ ok;
 switch (obj) {
   case Foo():
   case Foo(getter: pattern):
-  case Foo(
-      getter: pattern,
-    ):
+  case Foo(getter: pattern):
   case Foo(a: 1, b: 2, c: 3):
   case Foo(:var x, :var y):
   case Foo<int, String>(:var x, :var y):
@@ -261,9 +251,7 @@ switch (obj) {
   case const Foo():
   case const Foo(field, another):
   case const Foo(field: value):
-  case const Foo(
-      field: value,
-    ):
+  case const Foo(field: value):
   case const Foo<int, String>(field):
     ok;
 }

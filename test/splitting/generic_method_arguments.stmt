@@ -48,7 +48,7 @@ lengthyMethodName<
     TypeArgument>(valueArgument);
 <<<
 lengthyMethodName<TypeArgument>(
-  valueArgument
+  valueArgument,
 );
 >>> split both type and value arguments
 lengthyMethodName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
@@ -70,7 +70,7 @@ lengthyMethodName<
   fifth,
   sixth,
   seventh,
-  eighth
+  eighth,
 );
 >>> in method chain
 receiver.method<First, Second, Third, Fourth, Fifth>
@@ -90,7 +90,7 @@ receiver
       second,
       third,
       fourth,
-      fifth
+      fifth,
     )
     .method<
       First,
@@ -103,5 +103,5 @@ receiver
       second,
       third,
       fourth,
-      fifth
+      fifth,
     );

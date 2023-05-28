@@ -11,13 +11,14 @@ switch (
     return "ok";
 }
 >>> block split in value
-switch ([1,]) {
+switch ([veryLongElement,veryLongElement,]) {
   case 0:
     return "ok";
 }
 <<<
 switch ([
-  1,
+  veryLongElement,
+  veryLongElement,
 ]) {
   case 0:
     return "ok";
@@ -159,13 +160,14 @@ switch (obj) {
 }
 >>> no split in pattern, block split in guard
 switch (obj) {
-  case constant when [element,]: body;
+  case constant when [veryLongElement,veryLongElement,]: body;
 }
 <<<
 switch (obj) {
   case constant
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
       ]:
     body;
 }
@@ -205,48 +207,55 @@ switch (obj) {
 }
 >>> expression split in pattern, block split in guard
 switch (obj) {
-  case veryLongPattern || reallyMustSplit when [element,]: body;
+  case veryLongPattern || reallyMustSplit when [veryLongElement,veryLongElement,]: body;
 }
 <<<
 switch (obj) {
   case veryLongPattern ||
           reallyMustSplit
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
       ]:
     body;
 }
 >>> block split in pattern
 switch (obj) {
-  case [element,]: body;
+  case [veryLongElement,veryLongElement,veryLongElement,]: body;
 }
 <<<
 switch (obj) {
   case [
-      element,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     ]:
     body;
 }
 >>> block split in pattern forces guard to split
 switch (obj) {
-  case [element,] when true: body;
+  case [veryLongElement,veryLongElement,veryLongElement,] when true: body;
 }
 <<<
 switch (obj) {
   case [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ]
       when true:
     body;
 }
 >>> block split in pattern, expression split in guard
 switch (obj) {
-  case [element,] when longCondition || anotherLongCondition: body;
+  case [veryLongElement,veryLongElement,veryLongElement,] when longCondition || anotherLongCondition: body;
 }
 <<<
 switch (obj) {
   case [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ]
       when longCondition ||
           anotherLongCondition:
@@ -254,15 +263,20 @@ switch (obj) {
 }
 >>> block split in pattern, block split in guard
 switch (obj) {
-  case [element,] when [element,]: body;
+  case [veryLongElement,veryLongElement,veryLongElement,] when
+  [veryLongElement,veryLongElement,veryLongElement,]: body;
 }
 <<<
 switch (obj) {
   case [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ]
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ]:
     body;
 }

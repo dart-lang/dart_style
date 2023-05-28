@@ -123,7 +123,7 @@ for (var [longIdentifier, anotherLongOne] in obj) {;}
 <<<
 for (var [
       longIdentifier,
-      anotherLongOne
+      anotherLongOne,
     ] in obj) {
   ;
 }
@@ -162,7 +162,7 @@ for (var [longIdentifier, anotherLongOne] = obj; cond; inc) {;}
 <<<
 for (var [
       longIdentifier,
-      anotherLongOne
+      anotherLongOne,
     ] = obj;
     cond;
     inc) {
@@ -175,7 +175,7 @@ aThirdOperand; cond; inc) {;}
 for (var (
       first,
       second,
-      third
+      third,
     ) = longValueExpression +
         anotherOperand +
         aThirdOperand;

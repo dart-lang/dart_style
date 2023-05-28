@@ -16,7 +16,7 @@
   third,
   fourth,
   fifth,
-  sixth
+  sixth,
 ];
 >>> splits outer lists even if they fit
 [[first], [], [
@@ -28,14 +28,14 @@
   [
     second,
     [third],
-    fourth
-  ]
+    fourth,
+  ],
 ];
 >>> split indirect outer
 [function([inner])];
 <<<
 [
-  function([inner])
+  function([inner]),
 ];
 >>> empty literal does not force outer split
 [[], {}, () {}];
@@ -55,8 +55,8 @@
     eighth,
     nine,
     tenth,
-    eleventh
-  ]
+    eleventh,
+  ],
 ];
 >>> force multi-line because of contained block
 [first, () {"fn";},third,fourth];
@@ -67,7 +67,7 @@
     "fn";
   },
   third,
-  fourth
+  fourth,
 ];
 >>> spaces between items
 [1,2,3,4];
@@ -76,9 +76,7 @@
 >>> trailing comma forces split
 [1 , ];
 <<<
-[
-  1,
-];
+[1];
 >>> trailing comma multiline
 [first, second, third, fourth, fifth, sixth  , ];
 <<<
@@ -101,11 +99,11 @@
           argument,
           argument,
           argument,
-          argument
-        ]
-      ]
-    ]
-  ]
+          argument,
+        ],
+      ],
+    ],
+  ],
 ];
 >>> preserve newlines in lists containing a line comment
 [
@@ -166,7 +164,7 @@
   // comment
   element,
 
-  element
+  element,
 ];
 >>> a spread list literal splits an outer list even if it fits
 var list = [1, ...[2, 3], 4];
@@ -174,7 +172,7 @@ var list = [1, ...[2, 3], 4];
 var list = [
   1,
   ...[2, 3],
-  4
+  4,
 ];
 >>> spread empty list does not force outer split
 var list = [1, ...[], 4];
@@ -190,7 +188,7 @@ var list = [
       long +
       spread +
       expression,
-  3
+  3,
 ];
 >>> spread cascade
 var list = [1, ...thing..cascade()..another(), 4];
@@ -200,7 +198,7 @@ var list = [
   ...thing
     ..cascade()
     ..another(),
-  4
+  4,
 ];
 >>> spread lambda
 var list = [1, ...() { body; }, 4];
@@ -210,7 +208,7 @@ var list = [
   ...() {
     body;
   },
-  4
+  4,
 ];
 >>> spread immediately invoked lambda
 var list = [1, ...() sync* { yield thing; }(), 4];
@@ -220,5 +218,5 @@ var list = [
   ...() sync* {
     yield thing;
   }(),
-  4
+  4,
 ];

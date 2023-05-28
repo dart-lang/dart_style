@@ -10,7 +10,7 @@
   ..toString(
     argument,
     argument,
-    argument
+    argument,
   );
 >>> multiple cascades get the same line when the method names are the same
 list
@@ -100,41 +100,52 @@ main() async {
     ..b();
 }
 >>> omit split if single section on list literal
-[1,]..addAll(more);
+[veryLongElement,veryLongElement,veryLongElement,]..addAll(more);
 <<<
 [
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 ]..addAll(more);
 >>> omit split if single section on map literal
-var map = {1:2,}..addAll(more);
+var map = {1: veryLongElement,2: veryLongElement,3: veryLongElement,}..addAll(more);
 <<<
 var map = {
-  1: 2,
+  1: veryLongElement,
+  2: veryLongElement,
+  3: veryLongElement,
 }..addAll(more);
 >>> omit split if single section on record literal
-(1,2,)..addAll(more);
+(veryLongElement,veryLongElement,veryLongElement,)..addAll(more);
 <<<
 (
-  1,
-  2,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 )..addAll(more);
 >>> omit split if single section on trailing comma call
-foo(1,)..addAll(more);
+foo(veryLongElement,veryLongElement,veryLongElement,)..addAll(more);
 <<<
 foo(
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 )..addAll(more);
 >>> omit split if single section on trailing comma constructor
-new Foo(1,)..addAll(more);
+new Foo(veryLongElement,veryLongElement,veryLongElement,)..addAll(more);
 <<<
 new Foo(
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 )..addAll(more);
 >>> omit split if single section on trailing comma expression call
-(foo)(1,)..addAll(more);
+(foo)(veryLongElement,veryLongElement,veryLongElement,)..addAll(more);
 <<<
 (foo)(
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 )..addAll(more);
 >>> allow keeping collection on one line and splitting cascade
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]..cascade();
@@ -148,10 +159,12 @@ new Foo(
   ;
 });
 >>> don't force cascade to split on collection target if target and arg split
-[1,]..cascade(() {;});
+[veryLongElement,veryLongElement,veryLongElement,]..cascade(() {;});
 <<<
 [
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 ]..cascade(() {
   ;
 });

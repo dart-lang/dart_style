@@ -112,6 +112,12 @@ class Chunk extends Selection {
   bool get spaceWhenUnsplit => _spaceWhenUnsplit;
   bool _spaceWhenUnsplit;
 
+  /// If this chunk should have a trailing comma inserted in it when the
+  /// subsequent chunk splits, then this is the position where the comma
+  /// should be inserted. Otherwise -1.
+  int get trailingCommaPosition => _trailingCommaPosition;
+  int _trailingCommaPosition = -1;
+
   /// Whether this chunk marks the end of a range of chunks that can be line
   /// split independently of the following chunks.
   bool get canDivide => _canDivide;
@@ -165,6 +171,12 @@ class Chunk extends Selection {
   /// and after this chunk relate to each other.
   void preventDivide() {
     _canDivide = false;
+  }
+
+  void writeTrailingComma() {
+    // Should only bind this once.
+    assert(_trailingCommaPosition == -1);
+    _trailingCommaPosition = text.length;
   }
 
   @override

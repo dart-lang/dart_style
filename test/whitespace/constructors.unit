@@ -79,21 +79,21 @@ class Foo {
   Foo(
     super.a,
     int super.b,
-    int super.bar()
+    int super.bar(),
   );
   Foo.optional([
     super.a,
     int super.b = 123,
-    int super.bar()
+    int super.bar(),
   ]);
   Foo.named({
     required super.a,
     int super.b: 123,
-    required int super.bar()
+    required int super.bar(),
   });
   Foo.other(
     final int super.x,
-    super.bar()?
+    super.bar()?,
   );
 }
 >>> align initializers when split parameter list has no optional section
@@ -105,7 +105,7 @@ class Foo {
   Foo(
     parameter1,
     parameter2,
-    parameter3
+    parameter3,
   ) : initializer1 = 1,
       initializer2 = 2;
 }
@@ -118,7 +118,7 @@ class Foo {
   Foo(
     parameter1, [
     parameter2,
-    parameter3
+    parameter3,
   ]) : initializer1 = 1,
        initializer2 = 2;
 }
@@ -131,7 +131,7 @@ class Foo {
   Foo(
     parameter1, {
     parameter2,
-    parameter3
+    parameter3,
   }) : initializer1 = 1,
        initializer2 = 2;
 }

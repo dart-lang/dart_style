@@ -141,17 +141,13 @@ main() {
 >>> comment before "]" with trailing comma
 function([parameter,/* c */]) {;}
 <<<
-function([
-  parameter, /* c */
-]) {
+function([parameter /* c */]) {
   ;
 }
 >>> comment before ")" with trailing comma
 function([parameter,]/* c */) {;}
 <<<
-function([
-  parameter,
-] /* c */) {
+function([parameter] /* c */) {
   ;
 }
 >>>
@@ -165,7 +161,7 @@ function(
   /* comment */ int a,
   int b,
   int c, [
-  direction
+  direction,
 ]) {
   ;
 }
@@ -178,7 +174,7 @@ function(
 function(
   /* comment */ int a,
   int b,
-  int c
+  int c,
 ) {
   ;
 }
@@ -192,7 +188,7 @@ function(
   /* comment */ int a,
   int b,
   int c,
-  int d
+  int d,
 ) {
   ;
 }
@@ -204,7 +200,7 @@ function([
 <<<
 function([
   // comment
-  a
+  a,
 ]) {
   ;
 }
@@ -216,7 +212,7 @@ function({
 <<<
 function({
   // comment
-  a
+  a,
 }) {
   ;
 }

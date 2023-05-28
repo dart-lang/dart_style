@@ -3,7 +3,7 @@
 someLongFunctionName__________________(() x) {}
 <<<
 someLongFunctionName__________________(
-  () x
+  () x,
 ) {}
 >>> unsplit short single positional field
 (TypeName,) x;
@@ -13,7 +13,7 @@ someLongFunctionName__________________(
 function((VeryLongTypeName____________,) x) {;}
 <<<
 function(
-  (VeryLongTypeName____________,) x
+  (VeryLongTypeName____________,) x,
 ) {
   ;
 }
@@ -23,7 +23,7 @@ function((VeryLongTypeName___________________,) param) {;}
 function(
   (
     VeryLongTypeName___________________,
-  ) param
+  ) param,
 ) {
   ;
 }
@@ -32,7 +32,7 @@ function(
 <<<
 (
   LongTypeName,
-  LongTypeName
+  LongTypeName,
 ) longVariableName;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName) x;
@@ -41,7 +41,7 @@ function(
   TypeName,
   TypeName,
   TypeName,
-  TypeName
+  TypeName,
 ) x;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName,TypeName) x;
@@ -51,7 +51,7 @@ function(
   TypeName,
   TypeName,
   TypeName,
-  TypeName
+  TypeName,
 ) x;
 >>> split named
 ({TypeName a,TypeName b,TypeName c,TypeName d}) x;
@@ -60,7 +60,7 @@ function(
   TypeName a,
   TypeName b,
   TypeName c,
-  TypeName d
+  TypeName d,
 }) x;
 >>> split named if positional splits
 (TypeName,TypeName,TypeName,TypeName,{TypeName a,TypeName b}) x;
@@ -71,7 +71,7 @@ function(
   TypeName,
   TypeName, {
   TypeName a,
-  TypeName b
+  TypeName b,
 }) x;
 >>> split positional if named splits
 (TypeName,TypeName,{TypeName a,TypeName b,TypeName c,TypeName d}) x;
@@ -82,21 +82,16 @@ function(
   TypeName a,
   TypeName b,
   TypeName c,
-  TypeName d
+  TypeName d,
 }) x;
 >>> always split named with trailing comma
 ({int n,}) x;
 <<<
-({
-  int n,
-}) x;
+({int n}) x;
 >>> split positional with trailing comma if more than one
 (int m, int n,) x;
 <<<
-(
-  int m,
-  int n,
-) x;
+(int m, int n) x;
 >>> split outer record if inner record splits
 ((TypeName,TypeName,TypeName,TypeName),TypeName) x;
 <<<
@@ -105,9 +100,9 @@ function(
     TypeName,
     TypeName,
     TypeName,
-    TypeName
+    TypeName,
   ),
-  TypeName
+  TypeName,
 ) x;
 >>> split outer type argument list if inner record splits
 Map<String, (TypeName,TypeName,TypeName,TypeName)> map;
@@ -118,7 +113,7 @@ Map<
     TypeName,
     TypeName,
     TypeName,
-    TypeName
+    TypeName,
   )
 > map;
 >>> inside parameter list
@@ -130,8 +125,8 @@ function(
     TypeName,
     TypeName,
     TypeName,
-    TypeName
-  ) record
+    TypeName,
+  ) record,
 ) {
   ;
 }
@@ -144,45 +139,26 @@ function((TypeName,) record) {
 >>> named parameter trailing comma inside parameter list
 function(({TypeName param,}) record) {;}
 <<<
-function(
-  ({
-    TypeName param,
-  }) record
-) {
+function(({TypeName param}) record) {
   ;
 }
 >>> field formal parameter trailing comma inside parameter list
 class C { C((TypeName,TypeName,) this.record) {;} }
 <<<
 class C {
-  C(
-    (
-      TypeName,
-      TypeName,
-    ) this.record
-  ) {
+  C((TypeName, TypeName) this.record) {
     ;
   }
 }
 >>> inside trailing comma parameter list
 function((TypeName,TypeName,) record,) {;}
 <<<
-function(
-  (
-    TypeName,
-    TypeName,
-  ) record,
-) {
+function((TypeName, TypeName) record) {
   ;
 }
 >>> trailing comma inside trailing comma parameter list
 function((TypeName,TypeName,) record,) {;}
 <<<
-function(
-  (
-    TypeName,
-    TypeName,
-  ) record,
-) {
+function((TypeName, TypeName) record) {
   ;
 }

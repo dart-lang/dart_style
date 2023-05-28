@@ -30,7 +30,7 @@ y) = o;
 <<<
 var (
   x, // c
-  y
+  y,
 ) = o;
 >>> in infix pattern in pattern assignment
 var (x &&// c

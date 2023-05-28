@@ -1,0 +1,29 @@
+40 columns                              |
+>>> remove from enum value list if unsplit
+enum E {
+  a,
+  b,
+}
+<<<
+enum E { a, b }
+>>> add to enum value list if split
+enum E { longArgument1, veryLongArgument2 }
+<<<
+enum E {
+  longArgument1,
+  veryLongArgument2,
+}
+>>> remove from enum value list with semicolon
+enum E {
+  a,
+  b,
+  ;
+  void method() {}
+}
+<<<
+enum E {
+  a,
+  b;
+
+  void method() {}
+}

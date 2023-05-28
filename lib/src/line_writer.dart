@@ -156,7 +156,8 @@ class LineWriter {
         if (chunk.spaceWhenUnsplit) _buffer.write(' ');
       }
 
-      _writeChunk(chunk);
+      _writeChunk(chunk,
+          splitAfter: i + 1 >= chunks.length || splits.shouldSplitAt(i + 1));
     }
 
     return splits.cost;
@@ -189,7 +190,7 @@ class LineWriter {
         if (chunk is BlockChunk) _writeUnsplitBlock(chunk, column);
       }
 
-      _writeChunk(chunk);
+      _writeChunk(chunk, splitAfter: false);
     }
   }
 
@@ -214,16 +215,37 @@ class LineWriter {
 
   /// Writes [chunk] to the output and updates the selection if the chunk
   /// contains a selection marker.
-  void _writeChunk(Chunk chunk) {
+  void _writeChunk(Chunk chunk, {required bool splitAfter}) {
     if (chunk.selectionStart != null) {
       _selectionStart = length + chunk.selectionStart!;
+
+      // Adjust the selection past the trailing comma if there is one.
+      if (splitAfter &&
+          chunk.trailingCommaPosition != -1 &&
+          chunk.trailingCommaPosition <= chunk.selectionStart!) {
+        _selectionStart = _selectionStart! + 1;
+      }
     }
 
     if (chunk.selectionEnd != null) {
       _selectionEnd = length + chunk.selectionEnd!;
+
+      // Adjust the selection past the trailing comma if there is one.
+      if (splitAfter &&
+          chunk.trailingCommaPosition != -1 &&
+          chunk.trailingCommaPosition <= chunk.selectionEnd!) {
+        _selectionEnd = _selectionEnd! + 1;
+      }
     }
 
-    _buffer.write(chunk.text);
+    if (chunk.trailingCommaPosition == -1 || !splitAfter) {
+      _buffer.write(chunk.text);
+    } else {
+      // Insert the trailing comma.
+      _buffer.write(chunk.text.substring(0, chunk.trailingCommaPosition));
+      _buffer.write(',');
+      _buffer.write(chunk.text.substring(chunk.trailingCommaPosition));
+    }
   }
 }
 

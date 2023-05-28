@@ -180,6 +180,13 @@ class ChunkBuilder {
     _pendingSpace = true;
   }
 
+  void writeTrailingComma() {
+    // Write an empty string to ensure we have a chunk and all the pending stuff
+    // is flushed.
+    var chunk = write('');
+    chunk.writeTrailingComma();
+  }
+
   /// Write a split owned by the current innermost rule.
   ///
   /// If [nest] is `false`, ignores any current expression nesting. Otherwise,
@@ -605,6 +612,7 @@ class ChunkBuilder {
   /// [forceSplit] is `true`, the block always splits.
   ///
   /// Returns the previous writer for the surrounding block.
+  // TODO: Flip default value for forceSplit?
   ChunkBuilder endBlock({bool forceSplit = true}) {
     _divideChunks();
 
@@ -734,6 +742,8 @@ class ChunkBuilder {
     }
 
     // A block comment following a comma probably refers to the following item.
+    // TODO: Consider doing something smarter with trailing commas here. Should
+    // we comments before/after them?
     var text = chunk.text;
     if (text.endsWith(',') && comment.type == CommentType.inlineBlock) {
       return null;
@@ -772,6 +782,8 @@ class ChunkBuilder {
   ///     character (`(`, `[`, or `{`). This is to allow `foo(/* comment */)`,
   ///     et. al.
   bool _needsSpaceBeforeComment(SourceComment comment, Chunk chunk) {
+    // TODO: Consider doing something smarter with trailing commas here. Should
+    // we comments before/after them?
     // Not at the beginning of a line.
     var text = chunk.text;
     if (text.isEmpty) return false;
@@ -792,6 +804,8 @@ class ChunkBuilder {
   /// Returns `true` if a space should be output after the last comment which
   /// was just written and the token that will be written.
   bool _needsSpaceAfterComment(SourceComment comment, String token) {
+    // TODO: Consider doing something smarter with trailing commas here. Should
+    // we comments before/after them?
     // Not at the beginning of a line.
     if (_chunks.last.text.isEmpty) return false;
 

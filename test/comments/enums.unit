@@ -15,7 +15,7 @@ enum A {
   B,
 
   // comment
-  C
+  C,
 
   // comment
 }
@@ -35,7 +35,7 @@ enum A {
   B,
 
   /* comment */
-  C
+  C,
 
   /* comment */
 }
@@ -50,7 +50,7 @@ enum A {
 <<<
 enum A {
   // comment
-  B
+  B,
 }
 >>> remove blank lines after end of body
 enum A {
@@ -62,7 +62,7 @@ enum A {
 }
 <<<
 enum A {
-  B
+  B,
   // comment
 }
 >>> ensure blank line above doc comments
@@ -94,5 +94,5 @@ enum Foo {
 <<<
 enum Foo {
   a,
-  b // comment
+  b, // comment
 }

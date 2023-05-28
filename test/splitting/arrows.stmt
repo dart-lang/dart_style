@@ -3,7 +3,7 @@
 doSomethingWithFn((argument) => functionBodyTooLong());
 <<<
 doSomethingWithFn(
-  (argument) => functionBodyTooLong()
+  (argument) => functionBodyTooLong(),
 );
 >>> newline before fn expression should not force => to split
 {
@@ -19,7 +19,7 @@ doSomethingWithFn(
 SomeLongFunctionName(
   (longParameterName______) =>
       <LongTypeArgument>[
-    longListElement,
+    longListElement,longListElement,longListElement,
   ],
 );
 <<<
@@ -27,6 +27,8 @@ SomeLongFunctionName(
   (longParameterName______) => <
     LongTypeArgument
   >[
+    longListElement,
+    longListElement,
     longListElement,
   ],
 );

@@ -61,12 +61,14 @@ e = switch (
   0 => "ok"
 };
 >>> block split in value doesn't force body to split
-e = switch ([1,]) {
+e = switch ([veryLongElement,veryLongElement,veryLongElement,]) {
   0 => "ok"
 };
 <<<
 e = switch ([
-  1,
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
 ]) {
   0 => "ok"
 };
@@ -137,13 +139,15 @@ e = switch (obj) {
 };
 >>> no split in pattern, block split in guard
 e = switch (obj) {
-  constant when [element,] => body
+  constant when [veryLongElement,veryLongElement,veryLongElement,] => body
 };
 <<<
 e = switch (obj) {
   constant
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ] =>
     body
 };
@@ -183,14 +187,16 @@ e = switch (obj) {
 };
 >>> expression split in pattern, block split in guard
 e = switch (obj) {
-  veryLongPattern && reallyMustSplitAgain when [element,] => body
+  veryLongPattern && reallyMustSplitAgain when [veryLongElement,veryLongElement,veryLongElement,] => body
 };
 <<<
 e = switch (obj) {
   veryLongPattern &&
           reallyMustSplitAgain
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ] =>
     body
 };
@@ -229,14 +235,16 @@ e = switch (obj) {
 };
 >>> outermost logic-or split in pattern, block split in guard
 e = switch (obj) {
-  veryLongPattern || reallyMustSplitAgain when [element,] => body
+  veryLongPattern || reallyMustSplitAgain when [veryLongElement,veryLongElement,veryLongElement,] => body
 };
 <<<
 e = switch (obj) {
   veryLongPattern ||
   reallyMustSplitAgain
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ] =>
     body
 };
@@ -248,41 +256,47 @@ e = switch (obj) {
 e = switch (obj) {
   Foo(
     veryVeryLongPattern ||
-        reallyMustSplit
+        reallyMustSplit,
   ) =>
     body
 };
 >>> block split in pattern
 e = switch (obj) {
-  [element,] => body
+  [veryLongElement,veryLongElement,veryLongElement,] => body
 };
 <<<
 e = switch (obj) {
   [
-    element,
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
   ] =>
     body
 };
 >>> block split in pattern forces guard to split
 e = switch (obj) {
-  [element,] when true => body
+  [veryLongElement,veryLongElement,veryLongElement,] when true => body
 };
 <<<
 e = switch (obj) {
   [
-    element,
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
   ]
       when true =>
     body
 };
 >>> block split in pattern, expression split in guard
 e = switch (obj) {
-  [element,] when longCondition || anotherLongCondition => body
+  [veryLongElement,veryLongElement,veryLongElement,] when longCondition || anotherLongCondition => body
 };
 <<<
 e = switch (obj) {
   [
-    element,
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
   ]
       when longCondition ||
           anotherLongCondition =>
@@ -290,27 +304,33 @@ e = switch (obj) {
 };
 >>> block split in pattern, block split in guard
 e = switch (obj) {
-  [element,] when [element,] => body
+  [veryLongElement,veryLongElement,veryLongElement,] when
+  [veryLongElement,veryLongElement,veryLongElement,] => body
 };
 <<<
 e = switch (obj) {
   [
-    element,
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
   ]
       when [
-        element,
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
       ] =>
     body
 };
 >>> unsplit pattern with trailing comma argument list body
 e = switch (obj) {
-  pattern => function(argument, argument,)
+  pattern => function(veryLongElement,veryLongElement,veryLongElement,)
 };
 <<<
 e = switch (obj) {
   pattern => function(
-      argument,
-      argument,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     )
 };
 >>> don't indent || patterns when outermost in switch expression
@@ -333,13 +353,13 @@ e = switch (obj) {
   [
     oneConstant ||
         twoConstant ||
-        threeConstant
+        threeConstant,
   ] =>
     body
 };
 >>> split pattern with trailing comma argument list body
 e = switch (obj) {
-  pattern || anotherPattern || aThirdOne => function(argument, argument,)
+  pattern || anotherPattern || aThirdOne => function(veryLongElement,veryLongElement,veryLongElement,)
 };
 <<<
 e = switch (obj) {
@@ -347,13 +367,14 @@ e = switch (obj) {
   anotherPattern ||
   aThirdOne =>
     function(
-      argument,
-      argument,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     )
 };
 >>> trailing comma argument list body with switch inside => function body
 longFunctionName(veryLongParameter) => switch (obj) {
-  oneConstant || twoConstant || threeConstant => function(argument, argument,)
+  oneConstant || twoConstant || threeConstant => function(veryLongElement,veryLongElement,veryLongElement,)
 };
 <<<
 longFunctionName(veryLongParameter) =>
@@ -362,7 +383,8 @@ longFunctionName(veryLongParameter) =>
       twoConstant ||
       threeConstant =>
         function(
-          argument,
-          argument,
+          veryLongElement,
+          veryLongElement,
+          veryLongElement,
         )
     };

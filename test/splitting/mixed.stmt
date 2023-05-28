@@ -3,7 +3,7 @@
 sendPort.send({'type': 'error', 'error': 'oops'});
 <<<
 sendPort.send(
-  {'type': 'error', 'error': 'oops'}
+  {'type': 'error', 'error': 'oops'},
 );
 >>> prefers to wrap before "."
 new Future.sync(() => callback('msg')).then(
@@ -16,7 +16,7 @@ new Future.sync(() => callback('msg'))
 Stream readInput(AssetId id) => future((input) => input.read());
 <<<
 Stream readInput(AssetId id) => future(
-  (input) => input.read()
+  (input) => input.read(),
 );
 >>> nested expression indentation
 someFunctionName(argument, argument, argument,
@@ -29,8 +29,8 @@ someFunctionName(
   someOtherFunction(
     argument,
     argument,
-    arg
-  )
+    arg,
+  ),
 );
 >>> does not extra indent when multiple levels of nesting happen on one line
 someFunctionName(argument, argument, argument,
@@ -42,9 +42,9 @@ someFunctionName(
   argument,
   some(
     other(
-      function(argument, argument, arg)
-    )
-  )
+      function(argument, argument, arg),
+    ),
+  ),
 );
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
@@ -53,11 +53,11 @@ callSomeMethod(
   innerFunction(
     argument,
     argument,
-    argument
+    argument,
   ),
   argument,
   argument,
-  argument
+  argument,
 );
 >>> function inside a collection
 [item, obj.method(argument).method(argument).method(() {body;}).another().another()];
@@ -71,7 +71,7 @@ callSomeMethod(
         body;
       })
       .another()
-      .another()
+      .another(),
 ];
 >>> function inside an argument list
 function(argument, obj.method(argument).method(argument).method(() {body;}).another().another());
@@ -85,7 +85,7 @@ function(
         body;
       })
       .another()
-      .another()
+      .another(),
 );
 >>> unnested function inside nested expression
 function(argument, function(() {;}));
@@ -94,7 +94,7 @@ function(
   argument,
   function(() {
     ;
-  })
+  }),
 );
 >>> nested function inside nested expression
 function(argument, function(() {;}, argument, () {;}));
@@ -108,8 +108,8 @@ function(
     argument,
     () {
       ;
-    }
-  )
+    },
+  ),
 );
 >>> wrap before =>
 receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier);
@@ -117,7 +117,7 @@ receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier)
 receiver.firstMethod().next(
   (parameter) =>
       longIdentifier ==
-      veryLongIdentifier
+      veryLongIdentifier,
 );
 >>> wrap after =>
 receiver.firstMethod().next(() => veryveryveryverylongIdentifier == veryLongIdentifier);
@@ -125,20 +125,20 @@ receiver.firstMethod().next(() => veryveryveryverylongIdentifier == veryLongIden
 receiver.firstMethod().next(
   () =>
       veryveryveryverylongIdentifier ==
-      veryLongIdentifier
+      veryLongIdentifier,
 );
 >>> wrap at nested binary operator
 receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(
   longIdentifier ==
-      veryLongIdentifier
+      veryLongIdentifier,
 );
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
 receiver.first(
-  [listItem, secondItem, thirdItem]
+  [listItem, secondItem, thirdItem],
 ).second();
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem, fourthItem]).second();
@@ -147,7 +147,7 @@ receiver.first([
   listItem,
   secondItem,
   thirdItem,
-  fourthItem
+  fourthItem,
 ]).second();
 >>> list at end of method chain
 receiver.first().second([listItem, secondItem, thirdItem, fourthItem]);
@@ -156,7 +156,7 @@ receiver.first().second([
   listItem,
   secondItem,
   thirdItem,
-  fourthItem
+  fourthItem,
 ]);
 >>> binary operators in ascending precedence
 {
@@ -265,5 +265,5 @@ veryLongFunction(
     Third,
     Fourth
   >,
-  argument
+  argument,
 );

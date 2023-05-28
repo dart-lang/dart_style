@@ -35,7 +35,7 @@ longFunction(
   },
   c: () {
     ;
-  }
+  },
 );
 >>>
 longFunctionName(

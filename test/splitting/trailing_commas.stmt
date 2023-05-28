@@ -1,0 +1,231 @@
+40 columns                              |
+>>> remove from arg list if unsplit
+function(
+  1,
+  2,
+);
+<<<
+function(1, 2);
+>>> add to arg list if split
+function(longArgument1, veryLongArgument2);
+<<<
+function(
+  longArgument1,
+  veryLongArgument2,
+);
+>>> remove from assert arg list if unsplit
+assert(
+  1,
+  2,
+);
+<<<
+assert(1, 2);
+>>> add to assert arg list if split
+assert(longArgument1, veryLongArgument2);
+<<<
+assert(
+  longArgument1,
+  veryLongArgument2,
+);
+>>> remove from list if unsplit
+var list = [
+  1,
+  2,
+];
+<<<
+var list = [1, 2];
+>>> add to list if split
+var list = [longArgument1, veryLongArgument2];
+<<<
+var list = [
+  longArgument1,
+  veryLongArgument2,
+];
+>>> remove from map if unsplit
+var map = {
+  1: a,
+  2: b,
+};
+<<<
+var map = {1: a, 2: b};
+>>> add to map if split
+var map = {1: longArgument1, 2: veryLongArgument2};
+<<<
+var map = {
+  1: longArgument1,
+  2: veryLongArgument2,
+};
+>>> remove from set if unsplit
+var set = {
+  1,
+  2,
+};
+<<<
+var set = {1, 2};
+>>> add to set if split
+var set = {longArgument1, veryLongArgument2};
+<<<
+var set = {
+  longArgument1,
+  veryLongArgument2,
+};
+>>> remove from record if unsplit
+var record = (
+  1,
+  2,
+);
+<<<
+var record = (1, 2);
+>>> add to record if split
+var record = (longArgument1, veryLongArgument2);
+<<<
+var record = (
+  longArgument1,
+  veryLongArgument2,
+);
+>>> remove from mandatory param list if unsplit
+function(
+  a,
+  b,
+) {;}
+<<<
+function(a, b) {
+  ;
+}
+>>> add to mandatory param list if split
+function(longArgument1, veryLongArgument2) {;}
+<<<
+function(
+  longArgument1,
+  veryLongArgument2,
+) {
+  ;
+}
+>>> remove from optional param list if unsplit
+function([
+  a,
+  b,
+]) {;}
+<<<
+function([a, b]) {
+  ;
+}
+>>> add to optional param list if split
+function([longArgument1, veryLongArgument2]) {;}
+<<<
+function([
+  longArgument1,
+  veryLongArgument2,
+]) {
+  ;
+}
+>>> remove from named param list if unsplit
+function({
+  a,
+  b,
+}) {;}
+<<<
+function({a, b}) {
+  ;
+}
+>>> add to named param list if split
+function({longArgument1, veryLongArgument2}) {;}
+<<<
+function({
+  longArgument1,
+  veryLongArgument2,
+}) {
+  ;
+}
+>>> remove from record pattern if unsplit
+if (e case (a, b,)) {}
+<<<
+if (e case (a, b)) {}
+>>> add to record pattern if split
+if (e case (longPattern1, veryLongPattern2)) {}
+<<<
+if (e
+    case (
+      longPattern1,
+      veryLongPattern2,
+    )) {}
+>>> remove from list pattern if unsplit
+if (e case [a, b,]) {}
+<<<
+if (e case [a, b]) {}
+>>> add to list pattern if split
+if (e case [longPattern1, veryLongPattern2]) {}
+<<<
+if (e
+    case [
+      longPattern1,
+      veryLongPattern2,
+    ]) {}
+>>> remove from map pattern if unsplit
+if (e case {a: 1, b: 2,}) {}
+<<<
+if (e case {a: 1, b: 2}) {}
+>>> add to map pattern if split
+if (e case {a: longPattern1, b: veryLongPattern2}) {}
+<<<
+if (e
+    case {
+      a: longPattern1,
+      b: veryLongPattern2,
+    }) {}
+>>> remove from object pattern if unsplit
+if (e case Foo(a, b,)) {}
+<<<
+if (e case Foo(a, b)) {}
+>>> add to object pattern if split
+if (e case Foo(longPattern1, veryLongPattern2)) {}
+<<<
+if (e
+    case Foo(
+      longPattern1,
+      veryLongPattern2,
+    )) {}
+>>> remove trailing comma from chunk that isn't owned by arg list
+function(
+  1,
+  2 + 3,
+);
+<<<
+function(1, 2 + 3);
+>>> add trailing comma to chunk that isn't owned by arg list
+function(longArgument1, veryLongArgument2 + 3);
+<<<
+function(
+  longArgument1,
+  veryLongArgument2 + 3,
+);
+>>> add trailing comma to chunk that isn't owned by arg list that splits
+function(longArgument1, veryLongArgument2 + veryVeryVeryLongOperand3);
+<<<
+function(
+  longArgument1,
+  veryLongArgument2 +
+      veryVeryVeryLongOperand3,
+);
+>>> include trailing comma size when splitting
+outer(
+  argument,
+  inner(argument_______________________)
+);
+<<<
+outer(
+  argument,
+  inner(
+    argument_______________________,
+  ),
+);
+>>> include trailing comma size when splitting
+outer([
+  inner(argument_______________________)
+]);
+<<<
+outer([
+  inner(
+    argument_______________________,
+  ),
+]);

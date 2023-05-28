@@ -6,7 +6,7 @@ var set = {
   1,
   if (veryLongConditionExpression ||
       anotherPart)
-    2
+    2,
 };
 >>> without else on one line
 var set = {1, if (c) 2, 3};
@@ -20,7 +20,7 @@ var set = {1, if (c) 2 else 2, 3};
 var set = {if (c) somewhatLongThingHere};
 <<<
 var set = {
-  if (c) somewhatLongThingHere
+  if (c) somewhatLongThingHere,
 };
 >>> one line in multi-line
 var set = {veryLongThingThatForcesASplit, if (c) 2, 3};
@@ -28,7 +28,7 @@ var set = {veryLongThingThatForcesASplit, if (c) 2, 3};
 var set = {
   veryLongThingThatForcesASplit,
   if (c) 2,
-  3
+  3,
 };
 >>> one line in multi-line with else
 var set = {veryLongThingThatForcesASplit, if (c) 2 else 2, 3};
@@ -36,7 +36,7 @@ var set = {veryLongThingThatForcesASplit, if (c) 2 else 2, 3};
 var set = {
   veryLongThingThatForcesASplit,
   if (c) 2 else 2,
-  3
+  3,
 };
 >>> long then branch forces split
 var set = {1, if (condition) veryLongThingThatForcesASplit, 3};
@@ -45,7 +45,7 @@ var set = {
   1,
   if (condition)
     veryLongThingThatForcesASplit,
-  3
+  3,
 };
 >>> long then branch forces both to split
 var set = {1, if (condition) veryLongThingThatForcesASplit else 2, 3};
@@ -56,7 +56,7 @@ var set = {
     veryLongThingThatForcesASplit
   else
     2,
-  3
+  3,
 };
 >>> long else branch forces both to split
 var set = {1, if (condition) 2 else veryLongThingThatForcesASplit, 3};
@@ -67,86 +67,53 @@ var set = {
     2
   else
     veryLongThingThatForcesASplit,
-  3
+  3,
 };
 >>> trailing comma
 var set = {if (c) 2,};
 <<<
-var set = {
-  if (c) 2,
-};
+var set = {if (c) 2};
 >>> spread list inside if stays on one line if it fits
 var set = {if (c) ...{1, 2}};
 <<<
 var set = {
-  if (c) ...{1, 2}
+  if (c) ...{1, 2},
 };
 >>> spread list inside if formats like block if it splits
 var set = {if (c) ...{1, 2,}};
 <<<
 var set = {
-  if (c) ...{
-    1,
-    2,
-  }
+  if (c) ...{1, 2},
 };
 >>> both spreads split if then must
 var set = {if (c) ...{1, 2,} else ...{1, 2}};
 <<<
 var set = {
-  if (c) ...{
-    1,
-    2,
-  } else ...{
-    1,
-    2
-  }
+  if (c) ...{1, 2} else ...{1, 2},
 };
 >>> both spreads split if else must
 var set = {if (c) ...{1, 2} else ...{1, 2,}};
 <<<
 var set = {
-  if (c) ...{
-    1,
-    2
-  } else ...{
-    1,
-    2,
-  }
+  if (c) ...{1, 2} else ...{1, 2},
 };
 >>> a split collection that isn't spread wraps and indents
 var set = {if (c) {1,2,}};
 <<<
 var set = {
-  if (c)
-    {
-      1,
-      2,
-    }
+  if (c) {1, 2},
 };
 >>> a split collection that isn't spread wraps and indents
 var set = {if (c) {1,2,} else thing};
 <<<
 var set = {
-  if (c)
-    {
-      1,
-      2,
-    }
-  else
-    thing
+  if (c) {1, 2} else thing,
 };
 >>> a split collection that isn't spread wraps and indents
 var set = {if (c) thing else {1,2,}};
 <<<
 var set = {
-  if (c)
-    thing
-  else
-    {
-      1,
-      2,
-    }
+  if (c) thing else {1, 2},
 };
 >>> lambda inside then
 var set = {if (c) () { body; }};
@@ -155,7 +122,7 @@ var set = {
   if (c)
     () {
       body;
-    }
+    },
 };
 >>> lambda inside else
 var set = {if (c) thing else () { body; }};
@@ -166,27 +133,28 @@ var set = {
   else
     () {
       body;
-    }
+    },
 };
 >>> nested if splits outer
 var set = {if (c) if (d) thing};
 <<<
 var set = {
   if (c)
-    if (d) thing
+    if (d) thing,
 };
 >>> split collection before body
 var set = {if (c) longThingHereThatIsLong};
 <<<
 var set = {
-  if (c) longThingHereThatIsLong
+  if (c) longThingHereThatIsLong,
 };
 >>> just split outer if
 var set = {if (condition) if (another) longThingHereThatIsLong};
 <<<
 var set = {
   if (condition)
-    if (another) longThingHereThatIsLong
+    if (another)
+      longThingHereThatIsLong,
 };
 >>> split inside condition
 var set = {if (veryLongCondition + thatNeedsToSplit) thing};
@@ -194,5 +162,5 @@ var set = {if (veryLongCondition + thatNeedsToSplit) thing};
 var set = {
   if (veryLongCondition +
       thatNeedsToSplit)
-    thing
+    thing,
 };

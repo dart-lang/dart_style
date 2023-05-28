@@ -8,7 +8,7 @@ function(
 function(
   notString,
   "adjacent"
-  "string"
+  "string",
 );
 >>> do not indent adjacent strings if other args are not strings
 function(
@@ -32,7 +32,7 @@ function(
   "string",
   notString,
   "adjacent"
-      "string"
+      "string",
 );
 >>> do indent adjacent strings if other arg is string
 function(
@@ -58,7 +58,7 @@ function(
   "${str}${ing}",
   notString,
   "adjacent"
-      "string"
+      "string",
 );
 >>> do indent adjacent strings if other arg is adjacent string
 function(
@@ -73,7 +73,7 @@ function(
       "string",
   notString,
   "adjacent"
-      "string"
+      "string",
 );
 >>> always indent adjacent strings in list
 var list = [
@@ -89,7 +89,7 @@ var list = [
       "string",
   "another"
       "adjacent"
-      "string"
+      "string",
 ];
 >>> always indent adjacent strings in map key
 var map = {
@@ -105,7 +105,7 @@ var map = {
       "string": value,
   "another"
       "adjacent"
-      "string": value
+      "string": value,
 };
 >>> always indent adjacent strings in map value
 var map = {
@@ -121,7 +121,7 @@ var map = {
       "string",
   key: "another"
       "adjacent"
-      "string"
+      "string",
 };
 >>> always indent adjacent strings in set
 var set = {
@@ -137,7 +137,7 @@ var set = {
       "string",
   "another"
       "adjacent"
-      "string"
+      "string",
 };
 >>> don't indent in => body
 main() => "adjacent"
@@ -170,7 +170,7 @@ function(
   (parameter) =>
       "long long long long string"
       "adjacent",
-  another
+  another,
 );
 >>> indent in then branch of ?:
 var string = c ? "adjacent"
@@ -211,7 +211,7 @@ function(
 function(
   "adjacent"
       "string",
-  "${str}${ing}"
+  "${str}${ing}",
 );
 >>> another adjacent string counts as a string
 function(
@@ -224,7 +224,7 @@ function(
   "adjacent"
       "string",
   "another"
-      "adjacent"
+      "adjacent",
 );
 >>> do not indent adjacent strings in assert if other args are not strings
 assert(
@@ -235,7 +235,7 @@ assert(
 assert(
   condition,
   "adjacent"
-  "string"
+  "string",
 );
 >>> don't need extra indentation inside named arguments
 function(named: "adjacent"
@@ -249,7 +249,7 @@ function(
       "string",
   another: "adjacent"
       "string"
-      "more"
+      "more",
 );
 >>> don't need extra indentation inside named arguments
 function(named: "adjacent"

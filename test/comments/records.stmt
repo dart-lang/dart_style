@@ -60,7 +60,7 @@ var record = ( 1 // comment
 var record = (
   1 // comment
   ,
-  2
+  2,
 );
 >>> multi-element record line comment
 var record = ( 1, // comment
@@ -68,5 +68,5 @@ var record = ( 1, // comment
 <<<
 var record = (
   1, // comment
-  2
+  2,
 );

@@ -99,7 +99,7 @@ const c = [
   () => const B(() {
     const C();
   }),
-  D()
+  D(),
 ];
 >>> do not remove erroneous new
 const c = new A();

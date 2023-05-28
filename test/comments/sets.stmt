@@ -67,7 +67,7 @@ var set = {'a', 'b', // comment
 <<<
 var set = {
   'a', 'b', // comment
-  'c', 'd'
+  'c', 'd',
 };
 >>> line comments after last item
 var set = {'a', 'b' // 1
@@ -75,7 +75,7 @@ var set = {'a', 'b' // 1
 };
 <<<
 var set = {
-  'a', 'b' // 1
+  'a', 'b', // 1
   // 2
 };
 >>> line comments after trailing comma
@@ -94,7 +94,7 @@ var set = {
 <<<
 var set = {
   // comment
-  'foo'
+  'foo',
 };
 >>> remove blank line before beginning of body
 var set = <int>{

@@ -73,7 +73,7 @@ typedef G = T Function<
 >(
   TypeOne one,
   TypeTwo two,
-  TypeThree three
+  TypeThree three,
 );
 >>> generic typedef parameters on one line
 typedef Foo<T, S> = Function();
@@ -93,7 +93,7 @@ typedef LongfunctionType<
   First first,
   Second second,
   Third third,
-  Fourth fourth
+  Fourth fourth,
 );
 >>> both type parameter lists split
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Function<Seventh>(First first, Second second, Third third, Fourth fourth);
@@ -109,7 +109,7 @@ typedef LongfunctionType<
   First first,
   Second second,
   Third third,
-  Fourth fourth
+  Fourth fourth,
 );
 >>> all three parameter lists split
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Function<Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth>(First first, Second second, Third third, Fourth fourth);
@@ -133,7 +133,7 @@ typedef LongfunctionType<
   First first,
   Second second,
   Third third,
-  Fourth fourth
+  Fourth fourth,
 );
 >>> old generic typedef syntax
 typedef Foo  <  T  ,S  >(T t,S s);
@@ -144,14 +144,14 @@ typedef   SomeFunc=ReturnType  Function(int param,   double other);
 <<<
 typedef SomeFunc = ReturnType Function(
   int param,
-  double other
+  double other,
 );
 >>> generic in typedef
 typedef Generic = T Function<T>(T param, double other);
 <<<
 typedef Generic = T Function<T>(
   T param,
-  double other
+  double other,
 );
 >>> no return type
 typedef SomeFunc = Function();
@@ -165,9 +165,9 @@ typedef SomeFunc = Function(
   Function(
     int first,
     bool second,
-    String third
+    String third,
   ) second,
-  String third
+  String third,
 );
 >>> without param names
 typedef F = Function(int, bool, String);
@@ -189,7 +189,7 @@ typedef Foo = int Function(int x);
 typedef S Foo<S extends num>(S x);
 <<<
 typedef Foo<S extends num> = S Function(
-  S x
+  S x,
 );
 >>> named argument
 typedef int Foo({x});
@@ -206,7 +206,7 @@ typedef Foo = int Function(
   @meta dynamic v1,
   final dynamic v2,
   dynamic v3,
-  /*c*/ dynamic v4
+  /*c*/ dynamic v4,
 );
 >>> metadata and keywords optional positional
 typedef int Foo([@meta v1, final v2, var v3, /*c*/ v4]);
@@ -215,7 +215,7 @@ typedef Foo = int Function([
   @meta dynamic v1,
   final dynamic v2,
   dynamic v3,
-  /*c*/ dynamic v4
+  /*c*/ dynamic v4,
 ]);
 >>> metadata and keywords named
 typedef int Foo({@meta v1, final v2, var v3, /*c*/ v4});
@@ -224,31 +224,32 @@ typedef Foo = int Function({
   @meta dynamic v1,
   final dynamic v2,
   dynamic v3,
-  /*c*/ dynamic v4
+  /*c*/ dynamic v4,
 });
 >>> function argument
 typedef int Foo(int callback(int x));
 <<<
 typedef Foo = int Function(
-  int Function(int x) callback
+  int Function(int x) callback,
 );
 >>> nested Function type
 typedef int Foo(int cb(int Function(int) cb2));
 <<<
 typedef Foo = int Function(
-  int Function(int Function(int) cb2) cb
+  int Function(int Function(int) cb2)
+      cb,
 );
 >>> nested generic function
 typedef T Foo<T>(T cb<S>(T cb2(S x)));
 <<<
 typedef Foo<T> = T Function(
-  T Function<S>(T Function(S x) cb2) cb
+  T Function<S>(T Function(S x) cb2) cb,
 );
 >>> new-style function type unchanged
 typedef int Foo(int Function(int) cb);
 <<<
 typedef Foo = int Function(
-  int Function(int) cb
+  int Function(int) cb,
 );
 >>> don't change correct typedef
 typedef Foo = int Function(int);
@@ -262,17 +263,18 @@ typedef Foo = Function(dynamic x);
 typedef Foo(foo(x));
 <<<
 typedef Foo = Function(
-  Function(dynamic x) foo
+  Function(dynamic x) foo,
 );
 >>> block comments in typedef
 typedef/*0*/void/*1*/Foo/*2*/<T>/*3*/(/*4*/T/*5*/foo(/*6*/x));
 <<<
-typedef /*1*/ Foo /*2*/ <T> = /*0*/ void
-    Function /*3*/ (
+typedef /*1*/ Foo /*2*/ <
+  T
+> = /*0*/ void Function /*3*/ (
   /*4*/ T Function(
-    /*6*/ dynamic x
+    /*6*/ dynamic x,
   ) /*5*/
-      foo
+      foo,
 );
 >>> eol comments in typedef
 typedef//0
@@ -292,9 +294,9 @@ typedef //1
   //4
   T Function(
     //6
-    dynamic x
+    dynamic x,
   ) //5
-      foo
+      foo,
 );
 >>> nullable old style function-typed formal
 typedef Foo(foo()?);
@@ -305,17 +307,17 @@ typedef Foo({required a, required b()});
 <<<
 typedef Foo = Function({
   required dynamic a,
-  required Function() b
+  required Function() b,
 });
 >>> issue #826
 typedef void MyFunction(var parameter);
 <<<
 typedef MyFunction = void Function(
-  dynamic parameter
+  dynamic parameter,
 );
 >>> issue #826 with comment
 typedef void MyFunction(/* comment */ var parameter);
 <<<
 typedef MyFunction = void Function(
-  /* comment */ dynamic parameter
+  /* comment */ dynamic parameter,
 );

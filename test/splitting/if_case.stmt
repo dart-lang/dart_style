@@ -44,32 +44,41 @@ if (veryLongExpression +
   ;
 }
 >>> if pattern block splits then case splits
-if (obj case const [element,]) {;}
+if (obj case const [veryLongElement,veryLongElement,veryLongElement,]) {;}
 <<<
 if (obj
     case const [
-      element,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     ]) {
   ;
 }
 >>> if guard condition block splits then guard splits
-if (obj case constant when [element,]) {;}
+if (obj case constant when [veryLongElement,veryLongElement,veryLongElement,]) {;}
 <<<
 if (obj case constant
     when [
-      element,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     ]) {
   ;
 }
 >>> block splits in both pattern and guard
-if (obj case const [element,] when [element,]) {;}
+if (obj case const [veryLongElement,veryLongElement,veryLongElement,] when
+[veryLongElement,veryLongElement,veryLongElement,]) {;}
 <<<
 if (obj
     case const [
-      element,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     ]
     when [
-      element,
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
     ]) {
   ;
 }

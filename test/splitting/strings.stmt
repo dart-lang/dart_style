@@ -61,7 +61,7 @@ someMethod("""first line does not fits here
 <<<
 someMethod(
   """first line does not fits here
-"""
+""",
 );
 >>> format multiline as a block with a leading argument
 someMethod(
@@ -121,7 +121,7 @@ someMethod(
 """,
   """
   even more
-"""
+""",
 );
 >>> format multilines with other blocks as blocks
 someMethod("""
@@ -152,15 +152,15 @@ someMethod(
     "collection",
     "with",
     "many",
-    "elements"
-  ]
+    "elements",
+  ],
 );
 >>> interpolation is not split even when line is too long
 someMethod("some text that is pretty long ${    interpolate +
 a + thing   } more text");
 <<<
 someMethod(
-  "some text that is pretty long ${interpolate + a + thing} more text"
+  "some text that is pretty long ${interpolate + a + thing} more text",
 );
 >>> multi-line string interpolation does not split
 someMethod("foo", """
@@ -178,7 +178,7 @@ a + thing   } more'} text", "another arg");
 <<<
 someMethod(
   "some text that is ${pretty + 'long ${interpolate + a + thing} more'} text",
-  "another arg"
+  "another arg",
 );
 >>> hard splits are split in interpolation
 someMethod("before ${(){statement();statement();statement();}} after");
@@ -188,7 +188,7 @@ someMethod(
     statement();
     statement();
     statement();
-  }} after"
+  }} after",
 );
 >>> collections split in interpolation if needed
 method(
@@ -202,8 +202,8 @@ method(
     second,
     third,
     fourth,
-    {fifth: sixth}
-  ]} after"
+    {fifth: sixth},
+  ]} after",
 );
 >>> nested multiline strings are not merged in interpolation
 "before ${"""a
@@ -263,5 +263,5 @@ function(
 function(
   "long string long string ${interpolated + interpolated} long string",
   longLongLongLongObject
-      .longLongLongLongMethod()
+      .longLongLongLongMethod(),
 );

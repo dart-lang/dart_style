@@ -8,14 +8,14 @@ typedef   SomeFunc=ReturnType  Function(int param,   double other);
 <<<
 typedef SomeFunc = ReturnType Function(
   int param,
-  double other
+  double other,
 );
 >>> generic in typedef
 typedef Generic = T Function<T>(T param, double other);
 <<<
 typedef Generic = T Function<T>(
   T param,
-  double other
+  double other,
 );
 >>> no return type
 typedef SomeFunc = Function();
@@ -29,9 +29,9 @@ typedef SomeFunc = Function(
   Function(
     int first,
     bool second,
-    String third
+    String third,
   ) second,
-  String third
+  String third,
 );
 >>> without param names
 typedef F = Function(int, bool, String);

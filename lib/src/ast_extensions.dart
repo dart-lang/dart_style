@@ -5,6 +5,8 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 extension AstNodeExtensions on AstNode {
+  // TODO: Eventually, this should only be used by
+  // `SourceVisitor.writeCommaAfter()` and can be inlined there.
   /// The comma token immediately following this if there is one, or `null`.
   Token? get commaAfter {
     var next = endToken.next!;
@@ -19,6 +21,7 @@ extension AstNodeExtensions on AstNode {
     return null;
   }
 
+  // TODO: Remove uses of this.
   /// Whether there is a comma token immediately following this.
   bool get hasCommaAfter => commaAfter != null;
 

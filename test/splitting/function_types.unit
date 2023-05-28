@@ -15,14 +15,14 @@ Function(
   ninth,
   tenth,
   eleventh,
-  twelfth
+  twelfth,
 ) f;
 >>> parameters fit but ) does not
 Function(int firstArgume, int argumentTo) f;
 <<<
 Function(
   int firstArgume,
-  int argumentTo
+  int argumentTo,
 ) f;
 >>> keep mandatory and positional on same line
 Function(param, [foo, bar]) f;
@@ -38,7 +38,7 @@ Function(parameter, [int foo, String bar]) f;
 Function(
   parameter, [
   int foo,
-  String bar
+  String bar,
 ]) f;
 >>> move just named to second line even though all fit on second
 Function(parameter, {int foo, String bar}) f;
@@ -46,14 +46,14 @@ Function(parameter, {int foo, String bar}) f;
 Function(
   parameter, {
   int foo,
-  String bar
+  String bar,
 }) f;
 >>> avoid splitting in function type parameters
 Function(parameter1, void printFn(param1, param2)) f;
 <<<
 Function(
   parameter1,
-  void printFn(param1, param2)
+  void printFn(param1, param2),
 ) f;
 >>> allow splitting in function type parameters
 Function(v callback(parameter1, parameter2, parameter3, parameter4)) f;
@@ -63,8 +63,8 @@ Function(
     parameter1,
     parameter2,
     parameter3,
-    parameter4
-  )
+    parameter4,
+  ),
 ) f;
 >>> split optional onto one per line if they don't fit on one line
 Function([parameter1, parameter2, parameter3]) f;
@@ -72,19 +72,19 @@ Function([parameter1, parameter2, parameter3]) f;
 Function([
   parameter1,
   parameter2,
-  parameter3
+  parameter3,
 ]) f;
 >>> split between type and name
 Function(VerylongParameterType parameterName) f;
 <<<
 Function(
-  VerylongParameterType parameterName
+  VerylongParameterType parameterName,
 ) f;
 >>> split in function type and on variable name
 Function(VeryVeryVeryVeryLongParameterType) veryLongVariableName;
 <<<
 Function(
-  VeryVeryVeryVeryLongParameterType
+  VeryVeryVeryVeryLongParameterType,
 ) veryLongVariableName;
 >>> split in nested function type forces outer split
 Function(int, String, Function(parameter1, parameter2, parameter3)) f;
@@ -95,8 +95,8 @@ Function(
   Function(
     parameter1,
     parameter2,
-    parameter3
-  )
+    parameter3,
+  ),
 ) f;
 >>> split in type arguments and variable
 Function<Parameter1, Parameter2, Parameter3>() veryVeryLongVariableName;
@@ -122,10 +122,7 @@ Function<Argument>(String)
 >>> trailing comma
 Function(first, second,) f;
 <<<
-Function(
-  first,
-  second,
-) f;
+Function(first, second) f;
 >>> split inside type argument
 GenericClass<Function(first, second, third, fourth, fifth)> f;
 <<<
@@ -135,18 +132,13 @@ GenericClass<
     second,
     third,
     fourth,
-    fifth
+    fifth,
   )
 > f;
 >>> trailing comma split inside type argumennt
 GenericClass<Function(first, second,)> f;
 <<<
-GenericClass<
-  Function(
-    first,
-    second,
-  )
-> f;
+GenericClass<Function(first, second)> f;
 >>> inside parameter list
 outer(Function(first, second, third, fourth, fifth) fn) {;}
 <<<
@@ -156,50 +148,34 @@ outer(
     second,
     third,
     fourth,
-    fifth
-  ) fn
+    fifth,
+  ) fn,
 ) {
   ;
 }
 >>> trailing comma inside parameter list
 outer(Function(first,) fn) {;}
 <<<
-outer(
-  Function(
-    first,
-  ) fn
-) {
+outer(Function(first) fn) {
   ;
 }
 >>> optional parameter trailing comma inside parameter list
 outer(Function([first,]) fn) {;}
 <<<
-outer(
-  Function([
-    first,
-  ]) fn
-) {
+outer(Function([first]) fn) {
   ;
 }
 >>> named parameter trailing comma inside parameter list
 outer(Function({int first,}) fn) {;}
 <<<
-outer(
-  Function({
-    int first,
-  }) fn
-) {
+outer(Function({int first}) fn) {
   ;
 }
 >>> field formal parameter trailing comma inside parameter list
 class C { C(Function(first,) this.fn) {;} }
 <<<
 class C {
-  C(
-    Function(
-      first,
-    ) this.fn
-  ) {
+  C(Function(first) this.fn) {
     ;
   }
 }
@@ -212,7 +188,7 @@ outer(
     second,
     third,
     fourth,
-    fifth
+    fifth,
   ) fn,
 ) {
   ;

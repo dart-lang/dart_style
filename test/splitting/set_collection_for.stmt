@@ -3,7 +3,7 @@
 var set = {for (a in b) somewhatLongThingHere};
 <<<
 var set = {
-  for (a in b) somewhatLongThingHere
+  for (a in b) somewhatLongThingHere,
 };
 >>> one line in multi-line
 var set = {veryLongThingThatForcesASplit, for (a in b) 2, 3};
@@ -11,7 +11,7 @@ var set = {veryLongThingThatForcesASplit, for (a in b) 2, 3};
 var set = {
   veryLongThingThatForcesASplit,
   for (a in b) 2,
-  3
+  3,
 };
 >>> long body forces split
 var set = {1, for (a in b) veryLongThingThatForcesASplit, 3};
@@ -20,7 +20,7 @@ var set = {
   1,
   for (a in b)
     veryLongThingThatForcesASplit,
-  3
+  3,
 };
 >>> split inside body
 var set = {1, for (a in b) veryLongThingThatForcesASplit + anotherLongThing, 3};
@@ -30,38 +30,29 @@ var set = {
   for (a in b)
     veryLongThingThatForcesASplit +
         anotherLongThing,
-  3
+  3,
 };
 >>> trailing comma
 var set = {for (a in b) 2,};
 <<<
-var set = {
-  for (a in b) 2,
-};
+var set = {for (a in b) 2};
 >>> spread list inside for stays on one line if it fits
 var set = {for (a in b) ...{1, 2}};
 <<<
 var set = {
-  for (a in b) ...{1, 2}
+  for (a in b) ...{1, 2},
 };
 >>> spread list inside for formats like block if it splits
 var set = {for (a in b) ...{1, 2,}};
 <<<
 var set = {
-  for (a in b) ...{
-    1,
-    2,
-  }
+  for (a in b) ...{1, 2},
 };
 >>> a split collection that isn't spread wraps and indents
 var set = {for (a in b) {1,2,}};
 <<<
 var set = {
-  for (a in b)
-    {
-      1,
-      2,
-    }
+  for (a in b) {1, 2},
 };
 >>> lambda inside body
 var set = {for (a in b) () { body; }};
@@ -70,27 +61,27 @@ var set = {
   for (a in b)
     () {
       body;
-    }
+    },
 };
 >>> nested for splits outer for
 var s = {for (a in b) for (c in d) t};
 <<<
 var s = {
   for (a in b)
-    for (c in d) t
+    for (c in d) t,
 };
 >>> split collection before body
 var set = {for (a in b) longThingThatIsLong};
 <<<
 var set = {
-  for (a in b) longThingThatIsLong
+  for (a in b) longThingThatIsLong,
 };
 >>> just split outer for
 var set = {for (a in b) for (c in d) longThingThatIsLong};
 <<<
 var set = {
   for (a in b)
-    for (c in d) longThingThatIsLong
+    for (c in d) longThingThatIsLong,
 };
 >>> split in for-in type
 var set = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) body};
@@ -100,7 +91,7 @@ var set = {
         TypeArg,
         AnotherTypeArgument
       > a in b)
-    body
+    body,
 };
 >>> split in for-in expression
 var set = {for (a in sequenceExpression + thatDoesNotFit) body};
@@ -108,7 +99,7 @@ var set = {for (a in sequenceExpression + thatDoesNotFit) body};
 var set = {
   for (a in sequenceExpression +
       thatDoesNotFit)
-    body
+    body,
 };
 >>> split in for var type
 var set = {for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body};
@@ -120,7 +111,7 @@ var set = {
       > a = 0;
       a < 1;
       a++)
-    body
+    body,
 };
 >>> split in for initializer
 var set = {for (a = initializerExpression + thatDoesNotFit; a < 1; a++) body};
@@ -130,7 +121,7 @@ var set = {
           thatDoesNotFit;
       a < 1;
       a++)
-    body
+    body,
 };
 >>> split in for condition
 var set = {for (a = b; conditionExpression + thatDoesNotFit; a++) body};
@@ -140,7 +131,7 @@ var set = {
       conditionExpression +
           thatDoesNotFit;
       a++)
-    body
+    body,
 };
 >>> split in for increment
 var set = {for (a = b; a < 1; incrementExpression + thatDoesNotFit) body};
@@ -150,5 +141,5 @@ var set = {
       a < 1;
       incrementExpression +
           thatDoesNotFit)
-    body
+    body,
 };

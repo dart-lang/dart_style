@@ -24,6 +24,12 @@ import 'rule/type_argument.dart';
 import 'source_code.dart';
 import 'style_fix.dart';
 
+// TODO: Handle comments around trailing commas when the comma is added or
+// removed.
+
+// TODO: Write tests for how the selection gets updated when it is over or near
+// an added or removed trailing comma.
+
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
 class SourceVisitor extends ThrowingAstVisitor {
@@ -944,32 +950,33 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _beginBody(node.leftBracket, space: true);
 
-    visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
-
-    // If there is a trailing comma, always force the constants to split.
-    var trailingComma = node.constants.last.commaAfter;
-    if (trailingComma != null) {
-      builder.forceRules();
-    }
-
     // The ";" after the constants, which may occur after a trailing comma.
     Token afterConstants = node.constants.last.endToken.next!;
     Token? semicolon;
     if (afterConstants.type == TokenType.SEMICOLON) {
       semicolon = node.constants.last.endToken.next!;
-    } else if (trailingComma != null &&
-        trailingComma.next!.type == TokenType.SEMICOLON) {
+    } else if (afterConstants.type == TokenType.COMMA &&
+        afterConstants.next!.type == TokenType.SEMICOLON) {
       semicolon = afterConstants.next!;
     }
 
-    if (semicolon != null) {
-      // If there is both a trailing comma and a semicolon, move the semicolon
-      // to the next line. This doesn't look great but it's less bad than being
-      // next to the comma.
-      // TODO(rnystrom): If the formatter starts making non-whitespace changes
-      // like adding/removing trailing commas, then it should fix this too.
-      if (trailingComma != null) newline();
+    for (var value in node.constants) {
+      if (value != node.constants.first) splitOrTwoNewlines();
 
+      visit(value);
+
+      // Don't add a trailing comma if there will be a ";" at the end of the
+      // last value.
+      // TODO: Preserve comment on erased trailing comma with semicolon after
+      // it.
+      // TODO: Should probably discard semicolon (and replace with trailing
+      // comma as needed) if there are no members.
+      if (value != node.constants.last || semicolon == null) {
+        writeCommaAfter(value, isTrailing: value == node.constants.last);
+      }
+    }
+
+    if (semicolon != null) {
       token(semicolon);
 
       // Put a blank line between the constants and members.
@@ -978,10 +985,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _visitBodyContents(node.members);
 
-    _endBody(node.rightBracket,
-        forceSplit: semicolon != null ||
-            trailingComma != null ||
-            node.members.isNotEmpty);
+    _endBody(node.rightBracket, forceSplit: semicolon != null);
   }
 
   @override
@@ -1292,7 +1296,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var parameter in node.parameters) {
       builder.split(space: spaceWhenUnsplit);
       visit(parameter);
-      writeCommaAfter(parameter);
+      writeCommaAfter(parameter, isTrailing: parameter == node.parameters.last);
 
       // If the optional parameters start after this one, put the delimiter
       // at the end of its line. If we don't split, don't put a space after
@@ -1311,9 +1315,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
-    // TODO: Instead of forcing split here, add or remove trailing comma as
-    // needed.
-    builder = builder.endBlock(forceSplit: node.parameters.hasCommaAfter);
+    builder = builder.endBlock(forceSplit: false);
     builder.endRule();
 
     // Now write the delimiter itself.
@@ -2462,7 +2464,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var field in node.positionalFields) {
       builder.split(nest: false, space: field != node.positionalFields.first);
       visit(field);
-      writeCommaAfter(field);
+
+      // If there is only a single positional field, the comma is mandatory.
+      var isSinglePositionalField =
+          node.positionalFields.length == 1 && namedFields == null;
+
+      writeCommaAfter(field,
+          isTrailing: !isSinglePositionalField &&
+              field == node.positionalFields.last &&
+              namedFields == null);
     }
 
     // Then the named fields.
@@ -2476,7 +2486,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       for (var field in namedFields.fields) {
         builder.split(nest: false, space: field != namedFields.fields.first);
         visit(field);
-        writeCommaAfter(field);
+        writeCommaAfter(field, isTrailing: field == namedFields.fields.last);
       }
 
       firstClosingDelimiter = namedFields.rightBracket;
@@ -2488,18 +2498,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstClosingDelimiter);
     }
 
-    // If there is a trailing comma, then force the record type to split. But
-    // don't force if there is only a single positional element because then
-    // the trailing comma is actually mandatory.
-    bool force;
-    if (namedFields == null) {
-      force = node.positionalFields.length > 1 &&
-          node.positionalFields.last.hasCommaAfter;
-    } else {
-      force = namedFields.fields.last.hasCommaAfter;
-    }
-
-    builder = builder.endBlock(forceSplit: force);
+    builder = builder.endBlock(forceSplit: false);
     builder.endRule();
 
     // Now write the delimiter(s) themselves.
@@ -2713,6 +2712,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visitCommaSeparatedNodes(node.cases, between: split);
 
+    // TODO: Add or remove trailing comma if switch splits.
     var hasTrailingComma =
         node.cases.isNotEmpty && node.cases.last.commaAfter != null;
     _endBody(node.rightBracket, forceSplit: hasTrailingComma);
@@ -3140,16 +3140,16 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // No argument that needs special block argument handling, so format the
     // argument list like a regular body.
-    _beginBody(leftParenthesis);
+    var rule = Rule();
+    _beginBody(leftParenthesis, rule: rule);
 
     for (var argument in arguments) {
       builder.split(nest: false, space: argument != arguments.first);
       visit(argument);
-      writeCommaAfter(argument);
+      writeCommaAfter(argument, isTrailing: argument == arguments.last);
     }
 
-    // TODO: Shouldn't look for trailing comma to force split.
-    _endBody(rightParenthesis, forceSplit: arguments.hasCommaAfter);
+    _endBody(rightParenthesis);
   }
 
   /// If [arguments] is an argument list with a single argument that should
@@ -3267,7 +3267,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       if (argument == blockArgument) builder.startSpan();
 
       visit(argument);
-      writeCommaAfter(argument);
+      writeCommaAfter(argument, isTrailing: argument == arguments.last);
 
       if (argument == blockArgument) builder.endSpan();
     }
@@ -3416,11 +3416,12 @@ class SourceVisitor extends ThrowingAstVisitor {
     for (var node in nodes) {
       builder.split(nest: false, space: node != nodes.first);
       visit(node);
-      writeCommaAfter(node);
+      // Type arguments and parameters don't support trailing commas.
+      writeCommaAfter(node, isTrailing: false);
     }
 
     // If the collection has a trailing comma, the user must want it to split.
-    _endBody(rightBracket, forceSplit: nodes.hasCommaAfter);
+    _endBody(rightBracket);
   }
 
   /// Visits a sequence of labels before a statement or switch case.
@@ -3557,7 +3558,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Visit a comma-separated list of [nodes] if not null.
-  void visitCommaSeparatedNodes(Iterable<AstNode> nodes,
+  void visitCommaSeparatedNodes(List<AstNode> nodes,
       {void Function()? between}) {
     if (nodes.isEmpty) return;
 
@@ -3628,6 +3629,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     _beginBody(leftBracket, rule: blockRule);
     _startPossibleConstContext(constKeyword);
 
+    var isSingleElementRecord = isRecord && elements.length == 1;
+
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
@@ -3657,7 +3660,8 @@ class SourceVisitor extends ThrowingAstVisitor {
         }
 
         visit(element);
-        writeCommaAfter(element);
+        writeCommaAfter(element,
+            isTrailing: !isSingleElementRecord && element == elements.last);
       }
 
       builder.endRule();
@@ -3665,21 +3669,17 @@ class SourceVisitor extends ThrowingAstVisitor {
       for (var element in elements) {
         builder.split(nest: false, space: element != elements.first);
         visit(element);
-        writeCommaAfter(element);
+        writeCommaAfter(element,
+            isTrailing: !isSingleElementRecord && element == elements.last);
       }
     }
 
+    // TODO: Remove this rule?
     // If there is a collection inside this one, it forces this one to split.
     var force = false;
     if (splitOuterCollection) {
       force = _collectionSplits.removeLast();
     }
-
-    // If the collection has a trailing comma, the user must want it to split.
-    // (Unless it's a single-element record literal, in which case the trailing
-    // comma is required for disambiguation.)
-    var isSingleElementRecord = isRecord && elements.length == 1;
-    if (elements.hasCommaAfter && !isSingleElementRecord) force = true;
 
     _endPossibleConstContext(constKeyword);
     var blockChunk = _endBody(rightBracket, forceSplit: force);
@@ -3945,7 +3945,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// clauses in class declarations, which are formatted the same way.
   ///
   /// This assumes the current rule is a [CombinatorRule].
-  void _visitCombinator(Token keyword, Iterable<AstNode> nodes) {
+  void _visitCombinator(Token keyword, List<AstNode> nodes) {
     // Allow splitting before the keyword.
     var rule = builder.rule as CombinatorRule;
     rule.addCombinator(split());
@@ -4040,8 +4040,13 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Write the comma token following [node], if there is one.
-  void writeCommaAfter(AstNode node) {
-    token(node.commaAfter);
+  void writeCommaAfter(AstNode node, {required bool isTrailing}) {
+    if (isTrailing) {
+      // TODO: Preserve comments on existing comma token if there is one.
+      builder.writeTrailingComma();
+    } else {
+      token(node.commaAfter);
+    }
   }
 
   /// Emit the given [modifier] if it's non null, followed by non-breaking

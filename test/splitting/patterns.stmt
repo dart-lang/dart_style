@@ -128,7 +128,7 @@ if (obj
       first,
       second,
       third,
-      fourth
+      fourth,
     ]) {
   ;
 }
@@ -139,17 +139,14 @@ if (obj
     case [
       first,
       secondLongPattern ||
-          thirdLongPattern
+          thirdLongPattern,
     ]) {
   ;
 }
 >>> a trailing comma forces a split
 if (obj case [1,]) {;}
 <<<
-if (obj
-    case [
-      1,
-    ]) {
+if (obj case [1]) {
   ;
 }
 >>> does not split after "..."
@@ -158,7 +155,7 @@ if (obj case [...firstPattern || secondLongPattern]) {;}
 if (obj
     case [
       ...firstPattern ||
-          secondLongPattern
+          secondLongPattern,
     ]) {
   ;
 }
@@ -226,7 +223,7 @@ if (obj
     case {
       first: 1,
       second: 2,
-      third: 3
+      third: 3,
     }) {
   ;
 }
@@ -237,17 +234,14 @@ if (obj
     case {
       k: first,
       m: secondLongPattern ||
-          thirdLongPattern
+          thirdLongPattern,
     }) {
   ;
 }
 >>> a trailing comma forces a split
 if (obj case {k:1,}) {;}
 <<<
-if (obj
-    case {
-      k: 1,
-    }) {
+if (obj case {k: 1}) {
   ;
 }
 >>> nested map patterns don't force outer to split
@@ -326,7 +320,7 @@ if (obj case (:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
 if (obj
     case (
       :var firstLongInferredFieldName,
-      :var secondLongInferredName
+      :var secondLongInferredName,
     )) {
   ;
 }
@@ -338,7 +332,7 @@ if (obj
       longFieldName: [
         first,
         second,
-        third
+        third,
       ]
     )) {
   ;
@@ -350,7 +344,7 @@ if (obj
     case (
       longFieldName: {
         first: 1,
-        second: 2
+        second: 2,
       }
     )) {
   ;
@@ -362,7 +356,7 @@ if (obj
     case (
       longFieldName: (
         first: 1,
-        second: 2
+        second: 2,
       )
     )) {
   ;
@@ -375,7 +369,7 @@ if (obj
       longFieldName: const [
         first,
         second,
-        third
+        third,
       ]
     )) {
   ;
@@ -387,7 +381,7 @@ if (obj
     case (
       longFieldName: const {
         first: 1,
-        second: 2
+        second: 2,
       }
     )) {
   ;
@@ -399,7 +393,7 @@ if (obj
     case (
       longFieldName: const (
         first: 1,
-        second: 2
+        second: 2,
       )
     )) {
   ;
@@ -413,7 +407,7 @@ if (obj
       second,
       third,
       fourth,
-      fifth
+      fifth,
     )) {
   ;
 }
@@ -438,8 +432,8 @@ if (obj
         eighth,
         nine,
         tenth,
-        eleventh
-      )
+        eleventh,
+      ),
     )) {
   ;
 }
@@ -466,7 +460,7 @@ if (obj
       element,
       element,
       element,
-      element
+      element,
     ]) {
   ;
 }
@@ -477,7 +471,7 @@ if (obj
     case const {
       a: element,
       b: element,
-      c: element
+      c: element,
     }) {
   ;
 }
@@ -489,7 +483,7 @@ if (obj
       element,
       element,
       element,
-      element
+      element,
     }) {
   ;
 }
@@ -501,7 +495,7 @@ if (obj
       element,
       element,
       element,
-      element
+      element,
     )) {
   ;
 }
@@ -513,17 +507,14 @@ if (obj
       element,
       element,
       element,
-      element
+      element,
     )) {
   ;
 }
 >>> single-element objects with trailing commas split
 if (obj case Foo(:pattern,)) {;}
 <<<
-if (obj
-    case Foo(
-      :pattern,
-    )) {
+if (obj case Foo(:pattern)) {
   ;
 }
 >>> split single-element object
@@ -531,7 +522,8 @@ if (obj case Foo(longFieldName: longObjectFieldValu)) {;}
 <<<
 if (obj
     case Foo(
-      longFieldName: longObjectFieldValu
+      longFieldName:
+          longObjectFieldValu,
     )) {
   ;
 }
@@ -541,7 +533,7 @@ if (obj case Foo(longFieldName: veryLongObjectFieldValue)) {;}
 if (obj
     case Foo(
       longFieldName:
-          veryLongObjectFieldValue
+          veryLongObjectFieldValue,
     )) {
   ;
 }
@@ -550,7 +542,7 @@ if (obj case Foo(:var veryLongInferredFieldName_____)) {;}
 <<<
 if (obj
     case Foo(
-      :var veryLongInferredFieldName_____
+      :var veryLongInferredFieldName_____,
     )) {
   ;
 }
@@ -560,7 +552,7 @@ if (obj case Foo(:var firstLongInferredFieldName, :var secondLongInferredName)) 
 if (obj
     case Foo(
       :var firstLongInferredFieldName,
-      :var secondLongInferredName
+      :var secondLongInferredName,
     )) {
   ;
 }
@@ -572,8 +564,8 @@ if (obj
       longFieldName: [
         first,
         second,
-        third
-      ]
+        third,
+      ],
     )) {
   ;
 }
@@ -584,8 +576,8 @@ if (obj
     case Foo(
       longFieldName: {
         first: 1,
-        second: 2
-      }
+        second: 2,
+      },
     )) {
   ;
 }
@@ -596,8 +588,8 @@ if (obj
     case Foo(
       longFieldName: (
         first: 1,
-        second: 2
-      )
+        second: 2,
+      ),
     )) {
   ;
 }
@@ -609,8 +601,8 @@ if (obj
       longFieldName: const [
         first,
         second,
-        third
-      ]
+        third,
+      ],
     )) {
   ;
 }
@@ -621,8 +613,8 @@ if (obj
     case Foo(
       longFieldName: const {
         first: 1,
-        second: 2
-      }
+        second: 2,
+      },
     )) {
   ;
 }
@@ -633,8 +625,8 @@ if (obj
     case Foo(
       longFieldName: const (
         first: 1,
-        second: 2
-      )
+        second: 2,
+      ),
     )) {
   ;
 }
@@ -647,7 +639,7 @@ if (obj
       second,
       third,
       fourth,
-      fifth
+      fifth,
     )) {
   ;
 }
@@ -678,8 +670,8 @@ if (obj
         eighth: 8,
         nine: 9,
         tenth: 10,
-        eleventh: 11
-      )
+        eleventh: 11,
+      ),
     )) {
   ;
 }

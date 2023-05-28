@@ -6,7 +6,7 @@ argument3);
 someMethod(
   argument1,
   argument2, // comment
-  argument3
+  argument3,
 );
 >>> trailing line comment after non-split
 someMethod(argument1, argument2 // comment
@@ -14,14 +14,14 @@ someMethod(argument1, argument2 // comment
 <<<
 someMethod(
   argument1,
-  argument2 // comment
+  argument2, // comment
 );
 >>> inside list literal
 ['item' // comment
 ];
 <<<
 [
-  'item' // comment
+  'item', // comment
 ];
 >>> inside argument list
 foo(1 /* bang */, 2);
@@ -43,7 +43,7 @@ foo(
   /* comment */ arg,
   /* comment */ arg,
   /* comment */ arg,
-  /* comment */ arg
+  /* comment */ arg,
 );
 >>> space between block comment and other tokens
 var/**/a/**/=/**/1/**/+/**/2;
@@ -98,14 +98,14 @@ function(
   argument, //
   argument,
   named: argument,
-  another: argument
+  another: argument,
 );
 >>> block comment with newline before
 someVeryLongFunctionName(argumentName: true
 /* comment */);
 <<<
 someVeryLongFunctionName(
-  argumentName: true /* comment */
+  argumentName: true, /* comment */
 );
 >>> in delimited pattern in pattern assignment
 (x,// c
@@ -113,7 +113,7 @@ y) = o;
 <<<
 (
   x, // c
-  y
+  y,
 ) = o;
 >>> in infix pattern in pattern assignment
 (x &&// c

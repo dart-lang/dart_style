@@ -9,7 +9,7 @@ class Foo {
     this.first,
     this.second,
     this.third,
-    this.fourth
+    this.fourth,
   );
 }
 >>> indent parameters more if body is a wrapped =>
@@ -17,7 +17,7 @@ method(int firstArgument, int argumentTwo) => "very long body that must wrap";
 <<<
 method(
   int firstArgument,
-  int argumentTwo
+  int argumentTwo,
 ) => "very long body that must wrap";
 >>> split before "covariant"
 class A {
@@ -26,7 +26,7 @@ class A {
 <<<
 class A {
   longMethod(
-    covariant parameterNameHere
+    covariant parameterNameHere,
   ) {}
 }
 >>> split before "covariant" with multiple parameters
@@ -39,7 +39,7 @@ class A {
     covariant first,
     second,
     covariant int third(parameter),
-    fourth
+    fourth,
   ) {}
 }
 >>> never split after "covariant" (at least for now)
@@ -50,7 +50,7 @@ class A {
 class A {
   longMethod(
     covariant int
-        veryLongParameterNameWow
+        veryLongParameterNameWow,
   ) {}
 }
 >>> split before "required"
@@ -60,7 +60,7 @@ class A {
 <<<
 class A {
   longMethod({
-    required parameterNameHere
+    required parameterNameHere,
   }) {}
 }
 >>> split before "required" with multiple parameters
@@ -73,7 +73,7 @@ class A {
     required first,
     second,
     required int third(parameter),
-    fourth
+    fourth,
   }) {}
 }
 >>> never split after "required" (at least for now)
@@ -84,7 +84,7 @@ class A {
 class A {
   longMethod({
     required int
-        veryLongParameterNameWow
+        veryLongParameterNameWow,
   }) {}
 }
 >>> don't split between "required" and "covariant"
@@ -95,7 +95,7 @@ class A {
 class A {
   longMethod({
     required covariant int
-        veryLongParameterNameWow
+        veryLongParameterNameWow,
   }) {}
 }
 >>> split between field type and name
@@ -106,6 +106,6 @@ class Foo {
 class Foo {
   Foo(
     VerylongParameterType
-        this.parameterName
+        this.parameterName,
   ) {}
 }

@@ -38,7 +38,7 @@ var longIdentifier = new Thing(
 <<<
 var longIdentifier = new Thing(
   argument,
-  argument
+  argument,
 );
 >>> splits before ":" if the parameter list does not fit on one line
 class Foo {
@@ -49,7 +49,7 @@ class Foo {
   Foo(
     int longArg1,
     int longArg2,
-    int longArg3
+    int longArg3,
   ) : this._(longArg1);
 }
 >>> indent parameters more if body is a wrapped =>
@@ -61,7 +61,7 @@ class Foo {
   Foo(
     firstArgument,
     secondArgument,
-    third
+    third,
   ) => "very long body that must wrap";
 }
 >>> wrap initializers past the ":"
@@ -75,11 +75,11 @@ class Foo {
   Foo(parameter)
     : initializer = function(
         argument,
-        argument
+        argument,
       ),
       initializer2 = function(
         argument,
-        argument
+        argument,
       );
 }
 >>> split at "=" in initializer
@@ -91,7 +91,7 @@ class Foo {
   Foo()
     : initializer = function(
         argument,
-        arg
+        arg,
       );
 }
 >>> assert in initializer list, short
@@ -115,8 +115,8 @@ class Foo {
         function(
           argument,
           argument,
-          argument
-        )
+          argument,
+        ),
       ),
       assert(
         function(
@@ -124,10 +124,10 @@ class Foo {
           function(
             argument,
             argument,
-            argument
+            argument,
           ),
-          argument
-        )
+          argument,
+        ),
       );
 }
 >>> split assert with trailing comma
@@ -137,9 +137,7 @@ class Foo {
 <<<
 class Foo {
   Foo()
-    : assert(
-        condition,
-      );
+    : assert(condition);
 }
 >>> split assert with trailing comma and message
 class Foo {
@@ -148,50 +146,59 @@ class Foo {
 <<<
 class Foo {
   Foo()
-    : assert(
-        condition,
-        "some message",
-      );
+    : assert(condition, "some message");
 }
 >>> trailing commas and initializer lists
 class A {
-  A(a,):super();
+  A(parameter1,parameter2,parameter3,parameter4):super();
 }
 <<<
 class A {
   A(
-    a,
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
   ) : super();
 }
 >>>
 class A {
-  A({a,}):super();
+  A({parameter1,parameter2,parameter3,parameter4}):super();
 }
 <<<
 class A {
   A({
-    a,
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
   }) : super();
 }
 >>>
 class A {
-  A(a,):b=1,super();
+  A(parameter1,parameter2,parameter3,parameter4):b=1,super();
 }
 <<<
 class A {
   A(
-    a,
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
   ) : b = 1,
       super();
 }
 >>> extra space after ":" to line up with later initializers
 class A {
-  A({a,}):b=1,super(){;}
+  A({parameter1,parameter2,parameter3,parameter4}):b=1,super(){;}
 }
 <<<
 class A {
   A({
-    a,
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
   }) : b = 1,
        super() {
     ;
@@ -199,12 +206,15 @@ class A {
 }
 >>> no extra space on a single initializer, even if it splits
 class A {
-  A(a,):parameter = "some very very long param";
+  A(parameter1,parameter2,parameter3,parameter4):parameter = "some very very long param";
 }
 <<<
 class A {
   A(
-    a,
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
   ) : parameter =
           "some very very long param";
 }

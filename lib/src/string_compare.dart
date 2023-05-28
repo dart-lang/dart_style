@@ -3,6 +3,9 @@
 ///
 /// This follows the same rules as `String.trim()` because that's what
 /// dart_style uses to trim trailing whitespace.
+///
+/// Unlike `String.trim()`, this also treats commas as whitespace since the
+/// formatter may add or remove those in trailing positions.
 bool _isWhitespace(int c) {
   // Not using a set or something more elegant because this code is on the hot
   // path and this large expression is significantly faster than a set lookup.
@@ -17,7 +20,8 @@ bool _isWhitespace(int c) {
       c == 0x202f || // NARROW NO-BREAK SPACE.
       c == 0x205f || // MEDIUM MATHEMATICAL SPACE.
       c == 0x3000 || // IDEOGRAPHIC SPACE.
-      c == 0xfeff; // ZERO WIDTH NO_BREAK SPACE.
+      c == 0xfeff || // ZERO WIDTH NO_BREAK SPACE.
+      c == 0x002c; // Comma.
 }
 
 /// Returns the index of the next non-whitespace character.

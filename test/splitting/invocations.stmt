@@ -245,7 +245,7 @@ someTargetFunction(argument, argument, argument).method().method();
 someTargetFunction(
   argument,
   argument,
-  argument
+  argument,
 )
     .method()
     .method();
@@ -254,7 +254,7 @@ someVeryLongTargetFunction(argument, argument).one().two();
 <<<
 someVeryLongTargetFunction(
   argument,
-  argument
+  argument,
 )
     .one()
     .two();
@@ -264,7 +264,7 @@ someTargetFunction(argument, argument, argument).property.property;
 someTargetFunction(
   argument,
   argument,
-  argument
+  argument,
 )
     .property
     .property;
@@ -273,7 +273,7 @@ someVeryLongTargetFunction(argument, argument).one.two;
 <<<
 someVeryLongTargetFunction(
   argument,
-  argument
+  argument,
 )
     .one
     .two;
@@ -285,14 +285,14 @@ someVeryLongTargetFunction(
   element,
   element,
   element,
-  element
+  element,
 ].someLongMethod();
 >>> do not split on "." when target is map
 <String,String>{"key": "value", "another": "another value"}.someLongMethod();
 <<<
 <String, String>{
   "key": "value",
-  "another": "another value"
+  "another": "another value",
 }.someLongMethod();
 >>> do not split on "." when target is record
 (element, element, element, element, element).someLongMethod();
@@ -302,7 +302,7 @@ someVeryLongTargetFunction(
   element,
   element,
   element,
-  element
+  element,
 ).someLongMethod();
 >>> do not split on "." when target is function literal passed to method
 method(() {;}).someLongMethod();
@@ -325,20 +325,18 @@ new Foo(() {
 >>> do not split on "." when target is parenthesized unsplittable
 ((([element,]))).someLongMethod();
 <<<
-((([
-  element,
-]))).someLongMethod();
+((([element]))).someLongMethod();
 >>> trailing comma argument list does not force trailing method chain to split
 function(argument,).method().method();
 <<<
-function(
-  argument,
-).method().method();
+function(argument).method().method();
 >>> if method chain splits, split before first too
-function(argument,).method().method().method().method().method();
+function(longArgument,longArgument,longArgument,).method().method().method().method().method();
 <<<
 function(
-  argument,
+  longArgument,
+  longArgument,
+  longArgument,
 )
     .method() // TODO: Not sure about this.
     .method()
@@ -420,12 +418,12 @@ someReceiverObject
     .method2()
     .method3()(argument)(argument)
         <T, R>(
-          argument,
-          argument,
-          argument,
-          argument,
-          argument
-        )(argument)
+      argument,
+      argument,
+      argument,
+      argument,
+      argument,
+    )(argument)
     .method4()
     .method5()
     .method6();

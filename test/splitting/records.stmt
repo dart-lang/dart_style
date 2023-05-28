@@ -36,7 +36,7 @@ var record = (
   third,
   fourth,
   fifth,
-  sixth
+  sixth,
 );
 >>> don't force outer record to split
 ((first,), (second, third));
@@ -64,8 +64,8 @@ var record = (
     eighth,
     nine,
     tenth,
-    eleventh
-  )
+    eleventh,
+  ),
 );
 >>> force multi-line because of contained block
 (first, () {"fn";},third,fourth);
@@ -76,7 +76,7 @@ var record = (
     "fn";
   },
   third,
-  fourth
+  fourth,
 );
 >>> trailing comma in single-element does not split
 (1,);
@@ -85,10 +85,7 @@ var record = (
 >>> trailing comma in multi-element does force split
 (1,2,);
 <<<
-(
-  1,
-  2,
-);
+(1, 2);
 >>> preserve newlines in records containing a line comment
 (
   // yeah
@@ -148,14 +145,14 @@ var record = (
   // comment
   element,
 
-  element
+  element,
 );
 >>> format on one line in an argument list
 longFunctionName((element, element), (element, element, element, element));
 <<<
 longFunctionName(
   (element, element),
-  (element, element, element, element)
+  (element, element, element, element),
 );
 >>> format like a block in an argument list
 longFunctionName((element, element), (element, element, element, element, element));
@@ -167,14 +164,14 @@ longFunctionName(
     element,
     element,
     element,
-    element
-  )
+    element,
+  ),
 );
 >>> format on one line in an argument list
 longFunctionName((element, element, element, element));
 <<<
 longFunctionName(
-  (element, element, element, element)
+  (element, element, element, element),
 );
 >>> format like a block in an argument list
 longFunctionName((element, element, element, element, element));
@@ -184,7 +181,7 @@ longFunctionName((
   element,
   element,
   element,
-  element
+  element,
 ));
 >>> don't allow splitting between field name and record
 var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
@@ -195,7 +192,7 @@ var record = (
   argument,
   recordFieldName: (
     veryLongElement__________,
-  )
+  ),
 );
 >>> don't allow splitting between argument name and record
 longFunctionName(argument, argument, argument, argument, argument, argument,
@@ -210,5 +207,5 @@ longFunctionName(
   argument,
   argumentName: (
     veryLongElement__________,
-  )
+  ),
 );

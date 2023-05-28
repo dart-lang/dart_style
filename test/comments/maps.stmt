@@ -65,7 +65,7 @@ var map = {'a': 'b', // comment
 <<<
 var map = {
   'a': 'b', // comment
-  'c': 'd'
+  'c': 'd',
 };
 >>> line comments after last item
 var map = {'a': 'b' // 1
@@ -73,7 +73,7 @@ var map = {'a': 'b' // 1
 };
 <<<
 var map = {
-  'a': 'b' // 1
+  'a': 'b', // 1
   // 2
 };
 >>> line comments after trailing comma
@@ -92,7 +92,7 @@ var map = {
 <<<
 var map = {
   // comment
-  'foo': 1
+  'foo': 1,
 };
 >>> remove blank lines before beginning of body
 var map = {

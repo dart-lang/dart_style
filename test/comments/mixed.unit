@@ -80,7 +80,7 @@ main() {
     function(
       /*
 comment */
-      argument
+      argument,
     );
   }
 }

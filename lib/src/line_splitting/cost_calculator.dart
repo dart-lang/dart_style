@@ -120,6 +120,18 @@ class CostCalculator {
       }
 
       _column += chunk.text.length;
+
+      // If this chunk can have a trailing comma and we are inserting it, add
+      // one for the comma's length. The comma will be inserted if there is a
+      // split after this chunk (and thus this one is at the end of the line).
+      // If this chunk has a trailing comma and it's the last chunk, then we
+      // assume that it's the last chunk in a comma-delimited block in which
+      // case if we're here (and not in [_traverseUnsplitBlock()], then it must
+      // have split).
+      if (chunk.trailingCommaPosition != -1 &&
+          (i + 1 >= _splitter.chunks.length || _splits.shouldSplitAt(i + 1))) {
+        _column++;
+      }
     }
 
     // Add the costs for the rules that have any splits.

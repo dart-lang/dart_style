@@ -49,7 +49,7 @@ new SomeClass<
 >(valueArgument);
 <<<
 new SomeClass<TypeArgument>(
-  valueArgument
+  valueArgument,
 );
 >>> split both type and value arguments
 new SomeClass<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
@@ -71,7 +71,7 @@ new SomeClass<
   fifth,
   sixth,
   seventh,
-  eighth
+  eighth,
 );
 >>> newline before typed collection should not force <> to split
 {
@@ -91,7 +91,7 @@ new SomeClass<
 (longFunction)<TypeArgument>(valueArgument);
 <<<
 (longFunction)<TypeArgument>(
-  valueArgument
+  valueArgument,
 );
 >>> type arguments on invocation expressions split both type and value arguments
 (longFunction)<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
@@ -113,7 +113,7 @@ new SomeClass<
   fifth,
   sixth,
   seventh,
-  eighth
+  eighth,
 );
 >>> generic instantiation all fit on one line
 Foo<A,B,C,D>;

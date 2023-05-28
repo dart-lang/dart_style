@@ -10,10 +10,7 @@ enum Primate { bonobo, chimp, gorilla }
 >>> trailing comma always splits
 enum Primate{bonobo,chimp,}
 <<<
-enum Primate {
-  bonobo,
-  chimp,
-}
+enum Primate { bonobo, chimp }
 >>> metadata
 @Awesome @Fierce("really")
 enum Primate{bonobo,chimp,gorilla}
@@ -41,7 +38,7 @@ enum Primate {
 
   chimp,
 
-  gorilla
+  gorilla,
 }
 >>> do not preserve single newline
 enum Primate {
@@ -224,7 +221,7 @@ third(named:1,2,another:3)
 enum Args {
   first(),
   second(a, b, c),
-  third(named: 1, 2, another: 3)
+  third(named: 1, 2, another: 3),
 }
 >>> generic enum
 enum MagicNumbers< T    extends num   ,   S> {
@@ -234,7 +231,7 @@ enum MagicNumbers< T    extends num   ,   S> {
 enum MagicNumbers<T extends num, S> {
   one(1),
   two(2),
-  pi<double, String>(3.14159)
+  pi<double, String>(3.14159),
 }
 >>> trailing commas in value arguments
 enum Numbers {
@@ -242,23 +239,14 @@ enum Numbers {
   two(1,2,),
 }
 <<<
-enum Numbers {
-  one(
-    1,
-  ),
-  two(
-    1,
-    2,
-  ),
-}
+enum Numbers { one(1), two(1, 2) }
 >>> trailing comma and semicolon after constants
 enum E {a,b,c,;}
 <<<
 enum E {
   a,
   b,
-  c,
-  ;
+  c;
 }
 >>> trailing comma and semicolon after constants with member
 enum E {a,b,c,;var x;}
@@ -266,8 +254,7 @@ enum E {a,b,c,;var x;}
 enum E {
   a,
   b,
-  c,
-  ;
+  c;
 
   var x;
 }
@@ -277,8 +264,7 @@ enum E {a,b,c(123),;}
 enum E {
   a,
   b,
-  c(123),
-  ;
+  c(123);
 }
 >>> discard trailing newlines in body
 enum E {
@@ -290,9 +276,7 @@ enum E {
 
 }
 <<<
-enum E {
-  a,
-}
+enum E { a }
 >>> discard trailing newlines in body
 enum E {
   a;

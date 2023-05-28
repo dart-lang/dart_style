@@ -6,7 +6,7 @@ enum Primate {
   BONOBO,
   CHIMP,
   GORILLA,
-  ORANGUTAN
+  ORANGUTAN,
 }
 >>> multiple lines trailing comma
 enum Primate{BONOBO,CHIMP,GORILLA,ORANGUTAN,}
@@ -29,13 +29,13 @@ LastTypeArgument>(namedArgument: firstValue,anotherNamed:argumentValue)
 enum Args {
   firstEnumValue(
     longArgument,
-    anotherArgument
+    anotherArgument,
   ),
   secondEnumValue(
     longArgument,
     anotherArgument,
     aThirdArgument,
-    theLastOne
+    theLastOne,
   ),
   thirdGenericOne<
     FirstTypeArgument,
@@ -46,6 +46,6 @@ enum Args {
     LastTypeArgument
   >(
     namedArgument: firstValue,
-    anotherNamed: argumentValue
-  )
+    anotherNamed: argumentValue,
+  ),
 }

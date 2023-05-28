@@ -61,7 +61,7 @@ lengthyMethodName<
   fifth,
   sixth,
   seventh,
-  eighth
+  eighth,
 ) {}
 >>> type parameters and => body
 longFunctionName<LongTypeParameterT, LongTypeParameterS>() => body;
@@ -88,8 +88,8 @@ longFunctionName(
     AnotherTypeParam
   >(
     LongTypeParameter parameter,
-    AnotherTypeParam another
-  )
+    AnotherTypeParam another,
+  ),
 ) {
   ;
 }

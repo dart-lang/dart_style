@@ -55,7 +55,7 @@ int i = 0;
 int i = 0;
 <<<
 @SomeBigClass<TypeArgument>(
-  valueArgument
+  valueArgument,
 )
 int i = 0;
 >>> split both type and value arguments
@@ -78,7 +78,7 @@ int i = 0;
   fifth,
   sixth,
   seventh,
-  eighth
+  eighth,
 )
 int i = 0;
 >>> prefer to split at arguments rather than prefix
@@ -90,7 +90,7 @@ int i = 0;
 >(
   veryLongArgument,
   otherVeryLongArgument,
-  thirdVeryLongArgument
+  thirdVeryLongArgument,
 )
 int i = 0;
 >>> nested type arguments, no splitting required
@@ -125,7 +125,7 @@ Function(
   @annotation int param1,
   int param2,
   @annotation int param3,
-  int param4
+  int param4,
 ) func;
 >>> on unsplit record type field
 (@a int, {@a double d}) record;
@@ -137,5 +137,5 @@ Function(
 (
   @anno @tation int,
   @annotation String s, {
-  @annotation double d
+  @annotation double d,
 }) record;

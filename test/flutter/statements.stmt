@@ -52,5 +52,5 @@ function(int parameter1, String parameter2) {}
 <<<
 function(
   int parameter1,
-  String parameter2
+  String parameter2,
 ) {}

@@ -48,15 +48,11 @@ var set = {...?a, ...?b, 1, ...?c};
 >>> if
 var list = [   if   ( c    )   1    ,];
 <<<
-var list = [
-  if (c) 1,
-];
+var list = [if (c) 1];
 >>> if else
 var list = [   if   ( c    )   1    else    2   ,];
 <<<
-var list = [
-  if (c) 1 else 2,
-];
+var list = [if (c) 1 else 2];
 >>> c-style for
 var l = [for   (  var  i  =  0  ;  i  <  1  ;  i++  )  i];
 <<<
