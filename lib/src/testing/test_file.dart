@@ -46,7 +46,6 @@ class TestFile {
 
   /// Reads the test file from [file].
   factory TestFile._load(File file, String relativePath) {
-    // Explicitly create a File, in case the entry is a Link.
     var lines = file.readAsLinesSync();
 
     // The first line may have a "|" to indicate the page width.
