@@ -15,7 +15,7 @@ Future<String> findTestDirectory() async {
   var libraryUri = await Isolate.resolvePackageUri(
       Uri.parse('package:dart_style/src/testing/test_file.dart'));
   return p.normalize(
-      (p.join(p.dirname(libraryUri!.toFilePath()), '../../../test')));
+      p.join(p.dirname(libraryUri!.toFilePath()), '../../../test'));
 }
 
 /// A file containing a series of formatting tests.
