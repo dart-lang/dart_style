@@ -44,8 +44,8 @@ variableName = functionName(
 >>> long binary expression initializer
 variableName = argument * argument + argument;
 <<<
-variableName = argument * argument +
-    argument;
+variableName =
+    argument * argument + argument;
 >>> prefer to split at "=" instead of pattern
 (longIdentifier && anotherOne) = longValue;
 <<<
@@ -99,13 +99,10 @@ Foo(
 >>> split in value
 (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
 <<<
-(
-  first,
-  second,
-  third,
-) = longValueExpression +
-    anotherOperand +
-    aThirdOperand;
+(first, second, third) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
 >>> expression split in both
 (veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
 <<<

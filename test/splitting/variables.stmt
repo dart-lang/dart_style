@@ -39,8 +39,8 @@ var variableName = functionName(
 >>> long binary expression initializer
 int variableName = argument * argument + argument;
 <<<
-int variableName = argument * argument +
-    argument;
+int variableName =
+    argument * argument + argument;
 >>> lots of variables with no initializers
 var variableA, variableB, variableC, variableD;
 <<<
@@ -137,13 +137,10 @@ var Foo(
 >>> split in value
 var (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
 <<<
-var (
-  first,
-  second,
-  third,
-) = longValueExpression +
-    anotherOperand +
-    aThirdOperand;
+var (first, second, third) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
 >>> expression split in both
 var (longIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
 <<<

@@ -20,7 +20,11 @@ class Cost {
   static const normal = 1;
 
   /// Splitting after a "=".
-  static const assign = 2;
+  static const assign = 1;
+
+  /// Splitting after a "=" when the RHS is a function call or collection
+  /// literal.
+  static const assignDelimited = 2;
 
   /// Splitting inside the brackets of a list with only one element.
   static const singleElementList = 2;

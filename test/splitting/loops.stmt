@@ -172,13 +172,10 @@ for (var [
 for (var (first, second, third) = longValueExpression + anotherOperand +
 aThirdOperand; cond; inc) {;}
 <<<
-for (var (
-      first,
-      second,
-      third,
-    ) = longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+for (var (first, second, third) =
+        longValueExpression +
+            anotherOperand +
+            aThirdOperand;
     cond;
     inc) {
   ;

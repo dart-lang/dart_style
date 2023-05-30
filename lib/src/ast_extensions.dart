@@ -84,11 +84,11 @@ extension AstNodeExtensions on AstNode {
   bool get isDelimitedOrCall {
     if (isDelimited) return true;
 
-    var node = this;
     // TODO: Only targetless ones?
-    if (node is MethodInvocation) {
-      return true;
-    }
+    if (this is MethodInvocation) return true;
+
+    // TODO: Test.
+    if (this is InstanceCreationExpression) return true;
 
     return false;
   }

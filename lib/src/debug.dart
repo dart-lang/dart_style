@@ -143,6 +143,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
             } else {
               spanBars += span.cost.toString();
             }
+          } else {
+            spanBars += ' ';
           }
         }
       }

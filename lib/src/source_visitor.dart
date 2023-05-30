@@ -671,8 +671,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startBlockArgumentNesting();
     builder.unnest();
 
-    builder.startSpan();
-
     split();
     token(node.question);
     space();
@@ -691,7 +689,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.parent is ConditionalExpression) builder.forceRules();
 
     builder.endRule();
-    builder.endSpan();
     builder.endBlockArgumentNesting();
 
     // TODO(rnystrom): Consider revisiting whether users prefer this after 2.13.
@@ -843,23 +840,37 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitDefaultFormalParameter(DefaultFormalParameter node) {
     visit(node.parameter);
-    if (node.separator != null) {
+    if (node.separator case var separator?) {
       builder.startSpan();
       builder.nestExpression();
 
       if (_formatter.fixes.contains(StyleFix.namedDefaultSeparator)) {
         // Change the separator to "=".
         space();
-        writePrecedingCommentsAndNewlines(node.separator!);
-        _writeText('=', node.separator!);
+        writePrecedingCommentsAndNewlines(separator);
+        _writeText('=', separator);
       } else {
         // The '=' separator is preceded by a space, ":" is not.
-        if (node.separator!.type == TokenType.EQ) space();
-        token(node.separator);
+        if (separator.type == TokenType.EQ) space();
+        token(separator);
       }
 
-      soloSplit(Cost.assign);
-      visit(node.defaultValue);
+      // TODO: Needs tests.
+      // If the expression has a delimited body, prefer to split the body instead
+      // of at the `=`. Prefer:
+      //
+      //      var x = foo(
+      //        argument,
+      //      );
+      //
+      // Over:
+      //
+      //      var x =
+      //          foo(argument);
+      soloSplit(node.defaultValue!.isDelimitedOrCall
+          ? Cost.assignDelimited
+          : Cost.assign);
+      visit(node.defaultValue!);
 
       builder.unnest();
       builder.endSpan();
@@ -3297,7 +3308,20 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (nest) builder.nestExpression(now: true);
 
-    soloSplit(Cost.assign);
+    // TODO: Needs tests.
+    // If the expression has a delimited body, prefer to split the body instead
+    // of at the `=`. Prefer:
+    //
+    //      var x = foo(
+    //        argument,
+    //      );
+    //
+    // Over:
+    //
+    //      var x =
+    //          foo(argument);
+    soloSplit(
+        rightHandSide.isDelimitedOrCall ? Cost.assignDelimited : Cost.assign);
 
     // Don't wrap the right hand side in a span. This allows initializers that
     // are collections or function calls to split inside the body, like:
