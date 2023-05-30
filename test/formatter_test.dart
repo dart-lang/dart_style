@@ -10,12 +10,12 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-void main() {
-  testDirectory('comments');
-  testDirectory('regression');
-  testDirectory('selections');
-  testDirectory('splitting');
-  testDirectory('whitespace');
+void main() async {
+  await testDirectory('comments');
+  await testDirectory('regression');
+  await testDirectory('selections');
+  await testDirectory('splitting');
+  await testDirectory('whitespace');
 
   test('throws a FormatterException on failed parse', () {
     var formatter = DartFormatter();

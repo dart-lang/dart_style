@@ -23,7 +23,7 @@ longFunctionIsLoooooooooooooong(
     argument, argument);
 >>> wrap with just one argument
 print('a very very long string literal');
-<<<<
+<<<
 print(
     'a very very long string literal');
 >>>

@@ -10,13 +10,13 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-void main() {
-  testFile(
+void main() async {
+  await testFile(
       'fixes/named_default_separator.unit', [StyleFix.namedDefaultSeparator]);
-  testFile('fixes/doc_comments.stmt', [StyleFix.docComments]);
-  testFile('fixes/function_typedefs.unit', [StyleFix.functionTypedefs]);
-  testFile('fixes/optional_const.unit', [StyleFix.optionalConst]);
-  testFile('fixes/optional_new.stmt', [StyleFix.optionalNew]);
-  testFile('fixes/single_cascade_statements.stmt',
+  await testFile('fixes/doc_comments.stmt', [StyleFix.docComments]);
+  await testFile('fixes/function_typedefs.unit', [StyleFix.functionTypedefs]);
+  await testFile('fixes/optional_const.unit', [StyleFix.optionalConst]);
+  await testFile('fixes/optional_new.stmt', [StyleFix.optionalNew]);
+  await testFile('fixes/single_cascade_statements.stmt',
       [StyleFix.singleCascadeStatements]);
 }

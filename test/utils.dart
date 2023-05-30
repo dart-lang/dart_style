@@ -2,12 +2,10 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-library dart_style.test.utils;
-
 import 'dart:io';
-import 'dart:mirrors';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
@@ -19,10 +17,6 @@ const formattedSource = 'void main() => print("hello");\n';
 /// The same as formatted source but without a trailing newline because
 /// [TestProcess] filters those when it strips command line output into lines.
 const formattedOutput = 'void main() => print("hello");';
-
-final _indentPattern = RegExp(r'\(indent (\d+)\)');
-final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
-final _unicodePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 
 /// If tool/command_shell.dart has been compiled to a snapshot, this is the path
 /// to it.
@@ -70,14 +64,7 @@ Future<String> _compileSnapshot(String script) async {
   var tempDir =
       await Directory.systemTemp.createTemp(p.withoutExtension(scriptName));
   var snapshot = p.join(tempDir.path, '$scriptName.snapshot');
-
-  // Locate the "test" directory. Use mirrors so that this works with the test
-  // package, which loads this suite into an isolate.
-  var testDir = p.dirname(currentMirrorSystem()
-      .findLibrary(#dart_style.test.utils)
-      .uri
-      .toFilePath());
-  var scriptPath = p.normalize(p.join(p.dirname(testDir), script));
+  var scriptPath = p.normalize(p.join(await findTestDirectory(), '..', script));
 
   var compileResult = await Process.run(Platform.resolvedExecutable, [
     '--snapshot-kind=app-jit',
@@ -141,158 +128,44 @@ Future<TestProcess> runCommandOnDir([List<String>? args]) {
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
-void testDirectory(String name, [Iterable<StyleFix>? fixes]) {
-  // Locate the "test" directory. Use mirrors so that this works with the test
-  // package, which loads this suite into an isolate.
-  // TODO(rnystrom): Investigate using Isolate.resolvePackageUri instead.
-  var testDir = p.dirname(currentMirrorSystem()
-      .findLibrary(#dart_style.test.utils)
-      .uri
-      .toFilePath());
-
-  var entries = Directory(p.join(testDir, name))
-      .listSync(recursive: true, followLinks: false);
-  entries.sort((a, b) => a.path.compareTo(b.path));
-
-  for (var entry in entries) {
-    if (!entry.path.endsWith('.stmt') && !entry.path.endsWith('.unit')) {
-      continue;
-    }
-
-    _testFile(name, entry.path, fixes);
+Future<void> testDirectory(String name, [Iterable<StyleFix>? fixes]) async {
+  for (var test in await TestFile.listDirectory(name)) {
+    _testFile(test, fixes);
   }
 }
 
-void testFile(String path, [Iterable<StyleFix>? fixes]) {
-  // Locate the "test" directory. Use mirrors so that this works with the test
-  // package, which loads this suite into an isolate.
-  var testDir = p.dirname(currentMirrorSystem()
-      .findLibrary(#dart_style.test.utils)
-      .uri
-      .toFilePath());
-
-  _testFile(p.dirname(path), p.join(testDir, path), fixes);
+Future<void> testFile(String path, [Iterable<StyleFix>? fixes]) async {
+  _testFile(await TestFile.read(path), fixes);
 }
 
-void _testFile(String name, String path, Iterable<StyleFix>? baseFixes) {
-  var fixes = [...?baseFixes];
-
-  group('$name ${p.basename(path)}', () {
-    // Explicitly create a File, in case the entry is a Link.
-    var lines = File(path).readAsLinesSync();
-
-    // The first line may have a "|" to indicate the page width.
-    int? pageWidth;
-    if (lines[0].endsWith('|')) {
-      pageWidth = lines[0].indexOf('|');
-      lines = lines.skip(1).toList();
-    }
-
-    var i = 0;
-    while (i < lines.length) {
-      var description = lines[i++].replaceAll('>>>', '');
-
-      // Let the test specify a leading indentation. This is handy for
-      // regression tests which often come from a chunk of nested code.
-      var leadingIndent = 0;
-      description = description.replaceAllMapped(_indentPattern, (match) {
-        leadingIndent = int.parse(match[1]!);
-        return '';
-      });
-
-      // Let the test specify fixes to apply.
-      description = description.replaceAllMapped(_fixPattern, (match) {
-        fixes.add(StyleFix.all.firstWhere((fix) => fix.name == match[1]));
-        return '';
-      });
-
-      description = description.trim();
-
-      if (description == '') {
-        description = 'line ${i + 1}';
-      } else {
-        description = 'line ${i + 1}: $description';
-      }
-
-      var input = '';
-      while (!lines[i].startsWith('<<<')) {
-        input += '${lines[i++]}\n';
-      }
-
-      var expectedOutput = '';
-      while (++i < lines.length && !lines[i].startsWith('>>>')) {
-        expectedOutput += '${lines[i]}\n';
-      }
-
-      // Unescape special Unicode escape markers.
-      input = _unescapeUnicode(input);
-      expectedOutput = _unescapeUnicode(expectedOutput);
-
-      // TODO(rnystrom): Stop skipping these tests when possible.
-      if (description.contains('(skip:')) {
-        print('skipping $description');
-        continue;
-      }
-
-      test(description, () {
-        var isCompilationUnit = p.extension(path) == '.unit';
-
-        var inputCode =
-            _extractSelection(input, isCompilationUnit: isCompilationUnit);
-
-        var expected = _extractSelection(expectedOutput,
-            isCompilationUnit: isCompilationUnit);
-        var expectedText = expected.text;
-
+void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
+  group(testFile.path, () {
+    for (var formatTest in testFile.tests) {
+      test(formatTest.label, () {
         var formatter = DartFormatter(
-            pageWidth: pageWidth, indent: leadingIndent, fixes: fixes);
+            pageWidth: testFile.pageWidth,
+            indent: formatTest.leadingIndent,
+            fixes: [...?baseFixes, ...formatTest.fixes]);
 
-        var actual = formatter.formatSource(inputCode);
+        var actual = formatter.formatSource(formatTest.input);
 
         // The test files always put a newline at the end of the expectation.
         // Statements from the formatter (correctly) don't have that, so add
         // one to line up with the expected result.
         var actualText = actual.text;
-        if (!isCompilationUnit) actualText += '\n';
+        if (!testFile.isCompilationUnit) actualText += '\n';
 
         // Fail with an explicit message because it's easier to read than
         // the matcher output.
-        if (actualText != expectedText) {
+        if (actualText != formatTest.output.text) {
           fail('Formatting did not match expectation. Expected:\n'
-              '$expectedText\nActual:\n$actualText');
+              '${formatTest.output.text}\nActual:\n$actualText');
         }
 
-        expect(actual.selectionStart, equals(expected.selectionStart));
-        expect(actual.selectionLength, equals(expected.selectionLength));
+        expect(actual.selectionStart, equals(formatTest.output.selectionStart));
+        expect(
+            actual.selectionLength, equals(formatTest.output.selectionLength));
       });
     }
-  });
-}
-
-/// Given a source string that contains ‹ and › to indicate a selection, returns
-/// a [SourceCode] with the text (with the selection markers removed) and the
-/// correct selection range.
-SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
-  var start = source.indexOf('‹');
-  source = source.replaceAll('‹', '');
-
-  var end = source.indexOf('›');
-  source = source.replaceAll('›', '');
-
-  return SourceCode(source,
-      isCompilationUnit: isCompilationUnit,
-      selectionStart: start == -1 ? null : start,
-      selectionLength: end == -1 ? null : end - start);
-}
-
-/// Turn the special Unicode escape marker syntax used in the tests into real
-/// Unicode characters.
-///
-/// This does not use Dart's own string escape sequences so that we don't
-/// accidentally modify the Dart code being formatted.
-String _unescapeUnicode(String input) {
-  return input.replaceAllMapped(_unicodePattern, (match) {
-    var codePoint = int.parse(match[1]!, radix: 16);
-    return String.fromCharCode(codePoint);
   });
 }
