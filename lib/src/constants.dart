@@ -42,7 +42,7 @@ class Cost {
   static const typeParameterList = 2;
 
   /// Split between a type annotation and the annotated thing.
-  static const typeAnnotation = 4;
+  static const typeAnnotation = 2;
 }
 
 /// Constants for the number of spaces for various kinds of indentation.

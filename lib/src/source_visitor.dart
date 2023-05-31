@@ -1240,13 +1240,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitFieldDeclaration(FieldDeclaration node) {
     visitMetadata(node.metadata);
 
-    _simpleStatement(node, () {
-      modifier(node.externalKeyword);
-      modifier(node.staticKeyword);
-      modifier(node.abstractKeyword);
-      modifier(node.covariantKeyword);
-      visit(node.fields);
-    });
+    modifier(node.externalKeyword);
+    modifier(node.staticKeyword);
+    modifier(node.abstractKeyword);
+    modifier(node.covariantKeyword);
+    visit(node.fields);
+    token(node.semicolon);
   }
 
   @override
@@ -1254,8 +1253,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
       token(node.keyword, after: space);
-      visit(node.type);
-      _separatorBetweenTypeAndVariable(node.type);
+      visit(node.type, after: split);
       token(node.thisKeyword);
       token(node.period);
       token(node.name);
@@ -2615,25 +2613,8 @@ class SourceVisitor extends ThrowingAstVisitor {
         });
       } else {
         modifier(node.keyword);
-        // TODO: This was the code on main. I don't think it needs to be merged
-        // because _separatorBetweenTypeAndVariable() has similar logic, but
-        // leaving here for now so I can investigate the related test failures
-        // before I delete it.
-        // This was on main instead of the next three lines:
-        //         visit(type);
-        //         if (node.identifier != null && type != null) {
-        //           if (type is GenericFunctionType) {
-        //             // Don't split after function types. Instead, keep the variable
-        //             // name right after the `)`.
-        //             space();
-        //           } else {
-        //             split();
-        //           }
-        //         }
-        //         visit(node.identifier);
-
         visit(node.type);
-        if (node.name != null) _separatorBetweenTypeAndVariable(node.type);
+        if (node.name != null && node.type != null) split();
         token(node.name);
       }
 
@@ -2917,10 +2898,9 @@ class SourceVisitor extends ThrowingAstVisitor {
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
     visitMetadata(node.metadata);
 
-    _simpleStatement(node, () {
-      modifier(node.externalKeyword);
-      visit(node.variables);
-    });
+    modifier(node.externalKeyword);
+    visit(node.variables);
+    token(node.semicolon);
   }
 
   @override
@@ -2987,8 +2967,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     modifier(node.lateKeyword);
     modifier(node.keyword);
-    visit(node.type);
-    _separatorBetweenTypeAndVariable(node.type, isSolo: true);
+    visit(node.type, after: soloSplit);
 
     builder.endSpan();
 
@@ -3000,6 +2979,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // line.
     builder.startRule();
 
+    builder.nestExpression();
+
     // If there are multiple declarations split across lines, then we want any
     // blocks in the initializers to indent past the variables.
     if (node.variables.length > 1) builder.startBlockArgumentNesting();
@@ -3008,15 +2989,16 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     if (node.variables.length > 1) builder.endBlockArgumentNesting();
 
+    builder.unnest();
+
     builder.endRule();
     _endPossibleConstContext(node.keyword);
   }
 
   @override
   void visitVariableDeclarationStatement(VariableDeclarationStatement node) {
-    _simpleStatement(node, () {
-      visit(node.variables);
-    });
+    visit(node.variables);
+    token(node.semicolon);
   }
 
   @override
@@ -3718,14 +3700,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Begins writing a formal parameter of any kind.
   void _beginFormalParameter(FormalParameter node) {
     builder.startLazyRule(Rule(Cost.typeAnnotation));
-    builder.nestExpression();
     modifier(node.requiredKeyword);
     modifier(node.covariantKeyword);
   }
 
   /// Ends writing a formal parameter of any kind.
   void _endFormalParameter(FormalParameter node) {
-    builder.unnest();
     builder.endRule();
   }
 
@@ -3741,7 +3721,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       TypeParameterList? typeParameters,
       FormalParameterList parameters) {
     builder.startLazyRule(Rule(Cost.typeAnnotation));
-    builder.nestExpression();
 
     visit(returnType, after: split);
     if (functionKeyword != null) {
@@ -3750,7 +3729,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       _writeText('Function', positionToken!);
     }
 
-    builder.unnest();
     builder.endRule();
     _visitParameterSignature(typeParameters, parameters);
   }
@@ -3832,29 +3810,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(whenClause.whenKeyword);
     space();
     visit(whenClause.expression);
-  }
-
-  /// Writes the separator between a type annotation and a variable or
-  /// parameter. If the preceding type annotation ends in a delimited list of
-  /// elements that have block formatting, then we don't split between the
-  /// type annotation and parameter name, as in:
-  ///
-  ///     Function(
-  ///       int,
-  ///     ) variable;
-  ///
-  /// Otherwise, we can.
-  void _separatorBetweenTypeAndVariable(TypeAnnotation? type,
-      {bool isSolo = false}) {
-    if (type == null) return;
-
-    if (type is GenericFunctionType || type is RecordTypeAnnotation) {
-      space();
-    } else if (isSolo) {
-      soloSplit();
-    } else {
-      split();
-    }
   }
 
   /// Whether [node] should be forced to split even if completely empty.

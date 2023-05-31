@@ -118,7 +118,7 @@ var map = {
 ;
 <<<
 var map = {a: b, c: d} // comment
-    ;
+;
 >>> preserves one blank line between elements
 var map = {
 

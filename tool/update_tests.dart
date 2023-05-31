@@ -35,7 +35,7 @@ void main(List<String> arguments) async {
     }
   }
 
-  print('${unchanged} tests were unchanged.');
+  print('$unchanged tests were unchanged.');
 }
 
 final _unsupportedPaths = [
@@ -72,7 +72,7 @@ Future<int> _updateTestFile(TestFile testFile) async {
   var pageWidth = testFile.pageWidth;
   if (pageWidth != null) {
     var columns = '$pageWidth columns';
-    columns += ' ' * (pageWidth - columns.length) + '|';
+    columns += '${' ' * (pageWidth - columns.length)}|';
     buffer.writeln(columns);
   }
 

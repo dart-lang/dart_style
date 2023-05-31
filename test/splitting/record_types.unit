@@ -21,28 +21,21 @@ function(
 function((VeryLongTypeName___________________,) param) {;}
 <<<
 function(
-  (
-    VeryLongTypeName___________________,
-  ) param,
+  (VeryLongTypeName___________________,)
+  param,
 ) {
   ;
 }
 >>> prefer to split between type and variable
 (LongTypeName, LongTypeName) longVariableName;
 <<<
-(
-  LongTypeName,
-  LongTypeName,
-) longVariableName;
+(LongTypeName, LongTypeName)
+longVariableName;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName) x;
 <<<
-(
-  TypeName,
-  TypeName,
-  TypeName,
-  TypeName,
-) x;
+(TypeName, TypeName, TypeName, TypeName)
+x;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName,TypeName) x;
 <<<
@@ -126,7 +119,8 @@ function(
     TypeName,
     TypeName,
     TypeName,
-  ) record,
+  )
+  record,
 ) {
   ;
 }

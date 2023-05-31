@@ -35,7 +35,7 @@ class Foo {
 class Foo {
   covariant var soMuchSoVeryLongFieldNameHere;
   covariant VeryLongTypeAnnotation
-      field;
+  field;
 }
 >>> do not split after "external" in field
 class Foo {
@@ -46,7 +46,7 @@ class Foo {
 class Foo {
   external var soMuchSoVeryLongFieldNameHere;
   external SuperLongTypeAnnotation
-      field;
+  field;
 }
 >>> do not split after "abstract" in field
 class Foo {
@@ -57,5 +57,5 @@ class Foo {
 class Foo {
   abstract var soMuchSoVeryLongFieldNameHere;
   abstract SuperLongTypeAnnotation
-      field;
+  field;
 }

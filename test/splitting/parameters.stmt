@@ -143,5 +143,5 @@ doStuff(VerylongParameterType longParameterName) {}
 <<<
 doStuff(
   VerylongParameterType
-      longParameterName,
+  longParameterName,
 ) {}

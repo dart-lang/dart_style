@@ -50,7 +50,7 @@ class A {
 class A {
   longMethod(
     covariant int
-        veryLongParameterNameWow,
+    veryLongParameterNameWow,
   ) {}
 }
 >>> split before "required"
@@ -84,7 +84,7 @@ class A {
 class A {
   longMethod({
     required int
-        veryLongParameterNameWow,
+    veryLongParameterNameWow,
   }) {}
 }
 >>> don't split between "required" and "covariant"
@@ -95,7 +95,7 @@ class A {
 class A {
   longMethod({
     required covariant int
-        veryLongParameterNameWow,
+    veryLongParameterNameWow,
   }) {}
 }
 >>> split between field type and name
@@ -106,6 +106,6 @@ class Foo {
 class Foo {
   Foo(
     VerylongParameterType
-        this.parameterName,
+    this.parameterName,
   ) {}
 }

@@ -37,10 +37,8 @@
 >>> named fields trailing comma
 (  {  int  longValue  ,  String  veryLongLabel  ,  } ) x;
 <<<
-({
-  int longValue,
-  String veryLongLabel,
-}) x;
+({int longValue, String veryLongLabel})
+x;
 >>> nullable record type
 (  int  ,   bool  )   ?  x;
 <<<

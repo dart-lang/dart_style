@@ -187,3 +187,8 @@ var (longIdentifier &&
   fourth,
   fifth,
 );
+>>> long type name
+SomeVeryLongTypeName someLongVariableName;
+<<<
+SomeVeryLongTypeName
+someLongVariableName;

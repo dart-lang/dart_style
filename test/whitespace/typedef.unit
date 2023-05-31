@@ -30,7 +30,8 @@ typedef SomeFunc = Function(
     int first,
     bool second,
     String third,
-  ) second,
+  )
+  second,
   String third,
 );
 >>> without param names
