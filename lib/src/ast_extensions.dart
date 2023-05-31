@@ -141,6 +141,25 @@ extension AstIterableExtensions on Iterable<AstNode> {
 }
 
 extension ExpressionExtensions on Expression {
+  /// Given that `this` is a collection literal, or a [NamedExpression]
+  /// containing a collection literal, returns the opening delimiter token for
+  /// it.
+  Token get collectionDelimiter {
+    // Unwrap named arguments.
+    var expression = this;
+    if (expression is NamedExpression) {
+      expression = expression.expression;
+    }
+
+    return switch (expression) {
+      ListLiteral(:var leftBracket) ||
+      SetOrMapLiteral(:var leftBracket) =>
+      leftBracket,
+      RecordLiteral(:var leftParenthesis) => leftParenthesis,
+      _ => throw ArgumentError.value(expression, 'expression')
+    };
+  }
+
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
     var parent = this.parent;
@@ -258,5 +277,37 @@ extension CascadeExpressionExtensions on CascadeExpression {
     if (target is AwaitExpression) return false;
 
     return true;
+  }
+}
+
+extension ExpressionListExtensions on List<Expression> {
+  /// If [arguments] contains a single argument whose expression can receive
+  /// block formatting, then returns it. Otherwise returns `null`.
+  Expression? get blockArgument {
+    Expression? blockArgument;
+
+    for (var argument in this) {
+      // Unwrap named arguments.
+      var expression = argument;
+      if (expression is NamedExpression) {
+        expression = expression.expression;
+      }
+
+      switch (expression) {
+        case FunctionExpression(body: BlockFunctionBody()):
+        case ListLiteral():
+        case SetOrMapLiteral():
+        case RecordLiteral():
+        case SimpleStringLiteral(isMultiline: true):
+        case StringInterpolation(isMultiline: true):
+          // If we found multiple, then don't give any of them block formatting.
+          if (blockArgument != null) return null;
+
+          // We found one.
+          blockArgument = argument;
+      }
+    }
+
+    return blockArgument;
   }
 }

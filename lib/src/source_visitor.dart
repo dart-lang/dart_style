@@ -3126,28 +3126,28 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   void _visitArgumentList(Token leftParenthesis, List<Expression> arguments,
       Token rightParenthesis) {
-    if (_tryVisitBlockArgumentList(
-        leftParenthesis, arguments, rightParenthesis)) {
-      return;
+    var blockArgument = arguments.blockArgument;
+    if (blockArgument != null) {
+      _visitBlockArgumentList(
+          leftParenthesis, arguments, rightParenthesis, blockArgument);
+    } else {
+      // No argument that needs special block argument handling, so format the
+      // argument list like a regular body.
+      var rule = Rule();
+      _beginBody(leftParenthesis, rule: rule);
+
+      for (var argument in arguments) {
+        builder.split(nest: false, space: argument != arguments.first);
+        visit(argument);
+        writeCommaAfter(argument, isTrailing: argument == arguments.last);
+      }
+
+      _endBody(rightParenthesis);
     }
-
-    // No argument that needs special block argument handling, so format the
-    // argument list like a regular body.
-    var rule = Rule();
-    _beginBody(leftParenthesis, rule: rule);
-
-    for (var argument in arguments) {
-      builder.split(nest: false, space: argument != arguments.first);
-      visit(argument);
-      writeCommaAfter(argument, isTrailing: argument == arguments.last);
-    }
-
-    _endBody(rightParenthesis);
   }
 
-  /// If [arguments] is an argument list with a single argument that should
-  /// have block formatting, then formats it using block formatting and returns
-  /// `true`. Otherwise returns `false`.
+  /// Visits an argument list [arguments] which contains a single argument
+  /// [blockArgument] that should have block formatting.
   ///
   /// We allow one collection or block function expression to have block-like
   /// formatting, as in:
@@ -3161,43 +3161,18 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// seem to do that and because if that's allowed, it's not clear how to
   /// handle the case where some of the block-like arguments need to split and
   /// others don't.
-  bool _tryVisitBlockArgumentList(Token leftParenthesis,
-      List<Expression> arguments, Token rightParenthesis) {
-    Expression? blockArgument;
-    Token? blockDelimiter;
-
-    for (var argument in arguments) {
-      // Unwrap named arguments.
-      var expression = argument;
-      if (expression is NamedExpression) {
-        expression = expression.expression;
-      }
-
-      var (isBlock, delimiter) = switch (expression) {
-        FunctionExpression(:BlockFunctionBody body) => (
-            true,
-            body.block.leftBracket
-          ),
-        ListLiteral(:var leftBracket) => (true, leftBracket),
-        SetOrMapLiteral(:var leftBracket) => (true, leftBracket),
-        RecordLiteral(:var leftParenthesis) => (true, leftParenthesis),
-        // Allow multi-line strings to have block formatting.
-        SimpleStringLiteral(isMultiline: true) => (true, null),
-        StringInterpolation(isMultiline: true) => (true, null),
-        _ => (false, null)
-      };
-
-      if (isBlock) {
-        // If we found multiple, then don't give any of them block formatting.
-        if (blockArgument != null) return false;
-
-        // We found one.
-        blockArgument = argument;
-        blockDelimiter = delimiter;
-      }
-    }
-
-    if (blockArgument == null) return false;
+  void _visitBlockArgumentList(
+      Token leftParenthesis,
+      List<Expression> arguments,
+      Token rightParenthesis,
+      Expression blockArgument) {
+    // TODO: If there is only one argument and it's a block argument, should we
+    // for block formatting? Currently, the formatter allows:
+    //
+    //     function(
+    //       [listItem, secondItem, thirdItem],
+    //     );
+    // Might be worth preventing that.
 
     // If there is a block argument, then we need to handle the argument
     // list and all of its arguments together instead of putting the arguments
@@ -3220,7 +3195,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       rule = CollectionArgumentListRule();
 
       // Let the argument list control whether the collection splits.
-      _blockCollectionRules[blockDelimiter!] = rule;
+      _blockCollectionRules[blockArgument.collectionDelimiter] = rule;
     }
 
     builder.startRule(rule);
@@ -3271,7 +3246,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.endBlockArgumentNesting();
     builder.unnest();
     builder.endRule();
-    return true;
   }
 
   /// Visits the `=` and the following expression in any place where an `=`
