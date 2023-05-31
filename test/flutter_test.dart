@@ -10,6 +10,6 @@ import 'package:test/test.dart';
 
 import 'utils.dart';
 
-void main() {
-  testFile('flutter/statements.stmt');
+void main() async {
+  await testDirectory('flutter');
 }

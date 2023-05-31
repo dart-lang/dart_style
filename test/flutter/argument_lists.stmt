@@ -15,7 +15,7 @@ longFunctionName(
     element,
     element,
   ],
-  element__element
+  element__element,
 );
 >>>
 longFunction(
@@ -49,13 +49,13 @@ longFunctionName(
   () {
     ;
   },
-  element__element
+  element__element,
 );
 >>>
 longFunctionName((element, element, element, element));
 <<<
 longFunctionName(
-  (element, element, element, element)
+  (element, element, element, element),
 );
 >>>
 longFunctionName(
@@ -67,7 +67,7 @@ longFunctionName(
 longFunctionName(
   element__element__element,
   [element],
-  element__element
+  element__element,
 );
 >>>
 longFunctionName([
@@ -77,5 +77,5 @@ longFunctionName([
 <<<
 longFunctionName([
   element__element__element,
-  element__element
+  element__element,
 ]);
