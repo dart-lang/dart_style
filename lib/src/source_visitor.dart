@@ -3179,10 +3179,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     // as children of a BlockChunk for the argument list. That way, we can
     // have a single rule that controls how the argument list and the block
     // argument splits.
-    ArgumentListRule rule;
+    var rule = ArgumentListRule();
     if (blockArgument is FunctionExpression) {
-      rule = FunctionArgumentListRule();
-
       // Track the argument list rule so that we can indent the function's
       // parameters and body based on whether the argument list splits.
       _blockFunctionRules[blockArgument.parameters!.leftParenthesis] = rule;
@@ -3190,10 +3188,8 @@ class SourceVisitor extends ThrowingAstVisitor {
           (blockArgument.body as BlockFunctionBody).block.leftBracket] = rule;
     } else if (blockArgument is SimpleStringLiteral ||
         blockArgument is StringInterpolation) {
-      rule = FunctionArgumentListRule();
+      // Do nothing.
     } else {
-      rule = CollectionArgumentListRule();
-
       // Let the argument list control whether the collection splits.
       _blockCollectionRules[blockArgument.collectionDelimiter] = rule;
     }
@@ -3664,7 +3660,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     _endPossibleConstContext(constKeyword);
     var blockChunk = _endBody(rightBracket, forceSplit: force);
 
-    if (blockRule is CollectionArgumentListRule) {
+    if (blockRule is ArgumentListRule) {
       // This collection is a block argument, so let argument list rule know its
       // chunk.
       blockRule.bindBlock(blockChunk);

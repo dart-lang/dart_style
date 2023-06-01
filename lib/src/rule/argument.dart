@@ -5,33 +5,6 @@ import '../chunk.dart';
 import '../constants.dart';
 import 'rule.dart';
 
-/// Rule for an argument list that contains some block-like argument, as in:
-///
-/// ```
-/// test('description', () {
-///   ...
-/// });
-/// ```
-abstract class ArgumentListRule extends Rule with TrackInnerRulesMixin {
-  late final Chunk _rightParenthesisChunk;
-
-  void bindRightParenthesis(Chunk chunk) {
-    _rightParenthesisChunk = chunk;
-  }
-
-  @override
-  int chunkIndent(int value, Chunk chunk) {
-    // Don't indent the closing ")"
-    if (chunk == _rightParenthesisChunk) return 0;
-
-    // Indent other arguments.
-    return Indent.block;
-  }
-
-  @override
-  String toString() => 'Args${super.toString()}';
-}
-
 /// Rule for an argument list that contains a block-like collection argument,
 /// as in:
 ///
@@ -79,11 +52,21 @@ abstract class ArgumentListRule extends Rule with TrackInnerRulesMixin {
 ///       ]
 ///     );
 ///     ```
-class CollectionArgumentListRule extends ArgumentListRule {
-  late final Chunk _blockChunk;
+class ArgumentListRule extends Rule with TrackInnerRulesMixin {
+  /// The chunk where the splittable block argument begins.
+  ///
+  /// If the block argument is a for a function (which always splits), this
+  /// will be `null`.
+  Chunk? _blockChunk;
+
+  late final Chunk _rightParenthesisChunk;
 
   void bindBlock(Chunk chunk) {
     _blockChunk = chunk;
+  }
+
+  void bindRightParenthesis(Chunk chunk) {
+    _rightParenthesisChunk = chunk;
   }
 
   @override
@@ -110,37 +93,13 @@ class CollectionArgumentListRule extends ArgumentListRule {
       return value == 3 ? Indent.block : 0;
     }
 
-    return super.chunkIndent(value, chunk);
-  }
-}
+    // Don't indent the closing ")"
+    if (chunk == _rightParenthesisChunk) return 0;
 
-/// Rule for an argument list that contains a block-like function argument, as
-/// in:
-///
-/// ```
-/// function(argument, () {
-///   ;
-/// });
-/// ```
-///
-/// Since the function body always splits, the rule only has two values:
-///
-/// 0. Split the function body, but not the arguments.
-///
-///     ```
-///     function(argument, () {
-///       ;
-///     });
-///     ```
-///
-/// 1. Split the arguments and the function body.
-///
-///     ```
-///     function(
-///       argument,
-///       () {
-///         ;
-///       }
-///     );
-///     ```
-class FunctionArgumentListRule extends ArgumentListRule {}
+    // Indent other arguments.
+    return Indent.block;
+  }
+
+  @override
+  String toString() => 'Args${super.toString()}';
+}
