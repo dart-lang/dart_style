@@ -113,10 +113,9 @@ GenericClass<Parameter1, Parameter2>
 Function() f;
 >>> chained return types
 Function<Argument>(String) Function<Argument>(num) Function<Argument>(int) Function<Argument>(bool) longVariable;
-<<< not great, but so unusual it doesn't really matter
-Function<Argument>(String) Function<
-  Argument
->(num)
+<<<
+Function<Argument>(String)
+Function<Argument>(num)
 Function<Argument>(int)
 Function<Argument>(bool) longVariable;
 >>> trailing comma

@@ -39,7 +39,7 @@ class Cost {
   static const index = 4;
 
   /// Splitting a type parameter list.
-  static const typeParameterList = 2;
+  static const typeParameterList = 3;
 
   /// Split between a type annotation and the annotated thing.
   static const typeAnnotation = 2;

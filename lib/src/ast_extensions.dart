@@ -54,27 +54,36 @@ extension AstNodeExtensions on AstNode {
   bool get isDelimited {
     // TODO: Should we treat empty ones (without comments inside) differently?
 
-    if (this is ListLiteral ||
-        this is SetOrMapLiteral ||
-        this is RecordLiteral) {
-      return true;
-    }
-
-    if (this is ListPattern ||
-        this is MapPattern ||
-        this is ObjectPattern ||
-        this is RecordPattern) {
-      return true;
-    }
-
-    // Constant patterns whose body is a delimited expression are also
-    // delimited.
+    // TODO: Similar code in ExpressionListExtensions.blockArgument.
     var node = this;
-    if (node is ConstantPattern) {
-      return node.expression.isDelimited;
-    }
-
-    return false;
+    return switch (node) {
+      ListLiteral(:var elements)
+          when !elements.isEmptyBody(node.rightBracket) =>
+        true,
+      SetOrMapLiteral(:var elements)
+          when !elements.isEmptyBody(node.rightBracket) =>
+        true,
+      RecordLiteral(:var fields)
+          when !fields.isEmptyBody(node.rightParenthesis) =>
+        true,
+      ListPattern(:var elements)
+          when !elements.isEmptyBody(node.rightBracket) =>
+        true,
+      MapPattern(:var elements) when !elements.isEmptyBody(node.rightBracket) =>
+        true,
+      ObjectPattern(:var fields)
+          when !fields.isEmptyBody(node.rightParenthesis) =>
+        true,
+      RecordPattern(:var fields)
+          when !fields.isEmptyBody(node.rightParenthesis) =>
+        true,
+      ConstantPattern()
+        // Constant patterns whose body is a delimited expression are also
+        // delimited.
+        =>
+        node.expression.isDelimited,
+      _ => false,
+    };
   }
 
   // TODO: Better name.
@@ -84,13 +93,21 @@ extension AstNodeExtensions on AstNode {
   bool get isDelimitedOrCall {
     if (isDelimited) return true;
 
-    // TODO: Only targetless ones?
-    if (this is MethodInvocation) return true;
+    var node = this;
+    return switch (node) {
+      // TODO: Only targetless ones?
+      MethodInvocation(:var argumentList)
+          when !argumentList.arguments
+              .isEmptyBody(argumentList.rightParenthesis) =>
+        true,
 
-    // TODO: Test.
-    if (this is InstanceCreationExpression) return true;
-
-    return false;
+      // TODO: Test.
+      InstanceCreationExpression(:var argumentList)
+          when !argumentList.arguments
+              .isEmptyBody(argumentList.rightParenthesis) =>
+        true,
+      _ => false,
+    };
   }
 
   /// Whether this is immediately contained within an anonymous
@@ -154,8 +171,9 @@ extension ExpressionExtensions on Expression {
     return switch (expression) {
       ListLiteral(:var leftBracket) ||
       SetOrMapLiteral(:var leftBracket) =>
-      leftBracket,
+        leftBracket,
       RecordLiteral(:var leftParenthesis) => leftParenthesis,
+      MethodInvocation() => expression.argumentList.leftParenthesis,
       _ => throw ArgumentError.value(expression, 'expression')
     };
   }
@@ -284,10 +302,13 @@ extension ExpressionListExtensions on List<Expression> {
   /// If [arguments] contains a single argument whose expression can receive
   /// block formatting, then returns it. Otherwise returns `null`.
   Expression? get blockArgument {
-    Expression? blockArgument;
+    var functions = <Expression>[];
+    var collections = <Expression>[];
+    var calls = <Expression>[];
 
     for (var argument in this) {
-      // Unwrap named arguments.
+      // Unwrap named arguments so that we don't pick a positional block
+      // argument if there are other named arguments of the same kind.
       var expression = argument;
       if (expression is NamedExpression) {
         expression = expression.expression;
@@ -295,16 +316,49 @@ extension ExpressionListExtensions on List<Expression> {
 
       switch (expression) {
         case FunctionExpression(body: BlockFunctionBody()):
-        case ListLiteral():
-        case SetOrMapLiteral():
-        case RecordLiteral():
+          functions.add(argument);
+        case ListLiteral(:var elements)
+            when !elements.isEmptyBody(expression.rightBracket):
+        case SetOrMapLiteral(:var elements)
+            when !elements.isEmptyBody(expression.rightBracket):
+        case RecordLiteral(:var fields)
+            when !fields.isEmptyBody(expression.rightParenthesis):
         case SimpleStringLiteral(isMultiline: true):
         case StringInterpolation(isMultiline: true):
-          // If we found multiple, then don't give any of them block formatting.
-          if (blockArgument != null) return null;
+          collections.add(argument);
+        case MethodInvocation(:var argumentList)
+            when !argumentList.arguments
+                .isEmptyBody(argumentList.rightParenthesis):
+          calls.add(argument);
+      }
+    }
 
-          // We found one.
-          blockArgument = argument;
+    Expression? blockArgument;
+    if (functions.length == 1) {
+      blockArgument = functions.first;
+    } else if (functions.isEmpty && collections.length == 1) {
+      blockArgument = collections.first;
+    } else if (functions.isEmpty && collections.isEmpty && calls.length == 1) {
+      blockArgument = calls.first;
+    }
+
+    // Don't allow named block arguments. When an argument list has named
+    // arguments, it's more likely to have multiple arguments and it looks best
+    // if the names are all clearly visible at the beginning of the lines.
+    if (blockArgument is NamedExpression) return null;
+
+    // Don't allow a named block argument with other named arguments, since it
+    // makes it too easy to not see the names in the middle of a line, as in:
+    //
+    //    function(one: 1, two: [
+    //      //             ^^^
+    //      element
+    //    ]);
+    if (blockArgument is NamedExpression) {
+      for (var argument in this) {
+        if (argument != blockArgument && argument is NamedExpression) {
+          return null;
+        }
       }
     }
 

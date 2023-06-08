@@ -2429,10 +2429,25 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRecordLiteral(RecordLiteral node) {
+    // Unlike other collections, try to avoid splitting record literals because
+    // doing so inside an argument list can make them hard to see. Prefer:
+    //
+    //     function(
+    //       (record, literal),
+    //     );
+    //
+    // Over:
+    //
+    //     function((
+    //        record,
+    //        literal
+    //     ));
+    builder.startSpan();
     modifier(node.constKeyword);
     _visitCollectionLiteral(
         node.leftParenthesis, node.fields, node.rightParenthesis,
         isRecord: true);
+    builder.endSpan();
   }
 
   @override
@@ -3209,31 +3224,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
 
       builder.split(space: argument != arguments.first);
-
-      // Prefer to split the entire argument list and keep the block argument
-      // together. Prefer:
-      //
-      // ```
-      // function(
-      //   [element, element, element]
-      // );
-      // ```
-      //
-      // Over:
-      //
-      // ```
-      // function([
-      //   element,
-      //   element,
-      //   element
-      // ]);
-      // ```
-      if (argument == blockArgument) builder.startSpan();
-
       visit(argument);
       writeCommaAfter(argument, isTrailing: argument == arguments.last);
-
-      if (argument == blockArgument) builder.endSpan();
     }
 
     rule.bindRightParenthesis(zeroSplit());

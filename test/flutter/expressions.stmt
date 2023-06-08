@@ -1,0 +1,26 @@
+40 columns                              |
+>>> prefer splitting at "=" with empty argument list
+var variable = function<LongType, LongType>();
+<<<
+var variable =
+    function<LongType, LongType>();
+>>> prefer splitting at "=" with empty argument list
+var variable = new C<LongType, LongType>();
+<<<
+var variable =
+    new C<LongType, LongType>();
+>>> prefer splitting at "=" with empty list
+var longVariable = <VeryVeryVeryLongType>[];
+<<<
+var longVariable =
+    <VeryVeryVeryLongType>[];
+>>> prefer splitting at "=" with empty map
+var longVariable = <LongType, LongType>{};
+<<<
+var longVariable =
+    <LongType, LongType>{};
+>>> prefer splitting at "=" with empty set
+var longVariable = <VeryVeryVeryLongType>{};
+<<<
+var longVariable =
+    <VeryVeryVeryLongType>{};

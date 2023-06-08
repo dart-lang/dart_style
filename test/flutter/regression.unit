@@ -1,0 +1,47 @@
+>>> (indent 2)
+  Widget build(BuildContext context) {
+   return Material(child: Column(children: const <
+     Widget
+   >[SizedBox(width: 200, height: 100, child: ParentWidget())]));
+  }
+<<<
+  Widget build(BuildContext context) {
+    return Material(
+      child: Column(
+        children: const <Widget>[
+          SizedBox(width: 200, height: 100, child: ParentWidget()),
+        ],
+      ),
+    );
+  }
+>>>
+String _randomize(String text) {
+  return text.replaceAllMapped(
+    '*',
+    // Passing a seed so the results are reproducible.
+    (
+      _,
+    ) => chars[Random(0).nextInt(chars.length)],
+  );
+}
+<<<
+String _randomize(String text) {
+  return text.replaceAllMapped(
+    '*',
+    // Passing a seed so the results are reproducible.
+    (_) => chars[Random(0).nextInt(chars.length)],
+  );
+}
+>>>
+main() {
+  macroPerfTestMultiPageE2E(
+    testName,
+    <ScrollableButtonRoute>[ScrollableButtonRoute(kScrollableName, routeName)],
+  );
+}
+<<<
+main() {
+  macroPerfTestMultiPageE2E(testName, <ScrollableButtonRoute>[
+    ScrollableButtonRoute(kScrollableName, routeName),
+  ]);
+}

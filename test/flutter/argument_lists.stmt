@@ -79,3 +79,104 @@ longFunctionName([
   element__element__element,
   element__element,
 ]);
+>>> inner function call as block argument
+outerFunction(innerFunction(veryLongArgument,veryLongArgument));
+<<<
+outerFunction(innerFunction(
+  veryLongArgument,
+  veryLongArgument,
+));
+>>> inner method call as block argument
+outerFunction(inner.function(veryLongArgument,veryLongArgument));
+<<<
+outerFunction(inner.function(
+  veryLongArgument,
+  veryLongArgument,
+));
+>>> multiple levels
+one(two(three(four(veryLongArgument,veryLongArgument))));
+<<<
+one(two(three(four(
+  veryLongArgument,
+  veryLongArgument,
+))));
+>>>
+{
+  longFunction([veryVeryVeryVeryLongElement]);
+  longFunction(
+    superLongArgumentThatPreventsBlock,
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+  longFunction(
+    [
+      veryVeryLongElement,
+      veryVeryLongElement
+    ],
+    [
+      veryVeryLongElement,
+      veryVeryLongElement
+    ],
+  );
+}
+<<<
+{
+  longFunction([
+    veryVeryVeryVeryLongElement,
+  ]);
+  longFunction(
+    superLongArgumentThatPreventsBlock,
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+  longFunction(
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+}
+>>>
+someMethod(
+  () {
+    ;
+  },
+  function(
+    veryLongListElement, veryLongListElement
+  ),
+  [
+    veryLongListElement, veryLongListElement
+  ],
+);
+<<<
+someMethod(
+  () {
+    ;
+  },
+  function(
+    veryLongListElement,
+    veryLongListElement,
+  ),
+  [
+    veryLongListElement,
+    veryLongListElement,
+  ],
+);
+>>>
+test('Some very long test description '
+    'that is split across lines.', () {
+  body;
+});
+<<<
+test('Some very long test description '
+    'that is split across lines.', () {
+  body;
+});

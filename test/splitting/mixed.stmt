@@ -2,9 +2,10 @@
 >>> keeps map on one line if possible
 sendPort.send({'type': 'error', 'error': 'oops'});
 <<<
-sendPort.send(
-  {'type': 'error', 'error': 'oops'},
-);
+sendPort.send({
+  'type': 'error',
+  'error': 'oops',
+});
 >>> prefers to wrap before "."
 new Future.sync(() => callback('msg')).then(
     (result) => replyTo.send()).catchError((error) {});
@@ -49,16 +50,11 @@ someFunctionName(
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
 <<<
-callSomeMethod(
-  innerFunction(
-    argument,
-    argument,
-    argument,
-  ),
+callSomeMethod(innerFunction(
   argument,
   argument,
   argument,
-);
+), argument, argument, argument);
 >>> function inside a collection
 [item, obj.method(argument).method(argument).method(() {body;}).another().another()];
 <<<
@@ -90,12 +86,9 @@ function(
 >>> unnested function inside nested expression
 function(argument, function(() {;}));
 <<<
-function(
-  argument,
-  function(() {
-    ;
-  }),
-);
+function(argument, function(() {
+  ;
+}));
 >>> nested function inside nested expression
 function(argument, function(() {;}, argument, () {;}));
 <<<
@@ -137,9 +130,11 @@ receiver.firstMethod().next(
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();
 <<<
-receiver.first(
-  [listItem, secondItem, thirdItem],
-).second();
+receiver.first([
+  listItem,
+  secondItem,
+  thirdItem,
+]).second();
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem, fourthItem]).second();
 <<<

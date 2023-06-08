@@ -213,12 +213,9 @@ outer(
   inner(argument_______________________)
 );
 <<<
-outer(
-  argument,
-  inner(
-    argument_______________________,
-  ),
-);
+outer(argument, inner(
+  argument_______________________,
+));
 >>> include trailing comma size when splitting
 outer([
   inner(argument_______________________)

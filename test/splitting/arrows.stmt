@@ -24,9 +24,9 @@ SomeLongFunctionName(
 );
 <<<
 SomeLongFunctionName(
-  (longParameterName______) => <
-    LongTypeArgument
-  >[
+  (
+    longParameterName______,
+  ) => <LongTypeArgument>[
     longListElement,
     longListElement,
     longListElement,
