@@ -1277,10 +1277,10 @@ class SourceVisitor extends ThrowingAstVisitor {
       return null;
     }
 
+    token(node.leftParenthesis);
+
     var parameterRule = Rule(Cost.parameterList);
     builder.startRule(parameterRule);
-
-    token(node.leftParenthesis);
 
     // Find the parameter immediately preceding the optional parameters (if
     // there are any).
