@@ -225,32 +225,8 @@ class BlockChunk extends Chunk {
   /// The child chunks in this block.
   final List<Chunk> children = [];
 
-  /// Rule for the expression surrounding this block that determines whether
-  /// the block needs additional indentation when the rule splits.
-  ///
-  /// If this block is a function expression body inside a surrounding argument
-  /// list with block-like formatting, this is the rule for the argument list.
-  /// The way the argument list splits determines if the body of the function
-  /// literal needs to be indented or not:
-  ///
-  /// ```
-  /// // No indent:
-  /// function(argumentThatMaySplit, () {
-  ///   body;
-  /// });
-  ///
-  /// // Indent:
-  /// function(
-  ///   argumentThatMaySplit,
-  ///   () {
-  ///     body;
-  ///   }
-  /// );
-  /// ```
-  final Rule? indentRule;
-
   BlockChunk(super.rule, super.indent, super.nesting,
-      {required super.space, required super.flushLeft, this.indentRule})
+      {required super.space, required super.flushLeft})
       : super(isDouble: false);
 }
 

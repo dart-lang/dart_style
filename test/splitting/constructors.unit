@@ -111,24 +111,20 @@ class Foo {
 <<<
 class Foo {
   Foo()
-    : assert(
+    : assert(function(
+        argument,
+        argument,
+        argument,
+      )),
+      assert(function(
+        argument,
         function(
           argument,
           argument,
           argument,
         ),
-      ),
-      assert(
-        function(
-          argument,
-          function(
-            argument,
-            argument,
-            argument,
-          ),
-          argument,
-        ),
-      );
+        argument,
+      ));
 }
 >>> split assert with trailing comma
 class Foo {

@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'fast_hash.dart';
+import 'line_splitting/rule_set.dart';
+import 'rule/rule.dart';
 
 /// A single level of expression nesting.
 ///
@@ -30,6 +32,13 @@ class NestingLevel extends FastHash {
   /// Normally, this is [Indent.expression], but cascades use [Indent.cascade].
   final int indent;
 
+  /// If this nesting level's depth should be controlled by a rule, this is the
+  /// rule.
+  ///
+  /// This is used for argument lists so that whether or not the arguments are
+  /// indented can be determined based on the rule's value.
+  final Rule? _rule;
+
   /// The total number of characters of indentation from this level and all of
   /// its parents, after determining which nesting levels are actually used.
   ///
@@ -41,13 +50,15 @@ class NestingLevel extends FastHash {
 
   NestingLevel()
       : parent = null,
-        indent = 0;
+        indent = 0,
+        _rule = null;
 
-  NestingLevel._(this.parent, this.indent);
+  NestingLevel._(this.parent, this.indent, this._rule);
 
   /// Creates a new deeper level of nesting indented [spaces] more characters
   /// that the outer level.
-  NestingLevel nest(int spaces) => NestingLevel._(this, spaces);
+  NestingLevel nest(int spaces, Rule? rule) =>
+      NestingLevel._(this, spaces, rule);
 
   /// Clears the previously calculated total indent of this nesting level.
   void clearTotalUsedIndent() {
@@ -57,18 +68,27 @@ class NestingLevel extends FastHash {
 
   /// Calculates the total amount of indentation from this nesting level and
   /// all of its parents assuming only [usedNesting] levels are in use.
-  void refreshTotalUsedIndent(Set<NestingLevel> usedNesting) {
+  void refreshTotalUsedIndent(
+      Set<NestingLevel> usedNesting, RuleSet ruleValues) {
     var totalIndent = _totalUsedIndent;
     if (totalIndent != null) return;
 
     totalIndent = 0;
 
     if (parent != null) {
-      parent!.refreshTotalUsedIndent(usedNesting);
+      parent!.refreshTotalUsedIndent(usedNesting, ruleValues);
       totalIndent += parent!.totalUsedIndent;
     }
 
-    if (usedNesting.contains(this)) totalIndent += indent;
+    if (usedNesting.contains(this)) {
+      // If the nesting level is associated with a rule, let the rule determine
+      // the nesting based on its value. Otherwise, use the level's own nesting.
+      if (_rule case var rule?) {
+        totalIndent += rule.nestingIndent(ruleValues.getValue(rule));
+      } else {
+        totalIndent += indent;
+      }
+    }
 
     _totalUsedIndent = totalIndent;
   }

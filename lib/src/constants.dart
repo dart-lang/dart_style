@@ -47,6 +47,8 @@ class Cost {
 
 /// Constants for the number of spaces for various kinds of indentation.
 class Indent {
+  static const none = 0;
+
   /// The number of spaces in a block or collection body.
   static const block = 2;
 
@@ -55,10 +57,4 @@ class Indent {
 
   /// The number of spaces in a single level of expression nesting.
   static const expression = 4;
-
-  /// Argument lists get no indentation because the final `)` shouldn't be
-  /// indented.
-  ///
-  /// The arguments on preceding lines get +2 indentation on a per-chunk basis.
-  static const argumentList = 0;
 }

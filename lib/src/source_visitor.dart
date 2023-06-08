@@ -94,13 +94,6 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// formatting and spread collection literals inside control flow elements.
   final Map<Token, Rule> _blockCollectionRules = {};
 
-  /// Associates block-bodied function expressions with the rule for the
-  /// containing argument list.
-  ///
-  /// This ensures that we indent the function body and parameter list properly
-  /// depending on how the surrounding argument list splits.
-  final Map<Token, Rule> _blockFunctionRules = {};
-
   /// Comments and new lines attached to tokens added here are suppressed
   /// from the output.
   final Set<Token> _suppressPrecedingCommentsAndNewLines = {};
@@ -1250,7 +1243,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitFieldFormalParameter(FieldFormalParameter node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
       token(node.keyword, after: space);
       visit(node.type, after: split);
@@ -1298,8 +1291,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Process the parameters as a separate set of chunks.
-    builder = builder.startBlock(
-        indentRule: _blockFunctionRules[node.leftParenthesis]);
+    builder = builder.startBlock();
 
     var spaceWhenUnsplit = true;
     for (var parameter in node.parameters) {
@@ -1629,7 +1621,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       if (!_insideNewTypedefFix) {
         modifier(node.requiredKeyword);
         modifier(node.covariantKeyword);
@@ -2535,7 +2527,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitRecordTypeAnnotationNamedField(
       RecordTypeAnnotationNamedField node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       visit(node.type);
       token(node.name, before: space);
     });
@@ -2544,7 +2536,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitRecordTypeAnnotationPositionalField(
       RecordTypeAnnotationPositionalField node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       visit(node.type);
       token(node.name, before: space);
     });
@@ -2601,7 +2593,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSimpleFormalParameter(SimpleFormalParameter node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
 
       var type = node.type;
@@ -2679,7 +2671,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSuperFormalParameter(SuperFormalParameter node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
       token(node.keyword, after: space);
       visit(node.type, after: split);
@@ -2935,7 +2927,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitTypeParameter(TypeParameter node) {
-    visitParameterMetadata(node.metadata, () {
+    _visitParameterMetadata(node.metadata, () {
       token(node.name);
       token(node.extendsKeyword, before: space, after: space);
       visit(node.bound);
@@ -3087,7 +3079,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// Unlike other annotations, these are allowed to stay on the same line as
   /// the parameter.
-  void visitParameterMetadata(
+  void _visitParameterMetadata(
       NodeList<Annotation> metadata, void Function() visitParameter) {
     if (metadata.isEmpty) {
       visitParameter();
@@ -3103,17 +3095,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Wrap the rule around the parameter too. If it splits, we want to force
     // the annotations to split as well.
     builder.endRule();
-  }
-
-  // TODO: Get rid of unused NamedRule parameter.
-  /// Visits [node], which may be in an argument list controlled by [rule].
-  ///
-  /// This is called directly by [ArgumentListVisitorOld] so that it can pass in
-  /// the surrounding named argument rule. That way, this can ensure that a
-  /// split between the name and argument forces the argument list to split
-  /// too.
-  void visitNamedArgument(NamedExpression node) {
-    _visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
 
   /// Visits syntax of the form `identifier: <node>`: a named argument or a
@@ -3195,22 +3176,22 @@ class SourceVisitor extends ThrowingAstVisitor {
     // have a single rule that controls how the argument list and the block
     // argument splits.
     var rule = ArgumentListRule();
-    if (blockArgument is FunctionExpression) {
-      // Track the argument list rule so that we can indent the function's
-      // parameters and body based on whether the argument list splits.
-      _blockFunctionRules[blockArgument.parameters!.leftParenthesis] = rule;
-      _blockFunctionRules[
-          (blockArgument.body as BlockFunctionBody).block.leftBracket] = rule;
-    } else if (blockArgument is SimpleStringLiteral ||
-        blockArgument is StringInterpolation) {
-      // Do nothing.
-    } else {
+    if (blockArgument is ListLiteral ||
+        blockArgument is SetOrMapLiteral ||
+        blockArgument is RecordLiteral) {
       // Let the argument list control whether the collection splits.
       _blockCollectionRules[blockArgument.collectionDelimiter] = rule;
     }
 
     builder.startRule(rule);
-    builder.nestExpression(indent: Indent.argumentList);
+
+    // The ")" at the end of the argument list gets no additional nesting.
+    builder.nestExpression(indent: Indent.none);
+
+    // The arguments inside the argument list are indented depending on how the
+    // argument rule splits.
+    builder.nestExpression(rule: rule);
+
     builder.startBlockArgumentNesting();
     token(leftParenthesis);
 
@@ -3228,10 +3209,12 @@ class SourceVisitor extends ThrowingAstVisitor {
       writeCommaAfter(argument, isTrailing: argument == arguments.last);
     }
 
-    rule.bindRightParenthesis(zeroSplit());
+    builder.endBlockArgumentNesting();
+    builder.unnest();
+
+    zeroSplit();
     token(rightParenthesis);
 
-    builder.endBlockArgumentNesting();
     builder.unnest();
     builder.endRule();
   }
@@ -3844,8 +3827,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startRule(rule ?? _blockCollectionRules[leftBracket]);
 
     // Process the contents as a separate set of chunks.
-    builder = builder.startBlock(
-        indentRule: _blockFunctionRules[leftBracket], space: space);
+    builder = builder.startBlock(space: space);
   }
 
   /// Ends the body started by a call to [_beginBody()].

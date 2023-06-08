@@ -186,13 +186,10 @@ someLongReceiver.veryLongMethod(
 >>> multiple nested collections
 method(function([veryLongElement, veryLongElement], [veryLongElement, veryLongElement]), argument);
 <<<
-method(
-  function(
-    [veryLongElement, veryLongElement],
-    [veryLongElement, veryLongElement],
-  ),
-  argument,
-);
+method(function(
+  [veryLongElement, veryLongElement],
+  [veryLongElement, veryLongElement],
+), argument);
 >>> trailing collections are not indented
 function(argument, argument, argument, argument,
 [element, element, element, element],

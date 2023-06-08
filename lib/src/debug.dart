@@ -119,7 +119,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     row.add(properties);
 
     writeIf(chunk.indent != 0, () => 'indent ${chunk.indent}');
-    writeIf(chunk.nesting.isNested != 0, () => 'nest ${chunk.nesting}');
+    writeIf(chunk.nesting.isNested, () => 'nest ${chunk.nesting}');
 
     var spans = spanSet.toList();
     if (spans.length <= 20) {

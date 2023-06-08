@@ -4,6 +4,7 @@
 
 import 'constants.dart';
 import 'nesting_level.dart';
+import 'rule/rule.dart';
 
 /// Keeps track of block indentation and expression nesting while the source
 /// code is being visited and the chunks are being built.
@@ -93,13 +94,13 @@ class NestingBuilder {
   /// if the previous line has a lower level of nesting.
   ///
   /// If [indent] is omitted, defaults to [Indent.expression].
-  void nest([int? indent]) {
+  void nest(int? indent, Rule? rule) {
     indent ??= Indent.expression;
 
     if (_pendingNesting != null) {
-      _pendingNesting = _pendingNesting!.nest(indent);
+      _pendingNesting = _pendingNesting!.nest(indent, rule);
     } else {
-      _pendingNesting = _nesting.nest(indent);
+      _pendingNesting = _nesting.nest(indent, rule);
     }
   }
 

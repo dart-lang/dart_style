@@ -59,14 +59,8 @@ class ArgumentListRule extends Rule with TrackInnerRulesMixin {
   /// will be `null`.
   Chunk? _blockChunk;
 
-  late final Chunk _rightParenthesisChunk;
-
   void bindBlock(Chunk chunk) {
     _blockChunk = chunk;
-  }
-
-  void bindRightParenthesis(Chunk chunk) {
-    _rightParenthesisChunk = chunk;
   }
 
   @override
@@ -87,18 +81,10 @@ class ArgumentListRule extends Rule with TrackInnerRulesMixin {
   }
 
   @override
-  int chunkIndent(int value, Chunk chunk) {
-    // Only indent the body of the block argument if the arguments split.
-    if (chunk == _blockChunk) {
-      return value == 3 ? Indent.block : 0;
-    }
-
-    // Don't indent the closing ")"
-    if (chunk == _rightParenthesisChunk) return 0;
-
-    // Indent other arguments.
-    return Indent.block;
-  }
+  int nestingIndent(int value) => switch (value) {
+        2 || 3 => Indent.block,
+        _ => Indent.none,
+      };
 
   @override
   String toString() => 'Args${super.toString()}';

@@ -518,10 +518,10 @@ class ChunkBuilder {
   /// If [indent] is omitted, defaults to [Indent.expression]. If [now] is
   /// `true`, commits the nesting change immediately instead of waiting until
   /// after the next chunk of text is written.
-  void nestExpression({int? indent, bool? now}) {
+  void nestExpression({int? indent, bool? now, Rule? rule}) {
     now ??= false;
 
-    _nesting.nest(indent);
+    _nesting.nest(indent, rule);
     if (now) _nesting.commitNesting();
   }
 
@@ -580,14 +580,13 @@ class ChunkBuilder {
   /// Starts a new block chunk and returns the [ChunkBuilder] for it.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock(
-      {Rule? indentRule, bool indent = true, bool space = false}) {
+  ChunkBuilder startBlock({bool indent = true, bool space = false}) {
     // Start a block chunk for the block. It will contain the chunks for the
     // contents of the block, and its own text will be the closing block
     // delimiter.
     var chunk = BlockChunk(
         _rules.last, _nesting.indentation, _blockArgumentNesting.last,
-        space: space, flushLeft: _pendingFlushLeft, indentRule: indentRule);
+        space: space, flushLeft: _pendingFlushLeft);
     _chunks.add(chunk);
     _pendingFlushLeft = false;
 

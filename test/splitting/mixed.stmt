@@ -41,11 +41,9 @@ someFunctionName(
   argument,
   argument,
   argument,
-  some(
-    other(
-      function(argument, argument, arg),
-    ),
-  ),
+  some(other(
+    function(argument, argument, arg),
+  )),
 );
 >>> forces extra indent and lines, if later line needs it
 callSomeMethod(innerFunction(argument, argument, argument), argument, argument, argument);
@@ -92,18 +90,15 @@ function(argument, function(() {
 >>> nested function inside nested expression
 function(argument, function(() {;}, argument, () {;}));
 <<<
-function(
+function(argument, function(
+  () {
+    ;
+  },
   argument,
-  function(
-    () {
-      ;
-    },
-    argument,
-    () {
-      ;
-    },
-  ),
-);
+  () {
+    ;
+  },
+));
 >>> wrap before =>
 receiver.firstMethod().next((parameter) => longIdentifier == veryLongIdentifier);
 <<<
