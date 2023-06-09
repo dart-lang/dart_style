@@ -45,3 +45,19 @@ main() {
     ScrollableButtonRoute(kScrollableName, routeName),
   ]);
 }
+>>> (indent 4)
+    final io.ProcessResult result = await processManager.run(
+      <String>[
+        'file',
+        '--mime-type',
+        '-b', // is binary
+        filePath,
+      ],
+    );
+<<<
+    final io.ProcessResult result = await processManager.run(<String>[
+      'file',
+      '--mime-type',
+      '-b', // is binary
+      filePath,
+    ]);

@@ -87,11 +87,12 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// split.
   final List<bool> _collectionSplits = [];
 
+  // TODO: This is only used to ensure that the then and else spread collections
+  // split together. Can we do that in a simpler way?
   /// Associates delimited block expressions with the rule for the containing
   /// expression that manages them.
   ///
-  /// This is used for collection literals inside argument lists with block
-  /// formatting and spread collection literals inside control flow elements.
+  /// This is used for spread collection literals inside control flow elements.
   final Map<Token, Rule> _blockCollectionRules = {};
 
   /// Comments and new lines attached to tokens added here are suppressed
@@ -3162,27 +3163,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       List<Expression> arguments,
       Token rightParenthesis,
       Expression blockArgument) {
-    // TODO: If there is only one argument and it's a block argument, should we
-    // for block formatting? Currently, the formatter allows:
-    //
-    //     function(
-    //       [listItem, secondItem, thirdItem],
-    //     );
-    // Might be worth preventing that.
-
-    // If there is a block argument, then we need to handle the argument
-    // list and all of its arguments together instead of putting the arguments
-    // as children of a BlockChunk for the argument list. That way, we can
-    // have a single rule that controls how the argument list and the block
-    // argument splits.
     var rule = ArgumentListRule();
-    if (blockArgument is ListLiteral ||
-        blockArgument is SetOrMapLiteral ||
-        blockArgument is RecordLiteral) {
-      // Let the argument list control whether the collection splits.
-      _blockCollectionRules[blockArgument.collectionDelimiter] = rule;
-    }
-
     builder.startRule(rule);
 
     // The ")" at the end of the argument list gets no additional nesting.

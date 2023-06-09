@@ -207,3 +207,17 @@ test('Some very long test description '
     veryVeryLongElement,
   },
 }}';
+>>> block that must split because of an inner comment
+function(
+  [
+    a,
+    b, // comment
+    c,
+  ],
+);
+<<<
+function([
+  a,
+  b, // comment
+  c,
+]);
