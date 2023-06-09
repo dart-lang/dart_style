@@ -3964,11 +3964,26 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   /// Write the comma token following [node], if there is one.
   void writeCommaAfter(AstNode node, {required bool isTrailing}) {
+    // Look for the existing comma.
+    Token? comma;
+    var next = node.endToken.next!;
+    if (next.type == TokenType.COMMA) comma = next;
+
+    // TODO(sdk#38990): endToken doesn't include the "?" on a nullable
+    // function-typed formal, so check for that case and handle it.
+    if (next.type == TokenType.QUESTION && next.next!.type == TokenType.COMMA) {
+      comma = next.next;
+    }
+
     if (isTrailing) {
-      // TODO: Preserve comments on existing comma token if there is one.
+      // Preserve any comments on the existing trailing comma.
+      if (comma != null) {
+        writePrecedingCommentsAndNewlines(comma);
+      }
+
       builder.writeTrailingComma();
     } else {
-      token(node.commaAfter);
+      token(comma);
     }
   }
 
