@@ -180,3 +180,30 @@ test('Some very long test description '
     'that is split across lines.', () {
   body;
 });
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${outer(argument, inner(longArgument, longArgument))}';
+<<<
+'some long string ${outer(argument, inner(
+      longArgument,
+      longArgument,
+    ))}';
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${[argument, [veryVeryLongElement, veryVeryLongElement]]}';
+<<<
+'some long string ${[
+  argument,
+  [
+    veryVeryLongElement,
+    veryVeryLongElement,
+  ],
+]}';
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${{argument, {veryVeryLongElement, veryVeryLongElement}}}';
+<<<
+'some long string ${{
+  argument,
+  {
+    veryVeryLongElement,
+    veryVeryLongElement,
+  },
+}}';

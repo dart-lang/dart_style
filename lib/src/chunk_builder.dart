@@ -181,6 +181,11 @@ class ChunkBuilder {
   }
 
   void writeTrailingComma() {
+    // If we're in a string interpolation where we can't split, never write a
+    // trailing comma. This looks better and, critically, avoids potentially
+    // having two trailing commas in a single chunk, which it can't handle.
+    if (_preventSplitNesting > 0) return;
+
     // Write an empty string to ensure we have a chunk and all the pending stuff
     // is flushed.
     var chunk = write('');

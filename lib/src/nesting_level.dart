@@ -83,7 +83,12 @@ class NestingLevel extends FastHash {
     if (usedNesting.contains(this)) {
       // If the nesting level is associated with a rule, let the rule determine
       // the nesting based on its value. Otherwise, use the level's own nesting.
-      if (_rule case var rule?) {
+      //
+      // In rare cases (like nested argument lists inside interpolation), it's
+      // possible for a nesting level to be bound to a rule that isn't actually
+      // used by any chunk. In that case, fall back to the nesting level's
+      // indent.
+      if (_rule case var rule? when rule.index != null) {
         totalIndent += rule.nestingIndent(ruleValues.getValue(rule));
       } else {
         totalIndent += indent;
