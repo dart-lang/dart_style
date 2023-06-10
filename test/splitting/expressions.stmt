@@ -107,8 +107,7 @@ someFunction(someExtremelyLongArgumentName).clamp();
 <<<
 someFunction(
   someExtremelyLongArgumentName,
-)
-    .clamp();
+).clamp();
 >>> wrap inside parenthesized
 (someVerylongIdentifier * someVerylongIdentifier);
 <<<

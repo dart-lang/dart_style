@@ -119,8 +119,7 @@ receiver.firstMethod().next(
 receiver.firstMethod().next(longIdentifier == veryLongIdentifier);
 <<<
 receiver.firstMethod().next(
-  longIdentifier ==
-      veryLongIdentifier,
+  longIdentifier == veryLongIdentifier,
 );
 >>> list inside method chain
 receiver.first([listItem, secondItem, thirdItem]).second();

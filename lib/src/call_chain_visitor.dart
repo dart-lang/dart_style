@@ -4,10 +4,11 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
-import 'argument_list_visitor.dart';
 import 'ast_extensions.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';
+
+// TODO: Delete commented out stuff.
 
 /// Helper class for [SourceVisitor] that handles visiting and writing a
 /// chained series of "selectors": method invocations, property accesses,
@@ -53,6 +54,7 @@ class CallChainVisitor {
   /// order that they appear in the source reading from left to right.
   final List<_Selector> _calls;
 
+  /*
   /// The method calls containing block function literals that break the method
   /// chain and escape its indentation.
   ///
@@ -94,6 +96,7 @@ class CallChainVisitor {
   /// a trailing `toList()` or `toSet()` after a series of higher-order methods
   /// on an iterable.
   final _Selector? _hangingCall;
+  */
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -131,6 +134,7 @@ class CallChainVisitor {
 
     calls.removeRange(0, properties.length);
 
+    /*
     // Separate out the block calls, if there are any.
     List<_MethodSelector>? blockCalls;
     _Selector? hangingCall;
@@ -164,16 +168,64 @@ class CallChainVisitor {
     if (hangingCall != null) {
       calls.remove(hangingCall);
     }
+    */
 
     return CallChainVisitor._(
-        visitor, target, properties, calls, blockCalls, hangingCall);
+        visitor, target, properties, calls /*, blockCalls, hangingCall*/);
   }
 
-  CallChainVisitor._(this._visitor, this._target, this._properties, this._calls,
-      this._blockCalls, this._hangingCall);
+  CallChainVisitor._(
+    this._visitor,
+    this._target,
+    this._properties,
+    this._calls,
+    /*this._blockCalls, this._hangingCall*/
+  );
 
   /// Builds chunks for the call chain.
   void visit() {
+    _visitor.builder.nestExpression();
+    // _visitor.builder.startBlockArgumentNesting();
+
+    // Try to keep the entire method invocation one line.
+    _visitor.builder.startSpan();
+
+    _visitor.visit(_target);
+
+    Rule? propertyRule;
+    if (_properties.isNotEmpty) {
+      propertyRule = Rule();
+      _visitor.builder.startRule(propertyRule);
+      for (var property in _properties) {
+        _visitor.zeroSplit();
+        property.write(this);
+      }
+      _visitor.builder.endRule();
+    }
+
+    if (_calls.isNotEmpty) {
+      // If all calls contain only a single block argument, then allow block
+      // formatting the whole chain.
+      var allSingleBlocks = _calls.every((selector) => selector.isBlockCall);
+
+      var callRule = CallChainRule();
+      _visitor.builder.startRule(callRule);
+
+      // If the properties split, the calls do too.
+      if (propertyRule != null) propertyRule.constrainWhenSplit(callRule);
+
+      for (var call in _calls) {
+        _visitor.zeroSplit();
+        call.write(this);
+      }
+      _visitor.builder.endRule();
+    }
+
+    _visitor.builder.endSpan();
+    // _visitor.builder.endBlockArgumentNesting();
+    _visitor.builder.unnest();
+
+    /*
     _visitor.builder.nestExpression();
 
     // Try to keep the entire method invocation one line.
@@ -232,7 +284,9 @@ class CallChainVisitor {
     }
 
     if (_calls.length > 1) _visitor.builder.endBlockArgumentNesting();
+    */
 
+    /*
     // If there are block calls, end the chain and write those without any
     // extra indentation.
     var blockCalls = _blockCalls;
@@ -249,10 +303,13 @@ class CallChainVisitor {
       // split before the ".".
       _hangingCall?.write(this);
     }
+    */
 
+    /*
     _disableRule();
     _endSpan();
     _visitor.builder.unnest();
+    */
   }
 
   /// Returns `true` if the method chain should split if a split occurs inside
@@ -327,13 +384,14 @@ class CallChainVisitor {
   /// Called when a [_MethodSelector] has written its name and is about to
   /// write the argument list.
   void _beforeMethodArguments(_MethodSelector selector) {
+    /*
     // If we don't have any block calls, stop the rule after the last method
     // call name, but before its arguments. This allows unsplit chains where
     // the last argument list wraps, like:
     //
     //     foo().bar().baz(
     //         argument, list);
-    if (_blockCalls == null && _calls.isNotEmpty && selector == _calls.last) {
+    if (/*_blockCalls == null &&*/ _calls.isNotEmpty && selector == _calls.last) {
       _disableRule();
     }
 
@@ -355,10 +413,11 @@ class CallChainVisitor {
     // there looks really odd.
     if (_properties.isEmpty &&
         _calls.length == 1 &&
-        _blockCalls == null &&
+        /*_blockCalls == null &&*/
         _target is SimpleIdentifier) {
       _endSpan();
     }
+    */
   }
 
   /// If a [Rule] for the method chain is currently active, ends it.
@@ -407,7 +466,7 @@ class CallChainVisitor {
 ///         .method(arg)[index]
 ///         .another()!
 ///         .third();
-abstract class _Selector {
+sealed class _Selector {
   /// The series of index and/or null-assertion postfix selectors that follow
   /// and are attached to this one.
   ///
@@ -462,7 +521,10 @@ class _MethodSelector extends _Selector {
   bool get isProperty => false;
 
   @override
-  bool get isBlockCall => hasBlockArguments(_node.argumentList);
+  bool get isBlockCall =>
+      _node.argumentList.arguments.isEmpty ||
+      _node.argumentList.arguments.length == 1 &&
+          _node.argumentList.arguments.blockArgument != null;
 
   @override
   void writeSelector(CallChainVisitor visitor) {

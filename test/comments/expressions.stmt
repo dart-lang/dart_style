@@ -78,7 +78,7 @@ someExtremelyLongArgumentName).clamp();
 <<<
 someFunction(
   //
-  someExtremelyLongArgumentName
+  someExtremelyLongArgumentName,
 ).clamp();
 >>> line comment before binary operator
 {

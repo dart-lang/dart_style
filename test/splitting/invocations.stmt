@@ -71,7 +71,8 @@ compiler
     .somethingLong()
     .somethingLong((_) {
       body;
-    }).a();
+    })
+    .a();
 >>> nest calls one more than target
 someVeryLongExpression = someVeryLongExpression.someLongMethod();
 <<<
@@ -246,18 +247,22 @@ someTargetFunction(
   argument,
   argument,
   argument,
-)
-    .method()
-    .method();
+).method().method();
 >>> splitting the target forces methods to split
 someVeryLongTargetFunction(argument, argument).one().two();
 <<<
 someVeryLongTargetFunction(
   argument,
   argument,
-)
-    .one()
-    .two();
+).one().two();
+>>> splitting the target forces methods to split
+someVeryLongTargetFunction(argument, argument).oneVeryVeryLong().twoAlsoVeryVeryLong();
+<<<
+someVeryLongTargetFunction(
+  argument,
+  argument,
+).oneVeryVeryLong()
+    .twoAlsoVeryVeryLong();
 >>> target splits more deeply than property chain
 someTargetFunction(argument, argument, argument).property.property;
 <<<
@@ -265,18 +270,23 @@ someTargetFunction(
   argument,
   argument,
   argument,
-)
-    .property
-    .property;
+).property.property;
+>>> target splits more deeply than property chain
+someTargetFunction(argument, argument, argument).veryLongProperty.anotherVeryLongProperty;
+<<<
+someTargetFunction(
+  argument,
+  argument,
+  argument,
+).veryLongProperty
+    .anotherVeryLongProperty;
 >>> splitting the target forces methods to split
 someVeryLongTargetFunction(argument, argument).one.two;
 <<<
 someVeryLongTargetFunction(
   argument,
   argument,
-)
-    .one
-    .two;
+).one.two;
 >>> do not split on "." when target is list
 [element, element, element, element, element].someLongMethod();
 <<<

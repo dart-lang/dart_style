@@ -75,6 +75,7 @@ class Rule extends FastHash {
   /// range, the constrained rule's value must be a certain given value.
   final Map<Rule, List<_Constraint>> _constraints = {};
 
+  // TODO: This should have a better name.
   /// What constraint should be applied to this rule if an inner rule splits.
   ///
   /// If `null`, then it can split independently of any contained rules.
@@ -269,6 +270,12 @@ mixin TrackInnerRulesMixin implements Rule {
   void enableSplitOnInnerRules() {
     _trackInnerRules = true;
   }
+}
+
+// TODO: Move this elsewhere.
+class CallChainRule extends Rule {
+  @override
+  int? get splitOnInnerRules => null;
 }
 
 /// Describes a value constraint that one [Rule] places on another rule's

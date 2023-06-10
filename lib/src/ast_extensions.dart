@@ -49,6 +49,8 @@ extension AstNodeExtensions on AstNode {
 
   // TODO: Better name.
   // TODO: Include switch expressions?
+  // TODO: Should this return false if the delimited thing is empty and thus
+  // can't split internally?
   /// Whether this node is an expression or pattern with an explicitly
   /// delimited collection-like body.
   bool get isDelimited {
@@ -88,6 +90,8 @@ extension AstNodeExtensions on AstNode {
 
   // TODO: Better name.
   // TODO: Can this be unified with `isDelimited`?
+  // TODO: Should this return false if the delimited thing is empty and thus
+  // can't split internally?
   /// Whether this node is an expression or pattern with a delimited
   /// collection-like body or a function call with an argument list.
   bool get isDelimitedOrCall {
