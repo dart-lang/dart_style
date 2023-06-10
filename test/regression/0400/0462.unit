@@ -12,11 +12,10 @@ class Foo {
 <<<
 class Foo {
   Future<ComponentSettings<BiddingStrategyConfiguration>>
-      _biddingStrategyConfigurationFuture;
+  _biddingStrategyConfigurationFuture;
 
   Future<ComponentSettings<BiddingStrategyConfiguration>>
-      get biddingStrategyConfigurationFuture =>
-          _biddingStrategyConfigurationFuture;
+  get biddingStrategyConfigurationFuture => _biddingStrategyConfigurationFuture;
 }
 >>>
 class Foo {
@@ -29,5 +28,5 @@ class Foo {
 <<<
 class Foo {
   HashMap<AnalysisTarget, List<PendingFuture>>
-      get pendingFutureSources_forTesting => _pendingFutureTargets;
+  get pendingFutureSources_forTesting => _pendingFutureTargets;
 }

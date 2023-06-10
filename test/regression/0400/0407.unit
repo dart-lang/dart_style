@@ -27,8 +27,10 @@ receiver
         ..formattedTotal = _total == 0
             ? ""
             : _chartType == "PieChart"
-                ? _formatter.formatAsPercent(item.value / _total,
-                    fractionDigits: 1)
+                ? _formatter.formatAsPercent(
+                    item.value / _total,
+                    fractionDigits: 1,
+                  )
                 : _formatter.formatValue(item.value, item.valueType);
     }
 >>> (indent 6)
@@ -46,7 +48,9 @@ receiver
           ..formattedTotal = _total == 0
               ? ""
               : _chartType == "PieChart"
-                  ? _formatter.formatAsPercent(item.value / _total,
-                      fractionDigits: 1)
+                  ? _formatter.formatAsPercent(
+                      item.value / _total,
+                      fractionDigits: 1,
+                    )
                   : _formatter.formatValue(item.value, item.valueType);
       }

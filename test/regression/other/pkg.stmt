@@ -7,9 +7,10 @@
           ]);
 <<<
       expect(
-          wktGeographic.parseAll<GeoPoint2>(wktTest, range: Range(start: 2)),
-          <Geometry>[
-            GeoPoint2.from([3, 3]),
-            GeoPoint2.from([4, 4]),
-            GeoPoint2.from([5, 5]),
-          ]);
+        wktGeographic.parseAll<GeoPoint2>(wktTest, range: Range(start: 2)),
+        <Geometry>[
+          GeoPoint2.from([3, 3]),
+          GeoPoint2.from([4, 4]),
+          GeoPoint2.from([5, 5]),
+        ],
+      );

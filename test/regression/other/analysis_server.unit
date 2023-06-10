@@ -19,9 +19,11 @@ class CachingPubPackageMapProvider {
 <<<
 class CachingPubPackageMapProvider {
   CachingPubPackageMapProvider(
-      ResourceProvider resourceProvider, DirectoryBasedDartSdk sdk,
-      [RunPubList runPubList, this._writeFile])
-      : super(resourceProvider, sdk, runPubList) {
+    ResourceProvider resourceProvider,
+    DirectoryBasedDartSdk sdk, [
+    RunPubList runPubList,
+    this._writeFile,
+  ]) : super(resourceProvider, sdk, runPubList) {
     ;
   }
 }
@@ -34,9 +36,12 @@ class Foo {
 <<<
 class Foo {
   bool selectionIncludesNonWhitespaceOutsideNode(
-          SourceRange selection, AstNode node) =>
-      _selectionIncludesNonWhitespaceOutsideRange(
-          selection, SourceRangeFactory.rangeNode(node));
+    SourceRange selection,
+    AstNode node,
+  ) => _selectionIncludesNonWhitespaceOutsideRange(
+    selection,
+    SourceRangeFactory.rangeNode(node),
+  );
 }
 >>> (indent 2)
   void _writeCompletionPerformanceList(StringBuffer buffer) {
@@ -79,7 +84,9 @@ final ListResultDescriptor<AnalysisError> HINTS =
 <<<
 final ListResultDescriptor<AnalysisError> HINTS =
     new ListResultDescriptor<AnalysisError>(
-        'HINT_ERRORS', AnalysisError.NO_ERRORS);
+  'HINT_ERRORS',
+  AnalysisError.NO_ERRORS,
+);
 >>> (indent 2)
   makeMatcher() {
     docComment(toHtmlVisitor.collectHtml(() {
@@ -116,19 +123,27 @@ final ListResultDescriptor<AnalysisError> HINTS =
       }
 <<<
       main() {
-        files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
-            valueDecoder: (String jsonPath, Object json) =>
-                jsonDecoder._decodeUnion(jsonPath, json, "type", {
-                  "add": (String jsonPath, Object json) =>
-                      new AddContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json),
-                  "change": (String jsonPath, Object json) =>
-                      new ChangeContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json),
-                  "remove": (String jsonPath, Object json) =>
-                      new RemoveContentOverlay.fromJson(
-                          jsonDecoder, jsonPath, json)
-                }));
+        files = jsonDecoder._decodeMap(
+          jsonPath + ".files",
+          json["files"],
+          valueDecoder: (
+            String jsonPath,
+            Object json,
+          ) => jsonDecoder._decodeUnion(jsonPath, json, "type", {
+            "add": (
+              String jsonPath,
+              Object json,
+            ) => new AddContentOverlay.fromJson(jsonDecoder, jsonPath, json),
+            "change": (
+              String jsonPath,
+              Object json,
+            ) => new ChangeContentOverlay.fromJson(jsonDecoder, jsonPath, json),
+            "remove": (
+              String jsonPath,
+              Object json,
+            ) => new RemoveContentOverlay.fromJson(jsonDecoder, jsonPath, json),
+          }),
+        );
       }
 >>> (indent 2)
   main() {
@@ -152,10 +167,10 @@ final ListResultDescriptor<AnalysisError> HINTS =
   }
 <<<
   main() {
-    return context
-        .getContents(source)
-        .data
-        .substring(replacementOffset, offset);
+    return context.getContents(source).data.substring(
+      replacementOffset,
+      offset,
+    );
   }
 >>> (indent 2)
   main() {
@@ -166,10 +181,13 @@ final ListResultDescriptor<AnalysisError> HINTS =
   }
 <<<
   main() {
-    contextsChangedRaw(new ContextsChangedEvent(
+    contextsChangedRaw(
+      new ContextsChangedEvent(
         added: event.added.length > 0 ? [mockContext] : [],
         changed: event.changed.length > 0 ? [mockContext] : [],
-        removed: event.removed.length > 0 ? [mockContext] : []));
+        removed: event.removed.length > 0 ? [mockContext] : [],
+      ),
+    );
   }
 >>> (indent 2)
   void emitEmptyObjectClass(String className, ImpliedType impliedType) {
@@ -233,19 +251,23 @@ final ListResultDescriptor<AnalysisError> HINTS =
 <<<
   main() {
     return withBuilder(
-        new DartIrBuilder(
-            DART_CONSTANT_SYSTEM,
-            element,
-            // TODO(johnniwinther): Support closure variables.
-            new Set<dart2js.Local>()), () {
-      irBuilder.buildFunctionHeader(
-          constructor.parameters.map(converter.convertElement));
-      // Visit the body directly to avoid processing the signature as
-      // expressions.
-      // Call to allow for `body == null` in case of synthesized constructors.
-      build(body);
-      return irBuilder.makeConstructorDefinition(const [], const []);
-    });
+      new DartIrBuilder(
+        DART_CONSTANT_SYSTEM,
+        element,
+        // TODO(johnniwinther): Support closure variables.
+        new Set<dart2js.Local>(),
+      ),
+      () {
+        irBuilder.buildFunctionHeader(
+          constructor.parameters.map(converter.convertElement),
+        );
+        // Visit the body directly to avoid processing the signature as
+        // expressions.
+        // Call to allow for `body == null` in case of synthesized constructors.
+        build(body);
+        return irBuilder.makeConstructorDefinition(const [], const []);
+      },
+    );
   }
 >>> (indent 4)
     Element expectedElement = (declarations[0] as TopLevelVariableDeclaration)

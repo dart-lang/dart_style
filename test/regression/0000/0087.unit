@@ -37,6 +37,6 @@ void main() {
     [0, 3, isFalse],
     [1, 3, isFalse],
     [2, 3, isFalse],
-    [3, 3, isFalse]
+    [3, 3, isFalse],
   ];
 }

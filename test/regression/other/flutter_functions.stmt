@@ -37,13 +37,9 @@
   );
 <<<
   // packages/flutter/test/widgets/automatic_keep_alive_test.dart:52
-  return List<Widget>.generate(
-    100,
-    (int index) {
-      ;
-    },
-    growable: false,
-  );
+  return List<Widget>.generate(100, (int index) {
+    ;
+  }, growable: false);
 >>> (indent 2)
   // packages/flutter/lib/src/foundation/consolidate_response.dart:78
   subscription = response.listen((List<int> chunk) {
@@ -53,11 +49,16 @@
   }, onError: completer.completeError, cancelOnError: true);
 <<<
   // packages/flutter/lib/src/foundation/consolidate_response.dart:78
-  subscription = response.listen((List<int> chunk) {
-    ;
-  }, onDone: () {
-    ;
-  }, onError: completer.completeError, cancelOnError: true);
+  subscription = response.listen(
+    (List<int> chunk) {
+      ;
+    },
+    onDone: () {
+      ;
+    },
+    onError: completer.completeError,
+    cancelOnError: true,
+  );
 >>> (indent 2)
   // packages/flutter/lib/src/foundation/_isolates_io.dart:87
   final R result = await Timeline.timeSync(
@@ -69,13 +70,9 @@
   );
 <<<
   // packages/flutter/lib/src/foundation/_isolates_io.dart:87
-  final R result = await Timeline.timeSync(
-    configuration.debugLabel,
-    () async {
-      ;
-    },
-    flow: Flow.step(configuration.flowId),
-  );
+  final R result = await Timeline.timeSync(configuration.debugLabel, () async {
+    ;
+  }, flow: Flow.step(configuration.flowId));
 >>> (indent 4)
     // dev/benchmarks/macrobenchmarks/lib/src/web/bench_text_layout.dart:164
     profile.record('layout', () {
@@ -95,11 +92,14 @@
     });
 <<<
     // packages/flutter_web_plugins/lib/src/plugin_event_channel.dart:136
-    subscription = controller.stream.listen((dynamic event) {
-      ;
-    }, onError: (dynamic error) {
-      ;
-    });
+    subscription = controller.stream.listen(
+      (dynamic event) {
+        ;
+      },
+      onError: (dynamic error) {
+        ;
+      },
+    );
 >>> (indent 4)
     // packages/flutter_web_plugins/lib/src/plugin_registry.dart:144
     ui.channelBuffers.push(channel, message, (ByteData? reply) {
@@ -120,10 +120,8 @@
 <<<
     // packages/flutter_goldens_client/lib/skia_client.dart:368
     await io.HttpOverrides.runWithHttpOverrides<Future<void>>(() async {
-        ;
-      },
-      SkiaGoldHttpOverrides(),
-    );
+      ;
+    }, SkiaGoldHttpOverrides());
 >>> (indent 4)
     // packages/flutter/test/widgets/custom_multi_child_layout_test.dart:28
     expect(() {
@@ -211,13 +209,9 @@
       );
 <<<
       // packages/flutter/lib/src/scheduler/binding.dart:79
-      Timeline.timeSync(
-        debugLabel ?? 'Scheduled Task',
-        () {
-          ;
-        },
-        flow: flow != null ? Flow.step(flow!.id) : null,
-      );
+      Timeline.timeSync(debugLabel ?? 'Scheduled Task', () {
+        ;
+      }, flow: flow != null ? Flow.step(flow!.id) : null);
 >>> (indent 6)
       // packages/flutter/lib/src/painting/image_cache.dart:303
       return _LiveImage(
@@ -228,12 +222,9 @@
       );
 <<<
       // packages/flutter/lib/src/painting/image_cache.dart:303
-      return _LiveImage(
-        completer,
-        () {
-          ;
-        },
-      );
+      return _LiveImage(completer, () {
+        ;
+      });
 >>> (indent 6)
       // packages/flutter/lib/src/rendering/list_wheel_viewport.dart:910
       context.pushClipRect(
@@ -285,16 +276,20 @@
       });
 <<<
       // packages/flutter/lib/src/widgets/async.dart:134
-      _subscription = widget.stream!.listen((T data) {
-        setState(() {
-          _summary = widget.afterData(_summary, data);
-        });
-      }, onError: (Object error, StackTrace stackTrace) {
-        setState(() {
-          _summary = widget.afterError(_summary, error, stackTrace);
-        });
-      }, onDone: () {
-        setState(() {
-          _summary = widget.afterDone(_summary);
-        });
-      });
+      _subscription = widget.stream!.listen(
+        (T data) {
+          setState(() {
+            _summary = widget.afterData(_summary, data);
+          });
+        },
+        onError: (Object error, StackTrace stackTrace) {
+          setState(() {
+            _summary = widget.afterError(_summary, error, stackTrace);
+          });
+        },
+        onDone: () {
+          setState(() {
+            _summary = widget.afterDone(_summary);
+          });
+        },
+      );

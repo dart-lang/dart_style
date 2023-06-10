@@ -4,17 +4,18 @@ abstract class Connection<TLookupResponse, TLookupRequest, TRunQueryResponse, TR
 }
 <<<
 abstract class Connection<
-    TLookupResponse,
-    TLookupRequest,
-    TRunQueryResponse,
-    TRunQueryRequest,
-    TBeginTransactionResponse,
-    TBeginTransactionRequest,
-    TCommitResponse,
-    TCommitRequest,
-    TRollbackResponse,
-    TRollbackRequest,
-    TAllocateIdsResponse,
-    TAllocateIdsRequest> {
+  TLookupResponse,
+  TLookupRequest,
+  TRunQueryResponse,
+  TRunQueryRequest,
+  TBeginTransactionResponse,
+  TBeginTransactionRequest,
+  TCommitResponse,
+  TCommitRequest,
+  TRollbackResponse,
+  TRollbackRequest,
+  TAllocateIdsResponse,
+  TAllocateIdsRequest
+> {
   // ...
 }

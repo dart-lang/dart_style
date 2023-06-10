@@ -4,8 +4,10 @@ foo() {
 }
 <<<
 foo() {
-  assert(argument != argument &&
-      (argument.isDynamic || argument.isSubTypeOf(argument, argument)));
+  assert(
+    argument != argument &&
+        (argument.isDynamic || argument.isSubTypeOf(argument, argument)),
+  );
 }
 >>>
 foo() {
@@ -45,8 +47,9 @@ foo() {
 assert(say('Bob', 'Howdy', 'smoke signal') ==
 'Bob says Howdy with a smoke signal');
 <<<
-assert(say('Bob', 'Howdy', 'smoke signal') ==
-    'Bob says Howdy with a smoke signal');
+assert(
+  say('Bob', 'Howdy', 'smoke signal') == 'Bob says Howdy with a smoke signal',
+);
 >>>
 void main() {
   var xxxxxxxYyyyyyyy = aaaabbb

@@ -3,4 +3,5 @@
             .getTypeVariableAsLocal(typeVariable)] = param;
 <<<
         localsHandler.directLocals[
-            localsHandler.getTypeVariableAsLocal(typeVariable)] = param;
+          localsHandler.getTypeVariableAsLocal(typeVariable)
+        ] = param;

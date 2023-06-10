@@ -13,7 +13,8 @@ class C {
   get defaultProps {
     return newProps() // This newProps() call should not lint
       ..addProps(
-          super.defaultProps) // This super.defaultProps access should not lint
+        super.defaultProps,
+      ) // This super.defaultProps access should not lint
       ..somethingThatCanBeTouched =
           mcHammer; // This mcHammer access SHOULD lint
   }

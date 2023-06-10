@@ -11,7 +11,10 @@
 <<<
   @eventHandler
   bool computeChangePasswordDisabled(
-          String email, String password, String newPassword) =>
+    String email,
+    String password,
+    String newPassword,
+  ) =>
       email == null ||
       email.isEmpty ||
       password == null ||

@@ -5,6 +5,8 @@ main() {
 }
 <<<
 main() {
-  someReallyLongFunctionName('a really really really really long argument',
-      'a really really really really long argument');
+  someReallyLongFunctionName(
+    'a really really really really long argument',
+    'a really really really really long argument',
+  );
 }

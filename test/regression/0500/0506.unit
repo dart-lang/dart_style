@@ -65,14 +65,15 @@ class Foo {
 <<<
     main() {
       tree.Node definition = new tree.FunctionExpression(
-          makeIdentifier(param.name),
-          makeParameters(param.parameters),
-          null, // body
-          param.type == null ? null : makeType(param.type),
-          makeEmptyModifiers(), // TODO: Function parameter modifiers?
-          null, // initializers
-          null, // get/set
-          null); // async modifier
+        makeIdentifier(param.name),
+        makeParameters(param.parameters),
+        null, // body
+        param.type == null ? null : makeType(param.type),
+        makeEmptyModifiers(), // TODO: Function parameter modifiers?
+        null, // initializers
+        null, // get/set
+        null,
+      ); // async modifier
     }
 >>> (indent 2)
   main() {
@@ -86,7 +87,8 @@ class Foo {
 <<<
   main() {
     ConstantExpression constant = new TypeConstantExpression(
-        // TODO(johnniwinther): Use [type] when evaluation of constants is done
-        // directly on the constant expressions.
-        node.isCall ? coreTypes.typeType : type);
+      // TODO(johnniwinther): Use [type] when evaluation of constants is done
+      // directly on the constant expressions.
+      node.isCall ? coreTypes.typeType : type,
+    );
   }

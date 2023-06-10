@@ -74,11 +74,7 @@ class Semester {
 
 //  String get cacheSaveTag => '${Helper.username}_$code';
 
-  Semester({
-    this.year,
-    this.value,
-    this.text,
-  });
+  Semester({this.year, this.value, this.text});
 }
 >>> space before inline block comment
 class _MyAppState extends State<MyApp> {
@@ -136,30 +132,34 @@ class _MyAppState extends State<MyApp> {
               child: Column(
                 children: <Widget>[
                   _assetsAudioPlayer.builderCurrent(
-                      builder: (context, Playing? playing) {
-                    return Column(
-                      children: <Widget>[
-                        _assetsAudioPlayer.builderLoopMode(
-                          builder: (context, loopMode) {
-                            return PlayerBuilder.isPlaying(
+                    builder: (context, Playing? playing) {
+                      return Column(
+                        children: <Widget>[
+                          _assetsAudioPlayer.builderLoopMode(
+                            builder: (context, loopMode) {
+                              return PlayerBuilder.isPlaying(
                                 builder: (context, isPlaying) {
-                              return PlayingControls(
-                                onNext: () {
-                                  _assetsAudioPlayer.next(
-                                      keepLoopMode:
-                                          true /*keepLoopMode: false*/);
-                                },
-                                onPrevious: () {
-                                  _assetsAudioPlayer.previous(
-                                      /*keepLoopMode: false*/);
+                                  return PlayingControls(
+                                    onNext: () {
+                                      _assetsAudioPlayer.next(
+                                        keepLoopMode:
+                                            true, /*keepLoopMode: false*/
+                                      );
+                                    },
+                                    onPrevious: () {
+                                      _assetsAudioPlayer.previous(
+                                        /*keepLoopMode: false*/
+                                      );
+                                    },
+                                  );
                                 },
                               );
-                            });
-                          },
-                        ),
-                      ],
-                    );
-                  }),
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ],
               ),
             ),
@@ -367,7 +367,7 @@ class _ImageNetworkState extends State<ImageNetwork> {
 >>>
 class _Action< /*JsonSerializable*/ T> {}
 <<<
-class _Action< /*JsonSerializable*/ T> {}
+class _Action</*JsonSerializable*/ T> {}
 >>>
 enum RenovationBackend {
   frappe,
@@ -376,5 +376,5 @@ enum RenovationBackend {
 <<<
 enum RenovationBackend {
   frappe,
-  firebase // To be implemented
+  firebase, // To be implemented
 }

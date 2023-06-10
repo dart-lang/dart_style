@@ -102,8 +102,7 @@ enum EnumAll<S extends num, T extends num>
   v3<int, int>(y: 2),
   v4.named(1, y: 2),
   v5<int, int>.renamed(1, y: 2),
-  v6.new(),
-  ;
+  v6.new();
 
   /// Static members.
   ///
@@ -125,16 +124,16 @@ enum EnumAll<S extends num, T extends num>
   // Constructors.
   // Generative, non-redirecting, unnamed.
   const EnumAll({T? y})
-      : constructor = "unnamed",
-        this.x = 0 as S,
-        y = y ?? (0 as T);
+    : constructor = "unnamed",
+      this.x = 0 as S,
+      y = y ?? (0 as T);
   // Generative, non-redirecting, named.
   const EnumAll.named(this.x, {T? y, String? constructor})
-      : constructor = constructor ?? "named",
-        y = y ?? (0 as T);
+    : constructor = constructor ?? "named",
+      y = y ?? (0 as T);
   // Generative, redirecting.
   const EnumAll.renamed(S x, {T? y})
-      : this.named(x, y: y, constructor: "renamed");
+    : this.named(x, y: y, constructor: "renamed");
   // Factory, non-redirecting.
   factory EnumAll.factory(int index) => values[index] as EnumAll<S, T>;
   // Factory, redirecting (only to other factory constructor).

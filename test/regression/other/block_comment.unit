@@ -6,8 +6,11 @@ setSelectionRange(
 }
 <<<
 setSelectionRange(
-    /* TextInputElement | TextAreaElement */ Element input, int start, int end,
-    [direction]) {
+  /* TextInputElement | TextAreaElement */ Element input,
+  int start,
+  int end, [
+  direction,
+]) {
   ;
 }
 >>>
@@ -17,8 +20,11 @@ setSelectionRange(/* TextInputElement | TextAreaElement */ Element input, int st
 }
 <<<
 setSelectionRange(
-    /* TextInputElement | TextAreaElement */ Element input, int start, int end,
-    [direction]) {
+  /* TextInputElement | TextAreaElement */ Element input,
+  int start,
+  int end, [
+  direction,
+]) {
   ;
 }
 >>>

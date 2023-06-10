@@ -3,4 +3,5 @@ List<Set<TransformerId>> _stageTransformers(
     Map<TransformerId, Set<TransformerId>> transformerDependencies) {}
 <<<
 List<Set<TransformerId>> _stageTransformers(
-    Map<TransformerId, Set<TransformerId>> transformerDependencies) {}
+  Map<TransformerId, Set<TransformerId>> transformerDependencies,
+) {}

@@ -15,5 +15,5 @@ class F {
 <<<
 class F {
   List<AVeryLongTypeNameTHatTheUserCannotChange_____________>
-      aDescriptiveName__;
+  aDescriptiveName__;
 }

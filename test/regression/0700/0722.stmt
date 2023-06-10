@@ -26,9 +26,6 @@ Widget(
               : Text(
                   suffixNumber(project.taps),
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 18.0,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600),
                 ),
 );

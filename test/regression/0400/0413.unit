@@ -5,6 +5,7 @@ List get bindings => [
   ];
 <<<
 List get bindings => [
-      bind(const StaticFilePath())
-          .toValue(_staticFilePath.isEmpty ? _libRoot : _staticFilePath)
-    ];
+  bind(const StaticFilePath()).toValue(
+    _staticFilePath.isEmpty ? _libRoot : _staticFilePath,
+  ),
+];

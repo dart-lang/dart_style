@@ -28,5 +28,5 @@ enum RefType {
   cvref,
 
   /// Indicates not a reference
-  value
+  value,
 }

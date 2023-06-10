@@ -8,8 +8,8 @@ class A {
 <<<
 class A {
   A()
-      // comment
-      : field = value;
+    // comment
+    : field = value;
 }
 >>> no trailing whitespace before initializer comment when params wrap
 class A {
@@ -19,8 +19,14 @@ class A {
 }
 <<<
 class A {
-  A(some, very, long, parameter, list,
-      that, wraps)
-      // comment
-      : field = value;
+  A(
+    some,
+    very,
+    long,
+    parameter,
+    list,
+    that,
+    wraps,
+  ) // comment
+    : field = value;
 }

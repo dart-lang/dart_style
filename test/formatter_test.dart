@@ -12,11 +12,7 @@ import 'utils.dart';
 
 void main() async {
   await testDirectory('comments');
-  print('TODO: Migrate regression tests.');
-  // TODO: Don't want to hand migrate these, so want to wait to auto-migrate
-  // them once the other tests are passing and the formatter is working as
-  // desired.
-  // await testDirectory('regression');
+  await testDirectory('regression');
   await testDirectory('selections');
   await testDirectory('splitting');
   await testDirectory('whitespace');

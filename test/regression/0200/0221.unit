@@ -12,12 +12,10 @@ class Foo {
 class Foo {
   static Column column(Handler onSelection) =>
       (Column.defaultBuilder(videoMsg())
-            ..id = 'VIDEO'
-            ..segment = ((row) => row.segmentedStats
-                .map((s) => s.get(Stats.SEGMENTATION))
-                .toList())
-            ..cell = new Cell(onSelection))
-          .build();
+        ..id = 'VIDEO'
+        ..segment = ((row) =>
+            row.segmentedStats.map((s) => s.get(Stats.SEGMENTATION)).toList())
+        ..cell = new Cell(onSelection)).build();
 }
 >>>
 void _updateChart() {
@@ -34,14 +32,16 @@ void _updateChart() {
 <<<
 void _updateChart() {
   if (_model.settings != null) {
-    _chart.update((ChartSettings.builder()
-          ..ids.addAll(_model.ids)
-          ..statusFilter = StatusFilter.ALL
-          ..dateRange =
-              chartDates.toChartDateRange(_model.settings.dateRange.value)
-          ..segmentationDimension = _model.segmentation
-          ..context = ChartContext.empty)
-        .build());
+    _chart.update(
+      (ChartSettings.builder()
+        ..ids.addAll(_model.ids)
+        ..statusFilter = StatusFilter.ALL
+        ..dateRange = chartDates.toChartDateRange(
+          _model.settings.dateRange.value,
+        )
+        ..segmentationDimension = _model.segmentation
+        ..context = ChartContext.empty).build(),
+    );
   }
 }
 >>> (indent 2)
@@ -59,14 +59,16 @@ void _updateChart() {
 <<<
   void _updateChart() {
     if (_model.settings != null) {
-      _chart.update((ChartSettings.builder()
-            ..ids.addAll(_model.ids)
-            ..statusFilter = StatusFilter.ALL
-            ..dateRange =
-                chartDates.toChartDateRange(_model.settings.dateRange.value)
-            ..segmentationDimension = _model.segmentation
-            ..context = ChartContext.empty)
-          .build());
+      _chart.update(
+        (ChartSettings.builder()
+          ..ids.addAll(_model.ids)
+          ..statusFilter = StatusFilter.ALL
+          ..dateRange = chartDates.toChartDateRange(
+            _model.settings.dateRange.value,
+          )
+          ..segmentationDimension = _model.segmentation
+          ..context = ChartContext.empty).build(),
+      );
     }
   }
 >>>
@@ -78,12 +80,18 @@ trackEvent(String category, String action,
   ..label = label
   ..value = value);
 <<<
-trackEvent(String category, String action, {String label: '', int value: 0}) =>
-    eventsTracked.add(new AnalyticsEvent()
-      ..category = category
-      ..action = action
-      ..label = label
-      ..value = value);
+trackEvent(
+  String category,
+  String action, {
+  String label: '',
+  int value: 0,
+}) => eventsTracked.add(
+  new AnalyticsEvent()
+    ..category = category
+    ..action = action
+    ..label = label
+    ..value = value,
+);
 >>>
 main() {
   (new OrderBy()
@@ -95,9 +103,8 @@ main() {
 <<<
 main() {
   (new OrderBy()
-        ..field = s.column
-        ..sortOrder = s.isAscending
-            ? OrderBySortOrder.ASCENDING
-            : OrderBySortOrder.DESCENDING)
-      .toList();
+    ..field = s.column
+    ..sortOrder = s.isAscending
+        ? OrderBySortOrder.ASCENDING
+        : OrderBySortOrder.DESCENDING).toList();
 }

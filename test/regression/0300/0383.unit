@@ -6,7 +6,7 @@ class MummyMatchers {
 <<<
 class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers])
-      : publishers = publishers != null
-            ? publishers
-            : defaultPublishers.add(unittestPublisher);
+    : publishers = publishers != null
+          ? publishers
+          : defaultPublishers.add(unittestPublisher);
 }

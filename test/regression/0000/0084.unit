@@ -12,7 +12,9 @@ Future<TextureAtlas> load(String url, BitmapDataLoadOptions bitmapDataLoadOption
 }
 <<<
 Future<TextureAtlas> load(
-    String url, BitmapDataLoadOptions bitmapDataLoadOptions) {
+  String url,
+  BitmapDataLoadOptions bitmapDataLoadOptions,
+) {
   HttpRequest.getString(url).then((textureAtlasJson) {
     ;
 
@@ -41,8 +43,10 @@ class SoundSprite {
 }
 <<<
 class SoundSprite {
-  static Future<SoundSprite> load(String url,
-      [SoundLoadOptions soundLoadOptions = null]) {
+  static Future<SoundSprite> load(
+    String url, [
+    SoundLoadOptions soundLoadOptions = null,
+  ]) {
     HttpRequest.getString(url).then((soundSpriteJson) {
       if (segments is Map) {}
 

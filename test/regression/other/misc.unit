@@ -11,10 +11,14 @@ main() {
 <<<
 main() {
   addTask(
-      "publish",
-      createProcessTask("pub",
-          args: ["publish", "-f"], description: "Publishes a New Version"),
-      dependencies: ["version"]);
+    "publish",
+    createProcessTask(
+      "pub",
+      args: ["publish", "-f"],
+      description: "Publishes a New Version",
+    ),
+    dependencies: ["version"],
+  );
 }
 >>>
 Widget build() {

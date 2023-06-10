@@ -22,24 +22,25 @@
 <<<
     main() {
       assert(invariant(
-          node,
-          identical(name, '+') ||
-              identical(name, '=') ||
-              identical(name, '-') ||
-              identical(name, '*') ||
-              identical(name, '/') ||
-              identical(name, '%') ||
-              identical(name, '~/') ||
-              identical(name, '|') ||
-              identical(name, '&') ||
-              identical(name, '^') ||
-              identical(name, '~') ||
-              identical(name, '<<') ||
-              identical(name, '>>') ||
-              identical(name, '<') ||
-              identical(name, '>') ||
-              identical(name, '<=') ||
-              identical(name, '>=') ||
-              identical(name, '[]'),
-          message: 'Unexpected operator $name'));
+        node,
+        identical(name, '+') ||
+            identical(name, '=') ||
+            identical(name, '-') ||
+            identical(name, '*') ||
+            identical(name, '/') ||
+            identical(name, '%') ||
+            identical(name, '~/') ||
+            identical(name, '|') ||
+            identical(name, '&') ||
+            identical(name, '^') ||
+            identical(name, '~') ||
+            identical(name, '<<') ||
+            identical(name, '>>') ||
+            identical(name, '<') ||
+            identical(name, '>') ||
+            identical(name, '<=') ||
+            identical(name, '>=') ||
+            identical(name, '[]'),
+        message: 'Unexpected operator $name',
+      ));
     }

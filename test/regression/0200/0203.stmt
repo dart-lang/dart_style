@@ -11,5 +11,6 @@ var constructedRequest = new Request()
       (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
 <<<
   var constructedRequest = new Request()
-    ..campaignId =
-        (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
+    ..campaignId = (rollup.campaignId == null
+        ? new Int64(0)
+        : rollup.campaignId);

@@ -11,7 +11,8 @@ void fn81() {
   // The number of characters in the `four` line is ...........................81
   var list = (one.two().three()
     ..four(
-        '_15___20___25___30___35___40___45___50___55___60___65___70___75___'))
+      '_15___20___25___30___35___40___45___50___55___60___65___70___75___',
+    ))
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
@@ -26,11 +27,9 @@ void fn80() {
 <<<
 void fn80() {
   // The number of characters in the `four` line is ..........................80
-  var list =
-      (one.two().three()
-        ..four(
-            '_15___20___25___30___35___40___45___50___55___60___65___70___75__'))
-        ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+  var list = (one.two().three()
+    ..four('_15___20___25___30___35___40___45___50___55___60___65___70___75__'))
+    ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
 >>>
@@ -44,11 +43,9 @@ void fn79() {
 <<<
 void fn79() {
   // The number of characters in the `four` line is .........................79
-  var list =
-      (one.two().three()
-        ..four(
-            '_15___20___25___30___35___40___45___50___55___60___65___70___75_'))
-        ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+  var list = (one.two().three()
+    ..four('_15___20___25___30___35___40___45___50___55___60___65___70___75_'))
+    ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
 >>>
@@ -62,11 +59,9 @@ void fn78() {
 <<<
 void fn78() {
   // The number of characters in the `four` line is ........................78
-  var list =
-      (one.two().three()
-        ..four(
-            '_15___20___25___30___35___40___45___50___55___60___65___70___75'))
-        ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+  var list = (one.two().three()
+    ..four('_15___20___25___30___35___40___45___50___55___60___65___70___75'))
+    ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
 >>>
@@ -80,11 +75,9 @@ void fn77() {
 <<<
 void fn77() {
   // The number of characters in the `four` line is .......................77
-  var list =
-      (one.two().three()
-        ..four(
-            '_15___20___25___30___35___40___45___50___55___60___65___70___7'))
-        ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+  var list = (one.two().three()
+    ..four('_15___20___25___30___35___40___45___50___55___60___65___70___7'))
+    ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
 >>>
@@ -98,8 +91,8 @@ void fn76() {
 <<<
 void fn76() {
   // The number of characters in the `four` line is ......................76
-  var list =
-      (one.two().three()..four('_15___20___25___30___35___40___45___50___55___60___65___70___'))
-        ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
+  var list = (one.two().three()
+    ..four('_15___20___25___30___35___40___45___50___55___60___65___70___'))
+    ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }

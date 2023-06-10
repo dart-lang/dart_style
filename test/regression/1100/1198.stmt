@@ -11,9 +11,7 @@ switch (
 >>>
 switch ([1,]) {}
 <<<
-switch ([
-  1,
-]) {}
+switch ([1]) {}
 >>>
 e = switch (e) {};
 <<<
@@ -26,6 +24,4 @@ e = switch (
 >>>
 e = switch ([1,]) {};
 <<<
-e = switch ([
-  1,
-]) {};
+e = switch ([1]) {};

@@ -4,5 +4,9 @@
       .all.firstWhere((cookie) => cookie.name == name, orElse: () => null));
 <<<
   Optional<Cookie> getCookie(String name) =>
-      new Optional.fromNullable(_driver.cookies.all
-          .firstWhere((cookie) => cookie.name == name, orElse: () => null));
+      new Optional.fromNullable(
+        _driver.cookies.all.firstWhere(
+          (cookie) => cookie.name == name,
+          orElse: () => null,
+        ),
+      );

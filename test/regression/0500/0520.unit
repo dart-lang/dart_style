@@ -12,7 +12,5 @@ import 'package:meta/meta.dart';
 
 class Foo {
   final int bar;
-  Foo({
-    @required this.bar,
-  });
+  Foo({@required this.bar});
 }

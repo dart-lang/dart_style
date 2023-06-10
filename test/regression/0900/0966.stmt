@@ -20,5 +20,5 @@ return [
     else if (conditionB)
       ItemConstructorB()
     else
-      ItemConstructorC()
+      ItemConstructorC(),
 ];

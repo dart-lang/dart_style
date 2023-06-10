@@ -1,8 +1,9 @@
 >>> (indent 2)
 var aLocalVar12 = new APrettyClass(APrettyClass.aStaticMethodOnIt(anArgument));
 <<<
-  var aLocalVar12 =
-      new APrettyClass(APrettyClass.aStaticMethodOnIt(anArgument));
+  var aLocalVar12 = new APrettyClass(
+    APrettyClass.aStaticMethodOnIt(anArgument),
+  );
 >>>
 main() {
   variableName.methodName(
@@ -11,5 +12,7 @@ main() {
 <<<
 main() {
   variableName.methodName(
-      level, span.message(error.message, color: colorOf(severity.name)));
+    level,
+    span.message(error.message, color: colorOf(severity.name)),
+  );
 }

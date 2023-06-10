@@ -4,6 +4,8 @@ longerNamedFoo..items.add(new Foo()
   ..placeUrl = place.toString());
 <<<
 longerNamedFoo
-  ..items.add(new Foo()
-    ..name = bar.toto
-    ..placeUrl = place.toString());
+  ..items.add(
+    new Foo()
+      ..name = bar.toto
+      ..placeUrl = place.toString(),
+  );

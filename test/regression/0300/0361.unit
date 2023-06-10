@@ -61,6 +61,6 @@ class Foo {
     0xF7, // 7C: 247 '÷' "Division sign"
     0xD1, // 7D: 209 'Ñ' "Latin capital letter N with tilde"
     0xF1, // 7E: 241 'ñ' "Latin small letter N with tilde"
-    0x25A0 // 7F:         "Black Square" (NB: 2588 = Full Block)
+    0x25A0, // 7F:         "Black Square" (NB: 2588 = Full Block)
   ];
 }

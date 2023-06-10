@@ -8,10 +8,8 @@ when(
 )
    .thenReturn(new Future<MockProcessResult>.value(new MockProcessResult()));
 <<<
-when(
-  runner.call(
-    typed(captureAny),
-    typed(captureAny),
-    workingDirectory: typed(captureAny, named: "workingDirectory"),
-  ),
-).thenReturn(new Future<MockProcessResult>.value(new MockProcessResult()));
+when(runner.call(
+  typed(captureAny),
+  typed(captureAny),
+  workingDirectory: typed(captureAny, named: "workingDirectory"),
+)).thenReturn(new Future<MockProcessResult>.value(new MockProcessResult()));

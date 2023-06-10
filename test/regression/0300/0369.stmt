@@ -18,8 +18,15 @@ return log.progress("Loading asset environment", () async {
   var barback = new Barback(new PubPackageProvider(graph));
   barback.log.listen(_log);
 
-  var environment = new AssetEnvironment._(graph, barback, mode, watcherType,
-      hostname, basePort, environmentConstants);
+  var environment = new AssetEnvironment._(
+    graph,
+    barback,
+    mode,
+    watcherType,
+    hostname,
+    basePort,
+    environmentConstants,
+  );
 
   await environment._load(entrypoints: entrypoints, useDart2JS: useDart2JS);
   return environment;
