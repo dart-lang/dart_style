@@ -3177,10 +3177,15 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(leftParenthesis);
 
     for (var argument in arguments) {
-      // Allow the block argument to split without forcing the argument list
-      // to split.
       if (argument == blockArgument) {
+        // Allow the block argument to split without forcing the argument list
+        // to split.
         rule.disableSplitOnInnerRules();
+      } else if (argument is AdjacentStrings) {
+        // Allow adjacent strings to split without forcing the argument list
+        // to split. This is usually in functions like `test()`.
+        rule.disableSplitOnInnerRules();
+        builder.nestExpression();
       } else {
         rule.enableSplitOnInnerRules();
       }
@@ -3188,6 +3193,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.split(space: argument != arguments.first);
       visit(argument);
       writeCommaAfter(argument, isTrailing: argument == arguments.last);
+
+      if (argument is AdjacentStrings) builder.unnest();
     }
 
     builder.endBlockArgumentNesting();
