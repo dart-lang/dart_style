@@ -18,6 +18,7 @@ import 'constants.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
+import 'rule/conditional.dart';
 import 'rule/initializer.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
@@ -186,7 +187,13 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     builder.startSpan();
     builder.startRule();
-    if (shouldNest) builder.nestExpression();
+    if (shouldNest) {
+      // TODO: Hack. Figure out better way to handle conditional expressions.
+      builder.nestExpression(
+          indent: node.parent is ConditionalExpression
+              ? Indent.block
+              : Indent.expression);
+    }
     visitNodes(node.strings, between: splitOrNewline);
     if (shouldNest) builder.unnest();
     builder.endRule();
@@ -652,30 +659,38 @@ class SourceVisitor extends ThrowingAstVisitor {
         (node.parent as ConditionalExpression).elseExpression != node;
     if (shouldNest) builder.nestExpression();
     */
-    builder.nestExpression();
 
     // Start lazily so we don't force the operator to split if a line comment
     // appears before the first operand. If we split after one clause in a
     // conditional, always split after both.
-    builder.startLazyRule();
-    visit(node.condition);
+    builder.startLazyRule(ConditionalRule());
 
-    // Push any block arguments all the way past the leading "?" and ":".
-    builder.nestExpression(indent: Indent.block, now: true);
+    // TODO: Hack. Figure out better way to handle conditional expressions.
+    // Indent the conditional expression +4 leading up to the "?" and ":" and
+    // then another +2 so that block bodies inside the operands are aligned
+    // past the punctuation.
+    builder.nestExpression(
+        indent: (node.parent is ConditionalExpression
+                ? Indent.block
+                : Indent.expression) +
+            Indent.block);
     builder.startBlockArgumentNesting();
-    builder.unnest();
+
+    visit(node.condition);
 
     split();
     token(node.question);
     space();
-    builder.nestExpression();
     visit(node.thenExpression);
-    builder.unnest();
 
     split();
     token(node.colon);
     space();
     visit(node.elseExpression);
+
+    builder.endBlockArgumentNesting();
+
+    builder.unnest();
 
     // If conditional expressions are directly nested, force them all to split.
     // This line here forces the child, which implicitly forces the surrounding
@@ -683,13 +698,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (node.parent is ConditionalExpression) builder.forceRules();
 
     builder.endRule();
-    builder.endBlockArgumentNesting();
 
     // TODO(rnystrom): Consider revisiting whether users prefer this after 2.13.
     /*
     if (shouldNest) builder.unnest();
     */
-    builder.unnest();
   }
 
   @override
@@ -3285,7 +3298,13 @@ class SourceVisitor extends ThrowingAstVisitor {
       {int? precedence, bool nest = true}) {
     builder.startSpan();
 
-    if (nest) builder.nestExpression();
+    if (nest) {
+      // TODO: Hack. Figure out better way to handle conditional expressions.
+      builder.nestExpression(
+          indent: node.parent is ConditionalExpression
+              ? Indent.block
+              : Indent.expression);
+    }
 
     // Start lazily so we don't force the operator to split if a line comment
     // appears before the first operand.
