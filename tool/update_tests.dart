@@ -35,7 +35,7 @@ void main(List<String> arguments) async {
     }
   }
 
-  print('${unchanged} tests were unchanged.');
+  print('$unchanged tests were unchanged.');
 }
 
 final _unsupportedPaths = [
@@ -72,8 +72,9 @@ Future<int> _updateTestFile(TestFile testFile) async {
   var pageWidth = testFile.pageWidth;
   if (pageWidth != null) {
     var columns = '$pageWidth columns';
-    columns += ' ' * (pageWidth - columns.length) + '|';
-    buffer.writeln(columns);
+    buffer.write(columns);
+    buffer.write(' ' * (pageWidth - columns.length));
+    buffer.writeln('|');
   }
 
   // TODO(rnystrom): This is duplicating logic in fix_test.dart. Ideally, we'd
