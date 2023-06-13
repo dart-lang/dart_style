@@ -96,7 +96,6 @@ class CallChainVisitor {
   /// a trailing `toList()` or `toSet()` after a series of higher-order methods
   /// on an iterable.
   final _Selector? _hangingCall;
-  */
 
   /// Whether or not a [Rule] is currently active for the call chain.
   bool _ruleEnabled = false;
@@ -107,6 +106,7 @@ class CallChainVisitor {
   /// After the properties are visited (if there are any), this will be the
   /// rule used to split between them.
   Rule? _propertyRule;
+  */
 
   /// Creates a new call chain visitor for [visitor] for the method chain
   /// contained in [node].
@@ -204,9 +204,11 @@ class CallChainVisitor {
     }
 
     if (_calls.isNotEmpty) {
+      /*
       // If all calls contain only a single block argument, then allow block
       // formatting the whole chain.
       var allSingleBlocks = _calls.every((selector) => selector.isBlockCall);
+      */
 
       var callRule = CallChainRule();
       _visitor.builder.startRule(callRule);
@@ -312,6 +314,7 @@ class CallChainVisitor {
     */
   }
 
+  /*
   /// Returns `true` if the method chain should split if a split occurs inside
   /// [expression].
   ///
@@ -380,6 +383,7 @@ class CallChainVisitor {
 
     return _forcesSplit(argument);
   }
+  */
 
   /// Called when a [_MethodSelector] has written its name and is about to
   /// write the argument list.
@@ -420,6 +424,7 @@ class CallChainVisitor {
     */
   }
 
+  /*
   /// If a [Rule] for the method chain is currently active, ends it.
   void _disableRule() {
     if (_ruleEnabled == false) return;
@@ -452,6 +457,7 @@ class CallChainVisitor {
     _visitor.builder.endSpan();
     _spanEnded = true;
   }
+  */
 }
 
 /// One "selector" in a method call chain.

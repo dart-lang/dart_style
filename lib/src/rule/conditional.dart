@@ -8,17 +8,6 @@ import 'rule.dart';
 
 /// Rule for splitting a conditional expression.
 class ConditionalRule extends Rule {
-  late final Chunk _questionChunk;
-  late final Chunk _colonChunk;
-
-  void bindQuestion(Chunk chunk) {
-    _questionChunk = chunk;
-  }
-
-  void bindColon(Chunk chunk) {
-    _colonChunk = chunk;
-  }
-
   @override
   int chunkIndent(int value, Chunk chunk) {
     // TODO: Hack.
