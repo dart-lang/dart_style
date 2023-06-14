@@ -108,8 +108,27 @@ class InitializerRule extends Rule {
   /// don't.
   @override
   int chunkIndent(int value, Chunk chunk) {
-    if (_hasRightDelimiter && value == 2) return 1;
+    if (value == 1 && chunk == _colonChunk) return -2;
     return 0;
+  }
+
+  /// How much indentation a [NestingLevel] bound to this rule should add.
+  ///
+  /// This is used when the depth of a nesting level is specific to certain
+  /// rule values. Currently, it's used for argument lists, where arguments are
+  /// indented at some split values but not others.
+  @override
+  int nestingIndent(int value, {required bool isUsed}) {
+    switch (value) {
+      case Rule.unsplit:
+        return 0;
+      case 1:
+        return 4;
+      case 2:
+        return _hasRightDelimiter ? 5 : 4;
+      default:
+        throw ArgumentError.value(value, 'value');
+    }
   }
 
   @override

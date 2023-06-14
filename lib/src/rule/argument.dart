@@ -81,10 +81,14 @@ class ArgumentListRule extends TrackInnerRule {
   }
 
   @override
-  int nestingIndent(int value) => switch (value) {
-        2 || 3 => Indent.block,
-        _ => Indent.none,
-      };
+  int nestingIndent(int value, {required bool isUsed}) {
+    if (!isUsed) return 0;
+
+    return switch (value) {
+      2 || 3 => Indent.block,
+      _ => Indent.none,
+    };
+  }
 
   @override
   String toString() => 'Args${super.toString()}';

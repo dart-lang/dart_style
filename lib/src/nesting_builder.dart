@@ -94,13 +94,13 @@ class NestingBuilder {
   /// if the previous line has a lower level of nesting.
   ///
   /// If [indent] is omitted, defaults to [Indent.expression].
-  void nest(int? indent, Rule? rule) {
+  void nest(int? indent, Rule? rule, [String debugName = '']) {
     indent ??= Indent.expression;
 
     if (_pendingNesting != null) {
-      _pendingNesting = _pendingNesting!.nest(indent, rule);
+      _pendingNesting = _pendingNesting!.nest(indent, rule, debugName);
     } else {
-      _pendingNesting = _nesting.nest(indent, rule);
+      _pendingNesting = _nesting.nest(indent, rule, debugName);
     }
   }
 

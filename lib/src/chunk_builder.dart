@@ -523,10 +523,11 @@ class ChunkBuilder {
   /// If [indent] is omitted, defaults to [Indent.expression]. If [now] is
   /// `true`, commits the nesting change immediately instead of waiting until
   /// after the next chunk of text is written.
-  void nestExpression({int? indent, bool? now, Rule? rule}) {
+  void nestExpression(
+      {int? indent, bool? now, Rule? rule, String debugName = ''}) {
     now ??= false;
 
-    _nesting.nest(indent, rule);
+    _nesting.nest(indent, rule, debugName);
     if (now) _nesting.commitNesting();
   }
 

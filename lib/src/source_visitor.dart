@@ -751,6 +751,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // ":" if the parameters and initialization list don't all fit on one line.
     if (node.initializers.isNotEmpty) builder.startRule();
 
+    // TODO: Still relevant for Flutter style?
     // If the redirecting constructor happens to wrap, we want to make sure
     // the parameter list gets more deeply indented.
     if (node.redirectedConstructor != null) builder.nestExpression();
@@ -778,18 +779,19 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   void _visitConstructorInitializers(
       ConstructorDeclaration node, Rule? parameterRule) {
-    builder.indent();
-
     var initializerRule = InitializerRule(parameterRule,
         hasRightDelimiter: node.parameters.rightDelimiter != null);
+
     builder.startRule(initializerRule);
+    builder.nestExpression(indent: 0, now: true, rule: initializerRule);
+    builder.startBlockArgumentNesting();
 
     // ":".
+    // TODO: This does the wrong think if there is a line comment before the
+    // "//".
     initializerRule.bindColon(split());
     token(node.separator);
     space();
-
-    builder.indent();
 
     for (var i = 0; i < node.initializers.length; i++) {
       if (i > 0) {
@@ -801,10 +803,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       node.initializers[i].accept(this);
     }
 
+    builder.endBlockArgumentNesting();
+    builder.unnest();
     builder.endRule();
-
-    builder.unindent();
-    builder.unindent();
   }
 
   @override

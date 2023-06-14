@@ -128,8 +128,9 @@ class Rule extends FastHash {
   /// This is used when the depth of a nesting level is specific to certain
   /// rule values. Currently, it's used for argument lists, where arguments are
   /// indented at some split values but not others.
-  int nestingIndent(int value) => throw UnsupportedError(
-      'Must implement this if the Rule is bound to a NestingLevel.');
+  int nestingIndent(int value, {required bool isUsed}) =>
+      throw UnsupportedError(
+          'Must implement this if the Rule is bound to a NestingLevel.');
 
   /// Given that this rule has [value], determine if [other]'s value should be
   /// constrained.
