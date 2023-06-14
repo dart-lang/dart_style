@@ -4,5 +4,6 @@ var long___________________________________________________________name =
         ',');
 <<<
 var long___________________________________________________________name =
-    const Foo.named('long string long string long string', 'second arg')
-        .split(',');
+    const Foo.named('long string long string long string', 'second arg').split(
+      ',',
+    );

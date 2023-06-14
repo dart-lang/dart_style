@@ -30,13 +30,9 @@ compiler.run(script).then((_) {
 >>> a function in the middle of a chain is indented
 compiler.a().b((_) {body;}).c().d();
 <<<
-compiler
-    .a()
-    .b((_) {
-      body;
-    })
-    .c()
-    .d();
+compiler.a().b((_) {
+  body;
+}).c().d();
 >>> a function in the middle of a chain is indented
 compiler.a().b((_) {body;}).somethingLong().somethingLong().somethingLong();
 <<<

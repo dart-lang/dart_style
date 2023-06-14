@@ -244,9 +244,8 @@ class Rule extends FastHash {
   String toString() => '$id';
 }
 
-/// Mixin that can be applied to [Rule] classes to give them the ability to
-/// enable and disable [splitOnInnerRules].
-mixin TrackInnerRulesMixin implements Rule {
+/// A rule than can enable and disable [splitOnInnerRules].
+class TrackInnerRule extends Rule {
   /// If true, then inner rules that are written will force this rule to split.
   ///
   /// Temporarily disabled while writing collection arguments so that they can
@@ -270,12 +269,6 @@ mixin TrackInnerRulesMixin implements Rule {
   void enableSplitOnInnerRules() {
     _trackInnerRules = true;
   }
-}
-
-// TODO: Move this elsewhere.
-class CallChainRule extends Rule {
-  @override
-  int? get splitOnInnerRules => null;
 }
 
 /// Describes a value constraint that one [Rule] places on another rule's

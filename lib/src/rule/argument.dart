@@ -52,7 +52,7 @@ import 'rule.dart';
 ///       ]
 ///     );
 ///     ```
-class ArgumentListRule extends Rule with TrackInnerRulesMixin {
+class ArgumentListRule extends TrackInnerRule {
   /// The chunk where the splittable block argument begins.
   ///
   /// If the block argument is a for a function (which always splits), this

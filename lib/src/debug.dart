@@ -7,6 +7,7 @@ import 'dart:math' as math;
 
 import 'chunk.dart';
 import 'line_splitting/rule_set.dart';
+import 'nesting_level.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;
@@ -60,7 +61,8 @@ String bold(message) => '$_bold$message$_none';
 
 /// Prints [chunks] to stdout, one chunk per line, with detailed information
 /// about each chunk.
-void dumpChunks(int start, List<Chunk> chunks) {
+void dumpChunks(int start, List<Chunk> chunks,
+    [Set<NestingLevel>? usedNesting]) {
   if (chunks.skip(start).isEmpty) return;
 
   // Show the spans as vertical bands over their range (unless there are too
@@ -119,7 +121,8 @@ void dumpChunks(int start, List<Chunk> chunks) {
     row.add(properties);
 
     writeIf(chunk.indent != 0, () => 'indent ${chunk.indent}');
-    writeIf(chunk.nesting.isNested, () => 'nest ${chunk.nesting}');
+    writeIf(chunk.nesting.isNested,
+        () => 'nest ${chunk.nesting.toString(usedNesting)}');
 
     var spans = spanSet.toList();
     if (spans.length <= 20) {

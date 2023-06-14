@@ -233,14 +233,17 @@ class SourceVisitor extends ThrowingAstVisitor {
   ///    on earlier lines as possible.
   /// 5. Split the named arguments each onto their own line.
   @override
-  void visitArgumentList(ArgumentList node) {
+  Rule? visitArgumentList(ArgumentList node) {
     // Handle empty collections, with or without comments.
     if (node.arguments.isEmpty) {
       _visitBody(node.leftParenthesis, node.arguments, node.rightParenthesis);
-      return;
+
+      // TODO: If the empty arg list has a comment, then we should return a
+      // Rule for that.
+      return null;
     }
 
-    _visitArgumentList(
+    return _visitArgumentList(
         node.leftParenthesis, node.arguments, node.rightParenthesis);
   }
 
@@ -3134,26 +3137,28 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.unnest();
   }
 
-  void _visitArgumentList(Token leftParenthesis, List<Expression> arguments,
+  Rule? _visitArgumentList(Token leftParenthesis, List<Expression> arguments,
       Token rightParenthesis) {
     var blockArgument = arguments.blockArgument;
     if (blockArgument != null) {
       _visitBlockArgumentList(
           leftParenthesis, arguments, rightParenthesis, blockArgument);
-    } else {
-      // No argument that needs special block argument handling, so format the
-      // argument list like a regular body.
-      var rule = Rule();
-      _beginBody(leftParenthesis, rule: rule);
-
-      for (var argument in arguments) {
-        builder.split(nest: false, space: argument != arguments.first);
-        visit(argument);
-        writeCommaAfter(argument, isTrailing: argument == arguments.last);
-      }
-
-      _endBody(rightParenthesis);
+      return null;
     }
+
+    // No argument that needs special block argument handling, so format the
+    // argument list like a regular body.
+    var rule = Rule();
+    _beginBody(leftParenthesis, rule: rule);
+
+    for (var argument in arguments) {
+      builder.split(nest: false, space: argument != arguments.first);
+      visit(argument);
+      writeCommaAfter(argument, isTrailing: argument == arguments.last);
+    }
+
+    _endBody(rightParenthesis);
+    return rule;
   }
 
   /// Visits an argument list [arguments] which contains a single argument

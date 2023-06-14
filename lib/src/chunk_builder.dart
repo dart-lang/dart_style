@@ -662,10 +662,9 @@ class ChunkBuilder {
 
     _divideChunks();
 
-    if (debug.traceChunkBuilder) {
+    if (debug.traceChunkBuilder && _chunks.length > 1) {
       debug.log(debug.green('\nBuilt:'));
       debug.dumpChunks(0, _chunks);
-      debug.log();
     }
 
     var writer = LineWriter(_formatter, _chunks);

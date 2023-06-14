@@ -99,8 +99,16 @@ class NestingLevel extends FastHash {
   }
 
   @override
-  String toString() {
-    if (parent == null) return indent.toString();
-    return '$parent:$indent';
+  String toString([Set<NestingLevel>? usedNesting]) {
+    var result = '$indent';
+    if (usedNesting != null && !usedNesting.contains(this)) {
+      result = '_';
+    }
+
+    if (parent != null) {
+      result = '${parent!.toString(usedNesting)}:$result';
+    }
+
+    return result;
   }
 }

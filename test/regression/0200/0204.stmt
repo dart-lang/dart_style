@@ -3,16 +3,14 @@ var serverDuration = new Duration(
     microseconds: response.requestProcessingTimeUsec.toInt())
   .inMilliseconds.toString();
 <<<
-var serverDuration =
-    new Duration(microseconds: response.requestProcessingTimeUsec.toInt())
-        .inMilliseconds
-        .toString();
+var serverDuration = new Duration(
+  microseconds: response.requestProcessingTimeUsec.toInt(),
+).inMilliseconds.toString();
 >>> (indent 8)
         var serverDuration = new Duration(
             microseconds: response.requestProcessingTimeUsec.toInt())
           .inMilliseconds.toString();
 <<<
         var serverDuration = new Duration(
-                microseconds: response.requestProcessingTimeUsec.toInt())
-            .inMilliseconds
-            .toString();
+          microseconds: response.requestProcessingTimeUsec.toInt(),
+        ).inMilliseconds.toString();

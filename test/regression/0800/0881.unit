@@ -30,15 +30,15 @@ void main() async {
       final requestHandler = FakeRequestHandler()
         ..when(withServiceName(Ng2ProtoFooBarBazService.serviceName))
             .thenRespond(
-                FooBarBazListResponse()
-                  ..entities.add(
-                    FooBarBaz()
-                      ..fooBarBazEntityId = entityId
-                      ..name = 'Test entity'
-                      ..baseFooBarBazId = baseFooBarBazId
-                      ..entityFooBarBazId = entityFooBarBazId,
-                  ),
-              )
+              FooBarBazListResponse()
+                ..entities.add(
+                  FooBarBaz()
+                    ..fooBarBazEntityId = entityId
+                    ..name = 'Test entity'
+                    ..baseFooBarBazId = baseFooBarBazId
+                    ..entityFooBarBazId = entityFooBarBazId,
+                ),
+            )
         ..when(allOf(
           withServiceName(Ng2ProtoFooBarBazService.serviceName),
           hasFooBarBazId(baseFooBarBazId),

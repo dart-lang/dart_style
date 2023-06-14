@@ -5,10 +5,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import 'ast_extensions.dart';
+import 'rule/call_chain.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';
-
-// TODO: Delete commented out stuff.
 
 /// Helper class for [SourceVisitor] that handles visiting and writing a
 /// chained series of "selectors": method invocations, property accesses,
@@ -54,59 +53,7 @@ class CallChainVisitor {
   /// order that they appear in the source reading from left to right.
   final List<_Selector> _calls;
 
-  /*
-  /// The method calls containing block function literals that break the method
-  /// chain and escape its indentation.
-  ///
-  ///     receiver.a().b().c(() {
-  ///       ;
-  ///     }).d(() {
-  ///       ;
-  ///     }).e();
-  ///
-  /// Here, it will contain `c` and `d`.
-  ///
-  /// The block calls must be contiguous and must be a suffix of the list of
-  /// calls (except for the one allowed hanging call). Otherwise, none of them
-  /// are treated as block calls:
-  ///
-  ///     receiver
-  ///         .a()
-  ///         .b(() {
-  ///           ;
-  ///         })
-  ///         .c(() {
-  ///           ;
-  ///         })
-  ///         .d()
-  ///         .e();
-  final List<_MethodSelector>? _blockCalls;
-
-  /// If there is one or more block calls and a single chained expression after
-  /// that, this will be that expression.
-  ///
-  ///     receiver.a().b().c(() {
-  ///       ;
-  ///     }).d(() {
-  ///       ;
-  ///     }).e();
-  ///
-  /// We allow a single hanging call after the blocks because it will never
-  /// need to split before its `.` and this accommodates the common pattern of
-  /// a trailing `toList()` or `toSet()` after a series of higher-order methods
-  /// on an iterable.
-  final _Selector? _hangingCall;
-
-  /// Whether or not a [Rule] is currently active for the call chain.
-  bool _ruleEnabled = false;
-
-  /// Whether or not the span wrapping the call chain is currently active.
-  bool _spanEnded = false;
-
-  /// After the properties are visited (if there are any), this will be the
-  /// rule used to split between them.
-  Rule? _propertyRule;
-  */
+  final CallChainRule _callRule = CallChainRule();
 
   /// Creates a new call chain visitor for [visitor] for the method chain
   /// contained in [node].
@@ -134,63 +81,54 @@ class CallChainVisitor {
 
     calls.removeRange(0, properties.length);
 
-    /*
-    // Separate out the block calls, if there are any.
-    List<_MethodSelector>? blockCalls;
-    _Selector? hangingCall;
-
-    var inBlockCalls = false;
-    for (var call in calls) {
-      if (call.isBlockCall) {
-        inBlockCalls = true;
-        blockCalls ??= [];
-        blockCalls.add(call as _MethodSelector);
-      } else if (inBlockCalls) {
-        // We found a non-block call after a block call.
-        if (call == calls.last) {
-          // It's the one allowed hanging one, so it's OK.
-          hangingCall = call;
+    // Determine which method calls should force the call chain to split if
+    // their arguments split.
+    if (calls.length > 1) {
+      // The last call in the chain doesn't force the chain to split. Also, any
+      // calls with no arguments don't count when finding the "last" call.
+      var lastNonEmptyCall = calls.length - 1;
+      for (var i = calls.length - 1; i >= 0; i--) {
+        var call = calls[i];
+        if (call is _MethodSelector &&
+            call._node.argumentList.arguments.isNotEmpty) {
+          lastNonEmptyCall = i;
           break;
         }
+      }
 
-        // Don't allow any of the calls to be block formatted.
-        blockCalls = null;
-        break;
+      for (var i = 0; i < lastNonEmptyCall; i++) {
+        var call = calls[i];
+        if (call is _MethodSelector) {
+          call._splitsChain = true;
+        }
       }
     }
 
-    if (blockCalls != null) {
-      for (var blockCall in blockCalls) {
-        calls.remove(blockCall);
-      }
-    }
-
-    if (hangingCall != null) {
-      calls.remove(hangingCall);
-    }
-    */
-
-    return CallChainVisitor._(
-        visitor, target, properties, calls /*, blockCalls, hangingCall*/);
+    return CallChainVisitor._(visitor, target, properties, calls);
   }
 
   CallChainVisitor._(
-    this._visitor,
-    this._target,
-    this._properties,
-    this._calls,
-    /*this._blockCalls, this._hangingCall*/
-  );
+      this._visitor, this._target, this._properties, this._calls);
 
   /// Builds chunks for the call chain.
   void visit() {
     _visitor.builder.nestExpression();
-    // _visitor.builder.startBlockArgumentNesting();
+    _visitor.builder.startBlockArgumentNesting();
 
     // Try to keep the entire method invocation one line.
     _visitor.builder.startSpan();
 
+    // TODO: This is a really weird hack. Figure out why it's needed and do
+    // something cleaner.
+    // Push an empty nesting level around the target so that the block
+    // for the target doesn't use the chain's rule for its nesting.
+    _visitor.builder.nestExpression(indent: 0);
+    _visitor.builder.startBlockArgumentNesting();
+
     _visitor.visit(_target);
+
+    _visitor.builder.endBlockArgumentNesting();
+    _visitor.builder.unnest();
 
     Rule? propertyRule;
     if (_properties.isNotEmpty) {
@@ -204,260 +142,27 @@ class CallChainVisitor {
     }
 
     if (_calls.isNotEmpty) {
-      /*
-      // If all calls contain only a single block argument, then allow block
-      // formatting the whole chain.
-      var allSingleBlocks = _calls.every((selector) => selector.isBlockCall);
-      */
-
-      var callRule = CallChainRule();
-      _visitor.builder.startRule(callRule);
+      _visitor.builder.startRule(_callRule);
 
       // If the properties split, the calls do too.
-      if (propertyRule != null) propertyRule.constrainWhenSplit(callRule);
+      if (propertyRule != null) propertyRule.constrainWhenSplit(_callRule);
 
       for (var call in _calls) {
         _visitor.zeroSplit();
         call.write(this);
       }
+
       _visitor.builder.endRule();
     }
 
     _visitor.builder.endSpan();
-    // _visitor.builder.endBlockArgumentNesting();
+    _visitor.builder.endBlockArgumentNesting();
     _visitor.builder.unnest();
-
-    /*
-    _visitor.builder.nestExpression();
-
-    // Try to keep the entire method invocation one line.
-    _visitor.builder.startSpan();
-
-    // If a split in the target expression forces the first `.` to split, then
-    // start the rule now so that it surrounds the target.
-    var splitOnTarget = _forcesSplit(_target);
-
-    if (splitOnTarget) {
-      if (_properties.length > 1) {
-        _propertyRule = Rule();
-        _visitor.builder.startLazyRule(_propertyRule);
-      } else {
-        _enableRule(lazy: true);
-      }
-    }
-
-    _visitor.visit(_target);
-
-    // Leading properties all split or none do, but can not split even if the
-    // method calls do.
-    if (_properties.length == 1) {
-      _visitor.soloZeroSplit();
-      _properties.single.write(this);
-    } else if (_properties.length > 1) {
-      if (!splitOnTarget) {
-        _propertyRule = Rule();
-        _visitor.builder.startRule(_propertyRule);
-      }
-
-      for (var property in _properties) {
-        _visitor.zeroSplit();
-        property.write(this);
-      }
-
-      _visitor.builder.endRule();
-    }
-
-    // Indent any block arguments in the chain that don't get special formatting
-    // below. Only do this if there is more than one argument to avoid spurious
-    // indentation in cases like:
-    //
-    //     object.method(wrapper(() {
-    //       body;
-    //     });
-    // TODO(rnystrom): Come up with a less arbitrary way to express this?
-    if (_calls.length > 1) _visitor.builder.startBlockArgumentNesting();
-
-    // The chain of calls splits atomically (either all or none). Any block
-    // arguments inside them get indented to line up with the `.`.
-    for (var call in _calls) {
-      _enableRule();
-      _visitor.zeroSplit();
-      call.write(this);
-    }
-
-    if (_calls.length > 1) _visitor.builder.endBlockArgumentNesting();
-    */
-
-    /*
-    // If there are block calls, end the chain and write those without any
-    // extra indentation.
-    var blockCalls = _blockCalls;
-    if (blockCalls != null) {
-      _enableRule();
-      _visitor.zeroSplit();
-      _disableRule();
-
-      for (var blockCall in blockCalls) {
-        blockCall.write(this);
-      }
-
-      // If there is a hanging call after the last block, write it without any
-      // split before the ".".
-      _hangingCall?.write(this);
-    }
-    */
-
-    /*
-    _disableRule();
-    _endSpan();
-    _visitor.builder.unnest();
-    */
   }
-
-  /*
-  /// Returns `true` if the method chain should split if a split occurs inside
-  /// [expression].
-  ///
-  /// In most cases, splitting in a method chain's target forces the chain to
-  /// split too:
-  ///
-  ///      receiver(very, long, argument,
-  ///              list)                    // <-- Split here...
-  ///          .method();                   //     ...forces split here.
-  ///
-  /// However, if the target is a collection or function literal (or an
-  /// argument list ending in one of those), we don't want to split:
-  ///
-  ///      receiver(inner(() {
-  ///        ;
-  ///      }).method();                     // <-- Unsplit.
-  bool _forcesSplit(Expression expression) {
-    // TODO(rnystrom): Other cases we may want to consider handling and
-    // recursing into:
-    // * The right operand in an infix operator call.
-    // * The body of a `=>` function.
-
-    // Unwrap parentheses.
-    while (expression is ParenthesizedExpression) {
-      expression = expression.expression;
-    }
-
-    // Don't split right after a collection literal.
-    if (expression.isCollectionLiteral) return false;
-
-    // Don't split right after a non-empty curly-bodied function.
-    if (expression is FunctionExpression) {
-      if (expression.body is! BlockFunctionBody) return false;
-
-      return (expression.body as BlockFunctionBody).block.statements.isEmpty;
-    }
-
-    // If the expression ends in an argument list, base the splitting on the
-    // last argument.
-    ArgumentList? argumentList;
-    if (expression is MethodInvocation) {
-      argumentList = expression.argumentList;
-    } else if (expression is InstanceCreationExpression) {
-      argumentList = expression.argumentList;
-    } else if (expression is FunctionExpressionInvocation) {
-      argumentList = expression.argumentList;
-    }
-
-    // Any other kind of expression always splits.
-    if (argumentList == null) return true;
-    if (argumentList.arguments.isEmpty) return true;
-
-    var argument = argumentList.arguments.last;
-
-    // If the argument list has a trailing comma, treat it like a collection.
-    if (argument.hasCommaAfter) return false;
-
-    if (argument is NamedExpression) {
-      argument = argument.expression;
-    }
-
-    // TODO(rnystrom): This logic is similar (but not identical) to
-    // ArgumentListVisitor.hasBlockArguments. They overlap conceptually and
-    // both have their own peculiar heuristics. It would be good to unify and
-    // rationalize them.
-
-    return _forcesSplit(argument);
-  }
-  */
 
   /// Called when a [_MethodSelector] has written its name and is about to
   /// write the argument list.
-  void _beforeMethodArguments(_MethodSelector selector) {
-    /*
-    // If we don't have any block calls, stop the rule after the last method
-    // call name, but before its arguments. This allows unsplit chains where
-    // the last argument list wraps, like:
-    //
-    //     foo().bar().baz(
-    //         argument, list);
-    if (/*_blockCalls == null &&*/ _calls.isNotEmpty && selector == _calls.last) {
-      _disableRule();
-    }
-
-    // For a single method call on an identifier, stop the span before the
-    // arguments to make it easier to keep the call name with the target. In
-    // other words, prefer:
-    //
-    //     target.method(
-    //         argument, list);
-    //
-    // Over:
-    //
-    //     target
-    //         .method(argument, list);
-    //
-    // Alternatively, the way to think of this is try to avoid splitting on the
-    // "." when calling a single method on a single name. This is especially
-    // important because the identifier is often a library prefix, and splitting
-    // there looks really odd.
-    if (_properties.isEmpty &&
-        _calls.length == 1 &&
-        /*_blockCalls == null &&*/
-        _target is SimpleIdentifier) {
-      _endSpan();
-    }
-    */
-  }
-
-  /*
-  /// If a [Rule] for the method chain is currently active, ends it.
-  void _disableRule() {
-    if (_ruleEnabled == false) return;
-
-    _visitor.builder.endRule();
-    _ruleEnabled = false;
-  }
-
-  /// Creates a new method chain [Rule] if one is not already active.
-  void _enableRule({bool lazy = false}) {
-    if (_ruleEnabled) return;
-
-    // If the properties split, force the calls to split too.
-    var rule = Rule();
-    _propertyRule?.constrainWhenSplit(rule);
-
-    if (lazy) {
-      _visitor.builder.startLazyRule(rule);
-    } else {
-      _visitor.builder.startRule(rule);
-    }
-
-    _ruleEnabled = true;
-  }
-
-  /// Ends the span wrapping the call chain if it hasn't ended already.
-  void _endSpan() {
-    if (_spanEnded) return;
-
-    _visitor.builder.endSpan();
-    _spanEnded = true;
-  }
-  */
+  void _beforeMethodArguments(_MethodSelector selector) {}
 }
 
 /// One "selector" in a method call chain.
@@ -521,6 +226,10 @@ sealed class _Selector {
 class _MethodSelector extends _Selector {
   final MethodInvocation _node;
 
+  /// Whether a split in this method's argument list causes the method chain
+  /// to split.
+  bool _splitsChain = false;
+
   _MethodSelector(this._node);
 
   @override
@@ -539,9 +248,25 @@ class _MethodSelector extends _Selector {
 
     visitor._beforeMethodArguments(this);
 
+    // TODO: This is a really weird hack. Figure out why it's needed and do
+    // something cleaner.
+    // Push an empty nesting level around the argument list so that the block
+    // for the argument list doesn't use the chain's rule for its nesting.
+    visitor._visitor.builder.nestExpression(indent: 0);
+    visitor._visitor.builder.startBlockArgumentNesting();
+
     visitor._visitor.builder.nestExpression();
+
     visitor._visitor.visit(_node.typeArguments);
-    visitor._visitor.visitArgumentList(_node.argumentList);
+
+    var rule = visitor._visitor.visitArgumentList(_node.argumentList);
+
+    if (rule != null && _splitsChain) {
+      rule.constrainWhenSplit(visitor._callRule);
+    }
+
+    visitor._visitor.builder.unnest();
+    visitor._visitor.builder.endBlockArgumentNesting();
     visitor._visitor.builder.unnest();
   }
 }

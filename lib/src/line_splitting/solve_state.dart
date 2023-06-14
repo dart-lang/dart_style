@@ -313,6 +313,23 @@ class SolveState {
       }
     }
 
+    if (debug.traceSplitter && splitter.chunks.length > 1) {
+      var s = splitter.rules.map((rule) {
+        var valueLength = '${rule.fullySplitValue}'.length;
+
+        var value = '?';
+        if (ruleValues.contains(rule)) {
+          value = '${ruleValues.getValue(rule)}';
+        }
+
+        value = value.padLeft(valueLength);
+        return '$rule:$value';
+      }).join(' ');
+      debug.log('Splits $splits $s:');
+
+      debug.dumpChunks(0, splitter.chunks, usedNestingLevels);
+    }
+
     return splits;
   }
 

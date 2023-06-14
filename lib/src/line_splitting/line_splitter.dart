@@ -158,7 +158,7 @@ class LineSplitter {
         if (bestSolution.overflowChars == 0) break;
       }
 
-      if (debug.traceSplitter) {
+      if (debug.traceSplitter && chunks.length > 1) {
         var best = state == bestSolution ? ' (best)' : '';
         debug.log('$state$best');
         debug.dumpLines(chunks, state.splits);
@@ -171,7 +171,7 @@ class LineSplitter {
       state.expand();
     }
 
-    if (debug.traceSplitter) {
+    if (debug.traceSplitter && chunks.length > 1) {
       debug.log('$bestSolution (winner)');
       debug.dumpLines(chunks, bestSolution.splits);
       debug.log();

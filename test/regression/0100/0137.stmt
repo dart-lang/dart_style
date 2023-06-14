@@ -13,9 +13,9 @@
     });
 <<<
   Iterable<DeclarationMirror> _sortedLibraryDeclarations(LibraryMirror lib) =>
-      lib.declarations.values
-          .where((d) => d is ClassMirror || d is MethodMirror)
-          .toList()
+      lib.declarations.values.where(
+        (d) => d is ClassMirror || d is MethodMirror,
+      ).toList()
         ..sort((a, b) {
           if (a.runtimeType == b.runtimeType) {
             return _declarationName(a).compareTo(_declarationName(b));

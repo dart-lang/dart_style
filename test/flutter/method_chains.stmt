@@ -44,3 +44,15 @@ target.method([
   veryLongElement,
   veryLongElement,
 });
+>>>
+aVeryLongFunctionThatNeedsToWrap(
+  toASecondLineWrapWrap,
+).then(() {
+  ;
+});
+<<<
+aVeryLongFunctionThatNeedsToWrap(
+  toASecondLineWrapWrap,
+).then(() {
+  ;
+});
