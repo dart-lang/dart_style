@@ -225,7 +225,7 @@ var x = switch  (  obj  )  {
 <<<
 var x = switch (obj) {
   1 => 'one',
-  var two => 'two'
+  var two => 'two',
 };
 >>> handle cases that are not valid patterns
 switch (obj) {

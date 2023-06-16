@@ -388,20 +388,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     //     ]
     //       ..add(more);
     var target = node.target;
-    var splitIfTargetSplits = true;
-    if (node.cascadeSections.length > 1) {
-      // Always split if there are multiple cascade sections.
-    } else if (target.isCollectionLiteral) {
-      splitIfTargetSplits = false;
-    } else if (target is InvocationExpression) {
-      // If the target is a call with a trailing comma in the argument list,
-      // treat it like a collection literal.
-      splitIfTargetSplits = !target.argumentList.arguments.hasCommaAfter;
-    } else if (target is InstanceCreationExpression) {
-      // If the target is a call with a trailing comma in the argument list,
-      // treat it like a collection literal.
-      splitIfTargetSplits = !target.argumentList.arguments.hasCommaAfter;
-    }
+    var splitIfTargetSplits =
+        node.cascadeSections.length > 1 || !target.isDelimitedOrCall;
 
     if (splitIfTargetSplits) {
       builder.startLazyRule(node.allowInline ? Rule() : Rule.hard());
@@ -1055,17 +1043,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       builder.endRule();
     }
 
-    // If this function invocation appears in an argument list with trailing
-    // comma, don't add extra nesting to preserve normal indentation.
-    var isArgWithTrailingComma = false;
-    var parent = node.parent;
-    if (parent is FunctionExpression) {
-      isArgWithTrailingComma = parent.isTrailingCommaArgument;
-    }
-
-    if (!isArgWithTrailingComma) builder.startBlockArgumentNesting();
+    builder.startBlockArgumentNesting();
     visit(node.expression);
-    if (!isArgWithTrailingComma) builder.endBlockArgumentNesting();
+    builder.endBlockArgumentNesting();
 
     if (!node.expression.isDelimitedOrCall) {
       builder.unnest();
@@ -2727,12 +2707,20 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.leftBracket);
     builder = builder.startBlock(space: node.cases.isNotEmpty);
 
-    visitCommaSeparatedNodes(node.cases, between: split);
+    if (node.cases.isNotEmpty) {
+      var first = true;
+      for (var caseNode in node.cases) {
+        if (!first) split();
+        first = false;
 
-    // TODO: Add or remove trailing comma if switch splits.
-    var hasTrailingComma =
-        node.cases.isNotEmpty && node.cases.last.commaAfter != null;
-    _endBody(node.rightBracket, forceSplit: hasTrailingComma);
+        visit(caseNode);
+
+        // The comma after the node.
+        writeCommaAfter(caseNode, isTrailing: caseNode == node.cases.last);
+      }
+    }
+
+    _endBody(node.rightBracket);
   }
 
   @override

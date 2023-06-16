@@ -5,26 +5,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 extension AstNodeExtensions on AstNode {
-  // TODO: Eventually, this should only be used by
-  // `SourceVisitor.writeCommaAfter()` and can be inlined there.
-  /// The comma token immediately following this if there is one, or `null`.
-  Token? get commaAfter {
-    var next = endToken.next!;
-    if (next.type == TokenType.COMMA) return next;
-
-    // TODO(sdk#38990): endToken doesn't include the "?" on a nullable
-    // function-typed formal, so check for that case and handle it.
-    if (next.type == TokenType.QUESTION && next.next!.type == TokenType.COMMA) {
-      return next.next;
-    }
-
-    return null;
-  }
-
-  // TODO: Remove uses of this.
-  /// Whether there is a comma token immediately following this.
-  bool get hasCommaAfter => commaAfter != null;
-
   /// Whether this node is a statement or member with a braced body that isn't
   /// empty.
   ///
@@ -104,6 +84,10 @@ extension AstNodeExtensions on AstNode {
           when !argumentList.arguments
               .isEmptyBody(argumentList.rightParenthesis) =>
         true,
+      FunctionExpressionInvocation(:var argumentList)
+          when !argumentList.arguments
+              .isEmptyBody(argumentList.rightParenthesis) =>
+        true,
 
       // TODO: Test.
       InstanceCreationExpression(:var argumentList)
@@ -149,9 +133,6 @@ extension AstNodeExtensions on AstNode {
 }
 
 extension AstIterableExtensions on Iterable<AstNode> {
-  /// Whether there is a comma token immediately following this.
-  bool get hasCommaAfter => isNotEmpty && last.hasCommaAfter;
-
   /// Whether the collection literal or block containing these nodes and
   /// terminated by [rightBracket] is empty or not.
   ///
@@ -180,14 +161,6 @@ extension ExpressionExtensions on Expression {
       MethodInvocation() => expression.argumentList.leftParenthesis,
       _ => throw ArgumentError.value(expression, 'expression')
     };
-  }
-
-  /// Whether this is an argument in an argument list with a trailing comma.
-  bool get isTrailingCommaArgument {
-    var parent = this.parent;
-    if (parent is NamedExpression) parent = parent.parent;
-
-    return parent is ArgumentList && parent.arguments.hasCommaAfter;
   }
 
   /// Whether this is a method invocation that looks like it might be a static

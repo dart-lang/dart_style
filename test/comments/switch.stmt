@@ -104,7 +104,7 @@ e = switch (n) {
   // comment
 
 
-  1 => b
+  1 => b,
 
 
   // comment
@@ -117,7 +117,7 @@ e = switch (n) {
   0 => a,
   // comment
 
-  1 => b
+  1 => b,
 
   // comment
 };
@@ -131,7 +131,7 @@ e = switch (n) {
 e = switch (n) {
   0 => zero,
   // comment
-  1 => one
+  1 => one,
 };
 >>> line comment at end of case does not force split
 e = switch (n) {
@@ -143,7 +143,7 @@ e = switch (n) {
 e = switch (n) {
   0 => zero, // comment
   1 => one, // comment
-  2 => two // comment
+  2 => two, // comment
 };
 >>> line comment before case with guard does not force split
 e = switch (n) {

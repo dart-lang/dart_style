@@ -43,6 +43,6 @@ SomeLongFunctionName(
 SomeLongFunctionName(
   (longParameterName______) =>
       switch (value) {
-    constant => body,
-  },
+        constant => body,
+      },
 );
