@@ -3,10 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'rule.dart';
 
-class CallChainRule extends Rule {
-  @override
-  int? get splitOnInnerRules => null;
-
+class CallChainRule extends TrackInnerRule {
   @override
   String toString() => 'Chain${super.toString()}';
 }

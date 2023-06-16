@@ -118,6 +118,21 @@ class CallChainVisitor {
     // Try to keep the entire method invocation one line.
     _visitor.builder.startSpan();
 
+    Rule? propertyRule;
+
+    // If a split in the target expression forces the first `.` to split, then
+    // start the rule now so that it surrounds the target.
+    var splitOnTarget = _forcesSplit(_target);
+    if (splitOnTarget) {
+      if (_properties.isNotEmpty) {
+        propertyRule = Rule();
+        _visitor.builder.startLazyRule(propertyRule);
+      } else {
+        _visitor.builder.startLazyRule(_callRule);
+        _callRule.enableSplitOnInnerRules();
+      }
+    }
+
     // TODO: This is a really weird hack. Figure out why it's needed and do
     // something cleaner.
     // Push an empty nesting level around the target so that the block
@@ -130,10 +145,12 @@ class CallChainVisitor {
     _visitor.builder.endBlockArgumentNesting();
     _visitor.builder.unnest();
 
-    Rule? propertyRule;
     if (_properties.isNotEmpty) {
-      propertyRule = Rule();
-      _visitor.builder.startRule(propertyRule);
+      if (!splitOnTarget) {
+        propertyRule = Rule();
+        _visitor.builder.startRule(propertyRule);
+      }
+
       for (var property in _properties) {
         _visitor.zeroSplit();
         property.write(this);
@@ -142,7 +159,11 @@ class CallChainVisitor {
     }
 
     if (_calls.isNotEmpty) {
-      _visitor.builder.startRule(_callRule);
+      if (!splitOnTarget || propertyRule != null) {
+        _visitor.builder.startRule(_callRule);
+      }
+
+      _callRule.disableSplitOnInnerRules();
 
       // If the properties split, the calls do too.
       if (propertyRule != null) propertyRule.constrainWhenSplit(_callRule);
@@ -160,9 +181,60 @@ class CallChainVisitor {
     _visitor.builder.unnest();
   }
 
-  /// Called when a [_MethodSelector] has written its name and is about to
-  /// write the argument list.
-  void _beforeMethodArguments(_MethodSelector selector) {}
+  /// Returns `true` if the method chain should split if a split occurs inside
+  /// [expression].
+  ///
+  /// In most cases, splitting in a method chain's target forces the chain to
+  /// split too:
+  ///
+  ///      receiver(very, long, argument,
+  ///              list)                    // <-- Split here...
+  ///          .method();                   //     ...forces split here.
+  ///
+  /// However, if the target is a collection or function literal (or an
+  /// argument list ending in one of those), we don't want to split:
+  ///
+  ///      receiver(inner(() {
+  ///        ;
+  ///      }).method();                     // <-- Unsplit.
+  bool _forcesSplit(Expression expression) {
+    // TODO(rnystrom): Other cases we may want to consider handling and
+    // recursing into:
+    // * The right operand in an infix operator call.
+    // * The body of a `=>` function.
+
+    // Unwrap parentheses.
+    while (expression is ParenthesizedExpression) {
+      expression = expression.expression;
+    }
+
+    // Don't split right after a collection literal.
+    if (expression.isCollectionLiteral) return false;
+
+    // Don't split right after a non-empty curly-bodied function.
+    if (expression is FunctionExpression) {
+      if (expression.body is! BlockFunctionBody) return false;
+
+      return (expression.body as BlockFunctionBody).block.statements.isEmpty;
+    }
+
+    // If the expression ends in an argument list, base the splitting on the
+    // last argument.
+    ArgumentList? argumentList;
+    if (expression is MethodInvocation) {
+      argumentList = expression.argumentList;
+    } else if (expression is InstanceCreationExpression) {
+      argumentList = expression.argumentList;
+    } else if (expression is FunctionExpressionInvocation) {
+      argumentList = expression.argumentList;
+    }
+
+    // Any other kind of expression always splits.
+    if (argumentList == null) return true;
+    if (argumentList.arguments.isEmpty) return true;
+
+    return false;
+  }
 }
 
 /// One "selector" in a method call chain.
@@ -245,8 +317,6 @@ class _MethodSelector extends _Selector {
   void writeSelector(CallChainVisitor visitor) {
     visitor._visitor.token(_node.operator);
     visitor._visitor.token(_node.methodName.token);
-
-    visitor._beforeMethodArguments(this);
 
     // TODO: This is a really weird hack. Figure out why it's needed and do
     // something cleaner.

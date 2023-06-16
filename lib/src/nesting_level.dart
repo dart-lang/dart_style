@@ -109,7 +109,7 @@ class NestingLevel extends FastHash {
     var name = _rule?.toString() ?? _debugName;
     var result = '$name$indent';
     if (usedNesting != null && !usedNesting.contains(this)) {
-      result = '$name(off)';
+      result = '${name}_';
     }
 
     if (parent != null) {
