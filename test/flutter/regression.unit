@@ -61,3 +61,16 @@ main() {
       '-b', // is binary
       filePath,
     ]);
+>>>
+main() {
+  testWidgets('Exception handling in test harness ' ' - string', (WidgetTester tester) async {
+    throw 'Who lives, who dies, who tells your story?';
+  });
+}
+<<<
+main() {
+  testWidgets('Exception handling in test harness '
+      ' - string', (WidgetTester tester) async {
+    throw 'Who lives, who dies, who tells your story?';
+  });
+}

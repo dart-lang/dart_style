@@ -186,7 +186,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     builder.startSpan();
-    builder.startRule();
+    builder.startRule(Rule(Cost.adjacentStrings));
     if (shouldNest) {
       // TODO: Hack. Figure out better way to handle conditional expressions.
       builder.nestExpression(

@@ -265,3 +265,22 @@ function(
   longLongLongLongObject
       .longLongLongLongMethod(),
 );
+>>>
+test('First adjacent string'
+    'second adjacent string', () async {
+  ;
+});
+<<<
+test('First adjacent string'
+    'second adjacent string', () async {
+  ;
+});
+>>>
+test('First adjacent string' 'second adjacent string', () async {
+  ;
+});
+<<<
+test('First adjacent string'
+    'second adjacent string', () async {
+  ;
+});

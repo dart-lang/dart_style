@@ -11,6 +11,12 @@ class Cost {
   /// and we generally do prefer splitting after the `=>` over other places.
   static const arrow = 0;
 
+  /// The cost of splitting between adjacent strings.
+  ///
+  /// We make this zero since adjacent strings are almost always intended to
+  /// split across multiple lines.
+  static const adjacentStrings = 0;
+
   /// The default cost.
   ///
   /// This isn't zero because we want to ensure all splitting has *some* cost,
