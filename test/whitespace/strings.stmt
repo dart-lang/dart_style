@@ -33,3 +33,35 @@ two
 
 
 ''';
+>>> trailing space multiline string
+var x = ''' \   \ \
+z''';
+<<<
+var x = '''
+z''';
+>>> trailing space multiline string, no newline
+var x = '''   \ ''';
+<<<
+var x = '''   \ ''';
+>>> trailing space multiline interpolation string
+var x = ''' \   \ \
+${''}''';
+<<<
+var x = '''
+${''}''';
+>>> trailing space multiline interpolation before newline string
+var x = '''   ${''} ''';
+<<<
+var x = '''   ${''} ''';
+>>> trailing space multiline raw string
+var x = r''' \   \ \
+z''';
+<<<
+var x = r'''
+z''';
+>>> trailing space multiline doublequotes
+var x = """ \   \ \
+z""";
+<<<
+var x = """
+z""";

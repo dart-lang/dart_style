@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 // ignore_for_file: avoid_dynamic_calls
 
+import 'dart:convert';
+
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
@@ -4158,6 +4160,8 @@ class SourceVisitor extends ThrowingAstVisitor {
     _endBody(rightBracket, forceSplit: nodes.isNotEmpty);
   }
 
+  static final _lineTerminatorRE = RegExp(r'\r\n?|\n');
+
   /// Writes the string literal [string] to the output.
   ///
   /// Splits multiline strings into separate chunks so that the line splitter
@@ -4167,19 +4171,65 @@ class SourceVisitor extends ThrowingAstVisitor {
     // comments are written first.
     writePrecedingCommentsAndNewlines(string);
 
-    // Split each line of a multiline string into separate chunks.
-    var lines = string.lexeme.split(_formatter.lineEnding!);
+    var lines = string.lexeme.split(_lineTerminatorRE);
     var offset = string.offset;
+    var firstLine = lines.first;
+    if (lines.length > 1) {
+      // Special case for multiline string which contains
+      // at least one newline.
+      _writeStringFirstLine(firstLine, string, offset: offset);
+    } else {
+      _writeText(firstLine, string, offset: offset);
+    }
+    offset += firstLine.length;
 
-    _writeText(lines.first, string, offset: offset);
-    offset += lines.first.length;
-
-    for (var line in lines.skip(1)) {
+    for (var i = 1; i < lines.length; i++) {
+      var line = lines[i];
       builder.writeNewline(flushLeft: true, nest: true);
       offset++;
       _writeText(line, string, offset: offset, mergeEmptySplits: false);
       offset += line.length;
     }
+  }
+
+  /// Writes the first line of a multi-line string.
+  ///
+  /// If the string is a multiline string, and it has only whitespace
+  /// before the newline, that whitespace is omitted.
+  void _writeStringFirstLine(String line, Token string, {required int offset}) {
+    // Detect leading whitespace on the first line of multiline strings.
+    var quoteStart = line.startsWith('r') ? 1 : 0;
+    var quoteEnd = quoteStart + 3;
+    if (line.length > quoteEnd &&
+        (line.startsWith("'''", quoteStart) ||
+            line.startsWith('"""', quoteStart))) {
+      // Start of a multiline string literal.
+      // Check if rest of the line is whitespace, possibly preceded by
+      // backslash, or has a single trailing backslash preceding the newline.
+      var cursor = quoteEnd;
+
+      const backslash = 0x5c;
+      const space = 0x20;
+      const tab = 0x09;
+
+      do {
+        var char = line.codeUnitAt(cursor);
+        if (char == backslash) {
+          cursor += 1;
+          if (cursor >= line.length) {
+            break;
+          }
+          char = line.codeUnitAt(cursor);
+        }
+        if (char != space && char != tab) break;
+        cursor++;
+      } while (cursor < line.length);
+      if (cursor == line.length) {
+        _writeText(line.substring(0, quoteEnd), string, offset: offset);
+        return;
+      }
+    }
+    _writeText(line, string, offset: offset);
   }
 
   /// Write the comma token following [node], if there is one.
