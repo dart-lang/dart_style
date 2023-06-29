@@ -14,8 +14,8 @@ final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 Future<String> findTestDirectory() async {
   var libraryUri = await Isolate.resolvePackageUri(
       Uri.parse('package:dart_style/src/testing/test_file.dart'));
-  return p.normalize(
-      p.join(p.dirname(libraryUri!.toFilePath()), '../../../test'));
+  return p
+      .normalize(p.join(p.dirname(libraryUri!.toFilePath()), '../../../test'));
 }
 
 /// A file containing a series of formatting tests.
