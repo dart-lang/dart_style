@@ -3,8 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 // ignore_for_file: avoid_dynamic_calls
 
-import 'dart:convert';
-
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
