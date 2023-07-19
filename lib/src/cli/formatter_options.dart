@@ -39,6 +39,9 @@ class FormatterOptions {
   /// Sets the exit code to 1 if any changes are made.
   final bool setExitIfChanged;
 
+  /// Force a split and preserve the trailing comma if present.
+  final bool preserveTrailingCommas;
+
   FormatterOptions(
       {this.indent = 0,
       this.pageWidth = 80,
@@ -47,7 +50,8 @@ class FormatterOptions {
       this.show = Show.changed,
       this.output = Output.write,
       this.summary = Summary.none,
-      this.setExitIfChanged = false})
+      this.setExitIfChanged = false,
+      this.preserveTrailingCommas = false})
       : fixes = [...?fixes];
 
   /// Called when [file] is about to be formatted.

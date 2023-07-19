@@ -121,6 +121,7 @@ class FormatCommand extends Command<int> {
 
     var followLinks = argResults['follow-links'];
     var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
+    var preserveTrailingCommas = argResults['preserve-trailing-commas'] as bool;
 
     // If stdin isn't connected to a pipe, then the user is not passing
     // anything to stdin, so let them know they made a mistake.
@@ -145,7 +146,8 @@ class FormatCommand extends Command<int> {
         show: show,
         output: output,
         summary: summary,
-        setExitIfChanged: setExitIfChanged);
+        setExitIfChanged: setExitIfChanged,
+        preserveTrailingCommas: preserveTrailingCommas);
 
     if (argResults.rest.isEmpty) {
       await formatStdin(options, selection, stdinName);

@@ -18,31 +18,52 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
 
-  formatStmt('''
-  function(
-    (
-      parameter1,
-      parameter2,
-      parameter3
-    ) => P(
-      p,
-    ),
+  formatUnit('''
+  enum E { a, }
+  
+  f(int x,) {}
+  g([int x,]) {}
+  
+  (int,) a = (1,);
+  ({bool b,}) b = (b: true);
+  
+  var x = switch (1) {1 => 0,};
+  
+  main() {
+  function(// c
   );
-''', 40);
+  function(arg,);
+  function([element],);
+  }
+  
+  var c = [1,];
+  var d = {1: 0,};
+  var e = {1,};
+  var r = (1, 2,);
+  var r1 = (1,);
+  var f = [1, 2, // c
+  3, 4,
+  ];
+''', pageWidth: 40, preserveTrailingCommas: true);
 }
 
-void formatStmt(String source, [int pageWidth = 80]) {
-  runFormatter(source, pageWidth, isCompilationUnit: false);
+void formatStmt(String source,
+    {int pageWidth = 80, bool preserveTrailingCommas = false}) {
+  runFormatter(source, pageWidth,
+      isCompilationUnit: false, preserveTrailingCommas: preserveTrailingCommas);
 }
 
-void formatUnit(String source, [int pageWidth = 80]) {
-  runFormatter(source, pageWidth, isCompilationUnit: true);
+void formatUnit(String source,
+    {int pageWidth = 80, bool preserveTrailingCommas = false}) {
+  runFormatter(source, pageWidth,
+      isCompilationUnit: true, preserveTrailingCommas: preserveTrailingCommas);
 }
 
 void runFormatter(String source, int pageWidth,
-    {required bool isCompilationUnit}) {
+    {required bool isCompilationUnit, required bool preserveTrailingCommas}) {
   try {
-    var formatter = DartFormatter(pageWidth: pageWidth);
+    var formatter = DartFormatter(
+        pageWidth: pageWidth, preserveTrailingCommas: preserveTrailingCommas);
 
     String result;
     if (isCompilationUnit) {

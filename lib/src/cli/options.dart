@@ -73,6 +73,14 @@ void defineOptions(ArgParser parser,
       negatable: false,
       help: 'Return exit code 1 if there are any formatting changes.');
 
+  if (!oldCli) {
+    parser.addFlag('preserve-trailing-commas',
+        abbr: 'c',
+        negatable: false,
+        help: 'Force a split and preserve the trailing comma if present.\n'
+            'This option is just for prototyping.');
+  }
+
   if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
   parser.addFlag('fix',
       negatable: false, help: 'Apply all style fixes.', hide: !verbose);

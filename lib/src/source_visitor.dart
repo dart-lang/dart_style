@@ -995,7 +995,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     _visitBodyContents(node.members);
 
-    _endBody(node.rightBracket, forceSplit: semicolon != null);
+    _endBody(node.rightBracket,
+        forceSplit: semicolon != null ||
+            _preserveTrailingCommaAfter(node.constants.last));
   }
 
   @override
@@ -1314,7 +1316,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstDelimiter);
     }
 
-    builder = builder.endBlock(forceSplit: false);
+    builder = builder.endBlock(
+        forceSplit: _preserveTrailingCommaAfter(node.parameters.last));
     builder.endRule();
 
     // Now write the delimiter itself.
@@ -2512,7 +2515,9 @@ class SourceVisitor extends ThrowingAstVisitor {
       writePrecedingCommentsAndNewlines(firstClosingDelimiter);
     }
 
-    builder = builder.endBlock(forceSplit: false);
+    builder = builder.endBlock(
+        forceSplit: _preserveTrailingCommaAfter(
+            [...node.positionalFields, ...?namedFields?.fields].last));
     builder.endRule();
 
     // Now write the delimiter(s) themselves.
@@ -2720,7 +2725,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       }
     }
 
-    _endBody(node.rightBracket);
+    _endBody(node.rightBracket,
+        forceSplit: _preserveTrailingCommaAfter(node.cases.last));
   }
 
   @override
@@ -3146,7 +3152,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       writeCommaAfter(argument, isTrailing: argument == arguments.last);
     }
 
-    _endBody(rightParenthesis);
+    _endBody(rightParenthesis,
+        forceSplit: _preserveTrailingCommaAfter(arguments.last));
     return rule;
   }
 
@@ -3209,6 +3216,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     zeroSplit();
     token(rightParenthesis);
+
+    if (_preserveTrailingCommaAfter(arguments.last)) {
+      rule.enableSplitOnInnerRules();
+      builder.forceRules();
+    }
 
     builder.unnest();
     builder.endRule();
@@ -3634,7 +3646,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     _endPossibleConstContext(constKeyword);
-    var blockChunk = _endBody(rightBracket, forceSplit: force);
+    var blockChunk = _endBody(rightBracket,
+        forceSplit: force ||
+            !isSingleElementRecord &&
+                _preserveTrailingCommaAfter(elements.last));
 
     if (blockRule is ArgumentListRule) {
       // This collection is a block argument, so let argument list rule know its
@@ -3963,20 +3978,33 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
   }
 
-  /// Write the comma token following [node], if there is one.
-  void writeCommaAfter(AstNode node, {required bool isTrailing}) {
-    // Look for the existing comma.
-    Token? comma;
+  /// Whether [node] has a trailing comma after it that should be preserved and
+  /// force the surrounding construct to split.
+  bool _preserveTrailingCommaAfter(AstNode node) {
+    if (!_formatter.preserveTrailingCommas) return false;
+
+    return _commaAfter(node) != null;
+  }
+
+  Token? _commaAfter(AstNode node) {
     var next = node.endToken.next!;
-    if (next.type == TokenType.COMMA) comma = next;
+    if (next.type == TokenType.COMMA) return next;
 
     // TODO(sdk#38990): endToken doesn't include the "?" on a nullable
     // function-typed formal, so check for that case and handle it.
     if (next.type == TokenType.QUESTION && next.next!.type == TokenType.COMMA) {
-      comma = next.next;
+      return next.next;
     }
 
-    if (isTrailing) {
+    // No comma after.
+    return null;
+  }
+
+  /// Write the comma token following [node], if there is one.
+  void writeCommaAfter(AstNode node, {required bool isTrailing}) {
+    var comma = _commaAfter(node);
+
+    if (isTrailing && !_formatter.preserveTrailingCommas) {
       // Preserve any comments on the existing trailing comma.
       if (comma != null) {
         writePrecedingCommentsAndNewlines(comma);

@@ -29,6 +29,7 @@ Future<void> formatStdin(
     var formatter = DartFormatter(
         indent: options.indent,
         pageWidth: options.pageWidth,
+        preserveTrailingCommas: options.preserveTrailingCommas,
         fixes: options.fixes);
     try {
       options.beforeFile(null, name);
@@ -138,6 +139,7 @@ bool processFile(FormatterOptions options, File file, {String? displayPath}) {
   var formatter = DartFormatter(
       indent: options.indent,
       pageWidth: options.pageWidth,
+      preserveTrailingCommas: options.preserveTrailingCommas,
       fixes: options.fixes);
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);

@@ -33,6 +33,9 @@ class DartFormatter {
   /// The number of characters allowed in a single line.
   final int pageWidth;
 
+  /// Force a split and preserve the trailing comma if present.
+  final bool preserveTrailingCommas;
+
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
@@ -49,7 +52,11 @@ class DartFormatter {
   ///
   /// While formatting, also applies any of the given [fixes].
   DartFormatter(
-      {this.lineEnding, int? pageWidth, int? indent, Iterable<StyleFix>? fixes})
+      {this.lineEnding,
+      int? pageWidth,
+      int? indent,
+      Iterable<StyleFix>? fixes,
+      this.preserveTrailingCommas = false})
       : pageWidth = pageWidth ?? 80,
         indent = indent ?? 0,
         fixes = {...?fixes};
