@@ -244,7 +244,3 @@ abstract mixin class C12 = Object
     with Mixin;
 abstract base mixin class C13 = Object
     with Mixin;
->>> inline classes
-inline  class C {}
-<<<
-inline class C {}
