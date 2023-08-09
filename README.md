@@ -1,3 +1,53 @@
+**Note: This is an experimental branch of dart_style. By default, it behaves
+exactly the same as the master branch, but it contains *opt-in* support for a
+prototype implementation of a new experimental set of style rules.**
+
+This experiment holistically changes dart_style's formatting to better reflect
+the style used by the Flutter framework and many Flutter users.
+
+The most visible change is that it always formats argument lists the way that
+you get when you put trailing commas on them, like:
+
+```dart
+function(
+  argument,
+  argument,
+  argument
+);
+```
+
+In addition, it treats trailing commas as whitespace: It will add them if an
+argument list needs to split across lines, and it will remove them from argument
+lists and other constructs that do fit on one line.
+
+There are many other formatting changes throughout the language in order to look
+consistent with that style. It touches almost everything: constructor
+initializers, type arguments, closures in argument lists, method chains, etc.
+
+You can try out the experimental style by any of:
+
+-   When running `dart format` on the command line, pass `-e` or
+    `--experimental-style`.
+
+-   If a file contains this magic comment:
+
+    ```dart
+    // DO NOT SUBMIT USE DART FORMAT EXPERIMENT
+    ```
+
+    then the entire file will be formatted using the new style. This is a
+    convenient way to try out the new style when using the formatter through an
+    IDE integration. Once your IDE is using this branch of the formatter,
+    simply add that comment to a file and it will take effect.
+
+-   When using the formatter as a library, pass `experimentalStyle: true` when
+    constructing a DartFormatter instance.
+
+This prototype exists to get user feedback on the proposed style rules, so if
+you try it out, please do let us know what you think.
+
+---
+
 The dart_style package defines an automatic, opinionated formatter for Dart
 code. It replaces the whitespace in your program with what it deems to be the
 best formatting for it. Resulting code should follow the [Dart style guide][]
