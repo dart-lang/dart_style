@@ -96,7 +96,8 @@ Future<int> _updateTestFile(TestFile testFile) async {
     var formatter = DartFormatter(
         pageWidth: testFile.pageWidth,
         indent: formatTest.leadingIndent,
-        fixes: [...baseFixes, ...formatTest.fixes]);
+        fixes: [...baseFixes, ...formatTest.fixes],
+        experimentalStyle: testFile.path.contains('experiment/'));
 
     var actual = formatter.formatSource(formatTest.input);
 
