@@ -1,0 +1,7 @@
+>>> (indent 8)
+        localsHandler.directLocals[localsHandler
+            .getTypeVariableAsLocal(typeVariable)] = param;
+<<<
+        localsHandler.directLocals[
+          localsHandler.getTypeVariableAsLocal(typeVariable)
+        ] = param;

@@ -1,0 +1,58 @@
+40 columns                              |
+>>> one line
+target.a([e]);
+<<<
+target.a([e]);
+>>> one line
+target.a([e]).b({e});
+<<<
+target.a([e]).b({e});
+>>> one block argument
+target.method([element, element, element]);
+<<<
+target.method([
+  element,
+  element,
+  element,
+]);
+>>> one block argument
+target.method([veryLongElement,veryLongElement,veryLongElement]);
+<<<
+target.method([
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
+]);
+>>> chained block arguments
+target.method([element, element, element]).another({element, element, element});
+<<<
+target.method([
+  element,
+  element,
+  element,
+]).another({element, element, element});
+>>> chained block arguments
+target.method([veryLongElement, veryLongElement, veryLongElement])
+.another({veryLongElement, veryLongElement, veryLongElement});
+<<<
+target.method([
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
+]).another({
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
+});
+>>>
+aVeryLongFunctionThatNeedsToWrap(
+  toASecondLineWrapWrap,
+).then(() {
+  ;
+});
+<<<
+aVeryLongFunctionThatNeedsToWrap(
+  toASecondLineWrapWrap,
+).then(() {
+  ;
+});

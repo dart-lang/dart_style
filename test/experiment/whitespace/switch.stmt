@@ -1,0 +1,295 @@
+40 columns                              |
+>>> require at least one newline between statements in a case
+switch (foo) {case 0:a();b();c();}
+<<<
+switch (foo) {
+  case 0:
+    a();
+    b();
+    c();
+}
+>>> allow an extra newline between statements in a case
+switch (foo) {case 0:
+  a();
+
+  b();
+  c();
+}
+<<<
+switch (foo) {
+  case 0:
+    a();
+
+    b();
+    c();
+}
+>>> collapse any other newlines in a case
+switch (foo) {case 0:
+
+
+  a();
+
+
+
+  b();
+
+
+
+  c();
+
+
+}
+<<<
+switch (foo) {
+  case 0:
+    a();
+
+    b();
+
+    c();
+}
+>>> remove newlines between empty cases
+switch (foo) {
+  case 1:
+
+
+  case 2:
+
+  case 3:
+
+    body;
+
+  case 4:
+
+
+  default:
+
+
+    body;
+}
+<<<
+switch (foo) {
+  case 1:
+  case 2:
+  case 3:
+    body;
+
+  case 4:
+  default:
+    body;
+}
+>>> require at least one newline between statements in a default
+switch (foo) {default:a();b();c();}
+<<<
+switch (foo) {
+  default:
+    a();
+    b();
+    c();
+}
+>>> allow an extra newline between statements in a default
+switch (foo) {default:
+  a();
+
+  b();
+  c();
+}
+<<<
+switch (foo) {
+  default:
+    a();
+
+    b();
+    c();
+}
+>>> collapse any other newlines in a default
+switch (foo) {default:
+
+
+  a();
+
+
+
+  b();
+
+
+
+  c();
+
+
+}
+<<<
+switch (foo) {
+  default:
+    a();
+
+    b();
+
+    c();
+}
+>>> require at least one newline between cases
+switch (foo) {case 0:case 1:case 2:body();}
+<<<
+switch (foo) {
+  case 0:
+  case 1:
+  case 2:
+    body();
+}
+>>> allow an extra newline between non-empty cases
+switch (foo) {case 0: body();
+
+  case 1:
+  case 2:body();
+}
+<<<
+switch (foo) {
+  case 0:
+    body();
+
+  case 1:
+  case 2:
+    body();
+}
+>>> collapse any other newlines in a case
+switch (foo) {
+
+
+  case 0:
+
+
+  case 1:
+
+
+  case 2:
+
+
+    body();
+
+
+
+}
+<<<
+switch (foo) {
+  case 0:
+  case 1:
+  case 2:
+    body();
+}
+>>> indentation
+switch (fruit) {
+case "apple":
+print("delish");
+break;
+case "fig":
+print("bleh");
+break;
+}
+<<<
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  case "fig":
+    print("bleh");
+    break;
+}
+>>> labeled cases
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  label:case "fig":
+    print("bleh");
+    break;
+  other:default:
+    break;
+}
+<<<
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  label:
+  case "fig":
+    print("bleh");
+    break;
+  other:
+  default:
+    break;
+}
+>>> switch expression
+var x = switch  (  obj  )  {
+1  =>  'one'  ,  var  two  =>  'two'
+};
+<<<
+var x = switch (obj) {
+  1 => 'one',
+  var two => 'two',
+};
+>>> handle cases that are not valid patterns
+switch (obj) {
+  case {1, 2}:
+  case -pi:
+  case !true:
+  case ~1:
+  case 1 != 2:
+  case 1 == 2:
+  case 1 & 2:
+  case 1 | 2:
+  case 1 ^ 2:
+  case 1 ~/ 2:
+  case 1 >> 2:
+  case 1 >>> 2:
+  case 1 << 2:
+  case 1 + 2:
+  case 1 - 2:
+  case 1 * 2:
+  case 1 / 2:
+  case 1 % 2:
+  case 1 < 2:
+  case 1 <= 2:
+  case 1 > 2:
+  case 1 >= 2:
+  case 1 ?? 2:
+  case true ? 1 : 2:
+  case 's'.length:
+  case 1 is int:
+  case 1 is! int:
+    body;
+}
+<<<
+switch (obj) {
+  case {1, 2}:
+  case -pi:
+  case !true:
+  case ~1:
+  case 1 != 2:
+  case 1 == 2:
+  case 1 & 2:
+  case 1 | 2:
+  case 1 ^ 2:
+  case 1 ~/ 2:
+  case 1 >> 2:
+  case 1 >>> 2:
+  case 1 << 2:
+  case 1 + 2:
+  case 1 - 2:
+  case 1 * 2:
+  case 1 / 2:
+  case 1 % 2:
+  case 1 < 2:
+  case 1 <= 2:
+  case 1 > 2:
+  case 1 >= 2:
+  case 1 ?? 2:
+  case true ? 1 : 2:
+  case 's'.length:
+  case 1 is int:
+  case 1 is! int:
+    body;
+}
+>>> empty switch expression
+var x = switch(y) {};
+<<<
+var x = switch (y) {};

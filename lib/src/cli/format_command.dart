@@ -137,6 +137,8 @@ class FormatCommand extends Command<int> {
     }
     var stdinName = argResults['stdin-name'] as String;
 
+    var experimentalStyle = argResults['experimental-style'] as bool;
+
     var options = FormatterOptions(
         indent: indent,
         pageWidth: pageWidth,
@@ -145,7 +147,8 @@ class FormatCommand extends Command<int> {
         show: show,
         output: output,
         summary: summary,
-        setExitIfChanged: setExitIfChanged);
+        setExitIfChanged: setExitIfChanged,
+        experimentalStyle: experimentalStyle);
 
     if (argResults.rest.isEmpty) {
       await formatStdin(options, selection, stdinName);

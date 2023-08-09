@@ -1,0 +1,63 @@
+40 columns                              |
+>>> preserve block comment before removed comma
+function(argument /* before */,);
+<<<
+function(argument /* before */);
+>>> preserve block comment after removed comma
+function(argument, /* after */);
+<<<
+function(argument /* after */);
+>>> preserve block comments before and after removed comma
+f(argument /* before */, /* after */);
+<<<
+f(argument /* before */ /* after */);
+>>> preserve block comment before preserved comma
+function(veryLongArgument, veryLongArgument /* before */,);
+<<<
+function(
+  veryLongArgument,
+  veryLongArgument /* before */,
+);
+>>> preserve block comment after preserved comma
+function(veryLongArgument, veryLongArgument, /* after */);
+<<<
+function(
+  veryLongArgument,
+  veryLongArgument, /* after */
+);
+>>> preserve block comment before and after preserved comma
+function(veryLongArgument, argument /* before */ , /* after */);
+<<<
+function(
+  veryLongArgument,
+  argument /* before */, /* after */
+);
+>>> preserve block comment at inserted comma
+function(veryLongArgument, veryLongArgument /* at */);
+<<<
+function(
+  veryLongArgument,
+  veryLongArgument, /* at */
+);
+>>> preserve block comments at inserted comma
+function(veryLongArgument, veryLongArgument /* 1 */ /* 2 */);
+<<<
+function(
+  veryLongArgument,
+  veryLongArgument, /* 1 */ /* 2 */
+);
+>>> preserve line comment before comma
+function(argument // before
+,);
+<<<
+function(
+  argument // before
+  ,
+);
+>>> preserve line comment after comma
+function(argument, // after
+);
+<<<
+function(
+  argument, // after
+);

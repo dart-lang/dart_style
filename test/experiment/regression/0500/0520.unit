@@ -1,0 +1,16 @@
+>>>
+import 'package:meta/meta.dart';
+
+class Foo {
+  final int bar;
+  Foo({
+    @required this.bar,
+  });
+}
+<<<
+import 'package:meta/meta.dart';
+
+class Foo {
+  final int bar;
+  Foo({@required this.bar});
+}

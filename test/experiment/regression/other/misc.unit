@@ -1,0 +1,41 @@
+>>>
+main() {
+  addTask(
+      "publish",
+      createProcessTask("pub",
+          args: ["publish", "-f"], description: "Publishes a New Version"),
+      dependencies: [
+    "version"
+  ]);
+}
+<<<
+main() {
+  addTask(
+    "publish",
+    createProcessTask(
+      "pub",
+      args: ["publish", "-f"],
+      description: "Publishes a New Version",
+    ),
+    dependencies: ["version"],
+  );
+}
+>>>
+Widget build() {
+  var text = textData;
+  <AccountValue,
+      Function>{
+    AccountValue.start: () {
+      ;
+    },
+  };
+}
+<<<
+Widget build() {
+  var text = textData;
+  <AccountValue, Function>{
+    AccountValue.start: () {
+      ;
+    },
+  };
+}

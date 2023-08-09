@@ -128,24 +128,27 @@ Future<TestProcess> runCommandOnDir([List<String>? args]) {
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
-Future<void> testDirectory(String name, [Iterable<StyleFix>? fixes]) async {
+Future<void> testDirectory(String name,
+    {bool experimentalStyle = false}) async {
   for (var test in await TestFile.listDirectory(name)) {
-    _testFile(test, fixes);
+    _testFile(test, experimentalStyle: experimentalStyle);
   }
 }
 
 Future<void> testFile(String path, [Iterable<StyleFix>? fixes]) async {
-  _testFile(await TestFile.read(path), fixes);
+  _testFile(await TestFile.read(path), baseFixes: fixes);
 }
 
-void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
+void _testFile(TestFile testFile,
+    {Iterable<StyleFix>? baseFixes, bool experimentalStyle = false}) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
         var formatter = DartFormatter(
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
-            fixes: [...?baseFixes, ...formatTest.fixes]);
+            fixes: [...?baseFixes, ...formatTest.fixes],
+            experimentalStyle: experimentalStyle);
 
         var actual = formatter.formatSource(formatTest.input);
 

@@ -124,6 +124,11 @@ void defineOptions(ArgParser parser,
 
     // Ancient no longer used flag.
     parser.addFlag('transform', abbr: 't', negatable: false, hide: true);
+  } else {
+    parser.addFlag('experimental-style',
+        abbr: 'e',
+        negatable: false,
+        help: 'Enable the experimental style. WARNING: UNSTABLE.');
   }
 }
 

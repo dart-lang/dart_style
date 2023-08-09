@@ -1,0 +1,167 @@
+40 columns                              |
+>>> empty body
+class A {
+  A();
+}
+<<<
+class A {
+  A();
+}
+>>> redirecting factory constructor
+class A {
+  const factory A() = B;
+}
+<<<
+class A {
+  const factory A() = B;
+}
+>>> initializing formals
+class A {
+  int _a;
+  A(this._a);
+}
+<<<
+class A {
+  int _a;
+  A(this._a);
+}
+>>> constructor initialization list
+class X {
+  var x, y;
+  X() : x = 1, y = 2;
+}
+<<<
+class X {
+  var x, y;
+  X() : x = 1, y = 2;
+}
+>>> DO format constructor initialization lists with each field on its own line.
+class MyClass {
+  MyClass() : first = "some value", second = "another",
+        third = "last";
+}
+<<<
+class MyClass {
+  MyClass()
+    : first = "some value",
+      second = "another",
+      third = "last";
+}
+>>> DO format constructor initialization lists with each field on its own line.
+class MyClass {
+  MyClass(first, second) : super(first, second);
+  MyClass(first, second) : this(first, second);
+}
+<<<
+class MyClass {
+  MyClass(first, second)
+    : super(first, second);
+  MyClass(first, second)
+    : this(first, second);
+}
+>>> handle a comma after function typed initializing formals
+class Foo {
+  Foo(this.bar(), baz);
+}
+<<<
+class Foo {
+  Foo(this.bar(), baz);
+}
+>>> "super." parameters
+class Foo {
+  Foo(super . a, int  super  . b  , int  super . bar());
+  Foo.optional([  super . a, int  super  . b   =  123 , int  super . bar()  ]);
+  Foo.named({ required   super . a, int  super  . b  : 123 ,  required int  super . bar()  });
+  Foo.other(  final   int  super.x,   super.bar()  ?  );
+}
+<<<
+class Foo {
+  Foo(
+    super.a,
+    int super.b,
+    int super.bar(),
+  );
+  Foo.optional([
+    super.a,
+    int super.b = 123,
+    int super.bar(),
+  ]);
+  Foo.named({
+    required super.a,
+    int super.b: 123,
+    required int super.bar(),
+  });
+  Foo.other(
+    final int super.x,
+    super.bar()?,
+  );
+}
+>>> align initializers when split parameter list has no optional section
+class Foo {
+  Foo(parameter1, parameter2, parameter3) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1,
+    parameter2,
+    parameter3,
+  ) : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> align initializers when split parameter list has optional section
+class Foo {
+  Foo(parameter1, [parameter2, parameter3]) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1, [
+    parameter2,
+    parameter3,
+  ]) : initializer1 = 1,
+       initializer2 = 2;
+}
+>>> align initializers when split parameter list has named section
+class Foo {
+  Foo(parameter1, {parameter2, parameter3}) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1, {
+    parameter2,
+    parameter3,
+  }) : initializer1 = 1,
+       initializer2 = 2;
+}
+>>> align initializers when unsplit parameter list has no optional section
+class Foo {
+  Foo(parameter1) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(parameter1)
+    : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> align initializers when unsplit parameter list has optional section
+class Foo {
+  Foo([parameter1]) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo([parameter1])
+    : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> align initializers when unsplit parameter list has named section
+class Foo {
+  Foo({parameter1}) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo({parameter1})
+    : initializer1 = 1,
+      initializer2 = 2;
+}

@@ -1,0 +1,223 @@
+40 columns                              |
+>>>
+longFunctionName(
+  element__element__element,
+  [element,element,element,element,element,],
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  [
+    element,
+    element,
+    element,
+    element,
+    element,
+  ],
+  element__element,
+);
+>>>
+longFunction(
+    a: argument,
+        () {
+      ;
+    },
+    c: () {
+      ;
+    }
+);
+<<<
+longFunction(
+  a: argument,
+  () {
+    ;
+  },
+  c: () {
+    ;
+  },
+);
+>>>
+longFunctionName(
+  element__element__element,
+  () {;},
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  () {
+    ;
+  },
+  element__element,
+);
+>>>
+longFunctionName((element, element, element, element));
+<<<
+longFunctionName(
+  (element, element, element, element),
+);
+>>>
+longFunctionName(
+  element__element__element,
+  [element],
+  element__element
+);
+<<<
+longFunctionName(
+  element__element__element,
+  [element],
+  element__element,
+);
+>>>
+longFunctionName([
+  element__element__element,
+  element__element
+]);
+<<<
+longFunctionName([
+  element__element__element,
+  element__element,
+]);
+>>> inner function call as block argument
+outerFunction(innerFunction(veryLongArgument,veryLongArgument));
+<<<
+outerFunction(innerFunction(
+  veryLongArgument,
+  veryLongArgument,
+));
+>>> inner method call as block argument
+outerFunction(inner.function(veryLongArgument,veryLongArgument));
+<<<
+outerFunction(inner.function(
+  veryLongArgument,
+  veryLongArgument,
+));
+>>> multiple levels
+one(two(three(four(veryLongArgument,veryLongArgument))));
+<<<
+one(two(three(four(
+  veryLongArgument,
+  veryLongArgument,
+))));
+>>>
+{
+  longFunction([veryVeryVeryVeryLongElement]);
+  longFunction(
+    superLongArgumentThatPreventsBlock,
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+  longFunction(
+    [
+      veryVeryLongElement,
+      veryVeryLongElement
+    ],
+    [
+      veryVeryLongElement,
+      veryVeryLongElement
+    ],
+  );
+}
+<<<
+{
+  longFunction([
+    veryVeryVeryVeryLongElement,
+  ]);
+  longFunction(
+    superLongArgumentThatPreventsBlock,
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+  longFunction(
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+    [
+      veryVeryLongElement,
+      veryVeryLongElement,
+    ],
+  );
+}
+>>>
+someMethod(
+  () {
+    ;
+  },
+  function(
+    veryLongListElement, veryLongListElement
+  ),
+  [
+    veryLongListElement, veryLongListElement
+  ],
+);
+<<<
+someMethod(
+  () {
+    ;
+  },
+  function(
+    veryLongListElement,
+    veryLongListElement,
+  ),
+  [
+    veryLongListElement,
+    veryLongListElement,
+  ],
+);
+>>>
+test('Some very long test description '
+    'that is split across lines.', () {
+  body;
+});
+<<<
+test('Some very long test description '
+    'that is split across lines.', () {
+  body;
+});
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${outer(argument, inner(longArgument, longArgument))}';
+<<<
+'some long string ${outer(argument, inner(
+      longArgument,
+      longArgument,
+    ))}';
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${[argument, [veryVeryLongElement, veryVeryLongElement]]}';
+<<<
+'some long string ${[
+  argument,
+  [
+    veryVeryLongElement,
+    veryVeryLongElement,
+  ],
+]}';
+>>> long nested argument list in interpolation doesn't result in two trailing commas in one chunk
+'some long string ${{argument, {veryVeryLongElement, veryVeryLongElement}}}';
+<<<
+'some long string ${{
+  argument,
+  {
+    veryVeryLongElement,
+    veryVeryLongElement,
+  },
+}}';
+>>> block that must split because of an inner comment
+function(
+  [
+    a,
+    b, // comment
+    c,
+  ],
+);
+<<<
+function([
+  a,
+  b, // comment
+  c,
+]);

@@ -16,6 +16,8 @@ import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
+import 'experiment/source_visitor.dart' as experiment;
+import 'experiment/string_compare.dart' as experiment;
 import 'source_code.dart';
 import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
@@ -38,6 +40,9 @@ class DartFormatter {
 
   final Set<StyleFix> fixes;
 
+  /// Whether the experimental style should be used.
+  final bool experimentalStyle;
+
   /// Creates a new formatter for Dart code.
   ///
   /// If [lineEnding] is given, that will be used for any newlines in the
@@ -49,7 +54,11 @@ class DartFormatter {
   ///
   /// While formatting, also applies any of the given [fixes].
   DartFormatter(
-      {this.lineEnding, int? pageWidth, int? indent, Iterable<StyleFix>? fixes})
+      {this.lineEnding,
+      int? pageWidth,
+      int? indent,
+      Iterable<StyleFix>? fixes,
+      this.experimentalStyle = false})
       : pageWidth = pageWidth ?? 80,
         indent = indent ?? 0,
         fixes = {...?fixes};
@@ -165,16 +174,33 @@ class DartFormatter {
 
     // Format it.
     var lineInfo = parseResult.lineInfo;
-    var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-    var output = visitor.run(node);
 
-    // Sanity check that only whitespace was changed if that's all we expect.
-    if (fixes.isEmpty &&
-        !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw UnexpectedOutputException(source.text, output.text);
+    // Always enable the experiment if a magic marker comment appears. This lets
+    // users try it out locally by just putting the comment in a file.
+    if (experimentalStyle ||
+        text.contains('// DO NOT SUBMIT USE DART FORMAT EXPERIMENT')) {
+      var visitor = experiment.SourceVisitor(this, lineInfo, unitSourceCode);
+      var output = visitor.run(node);
+
+      // Sanity check that only whitespace was changed if that's all we expect.
+      if (fixes.isEmpty &&
+          !experiment.equalIgnoringWhitespace(source.text, output.text)) {
+        throw UnexpectedOutputException(source.text, output.text);
+      }
+
+      return output;
+    } else {
+      var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
+      var output = visitor.run(node);
+
+      // Sanity check that only whitespace was changed if that's all we expect.
+      if (fixes.isEmpty &&
+          !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
+        throw UnexpectedOutputException(source.text, output.text);
+      }
+
+      return output;
     }
-
-    return output;
   }
 
   /// Parse [source] from [uri].

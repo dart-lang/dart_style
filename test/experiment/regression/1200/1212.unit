@@ -1,0 +1,204 @@
+>>>
+class _$_ProjectOptions extends _ProjectOptions  {
+  const _$_ProjectOptions({required this.routeId, required this.action}): super._();
+
+@override
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initialize,required TResult Function( AppState state)  receiveUpdatedAppState,required TResult Function()  completedInitialFlow,required TResult Function( RouteId<CommonPageRoutePaywall> routeId)  dismissPaywall,required TResult Function( NotificationPermission status)  receiveNotificationPermissionStatus,required TResult Function( Object error,  StackTrace stackTrace)  receiveError,required TResult Function( Object error,  StackTrace stackTrace)  receiveNonFatalError,required TResult Function( Object error,  StackTrace stackTrace)  receiveProjectOperationError,required TResult Function( String? error)  showErrorDialog,required TResult Function( bool success)  handleNetworkOperationResult,required TResult Function( MineralProject project)  openProject,required TResult Function( LegacyProject legacyProject,  MineralProject mineralProject)  migratedProject,required TResult Function( String collectionId,  Template template,  bool asContentCreator)  openTemplate,required TResult Function( EditorSize size)  openEditorWithSize,required TResult Function()  openEditorAndCreateNewProject,required TResult Function( Uri uri,  bool openedAppThroughUri)  receivedDynamicLink,required TResult Function( NavigationAction<AppRoute> action)  mainNavigation,required TResult Function( RouteId<HomeRoute> routeId,  HomeAction action)  home,required TResult Function( RouteId<SplashRoute> routeId,  SplashAction action)  splash,required TResult Function( RouteId<SurveyRoute> routeId,  MagmaSurveyAction action)  survey,required TResult Function( RouteId<AckRoute> routeId,  AckAction action)  ack,required TResult Function( RouteId<SubInfoRoute> routeId,  MagmaSubInfoAction action)  subInfo,required TResult Function( RouteId<ProjectOptionsRoute> routeId,  ProjectOptionsAction action)  projectOptions,required TResult Function( InitializationAction action)  initialization,required TResult Function( ContentAction action)  content,required TResult Function( RouteId<ErrorDialogRoute> routeId,  ErrorDialogAction action)  errorDialog,required TResult Function( RouteId<InfoDialogRoute> routeId,  InfoDialogAction action)  infoDialog,required TResult Function( MagmaRatingConfiguration configuration)  dismissedRating,required TResult Function( RouteId<SupportRoute> routeId,  MagmaSupportAction action)  support,required TResult Function( RouteId<ClayEditorRoute> routeId,  EditorRootAction action)  clayEditor,required TResult Function( RouteId<TemplateSurveyRoute> routeId,  MagmaTemplateSurveyAction action)  templateSurvey,required TResult Function( RouteId<CollabRoute> routeId,  MagmaCollabAction action)  collab,required TResult Function( RouteId<RedeemCodeRoute> routeId,  MagmaRedeemCodeAction action)  redeemCode,required TResult Function( RouteId<OutdatedDialogRoute> routeId,  OutdatedDialogAction action)  outdatedDialog,required TResult Function( MagazineAction action)  magazine,required TResult Function( RouteId<TemplateCollectionListRoute> routeId,  TemplateCollectionListAction action)  templateCollectionList,required TResult Function( RouteId<CollectionDetailRoute> routeId,  CollectionDetailAction action)  collectionDetail,required TResult Function( RouteId<SimpleNewProjectRoute> routeId,  SimpleNewProjectAction action)  simpleNewProject,required TResult Function( RouteId<AppOnboardingFlowRoute> routeId,  OnboardingFlowAction action)  onboardingFlow,required TResult Function( String locale)  receiveUserLocale,required TResult Function( AuthenticationAction action)  authentication,required TResult Function( ToastType type,  Duration? autoDismissAfter)  showToast,required TResult Function()  hideToast,required TResult Function()  dispose,required TResult Function( LoginRouteState routeState)  pushLogin,required TResult Function( RouteId<UpdateEmailRoute> routeId,  UpdateEmailAction action)  updateEmail,required TResult Function( RouteId<AppDeleteAccountRoute> routeId,  DeleteAccountAction action)  deleteAccount,required TResult Function( RouteId<AppMultipleSubscriptionsRoute> routeId,  MultipleSubscriptionsAction action)  multipleSubscriptions,required TResult Function( RouteId<AppExpiredLinkRoute> routeId,  MagmaExpiredLinkAction action)  expiredLink,required TResult Function( CommonPageAction action)  common,required TResult Function()  fetchFcmToken,required TResult Function( String? token)  receivedFcmToken,required TResult Function( RouteId<AppUnlockRoute> routeId,  UnlockAction action)  unlock,required TResult Function()  setShouldSyncPaymentsAfterFirstStartup,required TResult Function( CustomerPurchaseResult result)  handleCustomerPurchaseResult,required TResult Function()  handleIntent,required TResult Function( RouteId<AppPaymentIssuesRoute> routeId,  PaymentIssuesAction action)  paymentIssues,required TResult Function( RouteId<AppSubscriptionCancellationFlowRoute> routeId,  SubscriptionCancellationFlowAction action)  subscriptionCancellationFlow,required TResult Function( BuiltList<FirebaseProject> remoteProjects)  receivedRemoteProjects,required TResult Function()  uploadRemoteProject,required TResult Function( bool shouldRestore)  abortUpload,required TResult Function( bool background)  setBackgroundState,required TResult Function( RouteId<AppPaymentMethodSettingsRoute> routeId,  PaymentMethodSettingsAction action)  paymentMethodSettings,required TResult Function( String id)  showSurvey,required TResult Function( String id,  Iterable<String> templateIds)  showTemplateSurvey,required TResult Function( RouteId<AppRouteSubscriptionAlreadyAssigned> routeId,  SubscriptionAlreadyAssignedAction action)  subscriptionAlreadyAssigned,}) {
+  return projectOptions(routeId,action);
+}
+}
+<<<
+class _$_ProjectOptions extends _ProjectOptions {
+  const _$_ProjectOptions({required this.routeId, required this.action})
+    : super._();
+
+  @override
+  @optionalTypeArgs
+  TResult when<TResult extends Object?>({
+    required TResult Function() initialize,
+    required TResult Function(AppState state) receiveUpdatedAppState,
+    required TResult Function() completedInitialFlow,
+    required TResult Function(RouteId<CommonPageRoutePaywall> routeId)
+    dismissPaywall,
+    required TResult Function(NotificationPermission status)
+    receiveNotificationPermissionStatus,
+    required TResult Function(Object error, StackTrace stackTrace) receiveError,
+    required TResult Function(Object error, StackTrace stackTrace)
+    receiveNonFatalError,
+    required TResult Function(Object error, StackTrace stackTrace)
+    receiveProjectOperationError,
+    required TResult Function(String? error) showErrorDialog,
+    required TResult Function(bool success) handleNetworkOperationResult,
+    required TResult Function(MineralProject project) openProject,
+    required TResult Function(
+      LegacyProject legacyProject,
+      MineralProject mineralProject,
+    )
+    migratedProject,
+    required TResult Function(
+      String collectionId,
+      Template template,
+      bool asContentCreator,
+    )
+    openTemplate,
+    required TResult Function(EditorSize size) openEditorWithSize,
+    required TResult Function() openEditorAndCreateNewProject,
+    required TResult Function(Uri uri, bool openedAppThroughUri)
+    receivedDynamicLink,
+    required TResult Function(NavigationAction<AppRoute> action) mainNavigation,
+    required TResult Function(RouteId<HomeRoute> routeId, HomeAction action)
+    home,
+    required TResult Function(RouteId<SplashRoute> routeId, SplashAction action)
+    splash,
+    required TResult Function(
+      RouteId<SurveyRoute> routeId,
+      MagmaSurveyAction action,
+    )
+    survey,
+    required TResult Function(RouteId<AckRoute> routeId, AckAction action) ack,
+    required TResult Function(
+      RouteId<SubInfoRoute> routeId,
+      MagmaSubInfoAction action,
+    )
+    subInfo,
+    required TResult Function(
+      RouteId<ProjectOptionsRoute> routeId,
+      ProjectOptionsAction action,
+    )
+    projectOptions,
+    required TResult Function(InitializationAction action) initialization,
+    required TResult Function(ContentAction action) content,
+    required TResult Function(
+      RouteId<ErrorDialogRoute> routeId,
+      ErrorDialogAction action,
+    )
+    errorDialog,
+    required TResult Function(
+      RouteId<InfoDialogRoute> routeId,
+      InfoDialogAction action,
+    )
+    infoDialog,
+    required TResult Function(MagmaRatingConfiguration configuration)
+    dismissedRating,
+    required TResult Function(
+      RouteId<SupportRoute> routeId,
+      MagmaSupportAction action,
+    )
+    support,
+    required TResult Function(
+      RouteId<ClayEditorRoute> routeId,
+      EditorRootAction action,
+    )
+    clayEditor,
+    required TResult Function(
+      RouteId<TemplateSurveyRoute> routeId,
+      MagmaTemplateSurveyAction action,
+    )
+    templateSurvey,
+    required TResult Function(
+      RouteId<CollabRoute> routeId,
+      MagmaCollabAction action,
+    )
+    collab,
+    required TResult Function(
+      RouteId<RedeemCodeRoute> routeId,
+      MagmaRedeemCodeAction action,
+    )
+    redeemCode,
+    required TResult Function(
+      RouteId<OutdatedDialogRoute> routeId,
+      OutdatedDialogAction action,
+    )
+    outdatedDialog,
+    required TResult Function(MagazineAction action) magazine,
+    required TResult Function(
+      RouteId<TemplateCollectionListRoute> routeId,
+      TemplateCollectionListAction action,
+    )
+    templateCollectionList,
+    required TResult Function(
+      RouteId<CollectionDetailRoute> routeId,
+      CollectionDetailAction action,
+    )
+    collectionDetail,
+    required TResult Function(
+      RouteId<SimpleNewProjectRoute> routeId,
+      SimpleNewProjectAction action,
+    )
+    simpleNewProject,
+    required TResult Function(
+      RouteId<AppOnboardingFlowRoute> routeId,
+      OnboardingFlowAction action,
+    )
+    onboardingFlow,
+    required TResult Function(String locale) receiveUserLocale,
+    required TResult Function(AuthenticationAction action) authentication,
+    required TResult Function(ToastType type, Duration? autoDismissAfter)
+    showToast,
+    required TResult Function() hideToast,
+    required TResult Function() dispose,
+    required TResult Function(LoginRouteState routeState) pushLogin,
+    required TResult Function(
+      RouteId<UpdateEmailRoute> routeId,
+      UpdateEmailAction action,
+    )
+    updateEmail,
+    required TResult Function(
+      RouteId<AppDeleteAccountRoute> routeId,
+      DeleteAccountAction action,
+    )
+    deleteAccount,
+    required TResult Function(
+      RouteId<AppMultipleSubscriptionsRoute> routeId,
+      MultipleSubscriptionsAction action,
+    )
+    multipleSubscriptions,
+    required TResult Function(
+      RouteId<AppExpiredLinkRoute> routeId,
+      MagmaExpiredLinkAction action,
+    )
+    expiredLink,
+    required TResult Function(CommonPageAction action) common,
+    required TResult Function() fetchFcmToken,
+    required TResult Function(String? token) receivedFcmToken,
+    required TResult Function(
+      RouteId<AppUnlockRoute> routeId,
+      UnlockAction action,
+    )
+    unlock,
+    required TResult Function() setShouldSyncPaymentsAfterFirstStartup,
+    required TResult Function(CustomerPurchaseResult result)
+    handleCustomerPurchaseResult,
+    required TResult Function() handleIntent,
+    required TResult Function(
+      RouteId<AppPaymentIssuesRoute> routeId,
+      PaymentIssuesAction action,
+    )
+    paymentIssues,
+    required TResult Function(
+      RouteId<AppSubscriptionCancellationFlowRoute> routeId,
+      SubscriptionCancellationFlowAction action,
+    )
+    subscriptionCancellationFlow,
+    required TResult Function(BuiltList<FirebaseProject> remoteProjects)
+    receivedRemoteProjects,
+    required TResult Function() uploadRemoteProject,
+    required TResult Function(bool shouldRestore) abortUpload,
+    required TResult Function(bool background) setBackgroundState,
+    required TResult Function(
+      RouteId<AppPaymentMethodSettingsRoute> routeId,
+      PaymentMethodSettingsAction action,
+    )
+    paymentMethodSettings,
+    required TResult Function(String id) showSurvey,
+    required TResult Function(String id, Iterable<String> templateIds)
+    showTemplateSurvey,
+    required TResult Function(
+      RouteId<AppRouteSubscriptionAlreadyAssigned> routeId,
+      SubscriptionAlreadyAssignedAction action,
+    )
+    subscriptionAlreadyAssigned,
+  }) {
+    return projectOptions(routeId, action);
+  }
+}
