@@ -1,3 +1,7 @@
+## 2.3.3
+
+* Remove support for `inline class` since that syntax has changed.
+
 ## 2.3.2
 
 * Don't indent parameters that have metadata annotations. Instead, align them
