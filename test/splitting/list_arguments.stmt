@@ -475,10 +475,10 @@ function([argument]).method().method();
 function([veryLongElement,veryLongElement,veryLongElement,]).method().method().method().method().method();
 <<<
 function([
-  veryLongElement,
-  veryLongElement,
-  veryLongElement,
-]) // TODO: Not sure about this.
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
+    ])
     .method()
     .method()
     .method()

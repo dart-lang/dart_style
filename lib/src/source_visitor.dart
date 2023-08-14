@@ -2726,7 +2726,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     _endBody(node.rightBracket,
-        forceSplit: _preserveTrailingCommaAfter(node.cases.last));
+        forceSplit: node.cases.isNotEmpty && _preserveTrailingCommaAfter(node.cases.last));
   }
 
   @override

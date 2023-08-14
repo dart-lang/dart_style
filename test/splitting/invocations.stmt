@@ -255,9 +255,10 @@ someVeryLongTargetFunction(
 someVeryLongTargetFunction(argument, argument).oneVeryVeryLong().twoAlsoVeryVeryLong();
 <<<
 someVeryLongTargetFunction(
-  argument,
-  argument,
-).oneVeryVeryLong()
+      argument,
+      argument,
+    )
+    .oneVeryVeryLong()
     .twoAlsoVeryVeryLong();
 >>> target splits more deeply than property chain
 someTargetFunction(argument, argument, argument).property.property;
@@ -271,10 +272,11 @@ someTargetFunction(
 someTargetFunction(argument, argument, argument).veryLongProperty.anotherVeryLongProperty;
 <<<
 someTargetFunction(
-  argument,
-  argument,
-  argument,
-).veryLongProperty
+      argument,
+      argument,
+      argument,
+    )
+    .veryLongProperty
     .anotherVeryLongProperty;
 >>> splitting the target forces methods to split
 someVeryLongTargetFunction(argument, argument).one.two;
@@ -340,11 +342,11 @@ function(argument).method().method();
 function(longArgument,longArgument,longArgument,).method().method().method().method().method();
 <<<
 function(
-  longArgument,
-  longArgument,
-  longArgument,
-)
-    .method() // TODO: Not sure about this.
+      longArgument,
+      longArgument,
+      longArgument,
+    )
+    .method()
     .method()
     .method()
     .method()
