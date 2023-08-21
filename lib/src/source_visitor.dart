@@ -2251,22 +2251,19 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitNamedType(NamedType node) {
-    var importPrefix = node.importPrefix;
-    if (importPrefix != null) {
+    if (node.importPrefix case var importPrefix?) {
       builder.startSpan();
-
       token(importPrefix.name);
       soloZeroSplit();
       token(importPrefix.period);
+      token(node.name2);
+      builder.endSpan();
+    } else {
+      token(node.name2);
     }
 
-    token(node.name2);
     visit(node.typeArguments);
     token(node.question);
-
-    if (importPrefix != null) {
-      builder.endSpan();
-    }
   }
 
   @override

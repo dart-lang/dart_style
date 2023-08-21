@@ -1,6 +1,7 @@
 ## 2.3.3-dev
 
 * Remove support for `inline class` since that syntax has changed.
+* Fix regression in splitting type annotations with library prefixes (#1249).
 
 ## 2.3.2
 
