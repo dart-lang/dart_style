@@ -1,7 +1,8 @@
 ## 2.3.3-dev
 
-* Remove support for `inline class` since that syntax has changed.
 * Fix regression in splitting type annotations with library prefixes (#1249).
+* Remove support for `inline class` since that syntax has changed.
+* Stop passing experiment flags to parser for features that have shipped.
 
 ## 2.3.2
 

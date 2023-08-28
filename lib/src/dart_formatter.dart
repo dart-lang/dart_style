@@ -202,17 +202,15 @@ class DartFormatter {
       {required bool patterns}) {
     // Enable all features that are enabled by default in the current analyzer
     // version.
-    var featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: Version(2, 19, 0),
-      flags: [
-        'inline-class',
-        'class-modifiers',
-        if (patterns) 'patterns',
-        'records',
-        'sealed-class',
-        'unnamed-libraries',
-      ],
-    );
+    FeatureSet featureSet;
+    if (patterns) {
+      featureSet = FeatureSet.latestLanguageVersion();
+    } else {
+      featureSet = FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: Version(2, 19, 0),
+        flags: [],
+      );
+    }
 
     return parseString(
       content: source,
