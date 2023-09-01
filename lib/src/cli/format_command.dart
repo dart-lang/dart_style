@@ -122,6 +122,8 @@ class FormatCommand extends Command<int> {
     var followLinks = argResults['follow-links'];
     var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
 
+    var experimentFlags = argResults['enable-experiment'] as List<String>;
+
     // If stdin isn't connected to a pipe, then the user is not passing
     // anything to stdin, so let them know they made a mistake.
     if (argResults.rest.isEmpty && stdin.hasTerminal) {
@@ -145,7 +147,8 @@ class FormatCommand extends Command<int> {
         show: show,
         output: output,
         summary: summary,
-        setExitIfChanged: setExitIfChanged);
+        setExitIfChanged: setExitIfChanged,
+        experimentFlags: experimentFlags);
 
     if (argResults.rest.isEmpty) {
       await formatStdin(options, selection, stdinName);

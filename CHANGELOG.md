@@ -2,7 +2,8 @@
 
 * Fix regression in splitting type annotations with library prefixes (#1249).
 * Remove support for `inline class` since that syntax has changed.
-* Stop passing experiment flags to parser for features that have shipped.
+* Add `--enable-experiment` command-line option to enable language experiments.
+  The library API also supports this with `DartFormatter.experimentFlags`.
 
 ## 2.3.2
 

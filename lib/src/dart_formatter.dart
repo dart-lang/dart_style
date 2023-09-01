@@ -38,6 +38,11 @@ class DartFormatter {
 
   final Set<StyleFix> fixes;
 
+  /// Flags to enable experimental language features.
+  ///
+  /// See dart.dev/go/experiments for details.
+  final List<String> experimentFlags;
+
   /// Creates a new formatter for Dart code.
   ///
   /// If [lineEnding] is given, that will be used for any newlines in the
@@ -49,10 +54,15 @@ class DartFormatter {
   ///
   /// While formatting, also applies any of the given [fixes].
   DartFormatter(
-      {this.lineEnding, int? pageWidth, int? indent, Iterable<StyleFix>? fixes})
+      {this.lineEnding,
+      int? pageWidth,
+      int? indent,
+      Iterable<StyleFix>? fixes,
+      List<String>? experimentFlags})
       : pageWidth = pageWidth ?? 80,
         indent = indent ?? 0,
-        fixes = {...?fixes};
+        fixes = {...?fixes},
+        experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
@@ -200,17 +210,9 @@ class DartFormatter {
   // happens to parse without error, then we use that result instead.
   ParseStringResult _parse(String source, String? uri,
       {required bool patterns}) {
-    // Enable all features that are enabled by default in the current analyzer
-    // version.
-    FeatureSet featureSet;
-    if (patterns) {
-      featureSet = FeatureSet.latestLanguageVersion();
-    } else {
-      featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(2, 19, 0),
-        flags: [],
-      );
-    }
+    var version = patterns ? Version(3, 0, 0) : Version(2, 19, 0);
+    var featureSet = FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: version, flags: experimentFlags);
 
     return parseString(
       content: source,
