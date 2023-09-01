@@ -1,7 +1,9 @@
 ## 2.3.3-dev
 
-* Remove support for `inline class` since that syntax has changed.
 * Fix regression in splitting type annotations with library prefixes (#1249).
+* Remove support for `inline class` since that syntax has changed.
+* Add `--enable-experiment` command-line option to enable language experiments.
+  The library API also supports this with `DartFormatter.experimentFlags`.
 
 ## 2.3.2
 
