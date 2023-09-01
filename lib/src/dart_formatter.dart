@@ -210,7 +210,7 @@ class DartFormatter {
   // happens to parse without error, then we use that result instead.
   ParseStringResult _parse(String source, String? uri,
       {required bool patterns}) {
-    var version = patterns ? Version(3, 0, 0) : Version(2, 19, 0);
+    var version = patterns ? FeatureSet.latestLanguageVersion() : Version(2, 19, 0);
     var featureSet = FeatureSet.fromEnableFlags2(
         sdkLanguageVersion: version, flags: experimentFlags);
 
