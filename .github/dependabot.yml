@@ -9,11 +9,14 @@ updates:
       interval: monthly
     labels:
       - autosubmit
+      - infrastructure
 
   # We check daily for major version dependency updates to capture releases of
   # package:analyzer.
-  - package-ecosystem: "pub"
+  - package-ecosystem: pub
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: daily
+    labels:
+      - infrastructure
     versioning-strategy: increase-if-necessary
