@@ -1062,7 +1062,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     _endBody(node.rightBracket,
         forceSplit: semicolon != null ||
             trailingComma != null ||
-            node.members.isNotEmpty);
+            node.members.isNotEmpty ||
+            // If there is a line comment after an enum constant, it won't
+            // automatically force the enum body to split since the rule for
+            // the constants is the hard rule used by the entire block and its
+            // hardening state doesn't actually change. Instead, look
+            // explicitly for a line comment here.
+            _containsLineComments(node.constants));
   }
 
   @override
@@ -3928,12 +3934,13 @@ class SourceVisitor extends ThrowingAstVisitor {
     return Cost.assign;
   }
 
-  /// Returns `true` if the collection withs [elements] delimited by
+  /// Returns `true` if the collection with [elements] delimited by
   /// [rightBracket] contains any line comments.
   ///
   /// This only looks for comments at the element boundary. Comments within an
   /// element are ignored.
-  bool _containsLineComments(Iterable<AstNode> elements, Token rightBracket) {
+  bool _containsLineComments(Iterable<AstNode> elements,
+      [Token? rightBracket]) {
     bool hasLineCommentBefore(Token token) {
       Token? comment = token.precedingComments;
       for (; comment != null; comment = comment.next) {
@@ -3949,7 +3956,11 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // Look before the closing bracket.
-    return hasLineCommentBefore(rightBracket);
+    if (rightBracket != null) {
+      if (hasLineCommentBefore(rightBracket)) return true;
+    }
+
+    return false;
   }
 
   /// Begins writing a bracket-delimited body whose contents are a nested
