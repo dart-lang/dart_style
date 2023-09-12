@@ -1,0 +1,30 @@
+40 columns                              |
+>>> Don't split after "import" even with long string.
+import
+'package:some/very/long/import/path.dart';
+<<<
+import 'package:some/very/long/import/path.dart';
+>>> Keep "as" on same line.
+import 'package:foo.dart'
+    as foo;
+<<<
+import 'package:foo.dart' as foo;
+>>> Wrap before "as".
+import 'package:some/path/foo.dart' as foo;
+<<<
+import 'package:some/path/foo.dart'
+    as foo;
+>>> Keep "deferred as" on same line.
+import 'foo.dart'   deferred   as foo;
+<<<
+import 'foo.dart' deferred as foo;
+>>> Wrap before "deferred".
+import 'package:foo/foo.dart' deferred as path;
+<<<
+import 'package:foo/foo.dart'
+    deferred as path;
+>>> Don't split before "deferred" and "as".
+import 'package:foo/some/path/foo.dart' deferred as very_long_identifier_path;
+<<<
+import 'package:foo/some/path/foo.dart'
+    deferred as very_long_identifier_path;

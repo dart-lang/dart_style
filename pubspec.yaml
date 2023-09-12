@@ -11,6 +11,7 @@ environment:
 dependencies:
   analyzer: '^6.2.0'
   args: ">=1.0.0 <3.0.0"
+  collection: "^1.17.0"
   path: ^1.0.0
   pub_semver: ">=1.4.4 <3.0.0"
   source_span: ^1.4.0

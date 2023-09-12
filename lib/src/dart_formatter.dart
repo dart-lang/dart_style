@@ -16,10 +16,20 @@ import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
+import 'front_end/ast_node_visitor.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
 import 'style_fix.dart';
+
+/// The in-progress "tall" formatting style is enabled by passing an experiment
+/// flag with this name.
+///
+/// Note that this isn't a real Dart SDK experiment: Only the formatter supports
+/// it. We use the [experimentFlags] API to pass this in so that support for it
+/// can be removed in a later version without it being a breaking change to the
+/// dart_style library API.
+const _tallStyleExperimentFlag = 'tall-style';
 
 /// Dart source code formatter.
 class DartFormatter {
@@ -175,8 +185,15 @@ class DartFormatter {
 
     // Format it.
     var lineInfo = parseResult.lineInfo;
-    var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-    var output = visitor.run(node);
+
+    SourceCode output;
+    if (experimentFlags.contains(_tallStyleExperimentFlag)) {
+      var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
+      output = visitor.run(node);
+    } else {
+      var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
+      output = visitor.run(node);
+    }
 
     // Sanity check that only whitespace was changed if that's all we expect.
     if (fixes.isEmpty &&
@@ -211,8 +228,13 @@ class DartFormatter {
   ParseStringResult _parse(String source, String? uri,
       {required bool patterns}) {
     var version = patterns ? Version(3, 0, 0) : Version(2, 19, 0);
+
+    // Don't pass the formatter's own experiment flag to the parser.
+    var experiments = experimentFlags.toList();
+    experiments.remove(_tallStyleExperimentFlag);
+
     var featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: version, flags: experimentFlags);
+        sdkLanguageVersion: version, flags: experiments);
 
     return parseString(
       content: source,
