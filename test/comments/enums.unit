@@ -96,3 +96,24 @@ enum Foo {
   a,
   b // comment
 }
+>>> line comment in middle
+enum Foo {
+  a,  // comment
+  b
+}
+<<<
+enum Foo {
+  a, // comment
+  b
+}
+>>> line comment in member constructor
+enum Foo {
+  a(// c
+  ),b()
+}
+<<<
+enum Foo {
+  a(// c
+      ),
+  b()
+}

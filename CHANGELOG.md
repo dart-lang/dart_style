@@ -1,5 +1,6 @@
 ## 2.3.3-dev
 
+* Always split enum declarations containing a line comment (#1254).
 * Fix regression in splitting type annotations with library prefixes (#1249).
 * Remove support for `inline class` since that syntax has changed.
 * Add `--enable-experiment` command-line option to enable language experiments.
