@@ -66,7 +66,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAsExpression(AsExpression node) {
-    throw UnimplementedError();
+    createInfix(node.expression, node.asOperator, node.type);
   }
 
   @override
@@ -96,7 +96,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitBinaryExpression(BinaryExpression node) {
-    throw UnimplementedError();
+    createInfixChain<BinaryExpression>(
+        node,
+        precedence: node.operator.type.precedence,
+        (expression) => (
+              expression.leftOperand,
+              expression.operator,
+              expression.rightOperand
+            ));
   }
 
   @override
@@ -290,7 +297,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitExpressionStatement(ExpressionStatement node) {
-    throw UnimplementedError();
+    visit(node.expression);
+    token(node.semicolon);
   }
 
   @override
@@ -443,7 +451,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIntegerLiteral(IntegerLiteral node) {
-    throw UnimplementedError();
+    token(node.literal);
   }
 
   @override
@@ -458,7 +466,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIsExpression(IsExpression node) {
-    throw UnimplementedError();
+    createInfix(
+        node.expression,
+        node.isOperator,
+        operator2: node.notOperator,
+        node.type);
   }
 
   @override
@@ -541,7 +553,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNamedType(NamedType node) {
-    throw UnimplementedError();
+    // TODO(tall): Handle import prefix.
+    if (node.importPrefix != null) throw UnimplementedError();
+
+    token(node.name2);
+
+    // TODO(tall): Handle type arguments.
+    if (node.typeArguments != null) throw UnimplementedError();
+
+    // TODO(tall): Handle nullable types.
+    if (node.question != null) throw UnimplementedError();
   }
 
   @override

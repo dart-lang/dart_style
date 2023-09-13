@@ -11,6 +11,9 @@ import '../piece/postfix.dart';
 import '../piece/sequence.dart';
 import 'piece_writer.dart';
 
+/// Record type for a destructured binary operator-like syntactic construct.
+typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
+
 /// Many AST nodes are structurally similar and receive similar formatting.
 ///
 /// For example, imports and exports are mostly the same, with exports a subset
@@ -132,8 +135,11 @@ mixin PieceFactory {
   /// If [hanging] is `true` then the operator goes at the end of the first
   /// line, like `+`. Otherwise, it goes at the beginning of the second, like
   /// `as`.
+  ///
+  /// The [operator2] parameter may be passed if the "operator" is actually two
+  /// separate tokens, as in `foo is! Bar`.
   void createInfix(AstNode left, Token operator, AstNode right,
-      {bool hanging = false}) {
+      {bool hanging = false, Token? operator2}) {
     var operands = <Piece>[];
     visit(left);
     operands.add(writer.pop());
@@ -141,15 +147,64 @@ mixin PieceFactory {
     if (hanging) {
       writer.space();
       token(operator);
+      token(operator2);
       writer.split();
     } else {
       writer.split();
       token(operator);
+      token(operator2);
       writer.space();
     }
 
     visit(right);
     operands.add(writer.pop());
+    writer.push(InfixPiece(operands));
+  }
+
+  /// Creates a chained infix operation: a binary operator expression, or
+  /// binary pattern.
+  ///
+  /// In a tree of binary AST nodes, all operators at the same precedence are
+  /// treated as a single chain of operators that either all split or none do.
+  /// Operands within those (which may themselves be chains of higher
+  /// precedence binary operators) are then formatted independently.
+  ///
+  /// [T] is the type of node being visited and [destructure] is a callback
+  /// that takes one of those and yields the operands and operator. We need
+  /// this since there's no interface shared by the various binary operator
+  /// AST nodes.
+  ///
+  /// If [precedence] is given, then this only flattens binary nodes with that
+  /// same precedence.
+  void createInfixChain<T extends AstNode>(
+      T node, BinaryOperation Function(T node) destructure,
+      {int? precedence}) {
+    var operands = <Piece>[];
+
+    void traverse(AstNode e) {
+      if (e is! T) {
+        visit(e);
+        operands.add(writer.pop());
+      } else {
+        var (left, operator, right) = destructure(e);
+        if (precedence != null && operator.type.precedence != precedence) {
+          // Binary node, but a different precedence, so don't flatten.
+          visit(e);
+          operands.add(writer.pop());
+        } else {
+          traverse(left);
+
+          writer.space();
+          token(operator);
+
+          writer.split();
+          traverse(right);
+        }
+      }
+    }
+
+    traverse(node);
+
     writer.push(InfixPiece(operands));
   }
 

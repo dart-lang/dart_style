@@ -10,6 +10,8 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() async {
+  await testDirectory('expression', tall: true);
+  await testDirectory('statement', tall: true);
   await testDirectory('top_level', tall: true);
 
   // TODO(tall): The old formatter_test.dart has tests here for things like
