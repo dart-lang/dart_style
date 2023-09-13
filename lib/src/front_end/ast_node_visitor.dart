@@ -188,7 +188,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConfiguration(Configuration node) {
-    throw UnimplementedError();
+    token(node.ifKeyword);
+    writer.space();
+    token(node.leftParenthesis);
+
+    if (node.equalToken case var equals?) {
+      createInfix(node.name, equals, node.value!, hanging: true);
+    } else {
+      visit(node.name);
+    }
+
+    token(node.rightParenthesis);
+    writer.space();
+    visit(node.uri);
   }
 
   @override
@@ -238,7 +250,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitDottedName(DottedName node) {
-    throw UnimplementedError();
+    createDotted(node.components);
   }
 
   @override
@@ -268,9 +280,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitExportDirective(ExportDirective node) {
-    // TODO(tall): Format configurations.
-    if (node.configurations.isNotEmpty) throw UnimplementedError();
-
     createImport(node, node.exportKeyword);
   }
 
@@ -416,9 +425,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitImportDirective(ImportDirective node) {
-    // TODO(tall): Format configurations.
-    if (node.configurations.isNotEmpty) throw UnimplementedError();
-
     createImport(node, node.importKeyword,
         deferredKeyword: node.deferredKeyword,
         asKeyword: node.asKeyword,

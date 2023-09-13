@@ -28,3 +28,37 @@ import 'package:foo/some/path/foo.dart' deferred as very_long_identifier_path;
 <<<
 import 'package:foo/some/path/foo.dart'
     deferred as very_long_identifier_path;
+>>> Dotted identifier in configuration.
+import'a'if(b  . c . d)'e';
+<<<
+import 'a' if (b.c.d) 'e';
+>>> Multiple configurations on one line.
+import 'a' if (b) 'b' if (c) 'c';
+<<<
+import 'a' if (b) 'b' if (c) 'c';
+>>> If configurations don't fit, they all split.
+import 'long/import/url.dart' if (b) 'b' if (c) 'c';
+<<<
+import 'long/import/url.dart'
+    if (b) 'b'
+    if (c) 'c';
+>>> Configurations don't split before URI.
+import 'long/import/url.dart' if (config) 'very/long/configured/import/url.dart';
+<<<
+import 'long/import/url.dart'
+    if (config) 'very/long/configured/import/url.dart';
+>>> Unsplit configuration with `==`.
+import 'a.dart' if (b == 's') 'c';
+<<<
+import 'a.dart' if (b == 's') 'c';
+>>> Split before `if` before `==`.
+import 'some/uri.dart' if (debug == 'string') 'c';
+<<<
+import 'some/uri.dart'
+    if (debug == 'string') 'c';
+>>> Split before `==` in configuration.
+import 'some/uri.dart' if (config.name.debug == 'string') 'c';
+<<<
+import 'some/uri.dart'
+    if (config.name.debug ==
+        'string') 'c';

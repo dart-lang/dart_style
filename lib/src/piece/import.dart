@@ -15,13 +15,17 @@ class ImportPiece extends Piece {
   /// The main directive and its URI.
   final Piece directive;
 
+  /// If the directive has `if` configurations, this is them.
+  final Piece? configurations;
+
   /// If this directive is an import with an `as` clause, this is that clause.
   final Piece? asClause;
 
   /// The piece for the `show` and/or `hide` combinators.
   final Piece? combinator;
 
-  ImportPiece(this.directive, this.asClause, this.combinator);
+  ImportPiece(
+      this.directive, this.configurations, this.asClause, this.combinator);
 
   @override
   int get stateCount => 1;
@@ -29,6 +33,7 @@ class ImportPiece extends Piece {
   @override
   void format(CodeWriter writer, int state) {
     writer.format(directive);
+    writer.formatOptional(configurations);
     writer.formatOptional(asClause);
     writer.formatOptional(combinator);
   }
@@ -36,6 +41,7 @@ class ImportPiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {
     callback(directive);
+    if (configurations case var configurations?) callback(configurations);
     if (asClause case var asClause?) callback(asClause);
     if (combinator case var combinator?) callback(combinator);
   }

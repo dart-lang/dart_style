@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../piece/import.dart';
+import '../piece/infix.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import '../piece/sequence.dart';
@@ -70,6 +71,18 @@ mixin PieceFactory {
     visit(directive.uri);
     var directivePiece = writer.pop();
 
+    Piece? configurationsPiece;
+    if (directive.configurations.isNotEmpty) {
+      var configurations = <Piece>[];
+      for (var configuration in directive.configurations) {
+        writer.split();
+        visit(configuration);
+        configurations.add(writer.pop());
+      }
+
+      configurationsPiece = PostfixPiece(configurations);
+    }
+
     Piece? asClause;
     if (asKeyword != null) {
       writer.split();
@@ -110,7 +123,34 @@ mixin PieceFactory {
 
     token(directive.semicolon);
 
-    writer.push(ImportPiece(directivePiece, asClause, combinator));
+    writer.push(
+        ImportPiece(directivePiece, configurationsPiece, asClause, combinator));
+  }
+
+  /// Creates a single infix operation.
+  ///
+  /// If [hanging] is `true` then the operator goes at the end of the first
+  /// line, like `+`. Otherwise, it goes at the beginning of the second, like
+  /// `as`.
+  void createInfix(AstNode left, Token operator, AstNode right,
+      {bool hanging = false}) {
+    var operands = <Piece>[];
+    visit(left);
+    operands.add(writer.pop());
+
+    if (hanging) {
+      writer.space();
+      token(operator);
+      writer.split();
+    } else {
+      writer.split();
+      token(operator);
+      writer.space();
+    }
+
+    visit(right);
+    operands.add(writer.pop());
+    writer.push(InfixPiece(operands));
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
