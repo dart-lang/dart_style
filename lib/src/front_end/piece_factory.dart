@@ -4,6 +4,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../piece/block.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
 import '../piece/piece.dart';
@@ -51,6 +52,33 @@ mixin PieceFactory {
   void createDirectiveMetadata(Directive directive) {
     // TODO(tall): Implement. See SourceVisitor._visitDirectiveMetadata().
     if (directive.metadata.isNotEmpty) throw UnimplementedError();
+  }
+
+  /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
+  /// body.
+  void createBlock(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
+    // Edge case: If the block is completely empty, output it as simple
+    // unsplittable text.
+    if (nodes.isEmpty && rightBracket.precedingComments == null) {
+      token(leftBracket);
+      token(rightBracket);
+      return;
+    }
+
+    token(leftBracket);
+    var leftBracketPiece = writer.pop();
+    writer.split();
+
+    var sequence = SequencePiece();
+    for (var node in nodes) {
+      addToSequence(sequence, node);
+    }
+
+    token(rightBracket);
+    var rightBracketPiece = writer.pop();
+
+    writer.push(BlockPiece(leftBracketPiece, sequence, rightBracketPiece,
+        alwaysSplit: nodes.isNotEmpty));
   }
 
   /// Creates a dotted or qualified identifier.

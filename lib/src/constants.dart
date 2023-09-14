@@ -56,6 +56,9 @@ class Cost {
 
 /// Constants for the number of spaces for various kinds of indentation.
 class Indent {
+  /// Reset back to no indentation.
+  static const none = 0;
+
   /// The number of spaces in a block or collection body.
   static const block = 2;
 
