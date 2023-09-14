@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -149,7 +150,8 @@ void _testFile(
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
             fixes: [...?baseFixes, ...formatTest.fixes],
-            experimentFlags: useTallStyle ? const ['tall-style'] : null);
+            experimentFlags:
+                useTallStyle ? const [tallStyleExperimentFlag] : null);
 
         var actual = formatter.formatSource(formatTest.input);
 

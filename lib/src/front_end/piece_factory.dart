@@ -15,11 +15,13 @@ import 'piece_writer.dart';
 /// Record type for a destructured binary operator-like syntactic construct.
 typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 
-/// Many AST nodes are structurally similar and receive similar formatting.
+/// Utility methods for creating pieces that share formatting logic across
+/// multiple parts of the language.
 ///
-/// For example, imports and exports are mostly the same, with exports a subset
-/// of imports. Likewise, assert statements are formatted like function calls
-/// and argument lists.
+/// Many AST nodes are structurally similar and receive similar formatting. For
+/// example, imports and exports are mostly the same, with exports a subset of
+/// imports. Likewise, assert statements are formatted like function calls and
+/// argument lists.
 ///
 /// This mixin defines functions that represent a general construct that is
 /// formatted a certain way. The function builds up an appropriate set of

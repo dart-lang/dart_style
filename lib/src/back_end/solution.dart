@@ -94,6 +94,8 @@ class Solution implements Comparable<Solution> {
     return result;
   }
 
+  /// Compares two solutions where a more desirable solution comes first.
+  ///
   /// For performance, we want to stop checking solutions as soon as we find
   /// the best one. Best means the fewest overflow characters and the lowest
   /// code.
