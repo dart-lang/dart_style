@@ -5,43 +5,7 @@ import 'fast_hash.dart';
 import 'marking_scheme.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
-
-/// Tracks where a selection start or end point may appear in some piece of
-/// text.
-abstract class Selection {
-  /// The chunk of text.
-  String get text;
-
-  /// The offset from the beginning of [text] where the selection starts, or
-  /// `null` if the selection does not start within this chunk.
-  int? get selectionStart => _selectionStart;
-  int? _selectionStart;
-
-  /// The offset from the beginning of [text] where the selection ends, or
-  /// `null` if the selection does not start within this chunk.
-  int? get selectionEnd => _selectionEnd;
-  int? _selectionEnd;
-
-  /// Sets [selectionStart] to be [start] characters into [text].
-  void startSelection(int start) {
-    _selectionStart = start;
-  }
-
-  /// Sets [selectionStart] to be [fromEnd] characters from the end of [text].
-  void startSelectionFromEnd(int fromEnd) {
-    _selectionStart = text.length - fromEnd;
-  }
-
-  /// Sets [selectionEnd] to be [end] characters into [text].
-  void endSelection(int end) {
-    _selectionEnd = end;
-  }
-
-  /// Sets [selectionEnd] to be [fromEnd] characters from the end of [text].
-  void endSelectionFromEnd(int fromEnd) {
-    _selectionEnd = text.length - fromEnd;
-  }
-}
+import 'selection.dart';
 
 /// A chunk of non-breaking output text that may begin on a newline.
 ///
@@ -308,45 +272,4 @@ class Span extends FastHash with Markable {
 
   @override
   String toString() => '$id\$$cost';
-}
-
-enum CommentType {
-  /// A `///` or `/**` doc comment.
-  doc,
-
-  /// A non-doc line comment.
-  line,
-
-  /// A `/* ... */` comment that should be on its own line.
-  block,
-
-  /// A `/* ... */` comment that can share a line with other code.
-  inlineBlock,
-}
-
-/// A comment in the source, with a bit of information about the surrounding
-/// whitespace.
-class SourceComment extends Selection {
-  /// The text of the comment, including `//`, `/*`, and `*/`.
-  @override
-  final String text;
-
-  /// What kind of comment this is.
-  final CommentType type;
-
-  /// The number of newlines between the comment or token preceding this comment
-  /// and the beginning of this one.
-  ///
-  /// Will be zero if the comment is a trailing one.
-  int linesBefore;
-
-  /// Whether this comment starts at column one in the source.
-  ///
-  /// Comments that start at the start of the line will not be indented in the
-  /// output. This way, commented out chunks of code do not get erroneously
-  /// re-indented.
-  final bool flushLeft;
-
-  SourceComment(this.text, this.type, this.linesBefore,
-      {required this.flushLeft});
 }

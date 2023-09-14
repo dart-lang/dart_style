@@ -1,0 +1,86 @@
+40 columns                              |
+>>> Empty block containing line comment.
+{ // comment
+}
+<<<
+{
+  // comment
+}
+>>> Empty block containing inline block comment.
+{   /* comment */  }
+<<<
+{/* comment */}
+>>>
+{
+  
+  /* comment */
+
+
+}
+<<<
+{/* comment */}
+>>> Empty block containing multi-line block comment.
+{   /* comment
+line */  }
+<<<
+{
+  /* comment
+line */
+}
+>>>
+{
+  
+  /* comment
+line */
+
+
+}
+<<<
+{
+  /* comment
+line */
+}
+>>> Remove blank lines before and after comments at end of block.
+{
+
+
+
+  // comment
+
+
+
+}
+<<<
+{
+  // comment
+}
+>>> Preserve one blank line between line comments and statements.
+{
+  // comment
+  a;
+
+  // comment
+
+  b;
+
+
+
+  // commennt
+
+
+
+  c;
+}
+<<<
+{
+  // comment
+  a;
+
+  // comment
+
+  b;
+
+  // commennt
+
+  c;
+}

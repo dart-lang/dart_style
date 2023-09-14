@@ -37,10 +37,15 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 mixin PieceFactory {
   PieceWriter get writer;
 
+  void beforeSequenceNode(SequencePiece sequence);
+
+  void writeCommentsAndBlanksBefore(Token token);
+
   void visit(AstNode? node, {void Function()? before, void Function()? after});
 
   /// Adds [node] to [sequence], handling blank lines around it.
   void addToSequence(SequencePiece sequence, AstNode node) {
+    beforeSequenceNode(sequence);
     visit(node);
     sequence.add(writer.pop());
     writer.split();
@@ -73,6 +78,9 @@ mixin PieceFactory {
     for (var node in nodes) {
       addToSequence(sequence, node);
     }
+
+    // Place any comments before the "}" inside the block.
+    beforeSequenceNode(sequence);
 
     token(rightBracket);
     var rightBracketPiece = writer.pop();
@@ -245,7 +253,7 @@ mixin PieceFactory {
   void token(Token? token, {void Function()? before, void Function()? after}) {
     if (token == null) return;
 
-    // TODO(tall): Write comments before the token.
+    writeCommentsAndBlanksBefore(token);
 
     if (before != null) before();
     writeLexeme(token.lexeme);

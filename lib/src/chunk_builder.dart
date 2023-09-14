@@ -12,6 +12,7 @@ import 'nesting_builder.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
 import 'source_code.dart';
+import 'source_comment.dart';
 import 'style_fix.dart';
 
 /// Matches if the last character of a string is an identifier character.

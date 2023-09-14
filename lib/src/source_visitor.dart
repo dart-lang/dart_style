@@ -22,6 +22,7 @@ import 'rule/combinator.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
+import 'source_comment.dart';
 import 'style_fix.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
