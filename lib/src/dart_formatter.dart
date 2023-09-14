@@ -15,21 +15,13 @@ import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'source_code.dart';
 import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
 import 'style_fix.dart';
-
-/// The in-progress "tall" formatting style is enabled by passing an experiment
-/// flag with this name.
-///
-/// Note that this isn't a real Dart SDK experiment: Only the formatter supports
-/// it. We use the [experimentFlags] API to pass this in so that support for it
-/// can be removed in a later version without it being a breaking change to the
-/// dart_style library API.
-const _tallStyleExperimentFlag = 'tall-style';
 
 /// Dart source code formatter.
 class DartFormatter {
@@ -187,7 +179,7 @@ class DartFormatter {
     var lineInfo = parseResult.lineInfo;
 
     SourceCode output;
-    if (experimentFlags.contains(_tallStyleExperimentFlag)) {
+    if (experimentFlags.contains(tallStyleExperimentFlag)) {
       var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(node);
     } else {
@@ -231,7 +223,7 @@ class DartFormatter {
 
     // Don't pass the formatter's own experiment flag to the parser.
     var experiments = experimentFlags.toList();
-    experiments.remove(_tallStyleExperimentFlag);
+    experiments.remove(tallStyleExperimentFlag);
 
     var featureSet = FeatureSet.fromEnableFlags2(
         sdkLanguageVersion: version, flags: experiments);
