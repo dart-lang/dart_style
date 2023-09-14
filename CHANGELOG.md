@@ -1,4 +1,4 @@
-## 2.3.3-dev
+## 2.3.3
 
 * Always split enum declarations containing a line comment (#1254).
 * Fix regression in splitting type annotations with library prefixes (#1249).
