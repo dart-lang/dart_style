@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:collection/collection.dart';
 
-import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import 'solution.dart';

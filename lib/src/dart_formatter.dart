@@ -23,15 +23,6 @@ import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
 import 'style_fix.dart';
 
-/// The in-progress "tall" formatting style is enabled by passing an experiment
-/// flag with this name.
-///
-/// Note that this isn't a real Dart SDK experiment: Only the formatter supports
-/// it. We use the [experimentFlags] API to pass this in so that support for it
-/// can be removed in a later version without it being a breaking change to the
-/// dart_style library API.
-const _tallStyleExperimentFlag = 'tall-style';
-
 /// Dart source code formatter.
 class DartFormatter {
   /// The string that newlines should use.
