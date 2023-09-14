@@ -9,3 +9,8 @@ export 'package:some/very/long/export/path.dart';
 export 'a.dart'show Ape,Bear hide Cat;
 <<<
 export 'a.dart' show Ape, Bear hide Cat;
+>>> Configuration.
+### More detailed configuration tests are handled under import.
+export'a'if(b  . c=='d'   )'e';
+<<<
+export 'a' if (b.c == 'd') 'e';
