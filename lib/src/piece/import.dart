@@ -15,7 +15,9 @@ class ImportPiece extends Piece {
   /// The directive keyword and its URI.
   final Piece directive;
 
-  /// If this directive is an import with an `as` clause, this is that clause.
+  /// The `as` clause for this directive.
+  ///
+  /// Null if this is not an import or it has no library prefix.
   final Piece? asClause;
 
   /// The piece for the `show` and/or `hide` combinators.
