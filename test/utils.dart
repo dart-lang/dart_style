@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -128,24 +129,29 @@ Future<TestProcess> runCommandOnDir([List<String>? args]) {
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
-Future<void> testDirectory(String name, [Iterable<StyleFix>? fixes]) async {
+Future<void> testDirectory(String name,
+    {required bool tall, Iterable<StyleFix>? fixes}) async {
   for (var test in await TestFile.listDirectory(name)) {
-    _testFile(test, fixes);
+    _testFile(test, tall, fixes);
   }
 }
 
-Future<void> testFile(String path, [Iterable<StyleFix>? fixes]) async {
-  _testFile(await TestFile.read(path), fixes);
+Future<void> testFile(String path,
+    {required bool tall, Iterable<StyleFix>? fixes}) async {
+  _testFile(await TestFile.read(path), tall, fixes);
 }
 
-void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
+void _testFile(
+    TestFile testFile, bool useTallStyle, Iterable<StyleFix>? baseFixes) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
         var formatter = DartFormatter(
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
-            fixes: [...?baseFixes, ...formatTest.fixes]);
+            fixes: [...?baseFixes, ...formatTest.fixes],
+            experimentFlags:
+                useTallStyle ? const [tallStyleExperimentFlag] : null);
 
         var actual = formatter.formatSource(formatTest.input);
 

@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:mirrors';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:path/path.dart' as p;
 
@@ -17,22 +18,26 @@ void main(List<String> args) {
   debug.traceLineWriter = true;
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
+  debug.tracePieceBuilder = true;
+  debug.traceSolver = true;
 
-  formatStmt('a is int????;');
+  formatUnit("import 'a.dart';", tall: true);
 }
 
-void formatStmt(String source, [int pageWidth = 80]) {
-  runFormatter(source, pageWidth, isCompilationUnit: false);
+void formatStmt(String source, {required bool tall, int pageWidth = 80}) {
+  runFormatter(source, pageWidth, tall: tall, isCompilationUnit: false);
 }
 
-void formatUnit(String source, [int pageWidth = 80]) {
-  runFormatter(source, pageWidth, isCompilationUnit: true);
+void formatUnit(String source, {required bool tall, int pageWidth = 80}) {
+  runFormatter(source, pageWidth, tall: tall, isCompilationUnit: true);
 }
 
 void runFormatter(String source, int pageWidth,
-    {required bool isCompilationUnit}) {
+    {required bool tall, required bool isCompilationUnit}) {
   try {
-    var formatter = DartFormatter(pageWidth: pageWidth);
+    var formatter = DartFormatter(
+        pageWidth: pageWidth,
+        experimentFlags: [if (tall) tallStyleExperimentFlag]);
 
     String result;
     if (isCompilationUnit) {

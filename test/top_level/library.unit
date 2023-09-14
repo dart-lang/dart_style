@@ -1,0 +1,13 @@
+40 columns                              |
+>>> No spaces between identifiers.
+library    a .  b   . c;
+<<<
+library a.b.c;
+>>> Don't wrap identifier.
+library veryLong.alsoLong.evenMoreLong.thisToo;
+<<<
+library veryLong.alsoLong.evenMoreLong.thisToo;
+>>> No spaces after unnamed library.
+library    ;
+<<<
+library;

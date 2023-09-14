@@ -1,0 +1,101 @@
+40 columns                              |
+>>> Keep shows on one line.
+import 'foo.dart'show Ape,Bear,Cat;
+<<<
+import 'foo.dart' show Ape, Bear, Cat;
+>>> Move all shows to next line.
+import 'foo.dart' show Ape, Bear, Cat, Dog;
+<<<
+import 'foo.dart'
+    show Ape, Bear, Cat, Dog;
+>>> Move all shows each to their own line.
+import 'foo.dart'show Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
+<<<
+import 'foo.dart'
+    show
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox,
+        Gorilla;
+>>> Keeps hide on one line.
+import 'foo.dart'hide Ape,Bear,Cat;
+<<<
+import 'foo.dart' hide Ape, Bear, Cat;
+>>> Move hides to next line.
+import 'foo.dart' hide Ape, Bear, Cat, Dog;
+<<<
+import 'foo.dart'
+    hide Ape, Bear, Cat, Dog;
+>>> Moves hides each to their own line.
+import 'foo.dart'hide Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
+<<<
+import 'foo.dart'
+    hide
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox,
+        Gorilla;
+>>> Both show and hide on directive line.
+import 'foo.dart'hide Ape show Bear;
+<<<
+import 'foo.dart' hide Ape show Bear;
+>>> Each combinator on its own line.
+import 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog;
+<<<
+import 'foo.dart'
+    hide Ape, Bear, Cat, Dog
+    show Ape, Bear, Cat, Dog;
+>>> Each combinator on own line, first one is split.
+import 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog;
+<<<
+import 'foo.dart'
+    hide
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox
+    show Ape, Bear, Cat, Dog;
+>>> Each combinator on own line, second one is split.
+import 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
+<<<
+import 'foo.dart'
+    hide Ape, Bear, Cat, Dog
+    show
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox;
+>>> Each combinator on own line, both are split.
+import 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
+<<<
+import 'foo.dart'
+    hide
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox
+    show
+        Ape,
+        Bear,
+        Cat,
+        Dog,
+        Echidna,
+        FlyingFox;
+>>> If combinators don't all fit on first line, always split both.
+import 'foo.dart' hide Ape, Bear show Ape, Bear, Cat, Dog;
+<<<
+import 'foo.dart'
+    hide Ape, Bear
+    show Ape, Bear, Cat, Dog;

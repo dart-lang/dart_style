@@ -7,6 +7,7 @@ import 'dart:math' as math;
 
 import 'chunk.dart';
 import 'line_splitting/rule_set.dart';
+import 'piece/piece.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;
@@ -16,6 +17,12 @@ bool traceLineWriter = false;
 
 /// Set this to `true` to turn on diagnostic output while line splitting.
 bool traceSplitter = false;
+
+/// Set this to `true` to turn on diagnostic output while building pieces.
+bool tracePieceBuilder = false;
+
+/// Set this to `true` to turn on diagnostic output while solving pieces.
+bool traceSolver = false;
 
 bool useAnsiColors = false;
 
@@ -254,6 +261,30 @@ void dumpLines(List<Chunk> chunks, SplitSet splits) {
   }
 
   log(buffer);
+}
+
+/// Build a string representation of the [piece] tree.
+String pieceTree(Piece piece) {
+  var buffer = StringBuffer();
+
+  void traverse(Piece piece) {
+    buffer.write(piece);
+
+    if (piece is! TextPiece) {
+      var children = <Piece>[];
+      piece.forEachChild(children.add);
+
+      buffer.write('(');
+      for (var child in children) {
+        if (child != children.first) buffer.write(' ');
+        traverse(child);
+      }
+      buffer.write(')');
+    }
+  }
+
+  traverse(piece);
+  return buffer.toString();
 }
 
 String _color(String ansiEscape) => useAnsiColors ? ansiEscape : '';
