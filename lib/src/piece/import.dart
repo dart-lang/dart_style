@@ -12,7 +12,7 @@ import 'piece.dart';
 /// imports, the configurations (`if` clauses), and combinators (`show` and
 /// `hide`).
 class ImportPiece extends Piece {
-  /// The main directive and its URI.
+  /// The directive keyword and its URI.
   final Piece directive;
 
   /// If this directive is an import with an `as` clause, this is that clause.

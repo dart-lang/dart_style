@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:collection/collection.dart';
 
-import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import 'solution.dart';
@@ -26,11 +25,11 @@ import 'solution.dart';
 // TODO(perf): At some point, we probably also want to do memoization of
 // previously formatted Piece subtrees.
 class Solver {
-  final DartFormatter _formatter;
+  final int _pageWidth;
 
   final PriorityQueue<Solution> _queue = PriorityQueue();
 
-  Solver(this._formatter);
+  Solver(this._pageWidth);
 
   /// Finds the best set of line splits for [piece] and returns the resulting
   /// formatted code.
@@ -53,7 +52,7 @@ class Solver {
   /// Finds the best solution for the piece tree starting at [root] with
   /// selectable [pieces].
   Solution _solve(Piece root, List<Piece> pieces) {
-    var solution = Solution(root, _formatter.pageWidth, PieceStateSet(pieces));
+    var solution = Solution(root, _pageWidth, PieceStateSet(pieces));
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.
@@ -78,7 +77,7 @@ class Solver {
 
       // Otherwise, try to expand the solution to explore different splitting
       // options.
-      for (var expanded in solution.expand(root, _formatter.pageWidth)) {
+      for (var expanded in solution.expand(root, _pageWidth)) {
         _queue.add(expanded);
       }
     }
