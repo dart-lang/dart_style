@@ -23,6 +23,7 @@ import '../source_code.dart';
 /// ExpressionStatement
 ///   BinaryExpression
 ///     SimpleIdentifier("a")
+///     Token("+")
 ///     SimpleIdentifier("b")
 /// ```
 ///
@@ -35,10 +36,10 @@ import '../source_code.dart';
 /// ```
 ///
 /// Note how the infix operator is attached to the preceding piece (which
-/// happens to just be text but could be more complex. Notice all that there
-/// is no piece for the expression statement and instead, the `;` is just
-/// appended to the last piece which is conceptually deeply nested inside the
-/// binary expression.
+/// happens to just be text but could be a more complex piece if the left
+/// operand was a nested expression). Notice also that there is no piece for
+/// the expression statement and instead, the `;` is just appended to the last
+/// piece which is conceptually deeply nested inside the binary expression.
 ///
 /// This class implements the "slippage" between these two representations. It
 /// has mutable state to allow incrementally building up pieces while traversing
@@ -134,7 +135,7 @@ class PieceWriter {
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode finish() {
-    var formatter = Solver(_formatter);
+    var formatter = Solver(_formatter.pageWidth);
 
     var piece = pop();
 

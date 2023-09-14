@@ -5,8 +5,21 @@ import '../constants.dart';
 import '../piece/piece.dart';
 import 'solution.dart';
 
-/// The interface that pieces use when to produce output formatting themselves
-/// during state solving.
+/// The interface used by [Piece]s to output formatted code.
+///
+/// The back-end lowers the tree of pieces to the final formatted code by
+/// allowing each piece to produce the output for the code it represents.
+/// This way, each piece has full flexibility for how to apply its own
+/// formatting logic.
+///
+/// To build the resulting output code, when a piece is formatted, it is passed
+/// an instance of this class. It has methods that the piece can call to add
+/// output text to the resulting code, recursively format child pieces, insert
+/// whitespace, etc.
+///
+/// This class also accumulates the score (the relative desireability of a set
+/// of formatting choices) that the resulting code has by tracking things like
+/// how many characters of code overflow the page width.
 class CodeWriter {
   final int _pageWidth;
 
@@ -19,19 +32,25 @@ class CodeWriter {
   /// The cost of the currently chosen line splits.
   int _cost = 0;
 
-  /// The number of characters of code that have overflowed the page width so
-  /// far.
+  /// The total number of characters of code that have overflowed the page
+  /// width so far.
   int _overflow = 0;
 
-  /// How long the line currently being written is.
+  /// The number of characters in the line currently being written.
   int _column = 0;
 
   /// Whether this solution has encountered a newline where none is allowed.
-  /// This means the solution is invalid.
+  ///
+  /// If true, it means the solution is invalid.
   bool _containsInvalidNewline = false;
 
-  /// For each piece being formatted from a call to [format], this tracks the
-  /// indentation of any new lines it begins.
+  /// The stack of state for each [Piece] being formatted.
+  ///
+  /// For each piece being formatted from a call to [format()], we keep track of
+  /// things like indentation and nesting levels. Pieces recursively format
+  /// their children. When they do, we push new values onto this stack. When a
+  /// piece is done (a call to [format()] returns), we pop the corresponding
+  /// state off the stack.
   ///
   /// This is used to increase the cumulative nesting as we recurse into pieces
   /// and then unwind that as child pieces are completed.
@@ -64,17 +83,20 @@ class CodeWriter {
     if (!_options.allowNewlines) _containsInvalidNewline = true;
   }
 
+  /// Appends [text] to the output.
+  ///
+  /// If [text] contains any internal newlines, the caller is responsible for
+  /// also calling [handleNewline()].
   void write(String text) {
     _buffer.write(text);
     _column += text.length;
   }
 
   /// Sets the number of spaces of indentation for code written by the current
-  /// piece to [indent].
+  /// piece to [indent], relative to the indentation of the surrounding piece.
   ///
   /// Replaces any previous indentation set by this piece.
   void setIndent(int indent) {
-    // Include indentation from surrounding pieces.
     _options.indent = _pieceOptions[_pieceOptions.length - 2].indent + indent;
   }
 
@@ -87,11 +109,11 @@ class CodeWriter {
   }
 
   /// Sets the number of spaces of expression nesting for code written by the
-  /// current piece to [nesting].
+  /// current piece to [nesting], relative to the nesting of the surrounding
+  /// piece.
   ///
   /// Replaces any previous nesting set by this piece.
   void setNesting(int nesting) {
-    // Include nesting from surrounding pieces.
     _options.nesting =
         _pieceOptions[_pieceOptions.length - 2].nesting + nesting;
   }
@@ -117,8 +139,9 @@ class CodeWriter {
     write(' ');
   }
 
-  /// Inserts a line split in the output. If [blank] is true, writes an extra
-  /// newline to produce a blank line.
+  /// Inserts a line split in the output.
+  ///
+  /// If [blank] is true, writes an extra newline to produce a blank line.
   void newline({bool blank = false}) {
     handleNewline();
     _finishLine();
@@ -130,12 +153,13 @@ class CodeWriter {
   }
 
   /// Sets whether newlines are allowed to occur from this point on for the
-  /// current piece of any of its children.
+  /// current piece or any of its children.
   void setAllowNewlines(bool allowed) {
     _options.allowNewlines = allowed;
   }
 
-  /// Format [piece] and insert the result into the code.
+  /// Format [piece] and insert the result into the code being written and
+  /// returned by [finish()].
   void format(Piece piece) {
     // Don't bother recursing into the piece tree if we know the solution will
     // be discarded.
@@ -175,14 +199,14 @@ class CodeWriter {
   }
 }
 
-/// Tracks the mutable state local to a single piece currently being formatted.
+/// The mutable state local to a single piece being formatted.
 class _PieceOptions {
-  /// The number of spaces of leading indentation coming from block-like
-  /// structure or explicit extra indentation (aligning constructor
+  /// The absolute number of spaces of leading indentation coming from
+  /// block-like structure or explicit extra indentation (aligning constructor
   /// initializers, `show` clauses, etc.).
   int indent;
 
-  /// The number of spaces of indentation from wrapped expressions.
+  /// The absolute number of spaces of indentation from wrapped expressions.
   int nesting;
 
   /// The total number of spaces of indentation.

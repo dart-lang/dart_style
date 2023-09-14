@@ -40,9 +40,10 @@ class TextPiece extends Piece {
   /// each line can be indented appropriately during formatting.
   final List<String> _lines = [];
 
-  /// True if this text piece contains or ends with a mandatory newline. This
-  /// can be from line comments, block comments with newlines inside, multiline
-  /// strings, etc.
+  /// True if this text piece contains or ends with a mandatory newline.
+  ///
+  /// This can be from line comments, block comments with newlines inside,
+  /// multiline strings, etc.
   bool _hasNewline = false;
 
   @override
