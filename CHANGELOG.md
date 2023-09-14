@@ -1,3 +1,8 @@
+## 2.3.4-dev
+
+* Add `tall-style` experiment flag to enable the in-progress unstable new
+  formatting style (#1253).
+
 ## 2.3.3
 
 * Always split enum declarations containing a line comment (#1254).
