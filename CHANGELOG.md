@@ -1,4 +1,4 @@
-## 2.3.4-dev
+## 2.3.4-wip
 
 * Add `tall-style` experiment flag to enable the in-progress unstable new
   formatting style (#1253).
