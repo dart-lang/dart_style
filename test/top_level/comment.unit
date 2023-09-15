@@ -36,3 +36,27 @@
   /* foo */   /* bar */
 <<<
 /* foo */ /* bar */
+>>> Inline comment between different kinds of directives.
+library a; /* comment */ import 'b.dart';
+<<<
+library a; /* comment */
+
+import 'b.dart';
+>>> Inline comment between directives.
+import 'a.dart'; /* comment */ import 'b.dart';
+<<<
+import 'a.dart'; /* comment */
+import 'b.dart';
+>>> Inline comment after directive.
+import 'a.dart'; /* comment */
+import 'b.dart';
+<<<
+import 'a.dart'; /* comment */
+import 'b.dart';
+>>> Inline comment before directive.
+import 'a.dart';
+/* comment */ import 'b.dart';
+<<<
+import 'a.dart';
+/* comment */
+import 'b.dart';

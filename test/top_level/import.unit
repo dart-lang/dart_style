@@ -1,4 +1,10 @@
 40 columns                              |
+>>> Discard newlines before first import.
+
+
+import 'a.dart';
+<<<
+import 'a.dart';
 >>> Don't split after "import" even with long string.
 import
 'package:some/very/long/import/path.dart';
