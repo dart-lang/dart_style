@@ -1,0 +1,125 @@
+40 columns                              |
+>>> Line comment before `as` operator.
+foo// c
+as Bar;
+<<<
+foo // c
+    as Bar;
+>>> Unsplit inline block comment before `as` operator.
+foo/* c */as Bar;
+<<<
+foo /* c */ as Bar;
+>>> Split inline block comment before `as` operator.
+veryLongOperand/* c */as VeryLongTypeName;
+<<<
+veryLongOperand /* c */
+    as VeryLongTypeName;
+>>> Line comment after `as` operator.
+foo as// c
+Bar;
+<<<
+### This looks weird because the comment is after a leading operator. Most
+### users wouldn't put a comment here.
+### TODO(rnystrom): Consider whether we want to move comments when they occur
+### in weird locations.
+foo
+    as // c
+    Bar;
+>>> Unsplit inline block comment after `as` operator.
+foo as/* c */Bar;
+<<<
+foo as /* c */ Bar;
+>>> Split inline block comment after `as` operator.
+veryLongOperand as/* c */VeryLongTypeName;
+<<<
+veryLongOperand
+    as /* c */ VeryLongTypeName;
+>>> Line comment before `is` operator.
+foo// c
+is Bar;
+<<<
+foo // c
+    is Bar;
+>>> Unsplit inline block comment before `is` operator.
+foo/* c */is Bar;
+<<<
+foo /* c */ is Bar;
+>>> Split inline block comment before `is` operator.
+veryLongOperand/* c */is VeryLongTypeName;
+<<<
+veryLongOperand /* c */
+    is VeryLongTypeName;
+>>> Line comment after `is` operator.
+foo is// c
+Bar;
+<<<
+### This looks weird because the comment is after a leading operator. Most
+### users wouldn't put a comment here.
+### TODO(rnystrom): Consider whether we want to move comments when they occur
+### in weird locations.
+foo
+    is // c
+    Bar;
+>>> Unsplit inline block comment after `is` operator.
+foo is/* c */Bar;
+<<<
+foo is /* c */ Bar;
+>>> Split inline block comment after `is` operator.
+veryLongOperand is/* c */VeryLongTypeName;
+<<<
+veryLongOperand
+    is /* c */ VeryLongTypeName;
+>>> Line comment before `is!` operator.
+foo// c
+is! Bar;
+<<<
+foo // c
+    is! Bar;
+>>> Unsplit inline block comment before `is!` operator.
+foo/* c */is! Bar;
+<<<
+foo /* c */ is! Bar;
+>>> Split inline block comment before `is!` operator.
+veryLongOperand/* c */is! VeryLongTypeName;
+<<<
+veryLongOperand /* c */
+    is! VeryLongTypeName;
+>>> Line comment inside `is!` operator.
+foo is // c
+! Bar;
+<<<
+### This looks weird because most users wouldn't put a comment here.
+### TODO(rnystrom): Consider whether we want to move comments when they occur
+### in weird locations.
+foo
+    is // c
+    ! Bar;
+>>> Unsplit inline block comment inside `is!` operator.
+foo is/* c */!Bar;
+<<<
+foo is /* c */ ! Bar;
+>>> Split inline block comment inside `is!` operator.
+veryLongOperand is/* c */!VeryLongTypeName;
+<<<
+veryLongOperand
+    is /* c */ ! VeryLongTypeName;
+>>> Line comment after `is!` operator.
+foo is!// c
+Bar;
+<<<
+### This looks weird because the comment is after a leading operator. Most
+### users wouldn't put a comment here.
+### TODO(rnystrom): Consider whether we want to move comments when they occur
+### in weird locations.
+foo
+    is! // c
+    Bar;
+>>> Unsplit inline block comment after `is!` operator.
+foo is!/* c */Bar;
+<<<
+foo is! /* c */ Bar;
+>>> Split inline block comment after `is!` operator.
+veryLongOperand is!/* c */VeryLongTypeName;
+<<<
+veryLongOperand
+    is! /* c */ VeryLongTypeName;

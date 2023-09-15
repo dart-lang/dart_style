@@ -12,7 +12,11 @@ import 'piece_writer.dart';
 /// comment tokens between meaningful tokens used by AST nodes.
 ///
 /// Also handles preserving discretionary blank lines in places where they are
-/// allowed.
+/// allowed. These are handled with comments because both comments and
+/// whitespace are found between the linear series of [Token]s produced by the
+/// analyzer parser. Likewise, both are output as whitespace (in the sense of
+/// not being executable code) interleaved with the [Piece]-building code that
+/// walks the actual AST and processes the code tokens.
 ///
 /// Comments are a challenge because they confound the intuitive tree-like
 /// structure of the code. A comment can appear between any two tokens, and a
@@ -191,20 +195,18 @@ mixin CommentWriter {
         if (comment == token.precedingComments) linesBefore = 2;
       }
 
-      var type = CommentType.block;
+      CommentType type;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        // TODO(rnystrom): Check that the comment isn't '/**/' because some of
-        // the dart_style tests use that to mean inline block comments. While
-        // refactoring the Chunk representation to move splits to the front of
-        // Chunk, I want to preserve the current test behavior. The fact that
-        // those tests pass with the old representation is a buggy quirk of the
-        // comment handling.
+        // We decide, somewhat arbitrarily, to treat `/**/` as a regular block
+        // comment and not a JavaDoc-style doc comment.
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
       } else if (commentLine == previousLine || commentLine == tokenLine) {
         type = CommentType.inlineBlock;
+      } else {
+        type = CommentType.block;
       }
 
       var sourceComment =
@@ -227,7 +229,8 @@ mixin CommentWriter {
     // Don't move a comment to a preceding line.
     if (comment.linesBefore != 0) return false;
 
-    // Multi-line comments are always pushed to the next line.
+    // Doc comments and non-inline `/* ... */` comments are always pushed to
+    // the next line.
     if (comment.type == CommentType.doc) return false;
     if (comment.type == CommentType.block) return false;
 

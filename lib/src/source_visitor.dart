@@ -4273,12 +4273,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        // TODO(rnystrom): Check that the comment isn't '/**/' because some of
-        // the dart_style tests use that to mean inline block comments. While
-        // refactoring the Chunk representation to move splits to the front of
-        // Chunk, I want to preserve the current test behavior. The fact that
-        // those tests pass with the old representation is a buggy quirk of the
-        // comment handling.
+        // We decide, somewhat arbitrarily, to treat `/**/` as a regular block
+        // comment and not a JavaDoc-style doc comment.
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;

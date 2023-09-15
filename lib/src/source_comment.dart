@@ -11,9 +11,21 @@ enum CommentType {
   line,
 
   /// A `/* ... */` comment that should be on its own line.
+  ///
+  /// These occur when the block comment doesn't appear with any code on the
+  /// same line preceding the `/*` or after the `*/`.
   block,
 
   /// A `/* ... */` comment that can share a line with other code.
+  ///
+  /// These occur when there is code on the same line either immediately
+  /// preceding the `/*`, after the `*/`, or both. An inline block comment
+  /// may be multiple lines, as in:
+  ///
+  /// ```
+  /// code /* comment
+  ///   more */
+  /// ```
   inlineBlock,
 }
 
@@ -24,7 +36,6 @@ class SourceComment extends Selection {
   @override
   final String text;
 
-  /// What kind of comment this is.
   final CommentType type;
 
   /// The number of newlines between the comment or token preceding this comment

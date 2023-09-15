@@ -4,7 +4,7 @@
 +2// b
 -3;
 <<<
-### This looks weird because the comment is before a trailing operator. Most
+### This looks weird because the comment is before a hanging operator. Most
 ### users wouldn't put a comment here.
 ### TODO(rnystrom): Consider whether we want to move comments when they occur
 ### in weird locations.
