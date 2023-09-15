@@ -1,0 +1,118 @@
+40 columns                              |
+>>> Multiplicative operators.
+1*2/3~/4%5;
+<<<
+1 * 2 / 3 ~/ 4 % 5;
+>>> Additive operators.
+1+2-3;
+<<<
+1 + 2 - 3;
+>>> Shift operators.
+1<<2>>3>>>4;
+<<<
+1 << 2 >> 3 >>> 4;
+>>> Bitwise operators.
+1&2^3|4;
+<<<
+1 & 2 ^ 3 | 4;
+>>> Relation operators (which are not associative in Dart).
+1<2;
+<<<
+1 < 2;
+>>>
+1>2;
+<<<
+1 > 2;
+>>>
+1<=2;
+<<<
+1 <= 2;
+>>>
+1>=2;
+<<<
+1 >= 2;
+>>> Equality operators (which are not associative in Dart).
+1==2;
+<<<
+1 == 2;
+>>> Equality operators.
+1!=2;
+<<<
+1 != 2;
+>>> Logical operators.
+1&&2||3;
+<<<
+1 && 2 || 3;
+>>> If-null operator.
+foo??bar;
+<<<
+foo ?? bar;
+>>> Unsplit operators with mixed precedence.
+1+2/3-4*5%6<<7;
+<<<
+1 + 2 / 3 - 4 * 5 % 6 << 7;
+>>> If any operator splits, they all do.
+operand1 + operand2 + operand3 + operand4;
+<<<
+operand1 +
+    operand2 +
+    operand3 +
+    operand4;
+>>> Mixed multiplicative operators split together.
+longName * longName / longName % longName ~/ longName;
+<<<
+longName *
+    longName /
+    longName %
+    longName ~/
+    longName;
+>>> Mixed additive operators split together.
+longName + longName - longName + longName - longName;
+<<<
+longName +
+    longName -
+    longName +
+    longName -
+    longName;
+>>> Mixed shift operators split together.
+longName >> longName << longName >> longName >>> longName;
+<<<
+longName >>
+    longName <<
+    longName >>
+    longName >>>
+    longName;
+>>> Mixed ascending precedence.
+b___________________ || a______________ && a______________ == a______________ >
+a______________ + a______________;
+<<<
+b___________________ ||
+    a______________ &&
+        a______________ ==
+            a______________ >
+                a______________ +
+                    a______________;
+>>> Mixed descending precedence.
+b___________________ + a_______________ > a______________ == a______________ &&
+a______________ || a______________;
+<<<
+b___________________ +
+                    a_______________ >
+                a______________ ==
+            a______________ &&
+        a______________ ||
+    a______________;
+>>> Mixture of same and different precedence.
+veryLongIdentifier + veryLongIdentifier / veryLongIdentifier *
+veryLongIdentifier - veryLongIdentifier * veryLongIdentifier +
+veryLongIdentifier / veryLongIdentifier - veryLongIdentifier;
+<<<
+veryLongIdentifier +
+    veryLongIdentifier /
+        veryLongIdentifier *
+        veryLongIdentifier -
+    veryLongIdentifier *
+        veryLongIdentifier +
+    veryLongIdentifier /
+        veryLongIdentifier -
+    veryLongIdentifier;

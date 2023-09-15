@@ -1,0 +1,5 @@
+40 columns                              |
+>>> No space before ";".
+expression    ;
+<<<
+expression;

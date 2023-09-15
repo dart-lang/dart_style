@@ -1,0 +1,28 @@
+40 columns                              |
+>>>
+foo   as   Bar;
+<<<
+foo as Bar;
+>>>
+foo   is   Bar;
+<<<
+foo is Bar;
+>>>
+foo   is   !   Bar;
+<<<
+foo is! Bar;
+>>> Split `as` before operator.
+extremelyLongIdentifier as VeryLongTypeName;
+<<<
+extremelyLongIdentifier
+    as VeryLongTypeName;
+>>> Split `is` before operator.
+extremelyLongIdentifier is VeryLongTypeName;
+<<<
+extremelyLongIdentifier
+    is VeryLongTypeName;
+>>> Split `is!` before operator.
+extremelyLongIdentifier is ! VeryLongTypeName;
+<<<
+extremelyLongIdentifier
+    is! VeryLongTypeName;
