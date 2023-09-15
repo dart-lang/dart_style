@@ -1,0 +1,42 @@
+40 columns                              |
+>>> Unsplit mixed.
+true||false&&true||false&&false;
+<<<
+true || false && true || false && false;
+>>> If any `&&` operator splits, they all do.
+operand1 && operand2 && operand3 && operand4;
+<<<
+operand1 &&
+    operand2 &&
+    operand3 &&
+    operand4;
+>>> If any `||` operator splits, they all do.
+operand1 || operand2 || operand3 || operand4;
+<<<
+operand1 ||
+    operand2 ||
+    operand3 ||
+    operand4;
+>>> Prefer to split `||` over `&&`.
+operand1 || operand2 && operand3 || operand4;
+<<<
+operand1 ||
+    operand2 && operand3 ||
+    operand4;
+>>>
+operand1 && operand2 || operand3 && operand4;
+<<<
+operand1 && operand2 ||
+    operand3 && operand4;
+>>> Mix `&&` with other binary operators.
+operand1 > operand2 && operand3 == operand4 && operand5 + operand6;
+<<<
+operand1 > operand2 &&
+    operand3 == operand4 &&
+    operand5 + operand6;
+>>> Mix `||` with other binary operators.
+operand1 > operand2 || operand3 == operand4 || operand5 + operand6;
+<<<
+operand1 > operand2 ||
+    operand3 == operand4 ||
+    operand5 + operand6;
