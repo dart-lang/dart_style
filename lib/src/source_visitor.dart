@@ -4273,8 +4273,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        // We decide, somewhat arbitrarily, to treat `/**/` as a regular block
-        // comment and not a JavaDoc-style doc comment.
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
