@@ -2,8 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-/// Where a selection start or end point may appear in some piece of text,
-/// measured in UTF-16 code units.
+/// A region of text selected by an optional start and end index, measured in
+/// UTF-16 code units.
 abstract class Selection {
   /// The chunk of text.
   String get text;
