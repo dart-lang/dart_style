@@ -116,7 +116,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitBooleanLiteral(BooleanLiteral node) {
-    throw UnimplementedError();
+    token(node.literal);
   }
 
   @override
