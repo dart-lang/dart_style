@@ -1,0 +1,38 @@
+40 columns                              |
+>>> Remove blank lines at top of file.
+
+
+// comment
+<<<
+// comment
+>>> Remove blank lines at end of file.
+// comment
+
+
+
+
+<<<
+// comment
+>>> Keep up to one blank line between top level comments.
+
+// one
+
+// two
+// three
+
+
+
+// four
+
+
+<<<
+// one
+
+// two
+// three
+
+// four
+>>> Remove extra spaces between adjacent inline block comments.
+  /* foo */   /* bar */
+<<<
+/* foo */ /* bar */

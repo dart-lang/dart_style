@@ -27,6 +27,38 @@
   }
   e;
 }
+>>> Allow a blank line between statements.
+{
+  a;
+  b;
+
+  c;
+
+
+
+  d;
+}
+<<<
+{
+  a;
+  b;
+
+  c;
+
+  d;
+}
+>>> Remove blank lines at beginning and end.
+{
+
+
+  a;
+
+
+}
+<<<
+{
+  a;
+}
 >>> Labelled statement.
 {label:statement;}
 <<<
@@ -47,5 +79,7 @@ a:
 b:
 c:
 d:
+
 e:
+
 statement;

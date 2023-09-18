@@ -65,6 +65,10 @@ class PieceWriter {
   /// Whether we should write a space before the next text that is written.
   bool _pendingSpace = false;
 
+  /// Whether we should write a newline in the current [TextPiece] before the
+  /// next text that is written.
+  bool _pendingNewline = false;
+
   /// Whether we should create a new [TextPiece] the next time text is written.
   bool _pendingSplit = false;
 
@@ -119,6 +123,8 @@ class PieceWriter {
     // current text.
     if (textPiece == null || _pendingSplit && !following) {
       textPiece = _currentText = TextPiece();
+    } else if (_pendingNewline) {
+      textPiece.newline();
     } else if (_pendingSpace) {
       textPiece.append(' ');
     }
@@ -126,7 +132,13 @@ class PieceWriter {
     textPiece.append(text, containsNewline: containsNewline);
 
     _pendingSpace = false;
+    _pendingNewline = false;
     if (!following) _pendingSplit = false;
+  }
+
+  /// Writes a mandatory newline from a comment in the current [TextPiece].
+  void writeNewline() {
+    _pendingNewline = true;
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output

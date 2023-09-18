@@ -61,9 +61,18 @@ class TestFile {
 
     var tests = <FormatTest>[];
 
+    String readLine() {
+      // Skip comment lines.
+      while (lines[i].startsWith('###')) {
+        i++;
+      }
+
+      return lines[i++];
+    }
+
     while (i < lines.length) {
-      var line = i + 1;
-      var description = lines[i++].replaceAll('>>>', '');
+      var lineNumber = i + 1;
+      var description = readLine().replaceAll('>>>', '');
       var fixes = <StyleFix>[];
 
       // Let the test specify a leading indentation. This is handy for
@@ -81,15 +90,24 @@ class TestFile {
       });
 
       var inputBuffer = StringBuffer();
-      while (!lines[i].startsWith('<<<')) {
-        inputBuffer.writeln(lines[i++]);
+      while (i < lines.length) {
+        var line = readLine();
+        if (line.startsWith('<<<')) break;
+        inputBuffer.writeln(line);
       }
 
-      var outputDescription = lines[i].replaceAll('<<<', '');
+      var outputDescription = lines[i - 1].replaceAll('<<<', '');
 
       var outputBuffer = StringBuffer();
-      while (++i < lines.length && !lines[i].startsWith('>>>')) {
-        outputBuffer.writeln(lines[i]);
+      while (i < lines.length) {
+        var line = readLine();
+        if (line.startsWith('>>>')) {
+          // Found another test, so roll back to the test description for the
+          // next iteration through the loop.
+          i--;
+          break;
+        }
+        outputBuffer.writeln(line);
       }
 
       var isCompilationUnit = file.path.endsWith('.unit');
@@ -99,7 +117,7 @@ class TestFile {
           isCompilationUnit: isCompilationUnit);
 
       tests.add(FormatTest(input, output, description.trim(),
-          outputDescription.trim(), line, fixes, leadingIndent));
+          outputDescription.trim(), lineNumber, fixes, leadingIndent));
     }
 
     return TestFile._(relativePath, pageWidth, tests);

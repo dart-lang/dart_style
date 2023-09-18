@@ -44,10 +44,13 @@ class TextPiece extends Piece {
   ///
   /// This can be from line comments, block comments with newlines inside,
   /// multiline strings, etc.
-  bool _hasNewline = false;
+  bool _containsNewline = false;
 
   @override
   int get stateCount => 1;
+
+  /// Whether the last line of this piece's text ends with [text].
+  bool endsWith(String text) => _lines.isNotEmpty && _lines.last.endsWith(text);
 
   /// Append [text] to the end of this piece.
   ///
@@ -59,14 +62,18 @@ class TextPiece extends Piece {
     // TODO(perf): Consider a faster way of accumulating text.
     _lines.last = _lines.last + text;
 
-    if (containsNewline) _hasNewline = true;
+    if (containsNewline) _containsNewline = true;
+  }
+
+  void newline() {
+    _lines.add('');
   }
 
   @override
   void format(CodeWriter writer, int state) {
     // Let the writer know if there are any embedded newlines even if there is
     // only one "line" in [_lines].
-    if (_hasNewline) writer.handleNewline();
+    if (_containsNewline) writer.handleNewline();
 
     for (var i = 0; i < _lines.length; i++) {
       if (i > 0) writer.newline();
@@ -78,5 +85,5 @@ class TextPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {}
 
   @override
-  String toString() => '`${_lines.join('¬')}`${_hasNewline ? '!' : ''}';
+  String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';
 }

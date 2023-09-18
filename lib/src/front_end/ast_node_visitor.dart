@@ -8,6 +8,7 @@ import 'package:analyzer/source/line_info.dart';
 import '../dart_formatter.dart';
 import '../piece/sequence.dart';
 import '../source_code.dart';
+import 'comment_writer.dart';
 import 'piece_factory.dart';
 import 'piece_writer.dart';
 
@@ -18,8 +19,10 @@ import 'piece_writer.dart';
 /// To avoid this class becoming a monolith, functionality is divided into a
 /// couple of mixins, one for each area of functionality. This class then
 /// contains only shared state and the visitor methods for the AST.
-class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
+class AstNodeVisitor extends ThrowingAstVisitor<void>
+    with CommentWriter, PieceFactory {
   /// Cached line info for calculating blank lines.
+  @override
   final LineInfo lineInfo;
 
   @override
@@ -39,11 +42,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   /// is effectively private.
   SourceCode run(AstNode node) {
     visit(node);
-
-    // TODO(tall): Output trailing comments.
-    if (node.endToken.next!.precedingComments != null) {
-      throw UnimplementedError();
-    }
 
     // Finish writing and return the complete result.
     return writer.finish();
@@ -184,6 +182,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // TODO(tall): Handle top level declarations.
     if (node.declarations.isNotEmpty) throw UnimplementedError();
+
+    // Write any comments at the end of the file.
+    beforeSequenceNode(sequence);
+    writeCommentsAndBlanksBefore(node.endToken.next!);
 
     writer.push(sequence);
   }

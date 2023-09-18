@@ -1,0 +1,75 @@
+40 columns                              |
+>>> Line comments before operators.
+1// a
++2// b
+-3;
+<<<
+### This looks weird because the comment is before a hanging operator. Most
+### users wouldn't put a comment here.
+### TODO(rnystrom): Consider whether we want to move comments when they occur
+### in weird locations.
+1 // a
+    +
+    2 // b
+    -
+    3;
+>>> Unsplit inline block comments before operators.
+1/* a */+2/* b */%3;
+<<<
+1 /* a */ + 2 /* b */ % 3;
+>>> Split inline block comments before operators.
+longOperand/* a */||longOperand/* b */||longOperand;
+<<<
+longOperand /* a */ ||
+    longOperand /* b */ ||
+    longOperand;
+>>> Line comments after operators.
+1+// a
+2-// b
+3;
+<<<
+1 + // a
+    2 - // b
+    3;
+>>> Unsplit inline block comments after operators.
+1+/* a */2%/* b */3;
+<<<
+1 + /* a */ 2 % /* b */ 3;
+>>> Split inline block comments after operators.
+longOperand-/* a */longOperand+/* b */longOperand;
+<<<
+longOperand - /* a */
+    longOperand + /* b */
+    longOperand;
+>>> Discard newlines before line comment inside expression.
+foo
+
+
+    // comment
+    + bar;
+<<<
+foo
+    // comment
+    +
+    bar;
+>>>
+foo &&
+
+
+
+  // comment
+  bar;
+<<<
+foo &&
+    // comment
+    bar;
+>>> Line comment before binary operator expression statement.
+{
+      // comment
+  1+2;
+}
+<<<
+{
+  // comment
+  1 + 2;
+}

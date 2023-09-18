@@ -22,6 +22,7 @@ import 'rule/combinator.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
 import 'source_code.dart';
+import 'source_comment.dart';
 import 'style_fix.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
@@ -4272,12 +4273,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        // TODO(rnystrom): Check that the comment isn't '/**/' because some of
-        // the dart_style tests use that to mean inline block comments. While
-        // refactoring the Chunk representation to move splits to the front of
-        // Chunk, I want to preserve the current test behavior. The fact that
-        // those tests pass with the old representation is a buggy quirk of the
-        // comment handling.
         type = CommentType.doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
