@@ -168,6 +168,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitCompilationUnit(CompilationUnit node) {
     var sequence = SequencePiece();
 
+    if (node.scriptTag case var scriptTag?) {
+      addToSequence(sequence, scriptTag);
+      sequence.addBlank();
+    }
+
     // Put a blank line between the library tag and the other directives.
     Iterable<Directive> directives = node.directives;
     if (directives.isNotEmpty && directives.first is LibraryDirective) {
@@ -623,12 +628,26 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitPartDirective(PartDirective node) {
-    throw UnimplementedError();
+    createDirectiveMetadata(node);
+    token(node.partKeyword);
+    writer.space();
+    visit(node.uri);
+    token(node.semicolon);
   }
 
   @override
   void visitPartOfDirective(PartOfDirective node) {
-    throw UnimplementedError();
+    createDirectiveMetadata(node);
+    token(node.partKeyword);
+    writer.space();
+    token(node.ofKeyword);
+    writer.space();
+
+    // Part-of may have either a name or a URI. Only one of these will be
+    // non-null. We visit both since visit() ignores null.
+    visit(node.libraryName);
+    visit(node.uri);
+    token(node.semicolon);
   }
 
   @override
@@ -727,7 +746,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitScriptTag(ScriptTag node) {
-    throw UnimplementedError();
+    // The lexeme includes the trailing newline. Strip it off since the
+    // formatter ensures it gets a newline after it. Since the script tag must
+    // come at the top of the file, we don't have to worry about preceding
+    // comments or whitespace.
+    // TODO(new-ir): Update selection if inside the script tag.
+    writer.write(node.scriptTag.lexeme.trim());
   }
 
   @override

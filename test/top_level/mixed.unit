@@ -1,0 +1,22 @@
+40 columns                              |
+>>> Insert blank between library and import.
+library foo;
+import 'a.dart';
+<<<
+library foo;
+
+import 'a.dart';
+>>> Insert blank between library and export.
+library foo;
+export 'a.dart';
+<<<
+library foo;
+
+export 'a.dart';
+>>> Insert blank between library and part.
+library foo;
+part 'a.dart';
+<<<
+library foo;
+
+part 'a.dart';

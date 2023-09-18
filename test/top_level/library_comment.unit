@@ -1,0 +1,35 @@
+40 columns                              |
+>>> Inline comment before name.
+library/* c */foo;
+<<<
+library /* c */ foo;
+>>> Inline comment before ".".
+library a/* c */.b.c;
+<<<
+library a /* c */ .b.c;
+>>> Inline comment after ".".
+library a./**/b.c;
+<<<
+library a. /**/ b.c;
+>>> Line comment before name.
+library // c
+a.b.c;
+<<<
+library // c
+a.b.c;
+>>> Line comment before ".".
+library a// c
+.b.c;
+<<<
+library a // c
+.b.c;
+>>> line comment after ".".
+library a.// c
+b.c;
+<<<
+library a. // c
+b.c;
+>>> Inline comment in unnamed library.
+library/* c */;
+<<<
+library /* c */;

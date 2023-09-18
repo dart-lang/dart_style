@@ -1,4 +1,10 @@
 40 columns                              |
+>>> Discard newlines before first export.
+
+
+export 'a.dart';
+<<<
+export 'a.dart';
 >>> Don't split after "export" even with long string.
 export 'package:some/very/long/export/path.dart';
 <<<

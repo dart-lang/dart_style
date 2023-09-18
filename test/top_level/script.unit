@@ -1,0 +1,41 @@
+40 columns                              |
+>>> Discard newlines before library.
+
+
+library a;
+<<<
+library a;
+>>> Insert blank between script and library.
+#!script
+library foo;
+<<<
+#!script
+
+library foo;
+>>> Collapse multiple lines between script and library.
+#!script
+
+
+
+library foo;
+<<<
+#!script
+
+library foo;
+>>> Insert blank between script and import.
+#!script
+import 'foo';
+<<<
+#!script
+
+import 'foo';
+>>> Collapse multiple lines between script and import.
+#!script
+
+
+
+import 'foo';
+<<<
+#!script
+
+import 'foo';

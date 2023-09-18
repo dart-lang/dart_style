@@ -1,0 +1,35 @@
+40 columns                              |
+>>> Insert blank between script and line comment.
+#!script
+// comment
+<<<
+#!script
+
+// comment
+>>> Collapse multiple lines between script and line comment.
+#!script
+
+
+
+// comment
+<<<
+#!script
+
+// comment
+>>> Insert blank between script and block comment.
+#!script
+/* comment */
+<<<
+#!script
+
+/* comment */
+>>> Collapse multiple lines between script and block comment.
+#!script
+
+
+
+/* comment */
+<<<
+#!script
+
+/* comment */
