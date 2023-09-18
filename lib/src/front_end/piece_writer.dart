@@ -97,9 +97,6 @@ class PieceWriter {
   ///
   /// The previous text piece should already be taken.
   void split() {
-    // Shouldn't have redundant splits.
-    assert(!_pendingSplit);
-
     _pendingSplit = true;
   }
 

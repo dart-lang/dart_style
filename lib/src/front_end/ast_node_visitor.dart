@@ -108,7 +108,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitBlock(Block node) {
-    throw UnimplementedError();
+    createBlock(node.leftBracket, node.statements, node.rightBracket);
   }
 
   @override
@@ -272,7 +272,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitEmptyStatement(EmptyStatement node) {
-    throw UnimplementedError();
+    token(node.semicolon);
   }
 
   @override
@@ -475,12 +475,21 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLabel(Label node) {
-    throw UnimplementedError();
+    visit(node.label);
+    token(node.colon);
   }
 
   @override
   void visitLabeledStatement(LabeledStatement node) {
-    throw UnimplementedError();
+    var sequence = SequencePiece();
+
+    for (var label in node.labels) {
+      addToSequence(sequence, label);
+    }
+
+    addToSequence(sequence, node.statement);
+
+    writer.push(sequence);
   }
 
   @override

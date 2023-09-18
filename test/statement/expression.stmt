@@ -3,3 +3,12 @@
 expression    ;
 <<<
 expression;
+>>> Empty statements.
+{;;;;}
+<<<
+{
+  ;
+  ;
+  ;
+  ;
+}
