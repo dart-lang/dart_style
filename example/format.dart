@@ -7,6 +7,7 @@ import 'dart:io';
 import 'dart:mirrors';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:path/path.dart' as p;
 
@@ -35,7 +36,8 @@ void runFormatter(String source, int pageWidth,
     {required bool tall, required bool isCompilationUnit}) {
   try {
     var formatter = DartFormatter(
-        pageWidth: pageWidth, experimentFlags: [if (tall) 'tall-style']);
+        pageWidth: pageWidth,
+        experimentFlags: [if (tall) tallStyleExperimentFlag]);
 
     String result;
     if (isCompilationUnit) {

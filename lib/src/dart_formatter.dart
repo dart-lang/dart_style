@@ -15,6 +15,7 @@ import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 
+import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'source_code.dart';
@@ -187,7 +188,7 @@ class DartFormatter {
     var lineInfo = parseResult.lineInfo;
 
     SourceCode output;
-    if (experimentFlags.contains(_tallStyleExperimentFlag)) {
+    if (experimentFlags.contains(tallStyleExperimentFlag)) {
       var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(node);
     } else {
@@ -231,7 +232,7 @@ class DartFormatter {
 
     // Don't pass the formatter's own experiment flag to the parser.
     var experiments = experimentFlags.toList();
-    experiments.remove(_tallStyleExperimentFlag);
+    experiments.remove(tallStyleExperimentFlag);
 
     var featureSet = FeatureSet.fromEnableFlags2(
         sdkLanguageVersion: version, flags: experiments);

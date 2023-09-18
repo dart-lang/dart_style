@@ -48,6 +48,9 @@ class TestFile {
   factory TestFile._load(File file, String relativePath) {
     var lines = file.readAsLinesSync();
 
+    // Ignore comment lines.
+    lines.removeWhere((line) => line.startsWith('###'));
+
     // The first line may have a "|" to indicate the page width.
     var i = 0;
     int? pageWidth;

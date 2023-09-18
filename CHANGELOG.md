@@ -1,4 +1,9 @@
-## 2.3.3-dev
+## 2.3.4-wip
+
+* Add `tall-style` experiment flag to enable the in-progress unstable new
+  formatting style (#1253).
+
+## 2.3.3
 
 * Always split enum declarations containing a line comment (#1254).
 * Fix regression in splitting type annotations with library prefixes (#1249).
