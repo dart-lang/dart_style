@@ -7,6 +7,7 @@ import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import '../source_code.dart';
+import 'comment_writer.dart';
 
 /// Incrementally builds [Piece]s while visiting AST nodes.
 ///
@@ -114,7 +115,18 @@ class PieceWriter {
   ///
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
-  void write(String text,
+  void write(String text) {
+    _write(text);
+  }
+
+  /// Write the contents of [comment] to the current innnermost [TextPiece],
+  /// handling any newlines that may appear in it.
+  void writeComment(SourceComment comment, {bool following = false}) {
+    _write(comment.text,
+        containsNewline: comment.containsNewline, following: following);
+  }
+
+  void _write(String text,
       {bool containsNewline = false, bool following = false}) {
     var textPiece = _currentText;
 

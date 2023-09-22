@@ -15,6 +15,7 @@ import 'ast_extensions.dart';
 import 'call_chain_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
+import 'comment_type.dart';
 import 'constants.dart';
 import 'dart_formatter.dart';
 import 'rule/argument.dart';

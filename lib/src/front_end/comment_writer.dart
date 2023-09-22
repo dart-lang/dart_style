@@ -1,11 +1,13 @@
 // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'dart:collection';
+
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/source/line_info.dart';
 
+import '../comment_type.dart';
 import '../piece/sequence.dart';
-import '../source_comment.dart';
 import 'piece_writer.dart';
 
 /// Functionality used by [AstNodeVisitor] to build text and pieces from the
@@ -61,13 +63,11 @@ mixin CommentWriter {
 
   /// Writes comments that appear before [token].
   void writeCommentsAndBlanksBefore(Token token) {
-    var (comments, linesBeforeToken) = _convertComments(token);
-
     if (_pendingSequence case var sequence?) {
       _pendingSequence = null;
-      _writeSequenceComments(sequence, comments, linesBeforeToken);
+      _writeSequenceComments(sequence, token);
     } else {
-      _writeNonSequenceComments(comments, linesBeforeToken, token);
+      _writeNonSequenceComments(token);
     }
   }
 
@@ -77,8 +77,9 @@ mixin CommentWriter {
   /// sequence. In that case, any comments that belong on their own line go as
   /// separate elements in the sequence. This lets the sequence handle blank
   /// lines before and/or after them.
-  void _writeSequenceComments(SequencePiece sequence,
-      List<SourceComment> comments, int linesBeforeToken) {
+  void _writeSequenceComments(SequencePiece sequence, Token token) {
+    var comments = _collectComments(token);
+
     // Edge case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
@@ -91,31 +92,28 @@ mixin CommentWriter {
     // Normally, a blank line is required after `library`, but since there is
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
-    if (linesBeforeToken > 1 ||
-        comments.any((comment) => comment.linesBefore > 1)) {
+    if (comments.containsBlank) {
       sequence.removeBlank();
     }
 
-    for (var comment in comments) {
-      var containsNewline =
-          comment.type == CommentType.line || comment.text.contains('\n');
-
-      if (_isHangingComment(comment)) {
+    for (var i = 0; i < comments.length; i++) {
+      var comment = comments[i];
+      if (sequence.contents.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous token.
         writer.space();
-        writer.write(comment.text,
-            containsNewline: containsNewline, following: true);
+
+        writer.writeComment(comment, following: true);
       } else {
         // Write the comment as its own sequence piece.
-        writer.write(comment.text, containsNewline: containsNewline);
-        if (comment.linesBefore > 1) sequence.addBlank();
+        writer.writeComment(comment);
+        if (comments.linesBefore(i) > 1) sequence.addBlank();
         sequence.add(writer.pop());
         writer.split();
       }
     }
 
     // Write a blank before the token if there should be one.
-    if (linesBeforeToken > 1) sequence.addBlank();
+    if (comments.linesBeforeNextToken > 1) sequence.addBlank();
   }
 
   /// Writes comments before [token] when [token] is not the first element in
@@ -123,21 +121,24 @@ mixin CommentWriter {
   ///
   /// In that case, the comments are directly embedded in the [TextPiece]s for
   /// the preceding token and/or [token].
-  void _writeNonSequenceComments(
-      List<SourceComment> comments, int linesBeforeToken, Token token) {
+  void _writeNonSequenceComments(Token token) {
+    // In the common case where there are no comments before the token, early
+    // out. This avoids calculating the number of newlines between every pair
+    // of tokens which is slow and unnecessary.
+    if (token.precedingComments == null) return;
+
+    var comments = _collectComments(token);
+
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
-      var containsNewline =
-          comment.type == CommentType.line || comment.text.contains('\n');
 
-      if (_isHangingComment(comment)) {
+      if (comments.isHanging(i)) {
         // Attach the comment to the previous token.
         writer.space();
-        writer.write(comment.text,
-            containsNewline: containsNewline, following: true);
+        writer.writeComment(comment, following: true);
       } else {
         writer.writeNewline();
-        writer.write(comment.text, containsNewline: containsNewline);
+        writer.writeComment(comment);
       }
 
       if (comment.type == CommentType.line) writer.writeNewline();
@@ -148,22 +149,9 @@ mixin CommentWriter {
     }
   }
 
-  /// Takes all of the comment tokens preceding [token] and converts them to
-  /// [SourceComment]s that track their kind and the whitespace between them.
-  ///
-  /// Returns the list of [SourceComments] and the number of newlines between
-  /// the last comment and [token]. If there are no comments, returns an empty
-  /// list and the number of lines between [token] and the preceding token.
-  (List<SourceComment>, int) _convertComments(Token token) {
-    Token? comment = token.precedingComments;
-
-    // TODO(perf): Avoid calculating newlines between tokens unless there are
-    // comments or it's needed to determine whether to insert a blank in a
-    // sequence.
-
-    // TODO(tall): If the token's comments are being moved by a fix, do not
-    // write them here.
-
+  /// Takes all of the comment tokens preceding [token] and builds a
+  /// [CommentSequence] that tracks them and the whitespace between them.
+  CommentSequence _collectComments(Token token) {
     var previousLine = _endLine(token.previous!);
     var tokenLine = _startLine(token);
 
@@ -173,15 +161,11 @@ mixin CommentWriter {
     // just override the script tag's line.
     if (token.previous!.type == TokenType.SCRIPT_TAG) previousLine = tokenLine;
 
-    var comments = <SourceComment>[];
-    while (comment != null) {
+    var comments = CommentSequence();
+    for (Token? comment = token.precedingComments;
+        comment != null;
+        comment = comment.next) {
       var commentLine = _startLine(comment);
-
-      // Don't preserve newlines at the top of the file.
-      if (comment == token.precedingComments &&
-          token.previous!.type == TokenType.EOF) {
-        previousLine = commentLine;
-      }
 
       var text = comment.lexeme.trim();
       var linesBefore = commentLine - previousLine;
@@ -207,50 +191,18 @@ mixin CommentWriter {
         type = CommentType.block;
       }
 
-      var sourceComment =
-          SourceComment(text, type, linesBefore, flushLeft: flushLeft);
+      var sourceComment = SourceComment(text, type, flushLeft: flushLeft);
 
       // TODO(tall): If this comment contains either of the selection endpoints,
       // mark them in the comment.
 
-      comments.add(sourceComment);
+      comments._add(linesBefore, sourceComment);
 
       previousLine = _endLine(comment);
-      comment = comment.next;
     }
 
-    return (comments, tokenLine - previousLine);
-  }
-
-  /// Whether [comment] should be attached to the preceding token.
-  bool _isHangingComment(SourceComment comment) {
-    // Don't move a comment to a preceding line.
-    if (comment.linesBefore != 0) return false;
-
-    // Doc comments and non-inline `/* ... */` comments are always pushed to
-    // the next line.
-    if (comment.type == CommentType.doc) return false;
-    if (comment.type == CommentType.block) return false;
-
-    var text = writer.currentText;
-
-    // Not if there is nothing before it.
-    if (text == null) return false;
-
-    // A block comment following a comma probably refers to the following item.
-    if (text.endsWith(',') && comment.type == CommentType.inlineBlock) {
-      return false;
-    }
-
-    // If the text before the split is an open grouping character, it looks
-    // better to keep it with the elements than with the bracket itself.
-    if (text.endsWith('(') ||
-        text.endsWith('[') ||
-        (text.endsWith('{') && !text.endsWith('\${'))) {
-      return false;
-    }
-
-    return true;
+    comments._setLinesBeforeNextToken(tokenLine - previousLine);
+    return comments;
   }
 
   /// Returns `true` if a space should be output after the last comment which
@@ -275,4 +227,128 @@ mixin CommentWriter {
   /// Gets the 1-based column number that the beginning of [token] lies on.
   int _startColumn(Token token) =>
       lineInfo.getLocation(token.offset).columnNumber;
+}
+
+/// A comment in the source, with a bit of information about the surrounding
+/// whitespace.
+class SourceComment {
+  /// The text of the comment, including `//`, `/*`, and `*/`.
+  final String text;
+
+  final CommentType type;
+
+  /// Whether this comment starts at column one in the source.
+  ///
+  /// Comments that start at the start of the line will not be indented in the
+  /// output. This way, commented out chunks of code do not get erroneously
+  /// re-indented.
+  final bool flushLeft;
+
+  SourceComment(this.text, this.type, {required this.flushLeft});
+
+  /// Whether this comment contains a mandatory newline, either because it's a
+  /// line comment or a multi-line block comment.
+  bool get containsNewline => type == CommentType.line || text.contains('\n');
+}
+
+/// A list of source code comments and the number of newlines between them, as
+/// well as the number of newlines before the first comment and after the last
+/// comment.
+///
+/// If there are no comments, this just tracks the number of newlines between
+/// a pair of tokens.
+///
+/// This class is not simply a list of "comment + newline" pairs because we want
+/// to know the number of newlines before the first comment and after the last.
+/// That means there is always one more newline count that there are comments,
+/// including the degenerate case where there are no comments but one newline
+/// count.
+///
+/// For example, this code:
+///
+/// ```dart
+/// a /* c1 */
+/// /* c2 */
+///
+/// /* c3 */
+///
+///
+/// b
+/// ```
+///
+/// Produces a sequence like:
+///
+/// * 0 newlines between `a` and `/* c1 */`
+/// * Comment `/* c1 */`
+/// * 1 newline between `/* c1 */` and `/* c2 */`
+/// * Comment `/* c2 */`
+/// * 2 newlines between `/* c2 */` and `/* c3 */`
+/// * Comment `/* c3 */`
+/// * 3 newlines between `/* c3 */` and `b`
+/// ```
+class CommentSequence extends ListBase<SourceComment> {
+  /// The number of newlines between a pair of comments or the preceding or
+  /// following tokens.
+  ///
+  /// This list is always one element longer than [_comments].
+  final List<int> _linesBetween = [];
+
+  final List<SourceComment> _comments = [];
+
+  /// The number of newlines between the comment at [commentIndex] and the
+  /// preceding comment or token.
+  int linesBefore(int commentIndex) => _linesBetween[commentIndex];
+
+  /// The number of newlines between the comment at [commentIndex] and the
+  /// following comment or token.
+  int linesAfter(int commentIndex) => _linesBetween[commentIndex + 1];
+
+  /// Whether the comment at [commentIndex] should be attached to the preceding
+  /// token.
+  bool isHanging(int commentIndex) {
+    // Don't move a comment to a preceding line.
+    if (linesBefore(commentIndex) != 0) return false;
+
+    // Doc comments and non-inline `/* ... */` comments are always pushed to
+    // the next line.
+    var type = _comments[commentIndex].type;
+    return type != CommentType.doc && type != CommentType.block;
+  }
+
+  /// The number of newlines between the last comment and the next token.
+  ///
+  /// If there are no comments, this is the number of lines between the next
+  /// token and the preceding one.
+  int get linesBeforeNextToken => _linesBetween.last;
+
+  /// Whether there are any blank lines (i.e. more than one newline) between any
+  /// pair of comments or between the comments and surrounding code.
+  bool get containsBlank => _linesBetween.any((lines) => lines > 1);
+
+  /// The number of comments in the sequence.
+  @override
+  int get length => _comments.length;
+
+  @override
+  set length(int newLength) =>
+      throw UnsupportedError('Comment sequence can\'t be modified.');
+
+  /// The comment at [index].
+  @override
+  SourceComment operator [](int index) => _comments[index];
+
+  @override
+  operator []=(int index, SourceComment value) =>
+      throw UnsupportedError('Comment sequence can\'t be modified.');
+
+  void _add(int linesBefore, SourceComment comment) {
+    _linesBetween.add(linesBefore);
+    _comments.add(comment);
+  }
+
+  /// Records the number of lines between the end of the last comment and the
+  /// beginning of the next token.
+  void _setLinesBeforeNextToken(int linesAfter) {
+    _linesBetween.add(linesAfter);
+  }
 }
