@@ -1,0 +1,72 @@
+40 columns                              |
+>>> Unsplit empty argument list with inline block comment.
+function ( /* comment */ ) ;
+<<<
+function(/* comment */);
+>>> Split empty argument list with inline block comment.
+veryLongFunction ( /* very long comment */ ) ;
+<<<
+veryLongFunction(
+  /* very long comment */
+);
+>>> Split empty argument list with line comment.
+function ( // comment
+) ;
+<<<
+function(
+  // comment
+);
+>>> Split empty argument list with block comment.
+function ( /* multi
+line
+comment */) ;
+<<<
+function(
+  /* multi
+line
+comment */
+);
+>>> Remove extra leading and all trailing empty lines.
+function(argument,
+
+
+  // comment
+
+
+another,
+);
+<<<
+function(
+  argument,
+
+  // comment
+  another,
+);
+>>> Preserve one blank line between line comments.
+function(argument,
+  // one
+  // two
+
+  // three
+
+
+  // four
+
+
+
+  // five
+another,
+);
+<<<
+function(
+  argument,
+  // one
+  // two
+
+  // three
+
+  // four
+
+  // five
+  another,
+);

@@ -4,6 +4,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../ast_extensions.dart';
 import '../piece/block.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
@@ -54,7 +55,7 @@ mixin PieceFactory implements CommentWriter {
   void createBlock(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
     // Edge case: If the block is completely empty, output it as simple
     // unsplittable text.
-    if (nodes.isEmpty && rightBracket.precedingComments == null) {
+    if (nodes.isEmptyBody(rightBracket)) {
       token(leftBracket);
       token(rightBracket);
       return;

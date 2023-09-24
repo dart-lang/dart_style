@@ -1,0 +1,26 @@
+40 columns                              |
+>>> Unsplit.
+function ( first : 123 , second : 345 ) ;
+<<<
+function(first: 123, second: 345);
+>>> Split arguments and add trailing comma.
+function ( one: "value" , two: "data" , three: "more stuff" ) ;
+<<<
+function(
+  one: "value",
+  two: "data",
+  three: "more stuff",
+);
+>>> Mixed named and positional.
+f(one: 1, "pos", two: 2, "itional");
+<<<
+f(one: 1, "pos", two: 2, "itional");
+>>> Mixed named and positional split.
+function(one: 1, "pos", two: 2, "itional");
+<<<
+function(
+  one: 1,
+  "pos",
+  two: 2,
+  "itional",
+);

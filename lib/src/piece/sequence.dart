@@ -7,6 +7,8 @@ import 'piece.dart';
 
 /// A piece for a series of statements or members inside a block or declaration
 /// body.
+///
+/// Usually constructed using a [SequenceBuilder].
 class SequencePiece extends Piece {
   /// The series of members or statements.
   final List<Piece> contents;

@@ -79,7 +79,7 @@ mixin CommentWriter {
       if (comments.isHanging(i)) {
         // Attach the comment to the previous token.
         writer.space();
-        writer.writeComment(comment, following: true);
+        writer.writeComment(comment, hanging: true);
       } else {
         writer.writeNewline();
         writer.writeComment(comment);
@@ -193,6 +193,10 @@ class SourceComment {
   /// Whether this comment contains a mandatory newline, either because it's a
   /// line comment or a multi-line block comment.
   bool get containsNewline => type == CommentType.line || text.contains('\n');
+
+  @override
+  String toString() =>
+      '`$text` ${type.toString().replaceAll('CommentType.', '')}';
 }
 
 /// A list of source code comments and the number of newlines between them, as
@@ -229,7 +233,6 @@ class SourceComment {
 /// * 2 newlines between `/* c2 */` and `/* c3 */`
 /// * Comment `/* c3 */`
 /// * 3 newlines between `/* c3 */` and `b`
-/// ```
 class CommentSequence extends ListBase<SourceComment> {
   static const CommentSequence empty = CommentSequence._([0], []);
 
@@ -261,6 +264,17 @@ class CommentSequence extends ListBase<SourceComment> {
     // the next line.
     var type = _comments[commentIndex].type;
     return type != CommentType.doc && type != CommentType.block;
+  }
+
+  /// Whether the comment at [commentIndex] should be attached to the following
+  /// token.
+  bool isLeading(int commentIndex) {
+    // Don't move code on the next line up to the comment.
+    if (linesAfter(commentIndex) > 0) return false;
+
+    // Doc comments and non-inline `/* ... */` comments are always pushed to
+    // the next line.
+    return _comments[commentIndex].type == CommentType.inlineBlock;
   }
 
   /// The number of newlines between the last comment and the next token.
@@ -298,5 +312,86 @@ class CommentSequence extends ListBase<SourceComment> {
   /// beginning of the next token.
   void _setLinesBeforeNextToken(int linesAfter) {
     _linesBetween.add(linesAfter);
+  }
+
+  /// Creates a new sequence that is this sequence followed by [other].
+  ///
+  /// Sums the trailing newline of the left sequence and the leading newline
+  /// of the right sequence.
+  CommentSequence concatenate(CommentSequence other) {
+    // Don't allocate new sequences if we don't need to.
+    if (isEmpty) return other;
+    if (other.isEmpty) return this;
+
+    var linesBetween = [
+      // Include all of the newlines from the left sequence, except the last.
+      for (var i = 0; i < _linesBetween.length - 1; i++) _linesBetween[i],
+      // Combine the trailing newline of the left sequence and the leading
+      // newline of the right sequence.
+      _linesBetween[_linesBetween.length - 1] + other._linesBetween[0],
+      // Include the remaining newlines of the right sequence.
+      for (var i = 1; i < other._linesBetween.length; i++)
+        other._linesBetween[i]
+    ];
+
+    var comments = [..._comments, ...other._comments];
+
+    return CommentSequence._(linesBetween, comments);
+  }
+
+  /// Splits this sequence into two subsequences where [index] indicates the
+  /// number of comments in the first returned sequence and the second
+  /// sequence gets the rest.
+  ///
+  /// The newline count right at the split point goes to the first sequence and
+  /// the second sequence gets an initial newline count of zero. For example,
+  /// given this input sequence:
+  ///
+  /// * 4 newlines before `/* a */`
+  /// * Comment `/* a */`
+  /// * 5 newlines between `/* a */` and `/* b */`
+  /// * Comment `/* b */`
+  /// * 6 newlines between `/* b */` and `/* c */`
+  /// * Comment `/* c */`
+  /// * 7 newlines between `/* c */` and `/* d */`
+  /// * Comment `/* d */`
+  /// * 8 newlines between `/* d */` and `/* e */`
+  /// * Comment `/* e */`
+  /// * 9 newlines after `/* e */`
+  ///
+  /// Calling `splitAt(2)` yields:
+  ///
+  /// First sequence:
+  ///
+  /// * 4 newlines before `/* a */`
+  /// * Comment `/* a */`
+  /// * 5 newline between `/* a */` and `/* b */`
+  /// * Comment `/* b */`
+  /// * 6 newlines after `/* b */`
+  ///
+  /// Second sequence:
+  ///
+  /// * 0 newlines before `/* c */`
+  /// * Comment `/* c */`
+  /// * 7 newlines between `/* c */` and `/* d */`
+  /// * Comment `/* d */`
+  /// * 8 newlines between `/* d */` and `/* e */`
+  /// * Comment `/* e */`
+  /// * 9 newlines after `/* e */`
+  (CommentSequence, CommentSequence) splitAt(int index) {
+    // Don't allocate new sequences if we don't have to.
+    if (index == 0) return (CommentSequence.empty, this);
+    if (index == length) return (this, CommentSequence.empty);
+
+    return (
+      CommentSequence._(
+          // +1 to include the newline after the last comment.
+          _linesBetween.sublist(0, index + 1),
+          _comments.sublist(0, index)),
+      CommentSequence._(
+          // 0 is the synthesized newline count before the first comment.
+          [0, ..._linesBetween.sublist(index + 1, _linesBetween.length)],
+          _comments.sublist(index, _comments.length))
+    );
   }
 }

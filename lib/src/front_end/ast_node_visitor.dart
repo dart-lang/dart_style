@@ -8,6 +8,7 @@ import 'package:analyzer/source/line_info.dart';
 import '../dart_formatter.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
+import 'delimited_list_builder.dart';
 import 'piece_factory.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
@@ -553,7 +554,23 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
-    throw UnimplementedError();
+    // TODO(tall): Support method invocation with explicit target expressions.
+    if (node.target != null) throw UnimplementedError();
+
+    visit(node.methodName);
+
+    // TODO(tall): Support type arguments to method calls.
+    if (node.typeArguments != null) throw UnimplementedError();
+
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(node.argumentList.leftParenthesis);
+
+    for (var argument in node.argumentList.arguments) {
+      builder.add(argument);
+    }
+
+    builder.rightBracket(node.argumentList.rightParenthesis);
+    writer.push(builder.build());
   }
 
   @override
@@ -563,7 +580,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    throw UnimplementedError();
+    visit(node.name);
+    writer.space();
+    visit(node.expression);
   }
 
   @override

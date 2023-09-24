@@ -77,7 +77,7 @@ class SequenceBuilder {
         // Attach the comment to the previous token.
         _visitor.writer.space();
 
-        _visitor.writer.writeComment(comment, following: true);
+        _visitor.writer.writeComment(comment, hanging: true);
       } else {
         // Write the comment as its own sequence piece.
         _visitor.writer.writeComment(comment);
