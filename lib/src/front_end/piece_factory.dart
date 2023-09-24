@@ -9,8 +9,10 @@ import '../piece/import.dart';
 import '../piece/infix.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
-import '../piece/sequence.dart';
+import 'ast_node_visitor.dart';
+import 'comment_writer.dart';
 import 'piece_writer.dart';
+import 'sequence_builder.dart';
 
 /// Record type for a destructured binary operator-like syntactic construct.
 typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
@@ -36,22 +38,8 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 /// word for "import or export directive" or "named thing with argument list".
 /// To avoid that, we pick one concrete construct formatted by the function,
 /// usually the most common, and name it after that, as in [createImport()].
-mixin PieceFactory {
-  PieceWriter get writer;
-
-  void beforeSequenceNode(SequencePiece sequence);
-
-  void writeCommentsAndBlanksBefore(Token token);
-
+mixin PieceFactory implements CommentWriter {
   void visit(AstNode? node, {void Function()? before, void Function()? after});
-
-  /// Adds [node] to [sequence], handling blank lines around it.
-  void addToSequence(SequencePiece sequence, AstNode node) {
-    beforeSequenceNode(sequence);
-    visit(node);
-    sequence.add(writer.pop());
-    writer.split();
-  }
 
   /// Creates metadata annotations for a directive.
   ///
@@ -76,18 +64,19 @@ mixin PieceFactory {
     var leftBracketPiece = writer.pop();
     writer.split();
 
-    var sequence = SequencePiece();
+    var sequence = SequenceBuilder(this);
     for (var node in nodes) {
-      addToSequence(sequence, node);
+      sequence.add(node);
     }
 
     // Place any comments before the "}" inside the block.
-    beforeSequenceNode(sequence);
+    sequence.addCommentsBefore(rightBracket);
 
     token(rightBracket);
     var rightBracketPiece = writer.pop();
 
-    writer.push(BlockPiece(leftBracketPiece, sequence, rightBracketPiece,
+    writer.push(BlockPiece(
+        leftBracketPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: nodes.isNotEmpty));
   }
 
@@ -255,7 +244,7 @@ mixin PieceFactory {
   void token(Token? token, {void Function()? before, void Function()? after}) {
     if (token == null) return;
 
-    writeCommentsAndBlanksBefore(token);
+    writeCommentsBefore(token);
 
     if (before != null) before();
     writeLexeme(token.lexeme);

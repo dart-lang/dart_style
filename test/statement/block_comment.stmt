@@ -12,7 +12,7 @@
 {/* comment */}
 >>>
 {
-  
+
   /* comment */
 
 
@@ -29,7 +29,7 @@ line */
 }
 >>>
 {
-  
+
   /* comment
 line */
 
@@ -65,7 +65,7 @@ line */
 
 
 
-  // commennt
+  // comment
 
 
 
@@ -80,7 +80,18 @@ line */
 
   b;
 
-  // commennt
+  // comment
 
+  c;
+}
+>>> comment before labeled statement
+{
+  /* c */ a: b: c;
+}
+<<<
+{
+  /* c */
+  a:
+  b:
   c;
 }
