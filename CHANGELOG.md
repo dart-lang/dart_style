@@ -2,6 +2,7 @@
 
 * Add `tall-style` experiment flag to enable the in-progress unstable new
   formatting style (#1253).
+* Format extension types.
 
 ## 2.3.3
 

@@ -1283,6 +1283,31 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
+    visitMetadata(node.metadata);
+
+    builder.nestExpression();
+    token(node.extensionKeyword);
+    space();
+    token(node.typeKeyword);
+    token(node.constKeyword, before: space);
+    space();
+    token(node.name);
+
+    visit(node.typeParameters);
+    visit(node.representation);
+    soloSplit();
+
+    builder.startRule(CombinatorRule());
+    visit(node.implementsClause);
+    builder.endRule();
+
+    space();
+    builder.unnest();
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
+  }
+
+  @override
   void visitFieldDeclaration(FieldDeclaration node) {
     visitMetadata(node.metadata);
 
@@ -2598,6 +2623,78 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.operator);
     space();
     visit(node.operand);
+  }
+
+  @override
+  void visitRepresentationConstructorName(RepresentationConstructorName node) {
+    token(node.period);
+    token(node.name);
+  }
+
+  @override
+  void visitRepresentationDeclaration(RepresentationDeclaration node) {
+    // Consider having `node.asFormalParameterList()`, and format based on that.
+    // Inline `visitFormalParameterList`, remove all that doesn't apply.
+    void writeAsParameter() {
+      // Inline `visitSimpleFormalParameter`.
+      visitParameterMetadata(node.fieldMetadata, () {
+        // Inline `_beginFormalParameter`
+        builder.startLazyRule(Rule(Cost.parameterType));
+        builder.nestExpression();
+
+        visit(node.fieldType);
+        _separatorBetweenTypeAndVariable(node.fieldType);
+        token(node.fieldName);
+
+        // Inline `_endFormalParameter`
+        builder.unnest();
+        builder.endRule();
+      });
+    }
+
+    visit(node.constructorName);
+    if (node.commaAfter != null) {
+      // Trailing comma is not currently allowed, so this code is not tested.
+      // Inline _visitTrailingCommaParameterList
+      builder.startRule(Rule.hard());
+      token(node.leftParenthesis);
+      // Process the parameters as a separate set of chunks.
+      builder = builder.startBlock();
+      builder.writeNewline();
+      // Inlined `visitSimpleFormalParameter`
+      writeAsParameter();
+      _writeCommaAfter(node);
+
+      if (node.rightParenthesis.precedingComments != null) {
+        builder.writeNewline();
+        writePrecedingCommentsAndNewlines(node.rightParenthesis);
+      }
+
+      builder = builder.endBlock();
+      builder.endRule();
+
+      token(node.leftParenthesis);
+      return;
+    }
+
+    token(node.leftParenthesis);
+
+    final rule = PositionalRule(null, argumentCount: 1);
+
+    builder.startRule(rule);
+    rule.beforeArgument(zeroSplit());
+
+    // Make sure record and function type parameter lists are indented.
+    builder.startBlockArgumentNesting();
+    builder.startSpan();
+
+    writeAsParameter();
+
+    builder.endBlockArgumentNesting();
+    builder.endSpan();
+    builder.endRule();
+
+    token(node.rightParenthesis);
   }
 
   @override

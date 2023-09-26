@@ -150,8 +150,9 @@ void _testFile(
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
             fixes: [...?baseFixes, ...formatTest.fixes],
-            experimentFlags:
-                useTallStyle ? const [tallStyleExperimentFlag] : null);
+            experimentFlags: useTallStyle
+                ? const ['inline-class', tallStyleExperimentFlag]
+                : const ['inline-class']);
 
         var actual = formatter.formatSource(formatTest.input);
 
