@@ -1296,7 +1296,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visit(node.typeParameters);
     visit(node.representation);
-    soloSplit();
 
     builder.startRule(CombinatorRule());
     visit(node.implementsClause);
