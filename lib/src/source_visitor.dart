@@ -2633,48 +2633,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitRepresentationDeclaration(RepresentationDeclaration node) {
     // Consider having `node.asFormalParameterList()`, and format based on that.
-    // Inline `visitFormalParameterList`, remove all that doesn't apply.
-    void writeAsParameter() {
-      // Inline `visitSimpleFormalParameter`.
-      visitParameterMetadata(node.fieldMetadata, () {
-        // Inline `_beginFormalParameter`
-        builder.startLazyRule(Rule(Cost.parameterType));
-        builder.nestExpression();
-
-        visit(node.fieldType);
-        _separatorBetweenTypeAndVariable(node.fieldType);
-        token(node.fieldName);
-
-        // Inline `_endFormalParameter`
-        builder.unnest();
-        builder.endRule();
-      });
-    }
 
     visit(node.constructorName);
-    if (node.commaAfter != null) {
-      // Trailing comma is not currently allowed, so this code is not tested.
-      // Inline _visitTrailingCommaParameterList
-      builder.startRule(Rule.hard());
-      token(node.leftParenthesis);
-      // Process the parameters as a separate set of chunks.
-      builder = builder.startBlock();
-      builder.writeNewline();
-      // Inlined `visitSimpleFormalParameter`
-      writeAsParameter();
-      _writeCommaAfter(node);
-
-      if (node.rightParenthesis.precedingComments != null) {
-        builder.writeNewline();
-        writePrecedingCommentsAndNewlines(node.rightParenthesis);
-      }
-
-      builder = builder.endBlock();
-      builder.endRule();
-
-      token(node.leftParenthesis);
-      return;
-    }
 
     token(node.leftParenthesis);
 
@@ -2687,7 +2647,22 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startBlockArgumentNesting();
     builder.startSpan();
 
-    writeAsParameter();
+    // Inline `visitFormalParameterList`, remove all that doesn't apply
+    // to a required positional parameter with no modifiers
+    // and no trailing comma.
+    visitParameterMetadata(node.fieldMetadata, () {
+      // Inline `_beginFormalParameter`
+      builder.startLazyRule(Rule(Cost.parameterType));
+      builder.nestExpression();
+
+      visit(node.fieldType);
+      _separatorBetweenTypeAndVariable(node.fieldType);
+      token(node.fieldName);
+
+      // Inline `_endFormalParameter`
+      builder.unnest();
+      builder.endRule();
+    });
 
     builder.endBlockArgumentNesting();
     builder.endSpan();
