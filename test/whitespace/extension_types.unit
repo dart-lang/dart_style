@@ -32,7 +32,7 @@ extension type A(int a) {
   }
 <<<
 extension type A(int a) {}
->>> leading space before "class"
+>>> leading space before "extension type"
   extension type A(int a) {
 }
 <<<
@@ -110,8 +110,66 @@ extension
 
 type
 
+const
 
+A
 
-A(int a){}
+<
+
+T
+
+>
+
+.
+
+name
+
+(
+
+int
+
+a
+
+)
+
+{
+
+}
 <<<
-extension type A(int a) {}
+extension type const A<T>.name(int a) {}
+>>> Supports all members except instance fields
+extension type const A<T>.name(int a) {
+  static  const int c = 1;
+  static  final int f = 1;
+  static  late final int l;
+  static  var v;
+  static  int get g => c;
+  static  set g(int i) {}
+  static  int m<X>(X x) => c;
+  const  A(int a) : this.a = a;
+  const  A.r(int a) : this(a);
+  const  factory A.rf(int a) = A;
+  factory  A.f(int a) => A(a);
+  int  get pr => 0;
+  set  pr(int x) {}
+  int  me(int x) => x;
+  int  operator+(int x) => x;
+}
+<<<
+extension type const A<T>.name(int a) {
+  static const int c = 1;
+  static final int f = 1;
+  static late final int l;
+  static var v;
+  static int get g => c;
+  static set g(int i) {}
+  static int m<X>(X x) => c;
+  const A(int a) : this.a = a;
+  const A.r(int a) : this(a);
+  const factory A.rf(int a) = A;
+  factory A.f(int a) => A(a);
+  int get pr => 0;
+  set pr(int x) {}
+  int me(int x) => x;
+  int operator +(int x) => x;
+}

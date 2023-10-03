@@ -2632,8 +2632,6 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRepresentationDeclaration(RepresentationDeclaration node) {
-    // Consider having `node.asFormalParameterList()`, and format based on that.
-
     visit(node.constructorName);
 
     token(node.leftParenthesis);
@@ -2647,11 +2645,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     builder.startBlockArgumentNesting();
     builder.startSpan();
 
-    // Inline `visitFormalParameterList`, remove all that doesn't apply
-    // to a required positional parameter with no modifiers
-    // and no trailing comma.
     visitParameterMetadata(node.fieldMetadata, () {
-      // Inline `_beginFormalParameter`
       builder.startLazyRule(Rule(Cost.parameterType));
       builder.nestExpression();
 
@@ -2659,7 +2653,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       _separatorBetweenTypeAndVariable(node.fieldType);
       token(node.fieldName);
 
-      // Inline `_endFormalParameter`
       builder.unnest();
       builder.endRule();
     });
