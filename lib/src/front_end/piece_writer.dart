@@ -113,6 +113,10 @@ class PieceWriter {
   /// Writes [text] raw text to the current innermost [TextPiece]. Starts a new
   /// one if needed.
   ///
+  /// If [hanging] is `true`, then [text] is appended to the current line even
+  /// if a split is pending. This is used for writing a comment that should be
+  /// on the end of a line.
+  ///
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
   void write(String text) {
@@ -121,19 +125,19 @@ class PieceWriter {
 
   /// Write the contents of [comment] to the current innnermost [TextPiece],
   /// handling any newlines that may appear in it.
-  void writeComment(SourceComment comment, {bool following = false}) {
+  void writeComment(SourceComment comment, {bool hanging = false}) {
     _write(comment.text,
-        containsNewline: comment.containsNewline, following: following);
+        containsNewline: comment.containsNewline, hanging: hanging);
   }
 
   void _write(String text,
-      {bool containsNewline = false, bool following = false}) {
+      {bool containsNewline = false, bool hanging = false}) {
     var textPiece = _currentText;
 
     // Create a new text piece if we don't have one or we are after a split.
     // Ignore the split if the text is deliberately intended to follow the
     // current text.
-    if (textPiece == null || _pendingSplit && !following) {
+    if (textPiece == null || _pendingSplit && !hanging) {
       textPiece = _currentText = TextPiece();
     } else if (_pendingNewline) {
       textPiece.newline();
@@ -145,7 +149,7 @@ class PieceWriter {
 
     _pendingSpace = false;
     _pendingNewline = false;
-    if (!following) _pendingSplit = false;
+    if (!hanging) _pendingSplit = false;
   }
 
   /// Writes a mandatory newline from a comment in the current [TextPiece].

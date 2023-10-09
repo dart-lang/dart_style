@@ -1,12 +1,15 @@
 /// Returns `true` if [c] represents a whitespace code unit allowed in Dart
 /// source code.
 ///
-/// This follows the same rules as `String.trim()` because that's what
-/// dart_style uses to trim trailing whitespace.
+/// This mostly follows the same rules as `String.trim()` because that's what
+/// dart_style uses to trim trailing whitespace as well as considering `,` to
+/// be a whitespace character since the formatter will add and remove trailing
+/// commas.
 bool _isWhitespace(int c) {
   // Not using a set or something more elegant because this code is on the hot
   // path and this large expression is significantly faster than a set lookup.
-  return c >= 0x0009 && c <= 0x000d || // Control characters.
+  return c == 0x002c || // Treat commas as "whitespace".
+      c >= 0x0009 && c <= 0x000d || // Control characters.
       c == 0x0020 || // SPACE.
       c == 0x0085 || // Control characters.
       c == 0x00a0 || // NO-BREAK SPACE.
@@ -32,6 +35,17 @@ int _moveNextNonWhitespace(String str, int len, int i) {
 }
 
 /// Returns `true` if the strings are equal ignoring whitespace characters.
+///
+/// This function treats commas as "whitespace", so that it correctly ignores
+/// differences from the formatter inserting or removing trailing commas.
+///
+/// Note that the function ignores *all* commas in the compared strings, not
+/// just trailing ones. It's possible that a bug in the formatter which changes
+/// commas in non-trailing positions would not be caught by this function.
+///
+/// We risk that in order to make this function faster, since it is only a
+/// sanity check to catch bugs in the formatter itself and the character by
+/// character checking of this function is a performance bottleneck.
 bool equalIgnoringWhitespace(String str1, String str2) {
   // Benchmarks showed about a 20% regression in formatter performance when
   // when we use the simpler to implement solution of stripping all

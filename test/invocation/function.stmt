@@ -1,0 +1,29 @@
+40 columns                              |
+>>> Empty argument list.
+function ( ) ;
+<<<
+function();
+>>> Never split empty argument list.
+function_______________________________();
+<<<
+function_______________________________();
+>>> Inline arguments.
+function ( argument , another , third ) ;
+<<<
+function(argument, another, third);
+>>> Split arguments and add trailing comma.
+function ( argument , another , third , fourth ) ;
+<<<
+function(
+  argument,
+  another,
+  third,
+  fourth,
+);
+>>> Remove trailing comma if unsplit.
+function(
+  argument,
+  another,
+);
+<<<
+function(argument, another);
