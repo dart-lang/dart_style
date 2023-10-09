@@ -4,6 +4,7 @@
 import 'dart:math' as math;
 
 import 'chunk.dart';
+import 'comment_type.dart';
 import 'constants.dart';
 import 'dart_formatter.dart';
 import 'debug.dart' as debug;

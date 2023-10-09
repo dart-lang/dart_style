@@ -6,11 +6,11 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../dart_formatter.dart';
-import '../piece/sequence.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 import 'piece_factory.dart';
 import 'piece_writer.dart';
+import 'sequence_builder.dart';
 
 /// Visits every token of the AST and produces a tree of [Piece]s that
 /// corresponds to it and contains every token and comment in the original
@@ -166,33 +166,32 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitCompilationUnit(CompilationUnit node) {
-    var sequence = SequencePiece();
+    var sequence = SequenceBuilder(this);
 
     if (node.scriptTag case var scriptTag?) {
-      addToSequence(sequence, scriptTag);
+      sequence.add(scriptTag);
       sequence.addBlank();
     }
 
     // Put a blank line between the library tag and the other directives.
     Iterable<Directive> directives = node.directives;
     if (directives.isNotEmpty && directives.first is LibraryDirective) {
-      addToSequence(sequence, directives.first);
+      sequence.add(directives.first);
       sequence.addBlank();
       directives = directives.skip(1);
     }
 
     for (var directive in directives) {
-      addToSequence(sequence, directive);
+      sequence.add(directive);
     }
 
     // TODO(tall): Handle top level declarations.
     if (node.declarations.isNotEmpty) throw UnimplementedError();
 
     // Write any comments at the end of the file.
-    beforeSequenceNode(sequence);
-    writeCommentsAndBlanksBefore(node.endToken.next!);
+    sequence.addCommentsBefore(node.endToken.next!);
 
-    writer.push(sequence);
+    writer.push(sequence.build());
   }
 
   @override
@@ -488,15 +487,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitLabeledStatement(LabeledStatement node) {
-    var sequence = SequencePiece();
+    var sequence = SequenceBuilder(this);
 
     for (var label in node.labels) {
-      addToSequence(sequence, label);
+      sequence.add(label);
     }
 
-    addToSequence(sequence, node.statement);
+    sequence.add(node.statement);
 
-    writer.push(sequence);
+    writer.push(sequence.build());
   }
 
   @override

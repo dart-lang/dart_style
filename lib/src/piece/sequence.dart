@@ -9,28 +9,13 @@ import 'piece.dart';
 /// body.
 class SequencePiece extends Piece {
   /// The series of members or statements.
-  final List<Piece> contents = [];
+  final List<Piece> contents;
 
   /// The pieces that should have a blank line preserved between them and the
   /// next piece.
-  final Set<Piece> _blanksAfter = {};
+  final Set<Piece> _blanksAfter;
 
-  /// Appends [piece] to the sequence.
-  void add(Piece piece) {
-    contents.add(piece);
-  }
-
-  /// Appends a blank line before the next piece in the sequence.
-  void addBlank() {
-    if (contents.isEmpty) return;
-    _blanksAfter.add(contents.last);
-  }
-
-  /// Removes the blank line that has been appended over the last piece.
-  void removeBlank() {
-    if (contents.isEmpty) return;
-    _blanksAfter.remove(contents.last);
-  }
+  SequencePiece(this.contents, this._blanksAfter);
 
   @override
   int get stateCount => 1;
