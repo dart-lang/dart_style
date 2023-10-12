@@ -145,17 +145,10 @@ mixin PieceFactory implements CommentWriter {
       }
     }
 
-    var combinator = switch (combinators.length) {
-      0 => null,
-      1 => OneCombinatorPiece(combinators[0]),
-      2 => TwoCombinatorPiece(combinators),
-      _ => throw StateError('Directives can only have up to two combinators.'),
-    };
-
     token(directive.semicolon);
 
-    writer.push(
-        ImportPiece(directivePiece, configurationsPiece, asClause, combinator));
+    writer.push(ImportPiece(
+        directivePiece, configurationsPiece, asClause, combinators));
   }
 
   /// Creates a single infix operation.

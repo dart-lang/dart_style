@@ -17,7 +17,7 @@ class PieceStateSet {
   /// there's nothing to solve for them.
   final List<Piece> _pieces;
 
-  final Map<Piece, int> _pieceStates;
+  final Map<Piece, State> _pieceStates;
 
   /// Creates a new [PieceStateSet] with no pieces set to any state (which
   /// implicitly means they have state 0).
@@ -26,7 +26,7 @@ class PieceStateSet {
   PieceStateSet._(this._pieces, this._pieceStates);
 
   /// The state this solution selects for [piece].
-  int pieceState(Piece piece) => _pieceStates[piece] ?? 0;
+  State pieceState(Piece piece) => _pieceStates[piece] ?? State.initial;
 
   /// Gets the first piece that doesn't have a state selected yet, or `null` if
   /// all pieces have selected states.
@@ -42,7 +42,7 @@ class PieceStateSet {
   }
 
   /// Creates a clone of this state with [piece] bound to [state].
-  PieceStateSet cloneWith(Piece piece, int state) {
+  PieceStateSet cloneWith(Piece piece, State state) {
     return PieceStateSet._(_pieces, {..._pieceStates, piece: state});
   }
 
@@ -85,13 +85,13 @@ class Solution implements Comparable<Solution> {
     var piece = _state.firstUnsolved();
     if (piece == null) return const [];
 
-    var result = <Solution>[];
-    for (var i = 0; i < piece.stateCount; i++) {
-      var solution = Solution(root, pageWidth, _state.cloneWith(piece, i));
-      result.add(solution);
-    }
+    return [
+      // All pieces support a default state.
+      Solution(root, pageWidth, _state.cloneWith(piece, State.initial)),
 
-    return result;
+      for (var state in piece.states)
+        Solution(root, pageWidth, _state.cloneWith(piece, state))
+    ];
   }
 
   /// Compares two solutions where a more desirable solution comes first.

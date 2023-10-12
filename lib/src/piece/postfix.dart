@@ -26,12 +26,12 @@ class PostfixPiece extends Piece {
   PostfixPiece(this.pieces);
 
   @override
-  int get stateCount => 2;
+  List<State> get states => const [State.split];
 
   @override
-  void format(CodeWriter writer, int state) {
+  void format(CodeWriter writer, State state) {
     for (var piece in pieces) {
-      writer.splitIf(state == 1, indent: Indent.expression);
+      writer.splitIf(state == State.split, indent: Indent.expression);
       writer.format(piece);
     }
   }

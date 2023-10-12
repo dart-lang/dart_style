@@ -39,7 +39,7 @@ class Solver {
 
     void traverse(Piece piece) {
       // We don't need to worry about selecting pieces that have only one state.
-      if (piece.stateCount > 1) unsolvedPieces.add(piece);
+      if (piece.states.isNotEmpty) unsolvedPieces.add(piece);
       piece.forEachChild(traverse);
     }
 

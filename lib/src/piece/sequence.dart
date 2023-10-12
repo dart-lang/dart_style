@@ -20,10 +20,10 @@ class SequencePiece extends Piece {
   SequencePiece(this.contents, this._blanksAfter);
 
   @override
-  int get stateCount => 1;
+  List<State> get states => const [];
 
   @override
-  void format(CodeWriter writer, int state) {
+  void format(CodeWriter writer, State state) {
     for (var i = 0; i < contents.length; i++) {
       writer.format(contents[i]);
 

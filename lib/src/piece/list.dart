@@ -36,10 +36,10 @@ class ListPiece extends Piece {
 
   /// Don't let the list split if there is nothing in it.
   @override
-  int get stateCount => _arguments.isNotEmpty ? 2 : 1;
+  List<State> get states => _arguments.isEmpty ? const [] : const [State.split];
 
   @override
-  void format(CodeWriter writer, int state) {
+  void format(CodeWriter writer, State state) {
     writer.format(_before);
 
     // TODO(tall): Should support a third state for argument lists with block
@@ -51,7 +51,7 @@ class ListPiece extends Piece {
     // });
     // ```
     switch (state) {
-      case 0:
+      case State.initial:
         // All arguments on one line with no trailing comma.
         writer.setAllowNewlines(false);
         for (var i = 0; i < _arguments.length; i++) {
@@ -61,7 +61,7 @@ class ListPiece extends Piece {
           _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
         }
 
-      case 1:
+      case State.split:
         // Each argument on its own line with a trailing comma after the last.
         writer.setIndent(Indent.block);
         writer.newline();
