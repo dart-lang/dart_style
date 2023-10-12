@@ -36,7 +36,17 @@ class SequenceBuilder {
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
   void add(AstNode node) {
-    addCommentsBefore(node.beginToken);
+    var token = switch (node) {
+      // If [node] is an [AnnotatedNode], then [beginToken] includes the
+      // leading doc comment, which we want to handle separately. So, in that
+      // case, explicitly skip past the doc comment to the subsequent metadata
+      // (if there is any), or the beginning of the code.
+      AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
+      AnnotatedNode() => node.firstTokenAfterCommentAndMetadata,
+      _ => node.beginToken
+    };
+
+    addCommentsBefore(token);
     _visitor.visit(node);
     _contents.add(_visitor.writer.pop());
     _visitor.writer.split();

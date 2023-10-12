@@ -1,0 +1,20 @@
+40 columns                              |
+>>> Inline after keyword.
+var /* comment */ x;
+<<<
+var /* comment */ x;
+>>> Trailing line comment.
+var x; // comment
+<<<
+var x; // comment
+>>> Inside multiple variable declaration list.
+var x /* comment */, y;
+<<<
+var x /* comment */, y;
+>>> Always place newline after multi-line block comment.
+/*
+*/ var i = value;
+<<<
+/*
+*/
+var i = value;

@@ -42,14 +42,6 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 mixin PieceFactory implements CommentWriter {
   void visit(AstNode? node, {void Function()? before, void Function()? after});
 
-  /// Creates metadata annotations for a directive.
-  ///
-  /// Always forces the annotations to be on a previous line.
-  void createDirectiveMetadata(Directive directive) {
-    // TODO(tall): Implement. See SourceVisitor._visitDirectiveMetadata().
-    if (directive.metadata.isNotEmpty) throw UnimplementedError();
-  }
-
   /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
   /// body.
   void createBlock(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
@@ -79,6 +71,14 @@ mixin PieceFactory implements CommentWriter {
     writer.push(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: nodes.isNotEmpty));
+  }
+
+  /// Creates metadata annotations for a directive.
+  ///
+  /// Always forces the annotations to be on a previous line.
+  void createDirectiveMetadata(Directive directive) {
+    // TODO(tall): Implement. See SourceVisitor._visitDirectiveMetadata().
+    if (directive.metadata.isNotEmpty) throw UnimplementedError();
   }
 
   /// Creates a dotted or qualified identifier.
@@ -227,6 +227,36 @@ mixin PieceFactory implements CommentWriter {
     traverse(node);
 
     writer.push(InfixPiece(operands));
+  }
+
+  /// Creates a [Piece] for some code followed by an `=` and an expression in
+  /// any place where an `=` appears:
+  ///
+  /// * Assignment
+  /// * Variable declaration
+  /// * Constructor initializer
+  ///
+  /// This method assumes the code to the left of the `=` has already been
+  /// visited.
+  ///
+  /// Does nothing if [equalsOperator] is `null`.
+  void finishAssignment(Token? equalsOperator, Expression? rightHandSide) {
+    if (equalsOperator == null) return;
+
+    writer.space();
+    token(equalsOperator);
+    var equals = writer.pop();
+    writer.split();
+
+    visit(rightHandSide);
+
+    var initializer = writer.pop();
+    writer.push(InfixPiece([equals, initializer]));
+  }
+
+  /// Writes an optional modifier that precedes other code.
+  void modifier(Token? keyword) {
+    token(keyword, after: writer.space);
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
