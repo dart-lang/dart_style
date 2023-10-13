@@ -176,7 +176,7 @@ class CodeWriter {
 
     // TODO(tall): Support pieces with different split costs, and possibly
     // different costs for each state value.
-    if (state != 0) _cost++;
+    if (state != State.initial) _cost++;
 
     // TODO(perf): Memoize this. Might want to create a nested PieceWriter
     // instead of passing in `this` so we can better control what state needs

@@ -30,13 +30,13 @@ class BlockPiece extends Piece {
       : _alwaysSplit = alwaysSplit;
 
   @override
-  int get stateCount => _alwaysSplit ? 1 : 2;
+  List<State> get states => _alwaysSplit ? const [] : const [State.split];
 
   @override
-  void format(CodeWriter writer, int state) {
+  void format(CodeWriter writer, State state) {
     writer.format(leftBracket);
 
-    if (_alwaysSplit || state == 1) {
+    if (_alwaysSplit || state == State.split) {
       writer.setIndent(Indent.block);
       writer.newline();
       writer.format(contents);

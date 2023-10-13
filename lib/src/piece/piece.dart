@@ -12,16 +12,19 @@ import '../back_end/code_writer.dart';
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
 abstract class Piece {
-  /// The number of different ways this piece can be split.
+  /// The ordered list of indexes identifying each way this piece can split.
   ///
-  /// States are numbered incrementally starting at zero. State zero should
-  /// always be the lowest cost state with the fewest line splits. Lower states
-  /// should generally be preferred over higher states.
-  int get stateCount;
+  /// Each piece determines what each value in the list represents. The list
+  /// returned by this function should be sorted so that earlier states in the
+  /// list compare less than later states.
+  ///
+  /// In addition to the values returned here, each piece should implicitly
+  /// support a [State.initial] which is the least split form the piece allows.
+  List<State> get states;
 
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
-  void format(CodeWriter writer, int state);
+  void format(CodeWriter writer, State state);
 
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
@@ -47,7 +50,7 @@ class TextPiece extends Piece {
   bool _containsNewline = false;
 
   @override
-  int get stateCount => 1;
+  List<State> get states => const [];
 
   /// Whether the last line of this piece's text ends with [text].
   bool endsWith(String text) => _lines.isNotEmpty && _lines.last.endsWith(text);
@@ -70,7 +73,7 @@ class TextPiece extends Piece {
   }
 
   @override
-  void format(CodeWriter writer, int state) {
+  void format(CodeWriter writer, State state) {
     // Let the writer know if there are any embedded newlines even if there is
     // only one "line" in [_lines].
     if (_containsNewline) writer.handleNewline();
@@ -86,4 +89,28 @@ class TextPiece extends Piece {
 
   @override
   String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';
+}
+
+/// A state that a piece can be in.
+///
+/// Each state identifies one way that a piece can be split into multiple lines.
+/// Each piece determines how its states are interpreted.
+class State implements Comparable<State> {
+  static const initial = State(0);
+
+  /// The maximally split state a piece can be in.
+  ///
+  /// The value here is somewhat arbitrary. It just needs to be larger than
+  /// any other value used by any [Piece] that uses this [State].
+  static const split = State(255);
+
+  final int _value;
+
+  const State(this._value);
+
+  @override
+  int compareTo(State other) => _value.compareTo(other._value);
+
+  @override
+  String toString() => '◦$_value';
 }
