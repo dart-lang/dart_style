@@ -544,9 +544,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // The formatter will preserve the newline after element 3 and the lack of
     // them after the other elements.
 
-    for (var element in node.elements) {
-      builder.add(element);
-    }
+    node.elements.forEach(builder.add);
 
     builder.rightBracket(node.rightBracket);
     writer.push(builder.build());
