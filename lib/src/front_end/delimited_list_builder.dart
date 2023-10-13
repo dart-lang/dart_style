@@ -31,20 +31,25 @@ class DelimitedListBuilder {
 
   late final Piece _rightBracket;
 
+  bool _trailingComma = true;
+
   DelimitedListBuilder(this._visitor);
 
   /// The list of comments following the most recently written element before
   /// any comma following the element.
   CommentSequence _commentsBeforeComma = CommentSequence.empty;
 
-  ListPiece build() =>
-      ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket);
+  ListPiece build() => ListPiece(
+      _leftBracket, _elements, _blanksAfter, _rightBracket, _trailingComma);
 
   /// Adds the opening [bracket] to the built list.
   void leftBracket(Token bracket) {
     _visitor.token(bracket);
     _leftBracket = _visitor.writer.pop();
     _visitor.writer.split();
+
+    // No trailing commas in type argument and type parameter lists.
+    if (bracket.type == TokenType.LT) _trailingComma = false;
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that

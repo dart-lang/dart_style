@@ -1,0 +1,106 @@
+40 columns                              |
+>>> Empty.
+[];
+<<<
+[];
+>>> Exactly page width.
+[  first  ,  second  ,  third  ,  fourth  ,  seventh  ]  ;
+<<<
+[first, second, third, fourth, seventh];
+>>> Split.
+[first, second, third, fourth, fifth, sixth,];
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+];
+>>> Add trailing comma if split.
+[first, second, third, fourth, fifth, sixth];
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+];
+>>> Remove trailing comma if unsplit.
+[first, second, third, fourth, fifth,];
+<<<
+[first, second, third, fourth, fifth];
+>>> Split in element forces list to split.
+[first + second + third + fourth + fifth];
+<<<
+[
+  first +
+      second +
+      third +
+      fourth +
+      fifth,
+];
+>>> Remove blank lines around elements.
+[
+
+
+  firstElement,
+
+
+
+  secondElement,
+
+
+
+  thirdElement
+
+
+];
+<<<
+[
+  firstElement,
+  secondElement,
+  thirdElement,
+];
+>>> With type argument.
+<  int  >  [  1  ,  2  ,  3  ];
+<<<
+<int>[1, 2, 3];
+>>> Split type arguments but not list.
+<Map<VeryLongTypeName, AnotherLongTypeName>>[1, 2, 3];
+<<<
+<
+  Map<
+    VeryLongTypeName,
+    AnotherLongTypeName
+  >
+>[1, 2, 3];
+>>> Split type arguments and list.
+<Map<VeryLongTypeName, AnotherLongTypeName>>[firstElement, secondElement,
+thirdElement];
+<<<
+<
+  Map<
+    VeryLongTypeName,
+    AnotherLongTypeName
+  >
+>[
+  firstElement,
+  secondElement,
+  thirdElement,
+];
+>>> Split in nested type argument.
+<Map<List<NotSplit>, Map<VeryLongTypeName, AnotherLongTypeName>>>[1, 2, 3];
+<<<
+<
+  Map<
+    List<NotSplit>,
+    Map<
+      VeryLongTypeName,
+      AnotherLongTypeName
+    >
+  >
+>[1, 2, 3];

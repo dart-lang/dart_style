@@ -68,6 +68,7 @@ invocation/   - Test formatting function and member invocations.
 member/       - Test formatting class/enum/extension/mixin member declarations.
 statement/    - Test formatting statements.
 top_level/    - Test formatting top-level declarations and directives.
+type/         - Test formatting type annotations.
 ```
 
 These tests are all run by `tall_format_test.dart`.

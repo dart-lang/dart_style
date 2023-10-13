@@ -18,3 +18,9 @@ var x /* comment */, y;
 /*
 */
 var i = value;
+>>> Prefer block-like splitting for empty lists with comments.
+var variableName = [ /* some long comment */ ];
+<<<
+var variableName = [
+  /* some long comment */
+];

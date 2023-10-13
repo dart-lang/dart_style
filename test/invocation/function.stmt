@@ -27,3 +27,36 @@ function(
 );
 <<<
 function(argument, another);
+>>> With type arguments.
+function  <  int  ,  String  >  (  1  ,  2  ,  3  );
+<<<
+function<int, String>(1, 2, 3);
+>>> Split type arguments but not arguments.
+function<VeryLongTypeName, AnotherLongTypeName>(1, 2, 3);
+<<<
+function<
+  VeryLongTypeName,
+  AnotherLongTypeName
+>(1, 2, 3);
+>>> Split type arguments and arguments.
+function<VeryLongTypeName, AnotherLongTypeName>(firstArgument, secondArgument,
+thirdArgument);
+<<<
+function<
+  VeryLongTypeName,
+  AnotherLongTypeName
+>(
+  firstArgument,
+  secondArgument,
+  thirdArgument,
+);
+>>> Split in nested type argument.
+function<List<NotSplit>, Map<VeryLongTypeName, AnotherLongTypeName>>(1, 2, 3);
+<<<
+function<
+  List<NotSplit>,
+  Map<
+    VeryLongTypeName,
+    AnotherLongTypeName
+  >
+>(1, 2, 3);

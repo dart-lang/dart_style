@@ -39,7 +39,7 @@ class VariablePiece extends Piece {
   static const State _betweenVariables = State(1);
 
   /// Split after the type annotation and between each variable.
-  static const State _afterType = State(2);
+  static const State _afterType = State(2, cost: 2);
 
   /// The leading keywords (`var`, `final`, `late`) and optional type
   /// annotation.
