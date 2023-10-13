@@ -1,0 +1,143 @@
+40 columns                              |
+>>> Line comment in empty list.
+var list = [
+// comment
+];
+<<<
+var list = [
+  // comment
+];
+>>> Line comment on opening line.
+var list = [ // comment
+];
+<<<
+var list = [
+  // comment
+];
+>>> Inline block comment.
+var list = [  /* comment */  ];
+<<<
+var list = [/* comment */];
+>>> Collapse all whitespace on single-line block comments in empty lists.
+var list = [
+
+
+  /* comment */
+
+
+];
+<<<
+var list = [/* comment */];
+>>> Multiple inline block comments.
+var list = [  /* 1 */   /* 2 */   /* 3 */  ];
+<<<
+var list = [/* 1 */ /* 2 */ /* 3 */];
+>>> Multiple comments on opening line.
+var list = [ /* first */ // second
+];
+<<<
+var list = [
+  /* first */
+  // second
+];
+>>> Multiline block comment.
+var list = [  /* comment
+*/  ];
+<<<
+var list = [
+  /* comment
+*/
+];
+>>> After element.
+['item' // comment
+];
+<<<
+[
+  'item', // comment
+];
+>>> Comment after list doesn't preserve newlines inside.
+[
+  a,b,c,
+  d
+] // comment
+;
+<<<
+[a, b, c, d] // comment
+;
+>>> Remove blank lines at ends of body
+var list = [
+
+
+
+  // comment
+
+
+
+
+];
+<<<
+var list = [
+  // comment
+];
+>>> Preserve blank lines between comments and elements.
+[
+  // comment
+  element,
+
+
+
+  noComment,
+
+
+  // comment
+
+
+  // another
+
+
+
+  yesComment
+
+
+];
+<<<
+[
+  // comment
+  element,
+  noComment,
+
+  // comment
+
+  // another
+  yesComment,
+];
+>>> Line comment between items.
+var list = ['a', // comment
+  'b'];
+<<<
+var list = [
+  'a', // comment
+  'b',
+];
+>>> Line comments after last item.
+var list = ['a' // 1
+  // 2
+];
+<<<
+var list = [
+  'a', // 1
+  // 2
+];
+>>> Line comments after trailing comma.
+var list = ['a', // 1
+  // 2
+];
+<<<
+var list = [
+  'a', // 1
+  // 2
+];
+>>> Space between block comment and ",".
+var list = [1,/* a */ 2 /* b */  , 3];
+<<<
+var list = [1, /* a */ 2, /* b */ 3];

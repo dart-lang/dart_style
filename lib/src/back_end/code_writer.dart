@@ -174,9 +174,7 @@ class CodeWriter {
 
     var state = _pieceStates.pieceState(piece);
 
-    // TODO(tall): Support pieces with different split costs, and possibly
-    // different costs for each state value.
-    if (state != State.initial) _cost++;
+    _cost += state.cost;
 
     // TODO(perf): Memoize this. Might want to create a nested PieceWriter
     // instead of passing in `this` so we can better control what state needs

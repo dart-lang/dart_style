@@ -123,3 +123,54 @@ int variableName = argument * argument + argument;
 <<<
 int variableName =
     argument * argument + argument;
+>>> Prefer block-like splitting for lists.
+var variableName = [element, element, element];
+<<<
+var variableName = [
+  element,
+  element,
+  element,
+];
+>>> No block-like splitting for empty lists.
+var variableNameWithExactLength____ = [];
+<<<
+var variableNameWithExactLength____ =
+    [];
+>>> Prefer block-like splitting for function calls.
+var variableName = function(argument, argument);
+<<<
+var variableName = function(
+  argument,
+  argument,
+);
+>>> No block-like splitting for empty argument lists.
+var variableNameExactLength = function();
+<<<
+var variableNameExactLength =
+    function();
+>>> No block-like splitting if function name doesn't fit.
+var longVariableName = veryLongFunctionName(argument);
+<<<
+var longVariableName =
+    veryLongFunctionName(argument);
+>>> Indent block if function name doesn't fit and arguments split.
+var longVariableName = veryLongFunctionName(argument, another);
+<<<
+var longVariableName =
+    veryLongFunctionName(
+      argument,
+      another,
+    );
+>>> Use block-like splitting for parenthesized expressions whose inner does.
+var variableName = ([element, element, element]);
+<<<
+var variableName = ([
+  element,
+  element,
+  element,
+]);
+>>>
+var variableName = (notDelimited + expression);
+<<<
+var variableName =
+    (notDelimited + expression);

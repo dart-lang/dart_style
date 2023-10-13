@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
@@ -245,13 +246,14 @@ mixin PieceFactory implements CommentWriter {
 
     writer.space();
     token(equalsOperator);
-    var equals = writer.pop();
+    var target = writer.pop();
     writer.split();
 
     visit(rightHandSide);
 
     var initializer = writer.pop();
-    writer.push(InfixPiece([equals, initializer]));
+    writer.push(AssignPiece(target, initializer,
+        isValueDelimited: rightHandSide!.isDelimited));
   }
 
   /// Writes an optional modifier that precedes other code.

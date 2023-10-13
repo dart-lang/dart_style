@@ -32,7 +32,14 @@ class ListPiece extends Piece {
   /// The ")" after the arguments.
   final Piece _after;
 
-  ListPiece(this._before, this._arguments, this._blanksAfter, this._after);
+  /// Whether a split list should get a trailing comma.
+  ///
+  /// This is true in most constructs in Dart, but trailing commas are
+  /// disallowed by the language in type argument and type parameter lists.
+  final bool _trailingComma;
+
+  ListPiece(this._before, this._arguments, this._blanksAfter, this._after,
+      this._trailingComma);
 
   /// Don't let the list split if there is nothing in it.
   @override
@@ -67,7 +74,8 @@ class ListPiece extends Piece {
         writer.newline();
         for (var i = 0; i < _arguments.length; i++) {
           var argument = _arguments[i];
-          argument.format(writer, omitComma: false);
+          argument.format(writer,
+              omitComma: i == _arguments.length - 1 && !_trailingComma);
           if (i < _arguments.length - 1) {
             writer.newline(blank: _blanksAfter.contains(argument));
           }
@@ -76,6 +84,7 @@ class ListPiece extends Piece {
         writer.newline();
     }
 
+    writer.setAllowNewlines(true);
     writer.format(_after);
   }
 

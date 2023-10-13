@@ -92,6 +92,34 @@ extension AstIterableExtensions on Iterable<AstNode> {
 }
 
 extension ExpressionExtensions on Expression {
+  /// Whether this expression is a "delimited" one that allows block-like
+  /// formatting in some contexts. For example, in an assignment, a split in
+  /// the assigned value is usually indented:
+  ///
+  /// ```
+  /// var variableName =
+  ///     longValue;
+  /// ```
+  ///
+  /// But not if the initializer is a delimited expression and we don't split
+  /// at the `=`:
+  ///
+  /// ```
+  /// var variableName = [
+  ///   element,
+  /// ];
+  /// ```
+  bool get isDelimited => switch (this) {
+        ParenthesizedExpression(:var expression) => expression.isDelimited,
+        ListLiteral() => true,
+        MethodInvocation() => true,
+        // TODO(tall): Map and set literals.
+        // TODO(tall): Record literals.
+        // TODO(tall): Instance creation expressions (`new` and `const`).
+        // TODO(tall): Switch expressions.
+        _ => false,
+      };
+
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
     var parent = this.parent;

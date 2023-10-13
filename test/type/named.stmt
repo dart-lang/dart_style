@@ -1,0 +1,43 @@
+40 columns                              |
+>>> Simple named type.
+int  x  ;
+<<<
+int x;
+>>> Nullable type.
+String  ?  s  ;
+<<<
+String? s;
+>>> Prefixed type.
+library_prefix  .  TypeName  x  ;
+<<<
+library_prefix.TypeName x;
+>>> Don't split on prefix.
+very_long_library_prefix  .  VeryLongTypeName  x  ;
+<<<
+very_long_library_prefix.VeryLongTypeName x;
+>>> Prefixed nullable type.
+prefix  .  TypeName  ?  x  ;
+<<<
+prefix.TypeName? x;
+>>> Unsplit type arguments.
+Generic  <  int  ,  String  ,  bool  >  g  ;
+<<<
+Generic<int, String, bool> g;
+>>> Split type arguments.
+Generic  <  LongTypeName  ,  AnotherLongType  ,  ThirdOne  >  g  ;
+<<<
+Generic<
+  LongTypeName,
+  AnotherLongType,
+  ThirdOne
+> g;
+>>> Splitting in type argument forces type argument list to split.
+Generic<Map<LongTypeName, AnotherType>, ThirdOne> g;
+<<<
+Generic<
+  Map<
+    LongTypeName,
+    AnotherType
+  >,
+  ThirdOne
+> g;

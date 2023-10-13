@@ -526,7 +526,30 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitListLiteral(ListLiteral node) {
-    throw UnimplementedError();
+    visit(node.typeArguments);
+
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(node.leftBracket);
+
+    // TODO(tall): Support a line comment inside a list literal as a signal to
+    // preserve internal newlines. So if you have:
+    //
+    // ```
+    // var list = [
+    //   1, 2, 3, // comment
+    //   4, 5, 6,
+    // ];
+    // ```
+    //
+    // The formatter will preserve the newline after element 3 and the lack of
+    // them after the other elements.
+
+    for (var element in node.elements) {
+      builder.add(element);
+    }
+
+    builder.rightBracket(node.rightBracket);
+    writer.push(builder.build());
   }
 
   @override
@@ -570,9 +593,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     if (node.target != null) throw UnimplementedError();
 
     visit(node.methodName);
-
-    // TODO(tall): Support type arguments to method calls.
-    if (node.typeArguments != null) throw UnimplementedError();
+    visit(node.typeArguments);
 
     var builder = DelimitedListBuilder(this);
     builder.leftBracket(node.argumentList.leftParenthesis);
@@ -603,9 +624,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     if (node.importPrefix != null) throw UnimplementedError();
 
     token(node.name2);
-
-    // TODO(tall): Handle type arguments.
-    if (node.typeArguments != null) throw UnimplementedError();
+    visit(node.typeArguments);
 
     // TODO(tall): Handle nullable types.
     if (node.question != null) throw UnimplementedError();
@@ -648,7 +667,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitParenthesizedExpression(ParenthesizedExpression node) {
-    throw UnimplementedError();
+    token(node.leftParenthesis);
+    visit(node.expression);
+    token(node.rightParenthesis);
   }
 
   @override
@@ -877,7 +898,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTypeArgumentList(TypeArgumentList node) {
-    throw UnimplementedError();
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(node.leftBracket);
+
+    for (var arguments in node.arguments) {
+      builder.add(arguments);
+    }
+
+    builder.rightBracket(node.rightBracket);
+    writer.push(builder.build());
   }
 
   @override

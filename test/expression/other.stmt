@@ -1,0 +1,11 @@
+40 columns                              |
+>>> Parenthesized.
+(  (
+
+
+expression
+
+
+)  );
+<<<
+((expression));

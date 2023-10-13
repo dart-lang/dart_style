@@ -96,7 +96,7 @@ class TextPiece extends Piece {
 /// Each state identifies one way that a piece can be split into multiple lines.
 /// Each piece determines how its states are interpreted.
 class State implements Comparable<State> {
-  static const initial = State(0);
+  static const initial = State(0, cost: 0);
 
   /// The maximally split state a piece can be in.
   ///
@@ -106,7 +106,10 @@ class State implements Comparable<State> {
 
   final int _value;
 
-  const State(this._value);
+  /// How much a solution is penalized when this state is chosen.
+  final int cost;
+
+  const State(this._value, {this.cost = 1});
 
   @override
   int compareTo(State other) => _value.compareTo(other._value);
