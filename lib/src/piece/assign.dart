@@ -34,7 +34,7 @@ import 'piece.dart';
 class AssignPiece extends Piece {
   /// Split inside the value but not at the `=`.
   ///
-  /// This is only allowed when the value is a delimitet expression.
+  /// This is only allowed when the value is a delimited expression.
   static const State _insideValue = State(1);
 
   /// Split after the `=` and allow splitting inside the value.
