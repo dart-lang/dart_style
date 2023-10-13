@@ -14,9 +14,9 @@ import '../back_end/code_writer.dart';
 abstract class Piece {
   /// The ordered list of indexes identifying each way this piece can split.
   ///
-  /// Each piece determines what each integer value in the list represents. The
-  /// list returned by this function should be sorted so that earlier states in
-  /// the list compare less than later states.
+  /// Each piece determines what each value in the list represents. The list
+  /// returned by this function should be sorted so that earlier states in the
+  /// list compare less than later states.
   ///
   /// In addition to the values returned here, each piece should implicitly
   /// support a [State.initial] which is the least split form the piece allows.

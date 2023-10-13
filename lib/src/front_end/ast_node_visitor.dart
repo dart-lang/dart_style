@@ -36,7 +36,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   AstNodeVisitor(DartFormatter formatter, this.lineInfo, SourceCode source)
       : writer = PieceWriter(formatter, source);
 
-  /// Visits [node], formatting its contents.
+  /// Visits [node] and returns the formatted result.
   ///
   /// Returns a [SourceCode] containing the resulting formatted source and
   /// updated selection, if any.
