@@ -152,10 +152,12 @@ class Score implements Comparable<Score> {
     if (!isValid) return 1;
     if (!other.isValid) return -1;
 
-    // Overflow is always penalized more than line splitting cost.
-    if (overflow != other.overflow) return overflow.compareTo(other.overflow);
+    // Even though overflow is "worse" than cost, we order in terms of cost
+    // because a solution with overflow may lead to a low-cost solution without
+    // overflow, so we want to explore in cost order.
+    if (cost != other.cost) return cost.compareTo(other.cost);
 
-    return cost.compareTo(other.cost);
+    return overflow.compareTo(other.overflow);
   }
 
   @override

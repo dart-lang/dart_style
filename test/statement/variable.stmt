@@ -1,0 +1,125 @@
+40 columns                              |
+>>> Short initializer.
+var   a   =   1  ;
+<<<
+var a = 1;
+>>> Split initializer.
+var variableName = veryLongInitializerName;
+<<<
+var variableName =
+    veryLongInitializerName;
+>>> Split overflowing initializer.
+var variableName = thisIsReallyQuiteAVeryLongVariableName;
+<<<
+var variableName =
+    thisIsReallyQuiteAVeryLongVariableName;
+>>> No split after keyword.
+var thisIsReallyQuiteAVeryLongVariableName;
+<<<
+var thisIsReallyQuiteAVeryLongVariableName;
+>>> Multiple unsplit variables with no initializers.
+var a , b , c , d;
+<<<
+var a, b, c, d;
+>>> Multiple split variables with no initializers.
+var variableA, variableB, variableC, variableD;
+<<<
+var variableA,
+    variableB,
+    variableC,
+    variableD;
+>>> Multiple unsplit variables with initializers.
+var x = 3, y = 4;
+<<<
+var x = 3, y = 4;
+>>>
+var x = 2, y;
+<<<
+var x = 2, y;
+>>> Multiple split variables with initializers.
+var x = initializer, y = initializer, z = initializer;
+<<<
+var x = initializer,
+    y = initializer,
+    z = initializer;
+>>> Indent initializers if there are multiple variables.
+var veryLongVariable1 = longishInitializer,
+    short = value,
+    veryLongVariable2 = longishInitializer;
+<<<
+var veryLongVariable1 =
+        longishInitializer,
+    short = value,
+    veryLongVariable2 =
+        longishInitializer;
+>>> Final variable.
+final  x  =  1  ;
+<<<
+final x = 1;
+>>> Typed variable.
+int  x  =  1  ;
+<<<
+int x = 1;
+>>> Typed final variable.
+final  int  x  =  1;
+<<<
+final int x = 1;
+>>> Late variables.
+{
+  late  var  i  ;
+  late  final  int  i  ;
+  late  int  i  ;
+}
+<<<
+{
+  late var i;
+  late final int i;
+  late int i;
+}
+>>> Split after type name.
+SomeVeryLongTypeName someLongVariableName;
+<<<
+SomeVeryLongTypeName
+someLongVariableName;
+>>> Split after type name with multiple variables.
+SomeVeryLongTypeName someLongVariableName, another, third;
+<<<
+SomeVeryLongTypeName
+someLongVariableName,
+another,
+third;
+>>> Split in initializer without splitting after type.
+int someLongVariableName = veryLong + initializer;
+<<<
+int someLongVariableName =
+    veryLong + initializer;
+>>> Split in initializers without splitting after type.
+int someLongVariableName = longInitializerValue,
+another = short, thirdLongVariable = anotherLongInitializer;
+<<<
+int someLongVariableName =
+        longInitializerValue,
+    another = short,
+    thirdLongVariable =
+        anotherLongInitializer;
+>>> Split after type name and in initializer.
+SomeVeryLongTypeName someLongVariableName = longInitializerValue;
+<<<
+SomeVeryLongTypeName
+someLongVariableName =
+    longInitializerValue;
+>>> Split after type name and in initializers.
+SomeVeryLongTypeName someLongVariableName = longInitializerValue,
+another = short, thirdLongVariable = anotherLongInitializer;
+<<<
+SomeVeryLongTypeName
+someLongVariableName =
+    longInitializerValue,
+another = short,
+thirdLongVariable =
+    anotherLongInitializer;
+>>> Prefer to split at "=" over infix operator.
+int variableName = argument * argument + argument;
+<<<
+int variableName =
+    argument * argument + argument;

@@ -6,6 +6,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../dart_formatter.dart';
+import '../piece/piece.dart';
+import '../piece/variable.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
@@ -34,7 +36,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   AstNodeVisitor(DartFormatter formatter, this.lineInfo, SourceCode source)
       : writer = PieceWriter(formatter, source);
 
-  /// Runs the visitor on [node], formatting its contents.
+  /// Visits [node] and returns the formatted result.
   ///
   /// Returns a [SourceCode] containing the resulting formatted source and
   /// updated selection, if any.
@@ -42,7 +44,41 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
   SourceCode run(AstNode node) {
-    visit(node);
+    // Always treat the code being formatted as contained in a sequence, even
+    // if we aren't formatting an entire compilation unit. That way, comments
+    // before and after the node are handled properly.
+    var sequence = SequenceBuilder(this);
+
+    if (node is CompilationUnit) {
+      if (node.scriptTag case var scriptTag?) {
+        sequence.add(scriptTag);
+        sequence.addBlank();
+      }
+
+      // Put a blank line between the library tag and the other directives.
+      Iterable<Directive> directives = node.directives;
+      if (directives.isNotEmpty && directives.first is LibraryDirective) {
+        sequence.add(directives.first);
+        sequence.addBlank();
+        directives = directives.skip(1);
+      }
+
+      for (var directive in directives) {
+        sequence.add(directive);
+      }
+
+      for (var declaration in node.declarations) {
+        sequence.add(declaration);
+      }
+    } else {
+      // Just formatting a single statement.
+      sequence.add(node);
+    }
+
+    // Write any comments at the end of the code.
+    sequence.addCommentsBefore(node.endToken.next!);
+
+    writer.push(sequence.build());
 
     // Finish writing and return the complete result.
     return writer.finish();
@@ -167,32 +203,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitCompilationUnit(CompilationUnit node) {
-    var sequence = SequenceBuilder(this);
-
-    if (node.scriptTag case var scriptTag?) {
-      sequence.add(scriptTag);
-      sequence.addBlank();
-    }
-
-    // Put a blank line between the library tag and the other directives.
-    Iterable<Directive> directives = node.directives;
-    if (directives.isNotEmpty && directives.first is LibraryDirective) {
-      sequence.add(directives.first);
-      sequence.addBlank();
-      directives = directives.skip(1);
-    }
-
-    for (var directive in directives) {
-      sequence.add(directive);
-    }
-
-    // TODO(tall): Handle top level declarations.
-    if (node.declarations.isNotEmpty) throw UnimplementedError();
-
-    // Write any comments at the end of the file.
-    sequence.addCommentsBefore(node.endToken.next!);
-
-    writer.push(sequence.build());
+    throw UnsupportedError(
+        'CompilationUnit should be handled directly by format().');
   }
 
   @override
@@ -854,7 +866,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
-    throw UnimplementedError();
+    visit(node.variables);
+    token(node.semicolon);
   }
 
   @override
@@ -879,17 +892,39 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitVariableDeclaration(VariableDeclaration node) {
-    throw UnimplementedError();
+    token(node.name);
+    finishAssignment(node.equals, node.initializer);
   }
 
   @override
   void visitVariableDeclarationList(VariableDeclarationList node) {
-    throw UnimplementedError();
+    // TODO(tall): Format metadata.
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+
+    modifier(node.lateKeyword);
+    modifier(node.keyword);
+
+    // TODO(tall): Test how splits inside the type annotation (like in a type
+    // argument list or a function type's parameter list) affect the indentation
+    // and splitting of the surrounding variable declaration.
+    visit(node.type);
+    var header = writer.pop();
+
+    var variables = <Piece>[];
+    for (var variable in node.variables) {
+      writer.split();
+      visit(variable);
+      commaAfter(variable);
+      variables.add(writer.pop());
+    }
+
+    writer.push(VariablePiece(header, variables, hasType: node.type != null));
   }
 
   @override
   void visitVariableDeclarationStatement(VariableDeclarationStatement node) {
-    throw UnimplementedError();
+    visit(node.variables);
+    token(node.semicolon);
   }
 
   @override
