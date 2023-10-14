@@ -6,8 +6,13 @@ import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for any construct where `=` is followed by an expression: variable
-/// initializer, assignment, constructor initializer, etc. Assignments can be
-/// formatted three ways:
+/// initializer, assignment, constructor initializer, etc.
+///
+/// This piece is also used for map entries and named arguments where `:` is
+/// followed by an expression or element because those also want to support the
+/// "block-like" formatting of delimited expressions on the right.
+///
+/// These constructs can be formatted three ways:
 ///
 /// [State.initial] No split at all:
 ///
@@ -59,14 +64,14 @@ class AssignPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.format(target);
-
-    // A split inside the value forces splitting at the "=" unless it's a
-    // delimited expression.
+    // A split in either child piece forces splitting after the "=" unless it's
+    // a delimited expression.
     if (state == State.initial) writer.setAllowNewlines(false);
 
     // Don't indent a split delimited expression.
     if (state != _insideValue) writer.setIndent(Indent.expression);
+
+    writer.format(target);
 
     writer.splitIf(state == _atEquals);
     writer.format(value);

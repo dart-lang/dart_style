@@ -152,7 +152,7 @@ class PieceWriter {
     if (!hanging) _pendingSplit = false;
   }
 
-  /// Writes a mandatory newline from a comment in the current [TextPiece].
+  /// Writes a mandatory newline from a comment to the current [TextPiece].
   void writeNewline() {
     _pendingNewline = true;
   }

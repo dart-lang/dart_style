@@ -1,0 +1,141 @@
+40 columns                              |
+>>> Empty.
+(  {  }  );
+<<<
+({});
+>>> Const.
+const  {  first  :  1  ,  second  :  2  }  ;
+<<<
+const {first: 1, second: 2};
+>>> Exactly page width.
+(  {  first  :  1  ,  second  :  2  ,  third  :  3  ,  f  :  4  }  );
+<<<
+({first: 1, second: 2, third: 3, f: 4});
+>>> Split.
+({first: 1, second: 2, third: 3, fourth: 4,});
+<<<
+({
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+});
+>>> Add trailing comma if split.
+({first: 1, second: 2, third: 3, fourth: 4});
+<<<
+({
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+});
+>>> Remove trailing comma if unsplit.
+({first: 1, second: 2, third: 3,});
+<<<
+({first: 1, second: 2, third: 3});
+>>> Prefer to split entry instead of key.
+({
+  first + second + third + fourth: fifth
+});
+<<<
+({
+  first + second + third + fourth:
+      fifth,
+});
+>>> Prefer to split entry instead of value.
+({
+  first: second + third + fourth + fifth
+});
+<<<
+({
+  first:
+      second + third + fourth + fifth,
+});
+>>> Split in key forces entry to split.
+({
+  first + second + third + fourth + fifth: sixth
+});
+<<<
+({
+  first +
+          second +
+          third +
+          fourth +
+          fifth:
+      sixth,
+});
+>>> Split in value forces entry to split.
+({
+  first: second + third + fourth + fifth + sixth
+});
+<<<
+({
+  first:
+      second +
+          third +
+          fourth +
+          fifth +
+          sixth,
+});
+>>> Remove blank lines around entries.
+({
+
+
+  firstElement: 1,
+
+
+
+  secondElement: 2,
+
+
+
+  thirdElement: 3
+
+
+});
+<<<
+({
+  firstElement: 1,
+  secondElement: 2,
+  thirdElement: 3,
+});
+>>> With type arguments.
+<  int  ,  String  >  {  1  :  'one'  ,  2  :  'two'  };
+<<<
+<int, String>{1: 'one', 2: 'two'};
+>>> Split map but not type arguments.
+<int, String>{firstElement: 'one', secondElement: 'two'};
+<<<
+<int, String>{
+  firstElement: 'one',
+  secondElement: 'two',
+};
+>>> Split type arguments but not map.
+<VeryLongTypeName, AnotherReallyLongTypeName>{1: 'one', 2: 'two'};
+<<<
+<
+  VeryLongTypeName,
+  AnotherReallyLongTypeName
+>{1: 'one', 2: 'two'};
+>>> Split type arguments and map.
+<VeryLongTypeName, AnotherReallyLongTypeName>
+{1: 'value one', 2: 'value two', 3: 'value three'};
+<<<
+<
+  VeryLongTypeName,
+  AnotherReallyLongTypeName
+>{
+  1: 'value one',
+  2: 'value two',
+  3: 'value three',
+};
+>>> Split in nested type argument.
+<List<NotSplit>, Map<VeryLongTypeName, AnotherLongTypeName>>{1: 'one', 2: 'two'};
+<<<
+<
+  List<NotSplit>,
+  Map<
+    VeryLongTypeName,
+    AnotherLongTypeName
+  >
+>{1: 'one', 2: 'two'};

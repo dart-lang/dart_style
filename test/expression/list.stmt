@@ -3,6 +3,10 @@
 [];
 <<<
 [];
+>>> Const.
+const  [  1  ,  2  ,  3  ]  ;
+<<<
+const [1, 2, 3];
 >>> Exactly page width.
 [  first  ,  second  ,  third  ,  fourth  ,  seventh  ]  ;
 <<<
@@ -69,6 +73,15 @@
 <  int  >  [  1  ,  2  ,  3  ];
 <<<
 <int>[1, 2, 3];
+>>> Split list but not type arguments.
+<Map<int, String>>
+[firstElement, secondElement, thirdElement];
+<<<
+<Map<int, String>>[
+  firstElement,
+  secondElement,
+  thirdElement,
+];
 >>> Split type arguments but not list.
 <Map<VeryLongTypeName, AnotherLongTypeName>>[1, 2, 3];
 <<<

@@ -113,7 +113,7 @@ extension ExpressionExtensions on Expression {
         ParenthesizedExpression(:var expression) => expression.isDelimited,
         ListLiteral() => true,
         MethodInvocation() => true,
-        // TODO(tall): Map and set literals.
+        SetOrMapLiteral() => true,
         // TODO(tall): Record literals.
         // TODO(tall): Instance creation expressions (`new` and `const`).
         // TODO(tall): Switch expressions.

@@ -526,28 +526,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitListLiteral(ListLiteral node) {
-    visit(node.typeArguments);
-
-    var builder = DelimitedListBuilder(this);
-    builder.leftBracket(node.leftBracket);
-
-    // TODO(tall): Support a line comment inside a list literal as a signal to
-    // preserve internal newlines. So if you have:
-    //
-    // ```
-    // var list = [
-    //   1, 2, 3, // comment
-    //   4, 5, 6,
-    // ];
-    // ```
-    //
-    // The formatter will preserve the newline after element 3 and the lack of
-    // them after the other elements.
-
-    node.elements.forEach(builder.add);
-
-    builder.rightBracket(node.rightBracket);
-    writer.push(builder.build());
+    createCollection(node, node.leftBracket, node.elements, node.rightBracket);
   }
 
   @override
@@ -567,7 +546,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    throw UnimplementedError();
+    visit(node.key);
+    finishAssignment(node.separator, node.value);
   }
 
   @override
@@ -611,9 +591,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    visit(node.name);
-    writer.space();
-    visit(node.expression);
+    visit(node.name.label);
+    finishAssignment(node.name.colon, node.expression);
   }
 
   @override
@@ -805,7 +784,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
-    throw UnimplementedError();
+    createCollection(node, node.leftBracket, node.elements, node.rightBracket);
   }
 
   @override
@@ -920,7 +899,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitVariableDeclaration(VariableDeclaration node) {
     token(node.name);
-    finishAssignment(node.equals, node.initializer);
+    if ((node.equals, node.initializer) case (var equals?, var initializer?)) {
+      finishAssignment(equals, initializer);
+    }
   }
 
   @override
