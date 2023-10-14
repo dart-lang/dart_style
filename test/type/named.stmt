@@ -14,7 +14,8 @@ library_prefix.TypeName x;
 >>> Don't split on prefix.
 very_long_library_prefix  .  VeryLongTypeName  x  ;
 <<<
-very_long_library_prefix.VeryLongTypeName x;
+very_long_library_prefix.VeryLongTypeName
+x;
 >>> Prefixed nullable type.
 prefix  .  TypeName  ?  x  ;
 <<<
@@ -31,13 +32,13 @@ Generic<
   AnotherLongType,
   ThirdOne
 > g;
->>> Splitting in type argument forces type argument list to split.
-Generic<Map<LongTypeName, AnotherType>, ThirdOne> g;
+>>> Splitting in type argument forces outer type argument list to split.
+Generic<Map<LongTypeName, AnotherReallyLongType>, ThirdOne> g;
 <<<
 Generic<
   Map<
     LongTypeName,
-    AnotherType
+    AnotherReallyLongType
   >,
   ThirdOne
 > g;
