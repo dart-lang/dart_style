@@ -195,18 +195,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitComment(Comment node) {
-    throw UnimplementedError();
+    assert(false, 'Comments should be handled elsewhere.');
   }
 
   @override
   void visitCommentReference(CommentReference node) {
-    throw UnimplementedError();
+    assert(false, 'Comments should be handled elsewhere.');
   }
 
   @override
   void visitCompilationUnit(CompilationUnit node) {
-    throw UnsupportedError(
-        'CompilationUnit should be handled directly by format().');
+    assert(false, 'CompilationUnit should be handled directly by format().');
   }
 
   @override
@@ -297,7 +296,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitDoubleLiteral(DoubleLiteral node) {
-    throw UnimplementedError();
+    token(node.literal);
   }
 
   @override
@@ -448,7 +447,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitHideCombinator(HideCombinator node) {
-    throw UnimplementedError();
+    assert(false, 'Combinators are handled by createImport().');
   }
 
   @override
@@ -517,13 +516,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitLabeledStatement(LabeledStatement node) {
     var sequence = SequenceBuilder(this);
-
     for (var label in node.labels) {
       sequence.add(label);
     }
 
     sequence.add(node.statement);
-
     writer.push(sequence.build());
   }
 
@@ -645,7 +642,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNullLiteral(NullLiteral node) {
-    throw UnimplementedError();
+    token(node.literal);
   }
 
   @override
@@ -812,7 +809,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitShowCombinator(ShowCombinator node) {
-    throw UnimplementedError();
+    assert(false, 'Combinators are handled by createImport().');
   }
 
   @override
@@ -872,12 +869,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSymbolLiteral(SymbolLiteral node) {
-    throw UnimplementedError();
+    token(node.poundSign);
+    var components = node.components;
+    for (var component in components) {
+      // The '.' separator.
+      if (component != components.first) token(component.previous);
+      token(component);
+    }
   }
 
   @override
   void visitThisExpression(ThisExpression node) {
-    throw UnimplementedError();
+    token(node.thisKeyword);
   }
 
   @override
