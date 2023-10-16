@@ -1,0 +1,142 @@
+40 columns                              |
+>>> Split in condition.
+if (veryLongCondition || anotherLongCondition) { body; }
+<<<
+if (veryLongCondition ||
+    anotherLongCondition) {
+  body;
+}
+>>> Indentation.
+if  (  true  )  {  return 42;  }  else  {  return 13;  }
+<<<
+if (true) {
+  return 42;
+} else {
+  return 13;
+}
+>>> Nested indentation.
+if (true){
+if (true){
+if (true){
+return true;
+} else{
+return false;
+}
+}
+}else{
+return false;
+}
+<<<
+if (true) {
+  if (true) {
+    if (true) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+} else {
+  return false;
+}
+>>> Chained else if.
+if (0 == 0) {
+  zero;
+} else if (0 == 1) {
+  one;
+} else if (0 == 2) {
+  two;
+}
+<<<
+if (0 == 0) {
+  zero;
+} else if (0 == 1) {
+  one;
+} else if (0 == 2) {
+  two;
+}
+>>> Then without else.
+if(true){print("true!");}
+<<<
+if (true) {
+  print("true!");
+}
+>>> Don't split empty block in if without else.
+if (condition) {
+
+
+}
+<<<
+if (condition) {}
+>>> Split empty block in if when there is an else.
+if (condition) {} else {
+
+}
+<<<
+if (condition) {
+} else {}
+>>> Unbraced then.
+if(true)print("true!");
+<<<
+if (true) print("true!");
+>>> Split unbraced then branch.
+### This goes against the style guide, but the formatter still has to handle it.
+if (condition) someLong(argument, another);
+<<<
+if (condition)
+  someLong(argument, another);
+>>> Split in condition forces unbraced if to split.
+if (veryLongCondition || veryLongExpression) body;
+<<<
+if (veryLongCondition ||
+    veryLongExpression)
+  body;
+>>> Split in then statement forces unbraced if to split.
+if (condition) veryLongExpression + anotherLongExpression;
+<<<
+if (condition)
+  veryLongExpression +
+      anotherLongExpression;
+>>> Unbraced else.
+if(true){print(1);}else print(0);
+<<<
+if (true) {
+  print(1);
+} else
+  print(0);
+>>> Unbraced both.
+if(true)print(1);else print(0);
+<<<
+if (true)
+  print(1);
+else
+  print(0);
+>>> Long if else without braces.
+if (condition)
+  someLong(argument, another);
+else
+  anotherLong(argument, another);
+<<<
+if (condition)
+  someLong(argument, another);
+else
+  anotherLong(argument, another);
+>>> Unbraced chained if-else without else.
+if(a)print(0);else if(b) print(1); else if(c) print(2);
+<<<
+if (a)
+  print(0);
+else if (b)
+  print(1);
+else if (c)
+  print(2);
+>>> Unbraced chained if-else with else.
+if(a)print(0);else if(b) print(1); else if(c) print(2); else print(3);
+<<<
+if (a)
+  print(0);
+else if (b)
+  print(1);
+else if (c)
+  print(2);
+else
+  print(3);

@@ -37,11 +37,12 @@ class BlockPiece extends Piece {
     writer.format(leftBracket);
 
     if (_alwaysSplit || state == State.split) {
-      writer.setIndent(Indent.block);
-      writer.newline();
-      writer.format(contents);
-      writer.setIndent(Indent.none);
-      writer.newline();
+      if (contents.isNotEmpty) {
+        writer.newline(indent: Indent.block);
+        writer.format(contents);
+      }
+
+      writer.newline(indent: Indent.none);
     } else {
       writer.setAllowNewlines(false);
       writer.format(contents);

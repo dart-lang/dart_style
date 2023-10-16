@@ -1,0 +1,14 @@
+40 columns                              |
+>>> Without value.
+return  ;
+<<<
+return ;
+>>> With value.
+return  value  ;
+<<<
+return value;
+>>> With split value.
+return  veryLongExpression + anotherLongOne;
+<<<
+return veryLongExpression +
+    anotherLongOne;

@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../ast_extensions.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
+import '../piece/if.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
 import '../piece/piece.dart';
@@ -46,33 +47,42 @@ mixin PieceFactory implements CommentWriter {
 
   /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
   /// body.
-  void createBlock(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
+  ///
+  /// If [forceSplit] is `true`, then the block will split even if empty. This
+  /// is used, for example, with empty blocks in `if` statements followed by
+  /// `else` clauses:
+  ///
+  /// ```
+  /// if (condition) {
+  /// } else {}
+  /// ```
+  void createBlock(Block block, {bool forceSplit = false}) {
     // Edge case: If the block is completely empty, output it as simple
-    // unsplittable text.
-    if (nodes.isEmptyBody(rightBracket)) {
-      token(leftBracket);
-      token(rightBracket);
+    // unsplittable text unless it's forced to split.
+    if (block.statements.isEmptyBody(block.rightBracket) && !forceSplit) {
+      token(block.leftBracket);
+      token(block.rightBracket);
       return;
     }
 
-    token(leftBracket);
+    token(block.leftBracket);
     var leftBracketPiece = writer.pop();
     writer.split();
 
     var sequence = SequenceBuilder(this);
-    for (var node in nodes) {
+    for (var node in block.statements) {
       sequence.add(node);
     }
 
     // Place any comments before the "}" inside the block.
-    sequence.addCommentsBefore(rightBracket);
+    sequence.addCommentsBefore(block.rightBracket);
 
-    token(rightBracket);
+    token(block.rightBracket);
     var rightBracketPiece = writer.pop();
 
     writer.push(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
-        alwaysSplit: nodes.isNotEmpty));
+        alwaysSplit: forceSplit || block.statements.isNotEmpty));
   }
 
   /// Creates a [ListPiece] for a collection literal.
@@ -121,6 +131,69 @@ mixin PieceFactory implements CommentWriter {
 
       visit(component);
     }
+  }
+
+  // TODO(tall): Generalize this to work with if elements too.
+  /// Creates a piece for a chain of if-else-if... statements.
+  void createIf(IfStatement ifStatement) {
+    var piece = IfPiece();
+
+    // Recurses through the else branches to flatten them into a linear if-else
+    // chain handled by a single [IfPiece].
+    void traverse(IfStatement node) {
+      token(node.ifKeyword);
+      writer.space();
+      token(node.leftParenthesis);
+      visit(node.expression);
+      token(node.rightParenthesis);
+      var condition = writer.pop();
+      writer.split();
+
+      // Edge case: When the then branch is a block and there is an else clause
+      // after it, we want to force the block to split even if empty, like:
+      //
+      // ```
+      // if (condition) {
+      // } else {
+      //   body;
+      // }
+      // ```
+      if (node.thenStatement case Block thenBlock
+          when node.elseStatement != null) {
+        createBlock(thenBlock, forceSplit: true);
+      } else {
+        visit(node.thenStatement);
+      }
+
+      var thenStatement = writer.pop();
+      writer.split();
+      piece.add(condition, thenStatement, isBlock: node.thenStatement is Block);
+
+      switch (node.elseStatement) {
+        case IfStatement elseIf:
+          // Hit an else-if, so flatten it into the chain with the `else`
+          // becoming part of the next section's header.
+          token(node.elseKeyword);
+          writer.space();
+          traverse(elseIf);
+
+        case var elseStatement?:
+          // Any other kind of else body ends the chain, with the header for
+          // the last section just being the `else` keyword.
+          token(node.elseKeyword);
+          var header = writer.pop();
+          writer.split();
+
+          visit(elseStatement);
+          var statement = writer.pop();
+          writer.split();
+          piece.add(header, statement, isBlock: elseStatement is Block);
+      }
+    }
+
+    traverse(ifStatement);
+
+    writer.push(piece);
   }
 
   /// Creates an [ImportPiece] for an import or export directive.

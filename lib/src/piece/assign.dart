@@ -72,7 +72,6 @@ class AssignPiece extends Piece {
     if (state != _insideValue) writer.setIndent(Indent.expression);
 
     writer.format(target);
-
     writer.splitIf(state == _atEquals);
     writer.format(value);
   }

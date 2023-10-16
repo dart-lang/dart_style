@@ -143,7 +143,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitBlock(Block node) {
-    createBlock(node.leftBracket, node.statements, node.rightBracket);
+    createBlock(node);
   }
 
   @override
@@ -441,7 +441,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitIfStatement(IfStatement node) {
-    throw UnimplementedError();
+    createIf(node);
   }
 
   @override
@@ -766,7 +766,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitReturnStatement(ReturnStatement node) {
-    throw UnimplementedError();
+    token(node.returnKeyword);
+
+    if (node.expression case var expression) {
+      writer.space();
+      visit(expression);
+    }
+
+    token(node.semicolon);
   }
 
   @override
