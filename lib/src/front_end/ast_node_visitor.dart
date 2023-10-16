@@ -618,14 +618,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNamedType(NamedType node) {
-    // TODO(tall): Handle import prefix.
-    if (node.importPrefix != null) throw UnimplementedError();
+    if (node.importPrefix case var importPrefix?) {
+      token(importPrefix.name);
+      token(importPrefix.period);
+    }
 
     token(node.name2);
     visit(node.typeArguments);
-
-    // TODO(tall): Handle nullable types.
-    if (node.question != null) throw UnimplementedError();
+    token(node.question);
   }
 
   @override
