@@ -136,6 +136,19 @@ var variableNameWithExactLength____ = [];
 <<<
 var variableNameWithExactLength____ =
     [];
+>>> Prefer block-like splitting for maps.
+var variableName = {1: element, 2: element, 3: element};
+<<<
+var variableName = {
+  1: element,
+  2: element,
+  3: element,
+};
+>>> No block-like splitting for empty maps.
+var variableNameWithExactLength____ = {};
+<<<
+var variableNameWithExactLength____ =
+    {};
 >>> Prefer block-like splitting for function calls.
 var variableName = function(argument, argument);
 <<<

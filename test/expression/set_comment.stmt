@@ -1,0 +1,22 @@
+40 columns                              |
+### Sets use most of the same formatting code as lists, so we don't test
+### all of the edge cases here, just the basics.
+>>> Line comment in empty set.
+var set = {
+// comment
+};
+<<<
+var set = {
+  // comment
+};
+>>> Inline block comment.
+var set = {  /* comment */  };
+<<<
+var set = {/* comment */};
+>>> After element.
+({element // comment
+});
+<<<
+({
+  element, // comment
+});

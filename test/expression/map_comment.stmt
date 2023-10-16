@@ -1,0 +1,72 @@
+40 columns                              |
+### Maps use most of the same formatting code as lists, so we don't test
+### all of the edge cases here, just the basics and map-specific stuff.
+>>> Line comment in empty map.
+var map = {
+// comment
+};
+<<<
+var map = {
+  // comment
+};
+>>> Inline block comment.
+var map = {  /* comment */  };
+<<<
+var map = {/* comment */};
+>>> After entry.
+({key: value // comment
+});
+<<<
+({
+  key: value, // comment
+});
+>>> Preserve blank lines between comments and entries.
+({
+  // comment
+  element: 1,
+
+
+
+  noComment: 2,
+
+
+  // comment
+
+
+  // another
+
+
+
+  yesComment: 3
+
+
+});
+<<<
+({
+  // comment
+  element: 1,
+  noComment: 2,
+
+  // comment
+
+  // another
+  yesComment: 3,
+});
+>>> Comment after key.
+({key // comment
+: value});
+<<<
+### This looks weird, but users don't usually put comments here.
+({
+  key // comment
+      :
+      value,
+});
+>>> Comment after `:`.
+({key : // comment
+value});
+<<<
+({
+  key: // comment
+      value,
+});

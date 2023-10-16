@@ -24,3 +24,32 @@ function(
   two: 2,
   "itional",
 );
+>>> Split after argument name.
+function(veryLongParameterName: veryLong + argument + expression);
+<<<
+function(
+  veryLongParameterName:
+      veryLong + argument + expression,
+);
+>>> Use block-like formatting for arguments that are delimited expressions.
+function(list: [element1, element2, element3, element4],
+map: {entry1: valueOne, entry2: valueTwo},
+call: function(argument1, argument2, argument3));
+<<<
+function(
+  list: [
+    element1,
+    element2,
+    element3,
+    element4,
+  ],
+  map: {
+    entry1: valueOne,
+    entry2: valueTwo,
+  },
+  call: function(
+    argument1,
+    argument2,
+    argument3,
+  ),
+);

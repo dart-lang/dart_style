@@ -24,3 +24,17 @@ var variableName = [ /* some long comment */ ];
 var variableName = [
   /* some long comment */
 ];
+>>> Line comment before `=`.
+var variable // comment
+= value;
+<<<
+### This looks weird, but users don't usually put comments here.
+var variable // comment
+    =
+    value;
+>>> Line comment after `=`.
+var variable = // comment
+value;
+<<<
+var variable = // comment
+    value;

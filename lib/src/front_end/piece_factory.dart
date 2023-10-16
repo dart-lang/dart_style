@@ -13,6 +13,7 @@ import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import 'ast_node_visitor.dart';
 import 'comment_writer.dart';
+import 'delimited_list_builder.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
 
@@ -72,6 +73,34 @@ mixin PieceFactory implements CommentWriter {
     writer.push(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: nodes.isNotEmpty));
+  }
+
+  /// Creates a [ListPiece] for a collection literal.
+  void createCollection(TypedLiteral literal, Token leftBracket,
+      List<AstNode> elements, Token rightBracket) {
+    modifier(literal.constKeyword);
+    visit(literal.typeArguments);
+
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(leftBracket);
+
+    // TODO(tall): Support a line comment inside a collection literal as a
+    // signal to preserve internal newlines. So if you have:
+    //
+    // ```
+    // var list = [
+    //   1, 2, 3, // comment
+    //   4, 5, 6,
+    // ];
+    // ```
+    //
+    // The formatter will preserve the newline after element 3 and the lack of
+    // them after the other elements.
+
+    elements.forEach(builder.add);
+
+    builder.rightBracket(rightBracket);
+    writer.push(builder.build());
   }
 
   /// Creates metadata annotations for a directive.
@@ -237,15 +266,14 @@ mixin PieceFactory implements CommentWriter {
   /// * Variable declaration
   /// * Constructor initializer
   ///
-  /// This method assumes the code to the left of the `=` has already been
-  /// visited.
+  /// This is also used for map literal entries and named arguments which are
+  /// also sort of like bindings. In that case, [operator] is the `:`.
   ///
-  /// Does nothing if [equalsOperator] is `null`.
-  void finishAssignment(Token? equalsOperator, Expression? rightHandSide) {
-    if (equalsOperator == null) return;
-
-    writer.space();
-    token(equalsOperator);
+  /// This method assumes the code to the left of the `=` or `:` has already
+  /// been visited.
+  void finishAssignment(Token operator, Expression rightHandSide) {
+    if (operator.type == TokenType.EQ) writer.space();
+    token(operator);
     var target = writer.pop();
     writer.split();
 
@@ -253,7 +281,7 @@ mixin PieceFactory implements CommentWriter {
 
     var initializer = writer.pop();
     writer.push(AssignPiece(target, initializer,
-        isValueDelimited: rightHandSide!.isDelimited));
+        isValueDelimited: rightHandSide.isDelimited));
   }
 
   /// Writes an optional modifier that precedes other code.
