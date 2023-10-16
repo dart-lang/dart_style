@@ -6,6 +6,8 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../dart_formatter.dart';
+import '../piece/do_while.dart';
+import '../piece/if.dart';
 import '../piece/piece.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
@@ -158,7 +160,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitBreakStatement(BreakStatement node) {
-    throw UnimplementedError();
+    createBreak(node.breakKeyword, node.label, node.semicolon);
   }
 
   @override
@@ -251,7 +253,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitContinueStatement(ContinueStatement node) {
-    throw UnimplementedError();
+    createBreak(node.continueKeyword, node.label, node.semicolon);
   }
 
   @override
@@ -271,7 +273,21 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitDoStatement(DoStatement node) {
-    throw UnimplementedError();
+    token(node.doKeyword);
+    writer.space();
+    visit(node.body);
+    writer.space();
+    token(node.whileKeyword);
+    var body = writer.pop();
+    writer.split();
+
+    token(node.leftParenthesis);
+    visit(node.condition);
+    token(node.rightParenthesis);
+    token(node.semicolon);
+    var condition = writer.pop();
+
+    writer.push(DoWhilePiece(body, condition));
   }
 
   @override
@@ -944,7 +960,20 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitWhileStatement(WhileStatement node) {
-    throw UnimplementedError();
+    token(node.whileKeyword);
+    writer.space();
+    token(node.leftParenthesis);
+    visit(node.condition);
+    token(node.rightParenthesis);
+    var condition = writer.pop();
+    writer.split();
+
+    visit(node.body);
+    var body = writer.pop();
+
+    var piece = IfPiece();
+    piece.add(condition, body, isBlock: node.body is Block);
+    writer.push(piece);
   }
 
   @override

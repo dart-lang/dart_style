@@ -85,6 +85,16 @@ mixin PieceFactory implements CommentWriter {
         alwaysSplit: forceSplit || block.statements.isNotEmpty));
   }
 
+  /// Creates a piece for a `break` or `continue` statement.
+  void createBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
+    token(keyword);
+    if (label != null) {
+      writer.space();
+      visit(label);
+    }
+    token(semicolon);
+  }
+
   /// Creates a [ListPiece] for a collection literal.
   void createCollection(TypedLiteral literal, Token leftBracket,
       List<AstNode> elements, Token rightBracket) {

@@ -6,6 +6,9 @@ import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for an if statement.
+///
+/// We also use this for while statements, which are formatted exactly like an
+/// if statement with no else clause.
 class IfPiece extends Piece {
   final List<_IfSection> _sections = [];
 

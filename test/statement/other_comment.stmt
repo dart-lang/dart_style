@@ -1,0 +1,37 @@
+40 columns                              |
+>>> Break with comment after keyword.
+while (true) {
+  break // comment
+  ;
+}
+<<<
+while (true) {
+  break // comment
+  ;
+}
+>>> Break with comment after semicolon.
+while (true) {
+  break; // comment
+}
+<<<
+while (true) {
+  break; // comment
+}
+>>> Continue with comment after keyword.
+while (true) {
+  break // comment
+  ;
+}
+<<<
+while (true) {
+  break // comment
+  ;
+}
+>>> Continue with comment after semicolon.
+while (true) {
+  break; // comment
+}
+<<<
+while (true) {
+  break; // comment
+}
