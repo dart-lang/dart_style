@@ -70,8 +70,7 @@ class ListPiece extends Piece {
 
       case State.split:
         // Each argument on its own line with a trailing comma after the last.
-        writer.setIndent(Indent.block);
-        writer.newline();
+        writer.newline(indent: Indent.block);
         for (var i = 0; i < _arguments.length; i++) {
           var argument = _arguments[i];
           argument.format(writer,
@@ -80,8 +79,7 @@ class ListPiece extends Piece {
             writer.newline(blank: _blanksAfter.contains(argument));
           }
         }
-        writer.setIndent(Indent.none);
-        writer.newline();
+        writer.newline(indent: Indent.none);
     }
 
     writer.setAllowNewlines(true);

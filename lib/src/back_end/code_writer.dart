@@ -141,8 +141,13 @@ class CodeWriter {
 
   /// Inserts a line split in the output.
   ///
-  /// If [blank] is true, writes an extra newline to produce a blank line.
-  void newline({bool blank = false}) {
+  /// If [blank] is `true`, writes an extra newline to produce a blank line.
+  ///
+  /// If [indent] is given, set the indentation of the new line (and all
+  /// subsequent lines) to that indentation relative to the containing piece.
+  void newline({bool blank = false, int? indent}) {
+    if (indent != null) setIndent(indent);
+
     handleNewline();
     _finishLine();
     _buffer.writeln();

@@ -11,31 +11,34 @@ import 'piece.dart';
 /// Usually constructed using a [SequenceBuilder].
 class SequencePiece extends Piece {
   /// The series of members or statements.
-  final List<Piece> contents;
+  final List<Piece> _contents;
 
   /// The pieces that should have a blank line preserved between them and the
   /// next piece.
   final Set<Piece> _blanksAfter;
 
-  SequencePiece(this.contents, this._blanksAfter);
+  SequencePiece(this._contents, this._blanksAfter);
+
+  /// Whether this sequence has any contents.
+  bool get isNotEmpty => _contents.isNotEmpty;
 
   @override
   List<State> get states => const [];
 
   @override
   void format(CodeWriter writer, State state) {
-    for (var i = 0; i < contents.length; i++) {
-      writer.format(contents[i]);
+    for (var i = 0; i < _contents.length; i++) {
+      writer.format(_contents[i]);
 
-      if (i < contents.length - 1) {
-        writer.newline(blank: _blanksAfter.contains(contents[i]));
+      if (i < _contents.length - 1) {
+        writer.newline(blank: _blanksAfter.contains(_contents[i]));
       }
     }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    contents.forEach(callback);
+    _contents.forEach(callback);
   }
 
   @override
