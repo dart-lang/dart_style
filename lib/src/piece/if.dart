@@ -5,8 +5,7 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for a series of statements or members inside a block or declaration
-/// body.
+/// A piece for an if statement.
 class IfPiece extends Piece {
   final List<_IfSection> _sections = [];
 
