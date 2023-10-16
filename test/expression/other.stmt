@@ -1,4 +1,12 @@
 40 columns                              |
+>>> Null literal.
+null  ;
+<<<
+null;
+>>> Double literal.
+12.34;
+<<<
+12.34;
 >>> Parenthesized.
 (  (
 
@@ -9,3 +17,19 @@ expression
 )  );
 <<<
 ((expression));
+>>> This.
+this  ;
+<<<
+this;
+>>> Unqualified symbol.
+#  foo  ;
+<<<
+#foo;
+>>> Qualified symbol
+#  foo  .  bar  .  baz  ;
+<<<
+#foo.bar.baz;
+>>> Long qualified symbols do not split.
+#longComponent.anotherLongComponent.third;
+<<<
+#longComponent.anotherLongComponent.third;
