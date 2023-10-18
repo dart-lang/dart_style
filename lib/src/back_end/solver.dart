@@ -14,14 +14,14 @@ import 'solution.dart';
 /// possible states, so it isn't feasible to brute force. There are a few
 /// techniques we use to avoid that:
 ///
-/// -   All pieces default to being in state zero. Every piece is implemented
-///     such that that state has no line splits and zero cost. Thus, it tries
-///     solutions with a minimum number of line splits first.
+/// -   All pieces default to being in [State.initial]. Every piece is
+///     implemented such that that state has no line splits (or only mandatory
+///     ones) and zero cost. Thus, it tries solutions with a minimum number of
+///     line splits first.
 ///
 /// -   Solutions are explored in priority order. We explore solutions with the
-///     fewest overflow characters and the lowest cost (in that order) first.
-///     This was, as soon as we find a solution with no overflow characters, we
-///     know it will be the best solution and can stop.
+///     the lowest cost first. This way, as soon as we find a solution with no
+///     overflow characters, we know it will be the best solution and can stop.
 // TODO(perf): At some point, we probably also want to do memoization of
 // previously formatted Piece subtrees.
 class Solver {
