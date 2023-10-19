@@ -22,7 +22,7 @@ dev_dependencies:
   # TODO(rnystrom): Disabled for now because node_preamble is not migrated yet
   # and publishing to npm hasn't been used in a while.
   #  node_preamble: ^1.0.0
-  lints: ^2.0.0
+  lints: ^3.0.0
   test: ^1.24.6
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
