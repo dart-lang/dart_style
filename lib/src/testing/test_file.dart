@@ -59,11 +59,6 @@ class TestFile {
     var tests = <FormatTest>[];
 
     String readLine() {
-      // Skip comment lines.
-      while (lines[i].startsWith('###')) {
-        i++;
-      }
-
       return lines[i++];
     }
 
@@ -188,8 +183,8 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
 /// Turn the special Unicode escape marker syntax used in the tests into real
 /// Unicode characters.
 ///
-/// This does not use Dart's own string escape sequences so that we don't
-/// accidentally modify the Dart code being formatted.
+/// These escapes do not use Dart's own string escape sequences,
+/// to avoid accidentally modifying the Dart code being formatted.
 String _unescapeUnicode(String input) {
   return input.replaceAllMapped(_unicodeUnescapePattern, (match) {
     var codePoint = int.parse(match[1]!, radix: 16);

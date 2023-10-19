@@ -20,8 +20,14 @@ extension type const A(int a) {
 <<<
 @Anno<int, int>()
 extension type const A<S, T>.name(
-    @required Map<int, int> a)
+        @required Map<int, int> a)
     implements I<S>, J<T> {}
+>>> parameter is only double-indented if there is an implements
+extension type const A<S, T>.name(
+        @required Map<int, int> a) {}
+<<<
+extension type const A<S, T>.name(
+    @required Map<int, int> a) {}
 >>> implements on same line if they fit
 extension type E(T i)
     implements I, J {}
@@ -54,12 +60,12 @@ extension type A(int a) {}
 implements /*k*/ I1 /*l*/ , /*m*/ I2 /*n*/ { /*o*/ } /*p*/
 <<<
 /*a*/ extension /*b*/ type /*c*/ A /*d*/ (
-    /*e*/ @ /*f*/ override /*g*/
-    int /*h*/ a /*i*/) /*j*/
+        /*e*/ @ /*f*/ override /*g*/
+        int /*h*/ a /*i*/) /*j*/
     implements /*k*/
         I1 /*l*/,
         /*m*/ I2 /*n*/ {/*o*/} /*p*/
->>> eol comments everywhere
+>>> eol comments everywhere, all retained.
 // 0
 @patch // a
 extension // b
@@ -89,17 +95,17 @@ extension // b
     const // d
     A // e
     < // f
-        T // g
-        > // h
-    . // i
-    name // j
-    (
-    // k
-    @ // l
-    required // m
-    int // n
-        a // o
-    ) // p
+            T // g
+            > // h
+        . // i
+        name // j
+        (
+        // k
+        @ // l
+        required // m
+        int // n
+            a // o
+        ) // p
     implements // q
         I // r
 {

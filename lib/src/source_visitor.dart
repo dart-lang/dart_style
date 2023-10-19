@@ -1294,8 +1294,10 @@ class SourceVisitor extends ThrowingAstVisitor {
     space();
     token(node.name);
 
+    builder.nestExpression();
     visit(node.typeParameters);
     visit(node.representation);
+    builder.unnest();
 
     builder.startRule(CombinatorRule());
     visit(node.implementsClause);
