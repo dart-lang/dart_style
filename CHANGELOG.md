@@ -1,8 +1,11 @@
+<<<<<<< HEAD
 ## 2.3.4-wip
 
 * Add `tall-style` experiment flag to enable the in-progress unstable new
   formatting style (#1253).
 * Format extension types.
+* Normalize ignored whitespace and "escaped whitespace" on first line
+  of multiline string literals. (#1235)
 
 ## 2.3.3
 

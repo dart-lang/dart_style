@@ -4195,19 +4195,35 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Writes the first line of a multi-line string.
   ///
   /// If the string is a multiline string, and it has only whitespace
-  /// before the newline, that whitespace is omitted.
+  /// and escaped whitespace before a first line break,
+  /// omit the non-escaped trailing whitespace.
+  /// Normalize escaped non-final whitspace to spaces.
+  ///
+  /// More specifically:
+  /// If a multiline string literal contains at least one line-break
+  /// (a CR, LF or CR+LF) as part of the source character content
+  /// (characters inside interpolation expressions do not count),
+  /// and the source characters from the starting quote to the first
+  /// line-break contains only the characters space, tab and backslash,
+  /// with no two adjacent backslashes, then that part of the string source,
+  /// including the following line break, is excluded from particiapting
+  /// code points to the string value.
+  ///
+  /// This function normalizes such excluded character sequences
+  /// to just the back-slashes, separated by space characters.
   void _writeStringFirstLine(String line, Token string, {required int offset}) {
     // Detect leading whitespace on the first line of multiline strings.
     var quoteStart = line.startsWith('r') ? 1 : 0;
     var quoteEnd = quoteStart + 3;
+    var backslashCount = 0;
     if (line.length > quoteEnd &&
         (line.startsWith("'''", quoteStart) ||
             line.startsWith('"""', quoteStart))) {
       // Start of a multiline string literal.
       // Check if rest of the line is whitespace, possibly preceded by
       // backslash, or has a single trailing backslash preceding the newline.
+      // Count the backslashes.
       var cursor = quoteEnd;
-
       const backslash = 0x5c;
       const space = 0x20;
       const tab = 0x09;
@@ -4216,6 +4232,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         var char = line.codeUnitAt(cursor);
         if (char == backslash) {
           cursor += 1;
+          backslashCount++;
           if (cursor >= line.length) {
             break;
           }
@@ -4225,7 +4242,19 @@ class SourceVisitor extends ThrowingAstVisitor {
         cursor++;
       } while (cursor < line.length);
       if (cursor == line.length) {
-        _writeText(line.substring(0, quoteEnd), string, offset: offset);
+        // No invalid character sequence found before end of line.
+        // Normalize the ignored "escaped" whitespace which has no
+        // effect on string content.
+        var firstLineText = line.substring(0, quoteEnd);
+        if (backslashCount > 0) {
+          var buffer = StringBuffer(firstLineText);
+          buffer.write(r'\');
+          while (--backslashCount > 0) {
+            buffer.write(r' \');
+          }
+          firstLineText = buffer.toString();
+        }
+        _writeText(firstLineText, string, offset: offset);
         return;
       }
     }

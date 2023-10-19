@@ -23,32 +23,13 @@ bool _isWhitespace(int c) {
       c == 0xfeff; // ZERO WIDTH NO_BREAK SPACE.
 }
 
-/// Returns the next non-whitespace character.
+/// Returns the index of the next non-whitespace character.
 ///
-/// Searches [str] for non-whitespace characters, starting at [i]
-/// and ending at [len].
-///
-/// Skips whitespace characters *and* single backslashes before whitespace
-/// characters. The latter is allowed to account for the first line
-/// of multiline strings (but does risk allowing the removal of a backslash
-/// from a raw string.)
-///
-/// Returns the index of the next non-whitespace character
-/// starting from [i], or [len] if there are no non-whitespace
-/// characters between [i] and [len].
+/// Returns `true` if current contains a non-whitespace character.
+/// Returns `false` if no characters are left.
 int _moveNextNonWhitespace(String str, int len, int i) {
-  const backslash = 0x5C;
-  while (i < len) {
-    var c = str.codeUnitAt(i);
-    if (_isWhitespace(c)) {
-      i += 1;
-    } else if (c == backslash &&
-        i + 1 < len &&
-        _isWhitespace(str.codeUnitAt(i + 1))) {
-      i += 2;
-    } else {
-      break;
-    }
+  while (i < len && _isWhitespace(str.codeUnitAt(i))) {
+    i++;
   }
   return i;
 }
@@ -83,9 +64,8 @@ bool equalIgnoringWhitespace(String str1, String str2) {
     if (i1 >= len1 || i2 >= len2) {
       return (i1 >= len1) == (i2 >= len2);
     }
-    if (str1.codeUnitAt(i1) != str2.codeUnitAt(i2)) {
-      return false;
-    }
+
+    if (str1[i1] != str2[i2]) return false;
     i1++;
     i2++;
   }
