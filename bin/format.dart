@@ -132,7 +132,8 @@ void main(List<String> args) async {
       show: show,
       output: output,
       summary: summary,
-      setExitIfChanged: setExitIfChanged);
+      setExitIfChanged: setExitIfChanged,
+      experimentFlags: argResults['enable-experiment']);
 
   if (argResults.rest.isEmpty) {
     await formatStdin(options, selection, argResults['stdin-name'] as String);

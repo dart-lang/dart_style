@@ -1,0 +1,181 @@
+40 columns                              |
+>>> indentation
+extension type const A(int a) {
+inc(int x) => ++x;
+foo(int x) {
+if (x == 0) {
+return true;
+}}}
+<<<
+extension type const A(int a) {
+  inc(int x) => ++x;
+  foo(int x) {
+    if (x == 0) {
+      return true;
+    }
+  }
+}
+>>> all tokens
+@Anno<int, int>() extension type const A<S, T>.name(@required Map<int, int> a) implements I<S>, J<T> {}
+<<<
+@Anno<int, int>()
+extension type const A<S, T>.name(
+        @required Map<int, int> a)
+    implements I<S>, J<T> {}
+>>> parameter is only double-indented if there is an implements
+extension type const A<S, T>.name(
+        @required Map<int, int> a) {}
+<<<
+extension type const A<S, T>.name(
+    @required Map<int, int> a) {}
+>>> implements on same line if they fit
+extension type E(T i)
+    implements I, J {}
+<<<
+extension type E(T i) implements I, J {}
+>>> trailing space inside body
+extension type A(int a) {
+  }
+<<<
+extension type A(int a) {}
+>>> leading space before "extension type"
+  extension type A(int a) {
+}
+<<<
+extension type A(int a) {}
+>>>
+extension type A(int a)  { int meaningOfLife() => 42; }
+<<<
+extension type A(int a) {
+  int meaningOfLife() => 42;
+}
+>>>
+extension   type   A  (  int  a  )  {
+  }
+<<<
+extension type A(int a) {}
+>>> comments everywhere, all retained
+/*a*/ extension /*b*/ type /*c*/ A
+/*d*/ ( /*e*/ @ /*f*/ override /*g*/ int /*h*/ a /*i*/ ) /*j*/
+implements /*k*/ I1 /*l*/ , /*m*/ I2 /*n*/ { /*o*/ } /*p*/
+<<<
+/*a*/ extension /*b*/ type /*c*/ A /*d*/ (
+        /*e*/ @ /*f*/ override /*g*/
+        int /*h*/ a /*i*/) /*j*/
+    implements /*k*/
+        I1 /*l*/,
+        /*m*/ I2 /*n*/ {/*o*/} /*p*/
+>>> eol comments everywhere, all retained.
+// 0
+@patch // a
+extension // b
+type // c
+const // d
+A // e
+< // f
+T // g
+> // h
+. // i
+name // j
+( // k
+@ // l
+required // m
+int // n
+a // o
+) // p
+implements // q
+I // r
+{ // s
+} // t
+<<<
+// 0
+@patch // a
+extension // b
+    type // c
+    const // d
+    A // e
+    < // f
+            T // g
+            > // h
+        . // i
+        name // j
+        (
+        // k
+        @ // l
+        required // m
+        int // n
+            a // o
+        ) // p
+    implements // q
+        I // r
+{
+  // s
+} // t
+>>> eats newlines
+extension
+
+type
+
+const
+
+A
+
+<
+
+T
+
+>
+
+.
+
+name
+
+(
+
+int
+
+a
+
+)
+
+{
+
+}
+<<<
+extension type const A<T>.name(int a) {}
+>>> Supports all members except instance fields
+extension type const A<T>.name(int a) {
+  static  const int c = 1;
+  static  final int f = 1;
+  static  late final int l;
+  static  var v;
+  static  int get g => c;
+  static  set g(int i) {}
+  static  int m<X>(X x) => c;
+  const  A(int a) : this.a = a;
+  const  A.r(int a) : this(a);
+  const  factory A.rf(int a) = A;
+  factory  A.f(int a) => A(a);
+  int  get pr => 0;
+  set  pr(int x) {}
+  int  me(int x) => x;
+  int  operator+(int x) => x;
+}
+<<<
+extension type const A<T>.name(int a) {
+  static const int c = 1;
+  static final int f = 1;
+  static late final int l;
+  static var v;
+  static int get g => c;
+  static set g(int i) {}
+  static int m<X>(X x) => c;
+  const A(int a) : this.a = a;
+  const A.r(int a) : this(a);
+  const factory A.rf(int a) = A;
+  factory A.f(int a) => A(a);
+  int get pr => 0;
+  set pr(int x) {}
+  int me(int x) => x;
+  int operator +(int x) => x;
+}

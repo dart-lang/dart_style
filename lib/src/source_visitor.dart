@@ -1283,6 +1283,32 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
+    visitMetadata(node.metadata);
+
+    builder.nestExpression();
+    token(node.extensionKeyword);
+    space();
+    token(node.typeKeyword);
+    token(node.constKeyword, before: space);
+    space();
+    token(node.name);
+
+    builder.nestExpression();
+    visit(node.typeParameters);
+    visit(node.representation);
+    builder.unnest();
+
+    builder.startRule(CombinatorRule());
+    visit(node.implementsClause);
+    builder.endRule();
+
+    space();
+    builder.unnest();
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
+  }
+
+  @override
   void visitFieldDeclaration(FieldDeclaration node) {
     visitMetadata(node.metadata);
 
@@ -2598,6 +2624,46 @@ class SourceVisitor extends ThrowingAstVisitor {
     token(node.operator);
     space();
     visit(node.operand);
+  }
+
+  @override
+  void visitRepresentationConstructorName(RepresentationConstructorName node) {
+    token(node.period);
+    token(node.name);
+  }
+
+  @override
+  void visitRepresentationDeclaration(RepresentationDeclaration node) {
+    visit(node.constructorName);
+
+    token(node.leftParenthesis);
+
+    final rule = PositionalRule(null, argumentCount: 1);
+
+    builder.startRule(rule);
+    rule.beforeArgument(zeroSplit());
+
+    // Make sure record and function type parameter lists are indented.
+    builder.startBlockArgumentNesting();
+    builder.startSpan();
+
+    visitParameterMetadata(node.fieldMetadata, () {
+      builder.startLazyRule(Rule(Cost.parameterType));
+      builder.nestExpression();
+
+      visit(node.fieldType);
+      _separatorBetweenTypeAndVariable(node.fieldType);
+      token(node.fieldName);
+
+      builder.unnest();
+      builder.endRule();
+    });
+
+    builder.endBlockArgumentNesting();
+    builder.endSpan();
+    builder.endRule();
+
+    token(node.rightParenthesis);
   }
 
   @override
