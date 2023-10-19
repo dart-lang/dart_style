@@ -81,6 +81,10 @@ class CodeWriter {
   /// comments and multi-line string literals.
   void handleNewline() {
     if (!_options.allowNewlines) _containsInvalidNewline = true;
+
+    // Note that this piece contains a newline so that we can propagate that
+    // up to containing pieces too.
+    _options.hasNewline = true;
   }
 
   /// Appends [text] to the output.
@@ -158,7 +162,7 @@ class CodeWriter {
   }
 
   /// Sets whether newlines are allowed to occur from this point on for the
-  /// current piece or any of its children.
+  /// current piece.
   void setAllowNewlines(bool allowed) {
     _options.allowNewlines = allowed;
   }
@@ -186,7 +190,12 @@ class CodeWriter {
     // to be used as the key in the memoization table.
     piece.format(this, state);
 
-    _pieceOptions.removeLast();
+    var childOptions = _pieceOptions.removeLast();
+
+    // If the child [piece] contains a newline then this one transitively does.
+    // TODO(tall): At some point, we may want to provide an API so that pieces
+    // can block this from propagating outward.
+    if (childOptions.hasNewline) handleNewline();
   }
 
   /// Format [piece] if not null.
@@ -220,6 +229,9 @@ class _PieceOptions {
   /// If a newline is written while this is `false`, the entire solution is
   /// considered invalid and gets discarded.
   bool allowNewlines;
+
+  /// Whether any newlines have occurred in this piece or any of its children.
+  bool hasNewline = false;
 
   _PieceOptions(this.indent, this.nesting, this.allowNewlines);
 }

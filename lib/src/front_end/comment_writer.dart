@@ -263,7 +263,7 @@ class CommentSequence extends ListBase<SourceComment> {
     // Doc comments and non-inline `/* ... */` comments are always pushed to
     // the next line.
     var type = _comments[commentIndex].type;
-    return type != CommentType.doc && type != CommentType.block;
+    return type == CommentType.inlineBlock || type == CommentType.line;
   }
 
   /// Whether the comment at [commentIndex] should be attached to the following

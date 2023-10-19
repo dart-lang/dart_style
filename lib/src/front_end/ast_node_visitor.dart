@@ -267,7 +267,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    throw UnimplementedError();
+    visit(node.parameter);
+
+    // TODO(tall): Implement default values when function declarations are
+    // implemented.
+    if (node.separator != null) throw UnimplementedError();
   }
 
   @override
@@ -357,7 +361,35 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFormalParameterList(FormalParameterList node) {
-    throw UnimplementedError();
+    // Find the parameter immediately preceding the optional parameters (if
+    // there are any).
+    FormalParameter? lastRequired;
+    for (var i = 0; i < node.parameters.length; i++) {
+      if (node.parameters[i] is DefaultFormalParameter) {
+        if (i > 0) lastRequired = node.parameters[i - 1];
+        break;
+      }
+    }
+
+    // If all parameters are optional, put the `[` or `{` right after `(`.
+    var builder = DelimitedListBuilder(this);
+    if (node.parameters.isNotEmpty &&
+        node.parameters.first is DefaultFormalParameter) {
+      builder.leftBracket(node.leftParenthesis, delimiter: node.leftDelimiter);
+    } else {
+      builder.leftBracket(node.leftParenthesis);
+    }
+
+    for (var parameter in node.parameters) {
+      builder.add(parameter);
+
+      // If the optional parameters start after this one, put the delimiter
+      // at the end of its line.
+      if (parameter == lastRequired) builder.leftDelimiter(node.leftDelimiter!);
+    }
+
+    builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
+    writer.push(builder.build());
   }
 
   @override
@@ -432,12 +464,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    throw UnimplementedError();
+    startFormalParameter(node);
+    createFunctionType(node.returnType, node.name, node.typeParameters,
+        node.parameters, node.question);
   }
 
   @override
   void visitGenericFunctionType(GenericFunctionType node) {
-    throw UnimplementedError();
+    createFunctionType(node.returnType, node.functionKeyword,
+        node.typeParameters, node.parameters, node.question);
   }
 
   @override
@@ -586,15 +621,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     visit(node.methodName);
     visit(node.typeArguments);
 
-    var builder = DelimitedListBuilder(this);
-    builder.leftBracket(node.argumentList.leftParenthesis);
-
-    for (var argument in node.argumentList.arguments) {
-      builder.add(argument);
-    }
-
-    builder.rightBracket(node.argumentList.rightParenthesis);
-    writer.push(builder.build());
+    createDelimited(node.argumentList.leftParenthesis,
+        node.argumentList.arguments, node.argumentList.rightParenthesis);
   }
 
   @override
@@ -814,7 +842,30 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSimpleFormalParameter(SimpleFormalParameter node) {
-    throw UnimplementedError();
+    startFormalParameter(node);
+
+    if (node.keyword != null) throw UnimplementedError();
+
+    // TODO(tall): When function declarations are implemented, test that the
+    // formatter won't split after `var` or `final` in a parameter (with a
+    // type or not).
+
+    if ((node.type, node.name) case (var type?, var name?)) {
+      // Have both a type and name, so allow splitting between them.
+      visit(type);
+      var typePiece = writer.pop();
+      writer.split();
+
+      token(name);
+      var namePiece = writer.pop();
+      writer.split();
+
+      writer.push(VariablePiece(typePiece, [namePiece], hasType: true));
+    } else {
+      // Only one of name or type so just write whichever there is.
+      visit(node.type);
+      token(node.name);
+    }
   }
 
   @override
@@ -901,25 +952,22 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTypeArgumentList(TypeArgumentList node) {
-    var builder = DelimitedListBuilder(this);
-    builder.leftBracket(node.leftBracket);
-
-    for (var arguments in node.arguments) {
-      builder.add(arguments);
-    }
-
-    builder.rightBracket(node.rightBracket);
-    writer.push(builder.build());
+    createDelimited(node.leftBracket, node.arguments, node.rightBracket);
   }
 
   @override
   void visitTypeParameter(TypeParameter node) {
-    throw UnimplementedError();
+    token(node.name);
+    if (node.bound case var bound?) {
+      writer.space();
+      modifier(node.extendsKeyword);
+      visit(bound);
+    }
   }
 
   @override
   void visitTypeParameterList(TypeParameterList node) {
-    throw UnimplementedError();
+    createDelimited(node.leftBracket, node.typeParameters, node.rightBracket);
   }
 
   @override

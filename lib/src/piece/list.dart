@@ -11,8 +11,17 @@ import 'piece.dart';
 /// class handles adding and removing the trailing comma depending on whether
 /// the list is split or not.
 ///
-/// Usually constructed using a [DelimitedListBuilder].
+/// Usually constructed using [createDelimited()] or a [DelimitedListBuilder].
 class ListPiece extends Piece {
+  /// State used for a split list containing type arguments or type parameters.
+  ///
+  /// Has a higher cost than [State.split] since splitting type arguments and
+  /// type parameters tends to look worse than splitting at other places.
+  // TODO(rnystrom): Having to use a different state for this is a little
+  // cumbersome. Maybe it would be better to most costs out of [State] and
+  // instead have the [Solver] ask each [Piece] for the cost of its state.
+  static const _splitTypes = State(1, cost: 2);
+
   /// The called expression and the subsequent "(".
   final Piece _before;
 
@@ -32,18 +41,29 @@ class ListPiece extends Piece {
   /// The ")" after the arguments.
   final Piece _after;
 
-  /// Whether a split list should get a trailing comma.
+  /// Whether this list is a list of type arguments or type parameters, versus
+  /// any other kind of list.
   ///
-  /// This is true in most constructs in Dart, but trailing commas are
-  /// disallowed by the language in type argument and type parameter lists.
-  final bool _trailingComma;
+  /// Type arguments/parameters are different because:
+  ///
+  /// *   The language doesn't allow a trailing comma in them.
+  /// *   Splitting in them looks aesthetically worse, so we increase the cost
+  ///     of doing so.
+  final bool _isTypeList;
 
   ListPiece(this._before, this._arguments, this._blanksAfter, this._after,
-      this._trailingComma);
+      this._isTypeList);
 
-  /// Don't let the list split if there is nothing in it.
   @override
-  List<State> get states => _arguments.isEmpty ? const [] : const [State.split];
+  List<State> get states {
+    // Don't split between an empty pair of brackets.
+    if (_arguments.isEmpty) return const [];
+
+    // Type lists are more expensive to split.
+    if (_isTypeList) return const [_splitTypes];
+
+    return const [State.split];
+  }
 
   @override
   void format(CodeWriter writer, State state) {
@@ -62,19 +82,20 @@ class ListPiece extends Piece {
         // All arguments on one line with no trailing comma.
         writer.setAllowNewlines(false);
         for (var i = 0; i < _arguments.length; i++) {
-          if (i > 0) writer.space();
+          if (i > 0 && _arguments[i - 1]._delimiter.isEmpty) writer.space();
 
           // Don't write a trailing comma.
           _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
         }
 
       case State.split:
+      case _splitTypes:
         // Each argument on its own line with a trailing comma after the last.
         writer.newline(indent: Indent.block);
         for (var i = 0; i < _arguments.length; i++) {
           var argument = _arguments[i];
           argument.format(writer,
-              omitComma: i == _arguments.length - 1 && !_trailingComma);
+              omitComma: _isTypeList && i == _arguments.length - 1);
           if (i < _arguments.length - 1) {
             writer.newline(blank: _blanksAfter.contains(argument));
           }
@@ -123,11 +144,28 @@ class ListPiece extends Piece {
 /// the comment.
 final class ListElement {
   final Piece? _element;
+
+  /// If this piece has an opening delimiter after the comma, this is its
+  /// lexeme, otherwise an empty string.
+  ///
+  /// This is only used for parameter lists when an optional or named parameter
+  /// section begins in the middle of the parameter list, like:
+  ///
+  /// ```
+  /// function(
+  ///   int parameter1, [
+  ///   int parameter2,
+  /// ]);
+  /// ```
+  final String _delimiter;
+
   final Piece? _comment;
 
-  ListElement(this._element, [this._comment]);
+  ListElement(Piece element, [Piece? comment]) : this._(element, '', comment);
 
-  ListElement.comment(this._comment) : _element = null;
+  ListElement.comment(Piece comment) : this._(null, '', comment);
+
+  ListElement._(this._element, this._delimiter, [this._comment]);
 
   /// Writes this element to [writer].
   ///
@@ -137,6 +175,10 @@ final class ListElement {
     if (_element case var element?) {
       writer.format(element);
       if (!omitComma) writer.write(',');
+      if (_delimiter.isNotEmpty) {
+        writer.space();
+        writer.write(_delimiter);
+      }
     }
 
     if (_comment case var comment?) {
@@ -153,6 +195,10 @@ final class ListElement {
   /// Returns a new [ListElement] containing this one's element and [comment].
   ListElement withComment(Piece comment) {
     assert(_comment == null); // Shouldn't already have one.
-    return ListElement(_element, comment);
+    return ListElement._(_element, _delimiter, comment);
+  }
+
+  ListElement withDelimiter(String delimiter) {
+    return ListElement._(_element, delimiter, _comment);
   }
 }

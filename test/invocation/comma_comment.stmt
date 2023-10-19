@@ -16,7 +16,7 @@ function(veryLongArgument, veryLongArgument /* before */, argument);
 <<<
 function(
   veryLongArgument,
-  veryLongArgument, /* before */
+  veryLongArgument /* before */,
   argument,
 );
 >>> Block comment after non-trailing comma.
@@ -32,7 +32,7 @@ function(veryLongArgument, argument /* before */ , /* after */ argument);
 <<<
 function(
   veryLongArgument,
-  argument, /* before */
+  argument /* before */,
   /* after */ argument,
 );
 >>> Block comment before preserved trailing comma.
@@ -40,35 +40,35 @@ function(veryLongArgument, veryLongArgument /* before */,);
 <<<
 function(
   veryLongArgument,
-  veryLongArgument, /* before */
+  veryLongArgument /* before */,
 );
 >>> Block comment after preserved trailing comma.
 function(veryLongArgument, veryLongArgument, /* after */);
 <<<
 function(
   veryLongArgument,
-  veryLongArgument, /* after */
+  veryLongArgument /* after */,
 );
 >>> Block comment before and after preserved trailing comma.
 function(veryLongArgument, argument /* before */ , /* after */);
 <<<
 function(
   veryLongArgument,
-  argument, /* before */ /* after */
+  argument /* before */ /* after */,
 );
 >>> Block comment at inserted comma.
 function(veryLongArgument, veryLongArgument /* at */);
 <<<
 function(
   veryLongArgument,
-  veryLongArgument, /* at */
+  veryLongArgument /* at */,
 );
 >>> Block comments at inserted comma.
 function(veryLongArgument, veryLongArgument /* 1 */ /* 2 */);
 <<<
 function(
   veryLongArgument,
-  veryLongArgument, /* 1 */ /* 2 */
+  veryLongArgument /* 1 */ /* 2 */,
 );
 >>> Block comment after comma on different line is leading when unsplit.
 function(argument, /* c */

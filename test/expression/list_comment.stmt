@@ -140,4 +140,4 @@ var list = [
 >>> Space between block comment and ",".
 var list = [1,/* a */ 2 /* b */  , 3];
 <<<
-var list = [1, /* a */ 2, /* b */ 3];
+var list = [1, /* a */ 2 /* b */, 3];

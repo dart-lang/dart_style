@@ -2,13 +2,20 @@
 /// source code.
 ///
 /// This mostly follows the same rules as `String.trim()` because that's what
-/// dart_style uses to trim trailing whitespace as well as considering `,` to
-/// be a whitespace character since the formatter will add and remove trailing
-/// commas.
+/// dart_style uses to trim trailing whitespace.
+///
+/// This function treats `,` as a whitespace character since the formatter will
+/// add and remove trailing commas. It treats, `[`, `]`, `{`, and `}` as
+/// whitespace characters because the formatter may move a comment if it
+/// appears near the closing delimiter of an optional parameter section.
 bool _isWhitespace(int c) {
   // Not using a set or something more elegant because this code is on the hot
   // path and this large expression is significantly faster than a set lookup.
   return c == 0x002c || // Treat commas as "whitespace".
+      c == 0x005b || // Treat `[` as "whitespace".
+      c == 0x005d || // Treat `]` as "whitespace".
+      c == 0x007b || // Treat `{` as "whitespace".
+      c == 0x007d || // Treat `}` as "whitespace".
       c >= 0x0009 && c <= 0x000d || // Control characters.
       c == 0x0020 || // SPACE.
       c == 0x0085 || // Control characters.
