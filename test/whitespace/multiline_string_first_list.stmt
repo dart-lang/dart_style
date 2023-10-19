@@ -1,0 +1,117 @@
+40 columns                              |
+>>> trailing all-space multiline string  (×20 = space, ×09 = tab)
+var x = '''×20×09×20×09
+×20×09
+×09×20''';
+<<<
+var x = '''
+×20×09
+×09×20''';
+>>> single trailing space
+var x = '''×20
+z''';
+<<<
+var x = '''
+z''';
+>>> single trailing tab
+var x = '''×09
+z''';
+<<<
+var x = '''
+z''';
+>>> trailing all-space multiline raw string
+var x = r'''×20×09×20×09
+×20×09
+×09×20''';
+<<<
+var x = r'''
+×20×09
+×09×20''';
+>>> no trailing characters, nothing happens
+var x = '''
+×20×09''';
+<<<
+var x = '''
+×20×09''';
+>>> no line break, nothing happnes
+var x = '''×20×09''';
+<<<
+var x = '''×20×09''';
+>>> line break not part of string.
+var x = '''×20×09×20×09${
+''}×20×09''';
+<<<
+var x = '''×20×09×20×09${''}×20×09''';
+>>> "escapes" allowed, not removed, but normalized
+var x = '''×20×09\×20\×09×20×09
+''';
+<<<
+var x = '''\×20\
+''';
+>>> single escaped space
+var x = '''\×20
+z''';
+<<<
+var x = '''\
+z''';
+>>> single escaped tab
+var x = '''\×09
+z''';
+<<<
+var x = '''\
+z''';
+>>> single trailing escape
+var x = '''\
+z''';
+<<<
+var x = '''\
+z''';
+>>> final "escape" allowed too, not removed, but normalized
+var x = '''×20×09\×20\×09×20×09\
+''';
+<<<
+var x = '''\×20\×20\
+''';
+>>> "escape" allowed in raw strings, not removed, but normalized
+var x = r'''×20×09\×20\×09×20×09\
+''';
+<<<
+var x = r'''\×20\×20\
+''';
+>>> A "double-escape" is not an escaped whitspace
+var x = '''×20×09\\×20
+''';
+<<<
+var x = '''×20×09\\×20
+''';
+>>> Non-whitispace character zero-content part on first line
+var x = '''   ${''}×20×09
+''';
+<<<
+var x = '''   ${''}×20×09
+''';
+>>> interpolations do not start a new "first line"
+var x = '''×20×09
+${''}×20×09
+''';
+<<<
+var x = '''
+${''}×20×09
+''';
+>>> Works with any line break - U+000A
+var x = '''×20×0a×20''';
+<<<
+var x = '''
+×20''';
+>>> Works with any line break - U+000D
+var x = '''×20×0d×20''';
+<<<
+var x = '''
+×20''';
+>>> Works with any line break - U+000D U+000A
+// First linebreak is not \r\n.
+var x = '''×20×0d×0az×20''';
+<<<
+// First linebreak is not \r\n.
+var x = '''
+z×20''';
