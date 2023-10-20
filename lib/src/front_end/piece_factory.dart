@@ -374,7 +374,7 @@ mixin PieceFactory implements CommentWriter {
   }
 
   /// Writes the parts of a formal parameter shared by all formal parameter
-  /// types: metadata, `coviariant`, etc.
+  /// types: metadata, `covariant`, etc.
   void startFormalParameter(FormalParameter parameter) {
     if (parameter.metadata.isNotEmpty) throw UnimplementedError();
 

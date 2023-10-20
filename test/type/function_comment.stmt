@@ -1,48 +1,152 @@
 40 columns                              |
->>> Block comment before first parameter.
+>>> Inline block comment before first parameter.
 Function(/* c */a,b) x;
 <<<
 Function(/* c */ a, b) x;
->>> Block comment before ",".
+>>> Inline block comment before ",".
 Function(a/* c */,b) x;
 <<<
 Function(a /* c */, b) x;
->>> Block comment after ",".
+>>> Inline block comment after ",".
 Function(a,/* c */b) x;
 <<<
 Function(a, /* c */ b) x;
->>> Block comment before "[".
+>>> Inline block comment before "[".
 Function(a /* c */, [b]) x;
 <<<
 Function(a /* c */, [b]) x;
->>> Block comment after "[".
+>>> Inline block comment after "[".
 Function([/* c */ arg]) x;
 <<<
 Function([/* c */ arg]) x;
->>> Block comment before "]".
+>>> Inline block comment before "]".
 Function([arg/* c */]) x;
 <<<
 Function([arg /* c */]) x;
->>> Block comment after "]".
+>>> Inline block comment after "]".
 Function([arg]/* c */) x;
 <<<
 Function([arg /* c */]) x;
->>> Block comment before "{".
+>>> Inline block comment before "{".
 Function(a,/* c */{int b}) x;
 <<<
 Function(a /* c */, {int b}) x;
->>> Block comment after "{".
+>>> Inline block comment after "{".
 Function({/* c */int arg}) x;
 <<<
 Function({/* c */ int arg}) x;
->>> Block comment before "}".
+>>> Inline block comment before "}".
 Function({int arg/* c */}) x;
 <<<
 Function({int arg /* c */}) x;
->>> Block comment after "{".
+>>> Inline block comment after "{".
 Function({int arg}/* c */) x;
 <<<
 Function({int arg /* c */}) x;
+>>> Non-inline block comment before first parameter.
+Function(
+/* c */
+a,b) x;
+<<<
+Function(
+  /* c */
+  a,
+  b,
+) x;
+>>> Non-inline block comment before ",".
+Function(a
+/* c */
+,b) x;
+<<<
+Function(
+  a,
+  /* c */
+  b,
+) x;
+>>> Non-inline block comment after ",".
+Function(a,
+/* c */
+b) x;
+<<<
+Function(
+  a,
+  /* c */
+  b,
+) x;
+>>> Non-inline block comment before "[".
+Function(a
+/* c */
+, [b]) x;
+<<<
+Function(
+  a, [
+  /* c */
+  b,
+]) x;
+>>> Non-inline block comment after "[".
+Function([
+/* c */
+arg]) x;
+<<<
+Function([
+  /* c */
+  arg,
+]) x;
+>>> Non-inline block comment before "]".
+Function([arg
+/* c */
+]) x;
+<<<
+Function([
+  arg,
+  /* c */
+]) x;
+>>> Non-inline block comment after "]".
+Function([arg]
+/* c */
+) x;
+<<<
+Function([
+  arg,
+  /* c */
+]) x;
+>>> Non-inline block comment before "{".
+Function(a,
+/* c */
+{int b}) x;
+<<<
+Function(
+  a, {
+  /* c */
+  int b,
+}) x;
+>>> Non-inline block comment after "{".
+Function({
+/* c */
+int arg}) x;
+<<<
+Function({
+  /* c */
+  int arg,
+}) x;
+>>> Non-inline block comment before "}".
+Function({int arg
+/* c */
+}) x;
+<<<
+Function({
+  int arg,
+  /* c */
+}) x;
+>>> Non-inline block comment after "{".
+Function({int arg}
+/* c */
+) x;
+<<<
+Function({
+  int arg,
+  /* c */
+}) x;
 >>> Line comment before first parameter.
 Function(// c
 a,b) x;
@@ -129,6 +233,108 @@ Function({int arg}// c
 Function({
   int arg, // c
 }) x;
+>>> Doc comment before first parameter.
+Function(/// c
+a,b) x;
+<<<
+Function(
+  /// c
+  a,
+  b,
+) x;
+>>> Doc comment before ",".
+Function(a/// c
+,b) x;
+<<<
+Function(
+  a,
+
+  /// c
+  b,
+) x;
+>>> Doc comment after ",".
+Function(a,/// c
+b) x;
+<<<
+Function(
+  a,
+
+  /// c
+  b,
+) x;
+>>> Doc comment before "[".
+Function(a,/// c
+[b]) x;
+<<<
+### Note: Moves comment after `[`.
+Function(
+  a, [
+
+  /// c
+  b,
+]) x;
+>>> Doc comment after "[".
+Function([/// c
+arg]) x;
+<<<
+Function([
+  /// c
+  arg,
+]) x;
+>>> Doc comment before "]".
+Function([arg/// c
+]) x;
+<<<
+Function([
+  arg,
+
+  /// c
+]) x;
+>>> Doc comment after "]".
+Function([arg]/// c
+) x;
+<<<
+Function([
+  arg,
+
+  /// c
+]) x;
+>>> Doc comment before "{".
+Function(a,/// c
+{int b}) x;
+<<<
+Function(
+  a, {
+
+  /// c
+  int b,
+}) x;
+>>> Doc comment after "{".
+Function({/// c
+int arg}) x;
+<<<
+Function({
+  /// c
+  int arg,
+}) x;
+>>> Doc comment before "}".
+Function({int arg/// c
+}) x;
+<<<
+Function({
+  int arg,
+
+  /// c
+}) x;
+>>> Doc comment after "{".
+Function({int arg}/// c
+) x;
+<<<
+Function({
+  int arg,
+
+  /// c
+}) x;
 >>> Comment before removed mandatory trailing comma.
 Function(a/* c */,) x;
 <<<
@@ -183,11 +389,11 @@ Function({int veryLongParameterName/* c */}) x;
 Function({
   int veryLongParameterName /* c */,
 }) x;
->>> Wrap inline block comment.
-Function(/* a very long block comment */) x;
+>>> Wrap inline Inline block comment.
+Function(/* a very long Inline block comment */) x;
 <<<
 Function(
-  /* a very long block comment */
+  /* a very long Inline block comment */
 ) x;
 >>> Before parameter.
 Function(

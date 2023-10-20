@@ -31,6 +31,14 @@ class DelimitedListBuilder {
 
   late final Piece _rightBracket;
 
+  /// Whether this list is a list of type arguments or type parameters, versus
+  /// any other kind of list.
+  ///
+  /// Type arguments/parameters are different because:
+  ///
+  /// *   The language doesn't allow a trailing comma in them.
+  /// *   Splitting in them looks aesthetically worse, so we increase the cost
+  ///     of doing so.
   bool _isTypeList = false;
 
   DelimitedListBuilder(this._visitor);
@@ -176,11 +184,9 @@ class DelimitedListBuilder {
 
     // Add any hanging inline block comments to the previous element before the
     // subsequent ",".
-    if (inlineComments.isNotEmpty) {
-      for (var comment in inlineComments) {
-        _visitor.writer.space();
-        _visitor.writer.writeComment(comment, hanging: true);
-      }
+    for (var comment in inlineComments) {
+      _visitor.writer.space();
+      _visitor.writer.writeComment(comment, hanging: true);
     }
 
     // Add any remaining hanging line comments to the previous element after

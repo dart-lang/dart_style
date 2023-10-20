@@ -18,7 +18,7 @@ var list = [
 var list = [  /* comment */  ];
 <<<
 var list = [/* comment */];
->>> Collapse all whitespace on single-line block comments in empty lists.
+>>> Remove blank lines around block comments in empty lists.
 var list = [
 
 
@@ -27,7 +27,9 @@ var list = [
 
 ];
 <<<
-var list = [/* comment */];
+var list = [
+  /* comment */
+];
 >>> Multiple inline block comments.
 var list = [  /* 1 */   /* 2 */   /* 3 */  ];
 <<<

@@ -361,31 +361,25 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFormalParameterList(FormalParameterList node) {
-    // Find the parameter immediately preceding the optional parameters (if
-    // there are any).
-    FormalParameter? lastRequired;
-    for (var i = 0; i < node.parameters.length; i++) {
-      if (node.parameters[i] is DefaultFormalParameter) {
-        if (i > 0) lastRequired = node.parameters[i - 1];
-        break;
-      }
-    }
+    // Find the first non-mandatory parameter (if there are any).
+    var firstOptional =
+        node.parameters.indexWhere((p) => p is DefaultFormalParameter);
 
     // If all parameters are optional, put the `[` or `{` right after `(`.
     var builder = DelimitedListBuilder(this);
-    if (node.parameters.isNotEmpty &&
-        node.parameters.first is DefaultFormalParameter) {
+    if (node.parameters.isNotEmpty && firstOptional == 0) {
       builder.leftBracket(node.leftParenthesis, delimiter: node.leftDelimiter);
     } else {
       builder.leftBracket(node.leftParenthesis);
     }
 
-    for (var parameter in node.parameters) {
-      builder.add(parameter);
+    for (var i = 0; i < node.parameters.length; i++) {
+      // If this is the first optional parameter, put the delimiter before it.
+      if (firstOptional > 0 && i == firstOptional) {
+        builder.leftDelimiter(node.leftDelimiter!);
+      }
 
-      // If the optional parameters start after this one, put the delimiter
-      // at the end of its line.
-      if (parameter == lastRequired) builder.leftDelimiter(node.leftDelimiter!);
+      builder.add(node.parameters[i]);
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
