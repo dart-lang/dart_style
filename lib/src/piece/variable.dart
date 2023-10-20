@@ -72,6 +72,11 @@ class VariablePiece extends Piece {
     // variables and their initializers.
     if (state == _betweenVariables) writer.setIndent(Indent.expression);
 
+    // Force variables to split if an initializer does.
+    if (_variables.length > 1 && state == State.initial) {
+      writer.setAllowNewlines(false);
+    }
+
     // Split after the type annotation.
     writer.splitIf(state == _afterType);
 
