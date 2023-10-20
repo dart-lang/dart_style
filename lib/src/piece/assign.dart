@@ -34,7 +34,7 @@ import 'piece.dart';
 ///
 /// ```
 /// var name =
-///   longValueExpression;
+///     longValueExpression;
 /// ```
 class AssignPiece extends Piece {
   /// Split inside the value but not at the `=`.
@@ -58,6 +58,30 @@ class AssignPiece extends Piece {
 
   AssignPiece(this.target, this.value, {required bool isValueDelimited})
       : _isValueDelimited = isValueDelimited;
+
+  // TODO(tall): The old formatter allows the first operand of a split
+  // conditional expression to be on the same line as the `=`, as in:
+  //
+  // ```
+  // var value = condition
+  //     ? thenValue
+  //     : elseValue;
+  // ```
+  //
+  // It's not clear if this behavior is deliberate or not. It does look OK,
+  // though. We could do the same thing here. If we do, I think it's worth
+  // considering allowing the same thing for infix expressions too:
+  //
+  // ```
+  // var value = operand +
+  //    operand +
+  //    operand;
+  // ```
+  //
+  // For now, we not implement this special case behavior. Once more of the
+  // language is implemented in the new back end and we can run the formatter
+  // on a large corpus of code, we can try it out and see if the special case
+  // behavior is worth it.
 
   @override
   List<State> get states => [if (_isValueDelimited) _insideValue, _atEquals];

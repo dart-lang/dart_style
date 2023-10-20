@@ -8,6 +8,7 @@ import 'package:analyzer/source/line_info.dart';
 import '../dart_formatter.dart';
 import '../piece/do_while.dart';
 import '../piece/if.dart';
+import '../piece/infix.dart';
 import '../piece/piece.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
@@ -210,7 +211,32 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitConditionalExpression(ConditionalExpression node) {
-    throw UnimplementedError();
+    visit(node.condition);
+    var condition = writer.pop();
+    writer.split();
+
+    token(node.question);
+    writer.space();
+    visit(node.thenExpression);
+    var thenBranch = writer.pop();
+    writer.split();
+
+    token(node.colon);
+    writer.space();
+    visit(node.elseExpression);
+    var elseBranch = writer.pop();
+
+    var piece = InfixPiece([condition, thenBranch, elseBranch]);
+
+    // If conditional expressions are directly nested, force them all to split,
+    // both parents and children.
+    if (node.parent is ConditionalExpression ||
+        node.thenExpression is ConditionalExpression ||
+        node.elseExpression is ConditionalExpression) {
+      piece.pin(State.split);
+    }
+
+    writer.push(piece);
   }
 
   @override
