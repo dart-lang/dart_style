@@ -26,7 +26,7 @@ class PieceStateSet {
   PieceStateSet._(this._pieces, this._pieceStates);
 
   /// The state this solution selects for [piece].
-  State pieceState(Piece piece) => _pieceStates[piece] ?? State.initial;
+  State pieceState(Piece piece) => _pieceStates[piece] ?? piece.defaultState;
 
   /// Gets the first piece that doesn't have a state selected yet, or `null` if
   /// all pieces have selected states.
@@ -85,11 +85,18 @@ class Solution implements Comparable<Solution> {
     var piece = _state.firstUnsolved();
     if (piece == null) return const [];
 
-    return [
-      // All pieces support a default state.
-      Solution(root, pageWidth, _state.cloneWith(piece, State.initial)),
+    var states = [
+      if (piece.pinnedState case var state?)
+        state
+      else ...[
+        // All pieces support a default state.
+        State.initial,
+        ...piece.states,
+      ]
+    ];
 
-      for (var state in piece.states)
+    return [
+      for (var state in states)
         Solution(root, pageWidth, _state.cloneWith(piece, state))
     ];
   }

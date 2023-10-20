@@ -22,12 +22,33 @@ abstract class Piece {
   /// support a [State.initial] which is the least split form the piece allows.
   List<State> get states;
 
+  /// The state the piece should apply if no specific state has been selected
+  /// in the solution for this piece yet.
+  State get defaultState => _pinnedState ?? State.initial;
+
+  /// If this piece has been pinned to a specific state, that state.
+  ///
+  /// This is used when a piece which otherwise supports multiple ways of
+  /// splitting should be eagerly constrained to a specific splitting choice
+  /// because of the context where it appears. For example, if conditional
+  /// expressions are nested, then all of them are forced to split because it's
+  /// too hard to read nested conditionals all on one line. We can express that
+  /// by pinning the Piece used for a conditional expression to its split state
+  /// when surrounded by or containing other conditionals.
+  State? get pinnedState => _pinnedState;
+  State? _pinnedState;
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);
 
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
+
+  /// Forces this piece to always use [state].
+  void pin(State state) {
+    _pinnedState = state;
+  }
 }
 
 /// A simple atomic piece of code.
