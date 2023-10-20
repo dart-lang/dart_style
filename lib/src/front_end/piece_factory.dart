@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../ast_extensions.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
+import '../piece/function.dart';
 import '../piece/if.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
@@ -101,9 +102,6 @@ mixin PieceFactory implements CommentWriter {
     modifier(literal.constKeyword);
     visit(literal.typeArguments);
 
-    var builder = DelimitedListBuilder(this);
-    builder.leftBracket(leftBracket);
-
     // TODO(tall): Support a line comment inside a collection literal as a
     // signal to preserve internal newlines. So if you have:
     //
@@ -117,8 +115,15 @@ mixin PieceFactory implements CommentWriter {
     // The formatter will preserve the newline after element 3 and the lack of
     // them after the other elements.
 
-    elements.forEach(builder.add);
+    createDelimited(leftBracket, elements, rightBracket);
+  }
 
+  /// Creates a [ListPiece] for the given bracket-delimited set of elements.
+  void createDelimited(
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(leftBracket);
+    elements.forEach(builder.add);
     builder.rightBracket(rightBracket);
     writer.push(builder.build());
   }
@@ -140,6 +145,32 @@ mixin PieceFactory implements CommentWriter {
       }
 
       visit(component);
+    }
+  }
+
+  /// Creates a function type or function-typed formal.
+  void createFunctionType(
+      TypeAnnotation? returnType,
+      Token? functionKeywordOrName,
+      TypeParameterList? typeParameters,
+      FormalParameterList parameters,
+      Token? question) {
+    Piece? returnTypePiece;
+    if (returnType != null) {
+      visit(returnType);
+      returnTypePiece = writer.pop();
+      writer.split();
+    }
+
+    token(functionKeywordOrName);
+    visit(typeParameters);
+    visit(parameters);
+    token(question);
+
+    // Allow splitting after the return type.
+    if (returnTypePiece != null) {
+      var parametersPiece = writer.pop();
+      writer.push(FunctionTypePiece(returnTypePiece, parametersPiece));
     }
   }
 
@@ -340,6 +371,15 @@ mixin PieceFactory implements CommentWriter {
     traverse(node);
 
     writer.push(InfixPiece(operands));
+  }
+
+  /// Writes the parts of a formal parameter shared by all formal parameter
+  /// types: metadata, `covariant`, etc.
+  void startFormalParameter(FormalParameter parameter) {
+    if (parameter.metadata.isNotEmpty) throw UnimplementedError();
+
+    modifier(parameter.requiredKeyword);
+    if (parameter.covariantKeyword != null) throw UnimplementedError();
   }
 
   /// Creates a [Piece] for some code followed by an `=` and an expression in

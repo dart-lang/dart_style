@@ -1,0 +1,198 @@
+40 columns                              |
+>>> Empty.
+Function  (  )  f;
+<<<
+Function() f;
+>>> Parameter and return types.
+void  Function  (  int  i  ,  String  s)  f;
+<<<
+void Function(int i, String s) f;
+>>> All optional parameters.
+Function  (  [  int  i  ,  String  s  ,  bool  b  ]  )  f;
+<<<
+Function([int i, String s, bool b]) f;
+>>> All named parameters.
+Function  (  {  int  i  ,  String  s  ,  bool  b  }  )  f;
+<<<
+Function({int i, String s, bool b}) f;
+>>> Mandatory and optional parameters.
+Function  (  int  i  ,  [  String  s  ,  bool  b  ]  )  f;
+<<<
+Function(int i, [String s, bool b]) f;
+>>> Mandatory and named parameters.
+Function  (  int  i  ,  {  String  s  ,  bool  b  }  )  f;
+<<<
+Function(int i, {String s, bool b}) f;
+>>> Required named parameter.
+Function  (  {  required  int  i  }  )  f;
+<<<
+Function({required int i}) f;
+>>> Type parameters.
+Function  <  A  ,  T  extends  S  >  (  x  ,  y  )  f;
+<<<
+Function<A, T extends S>(x, y) f;
+>>> Split value parameters.
+Function<T, R>(longParameterName, anotherLongParameter) f;
+<<<
+Function<T, R>(
+  longParameterName,
+  anotherLongParameter,
+) f;
+>>> Split type parameters.
+Function<LongTypeName, AnotherLongTypeName>(parameter) f;
+<<<
+Function<
+  LongTypeName,
+  AnotherLongTypeName
+>(parameter) f;
+>>> Split type parameters and value parameters.
+Function<LongTypeName, AnotherLongTypeName>(longParameterName, anotherLongParameter) f;
+<<<
+Function<
+  LongTypeName,
+  AnotherLongTypeName
+>(
+  longParameterName,
+  anotherLongParameter,
+) f;
+>>> Nullable types.
+int  ?  Function  (  int  ?  i  , {  String  ?  s  }  )  ?  f;
+<<<
+int? Function(int? i, {String? s})? f;
+>>> Split parameters.
+void Function(first, second, third, fourth) f;
+<<<
+void Function(
+  first,
+  second,
+  third,
+  fourth,
+) f;
+>>> Split parameters all optional.
+void Function([first, second, third, fourth]) f;
+<<<
+void Function([
+  first,
+  second,
+  third,
+  fourth,
+]) f;
+>>> Split parameters all named.
+void Function({bool first, double second, int third}) f;
+<<<
+void Function({
+  bool first,
+  double second,
+  int third,
+}) f;
+>>> Split parameters with optional.
+void Function(first, second, [third, fourth]) f;
+<<<
+void Function(
+  first,
+  second, [
+  third,
+  fourth,
+]) f;
+>>> Split parameters with named.
+void Function(first, second, {bool third, double fourth}) f;
+<<<
+void Function(
+  first,
+  second, {
+  bool third,
+  double fourth,
+}) f;
+>>> Remove trailing comma from mandatory if unsplit.
+Function(
+  first,
+  second,
+  third,
+) f;
+<<<
+Function(first, second, third) f;
+>>> Remove trailing comma from optional if unsplit.
+Function([
+  first,
+  second,
+  third,
+]) f;
+<<<
+Function([first, second, third]) f;
+>>> Remove trailing comma from named if unsplit.
+Function({
+  bool first,
+  int second,
+}) f;
+<<<
+Function({bool first, int second}) f;
+>>> Unsplit function typed parameter.
+Function(parameter1, void printFn(param1, param2)) f;
+<<<
+Function(
+  parameter1,
+  void printFn(param1, param2),
+) f;
+>>> Split function typed parameter.
+Function(int callback(parameter1, parameter2, parameter3, parameter4)) f;
+<<<
+Function(
+  int callback(
+    parameter1,
+    parameter2,
+    parameter3,
+    parameter4,
+  ),
+) f;
+>>> Required function typed formal.
+Function  (  {  required  void  callback  (  )  }  )  f  ;
+<<<
+Function({required void callback()}) f;
+>>> Split between parameter type and name.
+Function(VerylongParameterType longParameterName) f;
+<<<
+Function(
+  VerylongParameterType
+  longParameterName,
+) f;
+>>> Split in parameter type does not split before parameter.
+Function(Generic<LongTypeArgument, AnotherLongTypeName> parameter) f;
+<<<
+Function(
+  Generic<
+    LongTypeArgument,
+    AnotherLongTypeName
+  > parameter,
+) f;
+>>> Split in nested function type forces outer split.
+Function(int, String, Function(parameter1, parameter2, parameter3)) f;
+<<<
+Function(
+  int,
+  String,
+  Function(
+    parameter1,
+    parameter2,
+    parameter3,
+  ),
+) f;
+>>> Split in type arguments.
+Function<Parameter1, Parameter2, Parameter3>() f;
+<<<
+Function<
+  Parameter1,
+  Parameter2,
+  Parameter3
+>() f;
+>>> Split after return type.
+GenericClass<Parameter1, Parameter2> Function() f;
+<<<
+GenericClass<Parameter1, Parameter2>
+Function() f;
+>>> Chained return types.
+Function<Argument>(String) Function<Argument>(num) Function<Argument>(int) Function<Argument>(bool) longVariable;
+<<<
+Function<Argument>(String)
+Function<Argument>(num)
+Function<Argument>(int)
+Function<Argument>(bool) longVariable;

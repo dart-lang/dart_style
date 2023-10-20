@@ -32,7 +32,7 @@ void main() {
     expect(equalIgnoringWhitespace('foobar', 'foo\nbar'), isTrue);
   });
 
-  test('wdentical strings', () {
+  test('identical strings', () {
     expect(equalIgnoringWhitespace('foo bar', 'foo bar'), isTrue);
     expect(equalIgnoringWhitespace('', ''), isTrue);
   });
@@ -68,5 +68,25 @@ void main() {
     expect(equalIgnoringWhitespace('oo bar', 'foo bar'), isFalse);
     expect(equalIgnoringWhitespace('', 'foo bar'), isFalse);
     expect(equalIgnoringWhitespace('foo bar', ''), isFalse);
+  });
+
+  test('ignore differences from commas', () {
+    expect(equalIgnoringWhitespace('fn(a,)', 'fn(a)'), isTrue);
+    expect(equalIgnoringWhitespace('a,b,,,c,,,,', 'abc'), isTrue);
+    expect(equalIgnoringWhitespace('a,b,,,c,,,,', 'cba'), isFalse);
+  });
+
+  test('ignore differences from "[" and "]"', () {
+    expect(equalIgnoringWhitespace('f([a]/* c */)', 'f([a /* c */])'), isTrue);
+    expect(equalIgnoringWhitespace('f(/* c */[a])', 'f([/* c */ a])'), isTrue);
+    expect(equalIgnoringWhitespace('a]b][c][[]', 'abc'), isTrue);
+    expect(equalIgnoringWhitespace('a]b][c][[]', 'cba'), isFalse);
+  });
+
+  test('ignore differences from "{" and "}"', () {
+    expect(equalIgnoringWhitespace('f({a}/* c */)', 'f({a /* c */})'), isTrue);
+    expect(equalIgnoringWhitespace('f(/* c */{a})', 'f({/* c */ a})'), isTrue);
+    expect(equalIgnoringWhitespace('a}b}{c}{{}', 'abc'), isTrue);
+    expect(equalIgnoringWhitespace('a}b}{c}{{}', 'cba'), isFalse);
   });
 }

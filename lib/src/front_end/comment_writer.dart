@@ -85,7 +85,9 @@ mixin CommentWriter {
         writer.writeComment(comment);
       }
 
-      if (comment.type == CommentType.line) writer.writeNewline();
+      if (comment.type == CommentType.line || comment.type == CommentType.doc) {
+        writer.writeNewline();
+      }
     }
 
     if (comments.isNotEmpty && _needsSpaceAfterComment(token.lexeme)) {
@@ -130,6 +132,10 @@ mixin CommentWriter {
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
         type = CommentType.line;
       } else if (commentLine == previousLine || commentLine == tokenLine) {
+        // TODO(tall): I'm not sure if it makes sense to distinguish block
+        // comments with newlines around them from other block comments in the
+        // new Piece representation. Consider merging CommentType.inlineBlock
+        // and CommentType.block into a single type.
         type = CommentType.inlineBlock;
       } else {
         type = CommentType.block;
@@ -191,8 +197,10 @@ class SourceComment {
   SourceComment(this.text, this.type, {required this.flushLeft});
 
   /// Whether this comment contains a mandatory newline, either because it's a
-  /// line comment or a multi-line block comment.
-  bool get containsNewline => type == CommentType.line || text.contains('\n');
+  /// comment that should be on its own line or a lexeme with a newline inside
+  /// it (i.e. multi-line block comment, multi-line string).
+  bool get containsNewline =>
+      type != CommentType.inlineBlock || text.contains('\n');
 
   @override
   String toString() =>
@@ -261,9 +269,10 @@ class CommentSequence extends ListBase<SourceComment> {
     if (linesBefore(commentIndex) != 0) return false;
 
     // Doc comments and non-inline `/* ... */` comments are always pushed to
-    // the next line.
+    // the next line. Only inline block comments and line comments are allowed
+    // to hang at the end of a line.
     var type = _comments[commentIndex].type;
-    return type != CommentType.doc && type != CommentType.block;
+    return type == CommentType.inlineBlock || type == CommentType.line;
   }
 
   /// Whether the comment at [commentIndex] should be attached to the following

@@ -10,7 +10,7 @@
 {   /* comment */  }
 <<<
 {/* comment */}
->>>
+>>> Empty block containing non-inline block comment.
 {
 
   /* comment */
@@ -18,7 +18,9 @@
 
 }
 <<<
-{/* comment */}
+{
+  /* comment */
+}
 >>> Empty block containing multi-line block comment.
 {   /* comment
 line */  }

@@ -31,7 +31,15 @@ class DelimitedListBuilder {
 
   late final Piece _rightBracket;
 
-  bool _trailingComma = true;
+  /// Whether this list is a list of type arguments or type parameters, versus
+  /// any other kind of list.
+  ///
+  /// Type arguments/parameters are different because:
+  ///
+  /// *   The language doesn't allow a trailing comma in them.
+  /// *   Splitting in them looks aesthetically worse, so we increase the cost
+  ///     of doing so.
+  bool _isTypeList = false;
 
   DelimitedListBuilder(this._visitor);
 
@@ -40,24 +48,63 @@ class DelimitedListBuilder {
   CommentSequence _commentsBeforeComma = CommentSequence.empty;
 
   ListPiece build() => ListPiece(
-      _leftBracket, _elements, _blanksAfter, _rightBracket, _trailingComma);
+      _leftBracket, _elements, _blanksAfter, _rightBracket, _isTypeList);
 
   /// Adds the opening [bracket] to the built list.
-  void leftBracket(Token bracket) {
+  ///
+  /// If [delimiter] is given, it is a second bracket occurring immediately
+  /// after [bracket]. This is used for parameter lists where all parameters
+  /// are optional or named, as in:
+  ///
+  /// ```
+  /// function([parameter]);
+  /// ```
+  ///
+  /// Here, [bracket] will be `(` and [delimiter] will be `[`.
+  void leftBracket(Token bracket, {Token? delimiter}) {
     _visitor.token(bracket);
+    _visitor.token(delimiter);
     _leftBracket = _visitor.writer.pop();
     _visitor.writer.split();
 
     // No trailing commas in type argument and type parameter lists.
-    if (bracket.type == TokenType.LT) _trailingComma = false;
+    if (bracket.type == TokenType.LT) _isTypeList = true;
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that
   /// precede it.
-  void rightBracket(Token bracket) {
+  ///
+  /// If [delimiter] is given, it is a second bracket occurring immediately
+  /// after [bracket]. This is used for parameter lists with optional or named
+  /// parameters, like:
+  ///
+  /// ```
+  /// function(mandatory, {named});
+  /// ```
+  ///
+  /// Here, [bracket] will be `)` and [delimiter] will be `}`.
+  void rightBracket(Token bracket, {Token? delimiter}) {
     // Handle comments after the last element.
-    _addComments(bracket, hasElementAfter: false);
 
+    // Merge the comments before the delimiter (if there is one) and the
+    // bracket. If there is a delimiter, this will move comments between it and
+    // the bracket to before the delimiter, as in:
+    //
+    // ```
+    // // Before:
+    // f([parameter] /* comment */) {}
+    //
+    // // After:
+    // f([parameter /* comment */]) {}
+    // ```
+    var commentsBefore = _visitor.takeCommentsBefore(bracket);
+    if (delimiter != null) {
+      commentsBefore =
+          _visitor.takeCommentsBefore(delimiter).concatenate(commentsBefore);
+    }
+    _addComments(commentsBefore, hasElementAfter: false);
+
+    _visitor.token(delimiter);
     _visitor.token(bracket);
     _rightBracket = _visitor.writer.pop();
   }
@@ -67,8 +114,9 @@ class DelimitedListBuilder {
   /// Includes any comments that appear before element. Also includes the
   /// subsequent comma, if any, and any comments that precede the comma.
   void add(AstNode element) {
-    // Handle comments between the preceding argument and this one.
-    _addComments(element.beginToken, hasElementAfter: true);
+    // Handle comments between the preceding element and this one.
+    var commentsBeforeElement = _visitor.takeCommentsBefore(element.beginToken);
+    _addComments(commentsBeforeElement, hasElementAfter: true);
 
     // Traverse the element itself.
     _visitor.visit(element);
@@ -83,27 +131,66 @@ class DelimitedListBuilder {
     }
   }
 
-  /// Adds any comments preceding [token] the list.
+  /// Inserts an inner left delimiter between two elements.
+  ///
+  /// This is used for parameter lists when there are both mandatory and
+  /// optional or named parameters to insert the `[` or `{`, respectively.
+  ///
+  /// This should not be used if [delimiter] appears before all elements. In
+  /// that case, pass it to [leftBracket].
+  void leftDelimiter(Token delimiter) {
+    assert(_elements.isNotEmpty);
+
+    // Preserve any comments before the delimiter. Treat them as occurring
+    // before the previous element's comma. This means that:
+    //
+    // ```
+    // function(p1, /* comment */ [p1]);
+    // ```
+    //
+    // Will be formatted as:
+    //
+    // ```
+    // function(p1 /* comment */, [p1]);
+    // ```
+    //
+    // (In practice, it's such an unusual place for a comment that it doesn't
+    // matter that much where it goes and this seems to be simple and
+    // reasonable looking.)
+    _commentsBeforeComma = _commentsBeforeComma
+        .concatenate(_visitor.takeCommentsBefore(delimiter));
+
+    // Attach the delimiter to the previous element.
+    _elements.last = _elements.last.withDelimiter(delimiter.lexeme);
+  }
+
+  /// Adds [comments] to the list.
   ///
   /// If [hasElementAfter] is `true` then another element will be written after
   /// these comments. Otherwise, we are at the comments after the last element
   /// before the closing delimiter.
-  void _addComments(Token token, {required bool hasElementAfter}) {
-    var commentsBeforeElement = _visitor.takeCommentsBefore(token);
-
+  void _addComments(CommentSequence comments, {required bool hasElementAfter}) {
     // Early out if there's nothing to do.
-    if (_commentsBeforeComma.isEmpty && commentsBeforeElement.isEmpty) return;
+    if (_commentsBeforeComma.isEmpty && comments.isEmpty) return;
 
     // Figure out which comments are anchored to the preceding element, which
     // are freestanding, and which are attached to the next element.
     var (
+      inline: inlineComments,
       hanging: hangingComments,
       separate: separateComments,
       leading: leadingComments
-    ) = _splitCommaComments(commentsBeforeElement,
-        hasElementAfter: hasElementAfter);
+    ) = _splitCommaComments(comments, hasElementAfter: hasElementAfter);
 
-    // Add any hanging comments to the previous argument.
+    // Add any hanging inline block comments to the previous element before the
+    // subsequent ",".
+    for (var comment in inlineComments) {
+      _visitor.writer.space();
+      _visitor.writer.writeComment(comment, hanging: true);
+    }
+
+    // Add any remaining hanging line comments to the previous element after
+    // the ",".
     if (hangingComments.isNotEmpty) {
       for (var comment in hangingComments) {
         _visitor.writer.space();
@@ -137,9 +224,12 @@ class DelimitedListBuilder {
   /// Given the comments that followed the previous element before its comma
   /// and [commentsBeforeElement], the comments before the element we are about
   /// to write (and after the preceding element's comma), splits them into to
-  /// three comment sequences:
+  /// four comment sequences:
   ///
-  /// * The comments that should hang off the end of the preceding element.
+  /// * The inline block comments that should hang off the preceding element
+  ///   before its comma.
+  /// * The line comments that should hang off the end of the preceding element
+  ///   after its comma.
   /// * The comments that should be formatted like separate elements.
   /// * The comments that should lead the beginning of the next element we are
   ///   about to write.
@@ -148,9 +238,9 @@ class DelimitedListBuilder {
   ///
   /// ```
   /// function(
-  ///   argument /* hanging */,
+  ///   argument /* inline */, // hanging
   ///   // separate
-  ///   /* leading */
+  ///   /* leading */ nextArgument
   /// );
   /// ```
   ///
@@ -160,9 +250,13 @@ class DelimitedListBuilder {
   /// If [hasElementAfter] is `true` then another element will be written after
   /// these comments. Otherwise, we are at the comments after the last element
   /// before the closing delimiter.
-  ({CommentSequence hanging, CommentSequence separate, CommentSequence leading})
-      _splitCommaComments(CommentSequence commentsBeforeElement,
-          {required bool hasElementAfter}) {
+  ({
+    CommentSequence inline,
+    CommentSequence hanging,
+    CommentSequence separate,
+    CommentSequence leading
+  }) _splitCommaComments(CommentSequence commentsBeforeElement,
+      {required bool hasElementAfter}) {
     // If we're on the final comma after the last argument, the comma isn't
     // meaningful because there can't be leading comments after it.
     if (!hasElementAfter) {
@@ -181,8 +275,8 @@ class DelimitedListBuilder {
       commentsBeforeElement = remaining;
     }
 
-    // Inline block comments on the same line as a preceding element hang
-    // on that same line, as in:
+    // Inline block comments before the `,` stay with the preceding element, as
+    // in:
     //
     // ```
     // function(
@@ -190,18 +284,35 @@ class DelimitedListBuilder {
     //   argument,
     // );
     // ```
+    var inlineCommentCount = 0;
+    if (_elements.isNotEmpty) {
+      while (inlineCommentCount < _commentsBeforeComma.length) {
+        // Once we hit a single non-inline comment, the rest won't be either.
+        if (!_commentsBeforeComma.isHanging(inlineCommentCount) ||
+            _commentsBeforeComma[inlineCommentCount].type !=
+                CommentType.inlineBlock) {
+          break;
+        }
+
+        inlineCommentCount++;
+      }
+    }
+
+    var (inlineComments, remainingCommentsBeforeComma) =
+        _commentsBeforeComma.splitAt(inlineCommentCount);
+
     var hangingCommentCount = 0;
     if (_elements.isNotEmpty) {
-      while (hangingCommentCount < _commentsBeforeComma.length) {
+      while (hangingCommentCount < remainingCommentsBeforeComma.length) {
         // Once we hit a single non-hanging comment, the rest won't be either.
-        if (!_commentsBeforeComma.isHanging(hangingCommentCount)) break;
+        if (!remainingCommentsBeforeComma.isHanging(hangingCommentCount)) break;
 
         hangingCommentCount++;
       }
     }
 
     var (hangingComments, separateCommentsBeforeComma) =
-        _commentsBeforeComma.splitAt(hangingCommentCount);
+        remainingCommentsBeforeComma.splitAt(hangingCommentCount);
 
     // Inline block comments on the same line as the next element lead at the
     // beginning of that line, as in:
@@ -243,6 +354,7 @@ class DelimitedListBuilder {
         separateCommentsBeforeComma.concatenate(separateCommentsAfterComma);
 
     return (
+      inline: inlineComments,
       hanging: hangingComments,
       separate: separateComments,
       leading: leadingComments
