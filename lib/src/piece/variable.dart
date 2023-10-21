@@ -59,7 +59,7 @@ class VariablePiece extends Piece {
       : _hasType = hasType;
 
   @override
-  List<State> get states => [
+  List<State> get additionalStates => [
         if (_variables.length > 1) _betweenVariables,
         if (_hasType) _afterType,
       ];
@@ -73,7 +73,7 @@ class VariablePiece extends Piece {
     if (state == _betweenVariables) writer.setIndent(Indent.expression);
 
     // Force variables to split if an initializer does.
-    if (_variables.length > 1 && state == State.initial) {
+    if (_variables.length > 1 && state == State.unsplit) {
       writer.setAllowNewlines(false);
     }
 
@@ -82,7 +82,7 @@ class VariablePiece extends Piece {
 
     for (var i = 0; i < _variables.length; i++) {
       // Split between variables.
-      if (i > 0) writer.splitIf(state != State.initial);
+      if (i > 0) writer.splitIf(state != State.unsplit);
 
       writer.format(_variables[i]);
     }

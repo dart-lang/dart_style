@@ -14,7 +14,7 @@ import 'piece.dart';
 ///
 /// These constructs can be formatted three ways:
 ///
-/// [State.initial] No split at all:
+/// [State.unsplit] No split at all:
 ///
 /// ```
 /// var x = 123;
@@ -60,13 +60,14 @@ class AssignPiece extends Piece {
       : _isValueDelimited = isValueDelimited;
 
   @override
-  List<State> get states => [if (_isValueDelimited) _insideValue, _atEquals];
+  List<State> get additionalStates =>
+      [if (_isValueDelimited) _insideValue, _atEquals];
 
   @override
   void format(CodeWriter writer, State state) {
     // A split in either child piece forces splitting after the "=" unless it's
     // a delimited expression.
-    if (state == State.initial) writer.setAllowNewlines(false);
+    if (state == State.unsplit) writer.setAllowNewlines(false);
 
     // Don't indent a split delimited expression.
     if (state != _insideValue) writer.setIndent(Indent.expression);

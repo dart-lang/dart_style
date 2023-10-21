@@ -18,7 +18,7 @@ class FunctionTypePiece extends Piece {
   FunctionTypePiece(this._returnType, this._signature);
 
   @override
-  List<State> get states => const [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {

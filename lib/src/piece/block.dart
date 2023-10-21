@@ -25,7 +25,7 @@ class BlockPiece extends Piece {
   }
 
   @override
-  List<State> get states => const [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {
