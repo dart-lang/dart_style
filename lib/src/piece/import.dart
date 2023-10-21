@@ -13,7 +13,7 @@ import 'piece.dart';
 ///
 /// Combinators can be split like so:
 ///
-/// [State.initial] All on one line:
+/// [State.unsplit] All on one line:
 ///
 /// ```
 /// import 'animals.dart' show Ant, Bat hide Cat, Dog;
@@ -109,7 +109,7 @@ class ImportPiece extends Piece {
   }
 
   @override
-  List<State> get states => [
+  List<State> get additionalStates => [
         _beforeCombinators,
         if (_combinators.length > 1) ...[
           _firstCombinator,
@@ -126,13 +126,13 @@ class ImportPiece extends Piece {
 
     if (_combinators.isNotEmpty) {
       _combinators[0].format(writer,
-          splitKeyword: state != State.initial,
+          splitKeyword: state != State.unsplit,
           splitNames: state == _firstCombinator || state == State.split);
     }
 
     if (_combinators.length > 1) {
       _combinators[1].format(writer,
-          splitKeyword: state != State.initial,
+          splitKeyword: state != State.unsplit,
           splitNames: state == _secondCombinator || state == State.split);
     }
   }

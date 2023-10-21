@@ -22,25 +22,19 @@ class InfixPiece extends Piece {
   InfixPiece(this.operands);
 
   @override
-  List<State> get states => const [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {
-    switch (state) {
-      case State.initial:
-        writer.setAllowNewlines(false);
-        for (var i = 0; i < operands.length; i++) {
-          writer.format(operands[i]);
+    if (state == State.unsplit) {
+      writer.setAllowNewlines(false);
+    } else {
+      writer.setNesting(Indent.expression);
+    }
 
-          if (i < operands.length - 1) writer.space();
-        }
-
-      case State.split:
-        writer.setNesting(Indent.expression);
-        for (var i = 0; i < operands.length; i++) {
-          writer.format(operands[i]);
-          if (i < operands.length - 1) writer.newline();
-        }
+    for (var i = 0; i < operands.length; i++) {
+      writer.format(operands[i]);
+      if (i < operands.length - 1) writer.splitIf(state == State.split);
     }
   }
 

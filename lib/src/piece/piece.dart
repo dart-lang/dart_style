@@ -12,19 +12,29 @@ import '../back_end/code_writer.dart';
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
 abstract class Piece {
-  /// The ordered list of indexes identifying each way this piece can split.
+  /// The ordered list of ways this piece may split.
   ///
-  /// Each piece determines what each value in the list represents. The list
-  /// returned by this function should be sorted so that earlier states in the
-  /// list compare less than later states.
-  ///
-  /// In addition to the values returned here, each piece should implicitly
-  /// support a [State.initial] which is the least split form the piece allows.
-  List<State> get states;
+  /// If the piece is aready pinned, then this is just the one pinned state.
+  /// Otherwise, it's [State.unsplit], which all pieces support, followed by
+  /// any other [additionalStates].
+  List<State> get states {
+    if (_pinnedState case var state?) {
+      return [state];
+    } else {
+      return [State.unsplit, ...additionalStates];
+    }
+  }
 
-  /// The state the piece should apply if no specific state has been selected
-  /// in the solution for this piece yet.
-  State get defaultState => _pinnedState ?? State.initial;
+  /// The ordered list of all possible ways this piece could split.
+  ///
+  /// Piece subclasses should override this if they support being split in
+  /// multiple different ways.
+  ///
+  /// Each piece determines what each [State] in the list represents, including
+  /// the automatically included [State.unsplit]. The list returned by this
+  /// function should be sorted so that earlier states in the list compare less
+  /// than later states.
+  List<State> get additionalStates => const [];
 
   /// If this piece has been pinned to a specific state, that state.
   ///
@@ -70,9 +80,6 @@ class TextPiece extends Piece {
   /// multiline strings, etc.
   bool _containsNewline = false;
 
-  @override
-  List<State> get states => const [];
-
   /// Whether the last line of this piece's text ends with [text].
   bool endsWith(String text) => _lines.isNotEmpty && _lines.last.endsWith(text);
 
@@ -117,7 +124,7 @@ class TextPiece extends Piece {
 /// Each state identifies one way that a piece can be split into multiple lines.
 /// Each piece determines how its states are interpreted.
 class State implements Comparable<State> {
-  static const initial = State(0, cost: 0);
+  static const unsplit = State(0, cost: 0);
 
   /// The maximally split state a piece can be in.
   ///
