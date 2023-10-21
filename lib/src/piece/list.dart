@@ -55,15 +55,12 @@ class ListPiece extends Piece {
       this._isTypeList);
 
   @override
-  List<State> get states {
-    // Don't split between an empty pair of brackets.
-    if (_arguments.isEmpty) return const [];
-
-    // Type lists are more expensive to split.
-    if (_isTypeList) return const [_splitTypes];
-
-    return const [State.split];
-  }
+  List<State> get additionalStates => [
+        if (_isTypeList)
+          _splitTypes // Type lists are more expensive to split.
+        else if (_arguments.isNotEmpty)
+          State.split // Don't split between an empty pair of brackets.
+      ];
 
   @override
   void format(CodeWriter writer, State state) {
@@ -78,7 +75,7 @@ class ListPiece extends Piece {
     // });
     // ```
     switch (state) {
-      case State.initial:
+      case State.unsplit:
         // All arguments on one line with no trailing comma.
         writer.setAllowNewlines(false);
         for (var i = 0; i < _arguments.length; i++) {

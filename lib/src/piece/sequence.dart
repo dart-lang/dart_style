@@ -23,9 +23,6 @@ class SequencePiece extends Piece {
   bool get isNotEmpty => _contents.isNotEmpty;
 
   @override
-  List<State> get states => const [];
-
-  @override
   void format(CodeWriter writer, State state) {
     for (var i = 0; i < _contents.length; i++) {
       writer.format(_contents[i]);

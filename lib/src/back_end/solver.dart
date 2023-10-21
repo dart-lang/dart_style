@@ -14,10 +14,9 @@ import 'solution.dart';
 /// possible states, so it isn't feasible to brute force. There are a few
 /// techniques we use to avoid that:
 ///
-/// -   All pieces default to being in [State.initial]. Every piece is
-///     implemented such that that state has no line splits (or only mandatory
-///     ones) and zero cost. Thus, it tries solutions with a minimum number of
-///     line splits first.
+/// -   The initial state for each piece has no line splits or only mandatory
+///     ones. Thus, it tries solutions with a minimum number of line splits
+///     first.
 ///
 /// -   Solutions are explored in priority order. We explore solutions with the
 ///     the lowest cost first. This way, as soon as we find a solution with no

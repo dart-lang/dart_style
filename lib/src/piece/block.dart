@@ -19,24 +19,22 @@ class BlockPiece extends Piece {
   /// The closing delimiter.
   final Piece rightBracket;
 
-  /// Whether the block should always split its contents.
-  ///
-  /// True for most blocks, but false for enums and blocks containing only
-  /// inline block comments.
-  final bool _alwaysSplit;
-
+  /// If [alwaysSplit] is true, then the block should always split its contents.
+  /// This is true for most blocks, but false for enums and blocks containing
+  /// only inline block comments.
   BlockPiece(this.leftBracket, this.contents, this.rightBracket,
-      {bool alwaysSplit = true})
-      : _alwaysSplit = alwaysSplit;
+      {bool alwaysSplit = true}) {
+    if (alwaysSplit) pin(State.split);
+  }
 
   @override
-  List<State> get states => _alwaysSplit ? const [] : const [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {
     writer.format(leftBracket);
 
-    if (_alwaysSplit || state == State.split) {
+    if (state == State.split) {
       if (contents.isNotEmpty) {
         writer.newline(indent: Indent.block);
         writer.format(contents);

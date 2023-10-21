@@ -13,9 +13,6 @@ class DoWhilePiece extends Piece {
   DoWhilePiece(this._body, this._condition);
 
   @override
-  List<State> get states => const [];
-
-  @override
   void format(CodeWriter writer, State state) {
     writer.setIndent(Indent.none);
     writer.format(_body);

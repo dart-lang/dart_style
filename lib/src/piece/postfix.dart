@@ -26,7 +26,7 @@ class PostfixPiece extends Piece {
   PostfixPiece(this.pieces);
 
   @override
-  List<State> get states => const [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {
@@ -34,7 +34,7 @@ class PostfixPiece extends Piece {
     // too.
     // TODO(tall): This will need to be revisited when we use PostfixPiece for
     // actual postfix operators where this isn't always desired.
-    if (state == State.initial) writer.setAllowNewlines(false);
+    if (state == State.unsplit) writer.setAllowNewlines(false);
 
     for (var piece in pieces) {
       writer.splitIf(state == State.split, indent: Indent.expression);

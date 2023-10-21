@@ -30,14 +30,14 @@ class IfPiece extends Piece {
 
   /// If there is at least one else or else-if clause, then it always splits.
   @override
-  List<State> get states => _isUnbracedIfThen ? const [State.split] : const [];
+  List<State> get additionalStates => [if (_isUnbracedIfThen) State.split];
 
   @override
   void format(CodeWriter writer, State state) {
     if (_isUnbracedIfThen) {
       // A split in the condition or statement forces moving the entire
       // statement to the next line.
-      writer.setAllowNewlines(state != State.initial);
+      writer.setAllowNewlines(state != State.unsplit);
 
       var section = _sections.single;
       writer.format(section.header);
