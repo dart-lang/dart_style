@@ -1,0 +1,62 @@
+40 columns                              |
+>>> Inline block comment before `?`.
+cond /* c */ ? 1 : 2;
+<<<
+cond /* c */ ? 1 : 2;
+>>> Inline block comment after `?`.
+cond ? /* c */ 1 : 2;
+<<<
+cond ? /* c */ 1 : 2;
+>>> Inline block comment before `:`.
+cond ? 1 /* c */ : 2;
+<<<
+cond ? 1 /* c */ : 2;
+>>> Inline block comment after `:`.
+cond ? 1 : /* c */ 2;
+<<<
+cond ? 1 : /* c */ 2;
+>>> Inline block comment after else.
+cond ? 1 : 2 /* c */;
+<<<
+cond ? 1 : 2 /* c */;
+>>> Line comment before `?`.
+cond // c
+? 1 : 2;
+<<<
+cond // c
+    ? 1
+    : 2;
+>>> Line comment after `?`.
+cond ? // c
+1 : 2;
+<<<
+### Looks weird, but users generally won't put comments here.
+cond
+    ? // c
+    1
+    : 2;
+>>> Line comment before `:`.
+cond ? 1 // c
+: 2;
+<<<
+cond
+    ? 1 // c
+    : 2;
+>>> Line comment after `:`.
+cond ? 1 : // c
+2;
+<<<
+### Looks weird, but users generally won't put comments here.
+cond
+    ? 1
+    : // c
+    2;
+>>> Line comment after else.
+cond ? 1 : 2 // c
+;
+<<<
+### Looks weird, but users generally won't put comments here.
+cond
+    ? 1
+    : 2 // c
+    ;
