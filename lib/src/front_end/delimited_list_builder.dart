@@ -42,8 +42,9 @@ class DelimitedListBuilder {
   final int _splitCost;
 
   /// Whether this list should have spaces inside the bracket when it doesn't
-  /// split. This is false for most lists, but true for switch expression
-  /// bodies:
+  /// split.
+  ///
+  /// This is false for most lists, but true for switch expression bodies:
   ///
   /// ```
   /// v = switch (e) { 1 => 'one', 2 => 'two' };

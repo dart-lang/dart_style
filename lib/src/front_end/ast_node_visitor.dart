@@ -959,7 +959,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
 
-    // Attach the ` {` as part of the `)` in the switch value ListPiece.
+    // Attach the ` {` after the `(` in the [ListPiece] created by
+    // [createSwitchValue()].
     writer.space();
     token(node.leftBracket);
     writer.split();

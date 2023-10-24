@@ -128,8 +128,6 @@ class ListPiece extends Piece {
       // All arguments on one line with no trailing comma.
       for (var i = 0; i < _arguments.length; i++) {
         if (i > 0 && _arguments[i - 1]._delimiter.isEmpty) writer.space();
-
-        // Don't write a trailing comma.
         _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
       }
 
