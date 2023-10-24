@@ -5,7 +5,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
+import '../constants.dart';
 import '../dart_formatter.dart';
+import '../piece/block.dart';
 import '../piece/do_while.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
@@ -54,28 +56,28 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     if (node is CompilationUnit) {
       if (node.scriptTag case var scriptTag?) {
-        sequence.add(scriptTag);
+        sequence.visit(scriptTag);
         sequence.addBlank();
       }
 
       // Put a blank line between the library tag and the other directives.
       Iterable<Directive> directives = node.directives;
       if (directives.isNotEmpty && directives.first is LibraryDirective) {
-        sequence.add(directives.first);
+        sequence.visit(directives.first);
         sequence.addBlank();
         directives = directives.skip(1);
       }
 
       for (var directive in directives) {
-        sequence.add(directive);
+        sequence.visit(directive);
       }
 
       for (var declaration in node.declarations) {
-        sequence.add(declaration);
+        sequence.visit(declaration);
       }
     } else {
       // Just formatting a single statement.
-      sequence.add(node);
+      sequence.visit(node);
     }
 
     // Write any comments at the end of the code.
@@ -260,7 +262,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitConstantPattern(ConstantPattern node) {
-    throw UnimplementedError();
+    if (node.constKeyword != null) throw UnimplementedError();
+    visit(node.expression);
   }
 
   @override
@@ -574,10 +577,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitLabeledStatement(LabeledStatement node) {
     var sequence = SequenceBuilder(this);
     for (var label in node.labels) {
-      sequence.add(label);
+      sequence.visit(label);
     }
 
-    sequence.add(node.statement);
+    sequence.visit(node.statement);
     writer.push(sequence.build());
   }
 
@@ -643,8 +646,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     visit(node.methodName);
     visit(node.typeArguments);
 
-    createDelimited(node.argumentList.leftParenthesis,
-        node.argumentList.arguments, node.argumentList.rightParenthesis);
+    createList(node.argumentList.leftParenthesis, node.argumentList.arguments,
+        node.argumentList.rightParenthesis);
   }
 
   @override
@@ -927,17 +930,87 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSwitchExpression(SwitchExpression node) {
-    throw UnimplementedError();
+    var list = DelimitedListBuilder.switchBody(this);
+
+    createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
+        node.rightParenthesis);
+    writer.space();
+    list.leftBracket(node.leftBracket);
+
+    for (var member in node.cases) {
+      list.add(member);
+    }
+
+    list.rightBracket(node.rightBracket);
+    writer.push(list.build());
   }
 
   @override
   void visitSwitchExpressionCase(SwitchExpressionCase node) {
-    throw UnimplementedError();
+    if (node.guardedPattern.whenClause != null) throw UnimplementedError();
+
+    visit(node.guardedPattern.pattern);
+    writer.space();
+    finishAssignment(node.arrow, node.expression);
   }
 
   @override
   void visitSwitchStatement(SwitchStatement node) {
-    throw UnimplementedError();
+    createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
+        node.rightParenthesis);
+
+    // Attach the ` {` as part of the `)` in the switch value ListPiece.
+    writer.space();
+    token(node.leftBracket);
+    writer.split();
+    var switchPiece = writer.pop();
+
+    var sequence = SequenceBuilder(this);
+    for (var member in node.members) {
+      for (var label in member.labels) {
+        sequence.visit(label);
+      }
+
+      sequence.addCommentsBefore(member.keyword);
+      token(member.keyword);
+
+      if (member is SwitchCase) {
+        writer.space();
+        visit(member.expression);
+      } else if (member is SwitchPatternCase) {
+        writer.space();
+
+        if (member.guardedPattern.whenClause != null) {
+          throw UnimplementedError();
+        }
+
+        visit(member.guardedPattern.pattern);
+      } else {
+        assert(member is SwitchDefault);
+        // Nothing to do.
+      }
+
+      token(member.colon);
+      var casePiece = writer.pop();
+      writer.split();
+
+      // Don't allow any blank lines between the `case` line and the first
+      // statement in the case (or the next case if this case has no body).
+      sequence.add(casePiece, indent: Indent.none, allowBlankAfter: false);
+
+      for (var statement in member.statements) {
+        sequence.visit(statement, indent: Indent.block);
+      }
+    }
+
+    // Place any comments before the "}" inside the sequence.
+    sequence.addCommentsBefore(node.rightBracket);
+
+    token(node.rightBracket);
+    var rightBracketPiece = writer.pop();
+
+    writer.push(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
+        alwaysSplit: node.members.isNotEmpty));
   }
 
   @override
@@ -974,7 +1047,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTypeArgumentList(TypeArgumentList node) {
-    createDelimited(node.leftBracket, node.arguments, node.rightBracket);
+    createTypeList(node.leftBracket, node.arguments, node.rightBracket);
   }
 
   @override
@@ -989,7 +1062,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTypeParameterList(TypeParameterList node) {
-    createDelimited(node.leftBracket, node.typeParameters, node.rightBracket);
+    createTypeList(node.leftBracket, node.typeParameters, node.rightBracket);
   }
 
   @override

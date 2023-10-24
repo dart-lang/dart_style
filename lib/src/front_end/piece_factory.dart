@@ -58,21 +58,13 @@ mixin PieceFactory implements CommentWriter {
   /// } else {}
   /// ```
   void createBlock(Block block, {bool forceSplit = false}) {
-    // Edge case: If the block is completely empty, output it as simple
-    // unsplittable text unless it's forced to split.
-    if (block.statements.isEmptyBody(block.rightBracket) && !forceSplit) {
-      token(block.leftBracket);
-      token(block.rightBracket);
-      return;
-    }
-
     token(block.leftBracket);
     var leftBracketPiece = writer.pop();
     writer.split();
 
     var sequence = SequenceBuilder(this);
     for (var node in block.statements) {
-      sequence.add(node);
+      sequence.visit(node);
     }
 
     // Place any comments before the "}" inside the block.
@@ -115,17 +107,7 @@ mixin PieceFactory implements CommentWriter {
     // The formatter will preserve the newline after element 3 and the lack of
     // them after the other elements.
 
-    createDelimited(leftBracket, elements, rightBracket);
-  }
-
-  /// Creates a [ListPiece] for the given bracket-delimited set of elements.
-  void createDelimited(
-      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
-    var builder = DelimitedListBuilder(this);
-    builder.leftBracket(leftBracket);
-    elements.forEach(builder.add);
-    builder.rightBracket(rightBracket);
-    writer.push(builder.build());
+    createList(leftBracket, elements, rightBracket);
   }
 
   /// Creates metadata annotations for a directive.
@@ -371,6 +353,44 @@ mixin PieceFactory implements CommentWriter {
     traverse(node);
 
     writer.push(InfixPiece(operands));
+  }
+
+  /// Creates a [ListPiece] for the given bracket-delimited set of elements.
+  void createList(
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(leftBracket);
+    elements.forEach(builder.add);
+    builder.rightBracket(rightBracket);
+    writer.push(builder.build());
+  }
+
+  /// Visits the `switch (expr)` part of a switch statement or expression.
+  void createSwitchValue(Token switchKeyword, Token leftParenthesis,
+      Expression value, Token rightParenthesis) {
+    // Format like an argument list since it is an expression surrounded by
+    // parentheses.
+    var builder = DelimitedListBuilder.switchValue(this);
+
+    // Attach the `switch ` as part of the `(`.
+    token(switchKeyword);
+    writer.space();
+
+    builder.leftBracket(leftParenthesis);
+    builder.add(value);
+    builder.rightBracket(rightParenthesis);
+
+    writer.push(builder.build());
+  }
+
+  /// Creates a [ListPiece] for a type argument or type parameter list.
+  void createTypeList(
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+    var builder = DelimitedListBuilder.type(this);
+    builder.leftBracket(leftBracket);
+    elements.forEach(builder.add);
+    builder.rightBracket(rightBracket);
+    writer.push(builder.build());
   }
 
   /// Writes the parts of a formal parameter shared by all formal parameter

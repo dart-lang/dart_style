@@ -1,0 +1,119 @@
+40 columns                              |
+>>> Blank lines before comments.
+switch (n) {
+
+
+  // comment
+  case 0:
+
+
+
+  // comment
+
+
+
+  case 1:
+    body;
+
+
+  // comment
+
+
+}
+<<<
+switch (n) {
+  // comment
+  case 0:
+
+  // comment
+
+  case 1:
+    body;
+
+  // comment
+}
+>>> Line comment between cases does not force them to split.
+switch (n) {
+  case 0: zero;
+  // comment
+  case 1: one;
+}
+<<<
+switch (n) {
+  case 0:
+    zero;
+  // comment
+  case 1:
+    one;
+}
+>>> Line comment indentation.
+switch (n) {
+  // before first
+  case 0: zero;
+  // between
+  case 1: one;
+  // after last
+}
+<<<
+switch (n) {
+  // before first
+  case 0:
+    zero;
+  // between
+  case 1:
+    one;
+  // after last
+}
+>>> Line comment in empty cases.
+switch (n) {
+  case 0: // comment 0
+  case 1:
+    // comment 1
+  case 2:
+    // comment 2
+}
+<<<
+switch (n) {
+  case 0: // comment 0
+  case 1:
+  // comment 1
+  case 2:
+  // comment 2
+}
+>>> Line comment in empty switch.
+switch (e) {
+  // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> Line comment on opening line of empty switch.
+switch (e) { // comment
+}
+<<<
+switch (e) {
+  // comment
+}
+>>> Non-inline block comment in empty switch.
+switch (e) {
+  /* comment */
+}
+<<<
+switch (e) {
+  /* comment */
+}
+>>> Block comment with trailing newline.
+switch (e) {/* comment */
+}
+<<<
+switch (e) {/* comment */}
+>>> Block comment with leading newline.
+switch (e) {
+  /* comment */}
+<<<
+switch (e) {/* comment */}
+>>> Inline block comment.
+switch (e) {  /* comment */  }
+<<<
+switch (e) {/* comment */}

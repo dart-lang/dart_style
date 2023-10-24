@@ -114,9 +114,9 @@ extension ExpressionExtensions on Expression {
         ListLiteral() => true,
         MethodInvocation() => true,
         SetOrMapLiteral() => true,
+        SwitchExpression() => true,
         // TODO(tall): Record literals.
         // TODO(tall): Instance creation expressions (`new` and `const`).
-        // TODO(tall): Switch expressions.
         _ => false,
       };
 

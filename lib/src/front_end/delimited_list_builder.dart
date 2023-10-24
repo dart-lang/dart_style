@@ -31,24 +31,80 @@ class DelimitedListBuilder {
 
   late final Piece _rightBracket;
 
-  /// Whether this list is a list of type arguments or type parameters, versus
-  /// any other kind of list.
+  /// Whether this list should have a trailing comma if it splits.
   ///
-  /// Type arguments/parameters are different because:
-  ///
-  /// *   The language doesn't allow a trailing comma in them.
-  /// *   Splitting in them looks aesthetically worse, so we increase the cost
-  ///     of doing so.
-  bool _isTypeList = false;
+  /// This is true for most lists but false for type parameters, type arguments,
+  /// and switch values.
+  final bool _trailingComma;
 
-  DelimitedListBuilder(this._visitor);
+  /// The cost of splitting this list. Normally 1, but higher for some lists
+  /// that look worse when split.
+  final int _splitCost;
+
+  /// Whether this list should have spaces inside the bracket when it doesn't
+  /// split. This is false for most lists, but true for switch expression
+  /// bodies:
+  ///
+  /// ```
+  /// v = switch (e) { 1 => 'one', 2 => 'two' };
+  /// //              ^                      ^
+  /// ```
+  final bool _spaceWhenUnsplit;
+
+  /// Whether a split in the [_before] piece should force the list to split too.
+  ///
+  /// See [ListPiece._splitListIfBeforeSplits] for more details.
+  final bool _splitListIfBeforeSplits;
 
   /// The list of comments following the most recently written element before
   /// any comma following the element.
   CommentSequence _commentsBeforeComma = CommentSequence.empty;
 
+  /// Creates a new [DelimitedListBuilder] for an argument list, collection
+  /// literal, etc.
+  DelimitedListBuilder(this._visitor)
+      : _trailingComma = true,
+        _splitCost = 1,
+        _spaceWhenUnsplit = false,
+        _splitListIfBeforeSplits = false;
+
+  /// Creates a new [DelimitedListBuilder] for a switch expression body.
+  DelimitedListBuilder.switchBody(this._visitor)
+      : _trailingComma = true,
+        _splitCost = 1,
+        _spaceWhenUnsplit = true,
+        _splitListIfBeforeSplits = true;
+
+  /// Creates a new [DelimitedListBuilder] for the value part of a switch
+  /// statement or expression:
+  ///
+  /// ```
+  /// switch (value) { ... }
+  /// //     ^^^^^^^
+  /// ```
+  DelimitedListBuilder.switchValue(this._visitor)
+      : _trailingComma = false,
+        _splitCost = 2,
+        _spaceWhenUnsplit = false,
+        _splitListIfBeforeSplits = false;
+
+  /// Creates a new [DelimitedListBuilder] for a type argument or type parameter
+  /// list.
+  DelimitedListBuilder.type(this._visitor)
+      : _trailingComma = false,
+        _splitCost = 2,
+        _spaceWhenUnsplit = false,
+        _splitListIfBeforeSplits = false;
+
   ListPiece build() => ListPiece(
-      _leftBracket, _elements, _blanksAfter, _rightBracket, _isTypeList);
+      _leftBracket,
+      _elements,
+      _blanksAfter,
+      _rightBracket,
+      _splitCost,
+      _trailingComma,
+      _spaceWhenUnsplit,
+      _splitListIfBeforeSplits);
 
   /// Adds the opening [bracket] to the built list.
   ///
@@ -66,9 +122,6 @@ class DelimitedListBuilder {
     _visitor.token(delimiter);
     _leftBracket = _visitor.writer.pop();
     _visitor.writer.split();
-
-    // No trailing commas in type argument and type parameter lists.
-    if (bracket.type == TokenType.LT) _isTypeList = true;
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that

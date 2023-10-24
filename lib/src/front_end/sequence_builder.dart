@@ -4,6 +4,7 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../constants.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
 import 'piece_factory.dart';
@@ -22,20 +23,29 @@ import 'piece_factory.dart';
 class SequenceBuilder {
   final PieceFactory _visitor;
 
-  /// The series of members or statements.
-  final List<Piece> _contents = [];
+  /// The series of elements in the sequence.
+  final List<SequenceElement> _elements = [];
 
-  /// The pieces that should have a blank line preserved between them and the
-  /// next piece.
-  final Set<Piece> _blanksAfter = {};
+  /// Whether a blank line should be allowed after the current element.
+  bool _allowBlank = false;
 
   SequenceBuilder(this._visitor);
 
-  SequencePiece build() => SequencePiece(_contents, _blanksAfter);
+  SequencePiece build() => SequencePiece(_elements);
+
+  /// Adds [piece] to this sequence.
+  ///
+  /// The caller should have already called [addCommentsBefore()] with the
+  /// first token in [piece].
+  void add(Piece piece, {int? indent, bool allowBlankAfter = true}) {
+    _elements.add(SequenceElement(indent ?? Indent.none, piece));
+
+    _allowBlank = allowBlankAfter;
+  }
 
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
-  void add(AstNode node) {
+  void visit(AstNode node, {int? indent}) {
     var token = switch (node) {
       // If [node] is an [AnnotatedNode], then [beginToken] includes the
       // leading doc comment, which we want to handle separately. So, in that
@@ -48,14 +58,15 @@ class SequenceBuilder {
 
     addCommentsBefore(token);
     _visitor.visit(node);
-    _contents.add(_visitor.writer.pop());
+    add(_visitor.writer.pop(), indent: indent);
     _visitor.writer.split();
   }
 
   /// Appends a blank line before the next piece in the sequence.
   void addBlank() {
-    if (_contents.isEmpty) return;
-    _blanksAfter.add(_contents.last);
+    if (_elements.isEmpty) return;
+    if (!_allowBlank) return;
+    _elements.last.blankAfter = true;
   }
 
   /// Writes any comments appearing before [token] to the sequence.
@@ -77,13 +88,13 @@ class SequenceBuilder {
     // Normally, a blank line is required after `library`, but since there is
     // one after the comment, we don't need one before it. This is mainly so
     // that commented out directives stick with their preceding group.
-    if (comments.containsBlank && _contents.isNotEmpty) {
-      _blanksAfter.remove(_contents.last);
+    if (comments.containsBlank && _elements.isNotEmpty) {
+      _elements.last.blankAfter = false;
     }
 
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
-      if (_contents.isNotEmpty && comments.isHanging(i)) {
+      if (_elements.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous token.
         _visitor.writer.space();
 
@@ -91,8 +102,13 @@ class SequenceBuilder {
       } else {
         // Write the comment as its own sequence piece.
         _visitor.writer.writeComment(comment);
-        if (comments.linesBefore(i) > 1) addBlank();
-        _contents.add(_visitor.writer.pop());
+        if (comments.linesBefore(i) > 1) {
+          // Always preserve a blank line above sequence-level comments.
+          _allowBlank = true;
+          addBlank();
+        }
+
+        add(_visitor.writer.pop());
         _visitor.writer.split();
       }
     }

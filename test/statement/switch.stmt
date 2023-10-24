@@ -1,0 +1,282 @@
+40 columns                              |
+>>> Separate statements in cases.
+switch (foo) {case 0:a();b();c();}
+<<<
+switch (foo) {
+  case 0:
+    a();
+    b();
+    c();
+}
+>>> Allow a blank line between case statements.
+switch (foo) {case 0:
+  a();
+
+  b();
+  c();
+}
+<<<
+switch (foo) {
+  case 0:
+    a();
+
+    b();
+    c();
+}
+>>> Collapse other newlines in cases.
+switch (foo) {case 0:
+
+
+  a();
+
+
+
+  b();
+
+
+
+  c();
+
+
+}
+<<<
+switch (foo) {
+  case 0:
+    a();
+
+    b();
+
+    c();
+}
+>>> Remove newlines between empty cases.
+switch (foo) {
+  case 1:
+
+
+  case 2:
+
+  case 3:
+
+    body;
+
+  case 4:
+
+
+  default:
+
+
+    body;
+}
+<<<
+switch (foo) {
+  case 1:
+  case 2:
+  case 3:
+    body;
+
+  case 4:
+  default:
+    body;
+}
+>>> Separate statements in the default clause.
+switch (foo) {default:a();b();c();}
+<<<
+switch (foo) {
+  default:
+    a();
+    b();
+    c();
+}
+>>> Allow a blank line between statements in the default clause.
+switch (foo) {default:
+  a();
+
+  b();
+  c();
+}
+<<<
+switch (foo) {
+  default:
+    a();
+
+    b();
+    c();
+}
+>>> Collapse other newlines in the default clause.
+switch (foo) {default:
+
+
+  a();
+
+
+
+  b();
+
+
+
+  c();
+
+
+}
+<<<
+switch (foo) {
+  default:
+    a();
+
+    b();
+
+    c();
+}
+>>> Put cases on their own lines.
+switch (foo) {case 0:case 1:case 2:body();}
+<<<
+switch (foo) {
+  case 0:
+  case 1:
+  case 2:
+    body();
+}
+>>> Allow a blank line between non-empty cases.
+switch (foo) {case 0: body();
+
+  case 1:
+  case 2:body();
+}
+<<<
+switch (foo) {
+  case 0:
+    body();
+
+  case 1:
+  case 2:
+    body();
+}
+>>> Collapse other newlines between cases.
+switch (foo) {
+
+
+  case 0:
+
+
+  case 1:
+
+
+  case 2:
+
+
+    body();
+
+
+
+}
+<<<
+switch (foo) {
+  case 0:
+  case 1:
+  case 2:
+    body();
+}
+>>> Single-statement cases split even when they could fit on one line.
+switch (obj) {
+  case 1: a();
+  case 2: b();
+  default: c();
+}
+<<<
+switch (obj) {
+  case 1:
+    a();
+  case 2:
+    b();
+  default:
+    c();
+}
+>>> Multiple statement cases split even when they could fit on one line.
+switch (obj) {
+  case 1: a(); b();
+  case 2: c(); d();
+  default: d(); e();
+}
+<<<
+switch (obj) {
+  case 1:
+    a();
+    b();
+  case 2:
+    c();
+    d();
+  default:
+    d();
+    e();
+}
+>>> Indentation.
+switch (fruit) {
+case "apple":
+print("delish");
+break;
+case "fig":
+print("bleh");
+break;
+}
+<<<
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  case "fig":
+    print("bleh");
+    break;
+}
+>>> Labeled cases.
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  label:case "fig":
+    print("bleh");
+    break;
+  other:default:
+    break;
+}
+<<<
+switch (fruit) {
+  case "apple":
+    print("delish");
+    break;
+  label:
+  case "fig":
+    print("bleh");
+    break;
+  other:
+  default:
+    break;
+}
+>>> Split before the switch expression.
+switch ("a long string that must wrap") {
+  case 0:
+    return "ok";
+}
+<<<
+switch (
+  "a long string that must wrap"
+) {
+  case 0:
+    return "ok";
+}
+>>> Split a delimited expression in the switch expression.
+switch ([veryLongElement,veryLongElement]) {
+  case 0:
+    return "ok";
+}
+<<<
+### TODO(tall): Once block arguments are supported, this should become:
+### switch ([
+###   veryLongElement,
+###   veryLongElement,
+### ]) {
+switch (
+  [veryLongElement, veryLongElement]
+) {
+  case 0:
+    return "ok";
+}
