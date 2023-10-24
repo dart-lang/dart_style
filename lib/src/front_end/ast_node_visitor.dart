@@ -124,7 +124,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitAssignmentExpression(AssignmentExpression node) {
-    throw UnimplementedError();
+    visit(node.leftHandSide);
+    writer.space();
+    finishAssignment(node.operator, node.rightHandSide);
   }
 
   @override
