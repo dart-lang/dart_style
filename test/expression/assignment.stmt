@@ -1,0 +1,68 @@
+40 columns                              |
+>>> Chained assignment.
+a=b=c;
+<<<
+a = b = c;
+>>> Compound assignment operators.
+a*=b/=c~/=d%=e;
+<<<
+a *= b /= c ~/= d %= e;
+>>>
+a+=b-=c;
+<<<
+a += b -= c;
+>>>
+a<<=b>>>=c>>=d;
+<<<
+a <<= b >>>= c >>= d;
+>>>
+a&=b^=c|=d;
+<<<
+a &= b ^= c |= d;
+>>>
+a??=b;
+<<<
+a ??= b;
+>>> Split after `=`.
+variableName = thisIsReallyQuiteAVeryLongVariableName;
+<<<
+variableName =
+    thisIsReallyQuiteAVeryLongVariableName;
+>>> Prefer to split at "=" over infix operator.
+variableName = argument * argument + argument;
+<<<
+variableName =
+    argument * argument + argument;
+>>> Prefer block-like splitting for collections.
+variableName = [element, element, element];
+<<<
+variableName = [
+  element,
+  element,
+  element,
+];
+>>> Prefer block-like splitting for function calls.
+variableName = function(argument, argument);
+<<<
+variableName = function(
+  argument,
+  argument,
+);
+>>> No block-like splitting for empty argument lists.
+variableNameExactLength____ = function();
+<<<
+variableNameExactLength____ =
+    function();
+>>> No block-like splitting if function name doesn't fit.
+longVariableName = veryLongFunctionName_(argument);
+<<<
+longVariableName =
+    veryLongFunctionName_(argument);
+>>> Indent block if function name doesn't fit and arguments split.
+longVariableName = veryLongFunctionName_(argument, another);
+<<<
+longVariableName =
+    veryLongFunctionName_(
+      argument,
+      another,
+    );
