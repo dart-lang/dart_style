@@ -11,33 +11,50 @@ import 'piece.dart';
 /// Usually constructed using a [SequenceBuilder].
 class SequencePiece extends Piece {
   /// The series of members or statements.
-  final List<Piece> _contents;
+  final List<SequenceElement> _elements;
 
-  /// The pieces that should have a blank line preserved between them and the
-  /// next piece.
-  final Set<Piece> _blanksAfter;
-
-  SequencePiece(this._contents, this._blanksAfter);
+  SequencePiece(this._elements);
 
   /// Whether this sequence has any contents.
-  bool get isNotEmpty => _contents.isNotEmpty;
+  bool get isNotEmpty => _elements.isNotEmpty;
 
   @override
   void format(CodeWriter writer, State state) {
-    for (var i = 0; i < _contents.length; i++) {
-      writer.format(_contents[i]);
+    for (var i = 0; i < _elements.length; i++) {
+      var element = _elements[i];
+      writer.format(element.piece);
 
-      if (i < _contents.length - 1) {
-        writer.newline(blank: _blanksAfter.contains(_contents[i]));
+      if (i < _elements.length - 1) {
+        writer.newline(
+            blank: element.blankAfter, indent: _elements[i + 1].indent);
       }
     }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    _contents.forEach(callback);
+    for (var element in _elements) {
+      callback(element.piece);
+    }
   }
 
   @override
   String toString() => 'Sequence';
+}
+
+/// An element inside a [SequencePiece].
+///
+/// Tracks the underlying [Piece] along with surrounding whitespace.
+class SequenceElement {
+  /// The number of spaces of indentation on the line before this element,
+  /// relative to the surrounding [Piece].
+  final int indent;
+
+  /// The [Piece] for the element.
+  final Piece piece;
+
+  /// Whether there should be a blank line after this element.
+  bool blankAfter = false;
+
+  SequenceElement(this.indent, this.piece);
 }

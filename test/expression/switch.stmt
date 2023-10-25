@@ -1,0 +1,113 @@
+40 columns                              |
+>>> Empty.
+e = switch(y) {};
+<<<
+e = switch (y) {};
+>>> All one line.
+e = switch (c) { 0 => a, 1 => b };
+<<<
+e = switch (c) { 0 => a, 1 => b };
+>>> One case per line.
+e = switch (c) { 0 => first, 1 => second };
+<<<
+e = switch (c) {
+  0 => first,
+  1 => second,
+};
+>>> Remove trailing comma if cases fit on one line.
+e = switch (c) { 0 => a, 1 => b, };
+<<<
+e = switch (c) { 0 => a, 1 => b };
+>>> Split some cases at "=>" but not all.
+e = switch (c) {
+  first => a,
+  second => veryLongExpression + thatSplits,
+  third => c
+};
+<<<
+e = switch (c) {
+  first => a,
+  second =>
+      veryLongExpression + thatSplits,
+  third => c,
+};
+>>> Discard newlines between cases.
+e = switch (obj) {
+
+
+  0 => a,
+
+
+  1 => b,
+
+
+
+  2 => c
+
+
+};
+<<<
+e = switch (obj) {
+  0 => a,
+  1 => b,
+  2 => c,
+};
+>>> Split before switch value.
+e = switch ("a long string that must wrap") {
+  0 => "ok"
+};
+<<<
+e = switch (
+  "a long string that must wrap"
+) {
+  0 => "ok",
+};
+>>> Split in delimited value expression.
+e = switch ([veryLongElement,veryLongElement,veryLongElement,]) {
+  0 => "ok"
+};
+<<<
+### TODO(tall): Once block arguments are supported, this should become:
+### e = switch ([
+###   veryLongElement,
+###   veryLongElement,
+###   veryLongElement,
+### ]) {
+e = switch (
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ]
+) {
+  0 => "ok",
+};
+>>> Split in case expression.
+e = switch (obj) {
+  1 => veryLongExpression + thatStillMustSplit
+};
+<<<
+e = switch (obj) {
+  1 =>
+      veryLongExpression +
+          thatStillMustSplit,
+};
+>>> Prefer to split after "=>" instead of body.
+e = switch (obj) {
+  longConstant => longExpression + thatMustSplit
+};
+<<<
+e = switch (obj) {
+  longConstant =>
+      longExpression + thatMustSplit,
+};
+>>> Split after "=>" and in body.
+e = switch (obj) {
+  longConstant => veryLongLongExpression + thatMustSplit
+};
+<<<
+e = switch (obj) {
+  longConstant =>
+      veryLongLongExpression +
+          thatMustSplit,
+};

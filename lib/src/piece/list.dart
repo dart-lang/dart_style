@@ -13,15 +13,6 @@ import 'piece.dart';
 ///
 /// Usually constructed using [createDelimited()] or a [DelimitedListBuilder].
 class ListPiece extends Piece {
-  /// State used for a split list containing type arguments or type parameters.
-  ///
-  /// Has a higher cost than [State.split] since splitting type arguments and
-  /// type parameters tends to look worse than splitting at other places.
-  // TODO(rnystrom): Having to use a different state for this is a little
-  // cumbersome. Maybe it would be better to most costs out of [State] and
-  // instead have the [Solver] ask each [Piece] for the cost of its state.
-  static const _splitTypes = State(1, cost: 2);
-
   /// The called expression and the subsequent "(".
   final Piece _before;
 
@@ -41,29 +32,85 @@ class ListPiece extends Piece {
   /// The ")" after the arguments.
   final Piece _after;
 
-  /// Whether this list is a list of type arguments or type parameters, versus
-  /// any other kind of list.
+  /// Whether this list should have a trailing comma if it splits.
   ///
-  /// Type arguments/parameters are different because:
-  ///
-  /// *   The language doesn't allow a trailing comma in them.
-  /// *   Splitting in them looks aesthetically worse, so we increase the cost
-  ///     of doing so.
-  final bool _isTypeList;
+  /// This is true for most lists but false for type parameters, type arguments,
+  /// and switch values.
+  final bool _trailingComma;
 
-  ListPiece(this._before, this._arguments, this._blanksAfter, this._after,
-      this._isTypeList);
+  /// The state when the list is split.
+  ///
+  /// We use this instead of [State.split] because the cost is higher for some
+  /// kinds of lists.
+  // TODO(rnystrom): Having to use a different state for this is a little
+  // cumbersome. Maybe it would be better to most costs out of [State] and
+  // instead have the [Solver] ask each [Piece] for the cost of its state.
+  final State _splitState;
+
+  /// Whether this list should have spaces inside the bracket when it doesn't
+  /// split. This is false for most lists, but true for switch expression
+  /// bodies:
+  ///
+  /// ```
+  /// v = switch (e) { 1 => 'one', 2 => 'two' };
+  /// //              ^                      ^
+  /// ```
+  final bool _spaceWhenUnsplit;
+
+  /// Whether a split in the [_before] piece should force the list to split too.
+  /// Most of the time, this isn't relevant because the before part is usually
+  /// just a single bracket character.
+  ///
+  /// For collection literals with explicit type arguments, the [_before] piece
+  /// contains the type arguments. If those split, this is `false` to allow the
+  /// list itself to remain unsplit as in:
+  ///
+  /// ```
+  /// <
+  ///   VeryLongTypeName,
+  ///   AnotherLongTypeName,
+  /// >{a: 1};
+  /// ```
+  ///
+  /// For switch expressions, the `switch (value) {` part is in [_before] and
+  /// the body is the list. In that case, if the value splits, we want to force
+  /// the body to split too:
+  ///
+  /// ```
+  /// // Disallowed:
+  /// e = switch (
+  ///   "a long string that must wrap"
+  /// ) { 0 => "ok" };
+  ///
+  /// // Instead:
+  /// e = switch (
+  ///   "a long string that must wrap"
+  /// ) {
+  ///   0 => "ok",
+  /// };
+  /// ```
+  final bool _splitListIfBeforeSplits;
+
+  ListPiece(
+      this._before,
+      this._arguments,
+      this._blanksAfter,
+      this._after,
+      int cost,
+      this._trailingComma,
+      this._spaceWhenUnsplit,
+      this._splitListIfBeforeSplits)
+      : _splitState = State(1, cost: cost);
 
   @override
-  List<State> get additionalStates => [
-        if (_isTypeList)
-          _splitTypes // Type lists are more expensive to split.
-        else if (_arguments.isNotEmpty)
-          State.split // Don't split between an empty pair of brackets.
-      ];
+  List<State> get additionalStates => [if (_arguments.isNotEmpty) _splitState];
 
   @override
   void format(CodeWriter writer, State state) {
+    if (_splitListIfBeforeSplits && state == State.unsplit) {
+      writer.setAllowNewlines(false);
+    }
+
     writer.format(_before);
 
     // TODO(tall): Should support a third state for argument lists with block
@@ -74,30 +121,29 @@ class ListPiece extends Piece {
     //   ...
     // });
     // ```
-    switch (state) {
-      case State.unsplit:
-        // All arguments on one line with no trailing comma.
-        writer.setAllowNewlines(false);
-        for (var i = 0; i < _arguments.length; i++) {
-          if (i > 0 && _arguments[i - 1]._delimiter.isEmpty) writer.space();
+    if (state == State.unsplit) {
+      writer.setAllowNewlines(false);
+      if (_spaceWhenUnsplit && _arguments.isNotEmpty) writer.space();
 
-          // Don't write a trailing comma.
-          _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
-        }
+      // All arguments on one line with no trailing comma.
+      for (var i = 0; i < _arguments.length; i++) {
+        if (i > 0 && _arguments[i - 1]._delimiter.isEmpty) writer.space();
+        _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
+      }
 
-      case State.split:
-      case _splitTypes:
-        // Each argument on its own line with a trailing comma after the last.
-        writer.newline(indent: Indent.block);
-        for (var i = 0; i < _arguments.length; i++) {
-          var argument = _arguments[i];
-          argument.format(writer,
-              omitComma: _isTypeList && i == _arguments.length - 1);
-          if (i < _arguments.length - 1) {
-            writer.newline(blank: _blanksAfter.contains(argument));
-          }
+      if (_spaceWhenUnsplit && _arguments.isNotEmpty) writer.space();
+    } else {
+      // Each argument on its own line with a trailing comma after the last.
+      writer.newline(indent: Indent.block);
+      for (var i = 0; i < _arguments.length; i++) {
+        var argument = _arguments[i];
+        argument.format(writer,
+            omitComma: !_trailingComma && i == _arguments.length - 1);
+        if (i < _arguments.length - 1) {
+          writer.newline(blank: _blanksAfter.contains(argument));
         }
-        writer.newline(indent: Indent.none);
+      }
+      writer.newline(indent: Indent.none);
     }
 
     writer.setAllowNewlines(true);

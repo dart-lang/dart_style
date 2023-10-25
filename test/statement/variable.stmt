@@ -181,6 +181,33 @@ var longVariableName =
       argument,
       another,
     );
+>>> Use block-like splitting for switch expressions.
+var variableName = switch (value) { 1 => 'one', 2 => 'two' };
+<<<
+var variableName = switch (value) {
+  1 => 'one',
+  2 => 'two',
+};
+>>> Use block-like splitting for switch expressions with split values.
+var variableName = switch ([longElement, longElement, longElement])
+{ 1 => 'one', 2 => 'two' };
+<<<
+### TODO(tall): Once block arguments are supported, this should become:
+### var variableName = switch ([
+###   longElement,
+###   longElement,
+###   longElement,
+### ]) {
+var variableName = switch (
+  [
+    longElement,
+    longElement,
+    longElement,
+  ]
+) {
+  1 => 'one',
+  2 => 'two',
+};
 >>> Use block-like splitting for parenthesized expressions whose inner does.
 var variableName = ([element, element, element]);
 <<<
