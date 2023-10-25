@@ -3,6 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Internal debugging utilities.
+library;
+
 import 'dart:math' as math;
 
 import 'chunk.dart';
