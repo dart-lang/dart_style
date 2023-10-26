@@ -126,13 +126,14 @@ class CodeWriter {
   ///
   /// If [space] is `true` and [condition] is `false`, writes a space.
   ///
+  /// If [blank] is `true`, writes an extra newline to produce a blank line.
+  ///
   /// If [indent] is given, sets the amount of block-level indentation for this
   /// and all subsequent newlines to [indent].
-  void splitIf(bool condition, {bool space = true, int? indent}) {
-    if (indent != null) setIndent(indent);
-
+  void splitIf(bool condition,
+      {bool space = true, bool blank = false, int? indent}) {
     if (condition) {
-      newline();
+      newline(blank: blank, indent: indent);
     } else if (space) {
       this.space();
     }

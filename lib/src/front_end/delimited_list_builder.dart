@@ -20,7 +20,8 @@ import 'piece_factory.dart';
 class DelimitedListBuilder {
   final PieceFactory _visitor;
 
-  late final Piece _leftBracket;
+  /// The opening bracket before the elements, if any.
+  Piece? _leftBracket;
 
   /// The list of elements in the list.
   final List<ListElement> _elements = [];
@@ -29,33 +30,10 @@ class DelimitedListBuilder {
   /// next piece.
   final Set<ListElement> _blanksAfter = {};
 
-  late final Piece _rightBracket;
+  /// The closing bracket after the elements, if any.
+  Piece? _rightBracket;
 
-  /// Whether this list should have a trailing comma if it splits.
-  ///
-  /// This is true for most lists but false for type parameters, type arguments,
-  /// and switch values.
-  final bool _trailingComma;
-
-  /// The cost of splitting this list. Normally 1, but higher for some lists
-  /// that look worse when split.
-  final int _splitCost;
-
-  /// Whether this list should have spaces inside the bracket when it doesn't
-  /// split.
-  ///
-  /// This is false for most lists, but true for switch expression bodies:
-  ///
-  /// ```
-  /// v = switch (e) { 1 => 'one', 2 => 'two' };
-  /// //              ^                      ^
-  /// ```
-  final bool _spaceWhenUnsplit;
-
-  /// Whether a split in the [_before] piece should force the list to split too.
-  ///
-  /// See [ListPiece._splitListIfBeforeSplits] for more details.
-  final bool _splitListIfBeforeSplits;
+  final ListStyle _style;
 
   /// The list of comments following the most recently written element before
   /// any comma following the element.
@@ -63,49 +41,10 @@ class DelimitedListBuilder {
 
   /// Creates a new [DelimitedListBuilder] for an argument list, collection
   /// literal, etc.
-  DelimitedListBuilder(this._visitor)
-      : _trailingComma = true,
-        _splitCost = 1,
-        _spaceWhenUnsplit = false,
-        _splitListIfBeforeSplits = false;
+  DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
 
-  /// Creates a new [DelimitedListBuilder] for a switch expression body.
-  DelimitedListBuilder.switchBody(this._visitor)
-      : _trailingComma = true,
-        _splitCost = 1,
-        _spaceWhenUnsplit = true,
-        _splitListIfBeforeSplits = true;
-
-  /// Creates a new [DelimitedListBuilder] for the value part of a switch
-  /// statement or expression:
-  ///
-  /// ```
-  /// switch (value) { ... }
-  /// //     ^^^^^^^
-  /// ```
-  DelimitedListBuilder.switchValue(this._visitor)
-      : _trailingComma = false,
-        _splitCost = 2,
-        _spaceWhenUnsplit = false,
-        _splitListIfBeforeSplits = false;
-
-  /// Creates a new [DelimitedListBuilder] for a type argument or type parameter
-  /// list.
-  DelimitedListBuilder.type(this._visitor)
-      : _trailingComma = false,
-        _splitCost = 2,
-        _spaceWhenUnsplit = false,
-        _splitListIfBeforeSplits = false;
-
-  ListPiece build() => ListPiece(
-      _leftBracket,
-      _elements,
-      _blanksAfter,
-      _rightBracket,
-      _splitCost,
-      _trailingComma,
-      _spaceWhenUnsplit,
-      _splitListIfBeforeSplits);
+  ListPiece build() =>
+      ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
 
   /// Adds the opening [bracket] to the built list.
   ///
@@ -163,24 +102,40 @@ class DelimitedListBuilder {
     _rightBracket = _visitor.writer.pop();
   }
 
+  /// Adds [piece] to the built list.
+  ///
+  /// Use this when the piece is composed of more than one [AstNode] or [Token]
+  /// and [visit()] can't be used. When calling this, make sure to call
+  /// [addCommentsBefore()] for the first token in the [piece].
+  ///
+  /// Assumes there is no comma after this piece.
+  void add(Piece piece) {
+    _elements.add(ListElement(piece));
+    _commentsBeforeComma = CommentSequence.empty;
+  }
+
+  /// Writes any comments appearing before [token] to the list.
+  void addCommentsBefore(Token token) {
+    // Handle comments between the preceding element and this one.
+    var commentsBeforeElement = _visitor.takeCommentsBefore(token);
+    _addComments(commentsBeforeElement, hasElementAfter: true);
+  }
+
   /// Adds [element] to the built list.
   ///
   /// Includes any comments that appear before element. Also includes the
   /// subsequent comma, if any, and any comments that precede the comma.
-  void add(AstNode element) {
+  void visit(AstNode element) {
     // Handle comments between the preceding element and this one.
-    var commentsBeforeElement = _visitor.takeCommentsBefore(element.beginToken);
-    _addComments(commentsBeforeElement, hasElementAfter: true);
+    addCommentsBefore(element.beginToken);
 
     // Traverse the element itself.
     _visitor.visit(element);
-    _elements.add(ListElement(_visitor.writer.pop()));
     _visitor.writer.split();
+    add(_visitor.writer.pop());
 
     var nextToken = element.endToken.next!;
-    if (nextToken.lexeme != ',') {
-      _commentsBeforeComma = CommentSequence.empty;
-    } else {
+    if (nextToken.lexeme == ',') {
       _commentsBeforeComma = _visitor.takeCommentsBefore(nextToken);
     }
   }
@@ -256,7 +211,7 @@ class DelimitedListBuilder {
     }
 
     // Comments that are neither hanging nor leading are treated like their own
-    // arguments.
+    // elements.
     for (var i = 0; i < separateComments.length; i++) {
       var comment = separateComments[i];
       if (separateComments.linesBefore(i) > 1 && _elements.isNotEmpty) {
@@ -268,7 +223,7 @@ class DelimitedListBuilder {
       _visitor.writer.split();
     }
 
-    // Leading comments are written before the next argument.
+    // Leading comments are written before the next element.
     for (var comment in leadingComments) {
       _visitor.writer.writeComment(comment);
       _visitor.writer.space();
@@ -311,7 +266,7 @@ class DelimitedListBuilder {
     CommentSequence leading
   }) _splitCommaComments(CommentSequence commentsBeforeElement,
       {required bool hasElementAfter}) {
-    // If we're on the final comma after the last argument, the comma isn't
+    // If we're on the final comma after the last element, the comma isn't
     // meaningful because there can't be leading comments after it.
     if (!hasElementAfter) {
       _commentsBeforeComma =
@@ -319,7 +274,7 @@ class DelimitedListBuilder {
       commentsBeforeElement = CommentSequence.empty;
     }
 
-    // Edge case: A line comment on the same line as the preceding argument
+    // Edge case: A line comment on the same line as the preceding element
     // but after the comma is treated as hanging.
     if (commentsBeforeElement.isNotEmpty &&
         commentsBeforeElement[0].type == CommentType.line &&

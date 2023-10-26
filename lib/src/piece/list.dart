@@ -5,38 +5,33 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for a bracket-delimited, comma-separated series of items.
+/// A piece for a splittable series of items.
+///
+/// Items may optionally be delimited with brackets and may have commas added
+/// after elements.
 ///
 /// Used for argument lists, collection literals, parameter lists, etc. This
 /// class handles adding and removing the trailing comma depending on whether
-/// the list is split or not.
+/// the list is split or not. It handles comments inside the sequence of
+/// elements.
 ///
-/// Usually constructed using [createDelimited()] or a [DelimitedListBuilder].
+/// Usually constructed using [createList()] or a [DelimitedListBuilder].
 class ListPiece extends Piece {
-  /// The called expression and the subsequent "(".
-  final Piece _before;
+  /// The opening bracket before the elements, if any.
+  final Piece? _before;
 
-  /// The list of piece pairs, one for each argument and one for the comma
-  /// after the argument.
-  ///
-  /// We create a comma piece after every argument, even the last. We do this
-  /// even if the original source code didn't have a trailing comma. When the
-  /// piece is formatted, if it fits on one line, the final comma piece is
-  /// discarded. Otherwise it is included.
-  final List<ListElement> _arguments;
+  /// The list of elements.
+  final List<ListElement> _elements;
 
-  /// The arguments that should have a blank line preserved between them and the
+  /// The elements that should have a blank line preserved between them and the
   /// next piece.
   final Set<ListElement> _blanksAfter;
 
-  /// The ")" after the arguments.
-  final Piece _after;
+  /// The closing bracket after the elements, if any.
+  final Piece? _after;
 
-  /// Whether this list should have a trailing comma if it splits.
-  ///
-  /// This is true for most lists but false for type parameters, type arguments,
-  /// and switch values.
-  final bool _trailingComma;
+  /// The details of how this particular list should be formatted.
+  final ListStyle _style;
 
   /// The state when the list is split.
   ///
@@ -47,72 +42,15 @@ class ListPiece extends Piece {
   // instead have the [Solver] ask each [Piece] for the cost of its state.
   final State _splitState;
 
-  /// Whether this list should have spaces inside the bracket when it doesn't
-  /// split. This is false for most lists, but true for switch expression
-  /// bodies:
-  ///
-  /// ```
-  /// v = switch (e) { 1 => 'one', 2 => 'two' };
-  /// //              ^                      ^
-  /// ```
-  final bool _spaceWhenUnsplit;
-
-  /// Whether a split in the [_before] piece should force the list to split too.
-  /// Most of the time, this isn't relevant because the before part is usually
-  /// just a single bracket character.
-  ///
-  /// For collection literals with explicit type arguments, the [_before] piece
-  /// contains the type arguments. If those split, this is `false` to allow the
-  /// list itself to remain unsplit as in:
-  ///
-  /// ```
-  /// <
-  ///   VeryLongTypeName,
-  ///   AnotherLongTypeName,
-  /// >{a: 1};
-  /// ```
-  ///
-  /// For switch expressions, the `switch (value) {` part is in [_before] and
-  /// the body is the list. In that case, if the value splits, we want to force
-  /// the body to split too:
-  ///
-  /// ```
-  /// // Disallowed:
-  /// e = switch (
-  ///   "a long string that must wrap"
-  /// ) { 0 => "ok" };
-  ///
-  /// // Instead:
-  /// e = switch (
-  ///   "a long string that must wrap"
-  /// ) {
-  ///   0 => "ok",
-  /// };
-  /// ```
-  final bool _splitListIfBeforeSplits;
-
   ListPiece(
-      this._before,
-      this._arguments,
-      this._blanksAfter,
-      this._after,
-      int cost,
-      this._trailingComma,
-      this._spaceWhenUnsplit,
-      this._splitListIfBeforeSplits)
-      : _splitState = State(1, cost: cost);
+      this._before, this._elements, this._blanksAfter, this._after, this._style)
+      : _splitState = State(1, cost: _style.splitCost);
 
   @override
-  List<State> get additionalStates => [if (_arguments.isNotEmpty) _splitState];
+  List<State> get additionalStates => [if (_elements.isNotEmpty) _splitState];
 
   @override
   void format(CodeWriter writer, State state) {
-    if (_splitListIfBeforeSplits && state == State.unsplit) {
-      writer.setAllowNewlines(false);
-    }
-
-    writer.format(_before);
-
     // TODO(tall): Should support a third state for argument lists with block
     // arguments, like:
     //
@@ -121,48 +59,71 @@ class ListPiece extends Piece {
     //   ...
     // });
     // ```
-    if (state == State.unsplit) {
-      writer.setAllowNewlines(false);
-      if (_spaceWhenUnsplit && _arguments.isNotEmpty) writer.space();
 
-      // All arguments on one line with no trailing comma.
-      for (var i = 0; i < _arguments.length; i++) {
-        if (i > 0 && _arguments[i - 1]._delimiter.isEmpty) writer.space();
-        _arguments[i].format(writer, omitComma: i == _arguments.length - 1);
+    // Format the opening bracket, if there is one.
+    if (_before case var before?) {
+      if (_style.splitListIfBeforeSplits && state == State.unsplit) {
+        writer.setAllowNewlines(false);
       }
 
-      if (_spaceWhenUnsplit && _arguments.isNotEmpty) writer.space();
-    } else {
-      // Each argument on its own line with a trailing comma after the last.
-      writer.newline(indent: Indent.block);
-      for (var i = 0; i < _arguments.length; i++) {
-        var argument = _arguments[i];
-        argument.format(writer,
-            omitComma: !_trailingComma && i == _arguments.length - 1);
-        if (i < _arguments.length - 1) {
-          writer.newline(blank: _blanksAfter.contains(argument));
-        }
-      }
-      writer.newline(indent: Indent.none);
+      writer.format(before);
+
+      if (state == State.unsplit) writer.setAllowNewlines(false);
+
+      // Whitespace after the opening bracket.
+      writer.splitIf(state != State.unsplit,
+          indent: Indent.block,
+          space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
     }
 
-    writer.setAllowNewlines(true);
-    writer.format(_after);
+    // Format the elements.
+    for (var i = 0; i < _elements.length; i++) {
+      var isLast = i == _elements.length - 1;
+      var appendComma = switch (_style.commas) {
+        // Trailing comma after the last element if split but not otherwise.
+        Commas.trailing => !(state == State.unsplit && isLast),
+        // Never a trailing comma after the last element.
+        Commas.nonTrailing => !isLast,
+        Commas.none => false,
+      };
+
+      var element = _elements[i];
+      element.format(writer, appendComma: appendComma);
+
+      // Write a space or newline between elements.
+      if (!isLast) {
+        writer.splitIf(state != State.unsplit,
+            blank: _blanksAfter.contains(element),
+            // No space after the "[" or "{" in a parameter list.
+            space: element._delimiter.isEmpty);
+      }
+    }
+
+    // Format the closing bracket, if any.
+    if (_after case var after?) {
+      // Whitespace before the closing bracket.
+      writer.splitIf(state != State.unsplit,
+          indent: Indent.none,
+          space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
+
+      writer.setAllowNewlines(true);
+      writer.format(after);
+    }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    callback(_before);
+    if (_before case var before?) callback(before);
 
-    for (var argument in _arguments) {
+    for (var argument in _elements) {
       argument.forEachChild(callback);
     }
 
-    callback(_after);
+    if (_after case var after?) callback(after);
   }
 
   @override
-  String toString() => 'Call';
+  String toString() => 'List';
 }
 
 /// An element in a [ListPiece].
@@ -212,12 +173,12 @@ final class ListElement {
 
   /// Writes this element to [writer].
   ///
-  /// If this element could have a comma after it (because it's not just a
-  /// comment) and [omitComma] is `false`, then elides the comma.
-  void format(CodeWriter writer, {required bool omitComma}) {
+  /// If [appendComma] is `true`, writes a comma after the element, unless the
+  /// element shouldn't have one because it's a comment.
+  void format(CodeWriter writer, {required bool appendComma}) {
     if (_element case var element?) {
       writer.format(element);
-      if (!omitComma) writer.write(',');
+      if (appendComma) writer.write(',');
       if (_delimiter.isNotEmpty) {
         writer.space();
         writer.write(_delimiter);
@@ -244,4 +205,92 @@ final class ListElement {
   ListElement withDelimiter(String delimiter) {
     return ListElement._(_element, delimiter, _comment);
   }
+}
+
+/// Where commas should be added in a [ListPiece].
+enum Commas {
+  /// Add a comma after every element when the elements split, including the
+  /// last. When not split, omit the trailing comma.
+  trailing,
+
+  /// Add a comme after every element except for the last, regardless of whether
+  /// or not it is split.
+  nonTrailing,
+
+  /// Don't add commas after any elements.
+  none,
+}
+
+/// The various ways a "list" can appear syntactically and be formatted.
+///
+/// [ListPiece] is used for most places in code where a series of elements can
+/// be either all on one line or can be each split to their own line with no
+/// extra indentation: argument lists, parameter lists, collection literals,
+/// type arguments, switch expression cases, etc.
+///
+/// These have similar enough formatting to use the same class. And, in
+/// particular, they all handle comments between elements the same way. But
+/// they vary in whether or not a trailing comma is allowed, whether there
+/// should be spaces inside the delimiters when the elements aren't split, etc.
+/// This class captures those options.
+class ListStyle {
+  /// How commas should be handled by the list.
+  ///
+  /// Most lists use [Commas.trailing]. Type parameters and type arguments use
+  /// [Commas.nonTrailing]. For loop parts and switch values use [Commas.none].
+  final Commas commas;
+
+  /// The cost of splitting this list. Normally 1, but higher for some lists
+  /// that look worse when split.
+  final int splitCost;
+
+  /// Whether this list should have spaces inside the bracket when it doesn't
+  /// split. This is false for most lists, but true for switch expression
+  /// bodies:
+  ///
+  /// ```
+  /// v = switch (e) { 1 => 'one', 2 => 'two' };
+  /// //              ^                      ^
+  /// ```
+  final bool spaceWhenUnsplit;
+
+  /// Whether a split in the [_before] piece should force the list to split too.
+  /// Most of the time, this isn't relevant because the before part is usually
+  /// just a single bracket character.
+  ///
+  /// For collection literals with explicit type arguments, the [_before] piece
+  /// contains the type arguments. If those split, this is `false` to allow the
+  /// list itself to remain unsplit as in:
+  ///
+  /// ```
+  /// <
+  ///   VeryLongTypeName,
+  ///   AnotherLongTypeName,
+  /// >{a: 1};
+  /// ```
+  ///
+  /// For switch expressions, the `switch (value) {` part is in [_before] and
+  /// the body is the list. In that case, if the value splits, we want to force
+  /// the body to split too:
+  ///
+  /// ```
+  /// // Disallowed:
+  /// e = switch (
+  ///   "a long string that must wrap"
+  /// ) { 0 => "ok" };
+  ///
+  /// // Instead:
+  /// e = switch (
+  ///   "a long string that must wrap"
+  /// ) {
+  ///   0 => "ok",
+  /// };
+  /// ```
+  final bool splitListIfBeforeSplits;
+
+  const ListStyle(
+      {this.commas = Commas.trailing,
+      this.splitCost = Cost.normal,
+      this.spaceWhenUnsplit = false,
+      this.splitListIfBeforeSplits = false});
 }
