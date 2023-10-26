@@ -9,6 +9,7 @@ import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/block.dart';
 import '../piece/do_while.dart';
+import '../piece/for.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -425,37 +426,132 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitForStatement(ForStatement node) {
-    throw UnimplementedError();
+    token(node.forKeyword);
+    writer.split();
+    var forKeyword = writer.pop();
+
+    // Treat the for loop parts sort of as an argument list where each clause
+    // is a separate argument. This means that when they split, they split like:
+    //
+    // ```
+    // for (
+    //   initializerClause;
+    //   conditionClause;
+    //   incrementClause
+    // ) {
+    //   body;
+    // }
+    // ```
+    var partsList =
+        DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
+    partsList.leftBracket(node.leftParenthesis);
+
+    // Edge case: A totally empty for loop is formatted just as `(;;)` with
+    // no splits or spaces anywhere.
+    var forLoopParts = node.forLoopParts;
+    if (forLoopParts is ForPartsWithExpression &&
+        forLoopParts.initialization == null &&
+        forLoopParts.leftSeparator.precedingComments == null &&
+        forLoopParts.condition == null &&
+        forLoopParts.rightSeparator.precedingComments == null &&
+        forLoopParts.updaters.isEmpty &&
+        node.rightParenthesis.precedingComments == null) {
+      token(forLoopParts.leftSeparator);
+      token(forLoopParts.rightSeparator);
+    } else {
+      switch (forLoopParts) {
+        // ForParts is the base class for all three-clause "C-style" for loops.
+        // There are three subclasses based on whether the first clause is a
+        // declaration, expression, or pattern. The other clauses are the same
+        // and are handled here.
+        case ForParts():
+          // The initializer clause depends on which subclass we have.
+          switch (forLoopParts) {
+            case ForPartsWithDeclarations():
+              partsList.addCommentsBefore(forLoopParts.variables.beginToken);
+              visit(forLoopParts.variables);
+
+            case ForPartsWithExpression():
+              if (forLoopParts.initialization case var initializer?) {
+                partsList.addCommentsBefore(initializer.beginToken);
+                visit(initializer);
+              } else {
+                partsList.addCommentsBefore(forLoopParts.leftSeparator);
+              }
+
+            case ForPartsWithPattern():
+              throw UnimplementedError();
+          }
+
+          token(forLoopParts.leftSeparator);
+          writer.split();
+          partsList.add(writer.pop());
+
+          // The condition clause.
+          if (forLoopParts.condition case var conditionExpression?) {
+            partsList.addCommentsBefore(conditionExpression.beginToken);
+            visit(conditionExpression);
+          } else {
+            partsList.addCommentsBefore(forLoopParts.rightSeparator);
+          }
+
+          token(forLoopParts.rightSeparator);
+          writer.split();
+          partsList.add(writer.pop());
+
+          // The update clauses.
+          if (forLoopParts.updaters.isNotEmpty) {
+            partsList.addCommentsBefore(forLoopParts.updaters.first.beginToken);
+
+            createList(forLoopParts.updaters,
+                style: const ListStyle(commas: Commas.nonTrailing));
+            partsList.add(writer.pop());
+          }
+
+        case ForEachParts():
+          throw UnimplementedError();
+      }
+    }
+
+    partsList.rightBracket(node.rightParenthesis);
+    writer.split();
+    var forPartsPiece = partsList.build();
+
+    visit(node.body);
+    var body = writer.pop();
+
+    writer.push(ForPiece(forKeyword, forPartsPiece, body,
+        hasBlockBody: node.body is Block));
   }
 
   @override
   void visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
   void visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
   void visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
   void visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
   void visitForPartsWithExpression(ForPartsWithExpression node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
   void visitForPartsWithPattern(ForPartsWithPattern node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitForStatement().');
   }
 
   @override
@@ -647,8 +743,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     visit(node.methodName);
     visit(node.typeArguments);
 
-    createList(node.argumentList.leftParenthesis, node.argumentList.arguments,
-        node.argumentList.rightParenthesis);
+    createList(
+        leftBracket: node.argumentList.leftParenthesis,
+        node.argumentList.arguments,
+        rightBracket: node.argumentList.rightParenthesis);
   }
 
   @override

@@ -108,7 +108,7 @@ mixin PieceFactory implements CommentWriter {
     // The formatter will preserve the newline after element 3 and the lack of
     // them after the other elements.
 
-    createList(leftBracket, elements, rightBracket);
+    createList(leftBracket: leftBracket, elements, rightBracket: rightBracket);
   }
 
   /// Creates metadata annotations for a directive.
@@ -357,13 +357,14 @@ mixin PieceFactory implements CommentWriter {
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
-  void createList(
-      Token leftBracket, Iterable<AstNode> elements, Token rightBracket,
-      {ListStyle style = const ListStyle()}) {
+  void createList(Iterable<AstNode> elements,
+      {Token? leftBracket,
+      Token? rightBracket,
+      ListStyle style = const ListStyle()}) {
     var builder = DelimitedListBuilder(this, style);
-    builder.leftBracket(leftBracket);
+    if (leftBracket != null) builder.leftBracket(leftBracket);
     elements.forEach(builder.visit);
-    builder.rightBracket(rightBracket);
+    if (rightBracket != null) builder.rightBracket(rightBracket);
     writer.push(builder.build());
   }
 
@@ -389,7 +390,10 @@ mixin PieceFactory implements CommentWriter {
   /// Creates a [ListPiece] for a type argument or type parameter list.
   void createTypeList(
       Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
-    return createList(leftBracket, elements, rightBracket,
+    return createList(
+        leftBracket: leftBracket,
+        elements,
+        rightBracket: rightBracket,
         style: const ListStyle(commas: Commas.nonTrailing, splitCost: 2));
   }
 
