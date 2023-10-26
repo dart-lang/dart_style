@@ -122,9 +122,6 @@ class DelimitedListBuilder {
   }
 
   /// Adds [element] to the built list.
-  ///
-  /// Includes any comments that appear before element. Also includes the
-  /// subsequent comma, if any, and any comments that precede the comma.
   void visit(AstNode element) {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.beginToken);
