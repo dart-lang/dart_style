@@ -431,6 +431,34 @@ mixin PieceFactory implements CommentWriter {
         isValueDelimited: rightHandSide.isDelimited));
   }
 
+  /// Writes the condition and updaters part of for a [ForParts] after the
+  /// subclass's initializer clause has been written.
+  void finishForParts(ForParts forLoopParts, DelimitedListBuilder partsList) {
+    token(forLoopParts.leftSeparator);
+    writer.split();
+    partsList.add(writer.pop());
+
+    // The condition clause.
+    if (forLoopParts.condition case var conditionExpression?) {
+      partsList.addCommentsBefore(conditionExpression.beginToken);
+      visit(conditionExpression);
+    } else {
+      partsList.addCommentsBefore(forLoopParts.rightSeparator);
+    }
+
+    token(forLoopParts.rightSeparator);
+    writer.split();
+    partsList.add(writer.pop());
+
+    // The update clauses.
+    if (forLoopParts.updaters.isNotEmpty) {
+      partsList.addCommentsBefore(forLoopParts.updaters.first.beginToken);
+      createList(forLoopParts.updaters,
+          style: const ListStyle(commas: Commas.nonTrailing));
+      partsList.add(writer.pop());
+    }
+  }
+
   /// Writes an optional modifier that precedes other code.
   void modifier(Token? keyword) {
     token(keyword, after: writer.space);

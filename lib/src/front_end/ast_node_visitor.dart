@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
+import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
@@ -446,71 +447,39 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
     partsList.leftBracket(node.leftParenthesis);
 
-    // Edge case: A totally empty for loop is formatted just as `(;;)` with
-    // no splits or spaces anywhere.
     var forLoopParts = node.forLoopParts;
-    if (forLoopParts is ForPartsWithExpression &&
-        forLoopParts.initialization == null &&
-        forLoopParts.leftSeparator.precedingComments == null &&
-        forLoopParts.condition == null &&
-        forLoopParts.rightSeparator.precedingComments == null &&
-        forLoopParts.updaters.isEmpty &&
-        node.rightParenthesis.precedingComments == null) {
-      token(forLoopParts.leftSeparator);
-      token(forLoopParts.rightSeparator);
-    } else {
-      switch (forLoopParts) {
-        // ForParts is the base class for all three-clause "C-style" for loops.
-        // There are three subclasses based on whether the first clause is a
-        // declaration, expression, or pattern. The other clauses are the same
-        // and are handled here.
-        case ForParts():
-          // The initializer clause depends on which subclass we have.
-          switch (forLoopParts) {
-            case ForPartsWithDeclarations():
-              partsList.addCommentsBefore(forLoopParts.variables.beginToken);
-              visit(forLoopParts.variables);
+    switch (forLoopParts) {
+      // Edge case: A totally empty for loop is formatted just as `(;;)` with
+      // no splits or spaces anywhere.
+      case ForPartsWithExpression(
+            initialization: null,
+            leftSeparator: Token(precedingComments: null),
+            condition: null,
+            rightSeparator: Token(precedingComments: null),
+            updaters: NodeList(isEmpty: true),
+          )
+          when node.rightParenthesis.precedingComments == null:
+        token(forLoopParts.leftSeparator);
+        token(forLoopParts.rightSeparator);
+      case ForPartsWithDeclarations():
+        partsList.addCommentsBefore(forLoopParts.variables.beginToken);
+        visit(forLoopParts.variables);
+        finishForParts(forLoopParts, partsList);
 
-            case ForPartsWithExpression():
-              if (forLoopParts.initialization case var initializer?) {
-                partsList.addCommentsBefore(initializer.beginToken);
-                visit(initializer);
-              } else {
-                partsList.addCommentsBefore(forLoopParts.leftSeparator);
-              }
+      case ForPartsWithExpression():
+        if (forLoopParts.initialization case var initializer?) {
+          partsList.addCommentsBefore(initializer.beginToken);
+          visit(initializer);
+        } else {
+          partsList.addCommentsBefore(forLoopParts.leftSeparator);
+        }
+        finishForParts(forLoopParts, partsList);
 
-            case ForPartsWithPattern():
-              throw UnimplementedError();
-          }
-
-          token(forLoopParts.leftSeparator);
-          writer.split();
-          partsList.add(writer.pop());
-
-          // The condition clause.
-          if (forLoopParts.condition case var conditionExpression?) {
-            partsList.addCommentsBefore(conditionExpression.beginToken);
-            visit(conditionExpression);
-          } else {
-            partsList.addCommentsBefore(forLoopParts.rightSeparator);
-          }
-
-          token(forLoopParts.rightSeparator);
-          writer.split();
-          partsList.add(writer.pop());
-
-          // The update clauses.
-          if (forLoopParts.updaters.isNotEmpty) {
-            partsList.addCommentsBefore(forLoopParts.updaters.first.beginToken);
-
-            createList(forLoopParts.updaters,
-                style: const ListStyle(commas: Commas.nonTrailing));
-            partsList.add(writer.pop());
-          }
-
-        case ForEachParts():
-          throw UnimplementedError();
-      }
+      case ForPartsWithPattern():
+      case ForEachPartsWithDeclaration():
+      case ForEachPartsWithIdentifier():
+      case ForEachPartsWithPattern():
+        throw UnimplementedError();
     }
 
     partsList.rightBracket(node.rightParenthesis);
