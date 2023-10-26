@@ -11,6 +11,7 @@ import '../piece/function.dart';
 import '../piece/if.dart';
 import '../piece/import.dart';
 import '../piece/infix.dart';
+import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import 'ast_node_visitor.dart';
@@ -357,10 +358,11 @@ mixin PieceFactory implements CommentWriter {
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
   void createList(
-      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
-    var builder = DelimitedListBuilder(this);
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket,
+      {ListStyle style = const ListStyle()}) {
+    var builder = DelimitedListBuilder(this, style);
     builder.leftBracket(leftBracket);
-    elements.forEach(builder.add);
+    elements.forEach(builder.visit);
     builder.rightBracket(rightBracket);
     writer.push(builder.build());
   }
@@ -370,14 +372,15 @@ mixin PieceFactory implements CommentWriter {
       Expression value, Token rightParenthesis) {
     // Format like an argument list since it is an expression surrounded by
     // parentheses.
-    var builder = DelimitedListBuilder.switchValue(this);
+    var builder = DelimitedListBuilder(
+        this, const ListStyle(commas: Commas.none, splitCost: 2));
 
     // Attach the `switch ` as part of the `(`.
     token(switchKeyword);
     writer.space();
 
     builder.leftBracket(leftParenthesis);
-    builder.add(value);
+    builder.visit(value);
     builder.rightBracket(rightParenthesis);
 
     writer.push(builder.build());
@@ -386,11 +389,8 @@ mixin PieceFactory implements CommentWriter {
   /// Creates a [ListPiece] for a type argument or type parameter list.
   void createTypeList(
       Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
-    var builder = DelimitedListBuilder.type(this);
-    builder.leftBracket(leftBracket);
-    elements.forEach(builder.add);
-    builder.rightBracket(rightBracket);
-    writer.push(builder.build());
+    return createList(leftBracket, elements, rightBracket,
+        style: const ListStyle(commas: Commas.nonTrailing, splitCost: 2));
   }
 
   /// Writes the parts of a formal parameter shared by all formal parameter

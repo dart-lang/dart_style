@@ -11,6 +11,7 @@ import '../piece/block.dart';
 import '../piece/do_while.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
+import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
@@ -410,7 +411,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         builder.leftDelimiter(node.leftDelimiter!);
       }
 
-      builder.add(node.parameters[i]);
+      builder.visit(node.parameters[i]);
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
@@ -930,7 +931,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSwitchExpression(SwitchExpression node) {
-    var list = DelimitedListBuilder.switchBody(this);
+    var list = DelimitedListBuilder(this,
+        const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
 
     createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
@@ -938,7 +940,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     list.leftBracket(node.leftBracket);
 
     for (var member in node.cases) {
-      list.add(member);
+      list.visit(member);
     }
 
     list.rightBracket(node.rightBracket);
