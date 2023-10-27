@@ -167,7 +167,7 @@ class PieceWriter {
     return _currentText!;
   }
 
-  /// Pops the previous piece and begins a new one.
+  /// Pops the most recent piece and begins a new one.
   ///
   /// Any text written after this will go into a new [TextPiece] instead of
   /// being appended to the end of the popped one. Call this wherever a line
