@@ -461,18 +461,20 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
           when node.rightParenthesis.precedingComments == null:
         token(forLoopParts.leftSeparator);
         token(forLoopParts.rightSeparator);
+
       case ForPartsWithDeclarations():
         partsList.addCommentsBefore(forLoopParts.variables.beginToken);
         visit(forLoopParts.variables);
         finishForParts(forLoopParts, partsList);
 
+      case ForPartsWithExpression(:var initialization?):
+        partsList.addCommentsBefore(initialization.beginToken);
+        visit(initialization);
+        finishForParts(forLoopParts, partsList);
+
       case ForPartsWithExpression():
-        if (forLoopParts.initialization case var initializer?) {
-          partsList.addCommentsBefore(initializer.beginToken);
-          visit(initializer);
-        } else {
-          partsList.addCommentsBefore(forLoopParts.leftSeparator);
-        }
+        // No initializer part.
+        partsList.addCommentsBefore(forLoopParts.leftSeparator);
         finishForParts(forLoopParts, partsList);
 
       case ForPartsWithPattern():

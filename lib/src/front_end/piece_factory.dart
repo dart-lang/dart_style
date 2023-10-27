@@ -431,7 +431,7 @@ mixin PieceFactory implements CommentWriter {
         isValueDelimited: rightHandSide.isDelimited));
   }
 
-  /// Writes the condition and updaters part of for a [ForParts] after the
+  /// Writes the condition and updaters parts of a [ForParts] after the
   /// subclass's initializer clause has been written.
   void finishForParts(ForParts forLoopParts, DelimitedListBuilder partsList) {
     token(forLoopParts.leftSeparator);
