@@ -1,0 +1,100 @@
+40 columns                              |
+### Tests for loops where the initializer clause is a variable declaration.
+>>> Unsplit.
+for (var x = 1; condition; increment) { body; }
+<<<
+for (var x = 1; condition; increment) {
+  body;
+}
+>>> Split between clauses.
+for (var x = longFirstClause; veryLongSecondClause; third) {}
+<<<
+for (
+  var x = longFirstClause;
+  veryLongSecondClause;
+  third
+) {}
+>>>
+for (var x = init; longSecondClause; third) {}
+<<<
+for (
+  var x = init;
+  longSecondClause;
+  third
+) {}
+>>> Split with empty second clause.
+for (var x = initialize;; longIncrement) { body; }
+<<<
+for (
+  var x = initialize;
+  ;
+  longIncrement
+) {
+  body;
+}
+>>> Split with empty third clause.
+for (var x = initialize; longCondition; ) { body; }
+<<<
+for (
+  var x = initialize;
+  longCondition;
+) {
+  body;
+}
+>>> Split in increments splits clauses.
+for (var x = 1; bar; first = 1, second = 2, third = 3, fourth = 4) {}
+<<<
+for (
+  var x = 1;
+  bar;
+  first = 1,
+  second = 2,
+  third = 3,
+  fourth = 4
+) {}
+>>> Indent a wrapped initializer expression.
+for (var x = very + long + initialization + expression; a; b) {}
+<<<
+for (
+  var x =
+      very +
+          long +
+          initialization +
+          expression;
+  a;
+  b
+) {}
+>>> Unsplit multiple variable declarations.
+for (var a = 1, b = 2; 3; 4) {}
+<<<
+for (var a = 1, b = 2; 3; 4) {}
+>>> Split clauses and not variable declarations.
+for (var first = 1, second = 2, third = 3; 1; 2) {}
+<<<
+for (
+  var first = 1, second = 2, third = 3;
+  1;
+  2
+) {}
+>>> Split variable declarations.
+for (var first = 1, second = 2, third = 333; 1; 2) {}
+<<<
+for (
+  var first = 1,
+      second = 2,
+      third = 333;
+  1;
+  2
+) {}
+>>> Don't force variables to split if clauses split.
+for (var a = 1, b = 2; longCondition(expression); a += b) {
+  ;
+}
+<<<
+for (
+  var a = 1, b = 2;
+  longCondition(expression);
+  a += b
+) {
+  ;
+}

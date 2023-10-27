@@ -1,0 +1,256 @@
+40 columns                              |
+>>> Hanging line comment before initializer expression.
+for  (  // comment
+init  ;  cond  ;  incr  )  {  body;  }
+<<<
+for (
+  // comment
+  init;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment before initializer expression.
+for  (
+// comment
+init  ;  cond  ;  incr  )  {  body;  }
+<<<
+for (
+  // comment
+  init;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment before absent initializer expression.
+for  (  // comment
+;  cond  ;  incr  )  {  body;  }
+<<<
+for (
+  // comment
+  ;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment before absent initializer expression.
+for  (
+// comment
+;  cond  ;  incr  )  {  body;  }
+<<<
+for (
+  // comment
+  ;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment after initializer expression.
+for  (  init  // comment
+  ;  cond  ;  incr  )  {  body;  }
+<<<
+### Looks weird, but users don't tend to put comments here.
+for (
+  init // comment
+  ;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment after initializer expression.
+for  (  init
+// comment
+  ;  cond  ;  incr  )  {  body;  }
+<<<
+### Looks weird, but users don't tend to put comments here.
+for (
+  init
+  // comment
+  ;
+  cond;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment before condition expression.
+for  (  init  ;  // comment
+cond  ;  incr  )  {  body;  }
+<<<
+for (
+  init; // comment
+  cond;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment before condition expression.
+for  (  init  ;
+// comment
+cond  ;  incr  )  {  body;  }
+<<<
+for (
+  init;
+  // comment
+  cond;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment before absent condition expression.
+for  (  init  ;  // comment
+;  incr  )  {  body;  }
+<<<
+for (
+  init; // comment
+  ;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment before absent condition expression.
+for  (  init  ;
+// comment
+;  incr  )  {  body;  }
+<<<
+for (
+  init;
+  // comment
+  ;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment after condition expression.
+for  (  init  ;  cond  // comment
+;  incr  )  {  body;  }
+<<<
+### Looks weird, but users don't tend to put comments here.
+for (
+  init;
+  cond // comment
+  ;
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment after condition expression.
+for  (  init  ;  cond
+// comment
+;  incr  )  {  body;  }
+<<<
+### Looks weird, but users don't tend to put comments here.
+for (
+  init;
+  cond
+  // comment
+  ;
+  incr
+) {
+  body;
+}
+>>> Hanging line comment before increment expression.
+for  (  init  ;  cond  ;  // comment
+incr  )  {  body;  }
+<<<
+for (
+  init;
+  cond; // comment
+  incr
+) {
+  body;
+}
+>>> Non-hanging line comment before increment expression.
+for  (  init  ;  cond  ;
+// comment
+incr  )  {  body;  }
+<<<
+for (
+  init;
+  cond;
+  // comment
+  incr
+) {
+  body;
+}
+>>> Hanging line comment before absent increment expression.
+for  (  init  ;  cond  ;  // comment
+)  {  body;  }
+<<<
+for (
+  init;
+  cond; // comment
+) {
+  body;
+}
+>>> Non-hanging line comment before absent increment expression.
+for  (  init  ;  cond  ;
+// comment
+)  {  body;  }
+<<<
+for (
+  init;
+  cond;
+  // comment
+) {
+  body;
+}
+>>> Hanging line comment after increment expression.
+for  (  init  ;  cond  ;  incr  // comment
+  )  {  body;  }
+<<<
+for (
+  init;
+  cond;
+  incr // comment
+) {
+  body;
+}
+>>> Non-hanging line comment increment expression.
+for  (  init  ;  cond  ;  incr
+// comment
+)  {  body;  }
+<<<
+for (
+  init;
+  cond;
+  incr
+  // comment
+) {
+  body;
+}
+>>> Line comment before first `;` in fully empty clauses.
+for  (  // comment
+;  ;  )  {  body;  }
+<<<
+for (
+  // comment
+  ;
+  ;
+) {
+  body;
+}
+>>> Line comment before second `;` in fully empty clauses.
+for  (  ;  // comment
+;)  {  body;  }
+<<<
+for (
+  ; // comment
+  ;
+) {
+  body;
+}
+>>> Line comment after second `;` in fully empty clauses.
+for  (  ;  ;  // comment
+)  {  body;  }
+<<<
+for (
+  ;
+  ; // comment
+) {
+  body;
+}

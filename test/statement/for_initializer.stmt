@@ -1,0 +1,158 @@
+40 columns                              |
+### Tests for loops where the initializer clause is an expression.
+>>> Unsplit.
+for (initialize; condition; increment) { body; }
+<<<
+for (initialize; condition; increment) {
+  body;
+}
+>>> Split between clauses.
+for (veryLongFirstClause; veryLongSecondClause; third) {}
+<<<
+for (
+  veryLongFirstClause;
+  veryLongSecondClause;
+  third
+) {}
+>>>
+for (longFirstClause; longSecondClause; third) {}
+<<<
+for (
+  longFirstClause;
+  longSecondClause;
+  third
+) {}
+>>> Unsplit only initializer clause.
+for  ( initialize  ;  ;  )  { body; }
+<<<
+for (initialize; ;) {
+  body;
+}
+>>> Split only initializer clause.
+for  (  extremelyLong + veryLongInitializerClause  ;  ;  )  { body; }
+<<<
+for (
+  extremelyLong +
+      veryLongInitializerClause;
+  ;
+) {
+  body;
+}
+>>> Unsplit only condition clause.
+for  (   ;  condition  ;  )  { body; }
+<<<
+for (; condition;) {
+  body;
+}
+>>> Split only condition clause.
+for  (  ;  extremelyLong + veryLongConditionClause  ;  )  { body; }
+<<<
+for (
+  ;
+  extremelyLong +
+      veryLongConditionClause;
+) {
+  body;
+}
+>>> Unsplit only increment clause.
+for  (   ;  ;  increment  )  { body; }
+<<<
+for (; ; increment) {
+  body;
+}
+>>> Split only increment clause.
+for  (  ;  ;  extremelyLong + veryLongIncrementClause  )  { body; }
+<<<
+for (
+  ;
+  ;
+  extremelyLong +
+      veryLongIncrementClause
+) {
+  body;
+}
+>>> Unsplit no initializer clause.
+for  (  ;  cond  ;  incr )  { body; }
+<<<
+for (; cond; incr) {
+  body;
+}
+>>> Split no initializer clause.
+for  (  ;  longConditionClause  ;  longIncrementClause  )  { body; }
+<<<
+for (
+  ;
+  longConditionClause;
+  longIncrementClause
+) {
+  body;
+}
+>>> Unsplit no condition clause.
+for  (  init  ;  ;  incr  )  { body; }
+<<<
+for (init; ; incr) {
+  body;
+}
+>>> Split no condition clause.
+for  (  longInitializerClause  ;  ;  longIncrementClause  )  { body; }
+<<<
+for (
+  longInitializerClause;
+  ;
+  longIncrementClause
+) {
+  body;
+}
+>>> Unsplit no increment clause.
+for  (  init  ;  cond  ;  )  { body; }
+<<<
+for (init; cond;) {
+  body;
+}
+>>> Split no increment clause.
+for  (  longInitializerClause  ;  longConditionClause  ;  )  { body; }
+<<<
+for (
+  longInitializerClause;
+  longConditionClause;
+) {
+  body;
+}
+>>> Indent a wrapped initializer.
+for (very + long + initialization + expression; a; b) {}
+<<<
+for (
+  very +
+      long +
+      initialization +
+      expression;
+  a;
+  b
+) {}
+>>> Unsplit increments.
+for (foo; bar; a += 1, b += 1) {}
+<<<
+for (foo; bar; a += 1, b += 1) {}
+>>> Split clauses but not increments.
+for (a = 0; longCondition(expression); a += 1, b += 1) {
+  ;
+}
+<<<
+for (
+  a = 0;
+  longCondition(expression);
+  a += 1, b += 1
+) {
+  ;
+}
+>>> Split in increments splits clauses.
+for (foo; bar; first = 1, second = 2, third = 3, fourth = 4) {}
+<<<
+for (
+  foo;
+  bar;
+  first = 1,
+  second = 2,
+  third = 3,
+  fourth = 4
+) {}
