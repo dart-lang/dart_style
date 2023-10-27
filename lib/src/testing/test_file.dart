@@ -169,6 +169,17 @@ class FormatTest {
   }
 }
 
+extension SourceCodeExtensions on SourceCode {
+  /// If the source code has a selection, returns its text with `‹` and `›`
+  /// inserted at the selection begin and end points.
+  ///
+  /// Otherwise, returns the code as-is.
+  String get textWithSelectionMarkers {
+    if (selectionStart == null) return text;
+    return '$textBeforeSelection‹$selectedText›$textAfterSelection';
+  }
+}
+
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
