@@ -37,12 +37,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   final LineInfo lineInfo;
 
   @override
-  final PieceWriter writer;
+  final PieceWriter pieces;
 
-  /// Initialize a newly created visitor to write source code representing
-  /// the visited nodes to the given [writer].
+  /// Create a new visitor that will be called to visit the code in [source].
   AstNodeVisitor(DartFormatter formatter, this.lineInfo, SourceCode source)
-      : writer = PieceWriter(formatter, source);
+      : pieces = PieceWriter(formatter, source);
 
   /// Visits [node] and returns the formatted result.
   ///
@@ -86,10 +85,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // Write any comments at the end of the code.
     sequence.addCommentsBefore(node.endToken.next!);
 
-    writer.push(sequence.build());
+    pieces.push(sequence.build());
 
     // Finish writing and return the complete result.
-    return writer.finish();
+    return pieces.finish();
   }
 
   @override
@@ -130,7 +129,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitAssignmentExpression(AssignmentExpression node) {
     visit(node.leftHandSide);
-    writer.space();
+    space();
     finishAssignment(node.operator, node.rightHandSide);
   }
 
@@ -219,19 +218,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitConditionalExpression(ConditionalExpression node) {
     visit(node.condition);
-    var condition = writer.pop();
-    writer.split();
+    var condition = pieces.split();
 
     token(node.question);
-    writer.space();
+    space();
     visit(node.thenExpression);
-    var thenBranch = writer.pop();
-    writer.split();
+    var thenBranch = pieces.split();
 
     token(node.colon);
-    writer.space();
+    space();
     visit(node.elseExpression);
-    var elseBranch = writer.pop();
+    var elseBranch = pieces.pop();
 
     var piece = InfixPiece([condition, thenBranch, elseBranch]);
 
@@ -243,13 +240,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       piece.pin(State.split);
     }
 
-    writer.push(piece);
+    pieces.push(piece);
   }
 
   @override
   void visitConfiguration(Configuration node) {
     token(node.ifKeyword);
-    writer.space();
+    space();
     token(node.leftParenthesis);
 
     if (node.equalToken case var equals?) {
@@ -259,7 +256,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     token(node.rightParenthesis);
-    writer.space();
+    space();
     visit(node.uri);
   }
 
@@ -311,20 +308,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitDoStatement(DoStatement node) {
     token(node.doKeyword);
-    writer.space();
+    space();
     visit(node.body);
-    writer.space();
+    space();
     token(node.whileKeyword);
-    var body = writer.pop();
-    writer.split();
+    var body = pieces.split();
 
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
     token(node.semicolon);
-    var condition = writer.pop();
+    var condition = pieces.pop();
 
-    writer.push(DoWhilePiece(body, condition));
+    pieces.push(DoWhilePiece(body, condition));
   }
 
   @override
@@ -417,7 +413,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
-    writer.push(builder.build());
+    pieces.push(builder.build());
   }
 
   @override
@@ -428,8 +424,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitForStatement(ForStatement node) {
     token(node.forKeyword);
-    writer.split();
-    var forKeyword = writer.pop();
+    var forKeyword = pieces.split();
 
     // Treat the for loop parts sort of as an argument list where each clause
     // is a separate argument. This means that when they split, they split like:
@@ -485,13 +480,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     partsList.rightBracket(node.rightParenthesis);
-    writer.split();
     var forPartsPiece = partsList.build();
 
+    pieces.split();
     visit(node.body);
-    var body = writer.pop();
+    var body = pieces.pop();
 
-    writer.push(ForPiece(forKeyword, forPartsPiece, body,
+    pieces.push(ForPiece(forKeyword, forPartsPiece, body,
         hasBlockBody: node.body is Block));
   }
 
@@ -649,14 +644,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     sequence.visit(node.statement);
-    writer.push(sequence.build());
+    pieces.push(sequence.build());
   }
 
   @override
   void visitLibraryDirective(LibraryDirective node) {
     createDirectiveMetadata(node);
     token(node.libraryKeyword);
-    visit(node.name2, before: writer.space);
+    visit(node.name2, before: space);
     token(node.semicolon);
   }
 
@@ -794,7 +789,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitPartDirective(PartDirective node) {
     createDirectiveMetadata(node);
     token(node.partKeyword);
-    writer.space();
+    space();
     visit(node.uri);
     token(node.semicolon);
   }
@@ -803,9 +798,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitPartOfDirective(PartOfDirective node) {
     createDirectiveMetadata(node);
     token(node.partKeyword);
-    writer.space();
+    space();
     token(node.ofKeyword);
-    writer.space();
+    space();
 
     // Part-of may have either a name or a URI. Only one of these will be
     // non-null. We visit both since visit() ignores null.
@@ -908,7 +903,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     token(node.returnKeyword);
 
     if (node.expression case var expression) {
-      writer.space();
+      space();
       visit(expression);
     }
 
@@ -922,7 +917,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // come at the top of the file, we don't have to worry about preceding
     // comments or whitespace.
     // TODO(new-ir): Update selection if inside the script tag.
-    writer.write(node.scriptTag.lexeme.trim());
+    pieces.write(node.scriptTag.lexeme.trim());
   }
 
   @override
@@ -948,14 +943,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     if ((node.type, node.name) case (var type?, var name?)) {
       // Have both a type and name, so allow splitting between them.
       visit(type);
-      var typePiece = writer.pop();
-      writer.split();
+      var typePiece = pieces.split();
 
       token(name);
-      var namePiece = writer.pop();
-      writer.split();
+      var namePiece = pieces.pop();
 
-      writer.push(VariablePiece(typePiece, [namePiece], hasType: true));
+      pieces.push(VariablePiece(typePiece, [namePiece], hasType: true));
     } else {
       // Only one of name or type so just write whichever there is.
       visit(node.type);
@@ -1005,7 +998,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
-    writer.space();
+    space();
     list.leftBracket(node.leftBracket);
 
     for (var member in node.cases) {
@@ -1013,7 +1006,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     list.rightBracket(node.rightBracket);
-    writer.push(list.build());
+    pieces.push(list.build());
   }
 
   @override
@@ -1021,7 +1014,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     if (node.guardedPattern.whenClause != null) throw UnimplementedError();
 
     visit(node.guardedPattern.pattern);
-    writer.space();
+    space();
     finishAssignment(node.arrow, node.expression);
   }
 
@@ -1032,10 +1025,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     // Attach the ` {` after the `)` in the [ListPiece] created by
     // [createSwitchValue()].
-    writer.space();
+    space();
     token(node.leftBracket);
-    writer.split();
-    var switchPiece = writer.pop();
+    var switchPiece = pieces.split();
 
     var sequence = SequenceBuilder(this);
     for (var member in node.members) {
@@ -1047,10 +1039,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       token(member.keyword);
 
       if (member is SwitchCase) {
-        writer.space();
+        space();
         visit(member.expression);
       } else if (member is SwitchPatternCase) {
-        writer.space();
+        space();
 
         if (member.guardedPattern.whenClause != null) {
           throw UnimplementedError();
@@ -1063,8 +1055,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       }
 
       token(member.colon);
-      var casePiece = writer.pop();
-      writer.split();
+      var casePiece = pieces.split();
 
       // Don't allow any blank lines between the `case` line and the first
       // statement in the case (or the next case if this case has no body).
@@ -1079,9 +1070,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     sequence.addCommentsBefore(node.rightBracket);
 
     token(node.rightBracket);
-    var rightBracketPiece = writer.pop();
+    var rightBracketPiece = pieces.pop();
 
-    writer.push(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
+    pieces.push(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: node.members.isNotEmpty));
   }
 
@@ -1126,7 +1117,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitTypeParameter(TypeParameter node) {
     token(node.name);
     if (node.bound case var bound?) {
-      writer.space();
+      space();
       modifier(node.extendsKeyword);
       visit(bound);
     }
@@ -1157,17 +1148,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // argument list or a function type's parameter list) affect the indentation
     // and splitting of the surrounding variable declaration.
     visit(node.type);
-    var header = writer.pop();
+    var header = pieces.pop();
 
     var variables = <Piece>[];
     for (var variable in node.variables) {
-      writer.split();
+      pieces.split();
       visit(variable);
       commaAfter(variable);
-      variables.add(writer.pop());
+      variables.add(pieces.pop());
     }
 
-    writer.push(VariablePiece(header, variables, hasType: node.type != null));
+    pieces.push(VariablePiece(header, variables, hasType: node.type != null));
   }
 
   @override
@@ -1179,19 +1170,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitWhileStatement(WhileStatement node) {
     token(node.whileKeyword);
-    writer.space();
+    space();
     token(node.leftParenthesis);
     visit(node.condition);
     token(node.rightParenthesis);
-    var condition = writer.pop();
-    writer.split();
+    var condition = pieces.split();
 
     visit(node.body);
-    var body = writer.pop();
+    var body = pieces.pop();
 
     var piece = IfPiece();
     piece.add(condition, body, isBlock: node.body is Block);
-    writer.push(piece);
+    pieces.push(piece);
   }
 
   @override
