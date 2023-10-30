@@ -71,9 +71,9 @@ mixin PieceFactory implements CommentWriter {
     sequence.addCommentsBefore(block.rightBracket);
 
     token(block.rightBracket);
-    var rightBracketPiece = pieces.pop();
+    var rightBracketPiece = pieces.take();
 
-    pieces.push(BlockPiece(
+    pieces.give(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: forceSplit || block.statements.isNotEmpty));
   }
@@ -150,8 +150,8 @@ mixin PieceFactory implements CommentWriter {
 
     // Allow splitting after the return type.
     if (returnTypePiece != null) {
-      var parametersPiece = pieces.pop();
-      pieces.push(FunctionTypePiece(returnTypePiece, parametersPiece));
+      var parametersPiece = pieces.take();
+      pieces.give(FunctionTypePiece(returnTypePiece, parametersPiece));
     }
   }
 
@@ -204,14 +204,14 @@ mixin PieceFactory implements CommentWriter {
           var header = pieces.split();
 
           visit(elseStatement);
-          var statement = pieces.pop();
+          var statement = pieces.take();
           piece.add(header, statement, isBlock: elseStatement is Block);
       }
     }
 
     traverse(ifStatement);
 
-    pieces.push(piece);
+    pieces.give(piece);
   }
 
   /// Creates an [ImportPiece] for an import or export directive.
@@ -221,7 +221,7 @@ mixin PieceFactory implements CommentWriter {
     token(keyword);
     space();
     visit(directive.uri);
-    var directivePiece = pieces.pop();
+    var directivePiece = pieces.take();
 
     Piece? configurationsPiece;
     if (directive.configurations.isNotEmpty) {
@@ -229,7 +229,7 @@ mixin PieceFactory implements CommentWriter {
       for (var configuration in directive.configurations) {
         pieces.split();
         visit(configuration);
-        configurations.add(pieces.pop());
+        configurations.add(pieces.take());
       }
 
       configurationsPiece = PostfixPiece(configurations);
@@ -242,14 +242,14 @@ mixin PieceFactory implements CommentWriter {
       token(asKeyword);
       space();
       visit(prefix);
-      asClause = PostfixPiece([pieces.pop()]);
+      asClause = PostfixPiece([pieces.take()]);
     }
 
     var combinators = <ImportCombinator>[];
     for (var combinatorNode in directive.combinators) {
       pieces.split();
       token(combinatorNode.keyword);
-      var combinator = ImportCombinator(pieces.pop());
+      var combinator = ImportCombinator(pieces.take());
       combinators.add(combinator);
 
       switch (combinatorNode) {
@@ -259,7 +259,7 @@ mixin PieceFactory implements CommentWriter {
             pieces.split();
             token(name.token);
             commaAfter(name);
-            combinator.names.add(pieces.pop());
+            combinator.names.add(pieces.take());
           }
         default:
           throw StateError('Unknown combinator type $combinatorNode.');
@@ -268,7 +268,7 @@ mixin PieceFactory implements CommentWriter {
 
     token(directive.semicolon);
 
-    pieces.push(ImportPiece(
+    pieces.give(ImportPiece(
         directivePiece, configurationsPiece, asClause, combinators));
   }
 
@@ -299,8 +299,8 @@ mixin PieceFactory implements CommentWriter {
     }
 
     visit(right);
-    operands.add(pieces.pop());
-    pieces.push(InfixPiece(operands));
+    operands.add(pieces.take());
+    pieces.give(InfixPiece(operands));
   }
 
   /// Creates a chained infix operation: a binary operator expression, or
@@ -340,12 +340,12 @@ mixin PieceFactory implements CommentWriter {
 
       // Otherwise, just write the node itself.
       visit(e);
-      operands.add(pieces.pop());
+      operands.add(pieces.take());
     }
 
     traverse(node);
 
-    pieces.push(InfixPiece(operands));
+    pieces.give(InfixPiece(operands));
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
@@ -357,7 +357,7 @@ mixin PieceFactory implements CommentWriter {
     if (leftBracket != null) builder.leftBracket(leftBracket);
     elements.forEach(builder.visit);
     if (rightBracket != null) builder.rightBracket(rightBracket);
-    pieces.push(builder.build());
+    pieces.give(builder.build());
   }
 
   /// Visits the `switch (expr)` part of a switch statement or expression.
@@ -376,7 +376,7 @@ mixin PieceFactory implements CommentWriter {
     builder.visit(value);
     builder.rightBracket(rightParenthesis);
 
-    pieces.push(builder.build());
+    pieces.give(builder.build());
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
@@ -417,8 +417,8 @@ mixin PieceFactory implements CommentWriter {
 
     visit(rightHandSide);
 
-    var initializer = pieces.pop();
-    pieces.push(AssignPiece(target, initializer,
+    var initializer = pieces.take();
+    pieces.give(AssignPiece(target, initializer,
         isValueDelimited: rightHandSide.isDelimited));
   }
 

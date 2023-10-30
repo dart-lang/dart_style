@@ -98,7 +98,7 @@ class DelimitedListBuilder {
 
     _visitor.token(delimiter);
     _visitor.token(bracket);
-    _rightBracket = _visitor.pieces.pop();
+    _rightBracket = _visitor.pieces.take();
   }
 
   /// Adds [piece] to the built list.

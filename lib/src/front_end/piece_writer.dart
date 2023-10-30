@@ -39,10 +39,10 @@ import 'comment_writer.dart';
 /// Note how the infix operator is attached to the preceding piece (which
 /// happens to just be an identifier but could be a more complex piece if the
 /// left operand was a nested expression). Notice also that there is no piece
-/// for the expression statement and instead, the `;` is just appended to the
+/// for the expression statement and, instead, the `;` is just appended to the
 /// trailing TextPiece which may be deeply nested inside the binary expression.
 ///
-/// This class implements the "slippage" between these two representations. It
+/// This class implements that "slippage" between the two representations. It
 /// has mutable state to allow incrementally building up pieces while traversing
 /// the source AST nodes.
 ///
@@ -53,7 +53,7 @@ import 'comment_writer.dart';
 ///
 /// Those [TextPiece]s are aggregated into a tree of composite pieces which
 /// break the code into separate sections for line splitting. The main API for
-/// composing those pieces is [split()], [push()], and [pop()].
+/// composing those pieces is [split()], [give()], and [take()].
 ///
 /// Here is a simplified example of how they work:
 ///
@@ -68,11 +68,11 @@ import 'comment_writer.dart';
 ///   var conditionPiece = pieces.split();
 ///
 ///   visit(node.thenBranch);
-///   // Call pop() instead of split() because there may not be an else branch.
+///   // Call take() instead of split() because there may not be an else branch.
 ///   // If there isn't, then the thenBranch will be the trailing piece created
 ///   // by this function and we want to allow the caller to append to its
 ///   // innermost TextPiece.
-///   var thenPiece = pieces.pop();
+///   var thenPiece = pieces.take();
 ///
 ///   Piece? elsePiece;
 ///   if (node.elseBranch case var elseBranch?) {
@@ -82,14 +82,14 @@ import 'comment_writer.dart';
 ///     pieces.split();
 ///     visit(elseBranch);
 ///
-///     // Use pop() to capture the else branch while allowing the caller to
+///     // Use take() to capture the else branch while allowing the caller to
 ///     // append more code to it.
-///     elsePiece = pieces.pop();
+///     elsePiece = pieces.take();
 ///   }
 ///
 ///   // Create a new aggregate piece out of the subpieces and allow the caller
 ///   // to get it.
-///   pieces.push(IfPiece(conditionPiece, thenPiece, elsePiece));
+///   pieces.give(IfPiece(conditionPiece, thenPiece, elsePiece));
 /// }
 /// ```
 ///
@@ -100,12 +100,12 @@ import 'comment_writer.dart';
 ///     this when you have already traversed some part of an AST node and have
 ///     more to traverse after it.
 ///
-/// -   Use [pop()] to capture the current piece while allowing further code to
+/// -   Use [take()] to capture the current piece while allowing further code to
 ///     be appended to it. You'll usually call this to grab the last part of an
 ///     AST node where there is no more subsequent code.
 ///
-/// -   Use [push()] to return the newly created aggregate piece so that the
-///     caller can capture it with a later call to [split()] or [pop()].
+/// -   Use [give()] to return the newly created aggregate piece so that the
+///     caller can capture it with a later call to [split()] or [take()].
 class PieceWriter {
   final DartFormatter _formatter;
 
@@ -116,9 +116,9 @@ class PieceWriter {
   TextPiece? get currentText => _currentText;
   TextPiece? _currentText;
 
-  /// The most recently pushed piece, waiting to be taken by some surrounding
+  /// The most recently given piece, waiting to be taken by some surrounding
   /// piece.
-  Piece? _pushed;
+  Piece? _given;
 
   /// Whether we should write a space before the next text that is written.
   bool _pendingSpace = false;
@@ -133,20 +133,21 @@ class PieceWriter {
   PieceWriter(this._formatter, this._source);
 
   /// Gives the builder a newly completed [piece], to be taken by a later call
-  /// to [pop()] or [split()] from some surrounding piece.
-  void push(Piece piece) {
-    // Should never push more than one piece.
-    assert(_pushed == null);
-    _pushed = piece;
+  /// to [take()] or [split()] from some surrounding piece.
+  void give(Piece piece) {
+    // Any previously given piece should already be taken (and used as a child
+    // of [piece]).
+    assert(_given == null);
+    _given = piece;
   }
 
   /// Yields the most recent piece.
   ///
-  /// If a completed piece was added through a call to [push()], then returns
-  /// that piece. A pushed piece will only be returned once from either a call
-  /// to [pop()] or [split()].
+  /// If a completed piece was added through a call to [give()], then returns
+  /// that piece. A specific given piece will only be returned once from either
+  /// a call to [take()] or [split()].
   ///
-  /// If there is no pushed piece to return, returns the most recently created
+  /// If there is no given piece to return, returns the most recently created
   /// [TextPiece]. In this case, it still allows more text to be written to
   /// that piece. For example, in:
   ///
@@ -154,27 +155,27 @@ class PieceWriter {
   /// a + b;
   /// ```
   ///
-  /// The code for the infix expression will call [pop()] to capture the second
+  /// The code for the infix expression will call [take()] to capture the second
   /// `b` operand. Then the surrounding code for the expression statement will
   /// call [token()] for the `;`, which will correctly append it to the
   /// [TextPiece] for `b`.
-  Piece pop() {
-    if (_pushed case var piece?) {
-      _pushed = null;
+  Piece take() {
+    if (_given case var piece?) {
+      _given = null;
       return piece;
     }
 
     return _currentText!;
   }
 
-  /// Pops the most recent piece and begins a new one.
+  /// Takes the most recent piece and begins a new one.
   ///
   /// Any text written after this will go into a new [TextPiece] instead of
-  /// being appended to the end of the popped one. Call this wherever a line
+  /// being appended to the end of the taken one. Call this wherever a line
   /// break may be inserted by a piece during line splitting.
   Piece split() {
     _pendingSplit = true;
-    return pop();
+    return take();
   }
 
   /// Writes [text] raw text to the current innermost [TextPiece]. Starts a new
@@ -193,7 +194,7 @@ class PieceWriter {
     _pendingNewline = true;
   }
 
-  /// Write the contents of [comment] to the current innnermost [TextPiece],
+  /// Write the contents of [comment] to the current innermost [TextPiece],
   /// handling any newlines that may appear in it.
   ///
   /// If [hanging] is `true`, then the comment is appended to the current line
@@ -231,7 +232,7 @@ class PieceWriter {
   SourceCode finish() {
     var formatter = Solver(_formatter.pageWidth);
 
-    var piece = pop();
+    var piece = take();
 
     if (debug.tracePieceBuilder) {
       print(debug.pieceTree(piece));

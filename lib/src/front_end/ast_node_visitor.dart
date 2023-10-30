@@ -85,7 +85,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // Write any comments at the end of the code.
     sequence.addCommentsBefore(node.endToken.next!);
 
-    pieces.push(sequence.build());
+    pieces.give(sequence.build());
 
     // Finish writing and return the complete result.
     return pieces.finish();
@@ -228,7 +228,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     token(node.colon);
     space();
     visit(node.elseExpression);
-    var elseBranch = pieces.pop();
+    var elseBranch = pieces.take();
 
     var piece = InfixPiece([condition, thenBranch, elseBranch]);
 
@@ -240,7 +240,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       piece.pin(State.split);
     }
 
-    pieces.push(piece);
+    pieces.give(piece);
   }
 
   @override
@@ -318,9 +318,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     visit(node.condition);
     token(node.rightParenthesis);
     token(node.semicolon);
-    var condition = pieces.pop();
+    var condition = pieces.take();
 
-    pieces.push(DoWhilePiece(body, condition));
+    pieces.give(DoWhilePiece(body, condition));
   }
 
   @override
@@ -413,7 +413,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
-    pieces.push(builder.build());
+    pieces.give(builder.build());
   }
 
   @override
@@ -484,9 +484,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     pieces.split();
     visit(node.body);
-    var body = pieces.pop();
+    var body = pieces.take();
 
-    pieces.push(ForPiece(forKeyword, forPartsPiece, body,
+    pieces.give(ForPiece(forKeyword, forPartsPiece, body,
         hasBlockBody: node.body is Block));
   }
 
@@ -644,7 +644,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     sequence.visit(node.statement);
-    pieces.push(sequence.build());
+    pieces.give(sequence.build());
   }
 
   @override
@@ -946,9 +946,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       var typePiece = pieces.split();
 
       token(name);
-      var namePiece = pieces.pop();
+      var namePiece = pieces.take();
 
-      pieces.push(VariablePiece(typePiece, [namePiece], hasType: true));
+      pieces.give(VariablePiece(typePiece, [namePiece], hasType: true));
     } else {
       // Only one of name or type so just write whichever there is.
       visit(node.type);
@@ -1006,7 +1006,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     list.rightBracket(node.rightBracket);
-    pieces.push(list.build());
+    pieces.give(list.build());
   }
 
   @override
@@ -1070,9 +1070,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     sequence.addCommentsBefore(node.rightBracket);
 
     token(node.rightBracket);
-    var rightBracketPiece = pieces.pop();
+    var rightBracketPiece = pieces.take();
 
-    pieces.push(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
+    pieces.give(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: node.members.isNotEmpty));
   }
 
@@ -1148,17 +1148,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // argument list or a function type's parameter list) affect the indentation
     // and splitting of the surrounding variable declaration.
     visit(node.type);
-    var header = pieces.pop();
+    var header = pieces.take();
 
     var variables = <Piece>[];
     for (var variable in node.variables) {
       pieces.split();
       visit(variable);
       commaAfter(variable);
-      variables.add(pieces.pop());
+      variables.add(pieces.take());
     }
 
-    pieces.push(VariablePiece(header, variables, hasType: node.type != null));
+    pieces.give(VariablePiece(header, variables, hasType: node.type != null));
   }
 
   @override
@@ -1177,11 +1177,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     var condition = pieces.split();
 
     visit(node.body);
-    var body = pieces.pop();
+    var body = pieces.take();
 
     var piece = IfPiece();
     piece.add(condition, body, isBlock: node.body is Block);
-    pieces.push(piece);
+    pieces.give(piece);
   }
 
   @override
