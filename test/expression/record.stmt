@@ -1,0 +1,183 @@
+40 columns                              |
+>>> Empty record.
+var record = (   );
+<<<
+var record = ();
+>>> Single-element records don't split after ",".
+var record = (   value  ,  );
+<<<
+var record = (value,);
+>>> Multi-element record.
+var record = (   first  ,  second  ,  third  );
+<<<
+var record = (first, second, third);
+>>> Named record fields.
+var record = (   first  :  1  ,  2 ,  third : 3 );
+<<<
+var record = (first: 1, 2, third: 3);
+>>> Const record.
+var record = const   (  1 ,   2 );
+<<<
+var record = const (1, 2);
+>>> Empty records don't split.
+var longVariableName_______________ = ();
+<<<
+var longVariableName_______________ =
+    ();
+>>> Single-element record.
+var record = (veryLongRecordField________________,);
+<<<
+var record = (
+  veryLongRecordField________________,
+);
+>>> Single-element named record.
+var record = (longFieldName: longRecordFieldValue);
+<<<
+var record = (
+  longFieldName: longRecordFieldValue,
+);
+>>> Single-element named record splits at name.
+var record = (longFieldName: veryLongRecordFieldValue);
+<<<
+var record = (
+  longFieldName:
+      veryLongRecordFieldValue,
+);
+>>> Exactly 40 characters.
+(first, second, third, fourth, seventh);
+<<<
+(first, second, third, fourth, seventh);
+>>> Split with multiple elements.
+(first, second, third, fourth, fifth, sixth);
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+);
+>>> Don't force outer record to split.
+((first,), (second, third));
+<<<
+((first,), (second, third));
+>>> Don't force outer list to split.
+[(first,), (second, third)];
+<<<
+[(first,), (second, third)];
+>>> inner list doesn't force split
+([first], [second, third]);
+<<<
+([first], [second, third]);
+>>> Nested split record.
+(first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
+    eleventh));
+<<<
+(
+  first,
+  (second, third, fourth),
+  fifth,
+  (
+    sixth,
+    seventh,
+    eighth,
+    nine,
+    tenth,
+    eleventh,
+  ),
+);
+>>> Trailing comma in single-element does not split.
+(1,);
+<<<
+(1,);
+>>> Trailing comma in multi-element does force split.
+(1,2,);
+<<<
+(1, 2);
+>>> Ignore line comment after the "]".
+(
+  a,b,c,
+  d
+) // comment
+;
+<<<
+(a, b, c, d) // comment
+;
+>>> Preserve blank lines between comments and elements.
+(
+
+
+  element,
+
+
+
+  // comment
+  element,
+
+
+
+  element
+
+
+);
+<<<
+(
+  element,
+
+  // comment
+  element,
+  element,
+);
+>>> Format on one line in an argument list.
+longFunctionName((element, element), (element, element, element, element));
+<<<
+longFunctionName(
+  (element, element),
+  (element, element, element, element),
+);
+>>> Format like a block in an argument list.
+longFunctionName((element, element), (element, element, element, element, element));
+<<<
+longFunctionName(
+  (element, element),
+  (
+    element,
+    element,
+    element,
+    element,
+    element,
+  ),
+);
+>>> Format on one line in an argument list.
+longFunctionName((element, element, element, element));
+<<<
+longFunctionName(
+  (element, element, element, element),
+);
+>>> Don't allow splitting between field name and record.
+var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
+<<<
+var record = (
+  argument,
+  argument,
+  argument,
+  recordFieldName: (
+    veryLongElement__________,
+  ),
+);
+>>> Don't allow splitting between argument name and record.
+longFunctionName(argument, argument, argument, argument, argument, argument,
+argumentName: (veryLongElement__________,));
+<<<
+longFunctionName(
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argument,
+  argumentName: (
+    veryLongElement__________,
+  ),
+);
