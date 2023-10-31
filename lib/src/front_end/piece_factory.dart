@@ -470,14 +470,8 @@ mixin PieceFactory implements CommentWriter {
     writeCommentsBefore(token);
 
     if (before != null) before();
-    writeLexeme(token.lexeme);
+    pieces.writeToken(token);
     if (after != null) after();
-  }
-
-  /// Writes the raw [lexeme] to the current text piece.
-  void writeLexeme(String lexeme) {
-    // TODO(tall): Preserve selection.
-    pieces.write(lexeme);
   }
 
   /// Writes a comma after [node], if there is one.
@@ -489,7 +483,7 @@ mixin PieceFactory implements CommentWriter {
       // If there isn't a comma there, it must be a place where a trailing
       // comma can appear, so synthesize it. During formatting, we will decide
       // whether to include it.
-      writeLexeme(',');
+      pieces.writeText(',');
     }
   }
 }

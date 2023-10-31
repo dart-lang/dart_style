@@ -32,7 +32,7 @@ class Solver {
 
   /// Finds the best set of line splits for [piece] and returns the resulting
   /// formatted code.
-  String format(Piece piece) {
+  Solution format(Piece piece) {
     // Collect all of the pieces with states that can be selected.
     var unsolvedPieces = <Piece>[];
 
@@ -44,14 +44,13 @@ class Solver {
 
     traverse(piece);
 
-    var solution = _solve(piece, unsolvedPieces);
-    return solution.text;
+    return _solve(piece, unsolvedPieces);
   }
 
   /// Finds the best solution for the piece tree starting at [root] with
   /// selectable [pieces].
   Solution _solve(Piece root, List<Piece> pieces) {
-    var solution = Solution(root, _pageWidth, PieceStateSet(pieces));
+    var solution = Solution.initial(root, _pageWidth, pieces);
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.

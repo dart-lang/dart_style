@@ -167,6 +167,11 @@ void _testFile(
         if (actualText != formatTest.output.text) {
           fail('Formatting did not match expectation. Expected:\n'
               '${formatTest.output.text}\nActual:\n$actualText');
+        } else if (actual.selectionStart != formatTest.output.selectionStart ||
+            actual.selectionLength != formatTest.output.selectionLength) {
+          fail('Selection did not match expectation. Expected:\n'
+              '${formatTest.output.textWithSelectionMarkers}\n'
+              'Actual:\n${actual.textWithSelectionMarkers}');
         }
 
         expect(actual.selectionStart, equals(formatTest.output.selectionStart));

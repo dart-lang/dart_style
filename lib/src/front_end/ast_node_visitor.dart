@@ -913,11 +913,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitScriptTag(ScriptTag node) {
     // The lexeme includes the trailing newline. Strip it off since the
-    // formatter ensures it gets a newline after it. Since the script tag must
-    // come at the top of the file, we don't have to worry about preceding
-    // comments or whitespace.
-    // TODO(new-ir): Update selection if inside the script tag.
-    pieces.write(node.scriptTag.lexeme.trim());
+    // formatter ensures it gets a newline after it.
+    pieces.writeText(node.scriptTag.lexeme.trim(),
+        offset: node.scriptTag.offset);
   }
 
   @override

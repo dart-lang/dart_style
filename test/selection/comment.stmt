@@ -1,0 +1,37 @@
+40 columns                              |
+>>> Inside one comment.
+foo(   /* ‹ */  bar/*›*/);
+<<<
+foo(/* ‹ */ bar /*›*/);
+>>> In moved comments.
+someMethod(argument /* long com‹ment that wraps */, other /* last com›ment */);
+<<<
+someMethod(
+  argument /* long com‹ment that wraps */,
+  other /* last com›ment */,
+);
+>>> Before comments.
+1  ‹  /* */ +  ›  /* */ 2;
+<<<
+1 ‹/* */ +› /* */ 2;
+>>> After comments.
+1/* */  ‹  +/* */  ›   2;
+<<<
+1 /* */ ‹+ /* */› 2;
+>>> Between adjacent comments.
+1/* */  ‹  /* */ › /* */ +  2;
+<<<
+1 /* */ ‹/* */› /* */ + 2;
+>>> Inside multi-line non-sequence comment.
+a /* one
+t‹wo
+three */ + b /* four
+five
+si›x */;
+<<<
+a /* one
+t‹wo
+three */ +
+    b /* four
+five
+si›x */;

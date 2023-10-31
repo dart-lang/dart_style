@@ -80,6 +80,16 @@ class TextPiece extends Piece {
   /// multiline strings, etc.
   bool _containsNewline = false;
 
+  /// The offset from the beginning of [text] where the selection starts, or
+  /// `null` if the selection does not start within this chunk.
+  int? get selectionStart => _selectionStart;
+  int? _selectionStart;
+
+  /// The offset from the beginning of [text] where the selection ends, or
+  /// `null` if the selection does not start within this chunk.
+  int? get selectionEnd => _selectionEnd;
+  int? _selectionEnd;
+
   /// Whether the last line of this piece's text ends with [text].
   bool endsWith(String text) => _lines.isNotEmpty && _lines.last.endsWith(text);
 
@@ -106,6 +116,14 @@ class TextPiece extends Piece {
     // only one "line" in [_lines].
     if (_containsNewline) writer.handleNewline();
 
+    if (_selectionStart case var start?) {
+      writer.startSelection(start);
+    }
+
+    if (_selectionEnd case var end?) {
+      writer.endSelection(end);
+    }
+
     for (var i = 0; i < _lines.length; i++) {
       if (i > 0) writer.newline();
       writer.write(_lines[i]);
@@ -114,6 +132,30 @@ class TextPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {}
+
+  /// Sets [selectionStart] to be [start] code units after the end of the
+  /// current text in this piece.
+  void startSelection(int start) {
+    // Convert it to relative to the end of this piece.
+    for (var line in _lines) {
+      start += line.length;
+    }
+
+    // print('TextPiece start $start (absolute = $abs)');
+    _selectionStart = start;
+  }
+
+  /// Sets [selectionEnd] to be [end] code units after the end of the
+  /// current text in this piece.
+  void endSelection(int end) {
+    // Convert it to relative to the end of this piece.
+    for (var line in _lines) {
+      end += line.length;
+    }
+
+    // print('TextPiece end $end (absolute = $abs)');
+    _selectionEnd = end;
+  }
 
   @override
   String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';

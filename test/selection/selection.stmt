@@ -1,0 +1,59 @@
+40 columns                              |
+>>> Start at beginning.
+‹123›45;
+<<<
+‹123›45;
+>>> Start at end.
+12345;‹›
+<<<
+12345;‹›
+>>> Length at beginning.
+‹›12345;
+<<<
+‹›12345;
+>>> Length at end.
+12‹345;›
+<<<
+12‹345;›
+>>> Zero length in middle.
+123‹›45;
+<<<
+123‹›45;
+>>> Unchanged.
+f‹oo(a, b›, c);
+<<<
+f‹oo(a, b›, c);
+>>> Include added whitespace.
+a+f‹irst+se›cond;
+<<<
+a + f‹irst + se›cond;
+>>> In beginning of multi-line string literal.
+  """f‹irs›t
+second""";
+<<<
+"""f‹irs›t
+second""";
+>>> In middle of multi-line string literal.
+    """first
+se‹cond
+thi›rd
+fourth""";
+<<<
+"""first
+se‹cond
+thi›rd
+fourth""";
+>>> In end of multi-line string literal.
+  """first
+sec‹ond"""  ;›
+<<<
+"""first
+sec‹ond""";›
+>>> Only whitespace in zero space selected.
+foo(  ‹  ›  argument);
+<<<
+foo(‹›argument);
+>>> Only whitespace in space selected.
+operand  ‹  ›   +  another;
+<<<
+operand ‹›+ another;

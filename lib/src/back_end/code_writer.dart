@@ -59,16 +59,29 @@ class CodeWriter {
   /// The options for the current innermost piece being formatted.
   _PieceOptions get _options => _pieceOptions.last;
 
+  /// The offset in the formatted code where the selection starts, or `null` if
+  /// there is no selection.
+  int? _selectionStart;
+
+  /// The offset in the formatted code where the selection ends, or `null` if
+  /// there is no selection.
+  int? _selectionEnd;
+
   CodeWriter(this._pageWidth, this._pieceStates);
 
   /// Returns the finished code produced by formatting the tree of pieces and
   /// the final score.
-  (String, Score) finish() {
+  Solution finish() {
     _finishLine();
-    return (
-      _buffer.toString(),
-      Score(isValid: !_containsInvalidNewline, overflow: _overflow, cost: _cost)
-    );
+    return Solution(
+        _pieceStates,
+        _buffer.toString(),
+        Score(
+            isValid: !_containsInvalidNewline,
+            overflow: _overflow,
+            cost: _cost),
+        _selectionStart,
+        _selectionEnd);
   }
 
   /// Notes that a newline has been written.
@@ -92,6 +105,14 @@ class CodeWriter {
   /// If [text] contains any internal newlines, the caller is responsible for
   /// also calling [handleNewline()].
   void write(String text) {
+    // TODO(tall): Calling this directly from pieces outside of TextPiece may
+    // not handle selections as gracefully as we could. A selection marker may
+    // get pushed past the text written here. Currently, this is only called
+    // directly for commas in list-like things, and `;` in for loops. In
+    // general, it's better for all text written to the output to live inside
+    // TextPieces because that will preserve selection markers. Consider doing
+    // something smarter for commas in lists and semicolons in for loops.
+
     _buffer.write(text);
     _column += text.length;
   }
@@ -202,6 +223,18 @@ class CodeWriter {
   /// Format [piece] if not null.
   void formatOptional(Piece? piece) {
     if (piece != null) format(piece);
+  }
+
+  /// Sets [selectionStart] to be [start] code units into the output.
+  void startSelection(int start) {
+    assert(_selectionStart == null);
+    _selectionStart = _buffer.length + start;
+  }
+
+  /// Sets [selectionEnd] to be [end] code units into the output.
+  void endSelection(int end) {
+    assert(_selectionEnd == null);
+    _selectionEnd = _buffer.length + end;
   }
 
   void _finishLine() {

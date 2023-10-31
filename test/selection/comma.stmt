@@ -1,0 +1,51 @@
+40 columns                              |
+>>> Before removed comma.
+foo(
+  argument‹  ›,
+);
+<<<
+foo(argument‹›);
+>>> After removed comma.
+foo(
+  argument,‹  ›
+);
+<<<
+foo(argument‹›);
+>>> Around removed comma.
+foo(
+  argum‹ent,
+›);
+<<<
+foo(argum‹ent›);
+>>> At inserted comma.
+extremelyLongFunction(reallyLongArgument‹  ›);
+<<<
+extremelyLongFunction(
+  reallyLongArgument,
+‹›);
+>>> Around inserted comma.
+extremelyLongFunction(reallyLongArgu‹ment  )›;
+<<<
+extremelyLongFunction(
+  reallyLongArgu‹ment,
+)›;
+>>> Start before kept comma.
+foo(argument‹  ,   anot›her);
+<<<
+foo(argument, ‹anot›her);
+>>> Start after kept comma.
+foo(argument  ,   ‹ anot›her);
+<<<
+foo(argument, ‹anot›her);
+>>> End before kept comma.
+foo(argu‹ment › ,   another);
+<<<
+foo(argu‹ment›, another);
+>>> End after kept comma.
+foo(argu‹ment  ,  ›  another);
+<<<
+foo(argu‹ment, ›another);
+>>> Selection just kept comma.
+foo(argument  ‹  ,  ›  another);
+<<<
+foo(argument, ‹›another);

@@ -66,6 +66,7 @@ The newer tall style tests are:
 expression/   - Test formatting expressions.
 invocation/   - Test formatting function and member invocations.
 member/       - Test formatting class/enum/extension/mixin member declarations.
+selection/    - Test how the formatter preserves selection information.
 statement/    - Test formatting statements.
 top_level/    - Test formatting top-level declarations and directives.
 type/         - Test formatting type annotations.
