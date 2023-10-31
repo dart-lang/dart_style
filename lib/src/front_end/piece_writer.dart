@@ -201,6 +201,9 @@ class PieceWriter {
 
   /// Writes raw [text] to the current innermost [TextPiece]. Starts a new
   /// one if needed.
+  ///
+  /// If [offset] is given, it should be the number of code points preceding
+  /// this [text] in the original source code.
   void writeText(String text, {int? offset}) {
     _write(text, offset: offset);
   }

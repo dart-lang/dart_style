@@ -59,12 +59,16 @@ class CodeWriter {
   /// The options for the current innermost piece being formatted.
   _PieceOptions get _options => _pieceOptions.last;
 
-  /// The offset in the formatted code where the selection starts, or `null` if
-  /// there is no selection.
+  /// The offset in the formatted code where the selection starts.
+  ///
+  /// This is `null` until the piece containing the selection start is reached
+  /// at which point it gets set. It remains `null` if there is no selection.
   int? _selectionStart;
 
-  /// The offset in the formatted code where the selection ends, or `null` if
-  /// there is no selection.
+  /// The offset in the formatted code where the selection ends.
+  ///
+  /// This is `null` until the piece containing the selection end is reached
+  /// at which point it gets set. It remains `null` if there is no selection.
   int? _selectionEnd;
 
   CodeWriter(this._pageWidth, this._pieceStates);
