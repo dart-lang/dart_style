@@ -60,8 +60,7 @@ class DelimitedListBuilder {
   void leftBracket(Token bracket, {Token? delimiter}) {
     _visitor.token(bracket);
     _visitor.token(delimiter);
-    _leftBracket = _visitor.writer.pop();
-    _visitor.writer.split();
+    _leftBracket = _visitor.pieces.split();
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that
@@ -99,7 +98,7 @@ class DelimitedListBuilder {
 
     _visitor.token(delimiter);
     _visitor.token(bracket);
-    _rightBracket = _visitor.writer.pop();
+    _rightBracket = _visitor.pieces.take();
   }
 
   /// Adds [piece] to the built list.
@@ -128,8 +127,7 @@ class DelimitedListBuilder {
 
     // Traverse the element itself.
     _visitor.visit(element);
-    _visitor.writer.split();
-    add(_visitor.writer.pop());
+    add(_visitor.pieces.split());
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
@@ -191,20 +189,19 @@ class DelimitedListBuilder {
     // Add any hanging inline block comments to the previous element before the
     // subsequent ",".
     for (var comment in inlineComments) {
-      _visitor.writer.space();
-      _visitor.writer.writeComment(comment, hanging: true);
+      _visitor.space();
+      _visitor.pieces.writeComment(comment, hanging: true);
     }
 
     // Add any remaining hanging line comments to the previous element after
     // the ",".
     if (hangingComments.isNotEmpty) {
       for (var comment in hangingComments) {
-        _visitor.writer.space();
-        _visitor.writer.writeComment(comment);
+        _visitor.space();
+        _visitor.pieces.writeComment(comment);
       }
 
-      _elements.last = _elements.last.withComment(_visitor.writer.pop());
-      _visitor.writer.split();
+      _elements.last = _elements.last.withComment(_visitor.pieces.split());
     }
 
     // Comments that are neither hanging nor leading are treated like their own
@@ -215,15 +212,14 @@ class DelimitedListBuilder {
         _blanksAfter.add(_elements.last);
       }
 
-      _visitor.writer.writeComment(comment);
-      _elements.add(ListElement.comment(_visitor.writer.pop()));
-      _visitor.writer.split();
+      _visitor.pieces.writeComment(comment);
+      _elements.add(ListElement.comment(_visitor.pieces.split()));
     }
 
     // Leading comments are written before the next element.
     for (var comment in leadingComments) {
-      _visitor.writer.writeComment(comment);
-      _visitor.writer.space();
+      _visitor.pieces.writeComment(comment);
+      _visitor.space();
     }
   }
 

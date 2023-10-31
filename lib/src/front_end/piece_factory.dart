@@ -60,8 +60,7 @@ mixin PieceFactory implements CommentWriter {
   /// ```
   void createBlock(Block block, {bool forceSplit = false}) {
     token(block.leftBracket);
-    var leftBracketPiece = writer.pop();
-    writer.split();
+    var leftBracketPiece = pieces.split();
 
     var sequence = SequenceBuilder(this);
     for (var node in block.statements) {
@@ -72,9 +71,9 @@ mixin PieceFactory implements CommentWriter {
     sequence.addCommentsBefore(block.rightBracket);
 
     token(block.rightBracket);
-    var rightBracketPiece = writer.pop();
+    var rightBracketPiece = pieces.take();
 
-    writer.push(BlockPiece(
+    pieces.give(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
         alwaysSplit: forceSplit || block.statements.isNotEmpty));
   }
@@ -83,7 +82,7 @@ mixin PieceFactory implements CommentWriter {
   void createBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
     token(keyword);
     if (label != null) {
-      writer.space();
+      space();
       visit(label);
     }
     token(semicolon);
@@ -141,8 +140,7 @@ mixin PieceFactory implements CommentWriter {
     Piece? returnTypePiece;
     if (returnType != null) {
       visit(returnType);
-      returnTypePiece = writer.pop();
-      writer.split();
+      returnTypePiece = pieces.split();
     }
 
     token(functionKeywordOrName);
@@ -152,8 +150,8 @@ mixin PieceFactory implements CommentWriter {
 
     // Allow splitting after the return type.
     if (returnTypePiece != null) {
-      var parametersPiece = writer.pop();
-      writer.push(FunctionTypePiece(returnTypePiece, parametersPiece));
+      var parametersPiece = pieces.take();
+      pieces.give(FunctionTypePiece(returnTypePiece, parametersPiece));
     }
   }
 
@@ -166,12 +164,11 @@ mixin PieceFactory implements CommentWriter {
     // chain handled by a single [IfPiece].
     void traverse(IfStatement node) {
       token(node.ifKeyword);
-      writer.space();
+      space();
       token(node.leftParenthesis);
       visit(node.expression);
       token(node.rightParenthesis);
-      var condition = writer.pop();
-      writer.split();
+      var condition = pieces.split();
 
       // Edge case: When the then branch is a block and there is an else clause
       // after it, we want to force the block to split even if empty, like:
@@ -189,8 +186,7 @@ mixin PieceFactory implements CommentWriter {
         visit(node.thenStatement);
       }
 
-      var thenStatement = writer.pop();
-      writer.split();
+      var thenStatement = pieces.split();
       piece.add(condition, thenStatement, isBlock: node.thenStatement is Block);
 
       switch (node.elseStatement) {
@@ -198,26 +194,24 @@ mixin PieceFactory implements CommentWriter {
           // Hit an else-if, so flatten it into the chain with the `else`
           // becoming part of the next section's header.
           token(node.elseKeyword);
-          writer.space();
+          space();
           traverse(elseIf);
 
         case var elseStatement?:
           // Any other kind of else body ends the chain, with the header for
           // the last section just being the `else` keyword.
           token(node.elseKeyword);
-          var header = writer.pop();
-          writer.split();
+          var header = pieces.split();
 
           visit(elseStatement);
-          var statement = writer.pop();
-          writer.split();
+          var statement = pieces.take();
           piece.add(header, statement, isBlock: elseStatement is Block);
       }
     }
 
     traverse(ifStatement);
 
-    writer.push(piece);
+    pieces.give(piece);
   }
 
   /// Creates an [ImportPiece] for an import or export directive.
@@ -225,17 +219,17 @@ mixin PieceFactory implements CommentWriter {
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
     createDirectiveMetadata(directive);
     token(keyword);
-    writer.space();
+    space();
     visit(directive.uri);
-    var directivePiece = writer.pop();
+    var directivePiece = pieces.take();
 
     Piece? configurationsPiece;
     if (directive.configurations.isNotEmpty) {
       var configurations = <Piece>[];
       for (var configuration in directive.configurations) {
-        writer.split();
+        pieces.split();
         visit(configuration);
-        configurations.add(writer.pop());
+        configurations.add(pieces.take());
       }
 
       configurationsPiece = PostfixPiece(configurations);
@@ -243,29 +237,29 @@ mixin PieceFactory implements CommentWriter {
 
     Piece? asClause;
     if (asKeyword != null) {
-      writer.split();
-      token(deferredKeyword, after: writer.space);
+      pieces.split();
+      token(deferredKeyword, after: space);
       token(asKeyword);
-      writer.space();
+      space();
       visit(prefix);
-      asClause = PostfixPiece([writer.pop()]);
+      asClause = PostfixPiece([pieces.take()]);
     }
 
     var combinators = <ImportCombinator>[];
     for (var combinatorNode in directive.combinators) {
-      writer.split();
+      pieces.split();
       token(combinatorNode.keyword);
-      var combinator = ImportCombinator(writer.pop());
+      var combinator = ImportCombinator(pieces.take());
       combinators.add(combinator);
 
       switch (combinatorNode) {
         case HideCombinator(hiddenNames: var names):
         case ShowCombinator(shownNames: var names):
           for (var name in names) {
-            writer.split();
+            pieces.split();
             token(name.token);
             commaAfter(name);
-            combinator.names.add(writer.pop());
+            combinator.names.add(pieces.take());
           }
         default:
           throw StateError('Unknown combinator type $combinatorNode.');
@@ -274,7 +268,7 @@ mixin PieceFactory implements CommentWriter {
 
     token(directive.semicolon);
 
-    writer.push(ImportPiece(
+    pieces.give(ImportPiece(
         directivePiece, configurationsPiece, asClause, combinators));
   }
 
@@ -289,24 +283,24 @@ mixin PieceFactory implements CommentWriter {
   void createInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
     var operands = <Piece>[];
+
     visit(left);
-    operands.add(writer.pop());
 
     if (hanging) {
-      writer.space();
+      space();
       token(operator);
       token(operator2);
-      writer.split();
+      operands.add(pieces.split());
     } else {
-      writer.split();
+      operands.add(pieces.split());
       token(operator);
       token(operator2);
-      writer.space();
+      space();
     }
 
     visit(right);
-    operands.add(writer.pop());
-    writer.push(InfixPiece(operands));
+    operands.add(pieces.take());
+    pieces.give(InfixPiece(operands));
   }
 
   /// Creates a chained infix operation: a binary operator expression, or
@@ -330,30 +324,28 @@ mixin PieceFactory implements CommentWriter {
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
-      if (e is! T) {
-        visit(e);
-        operands.add(writer.pop());
-      } else {
+      // If the node is one if our infix operators, then recurse into the
+      // operands.
+      if (e is T) {
         var (left, operator, right) = destructure(e);
-        if (precedence != null && operator.type.precedence != precedence) {
-          // Binary node, but a different precedence, so don't flatten.
-          visit(e);
-          operands.add(writer.pop());
-        } else {
+        if (precedence == null || operator.type.precedence == precedence) {
           traverse(left);
-
-          writer.space();
+          space();
           token(operator);
-
-          writer.split();
+          pieces.split();
           traverse(right);
+          return;
         }
       }
+
+      // Otherwise, just write the node itself.
+      visit(e);
+      operands.add(pieces.take());
     }
 
     traverse(node);
 
-    writer.push(InfixPiece(operands));
+    pieces.give(InfixPiece(operands));
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
@@ -365,7 +357,7 @@ mixin PieceFactory implements CommentWriter {
     if (leftBracket != null) builder.leftBracket(leftBracket);
     elements.forEach(builder.visit);
     if (rightBracket != null) builder.rightBracket(rightBracket);
-    writer.push(builder.build());
+    pieces.give(builder.build());
   }
 
   /// Visits the `switch (expr)` part of a switch statement or expression.
@@ -378,13 +370,13 @@ mixin PieceFactory implements CommentWriter {
 
     // Attach the `switch ` as part of the `(`.
     token(switchKeyword);
-    writer.space();
+    space();
 
     builder.leftBracket(leftParenthesis);
     builder.visit(value);
     builder.rightBracket(rightParenthesis);
 
-    writer.push(builder.build());
+    pieces.give(builder.build());
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
@@ -419,15 +411,14 @@ mixin PieceFactory implements CommentWriter {
   /// This method assumes the code to the left of the `=` or `:` has already
   /// been visited.
   void finishAssignment(Token operator, Expression rightHandSide) {
-    if (operator.type == TokenType.EQ) writer.space();
+    if (operator.type == TokenType.EQ) space();
     token(operator);
-    var target = writer.pop();
-    writer.split();
+    var target = pieces.split();
 
     visit(rightHandSide);
 
-    var initializer = writer.pop();
-    writer.push(AssignPiece(target, initializer,
+    var initializer = pieces.take();
+    pieces.give(AssignPiece(target, initializer,
         isValueDelimited: rightHandSide.isDelimited));
   }
 
@@ -435,8 +426,7 @@ mixin PieceFactory implements CommentWriter {
   /// subclass's initializer clause has been written.
   void finishForParts(ForParts forLoopParts, DelimitedListBuilder partsList) {
     token(forLoopParts.leftSeparator);
-    writer.split();
-    partsList.add(writer.pop());
+    partsList.add(pieces.split());
 
     // The condition clause.
     if (forLoopParts.condition case var conditionExpression?) {
@@ -447,21 +437,25 @@ mixin PieceFactory implements CommentWriter {
     }
 
     token(forLoopParts.rightSeparator);
-    writer.split();
-    partsList.add(writer.pop());
+    partsList.add(pieces.split());
 
     // The update clauses.
     if (forLoopParts.updaters.isNotEmpty) {
       partsList.addCommentsBefore(forLoopParts.updaters.first.beginToken);
       createList(forLoopParts.updaters,
           style: const ListStyle(commas: Commas.nonTrailing));
-      partsList.add(writer.pop());
+      partsList.add(pieces.split());
     }
   }
 
   /// Writes an optional modifier that precedes other code.
   void modifier(Token? keyword) {
-    token(keyword, after: writer.space);
+    token(keyword, after: space);
+  }
+
+  /// Write a single space.
+  void space() {
+    pieces.writeSpace();
   }
 
   /// Emit [token], along with any comments and formatted whitespace that comes
@@ -483,7 +477,7 @@ mixin PieceFactory implements CommentWriter {
   /// Writes the raw [lexeme] to the current text piece.
   void writeLexeme(String lexeme) {
     // TODO(tall): Preserve selection.
-    writer.write(lexeme);
+    pieces.write(lexeme);
   }
 
   /// Writes a comma after [node], if there is one.

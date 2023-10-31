@@ -43,7 +43,7 @@ import 'piece_writer.dart';
 // TODO(tall): When argument lists and their comment handling is supported,
 // mention that here.
 mixin CommentWriter {
-  PieceWriter get writer;
+  PieceWriter get pieces;
 
   LineInfo get lineInfo;
 
@@ -78,20 +78,20 @@ mixin CommentWriter {
 
       if (comments.isHanging(i)) {
         // Attach the comment to the previous token.
-        writer.space();
-        writer.writeComment(comment, hanging: true);
+        pieces.writeSpace();
+        pieces.writeComment(comment, hanging: true);
       } else {
-        writer.writeNewline();
-        writer.writeComment(comment);
+        pieces.writeNewline();
+        pieces.writeComment(comment);
       }
 
       if (comment.type == CommentType.line || comment.type == CommentType.doc) {
-        writer.writeNewline();
+        pieces.writeNewline();
       }
     }
 
     if (comments.isNotEmpty && _needsSpaceAfterComment(token.lexeme)) {
-      writer.space();
+      pieces.writeSpace();
     }
   }
 

@@ -58,8 +58,7 @@ class SequenceBuilder {
 
     addCommentsBefore(token);
     _visitor.visit(node);
-    add(_visitor.writer.pop(), indent: indent);
-    _visitor.writer.split();
+    add(_visitor.pieces.split(), indent: indent);
   }
 
   /// Appends a blank line before the next piece in the sequence.
@@ -96,20 +95,19 @@ class SequenceBuilder {
       var comment = comments[i];
       if (_elements.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous token.
-        _visitor.writer.space();
+        _visitor.space();
 
-        _visitor.writer.writeComment(comment, hanging: true);
+        _visitor.pieces.writeComment(comment, hanging: true);
       } else {
         // Write the comment as its own sequence piece.
-        _visitor.writer.writeComment(comment);
+        _visitor.pieces.writeComment(comment);
         if (comments.linesBefore(i) > 1) {
           // Always preserve a blank line above sequence-level comments.
           _allowBlank = true;
           addBlank();
         }
 
-        add(_visitor.writer.pop());
-        _visitor.writer.split();
+        add(_visitor.pieces.split());
       }
     }
 
