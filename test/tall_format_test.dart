@@ -16,6 +16,7 @@ void main() async {
   await testDirectory('statement', tall: true);
   await testDirectory('top_level', tall: true);
   await testDirectory('type', tall: true);
+  await testDirectory('variable', tall: true);
 
   // TODO(tall): The old formatter_test.dart has tests here for things like
   // trailing newlines. Port those over to the new style once it supports all

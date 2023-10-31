@@ -63,13 +63,15 @@ These tests are all run by `short_format_test.dart`.
 The newer tall style tests are:
 
 ```
-expression/   - Test formatting expressions.
-invocation/   - Test formatting function and member invocations.
-member/       - Test formatting class/enum/extension/mixin member declarations.
-selection/    - Test how the formatter preserves selection information.
-statement/    - Test formatting statements.
-top_level/    - Test formatting top-level declarations and directives.
-type/         - Test formatting type annotations.
+declaration/  - Typedef, class, enum, and extension declarations.
+expression/   - Expressions.
+invocation/   - Function and member invocations.
+member/       - Constructor, method, field, getter, and setter declarations.
+selection/    - Test preserving selection information.
+statement/    - Statements.
+top_level/    - Top-level directives.
+type/         - Type annotations.
+variable/     - Top-level and local variable declarations.
 ```
 
 These tests are all run by `tall_format_test.dart`.
