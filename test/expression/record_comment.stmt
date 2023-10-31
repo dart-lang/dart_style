@@ -68,3 +68,37 @@ var record = (
   1, // comment
   2,
 );
+>>> Ignore line comment after the ")".
+(
+  a,b,c,
+  d
+) // comment
+;
+<<<
+(a, b, c, d) // comment
+;
+>>> Preserve blank lines between comments and elements.
+(
+
+
+  element,
+
+
+
+  // comment
+  element,
+
+
+
+  element
+
+
+);
+<<<
+(
+  element,
+
+  // comment
+  element,
+  element,
+);

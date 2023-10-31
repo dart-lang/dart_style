@@ -664,10 +664,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitListLiteral(ListLiteral node) {
     createCollection(
       node.constKeyword,
+      typeArguments: node.typeArguments,
       node.leftBracket,
       node.elements,
       node.rightBracket,
-      typeArguments: node.typeArguments,
     );
   }
 
@@ -865,8 +865,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitRecordLiteral(RecordLiteral node) {
     ListStyle style;
-    if (node.fields.length == 1) {
-      // Single-element records always have a trailing comma.
+    if (node.fields.length == 1 && node.fields[0] is! NamedExpression) {
+      // Single-element records always have a trailing comma, unless the single
+      // element is a named field.
       style = const ListStyle(commas: Commas.alwaysTrailing);
     } else {
       style = const ListStyle(commas: Commas.trailing);
@@ -943,10 +944,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
     createCollection(
       node.constKeyword,
+      typeArguments: node.typeArguments,
       node.leftBracket,
       node.elements,
       node.rightBracket,
-      typeArguments: node.typeArguments,
     );
   }
 

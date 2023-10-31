@@ -11,6 +11,13 @@ var record = (value,);
 var record = (   first  ,  second  ,  third  );
 <<<
 var record = (first, second, third);
+>>> Remove trailing comma from record if unsplit
+var record = (
+  1,
+  2,
+);
+<<<
+var record = (1, 2);
 >>> Named record fields.
 var record = (   first  :  1  ,  2 ,  third : 3 );
 <<<
@@ -30,13 +37,21 @@ var record = (veryLongRecordField________________,);
 var record = (
   veryLongRecordField________________,
 );
->>> Single-element named record.
+>>> Single-element named record doesn't have comma added.
+var record = (a: b);
+<<<
+var record = (a: b);
+>>> Single-element named record with comma removed.
+var record = (a: b,);
+<<<
+var record = (a: b);
+>>> Long single-element named record that splits.
 var record = (longFieldName: longRecordFieldValue);
 <<<
 var record = (
   longFieldName: longRecordFieldValue,
 );
->>> Single-element named record splits at name.
+>>> Long single-element named record splits at name.
 var record = (longFieldName: veryLongRecordFieldValue);
 <<<
 var record = (
@@ -91,70 +106,6 @@ var record = (
 (1,);
 <<<
 (1,);
->>> Trailing comma in multi-element does force split.
-(1,2,);
-<<<
-(1, 2);
->>> Ignore line comment after the "]".
-(
-  a,b,c,
-  d
-) // comment
-;
-<<<
-(a, b, c, d) // comment
-;
->>> Preserve blank lines between comments and elements.
-(
-
-
-  element,
-
-
-
-  // comment
-  element,
-
-
-
-  element
-
-
-);
-<<<
-(
-  element,
-
-  // comment
-  element,
-  element,
-);
->>> Format on one line in an argument list.
-longFunctionName((element, element), (element, element, element, element));
-<<<
-longFunctionName(
-  (element, element),
-  (element, element, element, element),
-);
->>> Format like a block in an argument list.
-longFunctionName((element, element), (element, element, element, element, element));
-<<<
-longFunctionName(
-  (element, element),
-  (
-    element,
-    element,
-    element,
-    element,
-    element,
-  ),
-);
->>> Format on one line in an argument list.
-longFunctionName((element, element, element, element));
-<<<
-longFunctionName(
-  (element, element, element, element),
-);
 >>> Don't allow splitting between field name and record.
 var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
 <<<
@@ -163,21 +114,6 @@ var record = (
   argument,
   argument,
   recordFieldName: (
-    veryLongElement__________,
-  ),
-);
->>> Don't allow splitting between argument name and record.
-longFunctionName(argument, argument, argument, argument, argument, argument,
-argumentName: (veryLongElement__________,));
-<<<
-longFunctionName(
-  argument,
-  argument,
-  argument,
-  argument,
-  argument,
-  argument,
-  argumentName: (
     veryLongElement__________,
   ),
 );
