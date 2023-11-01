@@ -153,12 +153,9 @@ mixin PieceFactory implements CommentWriter {
     visit(typeParameters);
     visit(parameters);
     token(question);
+    var parametersPiece = pieces.take();
 
-    // Allow splitting after the return type.
-    if (returnTypePiece != null) {
-      var parametersPiece = pieces.take();
-      pieces.give(FunctionTypePiece(returnTypePiece, parametersPiece));
-    }
+    pieces.give(FunctionPiece(returnTypePiece, parametersPiece));
   }
 
   // TODO(tall): Generalize this to work with if elements too.
@@ -404,6 +401,14 @@ mixin PieceFactory implements CommentWriter {
     if (parameter.covariantKeyword != null) throw UnimplementedError();
   }
 
+  /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
+  void functionBodyModifiers(FunctionBody body) {
+    // The `async` or `sync` keyword.
+    token(body.keyword);
+    token(body.star);
+    if (body.keyword != null) space();
+  }
+
   /// Creates a [Piece] for some code followed by an `=` and an expression in
   /// any place where an `=` appears:
   ///
@@ -452,6 +457,29 @@ mixin PieceFactory implements CommentWriter {
           style: const ListStyle(commas: Commas.nonTrailing));
       partsList.add(pieces.split());
     }
+  }
+
+  /// Finishes writing a named function declaration or anonymous function
+  /// expression after the return type (if any) and name (if any) has been
+  /// written.
+  void finishFunction(Piece? returnType, FunctionExpression function) {
+    visit(function.typeParameters);
+    visit(function.parameters);
+
+    Piece parameters;
+    Piece? body;
+    if (function.body case EmptyFunctionBody body) {
+      // If the body is just `;`, then don't allow a space or split before the
+      // semicolon by making it part of the parameters piece.
+      token(body.semicolon);
+      parameters = pieces.split();
+    } else {
+      parameters = pieces.split();
+      visit(function.body);
+      body = pieces.take();
+    }
+
+    pieces.give(FunctionPiece(returnType, parameters, body));
   }
 
   /// Writes an optional modifier that precedes other code.

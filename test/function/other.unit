@@ -1,0 +1,5 @@
+40 columns                              |
+>>> External function.
+external  void  printToConsole  (  line  )  ;
+<<<
+external void printToConsole(line);

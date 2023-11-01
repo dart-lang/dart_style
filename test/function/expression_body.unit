@@ -1,0 +1,71 @@
+40 columns                              |
+### Tests for named function declarations whose body is `=>`.
+>>> Unsplit body.
+f  (  )  =>  body  ;
+<<<
+f() => body;
+>>> Async.
+f  (  )  async  =>  body  ;
+<<<
+f() async => body;
+>>> Sync*.
+f  (  )  sync  *  =>  body  ;
+<<<
+f() sync* => body;
+>>> Async*.
+f  (  )  async  *  =>  body  ;
+<<<
+f() async* => body;
+>>> Split at `=>`.
+myFunction() => argument + anotherArgument;
+<<<
+myFunction() =>
+    argument + anotherArgument;
+>>> Split inside expression forces split at `=>`.
+veryLongFunction() => argument + anotherArgument + aThirdArgument;
+<<<
+veryLongFunction() =>
+    argument +
+        anotherArgument +
+        aThirdArgument;
+>>> Prefer block-like splitting for lists.
+function() => [element, element, element];
+<<<
+function() => [
+  element,
+  element,
+  element,
+];
+>>> Prefer block-like splitting for maps.
+function() => {1: element, 2: element, 3: element};
+<<<
+function() => {
+  1: element,
+  2: element,
+  3: element,
+};
+>>> Prefer block-like splitting for function calls.
+function() => another(argument, argument);
+<<<
+function() => another(
+  argument,
+  argument,
+);
+>>> Use block-like splitting for switch expressions.
+function() => switch (value) { 1 => 'one', 2 => 'two' };
+<<<
+function() => switch (value) {
+  1 => 'one',
+  2 => 'two',
+};
+>>> Don't indent block-like body when parameters split.
+function(longParameter, anotherParameter) => [longElement, longElement, longElement];
+<<<
+function(
+  longParameter,
+  anotherParameter,
+) => [
+  longElement,
+  longElement,
+  longElement,
+];

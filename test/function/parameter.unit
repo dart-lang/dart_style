@@ -1,0 +1,36 @@
+40 columns                              |
+### Most tests of parameter list formatting are handled by type/function.stmt.
+>>> Old style function typed parameter.
+bool doStuff(parameter1, void callback(int i, bool b)) {}
+<<<
+bool doStuff(
+  parameter1,
+  void callback(int i, bool b),
+) {}
+>>> Split inside old style function typed parameter.
+bool doStuff(parameter1,
+void callback(LongTypeName parameter1, AnotherLongType parameter2)) {}
+<<<
+bool doStuff(
+  parameter1,
+  void callback(
+    LongTypeName parameter1,
+    AnotherLongType parameter2,
+  ),
+) {}
+>>> Generic old style function typed parameter.
+function(int   foo  <  T  ,S >(T t, S s)) {}
+<<<
+function(int foo<T, S>(T t, S s)) {}
+>>> Nullable old style function typed parameter.
+function(int? callback()    ?  ) {}
+<<<
+function(int? callback()?) {}
+>>> `var` and `final` keywords on parameters.
+function(var x, final y, final String z) {}
+<<<
+function(
+  var x,
+  final y,
+  final String z,
+) {}

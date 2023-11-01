@@ -1,0 +1,42 @@
+40 columns                              |
+>>> Unsplit type parameters.
+f  <  T  ,  R  extends  T  >  (  T  t  ,  R  r  )  => body;
+<<<
+f<T, R extends T>(T t, R r) => body;
+>>> Split type parameters with block body.
+longFunctionName<LongTypeParameterT, LongTypeParameterS>() { body; }
+<<<
+longFunctionName<
+  LongTypeParameterT,
+  LongTypeParameterS
+>() {
+  body;
+}
+>>> Split type parameters and value parameters, with block body.
+longFunctionName<LongTypeParameterT, LongTypeParameterS>(
+longParameter1, longParameter2) { body; }
+<<<
+longFunctionName<
+  LongTypeParameterT,
+  LongTypeParameterS
+>(longParameter1, longParameter2) {
+  body;
+}
+>>> Split type parameters with expression body.
+longFunctionName<LongTypeParameterT, LongTypeParameterS>() => body;
+<<<
+longFunctionName<
+  LongTypeParameterT,
+  LongTypeParameterS
+>() => body;
+>>> Split type parameters and value parameters, with expression body.
+longFunctionName<LongTypeParameterT, LongTypeParameterS>(
+longParameter1, longParameter2) => body;
+<<<
+longFunctionName<
+  LongTypeParameterT,
+  LongTypeParameterS
+>(
+  longParameter1,
+  longParameter2,
+) => body;

@@ -1,0 +1,39 @@
+40 columns                              |
+### Tests for anonymous function expressions: "lambdas".
+>>> Generic.
+f = <  T  ,  S  extends  T  >  (  T  param  )  {  }  ;
+<<<
+f = <T, S extends T>(T param) {};
+>>> Async with block body.
+f = (  )  async  {  }  ;
+<<<
+f = () async {};
+>>> Async with expression body.
+f = (  )  async  =>  1;
+<<<
+f = () async => 1;
+>>> Sync* with block body.
+f = (  )  sync  *  {  }  ;
+<<<
+f = () sync* {};
+>>> Sync* with expression body.
+f = (  )  sync  *  =>  1;
+<<<
+f = () sync* => 1;
+>>> Aync* with block body.
+f = (  )  async  *  {  }  ;
+<<<
+f = () async* {};
+>>> Aync* with expression body.
+f = (  )  async  *  =>  1;
+<<<
+f = () async* => 1;
+>>> Split parameter list.
+function = (int firstArgument, int secondArgument) { print('42'); };
+<<<
+function = (
+  int firstArgument,
+  int secondArgument,
+) {
+  print('42');
+};

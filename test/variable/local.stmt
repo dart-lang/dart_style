@@ -208,6 +208,24 @@ var variableName = switch (
   1 => 'one',
   2 => 'two',
 };
+>>> Use block-like splitting for block-bodied function expressions.
+var variableName = (parameter, parameter, parameter) { body; };
+<<<
+var variableName = (
+  parameter,
+  parameter,
+  parameter,
+) {
+  body;
+};
+>>> Use block-like splitting for expression-bodied function expressions.
+var variableName = (parameter, parameter, parameter) => body;
+<<<
+var variableName = (
+  parameter,
+  parameter,
+  parameter,
+) => body;
 >>> Use block-like splitting for parenthesized expressions whose inner does.
 var variableName = ([element, element, element]);
 <<<
