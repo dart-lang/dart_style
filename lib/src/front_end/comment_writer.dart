@@ -141,10 +141,8 @@ mixin CommentWriter {
         type = CommentType.block;
       }
 
-      var sourceComment = SourceComment(text, type, flushLeft: flushLeft);
-
-      // TODO(tall): If this comment contains either of the selection endpoints,
-      // mark them in the comment.
+      var sourceComment = SourceComment(text, type,
+          offset: comment.offset, flushLeft: flushLeft);
 
       comments._add(linesBefore, sourceComment);
 
@@ -194,7 +192,14 @@ class SourceComment {
   /// re-indented.
   final bool flushLeft;
 
-  SourceComment(this.text, this.type, {required this.flushLeft});
+  /// The number of code points in the original source code preceding the start
+  /// of this comment.
+  ///
+  /// Used to track selection markers within the comment.
+  final int offset;
+
+  SourceComment(this.text, this.type,
+      {required this.flushLeft, required this.offset});
 
   /// Whether this comment contains a mandatory newline, either because it's a
   /// comment that should be on its own line or a lexeme with a newline inside

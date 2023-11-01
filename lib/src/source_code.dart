@@ -55,7 +55,7 @@ class SourceCode {
     // Must either provide both selection bounds or neither.
     if ((selectionStart == null) != (selectionLength == null)) {
       throw ArgumentError(
-          'Is selectionStart is provided, selectionLength must be too.');
+          'If selectionStart is provided, selectionLength must be too.');
     }
 
     if (selectionStart != null) {

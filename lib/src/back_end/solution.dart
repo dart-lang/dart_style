@@ -72,14 +72,26 @@ class Solution implements Comparable<Solution> {
   /// The score resulting from the selected piece states.
   final Score score;
 
-  factory Solution(Piece root, int pageWidth, PieceStateSet state) {
-    var writer = CodeWriter(pageWidth, state);
-    writer.format(root);
-    var (text, score) = writer.finish();
-    return Solution._(state, text, score);
+  /// The offset in [text] where the selection starts, or `null` if there is
+  /// no selection.
+  final int? selectionStart;
+
+  /// The offset in [text] where the selection ends, or `null` if there is
+  /// no selection.
+  final int? selectionEnd;
+
+  factory Solution.initial(Piece root, int pageWidth, List<Piece> pieces) {
+    return Solution._(root, pageWidth, PieceStateSet(pieces));
   }
 
-  Solution._(this._state, this.text, this.score);
+  factory Solution._(Piece root, int pageWidth, PieceStateSet state) {
+    var writer = CodeWriter(pageWidth, state);
+    writer.format(root);
+    return writer.finish();
+  }
+
+  Solution(this._state, this.text, this.score, this.selectionStart,
+      this.selectionEnd);
 
   /// When called on a [Solution] with some unselected piece states, chooses a
   /// piece and yields further solutions for each state that piece can have.
@@ -89,7 +101,7 @@ class Solution implements Comparable<Solution> {
 
     return [
       for (var state in piece.states)
-        Solution(root, pageWidth, _state.cloneWith(piece, state))
+        Solution._(root, pageWidth, _state.cloneWith(piece, state))
     ];
   }
 
