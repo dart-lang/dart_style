@@ -110,9 +110,10 @@ extension ExpressionExtensions on Expression {
   /// ];
   /// ```
   bool get isDelimited => switch (this) {
-        ParenthesizedExpression(:var expression) => expression.isDelimited,
+        FunctionExpression() => true,
         ListLiteral() => true,
         MethodInvocation() => true,
+        ParenthesizedExpression(:var expression) => expression.isDelimited,
         SetOrMapLiteral() => true,
         SwitchExpression() => true,
         // TODO(tall): Record literals.

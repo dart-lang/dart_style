@@ -1,0 +1,48 @@
+40 columns                              |
+>>> Named parameter.
+f(  {  optional  =  null  }  ) {}
+<<<
+f({optional = null}) {}
+>>> Named parameter with old separator.
+### This syntax is no longer supported by new versions of Dart, but we want to
+### support formatting older versions if possible.
+f(  {  optional  :  1  +  2  }  ) {}
+<<<
+f({optional: 1 + 2}) {}
+>>> Optional positional parameter.
+f(  [  optional  =  1  +  2  ]  ) {}
+<<<
+f([optional = 1 + 2]) {}
+>>> Split on positional default.
+doStuff([parameter = veryLongDefaultValueThatSplits, another =
+veryLongDefaultValue, third = alsoQuiteLongDefaultValue]) {}
+<<<
+doStuff([
+  parameter =
+      veryLongDefaultValueThatSplits,
+  another = veryLongDefaultValue,
+  third = alsoQuiteLongDefaultValue,
+]) {}
+>>> Split on named default.
+doStuff({parameter = veryLongDefaultValueThatSplits, another =
+veryLongDefaultValue, third = alsoAQuiteLongDefaultValue}) {}
+<<<
+doStuff({
+  parameter =
+      veryLongDefaultValueThatSplits,
+  another = veryLongDefaultValue,
+  third = alsoAQuiteLongDefaultValue,
+}) {}
+>>> Prefer block-like splitting for collection default values.
+function([param = [element, element, element, element]]) { body; }
+<<<
+function([
+  param = [
+    element,
+    element,
+    element,
+    element,
+  ],
+]) {
+  body;
+}

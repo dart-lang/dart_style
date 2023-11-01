@@ -157,7 +157,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitBlockFunctionBody(BlockFunctionBody node) {
-    throw UnimplementedError();
+    functionBodyModifiers(node);
+    visit(node.block);
   }
 
   @override
@@ -300,9 +301,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitDefaultFormalParameter(DefaultFormalParameter node) {
     visit(node.parameter);
 
-    // TODO(tall): Implement default values when function declarations are
-    // implemented.
-    if (node.separator != null) throw UnimplementedError();
+    if (node.separator case var separator?) {
+      finishAssignment(separator, node.defaultValue!);
+    }
   }
 
   @override
@@ -335,7 +336,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitEmptyFunctionBody(EmptyFunctionBody node) {
-    throw UnimplementedError();
+    token(node.semicolon);
   }
 
   @override
@@ -360,7 +361,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitExpressionFunctionBody(ExpressionFunctionBody node) {
-    throw UnimplementedError();
+    functionBodyModifiers(node);
+    finishAssignment(node.functionDefinition, node.expression);
+    token(node.semicolon);
   }
 
   @override
@@ -522,17 +525,29 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    throw UnimplementedError();
+    modifier(node.externalKeyword);
+
+    Piece? returnType;
+    if (node.returnType case var returnTypeNode?) {
+      visit(returnTypeNode);
+      returnType = pieces.split();
+    }
+
+    // TODO(tall): Get or set keywords for getters and setters.
+    if (node.propertyKeyword != null) throw UnimplementedError();
+    token(node.name);
+
+    finishFunction(returnType, node.functionExpression);
   }
 
   @override
   void visitFunctionDeclarationStatement(FunctionDeclarationStatement node) {
-    throw UnimplementedError();
+    visit(node.functionDeclaration);
   }
 
   @override
   void visitFunctionExpression(FunctionExpression node) {
-    throw UnimplementedError();
+    finishFunction(null, node);
   }
 
   @override
@@ -932,14 +947,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   void visitSimpleFormalParameter(SimpleFormalParameter node) {
     startFormalParameter(node);
 
-    if (node.keyword != null) throw UnimplementedError();
-
-    // TODO(tall): When function declarations are implemented, test that the
-    // formatter won't split after `var` or `final` in a parameter (with a
-    // type or not).
-
     if ((node.type, node.name) case (var type?, var name?)) {
       // Have both a type and name, so allow splitting between them.
+      modifier(node.keyword);
       visit(type);
       var typePiece = pieces.split();
 
@@ -949,6 +959,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       pieces.give(VariablePiece(typePiece, [namePiece], hasType: true));
     } else {
       // Only one of name or type so just write whichever there is.
+      modifier(node.keyword);
       visit(node.type);
       token(node.name);
     }

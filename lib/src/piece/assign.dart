@@ -78,7 +78,7 @@ class AssignPiece extends Piece {
   //    operand;
   // ```
   //
-  // For now, we not implement this special case behavior. Once more of the
+  // For now, we do not implement this special case behavior. Once more of the
   // language is implemented in the new back end and we can run the formatter
   // on a large corpus of code, we can try it out and see if the special case
   // behavior is worth it.

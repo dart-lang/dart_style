@@ -1,0 +1,14 @@
+40 columns                              |
+### The code for formatting function declarations is the same across top-level
+### and local functions. This just tests that local function declaration
+### statements work as expected.
+>>>
+main() {
+  int localFunction(String parameter) { body; }
+}
+<<<
+main() {
+  int localFunction(String parameter) {
+    body;
+  }
+}
