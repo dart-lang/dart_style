@@ -863,7 +863,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitPrefixExpression(PrefixExpression node) {
-    throw UnimplementedError();
+    token(node.operator);
+
+    // Edge case: put a space after "-" if the operand is "-" or "--" so that
+    // we don't merge the operator tokens.
+    if (node.operand
+        case PrefixExpression(operator: Token(lexeme: '-' || '--'))) {
+      space();
+    }
+
+    visit(node.operand);
   }
 
   @override

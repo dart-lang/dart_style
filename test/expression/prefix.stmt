@@ -1,0 +1,41 @@
+40 columns                              |
+>>> Unary negate.
+-  foo  ;
+<<<
+-foo;
+>>> Bitwise not.
+~  foo  ;
+<<<
+~foo;
+>>> Boolean not.
+!  foo  ;
+<<<
+!foo;
+>>> Prefix increment.
+++  foo  ;
+<<<
+++foo;
+>>> Prefix decrement.
+--  foo  ;
+<<<
+--foo;
+>>> Multiple prefix operators.
+-  ~  !  foo;
+<<<
+-~!foo;
+>>> Sequential `-` operators are not joined.
+-  -  -  -foo;
+<<<
+- - - -foo;
+>>> A `-` operator before a negative integer is not joined.
+-  -1;
+<<<
+- -1;
+>>> A `-` operator before a negative floating point number is not joined.
+-  -1.2;
+<<<
+- -1.2;
+>>> A `-` before a `--` is not joined.
+-  --  foo;
+<<<
+- --foo;
