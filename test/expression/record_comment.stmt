@@ -1,0 +1,104 @@
+40 columns                              |
+>>> Empty record block comment.
+var record = (  /* comment */  );
+<<<
+var record = (/* comment */);
+>>> Empty record line comment.
+var record = (  // comment
+);
+<<<
+var record = (
+  // comment
+);
+>>> Single-element record block comment, after comma.
+var record = ( element , /* comment */  );
+<<<
+var record = (element /* comment */,);
+>>> Single-element record block comment, before comma.
+var record = ( element /* comment */ , );
+<<<
+var record = (element /* comment */,);
+>>> Long single-element record block comment, before comma.
+var record = ( element /* very long adhered to element */ , );
+<<<
+var record = (
+  element /* very long adhered to element */,
+);
+>>> Long single-element record block comment, after comma.
+var record = ( element, /* very long adhered to element */ );
+<<<
+var record = (
+  element /* very long adhered to element */,
+);
+>>> Single-element record line comment, before comma.
+var record = ( element , // comment
+);
+<<<
+var record = (
+  element, // comment
+);
+>>> Single-element record line comment, after comma.
+var record = ( element // comment
+,);
+<<<
+var record = (
+  element, // comment
+);
+>>> Multi-element record block comment, before comma.
+var record = ( 1 /* comment */ , 2  );
+<<<
+var record = (1 /* comment */, 2);
+>>> Multi-element record block comment, after comma.
+var record = ( 1 , /* comment */ 2  );
+<<<
+var record = (1, /* comment */ 2);
+>>> Multi-element record line comment, before comma.
+var record = ( 1 // comment
+, 2  );
+<<<
+var record = (
+  1, // comment
+  2,
+);
+>>> Multi-element record line comment, after comma.
+var record = ( 1, // comment
+2  );
+<<<
+var record = (
+  1, // comment
+  2,
+);
+>>> Ignore line comment after the ")".
+(
+  a,b,c,
+  d
+) // comment
+;
+<<<
+(a, b, c, d) // comment
+;
+>>> Preserve blank lines between comments and elements.
+(
+
+
+  element,
+
+
+
+  // comment
+  element,
+
+
+
+  element
+
+
+);
+<<<
+(
+  element,
+
+  // comment
+  element,
+  element,
+);

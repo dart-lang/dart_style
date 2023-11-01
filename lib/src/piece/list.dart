@@ -80,6 +80,8 @@ class ListPiece extends Piece {
     for (var i = 0; i < _elements.length; i++) {
       var isLast = i == _elements.length - 1;
       var appendComma = switch (_style.commas) {
+        // Has a comma after every element.
+        Commas.alwaysTrailing => true,
         // Trailing comma after the last element if split but not otherwise.
         Commas.trailing => !(state == State.unsplit && isLast),
         // Never a trailing comma after the last element.
@@ -209,11 +211,14 @@ final class ListElement {
 
 /// Where commas should be added in a [ListPiece].
 enum Commas {
+  /// Add a comma after every element, regardless of whether or not it is split.
+  alwaysTrailing,
+
   /// Add a comma after every element when the elements split, including the
   /// last. When not split, omit the trailing comma.
   trailing,
 
-  /// Add a comme after every element except for the last, regardless of whether
+  /// Add a comma after every element except for the last, regardless of whether
   /// or not it is split.
   nonTrailing,
 
