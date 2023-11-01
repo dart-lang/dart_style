@@ -89,10 +89,11 @@ mixin PieceFactory implements CommentWriter {
   }
 
   /// Creates a [ListPiece] for a collection literal.
-  void createCollection(TypedLiteral literal, Token leftBracket,
-      List<AstNode> elements, Token rightBracket) {
-    modifier(literal.constKeyword);
-    visit(literal.typeArguments);
+  void createCollection(Token? constKeyword, Token leftBracket,
+      List<AstNode> elements, Token rightBracket,
+      {TypeArgumentList? typeArguments, ListStyle style = const ListStyle()}) {
+    modifier(constKeyword);
+    visit(typeArguments);
 
     // TODO(tall): Support a line comment inside a collection literal as a
     // signal to preserve internal newlines. So if you have:
@@ -107,7 +108,12 @@ mixin PieceFactory implements CommentWriter {
     // The formatter will preserve the newline after element 3 and the lack of
     // them after the other elements.
 
-    createList(leftBracket: leftBracket, elements, rightBracket: rightBracket);
+    createList(
+      leftBracket: leftBracket,
+      elements,
+      rightBracket: rightBracket,
+      style: style,
+    );
   }
 
   /// Creates metadata annotations for a directive.
