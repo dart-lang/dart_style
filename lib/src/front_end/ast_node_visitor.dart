@@ -629,20 +629,24 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // property access.
     var operations = <Piece>[];
 
-    if (node.constructorName.type.importPrefix case var importPrefix?) {
+    var constructor = node.constructorName;
+    if (constructor.type.importPrefix case var importPrefix?) {
       token(importPrefix.name);
       operations.add(pieces.split());
       token(importPrefix.period);
     }
 
-    token(node.constructorName.type.name2);
-    visit(node.constructorName.type.typeArguments);
-    token(node.constructorName.type.question);
+    // The name of the type being constructed.
+    var type = constructor.type;
+    token(type.name2);
+    visit(type.typeArguments);
+    token(type.question);
 
-    if (node.constructorName.name != null) {
+    // If this is a named constructor call, the name.
+    if (constructor.name != null) {
       operations.add(pieces.split());
-      token(node.constructorName.period);
-      visit(node.constructorName.name);
+      token(constructor.period);
+      visit(constructor.name);
     }
 
     finishCall(node.argumentList);
