@@ -1,0 +1,50 @@
+40 columns                              |
+### Constructor invocations are handled identically to function calls, so just
+### test the basics and make sure that we handle the keywords correctly.
+>>> Empty argument list.
+new  Foo  (  )  ;
+<<<
+new Foo();
+>>> Inline arguments.
+new  SomeType  ( argument , another ) ;
+<<<
+new SomeType(argument, another);
+>>> Split argument list.
+const  SomeType  ( argument , another , third ) ;
+<<<
+const SomeType(
+  argument,
+  another,
+  third,
+);
+>>> With type arguments.
+new  Map  <  int  ,  String  >  (  1  ,  2  ,  3  );
+<<<
+new Map<int, String>(1, 2, 3);
+>>> Named constructor.
+new  Thing  .  name  (  argument  )  ;
+<<<
+new Thing.name(argument);
+>>> Named constructor on class with type arguments.
+const  List  <  int  >  .  filled  (  1  ,  2  );
+<<<
+const List<int>.filled(1, 2);
+>>> Prefixed.
+new  prefix  .  TypeName  (  argument  )  ;
+<<<
+new prefix.TypeName(argument);
+>>> Prefix named constructor.
+const  prefix  .  Thing  .  name  (  argument  )  ;
+<<<
+const prefix.Thing.name(argument);
+>>> Split at name.
+new VeryLongClassName.veryLongNamedConstructor();
+<<<
+new VeryLongClassName
+    .veryLongNamedConstructor();
+>>> Split at name on prefixed named constructor.
+new prefix.VeryLongClassName.veryLongNamedConstructor();
+<<<
+new prefix
+    .VeryLongClassName
+    .veryLongNamedConstructor();
