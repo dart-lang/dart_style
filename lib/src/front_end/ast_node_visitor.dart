@@ -625,12 +625,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // splitting before the `.`. This doesn't look good, but is consistent with
     // constructor calls that don't have `new` or `const`. We allow splitting
     // in the latter because there is no way to distinguish syntactically
-    // between a named constructor call and any other kind of method call.
-    var calls = <Piece>[];
+    // between a named constructor call and any other kind of method call or
+    // property access.
+    var operations = <Piece>[];
 
     if (node.constructorName.type.importPrefix case var importPrefix?) {
       token(importPrefix.name);
-      calls.add(pieces.split());
+      operations.add(pieces.split());
       token(importPrefix.period);
     }
 
@@ -639,7 +640,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     token(node.constructorName.type.question);
 
     if (node.constructorName.name != null) {
-      calls.add(pieces.split());
+      operations.add(pieces.split());
       token(node.constructorName.period);
       visit(node.constructorName.name);
     }
@@ -647,9 +648,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     finishCall(node.argumentList);
 
     // If there was a prefix or constructor name, then make a splittable piece.
-    if (calls.isNotEmpty) {
-      calls.add(pieces.take());
-      pieces.give(ChainPiece(calls));
+    if (operations.isNotEmpty) {
+      operations.add(pieces.take());
+      pieces.give(ChainPiece(operations));
     }
   }
 

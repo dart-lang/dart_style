@@ -10,7 +10,7 @@ import 'piece.dart';
 // basics needed for instance creation expressions which may have method-like
 // `.` in them.
 
-/// A series of property access or method calls, like:
+/// A dotted series of property access or method calls, like:
 ///
 /// ```
 /// target.getter.method().another.method();
@@ -18,12 +18,12 @@ import 'piece.dart';
 ///
 /// This piece handles splitting before the `.`.
 class ChainPiece extends Piece {
-  /// The series of calls.
+  /// The series of operations.
   ///
-  /// The first piece in this is the target, and the rest are calls.
-  final List<Piece> _calls;
+  /// The first piece in this is the target, and the rest are operations.
+  final List<Piece> _operations;
 
-  ChainPiece(this._calls);
+  ChainPiece(this._operations);
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -36,15 +36,15 @@ class ChainPiece extends Piece {
       writer.setNesting(Indent.expression);
     }
 
-    for (var i = 0; i < _calls.length; i++) {
+    for (var i = 0; i < _operations.length; i++) {
       if (i > 0) writer.splitIf(state == State.split, space: false);
-      writer.format(_calls[i]);
+      writer.format(_operations[i]);
     }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    _calls.forEach(callback);
+    _operations.forEach(callback);
   }
 
   @override
