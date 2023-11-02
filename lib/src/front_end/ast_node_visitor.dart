@@ -9,6 +9,7 @@ import 'package:analyzer/source/line_info.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/block.dart';
+import '../piece/chain.dart';
 import '../piece/do_while.dart';
 import '../piece/for.dart';
 import '../piece/if.dart';
@@ -279,7 +280,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitConstructorName(ConstructorName node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitInstanceCreationExpression().');
   }
 
   @override
@@ -618,7 +619,38 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    throw UnimplementedError();
+    token(node.keyword, after: space);
+
+    // If there is an import prefix and/or constructor name, then allow
+    // splitting before the `.`. This doesn't look good, but is consistent with
+    // constructor calls that don't have `new` or `const`. We allow splitting
+    // in the latter because there is no way to distinguish syntactically
+    // between a named constructor call and any other kind of method call.
+    var calls = <Piece>[];
+
+    if (node.constructorName.type.importPrefix case var importPrefix?) {
+      token(importPrefix.name);
+      calls.add(pieces.split());
+      token(importPrefix.period);
+    }
+
+    token(node.constructorName.type.name2);
+    visit(node.constructorName.type.typeArguments);
+    token(node.constructorName.type.question);
+
+    if (node.constructorName.name != null) {
+      calls.add(pieces.split());
+      token(node.constructorName.period);
+      visit(node.constructorName.name);
+    }
+
+    finishCall(node.argumentList);
+
+    // If there was a prefix or constructor name, then make a splittable piece.
+    if (calls.isNotEmpty) {
+      calls.add(pieces.take());
+      pieces.give(ChainPiece(calls));
+    }
   }
 
   @override
@@ -729,11 +761,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     visit(node.methodName);
     visit(node.typeArguments);
-
-    createList(
-        leftBracket: node.argumentList.leftParenthesis,
-        node.argumentList.arguments,
-        rightBracket: node.argumentList.rightParenthesis);
+    finishCall(node.argumentList);
   }
 
   @override

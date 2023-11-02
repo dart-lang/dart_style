@@ -173,6 +173,20 @@ var longVariableName = veryLongFunctionName(argument);
 <<<
 var longVariableName =
     veryLongFunctionName(argument);
+>>> Prefer block-like splitting for constructor calls.
+var variableName = new Thing(argument, argument);
+<<<
+var variableName = new Thing(
+  argument,
+  argument,
+);
+>>> Prefer block-like splitting for const constructor calls.
+var variableName = const Thing(argument, argument);
+<<<
+var variableName = const Thing(
+  argument,
+  argument,
+);
 >>> Indent block if function name doesn't fit and arguments split.
 var longVariableName = veryLongFunctionName(argument, another);
 <<<

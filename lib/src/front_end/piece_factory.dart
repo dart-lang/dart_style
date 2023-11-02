@@ -433,6 +433,15 @@ mixin PieceFactory implements CommentWriter {
         isValueDelimited: rightHandSide.isDelimited));
   }
 
+  /// Writes the argument list part of a constructor, function, or method call
+  /// after the name has been written.
+  void finishCall(ArgumentList argumentList) {
+    createList(
+        leftBracket: argumentList.leftParenthesis,
+        argumentList.arguments,
+        rightBracket: argumentList.rightParenthesis);
+  }
+
   /// Writes the condition and updaters parts of a [ForParts] after the
   /// subclass's initializer clause has been written.
   void finishForParts(ForParts forLoopParts, DelimitedListBuilder partsList) {
