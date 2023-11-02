@@ -86,7 +86,7 @@ line */
 
   c;
 }
->>> comment before labeled statement
+>>> Comment before labeled statement.
 {
   /* c */ a: b: c;
 }

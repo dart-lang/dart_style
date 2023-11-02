@@ -1,0 +1,254 @@
+40 columns                              |
+>>> Unsplit extends clause.
+class A extends B {}
+<<<
+class A extends B {}
+>>> Unsplit implements clause.
+class A implements B {}
+<<<
+class A implements B {}
+>>> Unsplit with clause.
+class A extends B with C {}
+<<<
+class A extends B with C {}
+>>> Unsplit multiple clauses.
+class A extends B with C implements D {}
+<<<
+class A extends B with C implements D {}
+>>> Split at `extends`.
+class SomeClass extends VeryLongBaseClass {}
+<<<
+class SomeClass
+    extends VeryLongBaseClass {}
+>>> Split at `implements`.
+class SomeClass implements VeryLongBaseClass {}
+<<<
+class SomeClass
+    implements VeryLongBaseClass {}
+>>> Split at `implements` but not between interfaces.
+class SomeClass implements Interface, AnotherOne {}
+<<<
+class SomeClass
+    implements Interface, AnotherOne {}
+>>> Split at `implements` and interfaces.
+class SomeClass implements Interface, Another, Third {}
+<<<
+class SomeClass
+    implements
+        Interface,
+        Another,
+        Third {}
+>>> Split at `with`.
+class SomeLongClass with VeryLongMixin {}
+<<<
+class SomeLongClass
+    with VeryLongMixin {}
+>>> Split at `with` but not between mixins.
+class SomeClass with Mixin, AnotherOne {}
+<<<
+class SomeClass
+    with Mixin, AnotherOne {}
+>>> Split at `with` and mixins.
+class SomeClass with Mixin, Another, Third, Fourth {}
+<<<
+class SomeClass
+    with
+        Mixin,
+        Another,
+        Third,
+        Fourth {}
+>>> Split within `with` but not `implements`.
+class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface {}
+<<<
+class SomeClass extends A
+    with
+        Mixin,
+        Another,
+        Third,
+        Fourth,
+        Fifth
+    implements Interface {}
+>>> Split within `implements` but not `with`.
+class SomeClass extends A with Mixin implements Interface, Another, Third {}
+<<<
+class SomeClass extends A
+    with Mixin
+    implements
+        Interface,
+        Another,
+        Third {}
+>>> Split within both `with` and `implements`.
+class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface, Another, Third {}
+<<<
+class SomeClass extends A
+    with
+        Mixin,
+        Another,
+        Third,
+        Fourth,
+        Fifth
+    implements
+        Interface,
+        Another,
+        Third {}
+>>> Split at `extends` splits `implements` too.
+class AVeryLongSomeClass extends BaseClass implements I {}
+<<<
+class AVeryLongSomeClass
+    extends BaseClass
+    implements I {}
+>>>
+class AVeryLongSomeClass extends BaseClass implements Interface {}
+<<<
+class AVeryLongSomeClass
+    extends BaseClass
+    implements Interface {}
+>>> Split at `extends` splits `with` too.
+class AVeryLongSomeClass extends BaseClass with Mixin {}
+<<<
+class AVeryLongSomeClass
+    extends BaseClass
+    with Mixin {}
+>>> Can split `with` clause without splitting `extends`.
+class SomeClass extends A with Mixin, Another {}
+<<<
+class SomeClass extends A
+    with Mixin, Another {}
+>>>
+class SomeClass extends A with Mixin, Another, Third, Fourth {}
+<<<
+class SomeClass extends A
+    with
+        Mixin,
+        Another,
+        Third,
+        Fourth {}
+>>> Can split `implements` clause without splitting `extends`.
+class SomeClass extends A implements Type, Another {}
+<<<
+class SomeClass extends A
+    implements Type, Another {}
+>>>
+class SomeClass extends A implements Type, Another, Third, Fourth {}
+<<<
+class SomeClass extends A
+    implements
+        Type,
+        Another,
+        Third,
+        Fourth {}
+>>> Can split `with` and `implements` without splitting `extends`.
+class SomeVeryLongClass extends A with Mixin implements Interface {}
+<<<
+class SomeVeryLongClass extends A
+    with Mixin
+    implements Interface {}
+>>>
+class SomeClass extends A with Mixin, Another implements Interface, Another {}
+<<<
+class SomeClass extends A
+    with Mixin, Another
+    implements Interface, Another {}
+>>> Unsplit generic superclass.
+class SomeClass extends C<int> {}
+<<<
+class SomeClass extends C<int> {}
+>>> Split before `extends` on generic superclass.
+class SomeClass extends C<SomeLongClass> {}
+<<<
+class SomeClass
+    extends C<SomeLongClass> {}
+>>> Split in generic superclass.
+class SomeClass extends C<VeryLongType, AnotherLongType> {}
+<<<
+class SomeClass
+    extends
+        C<
+          VeryLongType,
+          AnotherLongType
+        > {}
+>>> Unsplit generic mixin.
+class SomeClass with C<int> {}
+<<<
+class SomeClass with C<int> {}
+>>> Split before `with` on generic mixin.
+class SomeClass with Mixin<SomeLongClass> {}
+<<<
+class SomeClass
+    with Mixin<SomeLongClass> {}
+>>> Split in generic mixin.
+class SomeClass with Mixin<VeryLongType, AnotherLongType> {}
+<<<
+class SomeClass
+    with
+        Mixin<
+          VeryLongType,
+          AnotherLongType
+        > {}
+>>> Unsplit generic superinterface.
+class SomeClass implements C<int> {}
+<<<
+class SomeClass implements C<int> {}
+>>> Split before `implements` on generic superinterface.
+class SomeClass implements C<SomeLongClass> {}
+<<<
+class SomeClass
+    implements C<SomeLongClass> {}
+>>> Split in generic superinterface.
+class SomeClass implements C<VeryLongType, AnotherLongType> {}
+<<<
+class SomeClass
+    implements
+        C<
+          VeryLongType,
+          AnotherLongType
+        > {}
+>>> Split in generic clause forces entire clause list to split.
+class SomeClass with A, B<LongTypeArgument, AnotherLongType>, C {}
+<<<
+class SomeClass
+    with
+        A,
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        >,
+        C {}
+>>> Split in generic `with` clause forces `implements` clause to split.
+class SomeClass with B<LongTypeArgument, AnotherLongType> implements C {}
+<<<
+class SomeClass
+    with
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        >
+    implements C {}
+>>> Split in generic `implements` clause forces `with` clause to split.
+class SomeClass with B implements C<LongTypeArgument, AnotherLongType> {}
+<<<
+class SomeClass
+    with B
+    implements
+        C<
+          LongTypeArgument,
+          AnotherLongType
+        > {}
+>>> Split in generic `with` clause does not force `extends` clause to split.
+class C extends A with B<LongTypeArgument, AnotherLongType> {}
+<<<
+class C extends A
+    with
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        > {}
+>>> Split in generic `implements` clause does not force `extends` clause to split.
+class C extends A implements B<LongTypeArgument, AnotherLongType> {}
+<<<
+class C extends A
+    implements
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        > {}

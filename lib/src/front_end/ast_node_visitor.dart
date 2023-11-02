@@ -74,8 +74,29 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         sequence.visit(directive);
       }
 
+      var needsBlank = true;
       for (var declaration in node.declarations) {
+        // Add a blank line before types with bodies.
+        var hasBody = declaration is ClassDeclaration ||
+            declaration is EnumDeclaration ||
+            declaration is ExtensionDeclaration;
+
+        if (hasBody) needsBlank = true;
+
+        if (needsBlank) sequence.addBlank();
         sequence.visit(declaration);
+
+        needsBlank = false;
+        if (hasBody) {
+          // Add a blank line after type declarations with bodies.
+          needsBlank = true;
+        } else if (declaration is FunctionDeclaration) {
+          // Add a blank line after non-empty block functions.
+          var body = declaration.functionExpression.body;
+          if (body is BlockFunctionBody) {
+            needsBlank = body.block.statements.isNotEmpty;
+          }
+        }
       }
     } else {
       // Just formatting a single statement.
@@ -193,7 +214,26 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    throw UnimplementedError();
+    createType(
+        node.metadata,
+        [
+          node.abstractKeyword,
+          node.baseKeyword,
+          node.interfaceKeyword,
+          node.finalKeyword,
+          node.sealedKeyword,
+          node.mixinKeyword,
+        ],
+        node.classKeyword,
+        node.name,
+        node.typeParameters,
+        node.extendsClause,
+        node.withClause,
+        node.implementsClause,
+        node.nativeClause,
+        node.leftBracket,
+        node.members,
+        node.rightBracket);
   }
 
   @override
@@ -374,7 +414,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitExtendsClause(ExtendsClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
@@ -600,7 +640,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitImplementsClause(ImplementsClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
@@ -761,7 +801,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNativeClause(NativeClause node) {
-    throw UnimplementedError();
+    space();
+    token(node.nativeKeyword);
+    space();
+    visit(node.name);
   }
 
   @override
@@ -1235,7 +1278,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitWithClause(WithClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
