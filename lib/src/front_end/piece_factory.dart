@@ -5,11 +5,12 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
+import '../piece/clause.dart';
 import '../piece/function.dart';
 import '../piece/if.dart';
-import '../piece/import.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
@@ -224,9 +225,8 @@ mixin PieceFactory implements CommentWriter {
     token(keyword);
     space();
     visit(directive.uri);
-    var directivePiece = pieces.take();
+    var importPieces = [pieces.take()];
 
-    Piece? configurationsPiece;
     if (directive.configurations.isNotEmpty) {
       var configurations = <Piece>[];
       for (var configuration in directive.configurations) {
@@ -235,44 +235,49 @@ mixin PieceFactory implements CommentWriter {
         configurations.add(pieces.take());
       }
 
-      configurationsPiece = PostfixPiece(configurations);
+      importPieces.add(PostfixPiece(configurations));
     }
 
-    Piece? asClause;
     if (asKeyword != null) {
       pieces.split();
       token(deferredKeyword, after: space);
       token(asKeyword);
       space();
       visit(prefix);
-      asClause = PostfixPiece([pieces.take()]);
+      importPieces.add(PostfixPiece([pieces.take()]));
     }
 
-    var combinators = <ImportCombinator>[];
-    for (var combinatorNode in directive.combinators) {
-      pieces.split();
-      token(combinatorNode.keyword);
-      var combinator = ImportCombinator(pieces.take());
-      combinators.add(combinator);
+    if (directive.combinators.isNotEmpty) {
+      var combinators = <ClausePiece>[];
+      for (var combinatorNode in directive.combinators) {
+        pieces.split();
+        token(combinatorNode.keyword);
+        var combinatorKeyword = pieces.split();
 
-      switch (combinatorNode) {
-        case HideCombinator(hiddenNames: var names):
-        case ShowCombinator(shownNames: var names):
-          for (var name in names) {
-            pieces.split();
-            token(name.token);
-            commaAfter(name);
-            combinator.names.add(pieces.take());
-          }
-        default:
-          throw StateError('Unknown combinator type $combinatorNode.');
+        switch (combinatorNode) {
+          case HideCombinator(hiddenNames: var names):
+          case ShowCombinator(shownNames: var names):
+            var parts = <Piece>[];
+            for (var name in names) {
+              pieces.split();
+              token(name.token);
+              commaAfter(name);
+              parts.add(pieces.take());
+            }
+
+            var combinator = ClausePiece(combinatorKeyword, parts);
+            combinators.add(combinator);
+          default:
+            throw StateError('Unknown combinator type $combinatorNode.');
+        }
       }
+
+      importPieces.add(ClausesPiece(combinators));
     }
 
     token(directive.semicolon);
 
-    pieces.give(ImportPiece(
-        directivePiece, configurationsPiece, asClause, combinators));
+    pieces.give(AdjacentPiece(importPieces));
   }
 
   /// Creates a single infix operation.

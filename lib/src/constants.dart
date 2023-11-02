@@ -79,7 +79,4 @@ class Indent {
 
   /// The ":" on a wrapped constructor initialization list.
   static const constructorInitializer = 4;
-
-  /// A split name in a show or hide combinator.
-  static const combinatorName = 8;
 }
