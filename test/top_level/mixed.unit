@@ -20,3 +20,29 @@ part 'a.dart';
 library foo;
 
 part 'a.dart';
+>>> Collapse extra newlines between declarations.
+
+
+
+class A {}
+
+
+
+class B = Base with Mixin;
+
+
+
+var c = 1;
+
+
+d() {}
+
+
+<<<
+class A {}
+
+class B = Base with Mixin;
+
+var c = 1;
+
+d() {}
