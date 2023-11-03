@@ -33,6 +33,8 @@ extension AstNodeExtensions on AstNode {
       body = node.body;
     } else if (node is FunctionDeclarationStatement) {
       body = node.functionDeclaration.functionExpression.body;
+    } else if (node is FunctionDeclaration) {
+      body = node.functionExpression.body;
     }
 
     return body is BlockFunctionBody && body.block.statements.isNotEmpty;

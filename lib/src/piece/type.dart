@@ -6,6 +6,8 @@ import 'clause.dart';
 import 'piece.dart';
 
 /// Piece for a type declaration with a body containing members.
+///
+/// Used for class, enum, and extension declarations.
 class TypePiece extends Piece {
   /// The leading keywords and modifiers, type name, and type parameters.
   final Piece _header;

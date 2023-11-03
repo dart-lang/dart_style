@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
+import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/block.dart';
@@ -75,29 +76,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         sequence.visit(directive);
       }
 
-      var needsBlank = true;
       for (var declaration in node.declarations) {
-        // Add a blank line before types with bodies.
         var hasBody = declaration is ClassDeclaration ||
             declaration is EnumDeclaration ||
             declaration is ExtensionDeclaration;
 
-        if (hasBody) needsBlank = true;
+        // Add a blank line before types with bodies.
+        if (hasBody) sequence.addBlank();
 
-        if (needsBlank) sequence.addBlank();
         sequence.visit(declaration);
 
-        needsBlank = false;
-        if (hasBody) {
-          // Add a blank line after type declarations with bodies.
-          needsBlank = true;
-        } else if (declaration is FunctionDeclaration) {
-          // Add a blank line after non-empty block functions.
-          var body = declaration.functionExpression.body;
-          if (body is BlockFunctionBody) {
-            needsBlank = body.block.statements.isNotEmpty;
-          }
-        }
+        // Add a blank line after type or function declarations with bodies.
+        if (hasBody || declaration.hasNonEmptyBody) sequence.addBlank();
       }
     } else {
       // Just formatting a single statement.
