@@ -1,0 +1,30 @@
+40 columns                              |
+>>> Single type parameter.
+class Foo  <  T  > {}
+<<<
+class Foo<T> {}
+>>> Multiple type parameters on one line.
+class Foo  <  A  ,  B  ,  C  ,  D  > {}
+<<<
+class Foo<A, B, C, D> {}
+>>> Bounds.
+class A  <  T  extends  int  ,  R  extends  T  ?  > {}
+<<<
+class A<T extends int, R extends T?> {}
+>>> Split type parameters.
+class LongClassName<First, Second, Third> {}
+<<<
+class LongClassName<
+  First,
+  Second,
+  Third
+> {}
+>>> Split inside type parameter bound splits type parameters.
+class LongClassName<T extends Map<LongTypeArgument, Another>> {}
+<<<
+class LongClassName<
+  T extends Map<
+    LongTypeArgument,
+    Another
+  >
+> {}

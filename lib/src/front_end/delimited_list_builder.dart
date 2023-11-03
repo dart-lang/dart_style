@@ -3,11 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
-import 'package:dart_style/src/front_end/comment_writer.dart';
 
 import '../comment_type.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
+import 'comment_writer.dart';
 import 'piece_factory.dart';
 
 /// Incrementally builds a [ListPiece], handling commas, comments, and

@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
+import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/block.dart';
@@ -76,7 +77,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       }
 
       for (var declaration in node.declarations) {
+        var hasBody = declaration is ClassDeclaration ||
+            declaration is EnumDeclaration ||
+            declaration is ExtensionDeclaration;
+
+        // Add a blank line before types with bodies.
+        if (hasBody) sequence.addBlank();
+
         sequence.visit(declaration);
+
+        // Add a blank line after type or function declarations with bodies.
+        if (hasBody || declaration.hasNonEmptyBody) sequence.addBlank();
       }
     } else {
       // Just formatting a single statement.
@@ -194,7 +205,26 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    throw UnimplementedError();
+    createType(
+        node.metadata,
+        [
+          node.abstractKeyword,
+          node.baseKeyword,
+          node.interfaceKeyword,
+          node.finalKeyword,
+          node.sealedKeyword,
+          node.mixinKeyword,
+        ],
+        node.classKeyword,
+        node.name,
+        node.typeParameters,
+        node.extendsClause,
+        node.withClause,
+        node.implementsClause,
+        node.nativeClause,
+        node.leftBracket,
+        node.members,
+        node.rightBracket);
   }
 
   @override
@@ -375,7 +405,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitExtendsClause(ExtendsClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
@@ -601,7 +631,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitImplementsClause(ImplementsClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
@@ -794,7 +824,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitNativeClause(NativeClause node) {
-    throw UnimplementedError();
+    space();
+    token(node.nativeKeyword);
+    space();
+    visit(node.name);
   }
 
   @override
@@ -1268,7 +1301,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitWithClause(WithClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override

@@ -15,6 +15,7 @@ import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
+import '../piece/type.dart';
 import 'ast_node_visitor.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
@@ -59,24 +60,44 @@ mixin PieceFactory implements CommentWriter {
   /// if (condition) {
   /// } else {}
   /// ```
-  void createBlock(Block block, {bool forceSplit = false}) {
-    token(block.leftBracket);
+  void createBody(Token leftBracket, List<AstNode> contents, Token rightBracket,
+      {bool forceSplit = false}) {
+    token(leftBracket);
     var leftBracketPiece = pieces.split();
 
     var sequence = SequenceBuilder(this);
-    for (var node in block.statements) {
+    for (var node in contents) {
       sequence.visit(node);
+
+      // If the node has a non-empty braced body, then require a blank line
+      // between it and the next node.
+      if (node.hasNonEmptyBody) sequence.addBlank();
     }
 
     // Place any comments before the "}" inside the block.
-    sequence.addCommentsBefore(block.rightBracket);
+    sequence.addCommentsBefore(rightBracket);
 
-    token(block.rightBracket);
+    token(rightBracket);
     var rightBracketPiece = pieces.take();
 
     pieces.give(BlockPiece(
         leftBracketPiece, sequence.build(), rightBracketPiece,
-        alwaysSplit: forceSplit || block.statements.isNotEmpty));
+        alwaysSplit: forceSplit || contents.isNotEmpty));
+  }
+
+  /// Creates a [BlockPiece] for a given [Block].
+  ///
+  /// If [forceSplit] is `true`, then the block will split even if empty. This
+  /// is used, for example, with empty blocks in `if` statements followed by
+  /// `else` clauses:
+  ///
+  /// ```
+  /// if (condition) {
+  /// } else {}
+  /// ```
+  void createBlock(Block block, {bool forceSplit = false}) {
+    createBody(block.leftBracket, block.statements, block.rightBracket,
+        forceSplit: forceSplit);
   }
 
   /// Creates a piece for a `break` or `continue` statement.
@@ -385,6 +406,74 @@ mixin PieceFactory implements CommentWriter {
     builder.rightBracket(rightParenthesis);
 
     pieces.give(builder.build());
+  }
+
+  /// Creates a class, enum, extension, etc. declaration with a body containing
+  /// members.
+  void createType(
+      NodeList<Annotation> metadata,
+      List<Token?> modifiers,
+      Token keyword,
+      Token name,
+      TypeParameterList? typeParameters,
+      ExtendsClause? extendsClause,
+      WithClause? withClause,
+      ImplementsClause? implementsClause,
+      NativeClause? nativeClause,
+      Token leftBracket,
+      List<AstNode> members,
+      Token rightBracket) {
+    if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
+    if (members.isNotEmpty) throw UnimplementedError('Type members.');
+
+    modifiers.forEach(modifier);
+    token(keyword);
+    space();
+    token(name);
+    visit(typeParameters);
+    var header = pieces.split();
+
+    var clauses = <ClausePiece>[];
+
+    void typeClause(Token keyword, List<AstNode> types) {
+      token(keyword);
+      var keywordPiece = pieces.split();
+
+      var typePieces = <Piece>[];
+      for (var type in types) {
+        visit(type);
+        commaAfter(type);
+        typePieces.add(pieces.split());
+      }
+
+      clauses.add(ClausePiece(keywordPiece, typePieces));
+    }
+
+    if (extendsClause != null) {
+      typeClause(extendsClause.extendsKeyword, [extendsClause.superclass]);
+    }
+
+    if (withClause != null) {
+      typeClause(withClause.withKeyword, withClause.mixinTypes);
+    }
+
+    if (implementsClause != null) {
+      typeClause(
+          implementsClause.implementsKeyword, implementsClause.interfaces);
+    }
+
+    ClausesPiece? clausesPiece;
+    if (clauses.isNotEmpty) {
+      clausesPiece =
+          ClausesPiece(clauses, allowLeadingClause: extendsClause != null);
+    }
+
+    visit(nativeClause);
+    space();
+    createBody(leftBracket, members, rightBracket);
+    var body = pieces.take();
+
+    pieces.give(TypePiece(header, clausesPiece, body));
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.

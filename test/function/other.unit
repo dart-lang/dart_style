@@ -3,3 +3,33 @@
 external  void  printToConsole  (  line  )  ;
 <<<
 external void printToConsole(line);
+>>> Force blank line after non-empty top-level function.
+a() {;}
+var x = 1;
+
+
+c() {;}d(){;}
+<<<
+a() {
+  ;
+}
+
+var x = 1;
+
+c() {
+  ;
+}
+
+d() {
+  ;
+}
+>>> Do not force blank line after empty top-level function.
+a() {} b() {}
+<<<
+a() {}
+b() {}
+>>> Do not force blank line after expression body top-level function.
+a() => null; b() => null;
+<<<
+a() => null;
+b() => null;

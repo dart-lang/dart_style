@@ -1,5 +1,17 @@
 40 columns                              |
->>> inside script tag
+>>> Inside script tag.
 #!scr‹ip›t
 <<<
 #!scr‹ip›t
+>>> Inside blank lines between declarations.
+class Foo {}
+
+
+‹  ›
+
+
+class Bar {}
+<<<
+class Foo {}
+
+‹›class Bar {}

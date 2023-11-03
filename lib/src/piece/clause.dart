@@ -70,20 +70,49 @@ import 'piece.dart';
 /// This ensures that when any wrapping occurs, the keywords are always at the
 /// beginning of the line.
 class ClausesPiece extends Piece {
+  /// State where we split between the clauses but not before the first one.
+  static const State _betweenClauses = State(1);
+
   final List<ClausePiece> _clauses;
 
-  ClausesPiece(this._clauses);
+  /// If `true`, then we're allowed to split between the clauses without
+  /// splitting before the first one too.
+  ///
+  /// This is used for class declarations where the `extends` clauses is treated
+  /// a little specially because it's a deeper coupling to the class and so we
+  /// want it to stay on the top line even if the other clauses split, like:
+  ///
+  /// ```
+  /// class BaseClass extends Derived
+  ///     implements OtherThing {
+  ///   ...
+  /// }
+  /// ```
+  final bool _allowLeadingClause;
+
+  ClausesPiece(this._clauses, {bool allowLeadingClause = false})
+      : _allowLeadingClause = allowLeadingClause;
 
   @override
-  List<State> get additionalStates => const [State.split];
+  List<State> get additionalStates =>
+      [if (_allowLeadingClause) _betweenClauses, State.split];
 
   @override
   void format(CodeWriter writer, State state) {
-    // If any of the lists inside any of the clauses split, split at the
-    // keywords too.
-    writer.setAllowNewlines(state == State.split);
     for (var clause in _clauses) {
-      writer.splitIf(state == State.split, indent: Indent.expression);
+      if (_allowLeadingClause && clause == _clauses.first) {
+        // Before the leading clause, only split when in the fully split state.
+        // A split inside the first clause forces a split before the keyword.
+        writer.splitIf(state == State.split, indent: Indent.expression);
+        writer.setAllowNewlines(state == State.split);
+      } else {
+        // For the other clauses (or if there is no leading one), split in the
+        // fully split state and any split inside and clause forces all of them
+        // to split.
+        writer.setAllowNewlines(state != State.unsplit);
+        writer.splitIf(state != State.unsplit, indent: Indent.expression);
+      }
+
       writer.format(clause);
     }
   }
@@ -112,6 +141,9 @@ class ClausePiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
+    // If any of the parts inside the clause split, split the list.
+    writer.setAllowNewlines(state != State.unsplit);
+
     writer.format(_keyword);
     for (var part in _parts) {
       writer.splitIf(state == State.split, indent: Indent.expression);

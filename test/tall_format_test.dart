@@ -10,6 +10,7 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() async {
+  await testDirectory('declaration', tall: true);
   await testDirectory('expression', tall: true);
   await testDirectory('function', tall: true);
   await testDirectory('invocation', tall: true);

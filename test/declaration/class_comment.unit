@@ -1,0 +1,76 @@
+40 columns                              |
+>>> Empty class containing line comment.
+class C { // comment
+}
+<<<
+class C {
+  // comment
+}
+>>> Empty class containing inline block comment.
+class C {   /* comment */  }
+<<<
+class C {/* comment */}
+>>> Empty class containing non-inline block comment.
+class C {
+
+  /* comment */
+
+
+}
+<<<
+class C {
+  /* comment */
+}
+>>> Empty class containing multi-line block comment.
+class C {   /* comment
+line */  }
+<<<
+class C {
+  /* comment
+line */
+}
+>>>
+class C {
+
+  /* comment
+line */
+
+
+}
+<<<
+class C {
+  /* comment
+line */
+}
+>>> Remove blank lines before and after comments at end of class.
+class C {
+
+
+
+  // comment
+
+
+
+}
+<<<
+class C {
+  // comment
+}
+>>> Force blank line before doc comment between classes.
+class Foo {} /// Doc comment.
+class Bar {}
+<<<
+class Foo {}
+
+/// Doc comment.
+class Bar {}
+>>> Force newline after JavaDoc-style block comment.
+class Foo {}
+/**
+*/ class Bar {}
+<<<
+class Foo {}
+
+/**
+*/
+class Bar {}
