@@ -69,8 +69,18 @@ class Solution implements Comparable<Solution> {
   /// The formatted code.
   final String text;
 
-  /// The score resulting from the selected piece states.
-  final Score score;
+  /// Whether this score is for a valid solution or not.
+  ///
+  /// An invalid solution is one where a hard newline appears in a context
+  /// where splitting isn't allowed. This is considered worse than any other
+  /// solution.
+  final bool isValid;
+
+  /// The number of characters that do not fit inside the page width.
+  final int overflow;
+
+  /// The amount of penalties applied based on the chosen line splits.
+  final int cost;
 
   /// The offset in [text] where the selection starts, or `null` if there is
   /// no selection.
@@ -90,8 +100,8 @@ class Solution implements Comparable<Solution> {
     return writer.finish();
   }
 
-  Solution(this._state, this.text, this.score, this.selectionStart,
-      this.selectionEnd);
+  Solution(this._state, this.text, this.selectionStart, this.selectionEnd,
+      {required this.overflow, required this.cost, required this.isValid});
 
   /// When called on a [Solution] with some unselected piece states, chooses a
   /// piece and yields further solutions for each state that piece can have.
@@ -112,8 +122,19 @@ class Solution implements Comparable<Solution> {
   /// code.
   @override
   int compareTo(Solution other) {
-    var scoreComparison = score.compareTo(other.score);
-    if (scoreComparison != 0) return scoreComparison;
+    // TODO(perf): This check is necessary to not make some of the tests not
+    // timeout, but I'm not sure why. Investigate what this does and if it's
+    // still necessary once other optimizations are in place.
+    // An invalid solution is worse than all others.
+    if (!isValid) return 1;
+    if (!other.isValid) return -1;
+
+    // Even though overflow is "worse" than cost, we order in terms of cost
+    // because a solution with overflow may lead to a low-cost solution without
+    // overflow, so we want to explore in cost order.
+    if (cost != other.cost) return cost.compareTo(other.cost);
+
+    if (overflow != other.overflow) return overflow.compareTo(other.overflow);
 
     // Should be solving the same set of pieces.
     assert(_state._pieces.length == other._state._pieces.length);
@@ -132,51 +153,12 @@ class Solution implements Comparable<Solution> {
   }
 
   @override
-  String toString() => '$score $_state';
-}
-
-class Score implements Comparable<Score> {
-  // TODO(tall): Should this actually be part of scoring? Do we want to use
-  // validity to determine how we order solutions to explore?
-  /// Whether this score is for a valid solution or not.
-  ///
-  /// An invalid solution is one where a hard newline appears in a context
-  /// where splitting isn't allowed. This is considered worse than any other
-  /// solution.
-  final bool isValid;
-
-  /// The number of characters that do not fit inside the page width.
-  final int overflow;
-
-  /// The amount of penalties applied based on the chosen line splits.
-  final int cost;
-
-  Score({required this.isValid, required this.overflow, required this.cost});
-
-  @override
-  int compareTo(Score other) {
-    // All invalid solutions are equal.
-    if (!isValid && !other.isValid) return 0;
-
-    // We are looking for *lower* costs and overflows, so an invalid score is
-    // considered higher or after all others.
-    if (!isValid) return 1;
-    if (!other.isValid) return -1;
-
-    // Even though overflow is "worse" than cost, we order in terms of cost
-    // because a solution with overflow may lead to a low-cost solution without
-    // overflow, so we want to explore in cost order.
-    if (cost != other.cost) return cost.compareTo(other.cost);
-
-    return overflow.compareTo(other.overflow);
-  }
-
-  @override
   String toString() {
     return [
       '\$$cost',
       if (overflow > 0) '($overflow over)',
-      if (!isValid) '(invalid)'
+      if (!isValid) '(invalid)',
+      '$_state',
     ].join(' ');
   }
 }

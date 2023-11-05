@@ -67,10 +67,10 @@ class Solver {
 
       // Since we process the solutions from lowest cost up, as soon as we find
       // a valid one that fits, it's the best.
-      if (solution.score.isValid) {
-        if (solution.score.overflow == 0) return solution;
+      if (solution.isValid) {
+        if (solution.overflow == 0) return solution;
 
-        if (solution.score.overflow < best.score.overflow) best = solution;
+        if (solution.overflow < best.overflow) best = solution;
       }
 
       // Otherwise, try to expand the solution to explore different splitting

@@ -78,14 +78,8 @@ class CodeWriter {
   Solution finish() {
     _finishLine();
     return Solution(
-        _pieceStates,
-        _buffer.toString(),
-        Score(
-            isValid: !_containsInvalidNewline,
-            overflow: _overflow,
-            cost: _cost),
-        _selectionStart,
-        _selectionEnd);
+        _pieceStates, _buffer.toString(), _selectionStart, _selectionEnd,
+        isValid: !_containsInvalidNewline, overflow: _overflow, cost: _cost);
   }
 
   /// Notes that a newline has been written.
