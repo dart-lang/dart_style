@@ -217,19 +217,38 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         ],
         node.classKeyword,
         node.name,
-        node.typeParameters,
-        node.extendsClause,
-        node.withClause,
-        node.implementsClause,
-        node.nativeClause,
-        node.leftBracket,
-        node.members,
-        node.rightBracket);
+        typeParameters: node.typeParameters,
+        extendsClause: node.extendsClause,
+        withClause: node.withClause,
+        implementsClause: node.implementsClause,
+        nativeClause: node.nativeClause,
+        body: (
+          leftBracket: node.leftBracket,
+          members: node.members,
+          rightBracket: node.rightBracket
+        ));
   }
 
   @override
   void visitClassTypeAlias(ClassTypeAlias node) {
-    throw UnimplementedError();
+    createType(
+        node.metadata,
+        [
+          node.abstractKeyword,
+          node.baseKeyword,
+          node.interfaceKeyword,
+          node.finalKeyword,
+          node.sealedKeyword,
+          node.mixinKeyword,
+        ],
+        node.typedefKeyword,
+        node.name,
+        equals: node.equals,
+        superclass: node.superclass,
+        typeParameters: node.typeParameters,
+        withClause: node.withClause,
+        implementsClause: node.implementsClause,
+        semicolon: node.semicolon);
   }
 
   @override
