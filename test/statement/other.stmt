@@ -31,3 +31,15 @@ while (true) {
 while (true) {
   continue someLabel;
 }
+>>> Yield.
+yield   i  ;
+<<<
+yield i;
+>>> Yield*.
+int i(int n) sync* {
+  yield   *  i(  n -  1)   ;
+}
+<<<
+int i(int n) sync* {
+  yield* i(n - 1);
+}

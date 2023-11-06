@@ -35,3 +35,15 @@ while (true) {
 while (true) {
   break; // comment
 }
+>>> Yield with comment after semicolon.
+yield    i    ; // comment
+<<<
+yield i; // comment
+>>> Yield* with comment after semicolon.
+int i(int n) sync* {
+  yield  *   i( x )    ;    // comment
+}
+<<<
+int i(int n) sync* {
+  yield* i(x); // comment
+}

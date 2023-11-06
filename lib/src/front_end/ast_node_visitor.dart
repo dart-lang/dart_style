@@ -1306,7 +1306,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitYieldStatement(YieldStatement node) {
-    throw UnimplementedError();
+    token(node.yieldKeyword);
+
+    if (node.star case var star?) {
+      token(star);
+      space();
+    }
+
+    visit(node.expression);
+    token(node.semicolon);
   }
 
   /// If [node] is not `null`, then visit it.
