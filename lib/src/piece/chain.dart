@@ -33,7 +33,7 @@ class ChainPiece extends Piece {
     if (state == State.unsplit) {
       writer.setAllowNewlines(false);
     } else {
-      writer.setNesting(Indent.expression);
+      writer.setIndent(Indent.expression);
     }
 
     for (var i = 0; i < _operations.length; i++) {

@@ -21,8 +21,12 @@ import 'solution.dart';
 /// -   Solutions are explored in priority order. We explore solutions with the
 ///     the lowest cost first. This way, as soon as we find a solution with no
 ///     overflow characters, we know it will be the best solution and can stop.
-// TODO(perf): At some point, we probably also want to do memoization of
-// previously formatted Piece subtrees.
+///
+/// -   When selecting states for pieces to expand solutions, we only look at
+///     pieces in the first line containing overflow characters or invalid
+///     newlines. See [Solution._livePieces] for more details.
+// TODO(perf): At some point, we may also want to do memoization of previously
+// formatted Piece subtrees.
 class Solver {
   final int _pageWidth;
 
@@ -67,10 +71,10 @@ class Solver {
 
       // Since we process the solutions from lowest cost up, as soon as we find
       // a valid one that fits, it's the best.
-      if (solution.score.isValid) {
-        if (solution.score.overflow == 0) return solution;
+      if (solution.isValid) {
+        if (solution.overflow == 0) return solution;
 
-        if (solution.score.overflow < best.score.overflow) best = solution;
+        if (solution.overflow < best.overflow) best = solution;
       }
 
       // Otherwise, try to expand the solution to explore different splitting
