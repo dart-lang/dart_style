@@ -65,3 +65,19 @@ class Foo {
   abstract SuperLongTypeAnnotation
   field;
 }
+>>> Constant.
+class Foo {
+  static  const  uptyped  =  123  ;
+  static  const  String  typed  =  'string'  ;
+
+  const  uptypedInstance  =  123  ;
+  const  StringInstance  typed  =  'string'  ;
+}
+<<<
+class Foo {
+  static const uptyped = 123;
+  static const String typed = 'string';
+
+  const uptypedInstance = 123;
+  const StringInstance typed = 'string';
+}
