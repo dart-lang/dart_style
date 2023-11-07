@@ -158,6 +158,39 @@ mixin PieceFactory implements CommentWriter {
     }
   }
 
+  /// Creates a function, method, getter, or setter declaration.
+  ///
+  /// If [modifierKeyword] is given, it should be the `static` or `abstract`
+  /// modifier on a method declaration. If [operatorKeyword] is given, it
+  /// should be the `operator` keyword on an operator declaration. If
+  /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
+  /// getter or setter declaration.
+  void createFunction(
+      {Token? externalKeyword,
+      Token? modifierKeyword,
+      AstNode? returnType,
+      Token? operatorKeyword,
+      Token? propertyKeyword,
+      required Token name,
+      TypeParameterList? typeParameters,
+      FormalParameterList? parameters,
+      required FunctionBody body}) {
+    modifier(externalKeyword);
+    modifier(modifierKeyword);
+
+    Piece? returnTypePiece;
+    if (returnType != null) {
+      visit(returnType);
+      returnTypePiece = pieces.split();
+    }
+
+    modifier(operatorKeyword);
+    modifier(propertyKeyword);
+    token(name);
+
+    finishFunction(returnTypePiece, typeParameters, parameters, body);
+  }
+
   /// Creates a function type or function-typed formal.
   void createFunctionType(
       TypeAnnotation? returnType,
@@ -424,7 +457,6 @@ mixin PieceFactory implements CommentWriter {
       List<AstNode> members,
       Token rightBracket) {
     if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
-    if (members.isNotEmpty) throw UnimplementedError('Type members.');
 
     modifiers.forEach(modifier);
     token(keyword);
@@ -483,7 +515,7 @@ mixin PieceFactory implements CommentWriter {
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
-        style: const ListStyle(commas: Commas.nonTrailing, splitCost: 2));
+        style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3));
   }
 
   /// Writes the parts of a formal parameter shared by all formal parameter
@@ -492,7 +524,7 @@ mixin PieceFactory implements CommentWriter {
     if (parameter.metadata.isNotEmpty) throw UnimplementedError();
 
     modifier(parameter.requiredKeyword);
-    if (parameter.covariantKeyword != null) throw UnimplementedError();
+    modifier(parameter.covariantKeyword);
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
@@ -565,24 +597,25 @@ mixin PieceFactory implements CommentWriter {
   /// Finishes writing a named function declaration or anonymous function
   /// expression after the return type (if any) and name (if any) has been
   /// written.
-  void finishFunction(Piece? returnType, FunctionExpression function) {
-    visit(function.typeParameters);
-    visit(function.parameters);
+  void finishFunction(Piece? returnType, TypeParameterList? typeParameters,
+      FormalParameterList? parameters, FunctionBody body) {
+    visit(typeParameters);
+    visit(parameters);
 
-    Piece parameters;
-    Piece? body;
-    if (function.body case EmptyFunctionBody body) {
+    Piece parametersPiece;
+    Piece? bodyPiece;
+    if (body is EmptyFunctionBody) {
       // If the body is just `;`, then don't allow a space or split before the
       // semicolon by making it part of the parameters piece.
       token(body.semicolon);
-      parameters = pieces.split();
+      parametersPiece = pieces.split();
     } else {
-      parameters = pieces.split();
-      visit(function.body);
-      body = pieces.take();
+      parametersPiece = pieces.split();
+      visit(body);
+      bodyPiece = pieces.take();
     }
 
-    pieces.give(FunctionPiece(returnType, parameters, body));
+    pieces.give(FunctionPiece(returnType, parametersPiece, bodyPiece));
   }
 
   /// Writes an optional modifier that precedes other code.

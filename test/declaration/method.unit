@@ -1,0 +1,123 @@
+40 columns                              |
+### Methods are formatted using the same code as function declarations, so most
+### of the tests are in function/. These tests just ensure that everything still
+### works inside a type declaration and test the features that can only be used
+### inside a type, like `covariant`.
+>>> Empty block body.
+class A {void x(){}}
+<<<
+class A {
+  void x() {}
+}
+>>> Non-empty block body.
+class A {void x(){body;}}
+<<<
+class A {
+  void x() {
+    body;
+  }
+}
+>>> Expression body.
+class A{int x()=>42+3;}
+<<<
+class A {
+  int x() => 42 + 3;
+}
+>>> Static method.
+class A{static bool x(){return true;}}
+<<<
+class A {
+  static bool x() {
+    return true;
+  }
+}
+>>> Covariant.
+class A {
+  pos(    covariant  int a,covariant    b  );
+  opt([ covariant int a,covariant    b  ]);
+  named({ covariant int a,covariant    b  });
+  fn(     covariant  int f(bool b));
+}
+<<<
+class A {
+  pos(covariant int a, covariant b);
+  opt([covariant int a, covariant b]);
+  named({covariant int a, covariant b});
+  fn(covariant int f(bool b));
+}
+>>> Split before `covariant`.
+class A {
+  longMethod(covariant parameterNameHere) {}
+}
+<<<
+class A {
+  longMethod(
+    covariant parameterNameHere,
+  ) {}
+}
+>>> Split before `covariant` with multiple parameters.
+class A {
+  longMethod(covariant first, second, covariant int third(parameter), fourth) {}
+}
+<<<
+class A {
+  longMethod(
+    covariant first,
+    second,
+    covariant int third(parameter),
+    fourth,
+  ) {}
+}
+>>> Don't split after `covariant`.
+class A {
+  longMethod(covariant int veryLongParameterNameWow) {}
+}
+<<<
+class A {
+  longMethod(
+    covariant int
+    veryLongParameterNameWow,
+  ) {}
+}
+>>> Required covariant parameter.
+class A {
+f({   required    covariant   int a}) {}
+}
+<<<
+class A {
+  f({required covariant int a}) {}
+}
+>>> Don't split between `required` and `covariant`.
+class A {
+  longMethod({required covariant int veryLongParameterNameWow}) {}
+}
+<<<
+class A {
+  longMethod({
+    required covariant int
+    veryLongParameterNameWow,
+  }) {}
+}
+>>> Getter in type.
+class A {
+  int get instanceProperty => 1;
+  static String get classProperty => "value";
+}
+<<<
+class A {
+  int get instanceProperty => 1;
+  static String get classProperty =>
+      "value";
+}
+>>> Setter in type.
+class A {
+  set instanceProperty(int value) {}
+  static set classProperty(String value) {}
+}
+<<<
+class A {
+  set instanceProperty(int value) {}
+  static set classProperty(
+    String value,
+  ) {}
+}

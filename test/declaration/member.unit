@@ -1,0 +1,41 @@
+40 columns                              |
+### Tests of mixed kinds of members in a declaration.
+>>> Insert a blank line after non-empty block-bodied members.
+class Foo {
+var a = 1; b() {;} c() => null; get d {;} get e => null; set f(value) {;
+} set g(value) => null; var h = 1;}
+<<<
+class Foo {
+  var a = 1;
+  b() {
+    ;
+  }
+
+  c() => null;
+  get d {
+    ;
+  }
+
+  get e => null;
+  set f(value) {
+    ;
+  }
+
+  set g(value) => null;
+  var h = 1;
+}
+>>> No blank line required after empty block-bodied members.
+class Foo {
+var a = 1; b() {} c() => null; get d {} get e => null; set f(value) {
+} set g(value) => null; var h = 1;}
+<<<
+class Foo {
+  var a = 1;
+  b() {}
+  c() => null;
+  get d {}
+  get e => null;
+  set f(value) {}
+  set g(value) => null;
+  var h = 1;
+}

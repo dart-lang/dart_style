@@ -1,0 +1,6 @@
+40 columns                              |
+>>> Split after `set`.
+VeryLongTypeAnnotation set veryLongSetter(v) {}
+<<<
+VeryLongTypeAnnotation
+set veryLongSetter(v) {}

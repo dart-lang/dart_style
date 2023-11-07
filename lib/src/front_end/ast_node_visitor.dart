@@ -415,7 +415,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFieldDeclaration(FieldDeclaration node) {
-    throw UnimplementedError();
+    modifier(node.externalKeyword);
+    modifier(node.staticKeyword);
+    modifier(node.abstractKeyword);
+    modifier(node.covariantKeyword);
+    visit(node.fields);
+    token(node.semicolon);
   }
 
   @override
@@ -556,19 +561,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFunctionDeclaration(FunctionDeclaration node) {
-    modifier(node.externalKeyword);
-
-    Piece? returnType;
-    if (node.returnType case var returnTypeNode?) {
-      visit(returnTypeNode);
-      returnType = pieces.split();
-    }
-
-    // TODO(tall): Get or set keywords for getters and setters.
-    if (node.propertyKeyword != null) throw UnimplementedError();
-    token(node.name);
-
-    finishFunction(returnType, node.functionExpression);
+    createFunction(
+        externalKeyword: node.externalKeyword,
+        returnType: node.returnType,
+        propertyKeyword: node.propertyKeyword,
+        name: node.name,
+        typeParameters: node.functionExpression.typeParameters,
+        parameters: node.functionExpression.parameters,
+        body: node.functionExpression.body);
   }
 
   @override
@@ -578,7 +578,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitFunctionExpression(FunctionExpression node) {
-    finishFunction(null, node);
+    finishFunction(null, node.typeParameters, node.parameters, node.body);
   }
 
   @override
@@ -786,7 +786,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMethodDeclaration(MethodDeclaration node) {
-    throw UnimplementedError();
+    createFunction(
+        externalKeyword: node.externalKeyword,
+        modifierKeyword: node.modifierKeyword,
+        returnType: node.returnType,
+        operatorKeyword: node.operatorKeyword,
+        propertyKeyword: node.propertyKeyword,
+        name: node.name,
+        typeParameters: node.typeParameters,
+        parameters: node.parameters,
+        body: node.body);
   }
 
   @override
@@ -1209,6 +1218,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
+    modifier(node.externalKeyword);
     visit(node.variables);
     token(node.semicolon);
   }

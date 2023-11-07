@@ -9,6 +9,8 @@ import 'piece.dart';
 ///
 /// Handles splitting between the return type and the rest of the function.
 class FunctionPiece extends Piece {
+  static const _splitAfterReturnType = State(1, cost: 2);
+
   /// The return type annotation, if any.
   final Piece? _returnType;
 
@@ -22,20 +24,21 @@ class FunctionPiece extends Piece {
   FunctionPiece(this._returnType, this._signature, [this._body]);
 
   @override
-  List<State> get additionalStates => [if (_returnType != null) State.split];
+  List<State> get additionalStates =>
+      [if (_returnType != null) _splitAfterReturnType];
 
   @override
   void format(CodeWriter writer, State state) {
     if (_returnType case var returnType?) {
       // A split inside the return type forces splitting after the return type.
-      writer.setAllowNewlines(state == State.split);
+      writer.setAllowNewlines(state == _splitAfterReturnType);
 
       writer.format(returnType);
 
       // A split in the type parameters or parameters does not force splitting
       // after the return type.
       writer.setAllowNewlines(true);
-      writer.splitIf(state == State.split);
+      writer.splitIf(state == _splitAfterReturnType);
     }
 
     writer.format(_signature);

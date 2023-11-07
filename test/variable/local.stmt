@@ -263,3 +263,13 @@ var a = 1,
       element,
       element,
     ];
+>>> Late local variable.
+{
+  late var x = 1;
+  late int y = 2;
+}
+<<<
+{
+  late var x = 1;
+  late int y = 2;
+}
