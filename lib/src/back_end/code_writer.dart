@@ -55,7 +55,7 @@ class CodeWriter {
   /// and then unwind that as child pieces are completed.
   final List<_PieceOptions> _pieceOptions = [_PieceOptions(0, true)];
 
-  /// True if we have already found the first line where whose piece should be
+  /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
   ///
   /// This is the first line that either overflows or contains an invalid
