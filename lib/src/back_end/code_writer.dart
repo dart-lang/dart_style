@@ -148,15 +148,8 @@ class CodeWriter {
 
     // If we haven't found an overflowing line yet, then this line might be one
     // so keep track of the pieces we've encountered.
-    if (!_foundExpandLine) {
-      // TODO(perf): This [addAll()] call might be slow. If each Piece had a
-      // reference to the parent piece that owned it, then we could maintain
-      // just the set of leaf pieces that occurred on the line and then expand
-      // it out to the full list of parent pieces too only at the point that
-      // we know we have an overflowing line.
-      if (_currentUnsolvedPieces.isNotEmpty) {
-        _nextPieceToExpand = _currentUnsolvedPieces.first;
-      }
+    if (!_foundExpandLine && _currentUnsolvedPieces.isNotEmpty) {
+      _nextPieceToExpand = _currentUnsolvedPieces.first;
     }
   }
 

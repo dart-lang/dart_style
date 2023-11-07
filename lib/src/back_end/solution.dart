@@ -66,7 +66,7 @@ class Solution implements Comparable<Solution> {
   /// solution.
   final bool isValid;
 
-  /// The number of characters that do not fit inside the page width.
+  /// The total number of characters that do not fit inside the page width.
   final int overflow;
 
   /// The amount of penalties applied based on the chosen line splits.
@@ -154,13 +154,6 @@ class Solution implements Comparable<Solution> {
   /// code.
   @override
   int compareTo(Solution other) {
-    // TODO(perf): This check is necessary to not make some of the tests not
-    // timeout, but I'm not sure why. Investigate what this does and if it's
-    // still necessary once other optimizations are in place.
-    // An invalid solution is worse than all others.
-    if (!isValid) return 1;
-    if (!other.isValid) return -1;
-
     // Even though overflow is "worse" than cost, we order in terms of cost
     // because a solution with overflow may lead to a low-cost solution without
     // overflow, so we want to explore in cost order.
