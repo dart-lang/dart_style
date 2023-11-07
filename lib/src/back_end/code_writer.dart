@@ -1,7 +1,6 @@
 // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../constants.dart';
 import '../piece/piece.dart';
 import 'solution.dart';
 
@@ -54,7 +53,39 @@ class CodeWriter {
   ///
   /// This is used to increase the cumulative nesting as we recurse into pieces
   /// and then unwind that as child pieces are completed.
-  final List<_PieceOptions> _pieceOptions = [_PieceOptions(0, 0, true)];
+  final List<_PieceOptions> _pieceOptions = [_PieceOptions(0, true)];
+
+  /// Whether we have already found the first line where whose piece should be
+  /// used to expand further solutions.
+  ///
+  /// This is the first line that either overflows or contains an invalid
+  /// newline. When expanding solutions, we use the first solvable piece on
+  /// this line.
+  bool _foundExpandLine = false;
+
+  /// The first solvable piece on the first overflowing or invalid line, if
+  /// we've found one.
+  ///
+  /// A piece is "solvable" if we haven't already bound it to a state and there
+  /// are multiple states it accepts. This is the piece whose states will be
+  /// bound when we expand the [Solution] that this [CodeWriter] is building
+  /// into further solutions.
+  ///
+  /// If [_foundExpandLine] is `false`, then this is the first solvable piece
+  /// that has written text to the current line. It may not actually be an
+  /// expand piece. We don't know until we reach the end of the line to see if
+  /// it overflows or is invalid. If the line is OK, then [_nextPieceToExpand]
+  /// is cleared when the next line begins. If [_foundExpandLine] is `true`,
+  /// then this known to be the piece that will be expanded next for this
+  /// solution.
+  Piece? _nextPieceToExpand;
+
+  /// The stack of solvable pieces currently being formatted.
+  ///
+  /// We use this to track which pieces are in play when text is written to the
+  /// current line so that we know which piece should be expanded in the next
+  /// solution if the line ends up overflowing.
+  final List<Piece> _currentUnsolvedPieces = [];
 
   /// The options for the current innermost piece being formatted.
   _PieceOptions get _options => _pieceOptions.last;
@@ -77,15 +108,10 @@ class CodeWriter {
   /// the final score.
   Solution finish() {
     _finishLine();
-    return Solution(
-        _pieceStates,
-        _buffer.toString(),
-        Score(
-            isValid: !_containsInvalidNewline,
-            overflow: _overflow,
-            cost: _cost),
-        _selectionStart,
-        _selectionEnd);
+
+    return Solution(_pieceStates, _buffer.toString(), _selectionStart,
+        _selectionEnd, _nextPieceToExpand,
+        isValid: !_containsInvalidNewline, overflow: _overflow, cost: _cost);
   }
 
   /// Notes that a newline has been written.
@@ -119,6 +145,12 @@ class CodeWriter {
 
     _buffer.write(text);
     _column += text.length;
+
+    // If we haven't found an overflowing line yet, then this line might be one
+    // so keep track of the pieces we've encountered.
+    if (!_foundExpandLine && _currentUnsolvedPieces.isNotEmpty) {
+      _nextPieceToExpand = _currentUnsolvedPieces.first;
+    }
   }
 
   /// Sets the number of spaces of indentation for code written by the current
@@ -127,24 +159,6 @@ class CodeWriter {
   /// Replaces any previous indentation set by this piece.
   void setIndent(int indent) {
     _options.indent = _pieceOptions[_pieceOptions.length - 2].indent + indent;
-  }
-
-  /// Increase the expression nesting of the current piece if [condition] is
-  /// `true`.
-  void nestIf(bool condition) {
-    if (!condition) return;
-
-    _options.nesting += Indent.expression;
-  }
-
-  /// Sets the number of spaces of expression nesting for code written by the
-  /// current piece to [nesting], relative to the nesting of the surrounding
-  /// piece.
-  ///
-  /// Replaces any previous nesting set by this piece.
-  void setNesting(int nesting) {
-    _options.nesting =
-        _pieceOptions[_pieceOptions.length - 2].nesting + nesting;
   }
 
   /// Inserts a newline if [condition] is true.
@@ -183,7 +197,7 @@ class CodeWriter {
     _buffer.writeln();
     if (blank) _buffer.writeln();
 
-    _column = _options.combinedIndentation;
+    _column = _options.indent;
     _buffer.write(' ' * _column);
   }
 
@@ -200,12 +214,10 @@ class CodeWriter {
     // be discarded.
     if (_containsInvalidNewline) return;
 
-    // TODO(tall): Sometimes, we'll want to reset the expression nesting for
-    // an inner piece, for when a block-like construct appears inside an
-    // expression. If it turns out that we don't actually need to handle indent
-    // and nesting separately here, then merge them into a single field.
-    _pieceOptions.add(_PieceOptions(
-        _options.indent, _options.nesting, _options.allowNewlines));
+    _pieceOptions.add(_PieceOptions(_options.indent, _options.allowNewlines));
+
+    var isUnsolved = !_pieceStates.isBound(piece) && piece.states.length > 1;
+    if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
     var state = _pieceStates.pieceState(piece);
 
@@ -215,6 +227,8 @@ class CodeWriter {
     // instead of passing in `this` so we can better control what state needs
     // to be used as the key in the memoization table.
     piece.format(this, state);
+
+    if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
     var childOptions = _pieceOptions.removeLast();
 
@@ -246,6 +260,19 @@ class CodeWriter {
     if (_column >= _pageWidth) {
       _overflow += _column - _pageWidth;
     }
+
+    // If we found a problematic line, and there is a piece on the line that
+    // we can try to split, then remember that piece so that the solution will
+    // expand it next.
+    if (!_foundExpandLine &&
+        _nextPieceToExpand != null &&
+        (_column > _pageWidth || _containsInvalidNewline)) {
+      // We found a problematic line, so remember it and the piece on it.
+      _foundExpandLine = true;
+    } else if (!_foundExpandLine) {
+      // This line was OK, so we don't need to expand the piece on it.
+      _nextPieceToExpand = null;
+    }
   }
 }
 
@@ -256,12 +283,6 @@ class _PieceOptions {
   /// initializers, `show` clauses, etc.).
   int indent;
 
-  /// The absolute number of spaces of indentation from wrapped expressions.
-  int nesting;
-
-  /// The total number of spaces of indentation.
-  int get combinedIndentation => indent + nesting;
-
   /// Whether newlines are allowed to occur.
   ///
   /// If a newline is written while this is `false`, the entire solution is
@@ -271,5 +292,5 @@ class _PieceOptions {
   /// Whether any newlines have occurred in this piece or any of its children.
   bool hasNewline = false;
 
-  _PieceOptions(this.indent, this.nesting, this.allowNewlines);
+  _PieceOptions(this.indent, this.allowNewlines);
 }

@@ -18,13 +18,18 @@ class TypePiece extends Piece {
   /// The `native` clause, if any, and the type body.
   final Piece _body;
 
-  TypePiece(this._header, this._clauses, this._body);
+  /// Whether the type has a `{ ... }` body or just a `;` at the end (for a
+  /// mixin application class).
+  final bool _hasBody;
+
+  TypePiece(this._header, this._clauses, this._body, {required bool hasBody})
+      : _hasBody = hasBody;
 
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_header);
     if (_clauses case var clauses?) writer.format(clauses);
-    writer.space();
+    if (_hasBody) writer.space();
     writer.format(_body);
   }
 

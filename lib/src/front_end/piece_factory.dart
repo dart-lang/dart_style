@@ -441,21 +441,26 @@ mixin PieceFactory implements CommentWriter {
     pieces.give(builder.build());
   }
 
-  /// Creates a class, enum, extension, etc. declaration with a body containing
-  /// members.
-  void createType(
-      NodeList<Annotation> metadata,
-      List<Token?> modifiers,
-      Token keyword,
-      Token name,
-      TypeParameterList? typeParameters,
+  /// Creates a class, enum, extension, mixin, or mixin application class
+  /// declaration.
+  ///
+  /// For all but a mixin application class, [body] should a record containing
+  /// the bracket delimiters and the list of member declarations for the type's
+  /// body.
+  ///
+  /// For mixin application classes, [body] is `null` and instead [equals],
+  /// [superclass], and [semicolon] are provided.
+  void createType(NodeList<Annotation> metadata, List<Token?> modifiers,
+      Token keyword, Token name,
+      {TypeParameterList? typeParameters,
+      Token? equals,
+      NamedType? superclass,
       ExtendsClause? extendsClause,
       WithClause? withClause,
       ImplementsClause? implementsClause,
       NativeClause? nativeClause,
-      Token leftBracket,
-      List<AstNode> members,
-      Token rightBracket) {
+      ({Token leftBracket, List<AstNode> members, Token rightBracket})? body,
+      Token? semicolon}) {
     if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
 
     modifiers.forEach(modifier);
@@ -463,6 +468,16 @@ mixin PieceFactory implements CommentWriter {
     space();
     token(name);
     visit(typeParameters);
+
+    // Mixin application classes have ` = Superclass` after the declaration
+    // name.
+    if (equals != null) {
+      space();
+      token(equals);
+      space();
+      visit(superclass);
+    }
+
     var header = pieces.split();
 
     var clauses = <ClausePiece>[];
@@ -502,10 +517,16 @@ mixin PieceFactory implements CommentWriter {
 
     visit(nativeClause);
     space();
-    createBody(leftBracket, members, rightBracket);
-    var body = pieces.take();
 
-    pieces.give(TypePiece(header, clausesPiece, body));
+    if (body != null) {
+      createBody(body.leftBracket, body.members, body.rightBracket);
+    } else {
+      token(semicolon);
+    }
+    var bodyPiece = pieces.take();
+
+    pieces.give(
+        TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null));
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
