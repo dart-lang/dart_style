@@ -69,3 +69,14 @@ function(
   longElement,
   longElement,
 ];
+>>> Prefer splitting parameters instead of after `=>`.
+LongReturnType function(parameter) => longFunctionBody;
+<<<
+LongReturnType function(
+  parameter,
+) => longFunctionBody;
+>>> Prefer splitting after `=>` instead of after return type.
+LongReturnType function() => longFunctionBody;
+<<<
+LongReturnType function() =>
+    longFunctionBody;

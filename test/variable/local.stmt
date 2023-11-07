@@ -263,3 +263,21 @@ var a = 1,
       element,
       element,
     ];
+>>> Late local variable.
+{
+  late var x = 1;
+  late int y = 2;
+}
+<<<
+{
+  late var x = 1;
+  late int y = 2;
+}
+>>> Constant.
+const  uptyped  =  123  ;
+<<<
+const uptyped = 123;
+>>>
+const  String  typed  =  'string'  ;
+<<<
+const String typed = 'string';

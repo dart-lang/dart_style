@@ -196,3 +196,25 @@ Function<Argument>(String)
 Function<Argument>(num)
 Function<Argument>(int)
 Function<Argument>(bool) longVariable;
+>>> Split before `required`.
+longMethod({required parameterNameHere}) {}
+<<<
+longMethod({
+  required parameterNameHere,
+}) {}
+>>> Split before `required` with multiple parameters.
+longMethod({required first, second, required int third(parameter), fourth}) {}
+<<<
+longMethod({
+  required first,
+  second,
+  required int third(parameter),
+  fourth,
+}) {}
+>>> Never split after `required`.
+longMethod({required int reallyLongParameterNameWow}) {}
+<<<
+longMethod({
+  required int
+  reallyLongParameterNameWow,
+}) {}

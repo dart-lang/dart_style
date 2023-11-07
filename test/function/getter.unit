@@ -1,0 +1,6 @@
+40 columns                              |
+>>> Split before `get`.
+VeryLongTypeAnnotation get veryLongGetter => null;
+<<<
+VeryLongTypeAnnotation
+get veryLongGetter => null;

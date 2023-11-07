@@ -13,3 +13,17 @@ SomeLongTypeName longVariable = longInitializer;
 <<<
 SomeLongTypeName longVariable =
     longInitializer;
+>>> Late top level variable.
+late var x = 1;
+late int y = 2;
+<<<
+late var x = 1;
+late int y = 2;
+>>> Constant.
+const  uptyped  =  123  ;
+<<<
+const uptyped = 123;
+>>>
+const  String  typed  =  'string'  ;
+<<<
+const String typed = 'string';

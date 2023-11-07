@@ -261,7 +261,11 @@ class CodeWriter {
       _overflow += _column - _pageWidth;
     }
 
+    // If we found a problematic line, and there is a piece on the line that
+    // we can try to split, then remember that piece so that the solution will
+    // expand it next.
     if (!_foundExpandLine &&
+        _nextPieceToExpand != null &&
         (_column > _pageWidth || _containsInvalidNewline)) {
       // We found a problematic line, so remember it and the piece on it.
       _foundExpandLine = true;

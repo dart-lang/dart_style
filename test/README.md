@@ -63,10 +63,12 @@ These tests are all run by `short_format_test.dart`.
 The newer tall style tests are:
 
 ```
-declaration/  - Typedef, class, enum, and extension declarations.
+declaration/  - Typedef, class, enum, extension, mixin, and member declarations.
+                Includes constructors, getters, setters, methods, and fields,
+                but not functions and variables, which are in their own
+                directories below.
 expression/   - Expressions.
 invocation/   - Function and member invocations.
-member/       - Constructor, method, field, getter, and setter declarations.
 selection/    - Test preserving selection information.
 statement/    - Statements.
 top_level/    - Top-level directives.

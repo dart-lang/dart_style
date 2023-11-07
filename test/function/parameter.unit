@@ -34,3 +34,7 @@ function(
   final y,
   final String z,
 ) {}
+>>> Required old style function typed parameter.
+f({   required    callback()}) {}
+<<<
+f({required callback()}) {}
