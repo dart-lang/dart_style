@@ -32,14 +32,18 @@ while (true) {
   continue someLabel;
 }
 >>> Yield.
-yield   i  ;
-<<<
-yield i;
->>> Yield*.
-int i(int n) sync* {
-  yield   *  i(  n -  1)   ;
+Stream<String> i(String n) async* {
+  yield   i   ;
 }
 <<<
-int i(int n) sync* {
+Stream<String> i(String n) async* {
+  yield i;
+}
+>>> Yield*.
+Stream<int> i(int n) async* {
+  yield * i (  n   - 1 )      ;
+}
+<<<
+Stream<int> i(int n) async* {
   yield* i(n - 1);
 }

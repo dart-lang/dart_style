@@ -1307,12 +1307,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitYieldStatement(YieldStatement node) {
     token(node.yieldKeyword);
-
-    if (node.star case var star?) {
-      token(star);
-      space();
-    }
-
+    token(node.star);
+    space();
     visit(node.expression);
     token(node.semicolon);
   }
