@@ -456,6 +456,7 @@ mixin PieceFactory implements CommentWriter {
       Token? equals,
       NamedType? superclass,
       ExtendsClause? extendsClause,
+      OnClause? onClause,
       WithClause? withClause,
       ImplementsClause? implementsClause,
       NativeClause? nativeClause,
@@ -500,6 +501,10 @@ mixin PieceFactory implements CommentWriter {
       typeClause(extendsClause.extendsKeyword, [extendsClause.superclass]);
     }
 
+    if (onClause != null) {
+      typeClause(onClause.onKeyword, onClause.superclassConstraints);
+    }
+
     if (withClause != null) {
       typeClause(withClause.withKeyword, withClause.mixinTypes);
     }
@@ -511,8 +516,8 @@ mixin PieceFactory implements CommentWriter {
 
     ClausesPiece? clausesPiece;
     if (clauses.isNotEmpty) {
-      clausesPiece =
-          ClausesPiece(clauses, allowLeadingClause: extendsClause != null);
+      clausesPiece = ClausesPiece(clauses,
+          allowLeadingClause: extendsClause != null || onClause != null);
     }
 
     visit(nativeClause);

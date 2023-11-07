@@ -829,7 +829,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMixinDeclaration(MixinDeclaration node) {
-    throw UnimplementedError();
+    createType(node.metadata, [node.baseKeyword], node.mixinKeyword, node.name,
+        typeParameters: node.typeParameters,
+        onClause: node.onClause,
+        implementsClause: node.implementsClause,
+        body: (
+          leftBracket: node.leftBracket,
+          members: node.members,
+          rightBracket: node.rightBracket
+        ));
   }
 
   @override

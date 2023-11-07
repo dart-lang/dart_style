@@ -1,0 +1,124 @@
+40 columns                              |
+>>> Unsplit on clause.
+mixin A on B {}
+<<<
+mixin A on B {}
+>>> Multiple unsplit types in on clause.
+mixin  M2  on  A  ,  B  ,  C  {  }
+<<<
+mixin M2 on A, B, C {}
+>>> Split at `on`.
+mixin SomeLongMixin on VeryLongBaseMixin {}
+<<<
+mixin SomeLongMixin
+    on VeryLongBaseMixin {}
+>>> Split multiple at `on`.
+mixin  LongMixin  on  SupertypeA  ,  SupertypeB  {  }
+<<<
+mixin LongMixin
+    on SupertypeA, SupertypeB {}
+>>> Split multiple on clause.
+mixin  M2  on  SupertypeA  ,  SupertypeB  ,  SupertypeC  {  }
+<<<
+mixin M2
+    on
+        SupertypeA,
+        SupertypeB,
+        SupertypeC {}
+>>> Unsplit implements clause.
+mixin A implements B {}
+<<<
+mixin A implements B {}
+>>> Unsplit multiple clauses.
+mixin A on B implements D {}
+<<<
+mixin A on B implements D {}
+>>> Split at `implements`.
+mixin SomeMixin implements VeryLongBaseMixin {}
+<<<
+mixin SomeMixin
+    implements VeryLongBaseMixin {}
+>>> Split at `implements` but not between interfaces.
+mixin SomeMixin implements Interface, AnotherOne {}
+<<<
+mixin SomeMixin
+    implements Interface, AnotherOne {}
+>>> Split at `implements` and interfaces.
+mixin SomeMixin implements Interface, Another, Third {}
+<<<
+mixin SomeMixin
+    implements
+        Interface,
+        Another,
+        Third {}
+>>> Split at `on` splits `implements` too.
+mixin AVeryLongSomeMixin on LongBaseMixin implements I {}
+<<<
+mixin AVeryLongSomeMixin
+    on LongBaseMixin
+    implements I {}
+>>>
+mixin AVeryLongSomeMixin on LongBaseMixin implements Interface {}
+<<<
+mixin AVeryLongSomeMixin
+    on LongBaseMixin
+    implements Interface {}
+>>> Can split `implements` clause without splitting `on`.
+mixin SomeMixin on A implements Type, Another {}
+<<<
+mixin SomeMixin on A
+    implements Type, Another {}
+>>>
+mixin SomeMixin on A implements Type, Another, Third, Fourth {}
+<<<
+mixin SomeMixin on A
+    implements
+        Type,
+        Another,
+        Third,
+        Fourth {}
+>>> Unsplit generic supermixin.
+mixin SomeMixin on C<int> {}
+<<<
+mixin SomeMixin on C<int> {}
+>>> Split before `on` on generic supermixin.
+mixin SomeMixin on Superclass<SomeLongmixin> {}
+<<<
+mixin SomeMixin
+    on Superclass<SomeLongmixin> {}
+>>> Split in generic supermixin.
+mixin SomeMixin on C<VeryLongType, AnotherLongType> {}
+<<<
+mixin SomeMixin
+    on
+        C<
+          VeryLongType,
+          AnotherLongType
+        > {}
+>>> Unsplit generic superinterface.
+mixin SomeMixin implements C<int> {}
+<<<
+mixin SomeMixin implements C<int> {}
+>>> Split before `implements` on generic superinterface.
+mixin SomeMixin implements C<SomeLongmixin> {}
+<<<
+mixin SomeMixin
+    implements C<SomeLongmixin> {}
+>>> Split in generic superinterface.
+mixin SomeMixin implements C<VeryLongType, AnotherLongType> {}
+<<<
+mixin SomeMixin
+    implements
+        C<
+          VeryLongType,
+          AnotherLongType
+        > {}
+>>> Split in generic `implements` clause does not force `on` clause to split.
+mixin C on A implements B<LongTypeArgument, AnotherLongType> {}
+<<<
+mixin C on A
+    implements
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        > {}
