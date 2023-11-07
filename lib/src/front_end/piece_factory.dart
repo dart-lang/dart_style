@@ -542,6 +542,10 @@ mixin PieceFactory implements CommentWriter {
   ///
   /// This method assumes the code to the left of the operator has already
   /// been visited.
+  ///
+  /// If [splitBeforeOperator] is `true`, then puts [operator] at the beginning
+  /// of the next line when it splits. Otherwise, puts the operator at the end
+  /// of the preceding line.
   void finishAssignment(Token operator, Expression rightHandSide,
       {bool splitBeforeOperator = false}) {
     Piece target;
