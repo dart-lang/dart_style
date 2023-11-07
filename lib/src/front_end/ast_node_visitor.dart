@@ -893,7 +893,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitOnClause(OnClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
