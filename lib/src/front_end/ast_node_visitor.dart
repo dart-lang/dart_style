@@ -147,7 +147,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitAwaitExpression(AwaitExpression node) {
-    throw UnimplementedError();
+    token(node.awaitKeyword);
+    space();
+    visit(node.expression);
   }
 
   @override
