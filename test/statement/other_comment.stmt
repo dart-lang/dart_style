@@ -35,3 +35,19 @@ while (true) {
 while (true) {
   break; // comment
 }
+>>> Yield with comment after semicolon.
+Stream<String> i(String n) async* {
+  yield   i   ;     // comment
+}
+<<<
+Stream<String> i(String n) async* {
+  yield i; // comment
+}
+>>> Yield* with comment after semicolon.
+Stream<int> i(int n) async* {
+  yield  *   i( x )    ;    // comment
+}
+<<<
+Stream<int> i(int n) async* {
+  yield* i(x); // comment
+}
