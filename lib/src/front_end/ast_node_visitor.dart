@@ -829,7 +829,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMixinDeclaration(MixinDeclaration node) {
-    throw UnimplementedError();
+    createType(node.metadata, [node.baseKeyword], node.mixinKeyword, node.name,
+        typeParameters: node.typeParameters,
+        onClause: node.onClause,
+        implementsClause: node.implementsClause,
+        body: (
+          leftBracket: node.leftBracket,
+          members: node.members,
+          rightBracket: node.rightBracket
+        ));
   }
 
   @override
@@ -885,7 +893,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitOnClause(OnClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by PieceFactory.createType().');
   }
 
   @override
