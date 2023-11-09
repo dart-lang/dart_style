@@ -421,6 +421,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     space();
 
     if (node.members.isEmpty) {
+      // If there are no members, format the constants like a delimited list.
+      // This keeps the enum declaration on one line if it fits.
       var builder = DelimitedListBuilder(
           this,
           const ListStyle(
@@ -431,7 +433,50 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
       pieces.give(builder.build());
     } else {
-      throw UnimplementedError();
+      // If there are members, format it like a block where each constant and
+      // member is on its own line.
+      token(node.leftBracket);
+      var leftBracketPiece = pieces.split();
+
+      var sequence = SequenceBuilder(this);
+      for (var constant in node.constants) {
+        sequence.addCommentsBefore(constant.firstNonCommentToken);
+        visit(constant);
+
+        if (constant != node.constants.last) {
+          commaAfter(constant);
+        } else {
+          // Discard the trailing comma if there is one since there is a
+          // semicolon to use as the separator, but preserve any comments before
+          // the discarded comma.
+          var trailingComma = constant.commaAfter;
+          if (trailingComma != null) writeCommentsBefore(trailingComma);
+
+          token(node.semicolon);
+        }
+
+        sequence.add(pieces.split());
+      }
+
+      // Insert a blank line between the constants and members.
+      sequence.addBlank();
+
+      for (var node in node.members) {
+        sequence.visit(node);
+
+        // If the node has a non-empty braced body, then require a blank line
+        // between it and the next node.
+        if (node.hasNonEmptyBody) sequence.addBlank();
+      }
+
+      // Place any comments before the "}" inside the block.
+      sequence.addCommentsBefore(node.rightBracket);
+
+      token(node.rightBracket);
+      var rightBracketPiece = pieces.take();
+
+      pieces.give(
+          BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece));
     }
   }
 

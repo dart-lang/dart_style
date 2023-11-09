@@ -87,7 +87,6 @@ class SequenceBuilder {
       if (_elements.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous token.
         _visitor.space();
-
         _visitor.pieces.writeComment(comment, hanging: true);
       } else {
         // Write the comment as its own sequence piece.
