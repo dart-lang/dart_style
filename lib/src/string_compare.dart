@@ -19,6 +19,9 @@
 /// add and remove trailing commas. It treats, `[`, `]`, `{`, and `}` as
 /// whitespace characters because the formatter may move a comment if it
 /// appears near the closing delimiter of an optional parameter section.
+///
+/// It treats `;` as whitespace because a trailing `;` inside an enum
+/// declaration that has no members will be removed.
 bool _isWhitespace(int c) {
   // Not using a set or something more elegant because this code is on the hot
   // path and this large expression is significantly faster than a set lookup.
@@ -27,6 +30,7 @@ bool _isWhitespace(int c) {
       c == 0x005d || // Treat `]` as "whitespace".
       c == 0x007b || // Treat `{` as "whitespace".
       c == 0x007d || // Treat `}` as "whitespace".
+      c == 0x003b || // Treat `;` as "whitespace".
       c >= 0x0009 && c <= 0x000d || // Control characters.
       c == 0x0020 || // SPACE.
       c == 0x0085 || // Control characters.

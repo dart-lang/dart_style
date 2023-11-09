@@ -114,8 +114,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
-    throw UnimplementedError();
+  void visitArgumentList(ArgumentList node) {
+    createList(
+        leftBracket: node.leftParenthesis,
+        node.arguments,
+        rightBracket: node.rightParenthesis);
   }
 
   @override
@@ -400,12 +403,36 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    throw UnimplementedError();
+    token(node.name);
+    if (node.arguments case var arguments?) {
+      visit(arguments.typeArguments);
+      visit(arguments.argumentList);
+    }
   }
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
-    throw UnimplementedError();
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+
+    token(node.enumKeyword);
+    space();
+    token(node.name);
+    visit(node.typeParameters);
+    space();
+
+    if (node.members.isEmpty) {
+      var builder = DelimitedListBuilder(
+          this,
+          const ListStyle(
+              spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
+      builder.leftBracket(node.leftBracket);
+      node.constants.forEach(builder.visit);
+
+      builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
+      pieces.give(builder.build());
+    } else {
+      throw UnimplementedError();
+    }
   }
 
   @override
@@ -750,7 +777,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       visit(constructor.name);
     }
 
-    finishCall(node.argumentList);
+    visit(node.argumentList);
 
     // If there was a prefix or constructor name, then make a splittable piece.
     if (operations.isNotEmpty) {
@@ -876,7 +903,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     visit(node.methodName);
     visit(node.typeArguments);
-    finishCall(node.argumentList);
+    visit(node.argumentList);
   }
 
   @override

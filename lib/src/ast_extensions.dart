@@ -5,6 +5,21 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 extension AstNodeExtensions on AstNode {
+  /// The first token at the beginning of this AST node, not including any
+  /// tokens for leading doc comments.
+  ///
+  /// If [node] is an [AnnotatedNode], then [beginToken] includes the
+  /// leading doc comment, which we want to handle separately. So, in that
+  /// case, explicitly skip past the doc comment to the subsequent metadata
+  /// (if there is any), or the beginning of the code.
+  Token get firstNonCommentToken {
+    return switch (this) {
+      AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
+      AnnotatedNode(firstTokenAfterCommentAndMetadata: var token) => token,
+      _ => beginToken
+    };
+  }
+
   /// The comma token immediately following this if there is one, or `null`.
   Token? get commaAfter {
     var next = endToken.next!;

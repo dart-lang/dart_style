@@ -89,4 +89,10 @@ void main() {
     expect(equalIgnoringWhitespace('a}b}{c}{{}', 'abc'), isTrue);
     expect(equalIgnoringWhitespace('a}b}{c}{{}', 'cba'), isFalse);
   });
+
+  test('ignore differences from ";"', () {
+    expect(equalIgnoringWhitespace('enum E { a; }', 'enum E { a }'), isTrue);
+    expect(equalIgnoringWhitespace('a;b;;c;;', 'abc'), isTrue);
+    expect(equalIgnoringWhitespace('a;b;c;;', 'cba'), isFalse);
+  });
 }
