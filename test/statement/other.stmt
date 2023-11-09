@@ -47,3 +47,11 @@ Stream<int> i(int n) async* {
 Stream<int> i(int n) async* {
   yield* i(n - 1);
 }
+>>> Await.
+foo() async {
+  await i (  1 + 2   )   ;
+}
+<<<
+foo() async {
+  await i(1 + 2);
+}

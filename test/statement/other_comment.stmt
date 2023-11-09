@@ -51,3 +51,11 @@ Stream<int> i(int n) async* {
 Stream<int> i(int n) async* {
   yield* i(x); // comment
 }
+>>> Await with comment after semicolon.
+foo() async {
+  await i (  1 + 2   )   ;     // comment
+}
+<<<
+foo() async {
+  await i(1 + 2); // comment
+}
