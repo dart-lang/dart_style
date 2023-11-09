@@ -433,7 +433,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitExtensionDeclaration(ExtensionDeclaration node) {
-    throw UnimplementedError();
+    createType(node.metadata, const [], node.extensionKeyword, node.name,
+        typeParameters: node.typeParameters,
+        onType: (node.onKeyword, node.extendedType),
+        body: (
+          leftBracket: node.leftBracket,
+          members: node.members,
+          rightBracket: node.rightBracket
+        ));
   }
 
   @override

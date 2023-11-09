@@ -450,8 +450,11 @@ mixin PieceFactory implements CommentWriter {
   ///
   /// For mixin application classes, [body] is `null` and instead [equals],
   /// [superclass], and [semicolon] are provided.
+  ///
+  /// If the type is an extension, then [onType] is a record containing the
+  /// `on` keyword and the on type.
   void createType(NodeList<Annotation> metadata, List<Token?> modifiers,
-      Token keyword, Token name,
+      Token keyword, Token? name,
       {TypeParameterList? typeParameters,
       Token? equals,
       NamedType? superclass,
@@ -460,14 +463,14 @@ mixin PieceFactory implements CommentWriter {
       WithClause? withClause,
       ImplementsClause? implementsClause,
       NativeClause? nativeClause,
+      (Token, TypeAnnotation)? onType,
       ({Token leftBracket, List<AstNode> members, Token rightBracket})? body,
       Token? semicolon}) {
     if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
 
     modifiers.forEach(modifier);
     token(keyword);
-    space();
-    token(name);
+    token(name, before: space);
     visit(typeParameters);
 
     // Mixin application classes have ` = Superclass` after the declaration
@@ -512,6 +515,10 @@ mixin PieceFactory implements CommentWriter {
     if (implementsClause != null) {
       typeClause(
           implementsClause.implementsKeyword, implementsClause.interfaces);
+    }
+
+    if (onType case (var onKeyword, var onType)?) {
+      typeClause(onKeyword, [onType]);
     }
 
     ClausesPiece? clausesPiece;

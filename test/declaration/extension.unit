@@ -1,0 +1,69 @@
+40 columns                              |
+>>> Empty body.
+extension  A  on  B  {
+
+
+  }
+<<<
+extension A on B {}
+>>> Members.
+extension A on B{z() => 0;f() { body; }}
+<<<
+extension A on B {
+  z() => 0;
+  f() {
+    body;
+  }
+}
+>>> Insert blank line before and after extension.
+var x = 1;
+extension A on B {}
+var y = 2;
+<<<
+var x = 1;
+
+extension A on B {}
+
+var y = 2;
+>>> Unsplit type parameters.
+extension  A  <  T  ,  S  >  on  B  {}
+<<<
+extension A<T, S> on B {}
+>>> Split type parameters.
+extension Extension<LongTypeParameter, Another> on BaseClass {}
+<<<
+extension Extension<
+  LongTypeParameter,
+  Another
+> on BaseClass {}
+>>> Unnamed.
+extension on String {}
+<<<
+extension on String {}
+>>> Unnamed with type parameters.
+extension  <  T  ,  S  >  on  B {}
+<<<
+extension<T, S> on B {}
+>>> Split at `on`.
+extension SomeExtension on VeryLongClass {}
+<<<
+extension SomeExtension
+    on VeryLongClass {}
+>>> Unsplit generic on type.
+extension SomeExtension on C<int> {}
+<<<
+extension SomeExtension on C<int> {}
+>>> Split before `on` on generic on type.
+extension SomeExtension on C<SomeLongClass> {}
+<<<
+extension SomeExtension
+    on C<SomeLongClass> {}
+>>> Split in generic on type.
+extension SomeExtension on C<VeryLongType, AnotherLongType> {}
+<<<
+extension SomeExtension
+    on
+        C<
+          VeryLongType,
+          AnotherLongType
+        > {}
