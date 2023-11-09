@@ -10,7 +10,8 @@ import 'piece.dart';
 ///
 /// This piece is also used for map entries and named arguments where `:` is
 /// followed by an expression or element because those also want to support the
-/// "block-like" formatting of delimited expressions on the right.
+/// "block-like" formatting of delimited expressions on the right, and for the
+/// `in` clause in for-in loops.
 ///
 /// These constructs can be formatted three ways:
 ///
@@ -42,18 +43,21 @@ class AssignPiece extends Piece {
   /// This is only allowed when the value is a delimited expression.
   static const State _insideValue = State(1);
 
-  /// Split after the `=` and allow splitting inside the value.
+  /// Split at the operator and allow splitting inside the value.
   ///
   /// This is more costly because, when it's possible to split inside a
   /// delimited value, we want to prefer that.
-  static const State _atEquals = State(2, cost: 2);
+  static const State _atOperator = State(2, cost: 2);
 
-  /// The left-hand side of the `=` and the `=` itself.
+  /// The left-hand side of the operation. Includes the operator unless it is
+  /// `in`.
   final Piece target;
 
-  /// The right-hand side of the `=`.
+  /// The right-hand side of the operation.
   final Piece value;
 
+  /// Whether the right-hand side is a delimited expression that should receive
+  /// block-like formatting.
   final bool _isValueDelimited;
 
   AssignPiece(this.target, this.value, {required bool isValueDelimited})
@@ -104,7 +108,7 @@ class AssignPiece extends Piece {
 
   @override
   List<State> get additionalStates =>
-      [if (_isValueDelimited) _insideValue, _atEquals];
+      [if (_isValueDelimited) _insideValue, _atOperator];
 
   @override
   void format(CodeWriter writer, State state) {
@@ -116,7 +120,7 @@ class AssignPiece extends Piece {
     if (state != _insideValue) writer.setIndent(Indent.expression);
 
     writer.format(target);
-    writer.splitIf(state == _atEquals);
+    writer.splitIf(state == _atOperator);
     writer.format(value);
   }
 

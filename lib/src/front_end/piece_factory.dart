@@ -561,22 +561,38 @@ mixin PieceFactory implements CommentWriter {
     if (body.keyword != null) space();
   }
 
-  /// Creates a [Piece] for some code followed by an `=` and an expression in
-  /// any place where an `=` appears:
+  /// Creates a [Piece] with "assignment-like" splitting.
+  ///
+  /// This is used, obviously, for assignments and variable declarations to
+  /// handle splitting after the `=`, but is also used in any context where an
+  /// expression follows something that it "defines" or "initializes":
   ///
   /// * Assignment
   /// * Variable declaration
   /// * Constructor initializer
+  /// * Expression (`=>`) function body
+  /// * Named argument or named record field (`:`)
+  /// * Map entry (`:`)
+  /// * For-in loop iterator (`in`)
   ///
-  /// This is also used for map literal entries and named arguments which are
-  /// also sort of like bindings. In that case, [operator] is the `:`.
-  ///
-  /// This method assumes the code to the left of the `=` or `:` has already
+  /// This method assumes the code to the left of the operator has already
   /// been visited.
-  void finishAssignment(Token operator, Expression rightHandSide) {
-    if (operator.type == TokenType.EQ) space();
-    token(operator);
-    var target = pieces.split();
+  ///
+  /// If [splitBeforeOperator] is `true`, then puts [operator] at the beginning
+  /// of the next line when it splits. Otherwise, puts the operator at the end
+  /// of the preceding line.
+  void finishAssignment(Token operator, Expression rightHandSide,
+      {bool splitBeforeOperator = false}) {
+    Piece target;
+    if (splitBeforeOperator) {
+      target = pieces.split();
+      token(operator);
+      space();
+    } else {
+      if (operator.type == TokenType.EQ) space();
+      token(operator);
+      target = pieces.split();
+    }
 
     visit(rightHandSide);
 
@@ -592,32 +608,6 @@ mixin PieceFactory implements CommentWriter {
         leftBracket: argumentList.leftParenthesis,
         argumentList.arguments,
         rightBracket: argumentList.rightParenthesis);
-  }
-
-  /// Writes the condition and updaters parts of a [ForParts] after the
-  /// subclass's initializer clause has been written.
-  void finishForParts(ForParts forLoopParts, DelimitedListBuilder partsList) {
-    token(forLoopParts.leftSeparator);
-    partsList.add(pieces.split());
-
-    // The condition clause.
-    if (forLoopParts.condition case var conditionExpression?) {
-      partsList.addCommentsBefore(conditionExpression.beginToken);
-      visit(conditionExpression);
-    } else {
-      partsList.addCommentsBefore(forLoopParts.rightSeparator);
-    }
-
-    token(forLoopParts.rightSeparator);
-    partsList.add(pieces.split());
-
-    // The update clauses.
-    if (forLoopParts.updaters.isNotEmpty) {
-      partsList.addCommentsBefore(forLoopParts.updaters.first.beginToken);
-      createList(forLoopParts.updaters,
-          style: const ListStyle(commas: Commas.nonTrailing));
-      partsList.add(pieces.split());
-    }
   }
 
   /// Finishes writing a named function declaration or anonymous function

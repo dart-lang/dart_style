@@ -339,7 +339,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitDeclaredIdentifier(DeclaredIdentifier node) {
-    throw UnimplementedError();
+    modifier(node.keyword);
+    visit(node.type, after: space);
+    token(node.name);
   }
 
   @override
@@ -481,66 +483,114 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitForStatement(ForStatement node) {
+    modifier(node.awaitKeyword);
     token(node.forKeyword);
     var forKeyword = pieces.split();
 
-    // Treat the for loop parts sort of as an argument list where each clause
-    // is a separate argument. This means that when they split, they split like:
-    //
-    // ```
-    // for (
-    //   initializerClause;
-    //   conditionClause;
-    //   incrementClause
-    // ) {
-    //   body;
-    // }
-    // ```
-    var partsList =
-        DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
-    partsList.leftBracket(node.leftParenthesis);
-
-    var forLoopParts = node.forLoopParts;
-    switch (forLoopParts) {
+    Piece forPartsPiece;
+    switch (node.forLoopParts) {
       // Edge case: A totally empty for loop is formatted just as `(;;)` with
       // no splits or spaces anywhere.
       case ForPartsWithExpression(
-            initialization: null,
-            leftSeparator: Token(precedingComments: null),
-            condition: null,
-            rightSeparator: Token(precedingComments: null),
-            updaters: NodeList(isEmpty: true),
-          )
+                initialization: null,
+                leftSeparator: Token(precedingComments: null),
+                condition: null,
+                rightSeparator: Token(precedingComments: null),
+                updaters: NodeList(isEmpty: true),
+              ) &&
+              var forParts
           when node.rightParenthesis.precedingComments == null:
-        token(forLoopParts.leftSeparator);
-        token(forLoopParts.rightSeparator);
+        token(node.leftParenthesis);
+        token(forParts.leftSeparator);
+        token(forParts.rightSeparator);
+        token(node.rightParenthesis);
+        forPartsPiece = pieces.split();
 
-      case ForPartsWithDeclarations():
-        partsList.addCommentsBefore(forLoopParts.variables.beginToken);
-        visit(forLoopParts.variables);
-        finishForParts(forLoopParts, partsList);
+      case ForParts forParts &&
+            ForPartsWithDeclarations(variables: AstNode? initializer):
+      case ForParts forParts &&
+            ForPartsWithExpression(initialization: AstNode? initializer):
+        // In a C-style for loop, treat the for loop parts like an argument list
+        // where each clause is a separate argument. This means that when they
+        // split, they split like:
+        //
+        // ```
+        // for (
+        //   initializerClause;
+        //   conditionClause;
+        //   incrementClause
+        // ) {
+        //   body;
+        // }
+        // ```
+        var partsList =
+            DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
+        partsList.leftBracket(node.leftParenthesis);
 
-      case ForPartsWithExpression(:var initialization?):
-        partsList.addCommentsBefore(initialization.beginToken);
-        visit(initialization);
-        finishForParts(forLoopParts, partsList);
+        // The initializer clause.
+        if (initializer != null) {
+          partsList.addCommentsBefore(initializer.beginToken);
+          visit(initializer);
+        } else {
+          // No initializer, so look at the comments before `;`.
+          partsList.addCommentsBefore(forParts.leftSeparator);
+        }
 
-      case ForPartsWithExpression():
-        // No initializer part.
-        partsList.addCommentsBefore(forLoopParts.leftSeparator);
-        finishForParts(forLoopParts, partsList);
+        token(forParts.leftSeparator);
+        partsList.add(pieces.split());
+
+        // The condition clause.
+        if (forParts.condition case var conditionExpression?) {
+          partsList.addCommentsBefore(conditionExpression.beginToken);
+          visit(conditionExpression);
+        } else {
+          partsList.addCommentsBefore(forParts.rightSeparator);
+        }
+
+        token(forParts.rightSeparator);
+        partsList.add(pieces.split());
+
+        // The update clauses.
+        if (forParts.updaters.isNotEmpty) {
+          partsList.addCommentsBefore(forParts.updaters.first.beginToken);
+          createList(forParts.updaters,
+              style: const ListStyle(commas: Commas.nonTrailing));
+          partsList.add(pieces.split());
+        }
+
+        partsList.rightBracket(node.rightParenthesis);
+        pieces.split();
+        forPartsPiece = partsList.build();
 
       case ForPartsWithPattern():
-      case ForEachPartsWithDeclaration():
-      case ForEachPartsWithIdentifier():
+        throw UnimplementedError();
+
+      case ForEachParts forEachParts &&
+            ForEachPartsWithDeclaration(loopVariable: AstNode variable):
+      case ForEachParts forEachParts &&
+            ForEachPartsWithIdentifier(identifier: AstNode variable):
+        // If a for-in loop, treat the for parts like an assignment, so they
+        // split like:
+        //
+        // ```
+        // for (var variable in [
+        //   initializer,
+        // ]) {
+        //   body;
+        // }
+        // ```
+        token(node.leftParenthesis);
+        visit(variable);
+
+        finishAssignment(forEachParts.inKeyword, forEachParts.iterable,
+            splitBeforeOperator: true);
+        token(node.rightParenthesis);
+        forPartsPiece = pieces.split();
+
       case ForEachPartsWithPattern():
         throw UnimplementedError();
     }
 
-    partsList.rightBracket(node.rightParenthesis);
-    var forPartsPiece = partsList.build();
-
-    pieces.split();
     visit(node.body);
     var body = pieces.take();
 

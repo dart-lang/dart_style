@@ -1,0 +1,79 @@
+40 columns                              |
+>>> Declare variable with `var`.
+for  (  var  file  in  files  )  {  body  ;  }
+<<<
+for (var file in files) {
+  body;
+}
+>>> Declare with type annotation.
+for (  List  <  int  >  ints  in  intLists  )  {  body  ;  }
+<<<
+for (List<int> ints in intLists) {
+  body;
+}
+>>> Declare variable with `final` and type.
+for (final Foo foo in foos) { body; }
+<<<
+for (final Foo foo in foos) {
+  body;
+}
+>>> Declare variable with just `final`.
+for (final foo in foos) {
+  body;
+}
+<<<
+for (final foo in foos) {
+  body;
+}
+>>> Use existing variable.
+for (  x  in  things  )  { body; }
+<<<
+for (x in things) {
+  body;
+}
+>>> Await for with declared variable.
+foo() async {
+  await  for  (  var  x  in  y  )  {  body  ;  }
+}
+<<<
+foo() async {
+  await for (var x in y) {
+    body;
+  }
+}
+>>> Await for with existing variable.
+foo() async {
+  await  for  (  x  in  y  )  {  body  ;  }
+}
+<<<
+foo() async {
+  await for (x in y) {
+    body;
+  }
+}
+>>> Split before `in`.
+for (var identifier in iteratableExpression) { body; }
+<<<
+for (var identifier
+    in iteratableExpression) {
+  body;
+}
+>>> Prefer block-like splitting after `in`.
+for (var identifier in [element, element, element]) { body; }
+<<<
+for (var identifier in [
+  element,
+  element,
+  element,
+]) {
+  body;
+}
+>>> Unsplit non-block body.
+for (i in sequence) something(i);
+<<<
+for (i in sequence) something(i);
+>>> Split non-block body.
+for (i in sequence) somethingMuchLonger(i);
+<<<
+for (i in sequence)
+  somethingMuchLonger(i);
