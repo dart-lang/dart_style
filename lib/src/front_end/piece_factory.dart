@@ -15,6 +15,7 @@ import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
+import '../piece/try.dart';
 import '../piece/type.dart';
 import 'ast_node_visitor.dart';
 import 'comment_writer.dart';
@@ -233,6 +234,71 @@ mixin PieceFactory implements CommentWriter {
     var parametersPiece = pieces.take();
 
     pieces.give(FunctionPiece(returnTypePiece, parametersPiece));
+  }
+
+  /// Creates a [TryPiece] for try statement.
+  void createTry(TryStatement tryStatement) {
+    var piece = TryPiece();
+
+    token(tryStatement.tryKeyword);
+    var tryHeader = pieces.split();
+    createBlock(tryStatement.body);
+    var tryBlock = pieces.split();
+    piece.add(tryHeader, tryBlock);
+
+    for (var i = 0; i < tryStatement.catchClauses.length; i++) {
+      var catchClause = tryStatement.catchClauses[i];
+      if (catchClause.onKeyword case var onKeyword?) {
+        token(onKeyword);
+        space();
+        visit(catchClause.exceptionType);
+      }
+      if (catchClause.catchKeyword case var catchKeyword?) {
+        space();
+        token(catchKeyword);
+        space();
+        token(catchClause.leftParenthesis);
+        token(catchClause.exceptionParameter?.name);
+        if (catchClause.comma case var comma?) {
+          token(comma);
+          space();
+          token(catchClause.stackTraceParameter?.name);
+        }
+        token(catchClause.rightParenthesis);
+      }
+      var catchClauseHeader = pieces.split();
+
+      // Edge case: When there's another catch/on/finally after this one, we
+      // want to force the block to split even if it's empty.
+      //
+      // ```
+      // try {
+      //   ..
+      // } on Foo {
+      // } finally Bar {
+      //   body;
+      // }
+      // ```
+      var forceSplit = i < tryStatement.catchClauses.length - 1 ||
+          tryStatement.finallyBlock != null;
+      createBlock(
+        catchClause.body,
+        forceSplit: forceSplit,
+      );
+      var catchClauseBody = pieces.split();
+
+      piece.add(catchClauseHeader, catchClauseBody);
+    }
+
+    if (tryStatement.finallyBlock case var finallyBlock?) {
+      token(tryStatement.finallyKeyword);
+      var finallyHeader = pieces.split();
+      createBlock(finallyBlock);
+      var finallyBody = pieces.split();
+      piece.add(finallyHeader, finallyBody);
+    }
+
+    pieces.give(piece);
   }
 
   // TODO(tall): Generalize this to work with if elements too.
