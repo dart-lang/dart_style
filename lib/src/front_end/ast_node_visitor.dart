@@ -131,15 +131,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitAssertStatement(AssertStatement node) {
     token(node.assertKeyword);
-
-    var arguments = [node.condition];
-    if (node.message case var message?) arguments.add(message);
     createList(
-      arguments,
+      [
+        node.condition,
+        if (node.message case var message?) message,
+      ],
       leftBracket: node.leftParenthesis,
       rightBracket: node.rightParenthesis,
     );
-
     token(node.semicolon);
   }
 
