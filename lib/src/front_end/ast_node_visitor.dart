@@ -133,7 +133,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitAssertStatement(AssertStatement node) {
-    throw UnimplementedError();
+    token(node.assertKeyword);
+    createList(
+      [
+        node.condition,
+        if (node.message case var message?) message,
+      ],
+      leftBracket: node.leftParenthesis,
+      rightBracket: node.rightParenthesis,
+    );
+    token(node.semicolon);
   }
 
   @override
