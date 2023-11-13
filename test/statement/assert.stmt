@@ -1,55 +1,55 @@
 40 columns                              |
->>> single-line assert
+>>> Single-line assert.
 assert("some short string");
 <<<
 assert("some short string");
->>> wrapped assert
+>>> Split single-line assert.
 assert("some very long string that wraps");
 <<<
 assert(
   "some very long string that wraps",
 );
->>> single-line assert with message
+>>> Single-line assert with message.
 assert(true, "blah");
 <<<
 assert(true, "blah");
->>> split assert with message before both
+>>> Split assert with long message.
 assert(true, "looong string that wraps");
 <<<
 assert(
   true,
   "looong string that wraps",
 );
->>> split assert with message after first
+>>> Split assert with message and long condition.
 assert(veryLongCondition, "long string that wraps");
 <<<
 assert(
   veryLongCondition,
   "long string that wraps",
 );
->>> split assert with message at both
+>>> Split assert with a long message and a long condition.
 assert(veryVeryVeryVeryVeryLongCondition, "long string that wraps");
 <<<
 assert(
   veryVeryVeryVeryVeryLongCondition,
   "long string that wraps",
 );
->>> split assert with trailing comma
+>>> Remove trailing comma if not split, with no message.
 assert(condition,);
 <<<
 assert(condition);
->>> split assert with trailing comma and message
+>>> Remove trailing comma if not split, with a message.
 assert(condition, "some message",);
 <<<
 assert(condition, "some message");
->>> remove from assert arg list if unsplit
+>>> Unsplit the argument list and remove trailing comma.
 assert(
   1,
   2,
 );
 <<<
 assert(1, 2);
->>> add to assert arg list if split
+>>> Add trailing comma if argument list split.
 assert(longArgument1, veryLongArgument2);
 <<<
 assert(
