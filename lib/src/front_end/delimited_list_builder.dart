@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:dart_style/src/ast_extensions.dart';
 
 import '../comment_type.dart';
 import '../piece/list.dart';
@@ -75,8 +76,13 @@ class DelimitedListBuilder {
   /// ```
   ///
   /// Here, [bracket] will be `)` and [delimiter] will be `}`.
-  void rightBracket(Token bracket, {Token? delimiter}) {
+  ///
+  /// If [semicolon] is given, it is the optional `;` in an enum declaration
+  /// after the enum constants when there are no subsequent members. Comments
+  /// before the `;` are kept, but the `;` itself is discarded.
+  void rightBracket(Token bracket, {Token? delimiter, Token? semicolon}) {
     // Handle comments after the last element.
+    var commentsBefore = _visitor.takeCommentsBefore(bracket);
 
     // Merge the comments before the delimiter (if there is one) and the
     // bracket. If there is a delimiter, this will move comments between it and
@@ -89,11 +95,16 @@ class DelimitedListBuilder {
     // // After:
     // f([parameter /* comment */]) {}
     // ```
-    var commentsBefore = _visitor.takeCommentsBefore(bracket);
     if (delimiter != null) {
       commentsBefore =
           _visitor.takeCommentsBefore(delimiter).concatenate(commentsBefore);
     }
+
+    if (semicolon != null) {
+      commentsBefore =
+          _visitor.takeCommentsBefore(semicolon).concatenate(commentsBefore);
+    }
+
     _addComments(commentsBefore, hasElementAfter: false);
 
     _visitor.token(delimiter);
@@ -123,7 +134,7 @@ class DelimitedListBuilder {
   /// Adds [element] to the built list.
   void visit(AstNode element) {
     // Handle comments between the preceding element and this one.
-    addCommentsBefore(element.beginToken);
+    addCommentsBefore(element.firstNonCommentToken);
 
     // Traverse the element itself.
     _visitor.visit(element);

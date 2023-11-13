@@ -114,8 +114,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitArgumentList(ArgumentList node, {bool nestExpression = true}) {
-    throw UnimplementedError();
+  void visitArgumentList(ArgumentList node) {
+    createList(
+        leftBracket: node.leftParenthesis,
+        node.arguments,
+        rightBracket: node.rightParenthesis);
   }
 
   @override
@@ -400,12 +403,81 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    throw UnimplementedError();
+    token(node.name);
+    if (node.arguments case var arguments?) {
+      visit(arguments.typeArguments);
+      visit(arguments.argumentList);
+    }
   }
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
-    throw UnimplementedError();
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+
+    token(node.enumKeyword);
+    space();
+    token(node.name);
+    visit(node.typeParameters);
+    space();
+
+    if (node.members.isEmpty) {
+      // If there are no members, format the constants like a delimited list.
+      // This keeps the enum declaration on one line if it fits.
+      var builder = DelimitedListBuilder(
+          this,
+          const ListStyle(
+              spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
+      builder.leftBracket(node.leftBracket);
+      node.constants.forEach(builder.visit);
+
+      builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
+      pieces.give(builder.build());
+    } else {
+      // If there are members, format it like a block where each constant and
+      // member is on its own line.
+      token(node.leftBracket);
+      var leftBracketPiece = pieces.split();
+
+      var sequence = SequenceBuilder(this);
+      for (var constant in node.constants) {
+        sequence.addCommentsBefore(constant.firstNonCommentToken);
+        visit(constant);
+
+        if (constant != node.constants.last) {
+          commaAfter(constant);
+        } else {
+          // Discard the trailing comma if there is one since there is a
+          // semicolon to use as the separator, but preserve any comments before
+          // the discarded comma.
+          var trailingComma = constant.commaAfter;
+          if (trailingComma != null) writeCommentsBefore(trailingComma);
+
+          token(node.semicolon);
+        }
+
+        sequence.add(pieces.split());
+      }
+
+      // Insert a blank line between the constants and members.
+      sequence.addBlank();
+
+      for (var node in node.members) {
+        sequence.visit(node);
+
+        // If the node has a non-empty braced body, then require a blank line
+        // between it and the next node.
+        if (node.hasNonEmptyBody) sequence.addBlank();
+      }
+
+      // Place any comments before the "}" inside the block.
+      sequence.addCommentsBefore(node.rightBracket);
+
+      token(node.rightBracket);
+      var rightBracketPiece = pieces.take();
+
+      pieces.give(
+          BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece));
+    }
   }
 
   @override
@@ -757,7 +829,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       visit(constructor.name);
     }
 
-    finishCall(node.argumentList);
+    visit(node.argumentList);
 
     // If there was a prefix or constructor name, then make a splittable piece.
     if (operations.isNotEmpty) {
@@ -883,7 +955,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     visit(node.methodName);
     visit(node.typeArguments);
-    finishCall(node.argumentList);
+    visit(node.argumentList);
   }
 
   @override

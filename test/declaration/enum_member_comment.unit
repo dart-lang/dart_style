@@ -1,0 +1,256 @@
+40 columns                              |
+>>> Line comments.
+enum A {
+  // comment
+  B,
+
+  // comment
+  C;
+
+  // comment
+  f() {}
+}
+<<<
+enum A {
+  // comment
+  B,
+
+  // comment
+  C;
+
+  // comment
+  f() {}
+}
+>>> Block comments.
+enum A {
+  /* comment */
+  B,
+
+  /* comment */
+  C;
+
+  /* comment */
+  f() {}
+}
+<<<
+enum A {
+  /* comment */
+  B,
+
+  /* comment */
+  C;
+
+  /* comment */
+  f() {}
+}
+>>> Remove blank lines before beginning of body.
+enum A {
+
+
+
+  // comment
+  B;
+  f() {}
+}
+<<<
+enum A {
+  // comment
+  B;
+
+  f() {}
+}
+>>> Remove blank lines after end of body.
+enum A {
+  B;
+  f() {}
+  // comment
+
+
+
+}
+<<<
+enum A {
+  B;
+
+  f() {}
+  // comment
+}
+>>> Ensure blank line above doc comments.
+enum Foo {/// doc
+a,/// doc
+b;/// doc
+var x = 1;
+/// doc
+void y() {}}
+<<<
+enum Foo {
+  /// doc
+  a,
+
+  /// doc
+  b;
+
+  /// doc
+  var x = 1;
+
+  /// doc
+  void y() {}
+}
+>>> Block comment before removed trailing comma.
+enum E { a /* before */,;f() {} }
+<<<
+enum E {
+  a /* before */;
+
+  f() {}
+}
+>>> Block comment after removed comma.
+enum E { a, /* after */;f() {} }
+<<<
+enum E {
+  a /* after */;
+
+  f() {}
+}
+>>> Block comments before and after removed comma.
+enum E { a /* before */, /* after */;f() {} }
+<<<
+enum E {
+  a /* before */ /* after */;
+
+  f() {}
+}
+>>> Block comment before semicolon.
+enum E { longEnumValue, anotherValue /* before */;f() {} }
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* before */;
+
+  f() {}
+}
+>>> Block comment after semicolon.
+enum E { longEnumValue, anotherValue; /* after */ f() {}}
+<<<
+enum E {
+  longEnumValue,
+  anotherValue; /* after */
+
+  f() {}
+}
+>>> Block comment before and after semicolon.
+enum E { longEnumValue, anotherValue /* before */ ; /* after */ f() {}}
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* before */; /* after */
+
+  f() {}
+}
+>>> Line comment before trailing comma.
+enum E { a // before
+,;f() {}}
+<<<
+enum E {
+  a // before
+  ;
+
+  f() {}
+}
+>>> Line comment after trailing comma.
+enum E { a, // after
+;f() {}}
+<<<
+enum E {
+  a // after
+  ;
+
+  f() {}
+}
+>>> Line comment before semicolon.
+enum E { a // before
+;f() {}}
+<<<
+enum E {
+  a // before
+  ;
+
+  f() {}
+}
+>>> Line comment after semicolon.
+enum E { a; // after
+f() {}
+}
+<<<
+enum E {
+  a; // after
+
+  f() {}
+}
+>>> Block comment before trailing comma and semicolon.
+enum E { a /* before */,;f() {} }
+<<<
+enum E {
+  a /* before */;
+
+  f() {}
+}
+>>> Block comment after trailing comma and semicolon.
+enum E { a,; /* after */f() {} }
+<<<
+enum E {
+  a; /* after */
+
+  f() {}
+}
+>>> Block comments before and after trailing comma and semicolon.
+enum E { a /* before */,; /* after */f() {} }
+<<<
+enum E {
+  a /* before */; /* after */
+
+  f() {}
+}
+>>> Line comment before trailing comma and semicolon.
+enum E { a // before
+,;f() {}}
+<<<
+enum E {
+  a // before
+  ;
+
+  f() {}
+}
+>>> Line comment after trailing comma and semicolon.
+enum E { a; // after
+f() {}}
+<<<
+enum E {
+  a; // after
+
+  f() {}
+}
+>>> Block comments around trailing comma and semicolon.
+enum E { a /* 1 */,/* 2 */;/* 3 */f() {} }
+<<<
+enum E {
+  a /* 1 */ /* 2 */; /* 3 */
+
+  f() {}
+}
+>>> Line comments around trailing comma and semicolon.
+### This is pathological, but removed tokens are a place where it's easy to
+### accidentally lose comments, so test it carefully.
+enum E { a // 1
+,// 2
+;// 3
+f() {}
+}
+<<<
+enum E {
+  a // 1
+  // 2
+  ; // 3
+
+  f() {}
+}

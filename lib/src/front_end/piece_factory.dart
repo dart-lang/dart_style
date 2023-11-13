@@ -608,15 +608,6 @@ mixin PieceFactory implements CommentWriter {
         isValueDelimited: rightHandSide.isDelimited));
   }
 
-  /// Writes the argument list part of a constructor, function, or method call
-  /// after the name has been written.
-  void finishCall(ArgumentList argumentList) {
-    createList(
-        leftBracket: argumentList.leftParenthesis,
-        argumentList.arguments,
-        rightBracket: argumentList.rightParenthesis);
-  }
-
   /// Finishes writing a named function declaration or anonymous function
   /// expression after the return type (if any) and name (if any) has been
   /// written.

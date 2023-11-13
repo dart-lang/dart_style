@@ -1,0 +1,62 @@
+40 columns                              |
+>>> Insert blank line between values and members.
+enum E { a, b, c; int x; }
+<<<
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+>>> Collapse multiple blank lines between values and members.
+enum E { a, b, c;
+
+
+
+int x; }
+<<<
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+>>> Always split if there are members.
+enum E { a, b, c; int x; }
+<<<
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+>>> Insert blank after non-empty block-bodied members.
+enum Foo {
+  x;
+var a = 1; b() {;} c() => null; get d {;} get e => null; set f(value) {;
+} set g(value) => null; var h = 1;}
+<<<
+enum Foo {
+  x;
+
+  var a = 1;
+  b() {
+    ;
+  }
+
+  c() => null;
+  get d {
+    ;
+  }
+
+  get e => null;
+  set f(value) {
+    ;
+  }
+
+  set g(value) => null;
+  var h = 1;
+}

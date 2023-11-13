@@ -1,0 +1,207 @@
+40 columns                              |
+>>> Line comments.
+enum A {
+  // comment
+  B,
+
+  // comment
+  C
+
+  // comment
+}
+<<<
+enum A {
+  // comment
+  B,
+
+  // comment
+  C,
+
+  // comment
+}
+>>> Block comments.
+enum A {
+  /* comment */
+  B,
+
+  /* comment */
+  C
+
+  /* comment */
+}
+<<<
+enum A {
+  /* comment */
+  B,
+
+  /* comment */
+  C,
+
+  /* comment */
+}
+>>> Remove blank lines before beginning of body.
+enum A {
+
+
+
+  // comment
+  B
+}
+<<<
+enum A {
+  // comment
+  B,
+}
+>>> Remove blank lines after end of body.
+enum A {
+  B
+  // comment
+
+
+
+}
+<<<
+enum A {
+  B,
+  // comment
+}
+>>> Ensure blank line above doc comments.
+enum Foo {/// doc
+a,/// doc
+b,/// doc
+c
+}
+<<<
+enum Foo {
+  /// doc
+  a,
+
+  /// doc
+  b,
+
+  /// doc
+  c,
+}
+>>> Block comment before removed trailing comma.
+enum E { a /* before */, }
+<<<
+enum E { a /* before */ }
+>>> Block comment after removed comma.
+enum E { a, /* after */ }
+<<<
+enum E { a /* after */ }
+>>> Block comments before and after removed comma.
+enum E { a /* before */, /* after */ }
+<<<
+enum E { a /* before */ /* after */ }
+>>> Block comment before preserved trailing comma.
+enum E { longEnumValue, anotherValue /* before */, }
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* before */,
+}
+>>> Block comment after preserved trailing comma.
+enum E { longEnumValue, anotherValue, /* after */ }
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* after */,
+}
+>>> Block comment before and after preserved trailing comma.
+enum E { longEnumValue, anotherValue /* before */ , /* after */ }
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* before */ /* after */,
+}
+>>> Block comment at inserted comma.
+enum E { longEnumValue, anotherValue /* at */ }
+<<<
+enum E {
+  longEnumValue,
+  anotherValue /* at */,
+}
+>>> Line comment before trailing comma.
+enum E { a // before
+,}
+<<<
+enum E {
+  a, // before
+}
+>>> Line comment after trailing comma.
+enum E { a, // after
+}
+<<<
+enum E {
+  a, // after
+}
+>>> Block comment before removed trailing semicolon.
+enum E { a /* before */; }
+<<<
+enum E { a /* before */ }
+>>> Block comment after removed semicolon.
+enum E { a; /* after */ }
+<<<
+enum E { a /* after */ }
+>>> Block comments before and after removed semicolon.
+enum E { a /* before */; /* after */ }
+<<<
+enum E { a /* before */ /* after */ }
+>>> Line comment before trailing semicolon.
+enum E { a // before
+;}
+<<<
+enum E {
+  a, // before
+}
+>>> Line comment after trailing semicolon.
+enum E { a; // after
+}
+<<<
+enum E {
+  a, // after
+}
+>>> Block comment before removed trailing comma and semicolon.
+enum E { a /* before */,; }
+<<<
+enum E { a /* before */ }
+>>> Block comment after removed trailing comma and semicolon.
+enum E { a,; /* after */ }
+<<<
+enum E { a /* after */ }
+>>> Block comments before and after removed trailing comma and semicolon.
+enum E { a /* before */,; /* after */ }
+<<<
+enum E { a /* before */ /* after */ }
+>>> Line comment before trailing comma and semicolon.
+enum E { a // before
+,;}
+<<<
+enum E {
+  a, // before
+}
+>>> Line comment after trailing comma and semicolon.
+enum E { a; // after
+}
+<<<
+enum E {
+  a, // after
+}
+>>> Block comments around removed trailing comma and semicolon.
+enum E { a /* 1 */,/* 2 */;/* 3 */ }
+<<<
+enum E { a /* 1 */ /* 2 */ /* 3 */ }
+>>> Line comments around removed trailing comma and semicolon.
+### This is pathological, but removed tokens are a place where it's easy to
+### accidentally lose comments, so test it carefully.
+enum E { a // 1
+,// 2
+;// 3
+}
+<<<
+enum E {
+  a, // 1
+  // 2
+  // 3
+}

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:dart_style/src/ast_extensions.dart';
 
 import '../constants.dart';
 import '../piece/piece.dart';
@@ -46,17 +47,7 @@ class SequenceBuilder {
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
   void visit(AstNode node, {int? indent}) {
-    var token = switch (node) {
-      // If [node] is an [AnnotatedNode], then [beginToken] includes the
-      // leading doc comment, which we want to handle separately. So, in that
-      // case, explicitly skip past the doc comment to the subsequent metadata
-      // (if there is any), or the beginning of the code.
-      AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
-      AnnotatedNode() => node.firstTokenAfterCommentAndMetadata,
-      _ => node.beginToken
-    };
-
-    addCommentsBefore(token);
+    addCommentsBefore(node.firstNonCommentToken);
     _visitor.visit(node);
     add(_visitor.pieces.split(), indent: indent);
   }
@@ -96,7 +87,6 @@ class SequenceBuilder {
       if (_elements.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous token.
         _visitor.space();
-
         _visitor.pieces.writeComment(comment, hanging: true);
       } else {
         // Write the comment as its own sequence piece.

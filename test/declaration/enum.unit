@@ -1,0 +1,117 @@
+40 columns                              |
+>>> Single value.
+enum Unity {one}
+<<<
+enum Unity { one }
+>>> Multiple unsplit values.
+enum Primate{
+
+  bonobo,
+
+
+
+  chimp,
+
+
+  gorilla
+
+
+
+}
+<<<
+enum Primate { bonobo, chimp, gorilla }
+>>> Remove trailing comma if values don't split.
+enum Primate{bonobo,chimp,}
+<<<
+enum Primate { bonobo, chimp }
+>>> Split values and insert trailing comma.
+enum Primate{bonobo,chimp,gorilla,organutan}
+<<<
+enum Primate {
+  bonobo,
+  chimp,
+  gorilla,
+  organutan,
+}
+>>> Insert blank line before and after enum declaration.
+var x = 1;
+enum A { a }
+var y = 2;
+<<<
+var x = 1;
+
+enum A { a }
+
+var y = 2;
+>>> Remove semicolon if there are no members.
+enum E { a, b; }
+<<<
+enum E { a, b }
+>>> Remove trailing comma and semicolon if unsplit.
+enum E {a,b,c,;}
+<<<
+enum E { a, b, c }
+>>> Argument lists in values.
+enum Args {
+first(),second(a,b,c),
+third(named:1,2,another:3)
+}
+<<<
+enum Args {
+  first(),
+  second(a, b, c),
+  third(named: 1, 2, another: 3),
+}
+>>> Split argument lists in values.
+enum Args {
+firstEnumValue(longArgument,anotherArgument),
+secondEnumValue(longArgument,anotherArgument,aThirdArgument,theLastOne),
+thirdGenericOne<FirstTypeArgument,
+SecondTypeArgument<NestedTypeArgument,AnotherNestedTypeArgument>,
+LastTypeArgument>(namedArgument: firstValue,anotherNamed:argumentValue)
+}
+<<<
+enum Args {
+  firstEnumValue(
+    longArgument,
+    anotherArgument,
+  ),
+  secondEnumValue(
+    longArgument,
+    anotherArgument,
+    aThirdArgument,
+    theLastOne,
+  ),
+  thirdGenericOne<
+    FirstTypeArgument,
+    SecondTypeArgument<
+      NestedTypeArgument,
+      AnotherNestedTypeArgument
+    >,
+    LastTypeArgument
+  >(
+    namedArgument: firstValue,
+    anotherNamed: argumentValue,
+  ),
+}
+>>> Generic enum type.
+enum MagicNumbers< T    extends num   ,   S> {
+  one(1), two(2),pi<double,String>(3.14159)
+}
+<<<
+enum MagicNumbers<T extends num, S> {
+  one(1),
+  two(2),
+  pi<double, String>(3.14159),
+}
+>>> Split in type parameters forces body to split.
+enum SomeEnumType<LongTypeParameterName, Another> { a, b, c }
+<<<
+enum SomeEnumType<
+  LongTypeParameterName,
+  Another
+> {
+  a,
+  b,
+  c,
+}
