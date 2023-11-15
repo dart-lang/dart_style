@@ -21,9 +21,8 @@ import 'piece.dart';
 /// var x = 123;
 /// ```
 ///
-/// [_insideValue] If the value is a delimited "block-like" expression,
-/// then we can split inside the block but not at the `=` with no additional
-/// indentation:
+/// If the value is a delimited "block-like" expression, then we allow splitting
+/// inside the value but not at the `=` with no additional indentation:
 ///
 /// ```
 /// var list = [
@@ -31,22 +30,17 @@ import 'piece.dart';
 /// ];
 /// ```
 ///
-/// [State.split] Split after the `=`:
+/// [_atOperator] Split after the `=`:
 ///
 /// ```
 /// var name =
 ///     longValueExpression;
 /// ```
 class AssignPiece extends Piece {
-  /// Split inside the value but not at the `=`.
+  /// Split after the operator.
   ///
-  /// This is only allowed when the value is a delimited expression.
-  static const State _insideValue = State(1);
-
-  /// Split at the operator and allow splitting inside the value.
-  ///
-  /// This is more costly because, when it's possible to split inside a
-  /// delimited value, we want to prefer that.
+  /// This is more costly because it's generally better to split either in the
+  /// value (if it's delimited) or in the target.
   static const State _atOperator = State(2, cost: 2);
 
   /// The left-hand side of the operation. Includes the operator unless it is
@@ -107,17 +101,18 @@ class AssignPiece extends Piece {
   // ```
 
   @override
-  List<State> get additionalStates =>
-      [if (_isValueDelimited) _insideValue, _atOperator];
+  List<State> get additionalStates => [_atOperator];
 
   @override
   void format(CodeWriter writer, State state) {
     // A split in either child piece forces splitting after the "=" unless it's
     // a delimited expression.
-    if (state == State.unsplit) writer.setAllowNewlines(false);
+    if (state == State.unsplit && !_isValueDelimited) {
+      writer.setAllowNewlines(false);
+    }
 
     // Don't indent a split delimited expression.
-    if (state != _insideValue) writer.setIndent(Indent.expression);
+    if (state != State.unsplit) writer.setIndent(Indent.expression);
 
     writer.format(target);
     writer.splitIf(state == _atOperator);

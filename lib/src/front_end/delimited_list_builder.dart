@@ -36,6 +36,11 @@ class DelimitedListBuilder {
 
   final ListStyle _style;
 
+  /// The nodes that have been visited by this builder.
+  ///
+  /// Used to find the block element from them, if desired.
+  final List<AstNode> _blockCandidates = [];
+
   /// The list of comments following the most recently written element before
   /// any comma following the element.
   CommentSequence _commentsBeforeComma = CommentSequence.empty;
@@ -44,8 +49,15 @@ class DelimitedListBuilder {
   /// literal, etc.
   DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
 
-  ListPiece build() =>
-      ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
+  /// Create the final [ListPiece] out of the added brackets, delimiters,
+  /// elements, and style.
+  ListPiece build() {
+    var blockElement = -1;
+    if (_style.allowBlockElement) blockElement = _findBlockElement();
+
+    return ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
+        _style, blockElement);
+  }
 
   /// Adds the opening [bracket] to the built list.
   ///
@@ -144,6 +156,9 @@ class DelimitedListBuilder {
     if (nextToken.lexeme == ',') {
       _commentsBeforeComma = _visitor.takeCommentsBefore(nextToken);
     }
+
+    // If this element might be block formatted, remember it.
+    if (_style.allowBlockElement) _blockCandidates.add(element);
   }
 
   /// Inserts an inner left delimiter between two elements.
@@ -372,5 +387,48 @@ class DelimitedListBuilder {
       separate: separateComments,
       leading: leadingComments
     );
+  }
+
+  /// If [_blockCandidates] contains a single expression that can receive
+  /// block formatting, then returns its index. Otherwise returns `-1`.
+  int _findBlockElement() {
+    // TODO(tall): These heuristics will probably need some iteration.
+    var functions = <int>[];
+    var others = <int>[];
+
+    for (var i = 0; i < _blockCandidates.length; i++) {
+      var node = _blockCandidates[i];
+      if (node is Expression && node.isDelimited) {
+        if (node is FunctionExpression) {
+          functions.add(i);
+        } else {
+          others.add(i);
+        }
+      }
+    }
+
+    // A function expression takes precedence over other block arguments.
+    if (functions.length == 1) return functions.first;
+
+    // Otherwise, if there is single block argument, it can be block formatted.
+    if (functions.isEmpty && others.length == 1) return others.first;
+
+    // There are no block arguments, or it's ambiguous as to which one should
+    // be it.
+    // TODO(tall): The old formatter allows multiple block arguments, like:
+    //
+    // ```
+    // function(() {
+    //   body;
+    // }, () {
+    //   more;
+    // });
+    // ```
+    //
+    // This doesn't seem very common in the Flutter repo, but does occur
+    // sometimes. We'll probably want to experiment to see if it's worth
+    // supporting multiple block arguments. If so, we should at least require
+    // them to be contiguous with no non-block arguments in the middle.
+    return -1;
   }
 }

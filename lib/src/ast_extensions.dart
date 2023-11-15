@@ -126,17 +126,61 @@ extension ExpressionExtensions on Expression {
   ///   element,
   /// ];
   /// ```
-  bool get isDelimited => switch (this) {
-        FunctionExpression() => true,
-        InstanceCreationExpression() => true,
-        ListLiteral() => true,
-        MethodInvocation() => true,
-        ParenthesizedExpression(:var expression) => expression.isDelimited,
-        RecordLiteral() => true,
-        SetOrMapLiteral() => true,
-        SwitchExpression() => true,
-        _ => false,
-      };
+  ///
+  /// Likewise, in an argument list, delimited expressions can be given
+  /// block-like formatting:
+  ///
+  /// ```
+  /// function([
+  ///   element,
+  /// ]);
+  /// ```
+  bool get isDelimited {
+    // Unwrap named expressions to get the real expression inside.
+    var expression = this;
+    if (expression is NamedExpression) {
+      expression = expression.expression;
+    }
+
+    // TODO(tall): We should also allow multi-line strings to be formatted
+    // like block arguments, at least in some cases like:
+    //
+    // ```
+    // function('''
+    //   Lots of
+    //   text
+    // ''');
+    // ```
+
+    // TODO(tall): Consider whether immediately-invoked function expressions
+    // should be block argument candidates, like:
+    //
+    // ```
+    // function(() {
+    //   body;
+    // }());
+    // ```
+    return switch (expression) {
+      // A function expression can use either a non-empty parameter list or a
+      // non-empty block body for block formatting.
+      FunctionExpression(:var parameters!, :var body) =>
+        !parameters.parameters.isEmptyBody(parameters.rightParenthesis) ||
+            body is BlockFunctionBody &&
+                !body.block.statements.isEmptyBody(body.block.rightBracket),
+      ListLiteral(:var elements, :var rightBracket) ||
+      SetOrMapLiteral(:var elements, :var rightBracket) =>
+        !elements.isEmptyBody(rightBracket),
+      RecordLiteral(:var fields, :var rightParenthesis) =>
+        !fields.isEmptyBody(rightParenthesis),
+      SwitchExpression(:var cases, :var rightBracket) =>
+        !cases.isEmptyBody(rightBracket),
+      InstanceCreationExpression(:var argumentList) ||
+      MethodInvocation(:var argumentList) =>
+        !argumentList.arguments.isEmptyBody(argumentList.rightParenthesis),
+      ParenthesizedExpression(:var expression) => expression.isDelimited,
+      _ => false,
+    };
+  }
 
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
