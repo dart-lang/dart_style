@@ -129,7 +129,4 @@ class AssignPiece extends Piece {
     callback(target);
     callback(value);
   }
-
-  @override
-  String toString() => 'Assign';
 }

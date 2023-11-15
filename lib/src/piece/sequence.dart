@@ -39,7 +39,7 @@ class SequencePiece extends Piece {
   }
 
   @override
-  String toString() => 'Sequence';
+  String get debugName => 'Seq';
 }
 
 /// An element inside a [SequencePiece].

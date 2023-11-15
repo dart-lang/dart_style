@@ -268,25 +268,72 @@ void dumpLines(List<Chunk> chunks, SplitSet splits) {
 /// Build a string representation of the [piece] tree.
 String pieceTree(Piece piece) {
   var buffer = StringBuffer();
+  _PieceDebugTree(piece).write(buffer, 0);
+  return buffer.toString();
+}
 
-  void traverse(Piece piece) {
-    buffer.write(piece);
+/// A stringified representation of a tree of pieces for debug output.
+class _PieceDebugTree {
+  final String label;
+  final List<_PieceDebugTree> children = [];
 
-    if (piece is! TextPiece) {
-      var children = <Piece>[];
-      piece.forEachChild(children.add);
-
-      buffer.write('(');
-      for (var child in children) {
-        if (child != children.first) buffer.write(' ');
-        traverse(child);
-      }
-      buffer.write(')');
-    }
+  _PieceDebugTree(Piece piece) : label = piece.toString() {
+    piece.forEachChild((child) {
+      children.add(_PieceDebugTree(child));
+    });
   }
 
-  traverse(piece);
-  return buffer.toString();
+  /// The approximate number of characters needed to print this tree.
+  ///
+  /// Used to determine when to show a tree's children inline or split. Note
+  /// that this is O(n^2), but we don't really care since it's only used for
+  /// debug output.
+  int get width {
+    var result = label.length;
+    for (var child in children) {
+      result += child.width;
+    }
+    return result;
+  }
+
+  void write(StringBuffer buffer, int indent) {
+    buffer.write(label);
+    if (children.isEmpty) return;
+
+    buffer.write('(');
+
+    // Split the tree if it is too long.
+    var isSplit = indent * 2 + width > 80;
+    if (isSplit) {
+      indent++;
+      buffer.writeln();
+      buffer.write('  ' * indent);
+    }
+
+    var first = true;
+    for (var child in children) {
+      if (!first) {
+        if (isSplit) {
+          buffer.writeln();
+          buffer.write('  ' * indent);
+        } else {
+          buffer.write(' ');
+        }
+      }
+
+      child.write(buffer, indent);
+
+      first = false;
+    }
+
+    if (isSplit) {
+      indent--;
+      buffer.writeln();
+      buffer.write('  ' * indent);
+    }
+
+    buffer.write(')');
+  }
 }
 
 String _color(String ansiEscape) => useAnsiColors ? ansiEscape : '';

@@ -123,9 +123,6 @@ class ListPiece extends Piece {
 
     if (_after case var after?) callback(after);
   }
-
-  @override
-  String toString() => 'List';
 }
 
 /// An element in a [ListPiece].

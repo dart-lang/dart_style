@@ -75,9 +75,6 @@ class IfPiece extends Piece {
       callback(section.statement);
     }
   }
-
-  @override
-  String toString() => 'If';
 }
 
 /// A single section in a chain of if-elses.

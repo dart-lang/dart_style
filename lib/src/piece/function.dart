@@ -56,5 +56,5 @@ class FunctionPiece extends Piece {
   }
 
   @override
-  String toString() => 'Fn';
+  String get debugName => 'Fn';
 }

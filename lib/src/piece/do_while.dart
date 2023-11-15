@@ -25,7 +25,4 @@ class DoWhilePiece extends Piece {
     callback(_body);
     callback(_condition);
   }
-
-  @override
-  String toString() => 'DoWhile';
 }
