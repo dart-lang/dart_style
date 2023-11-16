@@ -39,7 +39,4 @@ class TypePiece extends Piece {
     if (_clauses case var clauses?) callback(clauses);
     callback(_body);
   }
-
-  @override
-  String toString() => 'Type';
 }

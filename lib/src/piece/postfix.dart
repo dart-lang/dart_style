@@ -46,7 +46,4 @@ class PostfixPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     pieces.forEach(callback);
   }
-
-  @override
-  String toString() => 'Post';
 }

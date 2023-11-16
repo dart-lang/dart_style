@@ -95,5 +95,5 @@ class VariablePiece extends Piece {
   }
 
   @override
-  String toString() => 'Var';
+  String get debugName => 'Var';
 }
