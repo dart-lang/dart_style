@@ -36,11 +36,6 @@ class DelimitedListBuilder {
 
   final ListStyle _style;
 
-  /// The nodes that have been visited by this builder.
-  ///
-  /// Used to find the block element from them, if desired.
-  final List<AstNode> _blockCandidates = [];
-
   /// The list of comments following the most recently written element before
   /// any comma following the element.
   CommentSequence _commentsBeforeComma = CommentSequence.empty;
@@ -131,8 +126,8 @@ class DelimitedListBuilder {
   /// [addCommentsBefore()] for the first token in the [piece].
   ///
   /// Assumes there is no comma after this piece.
-  void add(Piece piece) {
-    _elements.add(ListElement(piece));
+  void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
+    _elements.add(ListElement(piece, format));
     _commentsBeforeComma = CommentSequence.empty;
   }
 
@@ -148,17 +143,21 @@ class DelimitedListBuilder {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.firstNonCommentToken);
 
+    // See if it's an expression that supports block formatting.
+    var format = switch (element) {
+      FunctionExpression() when element.canBlockSplit => BlockFormat.function,
+      Expression() when element.canBlockSplit => BlockFormat.block,
+      _ => BlockFormat.none,
+    };
+
     // Traverse the element itself.
     _visitor.visit(element);
-    add(_visitor.pieces.split());
+    add(_visitor.pieces.split(), format);
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
       _commentsBeforeComma = _visitor.takeCommentsBefore(nextToken);
     }
-
-    // If this element might be block formatted, remember it.
-    if (_style.allowBlockElement) _blockCandidates.add(element);
   }
 
   /// Inserts an inner left delimiter between two elements.
@@ -396,14 +395,14 @@ class DelimitedListBuilder {
     var functions = <int>[];
     var others = <int>[];
 
-    for (var i = 0; i < _blockCandidates.length; i++) {
-      var node = _blockCandidates[i];
-      if (node is Expression && node.canBlockSplit) {
-        if (node is FunctionExpression) {
+    for (var i = 0; i < _elements.length; i++) {
+      switch (_elements[i].blockFormat) {
+        case BlockFormat.function:
           functions.add(i);
-        } else {
+        case BlockFormat.block:
           others.add(i);
-        }
+        case BlockFormat.none:
+          break; // Not a block element.
       }
     }
 

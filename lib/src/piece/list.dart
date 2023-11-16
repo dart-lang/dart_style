@@ -187,6 +187,9 @@ class ListPiece extends Piece {
 final class ListElement {
   final Piece? _element;
 
+  /// What kind of block formatting can be applied to this element.
+  final BlockFormat blockFormat;
+
   /// If this piece has an opening delimiter after the comma, this is its
   /// lexeme, otherwise an empty string.
   ///
@@ -203,11 +206,14 @@ final class ListElement {
 
   final Piece? _comment;
 
-  ListElement(Piece element, [Piece? comment]) : this._(element, '', comment);
+  ListElement(Piece element, BlockFormat format, [Piece? comment])
+      : this._(element, format, '', comment);
 
-  ListElement.comment(Piece comment) : this._(null, '', comment);
+  ListElement.comment(Piece comment)
+      : this._(null, BlockFormat.none, '', comment);
 
-  ListElement._(this._element, this._delimiter, [this._comment]);
+  ListElement._(this._element, this.blockFormat, this._delimiter,
+      [this._comment]);
 
   /// Writes this element to [writer].
   ///
@@ -239,11 +245,11 @@ final class ListElement {
   /// Returns a new [ListElement] containing this one's element and [comment].
   ListElement withComment(Piece comment) {
     assert(_comment == null); // Shouldn't already have one.
-    return ListElement._(_element, _delimiter, comment);
+    return ListElement._(_element, blockFormat, _delimiter, comment);
   }
 
   ListElement withDelimiter(String delimiter) {
-    return ListElement._(_element, delimiter, _comment);
+    return ListElement._(_element, blockFormat, delimiter, _comment);
   }
 }
 
@@ -261,6 +267,20 @@ enum Commas {
   nonTrailing,
 
   /// Don't add commas after any elements.
+  none,
+}
+
+/// What kind of block formatting style can be applied to the element.
+enum BlockFormat {
+  /// The element is a function expression, which takes priority over other
+  /// kinds of block formatted elements.
+  function,
+
+  /// The element is a collection literal or some other kind expression that
+  /// can be block formatted.
+  block,
+
+  /// The element can't be block formatted.
   none,
 }
 
