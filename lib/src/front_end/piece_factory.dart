@@ -611,7 +611,7 @@ mixin PieceFactory implements CommentWriter {
 
     var initializer = pieces.take();
     pieces.give(AssignPiece(target, initializer,
-        isValueDelimited: rightHandSide.isDelimited));
+        isValueDelimited: rightHandSide.canBlockSplit));
   }
 
   /// Finishes writing a named function declaration or anonymous function

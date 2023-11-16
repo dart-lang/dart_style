@@ -49,7 +49,7 @@ class DelimitedListBuilder {
   /// literal, etc.
   DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
 
-  /// Create the final [ListPiece] out of the added brackets, delimiters,
+  /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
   ListPiece build() {
     var blockElement = -1;
@@ -398,7 +398,7 @@ class DelimitedListBuilder {
 
     for (var i = 0; i < _blockCandidates.length; i++) {
       var node = _blockCandidates[i];
-      if (node is Expression && node.isDelimited) {
+      if (node is Expression && node.canBlockSplit) {
         if (node is FunctionExpression) {
           functions.add(i);
         } else {
