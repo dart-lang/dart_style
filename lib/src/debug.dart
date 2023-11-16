@@ -283,7 +283,8 @@ class _PieceDebugTree {
     });
   }
 
-  /// The approximate number of characters needed to print this tree.
+  /// The approximate number of characters of output needed to print this tree
+  /// on a single line.
   ///
   /// Used to determine when to show a tree's children inline or split. Note
   /// that this is O(n^2), but we don't really care since it's only used for
