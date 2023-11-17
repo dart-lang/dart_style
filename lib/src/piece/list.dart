@@ -15,7 +15,35 @@ import 'piece.dart';
 /// the list is split or not. It handles comments inside the sequence of
 /// elements.
 ///
-/// Usually constructed using [createList()] or a [DelimitedListBuilder].
+/// These pieces can be formatted in one of three ways:
+///
+/// [State.split] Fully unsplit:
+///
+/// ```
+/// function(argument, argument, argument);
+/// ```
+///
+/// If one of the elements is a "block element", then we allow newlines inside
+/// it to support output like:
+///
+/// ```
+/// function(argument, () {
+///   blockElement;
+/// }, argument);
+/// ```
+///
+/// [_splitState] Split around all of the items:
+///
+/// ```
+/// function(
+///   argument,
+///   argument,
+///   argument,
+/// );
+/// ```
+///
+/// ListPieces are usually constructed using [createList()] or
+/// [DelimitedListBuilder].
 class ListPiece extends Piece {
   /// The opening bracket before the elements, if any.
   final Piece? _before;
@@ -37,29 +65,28 @@ class ListPiece extends Piece {
   ///
   /// We use this instead of [State.split] because the cost is higher for some
   /// kinds of lists.
+  ///
+  /// Also, if this list does have a block element, then we also increase the
+  /// cost of splitting the list itself a little more to prefer the block
+  /// argument splitting when possible.
   // TODO(rnystrom): Having to use a different state for this is a little
   // cumbersome. Maybe it would be better to most costs out of [State] and
   // instead have the [Solver] ask each [Piece] for the cost of its state.
   final State _splitState;
 
-  ListPiece(
-      this._before, this._elements, this._blanksAfter, this._after, this._style)
-      : _splitState = State(1, cost: _style.splitCost);
+  /// If this list has an element that can receive block formatting, this is
+  /// the elements's index. Otherwise `-1`.
+  final int _blockElement;
+
+  ListPiece(this._before, this._elements, this._blanksAfter, this._after,
+      this._style, this._blockElement)
+      : _splitState = State(2, cost: _style.splitCost);
 
   @override
   List<State> get additionalStates => [if (_elements.isNotEmpty) _splitState];
 
   @override
   void format(CodeWriter writer, State state) {
-    // TODO(tall): Should support a third state for argument lists with block
-    // arguments, like:
-    //
-    // ```
-    // test('description', () {
-    //   ...
-    // });
-    // ```
-
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
       if (_style.splitListIfBeforeSplits && state == State.unsplit) {
@@ -89,8 +116,17 @@ class ListPiece extends Piece {
         Commas.none => false,
       };
 
+      // Only allow newlines in the block element or in all elements if we're
+      // fully split.
+      writer.setAllowNewlines(i == _blockElement || state == _splitState);
+
       var element = _elements[i];
       element.format(writer, appendComma: appendComma);
+
+      // Only allow newlines in comments if we're fully split.
+      writer.setAllowNewlines(state == _splitState);
+
+      element.formatComment(writer);
 
       // Write a space or newline between elements.
       if (!isLast) {
@@ -148,6 +184,9 @@ class ListPiece extends Piece {
 final class ListElement {
   final Piece? _element;
 
+  /// What kind of block formatting can be applied to this element.
+  final BlockFormat blockFormat;
+
   /// If this piece has an opening delimiter after the comma, this is its
   /// lexeme, otherwise an empty string.
   ///
@@ -164,11 +203,14 @@ final class ListElement {
 
   final Piece? _comment;
 
-  ListElement(Piece element, [Piece? comment]) : this._(element, '', comment);
+  ListElement(Piece element, BlockFormat format, [Piece? comment])
+      : this._(element, format, '', comment);
 
-  ListElement.comment(Piece comment) : this._(null, '', comment);
+  ListElement.comment(Piece comment)
+      : this._(null, BlockFormat.none, '', comment);
 
-  ListElement._(this._element, this._delimiter, [this._comment]);
+  ListElement._(this._element, this.blockFormat, this._delimiter,
+      [this._comment]);
 
   /// Writes this element to [writer].
   ///
@@ -183,7 +225,9 @@ final class ListElement {
         writer.write(_delimiter);
       }
     }
+  }
 
+  void formatComment(CodeWriter writer) {
     if (_comment case var comment?) {
       if (_element != null) writer.space();
       writer.format(comment);
@@ -198,11 +242,11 @@ final class ListElement {
   /// Returns a new [ListElement] containing this one's element and [comment].
   ListElement withComment(Piece comment) {
     assert(_comment == null); // Shouldn't already have one.
-    return ListElement._(_element, _delimiter, comment);
+    return ListElement._(_element, blockFormat, _delimiter, comment);
   }
 
   ListElement withDelimiter(String delimiter) {
-    return ListElement._(_element, delimiter, _comment);
+    return ListElement._(_element, blockFormat, delimiter, _comment);
   }
 }
 
@@ -220,6 +264,20 @@ enum Commas {
   nonTrailing,
 
   /// Don't add commas after any elements.
+  none,
+}
+
+/// What kind of block formatting style can be applied to the element.
+enum BlockFormat {
+  /// The element is a function expression, which takes priority over other
+  /// kinds of block formatted elements.
+  function,
+
+  /// The element is a collection literal or some other kind expression that
+  /// can be block formatted.
+  block,
+
+  /// The element can't be block formatted.
   none,
 }
 
@@ -290,9 +348,21 @@ class ListStyle {
   /// ```
   final bool splitListIfBeforeSplits;
 
+  /// Whether an element in the list is allowed to have block-like formatting,
+  /// as in:
+  ///
+  /// ```
+  /// function(argument, [
+  ///   block,
+  ///   like,
+  /// ], argument);
+  /// ```
+  final bool allowBlockElement;
+
   const ListStyle(
       {this.commas = Commas.trailing,
       this.splitCost = Cost.normal,
       this.spaceWhenUnsplit = false,
-      this.splitListIfBeforeSplits = false});
+      this.splitListIfBeforeSplits = false,
+      this.allowBlockElement = false});
 }

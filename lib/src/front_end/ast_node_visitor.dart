@@ -115,10 +115,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitArgumentList(ArgumentList node) {
-    createList(
-        leftBracket: node.leftParenthesis,
-        node.arguments,
-        rightBracket: node.rightParenthesis);
+    createArgumentList(
+        node.leftParenthesis, node.arguments, node.rightParenthesis);
   }
 
   @override
@@ -134,14 +132,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   @override
   void visitAssertStatement(AssertStatement node) {
     token(node.assertKeyword);
-    createList(
-      [
-        node.condition,
-        if (node.message case var message?) message,
-      ],
-      leftBracket: node.leftParenthesis,
-      rightBracket: node.rightParenthesis,
-    );
+    createArgumentList(
+        node.leftParenthesis,
+        [
+          node.condition,
+          if (node.message case var message?) message,
+        ],
+        node.rightParenthesis);
     token(node.semicolon);
   }
 
@@ -438,7 +435,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
               spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
       builder.leftBracket(node.leftBracket);
       node.constants.forEach(builder.visit);
-
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
       pieces.give(builder.build());
     } else {
@@ -959,8 +955,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitMethodInvocation(MethodInvocation node) {
-    // TODO(tall): Support method invocation with explicit target expressions.
-    if (node.target != null) throw UnimplementedError();
+    // TODO(tall): Support splitting at `.` or `?.`. Right now we just format
+    // it inline so that we can use method calls in other tests.
+    visit(node.target);
+    token(node.operator);
 
     visit(node.methodName);
     visit(node.typeArguments);

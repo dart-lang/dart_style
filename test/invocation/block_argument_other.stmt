@@ -1,0 +1,89 @@
+40 columns                              |
+### Test other behavior related to block arguments.
+>>> Can have non-block arguments before the block argument.
+function(first, second, [third, fourth, fifth]);
+<<<
+function(first, second, [
+  third,
+  fourth,
+  fifth,
+]);
+>>> Can have non-block arguments after the block argument.
+function([first, second, third], fourth, fifth);
+<<<
+function([
+  first,
+  second,
+  third,
+], fourth, fifth);
+>>> Can have non-block arguments before and after the block argument.
+function(first, second, [third, fourth], fifth);
+<<<
+function(first, second, [
+  third,
+  fourth,
+], fifth);
+>>> Don't block argument format if it fits better to not.
+function('a long leading argument', <String>[element, element]);
+<<<
+function(
+  'a long leading argument',
+  <String>[element, element],
+);
+>>>
+function('a long leading argument',
+<String>[element, element, element, element]);
+<<<
+function(
+  'a long leading argument',
+  <String>[
+    element,
+    element,
+    element,
+    element,
+  ],
+);
+>>>
+function(<AVeryLong<Nested, GenericType>>[e]);
+<<<
+function(
+  <AVeryLong<Nested, GenericType>>[e],
+);
+>>>
+function(<AVeryLong<Nested, GenericType>>[element]);
+<<<
+function(
+  <AVeryLong<Nested, GenericType>>[
+    element,
+  ],
+);
+>>> A function block argument can be named.
+function(name: () { body; });
+<<<
+function(name: () {
+  body;
+});
+>>> A non-function block argument can be named.
+function(name: [element, element, element]);
+<<<
+function(name: [
+  element,
+  element,
+  element,
+]);
+>>> A long argument name can prevent block formatting.
+veryLongFunctionName(veryLongArgumentName: [element]);
+<<<
+veryLongFunctionName(
+  veryLongArgumentName: [element],
+);
+>>> A long argument name can prevent block formatting.
+veryLongFunctionName(veryLongArgumentName: [element, element, element]);
+<<<
+veryLongFunctionName(
+  veryLongArgumentName: [
+    element,
+    element,
+    element,
+  ],
+);

@@ -1,0 +1,66 @@
+40 columns                              |
+### Test how multiple block argument candidates are handled.
+>>> Multiple function expressions prevent block formatting.
+function(() { one; }, () { two; });
+<<<
+function(
+  () {
+    one;
+  },
+  () {
+    two;
+  },
+);
+>>> Empty and non-empty function expressions.
+function(() {}, () { body; }, () {});
+<<<
+function(() {}, () {
+  body;
+}, () {});
+>>> Function expression takes precedence over other kinds of block arguments.
+### The function is block formatted but the other arguments aren't.
+function([1, 2], () { body; }, {3, 4});
+<<<
+function([1, 2], () {
+  body;
+}, {3, 4});
+>>> Multiple collections prevent block formatting.
+function([element, element], {key: value});
+<<<
+function(
+  [element, element],
+  {key: value},
+);
+>>> Empty and non-empty collections.
+function([], [element, element], <String>{});
+<<<
+function([], [
+  element,
+  element,
+], <String>{});
+>>> Multiple calls prevent block formatting.
+function(inner(argument), new SomeClass(argument));
+<<<
+function(
+  inner(argument),
+  new SomeClass(argument),
+);
+>>> Empty and non-empty calls.
+function(a(), inner(argument), const C());
+<<<
+function(a(), inner(
+  argument,
+), const C());
+>>> Multiple switches prevent block formatting.
+function(switch (a) { 1 => 2 }, switch (b) { 1 => 2 });
+<<<
+function(
+  switch (a) { 1 => 2 },
+  switch (b) { 1 => 2 },
+);
+>>> Empty and non-empty switches.
+function(switch (a) {}, switch (b) { 1 => 2 }, switch (c) {});
+<<<
+function(switch (a) {}, switch (b) {
+  1 => 2,
+}, switch (c) {});

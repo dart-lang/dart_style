@@ -48,3 +48,11 @@ new prefix.VeryLongClassName.veryLongNamedConstructor();
 new prefix
     .VeryLongClassName
     .veryLongNamedConstructor();
+>>> Allow block-formatted argument.
+new Future(new Duration(1), () {
+      print('I am a callback');
+    });
+<<<
+new Future(new Duration(1), () {
+  print('I am a callback');
+});

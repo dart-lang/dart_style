@@ -49,6 +49,16 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 mixin PieceFactory implements CommentWriter {
   void visit(AstNode? node, {void Function()? before, void Function()? after});
 
+  /// Creates a [ListPiece] for an argument list.
+  void createArgumentList(
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+    return createList(
+        leftBracket: leftBracket,
+        elements,
+        rightBracket: rightBracket,
+        style: const ListStyle(allowBlockElement: true));
+  }
+
   /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
   /// body.
   ///
@@ -425,20 +435,16 @@ mixin PieceFactory implements CommentWriter {
   /// Visits the `switch (expr)` part of a switch statement or expression.
   void createSwitchValue(Token switchKeyword, Token leftParenthesis,
       Expression value, Token rightParenthesis) {
-    // Format like an argument list since it is an expression surrounded by
-    // parentheses.
-    var builder = DelimitedListBuilder(
-        this, const ListStyle(commas: Commas.none, splitCost: 2));
-
     // Attach the `switch ` as part of the `(`.
     token(switchKeyword);
     space();
 
-    builder.leftBracket(leftParenthesis);
-    builder.visit(value);
-    builder.rightBracket(rightParenthesis);
-
-    pieces.give(builder.build());
+    createList(
+        leftBracket: leftParenthesis,
+        [value],
+        rightBracket: rightParenthesis,
+        style: const ListStyle(
+            commas: Commas.none, splitCost: 2, allowBlockElement: true));
   }
 
   /// Creates a class, enum, extension, mixin, or mixin application class
@@ -605,7 +611,7 @@ mixin PieceFactory implements CommentWriter {
 
     var initializer = pieces.take();
     pieces.give(AssignPiece(target, initializer,
-        isValueDelimited: rightHandSide.isDelimited));
+        isValueDelimited: rightHandSide.canBlockSplit));
   }
 
   /// Finishes writing a named function declaration or anonymous function

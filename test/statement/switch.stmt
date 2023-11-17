@@ -269,14 +269,10 @@ switch ([veryLongElement,veryLongElement]) {
     return "ok";
 }
 <<<
-### TODO(tall): Once block arguments are supported, this should become:
-### switch ([
-###   veryLongElement,
-###   veryLongElement,
-### ]) {
-switch (
-  [veryLongElement, veryLongElement]
-) {
+switch ([
+  veryLongElement,
+  veryLongElement,
+]) {
   case 0:
     return "ok";
 }

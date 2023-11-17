@@ -34,14 +34,14 @@ import 'piece_writer.dart';
 /// couple of different ways.
 ///
 /// Comments between top-level declarations, member declarations inside types,
-/// and statements are handled directly by [SequenceBuilder].
+/// and statements are handled directly by [SequenceBuilder]. Comments inside
+/// argument lists, collection literals, and other similar constructs are
+/// handled directly be [DelimitedPieceBuilder].
 ///
 /// All other comments occur inside the middle of some expression or other
 /// construct. These get directly embedded in the [TextPiece] of the code being
 /// written. When that [TextPiece] is output later, it will include the comments
 /// as well.
-// TODO(tall): When argument lists and their comment handling is supported,
-// mention that here.
 mixin CommentWriter {
   PieceWriter get pieces;
 

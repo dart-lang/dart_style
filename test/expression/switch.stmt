@@ -67,19 +67,11 @@ e = switch ([veryLongElement,veryLongElement,veryLongElement,]) {
   0 => "ok"
 };
 <<<
-### TODO(tall): Once block arguments are supported, this should become:
-### e = switch ([
-###   veryLongElement,
-###   veryLongElement,
-###   veryLongElement,
-### ]) {
-e = switch (
-  [
-    veryLongElement,
-    veryLongElement,
-    veryLongElement,
-  ]
-) {
+e = switch ([
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
+]) {
   0 => "ok",
 };
 >>> Split in case expression.
