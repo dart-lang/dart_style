@@ -138,6 +138,18 @@ mixin PieceFactory implements CommentWriter {
     );
   }
 
+  /// Visits the leading keyword and parenthesized expression at the beginning
+  /// of an `if`, `while`, or `switch` expression or statement.
+  void startControlFlow(Token keyword, Token leftParenthesis, Expression value,
+      Token rightParenthesis) {
+    // Attach the keyword to the `(`.
+    token(keyword);
+    space();
+    token(leftParenthesis);
+    visit(value);
+    token(rightParenthesis);
+  }
+
   /// Creates metadata annotations for a directive.
   ///
   /// Always forces the annotations to be on a previous line.
@@ -221,11 +233,8 @@ mixin PieceFactory implements CommentWriter {
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
     void traverse(IfStatement node) {
-      token(node.ifKeyword);
-      space();
-      token(node.leftParenthesis);
-      visit(node.expression);
-      token(node.rightParenthesis);
+      startControlFlow(node.ifKeyword, node.leftParenthesis, node.expression,
+          node.rightParenthesis);
       var condition = pieces.split();
 
       // Edge case: When the then branch is a block and there is an else clause
@@ -419,25 +428,6 @@ mixin PieceFactory implements CommentWriter {
     if (leftBracket != null) builder.leftBracket(leftBracket);
     elements.forEach(builder.visit);
     if (rightBracket != null) builder.rightBracket(rightBracket);
-    pieces.give(builder.build());
-  }
-
-  /// Visits the `switch (expr)` part of a switch statement or expression.
-  void createSwitchValue(Token switchKeyword, Token leftParenthesis,
-      Expression value, Token rightParenthesis) {
-    // Format like an argument list since it is an expression surrounded by
-    // parentheses.
-    var builder = DelimitedListBuilder(
-        this, const ListStyle(commas: Commas.none, splitCost: 2));
-
-    // Attach the `switch ` as part of the `(`.
-    token(switchKeyword);
-    space();
-
-    builder.leftBracket(leftParenthesis);
-    builder.visit(value);
-    builder.rightBracket(rightParenthesis);
-
     pieces.give(builder.build());
   }
 

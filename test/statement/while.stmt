@@ -7,7 +7,7 @@ while (true) {}
 while (true);
 <<<
 while (true) ;
->>> Don't split before long condition.
+>>> Don't split at parentheses.
 while (aLongConditionExpressionThatWraps) {
   ;
 }
@@ -22,6 +22,18 @@ while (aLongCondition + expressionThatWraps) {
 <<<
 while (aLongCondition +
     expressionThatWraps) {
+  ;
+}
+>>> Block format condition expressions that allow it.
+while (function(argument, argument, argument)) {
+  ;
+}
+<<<
+while (function(
+  argument,
+  argument,
+  argument,
+)) {
   ;
 }
 >>> Unbraced body.

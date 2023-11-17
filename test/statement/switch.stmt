@@ -251,15 +251,13 @@ switch (fruit) {
   default:
     break;
 }
->>> Split before the switch expression.
+>>> Don't split at parentheses.
 switch ("a long string that must wrap") {
   case 0:
     return "ok";
 }
 <<<
-switch (
-  "a long string that must wrap"
-) {
+switch ("a long string that must wrap") {
   case 0:
     return "ok";
 }
@@ -269,14 +267,10 @@ switch ([veryLongElement,veryLongElement]) {
     return "ok";
 }
 <<<
-### TODO(tall): Once block arguments are supported, this should become:
-### switch ([
-###   veryLongElement,
-###   veryLongElement,
-### ]) {
-switch (
-  [veryLongElement, veryLongElement]
-) {
+switch ([
+  veryLongElement,
+  veryLongElement,
+]) {
   case 0:
     return "ok";
 }

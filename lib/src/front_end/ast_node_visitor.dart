@@ -1282,7 +1282,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     var list = DelimitedListBuilder(this,
         const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
 
-    createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
+    startControlFlow(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
     space();
     list.leftBracket(node.leftBracket);
@@ -1306,7 +1306,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitSwitchStatement(SwitchStatement node) {
-    createSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
+    startControlFlow(node.switchKeyword, node.leftParenthesis, node.expression,
         node.rightParenthesis);
 
     // Attach the ` {` after the `)` in the [ListPiece] created by

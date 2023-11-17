@@ -206,19 +206,11 @@ var variableName = switch (value) {
 var variableName = switch ([longElement, longElement, longElement])
 { 1 => 'one', 2 => 'two' };
 <<<
-### TODO(tall): Once block arguments are supported, this should become:
-### var variableName = switch ([
-###   longElement,
-###   longElement,
-###   longElement,
-### ]) {
-var variableName = switch (
-  [
-    longElement,
-    longElement,
-    longElement,
-  ]
-) {
+var variableName = switch ([
+  longElement,
+  longElement,
+  longElement,
+]) {
   1 => 'one',
   2 => 'two',
 };
