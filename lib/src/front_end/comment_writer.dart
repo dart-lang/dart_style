@@ -78,7 +78,6 @@ mixin CommentWriter {
 
       if (comments.isHanging(i)) {
         // Attach the comment to the previous token.
-        pieces.writeSpace();
         pieces.writeComment(comment, hanging: true);
       } else {
         pieces.writeNewline();
@@ -202,8 +201,7 @@ class SourceComment {
       {required this.flushLeft, required this.offset});
 
   /// Whether this comment contains a mandatory newline, either because it's a
-  /// comment that should be on its own line or a lexeme with a newline inside
-  /// it (i.e. multi-line block comment, multi-line string).
+  /// comment that should be on its own line or is a multi-line block comment.
   bool get containsNewline =>
       type != CommentType.inlineBlock || text.contains('\n');
 

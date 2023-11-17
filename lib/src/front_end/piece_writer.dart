@@ -4,6 +4,7 @@
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../back_end/solver.dart';
+import '../comment_type.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
@@ -124,10 +125,6 @@ class PieceWriter {
   /// Whether we should write a space before the next text that is written.
   bool _pendingSpace = false;
 
-  /// Whether we should write a newline in the current [TextPiece] before the
-  /// next text that is written.
-  bool _pendingNewline = false;
-
   /// Whether we should create a new [TextPiece] the next time text is written.
   bool _pendingSplit = false;
 
@@ -221,14 +218,14 @@ class PieceWriter {
 
   /// Writes a mandatory newline from a comment to the current [TextPiece].
   void writeNewline() {
-    _pendingNewline = true;
+    _currentText!.newline();
   }
 
   /// Write the contents of [comment] to the current innermost [TextPiece],
   /// handling any newlines that may appear in it.
   ///
   /// If [hanging] is `true`, then the comment is appended to the current line
-  /// even if call to [split()] has just happened. This is used for writing a
+  /// even if a call to [split()] has happened. This is used for writing a
   /// comment that should be on the end of a line.
   void writeComment(SourceComment comment, {bool hanging = false}) {
     _write(comment.text,
@@ -246,10 +243,9 @@ class PieceWriter {
     // current text.
     if (textPiece == null || _pendingSplit && !hanging) {
       textPiece = _currentText = TextPiece();
-    } else if (_pendingNewline) {
-      textPiece.newline();
-    } else if (_pendingSpace) {
-      textPiece.append(' ');
+    } else if (_pendingSpace || hanging) {
+      // Always write a space before hanging comments.
+      textPiece.appendSpace();
     }
 
     if (offset != null) {
@@ -267,7 +263,6 @@ class PieceWriter {
     textPiece.append(text, containsNewline: containsNewline);
 
     _pendingSpace = false;
-    _pendingNewline = false;
     if (!hanging) _pendingSplit = false;
   }
 
