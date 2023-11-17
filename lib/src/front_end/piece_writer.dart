@@ -4,7 +4,6 @@
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../back_end/solver.dart';
-import '../comment_type.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
