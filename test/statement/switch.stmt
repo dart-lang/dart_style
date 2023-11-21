@@ -251,15 +251,13 @@ switch (fruit) {
   default:
     break;
 }
->>> Split before the switch expression.
+>>> Don't split at parentheses.
 switch ("a long string that must wrap") {
   case 0:
     return "ok";
 }
 <<<
-switch (
-  "a long string that must wrap"
-) {
+switch ("a long string that must wrap") {
   case 0:
     return "ok";
 }

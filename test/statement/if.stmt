@@ -1,9 +1,36 @@
 40 columns                              |
->>> Split in condition.
+>>> Don't split before or after condition.
+if (veryLongConditionExpressionWithNoSplit) { body;}
+<<<
+if (veryLongConditionExpressionWithNoSplit) {
+  body;
+}
+>>> Split inside condition expression.
 if (veryLongCondition || anotherLongCondition) { body; }
 <<<
 if (veryLongCondition ||
     anotherLongCondition) {
+  body;
+}
+>>> Condition expressions can use block formatting.
+if ([element, element, element, element]) { body; }
+<<<
+if ([
+  element,
+  element,
+  element,
+  element,
+]) {
+  body;
+}
+>>>
+if (someFunction(argument, argument, argument)) { body; }
+<<<
+if (someFunction(
+  argument,
+  argument,
+  argument,
+)) {
   body;
 }
 >>> Indentation.

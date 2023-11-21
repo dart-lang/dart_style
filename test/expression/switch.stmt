@@ -52,14 +52,12 @@ e = switch (obj) {
   1 => b,
   2 => c,
 };
->>> Split before switch value.
+>>> Don't split at parentheses.
 e = switch ("a long string that must wrap") {
   0 => "ok"
 };
 <<<
-e = switch (
-  "a long string that must wrap"
-) {
+e = switch ("a long string that must wrap") {
   0 => "ok",
 };
 >>> Split in delimited value expression.

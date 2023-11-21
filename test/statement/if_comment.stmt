@@ -1,0 +1,80 @@
+40 columns                              |
+>>> Line comment after `if`.
+if // comment
+(c) { body; }
+<<<
+if // comment
+(c) {
+  body;
+}
+>>> Line comment before condition.
+if (// comment
+c) { body; }
+<<<
+if ( // comment
+c) {
+  body;
+}
+>>> Line comment after condition.
+if (c // comment
+){ body; }
+<<<
+if (c // comment
+) {
+  body;
+}
+>>> Line comment after `)`.
+if (c) // comment
+{ body; }
+<<<
+if (c) // comment
+{
+  body;
+}
+>>> Line comment after body.
+if (c)
+{ body; } // comment
+<<<
+if (c) {
+  body;
+} // comment
+>>> Line comment before `else`.
+if (c) { body; } // comment
+else { other; }
+<<<
+if (c) {
+  body;
+} // comment
+else {
+  other;
+}
+>>> Line comment after `else`.
+if (c) { body; } else// comment
+{ other; }
+<<<
+if (c) {
+  body;
+} else // comment
+{
+  other;
+}
+>>> Line comment after `else` body.
+if (c) { body; } else { other; }// comment
+<<<
+if (c) {
+  body;
+} else {
+  other;
+} // comment
+>>> Line comments in logic condition.
+if (// Do stuff.
+  condition1 ||
+  // More stuff.
+  condition2) { body; }
+<<<
+if ( // Do stuff.
+    condition1 ||
+    // More stuff.
+    condition2) {
+  body;
+}
