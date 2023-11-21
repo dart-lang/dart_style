@@ -42,7 +42,4 @@ class InfixPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     operands.forEach(callback);
   }
-
-  @override
-  String toString() => 'Infix';
 }

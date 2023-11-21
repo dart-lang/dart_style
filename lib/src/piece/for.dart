@@ -59,7 +59,4 @@ class ForPiece extends Piece {
     callback(_forParts);
     callback(_body);
   }
-
-  @override
-  String toString() => 'For';
 }

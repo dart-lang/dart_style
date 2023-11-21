@@ -60,3 +60,24 @@ function<
     AnotherLongTypeName
   >
 >(1, 2, 3);
+>>> Multiple nested split arguments.
+someFunctionOne(someArgument,
+someFunctionTwo(argument, argument, argument),
+someFunctionTwo(argument, argument, argument),
+someArgument, someArgument);
+<<<
+someFunctionOne(
+  someArgument,
+  someFunctionTwo(
+    argument,
+    argument,
+    argument,
+  ),
+  someFunctionTwo(
+    argument,
+    argument,
+    argument,
+  ),
+  someArgument,
+  someArgument,
+);

@@ -21,7 +21,4 @@ class AdjacentPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     _pieces.forEach(callback);
   }
-
-  @override
-  String toString() => 'Adjacent';
 }

@@ -49,6 +49,16 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 mixin PieceFactory implements CommentWriter {
   void visit(AstNode? node, {void Function()? before, void Function()? after});
 
+  /// Creates a [ListPiece] for an argument list.
+  void createArgumentList(
+      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+    return createList(
+        leftBracket: leftBracket,
+        elements,
+        rightBracket: rightBracket,
+        style: const ListStyle(allowBlockElement: true));
+  }
+
   /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
   /// body.
   ///
@@ -595,7 +605,7 @@ mixin PieceFactory implements CommentWriter {
 
     var initializer = pieces.take();
     pieces.give(AssignPiece(target, initializer,
-        isValueDelimited: rightHandSide.isDelimited));
+        isValueDelimited: rightHandSide.canBlockSplit));
   }
 
   /// Finishes writing a named function declaration or anonymous function

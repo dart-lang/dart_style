@@ -121,9 +121,6 @@ class ClausesPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     _clauses.forEach(callback);
   }
-
-  @override
-  String toString() => 'Clauses';
 }
 
 /// A keyword followed by a comma-separated list of items described by that
@@ -156,7 +153,4 @@ class ClausePiece extends Piece {
     callback(_keyword);
     _parts.forEach(callback);
   }
-
-  @override
-  String toString() => 'Clause';
 }

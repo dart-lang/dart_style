@@ -44,8 +44,15 @@ class DelimitedListBuilder {
   /// literal, etc.
   DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
 
-  ListPiece build() =>
-      ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
+  /// Creates the final [ListPiece] out of the added brackets, delimiters,
+  /// elements, and style.
+  ListPiece build() {
+    var blockElement = -1;
+    if (_style.allowBlockElement) blockElement = _findBlockElement();
+
+    return ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
+        _style, blockElement);
+  }
 
   /// Adds the opening [bracket] to the built list.
   ///
@@ -119,8 +126,8 @@ class DelimitedListBuilder {
   /// [addCommentsBefore()] for the first token in the [piece].
   ///
   /// Assumes there is no comma after this piece.
-  void add(Piece piece) {
-    _elements.add(ListElement(piece));
+  void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
+    _elements.add(ListElement(piece, format));
     _commentsBeforeComma = CommentSequence.empty;
   }
 
@@ -136,9 +143,16 @@ class DelimitedListBuilder {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.firstNonCommentToken);
 
+    // See if it's an expression that supports block formatting.
+    var format = switch (element) {
+      FunctionExpression() when element.canBlockSplit => BlockFormat.function,
+      Expression() when element.canBlockSplit => BlockFormat.block,
+      _ => BlockFormat.none,
+    };
+
     // Traverse the element itself.
     _visitor.visit(element);
-    add(_visitor.pieces.split());
+    add(_visitor.pieces.split(), format);
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
@@ -372,5 +386,48 @@ class DelimitedListBuilder {
       separate: separateComments,
       leading: leadingComments
     );
+  }
+
+  /// If [_blockCandidates] contains a single expression that can receive
+  /// block formatting, then returns its index. Otherwise returns `-1`.
+  int _findBlockElement() {
+    // TODO(tall): These heuristics will probably need some iteration.
+    var functions = <int>[];
+    var others = <int>[];
+
+    for (var i = 0; i < _elements.length; i++) {
+      switch (_elements[i].blockFormat) {
+        case BlockFormat.function:
+          functions.add(i);
+        case BlockFormat.block:
+          others.add(i);
+        case BlockFormat.none:
+          break; // Not a block element.
+      }
+    }
+
+    // A function expression takes precedence over other block arguments.
+    if (functions.length == 1) return functions.first;
+
+    // Otherwise, if there is single block argument, it can be block formatted.
+    if (functions.isEmpty && others.length == 1) return others.first;
+
+    // There are no block arguments, or it's ambiguous as to which one should
+    // be it.
+    // TODO(tall): The old formatter allows multiple block arguments, like:
+    //
+    // ```
+    // function(() {
+    //   body;
+    // }, () {
+    //   more;
+    // });
+    // ```
+    //
+    // This doesn't seem very common in the Flutter repo, but does occur
+    // sometimes. We'll probably want to experiment to see if it's worth
+    // supporting multiple block arguments. If so, we should at least require
+    // them to be contiguous with no non-block arguments in the middle.
+    return -1;
   }
 }

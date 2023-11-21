@@ -55,7 +55,4 @@ class BlockPiece extends Piece {
     callback(contents);
     callback(rightBracket);
   }
-
-  @override
-  String toString() => 'Block';
 }

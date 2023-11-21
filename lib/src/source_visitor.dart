@@ -364,7 +364,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // Treat empty blocks specially. In most cases, they are not allowed to
     // split. However, an empty block as the then statement of an if with an
     // else is always split.
-    if (node.statements.isEmptyBody(node.rightBracket)) {
+    if (!node.statements.canSplit(node.rightBracket)) {
       token(node.leftBracket);
       if (_splitEmptyBlock(node)) newline();
       token(node.rightBracket);
@@ -2803,7 +2803,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSwitchExpression(SwitchExpression node) {
-    if (node.cases.isEmptyBody(node.rightBracket)) {
+    if (!node.cases.canSplit(node.rightBracket)) {
       // Don't allow splitting an empty switch expression.
       _visitSwitchValue(node.switchKeyword, node.leftParenthesis,
           node.expression, node.rightParenthesis);
@@ -4147,7 +4147,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// Writes the brace-delimited body containing [nodes].
   void _visitBody(Token leftBracket, List<AstNode> nodes, Token rightBracket) {
     // Don't allow splitting in an empty body.
-    if (nodes.isEmptyBody(rightBracket)) {
+    if (!nodes.canSplit(rightBracket)) {
       token(leftBracket);
       token(rightBracket);
       return;

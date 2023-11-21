@@ -46,7 +46,4 @@ class ChainPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     _operations.forEach(callback);
   }
-
-  @override
-  String toString() => 'Chain';
 }

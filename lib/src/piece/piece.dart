@@ -59,6 +59,14 @@ abstract class Piece {
   void pin(State state) {
     _pinnedState = state;
   }
+
+  /// The name of this piece as it appears in debug output.
+  ///
+  /// By default, this is the class's name with `Piece` removed.
+  String get debugName => runtimeType.toString().replaceAll('Piece', '');
+
+  @override
+  String toString() => debugName;
 }
 
 /// A simple atomic piece of code.

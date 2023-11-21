@@ -81,11 +81,11 @@ extension AstNodeExtensions on AstNode {
     if (node is SpreadElement) {
       var expression = node.expression;
       if (expression is ListLiteral) {
-        if (!expression.elements.isEmptyBody(expression.rightBracket)) {
+        if (expression.elements.canSplit(expression.rightBracket)) {
           return expression.leftBracket;
         }
       } else if (expression is SetOrMapLiteral) {
-        if (!expression.elements.isEmptyBody(expression.rightBracket)) {
+        if (expression.elements.canSplit(expression.rightBracket)) {
           return expression.leftBracket;
         }
       }
@@ -99,44 +99,91 @@ extension AstIterableExtensions on Iterable<AstNode> {
   /// Whether there is a comma token immediately following this.
   bool get hasCommaAfter => isNotEmpty && last.hasCommaAfter;
 
-  /// Whether the collection literal or block containing these nodes and
-  /// terminated by [rightBracket] is empty or not.
+  /// Whether the delimited construct containing these nodes and terminated by
+  /// [rightBracket] can have a split inside it.
   ///
-  /// An empty collection must have no elements or comments inside. Collections
-  /// like that are treated specially because they cannot be split inside.
-  bool isEmptyBody(Token rightBracket) =>
-      isEmpty && rightBracket.precedingComments == null;
+  /// We disallow splitting for entirely empty delimited constructs like `[]`,
+  /// but allow a split if there are elements or comments inside.
+  bool canSplit(Token rightBracket) =>
+      isNotEmpty || rightBracket.precedingComments != null;
 }
 
 extension ExpressionExtensions on Expression {
-  /// Whether this expression is a "delimited" one that allows block-like
-  /// formatting in some contexts. For example, in an assignment, a split in
-  /// the assigned value is usually indented:
+  /// Whether this expression is a non-empty delimited container for inner
+  /// expressions that allows "block-like" formatting in some contexts. For
+  /// example, in an assignment, a split in the assigned value is usually
+  /// indented:
   ///
   /// ```
   /// var variableName =
   ///     longValue;
   /// ```
   ///
-  /// But not if the initializer is a delimited expression and we don't split
-  /// at the `=`:
+  /// But if the initializer is block-like, we don't split at the `=`:
   ///
   /// ```
   /// var variableName = [
   ///   element,
   /// ];
   /// ```
-  bool get isDelimited => switch (this) {
-        FunctionExpression() => true,
-        InstanceCreationExpression() => true,
-        ListLiteral() => true,
-        MethodInvocation() => true,
-        ParenthesizedExpression(:var expression) => expression.isDelimited,
-        RecordLiteral() => true,
-        SetOrMapLiteral() => true,
-        SwitchExpression() => true,
-        _ => false,
-      };
+  ///
+  /// Likewise, in an argument list, block-like expressions can avoid splitting
+  /// the surrounding argument list:
+  ///
+  /// ```
+  /// function([
+  ///   element,
+  /// ]);
+  /// ```
+  ///
+  /// Completely empty delimited constructs like `[]` and `foo()` don't allow
+  /// splitting inside them, so are not considered block-like.
+  bool get canBlockSplit {
+    // Unwrap named expressions to get the real expression inside.
+    var expression = this;
+    if (expression is NamedExpression) {
+      expression = expression.expression;
+    }
+
+    // TODO(tall): We should also allow multi-line strings to be formatted
+    // like block arguments, at least in some cases like:
+    //
+    // ```
+    // function('''
+    //   Lots of
+    //   text
+    // ''');
+    // ```
+
+    // TODO(tall): Consider whether immediately-invoked function expressions
+    // should be block argument candidates, like:
+    //
+    // ```
+    // function(() {
+    //   body;
+    // }());
+    // ```
+    return switch (expression) {
+      // A function expression can use either a non-empty parameter list or a
+      // non-empty block body for block formatting.
+      FunctionExpression(:var parameters?, :var body) =>
+        parameters.parameters.canSplit(parameters.rightParenthesis) ||
+            (body is BlockFunctionBody &&
+                body.block.statements.canSplit(body.block.rightBracket)),
+      ListLiteral(:var elements, :var rightBracket) ||
+      SetOrMapLiteral(:var elements, :var rightBracket) =>
+        elements.canSplit(rightBracket),
+      RecordLiteral(:var fields, :var rightParenthesis) =>
+        fields.canSplit(rightParenthesis),
+      SwitchExpression(:var cases, :var rightBracket) =>
+        cases.canSplit(rightBracket),
+      InstanceCreationExpression(:var argumentList) ||
+      MethodInvocation(:var argumentList) =>
+        argumentList.arguments.canSplit(argumentList.rightParenthesis),
+      ParenthesizedExpression(:var expression) => expression.canBlockSplit,
+      _ => false,
+    };
+  }
 
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {

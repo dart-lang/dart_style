@@ -49,10 +49,26 @@ assert(
 );
 <<<
 assert(1, 2);
->>> Add trailing comma if argument list split.
+>>> Add trailing comma if argument list splits.
 assert(longArgument1, veryLongArgument2);
 <<<
 assert(
   longArgument1,
   veryLongArgument2,
 );
+>>> Allow block formatting of condition.
+assert(inner(argument, argument, argument));
+<<<
+assert(inner(
+  argument,
+  argument,
+  argument,
+));
+>>> Allow block formatting of message.
+assert(true, inner(argument, argument, argument));
+<<<
+assert(true, inner(
+  argument,
+  argument,
+  argument,
+));
