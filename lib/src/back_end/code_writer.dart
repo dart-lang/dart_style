@@ -28,6 +28,19 @@ class CodeWriter {
   /// Buffer for the code being written.
   final StringBuffer _buffer = StringBuffer();
 
+  /// What whitespace should be written before the next non-whitespace text.
+  ///
+  /// When whitespace is written, instead of immediately writing it, we queue
+  /// it as pending. This ensures that we don't write trailing whitespace,
+  /// avoids writing spaces at the beginning of lines, and allows collapsing
+  /// multiple redundant newlines.
+  _Whitespace _pendingWhitespace = _Whitespace.none;
+
+  /// The number of spaces of indentation that should be begin the next line
+  /// when [_pendingWhitespace] is [_Whitespace.newline] or
+  /// [_Whitespace.blankLine].
+  int _pendingIndent = 0;
+
   /// The cost of the currently chosen line splits.
   int _cost = 0;
 
@@ -143,6 +156,7 @@ class CodeWriter {
     // TextPieces because that will preserve selection markers. Consider doing
     // something smarter for commas in lists and semicolons in for loops.
 
+    _flushWhitespace();
     _buffer.write(text);
     _column += text.length;
 
@@ -180,7 +194,10 @@ class CodeWriter {
 
   /// Writes a single space to the output.
   void space() {
-    write(' ');
+    // If a newline is already pending, then ignore the space.
+    if (_pendingWhitespace == _Whitespace.none) {
+      _pendingWhitespace = _Whitespace.space;
+    }
   }
 
   /// Inserts a line split in the output.
@@ -193,12 +210,15 @@ class CodeWriter {
     if (indent != null) setIndent(indent);
 
     handleNewline();
-    _finishLine();
-    _buffer.writeln();
-    if (blank) _buffer.writeln();
 
-    _column = _options.indent;
-    _buffer.write(' ' * _column);
+    // Collapse redundant newlines.
+    if (blank) {
+      _pendingWhitespace = _Whitespace.blankLine;
+    } else if (_pendingWhitespace != _Whitespace.blankLine) {
+      _pendingWhitespace = _Whitespace.newline;
+    }
+
+    _pendingIndent = _options.indent;
   }
 
   /// Sets whether newlines are allowed to occur from this point on for the
@@ -246,13 +266,44 @@ class CodeWriter {
   /// Sets [selectionStart] to be [start] code units into the output.
   void startSelection(int start) {
     assert(_selectionStart == null);
+
+    _flushWhitespace();
     _selectionStart = _buffer.length + start;
   }
 
   /// Sets [selectionEnd] to be [end] code units into the output.
   void endSelection(int end) {
     assert(_selectionEnd == null);
+
+    _flushWhitespace();
     _selectionEnd = _buffer.length + end;
+  }
+
+  /// Write any pending whitespace.
+  ///
+  /// This is called before non-whitespace text is about to be written, or
+  /// before the selection is updated since the latter requires an accurate
+  /// count of the written text, including whitespace.
+  void _flushWhitespace() {
+    switch (_pendingWhitespace) {
+      case _Whitespace.none:
+        break; // Nothing to do.
+
+      case _Whitespace.newline:
+      case _Whitespace.blankLine:
+        _finishLine();
+        _buffer.writeln();
+        if (_pendingWhitespace == _Whitespace.blankLine) _buffer.writeln();
+
+        _column = _pendingIndent;
+        _buffer.write(' ' * _column);
+
+      case _Whitespace.space:
+        _buffer.write(' ');
+        _column++;
+    }
+
+    _pendingWhitespace = _Whitespace.none;
   }
 
   void _finishLine() {
@@ -274,6 +325,21 @@ class CodeWriter {
       _nextPieceToExpand = null;
     }
   }
+}
+
+/// Different kinds of pending whitespace that have been requested.
+enum _Whitespace {
+  /// No pending whitespace.
+  none,
+
+  /// A single newline.
+  newline,
+
+  /// Two newlines.
+  blankLine,
+
+  /// A single space.
+  space
 }
 
 /// The mutable state local to a single piece being formatted.

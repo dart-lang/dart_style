@@ -88,14 +88,19 @@ class TextPiece extends Piece {
   /// multiline strings, etc.
   bool _containsNewline = false;
 
+  /// Whether this piece should have a newline written at the end of it.
+  ///
+  /// This is true during piece construction while lines are still being
+  /// written. It may also be true once a piece is fully complete if it ends in
+  /// a line comment.
+  bool _trailingNewline = false;
+
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
-  int? get selectionStart => _selectionStart;
   int? _selectionStart;
 
   /// The offset from the beginning of [text] where the selection ends, or
   /// `null` if the selection does not start within this chunk.
-  int? get selectionEnd => _selectionEnd;
   int? _selectionEnd;
 
   /// Whether the last line of this piece's text ends with [text].
@@ -106,16 +111,25 @@ class TextPiece extends Piece {
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
   void append(String text, {bool containsNewline = false}) {
-    if (_lines.isEmpty) _lines.add('');
+    if (_lines.isEmpty || _trailingNewline) _lines.add('');
 
     // TODO(perf): Consider a faster way of accumulating text.
     _lines.last = _lines.last + text;
 
     if (containsNewline) _containsNewline = true;
+
+    _trailingNewline = false;
+  }
+
+  void appendSpace() {
+    // Don't write an unnecessary space at the beginning of a line.
+    if (_trailingNewline) return;
+
+    append(' ');
   }
 
   void newline() {
-    _lines.add('');
+    _trailingNewline = true;
   }
 
   @override
@@ -136,6 +150,8 @@ class TextPiece extends Piece {
       if (i > 0) writer.newline();
       writer.write(_lines[i]);
     }
+
+    if (_trailingNewline) writer.newline();
   }
 
   @override
@@ -149,7 +165,6 @@ class TextPiece extends Piece {
       start += line.length;
     }
 
-    // print('TextPiece start $start (absolute = $abs)');
     _selectionStart = start;
   }
 
@@ -161,7 +176,6 @@ class TextPiece extends Piece {
       end += line.length;
     }
 
-    // print('TextPiece end $end (absolute = $abs)');
     _selectionEnd = end;
   }
 
