@@ -248,24 +248,15 @@ mixin PieceFactory implements CommentWriter {
 
     for (var i = 0; i < tryStatement.catchClauses.length; i++) {
       var catchClause = tryStatement.catchClauses[i];
-      if (catchClause.onKeyword case var onKeyword?) {
-        token(onKeyword);
-        space();
-        visit(catchClause.exceptionType);
-      }
-      if (catchClause.catchKeyword case var catchKeyword?) {
-        space();
-        token(catchKeyword);
-        space();
-        token(catchClause.leftParenthesis);
-        token(catchClause.exceptionParameter?.name);
-        if (catchClause.comma case var comma?) {
-          token(comma);
-          space();
-          token(catchClause.stackTraceParameter?.name);
-        }
-        token(catchClause.rightParenthesis);
-      }
+      token(catchClause.onKeyword, after: space);
+      visit(catchClause.exceptionType, after: space);
+
+      token(catchClause.catchKeyword, after: space);
+      token(catchClause.leftParenthesis);
+      token(catchClause.exceptionParameter?.name);
+      token(catchClause.comma, after: space);
+      token(catchClause.stackTraceParameter?.name);
+      token(catchClause.rightParenthesis);
       var catchClauseHeader = pieces.split();
 
       // Edge case: When there's another catch/on/finally after this one, we
