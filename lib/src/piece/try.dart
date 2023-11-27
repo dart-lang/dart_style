@@ -34,9 +34,6 @@ class TryPiece extends Piece {
       callback(section.body);
     }
   }
-
-  @override
-  String toString() => 'Try';
 }
 
 /// A section for a try.
