@@ -46,11 +46,11 @@ enum Output {
         break;
 
       case Output.json:
-        // TODO(rnystrom): Put an empty selection in here to remain compatible with
-        // the old formatter. Since there's no way to pass a selection on the
-        // command line, this will never be used, which is why it's hard-coded to
-        // -1, -1. If we add support for passing in a selection, put the real
-        // result here.
+        // TODO(rnystrom): Put an empty selection in here to remain compatible
+        // with the old formatter. Since there's no way to pass a selection on
+        // the command line, this will never be used, which is why it's
+        // hard-coded to -1, -1. If we add support for passing in a selection,
+        // put the real result here.
         print(jsonEncode({
           'path': path,
           'source': result.text,

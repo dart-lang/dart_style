@@ -49,7 +49,7 @@ final _none = _color('\u001b[0m');
 final _bold = _color('\u001b[1m');
 
 /// Prints [message] to stdout with each line correctly indented.
-void log([message]) {
+void log([Object? message]) {
   if (message == null) {
     print('');
     return;
@@ -59,13 +59,13 @@ void log([message]) {
 }
 
 /// Wraps [message] in gray ANSI escape codes if enabled.
-String gray(message) => '$_gray$message$_none';
+String gray(Object message) => '$_gray$message$_none';
 
 /// Wraps [message] in green ANSI escape codes if enabled.
-String green(message) => '$_green$message$_none';
+String green(Object message) => '$_green$message$_none';
 
 /// Wraps [message] in bold ANSI escape codes if enabled.
-String bold(message) => '$_bold$message$_none';
+String bold(Object message) => '$_bold$message$_none';
 
 /// Prints [chunks] to stdout, one chunk per line, with detailed information
 /// about each chunk.
@@ -99,7 +99,7 @@ void dumpChunks(int start, List<Chunk> chunks) {
     var row = <String>[];
     row.add('$prefix$index:');
 
-    void writeIf(predicate, String Function() callback) {
+    void writeIf(bool predicate, String Function() callback) {
       if (predicate) {
         row.add(callback());
       } else {

@@ -173,7 +173,7 @@ class SolveState {
 
     // The way SolveStates are expanded should guarantee that we never generate
     // the exact same state twice. Getting here implies that that failed.
-    throw 'unreachable';
+    throw StateError('unreachable');
   }
 
   /// Enqueues more solve states to consider based on this one.

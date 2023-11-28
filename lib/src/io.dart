@@ -25,7 +25,7 @@ Future<void> formatStdin(
 
   var completer = Completer<void>();
   var input = StringBuffer();
-  stdin.transform(Utf8Decoder()).listen(input.write, onDone: () {
+  stdin.transform(const Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = DartFormatter(
         indent: options.indent,
         pageWidth: options.pageWidth,

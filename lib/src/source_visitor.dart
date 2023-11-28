@@ -577,7 +577,7 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  visitCatchClauseParameter(CatchClauseParameter node) {
+  void visitCatchClauseParameter(CatchClauseParameter node) {
     token(node.name);
   }
 
@@ -842,7 +842,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.separator);
       space();
 
-      // Try to line up the initializers with the first one that follows the ":":
+      // Try to line up the initializers with the first one that follows the ":"
       //
       //     Foo(notTrailing)
       //         : initializer = value,
@@ -853,8 +853,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       //     ) : initializer = value,
       //         super(); // +4 from previous line.
       //
-      // This doesn't work if there is a trailing comma in an optional parameter,
-      // but we don't want to do a weird +5 alignment:
+      // This doesn't work if there is a trailing comma in an optional
+      // parameter, but we don't want to do a weird +5 alignment:
       //
       //     Foo({
       //       trailing,
@@ -1036,7 +1036,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     }
 
     // The ";" after the constants, which may occur after a trailing comma.
-    Token afterConstants = node.constants.last.endToken.next!;
+    var afterConstants = node.constants.last.endToken.next!;
     Token? semicolon;
     if (afterConstants.type == TokenType.SEMICOLON) {
       semicolon = node.constants.last.endToken.next!;
@@ -1573,9 +1573,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     modifier(declaration.keyword);
     visit(declaration.type, after: space);
 
-    visitCommaSeparatedNodes(declaration.variables, between: () {
-      split();
-    });
+    visitCommaSeparatedNodes(declaration.variables, between: split);
 
     builder.endRule();
     builder.unnest();
@@ -1828,8 +1826,8 @@ class SourceVisitor extends ThrowingAstVisitor {
       } else {
         split();
 
-        // If the then clause is a non-spread collection or lambda, make sure the
-        // body is indented.
+        // If the then clause is a non-spread collection or lambda, make sure
+        // the body is indented.
         builder.startBlockArgumentNesting();
       }
 
@@ -4128,7 +4126,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     // TODO(rnystrom): Can the analyzer move "semicolon" to some shared base
     // type?
-    token((node as dynamic).semicolon);
+    token((node as dynamic).semicolon as Token);
     builder.unnest();
   }
 

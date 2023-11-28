@@ -106,6 +106,7 @@ mixin CommentWriter {
     // just override the script tag's line.
     if (token.previous!.type == TokenType.SCRIPT_TAG) previousLine = tokenLine;
 
+    // ignore: prefer_const_constructors
     var comments = CommentSequence._([], []);
     for (Token? comment = token.precedingComments;
         comment != null;
@@ -312,7 +313,7 @@ class CommentSequence extends ListBase<SourceComment> {
   SourceComment operator [](int index) => _comments[index];
 
   @override
-  operator []=(int index, SourceComment value) =>
+  void operator []=(int index, SourceComment value) =>
       throw UnsupportedError('Comment sequence can\'t be modified.');
 
   void _add(int linesBefore, SourceComment comment) {

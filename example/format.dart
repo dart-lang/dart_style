@@ -1,6 +1,9 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+
+// ignore_for_file: unreachable_from_main
+
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
