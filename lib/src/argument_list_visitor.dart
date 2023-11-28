@@ -97,10 +97,8 @@ class ArgumentListVisitor {
       this._arguments,
       this._functions,
       this._argumentsAfterFunctions)
-      : assert(
-          _functions == null || _argumentsAfterFunctions != null,
-          'If _functions is passed, _argumentsAfterFunctions must be too.',
-        );
+      : assert(_functions == null || _argumentsAfterFunctions != null,
+            'If _functions is passed, _argumentsAfterFunctions must be too.');
 
   /// Builds chunks for the argument list.
   void visit() {

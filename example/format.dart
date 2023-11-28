@@ -2,8 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// ignore_for_file: unreachable_from_main
-
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
@@ -19,48 +17,17 @@ void main(List<String> args) {
   debug.tracePieceBuilder = true;
   debug.traceSolver = true;
 
-  runTest('selection/selection.stmt', 2);
+  _runTest('selection/selection.stmt', 2);
 }
 
-void formatStmt(String source, {required bool tall, int pageWidth = 80}) {
-  runFormatter(source, pageWidth, tall: tall, isCompilationUnit: false);
-}
-
-void formatUnit(String source, {required bool tall, int pageWidth = 80}) {
-  runFormatter(source, pageWidth, tall: tall, isCompilationUnit: true);
-}
-
-void runFormatter(String source, int pageWidth,
-    {required bool tall, required bool isCompilationUnit}) {
-  try {
-    var formatter = DartFormatter(
-        pageWidth: pageWidth,
-        experimentFlags: [if (tall) tallStyleExperimentFlag]);
-
-    String result;
-    if (isCompilationUnit) {
-      result = formatter.format(source);
-    } else {
-      result = formatter.formatStatement(source);
-    }
-
-    drawRuler('before', pageWidth);
-    print(source);
-    drawRuler('after', pageWidth);
-    print(result);
-  } on FormatterException catch (error) {
-    print(error.message());
-  }
-}
-
-void drawRuler(String label, int width) {
+void _drawRuler(String label, int width) {
   var padding = ' ' * (width - label.length - 1);
   print('$label:$padding|');
 }
 
 /// Runs the formatter test starting on [line] at [path] inside the "test"
 /// directory.
-Future<void> runTest(String path, int line,
+Future<void> _runTest(String path, int line,
     {int pageWidth = 40, bool tall = true}) async {
   var testFile = await TestFile.read(path);
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
@@ -84,16 +51,16 @@ Future<void> runTest(String path, int line,
   var expectedText = formatTest.output.textWithSelectionMarkers;
 
   print('$path ${formatTest.description}');
-  drawRuler('before', pageWidth);
+  _drawRuler('before', pageWidth);
   print(formatTest.input.textWithSelectionMarkers);
   if (actualText == expectedText) {
-    drawRuler('result', pageWidth);
+    _drawRuler('result', pageWidth);
     print(actualText);
   } else {
     print('FAIL');
-    drawRuler('expected', pageWidth);
+    _drawRuler('expected', pageWidth);
     print(expectedText);
-    drawRuler('actual', pageWidth);
+    _drawRuler('actual', pageWidth);
     print(actualText);
   }
 }

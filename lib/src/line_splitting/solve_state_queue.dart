@@ -14,8 +14,7 @@ import 'solve_state.dart';
 /// overflow characters. When a new state is added to the heap, it will be
 /// discarded, or a previously enqueued one will be discarded, if two overlap.
 class SolveStateQueue {
-  /// Initial capacity of a queue when created, or when added to after a
-  /// `clear`.
+  /// Initial capacity of a queue when created.
   ///
   /// Number can be any positive value. Picking a size that gives a whole
   /// number of "tree levels" in the heap is only done for aesthetic reasons.
