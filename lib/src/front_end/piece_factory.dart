@@ -252,13 +252,13 @@ mixin PieceFactory implements CommentWriter {
       Piece? onPiece;
       if (catchClause.onKeyword case var onKeyword?) {
         token(onKeyword, after: space);
-        visit(catchClause.exceptionType, after: space);
+        visit(catchClause.exceptionType);
         onPiece = pieces.split();
       }
 
       Piece? catchPiece;
       if (catchClause.catchKeyword case var catchKeyword?) {
-        token(catchKeyword, after: space);
+        token(catchKeyword);
         var catchKeywordPiece = pieces.split();
 
         var builder = DelimitedListBuilder(this);
