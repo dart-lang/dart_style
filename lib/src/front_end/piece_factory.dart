@@ -248,15 +248,45 @@ mixin PieceFactory implements CommentWriter {
 
     for (var i = 0; i < tryStatement.catchClauses.length; i++) {
       var catchClause = tryStatement.catchClauses[i];
-      token(catchClause.onKeyword, after: space);
-      visit(catchClause.exceptionType, after: space);
 
-      token(catchClause.catchKeyword, after: space);
-      token(catchClause.leftParenthesis);
-      token(catchClause.exceptionParameter?.name);
-      token(catchClause.comma, after: space);
-      token(catchClause.stackTraceParameter?.name);
-      token(catchClause.rightParenthesis);
+      Piece? onPiece;
+      if (catchClause.onKeyword case var onKeyword?) {
+        token(onKeyword, after: space);
+        visit(catchClause.exceptionType, after: space);
+        onPiece = pieces.split();
+      }
+
+      Piece? catchPiece;
+      if (catchClause.catchKeyword case var catchKeyword?) {
+        token(catchKeyword, after: space);
+        var catchKeywordPiece = pieces.split();
+
+        var builder = DelimitedListBuilder(this);
+        builder.leftBracket(catchClause.leftParenthesis!);
+        if (catchClause.exceptionParameter case var exceptionParameter?) {
+          builder.visit(exceptionParameter);
+        }
+        if (catchClause.stackTraceParameter case var stackTraceParameter?) {
+          builder.visit(stackTraceParameter);
+        }
+        builder.rightBracket(catchClause.rightParenthesis!);
+
+        catchPiece = AdjacentPiece(
+          [catchKeywordPiece, builder.build()],
+          spaceAfter: [catchKeywordPiece],
+        );
+      }
+
+      if (onPiece != null && catchPiece != null) {
+        pieces.give(AdjacentPiece(
+          [onPiece, catchPiece],
+          spaceAfter: [onPiece],
+        ));
+      } else if (onPiece != null) {
+        pieces.give(onPiece);
+      } else if (catchPiece != null) {
+        pieces.give(catchPiece);
+      }
       var catchClauseHeader = pieces.split();
 
       // Edge case: When there's another catch/on/finally after this one, we

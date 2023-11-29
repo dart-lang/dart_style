@@ -211,7 +211,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitCatchClauseParameter(CatchClauseParameter node) {
-    assert(false, 'This node is handled by visitTryStatement().');
+    token(node.name);
   }
 
   @override

@@ -8,8 +8,8 @@ import 'piece.dart';
 class TryPiece extends Piece {
   final List<_TrySectionPiece> _sections = [];
 
-  void add(Piece header, Piece statement) {
-    _sections.add(_TrySectionPiece(header, statement));
+  void add(Piece header, Piece block) {
+    _sections.add(_TrySectionPiece(header, block));
   }
 
   @override
