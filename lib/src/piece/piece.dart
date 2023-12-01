@@ -183,6 +183,17 @@ class TextPiece extends Piece {
   String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';
 }
 
+/// A piece that writes a single space.
+class SpacePiece extends Piece {
+  @override
+  void forEachChild(void Function(Piece piece) callback) {}
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.space();
+  }
+}
+
 /// A state that a piece can be in.
 ///
 /// Each state identifies one way that a piece can be split into multiple lines.

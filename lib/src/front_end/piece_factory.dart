@@ -5,7 +5,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/clause.dart';
@@ -16,6 +15,7 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import '../piece/type.dart';
+import 'adjacent_builder.dart';
 import 'ast_node_visitor.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
@@ -46,11 +46,15 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 /// word for "import or export directive" or "named thing with argument list".
 /// To avoid that, we pick one concrete construct formatted by the function,
 /// usually the most common, and name it after that, as in [createImport()].
-mixin PieceFactory implements CommentWriter {
-  void visit(AstNode? node, {void Function()? before, void Function()? after});
+mixin PieceFactory {
+  PieceWriter get pieces;
+
+  CommentWriter get comments;
+
+  Piece nodePiece(AstNode node, {bool commaAfter = false});
 
   /// Creates a [ListPiece] for an argument list.
-  void createArgumentList(
+  Piece createArgumentList(
       Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
     return createList(
         leftBracket: leftBracket,
@@ -70,10 +74,10 @@ mixin PieceFactory implements CommentWriter {
   /// if (condition) {
   /// } else {}
   /// ```
-  void createBody(Token leftBracket, List<AstNode> contents, Token rightBracket,
+  Piece createBody(
+      Token leftBracket, List<AstNode> contents, Token rightBracket,
       {bool forceSplit = false}) {
-    token(leftBracket);
-    var leftBracketPiece = pieces.split();
+    var leftBracketPiece = tokenPiece(leftBracket);
 
     var sequence = SequenceBuilder(this);
     for (var node in contents) {
@@ -87,12 +91,10 @@ mixin PieceFactory implements CommentWriter {
     // Place any comments before the "}" inside the block.
     sequence.addCommentsBefore(rightBracket);
 
-    token(rightBracket);
-    var rightBracketPiece = pieces.take();
+    var rightBracketPiece = tokenPiece(rightBracket);
 
-    pieces.give(BlockPiece(
-        leftBracketPiece, sequence.build(), rightBracketPiece,
-        alwaysSplit: forceSplit || contents.isNotEmpty));
+    return BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece,
+        alwaysSplit: forceSplit || contents.isNotEmpty || sequence.mustSplit);
   }
 
   /// Creates a [BlockPiece] for a given [Block].
@@ -105,59 +107,62 @@ mixin PieceFactory implements CommentWriter {
   /// if (condition) {
   /// } else {}
   /// ```
-  void createBlock(Block block, {bool forceSplit = false}) {
-    createBody(block.leftBracket, block.statements, block.rightBracket,
+  Piece createBlock(Block block, {bool forceSplit = false}) {
+    return createBody(block.leftBracket, block.statements, block.rightBracket,
         forceSplit: forceSplit);
   }
 
   /// Creates a piece for a `break` or `continue` statement.
-  void createBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
-    token(keyword);
-    if (label != null) {
-      space();
-      visit(label);
-    }
-    token(semicolon);
+  Piece createBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
+    return buildPiece((b) {
+      b.token(keyword);
+      b.visit(label, spaceBefore: true);
+      b.token(semicolon);
+    });
   }
 
   /// Creates a [ListPiece] for a collection literal.
-  void createCollection(Token? constKeyword, Token leftBracket,
+  Piece createCollection(Token? constKeyword, Token leftBracket,
       List<AstNode> elements, Token rightBracket,
       {TypeArgumentList? typeArguments, ListStyle style = const ListStyle()}) {
-    modifier(constKeyword);
-    visit(typeArguments);
+    return buildPiece((b) {
+      b.modifier(constKeyword);
+      b.visit(typeArguments);
 
-    // TODO(tall): Support a line comment inside a collection literal as a
-    // signal to preserve internal newlines. So if you have:
-    //
-    // ```
-    // var list = [
-    //   1, 2, 3, // comment
-    //   4, 5, 6,
-    // ];
-    // ```
-    //
-    // The formatter will preserve the newline after element 3 and the lack of
-    // them after the other elements.
+      // TODO(tall): Support a line comment inside a collection literal as a
+      // signal to preserve internal newlines. So if you have:
+      //
+      // ```
+      // var list = [
+      //   1, 2, 3, // comment
+      //   4, 5, 6,
+      // ];
+      // ```
+      //
+      // The formatter will preserve the newline after element 3 and the lack of
+      // them after the other elements.
 
-    createList(
-      leftBracket: leftBracket,
-      elements,
-      rightBracket: rightBracket,
-      style: style,
-    );
+      b.add(createList(
+        leftBracket: leftBracket,
+        elements,
+        rightBracket: rightBracket,
+        style: style,
+      ));
+    });
   }
 
   /// Visits the leading keyword and parenthesized expression at the beginning
   /// of an `if`, `while`, or `switch` expression or statement.
-  void startControlFlow(Token keyword, Token leftParenthesis, Expression value,
+  Piece startControlFlow(Token keyword, Token leftParenthesis, Expression value,
       Token rightParenthesis) {
     // Attach the keyword to the `(`.
-    token(keyword);
-    space();
-    token(leftParenthesis);
-    visit(value);
-    token(rightParenthesis);
+    return buildPiece((b) {
+      b.token(keyword);
+      b.space();
+      b.token(leftParenthesis);
+      b.visit(value);
+      b.token(rightParenthesis);
+    });
   }
 
   /// Creates metadata annotations for a directive.
@@ -169,15 +174,48 @@ mixin PieceFactory implements CommentWriter {
   }
 
   /// Creates a dotted or qualified identifier.
-  void createDotted(NodeList<SimpleIdentifier> components) {
-    for (var component in components) {
-      // Write the preceding ".".
-      if (component != components.first) {
-        token(component.beginToken.previous);
+  Piece createDotted(NodeList<SimpleIdentifier> components) {
+    return buildPiece((b) {
+      for (var component in components) {
+        // Write the preceding ".".
+        if (component != components.first) {
+          b.token(component.beginToken.previous!);
+        }
+
+        b.visit(component);
+      }
+    });
+  }
+
+  /// Creates a [Piece] for an enum constant.
+  ///
+  /// If the constant is in an enum declaration that also declares members, then
+  /// [hasMembers] should be `true`, [semicolon] is the `;` token before the
+  /// members (if any), and [isLastConstant] is `true` if [node] is the last
+  /// constant before the members.
+  Piece createEnumConstant(EnumConstantDeclaration node,
+      {bool hasMembers = false,
+      bool isLastConstant = false,
+      Token? semicolon}) {
+    return buildPiece((b) {
+      b.token(node.name);
+      if (node.arguments case var arguments?) {
+        b.visit(arguments.typeArguments);
+        b.visit(arguments.argumentList);
       }
 
-      visit(component);
-    }
+      if (hasMembers) {
+        if (!isLastConstant) {
+          b.token(node.commaAfter);
+        } else {
+          // Discard the trailing comma if there is one since there is a
+          // semicolon to use as the separator, but preserve any comments before
+          // the discarded comma.
+          b.commentsBefore(node.commaAfter);
+          b.token(semicolon);
+        }
+      }
+    });
   }
 
   /// Creates a function, method, getter, or setter declaration.
@@ -187,65 +225,81 @@ mixin PieceFactory implements CommentWriter {
   /// should be the `operator` keyword on an operator declaration. If
   /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
   /// getter or setter declaration.
-  void createFunction(
+  Piece createFunction(
       {Token? externalKeyword,
       Token? modifierKeyword,
       AstNode? returnType,
       Token? operatorKeyword,
       Token? propertyKeyword,
-      required Token name,
+      Token? name,
       TypeParameterList? typeParameters,
       FormalParameterList? parameters,
       required FunctionBody body}) {
-    modifier(externalKeyword);
-    modifier(modifierKeyword);
+    var builder = AdjacentBuilder(this);
+    builder.modifier(externalKeyword);
+    builder.modifier(modifierKeyword);
 
     Piece? returnTypePiece;
     if (returnType != null) {
-      visit(returnType);
-      returnTypePiece = pieces.split();
+      builder.visit(returnType);
+      returnTypePiece = builder.build();
     }
 
-    modifier(operatorKeyword);
-    modifier(propertyKeyword);
-    token(name);
+    builder.modifier(operatorKeyword);
+    builder.modifier(propertyKeyword);
+    builder.token(name);
+    builder.visit(typeParameters);
+    builder.visit(parameters);
+    var signature = builder.build();
 
-    finishFunction(returnTypePiece, typeParameters, parameters, body);
+    var bodyPiece = nodePiece(body);
+
+    return FunctionPiece(returnTypePiece, signature,
+        body: bodyPiece, spaceBeforeBody: body is! EmptyFunctionBody);
   }
 
   /// Creates a function type or function-typed formal.
-  void createFunctionType(
+  ///
+  /// If creating a piece for a function-typed formal, then [parameter] is the
+  /// formal parameter.
+  Piece createFunctionType(
       TypeAnnotation? returnType,
-      Token? functionKeywordOrName,
+      Token functionKeywordOrName,
       TypeParameterList? typeParameters,
       FormalParameterList parameters,
-      Token? question) {
+      Token? question,
+      {FunctionTypedFormalParameter? parameter}) {
+    var builder = AdjacentBuilder(this);
+
+    if (parameter != null) startFormalParameter(parameter, builder);
+
     Piece? returnTypePiece;
     if (returnType != null) {
-      visit(returnType);
-      returnTypePiece = pieces.split();
+      builder.visit(returnType);
+      returnTypePiece = builder.build();
     }
 
-    token(functionKeywordOrName);
-    visit(typeParameters);
-    visit(parameters);
-    token(question);
-    var parametersPiece = pieces.take();
+    builder.token(functionKeywordOrName);
+    builder.visit(typeParameters);
+    builder.visit(parameters);
+    builder.token(question);
 
-    pieces.give(FunctionPiece(returnTypePiece, parametersPiece));
+    return FunctionPiece(returnTypePiece, builder.build());
   }
 
   // TODO(tall): Generalize this to work with if elements too.
   /// Creates a piece for a chain of if-else-if... statements.
-  void createIf(IfStatement ifStatement) {
+  Piece createIf(IfStatement ifStatement) {
     var piece = IfPiece();
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
-    void traverse(IfStatement node) {
-      startControlFlow(node.ifKeyword, node.leftParenthesis, node.expression,
-          node.rightParenthesis);
-      var condition = pieces.split();
+    void traverse(Piece? previousElse, IfStatement node) {
+      var condition = buildPiece((b) {
+        if (previousElse != null) b.add(previousElse);
+        b.add(startControlFlow(node.ifKeyword, node.leftParenthesis,
+            node.expression, node.rightParenthesis));
+      });
 
       // Edge case: When the then branch is a block and there is an else clause
       // after it, we want to force the block to split even if empty, like:
@@ -256,86 +310,76 @@ mixin PieceFactory implements CommentWriter {
       //   body;
       // }
       // ```
-      if (node.thenStatement case Block thenBlock
-          when node.elseStatement != null) {
-        createBlock(thenBlock, forceSplit: true);
-      } else {
-        visit(node.thenStatement);
-      }
+      var thenStatement = switch (node.thenStatement) {
+        Block thenBlock when node.elseStatement != null =>
+          createBlock(thenBlock, forceSplit: true),
+        _ => nodePiece(node.thenStatement)
+      };
 
-      var thenStatement = pieces.split();
       piece.add(condition, thenStatement, isBlock: node.thenStatement is Block);
 
       switch (node.elseStatement) {
         case IfStatement elseIf:
           // Hit an else-if, so flatten it into the chain with the `else`
           // becoming part of the next section's header.
-          token(node.elseKeyword);
-          space();
-          traverse(elseIf);
+          traverse(buildPiece((b) {
+            b.token(node.elseKeyword);
+            b.space();
+          }), elseIf);
 
         case var elseStatement?:
           // Any other kind of else body ends the chain, with the header for
           // the last section just being the `else` keyword.
-          token(node.elseKeyword);
-          var header = pieces.split();
-
-          visit(elseStatement);
-          var statement = pieces.take();
+          var header = tokenPiece(node.elseKeyword!);
+          var statement = nodePiece(elseStatement);
           piece.add(header, statement, isBlock: elseStatement is Block);
       }
     }
 
-    traverse(ifStatement);
-
-    pieces.give(piece);
+    traverse(null, ifStatement);
+    return piece;
   }
 
   /// Creates an [ImportPiece] for an import or export directive.
-  void createImport(NamespaceDirective directive, Token keyword,
+  Piece createImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
+    var builder = AdjacentBuilder(this);
     createDirectiveMetadata(directive);
-    token(keyword);
-    space();
-    visit(directive.uri);
-    var importPieces = [pieces.take()];
+    builder.token(keyword);
+    builder.space();
+    builder.visit(directive.uri);
 
     if (directive.configurations.isNotEmpty) {
       var configurations = <Piece>[];
       for (var configuration in directive.configurations) {
-        pieces.split();
-        visit(configuration);
-        configurations.add(pieces.take());
+        configurations.add(nodePiece(configuration));
       }
 
-      importPieces.add(PostfixPiece(configurations));
+      builder.add(PostfixPiece(configurations));
     }
 
     if (asKeyword != null) {
-      pieces.split();
-      token(deferredKeyword, after: space);
-      token(asKeyword);
-      space();
-      visit(prefix);
-      importPieces.add(PostfixPiece([pieces.take()]));
+      builder.add(PostfixPiece([
+        buildPiece((b) {
+          b.token(deferredKeyword, spaceAfter: true);
+          b.token(asKeyword);
+          b.space();
+          b.visit(prefix!);
+        })
+      ]));
     }
 
     if (directive.combinators.isNotEmpty) {
       var combinators = <ClausePiece>[];
       for (var combinatorNode in directive.combinators) {
-        pieces.split();
-        token(combinatorNode.keyword);
-        var combinatorKeyword = pieces.split();
+        var combinatorKeyword = tokenPiece(combinatorNode.keyword);
 
         switch (combinatorNode) {
           case HideCombinator(hiddenNames: var names):
           case ShowCombinator(shownNames: var names):
             var parts = <Piece>[];
             for (var name in names) {
-              pieces.split();
-              token(name.token);
-              commaAfter(name);
-              parts.add(pieces.take());
+              parts.add(tokenPiece(name.token, commaAfter: true));
             }
 
             var combinator = ClausePiece(combinatorKeyword, parts);
@@ -345,12 +389,11 @@ mixin PieceFactory implements CommentWriter {
         }
       }
 
-      importPieces.add(ClausesPiece(combinators));
+      builder.add(ClausesPiece(combinators));
     }
 
-    token(directive.semicolon);
-
-    pieces.give(AdjacentPiece(importPieces));
+    builder.token(directive.semicolon);
+    return builder.build();
   }
 
   /// Creates a single infix operation.
@@ -361,27 +404,28 @@ mixin PieceFactory implements CommentWriter {
   ///
   /// The [operator2] parameter may be passed if the "operator" is actually two
   /// separate tokens, as in `foo is! Bar`.
-  void createInfix(AstNode left, Token operator, AstNode right,
+  Piece createInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
-    var operands = <Piece>[];
+    var leftPiece = buildPiece((b) {
+      b.visit(left);
+      if (hanging) {
+        b.space();
+        b.token(operator);
+        b.token(operator2);
+      }
+    });
 
-    visit(left);
+    var rightPiece = buildPiece((b) {
+      if (!hanging) {
+        b.token(operator);
+        b.token(operator2);
+        b.space();
+      }
 
-    if (hanging) {
-      space();
-      token(operator);
-      token(operator2);
-      operands.add(pieces.split());
-    } else {
-      operands.add(pieces.split());
-      token(operator);
-      token(operator2);
-      space();
-    }
+      b.visit(right);
+    });
 
-    visit(right);
-    operands.add(pieces.take());
-    pieces.give(InfixPiece(operands));
+    return InfixPiece([leftPiece, rightPiece]);
   }
 
   /// Creates a chained infix operation: a binary operator expression, or
@@ -399,9 +443,10 @@ mixin PieceFactory implements CommentWriter {
   ///
   /// If [precedence] is given, then this only flattens binary nodes with that
   /// same precedence.
-  void createInfixChain<T extends AstNode>(
+  Piece createInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence}) {
+    var builder = AdjacentBuilder(this);
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -411,26 +456,26 @@ mixin PieceFactory implements CommentWriter {
         var (left, operator, right) = destructure(e);
         if (precedence == null || operator.type.precedence == precedence) {
           traverse(left);
-          space();
-          token(operator);
-          pieces.split();
+          builder.space();
+          builder.token(operator);
+          operands.add(builder.build());
           traverse(right);
           return;
         }
       }
 
       // Otherwise, just write the node itself.
-      visit(e);
-      operands.add(pieces.take());
+      builder.visit(e);
     }
 
     traverse(node);
+    operands.add(builder.build());
 
-    pieces.give(InfixPiece(operands));
+    return InfixPiece(operands);
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
-  void createList(Iterable<AstNode> elements,
+  Piece createList(Iterable<AstNode> elements,
       {Token? leftBracket,
       Token? rightBracket,
       ListStyle style = const ListStyle()}) {
@@ -438,7 +483,7 @@ mixin PieceFactory implements CommentWriter {
     if (leftBracket != null) builder.leftBracket(leftBracket);
     elements.forEach(builder.visit);
     if (rightBracket != null) builder.rightBracket(rightBracket);
-    pieces.give(builder.build());
+    return builder.build();
   }
 
   /// Creates a class, enum, extension, mixin, or mixin application class
@@ -453,7 +498,7 @@ mixin PieceFactory implements CommentWriter {
   ///
   /// If the type is an extension, then [onType] is a record containing the
   /// `on` keyword and the on type.
-  void createType(NodeList<Annotation> metadata, List<Token?> modifiers,
+  Piece createType(NodeList<Annotation> metadata, List<Token?> modifiers,
       Token keyword, Token? name,
       {TypeParameterList? typeParameters,
       Token? equals,
@@ -468,33 +513,33 @@ mixin PieceFactory implements CommentWriter {
       Token? semicolon}) {
     if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
 
-    modifiers.forEach(modifier);
-    token(keyword);
-    token(name, before: space);
-    visit(typeParameters);
+    var header = buildPiece((b) {
+      modifiers.forEach(b.modifier);
+      b.token(keyword);
+      b.token(name, spaceBefore: true);
 
-    // Mixin application classes have ` = Superclass` after the declaration
-    // name.
-    if (equals != null) {
-      space();
-      token(equals);
-      space();
-      visit(superclass);
-    }
+      if (typeParameters != null) {
+        b.visit(typeParameters);
+      }
 
-    var header = pieces.split();
+      // Mixin application classes have ` = Superclass` after the declaration
+      // name.
+      if (equals != null) {
+        b.space();
+        b.token(equals);
+        b.space();
+        b.visit(superclass!);
+      }
+    });
 
     var clauses = <ClausePiece>[];
 
     void typeClause(Token keyword, List<AstNode> types) {
-      token(keyword);
-      var keywordPiece = pieces.split();
+      var keywordPiece = tokenPiece(keyword);
 
       var typePieces = <Piece>[];
       for (var type in types) {
-        visit(type);
-        commaAfter(type);
-        typePieces.add(pieces.split());
+        typePieces.add(nodePiece(type, commaAfter: true));
       }
 
       clauses.add(ClausePiece(keywordPiece, typePieces));
@@ -521,28 +566,29 @@ mixin PieceFactory implements CommentWriter {
       typeClause(onKeyword, [onType]);
     }
 
+    if (nativeClause != null) {
+      typeClause(nativeClause.nativeKeyword,
+          [if (nativeClause.name case var name?) name]);
+    }
+
     ClausesPiece? clausesPiece;
     if (clauses.isNotEmpty) {
       clausesPiece = ClausesPiece(clauses,
           allowLeadingClause: extendsClause != null || onClause != null);
     }
 
-    visit(nativeClause);
-    space();
-
+    Piece bodyPiece;
     if (body != null) {
-      createBody(body.leftBracket, body.members, body.rightBracket);
+      bodyPiece = createBody(body.leftBracket, body.members, body.rightBracket);
     } else {
-      token(semicolon);
+      bodyPiece = tokenPiece(semicolon!);
     }
-    var bodyPiece = pieces.take();
 
-    pieces.give(
-        TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null));
+    return TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null);
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
-  void createTypeList(
+  Piece createTypeList(
       Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
     return createList(
         leftBracket: leftBracket,
@@ -553,19 +599,20 @@ mixin PieceFactory implements CommentWriter {
 
   /// Writes the parts of a formal parameter shared by all formal parameter
   /// types: metadata, `covariant`, etc.
-  void startFormalParameter(FormalParameter parameter) {
+  void startFormalParameter(
+      FormalParameter parameter, AdjacentBuilder builder) {
     if (parameter.metadata.isNotEmpty) throw UnimplementedError();
 
-    modifier(parameter.requiredKeyword);
-    modifier(parameter.covariantKeyword);
+    builder.modifier(parameter.requiredKeyword);
+    builder.modifier(parameter.covariantKeyword);
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
-  void functionBodyModifiers(FunctionBody body) {
+  void functionBodyModifiers(FunctionBody body, AdjacentBuilder builder) {
     // The `async` or `sync` keyword.
-    token(body.keyword);
-    token(body.star);
-    if (body.keyword != null) space();
+    builder.token(body.keyword);
+    builder.token(body.star);
+    if (body.keyword != null) builder.space();
   }
 
   /// Creates a [Piece] with "assignment-like" splitting.
@@ -582,92 +629,53 @@ mixin PieceFactory implements CommentWriter {
   /// * Map entry (`:`)
   /// * For-in loop iterator (`in`)
   ///
-  /// This method assumes the code to the left of the operator has already
-  /// been visited.
-  ///
   /// If [splitBeforeOperator] is `true`, then puts [operator] at the beginning
   /// of the next line when it splits. Otherwise, puts the operator at the end
   /// of the preceding line.
-  void finishAssignment(Token operator, Expression rightHandSide,
-      {bool splitBeforeOperator = false}) {
-    Piece target;
+  Piece createAssignment(
+      AstNode target, Token operator, Expression rightHandSide,
+      {bool splitBeforeOperator = false,
+      bool includeComma = false,
+      spaceBeforeOperator = true}) {
     if (splitBeforeOperator) {
-      target = pieces.split();
-      token(operator);
-      space();
+      var targetPiece = nodePiece(target);
+
+      var initializer = buildPiece((b) {
+        b.token(operator);
+        b.space();
+        b.visit(rightHandSide, commaAfter: includeComma);
+      });
+
+      return AssignPiece(targetPiece, initializer,
+          isValueDelimited: rightHandSide.canBlockSplit);
     } else {
-      if (operator.type == TokenType.EQ) space();
-      token(operator);
-      target = pieces.split();
+      var targetPiece = buildPiece((b) {
+        b.visit(target);
+        b.token(operator, spaceBefore: spaceBeforeOperator);
+      });
+
+      var initializer = nodePiece(rightHandSide, commaAfter: includeComma);
+
+      return AssignPiece(targetPiece, initializer,
+          isValueDelimited: rightHandSide.canBlockSplit);
     }
-
-    visit(rightHandSide);
-
-    var initializer = pieces.take();
-    pieces.give(AssignPiece(target, initializer,
-        isValueDelimited: rightHandSide.canBlockSplit));
   }
 
-  /// Finishes writing a named function declaration or anonymous function
-  /// expression after the return type (if any) and name (if any) has been
-  /// written.
-  void finishFunction(Piece? returnType, TypeParameterList? typeParameters,
-      FormalParameterList? parameters, FunctionBody body) {
-    visit(typeParameters);
-    visit(parameters);
-
-    Piece parametersPiece;
-    Piece? bodyPiece;
-    if (body is EmptyFunctionBody) {
-      // If the body is just `;`, then don't allow a space or split before the
-      // semicolon by making it part of the parameters piece.
-      token(body.semicolon);
-      parametersPiece = pieces.split();
-    } else {
-      parametersPiece = pieces.split();
-      visit(body);
-      bodyPiece = pieces.take();
-    }
-
-    pieces.give(FunctionPiece(returnType, parametersPiece, bodyPiece));
+  /// Invokes [buildCallback] with a new [AdjacentBuilder] and returns the
+  /// built result.
+  Piece buildPiece(Function(AdjacentBuilder) buildCallback) {
+    var builder = AdjacentBuilder(this);
+    buildCallback(builder);
+    return builder.build();
   }
 
-  /// Writes an optional modifier that precedes other code.
-  void modifier(Token? keyword) {
-    token(keyword, after: space);
-  }
-
-  /// Write a single space.
-  void space() {
-    pieces.writeSpace();
-  }
-
-  /// Emit [token], along with any comments and formatted whitespace that comes
-  /// before it.
+  /// Creates a piece for only [token].
   ///
-  /// Does nothing if [token] is `null`. If [before] is given, it will be
-  /// executed before the token is outout. Likewise, [after] will be called
-  /// after the token is output.
-  void token(Token? token, {void Function()? before, void Function()? after}) {
-    if (token == null) return;
-
-    writeCommentsBefore(token);
-
-    if (before != null) before();
-    pieces.writeToken(token);
-    if (after != null) after();
-  }
-
-  /// Writes a comma after [node], if there is one.
-  void commaAfter(AstNode node, {bool trailing = false}) {
-    var nextToken = node.endToken.next!;
-    if (nextToken.lexeme == ',') {
-      token(nextToken);
-    } else if (trailing) {
-      // If there isn't a comma there, it must be a place where a trailing
-      // comma can appear, so synthesize it. During formatting, we will decide
-      // whether to include it.
-      pieces.writeText(',');
-    }
+  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
+  ///
+  /// If [commaAfter] is `true`, will look for and write a comma following the
+  /// token if there is one.
+  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
+    return pieces.tokenPiece(token, lexeme: lexeme, commaAfter: commaAfter);
   }
 }

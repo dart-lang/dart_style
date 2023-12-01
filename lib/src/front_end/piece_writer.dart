@@ -6,126 +6,24 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../back_end/solver.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
+import '../piece/adjacent.dart';
 import '../piece/piece.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 
-/// Incrementally builds [Piece]s while visiting AST nodes.
+/// Builds [TextPiece]s for [Token]s and comments.
 ///
-/// The nodes in the piece tree don't always map precisely to AST nodes. For
-/// example, in:
-///
-/// ```
-/// a + b;
-/// ```
-///
-/// The AST structure is like:
-///
-/// ```
-/// ExpressionStatement
-///   BinaryExpression
-///     SimpleIdentifier("a")
-///     Token("+")
-///     SimpleIdentifier("b")
-/// ```
-///
-/// But the resulting piece tree looks like:
-///
-/// ```
-/// Infix
-///   TextPiece("a +")
-///   TextPiece("b;")
-/// ```
-///
-/// Note how the infix operator is attached to the preceding piece (which
-/// happens to just be an identifier but could be a more complex piece if the
-/// left operand was a nested expression). Notice also that there is no piece
-/// for the expression statement and, instead, the `;` is just appended to the
-/// trailing TextPiece which may be deeply nested inside the binary expression.
-///
-/// This class implements that "slippage" between the two representations. It
-/// has mutable state to allow incrementally building up pieces while traversing
-/// the source AST nodes.
-///
-/// To visit an AST node and translate it to pieces, call [token()] and
-/// [visit()] to process the individual tokens and subnodes of the current
-/// node. Those will ultimately bottom out on calls to [write()], which appends
-/// literal text to the current [TextPiece] being written.
-///
-/// Those [TextPiece]s are aggregated into a tree of composite pieces which
-/// break the code into separate sections for line splitting. The main API for
-/// composing those pieces is [split()], [give()], and [take()].
-///
-/// Here is a simplified example of how they work:
-///
-/// ```
-/// visitIfStatement(IfStatement node) {
-///   // No split() here. The caller may have code they want to prepend to the
-///   // first piece in this one.
-///   visit(node.condition);
-///
-///   // Call split() because we may want to split between the condition and
-///   // then branches and we know there will be a then branch.
-///   var conditionPiece = pieces.split();
-///
-///   visit(node.thenBranch);
-///   // Call take() instead of split() because there may not be an else branch.
-///   // If there isn't, then the thenBranch will be the trailing piece created
-///   // by this function and we want to allow the caller to append to its
-///   // innermost TextPiece.
-///   var thenPiece = pieces.take();
-///
-///   Piece? elsePiece;
-///   if (node.elseBranch case var elseBranch?) {
-///     // Call split() here because it turns out we do have something after
-///     // the thenPiece and we want to be able to split between the then and
-///     // else parts.
-///     pieces.split();
-///     visit(elseBranch);
-///
-///     // Use take() to capture the else branch while allowing the caller to
-///     // append more code to it.
-///     elsePiece = pieces.take();
-///   }
-///
-///   // Create a new aggregate piece out of the subpieces and allow the caller
-///   // to get it.
-///   pieces.give(IfPiece(conditionPiece, thenPiece, elsePiece));
-/// }
-/// ```
-///
-/// The basic rules are:
-///
-/// -   Use [split()] to insert a point where a line break can occur and
-///     capture the piece for the code you've just written. You'll usually call
-///     this when you have already traversed some part of an AST node and have
-///     more to traverse after it.
-///
-/// -   Use [take()] to capture the current piece while allowing further code to
-///     be appended to it. You'll usually call this to grab the last part of an
-///     AST node where there is no more subsequent code.
-///
-/// -   Use [give()] to return the newly created aggregate piece so that the
-///     caller can capture it with a later call to [split()] or [take()].
+/// Handles updating selection markers and attaching comments to the tokens
+/// before and after the comments.
 class PieceWriter {
   final DartFormatter _formatter;
 
   final SourceCode _source;
 
-  /// The current [TextPiece] being written to or `null` if no text piece has
-  /// been started yet.
-  TextPiece? get currentText => _currentText;
-  TextPiece? _currentText;
+  final CommentWriter _comments;
 
-  /// The most recently given piece, waiting to be taken by some surrounding
-  /// piece.
-  Piece? _given;
-
-  /// Whether we should write a space before the next text that is written.
-  bool _pendingSpace = false;
-
-  /// Whether we should create a new [TextPiece] the next time text is written.
-  bool _pendingSplit = false;
+  /// The current [TextPiece] being written to.
+  TextPiece _currentText = TextPiece();
 
   /// Whether we have reached a token or comment that lies at or beyond the
   /// selection start offset in the original code.
@@ -147,136 +45,156 @@ class PieceWriter {
   /// This can only be accessed if there is a selection.
   late final int _selectionEnd = _findSelectionEnd();
 
-  PieceWriter(this._formatter, this._source);
+  PieceWriter(this._formatter, this._source, this._comments);
 
-  /// Gives the builder a newly completed [piece], to be taken by a later call
-  /// to [take()] or [split()] from some surrounding piece.
-  void give(Piece piece) {
-    // Any previously given piece should already be taken (and used as a child
-    // of [piece]).
-    assert(_given == null);
-    _given = piece;
-  }
+  /// Creates a piece for [token], including any comments that should be
+  /// attached to that token.
+  ///
+  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
+  ///
+  /// If [commaAfter] is `true`, will look for and write a comma following the
+  /// token if there is one.
+  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
+    _writeToken(token, lexeme: lexeme);
+    var tokenPiece = _currentText;
 
-  /// Yields the most recent piece.
-  ///
-  /// If a completed piece was added through a call to [give()], then returns
-  /// that piece. A specific given piece will only be returned once from either
-  /// a call to [take()] or [split()].
-  ///
-  /// If there is no given piece to return, returns the most recently created
-  /// [TextPiece]. In this case, it still allows more text to be written to
-  /// that piece. For example, in:
-  ///
-  /// ```
-  /// a + b;
-  /// ```
-  ///
-  /// The code for the infix expression will call [take()] to capture the second
-  /// `b` operand. Then the surrounding code for the expression statement will
-  /// call [token()] for the `;`, which will correctly append it to the
-  /// [TextPiece] for `b`.
-  Piece take() {
-    if (_given case var piece?) {
-      _given = null;
-      return piece;
+    if (commaAfter) {
+      var nextToken = token.next!;
+      if (nextToken.lexeme == ',') {
+        _writeToken(nextToken);
+        return AdjacentPiece([tokenPiece, _currentText]);
+      }
     }
 
-    return _currentText!;
+    return tokenPiece;
   }
 
-  /// Takes the most recent piece and begins a new one.
+  /// Writes any comments before [token].
   ///
-  /// Any text written after this will go into a new [TextPiece] instead of
-  /// being appended to the end of the taken one. Call this wherever a line
-  /// break may be inserted by a piece during line splitting.
-  Piece split() {
-    _pendingSplit = true;
-    return take();
-  }
-
-  /// Writes raw [text] to the current innermost [TextPiece]. Starts a new
-  /// one if needed.
+  /// Used to ensure comments before a token which will be discarded aren't
+  /// lost.
   ///
-  /// If [offset] is given, it should be the number of code points preceding
-  /// this [text] in the original source code.
-  void writeText(String text, {int? offset}) {
-    _write(text, offset: offset);
+  /// If there are any comments before [token] that should end up in their own
+  /// piece, returns a piece for them.
+  Piece? writeCommentsBefore(Token token) {
+    // If we created a new piece while writing the comments, make sure it
+    // doesn't get lost.
+    if (_writeCommentsBefore(token)) return _currentText;
+
+    // Otherwise, there are no comments, or all comments are hanging off the
+    // previous TextPiece.
+    return null;
   }
 
-  /// Writes the text of [token] to the current innermost [TextPiece], tracking
-  /// any selection markers that may appear in it.
-  void writeToken(Token token) {
-    _write(token.lexeme, offset: token.offset);
-  }
+  /// Writes [comment] to a new [Piece] and returns it.
+  Piece writeComment(SourceComment comment) {
+    _currentText = TextPiece();
 
-  /// Writes a space to the current [TextPiece].
-  void writeSpace() {
-    _pendingSpace = true;
-  }
-
-  /// Writes a mandatory newline from a comment to the current [TextPiece].
-  void writeNewline() {
-    _currentText!.newline();
-  }
-
-  /// Write the contents of [comment] to the current innermost [TextPiece],
-  /// handling any newlines that may appear in it.
-  ///
-  /// If [hanging] is `true`, then the comment is appended to the current line
-  /// even if a call to [split()] has happened. This is used for writing a
-  /// comment that should be on the end of a line.
-  void writeComment(SourceComment comment, {bool hanging = false}) {
     _write(comment.text,
-        offset: comment.offset,
-        containsNewline: comment.containsNewline,
-        hanging: hanging);
+        offset: comment.offset, containsNewline: comment.text.contains('\n'));
+    return _currentText;
   }
 
-  void _write(String text,
-      {bool containsNewline = false, bool hanging = false, int? offset}) {
-    var textPiece = _currentText;
+  /// Writes all of the comments that appear between [token] and the previous
+  /// one.
+  ///
+  /// Any hanging comments will be written to the current [TextPiece] for the
+  /// previous token. Remaining comments are written to a new [TextPiece].
+  /// Returns `true` if it created a new [TextPiece].
+  bool _writeCommentsBefore(Token token) {
+    var comments = _comments.commentsBefore(token);
+    if (comments.isEmpty) return false;
 
-    // Create a new text piece if we don't have one or we are after a split.
-    // Ignore the split if the text is deliberately intended to follow the
-    // current text.
-    if (textPiece == null || _pendingSplit && !hanging) {
-      textPiece = _currentText = TextPiece();
-    } else if (_pendingSpace || hanging) {
-      // Always write a space before hanging comments.
-      textPiece.appendSpace();
+    var createdPiece = false;
+
+    for (var i = 0; i < comments.length; i++) {
+      var comment = comments[i];
+
+      // The whitespace between the previous code or comment and this one.
+      if (comments.isHanging(i)) {
+        // Write a space before hanging comments.
+        _currentText.appendSpace();
+      } else if (!createdPiece) {
+        // The previous piece must end in a newline before this comment.
+        _currentText.newline();
+
+        // Only split once between the last hanging comment and the remaining
+        // non-hanging ones. Otherwise, we would end up dropping comment pieces
+        // on the floor. So given:
+        //
+        // ```
+        // before + // one
+        //    // two
+        //    // three
+        //    // four
+        //    after;
+        // ```
+        //
+        // The pieces are:
+        //
+        // - `before + // one`
+        // - `// two¬// three¬// four¬after`
+        // - `;`
+        _currentText = TextPiece();
+        createdPiece = true;
+      } else {
+        // There are multiple comments before the token that each need to be on
+        // their own lines, so split between the previous one and this one.
+        _currentText.newline();
+      }
+
+      _write(comment.text,
+          offset: comment.offset, containsNewline: comment.text.contains('\n'));
     }
 
+    // Output a trailing newline after the last comment if it needs one.
+    if (comments.last.requiresNewline) _currentText.newline();
+
+    return createdPiece;
+  }
+
+  /// Writes [token] and any comments that precede it to the current [TextPiece]
+  /// and updates any selection markers that appear in it.
+  void _writeToken(Token token, {String? lexeme}) {
+    if (!_writeCommentsBefore(token)) {
+      // We want this token to be in its own TextPiece, so if the comments
+      // didn't already lead to ending the previous TextPiece than do so now.
+      _currentText = TextPiece();
+    }
+
+    _write(lexeme ?? token.lexeme, offset: token.offset);
+  }
+
+  /// Writes [text] to the current [TextPiece].
+  ///
+  /// If [offset] is given and it contains any selection markers, then attaches
+  /// those markers to the [TextPiece].
+  void _write(String text, {bool containsNewline = false, int? offset}) {
     if (offset != null) {
       // If this text contains any of the selection endpoints, note their
       // relative locations in the text piece.
       if (_findSelectionStartWithin(offset, text.length) case var start?) {
-        textPiece.startSelection(start);
+        _currentText.startSelection(start);
       }
 
       if (_findSelectionEndWithin(offset, text.length) case var end?) {
-        textPiece.endSelection(end);
+        _currentText.endSelection(end);
       }
     }
 
-    textPiece.append(text, containsNewline: containsNewline);
-
-    _pendingSpace = false;
-    if (!hanging) _pendingSplit = false;
+    _currentText.append(text, containsNewline: containsNewline);
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
-  SourceCode finish() {
+  SourceCode finish(Piece rootPiece) {
     var formatter = Solver(_formatter.pageWidth);
 
-    var piece = take();
-
     if (debug.tracePieceBuilder) {
-      print(debug.pieceTree(piece));
+      print(debug.pieceTree(rootPiece));
     }
 
-    var result = formatter.format(piece);
+    var result = formatter.format(rootPiece);
     var outputCode = result.text;
 
     // Be a good citizen, end with a newline.

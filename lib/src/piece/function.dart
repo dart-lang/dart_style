@@ -21,7 +21,12 @@ class FunctionPiece extends Piece {
   /// If this is a function declaration with a (non-empty `;`) body, the body.
   final Piece? _body;
 
-  FunctionPiece(this._returnType, this._signature, [this._body]);
+  final bool _spaceBeforeBody;
+
+  FunctionPiece(this._returnType, this._signature,
+      {Piece? body, bool spaceBeforeBody = false})
+      : _body = body,
+        _spaceBeforeBody = spaceBeforeBody;
 
   @override
   List<State> get additionalStates =>
@@ -43,7 +48,7 @@ class FunctionPiece extends Piece {
 
     writer.format(_signature);
     if (_body case var body?) {
-      writer.space();
+      if (_spaceBeforeBody) writer.space();
       writer.format(body);
     }
   }

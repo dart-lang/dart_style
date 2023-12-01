@@ -9,9 +9,10 @@ import 'package:analyzer/source/line_info.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
+import '../piece/adjacent.dart';
+import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/chain.dart';
-import '../piece/do_while.dart';
 import '../piece/for.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
@@ -19,6 +20,7 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
+import 'adjacent_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
 import 'piece_factory.dart';
@@ -32,18 +34,22 @@ import 'sequence_builder.dart';
 /// To avoid this class becoming a monolith, functionality is divided into a
 /// couple of mixins, one for each area of functionality. This class then
 /// contains only shared state and the visitor methods for the AST.
-class AstNodeVisitor extends ThrowingAstVisitor<void>
-    with CommentWriter, PieceFactory {
-  /// Cached line info for calculating blank lines.
-  @override
-  final LineInfo lineInfo;
-
+class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   final PieceWriter pieces;
 
+  @override
+  final CommentWriter comments;
+
   /// Create a new visitor that will be called to visit the code in [source].
-  AstNodeVisitor(DartFormatter formatter, this.lineInfo, SourceCode source)
-      : pieces = PieceWriter(formatter, source);
+  factory AstNodeVisitor(
+      DartFormatter formatter, LineInfo lineInfo, SourceCode source) {
+    var comments = CommentWriter(lineInfo);
+    var pieces = PieceWriter(formatter, source, comments);
+    return AstNodeVisitor._(pieces, comments);
+  }
+
+  AstNodeVisitor._(this.pieces, this.comments);
 
   /// Visits [node] and returns the formatted result.
   ///
@@ -97,73 +103,74 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     // Write any comments at the end of the code.
     sequence.addCommentsBefore(node.endToken.next!);
 
-    pieces.give(sequence.build());
-
     // Finish writing and return the complete result.
-    return pieces.finish();
+    return pieces.finish(sequence.build());
   }
 
   @override
-  void visitAdjacentStrings(AdjacentStrings node) {
+  Piece visitAdjacentStrings(AdjacentStrings node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitAnnotation(Annotation node) {
+  Piece visitAnnotation(Annotation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitArgumentList(ArgumentList node) {
-    createArgumentList(
+  Piece visitArgumentList(ArgumentList node) {
+    return createArgumentList(
         node.leftParenthesis, node.arguments, node.rightParenthesis);
   }
 
   @override
-  void visitAsExpression(AsExpression node) {
-    createInfix(node.expression, node.asOperator, node.type);
+  Piece visitAsExpression(AsExpression node) {
+    return createInfix(node.expression, node.asOperator, node.type);
   }
 
   @override
-  void visitAssertInitializer(AssertInitializer node) {
+  Piece visitAssertInitializer(AssertInitializer node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitAssertStatement(AssertStatement node) {
-    token(node.assertKeyword);
-    createArgumentList(
-        node.leftParenthesis,
-        [
-          node.condition,
-          if (node.message case var message?) message,
-        ],
-        node.rightParenthesis);
-    token(node.semicolon);
+  Piece visitAssertStatement(AssertStatement node) {
+    return buildPiece((b) {
+      b.token(node.assertKeyword);
+      b.add(createArgumentList(
+          node.leftParenthesis,
+          [
+            node.condition,
+            if (node.message case var message?) message,
+          ],
+          node.rightParenthesis));
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitAssignedVariablePattern(AssignedVariablePattern node) {
+  Piece visitAssignedVariablePattern(AssignedVariablePattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitAssignmentExpression(AssignmentExpression node) {
-    visit(node.leftHandSide);
-    space();
-    finishAssignment(node.operator, node.rightHandSide);
+  Piece visitAssignmentExpression(AssignmentExpression node) {
+    return createAssignment(
+        node.leftHandSide, node.operator, node.rightHandSide);
   }
 
   @override
-  void visitAwaitExpression(AwaitExpression node) {
-    token(node.awaitKeyword);
-    space();
-    visit(node.expression);
+  Piece visitAwaitExpression(AwaitExpression node) {
+    return buildPiece((b) {
+      b.token(node.awaitKeyword);
+      b.space();
+      b.visit(node.expression);
+    });
   }
 
   @override
-  void visitBinaryExpression(BinaryExpression node) {
-    createInfixChain<BinaryExpression>(
+  Piece visitBinaryExpression(BinaryExpression node) {
+    return createInfixChain<BinaryExpression>(
         node,
         precedence: node.operator.type.precedence,
         (expression) => (
@@ -174,49 +181,51 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitBlock(Block node) {
-    createBlock(node);
+  Piece visitBlock(Block node) {
+    return createBlock(node);
   }
 
   @override
-  void visitBlockFunctionBody(BlockFunctionBody node) {
-    functionBodyModifiers(node);
-    visit(node.block);
+  Piece visitBlockFunctionBody(BlockFunctionBody node) {
+    return buildPiece((b) {
+      functionBodyModifiers(node, b);
+      b.visit(node.block);
+    });
   }
 
   @override
-  void visitBooleanLiteral(BooleanLiteral node) {
-    token(node.literal);
+  Piece visitBooleanLiteral(BooleanLiteral node) {
+    return tokenPiece(node.literal);
   }
 
   @override
-  void visitBreakStatement(BreakStatement node) {
-    createBreak(node.breakKeyword, node.label, node.semicolon);
+  Piece visitBreakStatement(BreakStatement node) {
+    return createBreak(node.breakKeyword, node.label, node.semicolon);
   }
 
   @override
-  void visitCascadeExpression(CascadeExpression node) {
+  Piece visitCascadeExpression(CascadeExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitCastPattern(CastPattern node) {
+  Piece visitCastPattern(CastPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitCatchClause(CatchClause node) {
+  Piece visitCatchClause(CatchClause node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitCatchClauseParameter(CatchClauseParameter node) {
+  Piece visitCatchClauseParameter(CatchClauseParameter node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitClassDeclaration(ClassDeclaration node) {
-    createType(
+  Piece visitClassDeclaration(ClassDeclaration node) {
+    return createType(
         node.metadata,
         [
           node.abstractKeyword,
@@ -241,8 +250,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitClassTypeAlias(ClassTypeAlias node) {
-    createType(
+  Piece visitClassTypeAlias(ClassTypeAlias node) {
+    return createType(
         node.metadata,
         [
           node.abstractKeyword,
@@ -263,36 +272,38 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitComment(Comment node) {
-    assert(false, 'Comments should be handled elsewhere.');
+  Piece visitComment(Comment node) {
+    throw UnsupportedError('Comments should be handled elsewhere.');
   }
 
   @override
-  void visitCommentReference(CommentReference node) {
-    assert(false, 'Comments should be handled elsewhere.');
+  Piece visitCommentReference(CommentReference node) {
+    throw UnsupportedError('Comments should be handled elsewhere.');
   }
 
   @override
-  void visitCompilationUnit(CompilationUnit node) {
-    assert(false, 'CompilationUnit should be handled directly by format().');
+  Piece visitCompilationUnit(CompilationUnit node) {
+    throw UnsupportedError(
+        'CompilationUnit should be handled directly by format().');
   }
 
   @override
-  void visitConditionalExpression(ConditionalExpression node) {
-    visit(node.condition);
-    var condition = pieces.split();
+  Piece visitConditionalExpression(ConditionalExpression node) {
+    var condition = nodePiece(node.condition);
 
-    token(node.question);
-    space();
-    visit(node.thenExpression);
-    var thenBranch = pieces.split();
+    var thenPiece = buildPiece((b) {
+      b.token(node.question);
+      b.space();
+      b.visit(node.thenExpression);
+    });
 
-    token(node.colon);
-    space();
-    visit(node.elseExpression);
-    var elseBranch = pieces.take();
+    var elsePiece = buildPiece((b) {
+      b.token(node.colon);
+      b.space();
+      b.visit(node.elseExpression);
+    });
 
-    var piece = InfixPiece([condition, thenBranch, elseBranch]);
+    var piece = InfixPiece([condition, thenPiece, elsePiece]);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
@@ -302,129 +313,130 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       piece.pin(State.split);
     }
 
-    pieces.give(piece);
+    return piece;
   }
 
   @override
-  void visitConfiguration(Configuration node) {
-    token(node.ifKeyword);
-    space();
-    token(node.leftParenthesis);
+  Piece visitConfiguration(Configuration node) {
+    return buildPiece((b) {
+      b.token(node.ifKeyword);
+      b.space();
+      b.token(node.leftParenthesis);
 
-    if (node.equalToken case var equals?) {
-      createInfix(node.name, equals, node.value!, hanging: true);
-    } else {
-      visit(node.name);
-    }
+      if (node.equalToken case var equals?) {
+        b.add(createInfix(node.name, equals, node.value!, hanging: true));
+      } else {
+        b.visit(node.name);
+      }
 
-    token(node.rightParenthesis);
-    space();
-    visit(node.uri);
+      b.token(node.rightParenthesis);
+      b.space();
+      b.visit(node.uri);
+    });
   }
 
   @override
-  void visitConstantPattern(ConstantPattern node) {
+  Piece visitConstantPattern(ConstantPattern node) {
     if (node.constKeyword != null) throw UnimplementedError();
-    visit(node.expression);
+    return nodePiece(node.expression);
   }
 
   @override
-  void visitConstructorDeclaration(ConstructorDeclaration node) {
+  Piece visitConstructorDeclaration(ConstructorDeclaration node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
+  Piece visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitConstructorName(ConstructorName node) {
-    assert(false, 'This node is handled by visitInstanceCreationExpression().');
+  Piece visitConstructorName(ConstructorName node) {
+    throw UnsupportedError(
+        'This node is handled by visitInstanceCreationExpression().');
   }
 
   @override
-  void visitContinueStatement(ContinueStatement node) {
-    createBreak(node.continueKeyword, node.label, node.semicolon);
+  Piece visitContinueStatement(ContinueStatement node) {
+    return createBreak(node.continueKeyword, node.label, node.semicolon);
   }
 
   @override
-  void visitDeclaredIdentifier(DeclaredIdentifier node) {
-    modifier(node.keyword);
-    visit(node.type, after: space);
-    token(node.name);
+  Piece visitDeclaredIdentifier(DeclaredIdentifier node) {
+    return buildPiece((b) {
+      b.modifier(node.keyword);
+      b.visit(node.type, spaceAfter: true);
+      b.token(node.name);
+    });
   }
 
   @override
-  void visitDeclaredVariablePattern(DeclaredVariablePattern node) {
+  Piece visitDeclaredVariablePattern(DeclaredVariablePattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    visit(node.parameter);
-
+  Piece visitDefaultFormalParameter(DefaultFormalParameter node) {
     if (node.separator case var separator?) {
-      finishAssignment(separator, node.defaultValue!);
+      return createAssignment(node.parameter, separator, node.defaultValue!,
+          spaceBeforeOperator: separator.type == TokenType.EQ);
+    } else {
+      return nodePiece(node.parameter);
     }
   }
 
   @override
-  void visitDoStatement(DoStatement node) {
-    token(node.doKeyword);
-    space();
-    visit(node.body);
-    space();
-    token(node.whileKeyword);
-    var body = pieces.split();
-
-    token(node.leftParenthesis);
-    visit(node.condition);
-    token(node.rightParenthesis);
-    token(node.semicolon);
-    var condition = pieces.take();
-
-    pieces.give(DoWhilePiece(body, condition));
+  Piece visitDoStatement(DoStatement node) {
+    return buildPiece((b) {
+      b.token(node.doKeyword);
+      b.space();
+      b.visit(node.body);
+      b.space();
+      b.token(node.whileKeyword);
+      b.space();
+      b.token(node.leftParenthesis);
+      b.visit(node.condition);
+      b.token(node.rightParenthesis);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitDottedName(DottedName node) {
-    createDotted(node.components);
+  Piece visitDottedName(DottedName node) {
+    return createDotted(node.components);
   }
 
   @override
-  void visitDoubleLiteral(DoubleLiteral node) {
-    token(node.literal);
+  Piece visitDoubleLiteral(DoubleLiteral node) {
+    return tokenPiece(node.literal);
   }
 
   @override
-  void visitEmptyFunctionBody(EmptyFunctionBody node) {
-    token(node.semicolon);
+  Piece visitEmptyFunctionBody(EmptyFunctionBody node) {
+    return tokenPiece(node.semicolon);
   }
 
   @override
-  void visitEmptyStatement(EmptyStatement node) {
-    token(node.semicolon);
+  Piece visitEmptyStatement(EmptyStatement node) {
+    return tokenPiece(node.semicolon);
   }
 
   @override
-  void visitEnumConstantDeclaration(EnumConstantDeclaration node) {
-    token(node.name);
-    if (node.arguments case var arguments?) {
-      visit(arguments.typeArguments);
-      visit(arguments.argumentList);
-    }
+  Piece visitEnumConstantDeclaration(EnumConstantDeclaration node) {
+    return createEnumConstant(node);
   }
 
   @override
-  void visitEnumDeclaration(EnumDeclaration node) {
+  Piece visitEnumDeclaration(EnumDeclaration node) {
     if (node.metadata.isNotEmpty) throw UnimplementedError();
 
-    token(node.enumKeyword);
-    space();
-    token(node.name);
-    visit(node.typeParameters);
-    space();
+    var header = buildPiece((b) {
+      b.token(node.enumKeyword);
+      b.space();
+      b.token(node.name);
+      b.visit(node.typeParameters);
+    });
 
     if (node.members.isEmpty) {
       // If there are no members, format the constants like a delimited list.
@@ -433,34 +445,26 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
           this,
           const ListStyle(
               spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-      builder.leftBracket(node.leftBracket);
+      builder.leftBracket(node.leftBracket, preceding: header);
       node.constants.forEach(builder.visit);
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
-      pieces.give(builder.build());
+      return builder.build();
     } else {
+      var builder = AdjacentBuilder(this);
+      builder.add(header);
+      builder.space();
+
       // If there are members, format it like a block where each constant and
       // member is on its own line.
-      token(node.leftBracket);
-      var leftBracketPiece = pieces.split();
+      var leftBracketPiece = tokenPiece(node.leftBracket);
 
       var sequence = SequenceBuilder(this);
       for (var constant in node.constants) {
         sequence.addCommentsBefore(constant.firstNonCommentToken);
-        visit(constant);
-
-        if (constant != node.constants.last) {
-          commaAfter(constant);
-        } else {
-          // Discard the trailing comma if there is one since there is a
-          // semicolon to use as the separator, but preserve any comments before
-          // the discarded comma.
-          var trailingComma = constant.commaAfter;
-          if (trailingComma != null) writeCommentsBefore(trailingComma);
-
-          token(node.semicolon);
-        }
-
-        sequence.add(pieces.split());
+        sequence.add(createEnumConstant(constant,
+            hasMembers: true,
+            isLastConstant: constant == node.constants.last,
+            semicolon: node.semicolon));
       }
 
       // Insert a blank line between the constants and members.
@@ -477,40 +481,52 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       // Place any comments before the "}" inside the block.
       sequence.addCommentsBefore(node.rightBracket);
 
-      token(node.rightBracket);
-      var rightBracketPiece = pieces.take();
+      var rightBracketPiece = tokenPiece(node.rightBracket);
 
-      pieces.give(
+      builder.add(
           BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece));
+      return builder.build();
     }
   }
 
   @override
-  void visitExportDirective(ExportDirective node) {
-    createImport(node, node.exportKeyword);
+  Piece visitExportDirective(ExportDirective node) {
+    return createImport(node, node.exportKeyword);
   }
 
   @override
-  void visitExpressionFunctionBody(ExpressionFunctionBody node) {
-    functionBodyModifiers(node);
-    finishAssignment(node.functionDefinition, node.expression);
-    token(node.semicolon);
+  Piece visitExpressionFunctionBody(ExpressionFunctionBody node) {
+    return buildPiece((b) {
+      var operatorPiece = buildPiece((b) {
+        functionBodyModifiers(node, b);
+        b.token(node.functionDefinition);
+      });
+
+      var expression = nodePiece(node.expression);
+
+      b.add(AssignPiece(operatorPiece, expression,
+          isValueDelimited: node.expression.canBlockSplit));
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitExpressionStatement(ExpressionStatement node) {
-    visit(node.expression);
-    token(node.semicolon);
+  Piece visitExpressionStatement(ExpressionStatement node) {
+    return buildPiece((b) {
+      b.visit(node.expression);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitExtendsClause(ExtendsClause node) {
-    assert(false, 'This node is handled by PieceFactory.createType().');
+  Piece visitExtendsClause(ExtendsClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
   }
 
   @override
-  void visitExtensionDeclaration(ExtensionDeclaration node) {
-    createType(node.metadata, const [], node.extensionKeyword, node.name,
+  Piece visitExtensionDeclaration(ExtensionDeclaration node) {
+    return createType(node.metadata, const [], node.extensionKeyword, node.name,
         typeParameters: node.typeParameters,
         onType: (node.onKeyword, node.extendedType),
         body: (
@@ -521,22 +537,24 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitFieldDeclaration(FieldDeclaration node) {
-    modifier(node.externalKeyword);
-    modifier(node.staticKeyword);
-    modifier(node.abstractKeyword);
-    modifier(node.covariantKeyword);
-    visit(node.fields);
-    token(node.semicolon);
+  Piece visitFieldDeclaration(FieldDeclaration node) {
+    return buildPiece((b) {
+      b.modifier(node.externalKeyword);
+      b.modifier(node.staticKeyword);
+      b.modifier(node.abstractKeyword);
+      b.modifier(node.covariantKeyword);
+      b.visit(node.fields);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitFieldFormalParameter(FieldFormalParameter node) {
+  Piece visitFieldFormalParameter(FieldFormalParameter node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitFormalParameterList(FormalParameterList node) {
+  Piece visitFormalParameterList(FormalParameterList node) {
     // Find the first non-mandatory parameter (if there are any).
     var firstOptional =
         node.parameters.indexWhere((p) => p is DefaultFormalParameter);
@@ -559,19 +577,20 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
-    pieces.give(builder.build());
+    return builder.build();
   }
 
   @override
-  void visitForElement(ForElement node) {
+  Piece visitForElement(ForElement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitForStatement(ForStatement node) {
-    modifier(node.awaitKeyword);
-    token(node.forKeyword);
-    var forKeyword = pieces.split();
+  Piece visitForStatement(ForStatement node) {
+    var forKeyword = buildPiece((b) {
+      b.modifier(node.awaitKeyword);
+      b.token(node.forKeyword);
+    });
 
     Piece forPartsPiece;
     switch (node.forLoopParts) {
@@ -586,11 +605,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
               ) &&
               var forParts
           when node.rightParenthesis.precedingComments == null:
-        token(node.leftParenthesis);
-        token(forParts.leftSeparator);
-        token(forParts.rightSeparator);
-        token(node.rightParenthesis);
-        forPartsPiece = pieces.split();
+        forPartsPiece = buildPiece((b) {
+          b.token(node.leftParenthesis);
+          b.token(forParts.leftSeparator);
+          b.token(forParts.rightSeparator);
+          b.token(node.rightParenthesis);
+        });
 
       case ForParts forParts &&
             ForPartsWithDeclarations(variables: AstNode? initializer):
@@ -616,36 +636,36 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         // The initializer clause.
         if (initializer != null) {
           partsList.addCommentsBefore(initializer.beginToken);
-          visit(initializer);
+          partsList.add(buildPiece((b) {
+            b.visit(initializer);
+            b.token(forParts.leftSeparator);
+          }));
         } else {
           // No initializer, so look at the comments before `;`.
           partsList.addCommentsBefore(forParts.leftSeparator);
+          partsList.add(tokenPiece(forParts.leftSeparator));
         }
-
-        token(forParts.leftSeparator);
-        partsList.add(pieces.split());
 
         // The condition clause.
         if (forParts.condition case var conditionExpression?) {
           partsList.addCommentsBefore(conditionExpression.beginToken);
-          visit(conditionExpression);
+          partsList.add(buildPiece((b) {
+            b.visit(conditionExpression);
+            b.token(forParts.rightSeparator);
+          }));
         } else {
           partsList.addCommentsBefore(forParts.rightSeparator);
+          partsList.add(tokenPiece(forParts.rightSeparator));
         }
-
-        token(forParts.rightSeparator);
-        partsList.add(pieces.split());
 
         // The update clauses.
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
-          createList(forParts.updaters,
-              style: const ListStyle(commas: Commas.nonTrailing));
-          partsList.add(pieces.split());
+          partsList.add(createList(forParts.updaters,
+              style: const ListStyle(commas: Commas.nonTrailing)));
         }
 
         partsList.rightBracket(node.rightParenthesis);
-        pieces.split();
         forPartsPiece = partsList.build();
 
       case ForPartsWithPattern():
@@ -665,58 +685,57 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
         //   body;
         // }
         // ```
-        token(node.leftParenthesis);
-        visit(variable);
-
-        finishAssignment(forEachParts.inKeyword, forEachParts.iterable,
-            splitBeforeOperator: true);
-        token(node.rightParenthesis);
-        forPartsPiece = pieces.split();
+        forPartsPiece = buildPiece((b) {
+          b.token(node.leftParenthesis);
+          b.add(createAssignment(
+              variable, forEachParts.inKeyword, forEachParts.iterable,
+              splitBeforeOperator: true));
+          b.token(node.rightParenthesis);
+        });
 
       case ForEachPartsWithPattern():
         throw UnimplementedError();
     }
 
-    visit(node.body);
-    var body = pieces.take();
+    var body = nodePiece(node.body);
 
-    pieces.give(ForPiece(forKeyword, forPartsPiece, body,
-        hasBlockBody: node.body is Block));
+    return ForPiece(forKeyword, forPartsPiece, body,
+        hasBlockBody: node.body is Block);
   }
 
   @override
-  void visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitForPartsWithExpression(ForPartsWithExpression node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForPartsWithExpression(ForPartsWithExpression node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitForPartsWithPattern(ForPartsWithPattern node) {
-    assert(false, 'This node is handled by visitForStatement().');
+  Piece visitForPartsWithPattern(ForPartsWithPattern node) {
+    throw UnsupportedError('This node is handled by visitForStatement().');
   }
 
   @override
-  void visitFunctionDeclaration(FunctionDeclaration node) {
-    createFunction(
+  Piece visitFunctionDeclaration(FunctionDeclaration node) {
+    return createFunction(
         externalKeyword: node.externalKeyword,
         returnType: node.returnType,
         propertyKeyword: node.propertyKeyword,
@@ -727,84 +746,93 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitFunctionDeclarationStatement(FunctionDeclarationStatement node) {
-    visit(node.functionDeclaration);
+  Piece visitFunctionDeclarationStatement(FunctionDeclarationStatement node) {
+    return nodePiece(node.functionDeclaration);
   }
 
   @override
-  void visitFunctionExpression(FunctionExpression node) {
-    finishFunction(null, node.typeParameters, node.parameters, node.body);
+  Piece visitFunctionExpression(FunctionExpression node) {
+    return createFunction(
+        typeParameters: node.typeParameters,
+        parameters: node.parameters,
+        body: node.body);
   }
 
   @override
-  void visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
+  Piece visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitFunctionReference(FunctionReference node) {
+  Piece visitFunctionReference(FunctionReference node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitFunctionTypeAlias(FunctionTypeAlias node) {
+  Piece visitFunctionTypeAlias(FunctionTypeAlias node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    startFormalParameter(node);
-    createFunctionType(node.returnType, node.name, node.typeParameters,
-        node.parameters, node.question);
+  Piece visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
+    return createFunctionType(
+        parameter: node,
+        node.returnType,
+        node.name,
+        node.typeParameters,
+        node.parameters,
+        node.question);
   }
 
   @override
-  void visitGenericFunctionType(GenericFunctionType node) {
-    createFunctionType(node.returnType, node.functionKeyword,
+  Piece visitGenericFunctionType(GenericFunctionType node) {
+    return createFunctionType(node.returnType, node.functionKeyword,
         node.typeParameters, node.parameters, node.question);
   }
 
   @override
-  void visitGenericTypeAlias(GenericTypeAlias node) {
+  Piece visitGenericTypeAlias(GenericTypeAlias node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitHideCombinator(HideCombinator node) {
-    assert(false, 'Combinators are handled by createImport().');
+  Piece visitHideCombinator(HideCombinator node) {
+    throw UnsupportedError('Combinators are handled by createImport().');
   }
 
   @override
-  void visitIfElement(IfElement node) {
+  Piece visitIfElement(IfElement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitIfStatement(IfStatement node) {
-    createIf(node);
+  Piece visitIfStatement(IfStatement node) {
+    return createIf(node);
   }
 
   @override
-  void visitImplementsClause(ImplementsClause node) {
-    assert(false, 'This node is handled by PieceFactory.createType().');
+  Piece visitImplementsClause(ImplementsClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
   }
 
   @override
-  void visitImportDirective(ImportDirective node) {
-    createImport(node, node.importKeyword,
+  Piece visitImportDirective(ImportDirective node) {
+    return createImport(node, node.importKeyword,
         deferredKeyword: node.deferredKeyword,
         asKeyword: node.asKeyword,
         prefix: node.prefix);
   }
 
   @override
-  void visitIndexExpression(IndexExpression node) {
+  Piece visitIndexExpression(IndexExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    token(node.keyword, after: space);
+  Piece visitInstanceCreationExpression(InstanceCreationExpression node) {
+    var builder = AdjacentBuilder(this);
+    builder.token(node.keyword, spaceAfter: true);
 
     // If there is an import prefix and/or constructor name, then allow
     // splitting before the `.`. This doesn't look good, but is consistent with
@@ -816,51 +844,51 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     var constructor = node.constructorName;
     if (constructor.type.importPrefix case var importPrefix?) {
-      token(importPrefix.name);
-      operations.add(pieces.split());
-      token(importPrefix.period);
+      builder.token(importPrefix.name);
+      operations.add(builder.build());
+      builder.token(importPrefix.period);
     }
 
-    // The name of the type being constructed.
+    // The type being constructed.
     var type = constructor.type;
-    token(type.name2);
-    visit(type.typeArguments);
-    token(type.question);
+    builder.token(type.name2);
+    builder.visit(type.typeArguments);
 
     // If this is a named constructor call, the name.
-    if (constructor.name != null) {
-      operations.add(pieces.split());
-      token(constructor.period);
-      visit(constructor.name);
+    if (constructor.name case var name?) {
+      operations.add(builder.build());
+      builder.token(constructor.period);
+      builder.visit(name);
     }
 
-    visit(node.argumentList);
+    builder.visit(node.argumentList);
+    operations.add(builder.build());
 
-    // If there was a prefix or constructor name, then make a splittable piece.
-    if (operations.isNotEmpty) {
-      operations.add(pieces.take());
-      pieces.give(ChainPiece(operations));
+    if (operations.length > 1) {
+      return ChainPiece(operations);
+    } else {
+      return operations.first;
     }
   }
 
   @override
-  void visitIntegerLiteral(IntegerLiteral node) {
-    token(node.literal);
+  Piece visitIntegerLiteral(IntegerLiteral node) {
+    return tokenPiece(node.literal);
   }
 
   @override
-  void visitInterpolationExpression(InterpolationExpression node) {
+  Piece visitInterpolationExpression(InterpolationExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitInterpolationString(InterpolationString node) {
+  Piece visitInterpolationString(InterpolationString node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitIsExpression(IsExpression node) {
-    createInfix(
+  Piece visitIsExpression(IsExpression node) {
+    return createInfix(
         node.expression,
         node.isOperator,
         operator2: node.notOperator,
@@ -868,38 +896,42 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitLabel(Label node) {
-    visit(node.label);
-    token(node.colon);
+  Piece visitLabel(Label node) {
+    return buildPiece((b) {
+      b.visit(node.label);
+      b.token(node.colon);
+    });
   }
 
   @override
-  void visitLabeledStatement(LabeledStatement node) {
+  Piece visitLabeledStatement(LabeledStatement node) {
     var sequence = SequenceBuilder(this);
     for (var label in node.labels) {
       sequence.visit(label);
     }
 
     sequence.visit(node.statement);
-    pieces.give(sequence.build());
+    return sequence.build();
   }
 
   @override
-  void visitLibraryDirective(LibraryDirective node) {
-    createDirectiveMetadata(node);
-    token(node.libraryKeyword);
-    visit(node.name2, before: space);
-    token(node.semicolon);
+  Piece visitLibraryDirective(LibraryDirective node) {
+    return buildPiece((b) {
+      createDirectiveMetadata(node);
+      b.token(node.libraryKeyword);
+      b.visit(node.name2, spaceBefore: true);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitLibraryIdentifier(LibraryIdentifier node) {
-    createDotted(node.components);
+  Piece visitLibraryIdentifier(LibraryIdentifier node) {
+    return createDotted(node.components);
   }
 
   @override
-  void visitListLiteral(ListLiteral node) {
-    createCollection(
+  Piece visitListLiteral(ListLiteral node) {
+    return createCollection(
       node.constKeyword,
       typeArguments: node.typeArguments,
       node.leftBracket,
@@ -909,39 +941,39 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitListPattern(ListPattern node) {
+  Piece visitListPattern(ListPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitLogicalAndPattern(LogicalAndPattern node) {
+  Piece visitLogicalAndPattern(LogicalAndPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitLogicalOrPattern(LogicalOrPattern node) {
+  Piece visitLogicalOrPattern(LogicalOrPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitMapLiteralEntry(MapLiteralEntry node) {
-    visit(node.key);
-    finishAssignment(node.separator, node.value);
+  Piece visitMapLiteralEntry(MapLiteralEntry node) {
+    return createAssignment(node.key, node.separator, node.value,
+        spaceBeforeOperator: false);
   }
 
   @override
-  void visitMapPattern(MapPattern node) {
+  Piece visitMapPattern(MapPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitMapPatternEntry(MapPatternEntry node) {
+  Piece visitMapPatternEntry(MapPatternEntry node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitMethodDeclaration(MethodDeclaration node) {
-    createFunction(
+  Piece visitMethodDeclaration(MethodDeclaration node) {
+    return createFunction(
         externalKeyword: node.externalKeyword,
         modifierKeyword: node.modifierKeyword,
         returnType: node.returnType,
@@ -954,20 +986,22 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitMethodInvocation(MethodInvocation node) {
-    // TODO(tall): Support splitting at `.` or `?.`. Right now we just format
-    // it inline so that we can use method calls in other tests.
-    visit(node.target);
-    token(node.operator);
-
-    visit(node.methodName);
-    visit(node.typeArguments);
-    visit(node.argumentList);
+  Piece visitMethodInvocation(MethodInvocation node) {
+    return buildPiece((b) {
+      // TODO(tall): Support splitting at `.` or `?.`. Right now we just format
+      // it inline so that we can use method calls in other tests.
+      b.visit(node.target);
+      b.token(node.operator);
+      b.visit(node.methodName);
+      b.visit(node.typeArguments);
+      b.visit(node.argumentList);
+    });
   }
 
   @override
-  void visitMixinDeclaration(MixinDeclaration node) {
-    createType(node.metadata, [node.baseKeyword], node.mixinKeyword, node.name,
+  Piece visitMixinDeclaration(MixinDeclaration node) {
+    return createType(
+        node.metadata, [node.baseKeyword], node.mixinKeyword, node.name,
         typeParameters: node.typeParameters,
         onClause: node.onClause,
         implementsClause: node.implementsClause,
@@ -979,155 +1013,164 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitNamedExpression(NamedExpression node) {
-    visit(node.name.label);
-    finishAssignment(node.name.colon, node.expression);
+  Piece visitNamedExpression(NamedExpression node) {
+    return createAssignment(node.name.label, node.name.colon, node.expression,
+        spaceBeforeOperator: false);
   }
 
   @override
-  void visitNamedType(NamedType node) {
-    if (node.importPrefix case var importPrefix?) {
-      token(importPrefix.name);
-      token(importPrefix.period);
-    }
-
-    token(node.name2);
-    visit(node.typeArguments);
-    token(node.question);
+  Piece visitNamedType(NamedType node) {
+    return buildPiece((b) {
+      b.token(node.importPrefix?.name);
+      b.token(node.importPrefix?.period);
+      b.token(node.name2);
+      b.visit(node.typeArguments);
+      b.token(node.question);
+    });
   }
 
   @override
-  void visitNativeClause(NativeClause node) {
-    space();
-    token(node.nativeKeyword);
-    space();
-    visit(node.name);
+  Piece visitNativeClause(NativeClause node) {
+    return buildPiece((b) {
+      b.token(node.nativeKeyword);
+      b.visit(node.name, spaceBefore: true);
+    });
   }
 
   @override
-  void visitNativeFunctionBody(NativeFunctionBody node) {
+  Piece visitNativeFunctionBody(NativeFunctionBody node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitNullAssertPattern(NullAssertPattern node) {
+  Piece visitNullAssertPattern(NullAssertPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitNullCheckPattern(NullCheckPattern node) {
+  Piece visitNullCheckPattern(NullCheckPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitNullLiteral(NullLiteral node) {
-    token(node.literal);
+  Piece visitNullLiteral(NullLiteral node) {
+    return tokenPiece(node.literal);
   }
 
   @override
-  void visitObjectPattern(ObjectPattern node) {
+  Piece visitObjectPattern(ObjectPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitOnClause(OnClause node) {
-    assert(false, 'This node is handled by PieceFactory.createType().');
+  Piece visitOnClause(OnClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
   }
 
   @override
-  void visitParenthesizedExpression(ParenthesizedExpression node) {
-    token(node.leftParenthesis);
-    visit(node.expression);
-    token(node.rightParenthesis);
+  Piece visitParenthesizedExpression(ParenthesizedExpression node) {
+    return buildPiece((b) {
+      b.token(node.leftParenthesis);
+      b.visit(node.expression);
+      b.token(node.rightParenthesis);
+    });
   }
 
   @override
-  void visitParenthesizedPattern(ParenthesizedPattern node) {
+  Piece visitParenthesizedPattern(ParenthesizedPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPartDirective(PartDirective node) {
-    createDirectiveMetadata(node);
-    token(node.partKeyword);
-    space();
-    visit(node.uri);
-    token(node.semicolon);
+  Piece visitPartDirective(PartDirective node) {
+    return buildPiece((b) {
+      createDirectiveMetadata(node);
+      b.token(node.partKeyword);
+      b.space();
+      b.visit(node.uri);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitPartOfDirective(PartOfDirective node) {
-    createDirectiveMetadata(node);
-    token(node.partKeyword);
-    space();
-    token(node.ofKeyword);
-    space();
+  Piece visitPartOfDirective(PartOfDirective node) {
+    return buildPiece((b) {
+      createDirectiveMetadata(node);
 
-    // Part-of may have either a name or a URI. Only one of these will be
-    // non-null. We visit both since visit() ignores null.
-    visit(node.libraryName);
-    visit(node.uri);
-    token(node.semicolon);
+      b.token(node.partKeyword);
+      b.space();
+      b.token(node.ofKeyword);
+      b.space();
+
+      // Part-of may have either a name or a URI. Only one of these will be
+      // non-null. We visit both since visit() ignores null.
+      b.visit(node.libraryName);
+      b.visit(node.uri);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitPatternAssignment(PatternAssignment node) {
+  Piece visitPatternAssignment(PatternAssignment node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPatternField(PatternField node) {
+  Piece visitPatternField(PatternField node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPatternVariableDeclaration(PatternVariableDeclaration node) {
+  Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPatternVariableDeclarationStatement(
+  Piece visitPatternVariableDeclarationStatement(
       PatternVariableDeclarationStatement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPostfixExpression(PostfixExpression node) {
+  Piece visitPostfixExpression(PostfixExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPrefixedIdentifier(PrefixedIdentifier node) {
+  Piece visitPrefixedIdentifier(PrefixedIdentifier node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitPrefixExpression(PrefixExpression node) {
-    token(node.operator);
+  Piece visitPrefixExpression(PrefixExpression node) {
+    return buildPiece((b) {
+      b.token(node.operator);
 
-    // Edge case: put a space after "-" if the operand is "-" or "--" so that
-    // we don't merge the operator tokens.
-    if (node.operand
-        case PrefixExpression(operator: Token(lexeme: '-' || '--'))) {
-      space();
-    }
+      // Edge case: put a space after "-" if the operand is "-" or "--" so that
+      // we don't merge the operator tokens.
+      if (node.operand
+          case PrefixExpression(operator: Token(lexeme: '-' || '--'))) {
+        b.space();
+      }
 
-    visit(node.operand);
+      b.visit(node.operand);
+    });
   }
 
   @override
-  void visitPropertyAccess(PropertyAccess node) {
+  Piece visitPropertyAccess(PropertyAccess node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRedirectingConstructorInvocation(
+  Piece visitRedirectingConstructorInvocation(
       RedirectingConstructorInvocation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRecordLiteral(RecordLiteral node) {
+  Piece visitRecordLiteral(RecordLiteral node) {
     ListStyle style;
     if (node.fields.length == 1 && node.fields[0] is! NamedExpression) {
       // Single-element records always have a trailing comma, unless the single
@@ -1136,7 +1179,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
     } else {
       style = const ListStyle(commas: Commas.trailing);
     }
-    createCollection(
+
+    return createCollection(
       node.constKeyword,
       node.leftParenthesis,
       node.fields,
@@ -1146,65 +1190,61 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitRecordPattern(RecordPattern node) {
+  Piece visitRecordPattern(RecordPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRecordTypeAnnotation(RecordTypeAnnotation node) {
+  Piece visitRecordTypeAnnotation(RecordTypeAnnotation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRecordTypeAnnotationNamedField(
+  Piece visitRecordTypeAnnotationNamedField(
       RecordTypeAnnotationNamedField node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRecordTypeAnnotationPositionalField(
+  Piece visitRecordTypeAnnotationPositionalField(
       RecordTypeAnnotationPositionalField node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRelationalPattern(RelationalPattern node) {
+  Piece visitRelationalPattern(RelationalPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRethrowExpression(RethrowExpression node) {
+  Piece visitRethrowExpression(RethrowExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitRestPatternElement(RestPatternElement node) {
+  Piece visitRestPatternElement(RestPatternElement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitReturnStatement(ReturnStatement node) {
-    token(node.returnKeyword);
-
-    if (node.expression case var expression) {
-      space();
-      visit(expression);
-    }
-
-    token(node.semicolon);
+  Piece visitReturnStatement(ReturnStatement node) {
+    return buildPiece((b) {
+      b.token(node.returnKeyword);
+      b.visit(node.expression, spaceBefore: true);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitScriptTag(ScriptTag node) {
+  Piece visitScriptTag(ScriptTag node) {
     // The lexeme includes the trailing newline. Strip it off since the
     // formatter ensures it gets a newline after it.
-    pieces.writeText(node.scriptTag.lexeme.trim(),
-        offset: node.scriptTag.offset);
+    return tokenPiece(node.scriptTag, lexeme: node.scriptTag.lexeme.trim());
   }
 
   @override
-  void visitSetOrMapLiteral(SetOrMapLiteral node) {
-    createCollection(
+  Piece visitSetOrMapLiteral(SetOrMapLiteral node) {
+    return createCollection(
       node.constKeyword,
       typeArguments: node.typeArguments,
       node.leftBracket,
@@ -1214,104 +1254,97 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
   }
 
   @override
-  void visitShowCombinator(ShowCombinator node) {
-    assert(false, 'Combinators are handled by createImport().');
+  Piece visitShowCombinator(ShowCombinator node) {
+    throw UnsupportedError('Combinators are handled by createImport().');
   }
 
   @override
-  void visitSimpleFormalParameter(SimpleFormalParameter node) {
-    startFormalParameter(node);
+  Piece visitSimpleFormalParameter(SimpleFormalParameter node) {
+    var builder = AdjacentBuilder(this);
+    startFormalParameter(node, builder);
+    builder.modifier(node.keyword);
+    builder.visit(node.type);
 
-    if ((node.type, node.name) case (var type?, var name?)) {
-      // Have both a type and name, so allow splitting between them.
-      modifier(node.keyword);
-      visit(type);
-      var typePiece = pieces.split();
-
-      token(name);
-      var namePiece = pieces.take();
-
-      pieces.give(VariablePiece(typePiece, [namePiece], hasType: true));
+    if ((node.type, node.name) case (var _?, var name?)) {
+      // Have both a type and name, so allow splitting after the type.
+      var typePiece = builder.build();
+      var namePiece = tokenPiece(name);
+      return VariablePiece(typePiece, [namePiece], hasType: true);
     } else {
-      // Only one of name or type so just write whichever there is.
-      modifier(node.keyword);
-      visit(node.type);
-      token(node.name);
+      // Don't have both a type and name, so just write whichever one we have.
+      builder.token(node.name);
+      return builder.build();
     }
   }
 
   @override
-  void visitSimpleIdentifier(SimpleIdentifier node) {
-    token(node.token);
+  Piece visitSimpleIdentifier(SimpleIdentifier node) {
+    return tokenPiece(node.token);
   }
 
   @override
-  void visitSimpleStringLiteral(SimpleStringLiteral node) {
-    token(node.literal);
+  Piece visitSimpleStringLiteral(SimpleStringLiteral node) {
+    return tokenPiece(node.literal);
   }
 
   @override
-  void visitSpreadElement(SpreadElement node) {
+  Piece visitSpreadElement(SpreadElement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitStringInterpolation(StringInterpolation node) {
+  Piece visitStringInterpolation(StringInterpolation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitSuperConstructorInvocation(SuperConstructorInvocation node) {
+  Piece visitSuperConstructorInvocation(SuperConstructorInvocation node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitSuperExpression(SuperExpression node) {
+  Piece visitSuperExpression(SuperExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitSuperFormalParameter(SuperFormalParameter node) {
+  Piece visitSuperFormalParameter(SuperFormalParameter node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitSwitchExpression(SwitchExpression node) {
+  Piece visitSwitchExpression(SwitchExpression node) {
+    var value = startControlFlow(node.switchKeyword, node.leftParenthesis,
+        node.expression, node.rightParenthesis);
+
     var list = DelimitedListBuilder(this,
         const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-
-    startControlFlow(node.switchKeyword, node.leftParenthesis, node.expression,
-        node.rightParenthesis);
-    space();
-    list.leftBracket(node.leftBracket);
+    list.leftBracket(node.leftBracket, preceding: value);
 
     for (var member in node.cases) {
       list.visit(member);
     }
 
     list.rightBracket(node.rightBracket);
-    pieces.give(list.build());
+    return list.build();
   }
 
   @override
-  void visitSwitchExpressionCase(SwitchExpressionCase node) {
+  Piece visitSwitchExpressionCase(SwitchExpressionCase node) {
     if (node.guardedPattern.whenClause != null) throw UnimplementedError();
 
-    visit(node.guardedPattern.pattern);
-    space();
-    finishAssignment(node.arrow, node.expression);
+    return createAssignment(
+        node.guardedPattern.pattern, node.arrow, node.expression);
   }
 
   @override
-  void visitSwitchStatement(SwitchStatement node) {
-    startControlFlow(node.switchKeyword, node.leftParenthesis, node.expression,
-        node.rightParenthesis);
-
-    // Attach the ` {` after the `)` in the [ListPiece] created by
-    // [createSwitchValue()].
-    space();
-    token(node.leftBracket);
-    var switchPiece = pieces.split();
+  Piece visitSwitchStatement(SwitchStatement node) {
+    var leftBracket = buildPiece((b) {
+      b.add(startControlFlow(node.switchKeyword, node.leftParenthesis,
+          node.expression, node.rightParenthesis));
+      b.space();
+      b.token(node.leftBracket);
+    });
 
     var sequence = SequenceBuilder(this);
     for (var member in node.members) {
@@ -1320,26 +1353,27 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
       }
 
       sequence.addCommentsBefore(member.keyword);
-      token(member.keyword);
 
-      if (member is SwitchCase) {
-        space();
-        visit(member.expression);
-      } else if (member is SwitchPatternCase) {
-        space();
+      var casePiece = buildPiece((b) {
+        b.token(member.keyword);
 
-        if (member.guardedPattern.whenClause != null) {
-          throw UnimplementedError();
+        if (member is SwitchCase) {
+          b.space();
+          b.visit(member.expression);
+        } else if (member is SwitchPatternCase) {
+          if (member.guardedPattern.whenClause != null) {
+            throw UnimplementedError();
+          }
+
+          b.space();
+          b.visit(member.guardedPattern.pattern);
+        } else {
+          assert(member is SwitchDefault);
+          // Nothing to do.
         }
 
-        visit(member.guardedPattern.pattern);
-      } else {
-        assert(member is SwitchDefault);
-        // Nothing to do.
-      }
-
-      token(member.colon);
-      var casePiece = pieces.split();
+        b.token(member.colon);
+      });
 
       // Don't allow any blank lines between the `case` line and the first
       // statement in the case (or the next case if this case has no body).
@@ -1352,152 +1386,176 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
     // Place any comments before the "}" inside the sequence.
     sequence.addCommentsBefore(node.rightBracket);
+    var rightBracketPiece = tokenPiece(node.rightBracket);
 
-    token(node.rightBracket);
-    var rightBracketPiece = pieces.take();
-
-    pieces.give(BlockPiece(switchPiece, sequence.build(), rightBracketPiece,
-        alwaysSplit: node.members.isNotEmpty));
+    return BlockPiece(leftBracket, sequence.build(), rightBracketPiece,
+        alwaysSplit: node.members.isNotEmpty || sequence.mustSplit);
   }
 
   @override
-  void visitSymbolLiteral(SymbolLiteral node) {
-    token(node.poundSign);
-    var components = node.components;
-    for (var component in components) {
-      // The '.' separator.
-      if (component != components.first) token(component.previous);
-      token(component);
-    }
+  Piece visitSymbolLiteral(SymbolLiteral node) {
+    return buildPiece((b) {
+      b.token(node.poundSign);
+      var components = node.components;
+      for (var component in components) {
+        // The '.' separator.
+        if (component != components.first) {
+          b.token(component.previous!);
+        }
+
+        b.token(component);
+      }
+    });
   }
 
   @override
-  void visitThisExpression(ThisExpression node) {
-    token(node.thisKeyword);
+  Piece visitThisExpression(ThisExpression node) {
+    return tokenPiece(node.thisKeyword);
   }
 
   @override
-  void visitThrowExpression(ThrowExpression node) {
+  Piece visitThrowExpression(ThrowExpression node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
-    modifier(node.externalKeyword);
-    visit(node.variables);
-    token(node.semicolon);
+  Piece visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
+    return buildPiece((b) {
+      b.modifier(node.externalKeyword);
+      b.visit(node.variables);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitTryStatement(TryStatement node) {
+  Piece visitTryStatement(TryStatement node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitTypeArgumentList(TypeArgumentList node) {
-    createTypeList(node.leftBracket, node.arguments, node.rightBracket);
+  Piece visitTypeArgumentList(TypeArgumentList node) {
+    return createTypeList(node.leftBracket, node.arguments, node.rightBracket);
   }
 
   @override
-  void visitTypeParameter(TypeParameter node) {
-    token(node.name);
-    if (node.bound case var bound?) {
-      space();
-      modifier(node.extendsKeyword);
-      visit(bound);
-    }
+  Piece visitTypeParameter(TypeParameter node) {
+    return buildPiece((b) {
+      b.token(node.name);
+      if (node.bound case var bound?) {
+        b.space();
+        b.token(node.extendsKeyword);
+        b.space();
+        b.visit(bound);
+      }
+    });
   }
 
   @override
-  void visitTypeParameterList(TypeParameterList node) {
-    createTypeList(node.leftBracket, node.typeParameters, node.rightBracket);
+  Piece visitTypeParameterList(TypeParameterList node) {
+    return createTypeList(
+        node.leftBracket, node.typeParameters, node.rightBracket);
   }
 
   @override
-  void visitVariableDeclaration(VariableDeclaration node) {
-    token(node.name);
-    if ((node.equals, node.initializer) case (var equals?, var initializer?)) {
-      finishAssignment(equals, initializer);
-    }
+  Piece visitVariableDeclaration(VariableDeclaration node) {
+    throw UnsupportedError('This is handled by visitVariableDeclarationList()');
   }
 
   @override
-  void visitVariableDeclarationList(VariableDeclarationList node) {
+  Piece visitVariableDeclarationList(VariableDeclarationList node) {
     // TODO(tall): Format metadata.
     if (node.metadata.isNotEmpty) throw UnimplementedError();
 
-    modifier(node.lateKeyword);
-    modifier(node.keyword);
+    var header = buildPiece((b) {
+      b.modifier(node.lateKeyword);
+      b.modifier(node.keyword);
 
-    // TODO(tall): Test how splits inside the type annotation (like in a type
-    // argument list or a function type's parameter list) affect the indentation
-    // and splitting of the surrounding variable declaration.
-    visit(node.type);
-    var header = pieces.take();
+      // TODO(tall): Test how splits inside the type annotation (like in a type
+      // argument list or a function type's parameter list) affect the indentation
+      // and splitting of the surrounding variable declaration.
+      b.visit(node.type);
+    });
 
     var variables = <Piece>[];
     for (var variable in node.variables) {
-      pieces.split();
-      visit(variable);
-      commaAfter(variable);
-      variables.add(pieces.take());
+      if ((variable.equals, variable.initializer)
+          case (var equals?, var initializer?)) {
+        var variablePiece = buildPiece((b) {
+          b.token(variable.name);
+          b.space();
+          b.token(equals);
+        });
+
+        var initializerPiece = nodePiece(initializer, commaAfter: true);
+
+        variables.add(AssignPiece(variablePiece, initializerPiece,
+            isValueDelimited: initializer.canBlockSplit));
+      } else {
+        variables.add(tokenPiece(variable.name, commaAfter: true));
+      }
     }
 
-    pieces.give(VariablePiece(header, variables, hasType: node.type != null));
+    return VariablePiece(header, variables, hasType: node.type != null);
   }
 
   @override
-  void visitVariableDeclarationStatement(VariableDeclarationStatement node) {
-    visit(node.variables);
-    token(node.semicolon);
+  Piece visitVariableDeclarationStatement(VariableDeclarationStatement node) {
+    return buildPiece((b) {
+      b.visit(node.variables);
+      b.token(node.semicolon);
+    });
   }
 
   @override
-  void visitWhileStatement(WhileStatement node) {
-    token(node.whileKeyword);
-    space();
-    token(node.leftParenthesis);
-    visit(node.condition);
-    token(node.rightParenthesis);
-    var condition = pieces.split();
+  Piece visitWhileStatement(WhileStatement node) {
+    var condition = startControlFlow(node.whileKeyword, node.leftParenthesis,
+        node.condition, node.rightParenthesis);
 
-    visit(node.body);
-    var body = pieces.take();
+    var body = nodePiece(node.body);
 
     var piece = IfPiece();
     piece.add(condition, body, isBlock: node.body is Block);
-    pieces.give(piece);
+    return piece;
   }
 
   @override
-  void visitWildcardPattern(WildcardPattern node) {
+  Piece visitWildcardPattern(WildcardPattern node) {
     throw UnimplementedError();
   }
 
   @override
-  void visitWithClause(WithClause node) {
-    assert(false, 'This node is handled by PieceFactory.createType().');
+  Piece visitWithClause(WithClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
   }
 
   @override
-  void visitYieldStatement(YieldStatement node) {
-    token(node.yieldKeyword);
-    token(node.star);
-    space();
-    visit(node.expression);
-    token(node.semicolon);
+  Piece visitYieldStatement(YieldStatement node) {
+    return buildPiece((b) {
+      b.token(node.yieldKeyword);
+      b.token(node.star);
+      b.space();
+      b.visit(node.expression);
+      b.token(node.semicolon);
+    });
   }
 
-  /// If [node] is not `null`, then visit it.
+  /// Visits [node] and creates a piece from it.
   ///
-  /// Invokes [before] before visiting [node], and [after] afterwards, but only
-  /// if [node] is present.
+  /// If [commaAfter] is `true`, looks for a comma token after [node] and
+  /// writes it to the piece as well.
   @override
-  void visit(AstNode? node, {void Function()? before, void Function()? after}) {
-    if (node == null) return;
+  Piece nodePiece(AstNode node, {bool commaAfter = false}) {
+    var result = node.accept(this)!;
 
-    if (before != null) before();
-    node.accept(this);
-    if (after != null) after();
+    if (commaAfter) {
+      var nextToken = node.endToken.next!;
+      if (nextToken.lexeme == ',') {
+        var comma = tokenPiece(nextToken);
+        result = AdjacentPiece([result, comma]);
+      }
+    }
+
+    return result;
   }
 }
