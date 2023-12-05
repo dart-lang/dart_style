@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/clause.dart';
@@ -14,6 +15,7 @@ import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
+import '../piece/try.dart';
 import '../piece/type.dart';
 import 'adjacent_builder.dart';
 import 'ast_node_visitor.dart';
@@ -285,6 +287,71 @@ mixin PieceFactory {
     builder.token(question);
 
     return FunctionPiece(returnTypePiece, builder.build());
+  }
+
+  /// Creates a [TryPiece] for try statement.
+  Piece createTry(TryStatement tryStatement) {
+    var piece = TryPiece();
+
+    var tryHeader = tokenPiece(tryStatement.tryKeyword);
+    var tryBlock = createBlock(tryStatement.body);
+    piece.add(tryHeader, tryBlock);
+
+    for (var i = 0; i < tryStatement.catchClauses.length; i++) {
+      var catchClause = tryStatement.catchClauses[i];
+
+      var catchClauseHeader = buildPiece((b) {
+        if (catchClause.onKeyword case var onKeyword?) {
+          b.token(onKeyword, spaceAfter: true);
+          b.visit(catchClause.exceptionType);
+        }
+
+        if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
+          b.space();
+        }
+
+        if (catchClause.catchKeyword case var catchKeyword?) {
+          b.token(catchKeyword);
+          b.space();
+
+          var parameters = DelimitedListBuilder(this);
+          parameters.leftBracket(catchClause.leftParenthesis!);
+          if (catchClause.exceptionParameter case var exceptionParameter?) {
+            parameters.visit(exceptionParameter);
+          }
+          if (catchClause.stackTraceParameter case var stackTraceParameter?) {
+            parameters.visit(stackTraceParameter);
+          }
+          parameters.rightBracket(catchClause.rightParenthesis!);
+          b.add(parameters.build());
+        }
+      });
+
+      // Edge case: When there's another catch/on/finally after this one, we
+      // want to force the block to split even if it's empty.
+      //
+      // ```
+      // try {
+      //   ..
+      // } on Foo {
+      // } finally Bar {
+      //   body;
+      // }
+      // ```
+      var forceSplit = i < tryStatement.catchClauses.length - 1 ||
+          tryStatement.finallyBlock != null;
+      var catchClauseBody =
+          createBlock(catchClause.body, forceSplit: forceSplit);
+      piece.add(catchClauseHeader, catchClauseBody);
+    }
+
+    if (tryStatement.finallyBlock case var finallyBlock?) {
+      var finallyHeader = tokenPiece(tryStatement.finallyKeyword!);
+      var finallyBody = createBlock(finallyBlock);
+      piece.add(finallyHeader, finallyBody);
+    }
+
+    return piece;
   }
 
   // TODO(tall): Generalize this to work with if elements too.

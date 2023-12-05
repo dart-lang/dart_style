@@ -1,0 +1,113 @@
+40 columns                              |
+>>> Try and catch exception.
+try {
+doSomething();
+} catch (e) {
+print(e);
+}
+<<<
+try {
+  doSomething();
+} catch (e) {
+  print(e);
+}
+>>> Try and catch exception with on clause.
+try{
+doSomething();
+}on Exception catch (e){
+print(e);
+}
+<<<
+try {
+  doSomething();
+} on Exception catch (e) {
+  print(e);
+}
+>>> Try and catch exception with on clause and stack trace.
+try{
+doSomething();
+}on Exception catch (e,   s){
+print(e);
+}
+<<<
+try {
+  doSomething();
+} on Exception catch (e, s) {
+  print(e);
+}
+>>> Split empty catch if there is a finally.
+try {;} catch (err) {} finally {;}
+<<<
+try {
+  ;
+} catch (err) {
+} finally {
+  ;
+}
+>>> Split empty on if there is a finally.
+try {;} on Exception {} finally {;}
+<<<
+try {
+  ;
+} on Exception {
+} finally {
+  ;
+}
+>>> Split all empty catches if there is a finally.
+try {;} catch (err1) {} catch (err2) {} catch (err3) {} finally {;}
+<<<
+try {
+  ;
+} catch (err1) {
+} catch (err2) {
+} catch (err3) {
+} finally {
+  ;
+}
+>>> Split leading empty catches if there are multiple.
+try {;} catch (err1) {} catch (err2) {} catch (err3) {}
+<<<
+try {
+  ;
+} catch (err1) {
+} catch (err2) {
+} catch (err3) {}
+>>> Split empty catch with on clause if there is a finally.
+try {
+  doSomething();
+} on Exception catch (e) {} finally {
+  cleanupSomething();
+}
+<<<
+try {
+  doSomething();
+} on Exception catch (e) {
+} finally {
+  cleanupSomething();
+}
+>>> Split multiple on clauses.
+try {
+  doSomething();
+} on FooException {} on BarException {
+  doSomething();
+}
+<<<
+try {
+  doSomething();
+} on FooException {
+} on BarException {
+  doSomething();
+}
+>>> Don't split try.
+try {
+  doSomething();
+} on FooException {} on BarException {
+  doSomething();
+}
+<<<
+try {
+  doSomething();
+} on FooException {
+} on BarException {
+  doSomething();
+}

@@ -215,12 +215,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitCatchClause(CatchClause node) {
-    throw UnimplementedError();
+    throw UnsupportedError('This node is handled by visitTryStatement().');
   }
 
   @override
   Piece visitCatchClauseParameter(CatchClauseParameter node) {
-    throw UnimplementedError();
+    return tokenPiece(node.name);
   }
 
   @override
@@ -1429,7 +1429,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitTryStatement(TryStatement node) {
-    throw UnimplementedError();
+    return createTry(node);
   }
 
   @override

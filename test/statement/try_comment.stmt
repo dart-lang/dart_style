@@ -1,0 +1,126 @@
+40 columns                              |
+>>> Line comment after `try`.
+try // comment
+{ body; } catch (e) { print(e); }
+<<<
+try // comment
+{
+  body;
+} catch (e) {
+  print(e);
+}
+>>> Line comment after `catch`.
+try { body; } catch // comment
+(e) { print(e); }
+<<<
+try {
+  body;
+} catch // comment
+(e) {
+  print(e);
+}
+>>> Line comment before `catch` condition.
+try { body; } catch (// comment
+e) { print(e); }
+<<<
+try {
+  body;
+} catch (
+  // comment
+  e,
+) {
+  print(e);
+}
+>>> Line comment after `catch` condition.
+try { body; } catch (e// comment
+) { print(e); }
+<<<
+try {
+  body;
+} catch (
+  e, // comment
+) {
+  print(e);
+}
+>>> Line comment after entire simple `catch` clause.
+try { body; } catch (e) // comment
+{ print(e); }
+<<<
+try {
+  body;
+} catch (e) // comment
+{
+  print(e);
+}
+>>> Line comment before `on`.
+try { body; } // comment
+on Exception catch (e) { print(e); }
+<<<
+try {
+  body;
+} // comment
+on Exception catch (e) {
+  print(e);
+}
+>>> Line comment after `on`.
+try { body; } on // comment
+Exception catch (e) { print(e); }
+<<<
+try {
+  body;
+} on // comment
+Exception catch (e) {
+  print(e);
+}
+>>> Line comment after exception in `on` clause.
+try { body; } on Exception // comment
+catch (e) { print(e); }
+<<<
+try {
+  body;
+} on Exception // comment
+catch (e) {
+  print(e);
+}
+>>> Line comment after `catch` body.
+try { body; } catch (e) { print(e); } // comment
+<<<
+try {
+  body;
+} catch (e) {
+  print(e);
+} // comment
+>>> Line comment before `finally`.
+try { body; } catch (e) { print(e); } // comment
+finally { ; }
+<<<
+try {
+  body;
+} catch (e) {
+  print(e);
+} // comment
+finally {
+  ;
+}
+>>> Line comment after `finally`.
+try { body; } catch (e) { print(e); } finally // comment
+{ ; }
+<<<
+try {
+  body;
+} catch (e) {
+  print(e);
+} finally // comment
+{
+  ;
+}
+>>> Line comment after `finally` body.
+try { body; } catch (e) { print(e); } finally { ; } // comment
+<<<
+try {
+  body;
+} catch (e) {
+  print(e);
+} finally {
+  ;
+} // comment
