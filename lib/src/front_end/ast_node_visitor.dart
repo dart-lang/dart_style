@@ -206,12 +206,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitCatchClause(CatchClause node) {
-    throw UnimplementedError();
+    assert(false, 'This node is handled by visitTryStatement().');
   }
 
   @override
   void visitCatchClauseParameter(CatchClauseParameter node) {
-    throw UnimplementedError();
+    token(node.name);
   }
 
   @override
@@ -1390,7 +1390,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void>
 
   @override
   void visitTryStatement(TryStatement node) {
-    throw UnimplementedError();
+    createTry(node);
   }
 
   @override

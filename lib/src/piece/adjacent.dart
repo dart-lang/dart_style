@@ -8,12 +8,17 @@ import 'piece.dart';
 class AdjacentPiece extends Piece {
   final List<Piece> _pieces;
 
-  AdjacentPiece(this._pieces);
+  /// The pieces that should have a space after them.
+  final Set<Piece> _spaceAfter;
+
+  AdjacentPiece(this._pieces, {List<Piece> spaceAfter = const []})
+      : _spaceAfter = spaceAfter.toSet();
 
   @override
   void format(CodeWriter writer, State state) {
     for (var piece in _pieces) {
       writer.format(piece);
+      if (_spaceAfter.contains(piece)) writer.space();
     }
   }
 
