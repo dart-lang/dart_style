@@ -3,8 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
-import '../ast_extensions.dart';
 
+import '../ast_extensions.dart';
 import '../constants.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
