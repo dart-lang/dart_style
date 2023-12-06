@@ -702,7 +702,7 @@ mixin PieceFactory {
       AstNode target, Token operator, Expression rightHandSide,
       {bool splitBeforeOperator = false,
       bool includeComma = false,
-      spaceBeforeOperator = true}) {
+      bool spaceBeforeOperator = true}) {
     if (splitBeforeOperator) {
       var targetPiece = nodePiece(target);
 
@@ -729,7 +729,7 @@ mixin PieceFactory {
 
   /// Invokes [buildCallback] with a new [AdjacentBuilder] and returns the
   /// built result.
-  Piece buildPiece(Function(AdjacentBuilder) buildCallback) {
+  Piece buildPiece(void Function(AdjacentBuilder) buildCallback) {
     var builder = AdjacentBuilder(this);
     buildCallback(builder);
     return builder.build();

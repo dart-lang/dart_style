@@ -42,7 +42,7 @@ void main() {
     var goodBefore = modTime('good.dart');
 
     // Wait a bit so the mod time of a formatted file will be different.
-    await Future.delayed(Duration(seconds: 1));
+    await Future<void>.delayed(const Duration(seconds: 1));
 
     var dir = Directory(p.join(d.sandbox, 'code'));
     processDirectory(overwriteOptions, dir);

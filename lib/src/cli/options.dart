@@ -145,7 +145,7 @@ List<int>? parseSelection(ArgResults argResults, String optionName) {
   try {
     var coordinates = option.split(':');
     if (coordinates.length != 2) {
-      throw FormatException(
+      throw const FormatException(
           'Selection should be a colon-separated pair of integers, "123:45".');
     }
 

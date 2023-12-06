@@ -87,7 +87,7 @@ class AdjacentBuilder {
 
   /// Removes redundant [AdjacentPiece] wrappers from [_pieces].
   Piece _flattenPieces() {
-    List<Piece> flattened = [];
+    var flattened = <Piece>[];
 
     void traverse(List<Piece> pieces) {
       for (var piece in pieces) {

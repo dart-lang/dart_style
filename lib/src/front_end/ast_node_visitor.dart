@@ -1472,8 +1472,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       b.modifier(node.keyword);
 
       // TODO(tall): Test how splits inside the type annotation (like in a type
-      // argument list or a function type's parameter list) affect the indentation
-      // and splitting of the surrounding variable declaration.
+      // argument list or a function type's parameter list) affect the
+      // indentation and splitting of the surrounding variable declaration.
       b.visit(node.type);
     });
 

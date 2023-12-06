@@ -219,7 +219,7 @@ class _BlockKey {
   _BlockKey(this.chunk, this.column);
 
   @override
-  bool operator ==(other) {
+  bool operator ==(Object other) {
     if (other is! _BlockKey) return false;
     return chunk == other.chunk && column == other.column;
   }

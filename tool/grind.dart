@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+// ignore_for_file: unreachable_from_main
+
 import 'package:grinder/grinder.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart' as yaml;
@@ -99,14 +101,19 @@ Future<void> bump() async {
   // Read the version from the pubspec.
   var pubspecFile = getFile('pubspec.yaml');
   var pubspec = pubspecFile.readAsStringSync();
-  var version = Version.parse((yaml.loadYaml(pubspec) as Map)['version']);
+  var version =
+      Version.parse((yaml.loadYaml(pubspec) as Map)['version'] as String);
 
   // Require a "-dev" version since we don't otherwise know what to bump it to.
-  if (!version.isPreRelease) throw 'Cannot publish non-dev version $version.';
+  if (!version.isPreRelease) {
+    throw StateError('Cannot publish non-dev version $version.');
+  }
 
   // Don't allow versions like "1.2.3-dev+4" because it's not clear if the
   // user intended the "+4" to be discarded or not.
-  if (version.build.isNotEmpty) throw 'Cannot publish build version $version.';
+  if (version.build.isNotEmpty) {
+    throw StateError('Cannot publish build version $version.');
+  }
 
   var bumped = Version(version.major, version.minor, version.patch);
 

@@ -32,7 +32,7 @@ class FormatCommand extends Command<int> {
   Future<int> run() async {
     var argResults = this.argResults!;
 
-    if (argResults['version']) {
+    if (argResults['version'] as bool) {
       print(dartStyleVersion);
       return 0;
     }
@@ -78,7 +78,7 @@ class FormatCommand extends Command<int> {
     }
 
     // Can't use --verbose with anything but --help.
-    if (argResults['verbose'] && !(argResults['help'] as bool)) {
+    if (argResults['verbose'] as bool && !(argResults['help'] as bool)) {
       usageException('Can only use --verbose with --help.');
     }
 
@@ -87,11 +87,11 @@ class FormatCommand extends Command<int> {
       usageException('Cannot print a summary with JSON output.');
     }
 
-    var pageWidth = int.tryParse(argResults['line-length']) ??
+    var pageWidth = int.tryParse(argResults['line-length'] as String) ??
         usageException('--line-length must be an integer, was '
             '"${argResults['line-length']}".');
 
-    var indent = int.tryParse(argResults['indent']) ??
+    var indent = int.tryParse(argResults['indent'] as String) ??
         usageException('--indent must be an integer, was '
             '"${argResults['indent']}".');
 
@@ -101,10 +101,10 @@ class FormatCommand extends Command<int> {
     }
 
     var fixes = <StyleFix>[];
-    if (argResults['fix']) fixes.addAll(StyleFix.all);
+    if (argResults['fix'] as bool) fixes.addAll(StyleFix.all);
     for (var fix in StyleFix.all) {
-      if (argResults['fix-${fix.name}']) {
-        if (argResults['fix']) {
+      if (argResults['fix-${fix.name}'] as bool) {
+        if (argResults['fix'] as bool) {
           usageException('--fix-${fix.name} is redundant with --fix.');
         }
 
@@ -119,7 +119,7 @@ class FormatCommand extends Command<int> {
       usageException(exception.message);
     }
 
-    var followLinks = argResults['follow-links'];
+    var followLinks = argResults['follow-links'] as bool;
     var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
 
     var experimentFlags = argResults['enable-experiment'] as List<String>;

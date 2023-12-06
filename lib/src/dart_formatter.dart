@@ -71,7 +71,7 @@ class DartFormatter {
   ///
   /// If [uri] is given, it is a [String] or [Uri] used to identify the file
   /// being formatted in error messages.
-  String format(String source, {uri}) {
+  String format(String source, {Object? uri}) {
     if (uri == null) {
       // Do nothing.
     } else if (uri is Uri) {
@@ -82,7 +82,8 @@ class DartFormatter {
       throw ArgumentError('uri must be `null`, a Uri, or a String.');
     }
 
-    return formatSource(SourceCode(source, uri: uri, isCompilationUnit: true))
+    return formatSource(
+            SourceCode(source, uri: uri as String?, isCompilationUnit: true))
         .text;
   }
 

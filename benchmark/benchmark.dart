@@ -13,8 +13,8 @@ const _formatsPerTrial = 30;
 /// Note, these files use ".txt" because while they can be *parsed* correctly,
 /// they don't resolve without error. That's OK because the formatter doesn't
 /// care about that.
-final source = loadFile('before.dart.txt');
-final expected = loadFile('after.dart.txt');
+final source = _loadFile('before.dart.txt');
+final expected = _loadFile('after.dart.txt');
 
 void main(List<String> args) {
   var best = 99999999.0;
@@ -27,7 +27,7 @@ void main(List<String> args) {
     // For a single benchmark, format the source multiple times.
     String? result;
     for (var j = 0; j < _formatsPerTrial; j++) {
-      result = formatSource();
+      result = _formatSource();
     }
 
     var elapsed =
@@ -47,32 +47,23 @@ void main(List<String> args) {
     // Don't print the first run. It's always terrible since the VM hasn't
     // warmed up yet.
     if (i == 0) continue;
-    printResult("Run ${padLeft('#$i', 3)}", elapsed);
+    _printResult("Run ${'#$i'.padLeft(3)}", elapsed);
   }
 
-  printResult('Best   ', best);
+  _printResult('Best   ', best);
 }
 
-String loadFile(String name) {
+String _loadFile(String name) {
   var path = p.join(p.dirname(p.fromUri(Platform.script)), name);
   return File(path).readAsStringSync();
 }
 
-void printResult(String label, double time) {
-  print('$label: ${padLeft(time.toStringAsFixed(2), 4)}ms '
+void _printResult(String label, double time) {
+  print('$label: ${time.toStringAsFixed(2).padLeft(4)}ms '
       "${'=' * ((time * 5).toInt())}");
 }
 
-String padLeft(input, int length) {
-  var result = input.toString();
-  if (result.length < length) {
-    result = ' ' * (length - result.length) + result;
-  }
-
-  return result;
-}
-
-String formatSource() {
+String _formatSource() {
   var formatter = DartFormatter();
   return formatter.format(source);
 }

@@ -25,17 +25,17 @@ void main(List<String> args) async {
     usageError(parser, err.message);
   }
 
-  if (argResults['help']) {
+  if (argResults['help'] as bool) {
     printUsage(parser);
     return;
   }
 
-  if (argResults['version']) {
+  if (argResults['version'] as bool) {
     print(dartStyleVersion);
     return;
   }
 
-  if (argResults['verbose'] && !(argResults['help'] as bool)) {
+  if (argResults['verbose'] as bool && !(argResults['help'] as bool)) {
     usageError(parser, 'Can only use --verbose with --help.');
   }
 
@@ -46,7 +46,7 @@ void main(List<String> args) async {
     usageError(parser, exception.message);
   }
 
-  if (argResults['dry-run'] && argResults['overwrite']) {
+  if (argResults['dry-run'] as bool && argResults['overwrite'] as bool) {
     usageError(
         parser, 'Cannot use --dry-run and --overwrite at the same time.');
   }
@@ -61,13 +61,13 @@ void main(List<String> args) async {
   var summary = Summary.none;
   var output = Output.show;
   var setExitIfChanged = false;
-  if (argResults['dry-run']) {
+  if (argResults['dry-run'] as bool) {
     checkForReporterCollision('dry-run', 'overwrite');
     checkForReporterCollision('dry-run', 'machine');
 
     show = Show.dryRun;
     output = Output.none;
-  } else if (argResults['overwrite']) {
+  } else if (argResults['overwrite'] as bool) {
     checkForReporterCollision('overwrite', 'machine');
 
     if (argResults.rest.isEmpty) {
@@ -77,17 +77,17 @@ void main(List<String> args) async {
 
     show = Show.overwrite;
     output = Output.write;
-  } else if (argResults['machine']) {
+  } else if (argResults['machine'] as bool) {
     output = Output.json;
   }
 
-  if (argResults['profile']) summary = Summary.profile();
+  if (argResults['profile'] as bool) summary = Summary.profile();
 
-  setExitIfChanged = argResults['set-exit-if-changed'];
+  setExitIfChanged = argResults['set-exit-if-changed'] as bool;
 
   int pageWidth;
   try {
-    pageWidth = int.parse(argResults['line-length']);
+    pageWidth = int.parse(argResults['line-length'] as String);
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -97,8 +97,8 @@ void main(List<String> args) async {
 
   int indent;
   try {
-    indent = int.parse(argResults['indent']);
-    if (indent < 0 || indent.toInt() != indent) throw FormatException();
+    indent = int.parse(argResults['indent'] as String);
+    if (indent < 0 || indent.toInt() != indent) throw const FormatException();
   } on FormatException catch (_) {
     usageError(
         parser,
@@ -106,13 +106,13 @@ void main(List<String> args) async {
         '"${argResults['indent']}".');
   }
 
-  var followLinks = argResults['follow-links'];
+  var followLinks = argResults['follow-links'] as bool;
 
   var fixes = <StyleFix>[];
-  if (argResults['fix']) fixes.addAll(StyleFix.all);
+  if (argResults['fix'] as bool) fixes.addAll(StyleFix.all);
   for (var fix in StyleFix.all) {
-    if (argResults['fix-${fix.name}']) {
-      if (argResults['fix']) {
+    if (argResults['fix-${fix.name}'] as bool) {
+      if (argResults['fix'] as bool) {
         usageError(parser, '--fix-${fix.name} is redundant with --fix.');
       }
 
@@ -133,7 +133,7 @@ void main(List<String> args) async {
       output: output,
       summary: summary,
       setExitIfChanged: setExitIfChanged,
-      experimentFlags: argResults['enable-experiment']);
+      experimentFlags: argResults['enable-experiment'] as List<String>);
 
   if (argResults.rest.isEmpty) {
     await formatStdin(options, selection, argResults['stdin-name'] as String);
