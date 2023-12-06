@@ -1,0 +1,28 @@
+40 columns                              |
+>>> Line comment after return without value.
+return // comment
+;
+<<<
+return // comment
+;
+>>> Line comment after semicolon without value.
+return; // comment
+<<<
+return; // comment
+>>> Line comment after return with value.
+return // comment
+1 + 2;
+<<<
+return // comment
+1 + 2;
+>>> Line comment after return value.
+return 1 + 2 // comment
+;
+<<<
+return 1 +
+    2 // comment
+    ;
+>>> Line comment after semicolon with value.
+return 1 + 2; // comment
+<<<
+return 1 + 2; // comment

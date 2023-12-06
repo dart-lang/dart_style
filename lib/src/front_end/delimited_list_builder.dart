@@ -34,7 +34,12 @@ class DelimitedListBuilder {
   /// The closing bracket after the elements, if any.
   Piece? _rightBracket;
 
+  bool _mustSplit = false;
+
   final ListStyle _style;
+
+  /// The comments that should appear before the next element.
+  final List<Piece> _leadingComments = [];
 
   /// The list of comments following the most recently written element before
   /// any comma following the element.
@@ -51,7 +56,8 @@ class DelimitedListBuilder {
     if (_style.allowBlockElement) blockElement = _findBlockElement();
 
     return ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
-        _style, blockElement);
+        _style, blockElement,
+        mustSplit: _mustSplit);
   }
 
   /// Adds the opening [bracket] to the built list.
@@ -65,10 +71,15 @@ class DelimitedListBuilder {
   /// ```
   ///
   /// Here, [bracket] will be `(` and [delimiter] will be `[`.
-  void leftBracket(Token bracket, {Token? delimiter}) {
-    _visitor.token(bracket);
-    _visitor.token(delimiter);
-    _leftBracket = _visitor.pieces.split();
+  void leftBracket(Token bracket, {Piece? preceding, Token? delimiter}) {
+    _leftBracket = _visitor.buildPiece((b) {
+      if (preceding != null) {
+        b.add(preceding);
+        b.space();
+      }
+      b.token(bracket);
+      b.token(delimiter);
+    });
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that
@@ -89,7 +100,7 @@ class DelimitedListBuilder {
   /// before the `;` are kept, but the `;` itself is discarded.
   void rightBracket(Token bracket, {Token? delimiter, Token? semicolon}) {
     // Handle comments after the last element.
-    var commentsBefore = _visitor.takeCommentsBefore(bracket);
+    var commentsBefore = _visitor.comments.takeCommentsBefore(bracket);
 
     // Merge the comments before the delimiter (if there is one) and the
     // bracket. If there is a delimiter, this will move comments between it and
@@ -103,20 +114,23 @@ class DelimitedListBuilder {
     // f([parameter /* comment */]) {}
     // ```
     if (delimiter != null) {
-      commentsBefore =
-          _visitor.takeCommentsBefore(delimiter).concatenate(commentsBefore);
+      commentsBefore = _visitor.comments
+          .takeCommentsBefore(delimiter)
+          .concatenate(commentsBefore);
     }
 
     if (semicolon != null) {
-      commentsBefore =
-          _visitor.takeCommentsBefore(semicolon).concatenate(commentsBefore);
+      commentsBefore = _visitor.comments
+          .takeCommentsBefore(semicolon)
+          .concatenate(commentsBefore);
     }
 
     _addComments(commentsBefore, hasElementAfter: false);
 
-    _visitor.token(delimiter);
-    _visitor.token(bracket);
-    _rightBracket = _visitor.pieces.take();
+    _rightBracket = _visitor.buildPiece((b) {
+      b.token(delimiter);
+      b.token(bracket);
+    });
   }
 
   /// Adds [piece] to the built list.
@@ -127,14 +141,15 @@ class DelimitedListBuilder {
   ///
   /// Assumes there is no comma after this piece.
   void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
-    _elements.add(ListElement(piece, format));
+    _elements.add(ListElement(_leadingComments, piece, format));
+    _leadingComments.clear();
     _commentsBeforeComma = CommentSequence.empty;
   }
 
   /// Writes any comments appearing before [token] to the list.
   void addCommentsBefore(Token token) {
     // Handle comments between the preceding element and this one.
-    var commentsBeforeElement = _visitor.takeCommentsBefore(token);
+    var commentsBeforeElement = _visitor.comments.takeCommentsBefore(token);
     _addComments(commentsBeforeElement, hasElementAfter: true);
   }
 
@@ -151,12 +166,11 @@ class DelimitedListBuilder {
     };
 
     // Traverse the element itself.
-    _visitor.visit(element);
-    add(_visitor.pieces.split(), format);
+    add(_visitor.nodePiece(element), format);
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
-      _commentsBeforeComma = _visitor.takeCommentsBefore(nextToken);
+      _commentsBeforeComma = _visitor.comments.takeCommentsBefore(nextToken);
     }
   }
 
@@ -187,10 +201,10 @@ class DelimitedListBuilder {
     // matter that much where it goes and this seems to be simple and
     // reasonable looking.)
     _commentsBeforeComma = _commentsBeforeComma
-        .concatenate(_visitor.takeCommentsBefore(delimiter));
+        .concatenate(_visitor.comments.takeCommentsBefore(delimiter));
 
     // Attach the delimiter to the previous element.
-    _elements.last = _elements.last.withDelimiter(delimiter.lexeme);
+    _elements.last.setDelimiter(delimiter.lexeme);
   }
 
   /// Adds [comments] to the list.
@@ -201,6 +215,10 @@ class DelimitedListBuilder {
   void _addComments(CommentSequence comments, {required bool hasElementAfter}) {
     // Early out if there's nothing to do.
     if (_commentsBeforeComma.isEmpty && comments.isEmpty) return;
+
+    if (_commentsBeforeComma.requiresNewline || comments.requiresNewline) {
+      _mustSplit = true;
+    }
 
     // Figure out which comments are anchored to the preceding element, which
     // are freestanding, and which are attached to the next element.
@@ -214,19 +232,17 @@ class DelimitedListBuilder {
     // Add any hanging inline block comments to the previous element before the
     // subsequent ",".
     for (var comment in inlineComments) {
-      _visitor.space();
-      _visitor.pieces.writeComment(comment, hanging: true);
+      var commentPiece = _visitor.pieces.writeComment(comment);
+      _elements.last.addComment(commentPiece, beforeDelimiter: true);
     }
 
     // Add any remaining hanging line comments to the previous element after
     // the ",".
     if (hangingComments.isNotEmpty) {
       for (var comment in hangingComments) {
-        _visitor.space();
-        _visitor.pieces.writeComment(comment);
+        var commentPiece = _visitor.pieces.writeComment(comment);
+        _elements.last.addComment(commentPiece);
       }
-
-      _elements.last = _elements.last.withComment(_visitor.pieces.split());
     }
 
     // Comments that are neither hanging nor leading are treated like their own
@@ -237,14 +253,14 @@ class DelimitedListBuilder {
         _blanksAfter.add(_elements.last);
       }
 
-      _visitor.pieces.writeComment(comment);
-      _elements.add(ListElement.comment(_visitor.pieces.split()));
+      var commentPiece = _visitor.pieces.writeComment(comment);
+      _elements.add(ListElement.comment(commentPiece));
     }
 
     // Leading comments are written before the next element.
     for (var comment in leadingComments) {
-      _visitor.pieces.writeComment(comment);
-      _visitor.space();
+      var commentPiece = _visitor.pieces.writeComment(comment);
+      _leadingComments.add(commentPiece);
     }
   }
 

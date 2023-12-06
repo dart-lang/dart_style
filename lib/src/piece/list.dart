@@ -79,8 +79,11 @@ class ListPiece extends Piece {
   final int _blockElement;
 
   ListPiece(this._before, this._elements, this._blanksAfter, this._after,
-      this._style, this._blockElement)
-      : _splitState = State(2, cost: _style.splitCost);
+      this._style, this._blockElement,
+      {required bool mustSplit})
+      : _splitState = State(2, cost: _style.splitCost) {
+    if (mustSplit) pin(_splitState);
+  }
 
   @override
   List<State> get additionalStates => [if (_elements.isNotEmpty) _splitState];
@@ -121,12 +124,10 @@ class ListPiece extends Piece {
       writer.setAllowNewlines(i == _blockElement || state == _splitState);
 
       var element = _elements[i];
-      element.format(writer, appendComma: appendComma);
-
-      // Only allow newlines in comments if we're fully split.
-      writer.setAllowNewlines(state == _splitState);
-
-      element.formatComment(writer);
+      element.format(writer,
+          appendComma: appendComma,
+          // Only allow newlines in comments if we're fully split.
+          allowNewlinesInComments: state == _splitState);
 
       // Write a space or newline between elements.
       if (!isLast) {
@@ -182,7 +183,10 @@ class ListPiece extends Piece {
 /// [ListElement] with both where `second` is the element and `// Hanging` is
 /// the comment.
 final class ListElement {
-  final Piece? _element;
+  /// The leading inline block comments before the content.
+  final List<Piece> _leadingComments;
+
+  final Piece? _content;
 
   /// What kind of block formatting can be applied to this element.
   final BlockFormat blockFormat;
@@ -199,54 +203,82 @@ final class ListElement {
   ///   int parameter2,
   /// ]);
   /// ```
-  final String _delimiter;
+  String _delimiter = '';
 
-  final Piece? _comment;
+  /// The hanging inline block and line comments that appear after the content.
+  final List<Piece> _hangingComments = [];
 
-  ListElement(Piece element, BlockFormat format, [Piece? comment])
-      : this._(element, format, '', comment);
+  /// The number of hanging comments that should appear before the delimiter.
+  ///
+  /// A list item may have hanging comments before and after the delimiter, as
+  /// in:
+  ///
+  /// ```
+  /// function(
+  ///   argument /* 1 */ /* 2 */, /* 3 */ /* 4 */ // 5
+  /// );
+  /// ```
+  ///
+  /// This field counts the number of comments that should be before the
+  /// delimiter (here `,` and 2).
+  int _commentsBeforeDelimiter = 0;
+
+  ListElement(List<Piece> leadingComments, Piece element, BlockFormat format)
+      : _leadingComments = [...leadingComments],
+        _content = element,
+        blockFormat = format;
 
   ListElement.comment(Piece comment)
-      : this._(null, BlockFormat.none, '', comment);
+      : _leadingComments = const [],
+        _content = null,
+        blockFormat = BlockFormat.none {
+    _hangingComments.add(comment);
+  }
 
-  ListElement._(this._element, this.blockFormat, this._delimiter,
-      [this._comment]);
+  void addComment(Piece comment, {bool beforeDelimiter = false}) {
+    _hangingComments.add(comment);
+    if (beforeDelimiter) _commentsBeforeDelimiter++;
+  }
 
-  /// Writes this element to [writer].
-  ///
-  /// If [appendComma] is `true`, writes a comma after the element, unless the
-  /// element shouldn't have one because it's a comment.
-  void format(CodeWriter writer, {required bool appendComma}) {
-    if (_element case var element?) {
-      writer.format(element);
+  void setDelimiter(String delimiter) {
+    _delimiter = delimiter;
+  }
+
+  void format(CodeWriter writer,
+      {required bool appendComma, required bool allowNewlinesInComments}) {
+    for (var comment in _leadingComments) {
+      writer.format(comment);
+      writer.space();
+    }
+
+    if (_content case var content?) {
+      writer.format(content);
+
+      for (var i = 0; i < _commentsBeforeDelimiter; i++) {
+        writer.space();
+        writer.format(_hangingComments[i]);
+      }
+
       if (appendComma) writer.write(',');
+
       if (_delimiter.isNotEmpty) {
         writer.space();
         writer.write(_delimiter);
       }
     }
-  }
 
-  void formatComment(CodeWriter writer) {
-    if (_comment case var comment?) {
-      if (_element != null) writer.space();
-      writer.format(comment);
+    writer.setAllowNewlines(allowNewlinesInComments);
+
+    for (var i = _commentsBeforeDelimiter; i < _hangingComments.length; i++) {
+      if (i > 0 || _content != null) writer.space();
+      writer.format(_hangingComments[i]);
     }
   }
 
   void forEachChild(void Function(Piece piece) callback) {
-    if (_element case var expression?) callback(expression);
-    if (_comment case var comment?) callback(comment);
-  }
-
-  /// Returns a new [ListElement] containing this one's element and [comment].
-  ListElement withComment(Piece comment) {
-    assert(_comment == null); // Shouldn't already have one.
-    return ListElement._(_element, blockFormat, _delimiter, comment);
-  }
-
-  ListElement withDelimiter(String delimiter) {
-    return ListElement._(_element, blockFormat, delimiter, _comment);
+    _leadingComments.forEach(callback);
+    if (_content case var content?) callback(content);
+    _hangingComments.forEach(callback);
   }
 }
 

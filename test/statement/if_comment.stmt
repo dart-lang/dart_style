@@ -31,50 +31,64 @@ if (c) // comment
 {
   body;
 }
->>> Line comment after body.
-if (c)
-{ body; } // comment
+>>> Line comment after non-block then body.
+if (true) body; // comment
 <<<
-if (c) {
+if (true) body; // comment
+>>> Line comment after block then body.
+if (true) {body;} // comment
+<<<
+if (true) {
   body;
 } // comment
->>> Line comment before `else`.
-if (c) { body; } // comment
-else { other; }
+>>> Line comment after non-block then body with else.
+if (true) body; // comment
+else other;
 <<<
-if (c) {
+if (true)
+  body; // comment
+else
+  other;
+>>> Line comment after block then body with else.
+if (true) {body;} // comment
+else {other;}
+<<<
+if (true) {
   body;
 } // comment
 else {
   other;
 }
->>> Line comment after `else`.
-if (c) { body; } else// comment
-{ other; }
+>>> Line comment after `else` with block body.
+if (true) {body;} else // comment
+{other;}
 <<<
-if (c) {
+if (true) {
   body;
 } else // comment
 {
   other;
 }
->>> Line comment after `else` body.
-if (c) { body; } else { other; }// comment
+>>> Line comment after `else` with non-block body.
+if (true) body; else // comment
+other;
 <<<
-if (c) {
+if (true)
+  body;
+else // comment
+  other;
+>>> Line comment after non-block else body.
+if (true) body; else other; // comment
+<<<
+if (true)
+  body;
+else
+  other; // comment
+>>> Line comment after block else body.
+if (true) {body;} else {other;} // comment
+<<<
+if (true) {
   body;
 } else {
   other;
 } // comment
->>> Line comments in logic condition.
-if (// Do stuff.
-  condition1 ||
-  // More stuff.
-  condition2) { body; }
-<<<
-if ( // Do stuff.
-    condition1 ||
-    // More stuff.
-    condition2) {
-  body;
-}

@@ -1,3 +1,8 @@
+## 2.3.5-wip
+
+* Use language version `3.3` to parse so that
+  code with extension types can be formatted.
+
 ## 2.3.4
 
 * Add `tall-style` experiment flag to enable the in-progress unstable new

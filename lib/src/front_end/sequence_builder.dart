@@ -32,6 +32,9 @@ class SequenceBuilder {
 
   SequenceBuilder(this._visitor);
 
+  bool _mustSplit = false;
+  bool get mustSplit => _mustSplit;
+
   SequencePiece build() => SequencePiece(_elements);
 
   /// Adds [piece] to this sequence.
@@ -48,8 +51,7 @@ class SequenceBuilder {
   /// any comments or blank lines that appear before it.
   void visit(AstNode node, {int? indent}) {
     addCommentsBefore(node.firstNonCommentToken);
-    _visitor.visit(node);
-    add(_visitor.pieces.split(), indent: indent);
+    add(_visitor.nodePiece(node), indent: indent);
   }
 
   /// Appends a blank line before the next piece in the sequence.
@@ -64,7 +66,7 @@ class SequenceBuilder {
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
   void addCommentsBefore(Token token) {
-    var comments = _visitor.takeCommentsBefore(token);
+    var comments = _visitor.comments.takeCommentsBefore(token);
 
     // Edge case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
@@ -83,23 +85,25 @@ class SequenceBuilder {
     }
 
     for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i];
+      var comment = _visitor.pieces.writeComment(comments[i]);
+
       if (_elements.isNotEmpty && comments.isHanging(i)) {
-        // Attach the comment to the previous token.
-        _visitor.space();
-        _visitor.pieces.writeComment(comment, hanging: true);
+        // Attach the comment to the previous element.
+        _elements.last.hangingComments.add(comment);
       } else {
-        // Write the comment as its own sequence piece.
-        _visitor.pieces.writeComment(comment);
         if (comments.linesBefore(i) > 1) {
           // Always preserve a blank line above sequence-level comments.
           _allowBlank = true;
           addBlank();
         }
 
-        add(_visitor.pieces.split());
+        // Write the comment as its own sequence piece.
+        add(comment);
       }
     }
+
+    // If the sequence contains any line comments, make sure it splits.
+    if (comments.requiresNewline) _mustSplit = true;
 
     // Write a blank before the token if there should be one.
     if (comments.linesBeforeNextToken > 1) addBlank();

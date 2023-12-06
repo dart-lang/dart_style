@@ -38,3 +38,15 @@ value;
 <<<
 var variable = // comment
     value;
+>>> Line comment after value.
+var variable = value // comment
+;
+<<<
+### Weird, but users rarely write this.
+var variable =
+    value // comment
+    ;
+>>> Line comment after semicolon.
+var variable = value; // comment
+<<<
+var variable = value; // comment
