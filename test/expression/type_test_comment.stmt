@@ -97,12 +97,12 @@ foo
 >>> Unsplit inline block comment inside `is!` operator.
 foo is/* c */!Bar;
 <<<
-foo is /* c */! Bar;
+foo is /* c */ ! Bar;
 >>> Split inline block comment inside `is!` operator.
 veryLongOperand is/* c */!VeryLongTypeName;
 <<<
 veryLongOperand
-    is /* c */! VeryLongTypeName;
+    is /* c */ ! VeryLongTypeName;
 >>> Line comment after `is!` operator.
 foo is!// c
 Bar;

@@ -1263,15 +1263,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var builder = AdjacentBuilder(this);
     startFormalParameter(node, builder);
     builder.modifier(node.keyword);
-    builder.visit(node.type);
 
     if ((node.type, node.name) case (var _?, var name?)) {
       // Have both a type and name, so allow splitting after the type.
+      builder.visit(node.type);
       var typePiece = builder.build();
       var namePiece = tokenPiece(name);
       return VariablePiece(typePiece, [namePiece], hasType: true);
     } else {
       // Don't have both a type and name, so just write whichever one we have.
+      builder.visit(node.type);
       builder.token(node.name);
       return builder.build();
     }

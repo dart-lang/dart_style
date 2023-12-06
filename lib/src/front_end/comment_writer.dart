@@ -62,7 +62,7 @@ class CommentWriter {
     return _commentsBefore(token);
   }
 
-  /// Gets the comments that appear before [token].
+  /// Returns the comments that appear before [token].
   CommentSequence commentsBefore(Token token) {
     // In the common case where there are no comments before the token, early
     // out. This avoids calculating the number of newlines between every pair

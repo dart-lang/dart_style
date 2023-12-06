@@ -69,6 +69,11 @@ class PieceWriter {
     return tokenPiece;
   }
 
+  // TODO(tall): Much of the comment handling code in CommentWriter got moved
+  // into here, so there isn't great separation of concerns anymore. Can we
+  // organize this code better? Or just combine CommentWriter with this class
+  // completely?
+
   /// Writes any comments before [token].
   ///
   /// Used to ensure comments before a token which will be discarded aren't
@@ -113,7 +118,7 @@ class PieceWriter {
       // The whitespace between the previous code or comment and this one.
       if (comments.isHanging(i)) {
         // Write a space before hanging comments.
-        _currentText.appendSpace();
+        _currentText.space();
       } else if (!createdPiece) {
         // The previous piece must end in a newline before this comment.
         _currentText.newline();
@@ -148,9 +153,24 @@ class PieceWriter {
     }
 
     // Output a trailing newline after the last comment if it needs one.
-    if (comments.last.requiresNewline) _currentText.newline();
+    if (comments.last.requiresNewline) {
+      _currentText.newline();
+    } else if (_needsSpaceAfterComment(token.lexeme)) {
+      _currentText.space();
+    }
 
     return createdPiece;
+  }
+
+  /// Returns `true` if a space should be output after an inline comment
+  /// which is followed by [lexeme].
+  bool _needsSpaceAfterComment(String lexeme) {
+    // It gets a space unless the next token is a delimiting punctuation.
+    return lexeme != ')' &&
+        lexeme != ']' &&
+        lexeme != '}' &&
+        lexeme != ',' &&
+        lexeme != ';';
   }
 
   /// Writes [token] and any comments that precede it to the current [TextPiece]

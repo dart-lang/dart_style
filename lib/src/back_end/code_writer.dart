@@ -1,6 +1,8 @@
 // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'dart:math';
+
 import '../piece/piece.dart';
 import 'solution.dart';
 
@@ -34,11 +36,11 @@ class CodeWriter {
   /// it as pending. This ensures that we don't write trailing whitespace,
   /// avoids writing spaces at the beginning of lines, and allows collapsing
   /// multiple redundant newlines.
-  _Whitespace _pendingWhitespace = _Whitespace.none;
+  Whitespace _pendingWhitespace = Whitespace.none;
 
   /// The number of spaces of indentation that should be begin the next line
-  /// when [_pendingWhitespace] is [_Whitespace.newline] or
-  /// [_Whitespace.blankLine].
+  /// when [_pendingWhitespace] is [Whitespace.newline] or
+  /// [Whitespace.blankLine].
   int _pendingIndent = 0;
 
   /// The cost of the currently chosen line splits.
@@ -194,10 +196,7 @@ class CodeWriter {
 
   /// Writes a single space to the output.
   void space() {
-    // If a newline is already pending, then ignore the space.
-    if (_pendingWhitespace == _Whitespace.none) {
-      _pendingWhitespace = _Whitespace.space;
-    }
+    whitespace(Whitespace.space);
   }
 
   /// Inserts a line split in the output.
@@ -209,16 +208,16 @@ class CodeWriter {
   void newline({bool blank = false, int? indent}) {
     if (indent != null) setIndent(indent);
 
-    handleNewline();
+    whitespace(blank ? Whitespace.blankLine : Whitespace.newline);
+  }
 
-    // Collapse redundant newlines.
-    if (blank) {
-      _pendingWhitespace = _Whitespace.blankLine;
-    } else if (_pendingWhitespace != _Whitespace.blankLine) {
-      _pendingWhitespace = _Whitespace.newline;
+  void whitespace(Whitespace whitespace) {
+    if (whitespace case Whitespace.newline || Whitespace.blankLine) {
+      handleNewline();
+      _pendingIndent = _options.indent;
     }
 
-    _pendingIndent = _options.indent;
+    _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
   }
 
   /// Sets whether newlines are allowed to occur from this point on for the
@@ -286,24 +285,24 @@ class CodeWriter {
   /// count of the written text, including whitespace.
   void _flushWhitespace() {
     switch (_pendingWhitespace) {
-      case _Whitespace.none:
+      case Whitespace.none:
         break; // Nothing to do.
 
-      case _Whitespace.newline:
-      case _Whitespace.blankLine:
+      case Whitespace.newline:
+      case Whitespace.blankLine:
         _finishLine();
         _buffer.writeln();
-        if (_pendingWhitespace == _Whitespace.blankLine) _buffer.writeln();
+        if (_pendingWhitespace == Whitespace.blankLine) _buffer.writeln();
 
         _column = _pendingIndent;
         _buffer.write(' ' * _column);
 
-      case _Whitespace.space:
+      case Whitespace.space:
         _buffer.write(' ');
         _column++;
     }
 
-    _pendingWhitespace = _Whitespace.none;
+    _pendingWhitespace = Whitespace.none;
   }
 
   void _finishLine() {
@@ -328,18 +327,28 @@ class CodeWriter {
 }
 
 /// Different kinds of pending whitespace that have been requested.
-enum _Whitespace {
+///
+/// Note that the order of values in the enum is significant: later ones have
+/// more whitespace than previous ones.
+enum Whitespace {
   /// No pending whitespace.
   none,
+
+  /// A single space.
+  space,
 
   /// A single newline.
   newline,
 
   /// Two newlines.
-  blankLine,
+  blankLine;
 
-  /// A single space.
-  space
+  /// Combines two pending whitespaces and returns the result.
+  ///
+  /// When two whitespaces overlap, they aren't both written: we don't want
+  /// two spaces or a newline followed by a space. Instead, the two whitespaces
+  /// are collapsed such that the largest one wins.
+  Whitespace collapse(Whitespace other) => values[max(index, other.index)];
 }
 
 /// The mutable state local to a single piece being formatted.

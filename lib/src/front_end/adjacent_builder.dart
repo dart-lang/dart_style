@@ -18,12 +18,11 @@ class AdjacentBuilder {
   AdjacentBuilder(this._visitor);
 
   /// Yields a new piece containing all of the pieces added to or created by
-  /// this builder.
+  /// this builder. The caller must ensure it doesn't build an empty piece.
   ///
   /// Also clears the builder's list of pieces so that this builder can be
   /// reused to build more pieces.
   Piece build() {
-    // The caller must ensure it doesn't build an empty piece.
     assert(_pieces.isNotEmpty);
 
     var result = _flattenPieces();

@@ -21,6 +21,16 @@ class FunctionPiece extends Piece {
   /// If this is a function declaration with a (non-empty `;`) body, the body.
   final Piece? _body;
 
+  /// Whether we should write a space between the function signature and body.
+  ///
+  /// This is `true` for most bodies except for empty function bodies, like:
+  ///
+  /// ```
+  /// class C {
+  ///   C();
+  ///   // ^ No space before `;`.
+  /// }
+  /// ```
   final bool _spaceBeforeBody;
 
   FunctionPiece(this._returnType, this._signature,
