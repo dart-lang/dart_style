@@ -7,11 +7,10 @@ import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../comment_type.dart';
-import 'piece_writer.dart';
 
-/// Functionality used by [AstNodeVisitor] and [SequenceBuilder] to build text
-/// and pieces from the comment tokens between meaningful tokens used by AST
-/// nodes.
+/// Functionality used by [AstNodeVisitor], [DelimitedListBuilder], and
+/// [SequenceBuilder] to build pieces from the comment tokens between meaningful
+/// tokens used by AST nodes.
 ///
 /// Also handles tracking newlines between tokens and comments so that
 /// information can be used to preserve discretionary blank lines in places
@@ -42,61 +41,43 @@ import 'piece_writer.dart';
 /// construct. These get directly embedded in the [TextPiece] of the code being
 /// written. When that [TextPiece] is output later, it will include the comments
 /// as well.
-mixin CommentWriter {
-  PieceWriter get pieces;
-
-  LineInfo get lineInfo;
+class CommentWriter {
+  final LineInfo _lineInfo;
 
   /// The tokens whose preceding comments have already been taken by calls to
   /// [takeCommentsBefore()].
   final Set<Token> _takenTokens = {};
 
+  CommentWriter(this._lineInfo);
+
   /// Returns the comments that appear before [token].
   ///
-  /// The caller is required to write them because a later call to [token()]
-  /// for this token will not write the preceding comments.
+  /// The caller is required to write them because a later call to write [token]
+  /// for this token will not write the preceding comments. Used by
+  /// [SequenceBuilder] and [DelimitedListBuilder] which handle comment
+  /// formatting themselves.
   CommentSequence takeCommentsBefore(Token token) {
     if (_takenTokens.contains(token)) return CommentSequence.empty;
     _takenTokens.add(token);
-    return _collectComments(token);
+    return _commentsBefore(token);
   }
 
-  /// Writes comments that appear before [token].
-  void writeCommentsBefore(Token token) {
+  /// Returns the comments that appear before [token].
+  CommentSequence commentsBefore(Token token) {
     // In the common case where there are no comments before the token, early
     // out. This avoids calculating the number of newlines between every pair
     // of tokens which is slow and unnecessary.
-    if (token.precedingComments == null) return;
+    if (token.precedingComments == null) return CommentSequence.empty;
 
-    // Don't write the comments if some other construct has already handled
-    // them.
-    if (_takenTokens.contains(token)) return;
+    // Don't yield the comments if some other construct already handled them.
+    if (_takenTokens.contains(token)) return CommentSequence.empty;
 
-    var comments = _collectComments(token);
-    for (var i = 0; i < comments.length; i++) {
-      var comment = comments[i];
-
-      if (comments.isHanging(i)) {
-        // Attach the comment to the previous token.
-        pieces.writeComment(comment, hanging: true);
-      } else {
-        pieces.writeNewline();
-        pieces.writeComment(comment);
-      }
-
-      if (comment.type == CommentType.line || comment.type == CommentType.doc) {
-        pieces.writeNewline();
-      }
-    }
-
-    if (comments.isNotEmpty && _needsSpaceAfterComment(token.lexeme)) {
-      pieces.writeSpace();
-    }
+    return _commentsBefore(token);
   }
 
   /// Takes all of the comment tokens preceding [token] and builds a
   /// [CommentSequence] that tracks them and the whitespace between them.
-  CommentSequence _collectComments(Token token) {
+  CommentSequence _commentsBefore(Token token) {
     var previousLine = _endLine(token.previous!);
     var tokenLine = _startLine(token);
 
@@ -152,28 +133,15 @@ mixin CommentWriter {
     return comments;
   }
 
-  /// Returns `true` if a space should be output after the last comment which
-  /// was just written and the [token] that will be written.
-  bool _needsSpaceAfterComment(String token) {
-    // It gets a space if the following token is not a delimiter or the empty
-    // string (for EOF).
-    return token != ')' &&
-        token != ']' &&
-        token != '}' &&
-        token != ',' &&
-        token != ';' &&
-        token != '';
-  }
-
   /// Gets the 1-based line number that the beginning of [token] lies on.
-  int _startLine(Token token) => lineInfo.getLocation(token.offset).lineNumber;
+  int _startLine(Token token) => _lineInfo.getLocation(token.offset).lineNumber;
 
   /// Gets the 1-based line number that the end of [token] lies on.
-  int _endLine(Token token) => lineInfo.getLocation(token.end).lineNumber;
+  int _endLine(Token token) => _lineInfo.getLocation(token.end).lineNumber;
 
   /// Gets the 1-based column number that the beginning of [token] lies on.
   int _startColumn(Token token) =>
-      lineInfo.getLocation(token.offset).columnNumber;
+      _lineInfo.getLocation(token.offset).columnNumber;
 }
 
 /// A comment in the source, with a bit of information about the surrounding
@@ -200,10 +168,9 @@ class SourceComment {
   SourceComment(this.text, this.type,
       {required this.flushLeft, required this.offset});
 
-  /// Whether this comment contains a mandatory newline, either because it's a
-  /// comment that should be on its own line or is a multi-line block comment.
-  bool get containsNewline =>
-      type != CommentType.inlineBlock || text.contains('\n');
+  /// Whether this comment ends with a mandatory newline, because it's a line
+  /// comment or a block comment that should be on its own line.
+  bool get requiresNewline => type != CommentType.inlineBlock;
 
   @override
   String toString() =>
@@ -256,6 +223,10 @@ class CommentSequence extends ListBase<SourceComment> {
   final List<SourceComment> _comments;
 
   const CommentSequence._(this._linesBetween, this._comments);
+
+  /// Whether this sequence contains any comments that require a newline.
+  bool get requiresNewline =>
+      _comments.any((comment) => comment.requiresNewline);
 
   /// The number of newlines between the comment at [commentIndex] and the
   /// preceding comment or token.

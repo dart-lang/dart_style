@@ -73,3 +73,17 @@ foo &&
   // comment
   1 + 2;
 }
+>>> Multiple line comments in expression.
+a + // one
+// two
+// three
+// four
+// five
+b;
+<<<
+a + // one
+    // two
+    // three
+    // four
+    // five
+    b;

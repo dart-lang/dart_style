@@ -1,0 +1,43 @@
+40 columns                              |
+>>> Line comment after `while`.
+while // comment
+(true) {body;}
+<<<
+while // comment
+(true) {
+  body;
+}
+>>> Line comment after `(`.
+while (// comment
+true) {body;}
+<<<
+while ( // comment
+true) {
+  body;
+}
+>>> Line comment after condition.
+while (true// comment
+) {body;}
+<<<
+while (true // comment
+) {
+  body;
+}
+>>> Line comment after `)`.
+while (true) // comment
+{body;}
+<<<
+while (true) // comment
+{
+  body;
+}
+>>> Line comment after non-block body.
+while (true) body; // comment
+<<<
+while (true) body; // comment
+>>> Line comment after block body.
+while (true) {body;} // comment
+<<<
+while (true) {
+  body;
+} // comment

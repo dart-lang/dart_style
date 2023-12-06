@@ -24,6 +24,11 @@ class SequencePiece extends Piece {
       var element = _elements[i];
       writer.format(element.piece);
 
+      for (var comment in element.hangingComments) {
+        writer.space();
+        writer.format(comment);
+      }
+
       if (i < _elements.length - 1) {
         writer.newline(
             blank: element.blankAfter, indent: _elements[i + 1].indent);
@@ -35,6 +40,9 @@ class SequencePiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     for (var element in _elements) {
       callback(element.piece);
+      for (var comment in element.hangingComments) {
+        callback(comment);
+      }
     }
   }
 
@@ -52,6 +60,9 @@ class SequenceElement {
 
   /// The [Piece] for the element.
   final Piece piece;
+
+  /// The comments that should appear at the end of this element's line.
+  final List<Piece> hangingComments = [];
 
   /// Whether there should be a blank line after this element.
   bool blankAfter = false;

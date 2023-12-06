@@ -2,7 +2,7 @@
 >>> Without value.
 return  ;
 <<<
-return ;
+return;
 >>> With value.
 return  value  ;
 <<<

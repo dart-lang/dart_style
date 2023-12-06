@@ -88,12 +88,15 @@ class TextPiece extends Piece {
   /// multiline strings, etc.
   bool _containsNewline = false;
 
-  /// Whether this piece should have a newline written at the end of it.
+  /// Whitespace at the end of this [TextPiece].
   ///
-  /// This is true during piece construction while lines are still being
-  /// written. It may also be true once a piece is fully complete if it ends in
-  /// a line comment.
-  bool _trailingNewline = false;
+  /// This will be turned into actual text if non-whitespace is written after
+  /// the pending whitespace is set. Otherwise, it will be written to the output
+  /// when the [TextPiece] is formatted.
+  ///
+  /// Initially [Whitespace.newline] so that we insert a new string into the
+  /// empty [_lines] list on the first write.
+  Whitespace _trailingWhitespace = Whitespace.newline;
 
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
@@ -111,25 +114,33 @@ class TextPiece extends Piece {
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
   void append(String text, {bool containsNewline = false}) {
-    if (_lines.isEmpty || _trailingNewline) _lines.add('');
+    // Write any pending whitespace into the text.
+    switch (_trailingWhitespace) {
+      case Whitespace.none:
+        break; // Nothing to do.
+      case Whitespace.space:
+        // TODO(perf): Consider a faster way of accumulating text.
+        _lines.last += ' ';
+      case Whitespace.newline:
+        _lines.add('');
+      case Whitespace.blankLine:
+        throw UnsupportedError('No blank lines in TextPieces.');
+    }
+
+    _trailingWhitespace = Whitespace.none;
 
     // TODO(perf): Consider a faster way of accumulating text.
     _lines.last = _lines.last + text;
 
     if (containsNewline) _containsNewline = true;
-
-    _trailingNewline = false;
   }
 
-  void appendSpace() {
-    // Don't write an unnecessary space at the beginning of a line.
-    if (_trailingNewline) return;
-
-    append(' ');
+  void space() {
+    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.space);
   }
 
   void newline() {
-    _trailingNewline = true;
+    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.newline);
   }
 
   @override
@@ -151,7 +162,7 @@ class TextPiece extends Piece {
       writer.write(_lines[i]);
     }
 
-    if (_trailingNewline) writer.newline();
+    writer.whitespace(_trailingWhitespace);
   }
 
   @override
@@ -160,27 +171,39 @@ class TextPiece extends Piece {
   /// Sets [selectionStart] to be [start] code units after the end of the
   /// current text in this piece.
   void startSelection(int start) {
-    // Convert it to relative to the end of this piece.
-    for (var line in _lines) {
-      start += line.length;
-    }
-
-    _selectionStart = start;
+    _selectionStart = _adjustSelection(start);
   }
 
   /// Sets [selectionEnd] to be [end] code units after the end of the
   /// current text in this piece.
   void endSelection(int end) {
-    // Convert it to relative to the end of this piece.
+    _selectionEnd = _adjustSelection(end);
+  }
+
+  /// Adjust [offset] by the current length of this [TextPiece].
+  int _adjustSelection(int offset) {
     for (var line in _lines) {
-      end += line.length;
+      offset += line.length;
     }
 
-    _selectionEnd = end;
+    if (_trailingWhitespace == Whitespace.space) offset++;
+
+    return offset;
   }
 
   @override
   String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';
+}
+
+/// A piece that writes a single space.
+class SpacePiece extends Piece {
+  @override
+  void forEachChild(void Function(Piece piece) callback) {}
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.space();
+  }
 }
 
 /// A state that a piece can be in.

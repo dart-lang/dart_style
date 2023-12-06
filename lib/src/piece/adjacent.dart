@@ -6,24 +6,19 @@ import 'piece.dart';
 
 /// A simple piece that just writes its child pieces one after the other.
 class AdjacentPiece extends Piece {
-  final List<Piece> _pieces;
+  final List<Piece> pieces;
 
-  /// The pieces that should have a space after them.
-  final Set<Piece> _spaceAfter;
-
-  AdjacentPiece(this._pieces, {List<Piece> spaceAfter = const []})
-      : _spaceAfter = spaceAfter.toSet();
+  AdjacentPiece(this.pieces);
 
   @override
   void format(CodeWriter writer, State state) {
-    for (var piece in _pieces) {
+    for (var piece in pieces) {
       writer.format(piece);
-      if (_spaceAfter.contains(piece)) writer.space();
     }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    _pieces.forEach(callback);
+    pieces.forEach(callback);
   }
 }
