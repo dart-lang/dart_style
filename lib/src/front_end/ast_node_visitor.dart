@@ -15,7 +15,6 @@ import '../piece/block.dart';
 import '../piece/chain.dart';
 import '../piece/constructor.dart';
 import '../piece/for.dart';
-import '../piece/function.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
