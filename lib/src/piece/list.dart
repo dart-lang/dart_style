@@ -61,32 +61,21 @@ class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
-  /// The state when the list is split.
-  ///
-  /// We use this instead of [State.split] because the cost is higher for some
-  /// kinds of lists.
-  ///
-  /// Also, if this list does have a block element, then we also increase the
-  /// cost of splitting the list itself a little more to prefer the block
-  /// argument splitting when possible.
-  // TODO(rnystrom): Having to use a different state for this is a little
-  // cumbersome. Maybe it would be better to most costs out of [State] and
-  // instead have the [Solver] ask each [Piece] for the cost of its state.
-  final State _splitState;
-
   /// If this list has an element that can receive block formatting, this is
   /// the elements's index. Otherwise `-1`.
   final int _blockElement;
 
   ListPiece(this._before, this._elements, this._blanksAfter, this._after,
-      this._style, this._blockElement,
-      {required bool mustSplit})
-      : _splitState = State(2, cost: _style.splitCost) {
-    if (mustSplit) pin(_splitState);
-  }
+      this._style, this._blockElement);
 
   @override
-  List<State> get additionalStates => [if (_elements.isNotEmpty) _splitState];
+  List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
+
+  @override
+  int stateCost(State state) {
+    if (state == State.split) return _style.splitCost;
+    return super.stateCost(state);
+  }
 
   @override
   void format(CodeWriter writer, State state) {
@@ -121,13 +110,13 @@ class ListPiece extends Piece {
 
       // Only allow newlines in the block element or in all elements if we're
       // fully split.
-      writer.setAllowNewlines(i == _blockElement || state == _splitState);
+      writer.setAllowNewlines(i == _blockElement || state == State.split);
 
       var element = _elements[i];
       element.format(writer,
           appendComma: appendComma,
           // Only allow newlines in comments if we're fully split.
-          allowNewlinesInComments: state == _splitState);
+          allowNewlinesInComments: state == State.split);
 
       // Write a space or newline between elements.
       if (!isLast) {

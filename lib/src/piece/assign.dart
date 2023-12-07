@@ -54,7 +54,7 @@ class AssignPiece extends Piece {
   /// block-like formatting.
   final bool _isValueDelimited;
 
-  AssignPiece(this.target, this.value, {required bool isValueDelimited})
+  AssignPiece(this.target, this.value, {bool isValueDelimited = false})
       : _isValueDelimited = isValueDelimited;
 
   // TODO(tall): The old formatter allows the first operand of a split

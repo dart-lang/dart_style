@@ -13,7 +13,9 @@ import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/chain.dart';
+import '../piece/constructor.dart';
 import '../piece/for.dart';
+import '../piece/function.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -130,7 +132,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitAssertInitializer(AssertInitializer node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.assertKeyword);
+      b.add(createList(
+        leftBracket: node.leftParenthesis,
+        [
+          node.condition,
+          if (node.message case var message?) message,
+        ],
+        rightBracket: node.rightParenthesis,
+      ));
+    });
   }
 
   @override
@@ -343,18 +355,85 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitConstructorDeclaration(ConstructorDeclaration node) {
-    throw UnimplementedError();
+    var header = buildPiece((b) {
+      b.modifier(node.externalKeyword);
+      b.modifier(node.constKeyword);
+      b.modifier(node.factoryKeyword);
+      b.visit(node.returnType);
+      b.token(node.period);
+      b.token(node.name);
+    });
+
+    var parameters = nodePiece(node.parameters);
+
+    Piece? redirect;
+    Piece? initializerSeparator;
+    Piece? initializers;
+    if (node.redirectedConstructor case var constructor?) {
+      redirect = AssignPiece(
+          tokenPiece(node.separator!), nodePiece(constructor),
+          isValueDelimited: false);
+    } else if (node.initializers.isNotEmpty) {
+      initializerSeparator = tokenPiece(node.separator!);
+      initializers = createList(node.initializers,
+          style: const ListStyle(commas: Commas.nonTrailing));
+    }
+
+    var body = createFunctionBody(node.body);
+
+    return ConstructorPiece(header, parameters, body,
+        canSplitParameters: node.parameters.parameters
+            .canSplit(node.parameters.rightParenthesis),
+        hasOptionalParameter: node.parameters.rightDelimiter != null,
+        redirect: redirect,
+        initializerSeparator: initializerSeparator,
+        initializers: initializers);
   }
 
   @override
   Piece visitConstructorFieldInitializer(ConstructorFieldInitializer node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.thisKeyword);
+      b.token(node.period);
+      b.add(createAssignment(node.fieldName, node.equals, node.expression));
+    });
   }
 
   @override
   Piece visitConstructorName(ConstructorName node) {
-    throw UnsupportedError(
-        'This node is handled by visitInstanceCreationExpression().');
+    // If there is an import prefix and/or constructor name, then allow
+    // splitting before the `.`. This doesn't look good, but is consistent with
+    // constructor calls that don't have `new` or `const`. We allow splitting
+    // in the latter because there is no way to distinguish syntactically
+    // between a named constructor call and any other kind of method call or
+    // property access.
+    var operations = <Piece>[];
+
+    var builder = AdjacentBuilder(this);
+    if (node.type.importPrefix case var importPrefix?) {
+      builder.token(importPrefix.name);
+      operations.add(builder.build());
+      builder.token(importPrefix.period);
+    }
+
+    // The name of the type being constructed.
+    var type = node.type;
+    builder.token(type.name2);
+    builder.visit(type.typeArguments);
+    builder.token(type.question);
+
+    // If this is a named constructor, the name.
+    if (node.name != null) {
+      operations.add(builder.build());
+      builder.token(node.period);
+      builder.visit(node.name);
+    }
+
+    // If there was a prefix or constructor name, then make a splittable piece.
+    // Otherwise, the current piece is a simple identifier for the name.
+    operations.add(builder.build());
+    if (operations.length == 1) return operations.first;
+    return ChainPiece(operations);
   }
 
   @override
@@ -550,7 +629,30 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFieldFormalParameter(FieldFormalParameter node) {
-    throw UnimplementedError();
+    if (node.parameters case var parameters?) {
+      // A function-typed field formal like:
+      //
+      // ```
+      // C(this.fn(parameter));
+      // ```
+      return createFunctionType(
+          node.type,
+          fieldKeyword: node.thisKeyword,
+          period: node.period,
+          node.name,
+          node.typeParameters,
+          parameters,
+          node.question,
+          parameter: node);
+    } else {
+      return createFormalParameter(
+          node,
+          mutableKeyword: node.keyword,
+          fieldKeyword: node.thisKeyword,
+          period: node.period,
+          node.type,
+          node.name);
+    }
   }
 
   @override
@@ -736,7 +838,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitFunctionDeclaration(FunctionDeclaration node) {
     return createFunction(
-        externalKeyword: node.externalKeyword,
+        modifiers: [node.externalKeyword],
         returnType: node.returnType,
         propertyKeyword: node.propertyKeyword,
         name: node.name,
@@ -974,11 +1076,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitMethodDeclaration(MethodDeclaration node) {
     return createFunction(
-        externalKeyword: node.externalKeyword,
-        modifierKeyword: node.modifierKeyword,
+        modifiers: [node.externalKeyword, node.modifierKeyword],
         returnType: node.returnType,
-        operatorKeyword: node.operatorKeyword,
-        propertyKeyword: node.propertyKeyword,
+        propertyKeyword: node.operatorKeyword ?? node.propertyKeyword,
         name: node.name,
         typeParameters: node.typeParameters,
         parameters: node.parameters,
@@ -1166,7 +1266,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitRedirectingConstructorInvocation(
       RedirectingConstructorInvocation node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.thisKeyword);
+      b.token(node.period);
+      b.visit(node.constructorName);
+      b.visit(node.argumentList);
+    });
   }
 
   @override
@@ -1260,22 +1365,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSimpleFormalParameter(SimpleFormalParameter node) {
-    var builder = AdjacentBuilder(this);
-    startFormalParameter(node, builder);
-    builder.modifier(node.keyword);
-
-    if ((node.type, node.name) case (var _?, var name?)) {
-      // Have both a type and name, so allow splitting after the type.
-      builder.visit(node.type);
-      var typePiece = builder.build();
-      var namePiece = tokenPiece(name);
-      return VariablePiece(typePiece, [namePiece], hasType: true);
-    } else {
-      // Don't have both a type and name, so just write whichever one we have.
-      builder.visit(node.type);
-      builder.token(node.name);
-      return builder.build();
-    }
+    return createFormalParameter(node, node.type, node.name,
+        mutableKeyword: node.keyword);
   }
 
   @override
@@ -1300,7 +1391,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSuperConstructorInvocation(SuperConstructorInvocation node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.superKeyword);
+      b.token(node.period);
+      b.visit(node.constructorName);
+      b.visit(node.argumentList);
+    });
   }
 
   @override
@@ -1310,7 +1406,30 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSuperFormalParameter(SuperFormalParameter node) {
-    throw UnimplementedError();
+    if (node.parameters case var parameters?) {
+      // A function-typed super parameter like:
+      //
+      // ```
+      // C(super.fn(parameter));
+      // ```
+      return createFunctionType(
+          node.type,
+          fieldKeyword: node.superKeyword,
+          period: node.period,
+          node.name,
+          node.typeParameters,
+          parameters,
+          node.question,
+          parameter: node);
+    } else {
+      return createFormalParameter(
+          node,
+          mutableKeyword: node.keyword,
+          fieldKeyword: node.superKeyword,
+          period: node.period,
+          node.type,
+          node.name);
+    }
   }
 
   @override

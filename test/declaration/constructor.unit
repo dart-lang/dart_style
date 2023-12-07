@@ -1,0 +1,129 @@
+40 columns                              |
+>>> Semicolon body.
+class A {
+  A();
+}
+<<<
+class A {
+  A();
+}
+>>> Empty body.
+class A {
+  A() {}
+}
+<<<
+class A {
+  A() {}
+}
+>>> Non-empty body.
+class A {
+  A() {body;}
+}
+<<<
+class A {
+  A() {
+    body;
+  }
+}
+>>> Constant and factory constructors.
+class Foo {
+  const  Foo  .  constant  ();
+  factory  Foo  .  fact  () => foo;
+}
+<<<
+class Foo {
+  const Foo.constant();
+  factory Foo.fact() => foo;
+}
+>>> Named constructor.
+class Foo {
+  Foo  .  bar  ()  {  }
+  const  Foo  .  baz()  ;
+  factory  Foo  .  bang(  int  param  ) => foo;
+}
+<<<
+class Foo {
+  Foo.bar() {}
+  const Foo.baz();
+  factory Foo.bang(int param) => foo;
+}
+>>> Don't split at named constructor.
+class SomeLongClassName {
+  SomeLongClassName.someLongConstructorName();
+}
+<<<
+class SomeLongClassName {
+  SomeLongClassName.someLongConstructorName();
+}
+>>> Redirecting constructor.
+class A {
+  A  (  )  : this  .  named  (  1  );
+  A  .  named  (  int  x  )  :  this  (  );
+}
+<<<
+class A {
+  A() : this.named(1);
+  A.named(int x) : this();
+}
+>>> Split after `:` in redirecting constructor.
+class LongClassName {
+  LongClassName() : this(argument, another);
+}
+<<<
+class LongClassName {
+  LongClassName()
+    : this(argument, another);
+}
+>>> Split in redirecting constructor argument list.
+class LongClassName {
+  LongClassName() : this(argument, anotherArgument, thirdOne);
+}
+<<<
+class LongClassName {
+  LongClassName()
+    : this(
+        argument,
+        anotherArgument,
+        thirdOne,
+      );
+}
+>>> Redirecting factory constructor.
+class A {
+  factory  A  .  nonConst  (  )  = B  <  int  >;
+  const  factory  A  (  int  x  )  =  prefix  .  B;
+}
+<<<
+class A {
+  factory A.nonConst() = B<int>;
+  const factory A(int x) = prefix.B;
+}
+>>> Split after `=` in redirecting factory constructor.
+class VeryLongClassName {
+  factory VeryLongClassName() = OtherLongClass;
+}
+<<<
+class VeryLongClassName {
+  factory VeryLongClassName() =
+      OtherLongClass;
+}
+>>> Prefer to split at `=` instead of in type arguments.
+class LongClass {
+  factory LongClass() = Other<LongType, Another>;
+}
+<<<
+class LongClass {
+  factory LongClass() =
+      Other<LongType, Another>;
+}
+>>> Split in redirecting factory constructor type argument list.
+class LongClass {
+  factory LongClass() = Other<SomeLongType, AnotherLongType>;
+}
+<<<
+class LongClass {
+  factory LongClass() =
+      Other<
+        SomeLongType,
+        AnotherLongType
+      >;
+}
