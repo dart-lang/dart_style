@@ -871,7 +871,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionTypeAlias(FunctionTypeAlias node) {
-    throw UnimplementedError();
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+
+    return buildPiece((b) {
+      b.token(node.typedefKeyword);
+      b.space();
+      b.token(node.name);
+      b.visit(node.typeParameters);
+      b.visit(node.parameters);
+      b.token(node.semicolon);
+    });
   }
 
   @override
@@ -893,7 +902,22 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitGenericTypeAlias(GenericTypeAlias node) {
-    throw UnimplementedError();
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+
+    return buildPiece((b) {
+      b.token(node.typedefKeyword);
+      b.space();
+      b.token(node.name);
+      b.visit(node.typeParameters);
+      b.space();
+      b.token(node.equals);
+      // Don't bother allowing splitting after the `=`. It's always better to
+      // split inside the type parameter, type argument, or parameter lists of
+      // the typedef or the aliased type.
+      b.space();
+      b.visit(node.type);
+      b.token(node.semicolon);
+    });
   }
 
   @override

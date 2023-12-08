@@ -1,0 +1,29 @@
+40 columns                              |
+>>> Line comment after `typedef`.
+typedef // c
+Alias = Type;
+<<<
+typedef // c
+Alias = Type;
+>>> Line comment after name.
+typedef Alias // c
+= Type;
+<<<
+typedef Alias // c
+= Type;
+>>> Line comment after `=`.
+typedef Alias = // c
+Type;
+<<<
+typedef Alias = // c
+Type;
+>>> Line comment after type.
+typedef Alias = Type // c
+;
+<<<
+typedef Alias = Type // c
+;
+>>> Line comment after `;`.
+typedef Alias = Type; // c
+<<<
+typedef Alias = Type; // c
