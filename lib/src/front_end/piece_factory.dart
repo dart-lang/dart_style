@@ -305,7 +305,7 @@ mixin PieceFactory {
   /// If creating a piece for a function-typed formal, then [parameter] is the
   /// formal parameter.
   ///
-  /// If this is a function-typed initializing formal (`this.foo()`, then
+  /// If this is a function-typed initializing formal (`this.foo()`), then
   /// [fieldKeyword] is `this` and [period] is the `.`. Likewise, for a
   /// function-typed super parameter, [fieldKeyword] is `super`.
   Piece createFunctionType(
