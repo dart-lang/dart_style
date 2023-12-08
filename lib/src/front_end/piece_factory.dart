@@ -16,6 +16,7 @@ import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import '../piece/try.dart';
 import '../piece/type.dart';
+import '../piece/variable.dart';
 import 'adjacent_builder.dart';
 import 'ast_node_visitor.dart';
 import 'comment_writer.dart';
@@ -219,6 +220,38 @@ mixin PieceFactory {
     });
   }
 
+  /// Creates a normal (not function-typed) formal parameter with a name and/or
+  /// type annotation.
+  ///
+  /// If [mutableKeyword] is given, it should be the `var` or `final` keyword.
+  /// If [fieldKeyword] and [period] are given, the former should be the `this`
+  /// or `super` keyword for an initializing formal or super parameter.
+  Piece createFormalParameter(
+      NormalFormalParameter node, TypeAnnotation? type, Token? name,
+      {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
+    var builder = AdjacentBuilder(this);
+    startFormalParameter(node, builder);
+    builder.modifier(mutableKeyword);
+    builder.visit(type);
+
+    Piece? typePiece;
+    if (type != null && name != null) {
+      typePiece = builder.build();
+    }
+
+    builder.token(fieldKeyword);
+    builder.token(period);
+    builder.token(name);
+
+    // If we have both a type and name, allow splitting between them.
+    if (typePiece != null) {
+      var namePiece = builder.build();
+      return VariablePiece(typePiece, [namePiece], hasType: true);
+    }
+
+    return builder.build();
+  }
+
   /// Creates a function, method, getter, or setter declaration.
   ///
   /// If [modifierKeyword] is given, it should be the `static` or `abstract`
@@ -227,8 +260,7 @@ mixin PieceFactory {
   /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
   /// getter or setter declaration.
   Piece createFunction(
-      {Token? externalKeyword,
-      Token? modifierKeyword,
+      {List<Token?> modifiers = const [],
       AstNode? returnType,
       Token? operatorKeyword,
       Token? propertyKeyword,
@@ -237,8 +269,9 @@ mixin PieceFactory {
       FormalParameterList? parameters,
       required FunctionBody body}) {
     var builder = AdjacentBuilder(this);
-    builder.modifier(externalKeyword);
-    builder.modifier(modifierKeyword);
+    for (var keyword in modifiers) {
+      builder.modifier(keyword);
+    }
 
     Piece? returnTypePiece;
     if (returnType != null) {
@@ -253,23 +286,37 @@ mixin PieceFactory {
     builder.visit(parameters);
     var signature = builder.build();
 
-    var bodyPiece = nodePiece(body);
+    var bodyPiece = createFunctionBody(body);
 
-    return FunctionPiece(returnTypePiece, signature,
-        body: bodyPiece, spaceBeforeBody: body is! EmptyFunctionBody);
+    return FunctionPiece(returnTypePiece, signature, bodyPiece);
+  }
+
+  /// Creates a piece for a function, method, or constructor body.
+  Piece createFunctionBody(FunctionBody body) {
+    return buildPiece((b) {
+      // Don't put a space before `;` bodies.
+      if (body is! EmptyFunctionBody) b.space();
+      b.visit(body);
+    });
   }
 
   /// Creates a function type or function-typed formal.
   ///
   /// If creating a piece for a function-typed formal, then [parameter] is the
   /// formal parameter.
+  ///
+  /// If this is a function-typed initializing formal (`this.foo()`), then
+  /// [fieldKeyword] is `this` and [period] is the `.`. Likewise, for a
+  /// function-typed super parameter, [fieldKeyword] is `super`.
   Piece createFunctionType(
       TypeAnnotation? returnType,
       Token functionKeywordOrName,
       TypeParameterList? typeParameters,
       FormalParameterList parameters,
       Token? question,
-      {FunctionTypedFormalParameter? parameter}) {
+      {FormalParameter? parameter,
+      Token? fieldKeyword,
+      Token? period}) {
     var builder = AdjacentBuilder(this);
 
     if (parameter != null) startFormalParameter(parameter, builder);
@@ -280,6 +327,8 @@ mixin PieceFactory {
       returnTypePiece = builder.build();
     }
 
+    builder.token(fieldKeyword);
+    builder.token(period);
     builder.token(functionKeywordOrName);
     builder.visit(typeParameters);
     builder.visit(parameters);

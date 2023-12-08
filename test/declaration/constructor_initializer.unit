@@ -1,0 +1,244 @@
+40 columns                              |
+>>> Unnamed super constructor.
+class Foo {
+  Foo(a, b)  :  super  (  a  ,  other  :  b  )  ;
+}
+<<<
+class Foo {
+  Foo(a, b) : super(a, other: b);
+}
+>>> Named super constructor.
+class Foo {
+  Foo(a, b)  :  super  .  name  (  a  ,  other  :  b  )  ;
+}
+<<<
+class Foo {
+  Foo(a, b) : super.name(a, other: b);
+}
+>>> Split a single initializer.
+class MyClass {
+  MyClass(first, second) : super(first, second);
+}
+<<<
+class MyClass {
+  MyClass(first, second)
+    : super(first, second);
+}
+>>> No parameters and unsplit field initializers.
+class X {
+  var x, y;
+  X() : x = 1, y = 2;
+}
+<<<
+class X {
+  var x, y;
+  X() : x = 1, y = 2;
+}
+>>> No parameters and split field initializers.
+class MyClass {
+  MyClass() : first = "some value", second = "another",
+        third = "last";
+}
+<<<
+class MyClass {
+  MyClass()
+    : first = "some value",
+      second = "another",
+      third = "last";
+}
+>>> Unsplit parameters and initializers.
+class C {
+  C(a, b) : super(a), _b = b, _c = 1;
+
+  C.b(a, b) : super(a), _b = b, _c = 1 { body; }
+}
+<<<
+class C {
+  C(a, b) : super(a), _b = b, _c = 1;
+
+  C.b(a, b) : super(a), _b = b, _c = 1 {
+    body;
+  }
+}
+>>> If parameters split, initializers do too even if they would fit unsplit.
+class C {
+  C(String first, String second, String third) : super(a), _b = b, _c = 1;
+}
+<<<
+class C {
+  C(
+    String first,
+    String second,
+    String third,
+  ) : super(a),
+      _b = b,
+      _c = 1;
+}
+>>>
+class C {
+  C(String first, String second, String third) : super(a), _b = b, _c = 1
+  { body; }
+}
+<<<
+class C {
+  C(
+    String first,
+    String second,
+    String third,
+  ) : super(a),
+      _b = b,
+      _c = 1 {
+    body;
+  }
+}
+>>>
+class Foo {
+  Foo(int longArg1, int longArg2, int longArg3) : this._(longArg1);
+}
+<<<
+class Foo {
+  Foo(
+    int longArg1,
+    int longArg2,
+    int longArg3,
+  ) : this._(longArg1);
+}
+>>> Split at `:` and not in parameter list.
+class Foo {
+  Foo(int a, int b): super(aLongIdentifier);
+}
+<<<
+class Foo {
+  Foo(int a, int b)
+    : super(aLongIdentifier);
+}
+>>> Split each initializer but not parameters.
+class Foo {
+  Foo(int a, int b) : super(a), this.b = longExpression;
+}
+<<<
+class Foo {
+  Foo(int a, int b)
+    : super(a),
+      this.b = longExpression;
+}
+>>> Align initializers when split parameter list has no optional section.
+class Foo {
+  Foo(parameter1, parameter2, parameter3) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1,
+    parameter2,
+    parameter3,
+  ) : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> Align initializers when split parameter list has optional section.
+class Foo {
+  Foo(parameter1, [parameter2, parameter3]) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1, [
+    parameter2,
+    parameter3,
+  ]) : initializer1 = 1,
+       initializer2 = 2;
+}
+>>> Align initializers when split parameter list has named section.
+class Foo {
+  Foo(parameter1, {parameter2, parameter3}) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(
+    parameter1, {
+    parameter2,
+    parameter3,
+  }) : initializer1 = 1,
+       initializer2 = 2;
+}
+>>> Align initializers when unsplit parameter list has no optional section.
+class Foo {
+  Foo(parameter1) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo(parameter1)
+    : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> Align initializers when unsplit parameter list has optional section.
+class Foo {
+  Foo([parameter1]) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo([parameter1])
+    : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> Align initializers when unsplit parameter list has named section.
+class Foo {
+  Foo({parameter1}) : initializer1 = 1, initializer2 = 2;
+}
+<<<
+class Foo {
+  Foo({parameter1})
+    : initializer1 = 1,
+      initializer2 = 2;
+}
+>>> Wrap split initializers past the `:`.
+class Foo {
+  Foo(parameter)
+      : initializer = function(argument, argument),
+        initializer2 = function(argument, argument);
+}
+<<<
+class Foo {
+  Foo(parameter)
+    : initializer = function(
+        argument,
+        argument,
+      ),
+      initializer2 = function(
+        argument,
+        argument,
+      );
+}
+>>> Wrap split initializers with split optional parameter list past the `:`.
+class Foo {
+  Foo(parameter1, [parameter2, parameter3])
+  : initializer = function(argument, argument),
+    initializer2 = function(argument, argument);
+}
+<<<
+class Foo {
+  Foo(
+    parameter1, [
+    parameter2,
+    parameter3,
+  ]) : initializer = function(
+         argument,
+         argument,
+       ),
+       initializer2 = function(
+         argument,
+         argument,
+       );
+}
+>>> Allow block formatting the initialized value.
+class Foo {
+  Foo() : initializer =function(argument, arg);
+}
+<<<
+class Foo {
+  Foo()
+    : initializer = function(
+        argument,
+        arg,
+      );
+}

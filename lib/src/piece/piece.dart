@@ -55,6 +55,14 @@ abstract class Piece {
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
 
+  /// The cost that this piece should apply to the solution when in [state].
+  ///
+  /// This is usually just the state's cost, but some pieces may want to tweak
+  /// the cost in certain circumstances.
+  // TODO(tall): Given that we have this API now, consider whether it makes
+  // sense to remove the cost field from State entirely.
+  int stateCost(State state) => state.cost;
+
   /// Forces this piece to always use [state].
   void pin(State state) {
     _pinnedState = state;

@@ -55,9 +55,10 @@ class DelimitedListBuilder {
     var blockElement = -1;
     if (_style.allowBlockElement) blockElement = _findBlockElement();
 
-    return ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
-        _style, blockElement,
-        mustSplit: _mustSplit);
+    var piece = ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
+        _style, blockElement);
+    if (_mustSplit) piece.pin(State.split);
+    return piece;
   }
 
   /// Adds the opening [bracket] to the built list.

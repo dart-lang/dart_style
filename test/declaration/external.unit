@@ -71,6 +71,20 @@ class A {
     int value,
   );
 }
+>>> Constructor.
+class A {
+  external A();
+  external const A.constant();
+  external factory A.fact();
+  external const factory A.constantFact();
+}
+<<<
+class A {
+  external A();
+  external const A.constant();
+  external factory A.fact();
+  external const factory A.constantFact();
+}
 >>> Don't split after `external`.
 class Foo {
   external var soMuchSoVeryLongFieldNameHere;

@@ -53,10 +53,16 @@ class CodeWriter {
   /// The number of characters in the line currently being written.
   int _column = 0;
 
-  /// Whether this solution has encountered a newline where none is allowed.
+  /// Whether this solution has encountered a conflict that makes it not a valid
+  /// solution.
   ///
-  /// If true, it means the solution is invalid.
-  bool _containsInvalidNewline = false;
+  /// This can occur if:
+  ///
+  /// - A mandatory newline occurs like from a line comment or statement where
+  ///   none is permitted.
+  /// - An outer piece requires a child piece to have a certain state and it
+  ///   doesn't.
+  bool _isInvalid = false;
 
   /// The stack of state for each [Piece] being formatted.
   ///
@@ -126,7 +132,7 @@ class CodeWriter {
 
     return Solution(_pieceStates, _buffer.toString(), _selectionStart,
         _selectionEnd, _nextPieceToExpand,
-        isValid: !_containsInvalidNewline, overflow: _overflow, cost: _cost);
+        isValid: !_isInvalid, overflow: _overflow, cost: _cost);
   }
 
   /// Notes that a newline has been written.
@@ -138,7 +144,7 @@ class CodeWriter {
   /// the raw text contains a newline, which can happen in multi-line block
   /// comments and multi-line string literals.
   void handleNewline() {
-    if (!_options.allowNewlines) _containsInvalidNewline = true;
+    if (!_options.allowNewlines) _isInvalid = true;
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
@@ -228,11 +234,12 @@ class CodeWriter {
 
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
-  void format(Piece piece) {
-    // Don't bother recursing into the piece tree if we know the solution will
-    // be discarded.
-    if (_containsInvalidNewline) return;
-
+  ///
+  /// If [requireState] is given, then [piece] must be in that state or the
+  /// solution is considered invalid. This is used to create constraints
+  /// between pieces. For example, a constructor piece forces the initializer
+  /// list child piece to split if the parameter list splits.
+  void format(Piece piece, {State? requireState}) {
     _pieceOptions.add(_PieceOptions(_options.indent, _options.allowNewlines));
 
     var isUnsolved = !_pieceStates.isBound(piece) && piece.states.length > 1;
@@ -240,7 +247,20 @@ class CodeWriter {
 
     var state = _pieceStates.pieceState(piece);
 
-    _cost += state.cost;
+    // If the parent piece constrains this child to a certain state, then
+    // invalidate the solution if it doesn't match.
+    if (requireState != null && state != requireState) {
+      _isInvalid = true;
+      // TODO(perf): The solver doesn't discard invalid states that are caused
+      // by newlines because sometimes an invalid state like that can lead to
+      // a valid state by selecting values for other pieces.
+      //
+      // But in this case, once a partial solution is invalidated by one piece's
+      // state conflicting with another's, any solution derived from that is
+      // also going to be invalid and we can prune that entire solution tree.
+    }
+
+    _cost += piece.stateCost(state);
 
     // TODO(perf): Memoize this. Might want to create a nested PieceWriter
     // instead of passing in `this` so we can better control what state needs
@@ -316,7 +336,7 @@ class CodeWriter {
     // expand it next.
     if (!_foundExpandLine &&
         _nextPieceToExpand != null &&
-        (_column > _pageWidth || _containsInvalidNewline)) {
+        (_column > _pageWidth || _isInvalid)) {
       // We found a problematic line, so remember it and the piece on it.
       _foundExpandLine = true;
     } else if (!_foundExpandLine) {

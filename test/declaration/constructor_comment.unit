@@ -1,0 +1,184 @@
+40 columns                              |
+>>> Line comment before redirecting constructor separator.
+class A {
+  A() // comment
+  : this();
+}
+<<<
+class A {
+  A() // comment
+    : this();
+}
+>>> Line comment after redirecting constructor separator.
+class A {
+  A() : // comment
+  this();
+}
+<<<
+class A {
+  A()
+    : // comment
+      this();
+}
+>>> Line comment before redirecting factory constructor separator.
+class A {
+  factory A() // comment
+  = B;
+}
+<<<
+class A {
+  factory A() // comment
+  = B;
+}
+>>> Line comment after redirecting factory constructor separator.
+class A {
+  factory A() = // comment
+  B;
+}
+<<<
+class A {
+  factory A() = // comment
+      B;
+}
+>>> Line comment in parameter list.
+class A {
+  A(param, // comment
+  param2) : b = 1, c = 2;
+}
+<<<
+class A {
+  A(
+    param, // comment
+    param2,
+  ) : b = 1,
+      c = 2;
+}
+>>> Line comment before initializer separator.
+class A {
+  A(param) // comment
+  : b = 1, c = 2;
+}
+<<<
+class A {
+  A(param) // comment
+    : b = 1,
+      c = 2;
+}
+>>> Line comment after initializer separator.
+class A {
+  A(param) :// comment
+  b = 1, c = 2;
+}
+<<<
+class A {
+  A(param)
+    : // comment
+      b = 1,
+      c = 2;
+}
+>>> Line comment with newline after initializer separator.
+class A {
+  A(param) :
+  // comment
+  b = 1, c = 2;
+}
+<<<
+class A {
+  A(param)
+    : // comment
+      b = 1,
+      c = 2;
+}
+>>> Line comment before initializer comma.
+class A {
+  A(param) : b = 1 // comment
+  , c = 2;
+}
+<<<
+class A {
+  A(param)
+    : b = 1, // comment
+      c = 2;
+}
+>>> Line comment after initializer comma.
+class A {
+  A(param) : b = 1, // comment
+  c = 2;
+}
+<<<
+class A {
+  A(param)
+    : b = 1, // comment
+      c = 2;
+}
+>>> Line comment between initializer lines.
+class A {
+  A(param) : b = 1,
+  // comment
+  c = 2;
+}
+<<<
+class A {
+  A(param)
+    : b = 1,
+      // comment
+      c = 2;
+}
+>>> Line comment before semicolon body.
+class A {
+  A(param) : b = 1, c = 2 // comment
+  ;
+}
+<<<
+### It's weird to force the `=` to split, but a comment here is unusual.
+class A {
+  A(param)
+    : b = 1,
+      c =
+          2 // comment
+          ;
+}
+>>> Line comment after semicolon body.
+class A {
+  A(param) : b = 1, c = 2; // comment
+}
+<<<
+class A {
+  A(param) : b = 1, c = 2; // comment
+}
+>>>
+class A {
+  A(param) : b = 1, c = 2; // longer comment
+}
+<<<
+class A {
+  A(param)
+    : b = 1,
+      c = 2; // longer comment
+}
+>>> Line comment before block body.
+class A {
+  A(param) : b = 1, c = 2 // comment
+  { body; }
+}
+<<<
+### Weird, but users rarely write this.
+class A {
+  A(param)
+    : b = 1,
+      c =
+          2 // comment
+          {
+    body;
+  }
+}
+>>> Line comment after block body.
+class A {
+  A(param) : b = 1, c = 2 { body; } // comment
+}
+<<<
+class A {
+  A(param) : b = 1, c = 2 {
+    body;
+  } // comment
+}

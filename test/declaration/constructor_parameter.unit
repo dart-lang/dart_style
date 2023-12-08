@@ -1,0 +1,83 @@
+40 columns                              |
+>>> Initializing formal.
+class Foo {
+  Foo(this  .  a, int  this  .  b,  final  this  .  c);
+  Foo.optional([  this . a, int  this  . b   =  123  ]);
+  Foo.named({ required   this . a, int  this  . b  = 123  });
+}
+<<<
+class Foo {
+  Foo(this.a, int this.b, final this.c);
+  Foo.optional([
+    this.a,
+    int this.b = 123,
+  ]);
+  Foo.named({
+    required this.a,
+    int this.b = 123,
+  });
+}
+>>> Function-typed initializing formal.
+class Foo {
+  Foo.function(this  .  a  (  int  x  ),  this  .  b  (  )  ?  );
+  Foo.optional([ int  this . c() ,  this  .  d ( ) = x  ]);
+  Foo.named({  required int  this . e()  ,  this  .  f ( ) = x });
+}
+<<<
+class Foo {
+  Foo.function(
+    this.a(int x),
+    this.b()?,
+  );
+  Foo.optional([
+    int this.c(),
+    this.d() = x,
+  ]);
+  Foo.named({
+    required int this.e(),
+    this.f() = x,
+  });
+}
+>>> Super parameter.
+class Foo {
+  Foo(super  .  a, int  super  .  b,  final  super  .  c);
+  Foo.optional([  super . a, int  super  . b   =  123  ]);
+  Foo.named({ required   super . a, int  super  . b  = 123  });
+}
+<<<
+class Foo {
+  Foo(
+    super.a,
+    int super.b,
+    final super.c,
+  );
+  Foo.optional([
+    super.a,
+    int super.b = 123,
+  ]);
+  Foo.named({
+    required super.a,
+    int super.b = 123,
+  });
+}
+>>> Function-typed super parameter.
+class Foo {
+  Foo.function(super  .  a  (  int  x  ),  super  .  b  (  )  ?  );
+  Foo.optional([ int  super . c() ,  super  .  d ( ) = x  ]);
+  Foo.named({  required int  super . e()  ,  super  .  f ( ) = x });
+}
+<<<
+class Foo {
+  Foo.function(
+    super.a(int x),
+    super.b()?,
+  );
+  Foo.optional([
+    int super.c(),
+    super.d() = x,
+  ]);
+  Foo.named({
+    required int super.e(),
+    super.f() = x,
+  });
+}
