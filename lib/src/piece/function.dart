@@ -9,8 +9,6 @@ import 'piece.dart';
 ///
 /// Handles splitting between the return type and the rest of the function.
 class FunctionPiece extends Piece {
-  static const _splitAfterReturnType = State(1, cost: 2);
-
   /// The return type annotation, if any.
   final Piece? _returnType;
 
@@ -21,24 +19,52 @@ class FunctionPiece extends Piece {
   /// If this is a function declaration with a (non-empty `;`) body, the body.
   final Piece? _body;
 
-  FunctionPiece(this._returnType, this._signature, [this._body]);
+  /// Whether the return type is a function type.
+  ///
+  /// When it is, allow splitting fairly cheaply because the return type is
+  /// usually pretty big and looks good on its own line, or at least better
+  /// then splitting inside the return type's parameter list. Prefers:
+  ///
+  ///     Function(int x, int y)
+  ///     returnFunction() { ... }
+  ///
+  /// Over:
+  ///
+  ///     Function(
+  ///       int x,
+  ///       int y,
+  ///     ) returnFunction() { ... }
+  ///
+  /// If the return type is *not* a function type, is almost always looks worse
+  /// to split at the return type, so make that high cost.
+  final bool _isReturnTypeFunctionType;
+
+  FunctionPiece(this._returnType, this._signature,
+      {required bool isReturnTypeFunctionType, Piece? body})
+      : _body = body,
+        _isReturnTypeFunctionType = isReturnTypeFunctionType;
 
   @override
-  List<State> get additionalStates =>
-      [if (_returnType != null) _splitAfterReturnType];
+  List<State> get additionalStates => [if (_returnType != null) State.split];
+
+  @override
+  int stateCost(State state) {
+    if (state == State.split) return _isReturnTypeFunctionType ? 1 : 4;
+    return super.stateCost(state);
+  }
 
   @override
   void format(CodeWriter writer, State state) {
     if (_returnType case var returnType?) {
       // A split inside the return type forces splitting after the return type.
-      writer.setAllowNewlines(state == _splitAfterReturnType);
+      writer.setAllowNewlines(state == State.split);
 
       writer.format(returnType);
 
       // A split in the type parameters or parameters does not force splitting
       // after the return type.
       writer.setAllowNewlines(true);
-      writer.splitIf(state == _splitAfterReturnType);
+      writer.splitIf(state == State.split);
     }
 
     writer.format(_signature);

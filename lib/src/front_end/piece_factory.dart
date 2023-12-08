@@ -261,7 +261,7 @@ mixin PieceFactory {
   /// getter or setter declaration.
   Piece createFunction(
       {List<Token?> modifiers = const [],
-      AstNode? returnType,
+      TypeAnnotation? returnType,
       Token? operatorKeyword,
       Token? propertyKeyword,
       Token? name,
@@ -288,7 +288,9 @@ mixin PieceFactory {
 
     var bodyPiece = createFunctionBody(body);
 
-    return FunctionPiece(returnTypePiece, signature, bodyPiece);
+    return FunctionPiece(returnTypePiece, signature,
+        isReturnTypeFunctionType: returnType is GenericFunctionType,
+        body: bodyPiece);
   }
 
   /// Creates a piece for a function, method, or constructor body.
@@ -334,7 +336,8 @@ mixin PieceFactory {
     builder.visit(parameters);
     builder.token(question);
 
-    return FunctionPiece(returnTypePiece, builder.build());
+    return FunctionPiece(returnTypePiece, builder.build(),
+        isReturnTypeFunctionType: returnType is GenericFunctionType);
   }
 
   /// Creates a [TryPiece] for try statement.

@@ -17,7 +17,46 @@ void main(List<String> args) {
   debug.tracePieceBuilder = true;
   debug.traceSolver = true;
 
+  _formatStmt('''
+  1 + 2;
+  ''');
+
+  _formatUnit('''
+  class C {}
+  ''');
+
   _runTest('selection/selection.stmt', 2);
+}
+
+void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {
+  _runFormatter(source, pageWidth, tall: tall, isCompilationUnit: false);
+}
+
+void _formatUnit(String source, {bool tall = true, int pageWidth = 40}) {
+  _runFormatter(source, pageWidth, tall: tall, isCompilationUnit: true);
+}
+
+void _runFormatter(String source, int pageWidth,
+    {required bool tall, required bool isCompilationUnit}) {
+  try {
+    var formatter = DartFormatter(
+        pageWidth: pageWidth,
+        experimentFlags: [if (tall) tallStyleExperimentFlag]);
+
+    String result;
+    if (isCompilationUnit) {
+      result = formatter.format(source);
+    } else {
+      result = formatter.formatStatement(source);
+    }
+
+    _drawRuler('before', pageWidth);
+    print(source);
+    _drawRuler('after', pageWidth);
+    print(result);
+  } on FormatterException catch (error) {
+    print(error.message());
+  }
 }
 
 void _drawRuler(String label, int width) {
