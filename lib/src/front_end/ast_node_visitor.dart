@@ -1162,7 +1162,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitNativeFunctionBody(NativeFunctionBody node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.nativeKeyword);
+      b.visit(node.stringLiteral, spaceBefore: true);
+      b.token(node.semicolon);
+    });
   }
 
   @override
