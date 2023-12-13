@@ -1,0 +1,55 @@
+40 columns                              |
+>>> Unsplit.
+var list = [  ...  a,...b,  ...
+c];
+<<<
+var list = [...a, ...b, ...c];
+>>> Don't split after `...`.
+var list = [...comicallyLongIdentifierThatOverflows];
+<<<
+var list = [
+  ...comicallyLongIdentifierThatOverflows,
+];
+>>> Null-aware.
+var list = [  ...?  a,...?b,  ...?
+c];
+<<<
+var list = [...?a, ...?b, ...?c];
+>>> Don't split after `...?`.
+var list = [...?comicallyLongIdentifierThatOverflows];
+<<<
+var list = [
+  ...?comicallyLongIdentifierThatOverflows,
+];
+>>> Split inside spread expression.
+var list = [1, ...some + very + long + spread + expression, 3];
+<<<
+var list = [
+  1,
+  ...some +
+      very +
+      long +
+      spread +
+      expression,
+  3,
+];
+>>> Spread function expression.
+var list = [1, ...() { body; }, 4];
+<<<
+var list = [
+  1,
+  ...() {
+    body;
+  },
+  4,
+];
+>>> Spread immediately invoked function expression.
+var list = [1, ...() sync* { yield thing; }(), 4];
+<<<
+var list = [
+  1,
+  ...() sync* {
+    yield thing;
+  }(),
+  4,
+];
