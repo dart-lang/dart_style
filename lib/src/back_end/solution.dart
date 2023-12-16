@@ -7,23 +7,19 @@ import 'code_writer.dart';
 /// A possibly incomplete set of selected states for a set of pieces being
 /// solved.
 class PieceStateSet {
-  // TODO(perf): Looking up and expanding the set of chunk states was a
-  // performance bottleneck in the old line splitter. If that turns out to be
-  // true here, then consider a faster representation for this list and the
-  // subsequent map field.
-  /// The in-order flattened list of all pieces being solved.
+  /// The states that pieces have been bound to.
   ///
-  /// This doesn't include pieces like text that have only a single value since
-  /// there's nothing to solve for them.
-  final List<Piece> _pieces;
-
+  /// Note that order that keys are inserted into this map is significant. When
+  /// ordering solutions, we use the order that pieces are bound in here to
+  /// break ties between solutions that otherwise have the same cost and
+  /// overflow.
   final Map<Piece, State> _pieceStates;
 
   /// Creates a new [PieceStateSet] with no pieces set to any state (which
   /// implicitly means they have state 0).
-  PieceStateSet(this._pieces) : _pieceStates = {};
+  PieceStateSet() : _pieceStates = {};
 
-  PieceStateSet._(this._pieces, this._pieceStates);
+  PieceStateSet._(this._pieceStates);
 
   /// The state this solution selects for [piece].
   ///
@@ -33,18 +29,43 @@ class PieceStateSet {
   /// Whether [piece] has been bound to a state in this set.
   bool isBound(Piece piece) => _pieceStates.containsKey(piece);
 
-  /// Creates a clone of this state with [piece] bound to [state].
-  PieceStateSet cloneWith(Piece piece, State state) {
-    return PieceStateSet._(_pieces, {..._pieceStates, piece: state});
+  /// Attempts to bind [piece] to [state], taking into account any constraints
+  /// pieces place on each other.
+  ///
+  /// Returns a new [PieceStateSet] with [piece] bound to [state] and any other
+  /// pieces constrained by that choice bound to their constrained values
+  /// (recursively). Returns `null` if a constraint conflicts with the already
+  /// bound or pinned state for some piece.
+  PieceStateSet? tryBind(Piece piece, State state) {
+    var conflict = false;
+    var boundStates = {..._pieceStates};
+
+    void traverse(Piece thisPiece, State thisState) {
+      // If this piece is already pinned or bound to some other state, then the
+      // solution doesn't make sense.
+      var alreadyBound = thisPiece.pinnedState ?? boundStates[thisPiece];
+      if (alreadyBound != null && alreadyBound != thisState) {
+        conflict = true;
+        return;
+      }
+
+      boundStates[thisPiece] = thisState;
+
+      // This piece may in turn place further constraints on others.
+      thisPiece.applyConstraints(thisState, traverse);
+    }
+
+    traverse(piece, state);
+
+    if (conflict) return null;
+    return PieceStateSet._(boundStates);
   }
 
   @override
   String toString() {
-    return _pieces.map((piece) {
-      var state = _pieceStates[piece];
-      var stateLabel = state == null ? '?' : '$state';
-      return '$piece:$stateLabel';
-    }).join(' ');
+    return _pieceStates.keys
+        .map((piece) => '$piece:${_pieceStates[piece]}')
+        .join(' ');
   }
 }
 
@@ -119,8 +140,8 @@ class Solution implements Comparable<Solution> {
   /// no selection.
   final int? selectionEnd;
 
-  factory Solution.initial(Piece root, int pageWidth, List<Piece> pieces) {
-    return Solution._(root, pageWidth, PieceStateSet(pieces));
+  factory Solution.initial(Piece root, int pageWidth) {
+    return Solution._(root, pageWidth, PieceStateSet());
   }
 
   factory Solution._(Piece root, int pageWidth, PieceStateSet state) {
@@ -137,10 +158,15 @@ class Solution implements Comparable<Solution> {
   /// piece and yields further solutions for each state that piece can have.
   List<Solution> expand(Piece root, int pageWidth) {
     if (_nextPieceToExpand case var piece?) {
-      return [
-        for (var state in piece.states)
-          Solution._(root, pageWidth, _state.cloneWith(piece, state))
-      ];
+      var result = <Solution>[];
+      for (var state in piece.states) {
+        var stateSet = _state.tryBind(piece, state);
+        if (stateSet != null) {
+          result.add(Solution._(root, pageWidth, stateSet));
+        }
+      }
+
+      return result;
     }
 
     // No piece we can expand.
@@ -161,14 +187,8 @@ class Solution implements Comparable<Solution> {
 
     if (overflow != other.overflow) return overflow.compareTo(other.overflow);
 
-    // Should be solving the same set of pieces.
-    assert(_state._pieces.length == other._state._pieces.length);
-
-    // If all else is equal, prefer lower states in earlier pieces.
-    // TODO(tall): This might not be needed once piece scoring is more
-    // sophisticated.
-    for (var i = 0; i < _state._pieces.length; i++) {
-      var piece = _state._pieces[i];
+    // If all else is equal, prefer lower states in earlier bound pieces.
+    for (var piece in _state._pieceStates.keys) {
       var thisState = _state.pieceState(piece);
       var otherState = other._state.pieceState(piece);
       if (thisState != otherState) return thisState.compareTo(otherState);

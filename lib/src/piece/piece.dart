@@ -4,6 +4,8 @@
 
 import '../back_end/code_writer.dart';
 
+typedef Constrain = void Function(Piece other, State constrainedState);
+
 /// Base class for the formatter's internal representation used for line
 /// splitting.
 ///
@@ -47,6 +49,14 @@ abstract class Piece {
   /// when surrounded by or containing other conditionals.
   State? get pinnedState => _pinnedState;
   State? _pinnedState;
+
+  /// Apply any constraints that this piece places on other pieces when this
+  /// piece is bound to [state].
+  ///
+  /// A piece class can override this. For any child piece that it wants to
+  /// constrain when this piece is in [state], call [constrain] and pass in the
+  /// child piece and the state that child should be constrained to.
+  void applyConstraints(State state, Constrain constrain) {}
 
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.

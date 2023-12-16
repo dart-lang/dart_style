@@ -107,22 +107,34 @@ class ConstructorPiece extends Piece {
           _splitBetweenInitializers
       ];
 
+  /// Apply constraints between how the parameters may split and how the
+  /// initializers may split.
+  @override
+  void applyConstraints(State state, Constrain constrain) {
+    // If there are no initializers, the parameters can do whatever.
+    if (_initializers case var initializers?) {
+      switch (state) {
+        case State.unsplit:
+          // All parameters and initializers on one line.
+          constrain(_parameters, State.unsplit);
+          constrain(initializers, State.unsplit);
+
+        case _splitBeforeInitializers:
+          // Only split before the `:` when the parameters fit on one line.
+          constrain(_parameters, State.unsplit);
+          constrain(initializers, State.split);
+
+        case _splitBetweenInitializers:
+          // Split both the parameters and initializers and put the `) :` on
+          // its own line.
+          constrain(_parameters, State.split);
+          constrain(initializers, State.split);
+      }
+    }
+  }
+
   @override
   void format(CodeWriter writer, State state) {
-    // There are constraints between how the parameters may split and now the
-    // initializers may split.
-    var (parameterState, initializerState) = switch (state) {
-      // If there are no initializers, the parameters can do whatever.
-      State.unsplit when _initializers == null => (null, null),
-      // All parameters and initializers on one line.
-      State.unsplit => (State.unsplit, State.unsplit),
-      // If the `:` splits, then the parameters can't.
-      _splitBeforeInitializers => (State.unsplit, State.split),
-      // The `) :` on its own line.
-      _splitBetweenInitializers => (State.split, State.split),
-      _ => throw ArgumentError(),
-    };
-
     // If there's a newline in the header or parameters (like a line comment
     // after the `)`), then don't allow the initializers to remain unsplit.
     if (_initializers != null && state == State.unsplit) {
@@ -130,7 +142,7 @@ class ConstructorPiece extends Piece {
     }
 
     writer.format(_header);
-    writer.format(_parameters, requireState: parameterState);
+    writer.format(_parameters);
 
     if (_redirect case var redirect?) {
       writer.space();
@@ -153,7 +165,7 @@ class ConstructorPiece extends Piece {
         writer.setIndent(4);
       }
 
-      writer.format(initializers, requireState: initializerState);
+      writer.format(initializers);
     }
 
     writer.setIndent(0);
