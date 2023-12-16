@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/clause.dart';
@@ -402,59 +403,6 @@ mixin PieceFactory {
       piece.add(finallyHeader, finallyBody);
     }
 
-    return piece;
-  }
-
-  // TODO(tall): Generalize this to work with if elements too.
-  /// Creates a piece for a chain of if-else-if... statements.
-  Piece createIf(IfStatement ifStatement) {
-    var piece = IfPiece();
-
-    // Recurses through the else branches to flatten them into a linear if-else
-    // chain handled by a single [IfPiece].
-    void traverse(Piece? previousElse, IfStatement node) {
-      var condition = buildPiece((b) {
-        if (previousElse != null) b.add(previousElse);
-        b.add(startControlFlow(node.ifKeyword, node.leftParenthesis,
-            node.expression, node.rightParenthesis));
-      });
-
-      // Edge case: When the then branch is a block and there is an else clause
-      // after it, we want to force the block to split even if empty, like:
-      //
-      // ```
-      // if (condition) {
-      // } else {
-      //   body;
-      // }
-      // ```
-      var thenStatement = switch (node.thenStatement) {
-        Block thenBlock when node.elseStatement != null =>
-          createBlock(thenBlock, forceSplit: true),
-        _ => nodePiece(node.thenStatement)
-      };
-
-      piece.add(condition, thenStatement, isBlock: node.thenStatement is Block);
-
-      switch (node.elseStatement) {
-        case IfStatement elseIf:
-          // Hit an else-if, so flatten it into the chain with the `else`
-          // becoming part of the next section's header.
-          traverse(buildPiece((b) {
-            b.token(node.elseKeyword);
-            b.space();
-          }), elseIf);
-
-        case var elseStatement?:
-          // Any other kind of else body ends the chain, with the header for
-          // the last section just being the `else` keyword.
-          var header = tokenPiece(node.elseKeyword!);
-          var statement = nodePiece(elseStatement);
-          piece.add(header, statement, isBlock: elseStatement is Block);
-      }
-    }
-
-    traverse(null, ifStatement);
     return piece;
   }
 

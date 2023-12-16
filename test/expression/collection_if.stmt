@@ -1,0 +1,238 @@
+40 columns                              |
+>>> Single-line without else.
+var list = [1,  if  (  c  )  2, 3];
+<<<
+var list = [1, if (c) 2, 3];
+>>> Single-line with else.
+var list = [1,  if  (  c  )  2  else  2  , 3];
+<<<
+var list = [1, if (c) 2 else 2, 3];
+>>> Inside map literal.
+var map = {1: a,  if  (  c  )  2: b, 3: c};
+<<<
+var map = {1: a, if (c) 2: b, 3: c};
+>>> Inside set literal.
+var set = {1,  if  (  c  )  2, 3};
+<<<
+var set = {1, if (c) 2, 3};
+>>> Split inside condition.
+var list = [1, if (veryLongConditionExpression || anotherPart) 2];
+<<<
+var list = [
+  1,
+  if (veryLongConditionExpression ||
+      anotherPart)
+    2,
+];
+>>> Split collection but not element.
+var list = [if (c) somewhatLongThingHere];
+<<<
+var list = [
+  if (c) somewhatLongThingHere,
+];
+>>>
+var list = [veryLongThingThatForcesASplit, if (c) 2, 3];
+<<<
+var list = [
+  veryLongThingThatForcesASplit,
+  if (c) 2,
+  3,
+];
+>>>
+var list = [veryLongThingThatForcesASplit, if (c) 2 else 2, 3];
+<<<
+var list = [
+  veryLongThingThatForcesASplit,
+  if (c) 2 else 2,
+  3,
+];
+>>> Long then branch forces split.
+var list = [1, if (condition) veryLongThingThatForcesASplit, 3];
+<<<
+var list = [
+  1,
+  if (condition)
+    veryLongThingThatForcesASplit,
+  3,
+];
+>>> Long then branch forces both to split.
+var list = [1, if (condition) veryLongThingThatForcesASplit else 2, 3];
+<<<
+var list = [
+  1,
+  if (condition)
+    veryLongThingThatForcesASplit
+  else
+    2,
+  3,
+];
+>>> Long else branch forces both to split.
+var list = [1, if (condition) 2 else veryLongThingThatForcesASplit, 3];
+<<<
+var list = [
+  1,
+  if (condition)
+    2
+  else
+    veryLongThingThatForcesASplit,
+  3,
+];
+>>> Split inside then branch.
+var list = [1, if (condition) veryLongThingThatForcesASplit + anotherLongThing, 3];
+<<<
+var list = [
+  1,
+  if (condition)
+    veryLongThingThatForcesASplit +
+        anotherLongThing,
+  3,
+];
+>>> Split inside else branch.
+var list = [1, if (condition) ok else veryLongThingThatForcesASplit + anotherLongThing, 3];
+<<<
+var list = [
+  1,
+  if (condition)
+    ok
+  else
+    veryLongThingThatForcesASplit +
+        anotherLongThing,
+  3,
+];
+>>> Function expression inside then.
+var list = [if (c) () { body; }];
+<<<
+var list = [
+  if (c)
+    () {
+      body;
+    },
+];
+>>> Function expression inside else.
+var list = [if (c) thing else () { body; }];
+<<<
+var list = [
+  if (c)
+    thing
+  else
+    () {
+      body;
+    },
+];
+>>> Split outer if when subelement is if.
+var list = [if (c) if (d) thing];
+<<<
+var list = [
+  if (c)
+    if (d) thing,
+];
+>>> Only split outer if.
+var list = [if (condition) if (another) longThingHereThatsLong];
+<<<
+var list = [
+  if (condition)
+    if (another) longThingHereThatsLong,
+];
+>>> Nested if inside list doesn't force outer if to split.
+var list = [if (a) [if (b) c]];
+<<<
+var list = [if (a) [if (b) c]];
+>>> Chained if-else.
+var list = [if (condition1) thing1 else if (condition2) thing2];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2,
+];
+>>> Chained if-else with else at end.
+var list = [if (condition1) thing1 else if (condition2) thing2 else thing3];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else
+    thing3,
+];
+>>> Long chained if-else.
+var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else if (condition3)
+    thing3,
+];
+>>> Long chained if-else with else at end.
+var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3 else thing4];
+<<<
+var list = [
+  if (condition1)
+    thing1
+  else if (condition2)
+    thing2
+  else if (condition3)
+    thing3
+  else
+    thing4,
+];
+>>> Chained if-else with spread and unspread collections.
+var list = [
+  if (condition1) ...[
+    spreadList
+  ] else if (condition2)
+    [notSpread]
+  else if (condition3)
+    thing1
+  else ...{
+    spreadSet
+  }
+];
+<<<
+var list = [
+  if (condition1) ...[
+    spreadList,
+  ] else if (condition2)
+    [notSpread]
+  else if (condition3)
+    thing1
+  else ...{
+    spreadSet,
+  },
+];
+>>> Nested chained if-else.
+var list = [
+  if (condition1)
+    if (condition2) a else b
+  else if (condition4)
+    if (condition5) c
+    else if (condition6) d else e
+  else if (condition7)
+    if (condition8) ...[f]
+    else if (condition9) [g] else ...{h}
+];
+<<<
+var list = [
+  if (condition1)
+    if (condition2) a else b
+  else if (condition4)
+    if (condition5)
+      c
+    else if (condition6)
+      d
+    else
+      e
+  else if (condition7)
+    if (condition8) ...[
+      f,
+    ] else if (condition9)
+      [g]
+    else ...{
+      h,
+    },
+];
