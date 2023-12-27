@@ -1511,19 +1511,70 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRecordTypeAnnotation(RecordTypeAnnotation node) {
-    throw UnimplementedError();
+    var namedFields = node.namedFields;
+    var positionalFields = node.positionalFields;
+
+    // Single positional record types always have a trailing comma.
+    var listStyle = node.positionalFields.length == 1 && namedFields == null
+        ? const ListStyle(commas: Commas.alwaysTrailing)
+        : const ListStyle(commas: Commas.trailing);
+    var builder = DelimitedListBuilder(this, listStyle);
+
+    // If all parameters are optional, put the `{` right after `(`.
+    if (positionalFields.isEmpty && namedFields != null) {
+      builder.leftBracket(
+        node.leftParenthesis,
+        delimiter: namedFields.leftBracket,
+      );
+    } else {
+      builder.leftBracket(node.leftParenthesis);
+    }
+
+    for (var positionalField in positionalFields) {
+      builder.visit(positionalField);
+    }
+
+    Token? rightDelimiter;
+    if (namedFields != null) {
+      // If this is the first optional parameter, put the delimiter before it.
+      if (positionalFields.isNotEmpty) {
+        builder.leftDelimiter(namedFields.leftBracket);
+      }
+      for (var namedField in namedFields.fields) {
+        builder.visit(namedField);
+      }
+      rightDelimiter = namedFields.rightBracket;
+    }
+
+    builder.rightBracket(node.rightParenthesis, delimiter: rightDelimiter);
+    return buildPiece((b) {
+      b.add(builder.build());
+      if (node.question case var question?) {
+        b.add(tokenPiece(question));
+      }
+    });
   }
 
   @override
   Piece visitRecordTypeAnnotationNamedField(
       RecordTypeAnnotationNamedField node) {
-    throw UnimplementedError();
+    // TODO(tall): Format metadata.
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.type);
+      b.token(node.name, spaceBefore: true);
+    });
   }
 
   @override
   Piece visitRecordTypeAnnotationPositionalField(
       RecordTypeAnnotationPositionalField node) {
-    throw UnimplementedError();
+    // TODO(tall): Format metadata.
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.type);
+      b.token(node.name, spaceBefore: true);
+    });
   }
 
   @override

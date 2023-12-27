@@ -74,3 +74,11 @@ class SomeClass native "Zapp" {
 }
 <<<
 class SomeClass native "Zapp" {}
+>>> Record type with multiple fields in parameter has no trailing comma.
+class C { C((TypeName,TypeName,) this.record) {;} }
+<<<
+class C {
+  C((TypeName, TypeName) this.record) {
+    ;
+  }
+}
