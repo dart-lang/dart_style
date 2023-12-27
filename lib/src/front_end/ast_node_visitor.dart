@@ -1358,7 +1358,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRethrowExpression(RethrowExpression node) {
-    throw UnimplementedError();
+    return tokenPiece(node.rethrowKeyword);
   }
 
   @override
@@ -1573,7 +1573,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitThrowExpression(ThrowExpression node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.throwKeyword, spaceAfter: true);
+      b.visit(node.expression);
+    });
   }
 
   @override
