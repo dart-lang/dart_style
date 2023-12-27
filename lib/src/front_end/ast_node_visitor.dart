@@ -1574,7 +1574,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitThrowExpression(ThrowExpression node) {
     return buildPiece((b) {
-      b.token(node.throwKeyword, spaceAfter: true);
+      b.token(node.throwKeyword);
+      b.space();
       b.visit(node.expression);
     });
   }
