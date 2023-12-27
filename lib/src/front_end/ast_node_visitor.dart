@@ -1515,7 +1515,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var positionalFields = node.positionalFields;
 
     // Single positional record types always have a trailing comma.
-    var listStyle = node.positionalFields.length == 1 && namedFields == null
+    var listStyle = positionalFields.length == 1 && namedFields == null
         ? const ListStyle(commas: Commas.alwaysTrailing)
         : const ListStyle(commas: Commas.trailing);
     var builder = DelimitedListBuilder(this, listStyle);
