@@ -158,15 +158,11 @@ class Solution implements Comparable<Solution> {
   /// piece and yields further solutions for each state that piece can have.
   List<Solution> expand(Piece root, int pageWidth) {
     if (_nextPieceToExpand case var piece?) {
-      var result = <Solution>[];
-      for (var state in piece.states) {
-        var stateSet = _state.tryBind(piece, state);
-        if (stateSet != null) {
-          result.add(Solution._(root, pageWidth, stateSet));
-        }
-      }
-
-      return result;
+      return [
+        for (var state in piece.states)
+          if (_state.tryBind(piece, state) case final stateSet?)
+            Solution._(root, pageWidth, stateSet)
+      ];
     }
 
     // No piece we can expand.
