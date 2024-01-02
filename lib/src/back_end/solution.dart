@@ -75,7 +75,7 @@ class PieceStateSet {
 /// code and its cost.
 class Solution implements Comparable<Solution> {
   /// The states the pieces have been set to in this solution.
-  final PieceStateSet _state;
+  final PieceStateSet _stateSet;
 
   /// The formatted code.
   final String text;
@@ -150,7 +150,7 @@ class Solution implements Comparable<Solution> {
     return writer.finish();
   }
 
-  Solution(this._state, this.text, this.selectionStart, this.selectionEnd,
+  Solution(this._stateSet, this.text, this.selectionStart, this.selectionEnd,
       this._nextPieceToExpand,
       {required this.overflow, required this.cost, required this.isValid});
 
@@ -160,7 +160,7 @@ class Solution implements Comparable<Solution> {
     if (_nextPieceToExpand case var piece?) {
       return [
         for (var state in piece.states)
-          if (_state.tryBind(piece, state) case final stateSet?)
+          if (_stateSet.tryBind(piece, state) case final stateSet?)
             Solution._(root, pageWidth, stateSet)
       ];
     }
@@ -184,9 +184,9 @@ class Solution implements Comparable<Solution> {
     if (overflow != other.overflow) return overflow.compareTo(other.overflow);
 
     // If all else is equal, prefer lower states in earlier bound pieces.
-    for (var piece in _state._pieceStates.keys) {
-      var thisState = _state.pieceState(piece);
-      var otherState = other._state.pieceState(piece);
+    for (var piece in _stateSet._pieceStates.keys) {
+      var thisState = _stateSet.pieceState(piece);
+      var otherState = other._stateSet.pieceState(piece);
       if (thisState != otherState) return thisState.compareTo(otherState);
     }
 
@@ -199,7 +199,7 @@ class Solution implements Comparable<Solution> {
       '\$$cost',
       if (overflow > 0) '($overflow over)',
       if (!isValid) '(invalid)',
-      '$_state',
+      '$_stateSet',
     ].join(' ');
   }
 }
