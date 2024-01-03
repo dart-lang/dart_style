@@ -5,12 +5,10 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/clause.dart';
 import '../piece/function.dart';
-import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
