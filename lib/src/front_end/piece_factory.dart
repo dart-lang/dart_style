@@ -225,24 +225,14 @@ mixin PieceFactory {
     var builder = AdjacentBuilder(this);
     startFormalParameter(node, builder);
     builder.modifier(mutableKeyword);
-    builder.visit(type);
-
-    Piece? typePiece;
-    if (type != null && name != null) {
-      typePiece = builder.build();
-    }
-
-    builder.token(fieldKeyword);
-    builder.token(period);
-    builder.token(name);
-
-    // If we have both a type and name, allow splitting between them.
-    if (typePiece != null) {
-      var namePiece = builder.build();
-      return VariablePiece(typePiece, [namePiece], hasType: true);
-    }
-
-    return builder.build();
+    return finishTypeAndName(
+      type,
+      name,
+      builder,
+      mutableKeyword: mutableKeyword,
+      fieldKeyword: fieldKeyword,
+      period: period,
+    );
   }
 
   /// Creates a function, method, getter, or setter declaration.
@@ -546,10 +536,11 @@ mixin PieceFactory {
   Piece createRecordTypeField(RecordTypeAnnotationField node) {
     // TODO(tall): Format metadata.
     if (node.metadata.isNotEmpty) throw UnimplementedError();
-    return buildPiece((b) {
-      b.visit(node.type);
-      b.token(node.name, spaceBefore: true);
-    });
+    return finishTypeAndName(
+      node.type,
+      node.name,
+      AdjacentBuilder(this),
+    );
   }
 
   /// Creates a class, enum, extension, mixin, or mixin application class
@@ -661,6 +652,34 @@ mixin PieceFactory {
         elements,
         rightBracket: rightBracket,
         style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3));
+  }
+
+  /// Creates a [VariablePiece] that allows splitting between a type and a name,
+  /// if they both exist.
+  ///
+  /// Otherwise, finishes building the existing [AdjacentPiece] with the
+  /// [builder].
+  Piece finishTypeAndName(
+      TypeAnnotation? type, Token? name, AdjacentBuilder builder,
+      {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
+    builder.visit(type);
+
+    Piece? typePiece;
+    if (type != null && name != null) {
+      typePiece = builder.build();
+    }
+
+    builder.token(fieldKeyword);
+    builder.token(period);
+    builder.token(name);
+
+    // If we have both a type and name, allow splitting between them.
+    if (typePiece != null) {
+      var namePiece = builder.build();
+      return VariablePiece(typePiece, [namePiece], hasType: true);
+    }
+
+    return builder.build();
   }
 
   /// Writes the parts of a formal parameter shared by all formal parameter

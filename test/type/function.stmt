@@ -268,6 +268,7 @@ function((TypeName,TypeName,) record,) {;}
 function((TypeName, TypeName) record) {
   ;
 }
+<<<<<<< HEAD
 
 
 >>> Unsplit generic method instantiation.
@@ -332,3 +333,5 @@ veryLongFunction(
   >,
   argument,
 );
+=======
+>>>>>>> 3976436 (Extracted parameter splitting to a helper.)
