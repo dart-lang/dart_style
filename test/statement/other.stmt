@@ -60,6 +60,10 @@ throw   'error'
 ;
 <<<
 throw 'error';
+>>> Throw doesn't split after the 'throw' keyword.
+throw 'Some extremely long error message.';
+<<<
+throw 'Some extremely long error message.';
 >>> Throw with long string literal.
 throw new FormatException('This is a long exception message.');
 <<<
