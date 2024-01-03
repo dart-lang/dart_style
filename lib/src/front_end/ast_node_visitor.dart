@@ -1556,23 +1556,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitRecordTypeAnnotationNamedField(
       RecordTypeAnnotationNamedField node) {
-    // TODO(tall): Format metadata.
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-    return buildPiece((b) {
-      b.visit(node.type);
-      b.token(node.name, spaceBefore: true);
-    });
+    return createRecordTypeField(node);
   }
 
   @override
   Piece visitRecordTypeAnnotationPositionalField(
       RecordTypeAnnotationPositionalField node) {
-    // TODO(tall): Format metadata.
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-    return buildPiece((b) {
-      b.visit(node.type);
-      b.token(node.name, spaceBefore: true);
-    });
+    return createRecordTypeField(node);
   }
 
   @override

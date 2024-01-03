@@ -542,6 +542,16 @@ mixin PieceFactory {
     return builder.build();
   }
 
+  /// Creates an [AdjacentPiece] for a given record type field.
+  Piece createRecordTypeField(RecordTypeAnnotationField node) {
+    // TODO(tall): Format metadata.
+    if (node.metadata.isNotEmpty) throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.type);
+      b.token(node.name, spaceBefore: true);
+    });
+  }
+
   /// Creates a class, enum, extension, mixin, or mixin application class
   /// declaration.
   ///
