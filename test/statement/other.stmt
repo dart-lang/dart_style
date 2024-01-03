@@ -55,3 +55,29 @@ foo() async {
 foo() async {
   await i(1 + 2);
 }
+>>> Throw.
+throw   'error'
+;
+<<<
+throw 'error';
+>>> Throw doesn't split after the 'throw' keyword.
+throw 'Some extremely long error message.';
+<<<
+throw 'Some extremely long error message.';
+>>> Throw with long string literal.
+throw new FormatException('This is a long exception message.');
+<<<
+throw new FormatException(
+  'This is a long exception message.',
+);
+>>> Rethrow.
+try {
+  throw 1   ;
+} catch    (e) {
+       rethrow    ;}
+<<<
+try {
+  throw 1;
+} catch (e) {
+  rethrow;
+}
