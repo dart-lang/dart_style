@@ -31,6 +31,13 @@
 (  {  int  value  ,  String  label  } ) x;
 <<<
 ({int value, String label}) x;
+>>> Split between the type and the name.
+( VeryVeryLongType_____  veryLongName___________________  , ) x;
+<<<
+(
+  VeryVeryLongType_____
+  veryLongName___________________,
+) x;
 >>> Split named positional fields.
 ( int  longValue  ,  String  veryVeryLongLabel  , ) x;
 <<<
