@@ -218,6 +218,58 @@ longMethod({
   required int
   reallyLongParameterNameWow,
 }) {}
+>>> Record type with multiple fields in parameter has no trailing comma.
+function((TypeName, TypeName) parameter) { ; }
+<<<
+function(
+  (TypeName, TypeName) parameter,
+) {
+  ;
+}
+>>> Split single long positional record type field.
+function((VeryLongTypeName___________________,) param) {;}
+<<<
+function(
+  (
+    VeryLongTypeName___________________,
+  ) param,
+) {
+  ;
+}
+>>> Split inside parameter list with record type.
+function((TypeName, TypeName, TypeName, TypeName, TypeName) record) {;}
+<<<
+function(
+  (
+    TypeName,
+    TypeName,
+    TypeName,
+    TypeName,
+    TypeName,
+  ) record,
+) {
+  ;
+}
+>>> Single positional has a trailing comma inside parameter list with record type.
+function((TypeName,) record) {;}
+<<<
+function((TypeName,) record) {
+  ;
+}
+>>> Named parameter has no trailing comma inside parameter list with record type.
+function(({TypeName param,}) record) {;}
+<<<
+function(({TypeName param}) record) {
+  ;
+}
+>>> Multiple positional fields have no trailing comma in parameter list with record type.
+function((TypeName,TypeName,) record,) {;}
+<<<
+function((TypeName, TypeName) record) {
+  ;
+}
+
+
 >>> Unsplit generic method instantiation.
 void main() => id  < int   > ;
 <<<

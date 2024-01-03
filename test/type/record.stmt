@@ -61,23 +61,9 @@ someLongFunctionName__________________(
 <<<
 (TypeName,) x;
 >>> Unsplit single positional field.
-function((VeryLongTypeName____________,) x) {;}
+(VeryLongTypeName________________,) x;
 <<<
-function(
-  (VeryLongTypeName____________,) x,
-) {
-  ;
-}
->>> Split single long positional field.
-function((VeryLongTypeName___________________,) param) {;}
-<<<
-function(
-  (
-    VeryLongTypeName___________________,
-  ) param,
-) {
-  ;
-}
+(VeryLongTypeName________________,) x;
 >>> Split positional types.
 (TypeName,TypeName,TypeName,TypeName) x;
 <<<
@@ -150,35 +136,3 @@ Map<
     TypeName,
   )
 > map;
->>> Split inside parameter list.
-function((TypeName, TypeName, TypeName, TypeName, TypeName) record) {;}
-<<<
-function(
-  (
-    TypeName,
-    TypeName,
-    TypeName,
-    TypeName,
-    TypeName,
-  ) record,
-) {
-  ;
-}
->>> Single positional has a trailing comma inside parameter list.
-function((TypeName,) record) {;}
-<<<
-function((TypeName,) record) {
-  ;
-}
->>> Named parameter has no trailing comma inside parameter list.
-function(({TypeName param,}) record) {;}
-<<<
-function(({TypeName param}) record) {
-  ;
-}
->>> Multiple positional fields have no trailing comma in parameter list.
-function((TypeName,TypeName,) record,) {;}
-<<<
-function((TypeName, TypeName) record) {
-  ;
-}
