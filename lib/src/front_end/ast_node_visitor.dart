@@ -1536,7 +1536,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     Token? rightDelimiter;
     if (namedFields != null) {
-      // If this is the first optional parameter, put the delimiter before it.
+      // If this is the first named field, put the delimiter before it.
       if (positionalFields.isNotEmpty) {
         builder.leftDelimiter(namedFields.leftBracket);
       }
@@ -1549,9 +1549,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     builder.rightBracket(node.rightParenthesis, delimiter: rightDelimiter);
     return buildPiece((b) {
       b.add(builder.build());
-      if (node.question case var question?) {
-        b.add(tokenPiece(question));
-      }
+      b.token(node.question);
     });
   }
 
