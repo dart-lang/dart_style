@@ -5,65 +5,30 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for an if statement.
+/// A piece for an if statement or element.
 ///
 /// We also use this for while statements, which are formatted exactly like an
 /// if statement with no else clause.
 class IfPiece extends Piece {
   final List<_IfSection> _sections = [];
 
-  /// Whether the if is a simple if with only a single unbraced then statement
-  /// and no else clause, like:
-  ///
-  /// ```
-  /// if (condition) print("ok");
-  /// ```
-  ///
-  /// Unlike other if statements, these allow a discretionary split after the
-  /// condition.
-  bool get _isUnbracedIfThen =>
-      _sections.length == 1 && !_sections.single.isBlock;
-
   void add(Piece header, Piece statement, {required bool isBlock}) {
     _sections.add(_IfSection(header, statement, isBlock));
   }
 
-  /// If there is at least one else or else-if clause, then it always splits.
   @override
-  List<State> get additionalStates => [if (_isUnbracedIfThen) State.split];
+  List<State> get additionalStates => [State.split];
 
   @override
-  void format(CodeWriter writer, State state) {
-    if (_isUnbracedIfThen) {
-      // A split in the condition or statement forces moving the entire
-      // statement to the next line.
-      writer.setAllowNewlines(state != State.unsplit);
-
-      var section = _sections.single;
-      writer.format(section.header);
-      writer.splitIf(state == State.split, indent: Indent.block);
-      writer.format(section.statement);
-      return;
-    }
-
-    for (var i = 0; i < _sections.length; i++) {
-      var section = _sections[i];
-
-      writer.format(section.header);
-
-      // If the statement is a block, then keep the `{` on the same line as the
-      // header part.
+  void applyConstraints(State state, Constrain constrain) {
+    // If an if element, any spread collection's split state must follow the
+    // surrounding if element's: we either split all the spreads or none of
+    // them. And if any of the non-spread then or else branches split, then the
+    // spreads do too. This has no effect on if statements since blocks always
+    // split.
+    for (var section in _sections) {
       if (section.isBlock) {
-        writer.space();
-      } else {
-        writer.newline(indent: Indent.block);
-      }
-
-      writer.format(section.statement);
-
-      // Reset the indentation for the subsequent `else` or `} else` line.
-      if (i < _sections.length - 1) {
-        writer.splitIf(!section.isBlock, indent: Indent.none);
+        constrain(section.statement, state);
       }
     }
   }
@@ -73,6 +38,29 @@ class IfPiece extends Piece {
     for (var section in _sections) {
       callback(section.header);
       callback(section.statement);
+    }
+  }
+
+  @override
+  void format(CodeWriter writer, State state) {
+    for (var i = 0; i < _sections.length; i++) {
+      var section = _sections[i];
+
+      // A split in the condition forces the branches to split.
+      writer.setAllowNewlines(state == State.split);
+      writer.format(section.header);
+
+      if (!section.isBlock) {
+        writer.splitIf(state == State.split, indent: Indent.block);
+      }
+
+      writer.format(section.statement);
+
+      // Reset the indentation for the subsequent `else` or `} else` line.
+      if (i < _sections.length - 1) {
+        writer.splitIf(state == State.split && !section.isBlock,
+            indent: Indent.none);
+      }
     }
   }
 }
@@ -88,7 +76,8 @@ class _IfSection {
   final Piece header;
   final Piece statement;
 
-  /// Whether the [statement] piece is from a block.
+  /// Whether the [statement] piece is from a block or a spread collection
+  /// literal.
   final bool isBlock;
 
   _IfSection(this.header, this.statement, this.isBlock);

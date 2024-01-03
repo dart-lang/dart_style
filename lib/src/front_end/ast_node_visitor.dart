@@ -935,12 +935,151 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIfElement(IfElement node) {
-    throw UnimplementedError();
+    var piece = IfPiece();
+
+    // Recurses through the else branches to flatten them into a linear if-else
+    // chain handled by a single [IfPiece].
+    void traverse(Token? precedingElse, IfElement ifElement) {
+      var spreadThen = ifElement.thenElement.spreadCollection;
+
+      var condition = buildPiece((b) {
+        b.token(precedingElse, spaceAfter: true);
+        b.add(startControlFlow(ifElement.ifKeyword, ifElement.leftParenthesis,
+            ifElement.expression, ifElement.rightParenthesis));
+
+        // Make the `...` part of the header so that IfPiece can correctly
+        // constrain the inner collection literal's ListPiece to split.
+        if (spreadThen != null) {
+          b.space();
+          b.token(spreadThen.spreadOperator);
+        }
+      });
+
+      Piece thenElement;
+      if (spreadThen != null) {
+        thenElement = nodePiece(spreadThen.expression);
+      } else {
+        thenElement = nodePiece(ifElement.thenElement);
+      }
+
+      // If the then branch of an if element is itself a control flow
+      // element, then force the outer if to always split.
+      if (ifElement.thenElement.isControlFlowElement) {
+        piece.pin(State.split);
+      }
+
+      piece.add(condition, thenElement, isBlock: spreadThen != null);
+
+      switch (ifElement.elseElement) {
+        case IfElement elseIf:
+          // Hit an else-if, so flatten it into the chain with the `else`
+          // becoming part of the next section's header.
+          traverse(ifElement.elseKeyword, elseIf);
+
+        case var elseElement?:
+          var spreadElse = elseElement.spreadCollection;
+
+          // Any other kind of else body ends the chain, with the header for
+          // the last section just being the `else` keyword.
+          var header = buildPiece((b) {
+            b.token(ifElement.elseKeyword!);
+
+            // Make the `...` part of the header so that IfPiece can correctly
+            // constrain the inner collection literal's ListPiece to split.
+            if (spreadElse != null) {
+              b.space();
+              b.token(spreadElse.spreadOperator);
+            }
+          });
+
+          Piece statement;
+          if (spreadElse != null) {
+            statement = nodePiece(spreadElse.expression);
+          } else {
+            statement = nodePiece(elseElement);
+          }
+
+          piece.add(header, statement, isBlock: spreadElse != null);
+
+          // If the else branch of an if element is itself a control flow
+          // element, then force the outer if to always split.
+          if (ifElement.thenElement.isControlFlowElement) {
+            piece.pin(State.split);
+          }
+
+        case null:
+          break; // Nothing to do.
+      }
+    }
+
+    traverse(null, node);
+    return piece;
   }
 
   @override
   Piece visitIfStatement(IfStatement node) {
-    return createIf(node);
+    var piece = IfPiece();
+
+    // Recurses through the else branches to flatten them into a linear if-else
+    // chain handled by a single [IfPiece].
+    void traverse(Token? precedingElse, IfStatement ifStatement) {
+      var condition = buildPiece((b) {
+        b.token(precedingElse, spaceAfter: true);
+        b.add(startControlFlow(
+            ifStatement.ifKeyword,
+            ifStatement.leftParenthesis,
+            ifStatement.expression,
+            ifStatement.rightParenthesis));
+        b.space();
+      });
+
+      // Edge case: When the then branch is a block and there is an else clause
+      // after it, we want to force the block to split even if empty, like:
+      //
+      // ```
+      // if (condition) {
+      // } else {
+      //   body;
+      // }
+      // ```
+      var thenStatement = switch (ifStatement.thenStatement) {
+        Block thenBlock when ifStatement.elseStatement != null =>
+          createBlock(thenBlock, forceSplit: true),
+        _ => nodePiece(ifStatement.thenStatement)
+      };
+
+      piece.add(condition, thenStatement,
+          isBlock: ifStatement.thenStatement is Block);
+
+      switch (ifStatement.elseStatement) {
+        case IfStatement elseIf:
+          // Hit an else-if, so flatten it into the chain with the `else`
+          // becoming part of the next section's header.
+          traverse(ifStatement.elseKeyword, elseIf);
+
+        case var elseStatement?:
+          // Any other kind of else body ends the chain, with the header for
+          // the last section just being the `else` keyword.
+          var header = buildPiece((b) {
+            b.token(ifStatement.elseKeyword, spaceAfter: true);
+          });
+          var statement = nodePiece(elseStatement);
+          piece.add(header, statement, isBlock: elseStatement is Block);
+      }
+    }
+
+    traverse(null, node);
+
+    // If statements almost always split at the clauses unless the if is a
+    // simple if with only a single unbraced then statement and no else clause,
+    // like:
+    //
+    //     if (condition) print("ok");
+    if (node.thenStatement is Block || node.elseStatement != null) {
+      piece.pin(State.split);
+    }
+
+    return piece;
   }
 
   @override
@@ -1666,8 +1805,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitWhileStatement(WhileStatement node) {
-    var condition = startControlFlow(node.whileKeyword, node.leftParenthesis,
-        node.condition, node.rightParenthesis);
+    var condition = buildPiece((b) {
+      b.add(startControlFlow(node.whileKeyword, node.leftParenthesis,
+          node.condition, node.rightParenthesis));
+      b.space();
+    });
 
     var body = nodePiece(node.body);
 

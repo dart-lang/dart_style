@@ -1,0 +1,202 @@
+40 columns                              |
+### Tests for spread (and unspread) sets inside if elements.
+>>> Spread then element stays unsplit if it fits.
+var set = {if (c) ...{1, 2}};
+<<<
+var set = {if (c) ...{1, 2}};
+>>> Spread else stays unsplit if it fits.
+var set = {if (c) 1 else ...{2, 3}};
+<<<
+var set = {if (c) 1 else ...{2, 3}};
+>>> Spread then and else stay unsplit if they fit.
+var set = {if (c) ...{1, 2} else ...{3, 4}};
+<<<
+var set = {
+  if (c) ...{1, 2} else ...{3, 4},
+};
+>>> Spread then formats like block if it splits.
+var set = {if (c) ...{element1, element2, element3}};
+<<<
+var set = {
+  if (c) ...{
+    element1,
+    element2,
+    element3,
+  },
+};
+>>> Both spreads split if then spread splits.
+var set = {if (c) ...{element1, element2, element3} else ...{1, 2}};
+<<<
+var set = {
+  if (c) ...{
+    element1,
+    element2,
+    element3,
+  } else ...{
+    1,
+    2,
+  },
+};
+>>> Both spreads split if else spread splits.
+var set = {if (c) ...{1, 2} else ...{element1, element2, element3}};
+<<<
+var set = {
+  if (c) ...{
+    1,
+    2,
+  } else ...{
+    element1,
+    element2,
+    element3,
+  },
+};
+>>> An empty spread then is not treated like block.
+var set = {
+  if (condition) ...{} else ...{veryLongElement,veryLongElement,veryLongElement,}
+};
+<<<
+var set = {
+  if (condition)
+    ...{}
+  else ...{
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  },
+};
+>>> An empty spread else is not treated like block.
+var set = {
+  if (condition) ...{veryLongElement,veryLongElement,veryLongElement,} else ...{}
+};
+<<<
+var set = {
+  if (condition) ...{
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  } else
+    ...{},
+};
+>>> An empty spread then doesn't split.
+var set = {
+  if (condition) ...{} else veryLongIdentifier
+};
+<<<
+var set = {
+  if (condition)
+    ...{}
+  else
+    veryLongIdentifier,
+};
+>>> An empty spread else doesn't split.
+var set = {
+  if (condition) veryLongIdentifier else ...{}
+};
+<<<
+var set = {
+  if (condition)
+    veryLongIdentifier
+  else
+    ...{},
+};
+>>> An empty spread then with a comment is treated like a block.
+var set = {
+  if (condition) ...{// c
+  } else ...{veryLongElement,veryLongElement,veryLongElement,}
+};
+<<<
+var set = {
+  if (condition) ...{
+    // c
+  } else ...{
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  },
+};
+>>> An empty spread else with a comment treated like a block.
+var set = {
+  if (condition) ...{veryLongElement,veryLongElement,veryLongElement,} else ...{// c
+  }
+};
+<<<
+var set = {
+  if (condition) ...{
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  } else ...{
+    // c
+  },
+};
+>>> A single-line list that isn't spread.
+var set = {if (a) {b}};
+<<<
+### TODO(tall): This will change if the new style gets the same rule as the old
+### where nested collections force outer ones to split.
+var set = {if (a) {b}};
+>>> A collection that isn't spread wraps and indents.
+var set = {if (condition) {element1, element2, element3}};
+<<<
+var set = {
+  if (condition)
+    {element1, element2, element3},
+};
+>>>
+var set = {if (c) {element1, element2, element3, element4}};
+<<<
+var set = {
+  if (c)
+    {
+      element1,
+      element2,
+      element3,
+      element4,
+    },
+};
+>>>
+var set = {if (c) {element1, element2, element3} else thing};
+<<<
+var set = {
+  if (c)
+    {element1, element2, element3}
+  else
+    thing,
+};
+>>>
+var set = {if (c) {element1, element2, element3, element4} else thing};
+<<<
+var set = {
+  if (c)
+    {
+      element1,
+      element2,
+      element3,
+      element4,
+    }
+  else
+    thing,
+};
+>>>
+var set = {if (c) thing else {element1, element2, element3}};
+<<<
+var set = {
+  if (c)
+    thing
+  else
+    {element1, element2, element3},
+};
+>>>
+var set = {if (c) thing else {element1, element2, element3, element4}};
+<<<
+var set = {
+  if (c)
+    thing
+  else
+    {
+      element1,
+      element2,
+      element3,
+      element4,
+    },
+};

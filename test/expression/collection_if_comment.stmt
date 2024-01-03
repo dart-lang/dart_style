@@ -1,0 +1,123 @@
+40 columns                              |
+>>> Line comment after `if`.
+var list = [
+if // comment
+(c) e];
+<<<
+var list = [
+  if // comment
+  (c)
+    e,
+];
+>>> Line comment before condition.
+var list = [
+  if (// comment
+c) e];
+<<<
+var list = [
+  if ( // comment
+  c)
+    e,
+];
+>>> Line comment after condition.
+var list = [
+if (c // comment
+) e];
+<<<
+var list = [
+  if (c // comment
+  )
+    e,
+];
+>>> Line comment after `)`.
+var list = [
+  if (c) // comment
+e];
+<<<
+var list = [
+  if (c) // comment
+    e,
+];
+>>> Line comment after non-spread then body.
+var list = [
+  if (true) e // comment
+];
+<<<
+var list = [
+  if (true) e, // comment
+];
+>>> Line comment after spread then body.
+var list = [
+  if (true) ...[e] // comment
+];
+<<<
+var list = [
+  if (true) ...[e], // comment
+];
+>>> Line comment after non-spread then body with else.
+var list = [
+  if (true) e // comment
+else f];
+<<<
+var list = [
+  if (true)
+    e // comment
+  else
+    f,
+];
+>>> Line comment after spread then body with else.
+var list = [
+if (true) ...[e] // comment
+else f];
+<<<
+var list = [
+  if (true) ...[
+    e,
+  ] // comment
+  else
+    f,
+];
+>>> Line comment after `else` with spread body.
+var list = [
+  if (true) ...[e] else // comment
+...[f]];
+<<<
+var list = [
+  if (true) ...[
+    e,
+  ] else // comment
+  ...[
+    f,
+  ],
+];
+>>> Line comment after `else` with non-spread body.
+var list = [
+if (true) e else // comment
+f];
+<<<
+var list = [
+  if (true)
+    e
+  else // comment
+    f,
+];
+>>> Line comment after non-block else body.
+var list = [
+  if (true) e else f // comment
+];
+<<<
+var list = [
+  if (true) e else f, // comment
+];
+>>> Line comment after block else body.
+var list = [
+if (true) ...[e] else ...[f] // comment
+];
+<<<
+var list = [
+  if (true) ...[
+    e,
+  ] else ...[
+    f,
+  ], // comment
+];

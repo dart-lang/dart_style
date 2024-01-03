@@ -160,7 +160,7 @@ class Solution implements Comparable<Solution> {
     if (_nextPieceToExpand case var piece?) {
       return [
         for (var state in piece.states)
-          if (_stateSet.tryBind(piece, state) case final stateSet?)
+          if (_stateSet.tryBind(piece, state) case var stateSet?)
             Solution._(root, pageWidth, stateSet)
       ];
     }

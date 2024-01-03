@@ -93,6 +93,23 @@ extension AstNodeExtensions on AstNode {
 
     return null;
   }
+
+  /// If this is a spread of a non-empty collection literal, then returns `this`
+  /// as a [SpreadElement].
+  ///
+  /// Otherwise, returns `null`.
+  SpreadElement? get spreadCollection {
+    var node = this;
+    if (node is! SpreadElement) return null;
+
+    return switch (node.expression) {
+      ListLiteral(:var elements, :var rightBracket) ||
+      SetOrMapLiteral(:var elements, :var rightBracket)
+          when elements.canSplit(rightBracket) =>
+        node,
+      _ => null,
+    };
+  }
 }
 
 extension AstIterableExtensions on Iterable<AstNode> {
