@@ -13,59 +13,51 @@ import 'piece.dart';
 ///
 /// Clauses can be chained on one line if they all fit, like:
 ///
-/// ```
-/// import 'animals.dart' show Ant, Bat hide Cat, Dog;
-/// ```
+///     import 'animals.dart' show Ant, Bat hide Cat, Dog;
 ///
 /// Or can split before all of the clauses, like:
 ///
-/// ```
-/// import 'animals.dart'
-///     show Ant, Bat
-///     hide Cat, Dog;
-/// ```
+///     import 'animals.dart'
+///         show Ant, Bat
+///         hide Cat, Dog;
 ///
 /// They can also split before every item in any of the clauses. If they do so,
 /// then the clauses must split too. So these are allowed:
 ///
-/// ```
-/// import 'animals.dart'
-///     show
-///         Ant,
-///         Bat
-///     hide Cat, Dog;
+///     import 'animals.dart'
+///         show
+///             Ant,
+///             Bat
+///         hide Cat, Dog;
 ///
-/// import 'animals.dart'
-///     show Ant, Bat
-///     hide
-///         Cat,
-///         Dog;
+///     import 'animals.dart'
+///         show Ant, Bat
+///         hide
+///             Cat,
+///             Dog;
 ///
-/// import 'animals.dart'
-///     show
-///         Ant,
-///         Bat
-///     hide
-///         Cat,
-///         Dog;
-/// ```
+///     import 'animals.dart'
+///         show
+///             Ant,
+///             Bat
+///         hide
+///             Cat,
+///             Dog;
 ///
 /// But these are not:
 ///
-/// ```
-/// // Wrap list but not keyword:
-/// import 'animals.dart' show
-///         Ant,
-///         Bat
-///     hide Cat, Dog;
+///     // Wrap list but not keyword:
+///     import 'animals.dart' show
+///             Ant,
+///             Bat
+///         hide Cat, Dog;
 ///
-/// // Wrap one keyword but not both:
-/// import 'animals.dart'
-///     show Ant, Bat hide Cat, Dog;
+///     // Wrap one keyword but not both:
+///     import 'animals.dart'
+///         show Ant, Bat hide Cat, Dog;
 ///
-/// import 'animals.dart' show Ant, Bat
-///     hide Cat, Dog;
-/// ```
+///     import 'animals.dart' show Ant, Bat
+///         hide Cat, Dog;
 ///
 /// This ensures that when any wrapping occurs, the keywords are always at the
 /// beginning of the line.
@@ -82,12 +74,10 @@ class ClausesPiece extends Piece {
   /// a little specially because it's a deeper coupling to the class and so we
   /// want it to stay on the top line even if the other clauses split, like:
   ///
-  /// ```
-  /// class BaseClass extends Derived
-  ///     implements OtherThing {
-  ///   ...
-  /// }
-  /// ```
+  ///     class BaseClass extends Derived
+  ///         implements OtherThing {
+  ///       ...
+  ///     }
   final bool _allowLeadingClause;
 
   ClausesPiece(this._clauses, {bool allowLeadingClause = false})

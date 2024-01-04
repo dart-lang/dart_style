@@ -20,9 +20,7 @@ enum CommentType {
   /// preceding the `/*`, after the `*/`, or both. An inline block comment
   /// may be multiple lines, as in:
   ///
-  /// ```
-  /// code /* comment
-  ///   more */
-  /// ```
+  ///     code /* comment
+  ///       more */
   inlineBlock,
 }

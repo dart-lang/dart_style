@@ -14,26 +14,20 @@ import 'piece.dart';
 /// Untyped variables never split after the keyword but do indent subsequent
 /// variables:
 ///
-/// ```
-/// var longVariableName = initializer,
-///     anotherVariable = anotherInitializer;
-/// ```
+///     var longVariableName = initializer,
+///         anotherVariable = anotherInitializer;
 ///
 /// Typed variables can split that way too:
 ///
-/// ```
-/// String longVariableName = initializer,
-///     anotherVariable = anotherInitializer;
-/// ```
+///     String longVariableName = initializer,
+///         anotherVariable = anotherInitializer;
 ///
 /// But they can also split after the type annotation. When that happens, the
 /// variables aren't indented:
 ///
-/// ```
-/// VeryLongTypeName
-/// longVariableName = initializer,
-/// anotherVariable = anotherInitializer;
-/// ```
+///     VeryLongTypeName
+///     longVariableName = initializer,
+///     anotherVariable = anotherInitializer;
 class VariablePiece extends Piece {
   /// Split between each variable in a multiple variable declaration.
   static const State _betweenVariables = State(1);

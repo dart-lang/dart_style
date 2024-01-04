@@ -127,13 +127,11 @@ class PieceWriter {
         // non-hanging ones. Otherwise, we would end up dropping comment pieces
         // on the floor. So given:
         //
-        // ```
-        // before + // one
-        //    // two
-        //    // three
-        //    // four
-        //    after;
-        // ```
+        //     before + // one
+        //        // two
+        //        // three
+        //        // four
+        //        after;
         //
         // The pieces are:
         //
@@ -321,15 +319,11 @@ class PieceWriter {
   /// Removes any trailing whitespace from the selection. For example, if the
   /// original selection markers are:
   ///
-  /// ```
-  /// function(lotsOfSpac‹eAfter,     ›     andBefore);
-  /// ```
+  ///     function(lotsOfSpac‹eAfter,     ›     andBefore);
   ///
   /// Then this function moves the end marker to:
   ///
-  /// ```
-  /// function(lotsOfSpac‹eAfter,›          andBefore);
-  /// ```
+  ///     function(lotsOfSpac‹eAfter,›          andBefore);
   ///
   /// We do this because the formatter itself rewrites whitespace so it's not
   /// useful or even meaningful to try to preserve a selection's location within

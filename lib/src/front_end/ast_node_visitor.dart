@@ -631,9 +631,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.parameters case var parameters?) {
       // A function-typed field formal like:
       //
-      // ```
-      // C(this.fn(parameter));
-      // ```
+      //     C(this.fn(parameter));
       return createFunctionType(
           node.type,
           fieldKeyword: node.thisKeyword,
@@ -721,15 +719,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         // where each clause is a separate argument. This means that when they
         // split, they split like:
         //
-        // ```
-        // for (
-        //   initializerClause;
-        //   conditionClause;
-        //   incrementClause
-        // ) {
-        //   body;
-        // }
-        // ```
+        //     for (
+        //       initializerClause;
+        //       conditionClause;
+        //       incrementClause
+        //     ) {
+        //       body;
+        //     }
         var partsList =
             DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
         partsList.leftBracket(node.leftParenthesis);
@@ -779,13 +775,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         // If a for-in loop, treat the for parts like an assignment, so they
         // split like:
         //
-        // ```
-        // for (var variable in [
-        //   initializer,
-        // ]) {
-        //   body;
-        // }
-        // ```
+        //     for (var variable in [
+        //       initializer,
+        //     ]) {
+        //       body;
+        //     }
         forPartsPiece = buildPiece((b) {
           b.token(node.leftParenthesis);
           b.add(createAssignment(
@@ -1036,12 +1030,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       // Edge case: When the then branch is a block and there is an else clause
       // after it, we want to force the block to split even if empty, like:
       //
-      // ```
-      // if (condition) {
-      // } else {
-      //   body;
-      // }
-      // ```
+      //     if (condition) {
+      //     } else {
+      //       body;
+      //     }
       var thenStatement = switch (ifStatement.thenStatement) {
         Block thenBlock when ifStatement.elseStatement != null =>
           createBlock(thenBlock, forceSplit: true),
@@ -1586,9 +1578,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.parameters case var parameters?) {
       // A function-typed super parameter like:
       //
-      // ```
-      // C(super.fn(parameter));
-      // ```
+      //     C(super.fn(parameter));
       return createFunctionType(
           node.type,
           fieldKeyword: node.superKeyword,
