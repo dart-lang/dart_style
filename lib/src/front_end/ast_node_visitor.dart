@@ -221,7 +221,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitCaseClause(CaseClause node) {
-    // TODO(tall): Handle special behaviour in the case clause.
     return buildPiece((b) {
       b.token(node.caseKeyword);
       if (node.guardedPattern.whenClause != null) {
@@ -1038,11 +1037,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     void traverse(Token? precedingElse, IfStatement ifStatement) {
       var condition = buildPiece((b) {
         b.token(precedingElse, spaceAfter: true);
-        b.add(startControlFlow(
-            ifStatement.ifKeyword,
-            ifStatement.leftParenthesis,
-            ifStatement.expression,
-            ifStatement.rightParenthesis));
+        b.token(ifStatement.ifKeyword);
+        b.space();
+        b.token(ifStatement.leftParenthesis);
+        b.add(buildPiece((b) {
+          b.visit(ifStatement.expression);
+          b.visit(ifStatement.caseClause, spaceBefore: true);
+        }));
+        b.token(ifStatement.rightParenthesis);
         b.space();
       });
 
