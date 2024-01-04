@@ -1098,7 +1098,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIndexExpression(IndexExpression node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before and/or after the `[` when method
+    // chain formatting is fully implemented. For now, we just output the code
+    // so that tests of other language features that contain index expressions
+    // can run.
+    return buildPiece((b) {
+      b.visit(node.target);
+      b.token(node.leftBracket);
+      b.visit(node.index);
+      b.token(node.rightBracket);
+    });
   }
 
   @override
@@ -1408,12 +1417,22 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPostfixExpression(PostfixExpression node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.operand);
+      b.token(node.operator);
+    });
   }
 
   @override
   Piece visitPrefixedIdentifier(PrefixedIdentifier node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before the `.` when method chain formatting
+    // is fully implemented. For now, we just output the code so that tests
+    // of other language features that contain prefixed identifiers can run.
+    return buildPiece((b) {
+      b.visit(node.prefix);
+      b.token(node.period);
+      b.visit(node.identifier);
+    });
   }
 
   @override
@@ -1434,7 +1453,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPropertyAccess(PropertyAccess node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before the `.` when method chain formatting
+    // is fully implemented. For now, we just output the code so that tests
+    // of other language features that contain property accesses can run.
+    return buildPiece((b) {
+      b.visit(node.target);
+      b.token(node.operator);
+      b.visit(node.propertyName);
+    });
   }
 
   @override
