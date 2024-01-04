@@ -1,0 +1,162 @@
+40 columns                              |
+>>> Line comment after `for`.
+var list = [
+for // comment
+(a; b; c) e];
+<<<
+var list = [
+  for // comment
+  (a; b; c)
+    e,
+];
+>>> Line comment before initializer
+var list = [
+  for (// comment
+a; b; c) e];
+<<<
+var list = [
+  for (
+    // comment
+    a;
+    b;
+    c
+  )
+    e,
+];
+>>> Line comment after initializer.
+var list = [
+for (a // comment
+; b; c) e];
+<<<
+var list = [
+  for (
+    a // comment
+    ;
+    b;
+    c
+  )
+    e,
+];
+>>> Line comment before condition.
+var list = [
+for (a; // comment
+b; c) e];
+<<<
+var list = [
+  for (
+    a; // comment
+    b;
+    c
+  )
+    e,
+];
+>>> Line comment before condition.
+var list = [
+for (a;
+// comment
+b; c) e];
+<<<
+var list = [
+  for (
+    a;
+    // comment
+    b;
+    c
+  )
+    e,
+];
+>>> Line comment after condition.
+var list = [
+for (a; b// comment
+; c) e];
+<<<
+var list = [
+  for (
+    a;
+    b // comment
+    ;
+    c
+  )
+    e,
+];
+>>> Line comment before increment.
+var list = [
+for (a; b; // comment
+c) e];
+<<<
+var list = [
+  for (
+    a;
+    b; // comment
+    c
+  )
+    e,
+];
+>>>
+var list = [
+for (a; b;
+// comment
+c) e];
+<<<
+var list = [
+  for (
+    a;
+    b;
+    // comment
+    c
+  )
+    e,
+];
+>>> Line comment after increment.
+var list = [
+for (a; b; c // comment
+) e];
+<<<
+var list = [
+  for (
+    a;
+    b;
+    c // comment
+  )
+    e,
+];
+>>>
+var list = [
+for (a; b; c
+// comment
+) e];
+<<<
+var list = [
+  for (
+    a;
+    b;
+    c
+    // comment
+  )
+    e,
+];
+>>> Line comment after `)`.
+var list = [
+  for (a; b; c) // comment
+e];
+<<<
+var list = [
+  for (a; b; c) // comment
+    e,
+];
+>>> Line comment after non-spread body.
+var list = [
+  for (;;) e // comment
+];
+<<<
+var list = [
+  for (;;) e, // comment
+];
+>>> Line comment after spread body.
+var list = [
+  for (;;) ...[e] // comment
+];
+<<<
+var list = [
+  for (;;) ...[e], // comment
+];

@@ -1,0 +1,51 @@
+40 columns                              |
+### Tests for spread (and unspread) lists inside for elements.
+>>> Spread list inside for stays on one line if it fits.
+var list = [for (;;) ...[1, 2]];
+<<<
+var list = [for (;;) ...[1, 2]];
+>>> Spread list inside for formats like block if it splits.
+var list = [for (;;) ...[element1, element2, element3]];
+<<<
+var list = [
+  for (;;) ...[
+    element1,
+    element2,
+    element3,
+  ],
+];
+>>> A split collection that isn't spread wraps and indents.
+var list = [for (;;) [element1, element2, element3]];
+<<<
+var list = [
+  for (;;)
+    [element1, element2, element3],
+];
+>>> A split collection that isn't spread wraps and indents.
+var list = [for (;;) [element1, element2, element3, element4]];
+<<<
+var list = [
+  for (;;)
+    [
+      element1,
+      element2,
+      element3,
+      element4,
+    ],
+];
+>>> Force split if loop body is for element.
+var l = [for (;;) for (c in d) t];
+<<<
+var l = [
+  for (;;)
+    for (c in d) t,
+];
+>>> Force split if loop body is if element.
+var list = [
+  for (;;) if (c) d
+];
+<<<
+var list = [
+  for (;;)
+    if (c) d,
+];

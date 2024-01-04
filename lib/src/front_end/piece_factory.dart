@@ -219,6 +219,115 @@ mixin PieceFactory {
     });
   }
 
+  /// Creates a piece for the parentheses and inner parts of a for statement or
+  /// for element.
+  Piece createForLoopParts(Token leftParenthesis, ForLoopParts forLoopParts,
+      Token rightParenthesis) {
+    switch (forLoopParts) {
+      // Edge case: A totally empty for loop is formatted just as `(;;)` with
+      // no splits or spaces anywhere.
+      case ForPartsWithExpression(
+                initialization: null,
+                leftSeparator: Token(precedingComments: null),
+                condition: null,
+                rightSeparator: Token(precedingComments: null),
+                updaters: NodeList(isEmpty: true),
+              ) &&
+              var forParts
+          when rightParenthesis.precedingComments == null:
+        return buildPiece((b) {
+          b.token(leftParenthesis);
+          b.token(forParts.leftSeparator);
+          b.token(forParts.rightSeparator);
+          b.token(rightParenthesis);
+        });
+
+      case ForParts forParts &&
+            ForPartsWithDeclarations(variables: AstNode? initializer):
+      case ForParts forParts &&
+            ForPartsWithExpression(initialization: AstNode? initializer):
+        // In a C-style for loop, treat the for loop parts like an argument list
+        // where each clause is a separate argument. This means that when they
+        // split, they split like:
+        //
+        // ```
+        // for (
+        //   initializerClause;
+        //   conditionClause;
+        //   incrementClause
+        // ) {
+        //   body;
+        // }
+        // ```
+        var partsList =
+            DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
+        partsList.leftBracket(leftParenthesis);
+
+        // The initializer clause.
+        if (initializer != null) {
+          partsList.addCommentsBefore(initializer.beginToken);
+          partsList.add(buildPiece((b) {
+            b.visit(initializer);
+            b.token(forParts.leftSeparator);
+          }));
+        } else {
+          // No initializer, so look at the comments before `;`.
+          partsList.addCommentsBefore(forParts.leftSeparator);
+          partsList.add(tokenPiece(forParts.leftSeparator));
+        }
+
+        // The condition clause.
+        if (forParts.condition case var conditionExpression?) {
+          partsList.addCommentsBefore(conditionExpression.beginToken);
+          partsList.add(buildPiece((b) {
+            b.visit(conditionExpression);
+            b.token(forParts.rightSeparator);
+          }));
+        } else {
+          partsList.addCommentsBefore(forParts.rightSeparator);
+          partsList.add(tokenPiece(forParts.rightSeparator));
+        }
+
+        // The update clauses.
+        if (forParts.updaters.isNotEmpty) {
+          partsList.addCommentsBefore(forParts.updaters.first.beginToken);
+          partsList.add(createList(forParts.updaters,
+              style: const ListStyle(commas: Commas.nonTrailing)));
+        }
+
+        partsList.rightBracket(rightParenthesis);
+        return partsList.build();
+
+      case ForPartsWithPattern():
+        throw UnimplementedError();
+
+      case ForEachParts forEachParts &&
+            ForEachPartsWithDeclaration(loopVariable: AstNode variable):
+      case ForEachParts forEachParts &&
+            ForEachPartsWithIdentifier(identifier: AstNode variable):
+        // If a for-in loop, treat the for parts like an assignment, so they
+        // split like:
+        //
+        // ```
+        // for (var variable in [
+        //   initializer,
+        // ]) {
+        //   body;
+        // }
+        // ```
+        return buildPiece((b) {
+          b.token(leftParenthesis);
+          b.add(createAssignment(
+              variable, forEachParts.inKeyword, forEachParts.iterable,
+              splitBeforeOperator: true, allowInnerSplit: true));
+          b.token(rightParenthesis);
+        });
+
+      case ForEachPartsWithPattern():
+        throw UnimplementedError();
+    }
+  }
+
   /// Creates a normal (not function-typed) formal parameter with a name and/or
   /// type annotation.
   ///
@@ -696,11 +805,23 @@ mixin PieceFactory {
   /// If [splitBeforeOperator] is `true`, then puts [operator] at the beginning
   /// of the next line when it splits. Otherwise, puts the operator at the end
   /// of the preceding line.
+  ///
+  /// If [allowInnerSplit] is `true`, then a newline inside the target or
+  /// right-hand side doesn't force splitting at the operator itself.
   Piece createAssignment(
       AstNode target, Token operator, Expression rightHandSide,
       {bool splitBeforeOperator = false,
       bool includeComma = false,
-      bool spaceBeforeOperator = true}) {
+      bool spaceBeforeOperator = true,
+      bool allowInnerSplit = false}) {
+    // If the right-hand side can have block formatting, then a newline in
+    // it doesn't force the operator to split, as in:
+    //
+    //    var list = [
+    //      element,
+    //    ];
+    allowInnerSplit |= rightHandSide.canBlockSplit;
+
     if (splitBeforeOperator) {
       var targetPiece = nodePiece(target);
 
@@ -711,7 +832,7 @@ mixin PieceFactory {
       });
 
       return AssignPiece(targetPiece, initializer,
-          isValueDelimited: rightHandSide.canBlockSplit);
+          allowInnerSplit: allowInnerSplit);
     } else {
       var targetPiece = buildPiece((b) {
         b.visit(target);
@@ -721,7 +842,7 @@ mixin PieceFactory {
       var initializer = nodePiece(rightHandSide, commaAfter: includeComma);
 
       return AssignPiece(targetPiece, initializer,
-          isValueDelimited: rightHandSide.canBlockSplit);
+          allowInnerSplit: allowInnerSplit);
     }
   }
 

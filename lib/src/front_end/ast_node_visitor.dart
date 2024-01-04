@@ -371,7 +371,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.redirectedConstructor case var constructor?) {
       redirect = AssignPiece(
           tokenPiece(node.separator!), nodePiece(constructor),
-          isValueDelimited: false);
+          allowInnerSplit: false);
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
       initializers = createList(node.initializers,
@@ -583,7 +583,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       var expression = nodePiece(node.expression);
 
       b.add(AssignPiece(operatorPiece, expression,
-          isValueDelimited: node.expression.canBlockSplit));
+          allowInnerSplit: node.expression.canBlockSplit));
       b.token(node.semicolon);
     });
   }
@@ -683,7 +683,25 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitForElement(ForElement node) {
-    throw UnimplementedError();
+    var forKeyword = buildPiece((b) {
+      b.modifier(node.awaitKeyword);
+      b.token(node.forKeyword);
+    });
+
+    var forPartsPiece = createForLoopParts(
+        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
+    var body = nodePiece(node.body);
+
+    var forPiece = ForPiece(forKeyword, forPartsPiece, body,
+        hasBlockBody: node.body.isSpreadCollection);
+
+    // If the body of a for element is itself a control flow element, then
+    // force the outer for to always split.
+    if (node.body.isControlFlowElement) {
+      forPiece.pin(State.split);
+    }
+
+    return forPiece;
   }
 
   @override
@@ -693,111 +711,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       b.token(node.forKeyword);
     });
 
-    Piece forPartsPiece;
-    switch (node.forLoopParts) {
-      // Edge case: A totally empty for loop is formatted just as `(;;)` with
-      // no splits or spaces anywhere.
-      case ForPartsWithExpression(
-                initialization: null,
-                leftSeparator: Token(precedingComments: null),
-                condition: null,
-                rightSeparator: Token(precedingComments: null),
-                updaters: NodeList(isEmpty: true),
-              ) &&
-              var forParts
-          when node.rightParenthesis.precedingComments == null:
-        forPartsPiece = buildPiece((b) {
-          b.token(node.leftParenthesis);
-          b.token(forParts.leftSeparator);
-          b.token(forParts.rightSeparator);
-          b.token(node.rightParenthesis);
-        });
-
-      case ForParts forParts &&
-            ForPartsWithDeclarations(variables: AstNode? initializer):
-      case ForParts forParts &&
-            ForPartsWithExpression(initialization: AstNode? initializer):
-        // In a C-style for loop, treat the for loop parts like an argument list
-        // where each clause is a separate argument. This means that when they
-        // split, they split like:
-        //
-        // ```
-        // for (
-        //   initializerClause;
-        //   conditionClause;
-        //   incrementClause
-        // ) {
-        //   body;
-        // }
-        // ```
-        var partsList =
-            DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
-        partsList.leftBracket(node.leftParenthesis);
-
-        // The initializer clause.
-        if (initializer != null) {
-          partsList.addCommentsBefore(initializer.beginToken);
-          partsList.add(buildPiece((b) {
-            b.visit(initializer);
-            b.token(forParts.leftSeparator);
-          }));
-        } else {
-          // No initializer, so look at the comments before `;`.
-          partsList.addCommentsBefore(forParts.leftSeparator);
-          partsList.add(tokenPiece(forParts.leftSeparator));
-        }
-
-        // The condition clause.
-        if (forParts.condition case var conditionExpression?) {
-          partsList.addCommentsBefore(conditionExpression.beginToken);
-          partsList.add(buildPiece((b) {
-            b.visit(conditionExpression);
-            b.token(forParts.rightSeparator);
-          }));
-        } else {
-          partsList.addCommentsBefore(forParts.rightSeparator);
-          partsList.add(tokenPiece(forParts.rightSeparator));
-        }
-
-        // The update clauses.
-        if (forParts.updaters.isNotEmpty) {
-          partsList.addCommentsBefore(forParts.updaters.first.beginToken);
-          partsList.add(createList(forParts.updaters,
-              style: const ListStyle(commas: Commas.nonTrailing)));
-        }
-
-        partsList.rightBracket(node.rightParenthesis);
-        forPartsPiece = partsList.build();
-
-      case ForPartsWithPattern():
-        throw UnimplementedError();
-
-      case ForEachParts forEachParts &&
-            ForEachPartsWithDeclaration(loopVariable: AstNode variable):
-      case ForEachParts forEachParts &&
-            ForEachPartsWithIdentifier(identifier: AstNode variable):
-        // If a for-in loop, treat the for parts like an assignment, so they
-        // split like:
-        //
-        // ```
-        // for (var variable in [
-        //   initializer,
-        // ]) {
-        //   body;
-        // }
-        // ```
-        forPartsPiece = buildPiece((b) {
-          b.token(node.leftParenthesis);
-          b.add(createAssignment(
-              variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true));
-          b.token(node.rightParenthesis);
-        });
-
-      case ForEachPartsWithPattern():
-        throw UnimplementedError();
-    }
-
+    var forPartsPiece = createForLoopParts(
+        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
     var body = nodePiece(node.body);
 
     return ForPiece(forKeyword, forPartsPiece, body,
@@ -1408,7 +1323,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPostfixExpression(PostfixExpression node) {
-    throw UnimplementedError();
+    // TODO(tall): This is implemented just so that tests of other language
+    // features (like for loops) that incidentally contain postfix expressions
+    // (like `i++`) can pass. The tests still need to be migrated.
+    return buildPiece((b) {
+      b.visit(node.operand);
+      b.token(node.operator);
+    });
   }
 
   @override
@@ -1790,7 +1711,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var initializerPiece = nodePiece(initializer, commaAfter: true);
 
         variables.add(AssignPiece(variablePiece, initializerPiece,
-            isValueDelimited: initializer.canBlockSplit));
+            allowInnerSplit: initializer.canBlockSplit));
       } else {
         variables.add(tokenPiece(variable.name, commaAfter: true));
       }
