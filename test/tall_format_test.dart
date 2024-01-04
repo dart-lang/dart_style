@@ -14,6 +14,7 @@ void main() async {
   await testDirectory('expression', tall: true);
   await testDirectory('function', tall: true);
   await testDirectory('invocation', tall: true);
+  await testDirectory('pattern', tall: true);
   await testDirectory('selection', tall: true);
   await testDirectory('statement', tall: true);
   await testDirectory('top_level', tall: true);

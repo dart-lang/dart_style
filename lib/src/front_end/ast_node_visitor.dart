@@ -220,6 +220,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
+  Piece visitCaseClause(CaseClause node) {
+    // TODO(tall): Handle special behaviour in the case clause.
+    return buildPiece((b) {
+      b.token(node.caseKeyword);
+      if (node.guardedPattern.whenClause != null) {
+        throw UnimplementedError();
+      }
+      b.space();
+      b.visit(node.guardedPattern.pattern);
+    });
+  }
+
+  @override
   Piece visitCastPattern(CastPattern node) {
     throw UnimplementedError();
   }
