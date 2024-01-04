@@ -315,6 +315,33 @@ mixin PieceFactory {
         //   body;
         // }
         // ```
+        // TODO(tall): Passing `allowInnerSplit: true` allows output like:
+        //
+        //     // 1
+        //     for (variable in longExpression +
+        //         thatWraps) {
+        //       ...
+        //     }
+        //
+        // Versus the split in the initializer forcing a split before `in` too:
+        //
+        //     // 2
+        //     for (variable
+        //         in longExpression +
+        //             thatWraps) {
+        //       ...
+        //     }
+        //
+        // This is also allowed:
+        //
+        //     // 3
+        //     for (variable
+        //         in longExpression + thatWraps) {
+        //       ...
+        //     }
+        //
+        // Currently, the formatter prefers 1 over 3. We may want to revisit
+        // that and prefer 3 instead.
         return buildPiece((b) {
           b.token(leftParenthesis);
           b.add(createAssignment(
