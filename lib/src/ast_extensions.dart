@@ -131,27 +131,21 @@ extension ExpressionExtensions on Expression {
   /// example, in an assignment, a split in the assigned value is usually
   /// indented:
   ///
-  /// ```
-  /// var variableName =
-  ///     longValue;
-  /// ```
+  ///     var variableName =
+  ///         longValue;
   ///
   /// But if the initializer is block-like, we don't split at the `=`:
   ///
-  /// ```
-  /// var variableName = [
-  ///   element,
-  /// ];
-  /// ```
+  ///     var variableName = [
+  ///       element,
+  ///     ];
   ///
   /// Likewise, in an argument list, block-like expressions can avoid splitting
   /// the surrounding argument list:
   ///
-  /// ```
-  /// function([
-  ///   element,
-  /// ]);
-  /// ```
+  ///     function([
+  ///       element,
+  ///     ]);
   ///
   /// Completely empty delimited constructs like `[]` and `foo()` don't allow
   /// splitting inside them, so are not considered block-like.
@@ -165,21 +159,17 @@ extension ExpressionExtensions on Expression {
     // TODO(tall): We should also allow multi-line strings to be formatted
     // like block arguments, at least in some cases like:
     //
-    // ```
-    // function('''
-    //   Lots of
-    //   text
-    // ''');
-    // ```
+    //     function('''
+    //       Lots of
+    //       text
+    //     ''');
 
     // TODO(tall): Consider whether immediately-invoked function expressions
     // should be block argument candidates, like:
     //
-    // ```
-    // function(() {
-    //   body;
-    // }());
-    // ```
+    //     function(() {
+    //       body;
+    //     }());
     return switch (expression) {
       // A function expression can use either a non-empty parameter list or a
       // non-empty block body for block formatting.

@@ -19,28 +19,22 @@ import 'piece.dart';
 ///
 /// [State.split] Fully unsplit:
 ///
-/// ```
-/// function(argument, argument, argument);
-/// ```
+///     function(argument, argument, argument);
 ///
 /// If one of the elements is a "block element", then we allow newlines inside
 /// it to support output like:
 ///
-/// ```
-/// function(argument, () {
-///   blockElement;
-/// }, argument);
-/// ```
+///     function(argument, () {
+///       blockElement;
+///     }, argument);
 ///
 /// [_splitState] Split around all of the items:
 ///
-/// ```
-/// function(
-///   argument,
-///   argument,
-///   argument,
-/// );
-/// ```
+///     function(
+///       argument,
+///       argument,
+///       argument,
+///     );
 ///
 /// ListPieces are usually constructed using [createList()] or
 /// [DelimitedListBuilder].
@@ -160,12 +154,10 @@ class ListPiece extends Piece {
 /// comment piece represents an element with a hanging comment after the
 /// (potentially ommitted) comma:
 ///
-/// ```dart
-/// function(
-///   first,
-///   // Standalone.
-///   second, // Hanging.
-/// ```
+///     function(
+///       first,
+///       // Standalone.
+///       second, // Hanging.
 ///
 /// Here, `first` is a [ListElement] with only an element, `// Standalone.` is
 /// a [ListElement] with only a comment, and `second, // Hanging.` is a
@@ -186,12 +178,10 @@ final class ListElement {
   /// This is only used for parameter lists when an optional or named parameter
   /// section begins in the middle of the parameter list, like:
   ///
-  /// ```
-  /// function(
-  ///   int parameter1, [
-  ///   int parameter2,
-  /// ]);
-  /// ```
+  ///     function(
+  ///       int parameter1, [
+  ///       int parameter2,
+  ///     ]);
   String _delimiter = '';
 
   /// The hanging inline block and line comments that appear after the content.
@@ -202,11 +192,9 @@ final class ListElement {
   /// A list item may have hanging comments before and after the delimiter, as
   /// in:
   ///
-  /// ```
-  /// function(
-  ///   argument /* 1 */ /* 2 */, /* 3 */ /* 4 */ // 5
-  /// );
-  /// ```
+  ///     function(
+  ///       argument /* 1 */ /* 2 */, /* 3 */ /* 4 */ // 5
+  ///     );
   ///
   /// This field counts the number of comments that should be before the
   /// delimiter (here `,` and 2).
@@ -329,10 +317,8 @@ class ListStyle {
   /// split. This is false for most lists, but true for switch expression
   /// bodies:
   ///
-  /// ```
-  /// v = switch (e) { 1 => 'one', 2 => 'two' };
-  /// //              ^                      ^
-  /// ```
+  ///     v = switch (e) { 1 => 'one', 2 => 'two' };
+  ///     //              ^                      ^
   final bool spaceWhenUnsplit;
 
   /// Whether a split in the [_before] piece should force the list to split too.
@@ -343,41 +329,35 @@ class ListStyle {
   /// contains the type arguments. If those split, this is `false` to allow the
   /// list itself to remain unsplit as in:
   ///
-  /// ```
-  /// <
-  ///   VeryLongTypeName,
-  ///   AnotherLongTypeName,
-  /// >{a: 1};
-  /// ```
+  ///     <
+  ///       VeryLongTypeName,
+  ///       AnotherLongTypeName,
+  ///     >{a: 1};
   ///
   /// For switch expressions, the `switch (value) {` part is in [_before] and
   /// the body is the list. In that case, if the value splits, we want to force
   /// the body to split too:
   ///
-  /// ```
-  /// // Disallowed:
-  /// e = switch (
-  ///   "a long string that must wrap"
-  /// ) { 0 => "ok" };
+  ///     // Disallowed:
+  ///     e = switch (
+  ///       "a long string that must wrap"
+  ///     ) { 0 => "ok" };
   ///
-  /// // Instead:
-  /// e = switch (
-  ///   "a long string that must wrap"
-  /// ) {
-  ///   0 => "ok",
-  /// };
-  /// ```
+  ///     // Instead:
+  ///     e = switch (
+  ///       "a long string that must wrap"
+  ///     ) {
+  ///       0 => "ok",
+  ///     };
   final bool splitListIfBeforeSplits;
 
   /// Whether an element in the list is allowed to have block-like formatting,
   /// as in:
   ///
-  /// ```
-  /// function(argument, [
-  ///   block,
-  ///   like,
-  /// ], argument);
-  /// ```
+  ///     function(argument, [
+  ///       block,
+  ///       like,
+  ///     ], argument);
   final bool allowBlockElement;
 
   const ListStyle(

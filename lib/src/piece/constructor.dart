@@ -13,48 +13,40 @@ import 'piece.dart';
 ///
 /// [State.unsplit] No splits at all, in the parameters or initializers.
 ///
-/// ```
-///   SomeClass(param) : a = 1, b = 2;
-/// ```
+///       SomeClass(param) : a = 1, b = 2;
 ///
 /// [_splitBeforeInitializers] Split before the `:` and between the
 /// initializers but not in the parameters.
 ///
-/// ```
-///   SomeClass(param)
-///     : a = 1,
-///       b = 2;
-/// ```
+///       SomeClass(param)
+///         : a = 1,
+///           b = 2;
 ///
 /// [_splitBetweenInitializers] Split between the initializers but not before
 /// the `:`. This state should only be chosen when the parameters split. If
 /// there are no parameters, this state is excluded.
 ///
-/// ```
-///   SomeClass(
-///     param
-///   ) : a = 1,
-///       b = 2;
-/// ```
+///       SomeClass(
+///         param
+///       ) : a = 1,
+///           b = 2;
 ///
 /// In addition, this piece deals with indenting initializers appropriately
 /// based on whether the parameter list has a `]` or `}` before the `)`. If
 /// there are optional parameters, then initializers after the first are
 /// indented one space more to line up with the first initializer:
 ///
-/// ```
-/// SomeClass(
-///   mandatory,
-/// ) : firstInitializer = 1,
-///     second = 2;
-/// // ^ Four spaces of indentation.
+///     SomeClass(
+///       mandatory,
+///     ) : firstInitializer = 1,
+///         second = 2;
+///     // ^ Four spaces of indentation.
 ///
-/// SomeClass([
-///   optional,
-/// ]) : firstInitializer = 1,
-///      second = 2;
-/// //  ^ Five spaces of indentation.
-/// ```
+///     SomeClass([
+///       optional,
+///     ]) : firstInitializer = 1,
+///          second = 2;
+///     //  ^ Five spaces of indentation.
 class ConstructorPiece extends Piece {
   static const _splitBeforeInitializers = State(1, cost: 1);
 

@@ -220,6 +220,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
+  Piece visitCaseClause(CaseClause node) {
+    return buildPiece((b) {
+      b.token(node.caseKeyword);
+      if (node.guardedPattern.whenClause != null) {
+        throw UnimplementedError();
+      }
+      b.space();
+      b.visit(node.guardedPattern.pattern);
+    });
+  }
+
+  @override
   Piece visitCastPattern(CastPattern node) {
     throw UnimplementedError();
   }
@@ -631,9 +643,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.parameters case var parameters?) {
       // A function-typed field formal like:
       //
-      // ```
-      // C(this.fn(parameter));
-      // ```
+      //     C(this.fn(parameter));
       return createFunctionType(
           node.type,
           fieldKeyword: node.thisKeyword,
@@ -789,7 +799,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionReference(FunctionReference node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.function);
+      b.visit(node.typeArguments);
+    });
   }
 
   @override
@@ -940,23 +953,24 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     void traverse(Token? precedingElse, IfStatement ifStatement) {
       var condition = buildPiece((b) {
         b.token(precedingElse, spaceAfter: true);
-        b.add(startControlFlow(
-            ifStatement.ifKeyword,
-            ifStatement.leftParenthesis,
-            ifStatement.expression,
-            ifStatement.rightParenthesis));
+        b.token(ifStatement.ifKeyword);
+        b.space();
+        b.token(ifStatement.leftParenthesis);
+        b.add(buildPiece((b) {
+          b.visit(ifStatement.expression);
+          b.visit(ifStatement.caseClause, spaceBefore: true);
+        }));
+        b.token(ifStatement.rightParenthesis);
         b.space();
       });
 
       // Edge case: When the then branch is a block and there is an else clause
       // after it, we want to force the block to split even if empty, like:
       //
-      // ```
-      // if (condition) {
-      // } else {
-      //   body;
-      // }
-      // ```
+      //     if (condition) {
+      //     } else {
+      //       body;
+      //     }
       var thenStatement = switch (ifStatement.thenStatement) {
         Block thenBlock when ifStatement.elseStatement != null =>
           createBlock(thenBlock, forceSplit: true),
@@ -1013,7 +1027,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIndexExpression(IndexExpression node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before and/or after the `[` when method
+    // chain formatting is fully implemented. For now, we just output the code
+    // so that tests of other language features that contain index expressions
+    // can run.
+    return buildPiece((b) {
+      b.visit(node.target);
+      b.token(node.leftBracket);
+      b.visit(node.index);
+      b.token(node.rightBracket);
+    });
   }
 
   @override
@@ -1323,9 +1346,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPostfixExpression(PostfixExpression node) {
-    // TODO(tall): This is implemented just so that tests of other language
-    // features (like for loops) that incidentally contain postfix expressions
-    // (like `i++`) can pass. The tests still need to be migrated.
     return buildPiece((b) {
       b.visit(node.operand);
       b.token(node.operator);
@@ -1334,7 +1354,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPrefixedIdentifier(PrefixedIdentifier node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before the `.` when method chain formatting
+    // is fully implemented. For now, we just output the code so that tests
+    // of other language features that contain prefixed identifiers can run.
+    return buildPiece((b) {
+      b.visit(node.prefix);
+      b.token(node.period);
+      b.visit(node.identifier);
+    });
   }
 
   @override
@@ -1355,7 +1382,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPropertyAccess(PropertyAccess node) {
-    throw UnimplementedError();
+    // TODO(tall): Allow splitting before the `.` when method chain formatting
+    // is fully implemented. For now, we just output the code so that tests
+    // of other language features that contain property accesses can run.
+    return buildPiece((b) {
+      b.visit(node.target);
+      b.token(node.operator);
+      b.visit(node.propertyName);
+    });
   }
 
   @override
@@ -1507,9 +1541,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.parameters case var parameters?) {
       // A function-typed super parameter like:
       //
-      // ```
-      // C(super.fn(parameter));
-      // ```
+      //     C(super.fn(parameter));
       return createFunctionType(
           node.type,
           fieldKeyword: node.superKeyword,

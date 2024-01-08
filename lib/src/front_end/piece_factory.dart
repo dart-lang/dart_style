@@ -71,10 +71,8 @@ mixin PieceFactory {
   /// is used, for example, with empty blocks in `if` statements followed by
   /// `else` clauses:
   ///
-  /// ```
-  /// if (condition) {
-  /// } else {}
-  /// ```
+  ///     if (condition) {
+  ///     } else {}
   Piece createBody(
       Token leftBracket, List<AstNode> contents, Token rightBracket,
       {bool forceSplit = false}) {
@@ -104,10 +102,8 @@ mixin PieceFactory {
   /// is used, for example, with empty blocks in `if` statements followed by
   /// `else` clauses:
   ///
-  /// ```
-  /// if (condition) {
-  /// } else {}
-  /// ```
+  ///     if (condition) {
+  ///     } else {}
   Piece createBlock(Block block, {bool forceSplit = false}) {
     return createBody(block.leftBracket, block.statements, block.rightBracket,
         forceSplit: forceSplit);
@@ -133,12 +129,10 @@ mixin PieceFactory {
       // TODO(tall): Support a line comment inside a collection literal as a
       // signal to preserve internal newlines. So if you have:
       //
-      // ```
-      // var list = [
-      //   1, 2, 3, // comment
-      //   4, 5, 6,
-      // ];
-      // ```
+      //     var list = [
+      //       1, 2, 3, // comment
+      //       4, 5, 6,
+      //     ];
       //
       // The formatter will preserve the newline after element 3 and the lack of
       // them after the other elements.
@@ -249,15 +243,13 @@ mixin PieceFactory {
         // where each clause is a separate argument. This means that when they
         // split, they split like:
         //
-        // ```
-        // for (
-        //   initializerClause;
-        //   conditionClause;
-        //   incrementClause
-        // ) {
-        //   body;
-        // }
-        // ```
+        //     for (
+        //       initializerClause;
+        //       conditionClause;
+        //       incrementClause
+        //     ) {
+        //       body;
+        //     }
         var partsList =
             DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
         partsList.leftBracket(leftParenthesis);
@@ -307,13 +299,11 @@ mixin PieceFactory {
         // If a for-in loop, treat the for parts like an assignment, so they
         // split like:
         //
-        // ```
-        // for (var variable in [
-        //   initializer,
-        // ]) {
-        //   body;
-        // }
-        // ```
+        //     for (var variable in [
+        //       initializer,
+        //     ]) {
+        //       body;
+        //     }
         // TODO(tall): Passing `allowInnerSplit: true` allows output like:
         //
         //     // 1
@@ -515,14 +505,12 @@ mixin PieceFactory {
       // Edge case: When there's another catch/on/finally after this one, we
       // want to force the block to split even if it's empty.
       //
-      // ```
-      // try {
-      //   ..
-      // } on Foo {
-      // } finally Bar {
-      //   body;
-      // }
-      // ```
+      //     try {
+      //       ..
+      //     } on Foo {
+      //     } finally Bar {
+      //       body;
+      //     }
       var forceSplit = i < tryStatement.catchClauses.length - 1 ||
           tryStatement.finallyBlock != null;
       var catchClauseBody =
