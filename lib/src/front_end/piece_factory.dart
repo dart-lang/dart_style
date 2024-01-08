@@ -227,18 +227,17 @@ mixin PieceFactory {
       // Edge case: A totally empty for loop is formatted just as `(;;)` with
       // no splits or spaces anywhere.
       case ForPartsWithExpression(
-                initialization: null,
-                leftSeparator: Token(precedingComments: null),
-                condition: null,
-                rightSeparator: Token(precedingComments: null),
-                updaters: NodeList(isEmpty: true),
-              ) &&
-              var forParts
+            initialization: null,
+            leftSeparator: Token(precedingComments: null),
+            condition: null,
+            rightSeparator: Token(precedingComments: null),
+            updaters: NodeList(isEmpty: true),
+          )
           when rightParenthesis.precedingComments == null:
         return buildPiece((b) {
           b.token(leftParenthesis);
-          b.token(forParts.leftSeparator);
-          b.token(forParts.rightSeparator);
+          b.token(forLoopParts.leftSeparator);
+          b.token(forLoopParts.rightSeparator);
           b.token(rightParenthesis);
         });
 

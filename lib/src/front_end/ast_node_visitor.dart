@@ -695,8 +695,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var forPiece = ForPiece(forKeyword, forPartsPiece, body,
         hasBlockBody: node.body.isSpreadCollection);
 
-    // If the body of a for element is itself a control flow element, then
-    // force the outer for to always split.
+    // It looks weird to have multiple nested control flow elements on the same
+    // line, so force the outer one to split if there is an inner one.
     if (node.body.isControlFlowElement) {
       forPiece.pin(State.split);
     }
