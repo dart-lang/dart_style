@@ -69,7 +69,6 @@ declaration/  - Typedef, class, enum, extension, mixin, and member declarations.
                 directories below.
 expression/   - Expressions and collection elements.
 invocation/   - Function and member invocations.
-pattern/      - Patterns.
 selection/    - Test preserving selection information.
 statement/    - Statements.
 top_level/    - Top-level directives.
