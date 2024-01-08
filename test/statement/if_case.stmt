@@ -1,0 +1,7 @@
+40 columns                              |
+>>> Simple bool pattern.
+if (obj case true) {;}
+<<<
+if (obj case true) {
+  ;
+}
