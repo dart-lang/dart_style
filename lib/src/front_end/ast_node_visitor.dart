@@ -874,7 +874,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionReference(FunctionReference node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.function);
+      b.visit(node.typeArguments);
+    });
   }
 
   @override
