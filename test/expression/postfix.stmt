@@ -1,0 +1,33 @@
+40 columns                              |
+>>> Postfix increment.
+value  ++  ;
+<<<
+value++;
+>>> Postfix decrement.
+value  --  ;
+<<<
+value--;
+>>> Increment and decrement as subexpressions.
+value  ++  -  other --;
+<<<
+value++ - other--;
+>>> Null-assert.
+obj ! ;
+<<<
+obj!;
+>>> Null-assert after method call.
+obj . method() ! ;
+<<<
+obj.method()!;
+>>> Null-assert after property.
+obj . prop ! ;
+<<<
+obj.prop!;
+>>> Null-assert inside method chain.
+obj ! . getter ! . method ( arg ) ! + 3;
+<<<
+obj!.getter!.method(arg)! + 3;
+>>> Null-assert before index and call operators.
+obj ! [ index ] ! ( call ) ! + 3;
+<<<
+obj![index]!(call)! + 3;
