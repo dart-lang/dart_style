@@ -44,12 +44,12 @@ class AssignPiece extends Piece {
   /// The right-hand side of the operation.
   final Piece value;
 
-  /// Whether the right-hand side is a delimited expression that should receive
-  /// block-like formatting.
-  final bool _isValueDelimited;
+  /// Whether a newline is allowed in the right-hand side without forcing a
+  /// split at the assignment operator.
+  final bool _allowInnerSplit;
 
-  AssignPiece(this.target, this.value, {bool isValueDelimited = false})
-      : _isValueDelimited = isValueDelimited;
+  AssignPiece(this.target, this.value, {bool allowInnerSplit = false})
+      : _allowInnerSplit = allowInnerSplit;
 
   // TODO(tall): The old formatter allows the first operand of a split
   // conditional expression to be on the same line as the `=`, as in:
@@ -91,9 +91,9 @@ class AssignPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    // A split in either child piece forces splitting after the "=" unless it's
-    // a delimited expression.
-    if (state == State.unsplit && !_isValueDelimited) {
+    // A split in either child piece forces splitting at assignment operator
+    // unless specifically allowed.
+    if (!_allowInnerSplit && state == State.unsplit) {
       writer.setAllowNewlines(false);
     }
 

@@ -1,0 +1,51 @@
+40 columns                              |
+### Tests for spread (and unspread) sets inside for elements.
+>>> Spread list inside for stays on one line if it fits.
+var set = {for (;;) ...{1, 2}};
+<<<
+var set = {for (;;) ...{1, 2}};
+>>> Spread list inside for formats like block if it splits.
+var set = {for (;;) ...{element1, element2, element3}};
+<<<
+var set = {
+  for (;;) ...{
+    element1,
+    element2,
+    element3,
+  },
+};
+>>> A split collection that isn't spread wraps and indents.
+var set = {for (;;) {element1, element2, element3}};
+<<<
+var set = {
+  for (;;)
+    {element1, element2, element3},
+};
+>>> A split collection that isn't spread wraps and indents.
+var set = {for (;;) {element1, element2, element3, element4}};
+<<<
+var set = {
+  for (;;)
+    {
+      element1,
+      element2,
+      element3,
+      element4,
+    },
+};
+>>> Force split if loop body is for element.
+var l = {for (;;) for (c in d) t};
+<<<
+var l = {
+  for (;;)
+    for (c in d) t,
+};
+>>> Force split if loop body is if element.
+var set = {
+  for (;;) if (c) d
+};
+<<<
+var set = {
+  for (;;)
+    if (c) d,
+};

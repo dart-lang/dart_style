@@ -58,6 +58,13 @@ for (var identifier
     in iteratableExpression) {
   body;
 }
+>>> Split inside initializer.
+for (var identifier in someVeryLong + iterableExpression) { body; }
+<<<
+for (var identifier in someVeryLong +
+    iterableExpression) {
+  body;
+}
 >>> Prefer block-like splitting after `in`.
 for (var identifier in [element, element, element]) { body; }
 <<<

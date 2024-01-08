@@ -1,0 +1,141 @@
+40 columns                              |
+>>> C-style for.
+var l = [for   (  var  i  =  0  ;  i  <  1  ;  i++  )  i];
+<<<
+var l = [for (var i = 0; i < 1; i++) i];
+>>> Empty clauses.
+var l = [for(  ;  ;  ) 1];
+<<<
+var l = [for (;;) 1];
+>>> Empty initializer clause.
+var l = [for (  ;   f; bar) 1];
+<<<
+var l = [for (; f; bar) 1];
+>>> Split in initializer.
+var list = [for (a = initializerExpression + thatDoesNotFit; a < 1; a++) body];
+<<<
+var list = [
+  for (
+    a =
+        initializerExpression +
+            thatDoesNotFit;
+    a < 1;
+    a++
+  )
+    body,
+];
+>>> Split in condition.
+var list = [for (a = b; conditionExpression + thatDoesNotFit; a++) body];
+<<<
+var list = [
+  for (
+    a = b;
+    conditionExpression +
+        thatDoesNotFit;
+    a++
+  )
+    body,
+];
+>>> Split in increment.
+var list = [for (a = b; a < 1; anIncrementExpression + thatDoesNotFit) body];
+<<<
+var list = [
+  for (
+    a = b;
+    a < 1;
+    anIncrementExpression +
+        thatDoesNotFit
+  )
+    body,
+];
+>>> Split inside for variable type.
+var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body];
+<<<
+var list = [
+  for (
+    LongGenericTypeName<
+      TypeArg,
+      AnotherTypeArgument
+    > a = 0;
+    a < 1;
+    a++
+  )
+    body,
+];
+>>> Split inside variable type with empty clauses.
+var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a;;) body];
+<<<
+var list = [
+  for (
+    LongGenericTypeName<
+      TypeArg,
+      AnotherTypeArgument
+    > a;
+    ;
+  )
+    body,
+];
+>>> Prefer splitting collection instead of body.
+var list = [for (;;) longThingThatIsLong];
+<<<
+var list = [
+  for (;;) longThingThatIsLong,
+];
+>>> Split outer for but not inner.
+var list = [for (;;) for (c in d) longThingThatIsLong];
+<<<
+var list = [
+  for (;;)
+    for (c in d) longThingThatIsLong,
+];
+>>> Unsplit in split collection.
+var list = [veryLongThingThatForcesASplit, for (;;) 2, 3];
+<<<
+var list = [
+  veryLongThingThatForcesASplit,
+  for (;;) 2,
+  3,
+];
+>>> Long loop body forces split.
+var list = [1, for (;;) veryLongThingThatForcesASplit, 3];
+<<<
+var list = [
+  1,
+  for (;;)
+    veryLongThingThatForcesASplit,
+  3,
+];
+>>> Split inside loop body.
+var list = [1, for (;;) veryLongThingThatForcesASplit + anotherLongThing, 3];
+<<<
+var list = [
+  1,
+  for (;;)
+    veryLongThingThatForcesASplit +
+        anotherLongThing,
+  3,
+];
+>>> Force split if loop body is for element.
+var l = [for (;;) for (c in d) t];
+<<<
+var l = [
+  for (;;)
+    for (c in d) t,
+];
+>>> Force split if loop body is if element.
+var map = {
+  for (;;) if (c) d
+};
+<<<
+var map = {
+  for (;;)
+    if (c) d,
+};
+>>> A control flow element in an inner list doesn't force the outer to split.
+var l = [for (;;) [if (c) d]];
+<<<
+var l = [for (;;) [if (c) d]];
+>>>
+var l = [for (;;) [for (c in d) e]];
+<<<
+var l = [for (;;) [for (c in d) e]];

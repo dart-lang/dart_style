@@ -1,0 +1,34 @@
+40 columns                              |
+### Tests for spread (and unspread) maps inside for elements.
+>>> Spread list inside for stays on one line if it fits.
+var map = {for (;;) ...{1: 1, 2: 2}};
+<<<
+var map = {for (;;) ...{1: 1, 2: 2}};
+>>> Spread list inside for formats like block if it splits.
+var map = {for (;;) ...{element1: 1, element2: 2, element3: 3}};
+<<<
+var map = {
+  for (;;) ...{
+    element1: 1,
+    element2: 2,
+    element3: 3,
+  },
+};
+>>> A split collection that isn't spread wraps and indents.
+var map = {for (;;) {element1: one, element2: two}};
+<<<
+var map = {
+  for (;;)
+    {element1: one, element2: two},
+};
+>>> A split collection that isn't spread wraps and indents.
+var map = {for (;;) {element1: 1, element2: 2, element3: 3}};
+<<<
+var map = {
+  for (;;)
+    {
+      element1: 1,
+      element2: 2,
+      element3: 3,
+    },
+};
