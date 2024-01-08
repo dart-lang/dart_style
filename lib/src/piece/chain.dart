@@ -12,9 +12,7 @@ import 'piece.dart';
 
 /// A dotted series of property access or method calls, like:
 ///
-/// ```
-/// target.getter.method().another.method();
-/// ```
+///     target.getter.method().another.method();
 ///
 /// This piece handles splitting before the `.`.
 class ChainPiece extends Piece {

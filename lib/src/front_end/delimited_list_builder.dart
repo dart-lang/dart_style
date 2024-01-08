@@ -67,9 +67,7 @@ class DelimitedListBuilder {
   /// after [bracket]. This is used for parameter lists where all parameters
   /// are optional or named, as in:
   ///
-  /// ```
-  /// function([parameter]);
-  /// ```
+  ///     function([parameter]);
   ///
   /// Here, [bracket] will be `(` and [delimiter] will be `[`.
   void leftBracket(Token bracket, {Piece? preceding, Token? delimiter}) {
@@ -90,9 +88,7 @@ class DelimitedListBuilder {
   /// after [bracket]. This is used for parameter lists with optional or named
   /// parameters, like:
   ///
-  /// ```
-  /// function(mandatory, {named});
-  /// ```
+  ///     function(mandatory, {named});
   ///
   /// Here, [bracket] will be `)` and [delimiter] will be `}`.
   ///
@@ -107,13 +103,11 @@ class DelimitedListBuilder {
     // bracket. If there is a delimiter, this will move comments between it and
     // the bracket to before the delimiter, as in:
     //
-    // ```
-    // // Before:
-    // f([parameter] /* comment */) {}
+    //     // Before:
+    //     f([parameter] /* comment */) {}
     //
-    // // After:
-    // f([parameter /* comment */]) {}
-    // ```
+    //     // After:
+    //     f([parameter /* comment */]) {}
     if (delimiter != null) {
       commentsBefore = _visitor.comments
           .takeCommentsBefore(delimiter)
@@ -188,15 +182,11 @@ class DelimitedListBuilder {
     // Preserve any comments before the delimiter. Treat them as occurring
     // before the previous element's comma. This means that:
     //
-    // ```
-    // function(p1, /* comment */ [p1]);
-    // ```
+    //     function(p1, /* comment */ [p1]);
     //
     // Will be formatted as:
     //
-    // ```
-    // function(p1 /* comment */, [p1]);
-    // ```
+    //     function(p1 /* comment */, [p1]);
     //
     // (In practice, it's such an unusual place for a comment that it doesn't
     // matter that much where it goes and this seems to be simple and
@@ -280,13 +270,11 @@ class DelimitedListBuilder {
   ///
   /// For example:
   ///
-  /// ```
-  /// function(
-  ///   argument /* inline */, // hanging
-  ///   // separate
-  ///   /* leading */ nextArgument
-  /// );
-  /// ```
+  ///     function(
+  ///       argument /* inline */, // hanging
+  ///       // separate
+  ///       /* leading */ nextArgument
+  ///     );
   ///
   /// Calculating these takes into account whether there are newlines before or
   /// after the comments, and which side of the commas the comments appear on.
@@ -322,12 +310,10 @@ class DelimitedListBuilder {
     // Inline block comments before the `,` stay with the preceding element, as
     // in:
     //
-    // ```
-    // function(
-    //   argument /* hanging */ /* comment */,
-    //   argument,
-    // );
-    // ```
+    //     function(
+    //       argument /* hanging */ /* comment */,
+    //       argument,
+    //     );
     var inlineCommentCount = 0;
     if (_elements.isNotEmpty) {
       while (inlineCommentCount < _commentsBeforeComma.length) {
@@ -361,12 +347,10 @@ class DelimitedListBuilder {
     // Inline block comments on the same line as the next element lead at the
     // beginning of that line, as in:
     ///
-    // ```
-    // function(
-    //   argument,
-    //   /* leading */ /* comment */ argument,
-    // );
-    // ```
+    //     function(
+    //       argument,
+    //       /* leading */ /* comment */ argument,
+    //     );
     var leadingCommentCount = 0;
     if (hasElementAfter && commentsBeforeElement.isNotEmpty) {
       while (leadingCommentCount < commentsBeforeElement.length) {
@@ -386,14 +370,12 @@ class DelimitedListBuilder {
     // Comments that are neither hanging nor leading are formatted like
     // separate elements, as in:
     //
-    // ```
-    // function(
-    //   argument,
-    //   /* comment */
-    //   argument,
-    //   // another
-    // );
-    // ```
+    //     function(
+    //       argument,
+    //       /* comment */
+    //       argument,
+    //       // another
+    //     );
     var separateComments =
         separateCommentsBeforeComma.concatenate(separateCommentsAfterComma);
 
@@ -433,13 +415,11 @@ class DelimitedListBuilder {
     // be it.
     // TODO(tall): The old formatter allows multiple block arguments, like:
     //
-    // ```
-    // function(() {
-    //   body;
-    // }, () {
-    //   more;
-    // });
-    // ```
+    //     function(() {
+    //       body;
+    //     }, () {
+    //       more;
+    //     });
     //
     // This doesn't seem very common in the Flutter repo, but does occur
     // sometimes. We'll probably want to experiment to see if it's worth

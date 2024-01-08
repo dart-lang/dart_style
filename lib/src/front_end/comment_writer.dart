@@ -193,15 +193,13 @@ class SourceComment {
 ///
 /// For example, this code:
 ///
-/// ```dart
-/// a /* c1 */
-/// /* c2 */
+///     a /* c1 */
+///     /* c2 */
 ///
-/// /* c3 */
+///     /* c3 */
 ///
 ///
-/// b
-/// ```
+///     b
 ///
 /// Produces a sequence like:
 ///

@@ -20,10 +20,8 @@ class ForPiece extends Piece {
   /// the body isn't a block, then we allow a discretionary split after the
   /// loop parts, as in:
   ///
-  /// ```
-  /// for (;;)
-  ///   print("ok");
-  /// ```
+  ///     for (;;)
+  ///       print("ok");
   final bool _hasBlockBody;
 
   ForPiece(this._forKeyword, this._forParts, this._body,
