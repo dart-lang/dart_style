@@ -1536,7 +1536,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     Token? rightDelimiter;
     if (namedFields != null) {
-      // If this is the first named field, put the delimiter before it.
+      // If we have both positional fields and named fields, then we need to add
+      // the left bracket delimiter before the first named field.
       if (positionalFields.isNotEmpty) {
         builder.leftDelimiter(namedFields.leftBracket);
       }
