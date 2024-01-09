@@ -1430,19 +1430,59 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRecordTypeAnnotation(RecordTypeAnnotation node) {
-    throw UnimplementedError();
+    var namedFields = node.namedFields;
+    var positionalFields = node.positionalFields;
+
+    // Single positional record types always have a trailing comma.
+    var listStyle = positionalFields.length == 1 && namedFields == null
+        ? const ListStyle(commas: Commas.alwaysTrailing)
+        : const ListStyle(commas: Commas.trailing);
+    var builder = DelimitedListBuilder(this, listStyle);
+
+    // If all parameters are optional, put the `{` right after `(`.
+    if (positionalFields.isEmpty && namedFields != null) {
+      builder.leftBracket(
+        node.leftParenthesis,
+        delimiter: namedFields.leftBracket,
+      );
+    } else {
+      builder.leftBracket(node.leftParenthesis);
+    }
+
+    for (var positionalField in positionalFields) {
+      builder.visit(positionalField);
+    }
+
+    Token? rightDelimiter;
+    if (namedFields != null) {
+      // If we have both positional fields and named fields, then we need to add
+      // the left bracket delimiter before the first named field.
+      if (positionalFields.isNotEmpty) {
+        builder.leftDelimiter(namedFields.leftBracket);
+      }
+      for (var namedField in namedFields.fields) {
+        builder.visit(namedField);
+      }
+      rightDelimiter = namedFields.rightBracket;
+    }
+
+    builder.rightBracket(node.rightParenthesis, delimiter: rightDelimiter);
+    return buildPiece((b) {
+      b.add(builder.build());
+      b.token(node.question);
+    });
   }
 
   @override
   Piece visitRecordTypeAnnotationNamedField(
       RecordTypeAnnotationNamedField node) {
-    throw UnimplementedError();
+    return createRecordTypeField(node);
   }
 
   @override
   Piece visitRecordTypeAnnotationPositionalField(
       RecordTypeAnnotationPositionalField node) {
-    throw UnimplementedError();
+    return createRecordTypeField(node);
   }
 
   @override

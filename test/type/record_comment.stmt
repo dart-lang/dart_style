@@ -1,0 +1,65 @@
+40 columns                              |
+>>> Comment between the type and name of a field.
+(int  // comment
+value, String label) x;
+<<<
+(
+  int // comment
+  value,
+  String label,
+) x;
+>>> Comment after field and comma.
+(int value, // comment
+String label) x;
+<<<
+(
+  int value, // comment
+  String label,
+) x;
+>>> Comment before field and comma.
+(int value // comment
+,String label) x;
+<<<
+(
+  int value, // comment
+  String label,
+) x;
+>>> Comment between positional and named delimiter.
+(int value, // comment
+{String label}) 
+x;
+<<<
+(
+  int value, { // comment
+  String label,
+}) x;
+>>> Comment after named left delimiter.
+(int value, {  // comment
+String label}) 
+x;
+<<<
+(
+  int value, { // comment
+  String label,
+}) x;
+>>> Comment after named right delimiter.
+(int value, {String label}  // comment
+)
+x;
+<<<
+(
+  int value, {
+  String label, // comment
+}) x;
+>>> Comment between record type and nullable question mark.
+(int value  , ) // comment
+? x;
+<<<
+(int value,) // comment
+? x;
+>>> Comment after record type.
+(int value,     String label) // comment
+x;
+<<<
+(int value, String label) // comment
+x;
