@@ -330,7 +330,11 @@ mixin PieceFactory {
         //     }
         //
         // Currently, the formatter prefers 1 over 3. We may want to revisit
-        // that and prefer 3 instead.
+        // that and prefer 3 instead. Or perhaps we shouldn't pass
+        // `allowInnerSplit: true` and force the `in` to split if the
+        // initializer does. That would be consistent with how we handle
+        // splitting before `case` when the pattern has a newline in an if-case
+        // statement or element.
         return buildPiece((b) {
           b.token(leftParenthesis);
           b.add(createAssignment(
