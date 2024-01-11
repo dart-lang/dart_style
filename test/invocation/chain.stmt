@@ -1,0 +1,102 @@
+40 columns                              |
+>>> Keep chain on one line if it fits.
+compiler.something().something().some();
+<<<
+compiler.something().something().some();
+>>> Split all chained calls if they don't fit on one line.
+compiler.something().something().something();
+<<<
+compiler
+    .something()
+    .something()
+    .something();
+>>> Indent contents of split argument lists in calls.
+target.arguments(argument1, argument2, argument3)
+.list([element1, element2, element3]).function(() {body;})
+.operator(someLongOperand + anotherLongOperand);
+<<<
+target
+    .arguments(
+      argument1,
+      argument2,
+      argument3,
+    )
+    .list([
+      element1,
+      element2,
+      element3,
+    ])
+    .function(() {
+      body;
+    })
+    .operator(
+      someLongOperand +
+          anotherLongOperand,
+    );
+>>> Indent split calls past the target indentation.
+someVeryLongExpression = someVeryLongExpression.someLongMethod();
+<<<
+someVeryLongExpression =
+    someVeryLongExpression
+        .someLongMethod();
+>>> Don't split before an implicit receiver.
+return
+     firstLongMethod()
+    .secondLongMethod();
+<<<
+return firstLongMethod()
+    .secondLongMethod();
+>>> If call looks like named constructor, don't put in chain.
+Foo.named().method().method().method().method().method();
+<<<
+Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> If call looks like prefixed constructor, don't put in chain.
+prefix.Foo().method().method().method().method().method();
+<<<
+prefix.Foo()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> If call looks like prefixed named constructor, don't put in chain.
+prefix.Foo.named().method().method().method().method().method();
+<<<
+prefix.Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> If call looks like private named constructor, don't put in chain.
+_Foo.named().method().method().method().method().method();
+<<<
+_Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> If call looks like private prefixed constructor, don't put in chain.
+prefix._Foo().method().method().method().method().method();
+<<<
+prefix._Foo()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();
+>>> If call looks like private prefixed named constructor, don't put in chain.
+prefix._Foo.named().method().method().method().method().method();
+<<<
+prefix._Foo.named()
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();

@@ -1,0 +1,13 @@
+40 columns                              |
+>>> Unsplit.
+receiver ?.  method() ?. getter;
+<<<
+receiver?.method()?.getter;
+>>> In split method chain.
+object?.method().method()?.method().method();
+<<<
+object
+    ?.method()
+    .method()
+    ?.method()
+    .method();

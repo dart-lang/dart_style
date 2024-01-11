@@ -37,17 +37,14 @@ new prefix.TypeName(argument);
 const  prefix  .  Thing  .  name  (  argument  )  ;
 <<<
 const prefix.Thing.name(argument);
->>> Split at name.
+>>> Don't split at name.
 new VeryLongClassName.veryLongNamedConstructor();
 <<<
-new VeryLongClassName
-    .veryLongNamedConstructor();
->>> Split at name on prefixed named constructor.
+new VeryLongClassName.veryLongNamedConstructor();
+>>> Don't split at name on prefixed named constructor.
 new prefix.VeryLongClassName.veryLongNamedConstructor();
 <<<
-new prefix
-    .VeryLongClassName
-    .veryLongNamedConstructor();
+new prefix.VeryLongClassName.veryLongNamedConstructor();
 >>> Allow block-formatted argument.
 new Future(new Duration(1), () {
       print('I am a callback');

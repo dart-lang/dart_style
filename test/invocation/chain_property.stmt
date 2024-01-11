@@ -1,0 +1,53 @@
+40 columns                              |
+### Tests special (or not) handling of properties in call chains.
+>>> Don't split leading properties in a chain.
+compiler.property.property.method().method().method();
+<<<
+compiler.property.property
+    .method()
+    .method()
+    .method();
+>>> Don't split leading properties even if other properties split.
+compiler.property.method().property.method();
+<<<
+compiler.property
+    .method()
+    .property
+    .method();
+>>> Split properties after a method chain.
+compiler.method().method().method().property.property;
+<<<
+compiler
+    .method()
+    .method()
+    .method()
+    .property
+    .property;
+>>> Split properties inside a method chain.
+compiler.method().property.method().property.method();
+<<<
+compiler
+    .method()
+    .property
+    .method()
+    .property
+    .method();
+>>> Split all properties if any split.
+avian.bovine.canine.equine.feline.piscine;
+<<<
+avian
+    .bovine
+    .canine
+    .equine
+    .feline
+    .piscine;
+>>> Split all leading properties if any split.
+avian.bovine.canine.equine.feline.piscine.method();
+<<<
+avian
+    .bovine
+    .canine
+    .equine
+    .feline
+    .piscine
+    .method();

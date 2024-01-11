@@ -577,6 +577,29 @@ mixin PieceFactory {
     return builder.build();
   }
 
+  /// Creates a [Piece] for an index expression whose [target] has already been
+  /// converted to a piece.
+  ///
+  /// The [target] may be `null` if [index] is an index expression for a
+  /// cascade section.
+  Piece createIndexExpression(Piece? target, IndexExpression index) {
+    // TODO(tall): Consider whether we should allow splitting between
+    // successive index expressions, like:
+    //
+    //     jsonData['some long key']
+    //         ['another long key'];
+    //
+    // The current formatter allows it, but it's very rarely used (0.021% of
+    // index expressions in a corpus of pub packages).
+    return buildPiece((b) {
+      if (target != null) b.add(target);
+      b.token(index.question);
+      b.token(index.leftBracket);
+      b.visit(index.index);
+      b.token(index.rightBracket);
+    });
+  }
+
   /// Creates a single infix operation.
   ///
   /// If [hanging] is `true` then the operator goes at the end of the first

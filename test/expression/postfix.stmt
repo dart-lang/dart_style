@@ -31,3 +31,32 @@ obj!.getter!.method(arg)! + 3;
 obj ! [ index ] ! ( call ) ! + 3;
 <<<
 obj![index]!(call)! + 3;
+>>> Simple index expression.
+list  [  123  ];
+<<<
+list[123];
+>>> Index expressions don't split.
+verylongIdentifier[someParticularlyLongArgument];
+<<<
+verylongIdentifier[someParticularlyLongArgument];
+>>> Split inside index.
+verylongIdentifier[someParticularly + longArgument];
+<<<
+verylongIdentifier[someParticularly +
+    longArgument];
+>>> Nested index expressions.
+verylongIdentifier[longIdentifier[someParticularlyLongArgument]];
+<<<
+verylongIdentifier[longIdentifier[someParticularlyLongArgument]];
+>>> Chained index expressions do not split.
+identifier[longArgument][longArgument][longArgument];
+<<<
+identifier[longArgument][longArgument][longArgument];
+>>> Null-aware index expression.
+list  ?  [  123  ];
+<<<
+list?[123];
+>>> Chained null-aware index expressions do not split.
+identifier?[longArgument][longArgument]?[longArgument];
+<<<
+identifier?[longArgument][longArgument]?[longArgument];

@@ -1,0 +1,161 @@
+40 columns                              |
+### Test how splits in call chain targets affect the chain.
+>>> Split function call target with unsplit chain.
+someTargetFunction(argument1, argument2).prop.method(1).method(2);
+<<<
+someTargetFunction(
+  argument1,
+  argument2,
+).prop.method(1).method(2);
+>>> Split function call target with block split chain.
+someTargetFunction(argument1, argument2)
+.prop.method(argument3, argument4, argument5);
+<<<
+someTargetFunction(
+  argument1,
+  argument2,
+).prop.method(
+  argument3,
+  argument4,
+  argument5,
+);
+>>> Split function call target with fully split chain.
+someTargetFunction(argument1, argument2, argument3)
+.method(argument).another(argument).third(argument);
+<<<
+someTargetFunction(
+      argument1,
+      argument2,
+      argument3,
+    )
+    .method(argument)
+    .another(argument)
+    .third(argument);
+>>> Split collection target with unsplit chain.
+[element1, element2, element3, element4].method().prop.another();
+<<<
+[
+  element1,
+  element2,
+  element3,
+  element4,
+].method().prop.another();
+>>> Split collection target with block split chain.
+[element1, element2, element3, element4].method().prop.another(
+argument1, argument2);
+<<<
+[element1, element2, element3, element4]
+    .method()
+    .prop
+    .another(argument1, argument2);
+>>>
+[element1, element2, element3, element4, element5].method().prop.another(
+argument1, argument2);
+<<<
+[
+  element1,
+  element2,
+  element3,
+  element4,
+  element5,
+].method().prop.another(
+  argument1,
+  argument2,
+);
+>>>
+[element1, element2, element3, element4].method().prop.another(
+argument1, argument2, argument3);
+<<<
+[
+  element1,
+  element2,
+  element3,
+  element4,
+].method().prop.another(
+  argument1,
+  argument2,
+  argument3,
+);
+>>> Allow split in function call target without splitting chain.
+function(argument1, argument2, argument3).method().chain();
+<<<
+function(
+  argument1,
+  argument2,
+  argument3,
+).method().chain();
+>>> Allow split in instance creation target without splitting chain.
+new Foo(argument1, argument2, argument3).method().chain();
+<<<
+new Foo(
+  argument1,
+  argument2,
+  argument3,
+).method().chain();
+>>> Allow split in list target without splitting chain.
+[element1, element2, element3, element4].method().chain();
+<<<
+[
+  element1,
+  element2,
+  element3,
+  element4,
+].method().chain();
+>>> Allow split in map target without splitting chain.
+return {key1: value1, key2: value2, key3: value3}.method().chain();
+<<<
+return {
+  key1: value1,
+  key2: value2,
+  key3: value3,
+}.method().chain();
+>>> Allow split in set target without splitting chain.
+return {element1, element2, element3, element4}.method().chain();
+<<<
+return {
+  element1,
+  element2,
+  element3,
+  element4,
+}.method().chain();
+>>> Allow split in record target without splitting chain.
+(element1, element2, element3, element4).method().chain();
+<<<
+(
+  element1,
+  element2,
+  element3,
+  element4,
+).method().chain();
+>>> Allow split in function expression target without splitting chain.
+(parameter) {body;}.method().chain();
+<<<
+(parameter) {
+  body;
+}.method().chain();
+>>> Allow split in switch expression target without splitting chain.
+return switch (value) {1 => true, 2 => false, 3 => true}.method().chain();
+<<<
+return switch (value) {
+  1 => true,
+  2 => false,
+  3 => true,
+}.method().chain();
+>>> Allow split in parenthesized target if inner expression allows it.
+(([element1, element2, element3, element4])).method().chain();
+<<<
+(([
+  element1,
+  element2,
+  element3,
+  element4,
+])).method().chain();
+>>> Split in other target expression forces chain to fully split.
+(operand1 + operand2 + operand3 + operand4).method().chain(argument);
+<<<
+(operand1 +
+        operand2 +
+        operand3 +
+        operand4)
+    .method()
+    .chain(argument);

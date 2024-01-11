@@ -12,7 +12,6 @@ import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
-import '../piece/chain.dart';
 import '../piece/constructor.dart';
 import '../piece/for.dart';
 import '../piece/if.dart';
@@ -22,6 +21,7 @@ import '../piece/piece.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
 import 'adjacent_builder.dart';
+import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
 import 'piece_factory.dart';
@@ -412,18 +412,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitConstructorName(ConstructorName node) {
-    // If there is an import prefix and/or constructor name, then allow
-    // splitting before the `.`. This doesn't look good, but is consistent with
-    // constructor calls that don't have `new` or `const`. We allow splitting
-    // in the latter because there is no way to distinguish syntactically
-    // between a named constructor call and any other kind of method call or
-    // property access.
-    var operations = <Piece>[];
-
     var builder = AdjacentBuilder(this);
     if (node.type.importPrefix case var importPrefix?) {
       builder.token(importPrefix.name);
-      operations.add(builder.build());
       builder.token(importPrefix.period);
     }
 
@@ -435,16 +426,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     // If this is a named constructor, the name.
     if (node.name != null) {
-      operations.add(builder.build());
       builder.token(node.period);
       builder.visit(node.name);
     }
 
     // If there was a prefix or constructor name, then make a splittable piece.
     // Otherwise, the current piece is a simple identifier for the name.
-    operations.add(builder.build());
-    if (operations.length == 1) return operations.first;
-    return ChainPiece(operations);
+    return builder.build();
   }
 
   @override
@@ -1027,16 +1015,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIndexExpression(IndexExpression node) {
-    // TODO(tall): Allow splitting before and/or after the `[` when method
-    // chain formatting is fully implemented. For now, we just output the code
-    // so that tests of other language features that contain index expressions
-    // can run.
-    return buildPiece((b) {
-      b.visit(node.target);
-      b.token(node.leftBracket);
-      b.visit(node.index);
-      b.token(node.rightBracket);
-    });
+    Piece? targetPiece;
+    if (node.target case var target?) targetPiece = nodePiece(target);
+    return createIndexExpression(targetPiece, node);
   }
 
   @override
@@ -1044,18 +1025,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var builder = AdjacentBuilder(this);
     builder.token(node.keyword, spaceAfter: true);
 
-    // If there is an import prefix and/or constructor name, then allow
-    // splitting before the `.`. This doesn't look good, but is consistent with
-    // constructor calls that don't have `new` or `const`. We allow splitting
-    // in the latter because there is no way to distinguish syntactically
-    // between a named constructor call and any other kind of method call or
-    // property access.
-    var operations = <Piece>[];
-
     var constructor = node.constructorName;
     if (constructor.type.importPrefix case var importPrefix?) {
       builder.token(importPrefix.name);
-      operations.add(builder.build());
       builder.token(importPrefix.period);
     }
 
@@ -1066,19 +1038,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     // If this is a named constructor call, the name.
     if (constructor.name case var name?) {
-      operations.add(builder.build());
       builder.token(constructor.period);
       builder.visit(name);
     }
 
     builder.visit(node.argumentList);
-    operations.add(builder.build());
 
-    if (operations.length > 1) {
-      return ChainPiece(operations);
-    } else {
-      return operations.first;
-    }
+    return builder.build();
   }
 
   @override
@@ -1195,15 +1161,23 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitMethodInvocation(MethodInvocation node) {
-    return buildPiece((b) {
-      // TODO(tall): Support splitting at `.` or `?.`. Right now we just format
-      // it inline so that we can use method calls in other tests.
-      b.visit(node.target);
-      b.token(node.operator);
-      b.visit(node.methodName);
-      b.visit(node.typeArguments);
-      b.visit(node.argumentList);
-    });
+    // If there's no target, this is a "bare" function call like "foo(1, 2)",
+    // or a section in a cascade.
+    //
+    // If it looks like a constructor or static call, we want to keep the
+    // target and method together instead of including the method in the
+    // subsequent method chain.
+    if (node.target == null || node.looksLikeStaticCall) {
+      return buildPiece((b) {
+        b.visit(node.target);
+        b.token(node.operator);
+        b.visit(node.methodName);
+        b.visit(node.typeArguments);
+        b.visit(node.argumentList);
+      });
+    }
+
+    return ChainBuilder(this, node).build();
   }
 
   @override
@@ -1354,14 +1328,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPrefixedIdentifier(PrefixedIdentifier node) {
-    // TODO(tall): Allow splitting before the `.` when method chain formatting
-    // is fully implemented. For now, we just output the code so that tests
-    // of other language features that contain prefixed identifiers can run.
-    return buildPiece((b) {
-      b.visit(node.prefix);
-      b.token(node.period);
-      b.visit(node.identifier);
-    });
+    return ChainBuilder(this, node).build();
   }
 
   @override
@@ -1382,14 +1349,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPropertyAccess(PropertyAccess node) {
-    // TODO(tall): Allow splitting before the `.` when method chain formatting
-    // is fully implemented. For now, we just output the code so that tests
-    // of other language features that contain property accesses can run.
-    return buildPiece((b) {
-      b.visit(node.target);
-      b.token(node.operator);
-      b.visit(node.propertyName);
-    });
+    return ChainBuilder(this, node).build();
   }
 
   @override

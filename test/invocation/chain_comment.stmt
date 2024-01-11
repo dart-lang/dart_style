@@ -1,0 +1,93 @@
+40 columns                              |
+>>> Line comment before `.` on property.
+target // c
+.property.other;
+<<<
+target // c
+    .property
+    .other;
+>>> Line comment after `.` on property.
+target. // c
+property.other;
+<<<
+### Ugly, but not where users place comments.
+target
+    . // c
+    property
+    .other;
+>>> Line comment before `.` on method.
+target // c
+.method().other();
+<<<
+target // c
+    .method()
+    .other();
+>>> Line comment after `.` on property.
+target. // c
+method().other();
+<<<
+### Ugly, but not where users place comments.
+target
+    . // c
+    method()
+    .other();
+>>> Line comments between calls.
+target // c1
+.a(1) // c2
+.b // c3
+.c() // c4
+.d(2);
+<<<
+target // c1
+    .a(1) // c2
+    .b // c3
+    .c() // c4
+    .d(2);
+>>> Line comment after method chain.
+target.prop.method() // c
+;
+<<<
+### A little weird to force the split, but users don't put comments here.
+target.prop
+    .method() // c
+    ;
+>>> Line comment after method chain.
+target.prop.method(); // c
+<<<
+target.prop.method(); // c
+>>> Line comment after method chain.
+target.prop.method(); // very long comment
+<<<
+target.prop
+    .method(); // very long comment
+>>> Line comment in target argument list.
+someFunction(// c
+someExtremelyLongArgumentName).clamp();
+<<<
+someFunction(
+  // c
+  someExtremelyLongArgumentName,
+).clamp();
+>>> Line comment in method chain argument list.
+target.method(// c
+);
+<<<
+target.method(
+  // c
+);
+>>>
+target.first(// c1
+).second(// c2
+).third(// c3
+);
+<<<
+target
+    .first(
+      // c1
+    )
+    .second(
+      // c2
+    )
+    .third(
+      // c3
+    );
