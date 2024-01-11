@@ -43,7 +43,9 @@ import 'piece.dart';
 ///         .method(
 ///           argument,
 ///           argument,
-///         ).another.method(
+///         )
+///         .another
+///         .method(
 ///           argument,
 ///           argument,
 ///         );

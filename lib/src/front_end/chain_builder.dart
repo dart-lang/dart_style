@@ -184,7 +184,8 @@ class ChainBuilder {
     }
   }
 
-  /// Creates a Piece for [target].
+  /// Creates and stores the resulting Piece for [target] as well as whether it
+  /// allows being split.
   void _visitTarget(Expression target) {
     _allowSplitInTarget = target.canBlockSplit;
     _target = _visitor.nodePiece(target);
