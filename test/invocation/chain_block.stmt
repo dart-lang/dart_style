@@ -1,0 +1,158 @@
+40 columns                              |
+### Tests "block-like" formatting of method chains where we don't split at
+### "." while still allowing newlines in some argument lists.
+>>> Block format single call with regular arguments.
+target.method(argument1, argument2, argument3);
+<<<
+target.method(
+  argument1,
+  argument2,
+  argument3,
+);
+>>> Block format single call with collection argument.
+target.method([element1, element2, element3]);
+<<<
+target.method([
+  element1,
+  element2,
+  element3,
+]);
+>>> Block format single call with function argument.
+target.method(() { body; });
+<<<
+target.method(() {
+  body;
+});
+>>> Block format single call with line comment in argument list.
+target.method(// comment
+);
+<<<
+target.method(
+  // comment
+);
+>>> Block format single call with block comment in argument list.
+target.method(/* a very long comment */);
+<<<
+target.method(
+  /* a very long comment */
+);
+>>> Allow block format with leading properties.
+target.property1.property2.method(argument1, argument2);
+<<<
+target.property1.property2.method(
+  argument1,
+  argument2,
+);
+>>> If leading properties split, then don't block format.
+target.property1.property2.property3.method(argument1, argument2, argument3);
+<<<
+target.property1.property2.property3
+    .method(
+      argument1,
+      argument2,
+      argument3,
+    );
+>>> Allow block format with leading calls.
+target.zero().one(1).two(1, 2).method(argument);
+<<<
+target.zero().one(1).two(1, 2).method(
+  argument,
+);
+>>> Allow unsplit method chain with function at end.
+compiler
+    .run(script)
+    .then((_) {
+      body;
+    });
+<<<
+compiler.run(script).then((_) {
+  body;
+});
+>>> Don't block format if the preceding chain doesn't fit on one line.
+compiler
+    .run(longerScriptArgumentHere)
+    .then((_) {
+      body;
+    });
+<<<
+compiler
+    .run(longerScriptArgumentHere)
+    .then((_) {
+      body;
+    });
+>>>
+target.property1.property2.property3.method(argument);
+<<<
+target.property1.property2.property3
+    .method(argument);
+>>> Allow a trailing property after the block-formatted call.
+target.method(argument1, argument2).property;
+<<<
+target.method(
+  argument1,
+  argument2,
+).property;
+>>> Allow a trailing empty call after the block-formatted call.
+target.method(argument1, argument2).another();
+<<<
+target.method(
+  argument1,
+  argument2,
+).another();
+>>> Don't allow a trailing non-empty call after the block-formatted call.
+target.method(argument1, argument2).another(1);
+<<<
+target
+    .method(argument1, argument2)
+    .another(1);
+>>> Don't allow a trailing non-empty call after the block-formatted call.
+target.method(argument1, argument2).another(/* c */);
+<<<
+target
+    .method(argument1, argument2)
+    .another(/* c */);
+>>> Allow postfix before block call.
+target.prop!.other[1]().method(argument1, argument2);
+<<<
+target.prop!.other[1]().method(
+  argument1,
+  argument2,
+);
+>>> Allow postfix `!` on block call.
+target.method(argument1, argument2, argument3)!;
+<<<
+target.method(
+  argument1,
+  argument2,
+  argument3,
+)!;
+>>> Postfix index on block call.
+target.method(argument1, argument2, argument3)[index];
+<<<
+target.method(
+  argument1,
+  argument2,
+  argument3,
+)[index];
+>>> Postfix call on block call.
+target.method(argument1, argument2, argument3)(argument4);
+<<<
+target.method(
+  argument1,
+  argument2,
+  argument3,
+)(argument4);
+>>> Postfix call on block call.
+target.method(argument1, argument2, argument3)
+(argument4, argument5, argument6, argument7);
+<<<
+target.method(
+  argument1,
+  argument2,
+  argument3,
+)(
+  argument4,
+  argument5,
+  argument6,
+  argument7,
+);
