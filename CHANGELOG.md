@@ -1,7 +1,9 @@
 ## 2.3.5-wip
 
-* Use language version `3.3` to parse so that
-  code with extension types can be formatted.
+* Use language version `3.3` to parse so that code with extension types can be
+  formatted.
+* Support formatting the `macro` modifier when the `macros` experiment flag
+  is passed.
 
 ## 2.3.4
 
