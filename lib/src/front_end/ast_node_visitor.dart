@@ -956,10 +956,25 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         b.token(ifStatement.ifKeyword);
         b.space();
         b.token(ifStatement.leftParenthesis);
-        b.add(buildPiece((b) {
-          b.visit(ifStatement.expression);
-          b.visit(ifStatement.caseClause, spaceBefore: true);
-        }));
+
+        // If the condition needs to split, we prefer splitting before the
+        // `case` keyword, like:
+        //
+        //     if (obj
+        //         case 123456789012345678901234567890) {
+        //       body;
+        //     }
+        var expressionPiece = nodePiece(ifStatement.expression);
+        if (ifStatement.caseClause case var caseClause?) {
+          var caseClausePiece = nodePiece(caseClause);
+          b.add(AssignPiece(
+            expressionPiece,
+            caseClausePiece,
+          ));
+        } else {
+          b.add(expressionPiece);
+        }
+
         b.token(ifStatement.rightParenthesis);
         b.space();
       });

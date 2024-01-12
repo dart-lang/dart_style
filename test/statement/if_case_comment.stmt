@@ -1,0 +1,27 @@
+40 columns                              |
+>>> Line comment before case keyword.
+if (obj // comment
+case true) {;}
+<<<
+if (obj // comment
+    case true) {
+  ;
+}
+>>> Line comment after case keyword.
+if (obj case // comment
+true) {;}
+<<<
+if (obj
+    case // comment
+    true) {
+  ;
+}
+>>> Line comment after case clause.
+if (obj case true // comment
+) {;}
+<<<
+if (obj
+    case true // comment
+    ) {
+  ;
+}

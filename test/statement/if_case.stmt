@@ -5,3 +5,17 @@ if (obj case true) {;}
 if (obj case true) {
   ;
 }
+>>> Split long expression before case.
+if (thisIsReallyQuiteAVeryLongVariableName case 1) {;}
+<<<
+if (thisIsReallyQuiteAVeryLongVariableName
+    case 1) {
+  ;
+}
+>>> Split long case clause before case.
+if (obj case 123456789012345678901234567890) {;}
+<<<
+if (obj
+    case 123456789012345678901234567890) {
+  ;
+}
