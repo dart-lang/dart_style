@@ -151,8 +151,8 @@ void _testFile(
             indent: formatTest.leadingIndent,
             fixes: [...?baseFixes, ...formatTest.fixes],
             experimentFlags: useTallStyle
-                ? const ['inline-class', tallStyleExperimentFlag]
-                : const ['inline-class']);
+                ? const ['inline-class', 'macros', tallStyleExperimentFlag]
+                : const ['inline-class', 'macros']);
 
         var actual = formatter.formatSource(formatTest.input);
 
