@@ -45,12 +45,17 @@ class VariablePiece extends Piece {
   /// Whether the variable declaration has a type annotation.
   final bool _hasType;
 
+  /// Whether the variable piece is a declared variable pattern.
+  final bool _isDeclaredVarPattern;
+
   /// Creates a [VariablePiece].
   ///
   /// The [hasType] parameter should be `true` if the variable declaration has
   /// a type annotation.
-  VariablePiece(this._header, this._variables, {required bool hasType})
-      : _hasType = hasType;
+  VariablePiece(this._header, this._variables,
+      {required bool hasType, bool isDeclaredVarPattern = false})
+      : _hasType = hasType,
+        _isDeclaredVarPattern = isDeclaredVarPattern;
 
   @override
   List<State> get additionalStates => [
@@ -71,8 +76,18 @@ class VariablePiece extends Piece {
       writer.setAllowNewlines(false);
     }
 
+    // Declared variable patterns add an extra indentation if there's a split
+    // after the type, like:
+    //
+    //    if (obj
+    //        case SomeLongTypeName
+    //            longVariableName) {
+    //      ;
+    //    }
+    var splitIndent = _isDeclaredVarPattern ? Indent.expression : 0;
+
     // Split after the type annotation.
-    writer.splitIf(state == _afterType);
+    writer.splitIf(state == _afterType, indent: splitIndent);
 
     for (var i = 0; i < _variables.length; i++) {
       // Split between variables.
