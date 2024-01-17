@@ -35,3 +35,14 @@ if (obj
         x) {
   ;
 }
+>>> Line comment after type, before long name.
+if (obj
+    case final // c
+    thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+<<<
+if (obj case final // c
+        thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}

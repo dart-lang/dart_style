@@ -452,17 +452,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitDeclaredVariablePattern(DeclaredVariablePattern node) {
-    // We don't need any splitting behavior if we don't have a type.
-    if (node.keyword != null && node.type == null) {
-      return buildPiece((b) {
-        b.modifier(node.keyword);
-        b.visit(node.type, spaceAfter: true);
-        b.token(node.name);
-      });
-    }
-
-    // Build a [VariablePiece] that can split between the type and the variable
-    // name.
     var header = buildPiece((b) {
       b.modifier(node.keyword);
       b.visit(node.type);
@@ -470,7 +459,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     return VariablePiece(
       header,
       [tokenPiece(node.name)],
-      hasType: true,
+      hasType: node.type != null,
     );
   }
 
