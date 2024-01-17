@@ -49,6 +49,10 @@ sec‹ond"""  ;›
 <<<
 """first
 sec‹ond""";›
+>>> In string interpolation.
+foo(  "$fi‹rst",  "${  sec›ond  }" );
+<<<
+foo("$fi‹rst", "${sec›ond}");
 >>> Only whitespace in zero space selected.
 foo(  ‹  ›  argument);
 <<<

@@ -156,14 +156,6 @@ extension ExpressionExtensions on Expression {
       expression = expression.expression;
     }
 
-    // TODO(tall): We should also allow multi-line strings to be formatted
-    // like block arguments, at least in some cases like:
-    //
-    //     function('''
-    //       Lots of
-    //       text
-    //     ''');
-
     // TODO(tall): Consider whether immediately-invoked function expressions
     // should be block argument candidates, like:
     //
@@ -177,6 +169,8 @@ extension ExpressionExtensions on Expression {
         parameters.parameters.canSplit(parameters.rightParenthesis) ||
             (body is BlockFunctionBody &&
                 body.block.statements.canSplit(body.block.rightBracket)),
+
+      // Non-empty collection literals can block split.
       ListLiteral(:var elements, :var rightBracket) ||
       SetOrMapLiteral(:var elements, :var rightBracket) =>
         elements.canSplit(rightBracket),
@@ -184,9 +178,17 @@ extension ExpressionExtensions on Expression {
         fields.canSplit(rightParenthesis),
       SwitchExpression(:var cases, :var rightBracket) =>
         cases.canSplit(rightBracket),
+
+      // Function calls can block split if their argument lists can.
       InstanceCreationExpression(:var argumentList) ||
       MethodInvocation(:var argumentList) =>
         argumentList.arguments.canSplit(argumentList.rightParenthesis),
+
+      // Multi-line strings can.
+      StringInterpolation(isMultiline: true) => true,
+      SimpleStringLiteral(isMultiline: true) => true,
+
+      // Parenthesized expressions can if the inner one can.
       ParenthesizedExpression(:var expression) => expression.canBlockSplit,
       _ => false,
     };

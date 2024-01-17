@@ -98,13 +98,7 @@ class TextPiece extends Piece {
   /// preceding comments that are on their own line will have multiple. These
   /// are stored as separate lines instead of a single multi-line string so that
   /// each line can be indented appropriately during formatting.
-  final List<String> _lines = [];
-
-  /// True if this text piece contains or ends with a mandatory newline.
-  ///
-  /// This can be from line comments, block comments with newlines inside,
-  /// multiline strings, etc.
-  bool _containsNewline = false;
+  final List<_Line> _lines = [];
 
   /// Whitespace at the end of this [TextPiece].
   ///
@@ -116,6 +110,14 @@ class TextPiece extends Piece {
   /// empty [_lines] list on the first write.
   Whitespace _trailingWhitespace = Whitespace.newline;
 
+  /// Whether the line after the next newline written should be fixed at column
+  /// one or indented to match the surrounding code.
+  ///
+  /// This is false for most lines, but is true for multiline strings where
+  /// subsequent lines in the string don't get any additional indentation from
+  /// formatting.
+  bool _flushLeft = false;
+
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionStart;
@@ -125,48 +127,43 @@ class TextPiece extends Piece {
   int? _selectionEnd;
 
   /// Whether the last line of this piece's text ends with [text].
-  bool endsWith(String text) => _lines.isNotEmpty && _lines.last.endsWith(text);
+  bool endsWith(String text) =>
+      _lines.isNotEmpty && _lines.last._text.endsWith(text);
 
   /// Append [text] to the end of this piece.
   ///
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
-  void append(String text, {bool containsNewline = false}) {
+  void append(String text) {
     // Write any pending whitespace into the text.
     switch (_trailingWhitespace) {
       case Whitespace.none:
         break; // Nothing to do.
       case Whitespace.space:
-        // TODO(perf): Consider a faster way of accumulating text.
-        _lines.last += ' ';
+        _lines.last.append(' ');
       case Whitespace.newline:
-        _lines.add('');
+        _lines.add(_Line(flushLeft: _flushLeft));
       case Whitespace.blankLine:
         throw UnsupportedError('No blank lines in TextPieces.');
     }
 
     _trailingWhitespace = Whitespace.none;
+    _flushLeft = false;
 
-    // TODO(perf): Consider a faster way of accumulating text.
-    _lines.last = _lines.last + text;
-
-    if (containsNewline) _containsNewline = true;
+    _lines.last.append(text);
   }
 
   void space() {
     _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.space);
   }
 
-  void newline() {
+  void newline({bool flushLeft = false}) {
     _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.newline);
+    _flushLeft = flushLeft;
   }
 
   @override
   void format(CodeWriter writer, State state) {
-    // Let the writer know if there are any embedded newlines even if there is
-    // only one "line" in [_lines].
-    if (_containsNewline) writer.handleNewline();
-
     if (_selectionStart case var start?) {
       writer.startSelection(start);
     }
@@ -176,8 +173,9 @@ class TextPiece extends Piece {
     }
 
     for (var i = 0; i < _lines.length; i++) {
-      if (i > 0) writer.newline();
-      writer.write(_lines[i]);
+      var line = _lines[i];
+      if (i > 0) writer.newline(flushLeft: line._isFlushLeft);
+      writer.write(line._text);
     }
 
     writer.whitespace(_trailingWhitespace);
@@ -201,7 +199,7 @@ class TextPiece extends Piece {
   /// Adjust [offset] by the current length of this [TextPiece].
   int _adjustSelection(int offset) {
     for (var line in _lines) {
-      offset += line.length;
+      offset += line._text.length;
     }
 
     if (_trailingWhitespace == Whitespace.space) offset++;
@@ -210,7 +208,26 @@ class TextPiece extends Piece {
   }
 
   @override
-  String toString() => '`${_lines.join('¬')}`${_containsNewline ? '!' : ''}';
+  String toString() => '`${_lines.join('¬')}`';
+}
+
+/// A single line of text within a [TextPiece].
+class _Line {
+  String _text = '';
+
+  /// Whether this line should start at column one or use the surrounding
+  /// indentation.
+  final bool _isFlushLeft;
+
+  _Line({required bool flushLeft}) : _isFlushLeft = flushLeft;
+
+  void append(String text) {
+    // TODO(perf): Consider a faster way of accumulating text.
+    _text += text;
+  }
+
+  @override
+  String toString() => _text;
 }
 
 /// A piece that writes a single space.

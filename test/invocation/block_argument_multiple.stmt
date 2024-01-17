@@ -64,3 +64,12 @@ function(switch (a) {}, switch (b) { 1 => 2 }, switch (c) {});
 function(switch (a) {}, switch (b) {
   1 => 2,
 }, switch (c) {});
+>>> Collection and multi-line string prevents block formatting.
+function([element, element], '''multiple
+lines''');
+<<<
+function(
+  [element, element],
+  '''multiple
+lines''',
+);

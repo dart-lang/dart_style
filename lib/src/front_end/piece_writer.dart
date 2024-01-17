@@ -11,6 +11,9 @@ import '../piece/piece.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 
+/// RegExp that matches any valid Dart line terminator.
+final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
+
 /// Builds [TextPiece]s for [Token]s and comments.
 ///
 /// Handles updating selection markers and attaching comments to the tokens
@@ -69,6 +72,22 @@ class PieceWriter {
     return tokenPiece;
   }
 
+  /// Creates a piece for a simple or interpolated string [literal].
+  ///
+  /// Handles splitting it into multiple lines in the resulting [TextPiece] if
+  /// [isMultiline] is `true`.
+  Piece stringLiteralPiece(Token literal, {required bool isMultiline}) {
+    if (!isMultiline) return tokenPiece(literal);
+
+    if (!_writeCommentsBefore(literal)) {
+      // We want this token to be in its own TextPiece, so if the comments
+      // didn't already lead to ending the previous TextPiece than do so now.
+      _currentText = TextPiece();
+    }
+
+    return _writeMultiLine(literal.lexeme, offset: literal.offset);
+  }
+
   // TODO(tall): Much of the comment handling code in CommentWriter got moved
   // into here, so there isn't great separation of concerns anymore. Can we
   // organize this code better? Or just combine CommentWriter with this class
@@ -95,9 +114,7 @@ class PieceWriter {
   Piece writeComment(SourceComment comment) {
     _currentText = TextPiece();
 
-    _write(comment.text,
-        offset: comment.offset, containsNewline: comment.text.contains('\n'));
-    return _currentText;
+    return _writeMultiLine(comment.text, offset: comment.offset);
   }
 
   /// Writes all of the comments that appear between [token] and the previous
@@ -146,8 +163,7 @@ class PieceWriter {
         _currentText.newline();
       }
 
-      _write(comment.text,
-          offset: comment.offset, containsNewline: comment.text.contains('\n'));
+      _write(comment.text, offset: comment.offset);
     }
 
     // Output a trailing newline after the last comment if it needs one.
@@ -180,14 +196,31 @@ class PieceWriter {
       _currentText = TextPiece();
     }
 
-    _write(lexeme ?? token.lexeme, offset: token.offset);
+    lexeme ??= token.lexeme;
+
+    _write(lexeme, offset: token.offset);
+  }
+
+  /// Writes multi-line [text] to the current [TextPiece].
+  ///
+  /// Handles breaking [text] into lines and adding them to the [TextPiece].
+  Piece _writeMultiLine(String lexeme, {required int offset}) {
+    var lines = lexeme.split(_lineTerminatorPattern);
+    var currentOffset = offset;
+    for (var i = 0; i < lines.length; i++) {
+      if (i > 0) _currentText.newline(flushLeft: true);
+      _write(lines[i], offset: currentOffset);
+      currentOffset += lines[i].length;
+    }
+
+    return _currentText;
   }
 
   /// Writes [text] to the current [TextPiece].
   ///
   /// If [offset] is given and it contains any selection markers, then attaches
   /// those markers to the [TextPiece].
-  void _write(String text, {bool containsNewline = false, int? offset}) {
+  void _write(String text, {int? offset}) {
     if (offset != null) {
       // If this text contains any of the selection endpoints, note their
       // relative locations in the text piece.
@@ -200,7 +233,7 @@ class PieceWriter {
       }
     }
 
-    _currentText.append(text, containsNewline: containsNewline);
+    _currentText.append(text);
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output

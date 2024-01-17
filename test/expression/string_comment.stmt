@@ -1,0 +1,72 @@
+40 columns                              |
+### Since both comments and multi-line strings involve adding lines to the same
+### TextPiece, make sure they don't get confused.
+>>> Line comment before indented multi-line string.
+{{
+before +
+// comment 1
+// comment 2
+// comment 3
+"""multi
+line
+string
+""";
+}}
+<<<
+{
+  {
+    before +
+        // comment 1
+        // comment 2
+        // comment 3
+        """multi
+line
+string
+""";
+  }
+}
+>>> Line comment after indented multi-line string.
+{{
+"""multi
+line
+string
+""" // comment 1
+// comment 2
+// comment 3
++ after;
+}}
+<<<
+{
+  {
+    """multi
+line
+string
+""" // comment 1
+        // comment 2
+        // comment 3
+        +
+        after;
+  }
+}
+>>> Line comment after indented multi-line string.
+{{
+"""multi
+line
+string
+""" + // comment 1
+// comment 2
+// comment 3
+after;
+}}
+<<<
+{
+  {
+    """multi
+line
+string
+""" + // comment 1
+        // comment 2
+        // comment 3
+        after;
+  }
+}
