@@ -471,7 +471,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       header,
       [tokenPiece(node.name)],
       hasType: true,
-      isDeclaredVarPattern: true,
     );
   }
 
@@ -979,6 +978,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           b.add(AssignPiece(
             expressionPiece,
             caseClausePiece,
+            indentInValue: true,
           ));
         } else {
           b.add(expressionPiece);

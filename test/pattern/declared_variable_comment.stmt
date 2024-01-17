@@ -1,0 +1,37 @@
+40 columns                              |
+>>> Line comment before "var".
+if (obj case // c
+var x) {;}
+<<<
+if (obj
+    case // c
+        var x) {
+  ;
+}
+>>> Line comment after "var".
+if (obj case var // c
+x) {;}
+<<<
+if (obj
+    case var // c
+        x) {
+  ;
+}
+>>> Line comment after variable (looks weird, but user should move comment).
+if (obj case var x // c
+) {;}
+<<<
+if (obj
+    case var x // c
+        ) {
+  ;
+}
+>>> Line comment after type.
+if (obj case List<int> // c
+x) {;}
+<<<
+if (obj
+    case List<int> // c
+        x) {
+  ;
+}
