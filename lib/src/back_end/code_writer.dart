@@ -172,6 +172,8 @@ class CodeWriter {
   /// piece to [indent], relative to the indentation of the surrounding piece.
   ///
   /// Replaces any previous indentation set by this piece.
+  ///
+  // TODO(tall): Add another API that adds/subtracts existing indentation.
   void setIndent(int indent) {
     _options.indent = _pieceOptions[_pieceOptions.length - 2].indent + indent;
   }

@@ -1,0 +1,33 @@
+40 columns                              |
+>>> No split after "var".
+if (obj case var thisIsReallyQuiteAVeryLongVariableName) {;}
+<<<
+if (obj
+    case var thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+>>> No split after "final".
+if (obj case final thisIsReallyQuiteAVeryLongVariableName) {;}
+<<<
+if (obj
+    case final thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+>>> No split between "final" and type.
+if (obj case final ThisIsReallyQuiteAVeryLongTypeName variable) {;}
+<<<
+if (obj
+    case final ThisIsReallyQuiteAVeryLongTypeName
+        variable) {
+  ;
+}
+>>> Split between type and name.
+if (obj case SomeLongTypeName longVariableName) {
+  ;
+}
+<<<
+if (obj
+    case SomeLongTypeName
+        longVariableName) {
+  ;
+}

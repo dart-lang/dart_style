@@ -13,7 +13,7 @@ true) {;}
 <<<
 if (obj
     case // comment
-    true) {
+        true) {
   ;
 }
 >>> Line comment after case clause.
@@ -22,6 +22,6 @@ if (obj case true // comment
 <<<
 if (obj
     case true // comment
-    ) {
+        ) {
   ;
 }

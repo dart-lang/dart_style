@@ -452,7 +452,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitDeclaredVariablePattern(DeclaredVariablePattern node) {
-    throw UnimplementedError();
+    var header = buildPiece((b) {
+      b.modifier(node.keyword);
+      b.visit(node.type);
+    });
+    return VariablePiece(
+      header,
+      [tokenPiece(node.name)],
+      hasType: node.type != null,
+    );
   }
 
   @override
@@ -959,6 +967,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           b.add(AssignPiece(
             expressionPiece,
             caseClausePiece,
+            indentInValue: true,
           ));
         } else {
           b.add(expressionPiece);
