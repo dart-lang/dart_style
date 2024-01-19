@@ -157,6 +157,7 @@ class DelimitedListBuilder {
     var format = switch (element) {
       FunctionExpression() when element.canBlockSplit => BlockFormat.function,
       Expression() when element.canBlockSplit => BlockFormat.block,
+      DartPattern() when element.canBlockSplit => BlockFormat.block,
       _ => BlockFormat.none,
     };
 

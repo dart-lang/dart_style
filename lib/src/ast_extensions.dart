@@ -311,3 +311,13 @@ extension CascadeExpressionExtensions on CascadeExpression {
     return true;
   }
 }
+
+extension PatternExtensions on DartPattern {
+  bool get canBlockSplit {
+    return switch (this) {
+      ListPattern(:var elements, :var rightBracket) =>
+        elements.canSplit(rightBracket),
+      _ => false,
+    };
+  }
+}

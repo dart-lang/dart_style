@@ -114,7 +114,9 @@ class AssignPiece extends Piece {
 
     writer.format(target);
     writer.splitIf(state == _atOperator);
-    if (_indentInValue) {
+
+    // We need extra indentation when there's no inner splitting of the value.
+    if (!_allowInnerSplit && _indentInValue) {
       writer.setIndent(Indent.expression * 2);
     }
     writer.format(value);
