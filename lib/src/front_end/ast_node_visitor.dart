@@ -964,12 +964,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var expressionPiece = nodePiece(ifStatement.expression);
         if (ifStatement.caseClause case var caseClause?) {
           var caseClausePiece = nodePiece(caseClause);
-          // If the right-hand side can have block formatting, then a newline in
-          // it doesn't force the operator to split, as in:
+          // If the case clause can have block formatting, then a newline in
+          // it doesn't force the if-case to split before the `case` keyword,
+          // like:
           //
-          //    var list = [
-          //      element,
-          //    ];
+          //     if (obj case [
+          //       first,
+          //       second,
+          //       third,
+          //     ]) {
+          //       ;
+          //     }
           var allowInnerSplit = caseClause.guardedPattern.pattern.canBlockSplit;
           b.add(AssignPiece(
             expressionPiece,
