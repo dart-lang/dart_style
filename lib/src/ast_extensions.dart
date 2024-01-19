@@ -313,6 +313,10 @@ extension CascadeExpressionExtensions on CascadeExpression {
 }
 
 extension PatternExtensions on DartPattern {
+  /// Whether this expression is a non-empty delimited container for inner
+  /// expressions that allows "block-like" formatting in some contexts.
+  ///
+  /// See [ExpressionExtensions.canBlockSplit].
   bool get canBlockSplit {
     return switch (this) {
       ListPattern(:var elements, :var rightBracket) =>
