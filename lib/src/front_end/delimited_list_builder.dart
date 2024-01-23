@@ -463,7 +463,7 @@ class DelimitedListBuilder {
 
       // A function expression takes precedence over other block arguments.
       case ([var blockArgument], _, _):
-      // Otherwise, if there is single block argument, it can be block formatted.
+      // Otherwise, if there one block argument, it can be block formatted.
       case ([], [var blockArgument], _):
         _elements[blockArgument].allowNewlines = true;
     }
