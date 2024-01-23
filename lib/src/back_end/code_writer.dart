@@ -199,6 +199,15 @@ class CodeWriter {
         flushLeft: flushLeft);
   }
 
+  /// Queues [whitespace] to be written to the output.
+  ///
+  /// If any non-whitespace is written after this call, then this whitespace
+  /// will be written first. Also handles merging multiple kinds of whitespace
+  /// intelligently together.
+  ///
+  /// If [flushLeft] is `true`, then the new line begins at column 1 and ignores
+  /// any surrounding indentation. This is used for multi-line block comments
+  /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
       _handleNewline();

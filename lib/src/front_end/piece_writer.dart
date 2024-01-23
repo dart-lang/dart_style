@@ -204,8 +204,11 @@ class PieceWriter {
   /// Writes multi-line [text] to the current [TextPiece].
   ///
   /// Handles breaking [text] into lines and adding them to the [TextPiece].
-  Piece _writeMultiLine(String lexeme, {required int offset}) {
-    var lines = lexeme.split(_lineTerminatorPattern);
+  ///
+  /// The [offset] parameter is the offset in the original source code of the
+  /// beginning of multi-line lexeme.
+  Piece _writeMultiLine(String text, {required int offset}) {
+    var lines = text.split(_lineTerminatorPattern);
     var currentOffset = offset;
     for (var i = 0; i < lines.length; i++) {
       if (i > 0) _currentText.newline(flushLeft: true);

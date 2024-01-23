@@ -29,16 +29,14 @@ void main() async {
   test('FormatterException.message() does not throw', () {
     // This is a regression test for #358 where an error whose position is
     // past the end of the source caused FormatterException to throw.
-    try {
-      DartFormatter().format('library');
-    } on FormatterException catch (err) {
-      var message = err.message();
-      expect(message, contains('Could not format'));
-    }
+    expect(
+        () => DartFormatter().format('library'),
+        throwsA(isA<FormatterException>().having(
+            (e) => e.message(), 'message', contains('Could not format'))));
   });
 
   test('FormatterException describes parse errors', () {
-    try {
+    expect(() {
       DartFormatter().format('''
 
       var a = some error;
@@ -47,12 +45,12 @@ void main() async {
       ''', uri: 'my_file.dart');
 
       fail('Should throw.');
-    } on FormatterException catch (err) {
-      var message = err.message();
-      expect(message, contains('my_file.dart'));
-      expect(message, contains('line 2'));
-      expect(message, contains('line 4'));
-    }
+    },
+        throwsA(isA<FormatterException>().having(
+            (e) => e.message(),
+            'message',
+            allOf(contains('Could not format'), contains('line 2'),
+                contains('line 4')))));
   });
 
   test('adds newline to unit', () {
@@ -73,14 +71,12 @@ void main() async {
   });
 
   test('fails if anything is after the statement', () {
-    try {
-      DartFormatter().formatStatement('var x = 1;;');
-
-      fail('Should throw.');
-    } on FormatterException catch (ex) {
-      expect(ex.errors.length, equals(1));
-      expect(ex.errors.first.offset, equals(10));
-    }
+    expect(
+        () => DartFormatter().formatStatement('var x = 1;;'),
+        throwsA(isA<FormatterException>()
+            .having((e) => e.errors.length, 'errors.length', equals(1))
+            .having((e) => e.errors.first.offset, 'errors.length.first.offset',
+                equals(10))));
   });
 
   test('preserves initial indent', () {
