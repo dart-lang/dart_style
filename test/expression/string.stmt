@@ -1,0 +1,88 @@
+40 columns                              |
+>>> Long single-line.
+"this string is longer than forty characters";
+<<<
+"this string is longer than forty characters";
+>>> Empty multi-line.
+{""""""; '''''';}
+<<<
+{
+  """""";
+  '''''';
+}
+>>> Blank lines in multi-line.
+'''
+
+
+two before
+
+one
+
+
+two
+
+
+''';
+<<<
+'''
+
+
+two before
+
+one
+
+
+two
+
+
+''';
+>>> Short one line multi-line.
+"""not too long""";
+<<<
+"""not too long""";
+>>> Multi-line with short lines.
+"""
+not too long
+or this one
+""";
+<<<
+"""
+not too long
+or this one
+""";
+>>> Multi-line with long lines.
+"""
+this string is longer than forty characters
+this one is also is longer than forty characters
+""";
+<<<
+"""
+this string is longer than forty characters
+this one is also is longer than forty characters
+""";
+>>> Only indent the first line of multiline strings.
+{
+"""
+multiline
+""";
+}
+<<<
+{
+  """
+multiline
+""";
+}
+>>> Only indent the first line of multiline strings.
+main() {
+  inner() {
+    function("""
+string""");
+  }
+}
+<<<
+main() {
+  inner() {
+    function("""
+string""");
+  }
+}

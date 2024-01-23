@@ -1079,12 +1079,17 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitInterpolationExpression(InterpolationExpression node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.leftBracket);
+      b.visit(node.expression);
+      b.token(node.rightBracket);
+    });
   }
 
   @override
   Piece visitInterpolationString(InterpolationString node) {
-    throw UnimplementedError();
+    return pieces.stringLiteralPiece(node.contents,
+        isMultiline: (node.parent as StringInterpolation).isMultiline);
   }
 
   @override
@@ -1530,7 +1535,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSimpleStringLiteral(SimpleStringLiteral node) {
-    return tokenPiece(node.literal);
+    return pieces.stringLiteralPiece(node.literal,
+        isMultiline: node.isMultiline);
   }
 
   @override
@@ -1543,7 +1549,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitStringInterpolation(StringInterpolation node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      for (var element in node.elements) {
+        b.visit(element);
+      }
+    });
   }
 
   @override

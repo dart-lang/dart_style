@@ -128,22 +128,6 @@ class CodeWriter {
         isValid: !_hasInvalidNewline, overflow: _overflow, cost: _cost);
   }
 
-  /// Notes that a newline has been written.
-  ///
-  /// If this occurs in a place where newlines are prohibited, then invalidates
-  /// the solution.
-  ///
-  /// This is called externally by [TextPiece] to let the writer know some of
-  /// the raw text contains a newline, which can happen in multi-line block
-  /// comments and multi-line string literals.
-  void handleNewline() {
-    if (!_options.allowNewlines) _hasInvalidNewline = true;
-
-    // Note that this piece contains a newline so that we can propagate that
-    // up to containing pieces too.
-    _options.hasNewline = true;
-  }
-
   /// Appends [text] to the output.
   ///
   /// If [text] contains any internal newlines, the caller is responsible for
@@ -206,16 +190,30 @@ class CodeWriter {
   ///
   /// If [indent] is given, set the indentation of the new line (and all
   /// subsequent lines) to that indentation relative to the containing piece.
-  void newline({bool blank = false, int? indent}) {
+  ///
+  /// If [flushLeft] is `true`, then the new line begins at column 1 and ignores
+  /// any surrounding indentation. This is used for multi-line block comments
+  /// and multi-line strings.
+  void newline({bool blank = false, int? indent, bool flushLeft = false}) {
     if (indent != null) setIndent(indent);
 
-    whitespace(blank ? Whitespace.blankLine : Whitespace.newline);
+    whitespace(blank ? Whitespace.blankLine : Whitespace.newline,
+        flushLeft: flushLeft);
   }
 
-  void whitespace(Whitespace whitespace) {
+  /// Queues [whitespace] to be written to the output.
+  ///
+  /// If any non-whitespace is written after this call, then this whitespace
+  /// will be written first. Also handles merging multiple kinds of whitespace
+  /// intelligently together.
+  ///
+  /// If [flushLeft] is `true`, then the new line begins at column 1 and ignores
+  /// any surrounding indentation. This is used for multi-line block comments
+  /// and multi-line strings.
+  void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      handleNewline();
-      _pendingIndent = _options.indent;
+      _handleNewline();
+      _pendingIndent = flushLeft ? 0 : _options.indent;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
@@ -248,9 +246,7 @@ class CodeWriter {
     var childOptions = _pieceOptions.removeLast();
 
     // If the child [piece] contains a newline then this one transitively does.
-    // TODO(tall): At some point, we may want to provide an API so that pieces
-    // can block this from propagating outward.
-    if (childOptions.hasNewline) handleNewline();
+    if (childOptions.hasNewline) _handleNewline();
   }
 
   /// Format [piece] if not null.
@@ -272,6 +268,18 @@ class CodeWriter {
 
     _flushWhitespace();
     _selectionEnd = _buffer.length + end;
+  }
+
+  /// Notes that a newline has been written.
+  ///
+  /// If this occurs in a place where newlines are prohibited, then invalidates
+  /// the solution.
+  void _handleNewline() {
+    if (!_options.allowNewlines) _hasInvalidNewline = true;
+
+    // Note that this piece contains a newline so that we can propagate that
+    // up to containing pieces too.
+    _options.hasNewline = true;
   }
 
   /// Write any pending whitespace.
