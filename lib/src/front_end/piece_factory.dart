@@ -118,10 +118,15 @@ mixin PieceFactory {
     });
   }
 
-  /// Creates a [ListPiece] for a collection literal.
-  Piece createCollection(Token? constKeyword, Token leftBracket,
-      List<AstNode> elements, Token rightBracket,
-      {TypeArgumentList? typeArguments, ListStyle style = const ListStyle()}) {
+  /// Creates a [ListPiece] for a collection literal or pattern.
+  Piece createCollection(
+    Token leftBracket,
+    List<AstNode> elements,
+    Token rightBracket, {
+    Token? constKeyword,
+    TypeArgumentList? typeArguments,
+    ListStyle style = const ListStyle(),
+  }) {
     return buildPiece((b) {
       b.modifier(constKeyword);
       b.visit(typeArguments);

@@ -1,0 +1,91 @@
+40 columns                              |
+>>> Basic list patterns. 
+switch (obj) {
+case  [  ]  :
+case  <  int  >  [  ]  :
+case  [  2  ]  :
+case  [  2  ,  ]  :
+case  [  2  ,  3  ]  :
+  ok;
+}
+<<<
+switch (obj) {
+  case []:
+  case <int>[]:
+  case [2]:
+  case [2]:
+  case [2, 3]:
+    ok;
+}
+>>> Unsplit list.
+if (obj case [1, ...var x, 3]) {;}
+<<<
+if (obj case [1, ...var x, 3]) {
+  ;
+}
+>>> If it splits anywhere in the list, it splits at every element.
+if (obj case [first,second,third,fourth]) {;}
+<<<
+if (obj case [
+  first,
+  second,
+  third,
+  fourth,
+]) {
+  ;
+}
+>>> Unsplit short list even with a comma.
+if (obj case [1,]) {;}
+<<<
+if (obj case [1]) {
+  ;
+}
+>>> Nested list patterns don't force outer to split
+if (obj case [[1, 2], [[3]]]) {;}
+<<<
+if (obj case [[1, 2], [[3]]]) {
+  ;
+}
+>>> Split all elements and keep line comment on newline.
+if (obj case [
+  // yeah
+  a,b,c,
+  d,e,f,
+]) {;}
+<<<
+if (obj case [
+  // yeah
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+]) {
+  ;
+}
+>>> Split in type argument, but not in the body.
+if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[e]) {;}
+<<<
+if (obj case <
+  Map<
+    VeryLongTypeArgument,
+    VeryLongTypeArgument
+  >
+>[e]) {
+  ;
+}
+>>> Split in type argument and body.
+if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[element,VeryLongElementElementElement]) {;}
+<<<
+if (obj case <
+  Map<
+    VeryLongTypeArgument,
+    VeryLongTypeArgument
+  >
+>[
+  element,
+  VeryLongElementElementElement,
+]) {
+  ;
+}
