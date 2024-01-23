@@ -118,7 +118,7 @@ mixin PieceFactory {
     });
   }
 
-  /// Creates a [ListPiece] for a collection literal.
+  /// Creates a [ListPiece] for a collection literal or pattern.
   Piece createCollection(
     Token leftBracket,
     List<AstNode> elements,

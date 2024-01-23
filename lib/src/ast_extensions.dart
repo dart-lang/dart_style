@@ -317,11 +317,9 @@ extension PatternExtensions on DartPattern {
   /// expressions that allows "block-like" formatting in some contexts.
   ///
   /// See [ExpressionExtensions.canBlockSplit].
-  bool get canBlockSplit {
-    return switch (this) {
-      ListPattern(:var elements, :var rightBracket) =>
-        elements.canSplit(rightBracket),
-      _ => false,
-    };
-  }
+  bool get canBlockSplit => switch (this) {
+        ListPattern(:var elements, :var rightBracket) =>
+          elements.canSplit(rightBracket),
+        _ => false,
+      };
 }
