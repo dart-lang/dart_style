@@ -1,0 +1,259 @@
+40 columns                              |
+>>> Always split even if there is no existing newline and they fit.
+var name = 'a'     'b''c';
+<<<
+var name =
+    'a'
+    'b'
+    'c';
+>>> Split when they don't fit too, of course.
+var name = "the first very long string" "the second very longstring";
+<<<
+var name =
+    "the first very long string"
+    "the second very longstring";
+>>> All adjacent strings split or don't split together.
+var text = "first" "second" "third" "fourth" "fifth";
+<<<
+var text =
+    "first"
+    "second"
+    "third"
+    "fourth"
+    "fifth";
+>>> Don't preserve newlines between adjacent strings.
+var name = "the first string"
+"the second string"
+
+
+
+"the third string";
+<<<
+var name =
+    "the first string"
+    "the second string"
+    "the third string";
+>>> Adjacent strings inside interpolation.
+var x = '${  "a"   "b"   }';
+<<<
+var x =
+    '${"a"
+        "b"}';
+>>> Don't indent in argument list if other arguments are not strings.
+function(notString, "adjacent" "string");
+<<<
+function(
+  notString,
+  "adjacent"
+  "string",
+);
+>>> Do indent if another argument is a string.
+function("string",notString,"adjacent" "string");
+<<<
+function(
+  "string",
+  notString,
+  "adjacent"
+      "string",
+);
+>>> Do indent if another argument is a string interpolation.
+function("${str}${ing}",notString,"adjacent" "string");
+<<<
+function(
+  "${str}${ing}",
+  notString,
+  "adjacent"
+      "string",
+);
+>>> Do indent if another argument is an adjacent string.
+function("adjacent" "string",notString,"adjacent" "string");
+<<<
+function(
+  "adjacent"
+      "string",
+  notString,
+  "adjacent"
+      "string",
+);
+>>> Don't indent in assert if other arguments are not strings.
+assert(
+    condition,
+    "adjacent"
+    "string");
+<<<
+assert(
+  condition,
+  "adjacent"
+  "string",
+);
+>>> Do indent in assert if other argument is a string.
+assert("condition","adjacent" "string");
+<<<
+assert(
+  "condition",
+  "adjacent"
+      "string",
+);
+>>> Do indent adjacent strings in lists.
+var list = ["adjacent""string"];
+<<<
+var list = [
+  "adjacent"
+      "string",
+];
+>>> Do indent adjacent strings in lists.
+var list = [
+  "adjacent"
+  "string",
+  "another"
+  "adjacent"
+  "string"
+];
+<<<
+var list = [
+  "adjacent"
+      "string",
+  "another"
+      "adjacent"
+      "string",
+];
+>>> Do indent in map keys.
+var map = {"adjacent" "string": value};
+<<<
+var map = {
+  "adjacent"
+          "string":
+      value,
+};
+>>> Don't indent in map values.
+var map = {key: "adjacent" "string"};
+<<<
+var map = {
+  key:
+      "adjacent"
+      "string",
+};
+>>> Do indent in sets.
+var set = {"adjacent" "string"};
+<<<
+var set = {
+  "adjacent"
+      "string",
+};
+>>> Do indent positional record fields.
+var record = ("adjacent" "string",);
+<<<
+var record = (
+  "adjacent"
+      "string",
+);
+>>> Don't indent in named record fields.
+var record = (field: "adjacent" "string",);
+<<<
+var record = (
+  field:
+      "adjacent"
+      "string",
+);
+>>> Indent only positional fields in a mixed record.
+var record = ("adjacent" "string", field: "another" "one", "third" "field");
+<<<
+var record = (
+  "adjacent"
+      "string",
+  field:
+      "another"
+      "one",
+  "third"
+      "field",
+);
+>>> Don't indent in `=>` body.
+main() => "adjacent"
+"string"
+"another";
+<<<
+main() =>
+    "adjacent"
+    "string"
+    "another";
+>>> Don't indent in long `=>` body.
+main() => "very very very very long adjacent"
+"string"
+"another";
+<<<
+main() =>
+    "very very very very long adjacent"
+    "string"
+    "another";
+>>> Don't indent in `=>` function expression.
+function(
+(parameter) => "string" "adjacent",
+(parameter) => "long long long long string" "adjacent",
+another);
+<<<
+function(
+  (parameter) =>
+      "string"
+      "adjacent",
+  (parameter) =>
+      "long long long long string"
+      "adjacent",
+  another,
+);
+>>> Indent in then branch of `?:`.
+var string = condition ? "adjacent"
+"string" : "other";
+<<<
+var string =
+    condition
+        ? "adjacent"
+            "string"
+        : "other";
+>>> Indent in else branch of `?:`.
+var string = condition ? "other" : "adjacent"
+"string";
+<<<
+var string =
+    condition
+        ? "other"
+        : "adjacent"
+            "string";
+>>> Don't indent in initializer.
+var longVariableName = "very long adjacent"
+"string";
+<<<
+var longVariableName =
+    "very long adjacent"
+    "string";
+>>> Don't indent in assignment.
+long.receiver.expression = "very long adjacent"
+"string";
+<<<
+long.receiver.expression =
+    "very long adjacent"
+    "string";
+>>>
+function(variable = "very long adjacent"
+"string");
+<<<
+function(
+  variable =
+      "very long adjacent"
+      "string",
+);
+>>> Don't indent inside named arguments.
+function(named: "adjacent"
+"string",
+another: "adjacent"
+"string"
+"more");
+<<<
+function(
+  named:
+      "adjacent"
+      "string",
+  another:
+      "adjacent"
+      "string"
+      "more",
+);

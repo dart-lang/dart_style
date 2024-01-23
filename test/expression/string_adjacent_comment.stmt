@@ -1,0 +1,60 @@
+40 columns                              |
+>>> Line comment before adjacent string.
+string = // comment
+'adjacent' 'string';
+<<<
+string = // comment
+    'adjacent'
+    'string';
+>>> Line comment inside adjacent string.
+string = 'adjacent' // comment
+'string';
+<<<
+string =
+    'adjacent' // comment
+    'string';
+>>>
+string = 'adjacent'
+// comment
+'string';
+<<<
+string =
+    'adjacent'
+    // comment
+    'string';
+>>> Line comment after adjacent string.
+### Looks weird but users don't put comment here.
+string = 'adjacent' 'string' // comment
+;
+<<<
+string =
+    'adjacent'
+    'string' // comment
+    ;
+>>> Inline block comment before adjacent string.
+string = /* comment */ 'adjacent' 'string';
+<<<
+string = /* comment */
+    'adjacent'
+    'string';
+>>> Inline block comment inside adjacent string.
+string = 'adjacent' /* comment */ 'string';
+<<<
+string =
+    'adjacent' /* comment */
+    'string';
+>>>
+string = 'adjacent'
+/* comment */
+'string';
+<<<
+string =
+    'adjacent'
+    /* comment */
+    'string';
+>>> Inline block comment after adjacent string.
+string = 'adjacent' 'string' /* comment */;
+<<<
+string =
+    'adjacent'
+    'string' /* comment */;

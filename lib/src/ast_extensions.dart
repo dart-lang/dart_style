@@ -314,6 +314,63 @@ extension CascadeExpressionExtensions on CascadeExpression {
   }
 }
 
+extension AdjacentStringsExtensions on AdjacentStrings {
+  /// Whether subsequent strings should be indented relative to the first
+  /// string.
+  ///
+  /// We generally want to indent adjacent strings because it can be confusing
+  /// otherwise when they appear in a list of expressions, like:
+  ///
+  ///     [
+  ///       "one",
+  ///       "two"
+  ///       "three",
+  ///       "four"
+  ///     ]
+  ///
+  /// Especially when these strings are longer, it can be hard to tell that
+  /// "three" is a continuation of the previous element.
+  ///
+  /// However, the indentation is distracting in places that don't suffer from
+  /// this ambiguity:
+  ///
+  ///     var description =
+  ///         "A very long description..."
+  ///             "this extra indentation is unnecessary.");
+  ///
+  /// To balance these, we omit the indentation when an adjacent string
+  /// expression is in a context where it's unlikely to be confusing.
+  bool get indentStrings {
+    bool hasOtherStringArgument(List<Expression> arguments) => arguments
+        .any((argument) => argument != this && argument is StringLiteral);
+
+    return switch (parent) {
+      ArgumentList(:var arguments) => hasOtherStringArgument(arguments),
+
+      // Treat asserts like argument lists.
+      Assertion(:var condition, :var message) =>
+        hasOtherStringArgument([condition, if (message != null) message]),
+
+      // Don't add extra indentation in a variable initializer or assignment:
+      //
+      //     var variable =
+      //         "no extra"
+      //         "indent";
+      VariableDeclaration() => false,
+      AssignmentExpression(:var rightHandSide) when rightHandSide == this =>
+        false,
+
+      // Don't indent when following `:`.
+      MapLiteralEntry(:var value) when value == this => false,
+      NamedExpression() => false,
+
+      // Don't indent when the body of a `=>` function.
+      ExpressionFunctionBody() => false,
+      _ => true,
+    };
+  }
+}
+
 extension PatternExtensions on DartPattern {
   /// Whether this expression is a non-empty delimited container for inner
   /// expressions that allows "block-like" formatting in some contexts.

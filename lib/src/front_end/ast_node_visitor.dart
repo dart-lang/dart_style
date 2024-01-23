@@ -10,6 +10,7 @@ import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
+import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/block.dart';
 import '../piece/constructor.dart';
@@ -110,7 +111,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitAdjacentStrings(AdjacentStrings node) {
-    throw UnimplementedError();
+    return AdjacentStringsPiece(node.strings.map(nodePiece).toList(),
+        indent: node.indentStrings);
   }
 
   @override
