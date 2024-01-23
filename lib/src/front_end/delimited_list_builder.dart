@@ -159,6 +159,7 @@ class DelimitedListBuilder {
       AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
       FunctionExpression() when element.canBlockSplit => BlockFormat.function,
       Expression() when element.canBlockSplit => BlockFormat.block,
+      DartPattern() when element.canBlockSplit => BlockFormat.block,
       _ => BlockFormat.none,
     };
 

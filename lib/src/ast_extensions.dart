@@ -370,3 +370,15 @@ extension AdjacentStringsExtensions on AdjacentStrings {
     };
   }
 }
+
+extension PatternExtensions on DartPattern {
+  /// Whether this expression is a non-empty delimited container for inner
+  /// expressions that allows "block-like" formatting in some contexts.
+  ///
+  /// See [ExpressionExtensions.canBlockSplit].
+  bool get canBlockSplit => switch (this) {
+        ListPattern(:var elements, :var rightBracket) =>
+          elements.canSplit(rightBracket),
+        _ => false,
+      };
+}

@@ -966,9 +966,22 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var expressionPiece = nodePiece(ifStatement.expression);
         if (ifStatement.caseClause case var caseClause?) {
           var caseClausePiece = nodePiece(caseClause);
+          // If the case clause can have block formatting, then a newline in
+          // it doesn't force the if-case to split before the `case` keyword,
+          // like:
+          //
+          //     if (obj case [
+          //       first,
+          //       second,
+          //       third,
+          //     ]) {
+          //       ;
+          //     }
+          var allowInnerSplit = caseClause.guardedPattern.pattern.canBlockSplit;
           b.add(AssignPiece(
             expressionPiece,
             caseClausePiece,
+            allowInnerSplit: allowInnerSplit,
             indentInValue: true,
           ));
         } else {
@@ -1140,7 +1153,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitListLiteral(ListLiteral node) {
     return createCollection(
-      node.constKeyword,
+      constKeyword: node.constKeyword,
       typeArguments: node.typeArguments,
       node.leftBracket,
       node.elements,
@@ -1150,7 +1163,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitListPattern(ListPattern node) {
-    throw UnimplementedError();
+    return createCollection(
+      typeArguments: node.typeArguments,
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+    );
   }
 
   @override
@@ -1407,7 +1425,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     }
 
     return createCollection(
-      node.constKeyword,
+      constKeyword: node.constKeyword,
       node.leftParenthesis,
       node.fields,
       node.rightParenthesis,
@@ -1489,7 +1507,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRestPatternElement(RestPatternElement node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.operator);
+      b.visit(node.pattern);
+    });
   }
 
   @override
@@ -1511,7 +1532,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitSetOrMapLiteral(SetOrMapLiteral node) {
     return createCollection(
-      node.constKeyword,
+      constKeyword: node.constKeyword,
       typeArguments: node.typeArguments,
       node.leftBracket,
       node.elements,
