@@ -52,7 +52,7 @@ class DelimitedListBuilder {
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
   ListPiece build() {
-    _selectBlockElement();
+    _setBlockElementFormatting();
 
     var piece =
         ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
@@ -154,7 +154,7 @@ class DelimitedListBuilder {
 
     // See if it's an expression that supports block formatting.
     var format = switch (element) {
-      AdjacentStrings() when element.indentStrings =>
+      AdjacentStrings(indentStrings: true) =>
         BlockFormat.indentedAdjacentStrings,
       AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
       FunctionExpression() when element.canBlockSplit => BlockFormat.function,
@@ -417,8 +417,8 @@ class DelimitedListBuilder {
   ///     );
   ///
   /// Stores the result of this calculation by setting flags on the
-  /// [ListElements].
-  void _selectBlockElement() {
+  /// [ListElement]s.
+  void _setBlockElementFormatting() {
     // TODO(tall): These heuristics will probably need some iteration.
     var functions = <int>[];
     var others = <int>[];
@@ -438,13 +438,12 @@ class DelimitedListBuilder {
       }
     }
 
-    // A function expression takes precedence over other block arguments.
-    if (functions.length == 1) {
-      // We only block formatting in an argument list containing adjacent
+    switch ((functions, others, adjacentStrings)) {
+      // Only allow block formatting in an argument list containing adjacent
       // strings when:
       //
       // 1. The block argument is a function expression.
-      // 2. If is the second argument, following an adjacent strings expression.
+      // 2. It is the second argument, following an adjacent strings expression.
       // 3. There are no other adjacent strings in the argument list.
       //
       // This matches the `test()` and `group()` and other similar APIs where
@@ -452,22 +451,21 @@ class DelimitedListBuilder {
       // but little else.
       // TODO(tall): We may want to iterate on these heuristics. For now,
       // starting with something very narrowly targeted.
-      if (adjacentStrings.length == 1 &&
-          adjacentStrings.first == 0 &&
-          functions.first == 1) {
+      case ([1], _, [0]):
+        // The adjacent strings.
         _elements[0].allowNewlines = true;
         if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
-      }
 
-      _elements[functions.first].allowNewlines = true;
-      return;
-    }
+        // The block-formattable function.
+        _elements[1].allowNewlines = true;
 
-    // Otherwise, if there is single block argument, it can be block formatted.
-    if (functions.isEmpty && others.length == 1) {
-      _elements[others.first].allowNewlines = true;
+      // A function expression takes precedence over other block arguments.
+      case ([var blockArgument], _, _):
+      // Otherwise, if there is single block argument, it can be block formatted.
+      case ([], [var blockArgument], _):
+        _elements[blockArgument].allowNewlines = true;
     }
 
     // If we get here, there are no block arguments, or it's ambiguous as to

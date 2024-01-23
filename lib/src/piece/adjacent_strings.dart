@@ -13,7 +13,7 @@ import 'piece.dart';
 class AdjacentStringsPiece extends Piece {
   final List<Piece> _strings;
 
-  /// Whether string after the first should be indented.
+  /// Whether strings after the first should be indented.
   final bool _indent;
 
   AdjacentStringsPiece(this._strings, {bool indent = true}) : _indent = indent;
