@@ -52,11 +52,10 @@ class DelimitedListBuilder {
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
   ListPiece build() {
-    var blockElement = -1;
-    if (_style.allowBlockElement) blockElement = _findBlockElement();
+    _selectBlockElement();
 
-    var piece = ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket,
-        _style, blockElement);
+    var piece =
+        ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
     if (_mustSplit) piece.pin(State.split);
     return piece;
   }
@@ -155,6 +154,9 @@ class DelimitedListBuilder {
 
     // See if it's an expression that supports block formatting.
     var format = switch (element) {
+      AdjacentStrings() when element.indentStrings =>
+        BlockFormat.indentedAdjacentStrings,
+      AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
       FunctionExpression() when element.canBlockSplit => BlockFormat.function,
       Expression() when element.canBlockSplit => BlockFormat.block,
       _ => BlockFormat.none,
@@ -387,12 +389,39 @@ class DelimitedListBuilder {
     );
   }
 
-  /// If [_blockCandidates] contains a single expression that can receive
-  /// block formatting, then returns its index. Otherwise returns `-1`.
-  int _findBlockElement() {
+  /// Looks at the [BlockFormat] types of all of the elements to determine if
+  /// one of them should be block formatted.
+  ///
+  /// Also, if an argument list has an adjacent strings expression followed by a
+  /// block formattable function expression, we allow the adjacent strings to
+  /// split without forcing the list to split so that it can continue to have
+  /// block formatting. This is pretty special-cased, but it makes calls to
+  /// `test()` and `group()` look better and those are so common that it's
+  /// worth massaging them some. It allows:
+  ///
+  ///     test('some long description'
+  ///         'split across multiple lines', () {
+  ///       expect(1, 1);
+  ///     });
+  ///
+  /// Without this special rule, the newline in the adjacent strings would
+  /// prevent block formatting and lead to the entire test body to be indented:
+  ///
+  ///     test(
+  ///       'some long description'
+  ///       'split across multiple lines',
+  ///       () {
+  ///         expect(1, 1);
+  ///       },
+  ///     );
+  ///
+  /// Stores the result of this calculation by setting flags on the
+  /// [ListElements].
+  void _selectBlockElement() {
     // TODO(tall): These heuristics will probably need some iteration.
     var functions = <int>[];
     var others = <int>[];
+    var adjacentStrings = <int>[];
 
     for (var i = 0; i < _elements.length; i++) {
       switch (_elements[i].blockFormat) {
@@ -400,19 +429,48 @@ class DelimitedListBuilder {
           functions.add(i);
         case BlockFormat.block:
           others.add(i);
+        case BlockFormat.indentedAdjacentStrings:
+        case BlockFormat.unindentedAdjacentStrings:
+          adjacentStrings.add(i);
         case BlockFormat.none:
           break; // Not a block element.
       }
     }
 
     // A function expression takes precedence over other block arguments.
-    if (functions.length == 1) return functions.first;
+    if (functions.length == 1) {
+      // We only block formatting in an argument list containing adjacent
+      // strings when:
+      //
+      // 1. The block argument is a function expression.
+      // 2. If is the second argument, following an adjacent strings expression.
+      // 3. There are no other adjacent strings in the argument list.
+      //
+      // This matches the `test()` and `group()` and other similar APIs where
+      // you have a message string followed by a block-like function expression
+      // but little else.
+      // TODO(tall): We may want to iterate on these heuristics. For now,
+      // starting with something very narrowly targeted.
+      if (adjacentStrings.length == 1 &&
+          adjacentStrings.first == 0 &&
+          functions.first == 1) {
+        _elements[0].allowNewlines = true;
+        if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
+          _elements[0].indentWhenBlockFormatted = true;
+        }
+      }
+
+      _elements[functions.first].allowNewlines = true;
+      return;
+    }
 
     // Otherwise, if there is single block argument, it can be block formatted.
-    if (functions.isEmpty && others.length == 1) return others.first;
+    if (functions.isEmpty && others.length == 1) {
+      _elements[others.first].allowNewlines = true;
+    }
 
-    // There are no block arguments, or it's ambiguous as to which one should
-    // be it.
+    // If we get here, there are no block arguments, or it's ambiguous as to
+    // which one should be it so none are.
     // TODO(tall): The old formatter allows multiple block arguments, like:
     //
     //     function(() {
@@ -425,6 +483,5 @@ class DelimitedListBuilder {
     // sometimes. We'll probably want to experiment to see if it's worth
     // supporting multiple block arguments. If so, we should at least require
     // them to be contiguous with no non-block arguments in the middle.
-    return -1;
   }
 }

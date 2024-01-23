@@ -55,12 +55,8 @@ class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
-  /// If this list has an element that can receive block formatting, this is
-  /// the elements's index. Otherwise `-1`.
-  final int _blockElement;
-
   ListPiece(this._before, this._elements, this._blanksAfter, this._after,
-      this._style, this._blockElement);
+      this._style);
 
   @override
   List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
@@ -102,15 +98,26 @@ class ListPiece extends Piece {
         Commas.none => false,
       };
 
-      // Only allow newlines in the block element or in all elements if we're
-      // fully split.
-      writer.setAllowNewlines(i == _blockElement || state == State.split);
-
       var element = _elements[i];
+
+      // Only some elements (usually a single block element) allow newlines
+      // when the list itself isn't split.
+      writer.setAllowNewlines(element.allowNewlines || state == State.split);
+
+      // If this element allows newlines when the list isn't split, add
+      // indentation if it requires it.
+      if (state == State.unsplit && element.indentWhenBlockFormatted) {
+        writer.setIndent(Indent.expression);
+      }
+
       element.format(writer,
           appendComma: appendComma,
           // Only allow newlines in comments if we're fully split.
           allowNewlinesInComments: state == State.split);
+
+      if (state == State.unsplit && element.indentWhenBlockFormatted) {
+        writer.setIndent(Indent.none);
+      }
 
       // Write a space or newline between elements.
       if (!isLast) {
@@ -171,6 +178,35 @@ final class ListElement {
 
   /// What kind of block formatting can be applied to this element.
   final BlockFormat blockFormat;
+
+  /// Whether newlines are allowed in this element when this list is unsplit.
+  ///
+  /// This is generally only true for a single "block" element, as in:
+  ///
+  ///     function(argument, [
+  ///       block,
+  ///       element,
+  ///     ], another);
+  bool allowNewlines = false;
+
+  /// Whether we should increase indentation when formatting this element when
+  /// the list isn't split.
+  ///
+  /// This only comes into play for unsplit lists and is only relevant when the
+  /// element contains newlines, which means that this is only ever useful when
+  /// [allowNewlines] is also true.
+  ///
+  /// This is used for adjacent strings expression at the beginning of an
+  /// argument list followed by a function expression, like in a `test()` call.
+  /// Since the adjacent strings may not require indentation when the list is
+  /// fully split, this ensures that they are indented properly when the list
+  /// isn't split. Avoids:
+  //
+  //     test('long description'
+  //     'that should be indented', () {
+  //       body;
+  //     });
+  bool indentWhenBlockFormatted = false;
 
   /// If this piece has an opening delimiter after the comma, this is its
   /// lexeme, otherwise an empty string.
@@ -285,6 +321,16 @@ enum BlockFormat {
   /// The element is a collection literal or some other kind expression that
   /// can be block formatted.
   block,
+
+  /// The element is an adjacent strings expression that's in an list that
+  /// requires its subsequent lines to be indented (because there are other
+  /// string literal in the list).
+  indentedAdjacentStrings,
+
+  /// The element is an adjacent strings expression that's in an list that
+  /// doesn't require its subsequent lines to be indented (because there
+  /// are no other string literals in the list).
+  unindentedAdjacentStrings,
 
   /// The element can't be block formatted.
   none,
