@@ -1,0 +1,50 @@
+40 columns                              |
+>>> Line comment on unsplit cascade line.
+receiver..cascade(); // comment
+<<<
+receiver..cascade(); // comment
+>>> Line comment on split cascade.
+receiver
+  ..cascade() // a
+  ..cascade() // b
+  ..more(); // c
+<<<
+receiver
+  ..cascade() // a
+  ..cascade() // b
+  ..more(); // c
+>>> Line comment before first multi-line cascade section stays on line.
+receiver // comment
+  ..cascade()
+  ..more();
+<<<
+receiver // comment
+  ..cascade()
+  ..more();
+>>> Remove blank lines around comments.
+receiver
+
+
+
+
+  // comment 1
+
+  ..cascade1()
+
+  // comment 2
+
+  ..cascade2()
+
+
+  // comment 3
+
+
+  ..cascade3();
+<<<
+receiver
+  // comment 1
+  ..cascade1()
+  // comment 2
+  ..cascade2()
+  // comment 3
+  ..cascade3();

@@ -218,7 +218,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitCascadeExpression(CascadeExpression node) {
-    throw UnimplementedError();
+    return ChainBuilder(this, node).build();
   }
 
   @override
@@ -1399,6 +1399,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPropertyAccess(PropertyAccess node) {
+    // If there's no target, this is a section in a cascade.
+    if (node.target == null) {
+      return buildPiece((b) {
+        b.token(node.operator);
+        b.visit(node.propertyName);
+      });
+    }
+
     return ChainBuilder(this, node).build();
   }
 

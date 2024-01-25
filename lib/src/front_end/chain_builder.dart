@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../constants.dart';
 import '../piece/chain.dart';
 import '../piece/piece.dart';
 import 'piece_factory.dart';
@@ -42,6 +43,13 @@ import 'piece_factory.dart';
 class ChainBuilder {
   final PieceFactory _visitor;
 
+  /// The outermost expression being converted to a chain.
+  ///
+  /// If it's a [CascadeExpression], then the chain is the cascade sections.
+  /// Otherwise, it's some kind of method call or property access and the chain
+  /// is the nested series of selector subexpressions.
+  final Expression _root;
+
   /// The left-most target of the chain.
   late Piece _target;
 
@@ -60,11 +68,40 @@ class ChainBuilder {
   /// The dotted property accesses and method calls following the target.
   final List<ChainCall> _calls = [];
 
-  ChainBuilder(this._visitor, Expression expression) {
-    _unwrapCall(expression);
+  ChainBuilder(this._visitor, this._root) {
+    if (_root case CascadeExpression cascade) {
+      _visitTarget(cascade.target);
+
+      for (var section in cascade.cascadeSections) {
+        _unwrapCall(section);
+      }
+    } else {
+      _unwrapCall(_root);
+    }
   }
 
   Piece build() {
+    if (_root case CascadeExpression cascade) {
+      // If there is only a single section and it can block split, allow it:
+      //
+      //     target..cascade(
+      //       argument,
+      //     );
+      var blockCallIndex = switch (_calls) {
+        [..., ChainCall(canSplit: true)] => _calls.length - 1,
+        _ => -1,
+      };
+
+      var chain = ChainPiece(_target, _calls,
+          indent: Indent.cascade,
+          blockCallIndex: blockCallIndex,
+          allowSplitInTarget: _allowSplitInTarget);
+
+      if (!cascade.allowInline) chain.pin(State.split);
+
+      return chain;
+    }
+
     // If there are no calls, there's no chain.
     if (_calls.isEmpty) return _target;
 
@@ -94,14 +131,43 @@ class ChainBuilder {
       _ => -1,
     };
 
-    return ChainPiece(_target, _calls, leadingProperties, blockCallIndex,
+    // If a method chain appears as the target of a cascade, then we only
+    // indent the method chain +2. That way, with the cascade's own +2, the
+    // result is a total of +4. This looks more natural than indenting the
+    // method chain +4 relative to the cascade's +2:
+    //
+    //     // Bad:
+    //     object
+    //           .method()
+    //           .method()
+    //       ..x = 1
+    //       ..y = 2;
+    //
+    //     // Better:
+    //     object
+    //         .method()
+    //         .method()
+    //       ..x = 1
+    //       ..y = 2;
+    var indent =
+        _root.parent is CascadeExpression ? Indent.cascade : Indent.expression;
+
+    return ChainPiece(_target, _calls,
+        indent: indent,
+        leadingProperties: leadingProperties,
+        blockCallIndex: blockCallIndex,
         allowSplitInTarget: _allowSplitInTarget);
   }
 
-  /// Given [expression], which is the outermost expression for some call chain,
-  /// recursively traverses the selectors to fill in the list of [_calls].
+  /// Given [expression], which is the expression for some call chain, traverses
+  /// the selectors to fill in the list of [_calls].
   ///
-  /// Initializes [_target] with the innermost subexpression that isn't a part
+  /// If [_root] is a [CascadeSection], then this is called once for each
+  /// section in the cascade.
+  ///
+  /// Otherwise, it's a method chain, and this recursively calls itself for the
+  /// targets to unzip and flatten the nested selector expressions. Then it
+  /// initializes [_target] with the innermost subexpression that isn't a part
   /// of the call chain. For example, given:
   ///
   ///     foo.bar()!.baz[0][1].bang()
@@ -112,16 +178,23 @@ class ChainBuilder {
   ///     .baz[0][1]
   ///     .bang()
   void _unwrapCall(Expression expression) {
+    var isCascade = _root is CascadeExpression;
+
     switch (expression) {
-      case Expression(looksLikeStaticCall: true):
+      case Expression(looksLikeStaticCall: true) when !isCascade:
         // Don't include things that look like static method or constructor
         // calls in the call chain because that tends to split up named
         // constructors from their class.
         _visitTarget(expression);
 
       // Selectors.
-      case MethodInvocation(:var target?):
-        _unwrapCall(target);
+      case AssignmentExpression():
+        var piece = _visitor.createAssignment(expression.leftHandSide,
+            expression.operator, expression.rightHandSide);
+        _calls.add(ChainCall(piece, CallType.property));
+
+      case MethodInvocation(:var target) when isCascade || target != null:
+        if (target != null) _unwrapCall(target);
 
         var callPiece = _visitor.buildPiece((b) {
           b.token(expression.operator);
@@ -135,8 +208,8 @@ class ChainBuilder {
         _calls.add(ChainCall(callPiece,
             canSplit ? CallType.splittableCall : CallType.unsplittableCall));
 
-      case PropertyAccess(:var target?):
-        _unwrapCall(target);
+      case PropertyAccess(:var target):
+        if (target != null) _unwrapCall(target);
 
         var piece = _visitor.buildPiece((b) {
           b.token(expression.operator);
@@ -146,7 +219,7 @@ class ChainBuilder {
         _calls.add(ChainCall(piece, CallType.property));
 
       case PrefixedIdentifier(:var prefix):
-        _unwrapCall(prefix);
+        if (!isCascade) _unwrapCall(prefix);
 
         var piece = _visitor.buildPiece((b) {
           b.token(expression.period);
@@ -165,6 +238,19 @@ class ChainBuilder {
           });
         });
 
+      case IndexExpression() when isCascade && _calls.isEmpty:
+        // An index expression as the first cascade section should be part of
+        // the cascade chain and not part of the target, as in:
+        //
+        //     foo
+        //       ..[index]
+        //       ..another();
+        //
+        // For non-cascade method chains, we keep leave the index as part of
+        // the target since the method chain doesn't begin until the first `.`.
+        var piece = _visitor.createIndexExpression(null, expression);
+        _calls.add(ChainCall(piece, CallType.property));
+
       case IndexExpression():
         _unwrapPostfix(expression.target!, (target) {
           return _visitor.createIndexExpression(target, expression);
@@ -180,7 +266,7 @@ class ChainBuilder {
 
       default:
         // Otherwise, it isn't a selector so we've reached the target.
-        _visitTarget(expression);
+        if (!isCascade) _visitTarget(expression);
     }
   }
 
@@ -194,8 +280,9 @@ class ChainBuilder {
   void _unwrapPostfix(
       Expression operand, Piece Function(Piece target) createPostfix) {
     _unwrapCall(operand);
+
     // If we don't have a preceding call to hang the postfix expression off of,
-    // wrap it around the target expression. For example:
+    // make it part of the target expression. For example:
     //
     //     (list + another)!
     if (_calls.isEmpty) {
