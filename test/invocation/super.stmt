@@ -1,0 +1,111 @@
+40 columns                              |
+>>> Unnamed call.
+super  (  arg1  ,  arg2  );
+<<<
+super(arg1, arg2);
+>>> Unnamed call with type arguments.
+super  <  int  ,  double  >  (  arg1  ,  arg2  );
+<<<
+super<int, double>(arg1, arg2);
+>>> Named call.
+super  .  name  (  arg1  ,  arg2  );
+<<<
+super.name(arg1, arg2);
+>>> Named call with type arguments.
+super  .  name  <  int  ,  double  >  (  arg1  ,  arg2  );
+<<<
+super.name<int, double>(arg1, arg2);
+>>> Getter.
+super  .  name;
+<<<
+super.name;
+>>> Setter.
+super  .  name  =  value;
+<<<
+super.name = value;
+>>> Equality operators.
+{
+  super  ==  other;
+  super  !=  other;
+}
+<<<
+{
+  super == other;
+  super != other;
+}
+>>> Comparison operators.
+{
+  super  <  other;
+  super  <=  other;
+  super  >  other;
+  super  >=  other;
+}
+<<<
+{
+  super < other;
+  super <= other;
+  super > other;
+  super >= other;
+}
+>>> Bitwise operators.
+{
+  super  &  other;
+  super  ^  other;
+  super  |  other;
+}
+<<<
+{
+  super & other;
+  super ^ other;
+  super | other;
+}
+>>> Shift operators.
+{
+  super  <<  other;
+  super  >>  other;
+  super  >>>  other;
+}
+<<<
+{
+  super << other;
+  super >> other;
+  super >>> other;
+}
+>>> Additive operators.
+{
+  super  +  other;
+  super  -  other;
+}
+<<<
+{
+  super + other;
+  super - other;
+}
+>>> Multiplicative operators.
+{
+  super  *  other;
+  super  /  other;
+  super  %  other;
+  super  ~/  other;
+}
+<<<
+{
+  super * other;
+  super / other;
+  super % other;
+  super ~/ other;
+}
+>>> Unary operators.
+{
+  -  super;
+  ~  super;
+}
+<<<
+{
+  -super;
+  ~super;
+}
+>>> Don't remove all spaces between multiple unary minuses.
+-  -  -  super;
+<<<
+- - -super;
