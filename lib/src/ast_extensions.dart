@@ -185,7 +185,12 @@ extension ExpressionExtensions on Expression {
 
       // Function calls can block split if their argument lists can.
       InstanceCreationExpression(:var argumentList) ||
-      MethodInvocation(:var argumentList) ||
+      MethodInvocation(:var argumentList) =>
+        argumentList.arguments.canSplit(argumentList.rightParenthesis),
+
+      // Note: Using a separate case instead of `||` for this type because
+      // Dart 3.0 reports an error that [argumentList] has a different type
+      // here than in the previous two clauses.
       FunctionExpressionInvocation(:var argumentList) =>
         argumentList.arguments.canSplit(argumentList.rightParenthesis),
 
