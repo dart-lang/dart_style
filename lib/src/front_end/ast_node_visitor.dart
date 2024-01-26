@@ -1591,7 +1591,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSuperExpression(SuperExpression node) {
-    throw UnimplementedError();
+    return tokenPiece(node.superKeyword);
   }
 
   @override
