@@ -147,7 +147,9 @@ class CodeWriter {
 
     // If we haven't found an overflowing line yet, then this line might be one
     // so keep track of the pieces we've encountered.
-    if (!_foundExpandLine && _currentUnsolvedPieces.isNotEmpty) {
+    if (!_foundExpandLine &&
+        _nextPieceToExpand == null &&
+        _currentUnsolvedPieces.isNotEmpty) {
       _nextPieceToExpand = _currentUnsolvedPieces.first;
     }
   }
