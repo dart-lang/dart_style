@@ -87,10 +87,8 @@ class ChainBuilder {
       //     target..cascade(
       //       argument,
       //     );
-      var blockCallIndex = switch (_calls) {
-        [..., ChainCall(canSplit: true)] => _calls.length - 1,
-        _ => -1,
-      };
+      var blockCallIndex =
+          _calls.length == 1 && _calls.single.canSplit ? 0 : -1;
 
       var chain = ChainPiece(_target, _calls,
           indent: Indent.cascade,
