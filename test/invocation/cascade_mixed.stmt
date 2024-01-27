@@ -1,0 +1,39 @@
+40 columns                              |
+>>> Inline with method chain.
+object.method().method()..c();
+<<<
+object.method().method()..c();
+>>> Split cascade, unsplit chain.
+object.method().method()..cascade()..cascade();
+<<<
+object.method().method()
+  ..cascade()
+  ..cascade();
+>>> Split cascade and chain.
+object.method().method().method().method()..cascade()..cascade()..cascade();
+<<<
+object
+    .method()
+    .method()
+    .method()
+    .method()
+  ..cascade()
+  ..cascade()
+  ..cascade();
+>>> Cascade setters on chain.
+object.method().method().method().method()..x=1..y=2;
+<<<
+object
+    .method()
+    .method()
+    .method()
+    .method()
+  ..x = 1
+  ..y = 2;
+>>> Postfix on cascade calls.
+object..cascade()!..cascade()[index]..cascade()(arg);
+<<<
+object
+  ..cascade()!
+  ..cascade()[index]
+  ..cascade()(arg);

@@ -163,6 +163,10 @@ extension ExpressionExtensions on Expression {
     //       body;
     //     }());
     return switch (expression) {
+      // Allow the target of a single-section cascade to be block formatted.
+      CascadeExpression(:var target, :var cascadeSections) =>
+        cascadeSections.length == 1 && target.canBlockSplit,
+
       // A function expression can use either a non-empty parameter list or a
       // non-empty block body for block formatting.
       FunctionExpression(:var parameters?, :var body) =>
@@ -182,6 +186,12 @@ extension ExpressionExtensions on Expression {
       // Function calls can block split if their argument lists can.
       InstanceCreationExpression(:var argumentList) ||
       MethodInvocation(:var argumentList) =>
+        argumentList.arguments.canSplit(argumentList.rightParenthesis),
+
+      // Note: Using a separate case instead of `||` for this type because
+      // Dart 3.0 reports an error that [argumentList] has a different type
+      // here than in the previous two clauses.
+      FunctionExpressionInvocation(:var argumentList) =>
         argumentList.arguments.canSplit(argumentList.rightParenthesis),
 
       // Multi-line strings can.
@@ -292,26 +302,27 @@ extension ExpressionExtensions on Expression {
 }
 
 extension CascadeExpressionExtensions on CascadeExpression {
-  /// Whether a cascade should be allowed to be inline as opposed to moving the
-  /// section to the next line.
-  bool get allowInline {
-    // Cascades with multiple sections are handled elsewhere and are never
-    // inline.
-    assert(cascadeSections.length == 1);
+  /// Whether a cascade should be allowed to be inline with the target as
+  /// opposed to moving the sections to the next line.
+  bool get allowInline => switch (target) {
+        // Cascades with multiple sections always split.
+        _ when cascadeSections.length > 1 => false,
 
-    // If the receiver is an expression that makes the cascade's very low
-    // precedence confusing, force it to split. For example:
-    //
-    //     a ? b : c..d();
-    //
-    // Here, the cascade is applied to the result of the conditional, not "c".
-    if (target is ConditionalExpression) return false;
-    if (target is BinaryExpression) return false;
-    if (target is PrefixExpression) return false;
-    if (target is AwaitExpression) return false;
+        // If the receiver is an expression that makes the cascade's very low
+        // precedence confusing, force it to split. For example:
+        //
+        //     a ? b : c..d();
+        //
+        // Here, the cascade is applied to the result of the conditional, not
+        // just "c".
+        ConditionalExpression() => false,
+        BinaryExpression() => false,
+        PrefixExpression() => false,
+        AwaitExpression() => false,
 
-    return true;
-  }
+        // Otherwise, the target doesn't force a split.
+        _ => true,
+      };
 }
 
 extension AdjacentStringsExtensions on AdjacentStrings {

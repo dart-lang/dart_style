@@ -599,6 +599,7 @@ mixin PieceFactory {
     return buildPiece((b) {
       if (target != null) b.add(target);
       b.token(index.question);
+      b.token(index.period);
       b.token(index.leftBracket);
       b.visit(index.index);
       b.token(index.rightBracket);

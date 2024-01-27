@@ -108,13 +108,24 @@ class ChainPiece extends Piece {
   ///         .method();
   final bool _allowSplitInTarget;
 
+  /// How much to indent the chain when it splits.
+  ///
+  /// This is [Indent.expression] for regular chains and [Indent.cascade] for
+  /// cascades.
+  final int _indent;
+
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  ChainPiece(
-      this._target, this._calls, this._leadingProperties, this._blockCallIndex,
-      {required bool allowSplitInTarget})
-      : _allowSplitInTarget = allowSplitInTarget,
+  ChainPiece(this._target, this._calls,
+      {int leadingProperties = 0,
+      int blockCallIndex = -1,
+      int indent = Indent.expression,
+      required bool allowSplitInTarget})
+      : _leadingProperties = leadingProperties,
+        _blockCallIndex = blockCallIndex,
+        _indent = indent,
+        _allowSplitInTarget = allowSplitInTarget,
         // If there are no calls, we shouldn't have created a chain.
         assert(_calls.isNotEmpty);
 
@@ -137,12 +148,12 @@ class ChainPiece extends Piece {
       case State.unsplit:
         writer.setAllowNewlines(_allowSplitInTarget);
       case _splitAfterProperties:
-        writer.setIndent(Indent.expression);
+        writer.setIndent(_indent);
         writer.setAllowNewlines(_allowSplitInTarget);
       case _blockFormatTrailingCall:
         writer.setAllowNewlines(_allowSplitInTarget);
       case State.split:
-        writer.setIndent(Indent.expression);
+        writer.setIndent(_indent);
     }
 
     writer.format(_target);

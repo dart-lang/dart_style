@@ -165,6 +165,31 @@ function________________(new SomeClass());
 function________________(
   new SomeClass(),
 );
+>>> Function expression call.
+function((expression)(veryLongArgumentExpression));
+<<<
+function((expression)(
+  veryLongArgumentExpression,
+));
+>>> Zero-argument function expression call with block comment.
+function((expression)(/* long comment */));
+<<<
+function((expression)(
+  /* long comment */
+));
+>>> Zero-argument function expression call with line comment.
+function((expression)(// comment
+));
+<<<
+function((expression)(
+  // comment
+));
+>>> A zero-argument function expression call is not a block argument.
+function_______________________((expr)());
+<<<
+function_______________________(
+  (expr)(),
+);
 >>> Parenthesized expression where inner expression is a block argument.
 function((innerFunction(veryLongArgumentExpression)));
 <<<
