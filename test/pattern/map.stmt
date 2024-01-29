@@ -1,0 +1,58 @@
+40 columns                              |
+>>> Unsplit map.
+if (obj case {k: 1, m: 3, ...}) {;}
+<<<
+if (obj case {k: 1, m: 3, ...}) {
+  ;
+}
+>>> If it splits anywhere, it splits at every element.
+if (obj case {first: 1,second: 2,third: 3}) {;}
+<<<
+if (obj case {
+  first: 1,
+  second: 2,
+  third: 3,
+}) {
+  ;
+}
+>>> Nested map patterns don't force outer to split.
+if (obj case {a: {k: 1}, m: [{k: 3}]}) {;}
+<<<
+if (obj case {a: {k: 1}, m: [{k: 3}]}) {
+  ;
+}
+>>> Tall splitting style with line comment.
+if (obj case {
+  // yeah
+  a:1,b:2,c:3,
+  d:4,e:5,f:6,
+}) {;}
+<<<
+if (obj case {
+  // yeah
+  a: 1,
+  b: 2,
+  c: 3,
+  d: 4,
+  e: 5,
+  f: 6,
+}) {
+  ;
+}
+>>> Remove trailing comma if unsplit.
+if (obj case {k:1,}) {;}
+<<<
+if (obj case {k: 1}) {
+  ;
+}
+>>> Remove trailing comma if unsplit, multiple.
+if (e case {a: 1, b: 2,}) {}
+<<<
+if (e case {a: 1, b: 2}) {}
+>>> Add comma to map pattern if split.
+if (e case {a: longPattern1, b: veryLongPattern2}) {}
+<<<
+if (e case {
+  a: longPattern1,
+  b: veryLongPattern2,
+}) {}
