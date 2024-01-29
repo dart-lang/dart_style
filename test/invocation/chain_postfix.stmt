@@ -136,9 +136,9 @@ someReceiverObject.method1().method2().method3()
 someReceiverObject
     .method1()
     .method2()
-    .method3()(
+    .method3()(argument)(
       argument,
-    )(argument)<T, R>(
+    )<T, R>(
       argument,
       argument,
       argument,
