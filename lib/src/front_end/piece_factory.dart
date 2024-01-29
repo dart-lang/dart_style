@@ -6,13 +6,13 @@ import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
 import '../piece/assign.dart';
-import '../piece/block.dart';
 import '../piece/clause.dart';
 import '../piece/function.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
+import '../piece/sequence.dart';
 import '../piece/try.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
@@ -64,8 +64,8 @@ mixin PieceFactory {
         style: const ListStyle(allowBlockElement: true));
   }
 
-  /// Creates a [BlockPiece] for a given bracket-delimited block or declaration
-  /// body.
+  /// Creates a [SequencePiece] for a given bracket-delimited block or
+  /// declaration body.
   ///
   /// If [forceSplit] is `true`, then the block will split even if empty. This
   /// is used, for example, with empty blocks in `if` statements followed by
@@ -76,9 +76,9 @@ mixin PieceFactory {
   Piece createBody(
       Token leftBracket, List<AstNode> contents, Token rightBracket,
       {bool forceSplit = false}) {
-    var leftBracketPiece = tokenPiece(leftBracket);
-
     var sequence = SequenceBuilder(this);
+    sequence.leftBracket(leftBracket);
+
     for (var node in contents) {
       sequence.visit(node);
 
@@ -87,16 +87,11 @@ mixin PieceFactory {
       if (node.hasNonEmptyBody) sequence.addBlank();
     }
 
-    // Place any comments before the "}" inside the block.
-    sequence.addCommentsBefore(rightBracket);
-
-    var rightBracketPiece = tokenPiece(rightBracket);
-
-    return BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece,
-        alwaysSplit: forceSplit || contents.isNotEmpty || sequence.mustSplit);
+    sequence.rightBracket(rightBracket);
+    return sequence.build(forceSplit: forceSplit);
   }
 
-  /// Creates a [BlockPiece] for a given [Block].
+  /// Creates a [SequencePiece] for a given [Block].
   ///
   /// If [forceSplit] is `true`, then the block will split even if empty. This
   /// is used, for example, with empty blocks in `if` statements followed by
