@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:path/path.dart' as p;
 
 const _numTrials = 100;
@@ -14,9 +15,13 @@ const _formatsPerTrial = 30;
 /// they don't resolve without error. That's OK because the formatter doesn't
 /// care about that.
 final source = _loadFile('before.dart.txt');
-final expected = _loadFile('after.dart.txt');
 
 void main(List<String> args) {
+  var tallStyle = args.contains('--tall');
+
+  var expected =
+      _loadFile(tallStyle ? 'after_tall.dart.txt' : 'after_short.dart.txt');
+
   var best = 99999999.0;
 
   // Run the benchmark several times. This ensures the VM is warmed up and lets
@@ -27,7 +32,7 @@ void main(List<String> args) {
     // For a single benchmark, format the source multiple times.
     String? result;
     for (var j = 0; j < _formatsPerTrial; j++) {
-      result = _formatSource();
+      result = _formatSource(tallStyle: tallStyle);
     }
 
     var elapsed =
@@ -63,7 +68,8 @@ void _printResult(String label, double time) {
       "${'=' * ((time * 5).toInt())}");
 }
 
-String _formatSource() {
-  var formatter = DartFormatter();
+String _formatSource({required bool tallStyle}) {
+  var formatter =
+      DartFormatter(experimentFlags: [if (tallStyle) tallStyleExperimentFlag]);
   return formatter.format(source);
 }
