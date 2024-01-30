@@ -12,7 +12,6 @@ import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
-import '../piece/block.dart';
 import '../piece/constructor.dart';
 import '../piece/for.dart';
 import '../piece/if.dart';
@@ -545,9 +544,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
       // If there are members, format it like a block where each constant and
       // member is on its own line.
-      var leftBracketPiece = tokenPiece(node.leftBracket);
-
       var sequence = SequenceBuilder(this);
+      sequence.leftBracket(node.leftBracket);
+
       for (var constant in node.constants) {
         sequence.addCommentsBefore(constant.firstNonCommentToken);
         sequence.add(createEnumConstant(constant,
@@ -567,13 +566,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         if (node.hasNonEmptyBody) sequence.addBlank();
       }
 
-      // Place any comments before the "}" inside the block.
-      sequence.addCommentsBefore(node.rightBracket);
+      sequence.rightBracket(node.rightBracket);
 
-      var rightBracketPiece = tokenPiece(node.rightBracket);
-
-      builder.add(
-          BlockPiece(leftBracketPiece, sequence.build(), rightBracketPiece));
+      builder.add(sequence.build());
       return builder.build();
     }
   }
@@ -1661,57 +1656,54 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSwitchStatement(SwitchStatement node) {
-    var leftBracket = buildPiece((b) {
+    return buildPiece((b) {
       b.add(startControlFlow(node.switchKeyword, node.leftParenthesis,
           node.expression, node.rightParenthesis));
       b.space();
-      b.token(node.leftBracket);
-    });
 
-    var sequence = SequenceBuilder(this);
-    for (var member in node.members) {
-      for (var label in member.labels) {
-        sequence.visit(label);
-      }
+      var sequence = SequenceBuilder(this);
+      sequence.leftBracket(node.leftBracket);
 
-      sequence.addCommentsBefore(member.keyword);
-
-      var casePiece = buildPiece((b) {
-        b.token(member.keyword);
-
-        if (member is SwitchCase) {
-          b.space();
-          b.visit(member.expression);
-        } else if (member is SwitchPatternCase) {
-          if (member.guardedPattern.whenClause != null) {
-            throw UnimplementedError();
-          }
-
-          b.space();
-          b.visit(member.guardedPattern.pattern);
-        } else {
-          assert(member is SwitchDefault);
-          // Nothing to do.
+      for (var member in node.members) {
+        for (var label in member.labels) {
+          sequence.visit(label);
         }
 
-        b.token(member.colon);
-      });
+        sequence.addCommentsBefore(member.keyword);
 
-      // Don't allow any blank lines between the `case` line and the first
-      // statement in the case (or the next case if this case has no body).
-      sequence.add(casePiece, indent: Indent.none, allowBlankAfter: false);
+        var casePiece = buildPiece((b) {
+          b.token(member.keyword);
 
-      for (var statement in member.statements) {
-        sequence.visit(statement, indent: Indent.block);
+          if (member is SwitchCase) {
+            b.space();
+            b.visit(member.expression);
+          } else if (member is SwitchPatternCase) {
+            if (member.guardedPattern.whenClause != null) {
+              throw UnimplementedError();
+            }
+
+            b.space();
+            b.visit(member.guardedPattern.pattern);
+          } else {
+            assert(member is SwitchDefault);
+            // Nothing to do.
+          }
+
+          b.token(member.colon);
+        });
+
+        // Don't allow any blank lines between the `case` line and the first
+        // statement in the case (or the next case if this case has no body).
+        sequence.add(casePiece, indent: Indent.none, allowBlankAfter: false);
+
+        for (var statement in member.statements) {
+          sequence.visit(statement, indent: Indent.block);
+        }
       }
-    }
 
-    // Place any comments before the "}" inside the sequence.
-    sequence.addCommentsBefore(node.rightBracket);
-    var rightBracketPiece = tokenPiece(node.rightBracket);
-
-    return BlockPiece(leftBracket, sequence.build(), rightBracketPiece,
-        alwaysSplit: node.members.isNotEmpty || sequence.mustSplit);
+      sequence.rightBracket(node.rightBracket);
+      b.add(sequence.build());
+    });
   }
 
   @override

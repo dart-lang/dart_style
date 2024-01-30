@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
+import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a series of statements or members inside a block or declaration
@@ -10,16 +11,32 @@ import 'piece.dart';
 ///
 /// Usually constructed using a [SequenceBuilder].
 class SequencePiece extends Piece {
+  /// The opening delimiter, if any.
+  final Piece? _leftBracket;
+
   /// The series of members or statements.
   final List<SequenceElement> _elements;
 
-  SequencePiece(this._elements);
+  SequencePiece(this._elements, {Piece? leftBracket, Piece? rightBracket})
+      : _leftBracket = leftBracket,
+        _rightBracket = rightBracket;
 
-  /// Whether this sequence has any contents.
-  bool get isNotEmpty => _elements.isNotEmpty;
+  /// The closing delimiter, if any.
+  final Piece? _rightBracket;
+
+  @override
+  List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
 
   @override
   void format(CodeWriter writer, State state) {
+    writer.setAllowNewlines(state == State.split);
+
+    if (_leftBracket case var leftBracket?) {
+      writer.format(leftBracket);
+      writer.splitIf(state == State.split,
+          space: false, indent: _elements.firstOrNull?.indent ?? 0);
+    }
+
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
       writer.format(element.piece);
@@ -34,16 +51,25 @@ class SequencePiece extends Piece {
             blank: element.blankAfter, indent: _elements[i + 1].indent);
       }
     }
+
+    if (_rightBracket case var rightBracket?) {
+      writer.splitIf(state == State.split, space: false, indent: Indent.none);
+      writer.format(rightBracket);
+    }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
+    if (_leftBracket case var leftBracket?) callback(leftBracket);
+
     for (var element in _elements) {
       callback(element.piece);
       for (var comment in element.hangingComments) {
         callback(comment);
       }
     }
+
+    if (_rightBracket case var rightBracket?) callback(rightBracket);
   }
 
   @override
