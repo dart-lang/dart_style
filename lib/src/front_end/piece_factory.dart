@@ -715,34 +715,37 @@ mixin PieceFactory {
     Token? constKeyword,
   }) {
     var style = switch (fields) {
-      // Record patterns with named fields don't add trailing commas unless
-      // split, like:
+      // Record patterns with a single positional field will always
+      // have a trailing comma, like:
       //
-      //     if (obj case (name: value)) {
+      //     if (obj case (pattern,)) {
       //       ;
       //     }
-      [PatternField(name: _?)] => const ListStyle(commas: Commas.trailing),
-
-      // Record types with named fields don't add trailing commas unless split,
-      // like:
-      //
-      //     ({int n}) x;
-      [NamedExpression()] => const ListStyle(commas: Commas.trailing),
+      [PatternField(name: null)] =>
+        const ListStyle(commas: Commas.alwaysTrailing),
 
       // Record types with a single position field will always have a trailing
       // comma, like:
       //
       //     (int,) x;
       //
-      // Similarly, record patterns with a single positional field will always
-      // have a trailing comma, like:
+      [var field] when field is! NamedExpression && field is! PatternField =>
+        const ListStyle(commas: Commas.alwaysTrailing),
+
+      // All other record types and patterns have regular trailing commas when
+      // split.
       //
-      //     if (obj case (pattern,)) {
+      // Record types with a single named fields don't add trailing commas
+      // unless it's split, like:
+      //
+      //     ({int n}) x;
+      //
+      // Record patterns with a single named fields don't add trailing commas
+      // unless it's split, like:
+      //
+      //     if (obj case (name: value)) {
       //       ;
       //     }
-      [_] => const ListStyle(commas: Commas.alwaysTrailing),
-
-      // Typical trailing comma when split for more than 1 field in the record.
       _ => const ListStyle(commas: Commas.trailing)
     };
     return createCollection(
