@@ -713,7 +713,6 @@ mixin PieceFactory {
     List<AstNode> fields,
     Token rightParenthesis, {
     Token? constKeyword,
-    TypeArgumentList? typeArguments,
   }) {
     var style = switch (fields) {
       // Record patterns with named fields don't add trailing commas unless
