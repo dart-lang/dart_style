@@ -1,0 +1,26 @@
+40 columns                              |
+>>> Empty record pattern block comment.
+if (obj case (  /* comment */  )) {;}
+<<<
+if (obj case (/* comment */)) {
+  ;
+}
+>>> Empty record pattern line comment.
+if (obj case (  // comment
+)) {;}
+<<<
+if (obj case (
+  // comment
+)) {
+  ;
+}
+>>> Record line comment between fields.
+if (obj case ( first , // comment
+second)){;}
+<<<
+if (obj case (
+  first, // comment
+  second,
+)) {
+  ;
+}

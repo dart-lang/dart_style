@@ -707,6 +707,54 @@ mixin PieceFactory {
     );
   }
 
+  /// Creates a [ListPiece] for a record literal or pattern.
+  Piece createRecordCollection(
+    Token leftParenthesis,
+    List<AstNode> fields,
+    Token rightParenthesis, {
+    Token? constKeyword,
+    TypeArgumentList? typeArguments,
+  }) {
+    var style = switch (fields) {
+      // Record patterns with named fields don't add trailing commas unless
+      // split, like:
+      //
+      //     if (obj case (name: value)) {
+      //       ;
+      //     }
+      [PatternField(name: _?)] => const ListStyle(commas: Commas.trailing),
+
+      // Record types with named fields don't add trailing commas unless split,
+      // like:
+      //
+      //     ({int n}) x;
+      [NamedExpression()] => const ListStyle(commas: Commas.trailing),
+
+      // Record types with a single position field will always have a trailing
+      // comma, like:
+      //
+      //     (int,) x;
+      //
+      // Similarly, record patterns with a single positional field will always
+      // have a trailing comma, like:
+      //
+      //     if (obj case (pattern,)) {
+      //       ;
+      //     }
+      [_] => const ListStyle(commas: Commas.alwaysTrailing),
+
+      // Typical trailing comma when split for more than 1 field in the record.
+      _ => const ListStyle(commas: Commas.trailing)
+    };
+    return createCollection(
+      constKeyword: constKeyword,
+      leftParenthesis,
+      fields,
+      rightParenthesis,
+      style: style,
+    );
+  }
+
   /// Creates a class, enum, extension, mixin, or mixin application class
   /// declaration.
   ///
