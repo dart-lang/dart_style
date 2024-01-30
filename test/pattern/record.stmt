@@ -3,6 +3,8 @@
 switch (obj) {
   case  (  )  :
   case  (  value  ,  )  :
+  case  (  : var x  ,  )  :
+  case  ( name : var x  ,  )  :
   case  (  first  ,  second  ,  third  )  :
   case  (  first  :  1  ,  2  ,  third  :  3  )  :
   case  (  :  var  x  ,  :  var  y  )  :
@@ -12,6 +14,8 @@ switch (obj) {
 switch (obj) {
   case ():
   case (value,):
+  case (:var x):
+  case (name: var x):
   case (first, second, third):
   case (first: 1, 2, third: 3):
   case (:var x, :var y):
