@@ -1,0 +1,46 @@
+40 columns                              |
+>>> Indent line comment inside map.
+if (obj case {
+ // c
+}) {;}
+<<<
+if (obj case {
+  // c
+}) {
+  ;
+}
+>>> Line comment on opening line of map.
+if (obj case {// c
+}) {;}
+<<<
+if (obj case {
+  // c
+}) {
+  ;
+}
+>>> Indented block comment in map.
+if (obj case {
+  /* comment */
+}){;}
+<<<
+if (obj case {
+  /* comment */
+}) {
+  ;
+}
+>>> Inline block comment in map.
+if (obj case {  /* comment */  k: v  }){;}
+<<<
+if (obj case {/* comment */ k: v}) {
+  ;
+}
+>>> Line comment between map items.
+if (obj case {k: 'a', // comment
+  m: 'b'}){;}
+<<<
+if (obj case {
+  k: 'a', // comment
+  m: 'b',
+}) {
+  ;
+}

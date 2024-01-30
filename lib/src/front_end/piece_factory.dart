@@ -884,8 +884,7 @@ mixin PieceFactory {
   ///
   /// If [allowInnerSplit] is `true`, then a newline inside the target or
   /// right-hand side doesn't force splitting at the operator itself.
-  Piece createAssignment(
-      AstNode target, Token operator, Expression rightHandSide,
+  Piece createAssignment(AstNode target, Token operator, AstNode rightHandSide,
       {bool splitBeforeOperator = false,
       bool includeComma = false,
       bool spaceBeforeOperator = true,
@@ -896,7 +895,11 @@ mixin PieceFactory {
     //    var list = [
     //      element,
     //    ];
-    allowInnerSplit |= rightHandSide.canBlockSplit;
+    allowInnerSplit |= switch (rightHandSide) {
+      Expression() => rightHandSide.canBlockSplit,
+      DartPattern() => rightHandSide.canBlockSplit,
+      _ => false
+    };
 
     if (splitBeforeOperator) {
       var targetPiece = nodePiece(target);

@@ -1189,12 +1189,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitMapPattern(MapPattern node) {
-    throw UnimplementedError();
+    return createCollection(
+      typeArguments: node.typeArguments,
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+    );
   }
 
   @override
   Piece visitMapPatternEntry(MapPatternEntry node) {
-    throw UnimplementedError();
+    return createAssignment(node.key, node.separator, node.value,
+        spaceBeforeOperator: false);
   }
 
   @override

@@ -390,6 +390,8 @@ extension PatternExtensions on DartPattern {
   bool get canBlockSplit => switch (this) {
         ListPattern(:var elements, :var rightBracket) =>
           elements.canSplit(rightBracket),
+        MapPattern(:var elements, :var rightBracket) =>
+          elements.canSplit(rightBracket),
         _ => false,
       };
 }
