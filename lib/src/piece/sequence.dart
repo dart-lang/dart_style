@@ -34,8 +34,7 @@ class SequencePiece extends Piece {
     if (_leftBracket case var leftBracket?) {
       writer.format(leftBracket);
       writer.splitIf(state == State.split,
-          space: false,
-          indent: _elements.firstOrNull?.indent ?? 0);
+          space: false, indent: _elements.firstOrNull?.indent ?? 0);
     }
 
     for (var i = 0; i < _elements.length; i++) {
