@@ -4,10 +4,16 @@
 import '../piece/piece.dart';
 import 'code_writer.dart';
 
-/// A single possible line splitting solution.
+/// A single possible set of formatting choices.
 ///
-/// Stores the states that each piece is set to and the resulting formatted
-/// code and its cost.
+/// Each solution binds some number of [Piece]s in the piece tree to [State]s.
+/// (Any pieces whose states are not bound are treated as having a default
+/// unsplit state.)
+///
+/// Given that set of states, we can create a [CodeWriter] and give that to all
+/// of the pieces in the tree so they can format themselves. That in turn
+/// yields a total number of overflow characters, cost, and formatted output,
+/// which are all stored here.
 class Solution implements Comparable<Solution> {
   /// The states that pieces have been bound to.
   ///

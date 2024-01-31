@@ -20,7 +20,7 @@ import 'solution.dart';
 class CodeWriter {
   final int _pageWidth;
 
-  /// The solution being formatted.
+  /// The solution this [CodeWriter] is generating code for.
   final Solution _solution;
 
   /// Buffer for the code being written.
@@ -88,10 +88,8 @@ class CodeWriter {
 
   CodeWriter(this._pageWidth, this._solution);
 
-  /// Called after this writer has finished formatting the entire piece tree.
-  ///
   /// Returns the final formatted text and the next piece that can be expanded
-  /// from this solution, if any.
+  /// from the solution this [CodeWriter] is writing, if any.
   (String, Piece?) finish() {
     _finishLine();
 
@@ -128,11 +126,15 @@ class CodeWriter {
   /// piece to [indent], relative to the indentation of the surrounding piece.
   ///
   /// Replaces any previous indentation set by this piece.
-  ///
   // TODO(tall): Add another API that adds/subtracts existing indentation.
   void setIndent(int indent) {
-    var parentIndent =
-        _options.length > 1 ? _options[_options.length - 2].indent : 0;
+    var parentIndent = 0;
+
+    // If there is a surrounding Piece, then set the indent relative to that
+    // piece's current indentation.
+    if (_options.length > 1) {
+      parentIndent = _options[_options.length - 2].indent;
+    }
 
     _options.last.indent = parentIndent + indent;
   }
