@@ -29,16 +29,11 @@ class Solution implements Comparable<Solution> {
   /// An invalid solution is one where a hard newline appears in a context
   /// where splitting isn't allowed. This is considered worse than any other
   /// solution.
-  bool get isValid => _isValid;
-  bool _isValid = true;
+  bool get isValid => _invalidPiece == null;
 
-  /// Whether this solution can be expanded from to enqueue other solutions.
-  ///
-  /// This is generally `true`, but will be `false` if [isValid] is `false`
-  /// and if the piece that forbid the unexpected newline was already bound by
-  /// this solution so can't be chosen to have a different state in further
-  /// expanded solutions.
-  bool _canExpandSolution = true;
+  /// The piece that forbid newlines when an invalid newline was written, or
+  /// `null` if no invalid newline has occurred.
+  Piece? _invalidPiece;
 
   /// The total number of characters that do not fit inside the page width.
   int get overflow => _overflow;
@@ -143,26 +138,38 @@ class Solution implements Comparable<Solution> {
   ///
   /// This should only be called by [CodeWriter].
   void invalidate(Piece piece) {
-    _isValid = false;
-
-    // If the piece whose newline constraint was violated is already bound to
-    // one state, then every solution derived from this one will also fail in
-    // the same way, so discard the whole solution tree hanging off this one.
-    if (isBound(piece)) _canExpandSolution = false;
+    _invalidPiece = piece;
   }
 
   /// When called on a [Solution] with some unselected piece states, chooses a
   /// piece and yields further solutions for each state that piece can have.
   List<Solution> expand(Piece root, int pageWidth) {
-    // If this solution is invalid and can't lead to any valid solutions, don't
-    // consider it.
-    if (!_canExpandSolution) return const [];
+    // If the piece whose newline constraint was violated is already bound to
+    // one state, then every solution derived from this one will also fail in
+    // the same way, so discard the whole solution tree hanging off this one.
+    if (_invalidPiece case var piece? when isBound(piece)) return const [];
 
     var expandPiece = _nextPieceToExpand;
 
     // If there is no piece that we can expand on this solution, it's a dead
     // end (or a winner).
     if (expandPiece == null) return const [];
+
+    // TODO(perf): If `_invalidPiece == expandPiece`, then we know that the
+    // first state leads to an invalid solution, so there's no point in trying
+    // to expand to a solution that binds `expandPiece` to
+    // `expandPiece.states[0]`. We should be able to do:
+    //
+    //     Iterable<State> states = expandPiece.states;
+    //     if (_invalidPiece == expandPiece) {
+    //       print('skip $expandPiece ${states.first}');
+    //       states = states.skip(1);
+    //     }
+    //
+    // And then use `states` below. But when I tried that, it didn't seem to
+    // make any noticeable performance difference on the one pathological
+    // example I tried. Leaving this here as a TODO to investigate more when
+    // there are other benchmarks we can try.
 
     return [
       for (var state in expandPiece.states)
