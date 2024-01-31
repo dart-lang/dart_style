@@ -17,15 +17,11 @@ import 'solution.dart';
 /// an instance of this class. It has methods that the piece can call to add
 /// output text to the resulting code, recursively format child pieces, insert
 /// whitespace, etc.
-///
-/// This class also accumulates the score (the relative desireability of a set
-/// of formatting choices) that the resulting code has by tracking things like
-/// how many characters of code overflow the page width.
 class CodeWriter {
   final int _pageWidth;
 
-  /// The state values for the pieces being written.
-  final PieceStateSet _pieceStates;
+  /// The solution being formatted.
+  final Solution _solution;
 
   /// Buffer for the code being written.
   final StringBuffer _buffer = StringBuffer();
@@ -43,19 +39,8 @@ class CodeWriter {
   /// [Whitespace.blankLine].
   int _pendingIndent = 0;
 
-  /// The cost of the currently chosen line splits.
-  int _cost = 0;
-
-  /// The total number of characters of code that have overflowed the page
-  /// width so far.
-  int _overflow = 0;
-
   /// The number of characters in the line currently being written.
   int _column = 0;
-
-  /// Whether this solution has encountered a mandatory newline (like from a
-  /// line comment or a statement terminator) where no newline is permitted.
-  bool _hasInvalidNewline = false;
 
   /// The stack of state for each [Piece] being formatted.
   ///
@@ -104,28 +89,16 @@ class CodeWriter {
   /// The options for the current innermost piece being formatted.
   _PieceOptions get _options => _pieceOptions.last;
 
-  /// The offset in the formatted code where the selection starts.
+  CodeWriter(this._pageWidth, this._solution);
+
+  /// Called after this writer has finished formatting the entire piece tree.
   ///
-  /// This is `null` until the piece containing the selection start is reached
-  /// at which point it gets set. It remains `null` if there is no selection.
-  int? _selectionStart;
-
-  /// The offset in the formatted code where the selection ends.
-  ///
-  /// This is `null` until the piece containing the selection end is reached
-  /// at which point it gets set. It remains `null` if there is no selection.
-  int? _selectionEnd;
-
-  CodeWriter(this._pageWidth, this._pieceStates);
-
-  /// Returns the finished code produced by formatting the tree of pieces and
-  /// the final score.
-  Solution finish() {
+  /// Returns the final formatted text and the next piece that can be expanded
+  /// from this solution, if any.
+  (String, Piece?) finish() {
     _finishLine();
 
-    return Solution(_pieceStates, _buffer.toString(), _selectionStart,
-        _selectionEnd, _nextPieceToExpand,
-        isValid: !_hasInvalidNewline, overflow: _overflow, cost: _cost);
+    return (_buffer.toString(), _nextPieceToExpand);
   }
 
   /// Appends [text] to the output.
@@ -232,16 +205,13 @@ class CodeWriter {
   void format(Piece piece) {
     _pieceOptions.add(_PieceOptions(_options.indent, _options.allowNewlines));
 
-    var isUnsolved = !_pieceStates.isBound(piece) && piece.states.length > 1;
+    var isUnsolved = !_solution.isBound(piece) && piece.states.length > 1;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
-
-    var state = _pieceStates.pieceState(piece);
-    _cost += piece.stateCost(state);
 
     // TODO(perf): Memoize this. Might want to create a nested PieceWriter
     // instead of passing in `this` so we can better control what state needs
     // to be used as the key in the memoization table.
-    piece.format(this, state);
+    piece.format(this, _solution.pieceState(piece));
 
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
@@ -258,18 +228,14 @@ class CodeWriter {
 
   /// Sets [selectionStart] to be [start] code units into the output.
   void startSelection(int start) {
-    assert(_selectionStart == null);
-
     _flushWhitespace();
-    _selectionStart = _buffer.length + start;
+    _solution.startSelection(_buffer.length + start);
   }
 
   /// Sets [selectionEnd] to be [end] code units into the output.
   void endSelection(int end) {
-    assert(_selectionEnd == null);
-
     _flushWhitespace();
-    _selectionEnd = _buffer.length + end;
+    _solution.endSelection(_buffer.length + end);
   }
 
   /// Notes that a newline has been written.
@@ -277,7 +243,7 @@ class CodeWriter {
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
   void _handleNewline() {
-    if (!_options.allowNewlines) _hasInvalidNewline = true;
+    if (!_options.allowNewlines) _solution.invalidate();
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
@@ -314,7 +280,7 @@ class CodeWriter {
   void _finishLine() {
     // If the completed line is too long, track the overflow.
     if (_column >= _pageWidth) {
-      _overflow += _column - _pageWidth;
+      _solution.addOverflow(_column - _pageWidth);
     }
 
     // If we found a problematic line, and there is a piece on the line that
@@ -322,7 +288,7 @@ class CodeWriter {
     // expand it next.
     if (!_foundExpandLine &&
         _nextPieceToExpand != null &&
-        (_column > _pageWidth || _hasInvalidNewline)) {
+        (_column > _pageWidth || !_solution.isValid)) {
       // We found a problematic line, so remember it and the piece on it.
       _foundExpandLine = true;
     } else if (!_foundExpandLine) {

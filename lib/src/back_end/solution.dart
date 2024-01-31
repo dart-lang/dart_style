@@ -4,9 +4,11 @@
 import '../piece/piece.dart';
 import 'code_writer.dart';
 
-/// A possibly incomplete set of selected states for a set of pieces being
-/// solved.
-class PieceStateSet {
+/// A single possible line splitting solution.
+///
+/// Stores the states that each piece is set to and the resulting formatted
+/// code and its cost.
+class Solution implements Comparable<Solution> {
   /// The states that pieces have been bound to.
   ///
   /// Note that order that keys are inserted into this map is significant. When
@@ -15,83 +17,24 @@ class PieceStateSet {
   /// overflow.
   final Map<Piece, State> _pieceStates;
 
-  /// Creates a new [PieceStateSet] with no pieces set to any state (which
-  /// implicitly means they have state 0).
-  PieceStateSet() : _pieceStates = {};
-
-  PieceStateSet._(this._pieceStates);
-
-  /// The state this solution selects for [piece].
-  ///
-  /// If no state has been selected, defaults to the first state.
-  State pieceState(Piece piece) => _pieceStates[piece] ?? piece.states.first;
-
-  /// Whether [piece] has been bound to a state in this set.
-  bool isBound(Piece piece) => _pieceStates.containsKey(piece);
-
-  /// Attempts to bind [piece] to [state], taking into account any constraints
-  /// pieces place on each other.
-  ///
-  /// Returns a new [PieceStateSet] with [piece] bound to [state] and any other
-  /// pieces constrained by that choice bound to their constrained values
-  /// (recursively). Returns `null` if a constraint conflicts with the already
-  /// bound or pinned state for some piece.
-  PieceStateSet? tryBind(Piece piece, State state) {
-    var conflict = false;
-    var boundStates = {..._pieceStates};
-
-    void traverse(Piece thisPiece, State thisState) {
-      // If this piece is already pinned or bound to some other state, then the
-      // solution doesn't make sense.
-      var alreadyBound = thisPiece.pinnedState ?? boundStates[thisPiece];
-      if (alreadyBound != null && alreadyBound != thisState) {
-        conflict = true;
-        return;
-      }
-
-      boundStates[thisPiece] = thisState;
-
-      // This piece may in turn place further constraints on others.
-      thisPiece.applyConstraints(thisState, traverse);
-    }
-
-    traverse(piece, state);
-
-    if (conflict) return null;
-    return PieceStateSet._(boundStates);
-  }
-
-  @override
-  String toString() {
-    return _pieceStates.keys
-        .map((piece) => '$piece:${_pieceStates[piece]}')
-        .join(' ');
-  }
-}
-
-/// A single possible line splitting solution.
-///
-/// Stores the states that each piece is set to and the resulting formatted
-/// code and its cost.
-class Solution implements Comparable<Solution> {
-  /// The states the pieces have been set to in this solution.
-  final PieceStateSet _stateSet;
+  /// The amount of penalties applied based on the chosen line splits.
+  final int cost;
 
   /// The formatted code.
-  final String text;
+  String get text => _text;
+  late final String _text;
 
   /// Whether this score is for a valid solution or not.
   ///
   /// An invalid solution is one where a hard newline appears in a context
   /// where splitting isn't allowed. This is considered worse than any other
   /// solution.
-  final bool isValid;
+  bool get isValid => _isValid;
+  bool _isValid = true;
 
   /// The total number of characters that do not fit inside the page width.
-  final int overflow;
-
-  /// The amount of penalties applied based on the chosen line splits.
-  final int cost;
+  int get overflow => _overflow;
+  int _overflow = 0;
 
   /// The unsolved piece in this solution that should be expanded next to
   /// produce new more refined solutions, if there is one.
@@ -130,43 +73,120 @@ class Solution implements Comparable<Solution> {
   ///
   /// If this is `null`, then there are no further solutions to generate from
   /// this one. It's either a dead end or a winner.
-  final Piece? _nextPieceToExpand;
+  late final Piece? _nextPieceToExpand;
 
   /// The offset in [text] where the selection starts, or `null` if there is
   /// no selection.
-  final int? selectionStart;
+  int? get selectionStart => _selectionStart;
+  int? _selectionStart;
 
   /// The offset in [text] where the selection ends, or `null` if there is
   /// no selection.
-  final int? selectionEnd;
+  int? get selectionEnd => _selectionEnd;
+  int? _selectionEnd;
 
-  factory Solution.initial(Piece root, int pageWidth) {
-    return Solution._(root, pageWidth, PieceStateSet());
-  }
+  /// Creates a new [Solution] with no pieces set to any state (which
+  /// implicitly means they have state [State.unsplit] unless they're pinned to
+  /// another state).
+  Solution(Piece root, int pageWidth) : this._(root, pageWidth, 0, {});
 
-  factory Solution._(Piece root, int pageWidth, PieceStateSet state) {
-    var writer = CodeWriter(pageWidth, state);
+  Solution._(Piece root, int pageWidth, this.cost, this._pieceStates) {
+    var writer = CodeWriter(pageWidth, this);
     writer.format(root);
-    return writer.finish();
+
+    var (text, nextPieceToExpand) = writer.finish();
+    _text = text;
+    _nextPieceToExpand = nextPieceToExpand;
   }
 
-  Solution(this._stateSet, this.text, this.selectionStart, this.selectionEnd,
-      this._nextPieceToExpand,
-      {required this.overflow, required this.cost, required this.isValid});
+  /// The state this solution selects for [piece].
+  ///
+  /// If no state has been selected, defaults to the first state.
+  State pieceState(Piece piece) => _pieceStates[piece] ?? piece.states.first;
+
+  /// Whether [piece] has been bound to a state in this set.
+  bool isBound(Piece piece) => _pieceStates.containsKey(piece);
+
+  /// Increases the total overflow for this solution by [overflow].
+  ///
+  /// This should only be called by [CodeWriter].
+  void addOverflow(int overflow) {
+    _overflow += overflow;
+  }
+
+  /// Sets [selectionStart] to be [start] code units into the output.
+  ///
+  /// This should only be called by [CodeWriter].
+  void startSelection(int start) {
+    assert(_selectionStart == null);
+    _selectionStart = start;
+  }
+
+  /// Sets [selectionEnd] to be [end] code units into the output.
+  ///
+  /// This should only be called by [CodeWriter].
+  void endSelection(int end) {
+    assert(_selectionEnd == null);
+    _selectionEnd = end;
+  }
+
+  /// Mark this solution as having a newline where none is permitted and thus
+  /// not a valid solution.
+  ///
+  /// This should only be called by [CodeWriter].
+  void invalidate() {
+    _isValid = false;
+  }
 
   /// When called on a [Solution] with some unselected piece states, chooses a
   /// piece and yields further solutions for each state that piece can have.
   List<Solution> expand(Piece root, int pageWidth) {
-    if (_nextPieceToExpand case var piece?) {
-      return [
-        for (var state in piece.states)
-          if (_stateSet.tryBind(piece, state) case var stateSet?)
-            Solution._(root, pageWidth, stateSet)
-      ];
+    var expandPiece = _nextPieceToExpand;
+
+    // If there is no piece that we can expand on this solution, it's a dead
+    // end (or a winner).
+    if (expandPiece == null) return const [];
+
+    return [
+      for (var state in expandPiece.states)
+        if (_tryBind(root, pageWidth, expandPiece, state) case var solution?)
+          solution
+    ];
+  }
+
+  /// Attempts to extend this solution's piece states by binding [piece] to
+  /// [state], taking into account any constraints pieces place on each other.
+  ///
+  /// Returns a new [Solution] with [piece] bound to [state] and any other
+  /// pieces constrained by that choice bound to their constrained values
+  /// (recursively). Returns `null` if a constraint conflicts with the already
+  /// bound or pinned state for some piece.
+  Solution? _tryBind(Piece root, int pageWidth, Piece piece, State state) {
+    var conflict = false;
+    var newStates = {..._pieceStates};
+    var newCost = cost;
+
+    void bind(Piece thisPiece, State thisState) {
+      // If this piece is already pinned or bound to some other state, then the
+      // solution doesn't make sense.
+      var alreadyBound = thisPiece.pinnedState ?? newStates[thisPiece];
+      if (alreadyBound != null && alreadyBound != thisState) {
+        conflict = true;
+        return;
+      }
+
+      newStates[thisPiece] = thisState;
+      newCost += thisPiece.stateCost(thisState);
+
+      // This piece may in turn place further constraints on others.
+      thisPiece.applyConstraints(thisState, bind);
     }
 
-    // No piece we can expand.
-    return const [];
+    bind(piece, state);
+
+    if (conflict) return null;
+
+    return Solution._(root, pageWidth, newCost, newStates);
   }
 
   /// Compares two solutions where a more desirable solution comes first.
@@ -184,9 +204,9 @@ class Solution implements Comparable<Solution> {
     if (overflow != other.overflow) return overflow.compareTo(other.overflow);
 
     // If all else is equal, prefer lower states in earlier bound pieces.
-    for (var piece in _stateSet._pieceStates.keys) {
-      var thisState = _stateSet.pieceState(piece);
-      var otherState = other._stateSet.pieceState(piece);
+    for (var piece in _pieceStates.keys) {
+      var thisState = pieceState(piece);
+      var otherState = other.pieceState(piece);
       if (thisState != otherState) return thisState.compareTo(otherState);
     }
 
@@ -195,11 +215,15 @@ class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
+    var states = _pieceStates.keys
+        .map((piece) => '$piece:${_pieceStates[piece]}')
+        .join(' ');
+
     return [
       '\$$cost',
       if (overflow > 0) '($overflow over)',
       if (!isValid) '(invalid)',
-      '$_stateSet',
+      states,
     ].join(' ');
   }
 }

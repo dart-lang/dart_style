@@ -37,17 +37,20 @@ class Solver {
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.
   Solution format(Piece root) {
-    var solution = Solution.initial(root, _pageWidth);
+    var solution = Solution(root, _pageWidth);
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.
     var best = solution;
 
+    var tries = 0;
+
     while (_queue.isNotEmpty) {
       var solution = _queue.removeFirst();
+      tries++;
 
       if (debug.traceSolver) {
-        debug.log(debug.bold(solution));
+        debug.log(debug.bold('#$tries $solution'));
         debug.log(solution.text);
         debug.log('');
       }
