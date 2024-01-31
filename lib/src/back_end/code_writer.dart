@@ -208,7 +208,8 @@ class CodeWriter {
     _options.add(_PieceOptions(piece, _options.lastOrNull?.indent ?? 0,
         _options.lastOrNull?.allowNewlines ?? true));
 
-    var isUnsolved = !_solution.isBound(piece) && piece.states.length > 1;
+    var isUnsolved =
+        !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
     // TODO(perf): Memoize this. Might want to create a nested PieceWriter

@@ -134,7 +134,7 @@ class Solution implements Comparable<Solution> {
   /// The state this solution selects for [piece].
   ///
   /// If no state has been selected, defaults to the first state.
-  State pieceState(Piece piece) => _pieceStates[piece] ?? piece.states.first;
+  State pieceState(Piece piece) => _pieceStates[piece] ?? State.unsplit;
 
   /// Whether [piece] has been bound to a state in this set.
   bool isBound(Piece piece) => _pieceStates.containsKey(piece);
