@@ -197,6 +197,10 @@ class Solution implements Comparable<Solution> {
     var newCost = cost;
 
     void bind(Piece thisPiece, State thisState) {
+      // If we've already failed from a previous sibling's constraint violation,
+      // early out.
+      if (conflict) return;
+
       // If this piece is already pinned or bound to some other state, then the
       // solution doesn't make sense.
       var alreadyBound = thisPiece.pinnedState ?? newStates[thisPiece];
