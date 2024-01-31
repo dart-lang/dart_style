@@ -857,7 +857,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIfElement(IfElement node) {
-    var piece = IfPiece();
+    var piece = IfPiece(isStatement: false);
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -940,7 +940,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIfStatement(IfStatement node) {
-    var piece = IfPiece();
+    var piece = IfPiece(isStatement: true);
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -1834,7 +1834,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     var body = nodePiece(node.body);
 
-    var piece = IfPiece();
+    var piece = IfPiece(isStatement: true);
     piece.add(condition, body, isBlock: node.body is Block);
     return piece;
   }

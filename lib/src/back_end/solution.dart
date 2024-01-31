@@ -97,7 +97,30 @@ class Solution implements Comparable<Solution> {
   /// Creates a new [Solution] with no pieces set to any state (which
   /// implicitly means they have state [State.unsplit] unless they're pinned to
   /// another state).
-  Solution(Piece root, int pageWidth) : this._(root, pageWidth, 0, {});
+  factory Solution(Piece root, int pageWidth) {
+    var pieceStates = <Piece, State>{};
+    var cost = 0;
+
+    // Bind every pinned piece to its state and propagate any constraints from
+    // those.
+    void traversePinned(Piece piece) {
+      if (piece.pinnedState case var pinned?) {
+        var additionalCost = _tryBind(pieceStates, piece, pinned);
+
+        // Pieces should be implemented such that they never get pinned into a
+        // conflicting state because then there's no possible solution, so
+        // [_tryBind()] should always succeed and [additionalCost] won't be
+        // `null`.
+        cost += additionalCost!;
+      }
+
+      piece.forEachChild(traversePinned);
+    }
+
+    traversePinned(root);
+
+    return Solution._(root, pageWidth, cost, pieceStates);
+  }
 
   Solution._(Piece root, int pageWidth, this.cost, this._pieceStates) {
     var writer = CodeWriter(pageWidth, this);
@@ -147,8 +170,11 @@ class Solution implements Comparable<Solution> {
     _invalidPiece = piece;
   }
 
-  /// When called on a [Solution] with some unselected piece states, chooses a
-  /// piece and yields further solutions for each state that piece can have.
+  /// Derives new potential solutions from this one by binding
+  /// [_nextPieceToExpand] to all of its possible states.
+  ///
+  /// If there is no potential piece to expand, or all attempts to expand it
+  /// fail, returns an empty list.
   List<Solution> expand(Piece root, int pageWidth) {
     // If the piece whose newline constraint was violated is already bound to
     // one state, then every solution derived from this one will also fail in
@@ -176,51 +202,25 @@ class Solution implements Comparable<Solution> {
     // make any noticeable performance difference on the one pathological
     // example I tried. Leaving this here as a TODO to investigate more when
     // there are other benchmarks we can try.
+    var solutions = <Solution>[];
 
-    return [
-      for (var state in expandPiece.states)
-        if (_tryBind(root, pageWidth, expandPiece, state) case var solution?)
-          solution
-    ];
-  }
+    // For each state that the expanding piece can be in, create a new solution
+    // that inherits all of the bindings of this one, and binds the expanding
+    // piece to that state (along with any further pieces constrained by that
+    // one).
+    for (var state in expandPiece.states) {
+      var newStates = {..._pieceStates};
 
-  /// Attempts to extend this solution's piece states by binding [piece] to
-  /// [state], taking into account any constraints pieces place on each other.
-  ///
-  /// Returns a new [Solution] with [piece] bound to [state] and any other
-  /// pieces constrained by that choice bound to their constrained values
-  /// (recursively). Returns `null` if a constraint conflicts with the already
-  /// bound or pinned state for some piece.
-  Solution? _tryBind(Piece root, int pageWidth, Piece piece, State state) {
-    var conflict = false;
-    var newStates = {..._pieceStates};
-    var newCost = cost;
+      var additionalCost = _tryBind(newStates, expandPiece, state);
 
-    void bind(Piece thisPiece, State thisState) {
-      // If we've already failed from a previous sibling's constraint violation,
-      // early out.
-      if (conflict) return;
+      // Discard the solution if we hit a constraint violation.
+      if (additionalCost == null) continue;
 
-      // If this piece is already pinned or bound to some other state, then the
-      // solution doesn't make sense.
-      var alreadyBound = thisPiece.pinnedState ?? newStates[thisPiece];
-      if (alreadyBound != null && alreadyBound != thisState) {
-        conflict = true;
-        return;
-      }
-
-      newStates[thisPiece] = thisState;
-      newCost += thisPiece.stateCost(thisState);
-
-      // This piece may in turn place further constraints on others.
-      thisPiece.applyConstraints(thisState, bind);
+      solutions
+          .add(Solution._(root, pageWidth, cost + additionalCost, newStates));
     }
 
-    bind(piece, state);
-
-    if (conflict) return null;
-
-    return Solution._(root, pageWidth, newCost, newStates);
+    return solutions;
   }
 
   /// Compares two solutions where a more desirable solution comes first.
@@ -259,5 +259,47 @@ class Solution implements Comparable<Solution> {
       if (!isValid) '(invalid)',
       states,
     ].join(' ');
+  }
+
+  /// Attempts to add a binding from [piece] to [state] in [boundStates], and
+  /// then adds any further bindings from constraints that [piece] applies to
+  /// its children, recursively.
+  ///
+  /// This may fail if [piece] is already bound to a different [state], or if
+  /// any constrained pieces are bound to different states.
+  ///
+  /// If successful, returns the additional cost required to bind [piece] to
+  /// [state] (along with any other applied constrained pieces). Otherwise,
+  /// returns `null` to indicate failure.
+  static int? _tryBind(
+      Map<Piece, State> boundStates, Piece piece, State state) {
+    var success = true;
+    var additionalCost = 0;
+
+    void bind(Piece thisPiece, State thisState) {
+      // If we've already failed from a previous sibling's constraint violation,
+      // early out.
+      if (!success) return;
+
+      // Apply the new binding if it doesn't conflict with an existing one.
+      switch (boundStates[thisPiece]) {
+        case null:
+          // Binding a unbound piece to a state.
+          additionalCost += thisPiece.stateCost(thisState);
+          boundStates[thisPiece] = thisState;
+
+          // This piece may in turn place further constraints on others.
+          thisPiece.applyConstraints(thisState, bind);
+        case var alreadyBound when alreadyBound != thisState:
+          // Already bound to a different state, so there's a conflict.
+          success = false;
+        default:
+          break; // Already bound to the same state, so nothing to do.
+      }
+    }
+
+    bind(piece, state);
+
+    return success ? additionalCost : null;
   }
 }

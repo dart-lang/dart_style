@@ -16,15 +16,13 @@ typedef Constrain = void Function(Piece other, State constrainedState);
 abstract class Piece {
   /// The ordered list of ways this piece may split.
   ///
-  /// If the piece is aready pinned, then this is just the one pinned state.
-  /// Otherwise, it's [State.unsplit], which all pieces support, followed by
-  /// any other [additionalStates].
+  /// This is [State.unsplit], which all pieces support, followed by any other
+  /// [additionalStates].
   List<State> get states {
-    if (_pinnedState case var state?) {
-      return [state];
-    } else {
-      return [State.unsplit, ...additionalStates];
-    }
+    // Pinned pieces should be bound eagerly in the Solution so we shouldn't
+    // ever need to iterate over their states.
+    assert(_pinnedState == null);
+    return [State.unsplit, ...additionalStates];
   }
 
   /// The ordered list of all possible ways this piece could split.
