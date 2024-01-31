@@ -10,7 +10,7 @@ import 'solution.dart';
 /// Selects states for each piece in a tree of pieces to find the best set of
 /// line splits that minimizes overflow characters and line splitting costs.
 ///
-/// This problem is combinatorial for the number of pieces and each of their
+/// This problem is combinatorial over the number of pieces and each of their
 /// possible states, so it isn't feasible to brute force. There are a few
 /// techniques we use to avoid that:
 ///
@@ -24,7 +24,7 @@ import 'solution.dart';
 ///
 /// -   When selecting states for pieces to expand solutions, we only look at
 ///     pieces in the first line containing overflow characters or invalid
-///     newlines. See [Solution._livePieces] for more details.
+///     newlines. See [Solution._nextPieceToExpand] for more details.
 // TODO(perf): At some point, we may also want to do memoization of previously
 // formatted Piece subtrees.
 class Solver {
@@ -37,17 +37,20 @@ class Solver {
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.
   Solution format(Piece root) {
-    var solution = Solution.initial(root, _pageWidth);
+    var solution = Solution(root, _pageWidth);
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.
     var best = solution;
 
+    var tries = 0;
+
     while (_queue.isNotEmpty) {
       var solution = _queue.removeFirst();
+      tries++;
 
       if (debug.traceSolver) {
-        debug.log(debug.bold(solution));
+        debug.log(debug.bold('#$tries $solution'));
         debug.log(solution.text);
         debug.log('');
       }
