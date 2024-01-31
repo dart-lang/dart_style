@@ -52,7 +52,7 @@ class CodeWriter {
   ///
   /// This is used to increase the cumulative nesting as we recurse into pieces
   /// and then unwind that as child pieces are completed.
-  final List<_PieceOptions> _pieceOptions = [_PieceOptions(0, true)];
+  final List<_PieceOptions> _options = [];
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -85,9 +85,6 @@ class CodeWriter {
   /// current line so that we know which piece should be expanded in the next
   /// solution if the line ends up overflowing.
   final List<Piece> _currentUnsolvedPieces = [];
-
-  /// The options for the current innermost piece being formatted.
-  _PieceOptions get _options => _pieceOptions.last;
 
   CodeWriter(this._pageWidth, this._solution);
 
@@ -134,7 +131,10 @@ class CodeWriter {
   ///
   // TODO(tall): Add another API that adds/subtracts existing indentation.
   void setIndent(int indent) {
-    _options.indent = _pieceOptions[_pieceOptions.length - 2].indent + indent;
+    var parentIndent =
+        _options.length > 1 ? _options[_options.length - 2].indent : 0;
+
+    _options.last.indent = parentIndent + indent;
   }
 
   /// Inserts a newline if [condition] is true.
@@ -188,7 +188,7 @@ class CodeWriter {
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
       _handleNewline();
-      _pendingIndent = flushLeft ? 0 : _options.indent;
+      _pendingIndent = flushLeft ? 0 : _options.last.indent;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
@@ -197,13 +197,14 @@ class CodeWriter {
   /// Sets whether newlines are allowed to occur from this point on for the
   /// current piece.
   void setAllowNewlines(bool allowed) {
-    _options.allowNewlines = allowed;
+    _options.last.allowNewlines = allowed;
   }
 
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
   void format(Piece piece) {
-    _pieceOptions.add(_PieceOptions(_options.indent, _options.allowNewlines));
+    _options.add(_PieceOptions(piece, _options.lastOrNull?.indent ?? 0,
+        _options.lastOrNull?.allowNewlines ?? true));
 
     var isUnsolved = !_solution.isBound(piece) && piece.states.length > 1;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
@@ -215,10 +216,10 @@ class CodeWriter {
 
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childOptions = _pieceOptions.removeLast();
+    var childOptions = _options.removeLast();
 
     // If the child [piece] contains a newline then this one transitively does.
-    if (childOptions.hasNewline) _handleNewline();
+    if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
   }
 
   /// Format [piece] if not null.
@@ -243,11 +244,11 @@ class CodeWriter {
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
   void _handleNewline() {
-    if (!_options.allowNewlines) _solution.invalidate();
+    if (!_options.last.allowNewlines) _solution.invalidate(_options.last.piece);
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
-    _options.hasNewline = true;
+    _options.last.hasNewline = true;
   }
 
   /// Write any pending whitespace.
@@ -325,6 +326,9 @@ enum Whitespace {
 
 /// The mutable state local to a single piece being formatted.
 class _PieceOptions {
+  /// The piece being formatted with these options.
+  final Piece piece;
+
   /// The absolute number of spaces of leading indentation coming from
   /// block-like structure or explicit extra indentation (aligning constructor
   /// initializers, `show` clauses, etc.).
@@ -339,5 +343,5 @@ class _PieceOptions {
   /// Whether any newlines have occurred in this piece or any of its children.
   bool hasNewline = false;
 
-  _PieceOptions(this.indent, this.allowNewlines);
+  _PieceOptions(this.piece, this.indent, this.allowNewlines);
 }

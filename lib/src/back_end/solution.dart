@@ -32,6 +32,14 @@ class Solution implements Comparable<Solution> {
   bool get isValid => _isValid;
   bool _isValid = true;
 
+  /// Whether this solution can be expanded from to enqueue other solutions.
+  ///
+  /// This is generally `true`, but will be `false` if [isValid] is `false`
+  /// and if the piece that forbid the unexpected newline was already bound by
+  /// this solution so can't be chosen to have a different state in further
+  /// expanded solutions.
+  bool _canExpandSolution = true;
+
   /// The total number of characters that do not fit inside the page width.
   int get overflow => _overflow;
   int _overflow = 0;
@@ -130,17 +138,26 @@ class Solution implements Comparable<Solution> {
     _selectionEnd = end;
   }
 
-  /// Mark this solution as having a newline where none is permitted and thus
-  /// not a valid solution.
+  /// Mark this solution as having a newline where none is permitted by [piece]
+  /// and is thus not a valid solution.
   ///
   /// This should only be called by [CodeWriter].
-  void invalidate() {
+  void invalidate(Piece piece) {
     _isValid = false;
+
+    // If the piece whose newline constraint was violated is already bound to
+    // one state, then every solution derived from this one will also fail in
+    // the same way, so discard the whole solution tree hanging off this one.
+    if (isBound(piece)) _canExpandSolution = false;
   }
 
   /// When called on a [Solution] with some unselected piece states, chooses a
   /// piece and yields further solutions for each state that piece can have.
   List<Solution> expand(Piece root, int pageWidth) {
+    // If this solution is invalid and can't lead to any valid solutions, don't
+    // consider it.
+    if (!_canExpandSolution) return const [];
+
     var expandPiece = _nextPieceToExpand;
 
     // If there is no piece that we can expand on this solution, it's a dead
