@@ -1441,7 +1441,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRecordLiteral(RecordLiteral node) {
-    return createRecordCollection(
+    return createRecord(
       constKeyword: node.constKeyword,
       node.leftParenthesis,
       node.fields,
@@ -1451,7 +1451,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRecordPattern(RecordPattern node) {
-    return createRecordCollection(
+    return createRecord(
       node.leftParenthesis,
       node.fields,
       node.rightParenthesis,

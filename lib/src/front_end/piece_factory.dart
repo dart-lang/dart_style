@@ -708,44 +708,41 @@ mixin PieceFactory {
   }
 
   /// Creates a [ListPiece] for a record literal or pattern.
-  Piece createRecordCollection(
+  Piece createRecord(
     Token leftParenthesis,
     List<AstNode> fields,
     Token rightParenthesis, {
     Token? constKeyword,
   }) {
     var style = switch (fields) {
-      // Record patterns with a single positional field will always
-      // have a trailing comma, like:
-      //
-      //     if (obj case (pattern,)) {
-      //       ;
-      //     }
-      [PatternField(name: null)] =>
-        const ListStyle(commas: Commas.alwaysTrailing),
-
-      // Record types with a single position field will always have a trailing
-      // comma, like:
-      //
-      //     (int,) x;
-      //
-      [var field] when field is! NamedExpression && field is! PatternField =>
-        const ListStyle(commas: Commas.alwaysTrailing),
-
-      // All other record types and patterns have regular trailing commas when
-      // split.
-      //
-      // Record types with a single named fields don't add trailing commas
-      // unless it's split, like:
+      // Record types or patterns with a single named field don't add a trailing
+      // comma unless it's split, like:
       //
       //     ({int n}) x;
       //
-      // Record patterns with a single named fields don't add trailing commas
-      // unless it's split, like:
+      // Or:
       //
       //     if (obj case (name: value)) {
       //       ;
       //     }
+      [PatternField(name: _?)] => const ListStyle(commas: Commas.trailing),
+      [NamedExpression()] => const ListStyle(commas: Commas.trailing),
+
+      // Record types or patterns with a single positional field always have a
+      // trailing comma to disambiguate from parenthesized expressions or
+      // patterns, like:
+      //
+      //     (int,) x;
+      //
+      // Or:
+      //
+      //     if (obj case (pattern,)) {
+      //       ;
+      //     }
+      [_] => const ListStyle(commas: Commas.alwaysTrailing),
+
+      // Record types or patterns with multiple fields have regular trailing
+      // commas when split.
       _ => const ListStyle(commas: Commas.trailing)
     };
     return createCollection(
