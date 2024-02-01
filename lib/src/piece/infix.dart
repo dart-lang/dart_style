@@ -31,7 +31,12 @@ class InfixPiece extends Piece {
     }
 
     for (var i = 0; i < operands.length; i++) {
-      writer.format(operands[i]);
+      // We can format each operand separately if the operand is on its own
+      // line. This happens when the operator is split and we aren't the first
+      // or last operand.
+      var separate = state == State.split && i > 0 && i < operands.length - 1;
+
+      writer.format(operands[i], separate: separate);
       if (i < operands.length - 1) writer.splitIf(state == State.split);
     }
   }

@@ -1,0 +1,41 @@
+40 columns                              |
+// Test infix operators.
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand <<
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand >>
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand >>>
+
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand <<
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand >>
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand &
+
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand <<
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand >>
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand ^
+
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand <<
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand >>
+longOperand * longOperand / longOperand ~/ longOperand % longOperand +
+longOperand * longOperand / longOperand ~/ longOperand % longOperand -
+longOperand * longOperand / longOperand ~/ longOperand % longOperand ;
