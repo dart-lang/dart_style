@@ -25,11 +25,11 @@ class DelimitedListBuilder {
   Piece? _leftBracket;
 
   /// The list of elements in the list.
-  final List<ListElement> _elements = [];
+  final List<ListElementPiece> _elements = [];
 
   /// The element that should have a blank line preserved between them and the
   /// next piece.
-  final Set<ListElement> _blanksAfter = {};
+  final Set<ListElementPiece> _blanksAfter = {};
 
   /// The closing bracket after the elements, if any.
   Piece? _rightBracket;
@@ -135,7 +135,7 @@ class DelimitedListBuilder {
   ///
   /// Assumes there is no comma after this piece.
   void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
-    _elements.add(ListElement(_leadingComments, piece, format));
+    _elements.add(ListElementPiece(_leadingComments, piece, format));
     _leadingComments.clear();
     _commentsBeforeComma = CommentSequence.empty;
   }
@@ -248,7 +248,7 @@ class DelimitedListBuilder {
       }
 
       var commentPiece = _visitor.pieces.writeComment(comment);
-      _elements.add(ListElement.comment(commentPiece));
+      _elements.add(ListElementPiece.comment(commentPiece));
     }
 
     // Leading comments are written before the next element.
