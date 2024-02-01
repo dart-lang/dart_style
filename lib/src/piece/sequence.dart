@@ -39,7 +39,10 @@ class SequencePiece extends Piece {
 
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
-      writer.format(element);
+
+      // If the sequence is split, then every element is on its own line and
+      // can be formatted separately.
+      writer.format(element, separate: state == State.split);
 
       if (i < _elements.length - 1) {
         writer.newline(

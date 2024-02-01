@@ -1,0 +1,40 @@
+40 columns                              |
+import 'path.dart' as very_long_prefix;
+import 'import/path.dart' as very_long_prefix;
+import 'long/import/path.dart' as very_long_prefix;
+import 'really/long/import/path.dart' as very_long_prefix;
+import 'some/really/long/import/path.dart' as very_long_prefix;
+import 'path.dart' as prefix;
+import 'import/path.dart' as prefix;
+import 'long/import/path.dart' as prefix;
+import 'really/long/import/path.dart' as prefix;
+import 'some/really/long/import/path.dart' as prefix;
+
+import 'import/path.dart' show Identifier1;
+import 'import/path.dart' show Identifier1, Identifier2;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3, Identifier4;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5, Identifier6;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5, Identifier6, Identifier7;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5, Identifier6, Identifier7, Identifier8;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5, Identifier6, Identifier7, Identifier8, Identifier9;
+import 'import/path.dart' show Identifier1, Identifier2, Identifier3,
+Identifier4, Identifier5, Identifier6, Identifier7, Identifier8, Identifier9,
+Identifier10;
+
+SomeTypeName someVariableName1 = someInitializer;
+SomeTypeName someVariableName2 = someInitializer;
+SomeTypeName someVariableName3 = someInitializer;
+SomeTypeName someVariableName4 = someInitializer;
+SomeTypeName someVariableName5 = someInitializer;
+SomeTypeName someVariableName6 = someInitializer;
+SomeTypeName someVariableName7 = someInitializer;
+SomeTypeName someVariableName8 = someInitializer;
+SomeTypeName someVariableName9 = someInitializer;
+SomeTypeName someVariableName10 = someInitializer;
