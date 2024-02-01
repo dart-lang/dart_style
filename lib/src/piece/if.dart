@@ -10,7 +10,12 @@ import 'piece.dart';
 /// We also use this for while statements, which are formatted exactly like an
 /// if statement with no else clause.
 class IfPiece extends Piece {
+  /// Whether this is an if statement versus if collection element.
+  final bool _isStatement;
+
   final List<_IfSection> _sections = [];
+
+  IfPiece({required bool isStatement}) : _isStatement = isStatement;
 
   void add(Piece header, Piece statement, {required bool isBlock}) {
     _sections.add(_IfSection(header, statement, isBlock));
@@ -24,11 +29,12 @@ class IfPiece extends Piece {
     // If an if element, any spread collection's split state must follow the
     // surrounding if element's: we either split all the spreads or none of
     // them. And if any of the non-spread then or else branches split, then the
-    // spreads do too. This has no effect on if statements since blocks always
-    // split.
-    for (var section in _sections) {
-      if (section.isBlock) {
-        constrain(section.statement, state);
+    // spreads do too.
+    if (!_isStatement) {
+      for (var section in _sections) {
+        if (section.isBlock) {
+          constrain(section.statement, state);
+        }
       }
     }
   }
