@@ -1355,7 +1355,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPatternField(PatternField node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.name);
+      b.visit(node.pattern);
+    });
+  }
+
+  @override
+  Piece visitPatternFieldName(PatternFieldName node) {
+    return buildPiece((b) {
+      b.token(node.name);
+      b.token(node.colon);
+      if (node.name != null) b.space();
+    });
   }
 
   @override
@@ -1424,27 +1436,21 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRecordLiteral(RecordLiteral node) {
-    ListStyle style;
-    if (node.fields.length == 1 && node.fields[0] is! NamedExpression) {
-      // Single-element records always have a trailing comma, unless the single
-      // element is a named field.
-      style = const ListStyle(commas: Commas.alwaysTrailing);
-    } else {
-      style = const ListStyle(commas: Commas.trailing);
-    }
-
-    return createCollection(
+    return createRecord(
       constKeyword: node.constKeyword,
       node.leftParenthesis,
       node.fields,
       node.rightParenthesis,
-      style: style,
     );
   }
 
   @override
   Piece visitRecordPattern(RecordPattern node) {
-    throw UnimplementedError();
+    return createRecord(
+      node.leftParenthesis,
+      node.fields,
+      node.rightParenthesis,
+    );
   }
 
   @override

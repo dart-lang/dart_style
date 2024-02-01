@@ -392,6 +392,8 @@ extension PatternExtensions on DartPattern {
           elements.canSplit(rightBracket),
         MapPattern(:var elements, :var rightBracket) =>
           elements.canSplit(rightBracket),
+        RecordPattern(:var fields, :var rightParenthesis) =>
+          fields.canSplit(rightParenthesis),
         _ => false,
       };
 }

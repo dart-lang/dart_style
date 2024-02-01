@@ -1,0 +1,166 @@
+40 columns                              |
+>>> Basic record switch. 
+switch (obj) {
+  case  (  )  :
+  case  (  value  ,  )  :
+  case  (  : var x  ,  )  :
+  case  ( name : var x  ,  )  :
+  case  (  first  ,  second  ,  third  )  :
+  case  (  first  :  1  ,  2  ,  third  :  3  )  :
+  case  (  :  var  x  ,  :  var  y  )  :
+    ok;
+}
+<<<
+switch (obj) {
+  case ():
+  case (value,):
+  case (:var x):
+  case (name: var x):
+  case (first, second, third):
+  case (first: 1, 2, third: 3):
+  case (:var x, :var y):
+    ok;
+}
+>>> Unsplit single-element record, with trailing comma.
+if (obj case (pattern,)) {;}
+<<<
+if (obj case (pattern,)) {
+  ;
+}
+>>> Remove trailing comma from single named field.
+if (obj case (name: value,)) {;}
+<<<
+if (obj case (name: value)) {
+  ;
+}
+>>> Split single-element record after ",".
+if (obj case (veryLongRecordField____________,)) {;}
+<<<
+if (obj case (
+  veryLongRecordField____________,
+)) {
+  ;
+}
+>>> Split single-element named record.
+if (obj case (longFieldName: longRecordFieldValue)) {;}
+<<<
+if (obj case (
+  longFieldName: longRecordFieldValue,
+)) {
+  ;
+}
+>>> Split single-element named record at name.
+if (obj case (longFieldName: veryLongRecordFieldValue)) {;}
+<<<
+if (obj case (
+  longFieldName: veryLongRecordFieldValue,
+)) {
+  ;
+}
+>>> Split single-element record with inferred name.
+if (obj case (:var veryLongInferredFieldName_____)) {;}
+<<<
+if (obj case (
+  :var veryLongInferredFieldName_____,
+)) {
+  ;
+}
+>>> Split multiple-element record with inferred names.
+if (obj case (:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
+<<<
+if (obj case (
+  :var firstLongInferredFieldName,
+  :var secondLongInferredName,
+)) {
+  ;
+}
+>>> Don't split between name and list subpattern.
+if (obj case (longFieldName: [first, second, third])) {;}
+<<<
+if (obj case (
+  longFieldName: [first, second, third],
+)) {
+  ;
+}
+>>> Don't split between name and map subpattern.
+if (obj case (longFieldName: {first: 1, second: 2})) {;}
+<<<
+if (obj case (
+  longFieldName: {first: 1, second: 2},
+)) {
+  ;
+}
+>>> Don't split between name and record subpattern.
+if (obj case (longFieldName: (first: 1, second: 2))) {;}
+<<<
+if (obj case (
+  longFieldName: (first: 1, second: 2),
+)) {
+  ;
+}
+>>> If any field splits, all fields split.
+if (obj case (first, second, third, fourth, fifth)) {;}
+<<<
+if (obj case (
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+)) {
+  ;
+}
+>>> Don't force outer record to split.
+if (obj case ((a,), (b, c))) {;}
+<<<
+if (obj case ((a,), (b, c))) {
+  ;
+}
+>>> Split nested record.
+if (obj case (first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
+    eleventh))) {;}
+<<<
+if (obj case (
+  first,
+  (second, third, fourth),
+  fifth,
+  (
+    sixth,
+    seventh,
+    eighth,
+    nine,
+    tenth,
+    eleventh,
+  ),
+)) {
+  ;
+}
+>>> Tall splitting style with line comment.
+if (obj case (
+  // yeah
+  a,b,c,
+  d,e,f,
+)) {;}
+<<<
+if (obj case (
+  // yeah
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+)) {
+  ;
+}
+>>> Remove comma from multiple-field record pattern if unsplit
+if (e case (a, b,)) {}
+<<<
+if (e case (a, b)) {}
+>>> Add comma to record pattern if split.
+if (e case (longPattern1, veryLongPattern2)) {}
+<<<
+if (e case (
+  longPattern1,
+  veryLongPattern2,
+)) {}
