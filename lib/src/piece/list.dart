@@ -138,7 +138,14 @@ class ListPiece extends Piece {
         writer.setIndent(Indent.expression);
       }
 
-      writer.format(element);
+      // We can format each list item separately if the item is on its own line.
+      // This happens when the list is split and there is something before and
+      // after the item, either brackets or other items.
+      var separate = state == State.split &&
+          (i > 0 || _before != null) &&
+          (i < _elements.length - 1 || _after != null);
+
+      writer.format(element, separate: separate);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.setIndent(Indent.none);

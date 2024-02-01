@@ -1,0 +1,127 @@
+// Test collection literals.
+[
+  [
+    [
+      listElement1,
+      listElement2,
+      listElement3
+    ],
+    {
+      setElement1,
+      setElement2,
+      setElement3
+    },
+    {
+      mapKey1: mapValue1,
+      mapKey2: mapValue2
+    },
+    (
+      recordField1,
+      recordField2,
+      recordField3
+    ),
+    (
+      name1: recordField1,
+      name2: recordField2
+    ),
+  ],
+  {
+    [
+      listElement1,
+      listElement2,
+      listElement3
+    ],
+    {
+      setElement1,
+      setElement2,
+      setElement3
+    },
+    {
+      mapKey1: mapValue1,
+      mapKey2: mapValue2
+    },
+    (
+      recordField1,
+      recordField2,
+      recordField3
+    ),
+    (
+      name1: recordField1,
+      name2: recordField2
+    ),
+  },
+  {
+    key1: [
+      listElement1,
+      listElement2,
+      listElement3
+    ],
+    key2: {
+      setElement1,
+      setElement2,
+      setElement3
+    },
+    key3: {
+      mapKey1: mapValue1,
+      mapKey2: mapValue2
+    },
+    key4: (
+      recordField1,
+      recordField2,
+      recordField3
+    ),
+    key5: (
+      name1: recordField1,
+      name2: recordField2
+    ),
+  }(
+    [
+      listElement1,
+      listElement2,
+      listElement3
+    ],
+    {
+      setElement1,
+      setElement2,
+      setElement3
+    },
+    {
+      mapKey1: mapValue1,
+      mapKey2: mapValue2
+    },
+    (
+      recordField1,
+      recordField2,
+      recordField3
+    ),
+    (
+      name1: recordField1,
+      name2: recordField2
+    ),
+  ),
+  (
+    field1: [
+      listElement1,
+      listElement2,
+      listElement3
+    ],
+    field2: {
+      setElement1,
+      setElement2,
+      setElement3
+    },
+    field3: {
+      mapKey1: mapValue1,
+      mapKey2: mapValue2
+    },
+    field4: (
+      recordField1,
+      recordField2,
+      recordField3
+    ),
+    field5: (
+      name1: recordField1,
+      name2: recordField2
+    ),
+  ),
+];
