@@ -15,7 +15,7 @@ class SequencePiece extends Piece {
   final Piece? _leftBracket;
 
   /// The series of members or statements.
-  final List<SequenceElement> _elements;
+  final List<SequenceElementPiece> _elements;
 
   SequencePiece(this._elements, {Piece? leftBracket, Piece? rightBracket})
       : _leftBracket = leftBracket,
@@ -34,21 +34,16 @@ class SequencePiece extends Piece {
     if (_leftBracket case var leftBracket?) {
       writer.format(leftBracket);
       writer.splitIf(state == State.split,
-          space: false, indent: _elements.firstOrNull?.indent ?? 0);
+          space: false, indent: _elements.firstOrNull?._indent ?? 0);
     }
 
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
-      writer.format(element.piece);
-
-      for (var comment in element.hangingComments) {
-        writer.space();
-        writer.format(comment);
-      }
+      writer.format(element);
 
       if (i < _elements.length - 1) {
         writer.newline(
-            blank: element.blankAfter, indent: _elements[i + 1].indent);
+            blank: element.blankAfter, indent: _elements[i + 1]._indent);
       }
     }
 
@@ -63,10 +58,7 @@ class SequencePiece extends Piece {
     if (_leftBracket case var leftBracket?) callback(leftBracket);
 
     for (var element in _elements) {
-      callback(element.piece);
-      for (var comment in element.hangingComments) {
-        callback(comment);
-      }
+      callback(element);
     }
 
     if (_rightBracket case var rightBracket?) callback(rightBracket);
@@ -79,13 +71,13 @@ class SequencePiece extends Piece {
 /// An element inside a [SequencePiece].
 ///
 /// Tracks the underlying [Piece] along with surrounding whitespace.
-class SequenceElement {
+class SequenceElementPiece extends Piece {
   /// The number of spaces of indentation on the line before this element,
   /// relative to the surrounding [Piece].
-  final int indent;
+  final int _indent;
 
   /// The [Piece] for the element.
-  final Piece piece;
+  final Piece _piece;
 
   /// The comments that should appear at the end of this element's line.
   final List<Piece> hangingComments = [];
@@ -93,5 +85,23 @@ class SequenceElement {
   /// Whether there should be a blank line after this element.
   bool blankAfter = false;
 
-  SequenceElement(this.indent, this.piece);
+  SequenceElementPiece(this._indent, this._piece);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.format(_piece);
+
+    for (var comment in hangingComments) {
+      writer.space();
+      writer.format(comment);
+    }
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    callback(_piece);
+    for (var comment in hangingComments) {
+      callback(comment);
+    }
+  }
 }

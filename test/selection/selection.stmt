@@ -61,3 +61,19 @@ foo(‹›argument);
 operand  ‹  ›   +  another;
 <<<
 operand ‹›+ another;
+>>> Inside block.
+{
+  first();
+  sec‹ond();
+  third();
+  fou›rth();
+  fifth();
+}
+<<<
+{
+  first();
+  sec‹ond();
+  third();
+  fou›rth();
+  fifth();
+}
