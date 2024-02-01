@@ -60,6 +60,7 @@ class IfPiece extends Piece {
         writer.splitIf(state == State.split, indent: Indent.block);
       }
 
+      // TODO(perf): Investigate whether it's worth using `separate:` here.
       writer.format(section.statement);
 
       // Reset the indentation for the subsequent `else` or `} else` line.

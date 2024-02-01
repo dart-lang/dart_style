@@ -78,6 +78,7 @@ class VariablePiece extends Piece {
       // Split between variables.
       if (i > 0) writer.splitIf(state != State.unsplit);
 
+      // TODO(perf): Investigate whether it's worth using `separate:` here.
       writer.format(_variables[i]);
     }
   }
