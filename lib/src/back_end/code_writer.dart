@@ -5,6 +5,7 @@ import 'dart:math';
 
 import '../piece/piece.dart';
 import 'solution.dart';
+import 'solution_cache.dart';
 
 /// The interface used by [Piece]s to output formatted code.
 ///
@@ -19,6 +20,13 @@ import 'solution.dart';
 /// whitespace, etc.
 class CodeWriter {
   final int _pageWidth;
+
+  /// The number of spaces of leading indentation at the beginning of each line
+  /// independent of indentation created by pieces being written.
+  final int _leadingIndent;
+
+  /// Previously cached formatted subtrees.
+  final SolutionCache _cache;
 
   /// The solution this [CodeWriter] is generating code for.
   final Solution _solution;
@@ -86,7 +94,12 @@ class CodeWriter {
   /// solution if the line ends up overflowing.
   final List<Piece> _currentUnsolvedPieces = [];
 
-  CodeWriter(this._pageWidth, this._solution);
+  CodeWriter(
+      this._pageWidth, this._leadingIndent, this._cache, this._solution) {
+    // Write the leading indent before the first line.
+    _buffer.write(' ' * _leadingIndent);
+    _column = _leadingIndent;
+  }
 
   /// Returns the final formatted text and the next piece that can be expanded
   /// from the solution this [CodeWriter] is writing, if any.
@@ -128,7 +141,7 @@ class CodeWriter {
   /// Replaces any previous indentation set by this piece.
   // TODO(tall): Add another API that adds/subtracts existing indentation.
   void setIndent(int indent) {
-    var parentIndent = 0;
+    var parentIndent = _leadingIndent;
 
     // If there is a surrounding Piece, then set the indent relative to that
     // piece's current indentation.
@@ -204,30 +217,60 @@ class CodeWriter {
 
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
-  void format(Piece piece) {
-    _options.add(_PieceOptions(piece, _options.lastOrNull?.indent ?? 0,
-        _options.lastOrNull?.allowNewlines ?? true));
+  ///
+  /// If [separate] is `true`, then [piece] is formatted and solved using a
+  /// separate Solver and the result inserted into this CodeWriter's Solution.
+  /// This lets us solve branches of the piece tree separately and compose the
+  /// optimal results together.
+  ///
+  /// It's only safe to pass [separate] when the piece's formatting depends
+  /// only on its starting indentation and state. If the piece's formatting can
+  /// be affected by the contents of the current line, the contents after the
+  /// piece's ending line, or constraints between pieces, then [separate] should
+  /// be `false`. It's up to the parent piece to only call this when it's safe
+  /// to do so. In practice, this usually means when the parent piece knows that
+  /// [piece] will have a newline before and after it.
+  void format(Piece piece, {bool separate = false}) {
+    if (separate) {
+      var solution = _cache.find(
+          _pageWidth, piece, _solution.pieceState(piece), _pendingIndent);
 
-    var isUnsolved =
-        !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
-    if (isUnsolved) _currentUnsolvedPieces.add(piece);
+      _pendingIndent = 0;
+      _flushWhitespace();
 
-    // TODO(perf): Memoize this. Might want to create a nested PieceWriter
-    // instead of passing in `this` so we can better control what state needs
-    // to be used as the key in the memoization table.
-    piece.format(this, _solution.pieceState(piece));
+      _solution.mergeSubtree(solution);
 
-    if (isUnsolved) _currentUnsolvedPieces.removeLast();
+      // If a selection marker was in the child piece, set it in this piece,
+      // relative to where the child's code is appended.
+      if (solution.selectionStart case var start?) {
+        _solution.startSelection(_buffer.length + start);
+      }
 
-    var childOptions = _options.removeLast();
+      if (solution.selectionEnd case var end?) {
+        _solution.endSelection(_buffer.length + end);
+      }
 
-    // If the child [piece] contains a newline then this one transitively does.
-    if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
-  }
+      _buffer.write(solution.text);
+    } else {
+      _options.add(_PieceOptions(
+          piece,
+          _options.lastOrNull?.indent ?? _leadingIndent,
+          _options.lastOrNull?.allowNewlines ?? true));
 
-  /// Format [piece] if not null.
-  void formatOptional(Piece? piece) {
-    if (piece != null) format(piece);
+      var isUnsolved =
+          !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
+      if (isUnsolved) _currentUnsolvedPieces.add(piece);
+
+      piece.format(this, _solution.pieceState(piece));
+
+      if (isUnsolved) _currentUnsolvedPieces.removeLast();
+
+      var childOptions = _options.removeLast();
+
+      // If the child [piece] contains a newline then this one transitively
+      // does.
+      if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
+    }
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../back_end/solution_cache.dart';
 import '../back_end/solver.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
@@ -242,7 +243,8 @@ class PieceWriter {
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode finish(Piece rootPiece) {
-    var formatter = Solver(_formatter.pageWidth);
+    var cache = SolutionCache();
+    var formatter = Solver(cache, pageWidth: _formatter.pageWidth);
 
     if (debug.tracePieceBuilder) {
       print(debug.pieceTree(rootPiece));
