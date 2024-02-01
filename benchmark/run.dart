@@ -1,4 +1,4 @@
-// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:path/path.dart' as p;
 
-const _numTrials = 100;
+const _totalTrials = 100;
 const _formatsPerTrial = 10;
 
 final _benchmarkDirectory = p.dirname(p.fromUri(Platform.script));
@@ -56,7 +56,7 @@ void main(List<String> args) {
   // Run the benchmark several times. This ensures the VM is warmed up and lets
   // us see how much variance there is.
   var best = 99999999.0;
-  for (var i = 0; i <= _numTrials; i++) {
+  for (var i = 0; i <= _totalTrials; i++) {
     var stopwatch = Stopwatch()..start();
 
     // For a single benchmark, format the source multiple times.
