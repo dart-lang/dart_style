@@ -15,7 +15,7 @@ import 'solver.dart';
 /// Solution that has that piece at that leading indentation.
 ///
 /// This cache stores those previously formatted subtree pieces so that
-/// [CodeWriter] can reuse them across Solution[s].
+/// [CodeWriter] can reuse them across [Solution]s.
 class SolutionCache {
   final _cache = <_Key, Solution>{};
 
