@@ -21,6 +21,7 @@ void main() async {
   await testDirectory('top_level', tall: true);
   await testDirectory('type', tall: true);
   await testDirectory('variable', tall: true);
+  await testDirectory('regression_tall', tall: true);
 
   test('throws a FormatterException on failed parse', () {
     var formatter = DartFormatter();

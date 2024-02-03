@@ -1,0 +1,22 @@
+>>> Incorrect cost calculation when merging subtrees led to wrong solution.
+SomeVeryLongReturnType
+someFunctionName(SomeType_parameter1 AnotherType_parameter2) {
+  {
+    deps.then(() {
+          ;
+        })
+        .then(________traverseDeps_depender__deps_);
+  }
+}
+<<<
+SomeVeryLongReturnType someFunctionName(
+  SomeType_parameter1 AnotherType_parameter2,
+) {
+  {
+    deps
+        .then(() {
+          ;
+        })
+        .then(________traverseDeps_depender__deps_);
+  }
+}
