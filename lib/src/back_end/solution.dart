@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import '../piece/piece.dart';
 import 'code_writer.dart';
+import 'solution_cache.dart';
 
 /// A single possible set of formatting choices.
 ///
@@ -24,7 +25,8 @@ class Solution implements Comparable<Solution> {
   final Map<Piece, State> _pieceStates;
 
   /// The amount of penalties applied based on the chosen line splits.
-  final int cost;
+  int get cost => _cost;
+  int _cost;
 
   /// The formatted code.
   String get text => _text;
@@ -97,7 +99,8 @@ class Solution implements Comparable<Solution> {
   /// Creates a new [Solution] with no pieces set to any state (which
   /// implicitly means they have state [State.unsplit] unless they're pinned to
   /// another state).
-  factory Solution(Piece root, int pageWidth) {
+  factory Solution(SolutionCache cache, Piece root,
+      {required int pageWidth, required int leadingIndent, State? rootState}) {
     var pieceStates = <Piece, State>{};
     var cost = 0;
 
@@ -117,13 +120,25 @@ class Solution implements Comparable<Solution> {
       piece.forEachChild(traversePinned);
     }
 
+    // If we're formatting a subtree of a larger Piece tree that binds [root]
+    // to [rootState], then bind it in this solution too.
+    if (rootState != null) {
+      var additionalCost = _tryBind(pieceStates, root, rootState);
+
+      // Binding should always succeed since we should only get here when
+      // formatting a subtree whose surrounding Solution successfully bound
+      // this piece to this state.
+      cost += additionalCost!;
+    }
+
     traversePinned(root);
 
-    return Solution._(root, pageWidth, cost, pieceStates);
+    return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
   }
 
-  Solution._(Piece root, int pageWidth, this.cost, this._pieceStates) {
-    var writer = CodeWriter(pageWidth, this);
+  Solution._(SolutionCache cache, Piece root, int pageWidth, int leadingIndent,
+      this._cost, this._pieceStates) {
+    var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
     writer.format(root);
 
     var (text, nextPieceToExpand) = writer.finish();
@@ -144,6 +159,17 @@ class Solution implements Comparable<Solution> {
   /// This should only be called by [CodeWriter].
   void addOverflow(int overflow) {
     _overflow += overflow;
+  }
+
+  /// Apply the overflow, cost, and bound states from [subtreeSolution] to this
+  /// solution.
+  ///
+  /// This is called when a subtree of a Piece tree is solved separately and
+  /// the resulting solution is being merged with this one.
+  void mergeSubtree(Solution subtreeSolution) {
+    _overflow += subtreeSolution._overflow;
+    _cost += subtreeSolution.cost;
+    _pieceStates.addAll(subtreeSolution._pieceStates);
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -175,7 +201,8 @@ class Solution implements Comparable<Solution> {
   ///
   /// If there is no potential piece to expand, or all attempts to expand it
   /// fail, returns an empty list.
-  List<Solution> expand(Piece root, int pageWidth) {
+  List<Solution> expand(SolutionCache cache, Piece root,
+      {required int pageWidth, required int leadingIndent}) {
     // If the piece whose newline constraint was violated is already bound to
     // one state, then every solution derived from this one will also fail in
     // the same way, so discard the whole solution tree hanging off this one.
@@ -216,8 +243,8 @@ class Solution implements Comparable<Solution> {
       // Discard the solution if we hit a constraint violation.
       if (additionalCost == null) continue;
 
-      solutions
-          .add(Solution._(root, pageWidth, cost + additionalCost, newStates));
+      solutions.add(Solution._(cache, root, pageWidth, leadingIndent,
+          cost + additionalCost, newStates));
     }
 
     return solutions;

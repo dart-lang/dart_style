@@ -28,7 +28,7 @@ class SequenceBuilder {
   Piece? _leftBracket;
 
   /// The series of elements in the sequence.
-  final List<SequenceElement> _elements = [];
+  final List<SequenceElementPiece> _elements = [];
 
   /// The closing bracket after the elements, if any.
   Piece? _rightBracket;
@@ -42,6 +42,11 @@ class SequenceBuilder {
   bool get mustSplit => _mustSplit;
 
   SequencePiece build({bool forceSplit = false}) {
+    // Discard any trailing blank line after the last element.
+    if (_elements.isNotEmpty) {
+      _elements.last.blankAfter = false;
+    }
+
     var piece = SequencePiece(_elements,
         leftBracket: _leftBracket, rightBracket: _rightBracket);
 
@@ -142,6 +147,6 @@ class SequenceBuilder {
     // If there are brackets, add a level of block indentation.
     if (_leftBracket != null) indent += Indent.block;
 
-    _elements.add(SequenceElement(indent, piece));
+    _elements.add(SequenceElementPiece(indent, piece));
   }
 }

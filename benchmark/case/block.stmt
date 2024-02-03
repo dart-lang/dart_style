@@ -1,0 +1,51 @@
+40 columns                              |
+// Test statements nested within blocks.
+{
+  {
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+  }
+
+  someLongOuterExpression + anotherOperand;
+
+  {
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+  }
+
+  someLongOuterExpression + anotherOperand;
+
+  {
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+  }
+
+  someLongOuterExpression + anotherOperand;
+
+  {
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+  }
+
+  someLongOuterExpression + anotherOperand;
+
+  {
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+    someLongOuterExpression + anotherOperand;
+  }
+}

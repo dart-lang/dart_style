@@ -172,8 +172,16 @@ class ChainPiece extends Piece {
           writer.newline();
       }
 
-      var call = _calls[i];
-      writer.format(call._call);
+      // If the chain is fully split, then every call except for the last will
+      // be on its own line. If the chain is split after properties, then
+      // every non-property call except the last will be on its own line.
+      var separate = switch (state) {
+        _splitAfterProperties =>
+          i >= _leadingProperties && i < _calls.length - 1,
+        State.split => i < _calls.length - 1,
+        _ => false,
+      };
+      writer.format(_calls[i]._call, separate: separate);
     }
   }
 

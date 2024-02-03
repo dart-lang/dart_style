@@ -6,6 +6,7 @@ import 'package:collection/collection.dart';
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import 'solution.dart';
+import 'solution_cache.dart';
 
 /// Selects states for each piece in a tree of pieces to find the best set of
 /// line splits that minimizes overflow characters and line splitting costs.
@@ -25,19 +26,35 @@ import 'solution.dart';
 /// -   When selecting states for pieces to expand solutions, we only look at
 ///     pieces in the first line containing overflow characters or invalid
 ///     newlines. See [Solution._nextPieceToExpand] for more details.
-// TODO(perf): At some point, we may also want to do memoization of previously
-// formatted Piece subtrees.
+///
+/// -   If a subtree Piece is sufficiently isolated from surrounding content
+///     (usually this means it is on its own line), then we hoist that entire
+///     subtree out, format it with a separate Solver, and then insert the
+///     result into the Solution. We also memoize the result of doing this and
+///     use it across different Solutions. This enables us to both divide and
+///     conquer the Piece tree and solve portions separately, while also
+///     reusing work across different solutions.
 class Solver {
+  final SolutionCache _cache;
+
   final int _pageWidth;
+  final int _leadingIndent;
 
   final PriorityQueue<Solution> _queue = PriorityQueue();
 
-  Solver(this._pageWidth);
+  Solver(this._cache, {required int pageWidth, int leadingIndent = 0})
+      : _pageWidth = pageWidth,
+        _leadingIndent = leadingIndent;
 
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.
-  Solution format(Piece root) {
-    var solution = Solution(root, _pageWidth);
+  ///
+  /// If [rootState] is given, then [root] is bound to that state.
+  Solution format(Piece root, [State? rootState]) {
+    var solution = Solution(_cache, root,
+        pageWidth: _pageWidth,
+        leadingIndent: _leadingIndent,
+        rootState: rootState);
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.
@@ -45,6 +62,8 @@ class Solver {
 
     var tries = 0;
 
+    // TODO(perf): Consider bailing out after a certain maximum number of tries,
+    // so that it outputs suboptimal formatting instead of hanging entirely.
     while (_queue.isNotEmpty) {
       var solution = _queue.removeFirst();
       tries++;
@@ -65,7 +84,8 @@ class Solver {
 
       // Otherwise, try to expand the solution to explore different splitting
       // options.
-      for (var expanded in solution.expand(root, _pageWidth)) {
+      for (var expanded in solution.expand(_cache, root,
+          pageWidth: _pageWidth, leadingIndent: _leadingIndent)) {
         _queue.add(expanded);
       }
     }

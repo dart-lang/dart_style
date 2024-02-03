@@ -43,11 +43,11 @@ class ListPiece extends Piece {
   final Piece? _before;
 
   /// The list of elements.
-  final List<ListElement> _elements;
+  final List<ListElementPiece> _elements;
 
   /// The elements that should have a blank line preserved between them and the
   /// next piece.
-  final Set<ListElement> _blanksAfter;
+  final Set<ListElementPiece> _blanksAfter;
 
   /// The closing bracket after the elements, if any.
   final Piece? _after;
@@ -56,10 +56,49 @@ class ListPiece extends Piece {
   final ListStyle _style;
 
   ListPiece(this._before, this._elements, this._blanksAfter, this._after,
-      this._style);
+      this._style) {
+    // For most elements, we know whether or not it will have a comma based
+    // only on the comma style and its position in the list, so pin those here.
+    for (var i = 0; i < _elements.length; i++) {
+      var element = _elements[i];
+
+      switch (_style.commas) {
+        case Commas.alwaysTrailing:
+          // Has a comma after every element.
+          element.pin(ListElementPiece._appendComma);
+
+        case Commas.trailing:
+          // Always has a comma after every element except the last. The last
+          // will be constrained to have one or not depending on whether the
+          // list splits. See applyConstraints().
+          if (i < _elements.length - 1) {
+            element.pin(ListElementPiece._appendComma);
+          }
+
+        case Commas.nonTrailing:
+          // Never a trailing comma after the last element.
+          element.pin(i < _elements.length - 1
+              ? ListElementPiece._appendComma
+              : State.unsplit);
+
+        case Commas.none:
+          // No comma after any element.
+          element.pin(State.unsplit);
+      }
+    }
+  }
 
   @override
   List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
+
+  @override
+  void applyConstraints(State state, Constrain constrain) {
+    // Give the last element a trailing comma only if the list is split.
+    if (_style.commas == Commas.trailing && _elements.isNotEmpty) {
+      constrain(_elements.last,
+          state == State.split ? ListElementPiece._appendComma : State.unsplit);
+    }
+  }
 
   @override
   int stateCost(State state) {
@@ -87,17 +126,6 @@ class ListPiece extends Piece {
 
     // Format the elements.
     for (var i = 0; i < _elements.length; i++) {
-      var isLast = i == _elements.length - 1;
-      var appendComma = switch (_style.commas) {
-        // Has a comma after every element.
-        Commas.alwaysTrailing => true,
-        // Trailing comma after the last element if split but not otherwise.
-        Commas.trailing => !(state == State.unsplit && isLast),
-        // Never a trailing comma after the last element.
-        Commas.nonTrailing => !isLast,
-        Commas.none => false,
-      };
-
       var element = _elements[i];
 
       // Only some elements (usually a single block element) allow newlines
@@ -110,17 +138,21 @@ class ListPiece extends Piece {
         writer.setIndent(Indent.expression);
       }
 
-      element.format(writer,
-          appendComma: appendComma,
-          // Only allow newlines in comments if we're fully split.
-          allowNewlinesInComments: state == State.split);
+      // We can format each list item separately if the item is on its own line.
+      // This happens when the list is split and there is something before and
+      // after the item, either brackets or other items.
+      var separate = state == State.split &&
+          (i > 0 || _before != null) &&
+          (i < _elements.length - 1 || _after != null);
+
+      writer.format(element, separate: separate);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.setIndent(Indent.none);
       }
 
       // Write a space or newline between elements.
-      if (!isLast) {
+      if (i < _elements.length - 1) {
         writer.splitIf(state != State.unsplit,
             blank: _blanksAfter.contains(element),
             // No space after the "[" or "{" in a parameter list.
@@ -144,8 +176,8 @@ class ListPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     if (_before case var before?) callback(before);
 
-    for (var argument in _elements) {
-      argument.forEachChild(callback);
+    for (var element in _elements) {
+      callback(element);
     }
 
     if (_after case var after?) callback(after);
@@ -154,23 +186,23 @@ class ListPiece extends Piece {
 
 /// An element in a [ListPiece].
 ///
-/// Contains a piece for the element itself and a comment. Both are optional,
-/// but at least one must be present. A [ListElement] containing only a comment
-/// is used when a comment appears in a place where it gets formatted like a
-/// standalone element. A [ListElement] containing both an element piece and a
-/// comment piece represents an element with a hanging comment after the
-/// (potentially ommitted) comma:
+/// Contains any leading inline comments, the element's code content, and
+/// trailing comments.
 ///
-///     function(
-///       first,
-///       // Standalone.
-///       second, // Hanging.
+/// Leading and trailing comments may be empty if there are no comments. The
+/// content may be empty when the element piece represents a comment that is on
+/// its own line and formatted like a standalone element. In that case,
+/// [_hangingComments] will contain the comment.
 ///
-/// Here, `first` is a [ListElement] with only an element, `// Standalone.` is
-/// a [ListElement] with only a comment, and `second, // Hanging.` is a
-/// [ListElement] with both where `second` is the element and `// Hanging` is
-/// the comment.
-final class ListElement {
+/// This piece also handles writing the comma after the content (but before any
+/// hanging comments) when appropriate. The split state of the surrounding list
+/// often determines whether the last element's trailing comma is shown. To
+/// handle that, this piece has two states: [State.unsplit] omits the comma and
+/// [_appendComma] writes it. The parent [ListPiece] will pin or constrain its
+/// child elements appropriately to control whether or not the comma is written.
+final class ListElementPiece extends Piece {
+  static const State _appendComma = State(1, cost: 0);
+
   /// The leading inline block comments before the content.
   final List<Piece> _leadingComments;
 
@@ -236,12 +268,13 @@ final class ListElement {
   /// delimiter (here `,` and 2).
   int _commentsBeforeDelimiter = 0;
 
-  ListElement(List<Piece> leadingComments, Piece element, BlockFormat format)
+  ListElementPiece(
+      List<Piece> leadingComments, Piece element, BlockFormat format)
       : _leadingComments = [...leadingComments],
         _content = element,
         blockFormat = format;
 
-  ListElement.comment(Piece comment)
+  ListElementPiece.comment(Piece comment)
       : _leadingComments = const [],
         _content = null,
         blockFormat = BlockFormat.none {
@@ -257,8 +290,8 @@ final class ListElement {
     _delimiter = delimiter;
   }
 
-  void format(CodeWriter writer,
-      {required bool appendComma, required bool allowNewlinesInComments}) {
+  @override
+  void format(CodeWriter writer, State state) {
     for (var comment in _leadingComments) {
       writer.format(comment);
       writer.space();
@@ -272,7 +305,7 @@ final class ListElement {
         writer.format(_hangingComments[i]);
       }
 
-      if (appendComma) writer.write(',');
+      if (state == _appendComma) writer.write(',');
 
       if (_delimiter.isNotEmpty) {
         writer.space();
@@ -280,14 +313,13 @@ final class ListElement {
       }
     }
 
-    writer.setAllowNewlines(allowNewlinesInComments);
-
     for (var i = _commentsBeforeDelimiter; i < _hangingComments.length; i++) {
       if (i > 0 || _content != null) writer.space();
       writer.format(_hangingComments[i]);
     }
   }
 
+  @override
   void forEachChild(void Function(Piece piece) callback) {
     _leadingComments.forEach(callback);
     if (_content case var content?) callback(content);
