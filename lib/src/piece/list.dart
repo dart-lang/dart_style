@@ -58,7 +58,7 @@ class ListPiece extends Piece {
   ListPiece(this._before, this._elements, this._blanksAfter, this._after,
       this._style) {
     // For most elements, we know whether or not it will have a comma based
-    // only the comma style and its position in the list, so pin those here.
+    // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
 

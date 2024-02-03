@@ -16,21 +16,25 @@ import 'solver.dart';
 ///
 /// This cache stores those previously formatted subtree pieces so that
 /// [CodeWriter] can reuse them across [Solution]s.
+///
+/// Note that this cache is shared across all Solvers and Solutions for an
+/// entire format operation. Different Solvers and Solutions may end up reaching
+/// the same child Piece and wanting to format it separately with the same
+/// indentation. When that happens, sharing this cache allows us to reuse that
+/// cached subtree Solution.
 class SolutionCache {
   final _cache = <_Key, Solution>{};
 
-  /// Looks up a previously cached solution for formatting [root] with leading
-  /// [indent].
-  ///
-  /// If found, returns the cached solution. Otherwise solves it, caches it,
-  /// and returns the result.
+  /// Returns a previously cached solution for formatting [root] with leading
+  /// [indent] or produces a new solution, caches it, and returns it.
   Solution find(int pageWidth, Piece root, State state, int indent) {
     // See if we've already formatted this piece at this indentation.
     var key = (root, state, indent: indent);
     if (_cache[key] case var solution?) return solution;
 
-    var solver = Solver(this, pageWidth: pageWidth, leadingIndent: indent);
-    return _cache[key] = solver.format(root, state);
+    return _cache[key] ??=
+        Solver(this, pageWidth: pageWidth, leadingIndent: indent)
+            .format(root, state);
   }
 }
 

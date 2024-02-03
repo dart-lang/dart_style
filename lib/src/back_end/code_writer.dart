@@ -232,45 +232,56 @@ class CodeWriter {
   /// [piece] will have a newline before and after it.
   void format(Piece piece, {bool separate = false}) {
     if (separate) {
-      var solution = _cache.find(
-          _pageWidth, piece, _solution.pieceState(piece), _pendingIndent);
-
-      _pendingIndent = 0;
-      _flushWhitespace();
-
-      _solution.mergeSubtree(solution);
-
-      // If a selection marker was in the child piece, set it in this piece,
-      // relative to where the child's code is appended.
-      if (solution.selectionStart case var start?) {
-        _solution.startSelection(_buffer.length + start);
-      }
-
-      if (solution.selectionEnd case var end?) {
-        _solution.endSelection(_buffer.length + end);
-      }
-
-      _buffer.write(solution.text);
+      _formatSeparate(piece);
     } else {
-      _options.add(_PieceOptions(
-          piece,
-          _options.lastOrNull?.indent ?? _leadingIndent,
-          _options.lastOrNull?.allowNewlines ?? true));
-
-      var isUnsolved =
-          !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
-      if (isUnsolved) _currentUnsolvedPieces.add(piece);
-
-      piece.format(this, _solution.pieceState(piece));
-
-      if (isUnsolved) _currentUnsolvedPieces.removeLast();
-
-      var childOptions = _options.removeLast();
-
-      // If the child [piece] contains a newline then this one transitively
-      // does.
-      if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
+      _formatInline(piece);
     }
+  }
+
+  /// Format [piece] using a separate [Solver] and merge the result into this
+  /// writer's [_solution].
+  void _formatSeparate(Piece piece) {
+    var solution = _cache.find(
+        _pageWidth, piece, _solution.pieceState(piece), _pendingIndent);
+
+    _pendingIndent = 0;
+    _flushWhitespace();
+
+    _solution.mergeSubtree(solution);
+
+    // If a selection marker was in the child piece, set it in this piece,
+    // relative to where the child's code is appended.
+    if (solution.selectionStart case var start?) {
+      _solution.startSelection(_buffer.length + start);
+    }
+
+    if (solution.selectionEnd case var end?) {
+      _solution.endSelection(_buffer.length + end);
+    }
+
+    _buffer.write(solution.text);
+  }
+
+  /// Format [piece] writing directly into this [CodeWriter].
+  void _formatInline(Piece piece) {
+    _options.add(_PieceOptions(
+        piece,
+        _options.lastOrNull?.indent ?? _leadingIndent,
+        _options.lastOrNull?.allowNewlines ?? true));
+
+    var isUnsolved =
+        !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
+    if (isUnsolved) _currentUnsolvedPieces.add(piece);
+
+    piece.format(this, _solution.pieceState(piece));
+
+    if (isUnsolved) _currentUnsolvedPieces.removeLast();
+
+    var childOptions = _options.removeLast();
+
+    // If the child [piece] contains a newline then this one transitively
+    // does.
+    if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
