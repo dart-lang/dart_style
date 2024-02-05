@@ -168,8 +168,15 @@ class Solution implements Comparable<Solution> {
   /// the resulting solution is being merged with this one.
   void mergeSubtree(Solution subtreeSolution) {
     _overflow += subtreeSolution._overflow;
-    _cost += subtreeSolution.cost;
-    _pieceStates.addAll(subtreeSolution._pieceStates);
+
+    // Add the subtree's bound pieces to this one. Make sure to not double
+    // count costs for pieces that are already bound in this one.
+    subtreeSolution._pieceStates.forEach((piece, state) {
+      _pieceStates.putIfAbsent(piece, () {
+        _cost += piece.stateCost(state);
+        return state;
+      });
+    });
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
