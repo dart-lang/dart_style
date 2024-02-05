@@ -28,13 +28,12 @@ class SolutionCache {
   /// Returns a previously cached solution for formatting [root] with leading
   /// [indent] or produces a new solution, caches it, and returns it.
   Solution find(int pageWidth, Piece root, State state, int indent) {
-    // See if we've already formatted this piece at this indentation.
-    var key = (root, state, indent: indent);
-    if (_cache[key] case var solution?) return solution;
-
-    return _cache[key] ??=
-        Solver(this, pageWidth: pageWidth, leadingIndent: indent)
-            .format(root, state);
+    // See if we've already formatted this piece at this indentation. If not,
+    // format it and store the result.
+    return _cache.putIfAbsent(
+        (root, state, indent: indent),
+        () => Solver(this, pageWidth: pageWidth, leadingIndent: indent)
+            .format(root, state));
   }
 }
 

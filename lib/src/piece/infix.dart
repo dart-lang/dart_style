@@ -15,9 +15,9 @@ class InfixPiece extends Piece {
   /// embedded in the operand pieces. If the operator is a hanging one, it will
   /// be in the preceding operand, so `1 + 2` becomes "Infix(`1 +`, `2`)".
   /// A leading operator like `foo as int` becomes "Infix(`foo`, `as int`)".
-  final List<Piece> operands;
+  final List<Piece> _operands;
 
-  InfixPiece(this.operands);
+  InfixPiece(this._operands);
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -30,19 +30,37 @@ class InfixPiece extends Piece {
       writer.setIndent(Indent.expression);
     }
 
-    for (var i = 0; i < operands.length; i++) {
+    for (var i = 0; i < _operands.length; i++) {
       // We can format each operand separately if the operand is on its own
       // line. This happens when the operator is split and we aren't the first
       // or last operand.
-      var separate = state == State.split && i > 0 && i < operands.length - 1;
+      var separate = state == State.split && i > 0 && i < _operands.length - 1;
 
-      writer.format(operands[i], separate: separate);
-      if (i < operands.length - 1) writer.splitIf(state == State.split);
+      writer.format(_operands[i], separate: separate);
+      if (i < _operands.length - 1) writer.splitIf(state == State.split);
     }
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    operands.forEach(callback);
+    _operands.forEach(callback);
+  }
+
+  @override
+  State? fixedStateForPageWidth(int pageWidth) {
+    var totalLength = 0;
+
+    for (var operand in _operands) {
+      // If any operand contains a newline, then we have to split.
+      if (operand.containsNewline) return State.split;
+
+      totalLength += operand.totalCharacters;
+      if (totalLength > pageWidth) break;
+    }
+
+    // If the total length doesn't fit in the page, then we have to split.
+    if (totalLength > pageWidth) return State.split;
+
+    return null;
   }
 }

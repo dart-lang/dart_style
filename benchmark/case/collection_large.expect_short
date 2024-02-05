@@ -1,0 +1,511 @@
+// Test collection literals.
+[
+  [
+    [
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ],
+    {
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    {
+      key1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      key2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      key3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      key4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      key5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    (
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+    (
+      field1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      field2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      field3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      field4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      field5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+  ],
+  {
+    [
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ],
+    {
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    {
+      key1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      key2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      key3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      key4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      key5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    (
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+    (
+      field1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      field2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      field3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      field4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      field5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+  },
+  {
+    key1: [
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ],
+    key2: {
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    key3: {
+      key1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      key2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      key3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      key4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      key5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    key4: (
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+    key5: (
+      field1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      field2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      field3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      field4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      field5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+  },
+  (
+    [
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ],
+    {
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    {
+      key1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      key2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      key3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      key4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      key5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    },
+    (
+      [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+    (
+      field1: [
+        list + element1,
+        list + element2,
+        list + element3
+      ],
+      field2: {
+        set + element1,
+        set + element2,
+        set + element3
+      },
+      field3: {
+        map + key1: map + value1,
+        map + key2: map + value2
+      },
+      field4: (
+        record + field1,
+        record + field2,
+        record + field3
+      ),
+      field5: (
+        name1: record + field1,
+        name2: record + field2
+      ),
+    ),
+  ),
+];

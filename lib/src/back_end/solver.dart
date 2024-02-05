@@ -55,6 +55,24 @@ class Solver {
         pageWidth: _pageWidth,
         leadingIndent: _leadingIndent,
         rootState: rootState);
+    if (debug.traceSolver) {
+      var unsolved = <Piece>[];
+      void traverse(Piece piece) {
+        if (piece.additionalStates.isNotEmpty &&
+            piece.pinnedState == null &&
+            !solution.isBound(piece)) {
+          unsolved.add(piece);
+        }
+
+        piece.forEachChild(traverse);
+      }
+
+      traverse(root);
+
+      debug.log(debug.bold('Solving $root for ${unsolved.join(' ')}:'));
+      debug.log(debug.pieceTree(root));
+    }
+
     _queue.add(solution);
 
     // The lowest cost solution found so far that does overflow.
@@ -77,7 +95,10 @@ class Solver {
       // Since we process the solutions from lowest cost up, as soon as we find
       // a valid one that fits, it's the best.
       if (solution.isValid) {
-        if (solution.overflow == 0) return solution;
+        if (solution.overflow == 0) {
+          best = solution;
+          break;
+        }
 
         if (solution.overflow < best.overflow) best = solution;
       }
@@ -91,6 +112,12 @@ class Solver {
     }
 
     // If we didn't find a solution without overflow, pick the least bad one.
+    if (debug.traceSolver) {
+      debug.log(debug.bold('Solved $root to $best:'));
+      debug.log(best.text);
+      debug.log('');
+    }
+
     return best;
   }
 }

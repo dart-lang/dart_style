@@ -243,13 +243,26 @@ class PieceWriter {
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
   SourceCode finish(Piece rootPiece) {
-    var cache = SolutionCache();
-    var formatter = Solver(cache, pageWidth: _formatter.pageWidth);
-
     if (debug.tracePieceBuilder) {
-      print(debug.pieceTree(rootPiece));
+      debug.log(debug.pieceTree(rootPiece));
     }
 
+    // See if it's possible to eagerly pin any of the pieces based just on the
+    // length and newlines in their children. This is faster, especially for
+    // larger outermost pieces, then relying on the solver to determine their
+    // state.
+    void traverse(Piece piece) {
+      piece.forEachChild(traverse);
+
+      if (piece.fixedStateForPageWidth(_formatter.pageWidth) case var state?) {
+        piece.pin(state);
+      }
+    }
+
+    traverse(rootPiece);
+
+    var cache = SolutionCache();
+    var formatter = Solver(cache, pageWidth: _formatter.pageWidth);
     var result = formatter.format(rootPiece);
     var outputCode = result.text;
 

@@ -182,6 +182,39 @@ class ListPiece extends Piece {
 
     if (_after case var after?) callback(after);
   }
+
+  @override
+  State? fixedStateForPageWidth(int pageWidth) {
+    var totalLength = 0;
+    if (_before case var before?) {
+      // A newline in the opening bracket (like a line comment after the
+      // bracket) forces the list to split.
+      if (before.containsNewline) return State.split;
+      totalLength += before.totalCharacters;
+    }
+
+    for (var element in _elements) {
+      // Elements that can be block arguments won't necessarily force the list
+      // to split.
+      if (element.allowNewlines) continue;
+
+      if (element.containsNewline) return State.split;
+      totalLength += element.totalCharacters;
+      if (totalLength > pageWidth) break;
+    }
+
+    if (_after case var after?) {
+      totalLength += after.totalCharacters;
+
+      // Note that in `_after` does *not* force the list to split, so we ignore
+      // it here. This is typically a line comment after the closing bracket.
+    }
+
+    // If the entire list doesn't fit on one line, it will split.
+    if (totalLength >= pageWidth) return State.split;
+
+    return null;
+  }
 }
 
 /// An element in a [ListPiece].

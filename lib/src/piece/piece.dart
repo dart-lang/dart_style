@@ -48,6 +48,40 @@ abstract class Piece {
   State? get pinnedState => _pinnedState;
   State? _pinnedState;
 
+  /// Whether this piece or any of its children contain an explicit mandatory
+  /// newline.
+  ///
+  /// This is lazily computed and cached for performance, so should only be
+  /// accessed after all of the piece's children are known.
+  late final bool containsNewline = _calculateContainsNewline();
+
+  bool _calculateContainsNewline() {
+    var anyHasNewline = false;
+
+    forEachChild((child) {
+      anyHasNewline |= child.containsNewline;
+    });
+
+    return anyHasNewline;
+  }
+
+  /// The total number of characters of content in this piece and all of its
+  /// children.
+  ///
+  /// This is lazily computed and cached for performance, so should only be
+  /// accessed after all of the piece's children are known.
+  late final int totalCharacters = _calculateTotalCharacters();
+
+  int _calculateTotalCharacters() {
+    var total = 0;
+
+    forEachChild((child) {
+      total += child.totalCharacters;
+    });
+
+    return total;
+  }
+
   /// Apply any constraints that this piece places on other pieces when this
   /// piece is bound to [state].
   ///
@@ -62,6 +96,30 @@ abstract class Piece {
 
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
+
+  /// If the piece can determine that it will always end up in a certain state
+  /// given [pageWidth] and size metrics retured by calling [containsNewline]
+  /// and [totalCharacters] on its children, then returns that [State].
+  ///
+  /// For example, a series of infix operators wider than a page will always
+  /// split one per operator. If we can determine this eagerly just based on
+  /// the size of the children and the page width, then we can pin the Piece to
+  /// that State. That in turn heavily prunes the search space that the [Solver]
+  /// is exploring. In practice, for large expressions, many of the outermost
+  /// Pieces can be eagerly pinned to their fully split state. That avoids the
+  /// Solver wasting a lot of time trying in vain to pack those outer Pieces
+  /// into unsplit states when it's obvious just from the size of their contents
+  /// that they'll have to split.
+  ///
+  /// If it's not possible to determine whether a piece will split from its
+  /// metrics, this returns `null`.
+  ///
+  /// This is purely an optimization: Running the [Solver] without ever calling
+  /// this and pinning the resulting [State] should yield the same formatting.
+  /// It is up to the [Piece] subclasses overriding this to ensure that they
+  /// only return a non-`null` [State] if the piece really would always be
+  /// solved to the returned state given its children.
+  State? fixedStateForPageWidth(int pageWidth) => null;
 
   /// The cost that this piece should apply to the solution when in [state].
   ///
@@ -206,6 +264,21 @@ class TextPiece extends Piece {
   }
 
   @override
+  bool _calculateContainsNewline() =>
+      _lines.length > 1 || _trailingWhitespace.hasNewline;
+
+  @override
+  int _calculateTotalCharacters() {
+    var total = 0;
+
+    for (var line in _lines) {
+      total += line._text.length;
+    }
+
+    return total;
+  }
+
+  @override
   String toString() => '`${_lines.join('¬')}`';
 }
 
@@ -237,6 +310,12 @@ class SpacePiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.space();
   }
+
+  @override
+  bool _calculateContainsNewline() => false;
+
+  @override
+  int _calculateTotalCharacters() => 1;
 }
 
 /// A state that a piece can be in.

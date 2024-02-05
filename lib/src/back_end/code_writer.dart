@@ -379,6 +379,12 @@ enum Whitespace {
   /// two spaces or a newline followed by a space. Instead, the two whitespaces
   /// are collapsed such that the largest one wins.
   Whitespace collapse(Whitespace other) => values[max(index, other.index)];
+
+  /// Whether this whitespace contains at least one newline.
+  bool get hasNewline => switch (this) {
+        newline || blankLine => true,
+        _ => false,
+      };
 }
 
 /// The mutable state local to a single piece being formatted.
