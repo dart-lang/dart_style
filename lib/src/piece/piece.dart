@@ -98,7 +98,7 @@ abstract class Piece {
   void forEachChild(void Function(Piece piece) callback);
 
   /// If the piece can determine that it will always end up in a certain state
-  /// given [pageWidth] and size metrics retured by calling [containsNewline]
+  /// given [pageWidth] and size metrics returned by calling [containsNewline]
   /// and [totalCharacters] on its children, then returns that [State].
   ///
   /// For example, a series of infix operators wider than a page will always

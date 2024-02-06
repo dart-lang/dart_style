@@ -453,19 +453,19 @@ class DelimitedListBuilder {
       // starting with something very narrowly targeted.
       case ([1], _, [0]):
         // The adjacent strings.
-        _elements[0].allowNewlines = true;
+        _elements[0].allowNewlinesWhenUnsplit = true;
         if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
 
         // The block-formattable function.
-        _elements[1].allowNewlines = true;
+        _elements[1].allowNewlinesWhenUnsplit = true;
 
       // A function expression takes precedence over other block arguments.
       case ([var blockArgument], _, _):
       // Otherwise, if there one block argument, it can be block formatted.
       case ([], [var blockArgument], _):
-        _elements[blockArgument].allowNewlines = true;
+        _elements[blockArgument].allowNewlinesWhenUnsplit = true;
     }
 
     // If we get here, there are no block arguments, or it's ambiguous as to
