@@ -130,7 +130,8 @@ class ListPiece extends Piece {
 
       // Only some elements (usually a single block element) allow newlines
       // when the list itself isn't split.
-      writer.setAllowNewlines(element.allowNewlines || state == State.split);
+      writer.setAllowNewlines(
+          element.allowNewlinesWhenUnsplit || state == State.split);
 
       // If this element allows newlines when the list isn't split, add
       // indentation if it requires it.
@@ -182,6 +183,39 @@ class ListPiece extends Piece {
 
     if (_after case var after?) callback(after);
   }
+
+  @override
+  State? fixedStateForPageWidth(int pageWidth) {
+    var totalLength = 0;
+    if (_before case var before?) {
+      // A newline in the opening bracket (like a line comment after the
+      // bracket) forces the list to split.
+      if (before.containsNewline) return State.split;
+      totalLength += before.totalCharacters;
+    }
+
+    for (var element in _elements) {
+      // Elements that can be block arguments won't necessarily force the list
+      // to split.
+      if (element.allowNewlinesWhenUnsplit) continue;
+
+      if (element.containsNewline) return State.split;
+      totalLength += element.totalCharacters;
+      if (totalLength > pageWidth) break;
+    }
+
+    if (_after case var after?) {
+      totalLength += after.totalCharacters;
+
+      // Note that in `_after` does *not* force the list to split, so we ignore
+      // it here. This is typically a line comment after the closing bracket.
+    }
+
+    // If the entire list doesn't fit on one line, it will split.
+    if (totalLength >= pageWidth) return State.split;
+
+    return null;
+  }
 }
 
 /// An element in a [ListPiece].
@@ -219,14 +253,14 @@ final class ListElementPiece extends Piece {
   ///       block,
   ///       element,
   ///     ], another);
-  bool allowNewlines = false;
+  bool allowNewlinesWhenUnsplit = false;
 
   /// Whether we should increase indentation when formatting this element when
   /// the list isn't split.
   ///
   /// This only comes into play for unsplit lists and is only relevant when the
   /// element contains newlines, which means that this is only ever useful when
-  /// [allowNewlines] is also true.
+  /// [allowNewlinesWhenUnsplit] is also true.
   ///
   /// This is used for adjacent strings expression at the beginning of an
   /// argument list followed by a function expression, like in a `test()` call.

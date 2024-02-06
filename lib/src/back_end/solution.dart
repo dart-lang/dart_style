@@ -120,6 +120,8 @@ class Solution implements Comparable<Solution> {
       piece.forEachChild(traversePinned);
     }
 
+    traversePinned(root);
+
     // If we're formatting a subtree of a larger Piece tree that binds [root]
     // to [rootState], then bind it in this solution too.
     if (rootState != null) {
@@ -130,8 +132,6 @@ class Solution implements Comparable<Solution> {
       // this piece to this state.
       cost += additionalCost!;
     }
-
-    traversePinned(root);
 
     return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
   }
@@ -283,15 +283,17 @@ class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
-    var states = _pieceStates.keys
-        .map((piece) => '$piece:${_pieceStates[piece]}')
-        .join(' ');
+    var states = [
+      for (var MapEntry(key: piece, value: state) in _pieceStates.entries)
+        if (piece.additionalStates.isNotEmpty && piece.pinnedState == null)
+          '$piece$state'
+    ];
 
     return [
       '\$$cost',
       if (overflow > 0) '($overflow over)',
       if (!isValid) '(invalid)',
-      states,
+      states.join(' '),
     ].join(' ');
   }
 
