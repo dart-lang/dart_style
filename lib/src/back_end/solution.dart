@@ -288,7 +288,7 @@ class Solution implements Comparable<Solution> {
       if (piece.additionalStates.isEmpty) return;
       if (piece.pinnedState != null) return;
 
-      states.add('$piece${_pieceStates[piece]}');
+      states.add('$piece$state');
     });
 
     return [
