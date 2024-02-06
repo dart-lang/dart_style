@@ -283,13 +283,11 @@ class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
-    var states = <String>[];
-    _pieceStates.forEach((piece, state) {
-      if (piece.additionalStates.isEmpty) return;
-      if (piece.pinnedState != null) return;
-
-      states.add('$piece$state');
-    });
+    var states = [
+      for (var MapEntry(key: piece, value: state) in _pieceStates.entries)
+        if (piece.additionalStates.isNotEmpty && piece.pinnedState == null)
+          '$piece$state'
+    ];
 
     return [
       '\$$cost',
