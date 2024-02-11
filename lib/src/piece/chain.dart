@@ -138,65 +138,69 @@ class ChainPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    // If we split at the ".", then indent all of the calls, like:
-    //
-    //     target
-    //         .call(
-    //           arg,
-    //         );
     switch (state) {
       case State.unsplit:
-        writer.pushAllowNewlines(_allowSplitInTarget);
+        _formatTarget(writer);
+
+        writer.pushAllowNewlines(false);
+        for (var i = 0; i < _calls.length; i++) {
+          _formatCall(writer, state, i);
+        }
+        writer.popAllowNewlines();
+
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        writer.pushAllowNewlines(_allowSplitInTarget);
-      case _blockFormatTrailingCall:
-        writer.pushAllowNewlines(_allowSplitInTarget);
-      case State.split:
-        writer.pushIndent(_indent);
-    }
+        _formatTarget(writer);
 
-    writer.format(_target);
-
-    for (var i = 0; i < _calls.length; i++) {
-      switch (state) {
-        case State.unsplit:
-          writer.pushAllowNewlines(false);
-        case _splitAfterProperties:
+        for (var i = 0; i < _calls.length; i++) {
           writer.pushAllowNewlines(i >= _leadingProperties);
           writer.splitIf(i >= _leadingProperties, space: false);
-        case _blockFormatTrailingCall:
-          writer.pushAllowNewlines(i == _blockCallIndex);
-        case State.split:
-          writer.pushAllowNewlines(true);
-          writer.newline();
-      }
+          _formatCall(writer, state, i);
+          writer.popAllowNewlines();
+        }
 
-      // If the chain is fully split, then every call except for the last will
-      // be on its own line. If the chain is split after properties, then
-      // every non-property call except the last will be on its own line.
-      var separate = switch (state) {
-        _splitAfterProperties =>
-          i >= _leadingProperties && i < _calls.length - 1,
-        State.split => i < _calls.length - 1,
-        _ => false,
-      };
-      writer.format(_calls[i]._call, separate: separate);
-
-      writer.popAllowNewlines();
-    }
-
-    switch (state) {
-      case State.unsplit:
-        writer.popAllowNewlines();
-      case _splitAfterProperties:
         writer.popIndent();
-        writer.popAllowNewlines();
+
       case _blockFormatTrailingCall:
-        writer.popAllowNewlines();
+        _formatTarget(writer);
+
+        for (var i = 0; i < _calls.length; i++) {
+          writer.pushAllowNewlines(i == _blockCallIndex);
+          _formatCall(writer, state, i);
+          writer.popAllowNewlines();
+        }
+
       case State.split:
+        writer.pushIndent(_indent);
+        writer.format(_target);
+
+        writer.pushAllowNewlines(true);
+        for (var i = 0; i < _calls.length; i++) {
+          writer.newline();
+          _formatCall(writer, state, i);
+        }
+        writer.popAllowNewlines();
         writer.popIndent();
     }
+  }
+
+  void _formatTarget(CodeWriter writer) {
+    writer.pushAllowNewlines(_allowSplitInTarget);
+    writer.format(_target);
+    writer.popAllowNewlines();
+  }
+
+  void _formatCall(CodeWriter writer, State state, int i) {
+    // If the chain is fully split, then every call except for the last will
+    // be on its own line. If the chain is split after properties, then
+    // every non-property call except the last will be on its own line.
+    var separate = switch (state) {
+      _splitAfterProperties => i >= _leadingProperties && i < _calls.length - 1,
+      State.split => i < _calls.length - 1,
+      _ => false,
+    };
+
+    writer.format(_calls[i]._call, separate: separate);
   }
 
   @override
