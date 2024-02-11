@@ -25,7 +25,7 @@ class InfixPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     if (state == State.unsplit) {
-      writer.setAllowNewlines(false);
+      writer.pushAllowNewlines(false);
     } else {
       writer.pushIndent(Indent.expression);
     }
@@ -40,7 +40,11 @@ class InfixPiece extends Piece {
       if (i < _operands.length - 1) writer.splitIf(state == State.split);
     }
 
-    if (state != State.unsplit) writer.popIndent();
+    if (state == State.unsplit) {
+      writer.popAllowNewlines();
+    } else {
+      writer.popIndent();
+    }
   }
 
   @override

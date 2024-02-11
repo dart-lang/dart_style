@@ -53,7 +53,7 @@ class IfPiece extends Piece {
       var section = _sections[i];
 
       // A split in the condition forces the branches to split.
-      writer.setAllowNewlines(state == State.split);
+      writer.pushAllowNewlines(state == State.split);
       writer.format(section.header);
 
       if (!section.isBlock) {
@@ -70,6 +70,8 @@ class IfPiece extends Piece {
       if (i < _sections.length - 1) {
         writer.splitIf(state == State.split && !section.isBlock);
       }
+
+      writer.popAllowNewlines();
     }
   }
 }

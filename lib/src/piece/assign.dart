@@ -105,9 +105,7 @@ class AssignPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // A split in either child piece forces splitting at assignment operator
     // unless specifically allowed.
-    if (!_allowInnerSplit && state == State.unsplit) {
-      writer.setAllowNewlines(false);
-    }
+    writer.pushAllowNewlines(_allowInnerSplit || state != State.unsplit);
 
     // Don't indent a split delimited expression.
     if (state != State.unsplit) writer.pushIndent(Indent.expression);
@@ -127,6 +125,8 @@ class AssignPiece extends Piece {
     }
 
     if (state != State.unsplit) writer.popIndent();
+
+    writer.popAllowNewlines();
   }
 
   @override

@@ -96,16 +96,18 @@ class ClausesPiece extends Piece {
         // Before the leading clause, only split when in the fully split state.
         // A split inside the first clause forces a split before the keyword.
         writer.splitIf(state == State.split);
-        writer.setAllowNewlines(state == State.split);
+        writer.pushAllowNewlines(state == State.split);
       } else {
         // For the other clauses (or if there is no leading one), split in the
         // fully split state and any split inside and clause forces all of them
         // to split.
-        writer.setAllowNewlines(state != State.unsplit);
+        writer.pushAllowNewlines(state != State.unsplit);
         writer.splitIf(state != State.unsplit);
       }
 
       writer.format(clause);
+
+      writer.popAllowNewlines();
     }
 
     writer.popIndent();
@@ -133,7 +135,7 @@ class ClausePiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     // If any of the parts inside the clause split, split the list.
-    writer.setAllowNewlines(state != State.unsplit);
+    writer.pushAllowNewlines(state != State.unsplit);
     writer.pushIndent(Indent.expression);
 
     writer.format(_keyword);
@@ -143,6 +145,7 @@ class ClausePiece extends Piece {
     }
 
     writer.popIndent();
+    writer.popAllowNewlines();
   }
 
   @override

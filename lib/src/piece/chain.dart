@@ -146,12 +146,12 @@ class ChainPiece extends Piece {
     //         );
     switch (state) {
       case State.unsplit:
-        writer.setAllowNewlines(_allowSplitInTarget);
+        writer.pushAllowNewlines(_allowSplitInTarget);
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        writer.setAllowNewlines(_allowSplitInTarget);
+        writer.pushAllowNewlines(_allowSplitInTarget);
       case _blockFormatTrailingCall:
-        writer.setAllowNewlines(_allowSplitInTarget);
+        writer.pushAllowNewlines(_allowSplitInTarget);
       case State.split:
         writer.pushIndent(_indent);
     }
@@ -161,14 +161,14 @@ class ChainPiece extends Piece {
     for (var i = 0; i < _calls.length; i++) {
       switch (state) {
         case State.unsplit:
-          writer.setAllowNewlines(false);
+          writer.pushAllowNewlines(false);
         case _splitAfterProperties:
-          writer.setAllowNewlines(i >= _leadingProperties);
+          writer.pushAllowNewlines(i >= _leadingProperties);
           writer.splitIf(i >= _leadingProperties, space: false);
         case _blockFormatTrailingCall:
-          writer.setAllowNewlines(i == _blockCallIndex);
+          writer.pushAllowNewlines(i == _blockCallIndex);
         case State.split:
-          writer.setAllowNewlines(true);
+          writer.pushAllowNewlines(true);
           writer.newline();
       }
 
@@ -182,10 +182,20 @@ class ChainPiece extends Piece {
         _ => false,
       };
       writer.format(_calls[i]._call, separate: separate);
+
+      writer.popAllowNewlines();
     }
 
-    if (state == _splitAfterProperties || state == State.split) {
-      writer.popIndent();
+    switch (state) {
+      case State.unsplit:
+        writer.popAllowNewlines();
+      case _splitAfterProperties:
+        writer.popIndent();
+        writer.popAllowNewlines();
+      case _blockFormatTrailingCall:
+        writer.popAllowNewlines();
+      case State.split:
+        writer.popIndent();
     }
   }
 

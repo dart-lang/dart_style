@@ -110,15 +110,15 @@ class ListPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
-      if (_style.splitListIfBeforeSplits && state == State.unsplit) {
-        writer.setAllowNewlines(false);
-      }
+      writer.pushAllowNewlines(
+          !_style.splitListIfBeforeSplits || state != State.unsplit);
 
       writer.format(before);
 
-      if (state == State.unsplit) {
-        writer.setAllowNewlines(false);
-      } else {
+      writer.popAllowNewlines();
+      writer.pushAllowNewlines(state != State.unsplit);
+
+      if (state != State.unsplit) {
         writer.pushIndent(Indent.block);
       }
 
@@ -133,7 +133,8 @@ class ListPiece extends Piece {
 
       // Only some elements (usually a single block element) allow newlines
       // when the list itself isn't split.
-      writer.setAllowNewlines(
+      if (_before != null || i > 0) writer.popAllowNewlines();
+      writer.pushAllowNewlines(
           element.allowNewlinesWhenUnsplit || state == State.split);
 
       // If this element allows newlines when the list isn't split, add
@@ -172,9 +173,12 @@ class ListPiece extends Piece {
       writer.splitIf(state != State.unsplit,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
-      writer.setAllowNewlines(true);
+      if (_before != null || _elements.isNotEmpty) writer.popAllowNewlines();
+      writer.pushAllowNewlines(true);
       writer.format(after);
     }
+
+    writer.popAllowNewlines();
   }
 
   @override

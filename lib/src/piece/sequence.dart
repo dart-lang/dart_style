@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a series of statements or members inside a block or declaration
@@ -29,7 +28,7 @@ class SequencePiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.setAllowNewlines(state == State.split);
+    writer.pushAllowNewlines(state == State.split);
 
     if (_leftBracket case var leftBracket?) {
       writer.format(leftBracket);
@@ -62,6 +61,8 @@ class SequencePiece extends Piece {
       writer.splitIf(state == State.split, space: false);
       writer.format(rightBracket);
     }
+
+    writer.popAllowNewlines();
   }
 
   @override

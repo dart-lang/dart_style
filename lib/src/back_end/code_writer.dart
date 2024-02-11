@@ -53,17 +53,16 @@ class CodeWriter {
   /// for block nesting, expression wrapping, constructor initializers, etc.
   final List<int> _indentStack = [];
 
-  /// The stack of state for each [Piece] being formatted.
-  ///
-  /// For each piece being formatted from a call to [format()], we keep track of
-  /// things like indentation and nesting levels. Pieces recursively format
-  /// their children. When they do, we push new values onto this stack. When a
-  /// piece is done (a call to [format()] returns), we pop the corresponding
-  /// state off the stack.
-  ///
-  /// This is used to increase the cumulative nesting as we recurse into pieces
-  /// and then unwind that as child pieces are completed.
-  final List<_PieceOptions> _options = [];
+  /// The stack of regions created by pairs of calls to [pushAllowNewlines()]
+  /// and [popAllowNewlines()].
+  final List<bool> _allowNewlineStack = [true];
+
+  /// Whether any newlines have been written during the [_currentPiece] being
+  /// formatted.
+  bool _hadNewline = false;
+
+  /// The current innermost piece being formatted by a call to [format()].
+  Piece? _currentPiece;
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -153,6 +152,22 @@ class CodeWriter {
     _indentStack.removeLast();
   }
 
+  /// Begins a region of formatting where newlines are allowed if [allow] is
+  /// `true` or prohibited otherwise.
+  ///
+  /// If a newline is written while the top of the stack is `false`, the entire
+  /// solution is considered invalid and gets discarded.
+  ///
+  /// The region is ended by a corresponding call to [popAllowNewlines()].
+  void pushAllowNewlines(bool allow) {
+    _allowNewlineStack.add(allow);
+  }
+
+  /// Ends the region begun by the most recent call to [pushAllowNewlines()].
+  void popAllowNewlines() {
+    _allowNewlineStack.removeLast();
+  }
+
   /// Inserts a newline if [condition] is true.
   ///
   /// If [space] is `true` and [condition] is `false`, writes a space.
@@ -199,12 +214,6 @@ class CodeWriter {
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
-  }
-
-  /// Sets whether newlines are allowed to occur from this point on for the
-  /// current piece.
-  void setAllowNewlines(bool allowed) {
-    _options.last.allowNewlines = allowed;
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -256,8 +265,12 @@ class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    _options
-        .add(_PieceOptions(piece, _options.lastOrNull?.allowNewlines ?? true));
+    // Begin a new formatting context for this child.
+    var previousPiece = _currentPiece;
+    _currentPiece = piece;
+
+    var previousHadNewline = _hadNewline;
+    _hadNewline = false;
 
     _indentStack.add(_indentStack.last);
 
@@ -265,16 +278,20 @@ class CodeWriter {
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
+    // Format the child piece.
     piece.format(this, _solution.pieceState(piece));
 
+    // Restore the surrounding piece's context.
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childOptions = _options.removeLast();
+    var childHadNewline = _hadNewline;
+    _hadNewline = previousHadNewline;
+
+    _currentPiece = previousPiece;
     _indentStack.removeLast();
 
-    // If the child [piece] contains a newline then this one transitively
-    // does.
-    if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
+    // If the child contained a newline then the parent transitively does.
+    if (childHadNewline && _currentPiece != null) _handleNewline();
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -294,11 +311,11 @@ class CodeWriter {
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
   void _handleNewline() {
-    if (!_options.last.allowNewlines) _solution.invalidate(_options.last.piece);
+    if (!_allowNewlineStack.last) _solution.invalidate(_currentPiece!);
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
-    _options.last.hasNewline = true;
+    _hadNewline = true;
   }
 
   /// Write any pending whitespace.
@@ -378,21 +395,4 @@ enum Whitespace {
         newline || blankLine => true,
         _ => false,
       };
-}
-
-/// The mutable state local to a single piece being formatted.
-class _PieceOptions {
-  /// The piece being formatted with these options.
-  final Piece piece;
-
-  /// Whether newlines are allowed to occur.
-  ///
-  /// If a newline is written while this is `false`, the entire solution is
-  /// considered invalid and gets discarded.
-  bool allowNewlines;
-
-  /// Whether any newlines have occurred in this piece or any of its children.
-  bool hasNewline = false;
-
-  _PieceOptions(this.piece, this.allowNewlines);
 }
