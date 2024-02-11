@@ -64,7 +64,7 @@ class VariablePiece extends Piece {
 
     // If we split at the variables (but not the type), then indent the
     // variables and their initializers.
-    if (state == _betweenVariables) writer.setIndent(Indent.expression);
+    if (state == _betweenVariables) writer.pushIndent(Indent.expression);
 
     // Force variables to split if an initializer does.
     if (_variables.length > 1 && state == State.unsplit) {
@@ -81,6 +81,8 @@ class VariablePiece extends Piece {
       // TODO(perf): Investigate whether it's worth using `separate:` here.
       writer.format(_variables[i]);
     }
+
+    if (state == _betweenVariables) writer.popIndent();
   }
 
   @override

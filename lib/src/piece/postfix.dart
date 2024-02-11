@@ -34,10 +34,14 @@ class PostfixPiece extends Piece {
     // actual postfix operators where this isn't always desired.
     if (state == State.unsplit) writer.setAllowNewlines(false);
 
+    writer.pushIndent(Indent.expression);
+
     for (var piece in pieces) {
-      writer.splitIf(state == State.split, indent: Indent.expression);
+      writer.splitIf(state == State.split);
       writer.format(piece);
     }
+
+    writer.popIndent();
   }
 
   @override

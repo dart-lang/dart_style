@@ -148,12 +148,12 @@ class ChainPiece extends Piece {
       case State.unsplit:
         writer.setAllowNewlines(_allowSplitInTarget);
       case _splitAfterProperties:
-        writer.setIndent(_indent);
+        writer.pushIndent(_indent);
         writer.setAllowNewlines(_allowSplitInTarget);
       case _blockFormatTrailingCall:
         writer.setAllowNewlines(_allowSplitInTarget);
       case State.split:
-        writer.setIndent(_indent);
+        writer.pushIndent(_indent);
     }
 
     writer.format(_target);
@@ -182,6 +182,10 @@ class ChainPiece extends Piece {
         _ => false,
       };
       writer.format(_calls[i]._call, separate: separate);
+    }
+
+    if (state == _splitAfterProperties || state == State.split) {
+      writer.popIndent();
     }
   }
 

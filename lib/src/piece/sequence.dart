@@ -33,8 +33,8 @@ class SequencePiece extends Piece {
 
     if (_leftBracket case var leftBracket?) {
       writer.format(leftBracket);
-      writer.splitIf(state == State.split,
-          space: false, indent: _elements.firstOrNull?._indent ?? 0);
+      writer.pushIndent(_elements.firstOrNull?._indent ?? 0);
+      writer.splitIf(state == State.split, space: false);
     }
 
     for (var i = 0; i < _elements.length; i++) {
@@ -50,13 +50,16 @@ class SequencePiece extends Piece {
       writer.format(element, separate: separate);
 
       if (i < _elements.length - 1) {
-        writer.newline(
-            blank: element.blankAfter, indent: _elements[i + 1]._indent);
+        if (_leftBracket != null || i > 0) writer.popIndent();
+        writer.pushIndent(_elements[i + 1]._indent);
+        writer.newline(blank: element.blankAfter);
       }
     }
 
+    if (_leftBracket != null || _elements.isNotEmpty) writer.popIndent();
+
     if (_rightBracket case var rightBracket?) {
-      writer.splitIf(state == State.split, space: false, indent: Indent.none);
+      writer.splitIf(state == State.split, space: false);
       writer.format(rightBracket);
     }
   }

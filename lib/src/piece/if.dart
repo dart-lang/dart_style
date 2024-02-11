@@ -57,16 +57,18 @@ class IfPiece extends Piece {
       writer.format(section.header);
 
       if (!section.isBlock) {
-        writer.splitIf(state == State.split, indent: Indent.block);
+        writer.pushIndent(Indent.block);
+        writer.splitIf(state == State.split);
       }
 
       // TODO(perf): Investigate whether it's worth using `separate:` here.
       writer.format(section.statement);
 
       // Reset the indentation for the subsequent `else` or `} else` line.
+      if (!section.isBlock) writer.popIndent();
+
       if (i < _sections.length - 1) {
-        writer.splitIf(state == State.split && !section.isBlock,
-            indent: Indent.none);
+        writer.splitIf(state == State.split && !section.isBlock);
       }
     }
   }

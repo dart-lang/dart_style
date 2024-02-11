@@ -116,11 +116,14 @@ class ListPiece extends Piece {
 
       writer.format(before);
 
-      if (state == State.unsplit) writer.setAllowNewlines(false);
+      if (state == State.unsplit) {
+        writer.setAllowNewlines(false);
+      } else {
+        writer.pushIndent(Indent.block);
+      }
 
       // Whitespace after the opening bracket.
       writer.splitIf(state != State.unsplit,
-          indent: Indent.block,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
     }
 
@@ -136,7 +139,7 @@ class ListPiece extends Piece {
       // If this element allows newlines when the list isn't split, add
       // indentation if it requires it.
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
-        writer.setIndent(Indent.expression);
+        writer.pushIndent(Indent.expression);
       }
 
       // We can format each list item separately if the item is on its own line.
@@ -149,7 +152,7 @@ class ListPiece extends Piece {
       writer.format(element, separate: separate);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
-        writer.setIndent(Indent.none);
+        writer.popIndent();
       }
 
       // Write a space or newline between elements.
@@ -163,9 +166,10 @@ class ListPiece extends Piece {
 
     // Format the closing bracket, if any.
     if (_after case var after?) {
+      if (state != State.unsplit) writer.popIndent();
+
       // Whitespace before the closing bracket.
       writer.splitIf(state != State.unsplit,
-          indent: Indent.none,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
       writer.setAllowNewlines(true);

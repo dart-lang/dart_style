@@ -110,16 +110,23 @@ class AssignPiece extends Piece {
     }
 
     // Don't indent a split delimited expression.
-    if (state != State.unsplit) writer.setIndent(Indent.expression);
+    if (state != State.unsplit) writer.pushIndent(Indent.expression);
 
     writer.format(target);
     writer.splitIf(state == _atOperator);
 
     // We need extra indentation when there's no inner splitting of the value.
     if (!_allowInnerSplit && _indentInValue) {
-      writer.setIndent(Indent.expression * 2);
+      writer.pushIndent(Indent.expression);
     }
+
     writer.format(value);
+
+    if (!_allowInnerSplit && _indentInValue) {
+      writer.popIndent();
+    }
+
+    if (state != State.unsplit) writer.popIndent();
   }
 
   @override

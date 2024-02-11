@@ -21,10 +21,6 @@ import 'solution_cache.dart';
 class CodeWriter {
   final int _pageWidth;
 
-  /// The number of spaces of leading indentation at the beginning of each line
-  /// independent of indentation created by pieces being written.
-  final int _leadingIndent;
-
   /// Previously cached formatted subtrees.
   final SolutionCache _cache;
 
@@ -49,6 +45,13 @@ class CodeWriter {
 
   /// The number of characters in the line currently being written.
   int _column = 0;
+
+  /// The stack indentation levels.
+  ///
+  /// Each entry in the stack is the absolute number of spaces of leading
+  /// indentation that should be written when beginning a new line to account
+  /// for block nesting, expression wrapping, constructor initializers, etc.
+  final List<int> _indentStack = [];
 
   /// The stack of state for each [Piece] being formatted.
   ///
@@ -94,11 +97,15 @@ class CodeWriter {
   /// solution if the line ends up overflowing.
   final List<Piece> _currentUnsolvedPieces = [];
 
-  CodeWriter(
-      this._pageWidth, this._leadingIndent, this._cache, this._solution) {
+  /// [leadingIndent] is the number of spaces of leading indentation at the
+  /// beginning of each line independent of indentation created by pieces being
+  /// written.
+  CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution) {
+    _indentStack.add(leadingIndent);
+
     // Write the leading indent before the first line.
-    _buffer.write(' ' * _leadingIndent);
-    _column = _leadingIndent;
+    _buffer.write(' ' * leadingIndent);
+    _column = leadingIndent;
   }
 
   /// Returns the final formatted text and the next piece that can be expanded
@@ -135,21 +142,15 @@ class CodeWriter {
     }
   }
 
-  /// Sets the number of spaces of indentation for code written by the current
-  /// piece to [indent], relative to the indentation of the surrounding piece.
-  ///
-  /// Replaces any previous indentation set by this piece.
-  // TODO(tall): Add another API that adds/subtracts existing indentation.
-  void setIndent(int indent) {
-    var parentIndent = _leadingIndent;
+  /// Increases the number of spaces of indentation by [indent] relative to the
+  /// current amount of indentation.
+  void pushIndent(int indent) {
+    _indentStack.add(_indentStack.last + indent);
+  }
 
-    // If there is a surrounding Piece, then set the indent relative to that
-    // piece's current indentation.
-    if (_options.length > 1) {
-      parentIndent = _options[_options.length - 2].indent;
-    }
-
-    _options.last.indent = parentIndent + indent;
+  /// Discards the indentation change from the last call to [pushIndent()].
+  void popIndent() {
+    _indentStack.removeLast();
   }
 
   /// Inserts a newline if [condition] is true.
@@ -157,13 +158,9 @@ class CodeWriter {
   /// If [space] is `true` and [condition] is `false`, writes a space.
   ///
   /// If [blank] is `true`, writes an extra newline to produce a blank line.
-  ///
-  /// If [indent] is given, sets the amount of block-level indentation for this
-  /// and all subsequent newlines to [indent].
-  void splitIf(bool condition,
-      {bool space = true, bool blank = false, int? indent}) {
+  void splitIf(bool condition, {bool space = true, bool blank = false}) {
     if (condition) {
-      newline(blank: blank, indent: indent);
+      newline(blank: blank);
     } else if (space) {
       this.space();
     }
@@ -178,15 +175,10 @@ class CodeWriter {
   ///
   /// If [blank] is `true`, writes an extra newline to produce a blank line.
   ///
-  /// If [indent] is given, set the indentation of the new line (and all
-  /// subsequent lines) to that indentation relative to the containing piece.
-  ///
   /// If [flushLeft] is `true`, then the new line begins at column 1 and ignores
   /// any surrounding indentation. This is used for multi-line block comments
   /// and multi-line strings.
-  void newline({bool blank = false, int? indent, bool flushLeft = false}) {
-    if (indent != null) setIndent(indent);
-
+  void newline({bool blank = false, bool flushLeft = false}) {
     whitespace(blank ? Whitespace.blankLine : Whitespace.newline,
         flushLeft: flushLeft);
   }
@@ -203,7 +195,7 @@ class CodeWriter {
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
       _handleNewline();
-      _pendingIndent = flushLeft ? 0 : _options.last.indent;
+      _pendingIndent = flushLeft ? 0 : _indentStack.last;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
@@ -264,10 +256,10 @@ class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    _options.add(_PieceOptions(
-        piece,
-        _options.lastOrNull?.indent ?? _leadingIndent,
-        _options.lastOrNull?.allowNewlines ?? true));
+    _options
+        .add(_PieceOptions(piece, _options.lastOrNull?.allowNewlines ?? true));
+
+    _indentStack.add(_indentStack.last);
 
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
@@ -278,6 +270,7 @@ class CodeWriter {
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
     var childOptions = _options.removeLast();
+    _indentStack.removeLast();
 
     // If the child [piece] contains a newline then this one transitively
     // does.
@@ -392,11 +385,6 @@ class _PieceOptions {
   /// The piece being formatted with these options.
   final Piece piece;
 
-  /// The absolute number of spaces of leading indentation coming from
-  /// block-like structure or explicit extra indentation (aligning constructor
-  /// initializers, `show` clauses, etc.).
-  int indent;
-
   /// Whether newlines are allowed to occur.
   ///
   /// If a newline is written while this is `false`, the entire solution is
@@ -406,5 +394,5 @@ class _PieceOptions {
   /// Whether any newlines have occurred in this piece or any of its children.
   bool hasNewline = false;
 
-  _PieceOptions(this.piece, this.indent, this.allowNewlines);
+  _PieceOptions(this.piece, this.allowNewlines);
 }

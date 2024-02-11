@@ -79,4 +79,24 @@ class Indent {
 
   /// The ":" on a wrapped constructor initialization list.
   static const constructorInitializer = 4;
+
+  /// A wrapped constructor initializer after the first one when the parameter
+  /// list does not have optional or named parameters, like:
+  ///
+  ///     Constructor(
+  ///       parameter,
+  ///     ) : first,
+  ///         second;
+  ///       ^^ This indentation.
+  static const initializer = 2;
+
+  /// A wrapped constructor initializer after the first one when the parameter
+  /// list has optional or named parameters, like:
+  ///
+  ///     Constructor([
+  ///       parameter,
+  ///     ]) : first,
+  ///          second;
+  ///       ^^^ This indentation.
+  static const initializerWithOptionalParameter = 3;
 }
