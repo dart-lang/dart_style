@@ -115,7 +115,7 @@ class AssignPiece extends Piece {
 
     // We need extra indentation when there's no inner splitting of the value.
     if (!_allowInnerSplit && _indentInValue) {
-      writer.pushIndent(Indent.expression);
+      writer.pushIndent(Indent.expression, canCollapse: true);
     }
 
     writer.format(value);

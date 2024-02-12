@@ -51,7 +51,7 @@ class CodeWriter {
   /// Each entry in the stack is the absolute number of spaces of leading
   /// indentation that should be written when beginning a new line to account
   /// for block nesting, expression wrapping, constructor initializers, etc.
-  final List<int> _indentStack = [];
+  final List<_Indent> _indentStack = [];
 
   /// The stack of regions created by pairs of calls to [pushAllowNewlines()]
   /// and [popAllowNewlines()].
@@ -100,7 +100,7 @@ class CodeWriter {
   /// beginning of each line independent of indentation created by pieces being
   /// written.
   CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution) {
-    _indentStack.add(leadingIndent);
+    _indentStack.add(_Indent(leadingIndent, 0));
 
     // Write the leading indent before the first line.
     _buffer.write(' ' * leadingIndent);
@@ -143,8 +143,27 @@ class CodeWriter {
 
   /// Increases the number of spaces of indentation by [indent] relative to the
   /// current amount of indentation.
-  void pushIndent(int indent) {
-    _indentStack.add(_indentStack.last + indent);
+  ///
+  /// If [canCollapse] is `true`, then the new [indent] spaces of indentation
+  /// are "collapsible". This means that further calls to [pushIndent()] will
+  /// merge their indentation with [indent] and not increase the visible
+  /// indentation until more than [indent] spaces of indentation have been
+  /// increased.
+  void pushIndent(int indent, {bool canCollapse = false}) {
+    var parentIndent = _indentStack.last.indent;
+    var parentCollapse = _indentStack.last.collapsible;
+
+    if (canCollapse) {
+      // Increase the indent and the collapsible indent.
+      _indentStack.add(_Indent(parentIndent + indent, parentCollapse + indent));
+    } else if (parentCollapse > indent) {
+      // All new indent is collapsed with the existing collapsible indent.
+      _indentStack.add(_Indent(parentIndent, parentCollapse - indent));
+    } else {
+      // Use up the collapsible indent (if any) and then indent by the rest.
+      indent -= parentCollapse;
+      _indentStack.add(_Indent(parentIndent + indent, 0));
+    }
   }
 
   /// Discards the indentation change from the last call to [pushIndent()].
@@ -210,7 +229,7 @@ class CodeWriter {
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
       _handleNewline();
-      _pendingIndent = flushLeft ? 0 : _indentStack.last;
+      _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
@@ -395,4 +414,15 @@ enum Whitespace {
         newline || blankLine => true,
         _ => false,
       };
+}
+
+/// A level of indentation in the indentation stack.
+class _Indent {
+  /// The total number of spaces of indentation.
+  final int indent;
+
+  /// How many spaces of [indent] can be collapsed with further indentation.
+  final int collapsible;
+
+  _Indent(this.indent, this.collapsible);
 }

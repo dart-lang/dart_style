@@ -1168,12 +1168,26 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitLogicalAndPattern(LogicalAndPattern node) {
-    throw UnimplementedError();
+    return createInfixChain<LogicalAndPattern>(
+        node,
+        precedence: node.operator.type.precedence,
+        (expression) => (
+              expression.leftOperand,
+              expression.operator,
+              expression.rightOperand
+            ));
   }
 
   @override
   Piece visitLogicalOrPattern(LogicalOrPattern node) {
-    throw UnimplementedError();
+    return createInfixChain<LogicalOrPattern>(
+        node,
+        precedence: node.operator.type.precedence,
+        (expression) => (
+              expression.leftOperand,
+              expression.operator,
+              expression.rightOperand
+            ));
   }
 
   @override
@@ -1316,7 +1330,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitParenthesizedPattern(ParenthesizedPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.leftParenthesis);
+      b.visit(node.pattern);
+      b.token(node.rightParenthesis);
+    });
   }
 
   @override

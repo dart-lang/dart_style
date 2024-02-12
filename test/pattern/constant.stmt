@@ -1,0 +1,18 @@
+40 columns                              |
+>>> Split in qualified name.
+if (object case veryLongPrefix.longIdentifierName) {;}
+<<<
+if (object
+    case veryLongPrefix
+        .longIdentifierName) {
+  ;
+}
+>>> Split in property chain.
+if (object case longPrefix.longType.longIdentifierName) {;}
+<<<
+if (object
+    case longPrefix
+        .longType
+        .longIdentifierName) {
+  ;
+}
