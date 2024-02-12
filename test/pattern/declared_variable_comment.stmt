@@ -42,7 +42,8 @@ if (obj
   ;
 }
 <<<
-if (obj case final // c
+if (obj
+    case final // c
         thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }

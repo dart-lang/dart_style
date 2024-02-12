@@ -92,15 +92,18 @@ class Solver {
         debug.log('');
       }
 
-      // Since we process the solutions from lowest cost up, as soon as we find
-      // a valid one that fits, it's the best.
       if (solution.isValid) {
+        // Since we process the solutions from lowest cost up, as soon as we
+        // find a valid one that fits, it's the best.
         if (solution.overflow == 0) {
           best = solution;
           break;
         }
 
-        if (solution.overflow < best.overflow) best = solution;
+        // If not, keep track of the least-bad one we've found so far.
+        if (!best.isValid || solution.overflow < best.overflow) {
+          best = solution;
+        }
       }
 
       // Otherwise, try to expand the solution to explore different splitting
