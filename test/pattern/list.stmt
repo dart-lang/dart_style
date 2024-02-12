@@ -1,5 +1,5 @@
 40 columns                              |
->>> Basic list patterns. 
+>>> Basic list patterns.
 switch (obj) {
 case  [  ]  :
 case  <  int  >  [  ]  :
@@ -86,6 +86,25 @@ if (obj case <
 >[
   element,
   VeryLongElementElementElement,
+]) {
+  ;
+}
+>>> Split inside element forces list to split.
+if (obj case [first,secondLongPattern ||thirdVeryLongPattern]) {;}
+<<<
+if (obj case [
+  first,
+  secondLongPattern ||
+      thirdVeryLongPattern,
+]) {
+  ;
+}
+>>> Split in rest element does not split after "...".
+if (obj case [...firstPattern || secondVeryLongPattern]) {;}
+<<<
+if (obj case [
+  ...firstPattern ||
+      secondVeryLongPattern,
 ]) {
   ;
 }

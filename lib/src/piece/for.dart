@@ -34,9 +34,7 @@ class ForPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    if (!_hasBlockBody && state == State.unsplit) {
-      writer.setAllowNewlines(false);
-    }
+    writer.pushAllowNewlines(_hasBlockBody || state != State.unsplit);
 
     writer.format(_forKeyword);
     writer.space();
@@ -45,10 +43,14 @@ class ForPiece extends Piece {
     if (_hasBlockBody) {
       writer.space();
     } else {
-      writer.splitIf(state == State.split, indent: Indent.block);
+      writer.pushIndent(Indent.block);
+      writer.splitIf(state == State.split);
     }
 
     writer.format(_body);
+    if (!_hasBlockBody) writer.popIndent();
+
+    writer.popAllowNewlines();
   }
 
   @override

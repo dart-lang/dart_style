@@ -25,9 +25,9 @@ class InfixPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     if (state == State.unsplit) {
-      writer.setAllowNewlines(false);
+      writer.pushAllowNewlines(false);
     } else {
-      writer.setIndent(Indent.expression);
+      writer.pushIndent(Indent.expression);
     }
 
     for (var i = 0; i < _operands.length; i++) {
@@ -38,6 +38,12 @@ class InfixPiece extends Piece {
 
       writer.format(_operands[i], separate: separate);
       if (i < _operands.length - 1) writer.splitIf(state == State.split);
+    }
+
+    if (state == State.unsplit) {
+      writer.popAllowNewlines();
+    } else {
+      writer.popIndent();
     }
   }
 

@@ -1,0 +1,51 @@
+40 columns                              |
+>>> Unsplit.
+if (o case 1   ||  2   &&  3  ) {}
+<<<
+if (o case 1 || 2 && 3) {}
+>>> Nested as subpattern.
+if (o case 1   &&  (  2   ||  3   )  ) {}
+<<<
+if (o case 1 && (2 || 3)) {}
+>>> Chain of same logic operator all split together.
+if (object case first || second || third || fourth) {;}
+<<<
+if (object
+    case first ||
+        second ||
+        third ||
+        fourth) {
+  ;
+}
+>>> Chains of different logic operators split separately.
+if (object case first && second || third && fourth && fifth && sixth) {;}
+<<<
+if (object
+    case first && second ||
+        third &&
+            fourth &&
+            fifth &&
+            sixth) {
+  ;
+}
+>>> Chains of different logic operators split separately.
+if (object case first && second && third && fourth || fifth && sixth) {;}
+<<<
+if (object
+    case first &&
+            second &&
+            third &&
+            fourth ||
+        fifth && sixth) {
+  ;
+}
+>>> Multiple split variables as logic operands.
+if (object case SomeVeryLongTypeName anAlsoLongVariableName || AnotherLongTypeName anotherLongVariableName) {;}
+<<<
+if (object
+    case SomeVeryLongTypeName
+        anAlsoLongVariableName ||
+        AnotherLongTypeName
+        anotherLongVariableName) {
+  ;
+}

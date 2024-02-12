@@ -110,17 +110,20 @@ class ListPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
-      if (_style.splitListIfBeforeSplits && state == State.unsplit) {
-        writer.setAllowNewlines(false);
-      }
+      writer.pushAllowNewlines(
+          !_style.splitListIfBeforeSplits || state != State.unsplit);
 
       writer.format(before);
 
-      if (state == State.unsplit) writer.setAllowNewlines(false);
+      writer.popAllowNewlines();
+      writer.pushAllowNewlines(state != State.unsplit);
+
+      if (state != State.unsplit) {
+        writer.pushIndent(Indent.block);
+      }
 
       // Whitespace after the opening bracket.
       writer.splitIf(state != State.unsplit,
-          indent: Indent.block,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
     }
 
@@ -130,13 +133,14 @@ class ListPiece extends Piece {
 
       // Only some elements (usually a single block element) allow newlines
       // when the list itself isn't split.
-      writer.setAllowNewlines(
+      if (_before != null || i > 0) writer.popAllowNewlines();
+      writer.pushAllowNewlines(
           element.allowNewlinesWhenUnsplit || state == State.split);
 
       // If this element allows newlines when the list isn't split, add
       // indentation if it requires it.
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
-        writer.setIndent(Indent.expression);
+        writer.pushIndent(Indent.expression);
       }
 
       // We can format each list item separately if the item is on its own line.
@@ -149,7 +153,7 @@ class ListPiece extends Piece {
       writer.format(element, separate: separate);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
-        writer.setIndent(Indent.none);
+        writer.popIndent();
       }
 
       // Write a space or newline between elements.
@@ -163,14 +167,18 @@ class ListPiece extends Piece {
 
     // Format the closing bracket, if any.
     if (_after case var after?) {
+      if (state != State.unsplit) writer.popIndent();
+
       // Whitespace before the closing bracket.
       writer.splitIf(state != State.unsplit,
-          indent: Indent.none,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
-      writer.setAllowNewlines(true);
+      if (_before != null || _elements.isNotEmpty) writer.popAllowNewlines();
+      writer.pushAllowNewlines(true);
       writer.format(after);
     }
+
+    writer.popAllowNewlines();
   }
 
   @override

@@ -56,3 +56,14 @@ if (e case {
   a: longPattern1,
   b: veryLongPattern2,
 }) {}
+>>> Split inside value forces map to split.
+if (obj case {firstKey: first, secondKey: secondLongPattern ||thirdLongPattern}) {;}
+<<<
+if (obj case {
+  firstKey: first,
+  secondKey:
+      secondLongPattern ||
+          thirdLongPattern,
+}) {
+  ;
+}

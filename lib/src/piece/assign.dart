@@ -105,21 +105,28 @@ class AssignPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // A split in either child piece forces splitting at assignment operator
     // unless specifically allowed.
-    if (!_allowInnerSplit && state == State.unsplit) {
-      writer.setAllowNewlines(false);
-    }
+    writer.pushAllowNewlines(_allowInnerSplit || state != State.unsplit);
 
     // Don't indent a split delimited expression.
-    if (state != State.unsplit) writer.setIndent(Indent.expression);
+    if (state != State.unsplit) writer.pushIndent(Indent.expression);
 
     writer.format(target);
     writer.splitIf(state == _atOperator);
 
     // We need extra indentation when there's no inner splitting of the value.
     if (!_allowInnerSplit && _indentInValue) {
-      writer.setIndent(Indent.expression * 2);
+      writer.pushIndent(Indent.expression, canCollapse: true);
     }
+
     writer.format(value);
+
+    if (!_allowInnerSplit && _indentInValue) {
+      writer.popIndent();
+    }
+
+    if (state != State.unsplit) writer.popIndent();
+
+    writer.popAllowNewlines();
   }
 
   @override

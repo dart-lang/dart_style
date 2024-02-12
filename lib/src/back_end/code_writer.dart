@@ -21,10 +21,6 @@ import 'solution_cache.dart';
 class CodeWriter {
   final int _pageWidth;
 
-  /// The number of spaces of leading indentation at the beginning of each line
-  /// independent of indentation created by pieces being written.
-  final int _leadingIndent;
-
   /// Previously cached formatted subtrees.
   final SolutionCache _cache;
 
@@ -50,17 +46,23 @@ class CodeWriter {
   /// The number of characters in the line currently being written.
   int _column = 0;
 
-  /// The stack of state for each [Piece] being formatted.
+  /// The stack indentation levels.
   ///
-  /// For each piece being formatted from a call to [format()], we keep track of
-  /// things like indentation and nesting levels. Pieces recursively format
-  /// their children. When they do, we push new values onto this stack. When a
-  /// piece is done (a call to [format()] returns), we pop the corresponding
-  /// state off the stack.
-  ///
-  /// This is used to increase the cumulative nesting as we recurse into pieces
-  /// and then unwind that as child pieces are completed.
-  final List<_PieceOptions> _options = [];
+  /// Each entry in the stack is the absolute number of spaces of leading
+  /// indentation that should be written when beginning a new line to account
+  /// for block nesting, expression wrapping, constructor initializers, etc.
+  final List<_Indent> _indentStack = [];
+
+  /// The stack of regions created by pairs of calls to [pushAllowNewlines()]
+  /// and [popAllowNewlines()].
+  final List<bool> _allowNewlineStack = [true];
+
+  /// Whether any newlines have been written during the [_currentPiece] being
+  /// formatted.
+  bool _hadNewline = false;
+
+  /// The current innermost piece being formatted by a call to [format()].
+  Piece? _currentPiece;
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -94,11 +96,15 @@ class CodeWriter {
   /// solution if the line ends up overflowing.
   final List<Piece> _currentUnsolvedPieces = [];
 
-  CodeWriter(
-      this._pageWidth, this._leadingIndent, this._cache, this._solution) {
+  /// [leadingIndent] is the number of spaces of leading indentation at the
+  /// beginning of each line independent of indentation created by pieces being
+  /// written.
+  CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution) {
+    _indentStack.add(_Indent(leadingIndent, 0));
+
     // Write the leading indent before the first line.
-    _buffer.write(' ' * _leadingIndent);
-    _column = _leadingIndent;
+    _buffer.write(' ' * leadingIndent);
+    _column = leadingIndent;
   }
 
   /// Returns the final formatted text and the next piece that can be expanded
@@ -135,21 +141,50 @@ class CodeWriter {
     }
   }
 
-  /// Sets the number of spaces of indentation for code written by the current
-  /// piece to [indent], relative to the indentation of the surrounding piece.
+  /// Increases the number of spaces of indentation by [indent] relative to the
+  /// current amount of indentation.
   ///
-  /// Replaces any previous indentation set by this piece.
-  // TODO(tall): Add another API that adds/subtracts existing indentation.
-  void setIndent(int indent) {
-    var parentIndent = _leadingIndent;
+  /// If [canCollapse] is `true`, then the new [indent] spaces of indentation
+  /// are "collapsible". This means that further calls to [pushIndent()] will
+  /// merge their indentation with [indent] and not increase the visible
+  /// indentation until more than [indent] spaces of indentation have been
+  /// increased.
+  void pushIndent(int indent, {bool canCollapse = false}) {
+    var parentIndent = _indentStack.last.indent;
+    var parentCollapse = _indentStack.last.collapsible;
 
-    // If there is a surrounding Piece, then set the indent relative to that
-    // piece's current indentation.
-    if (_options.length > 1) {
-      parentIndent = _options[_options.length - 2].indent;
+    if (canCollapse) {
+      // Increase the indent and the collapsible indent.
+      _indentStack.add(_Indent(parentIndent + indent, parentCollapse + indent));
+    } else if (parentCollapse > indent) {
+      // All new indent is collapsed with the existing collapsible indent.
+      _indentStack.add(_Indent(parentIndent, parentCollapse - indent));
+    } else {
+      // Use up the collapsible indent (if any) and then indent by the rest.
+      indent -= parentCollapse;
+      _indentStack.add(_Indent(parentIndent + indent, 0));
     }
+  }
 
-    _options.last.indent = parentIndent + indent;
+  /// Discards the indentation change from the last call to [pushIndent()].
+  void popIndent() {
+    _indentStack.removeLast();
+  }
+
+  /// Begins a region of formatting where newlines are allowed if [allow] is
+  /// `true` or prohibited otherwise.
+  ///
+  /// If a newline is written while the top of the stack is `false`, the entire
+  /// solution is considered invalid and gets discarded.
+  ///
+  /// The region is ended by a corresponding call to [popAllowNewlines()].
+  void pushAllowNewlines(bool allow) {
+    _allowNewlineStack.add(allow);
+  }
+
+  /// Ends the region begun by the most recent call to [pushAllowNewlines()].
+  void popAllowNewlines() {
+    _allowNewlineStack.removeLast();
   }
 
   /// Inserts a newline if [condition] is true.
@@ -157,13 +192,9 @@ class CodeWriter {
   /// If [space] is `true` and [condition] is `false`, writes a space.
   ///
   /// If [blank] is `true`, writes an extra newline to produce a blank line.
-  ///
-  /// If [indent] is given, sets the amount of block-level indentation for this
-  /// and all subsequent newlines to [indent].
-  void splitIf(bool condition,
-      {bool space = true, bool blank = false, int? indent}) {
+  void splitIf(bool condition, {bool space = true, bool blank = false}) {
     if (condition) {
-      newline(blank: blank, indent: indent);
+      newline(blank: blank);
     } else if (space) {
       this.space();
     }
@@ -178,15 +209,10 @@ class CodeWriter {
   ///
   /// If [blank] is `true`, writes an extra newline to produce a blank line.
   ///
-  /// If [indent] is given, set the indentation of the new line (and all
-  /// subsequent lines) to that indentation relative to the containing piece.
-  ///
   /// If [flushLeft] is `true`, then the new line begins at column 1 and ignores
   /// any surrounding indentation. This is used for multi-line block comments
   /// and multi-line strings.
-  void newline({bool blank = false, int? indent, bool flushLeft = false}) {
-    if (indent != null) setIndent(indent);
-
+  void newline({bool blank = false, bool flushLeft = false}) {
     whitespace(blank ? Whitespace.blankLine : Whitespace.newline,
         flushLeft: flushLeft);
   }
@@ -203,16 +229,10 @@ class CodeWriter {
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
       _handleNewline();
-      _pendingIndent = flushLeft ? 0 : _options.last.indent;
+      _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
-  }
-
-  /// Sets whether newlines are allowed to occur from this point on for the
-  /// current piece.
-  void setAllowNewlines(bool allowed) {
-    _options.last.allowNewlines = allowed;
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -264,24 +284,30 @@ class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    _options.add(_PieceOptions(
-        piece,
-        _options.lastOrNull?.indent ?? _leadingIndent,
-        _options.lastOrNull?.allowNewlines ?? true));
+    // Begin a new formatting context for this child.
+    var previousPiece = _currentPiece;
+    _currentPiece = piece;
+
+    var previousHadNewline = _hadNewline;
+    _hadNewline = false;
 
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
+    // Format the child piece.
     piece.format(this, _solution.pieceState(piece));
 
+    // Restore the surrounding piece's context.
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childOptions = _options.removeLast();
+    var childHadNewline = _hadNewline;
+    _hadNewline = previousHadNewline;
 
-    // If the child [piece] contains a newline then this one transitively
-    // does.
-    if (childOptions.hasNewline && _options.isNotEmpty) _handleNewline();
+    _currentPiece = previousPiece;
+
+    // If the child contained a newline then the parent transitively does.
+    if (childHadNewline && _currentPiece != null) _handleNewline();
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -301,11 +327,11 @@ class CodeWriter {
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
   void _handleNewline() {
-    if (!_options.last.allowNewlines) _solution.invalidate(_options.last.piece);
+    if (!_allowNewlineStack.last) _solution.invalidate(_currentPiece!);
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
-    _options.last.hasNewline = true;
+    _hadNewline = true;
   }
 
   /// Write any pending whitespace.
@@ -387,24 +413,13 @@ enum Whitespace {
       };
 }
 
-/// The mutable state local to a single piece being formatted.
-class _PieceOptions {
-  /// The piece being formatted with these options.
-  final Piece piece;
+/// A level of indentation in the indentation stack.
+class _Indent {
+  /// The total number of spaces of indentation.
+  final int indent;
 
-  /// The absolute number of spaces of leading indentation coming from
-  /// block-like structure or explicit extra indentation (aligning constructor
-  /// initializers, `show` clauses, etc.).
-  int indent;
+  /// How many spaces of [indent] can be collapsed with further indentation.
+  final int collapsible;
 
-  /// Whether newlines are allowed to occur.
-  ///
-  /// If a newline is written while this is `false`, the entire solution is
-  /// considered invalid and gets discarded.
-  bool allowNewlines;
-
-  /// Whether any newlines have occurred in this piece or any of its children.
-  bool hasNewline = false;
-
-  _PieceOptions(this.piece, this.indent, this.allowNewlines);
+  _Indent(this.indent, this.collapsible);
 }

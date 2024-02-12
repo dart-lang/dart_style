@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
+import '../constants.dart';
 import 'piece.dart';
 
 /// A constructor declaration.
@@ -129,9 +130,7 @@ class ConstructorPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // If there's a newline in the header or parameters (like a line comment
     // after the `)`), then don't allow the initializers to remain unsplit.
-    if (_initializers != null && state == State.unsplit) {
-      writer.setAllowNewlines(false);
-    }
+    writer.pushAllowNewlines(_initializers == null || state != State.unsplit);
 
     writer.format(_header);
     writer.format(_parameters);
@@ -142,26 +141,25 @@ class ConstructorPiece extends Piece {
     }
 
     if (_initializers case var initializers?) {
-      writer.setAllowNewlines(state != State.unsplit);
-      writer.splitIf(state == _splitBeforeInitializers, indent: 2);
+      writer.pushIndent(Indent.block);
+      writer.splitIf(state == _splitBeforeInitializers);
 
       writer.format(_initializerSeparator!);
       writer.space();
 
       // Indent subsequent initializers past the `:`.
       if (_hasOptionalParameter && state == _splitBetweenInitializers) {
-        // If the parameter list ends in `]) : init...` then we need to indent
-        // +5 to line up subsequent initializers.
-        writer.setIndent(5);
+        writer.pushIndent(Indent.initializerWithOptionalParameter);
       } else {
-        writer.setIndent(4);
+        writer.pushIndent(Indent.initializer);
       }
 
       writer.format(initializers);
+      writer.popIndent();
+      writer.popIndent();
     }
 
-    writer.setIndent(0);
-    writer.setAllowNewlines(true);
+    writer.popAllowNewlines();
     writer.format(_body);
   }
 

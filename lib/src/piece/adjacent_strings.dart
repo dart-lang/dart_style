@@ -20,12 +20,14 @@ class AdjacentStringsPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    if (_indent) writer.setIndent(Indent.expression);
+    if (_indent) writer.pushIndent(Indent.expression);
 
     for (var i = 0; i < _strings.length; i++) {
       if (i > 0) writer.newline();
       writer.format(_strings[i]);
     }
+
+    if (_indent) writer.popIndent();
   }
 
   @override
