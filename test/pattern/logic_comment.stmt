@@ -1,0 +1,49 @@
+40 columns                              |
+>>> Before first logical pattern operand.
+if (obj case // c
+pattern || otherPattern) {;}
+<<<
+if (obj
+    case // c
+        pattern || otherPattern) {
+  ;
+}
+>>> Before first nested logical pattern operand.
+if (obj case pattern || // c
+otherPattern && thirdLongPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern &&
+            thirdLongPattern) {
+  ;
+}
+>>> After left logical operand.
+if (obj case pattern // c
+|| otherPattern) {;}
+<<<
+if (obj
+    case pattern // c
+        ||
+        otherPattern) {
+  ;
+}
+>>> After operator in logical pattern.
+if (obj case pattern || // c
+otherPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern) {
+  ;
+}
+>>> After right operand in logical pattern.
+if (obj case somePattern || otherPattern // c
+) {;}
+<<<
+if (obj
+    case somePattern ||
+        otherPattern // c
+        ) {
+  ;
+}
