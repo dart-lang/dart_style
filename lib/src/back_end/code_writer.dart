@@ -291,8 +291,6 @@ class CodeWriter {
     var previousHadNewline = _hadNewline;
     _hadNewline = false;
 
-    _indentStack.add(_indentStack.last);
-
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
@@ -307,7 +305,6 @@ class CodeWriter {
     _hadNewline = previousHadNewline;
 
     _currentPiece = previousPiece;
-    _indentStack.removeLast();
 
     // If the child contained a newline then the parent transitively does.
     if (childHadNewline && _currentPiece != null) _handleNewline();

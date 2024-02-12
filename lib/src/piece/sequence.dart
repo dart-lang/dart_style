@@ -55,7 +55,7 @@ class SequencePiece extends Piece {
       }
     }
 
-    if (_leftBracket != null || _elements.isNotEmpty) writer.popIndent();
+    if (_leftBracket != null || _elements.length > 1) writer.popIndent();
 
     if (_rightBracket case var rightBracket?) {
       writer.splitIf(state == State.split, space: false);
