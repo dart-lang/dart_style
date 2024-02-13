@@ -388,6 +388,7 @@ extension PatternExtensions on DartPattern {
   ///
   /// See [ExpressionExtensions.canBlockSplit].
   bool get canBlockSplit => switch (this) {
+        ConstantPattern(:var expression) => expression.canBlockSplit,
         ListPattern(:var elements, :var rightBracket) =>
           elements.canSplit(rightBracket),
         MapPattern(:var elements, :var rightBracket) =>

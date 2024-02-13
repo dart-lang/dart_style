@@ -48,20 +48,8 @@ class AssignPiece extends Piece {
   /// split at the assignment operator.
   final bool _allowInnerSplit;
 
-  /// Whether there's an extra indent needed in the [value] piece when it
-  /// splits, like:
-  //
-  //    if (obj
-  //        case SomeLongTypeName
-  //            longVariableName) {
-  //      ;
-  //    }
-  final bool _indentInValue;
-
-  AssignPiece(this.target, this.value,
-      {bool allowInnerSplit = false, bool indentInValue = false})
-      : _allowInnerSplit = allowInnerSplit,
-        _indentInValue = indentInValue;
+  AssignPiece(this.target, this.value, {bool allowInnerSplit = false})
+      : _allowInnerSplit = allowInnerSplit;
 
   // TODO(tall): The old formatter allows the first operand of a split
   // conditional expression to be on the same line as the `=`, as in:
@@ -112,17 +100,7 @@ class AssignPiece extends Piece {
 
     writer.format(target);
     writer.splitIf(state == _atOperator);
-
-    // We need extra indentation when there's no inner splitting of the value.
-    if (!_allowInnerSplit && _indentInValue) {
-      writer.pushIndent(Indent.expression, canCollapse: true);
-    }
-
     writer.format(value);
-
-    if (!_allowInnerSplit && _indentInValue) {
-      writer.popIndent();
-    }
 
     if (state != State.unsplit) writer.popIndent();
 

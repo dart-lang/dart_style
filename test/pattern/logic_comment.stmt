@@ -1,0 +1,50 @@
+40 columns                              |
+>>> Before first operand.
+if (obj case // c
+pattern || otherPattern) {;}
+<<<
+if (obj
+    case // c
+        pattern || otherPattern) {
+  ;
+}
+>>> Before first operand of nested.
+if (obj case pattern || // c
+otherPattern && thirdLongPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern &&
+            thirdLongPattern) {
+  ;
+}
+>>> After left logic operand.
+### Looks weird, but user should move comment.
+if (obj case pattern // c
+|| otherPattern) {;}
+<<<
+if (obj
+    case pattern // c
+        ||
+        otherPattern) {
+  ;
+}
+>>> After logic operator.
+if (obj case pattern || // c
+otherPattern) {;}
+<<<
+if (obj
+    case pattern || // c
+        otherPattern) {
+  ;
+}
+>>> After right logic operand.
+if (obj case somePattern || otherPattern // c
+) {;}
+<<<
+if (obj
+    case somePattern ||
+        otherPattern // c
+        ) {
+  ;
+}

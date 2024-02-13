@@ -221,18 +221,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
-  Piece visitCaseClause(CaseClause node) {
-    return buildPiece((b) {
-      b.token(node.caseKeyword);
-      if (node.guardedPattern.whenClause != null) {
-        throw UnimplementedError();
-      }
-      b.space();
-      b.visit(node.guardedPattern.pattern);
-    });
-  }
-
-  @override
   Piece visitCastPattern(CastPattern node) {
     throw UnimplementedError();
   }
@@ -362,8 +350,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitConstantPattern(ConstantPattern node) {
-    if (node.constKeyword != null) throw UnimplementedError();
-    return nodePiece(node.expression);
+    return buildPiece((b) {
+      b.token(node.constKeyword, spaceAfter: true);
+      b.visit(node.expression);
+    });
   }
 
   @override
@@ -453,15 +443,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitDeclaredVariablePattern(DeclaredVariablePattern node) {
-    var header = buildPiece((b) {
-      b.modifier(node.keyword);
-      b.visit(node.type);
-    });
-    return VariablePiece(
-      header,
-      [tokenPiece(node.name)],
-      hasType: node.type != null,
-    );
+    return createPatternVariable(node.keyword, node.type, node.name);
   }
 
   @override
@@ -866,8 +848,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
       var condition = buildPiece((b) {
         b.token(precedingElse, spaceAfter: true);
-        b.add(startControlFlow(ifElement.ifKeyword, ifElement.leftParenthesis,
-            ifElement.expression, ifElement.rightParenthesis));
+        b.add(createIfCondition(
+            ifElement.ifKeyword,
+            ifElement.leftParenthesis,
+            ifElement.expression,
+            ifElement.caseClause,
+            ifElement.rightParenthesis));
 
         // Make the `...` part of the header so that IfPiece can correctly
         // constrain the inner collection literal's ListPiece to split.
@@ -947,43 +933,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     void traverse(Token? precedingElse, IfStatement ifStatement) {
       var condition = buildPiece((b) {
         b.token(precedingElse, spaceAfter: true);
-        b.token(ifStatement.ifKeyword);
-        b.space();
-        b.token(ifStatement.leftParenthesis);
-
-        // If the condition needs to split, we prefer splitting before the
-        // `case` keyword, like:
-        //
-        //     if (obj
-        //         case 123456789012345678901234567890) {
-        //       body;
-        //     }
-        var expressionPiece = nodePiece(ifStatement.expression);
-        if (ifStatement.caseClause case var caseClause?) {
-          var caseClausePiece = nodePiece(caseClause);
-          // If the case clause can have block formatting, then a newline in
-          // it doesn't force the if-case to split before the `case` keyword,
-          // like:
-          //
-          //     if (obj case [
-          //       first,
-          //       second,
-          //       third,
-          //     ]) {
-          //       ;
-          //     }
-          var allowInnerSplit = caseClause.guardedPattern.pattern.canBlockSplit;
-          b.add(AssignPiece(
-            expressionPiece,
-            caseClausePiece,
-            allowInnerSplit: allowInnerSplit,
-            indentInValue: true,
-          ));
-        } else {
-          b.add(expressionPiece);
-        }
-
-        b.token(ifStatement.rightParenthesis);
+        b.add(createIfCondition(
+            ifStatement.ifKeyword,
+            ifStatement.leftParenthesis,
+            ifStatement.expression,
+            ifStatement.caseClause,
+            ifStatement.rightParenthesis));
         b.space();
       });
 
@@ -1865,7 +1820,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitWildcardPattern(WildcardPattern node) {
-    throw UnimplementedError();
+    return createPatternVariable(node.keyword, node.type, node.name);
   }
 
   @override
