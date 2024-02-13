@@ -8,6 +8,7 @@ import '../ast_extensions.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
 import '../piece/function.dart';
+import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
@@ -458,6 +459,45 @@ mixin PieceFactory {
         isReturnTypeFunctionType: returnType is GenericFunctionType);
   }
 
+  /// Creates a piece for the header -- everything from the `if` keyword to the
+  /// closing `)` -- of an if statement, if element, if-case statement, or
+  /// if-case element.
+  Piece createIfCondition(Token ifKeyword, Token leftParenthesis,
+      Expression expression, CaseClause? caseClause, Token rightParenthesis) {
+    return buildPiece((b) {
+      b.token(ifKeyword);
+      b.space();
+      b.token(leftParenthesis);
+
+      var expressionPiece = nodePiece(expression);
+
+      if (caseClause != null) {
+        var casePiece = buildPiece((b) {
+          b.token(caseClause.caseKeyword);
+          b.space();
+          b.visit(caseClause.guardedPattern.pattern);
+        });
+
+        Piece? guardPiece;
+        if (caseClause.guardedPattern.whenClause case var whenClause?) {
+          guardPiece = buildPiece((b) {
+            b.token(whenClause.whenKeyword);
+            b.space();
+            b.visit(whenClause.expression);
+          });
+        }
+
+        b.add(IfCasePiece(expressionPiece, casePiece, guardPiece,
+            canBlockSplitPattern:
+                caseClause.guardedPattern.pattern.canBlockSplit));
+      } else {
+        b.add(expressionPiece);
+      }
+
+      b.token(rightParenthesis);
+    });
+  }
+
   /// Creates a [TryPiece] for try statement.
   Piece createTry(TryStatement tryStatement) {
     var piece = TryPiece();
@@ -689,6 +729,24 @@ mixin PieceFactory {
     elements.forEach(builder.visit);
     if (rightBracket != null) builder.rightBracket(rightBracket);
     return builder.build();
+  }
+
+  /// Create a [VariablePiece] for a named or wildcard variable pattern.
+  Piece createPatternVariable(
+      Token? keyword, TypeAnnotation? type, Token name) {
+    // If it's a wildcard with no declaration keyword or type, there is just a
+    // name token.
+    if (keyword == null && type == null) return tokenPiece(name);
+
+    var header = buildPiece((b) {
+      b.modifier(keyword);
+      b.visit(type);
+    });
+    return VariablePiece(
+      header,
+      [tokenPiece(name)],
+      hasType: type != null,
+    );
   }
 
   /// Creates an [AdjacentPiece] for a given record type field.

@@ -1,0 +1,68 @@
+40 columns                              |
+>>> Inside parenthesized.
+if (obj case ( // c
+pattern)) {;}
+<<<
+if (obj
+    case ( // c
+        pattern)) {
+  ;
+}
+>>> In qualified name.
+if (obj case qualified // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .name) {
+  ;
+}
+>>> In prefixed qualified name.
+if (obj case qualified // c
+.prefixed // c
+.name) {;}
+<<<
+if (obj
+    case qualified // c
+        .prefixed // c
+        .name) {
+  ;
+}
+>>> Empty const constructor line comment.
+if (obj case const Foo(  // comment
+)) {;}
+<<<
+if (obj case const Foo(
+  // comment
+)) {
+  ;
+}
+>>> Const constructor line comment between arguments.
+if (obj case const Foo( first , // comment
+second)){;}
+<<<
+if (obj case const Foo(
+  first, // comment
+  second,
+)) {
+  ;
+}
+>>> After "(" in parenthesized constant.
+if (obj case const ( // comment
+expression)){;}
+<<<
+if (obj
+    case const ( // comment
+        expression)) {
+  ;
+}
+>>> After expression in parenthesized constant.
+### Looks weird, but user should move comment.
+if (obj case const ( expression // comment
+)){;}
+<<<
+if (obj
+    case const (expression // comment
+        )) {
+  ;
+}

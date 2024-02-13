@@ -1,0 +1,46 @@
+40 columns                              |
+>>> Indent line comment inside list.
+if (obj case [
+ // c
+]) {;}
+<<<
+if (obj case [
+  // c
+]) {
+  ;
+}
+>>> Line comment on opening line of list.
+if (obj case [// c
+]) {;}
+<<<
+if (obj case [
+  // c
+]) {
+  ;
+}
+>>> Indented block comment in list.
+if (obj case [
+  /* comment */
+]){;}
+<<<
+if (obj case [
+  /* comment */
+]) {
+  ;
+}
+>>> Inline block comment in list.
+if (obj case [  /* comment */  e  ]){;}
+<<<
+if (obj case [/* comment */ e]) {
+  ;
+}
+>>> Line comment between list items.
+if (obj case ['a', // comment
+  'b']){;}
+<<<
+if (obj case [
+  'a', // comment
+  'b',
+]) {
+  ;
+}

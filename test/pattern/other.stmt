@@ -1,0 +1,116 @@
+40 columns                              |
+>>> Literal constants.
+switch (obj) {
+case  true  :
+case  false  :
+case  null  :
+case  123  :
+case  12.34  :
+case  -  123  :
+case  -  12.34  :
+case  'string'  :
+case  's$tr${  ing  }'  :
+case  #symbol  :
+  ok;
+}
+<<<
+switch (obj) {
+  case true:
+  case false:
+  case null:
+  case 123:
+  case 12.34:
+  case -123:
+  case -12.34:
+  case 'string':
+  case 's$tr${ing}':
+  case #symbol:
+    ok;
+}
+>>> Identifier constants.
+switch (obj) {
+case  _  :
+case  name  :
+case  qualified  .  name  :
+case  prefixed  .  qualified  .  name  :
+  ok;
+}
+<<<
+switch (obj) {
+  case _:
+  case name:
+  case qualified.name:
+  case prefixed.qualified.name:
+    ok;
+}
+>>> Split in qualified name.
+if (object case veryLongPrefix.longIdentifierName) {;}
+<<<
+if (object
+    case veryLongPrefix
+        .longIdentifierName) {
+  ;
+}
+>>> Split in property chain.
+if (object case longPrefix.longType.longIdentifierName) {;}
+<<<
+if (object
+    case longPrefix
+        .longType
+        .longIdentifierName) {
+  ;
+}
+>>> Constant collection literals.
+switch (obj) {
+case  const  [  ]  :
+case  const  <  int  >  [  ]  :
+case  const  [  1  ,  2  ]  :
+case  const  {  }  :
+case  const  <  int  >  {  }  :
+case  const  {  1  ,  2  }  :
+case  const  <  int  ,  String  >  {  }  :
+case  const  {  1  :  's'  ,  2  :  't'  }  :
+  ok;
+}
+<<<
+switch (obj) {
+  case const []:
+  case const <int>[]:
+  case const [1, 2]:
+  case const {}:
+  case const <int>{}:
+  case const {1, 2}:
+  case const <int, String>{}:
+  case const {1: 's', 2: 't'}:
+    ok;
+}
+>>> Constant constructor invocations.
+switch (obj) {
+case  const  Foo  (  )  :
+case  const  Foo  (  field  ,  another  )  :
+case  const  Foo  (  field  :  value  )  :
+case  const  Foo  (  field  :  value  ,  )  :
+case  const  Foo  <  int  ,  String  >  (  field  )  :
+ok;
+}
+<<<
+switch (obj) {
+  case const Foo():
+  case const Foo(field, another):
+  case const Foo(field: value):
+  case const Foo(field: value):
+  case const Foo<int, String>(field):
+    ok;
+}
+>>> Parenthesized constant expressions.
+switch (obj) {
+case  const  (  1  )  :
+case  const  (  -  foo  *  bar  )  :
+ok;
+}
+<<<
+switch (obj) {
+  case const (1):
+  case const (-foo * bar):
+    ok;
+}

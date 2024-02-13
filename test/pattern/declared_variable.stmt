@@ -1,4 +1,22 @@
 40 columns                              |
+>>> Variables.
+switch (obj) {
+case  int  ?  _  :
+case  List < String >  name  :
+case  var  name  :
+case  final  name  :
+case  final  (  int  ,  String  )  name  :
+  ok;
+}
+<<<
+switch (obj) {
+  case int? _:
+  case List<String> name:
+  case var name:
+  case final name:
+  case final (int, String) name:
+    ok;
+}
 >>> No split after "var".
 if (obj case var thisIsReallyQuiteAVeryLongVariableName) {;}
 <<<

@@ -1,4 +1,26 @@
 40 columns                              |
+>>> Maps.
+switch (obj) {
+case  {  }  :
+case  <  int  ,  String  >  {  }  :
+case  {  k  :  _  }  :
+case  {  k  :  _  ,  }  :
+case  {  k  :  1  ,  m  :  2  }  :
+case  {  ...  }  :
+case  {  k  :  _  ,  ...  }  :
+  ok;
+}
+<<<
+switch (obj) {
+  case {}:
+  case <int, String>{}:
+  case {k: _}:
+  case {k: _}:
+  case {k: 1, m: 2}:
+  case {...}:
+  case {k: _, ...}:
+    ok;
+}
 >>> Unsplit map.
 if (obj case {k: 1, m: 3, ...}) {;}
 <<<
