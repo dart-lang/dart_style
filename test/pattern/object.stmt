@@ -1,0 +1,188 @@
+40 columns                              |
+>>> Single-element objects with trailing comma removed.
+if (obj case Foo(:pattern,)) {;}
+<<<
+if (obj case Foo(:pattern)) {
+  ;
+}
+>>> Split single-element object.
+if (obj case Foo(longFieldName: veryLongObjectFieldValue)) {;}
+<<<
+if (obj case Foo(
+  longFieldName: veryLongObjectFieldValue,
+)) {
+  ;
+}
+>>> Split all fields, if any field splits.
+if (obj case Foo(first, second, third, fourth, fifth)) {;}
+<<<
+if (obj case Foo(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+)) {
+  ;
+}
+>>> Split single-element object with inferred name.
+if (obj case Foo(:var veryLongInferredFieldName_____)) {;}
+<<<
+if (obj case Foo(
+  :var veryLongInferredFieldName_____,
+)) {
+  ;
+}
+>>> Split multiple inferred fields.
+if (obj case Foo(:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
+<<<
+if (obj case Foo(
+  :var firstLongInferredFieldName,
+  :var secondLongInferredName,
+)) {
+  ;
+}
+>>> Split with list subpattern.
+if (obj case Foo(longFieldName: [first, second, third])) {;}
+<<<
+if (obj case Foo(
+  longFieldName: [first, second, third],
+)) {
+  ;
+}
+>>> Split with a split list subpattern.
+if (obj case Foo(longFieldName: [firstlooooooong, secondlooooooong, thirdlooooooong])) {;}
+<<<
+if (obj case Foo(
+  longFieldName: [
+    firstlooooooong,
+    secondlooooooong,
+    thirdlooooooong,
+  ],
+)) {
+  ;
+}
+>>> Don't split between name and constant list.
+if (obj case Foo(longFieldName: const [first, second, third])) {;}
+<<<
+if (obj case Foo(
+  longFieldName: const [
+    first,
+    second,
+    third,
+  ],
+)) {
+  ;
+}
+>>> Split with map subpattern.
+if (obj case Foo(longFieldName: {first: 1, second: 2})) {;}
+<<<
+if (obj case Foo(
+  longFieldName: {first: 1, second: 2},
+)) {
+  ;
+}
+>>> Split with a split map subpattern.
+if (obj case Foo(longFieldName: {firstlooooooong: 1, secondlooooooong: 2})) {;}
+<<<
+if (obj case Foo(
+  longFieldName: {
+    firstlooooooong: 1,
+    secondlooooooong: 2,
+  },
+)) {
+  ;
+}
+>>> Don't split between name and constant map.
+if (obj case Foo(longFieldName: const {first: 1, second: 2})) {;}
+<<<
+if (obj case Foo(
+  longFieldName: const {
+    first: 1,
+    second: 2,
+  },
+)) {
+  ;
+}
+>>> Split with record subpattern.
+if (obj case Foo(longFieldName: (first: 1, second: 2))) {;}
+<<<
+if (obj case Foo(
+  longFieldName: (first: 1, second: 2),
+)) {
+  ;
+}
+>>> Split with split record subpattern.
+if (obj case Foo(longFieldName: (firstlooooooong: 1, secondlooooooong: 2))) {;}
+<<<
+if (obj case Foo(
+  longFieldName: (
+    firstlooooooong: 1,
+    secondlooooooong: 2,
+  ),
+)) {
+  ;
+}
+>>> Don't split between name and const record.
+if (obj case Foo(longFieldName: const (first: 1, second: 2))) {;}
+<<<
+if (obj case Foo(
+  longFieldName: const (
+    first: 1,
+    second: 2,
+  ),
+)) {
+  ;
+}
+>>> Nested object doesn't force outer object to split.
+if (obj case Foo(Bar(a: 1, b: 2))) {;}
+<<<
+if (obj case Foo(Bar(a: 1, b: 2))) {
+  ;
+}
+>>> Multiple objects doesn't force outer object to split.
+if (obj case (Foo(a: 1), Bar(b: 2))) {;}
+<<<
+if (obj case (Foo(a: 1), Bar(b: 2))) {
+  ;
+}
+>>> Deeply nested split object.
+if (obj case Foo(first: 1, Bar(second: 2, third: 3, four: 4), fifth: 5, Baz(sixth: 6, seventh: 7, eighth: 8, nine: 9, tenth: 10,
+    eleventh: 11))) {;}
+<<<
+if (obj case Foo(
+  first: 1,
+  Bar(second: 2, third: 3, four: 4),
+  fifth: 5,
+  Baz(
+    sixth: 6,
+    seventh: 7,
+    eighth: 8,
+    nine: 9,
+    tenth: 10,
+    eleventh: 11,
+  ),
+)) {
+  ;
+}
+>>> Split in type argument.
+if (obj case LongClassName<First, Second>()) {;}
+<<<
+### TODO(tall): It formats like this if there's no elements. Similarly with lists, maps etc.
+if (obj
+    case LongClassName<
+        First,
+        Second
+        >()) {
+  ;
+}
+>>> Split in type argument and body.
+if (obj case LongClassName<First, Second, Third>(first: 1, second: 2, third: 3)) {;}
+<<<
+if (obj case LongClassName<
+  First,
+  Second,
+  Third
+>(first: 1, second: 2, third: 3)) {
+  ;
+}

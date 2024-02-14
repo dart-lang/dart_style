@@ -1265,7 +1265,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitObjectPattern(ObjectPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.type);
+      b.add(createCollection(
+        node.leftParenthesis,
+        node.fields,
+        node.rightParenthesis,
+      ));
+    });
   }
 
   @override
