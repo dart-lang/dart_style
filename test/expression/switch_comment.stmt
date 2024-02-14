@@ -85,3 +85,15 @@ e = switch (n) { /* comment */ };
 e = switch (n) {  /* comment */  };
 <<<
 e = switch (n) { /* comment */ };
+>>> Line comment before case with guard does not force guard to split.
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};
+<<<
+e = switch (n) {
+  0 => zero,
+  // comment
+  1 when true => one,
+};

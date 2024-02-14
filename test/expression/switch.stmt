@@ -28,7 +28,7 @@ e = switch (c) {
 e = switch (c) {
   first => a,
   second =>
-      veryLongExpression + thatSplits,
+    veryLongExpression + thatSplits,
   third => c,
 };
 >>> Discard newlines between cases.
@@ -79,8 +79,8 @@ e = switch (obj) {
 <<<
 e = switch (obj) {
   1 =>
-      veryLongExpression +
-          thatStillMustSplit,
+    veryLongExpression +
+        thatStillMustSplit,
 };
 >>> Prefer to split after "=>" instead of body.
 e = switch (obj) {
@@ -89,7 +89,7 @@ e = switch (obj) {
 <<<
 e = switch (obj) {
   longConstant =>
-      longExpression + thatMustSplit,
+    longExpression + thatMustSplit,
 };
 >>> Split after "=>" and in body.
 e = switch (obj) {
@@ -98,6 +98,80 @@ e = switch (obj) {
 <<<
 e = switch (obj) {
   longConstant =>
-      veryLongLongExpression +
-          thatMustSplit,
+    veryLongLongExpression +
+        thatMustSplit,
+};
+>>> Expression split in pattern.
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplit => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+      reallyMustSplit =>
+    body,
+};
+>>> Outermost logic-or patterns are indented like parallel cases.
+e = switch (obj) {
+  oneConstant || twoConstant || threeConstant => body
+};
+<<<
+e = switch (obj) {
+  oneConstant ||
+  twoConstant ||
+  threeConstant =>
+    body,
+};
+>>> Nested logic-or operands are indented.
+e = switch (obj) {
+  [oneConstant || twoConstant || threeConstant] => body
+};
+<<<
+e = switch (obj) {
+  [
+    oneConstant ||
+        twoConstant ||
+        threeConstant,
+  ] =>
+    body,
+};
+>>> Block split in pattern.
+e = switch (obj) {
+  [veryLongElement,veryLongElement,veryLongElement,] => body
+};
+<<<
+e = switch (obj) {
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ] =>
+    body,
+};
+>>> Unsplit pattern with trailing block split body.
+e = switch (obj) {
+  pattern => function(veryLongElement,veryLongElement,veryLongElement)
+};
+<<<
+e = switch (obj) {
+  pattern => function(
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ),
+};
+>>> Split pattern with block split body.
+e = switch (obj) {
+  pattern && anotherPattern && aThirdOne => function(veryLongElement,veryLongElement,veryLongElement)
+};
+<<<
+e = switch (obj) {
+  pattern &&
+      anotherPattern &&
+      aThirdOne =>
+    function(
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
+    ),
 };

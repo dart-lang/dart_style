@@ -1,0 +1,177 @@
+40 columns                              |
+>>> Pattern and guard on same line.
+e = switch (obj) {
+  constant when condition => body
+};
+<<<
+e = switch (obj) {
+  constant when condition => body,
+};
+>>> Pattern and guard on same line, split after `=>`.
+e = switch (obj) {
+  constant when condition => veryLongBody
+};
+<<<
+e = switch (obj) {
+  constant when condition =>
+    veryLongBody,
+};
+>>> Prefer to split at `=>` before guard.
+e = switch (obj) {
+  veryLongConstant when longCondition => body
+};
+<<<
+e = switch (obj) {
+  veryLongConstant when longCondition =>
+    body,
+};
+>>> No split in pattern, expression split in guard.
+e = switch (obj) {
+  longConstant when veryLongCondition || anotherCondition => body
+};
+<<<
+e = switch (obj) {
+  longConstant
+      when veryLongCondition ||
+          anotherCondition =>
+    body,
+};
+>>> No split in pattern, block split in guard.
+e = switch (obj) {
+  constant when [veryLongElement,veryLongElement,veryLongElement,] => body
+};
+<<<
+e = switch (obj) {
+  constant
+      when [
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
+      ] =>
+    body,
+};
+>>> Expression split in pattern forces guard to split.
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplitHere when true => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+          reallyMustSplitHere
+      when true =>
+    body,
+};
+>>> Expression split in pattern, expression split in guard.
+e = switch (obj) {
+  veryVeryLongPattern && reallyMustSplitToo when veryLongCondition
+  || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern &&
+          reallyMustSplitToo
+      when veryLongCondition ||
+          anotherLongCondition =>
+    body,
+};
+>>> Expression split in pattern, block split in guard.
+e = switch (obj) {
+  veryLongPattern && reallyMustSplitAgain when [veryLongElement,veryLongElement,veryLongElement,] => body
+};
+<<<
+e = switch (obj) {
+  veryLongPattern &&
+          reallyMustSplitAgain
+      when [
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
+      ] =>
+    body,
+};
+>>> Outermost logic-or split does not force guard to split.
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitHere when true => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitHere when true =>
+    body,
+};
+>>> Outermost logic-or split in pattern, expression split in guard.
+e = switch (obj) {
+  veryVeryLongPattern || reallyMustSplitToo when veryLongCondition
+  || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  veryVeryLongPattern ||
+  reallyMustSplitToo
+      when veryLongCondition ||
+          anotherLongCondition =>
+    body,
+};
+>>> Outermost logic-or split in pattern, block split in guard.
+e = switch (obj) {
+  veryLongPattern || reallyMustSplitAgain when [veryLongElement,veryLongElement,veryLongElement,] => body
+};
+<<<
+e = switch (obj) {
+  veryLongPattern ||
+  reallyMustSplitAgain
+      when [
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
+      ] =>
+    body,
+};
+>>> Block split in pattern forces guard to split.
+e = switch (obj) {
+  [veryLongElement,veryLongElement,veryLongElement,] when true => body
+};
+<<<
+e = switch (obj) {
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ]
+      when true =>
+    body,
+};
+>>> Block split in pattern, expression split in guard.
+e = switch (obj) {
+  [veryLongElement,veryLongElement,veryLongElement,] when longCondition || anotherLongCondition => body
+};
+<<<
+e = switch (obj) {
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ]
+      when longCondition ||
+          anotherLongCondition =>
+    body,
+};
+>>> Block split in pattern, block split in guard.
+e = switch (obj) {
+  [veryLongElement,veryLongElement,veryLongElement,] when
+  [veryLongElement,veryLongElement,veryLongElement,] => body
+};
+<<<
+e = switch (obj) {
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ]
+      when [
+        veryLongElement,
+        veryLongElement,
+        veryLongElement,
+      ] =>
+    body,
+};

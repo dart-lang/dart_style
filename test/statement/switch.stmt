@@ -274,3 +274,29 @@ switch ([
   case 0:
     return "ok";
 }
+>>> Block split in pattern.
+switch (obj) {
+  case [veryLongElement,veryLongElement,veryLongElement,]: body;
+}
+<<<
+switch (obj) {
+  case [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ]:
+    body;
+}
+>>> Infix `||` pattern as outermost.
+### Switch expressions have some special formatting rules so here we just
+### validate that those rules don't inadvertently affect switch statements too.
+switch (obj) {
+  case oneConstant || twoConstant || threeConstant: body;
+}
+<<<
+switch (obj) {
+  case oneConstant ||
+      twoConstant ||
+      threeConstant:
+    body;
+}
