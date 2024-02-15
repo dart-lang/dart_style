@@ -487,10 +487,3 @@ class ListStyle {
       this.splitListIfBeforeSplits = false,
       this.allowBlockElement = false});
 }
-
-enum E {
-  a,
-
-  b,
-  c,
-}
