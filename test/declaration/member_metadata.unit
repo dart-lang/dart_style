@@ -1,0 +1,87 @@
+40 columns                              |
+>>> On members.
+class X {
+  @meta   var _x;
+  @meta       X.y();
+  @meta   factory X(x) => null;
+  @meta  int x() => null;
+}
+<<<
+class X {
+  @meta
+  var _x;
+  @meta
+  X.y();
+  @meta
+  factory X(x) => null;
+  @meta
+  int x() => null;
+}
+>>> Put member annotations on their own lines.
+class X {
+  @meta @another  var _x;
+  @meta @another       X.y();
+  @meta @another  factory X(x) => null;
+  @meta @another  int x() => null;
+}
+<<<
+class X {
+  @meta
+  @another
+  var _x;
+  @meta
+  @another
+  X.y();
+  @meta
+  @another
+  factory X(x) => null;
+  @meta
+  @another
+  int x() => null;
+}
+>>> On covariant field.
+class Foo {
+@wat  covariant    int zoop;
+}
+<<<
+class Foo {
+  @wat
+  covariant int zoop;
+}
+>>> On late fields.
+class B {
+  @meta late int c;
+  method() {
+    @meta late int d;
+  }
+}
+<<<
+class B {
+  @meta
+  late int c;
+  method() {
+    @meta
+    late int d;
+  }
+}
+>>> On external field.
+class C {
+  @meta  external static   var  x;
+  @meta  external var x;
+}
+<<<
+class C {
+  @meta
+  external static var x;
+  @meta
+  external var x;
+}
+>>> On abstract field.
+class C {
+  @meta  abstract var x;
+}
+<<<
+class C {
+  @meta
+  abstract var x;
+}

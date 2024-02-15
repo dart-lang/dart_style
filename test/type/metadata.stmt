@@ -1,0 +1,26 @@
+40 columns                              |
+>>> On unsplit function type parameters.
+Function(@a @b int c, int d) func;
+<<<
+Function(@a @b int c, int d) func;
+>>> On split function type parameters.
+Function(@annotation int param1, int param2, @annotation int param3, int param4) func;
+<<<
+Function(
+  @annotation int param1,
+  int param2,
+  @annotation int param3,
+  int param4,
+) func;
+>>> On unsplit record type field.
+(@a int, {@a double d}) record;
+<<<
+(@a int, {@a double d}) record;
+>>> On split record type field.
+(@anno @tation int, @annotation String s, {@annotation double d}) record;
+<<<
+(
+  @anno @tation int,
+  @annotation String s, {
+  @annotation double d,
+}) record;

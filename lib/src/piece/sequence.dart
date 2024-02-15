@@ -89,7 +89,7 @@ class SequenceElementPiece extends Piece {
   final int _indent;
 
   /// The [Piece] for the element.
-  final Piece _piece;
+  final Piece piece;
 
   /// The comments that should appear at the end of this element's line.
   final List<Piece> hangingComments = [];
@@ -97,11 +97,11 @@ class SequenceElementPiece extends Piece {
   /// Whether there should be a blank line after this element.
   bool blankAfter = false;
 
-  SequenceElementPiece(this._indent, this._piece);
+  SequenceElementPiece(this._indent, this.piece);
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.format(_piece);
+    writer.format(piece);
 
     for (var comment in hangingComments) {
       writer.space();
@@ -111,7 +111,7 @@ class SequenceElementPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    callback(_piece);
+    callback(piece);
     for (var comment in hangingComments) {
       callback(comment);
     }

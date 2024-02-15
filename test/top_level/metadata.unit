@@ -1,0 +1,42 @@
+40 columns                              |
+>>> Split before directives.
+@deprecated library foo;
+
+@deprecated import 'dart:io';
+
+@deprecated export 'dart:io';
+<<<
+@deprecated
+library foo;
+
+@deprecated
+import 'dart:io';
+
+@deprecated
+export 'dart:io';
+>>> On part.
+@foo part "part.dart";
+<<<
+@foo
+part "part.dart";
+>>> On part of.
+@foo part of bar;
+<<<
+@foo
+part of bar;
+>>> Remove blank lines between metadata and directive.
+@foo
+
+
+
+import 'foo.dart';
+
+@bar
+
+import 'bar.dart';
+<<<
+@foo
+import 'foo.dart';
+
+@bar
+import 'bar.dart';

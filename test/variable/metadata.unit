@@ -1,0 +1,158 @@
+40 columns                              |
+>>> On top-level variable.
+@DomName('DatabaseCallback')
+@Experimental()
+var variable;
+<<<
+@DomName('DatabaseCallback')
+@Experimental()
+var variable;
+>>> On local variable.
+main() {
+@DomName('DatabaseCallback')
+@Experimental()
+var variable;
+}
+<<<
+main() {
+  @DomName('DatabaseCallback')
+  @Experimental()
+  var variable;
+}
+>>> Unsplit.
+@a.B<C,D>(e,f,g) int i = 0;
+<<<
+@a.B<C, D>(e, f, g)
+int i = 0;
+>>> Split type arguments.
+@BigLongClassName<First, Second, Third>() int i = 0;
+<<<
+@BigLongClassName<
+  First,
+  Second,
+  Third
+>()
+int i = 0;
+>>> Prefer to split value arguments over type arguments.
+@SomeBigClass<
+  TypeArgument
+>(valueArgument)
+int i = 0;
+<<<
+@SomeBigClass<TypeArgument>(
+  valueArgument,
+)
+int i = 0;
+>>> Split both type and value arguments.
+@SomeBigClass<First, Second, Third, Fourth, Fifth>(
+  first, second, third, fourth, fifth, sixth) int i = 0;
+<<<
+@SomeBigClass<
+  First,
+  Second,
+  Third,
+  Fourth,
+  Fifth
+>(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+)
+int i = 0;
+>>> Prefer to split at arguments rather than prefix.
+@veryLongPrefix.VeryLongClassName<VeryLongTypeArgument,OtherVeryLongTypeArgument>(veryLongArgument,otherVeryLongArgument,thirdVeryLongArgument) int i = 0;
+<<<
+@veryLongPrefix.VeryLongClassName<
+  VeryLongTypeArgument,
+  OtherVeryLongTypeArgument
+>(
+  veryLongArgument,
+  otherVeryLongArgument,
+  thirdVeryLongArgument,
+)
+int i = 0;
+>>> Nested type arguments without splitting.
+@A<B<C,D>,E<F,G>>() int i = 0;
+<<<
+@A<B<C, D>, E<F, G>>()
+int i = 0;
+>>> Nested type arguments, split at outer level.
+@Aaaa<Bbbb<Cccc,Dddd>,Eeee<Ffff,Gggg>>() int i = 0;
+<<<
+@Aaaa<
+  Bbbb<Cccc, Dddd>,
+  Eeee<Ffff, Gggg>
+>()
+int i = 0;
+>>> Nested type arguments, split at inner level.
+@Aaaaaaaaa<Bbbbbbbbbbb<Ccccccccccc,Dddddddddddd>,Eeeeeeeee<Fffffffff,Ggggggggg>>() int i = 0;
+<<<
+@Aaaaaaaaa<
+  Bbbbbbbbbbb<
+    Ccccccccccc,
+    Dddddddddddd
+  >,
+  Eeeeeeeee<Fffffffff, Ggggggggg>
+>()
+int i = 0;
+>>> Prefixed type.
+@prefix.A<int,String>()int x;
+<<<
+@prefix.A<int, String>()
+int x;
+>>> Named constructor.
+@A<int,String>.constructor()int x;
+<<<
+@A<int, String>.constructor()
+int x;
+>>> Prefixed named constructor.
+@prefix.A<int,String>.constructor()int x;
+<<<
+@prefix.A<int, String>.constructor()
+int x;
+>>> On pattern variable, moves to own line.
+main() {
+  @meta var (x, y) = o;
+}
+<<<
+main() {
+  @meta
+  var (x, y) = o;
+}
+>>> Split after metadata.
+main() {
+  @meta var a;
+
+  @meta
+  var b;
+
+  @a @b
+
+
+  var c;
+}
+<<<
+main() {
+  @meta
+  var a;
+
+  @meta
+  var b;
+
+  @a
+  @b
+  var c;
+}
+>>> On external variable.
+@meta  external var x;
+<<<
+@meta
+external var x;
+>>> On late variable.
+@meta late int a;
+<<<
+@meta
+late int a;
