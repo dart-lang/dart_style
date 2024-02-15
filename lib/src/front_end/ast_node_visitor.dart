@@ -230,7 +230,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitCastPattern(CastPattern node) {
-    throw UnimplementedError();
+    return createInfix(node.pattern, node.asToken, node.type);
   }
 
   @override

@@ -1,0 +1,29 @@
+40 columns                              |
+>>> Line comment before pattern.
+if (obj case // c
+constant as Type) {;}
+<<<
+if (obj
+    case // c
+        constant as Type) {
+  ;
+}
+>>> Line comment before 'as'.
+if (obj case constant // c
+as Type) {;}
+<<<
+if (obj
+    case constant // c
+        as Type) {
+  ;
+}
+>>> Line comment after 'as'.
+if (obj case constant as // c
+Type) {;}
+<<<
+if (obj
+    case constant
+        as // c
+        Type) {
+  ;
+}
