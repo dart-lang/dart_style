@@ -1,0 +1,45 @@
+40 columns                              |
+>>> Keep line comment when split.
+if (obj case Foo(
+  // yeah
+  a:1,b:2,c:3,
+  d:4,e:5,f:6,
+)) {;}
+<<<
+if (obj case Foo(
+  // yeah
+  a: 1,
+  b: 2,
+  c: 3,
+  d: 4,
+  e: 5,
+  f: 6,
+)) {
+  ;
+}
+>>> Empty object pattern with block comment.
+if (obj case Foo(  /* comment */  )) {;}
+<<<
+if (obj case Foo(/* comment */)) {
+  ;
+}
+>>> Empty object pattern with line comment.
+if (obj case Foo(  // comment
+)) {;}
+<<<
+### Weird, but users rarely write this.
+if (obj case Foo(
+  // comment
+)) {
+  ;
+}
+>>> Line comment between arguments in object.
+if (obj case Foo( first , // comment
+second)){;}
+<<<
+if (obj case Foo(
+  first, // comment
+  second,
+)) {
+  ;
+}

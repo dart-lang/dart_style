@@ -1,0 +1,109 @@
+40 columns                              |
+>>> List constant in list pattern doesn't force pattern to split.
+if (obj case [const [1, 2]]) {;}
+<<<
+if (obj case [const [1, 2]]) {
+  ;
+}
+>>> Don't split between name and constant list.
+if (obj case (longFieldName: const [first, second, third])) {;}
+<<<
+if (obj case (
+  longFieldName: const [
+    first,
+    second,
+    third,
+  ],
+)) {
+  ;
+}
+>>> Split list constant in pattern.
+if (obj case const [element, element, element, element]) {;}
+<<<
+if (obj case const [
+  element,
+  element,
+  element,
+  element,
+]) {
+  ;
+}
+>>> Map constant in map pattern doesn't force pattern to split.
+if (obj case {k: const {1: 2}}) {;}
+<<<
+if (obj case {k: const {1: 2}}) {
+  ;
+}
+>>> Don't split between name and constant map.
+if (obj case (longFieldName: const {first: 1, second: 2})) {;}
+<<<
+if (obj case (
+  longFieldName: const {
+    first: 1,
+    second: 2,
+  },
+)) {
+  ;
+}
+>>> Split map constant in pattern.
+if (obj case const {a: element, b: element, c: element}) {;}
+<<<
+if (obj case const {
+  a: element,
+  b: element,
+  c: element,
+}) {
+  ;
+}
+>>> Don't split between name and const record.
+if (obj case (longFieldName: const (first: 1, second: 2))) {;}
+<<<
+if (obj case (
+  longFieldName: const (
+    first: 1,
+    second: 2,
+  ),
+)) {
+  ;
+}
+>>> Split record constant in pattern.
+if (obj case const (element, element, element, element)) {;}
+<<<
+if (obj case const (
+  element,
+  element,
+  element,
+  element,
+)) {
+  ;
+}
+>>> Split set constant in pattern.
+if (obj case const {element, element, element, element}) {;}
+<<<
+if (obj case const {
+  element,
+  element,
+  element,
+  element,
+}) {
+  ;
+}
+>>> Split constant constructor in pattern.
+if (obj case const Foo(element, element, element, element)) {;}
+<<<
+if (obj case const Foo(
+  element,
+  element,
+  element,
+  element,
+)) {
+  ;
+}
+>>> Split in parenthesized constant expression.
+if (obj case const(longArgument + anotherArgument)) {;}
+<<<
+if (obj
+    case const (longArgument +
+        anotherArgument)) {
+  ;
+}
