@@ -42,11 +42,20 @@ mixin M {}
 
 @meta
 base mixin N {}
->>> On extension
+>>> On extension.
 @meta extension A on B {}
 <<<
 @meta
 extension A on B {}
+>>> On extension type.
+@meta extension type A(int x) {}
+<<<
+@meta
+extension type A(int x) {}
+>>> On extension type representation parameter.
+extension type A(@a @b int x) {}
+<<<
+extension type A(@a @b int x) {}
 >>> On old style typedef.
 @meta typedef void X(y);
 <<<

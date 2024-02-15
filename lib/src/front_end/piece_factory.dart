@@ -353,7 +353,7 @@ mixin PieceFactory {
   Piece createFormalParameter(
       NormalFormalParameter node, TypeAnnotation? type, Token? name,
       {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
-    return _createParameter(
+    return createParameter(
         metadata: node.metadata,
         modifiers: [
           node.requiredKeyword,
@@ -752,7 +752,7 @@ mixin PieceFactory {
 
   /// Creates an [AdjacentPiece] for a given record type field.
   Piece createRecordTypeField(RecordTypeAnnotationField node) {
-    return _createParameter(metadata: node.metadata, node.type, node.name);
+    return createParameter(metadata: node.metadata, node.type, node.name);
   }
 
   /// Creates a [ListPiece] for a record literal or pattern.
@@ -802,23 +802,28 @@ mixin PieceFactory {
     );
   }
 
-  /// Creates a class, enum, extension, mixin, or mixin application class
-  /// declaration.
+  /// Creates a class, enum, extension, extension type, mixin, or mixin
+  /// application class declaration.
+  ///
+  /// The [keywords] list is the ordered list of modifiers and keywords at the
+  /// beginning of the declaration.
   ///
   /// For all but a mixin application class, [body] should a record containing
   /// the bracket delimiters and the list of member declarations for the type's
-  /// body.
-  ///
-  /// For mixin application classes, [body] is `null` and instead [equals],
-  /// [superclass], and [semicolon] are provided.
+  /// body. For mixin application classes, [body] is `null` and instead
+  /// [equals], [superclass], and [semicolon] are provided.
   ///
   /// If the type is an extension, then [onType] is a record containing the
   /// `on` keyword and the on type.
-  Piece createType(NodeList<Annotation> metadata, List<Token?> modifiers,
-      Token keyword, Token? name,
+  ///
+  /// If the type is an extension type, then [representation] is the primary
+  /// constructor for it.
+  Piece createType(
+      NodeList<Annotation> metadata, List<Token?> keywords, Token? name,
       {TypeParameterList? typeParameters,
       Token? equals,
       NamedType? superclass,
+      RepresentationDeclaration? representation,
       ExtendsClause? extendsClause,
       OnClause? onClause,
       WithClause? withClause,
@@ -831,8 +836,13 @@ mixin PieceFactory {
     metadataBuilder.metadata(metadata);
 
     var header = buildPiece((b) {
-      modifiers.forEach(b.modifier);
-      b.token(keyword);
+      var space = false;
+      for (var keyword in keywords) {
+        if (space) b.space();
+        b.token(keyword);
+        if (keyword != null) space = true;
+      }
+
       b.token(name, spaceBefore: true);
 
       if (typeParameters != null) {
@@ -846,6 +856,11 @@ mixin PieceFactory {
         b.token(equals);
         b.space();
         b.visit(superclass!);
+      }
+
+      // Extension types have a representation type.
+      if (representation != null) {
+        b.visit(representation);
       }
     });
 
@@ -989,11 +1004,14 @@ mixin PieceFactory {
   /// Creates a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a
   /// parameter.
-  Piece _createParameter(TypeAnnotation? type, Token? name,
+  Piece createParameter(TypeAnnotation? type, Token? name,
       {List<Annotation> metadata = const [],
       List<Token?> modifiers = const [],
       Token? fieldKeyword,
       Token? period}) {
+    var builder = AdjacentBuilder(this);
+    builder.metadata(metadata, inline: true);
+
     Piece? typePiece;
     if (type != null) {
       typePiece = buildPiece((b) {
@@ -1021,9 +1039,6 @@ mixin PieceFactory {
         b.token(name);
       });
     }
-
-    var builder = AdjacentBuilder(this);
-    builder.metadata(metadata, inline: true);
 
     if (typePiece != null && namePiece != null) {
       // We have both a type and name, allow splitting between them.

@@ -255,8 +255,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           node.sealedKeyword,
           node.macroKeyword,
           node.mixinKeyword,
+          node.classKeyword,
         ],
-        node.classKeyword,
         node.name,
         typeParameters: node.typeParameters,
         extendsClause: node.extendsClause,
@@ -281,8 +281,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           node.finalKeyword,
           node.sealedKeyword,
           node.mixinKeyword,
+          node.typedefKeyword,
         ],
-        node.typedefKeyword,
         node.name,
         equals: node.equals,
         superclass: node.superclass,
@@ -607,9 +607,29 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitExtensionDeclaration(ExtensionDeclaration node) {
-    return createType(node.metadata, const [], node.extensionKeyword, node.name,
+    return createType(node.metadata, [node.extensionKeyword], node.name,
         typeParameters: node.typeParameters,
         onType: (node.onKeyword, node.extendedType),
+        body: (
+          leftBracket: node.leftBracket,
+          members: node.members,
+          rightBracket: node.rightBracket
+        ));
+  }
+
+  @override
+  Piece visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
+    return createType(
+        node.metadata,
+        [
+          node.extensionKeyword,
+          node.typeKeyword,
+          if (node.constKeyword case var keyword?) keyword
+        ],
+        node.name,
+        typeParameters: node.typeParameters,
+        representation: node.representation,
+        implementsClause: node.implementsClause,
         body: (
           leftBracket: node.leftBracket,
           members: node.members,
@@ -1226,7 +1246,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitMixinDeclaration(MixinDeclaration node) {
     return createType(
-        node.metadata, [node.baseKeyword], node.mixinKeyword, node.name,
+        node.metadata, [node.baseKeyword, node.mixinKeyword], node.name,
         typeParameters: node.typeParameters,
         onClause: node.onClause,
         implementsClause: node.implementsClause,
@@ -1522,6 +1542,28 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitRelationalPattern(RelationalPattern node) {
     throw UnimplementedError();
+  }
+
+  @override
+  Piece visitRepresentationConstructorName(RepresentationConstructorName node) {
+    return buildPiece((b) {
+      b.token(node.period);
+      b.token(node.name);
+    });
+  }
+
+  @override
+  Piece visitRepresentationDeclaration(RepresentationDeclaration node) {
+    return buildPiece((b) {
+      b.visit(node.constructorName);
+
+      var builder = DelimitedListBuilder(this);
+      builder.leftBracket(node.leftParenthesis);
+      builder.add(createParameter(
+          metadata: node.fieldMetadata, node.fieldType, node.fieldName));
+      builder.rightBracket(node.rightParenthesis);
+      b.add(builder.build());
+    });
   }
 
   @override
