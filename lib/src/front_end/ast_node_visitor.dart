@@ -12,6 +12,7 @@ import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
+import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/for.dart';
 import '../piece/if.dart';
@@ -1005,8 +1006,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitIndexExpression(IndexExpression node) {
-    Piece? targetPiece;
-    if (node.target case var target?) targetPiece = nodePiece(target);
+    var targetPiece = optionalNodePiece(node.target);
     return createIndexExpression(targetPiece, node);
   }
 
@@ -1135,9 +1135,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitLogicalOrPattern(LogicalOrPattern node) {
+    // If a logical or pattern is the outermost pattern in a switch expression
+    // case, we want to format it like parallel cases and not indent the
+    // subsequent operands.
+    var indent = node.parent is! GuardedPattern ||
+        node.parent!.parent is! SwitchExpressionCase;
+
     return createInfixChain<LogicalOrPattern>(
         node,
         precedence: node.operator.type.precedence,
+        indent: indent,
         (expression) => (
               expression.leftOperand,
               expression.operator,
@@ -1627,10 +1634,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSwitchExpressionCase(SwitchExpressionCase node) {
-    if (node.guardedPattern.whenClause != null) throw UnimplementedError();
+    var patternPiece = nodePiece(node.guardedPattern.pattern);
 
-    return createAssignment(
-        node.guardedPattern.pattern, node.arrow, node.expression);
+    var guardPiece = optionalNodePiece(node.guardedPattern.whenClause);
+    var arrowPiece = tokenPiece(node.arrow);
+    var bodyPiece = nodePiece(node.expression);
+
+    return CaseExpressionPiece(patternPiece, guardPiece, arrowPiece, bodyPiece,
+        canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
+        patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
+        canBlockSplitBody: node.expression.canBlockSplit);
   }
 
   @override
@@ -1653,19 +1666,21 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var casePiece = buildPiece((b) {
           b.token(member.keyword);
 
-          if (member is SwitchCase) {
-            b.space();
-            b.visit(member.expression);
-          } else if (member is SwitchPatternCase) {
-            if (member.guardedPattern.whenClause != null) {
-              throw UnimplementedError();
-            }
+          switch (member) {
+            case SwitchCase():
+              b.space();
+              b.visit(member.expression);
+            case SwitchPatternCase():
+              b.space();
 
-            b.space();
-            b.visit(member.guardedPattern.pattern);
-          } else {
-            assert(member is SwitchDefault);
-            // Nothing to do.
+              var patternPiece = nodePiece(member.guardedPattern.pattern);
+              var guardPiece =
+                  optionalNodePiece(member.guardedPattern.whenClause);
+
+              b.add(CaseStatementPiece(patternPiece, guardPiece));
+
+            case SwitchDefault():
+              break; // Nothing to do.
           }
 
           b.token(member.colon);
@@ -1804,6 +1819,15 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
+  Piece visitWhenClause(WhenClause node) {
+    return buildPiece((b) {
+      b.token(node.whenKeyword);
+      b.space();
+      b.visit(node.expression);
+    });
+  }
+
+  @override
   Piece visitWhileStatement(WhileStatement node) {
     var condition = buildPiece((b) {
       b.add(startControlFlow(node.whileKeyword, node.leftParenthesis,
@@ -1857,5 +1881,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     }
 
     return result;
+  }
+
+  /// Visits [node] and creates a piece from it if not `null`.
+  ///
+  /// Otherwise returns `null`.
+  @override
+  Piece? optionalNodePiece(AstNode? node) {
+    if (node == null) return null;
+    return nodePiece(node);
   }
 }

@@ -55,6 +55,8 @@ mixin PieceFactory {
 
   Piece nodePiece(AstNode node, {bool commaAfter = false});
 
+  Piece? optionalNodePiece(AstNode? node);
+
   /// Creates a [ListPiece] for an argument list.
   Piece createArgumentList(
       Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
@@ -478,14 +480,8 @@ mixin PieceFactory {
           b.visit(caseClause.guardedPattern.pattern);
         });
 
-        Piece? guardPiece;
-        if (caseClause.guardedPattern.whenClause case var whenClause?) {
-          guardPiece = buildPiece((b) {
-            b.token(whenClause.whenKeyword);
-            b.space();
-            b.visit(whenClause.expression);
-          });
-        }
+        var guardPiece =
+            optionalNodePiece(caseClause.guardedPattern.whenClause);
 
         b.add(IfCasePiece(expressionPiece, casePiece, guardPiece,
             canBlockSplitPattern:
@@ -690,7 +686,7 @@ mixin PieceFactory {
   /// same precedence.
   Piece createInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
-      {int? precedence}) {
+      {int? precedence, bool indent = true}) {
     var builder = AdjacentBuilder(this);
     var operands = <Piece>[];
 
@@ -716,7 +712,7 @@ mixin PieceFactory {
     traverse(node);
     operands.add(builder.build());
 
-    return InfixPiece(operands);
+    return InfixPiece(operands, indent: indent);
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
