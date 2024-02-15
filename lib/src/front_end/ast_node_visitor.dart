@@ -117,7 +117,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitAnnotation(Annotation node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.atSign);
+      b.visit(node.name);
+      b.visit(node.typeArguments);
+      b.token(node.period);
+      b.visit(node.constructorName);
+      b.visit(node.arguments);
+    });
   }
 
   @override
@@ -360,6 +367,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitConstructorDeclaration(ConstructorDeclaration node) {
     var header = buildPiece((b) {
+      b.metadata(node.metadata);
       b.modifier(node.externalKeyword);
       b.modifier(node.constKeyword);
       b.modifier(node.factoryKeyword);
@@ -500,7 +508,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitEnumDeclaration(EnumDeclaration node) {
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
+    var metadataBuilder = AdjacentBuilder(this);
+    metadataBuilder.metadata(node.metadata);
 
     var header = buildPiece((b) {
       b.token(node.enumKeyword);
@@ -512,6 +521,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.members.isEmpty) {
       // If there are no members, format the constants like a delimited list.
       // This keeps the enum declaration on one line if it fits.
+      // TODO(tall): The old style preserves blank lines and newlines between
+      // enum values. A newline will also force the enum to split even if it
+      // would otherwise fit. Do we want to do that with the new style too?
       var builder = DelimitedListBuilder(
           this,
           const ListStyle(
@@ -519,41 +531,43 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       builder.leftBracket(node.leftBracket, preceding: header);
       node.constants.forEach(builder.visit);
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
-      return builder.build();
+      metadataBuilder.add(builder.build());
     } else {
-      var builder = AdjacentBuilder(this);
-      builder.add(header);
-      builder.space();
+      metadataBuilder.add(buildPiece((b) {
+        b.add(header);
+        b.space();
 
-      // If there are members, format it like a block where each constant and
-      // member is on its own line.
-      var sequence = SequenceBuilder(this);
-      sequence.leftBracket(node.leftBracket);
+        // If there are members, format it like a block where each constant and
+        // member is on its own line.
+        var members = SequenceBuilder(this);
+        members.leftBracket(node.leftBracket);
 
-      for (var constant in node.constants) {
-        sequence.addCommentsBefore(constant.firstNonCommentToken);
-        sequence.add(createEnumConstant(constant,
-            hasMembers: true,
-            isLastConstant: constant == node.constants.last,
-            semicolon: node.semicolon));
-      }
+        for (var constant in node.constants) {
+          members.addCommentsBefore(constant.firstNonCommentToken);
+          members.add(createEnumConstant(constant,
+              hasMembers: true,
+              isLastConstant: constant == node.constants.last,
+              semicolon: node.semicolon));
+        }
 
-      // Insert a blank line between the constants and members.
-      sequence.addBlank();
+        // Insert a blank line between the constants and members.
+        members.addBlank();
 
-      for (var node in node.members) {
-        sequence.visit(node);
+        for (var node in node.members) {
+          members.visit(node);
 
-        // If the node has a non-empty braced body, then require a blank line
-        // between it and the next node.
-        if (node.hasNonEmptyBody) sequence.addBlank();
-      }
+          // If the node has a non-empty braced body, then require a blank line
+          // between it and the next node.
+          if (node.hasNonEmptyBody) members.addBlank();
+        }
 
-      sequence.rightBracket(node.rightBracket);
+        members.rightBracket(node.rightBracket);
 
-      builder.add(sequence.build());
-      return builder.build();
+        b.add(members.build());
+      }));
     }
+
+    return metadataBuilder.build();
   }
 
   @override
@@ -606,6 +620,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitFieldDeclaration(FieldDeclaration node) {
     return buildPiece((b) {
+      b.metadata(node.metadata);
       b.modifier(node.externalKeyword);
       b.modifier(node.staticKeyword);
       b.modifier(node.abstractKeyword);
@@ -739,6 +754,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitFunctionDeclaration(FunctionDeclaration node) {
     return createFunction(
+        metadata: node.metadata,
         modifiers: [node.externalKeyword],
         returnType: node.returnType,
         propertyKeyword: node.propertyKeyword,
@@ -784,11 +800,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionTypeAlias(FunctionTypeAlias node) {
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-
     return buildPiece((b) {
+      b.metadata(node.metadata);
       b.token(node.typedefKeyword);
       b.space();
+      b.visit(node.returnType, spaceAfter: true);
       b.token(node.name);
       b.visit(node.typeParameters);
       b.visit(node.parameters);
@@ -815,9 +831,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitGenericTypeAlias(GenericTypeAlias node) {
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-
     return buildPiece((b) {
+      b.metadata(node.metadata);
       b.token(node.typedefKeyword);
       b.space();
       b.token(node.name);
@@ -1088,7 +1103,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitLibraryDirective(LibraryDirective node) {
     return buildPiece((b) {
-      createDirectiveMetadata(node);
+      b.metadata(node.metadata);
       b.token(node.libraryKeyword);
       b.visit(node.name2, spaceBefore: true);
       b.token(node.semicolon);
@@ -1177,6 +1192,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitMethodDeclaration(MethodDeclaration node) {
     return createFunction(
+        metadata: node.metadata,
         modifiers: [node.externalKeyword, node.modifierKeyword],
         returnType: node.returnType,
         propertyKeyword: node.operatorKeyword ?? node.propertyKeyword,
@@ -1309,7 +1325,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitPartDirective(PartDirective node) {
     return buildPiece((b) {
-      createDirectiveMetadata(node);
+      b.metadata(node.metadata);
       b.token(node.partKeyword);
       b.space();
       b.visit(node.uri);
@@ -1320,8 +1336,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitPartOfDirective(PartOfDirective node) {
     return buildPiece((b) {
-      createDirectiveMetadata(node);
-
+      b.metadata(node.metadata);
       b.token(node.partKeyword);
       b.space();
       b.token(node.ofKeyword);
@@ -1359,13 +1374,27 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
-    throw UnimplementedError();
+    // TODO(tall): This is just a basic implementation for the metadata tests.
+    // It still needs a full implementation and tests.
+    return buildPiece((b) {
+      b.metadata(node.metadata);
+      b.token(node.keyword);
+      b.space();
+      b.visit(node.pattern);
+      b.space();
+      b.token(node.equals);
+      b.space();
+      b.visit(node.expression);
+    });
   }
 
   @override
   Piece visitPatternVariableDeclarationStatement(
       PatternVariableDeclarationStatement node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.declaration);
+      b.token(node.semicolon);
+    });
   }
 
   @override
@@ -1740,6 +1769,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitTopLevelVariableDeclaration(TopLevelVariableDeclaration node) {
     return buildPiece((b) {
+      b.metadata(node.metadata);
       b.modifier(node.externalKeyword);
       b.visit(node.variables);
       b.token(node.semicolon);
@@ -1759,6 +1789,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitTypeParameter(TypeParameter node) {
     return buildPiece((b) {
+      b.metadata(node.metadata, inline: true);
       b.token(node.name);
       if (node.bound case var bound?) {
         b.space();
@@ -1782,10 +1813,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitVariableDeclarationList(VariableDeclarationList node) {
-    // TODO(tall): Format metadata.
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-
     var header = buildPiece((b) {
+      b.metadata(node.metadata);
       b.modifier(node.lateKeyword);
       b.modifier(node.keyword);
 

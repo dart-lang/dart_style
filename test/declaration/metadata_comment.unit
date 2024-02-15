@@ -1,0 +1,19 @@
+40 columns                              |
+>>> Comment after metadata.
+@DomName('DatabaseCallback')
+@Experimental() // deprecated
+class C {}
+<<<
+@DomName('DatabaseCallback')
+@Experimental() // deprecated
+class C {}
+>>> Comment between metadata.
+@DomName('DatabaseCallback') // deprecated
+@Experimental()
+class C {}
+<<<
+@DomName(
+  'DatabaseCallback',
+) // deprecated
+@Experimental()
+class C {}

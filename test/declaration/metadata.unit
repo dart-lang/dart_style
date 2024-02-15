@@ -1,0 +1,74 @@
+40 columns                              |
+>>> Collapse newlines between annotations.
+@a
+
+
+@b
+
+
+
+@c
+
+
+class A {}
+<<<
+@a
+@b
+@c
+class A {}
+>>> On class.
+@meta class X {}
+
+@a @b class A {}
+
+@meta class Y = X with Z;
+<<<
+@meta
+class X {}
+
+@a
+@b
+class A {}
+
+@meta
+class Y = X with Z;
+>>> On mixin.
+@meta   mixin M {}
+
+@meta  base   mixin N {}
+<<<
+@meta
+mixin M {}
+
+@meta
+base mixin N {}
+>>> On extension
+@meta extension A on B {}
+<<<
+@meta
+extension A on B {}
+>>> On old style typedef.
+@meta typedef void X(y);
+<<<
+@meta
+typedef void X(y);
+>>> On function typedef.
+@foo typedef Fn = Function();
+<<<
+@foo
+typedef Fn = Function();
+>>> On non-function typedef.
+@foo typedef Hash< @a  K, @b(  1  )  V  >  =  Map < K ,  V >   ;
+<<<
+@foo
+typedef Hash<@a K, @b(1) V> = Map<K, V>;
+>>> On type parameter.
+class Foo<
+
+@a
+
+@b
+
+T> {}
+<<<
+class Foo<@a @b T> {}

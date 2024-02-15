@@ -163,14 +163,6 @@ mixin PieceFactory {
     });
   }
 
-  /// Creates metadata annotations for a directive.
-  ///
-  /// Always forces the annotations to be on a previous line.
-  void createDirectiveMetadata(Directive directive) {
-    // TODO(tall): Implement. See SourceVisitor._visitDirectiveMetadata().
-    if (directive.metadata.isNotEmpty) throw UnimplementedError();
-  }
-
   /// Creates a dotted or qualified identifier.
   Piece createDotted(NodeList<SimpleIdentifier> components) {
     return buildPiece((b) {
@@ -196,6 +188,7 @@ mixin PieceFactory {
       bool isLastConstant = false,
       Token? semicolon}) {
     return buildPiece((b) {
+      b.metadata(node.metadata);
       b.token(node.name);
       if (node.arguments case var arguments?) {
         b.visit(arguments.typeArguments);
@@ -360,17 +353,17 @@ mixin PieceFactory {
   Piece createFormalParameter(
       NormalFormalParameter node, TypeAnnotation? type, Token? name,
       {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
-    var builder = AdjacentBuilder(this);
-    startFormalParameter(node, builder);
-    builder.modifier(mutableKeyword);
-    return finishTypeAndName(
-      type,
-      name,
-      builder,
-      mutableKeyword: mutableKeyword,
-      fieldKeyword: fieldKeyword,
-      period: period,
-    );
+    return _createParameter(
+        metadata: node.metadata,
+        modifiers: [
+          node.requiredKeyword,
+          node.covariantKeyword,
+          mutableKeyword,
+        ],
+        type,
+        fieldKeyword: fieldKeyword,
+        period: period,
+        name);
   }
 
   /// Creates a function, method, getter, or setter declaration.
@@ -381,7 +374,8 @@ mixin PieceFactory {
   /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
   /// getter or setter declaration.
   Piece createFunction(
-      {List<Token?> modifiers = const [],
+      {List<Annotation> metadata = const [],
+      List<Token?> modifiers = const [],
       TypeAnnotation? returnType,
       Token? operatorKeyword,
       Token? propertyKeyword,
@@ -389,6 +383,9 @@ mixin PieceFactory {
       TypeParameterList? typeParameters,
       FormalParameterList? parameters,
       required FunctionBody body}) {
+    var metadataBuilder = AdjacentBuilder(this);
+    metadataBuilder.metadata(metadata);
+
     var builder = AdjacentBuilder(this);
     for (var keyword in modifiers) {
       builder.modifier(keyword);
@@ -409,9 +406,11 @@ mixin PieceFactory {
 
     var bodyPiece = createFunctionBody(body);
 
-    return FunctionPiece(returnTypePiece, signature,
+    metadataBuilder.add(FunctionPiece(returnTypePiece, signature,
         isReturnTypeFunctionType: returnType is GenericFunctionType,
-        body: bodyPiece);
+        body: bodyPiece));
+
+    return metadataBuilder.build();
   }
 
   /// Creates a piece for a function, method, or constructor body.
@@ -442,7 +441,11 @@ mixin PieceFactory {
       Token? period}) {
     var builder = AdjacentBuilder(this);
 
-    if (parameter != null) startFormalParameter(parameter, builder);
+    if (parameter != null) {
+      builder.metadata(parameter.metadata, inline: true);
+      builder.modifier(parameter.requiredKeyword);
+      builder.modifier(parameter.covariantKeyword);
+    }
 
     Piece? returnTypePiece;
     if (returnType != null) {
@@ -457,8 +460,10 @@ mixin PieceFactory {
     builder.visit(parameters);
     builder.token(question);
 
-    return FunctionPiece(returnTypePiece, builder.build(),
-        isReturnTypeFunctionType: returnType is GenericFunctionType);
+    builder.add(FunctionPiece(returnTypePiece, builder.build(),
+        isReturnTypeFunctionType: returnType is GenericFunctionType));
+
+    return builder.build();
   }
 
   /// Creates a piece for the header -- everything from the `if` keyword to the
@@ -561,7 +566,7 @@ mixin PieceFactory {
   Piece createImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
     var builder = AdjacentBuilder(this);
-    createDirectiveMetadata(directive);
+    builder.metadata(directive.metadata);
     builder.token(keyword);
     builder.space();
     builder.visit(directive.uri);
@@ -747,13 +752,7 @@ mixin PieceFactory {
 
   /// Creates an [AdjacentPiece] for a given record type field.
   Piece createRecordTypeField(RecordTypeAnnotationField node) {
-    // TODO(tall): Format metadata.
-    if (node.metadata.isNotEmpty) throw UnimplementedError();
-    return finishTypeAndName(
-      node.type,
-      node.name,
-      AdjacentBuilder(this),
-    );
+    return _createParameter(metadata: node.metadata, node.type, node.name);
   }
 
   /// Creates a [ListPiece] for a record literal or pattern.
@@ -828,7 +827,8 @@ mixin PieceFactory {
       (Token, TypeAnnotation)? onType,
       ({Token leftBracket, List<AstNode> members, Token rightBracket})? body,
       Token? semicolon}) {
-    if (metadata.isNotEmpty) throw UnimplementedError('Type metadata.');
+    var metadataBuilder = AdjacentBuilder(this);
+    metadataBuilder.metadata(metadata);
 
     var header = buildPiece((b) {
       modifiers.forEach(b.modifier);
@@ -901,7 +901,10 @@ mixin PieceFactory {
       bodyPiece = tokenPiece(semicolon!);
     }
 
-    return TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null);
+    metadataBuilder
+        .add(TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null));
+
+    return metadataBuilder.build();
   }
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
@@ -912,44 +915,6 @@ mixin PieceFactory {
         elements,
         rightBracket: rightBracket,
         style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3));
-  }
-
-  /// Creates a [VariablePiece] that allows splitting between a type and a name,
-  /// if they both exist.
-  ///
-  /// Otherwise, finishes building the existing [AdjacentPiece] with the
-  /// [builder].
-  Piece finishTypeAndName(
-      TypeAnnotation? type, Token? name, AdjacentBuilder builder,
-      {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
-    builder.visit(type);
-
-    Piece? typePiece;
-    if (type != null && name != null) {
-      typePiece = builder.build();
-    }
-
-    builder.token(fieldKeyword);
-    builder.token(period);
-    builder.token(name);
-
-    // If we have both a type and name, allow splitting between them.
-    if (typePiece != null) {
-      var namePiece = builder.build();
-      return VariablePiece(typePiece, [namePiece], hasType: true);
-    }
-
-    return builder.build();
-  }
-
-  /// Writes the parts of a formal parameter shared by all formal parameter
-  /// types: metadata, `covariant`, etc.
-  void startFormalParameter(
-      FormalParameter parameter, AdjacentBuilder builder) {
-    if (parameter.metadata.isNotEmpty) throw UnimplementedError();
-
-    builder.modifier(parameter.requiredKeyword);
-    builder.modifier(parameter.covariantKeyword);
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
@@ -1019,6 +984,57 @@ mixin PieceFactory {
       return AssignPiece(targetPiece, initializer,
           allowInnerSplit: allowInnerSplit);
     }
+  }
+
+  /// Creates a piece for a parameter-like constructor: Either a simple formal
+  /// parameter or a record type field, which is syntactically similar to a
+  /// parameter.
+  Piece _createParameter(TypeAnnotation? type, Token? name,
+      {List<Annotation> metadata = const [],
+      List<Token?> modifiers = const [],
+      Token? fieldKeyword,
+      Token? period}) {
+    Piece? typePiece;
+    if (type != null) {
+      typePiece = buildPiece((b) {
+        for (var keyword in modifiers) {
+          b.modifier(keyword);
+        }
+
+        b.visit(type);
+      });
+    }
+
+    Piece? namePiece;
+    if (name != null) {
+      namePiece = buildPiece((b) {
+        // If there is a type annotation, the modifiers will be before the type.
+        // Otherwise, they go before the name.
+        if (type == null) {
+          for (var keyword in modifiers) {
+            b.modifier(keyword);
+          }
+        }
+
+        b.token(fieldKeyword);
+        b.token(period);
+        b.token(name);
+      });
+    }
+
+    var builder = AdjacentBuilder(this);
+    builder.metadata(metadata, inline: true);
+
+    if (typePiece != null && namePiece != null) {
+      // We have both a type and name, allow splitting between them.
+      builder.add(VariablePiece(typePiece, [namePiece], hasType: true));
+    } else if (typePiece != null) {
+      builder.add(typePiece);
+    } else if (namePiece != null) {
+      builder.add(namePiece);
+    }
+
+    return builder.build();
   }
 
   /// Invokes [buildCallback] with a new [AdjacentBuilder] and returns the

@@ -1,0 +1,90 @@
+40 columns                              |
+>>> Splitting in one parameter's metadata doesn't force others to split.
+function(@Annotation longParameter,
+  // Comment.
+@Annotation @Other @Third longParameter2,) {}
+<<<
+function(
+  @Annotation longParameter,
+  // Comment.
+  @Annotation
+  @Other
+  @Third
+  longParameter2,
+) {}
+>>> Split after metadata.
+@meta foo() {}
+<<<
+@meta
+foo() {}
+>>> Split after each annotation.
+@meta @another foo() {}
+<<<
+@meta
+@another
+foo() {}
+>>> Unsplit on parameter.
+foo(
+
+@a
+
+@b
+
+param) {}
+<<<
+foo(@a @b param) {}
+>>> Keep "covariant" with parameter.
+class A { function(@Annotation @VeryLongMetadataAnnotation covariant longParameter) {} }
+<<<
+class A {
+  function(
+    @Annotation
+    @VeryLongMetadataAnnotation
+    covariant longParameter,
+  ) {}
+}
+>>> Keep "required" with parameter.
+class A { function({@Annotation @VeryLongMetadataAnnotation required longParameter}) {} }
+<<<
+class A {
+  function({
+    @Annotation
+    @VeryLongMetadataAnnotation
+    required longParameter,
+  }) {}
+}
+>>> On function-typed formal parameter.
+withReturnType(@foo @bar int fn(@foo param)) {}
+withoutReturnType(@foo @bar fn(@foo param)) {}
+<<<
+withReturnType(
+  @foo @bar int fn(@foo param),
+) {}
+withoutReturnType(
+  @foo @bar fn(@foo param),
+) {}
+>>> On default formal parameter.
+positional([@foo bar]) {}
+named({@foo bar}) {}
+<<<
+positional([@foo bar]) {}
+named({@foo bar}) {}
+>>> On initializing formal.
+class Foo {
+  Foo(@bar this.field);
+}
+<<<
+class Foo {
+  Foo(@bar this.field);
+}
+>>> On "super." parameter.
+class Foo {
+  Foo(@bar super.field, [  @foo()   @baz   super.another  ]);
+}
+<<<
+class Foo {
+  Foo(
+    @bar super.field, [
+    @foo() @baz super.another,
+  ]);
+}

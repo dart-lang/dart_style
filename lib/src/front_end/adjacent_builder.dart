@@ -5,17 +5,42 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../piece/adjacent.dart';
+import '../piece/list.dart';
 import '../piece/piece.dart';
+import 'delimited_list_builder.dart';
 import 'piece_factory.dart';
+import 'sequence_builder.dart';
 
 /// Incrementally builds an [AdjacentPiece].
+///
+/// Can also be used to attach metadata annotations to the [Piece] being built.
 class AdjacentBuilder {
   final PieceFactory _visitor;
+
+  final List<Piece> _metadataPieces = [];
+
+  /// Whether the annotations added by a call to [metadata] should be allowed
+  /// on the same line as the code they annotate, or whether a mandatory
+  /// newline should be inserted after each annotation.
+  bool _isMetadataInline = false;
 
   /// The series of adjacent pieces.
   final List<Piece> _pieces = [];
 
   AdjacentBuilder(this._visitor);
+
+  /// Creates pieces for all of the annotations in [metadata].
+  ///
+  /// When this builder is built, if there are any annotations, the returned
+  /// Piece will contain the annotation pieces followed by the [AdjacentPiece]
+  /// being built.
+  void metadata(List<Annotation> metadata, {bool inline = false}) {
+    _isMetadataInline = inline;
+
+    for (var annotation in metadata) {
+      _metadataPieces.add(_visitor.nodePiece(annotation));
+    }
+  }
 
   /// Yields a new piece containing all of the pieces added to or created by
   /// this builder. The caller must ensure it doesn't build an empty piece.
@@ -27,6 +52,36 @@ class AdjacentBuilder {
 
     var result = _flattenPieces();
     _pieces.clear();
+
+    // If there is metadata, wrap the AdjacentPiece in another piece containing
+    // the annotations first.
+    if (_metadataPieces.isNotEmpty) {
+      if (_isMetadataInline) {
+        var list = DelimitedListBuilder(
+            _visitor,
+            const ListStyle(
+              commas: Commas.none,
+              spaceWhenUnsplit: true,
+            ));
+
+        for (var piece in _metadataPieces) {
+          list.add(piece);
+        }
+
+        list.add(result);
+        result = list.build();
+      } else {
+        var sequence = SequenceBuilder(_visitor);
+        for (var piece in _metadataPieces) {
+          sequence.add(piece);
+        }
+
+        sequence.add(result);
+        result = sequence.build(forceSplit: true);
+      }
+
+      _metadataPieces.clear();
+    }
 
     return result;
   }
