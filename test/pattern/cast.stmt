@@ -1,0 +1,22 @@
+40 columns                              |
+>>> Basic cast pattern. 
+if (object case x as int) {;}
+<<<
+if (object case x as int) {
+  ;
+}
+>>> Split before 'case'.
+if (object case constant as VeryLongType) {;}
+<<<
+if (object
+    case constant as VeryLongType) {
+  ;
+}
+>>> Split before 'as'.
+if (object case veryLongConstant as VeryLongType) {;}
+<<<
+if (object
+    case veryLongConstant
+        as VeryLongType) {
+  ;
+}
