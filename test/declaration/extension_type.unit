@@ -1,0 +1,129 @@
+40 columns                              |
+>>> Empty body.
+extension type A(int a) {
+  }
+<<<
+extension type A(int a) {}
+>>> Const and named constructor.
+extension  type  const  A  .  name  (  int  a  ) {}
+<<<
+extension type const A.name(int a) {}
+>>> Type parameters.
+extension type A<T extends int, R>(int a) {}
+<<<
+extension type A<T extends int, R>(
+  int a,
+) {}
+>>> Indentation in body.
+extension type A(int a) {
+inc(int x) => ++x;
+foo(int x) {
+if (x == 0) {
+return true;
+}}}
+<<<
+extension type A(int a) {
+  inc(int x) => ++x;
+  foo(int x) {
+    if (x == 0) {
+      return true;
+    }
+  }
+}
+>>> Don't split clauses if they fit.
+extension type E(T i)
+    implements I, J {}
+<<<
+extension type E(T i) implements I, J {}
+>>> Split in representation parameter list.
+extension type LongExtensionType(LongTypeName a) {}
+<<<
+extension type LongExtensionType(
+  LongTypeName a,
+) {}
+>>> Split in representation with implements clause.
+extension type LongExtensionType(LongTypeName a) implements Something {
+  method() {;}
+}
+<<<
+extension type LongExtensionType(
+  LongTypeName a,
+) implements Something {
+  method() {
+    ;
+  }
+}
+>>> Simple body.
+extension type A(int a)  { int meaningOfLife() => 42; }
+<<<
+extension type A(int a) {
+  int meaningOfLife() => 42;
+}
+>>> Discard extra newlines.
+extension
+
+type
+
+const
+
+A
+
+<
+
+T
+
+>
+
+.
+
+name
+
+(
+
+int
+
+a
+
+)
+
+{
+
+}
+<<<
+extension type const A<T>.name(int a) {}
+>>> All kinds of members (except instance fields).
+extension type const A<T>.name(int a) {
+  static  const int c = 1;
+  static  final int f = 1;
+  static  late final int l;
+  static  var v;
+  static  int get g => c;
+  static  set g(int i) {}
+  static  int m<X>(X x) => c;
+  const  A(int a) : this.a = a;
+  const  A.r(int a) : this(a);
+  const  factory A.rf(int a) = A;
+  factory  A.f(int a) => A(a);
+  int  get pr => 0;
+  set  pr(int x) {}
+  int  me(int x) => x;
+  int  operator+(int x) => x;
+}
+<<<
+extension type const A<T>.name(int a) {
+  static const int c = 1;
+  static final int f = 1;
+  static late final int l;
+  static var v;
+  static int get g => c;
+  static set g(int i) {}
+  static int m<X>(X x) => c;
+  const A(int a) : this.a = a;
+  const A.r(int a) : this(a);
+  const factory A.rf(int a) = A;
+  factory A.f(int a) => A(a);
+  int get pr => 0;
+  set pr(int x) {}
+  int me(int x) => x;
+  int operator +(int x) => x;
+}
