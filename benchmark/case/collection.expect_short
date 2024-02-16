@@ -1,5 +1,5 @@
 // Test collection literals.
-[
+var list = [
   [
     [
       listElement1,

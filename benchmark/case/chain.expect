@@ -1,5 +1,5 @@
 // Test long split method chains.
-target
+var result = target
     .someMethod1(
       argument1,
       argument2,
