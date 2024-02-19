@@ -139,3 +139,29 @@ var l = [for (;;) [if (c) d]];
 var l = [for (;;) [for (c in d) e]];
 <<<
 var l = [for (;;) [for (c in d) e]];
+>>> Pattern for-in.
+var list = [
+for (var (longIdentifier && anotherLongOne) in obj) element
+];
+<<<
+var list = [
+  for (var (longIdentifier &&
+          anotherLongOne)
+      in obj)
+    element,
+];
+>>> Pattern for.
+var list = [
+for (var (longIdentifier && anotherLongOne) = obj; cond; inc) element
+];
+<<<
+var list = [
+  for (
+    var (longIdentifier &&
+            anotherLongOne) =
+        obj;
+    cond;
+    inc
+  )
+    element,
+];
