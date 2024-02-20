@@ -60,3 +60,44 @@ import 'a.dart';
 import 'a.dart';
 /* comment */
 import 'b.dart';
+>>> Ensure blank line above doc comments on top level directives and declarations.
+#!script
+/// Doc library.
+library;
+/// Doc export.
+export 'a.dart';
+/// Doc import.
+import 'a.dart';
+/// Doc class.
+class C {}
+/// Doc variable.
+var a = 1;
+/// Doc function.
+void b() => body;
+/// Doc function.
+void c() {;}
+<<<
+#!script
+
+/// Doc library.
+library;
+
+/// Doc export.
+export 'a.dart';
+
+/// Doc import.
+import 'a.dart';
+
+/// Doc class.
+class C {}
+
+/// Doc variable.
+var a = 1;
+
+/// Doc function.
+void b() => body;
+
+/// Doc function.
+void c() {
+  ;
+}

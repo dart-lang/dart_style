@@ -1,0 +1,43 @@
+40 columns                              |
+>>> Unsplit type arguments.
+Generic  <  int  ,  String  ,  bool  >  g  ;
+<<<
+Generic<int, String, bool> g;
+>>> Split type arguments.
+Generic  <  LongTypeName  ,  AnotherLongType  ,  ThirdOne  >  g  ;
+<<<
+Generic<
+  LongTypeName,
+  AnotherLongType,
+  ThirdOne
+> g;
+>>> Splitting in type argument forces outer type argument list to split.
+Generic<Map<LongTypeName, AnotherReallyLongType>, ThirdOne> g;
+<<<
+Generic<
+  Map<
+    LongTypeName,
+    AnotherReallyLongType
+  >,
+  ThirdOne
+> g;
+>>> Nullable type argument.
+Map<  int  ?  , List<String  ?  > ? > m;
+<<<
+Map<int?, List<String?>?> m;
+>>> Record type type argument.
+Set < ( int  x  ,  String  ,  {  bool   b,  int  i  } )> s;
+<<<
+Set<(int x, String, {bool b, int i})> s;
+>>> Split inside type argument.
+GenericClass<Function(first, second, third, fourth, fifth)> f;
+<<<
+GenericClass<
+  Function(
+    first,
+    second,
+    third,
+    fourth,
+    fifth,
+  )
+> f;

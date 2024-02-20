@@ -20,25 +20,3 @@ x;
 prefix  .  TypeName  ?  x  ;
 <<<
 prefix.TypeName? x;
->>> Unsplit type arguments.
-Generic  <  int  ,  String  ,  bool  >  g  ;
-<<<
-Generic<int, String, bool> g;
->>> Split type arguments.
-Generic  <  LongTypeName  ,  AnotherLongType  ,  ThirdOne  >  g  ;
-<<<
-Generic<
-  LongTypeName,
-  AnotherLongType,
-  ThirdOne
-> g;
->>> Splitting in type argument forces outer type argument list to split.
-Generic<Map<LongTypeName, AnotherReallyLongType>, ThirdOne> g;
-<<<
-Generic<
-  Map<
-    LongTypeName,
-    AnotherReallyLongType
-  >,
-  ThirdOne
-> g;

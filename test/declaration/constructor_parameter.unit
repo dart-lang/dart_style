@@ -81,3 +81,13 @@ class Foo {
     super.f() = x,
   });
 }
+>>> Covariant initializing formal.
+### This isn't semantically valid Dart code, but it's syntactically valid so
+### the formatter should handle it correctly.
+class A {
+  A(   covariant   this.foo);
+}
+<<<
+class A {
+  A(covariant this.foo);
+}

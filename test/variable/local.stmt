@@ -273,3 +273,10 @@ const uptyped = 123;
 const  String  typed  =  'string'  ;
 <<<
 const String typed = 'string';
+>>> With multiple variables, indent initializer block body.
+SomeType a = () {body;}, b;
+<<<
+SomeType a = () {
+      body;
+    },
+    b;
