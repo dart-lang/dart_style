@@ -1394,8 +1394,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
-    // TODO(tall): This is just a basic implementation for the metadata tests.
-    // It still needs a full implementation and tests.
     return buildPiece((b) {
       b.metadata(node.metadata);
       b.token(node.keyword);
