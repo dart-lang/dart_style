@@ -6,6 +6,17 @@ class C { // comment
 class C {
   // comment
 }
+>>> Indent line comment in body.
+### Note: The old formatter had a special rule that line comments starting at
+### column 1 would not be indented even if the surrounding code otherwise
+### required it. The new style deliberately does not have that rule.
+class C {
+// comment
+}
+<<<
+class C {
+  // comment
+}
 >>> Empty class containing inline block comment.
 class C {   /* comment */  }
 <<<
