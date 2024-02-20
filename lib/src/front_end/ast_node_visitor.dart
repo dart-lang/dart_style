@@ -170,7 +170,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitAssignedVariablePattern(AssignedVariablePattern node) {
-    throw UnimplementedError();
+    return tokenPiece(node.name);
   }
 
   @override
@@ -1372,7 +1372,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPatternAssignment(PatternAssignment node) {
-    throw UnimplementedError();
+    return createAssignment(node.pattern, node.equals, node.expression);
   }
 
   @override
