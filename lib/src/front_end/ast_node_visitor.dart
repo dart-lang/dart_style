@@ -181,11 +181,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitAwaitExpression(AwaitExpression node) {
-    return buildPiece((b) {
-      b.token(node.awaitKeyword);
-      b.space();
-      b.visit(node.expression);
-    });
+    return createPrefix(node.awaitKeyword, space: true, node.expression);
   }
 
   @override
@@ -358,10 +354,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitConstantPattern(ConstantPattern node) {
-    return buildPiece((b) {
-      b.token(node.constKeyword, spaceAfter: true);
-      b.visit(node.expression);
-    });
+    return createPrefix(node.constKeyword, space: true, node.expression);
   }
 
   @override
@@ -1293,12 +1286,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitNullAssertPattern(NullAssertPattern node) {
-    throw UnimplementedError();
+    return createPostfix(node.pattern, node.operator);
   }
 
   @override
   Piece visitNullCheckPattern(NullCheckPattern node) {
-    throw UnimplementedError();
+    return createPostfix(node.pattern, node.operator);
   }
 
   @override
@@ -1413,10 +1406,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPostfixExpression(PostfixExpression node) {
-    return buildPiece((b) {
-      b.visit(node.operand);
-      b.token(node.operator);
-    });
+    return createPostfix(node.operand, node.operator);
   }
 
   @override
@@ -1542,7 +1532,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRelationalPattern(RelationalPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.operator);
+      b.space();
+      b.visit(node.operand);
+    });
   }
 
   @override
@@ -1574,10 +1568,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRestPatternElement(RestPatternElement node) {
-    return buildPiece((b) {
-      b.token(node.operator);
-      b.visit(node.pattern);
-    });
+    return createPrefix(node.operator, node.pattern);
   }
 
   @override
@@ -1631,10 +1622,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSpreadElement(SpreadElement node) {
-    return buildPiece((b) {
-      b.token(node.spreadOperator);
-      b.visit(node.expression);
-    });
+    return createPrefix(node.spreadOperator, node.expression);
   }
 
   @override
@@ -1795,11 +1783,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitThrowExpression(ThrowExpression node) {
-    return buildPiece((b) {
-      b.token(node.throwKeyword);
-      b.space();
-      b.visit(node.expression);
-    });
+    return createPrefix(node.throwKeyword, space: true, node.expression);
   }
 
   @override
@@ -1892,11 +1876,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitWhenClause(WhenClause node) {
-    return buildPiece((b) {
-      b.token(node.whenKeyword);
-      b.space();
-      b.visit(node.expression);
-    });
+    return createPrefix(node.whenKeyword, space: true, node.expression);
   }
 
   @override

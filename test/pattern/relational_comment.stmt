@@ -1,0 +1,21 @@
+40 columns                              |
+>>> After operator.
+if (obj case <= // c
+someConstant + anotherLongConstant) {;}
+<<<
+if (obj
+    case <= // c
+        someConstant +
+        anotherLongConstant) {
+  ;
+}
+>>> After operand.
+if (obj case <= someConstant + anotherLongConstant // c
+) {;}
+<<<
+if (obj
+    case <= someConstant +
+        anotherLongConstant // c
+        ) {
+  ;
+}

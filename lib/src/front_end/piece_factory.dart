@@ -759,6 +759,25 @@ mixin PieceFactory {
     );
   }
 
+  /// Creates a [Piece] for an AST node followed by an unsplittable token.
+  Piece createPostfix(AstNode node, Token? operator) {
+    return buildPiece((b) {
+      b.visit(node);
+      b.token(operator);
+    });
+  }
+
+  /// Creates a [Piece] for an AST node preceded by an unsplittable token.
+  ///
+  /// If [space] is `true` and there is an operator, writes a space between the
+  /// operator and operand.
+  Piece createPrefix(Token? operator, AstNode? node, {bool space = false}) {
+    return buildPiece((b) {
+      b.token(operator, spaceAfter: space);
+      b.visit(node);
+    });
+  }
+
   /// Creates an [AdjacentPiece] for a given record type field.
   Piece createRecordTypeField(RecordTypeAnnotationField node) {
     return createParameter(metadata: node.metadata, node.type, node.name);

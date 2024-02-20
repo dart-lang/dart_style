@@ -114,3 +114,11 @@ switch (obj) {
   case const (-foo * bar):
     ok;
 }
+>>> Null-check pattern.
+if (o case pattern  ?  ) {}
+<<<
+if (o case pattern?) {}
+>>> Null-assert pattern.
+if (o case pattern  !  ) {}
+<<<
+if (o case pattern!) {}
