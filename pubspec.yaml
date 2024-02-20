@@ -19,10 +19,6 @@ dependencies:
 dev_dependencies:
   dart_flutter_team_lints: ^2.0.0
   grinder: ^0.9.0-nullsafety.0
-  js: ^0.6.0
-  # TODO(rnystrom): Disabled for now because node_preamble is not migrated yet
-  # and publishing to npm hasn't been used in a while.
-  #  node_preamble: ^1.0.0
   test: ^1.24.6
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
