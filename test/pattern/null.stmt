@@ -1,0 +1,9 @@
+40 columns                              |
+>>> Basic null-check.
+if (o case pattern  ?  ) {}
+<<<
+if (o case pattern?) {}
+>>> Basic null-assert.
+if (o case pattern  !  ) {}
+<<<
+if (o case pattern!) {}

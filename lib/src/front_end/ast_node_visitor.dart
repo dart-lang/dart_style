@@ -1293,12 +1293,18 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitNullAssertPattern(NullAssertPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.pattern);
+      b.token(node.operator);
+    });
   }
 
   @override
   Piece visitNullCheckPattern(NullCheckPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.visit(node.pattern);
+      b.token(node.operator);
+    });
   }
 
   @override
@@ -1548,7 +1554,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitRelationalPattern(RelationalPattern node) {
-    throw UnimplementedError();
+    return buildPiece((b) {
+      b.token(node.operator, spaceAfter: true);
+      b.visit(node.operand);
+    });
   }
 
   @override

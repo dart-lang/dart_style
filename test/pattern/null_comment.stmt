@@ -1,0 +1,41 @@
+40 columns                              |
+>>> Line comment before null-check.
+if (obj case pattern // c
+?) {;}
+<<<
+### Weird, but users rarely write this.
+if (obj
+    case pattern // c
+        ?) {
+  ;
+}
+>>> Line comment after null-check.
+if (obj case pattern? // c
+) {;}
+<<<
+### Weird, but users rarely write this.
+if (obj
+    case pattern? // c
+        ) {
+  ;
+}
+>>> Line comment before null-assert.
+if (obj case pattern // c
+!) {;}
+<<<
+### Weird, but users rarely write this.
+if (obj
+    case pattern // c
+        !) {
+  ;
+}
+>>> Line comment after null-assert.
+if (obj case pattern! // c
+) {;}
+<<<
+### Weird, but users rarely write this.
+if (obj
+    case pattern! // c
+        ) {
+  ;
+}

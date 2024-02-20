@@ -1,0 +1,21 @@
+40 columns                              |
+>>> Line comment after relational operator.
+if (obj case <= // c
+someConstant + anotherLongConstant) {;}
+<<<
+if (obj
+    case <= // c
+        someConstant +
+        anotherLongConstant) {
+  ;
+}
+>>> Line comment after relational operand.
+if (obj case <= someConstant + anotherLongConstant // c
+) {;}
+<<<
+if (obj
+    case <= someConstant +
+        anotherLongConstant // c
+        ) {
+  ;
+}
