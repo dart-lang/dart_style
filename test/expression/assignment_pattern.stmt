@@ -1,4 +1,22 @@
 40 columns                              |
+>>> All supported patterns.
+{
+  (  a  &&  b  )  =  o;
+  (  a  as  int  ,  b  )  = o;
+  (  :  inferred  ) = o;
+  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  {  'k'  :  _  ,  ...  } = o;
+  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  (a && b) = o;
+  (a as int, b) = o;
+  (:inferred) = o;
+  [a!, Foo(:b), ...] = o;
+  {'k': _, ...} = o;
+  Foo(prop: value, :inferred) = o;
+}
 >>> Prefer to split at "=" instead of pattern.
 (longIdentifier && anotherOne) = longValue;
 <<<
