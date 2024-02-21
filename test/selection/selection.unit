@@ -15,3 +15,84 @@ class Bar {}
 class Foo {}
 
 ‹›class Bar {}
+>>> Select entire file.
+‹main(  )  {
+  body(   )  ;}›
+<<<
+‹main() {
+  body();
+}›
+>>> With trailing comment.
+   ma‹in() {}
+// com›ment
+<<<
+ma‹in() {}
+// com›ment
+>>> In discarded whitespace.
+foo(  ‹  argument){  ›  }
+<<<
+foo(‹argument) {›}
+>>> In zero-length split whitespace.
+main(){veryLongMethodCall(‹veryLongArgumentName);
+veryLongMethodCall(›veryLongArgumentName);
+}
+<<<
+main() {
+  veryLongMethodCall(
+    ‹veryLongArgumentName,
+  );
+  veryLongMethodCall(›
+    veryLongArgumentName,
+  );
+}
+>>> In split-inserted space.
+main() {shortCall(argument, ‹  argument);
+shortCall(argument,  › argument);
+}
+<<<
+main() {
+  shortCall(argument, ‹argument);
+  shortCall(argument, ›argument);
+}
+>>> In inserted mandatory newline.
+foo() {body;  ‹  }
+bar() {body;  ›  }
+<<<
+foo() {
+  body;
+‹}
+
+bar() {
+  body;›
+}
+>>> In inserted mandatory space.
+main() async {
+await‹(1);
+throw›(2);
+}
+<<<
+main() async {
+  await ‹(1);
+  throw› (2);
+}
+>>> Across pieces that get solved separately.
+foo() {
+
+
+  fir‹st();
+}
+
+bar() {sec›ond();}
+<<<
+foo() {
+  fir‹st();
+}
+
+bar() {
+  sec›ond();
+}
+>>> Only whitespace in newline selected.
+foo() {} ‹  › bar() {}
+<<<
+foo() {}
+‹›bar() {}

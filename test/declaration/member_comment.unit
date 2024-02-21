@@ -1,0 +1,24 @@
+40 columns                              |
+>>> Ensure blank line above doc comments on members.
+class Foo {
+var a = 1; /// Doc A.
+var b = 2;
+/// Doc c.
+void c() => body; /// Doc d.
+void d() {;}
+}
+<<<
+class Foo {
+  var a = 1;
+
+  /// Doc A.
+  var b = 2;
+
+  /// Doc c.
+  void c() => body;
+
+  /// Doc d.
+  void d() {
+    ;
+  }
+}

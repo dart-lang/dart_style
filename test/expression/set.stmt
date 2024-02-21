@@ -20,3 +20,17 @@ const {first, second};
 <  int  >  {  1  ,  2  };
 <<<
 <int>{1, 2};
+>>> Split in type argument.
+var set = <Inner<First, Second, Third, Fourth, Fifth, Sixth>>{};
+<<<
+var set =
+    <
+      Inner<
+        First,
+        Second,
+        Third,
+        Fourth,
+        Fifth,
+        Sixth
+      >
+    >{};

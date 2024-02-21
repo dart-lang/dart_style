@@ -1,0 +1,9 @@
+40 columns                              |
+>>> Line comment in combinator list.
+import 'foo.dart' hide First, //
+Second;
+<<<
+import 'foo.dart'
+    hide
+        First, //
+        Second;

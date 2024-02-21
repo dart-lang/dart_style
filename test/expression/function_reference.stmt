@@ -1,0 +1,63 @@
+40 columns                              |
+>>> Unsplit.
+void main() => id  < int   > ;
+<<<
+void main() => id<int>;
+>>> Unsplit with multiple type arguments.
+void main() => id  < int , String  , bool   > ;
+<<<
+void main() => id<int, String, bool>;
+>>> Unsplit generic constructor tear-off.
+var x = Class  < int  >;
+<<<
+var x = Class<int>;
+>>> Split type arguments.
+LongClassName<First, Second, Third, Fourth>;
+<<<
+LongClassName<
+  First,
+  Second,
+  Third,
+  Fourth
+>;
+>>> Split type arguments.
+LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>;
+<<<
+LongClassName<
+  First,
+  Second,
+  Third,
+  Fourth,
+  Fifth,
+  Sixth,
+  Seventh,
+  Eighth
+>;
+>>> Split nested type arguments.
+LongClassName<First, Inner<Second, Third, Fourth, Fifth, Sixth, Seventh>, Eighth>;
+<<<
+LongClassName<
+  First,
+  Inner<
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+    Sixth,
+    Seventh
+  >,
+  Eighth
+>;
+>>> Split type arguments when nested inside expression.
+veryLongFunction(argument, ConstructorTearOff<First, Second, Third, Fourth>, argument);
+<<<
+veryLongFunction(
+  argument,
+  ConstructorTearOff<
+    First,
+    Second,
+    Third,
+    Fourth
+  >,
+  argument,
+);

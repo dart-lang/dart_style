@@ -31,45 +31,6 @@ while (true) {
 while (true) {
   continue someLabel;
 }
->>> Yield.
-Stream<String> i(String n) async* {
-  yield   i   ;
-}
-<<<
-Stream<String> i(String n) async* {
-  yield i;
-}
->>> Yield*.
-Stream<int> i(int n) async* {
-  yield * i (  n   - 1 )      ;
-}
-<<<
-Stream<int> i(int n) async* {
-  yield* i(n - 1);
-}
->>> Await.
-foo() async {
-  await i (  1 + 2   )   ;
-}
-<<<
-foo() async {
-  await i(1 + 2);
-}
->>> Throw.
-throw   'error'
-;
-<<<
-throw 'error';
->>> Throw doesn't split after the 'throw' keyword.
-throw 'Some extremely long error message.';
-<<<
-throw 'Some extremely long error message.';
->>> Throw with long string literal.
-throw new FormatException('This is a long exception message.');
-<<<
-throw new FormatException(
-  'This is a long exception message.',
-);
 >>> Rethrow.
 try {
   throw 1   ;
