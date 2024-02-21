@@ -1,0 +1,144 @@
+40 columns                              |
+>>> All supported patterns.
+{
+  (  a  &&  b  )  =  o;
+  (  a  as  int  ,  b  )  = o;
+  (  :  inferred  ) = o;
+  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  {  'k'  :  _  ,  ...  } = o;
+  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  (a && b) = o;
+  (a as int, b) = o;
+  (:inferred) = o;
+  [a!, Foo(:b), ...] = o;
+  {'k': _, ...} = o;
+  Foo(prop: value, :inferred) = o;
+}
+>>> Prefer to split at "=" instead of pattern.
+(longIdentifier && anotherOne) = longValue;
+<<<
+(longIdentifier && anotherOne) =
+    longValue;
+>>> Prefer to split in value over pattern.
+(first, second, third, fourth, fifth) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(first, second, third, fourth, fifth) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> Split in infix pattern.
+(veryLongIdentifier && anotherAlsoLongOne) = value;
+<<<
+(veryLongIdentifier &&
+        anotherAlsoLongOne) =
+    value;
+>>> Split in list pattern.
+[first, second, third, fourth, fifth, sixth] = value;
+<<<
+[
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+] = value;
+>>> Split in map pattern.
+{first: second, third: fourth, fifth: sixth} = value;
+<<<
+{
+  first: second,
+  third: fourth,
+  fifth: sixth,
+} = value;
+>>> Split in record pattern.
+(first, second, third, fourth, fifth, sixth) = value;
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+) = value;
+>>> Split in object pattern.
+Foo(:first, :second, :third, :fourth, :fifth) = value;
+<<<
+Foo(
+  :first,
+  :second,
+  :third,
+  :fourth,
+  :fifth,
+) = value;
+>>> Expression split in value.
+(first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(first, second, third) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> Expression split in both.
+(veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(veryLongIdentifier &&
+        anotherAlsoLongOne) =
+    longValueExpression +
+        anotherOperand +
+        aThirdOperand;
+>>> Block split in both.
+(first, second, third, fourth, fifth, sixth) = (first, second, third, fourth, fifth);
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+);
+>>> Expression split in pattern, block split in value.
+(veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+(veryLongIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+);
+>>> Expression split in pattern, block split in value.
+(veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
+<<<
+(veryLongIdentifier &&
+    anotherAlsoLongOne) = (
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+);
+>>> Block split in pattern, expression split in value.
+(first, second, third, fourth, fifth, sixth) = longValueExpression + anotherOperand + aThirdOperand;
+<<<
+(
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+) = longValueExpression +
+    anotherOperand +
+    aThirdOperand;
