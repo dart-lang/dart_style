@@ -384,7 +384,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     if (node.redirectedConstructor case var constructor?) {
       redirect = AssignPiece(
           tokenPiece(node.separator!), nodePiece(constructor),
-          allowInnerSplit: false);
+          canBlockSplitRight: false);
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
       initializers = createList(node.initializers,
@@ -586,7 +586,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       var expression = nodePiece(node.expression);
 
       b.add(AssignPiece(operatorPiece, expression,
-          allowInnerSplit: node.expression.canBlockSplit));
+          canBlockSplitRight: node.expression.canBlockSplit));
       b.token(node.semicolon);
     });
   }
@@ -1394,17 +1394,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
-    // TODO(tall): This is just a basic implementation for the metadata tests.
-    // It still needs a full implementation and tests.
     return buildPiece((b) {
       b.metadata(node.metadata);
       b.token(node.keyword);
       b.space();
-      b.visit(node.pattern);
-      b.space();
-      b.token(node.equals);
-      b.space();
-      b.visit(node.expression);
+      b.add(createAssignment(node.pattern, node.equals, node.expression));
     });
   }
 
@@ -1879,7 +1873,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var initializerPiece = nodePiece(initializer, commaAfter: true);
 
         variables.add(AssignPiece(variablePiece, initializerPiece,
-            allowInnerSplit: initializer.canBlockSplit));
+            canBlockSplitRight: initializer.canBlockSplit));
       } else {
         variables.add(tokenPiece(variable.name, commaAfter: true));
       }

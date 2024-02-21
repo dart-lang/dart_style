@@ -19,37 +19,75 @@ import 'piece.dart';
 ///
 ///     var x = 123;
 ///
-/// If the value is a delimited "block-like" expression, then we allow splitting
-/// inside the value but not at the `=` with no additional indentation:
+/// This state also allows splitting the right side if it can be block
+/// formatted:
 ///
 ///     var list = [
 ///       element,
 ///     ];
 ///
-/// [_atOperator] Split after the `=`:
+/// [_blockSplit] Block split in the operands that support it and expression
+/// split in the others. This state requires at least one operand to support
+/// block splitting. Examples:
 ///
-///     var name =
-///         longValueExpression;
+///     var [
+///       element,
+///     ] = value;
+///
+///     var [
+///       element,
+///     ] = longOperand +
+///         anotherOperand;
+///
+///     var (longVariable &&
+///         anotherVariable) = [
+///       element,
+///     ];
+///
+/// [_atOperator] Split at the `=` or `in` operator and allow expression
+/// splitting in either operand:
+///
+///     var (longVariable &&
+///             anotherVariable) =
+///         longOperand +
+///             anotherOperand;
 class AssignPiece extends Piece {
-  /// Split after the operator.
+  /// Split at the operator.
   ///
-  /// This is more costly because it's generally better to split either in the
-  /// value (if it's delimited) or in the target.
-  static const State _atOperator = State(2, cost: 2);
+  /// This is more costly because it's generally better to block split in one
+  /// or both of the operands.
+  static const State _atOperator = State(1, cost: 2);
+
+  /// Block split in one or both of the operands.
+  static const State _blockSplit = State(2);
 
   /// The left-hand side of the operation. Includes the operator unless it is
   /// `in`.
-  final Piece target;
+  final Piece _left;
 
   /// The right-hand side of the operation.
-  final Piece value;
+  final Piece _right;
 
-  /// Whether a newline is allowed in the right-hand side without forcing a
-  /// split at the assignment operator.
-  final bool _allowInnerSplit;
+  /// If `true`, then the left side supports being block-formatted, like:
+  ///
+  ///     var [
+  ///       element1,
+  ///       element2,
+  ///     ] = value;
+  final bool _canBlockSplitLeft;
 
-  AssignPiece(this.target, this.value, {bool allowInnerSplit = false})
-      : _allowInnerSplit = allowInnerSplit;
+  /// If `true` then the right side supports being block-formatted, like:
+  ///
+  ///     var list = [
+  ///       element1,
+  ///       element2,
+  ///     ];
+  final bool _canBlockSplitRight;
+
+  AssignPiece(this._left, this._right,
+      {bool canBlockSplitLeft = false, bool canBlockSplitRight = false})
+      : _canBlockSplitLeft = canBlockSplitLeft,
+        _canBlockSplitRight = canBlockSplitRight;
 
   // TODO(tall): The old formatter allows the first operand of a split
   // conditional expression to be on the same line as the `=`, as in:
@@ -87,29 +125,66 @@ class AssignPiece extends Piece {
   //             operand;
 
   @override
-  List<State> get additionalStates => [_atOperator];
+  List<State> get additionalStates => [
+        // If at least one operand can block split, allow splitting in operands
+        // without splitting at the operator.
+        if (_canBlockSplitLeft || _canBlockSplitRight) _blockSplit,
+        _atOperator,
+      ];
 
   @override
   void format(CodeWriter writer, State state) {
-    // A split in either child piece forces splitting at assignment operator
-    // unless specifically allowed.
-    writer.pushAllowNewlines(_allowInnerSplit || state != State.unsplit);
+    var allowNewlinesInLeft = true;
+    var indentLeft = false;
+    var allowNewlinesInRight = true;
+    var indentRight = false;
+    var collapseIndent = false;
 
-    // Don't indent a split delimited expression.
-    if (state != State.unsplit) writer.pushIndent(Indent.expression);
+    switch (state) {
+      case State.unsplit:
+        allowNewlinesInLeft = false;
 
-    writer.format(target);
+        // Always allow block-splitting the right side if it supports it.
+        allowNewlinesInRight = _canBlockSplitRight;
+
+      case _atOperator:
+        // When splitting at the operator, both operands may split or not and
+        // will be indented if they do.
+        indentLeft = true;
+        indentRight = true;
+
+      case _blockSplit:
+        // Indent either operand if it doesn't block split.
+        indentLeft = !_canBlockSplitLeft;
+        indentRight = !_canBlockSplitRight;
+        collapseIndent = true;
+    }
+
+    writer.pushAllowNewlines(allowNewlinesInLeft);
+    if (indentLeft) {
+      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
+    }
+
+    writer.format(_left);
     writer.splitIf(state == _atOperator);
-    writer.format(value);
 
-    if (state != State.unsplit) writer.popIndent();
+    if (indentLeft) writer.popIndent();
+    writer.popAllowNewlines();
 
+    writer.pushAllowNewlines(allowNewlinesInRight);
+    if (indentRight) {
+      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
+    }
+
+    writer.format(_right);
+
+    if (indentRight) writer.popIndent();
     writer.popAllowNewlines();
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    callback(target);
-    callback(value);
+    callback(_left);
+    callback(_right);
   }
 }

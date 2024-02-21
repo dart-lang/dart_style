@@ -235,6 +235,8 @@ mixin PieceFactory {
             ForPartsWithDeclarations(variables: AstNode? initializer):
       case ForParts forParts &&
             ForPartsWithExpression(initialization: AstNode? initializer):
+      case ForParts forParts &&
+            ForPartsWithPattern(variables: AstNode? initializer):
         // In a C-style for loop, treat the for loop parts like an argument list
         // where each clause is a separate argument. This means that when they
         // split, they split like:
@@ -285,9 +287,6 @@ mixin PieceFactory {
         partsList.rightBracket(rightParenthesis);
         return partsList.build();
 
-      case ForPartsWithPattern():
-        throw UnimplementedError();
-
       case ForEachParts forEachParts &&
             ForEachPartsWithDeclaration(loopVariable: AstNode variable):
       case ForEachParts forEachParts &&
@@ -335,12 +334,22 @@ mixin PieceFactory {
           b.token(leftParenthesis);
           b.add(createAssignment(
               variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true, allowInnerSplit: true));
+              splitBeforeOperator: true, canBlockSplitLeft: true));
           b.token(rightParenthesis);
         });
 
-      case ForEachPartsWithPattern():
-        throw UnimplementedError();
+      case ForEachParts forEachParts &&
+            ForEachPartsWithPattern(:var keyword, :var pattern):
+        return buildPiece((b) {
+          b.token(leftParenthesis);
+          b.token(keyword);
+          b.space();
+
+          b.add(createAssignment(
+              pattern, forEachParts.inKeyword, forEachParts.iterable,
+              splitBeforeOperator: true));
+          b.token(rightParenthesis);
+        });
     }
   }
 
@@ -958,47 +967,64 @@ mixin PieceFactory {
   /// of the next line when it splits. Otherwise, puts the operator at the end
   /// of the preceding line.
   ///
-  /// If [allowInnerSplit] is `true`, then a newline inside the target or
-  /// right-hand side doesn't force splitting at the operator itself.
-  Piece createAssignment(AstNode target, Token operator, AstNode rightHandSide,
+  /// If [canBlockSplitLeft] is `true`, then the left-hand operand supports
+  /// being block-formatted without indenting it farther, like:
+  ///
+  ///     var [
+  ///       element,
+  ///     ] = list;
+  Piece createAssignment(
+      AstNode leftHandSide, Token operator, AstNode rightHandSide,
       {bool splitBeforeOperator = false,
       bool includeComma = false,
       bool spaceBeforeOperator = true,
-      bool allowInnerSplit = false}) {
-    // If the right-hand side can have block formatting, then a newline in
-    // it doesn't force the operator to split, as in:
+      bool canBlockSplitLeft = false}) {
+    // If an operand can have block formatting, then a newline in it doesn't
+    // force the operator to split, as in:
+    //
+    //    var [
+    //      element,
+    //    ] = list;
+    //
+    // Or:
     //
     //    var list = [
     //      element,
     //    ];
-    allowInnerSplit |= switch (rightHandSide) {
+    canBlockSplitLeft |= switch (leftHandSide) {
+      Expression() => leftHandSide.canBlockSplit,
+      DartPattern() => leftHandSide.canBlockSplit,
+      _ => false
+    };
+
+    var canBlockSplitRight = switch (rightHandSide) {
       Expression() => rightHandSide.canBlockSplit,
       DartPattern() => rightHandSide.canBlockSplit,
       _ => false
     };
 
+    Piece leftPiece;
+    Piece rightPiece;
     if (splitBeforeOperator) {
-      var targetPiece = nodePiece(target);
+      leftPiece = nodePiece(leftHandSide);
 
-      var initializer = buildPiece((b) {
+      rightPiece = buildPiece((b) {
         b.token(operator);
         b.space();
         b.visit(rightHandSide, commaAfter: includeComma);
       });
-
-      return AssignPiece(targetPiece, initializer,
-          allowInnerSplit: allowInnerSplit);
     } else {
-      var targetPiece = buildPiece((b) {
-        b.visit(target);
+      leftPiece = buildPiece((b) {
+        b.visit(leftHandSide);
         b.token(operator, spaceBefore: spaceBeforeOperator);
       });
 
-      var initializer = nodePiece(rightHandSide, commaAfter: includeComma);
-
-      return AssignPiece(targetPiece, initializer,
-          allowInnerSplit: allowInnerSplit);
+      rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
     }
+
+    return AssignPiece(leftPiece, rightPiece,
+        canBlockSplitLeft: canBlockSplitLeft,
+        canBlockSplitRight: canBlockSplitRight);
   }
 
   /// Creates a piece for a parameter-like constructor: Either a simple formal

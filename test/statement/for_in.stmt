@@ -84,3 +84,41 @@ for (i in sequence) somethingMuchLonger(i);
 <<<
 for (i in sequence)
   somethingMuchLonger(i);
+>>> Expression split in pattern.
+for (var (longIdentifier && anotherLongOne) in obj) {;}
+<<<
+for (var (longIdentifier &&
+        anotherLongOne)
+    in obj) {
+  ;
+}
+>>> Block split in pattern.
+for (var [longIdentifier, anotherLongOne] in obj) {;}
+<<<
+for (var [
+  longIdentifier,
+  anotherLongOne,
+] in obj) {
+  ;
+}
+>>> With pattern, split in value.
+for (var (first, second, third) in longValueExpression + anotherOperand +
+aThirdOperand) {;}
+<<<
+for (var (first, second, third)
+    in longValueExpression +
+        anotherOperand +
+        aThirdOperand) {
+  ;
+}
+>>> Split in pattern and value.
+for (var (longIdentifier && anotherAlsoLongOne) in longValueExpression +
+anotherOperand + aThirdOperand) {;}
+<<<
+for (var (longIdentifier &&
+        anotherAlsoLongOne)
+    in longValueExpression +
+        anotherOperand +
+        aThirdOperand) {
+  ;
+}
