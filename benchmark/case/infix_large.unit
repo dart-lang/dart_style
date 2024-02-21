@@ -1,4 +1,5 @@
 // Test infix operators.
+var result =
 longOperand * longOperand * longOperand * longOperand * longOperand +
 longOperand * longOperand * longOperand * longOperand * longOperand +
 longOperand * longOperand * longOperand * longOperand * longOperand +

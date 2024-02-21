@@ -1,6 +1,6 @@
 40 columns                              |
 // Test statements nested within blocks.
-{
+main() {
   {
     someLongOuterExpression + anotherOperand;
     someLongOuterExpression + anotherOperand;
