@@ -792,10 +792,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
-    // TODO(tall): This is just basic support to get the syntax doing something
-    // so that tests of other features that happen to use this syntax can run.
-    // The main tests for function expression calls still need to be migrated
-    // over and this may need some tweaks.
     return buildPiece((b) {
       b.visit(node.function);
       b.visit(node.typeArguments);
