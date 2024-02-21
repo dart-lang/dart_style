@@ -1,0 +1,33 @@
+40 columns                              |
+>>> All relational operators.
+switch (obj) {
+  case   ==   other:
+  case   !=   other:
+  case   <   other:
+  case   <=   other:
+  case   >   other:
+  case   >=   other:
+    body;
+}
+<<<
+switch (obj) {
+  case == other:
+  case != other:
+  case < other:
+  case <= other:
+  case > other:
+  case >= other:
+    body;
+}
+>>> Relational pattern as subpattern.
+if (o case  >  1  &&  <   2 && (  ==   3 )) {}
+<<<
+if (o case > 1 && < 2 && (== 3)) {}
+>>> Split inside constant.
+if (object case != veryLongConstant + expressionThatSplits) {;}
+<<<
+if (object
+    case != veryLongConstant +
+        expressionThatSplits) {
+  ;
+}

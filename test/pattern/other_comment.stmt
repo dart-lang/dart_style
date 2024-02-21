@@ -66,3 +66,43 @@ if (obj
         )) {
   ;
 }
+>>> Before null-check.
+### Looks weird, but user should move comment.
+if (obj case pattern // c
+?) {;}
+<<<
+if (obj
+    case pattern // c
+        ?) {
+  ;
+}
+>>> After null-check.
+### Looks weird, but user should move comment.
+if (obj case pattern? // c
+) {;}
+<<<
+if (obj
+    case pattern? // c
+        ) {
+  ;
+}
+>>> Before null-assert.
+### Looks weird, but user should move comment.
+if (obj case pattern // c
+!) {;}
+<<<
+if (obj
+    case pattern // c
+        !) {
+  ;
+}
+>>> After null-assert.
+### Looks weird, but user should move comment.
+if (obj case pattern! // c
+) {;}
+<<<
+if (obj
+    case pattern! // c
+        ) {
+  ;
+}
