@@ -170,8 +170,8 @@ if (obj case LongClassName<First, Second>()) {;}
 <<<
 if (obj
     case LongClassName<
-        First,
-        Second
+          First,
+          Second
         >()) {
   ;
 }
