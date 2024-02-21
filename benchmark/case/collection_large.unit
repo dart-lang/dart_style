@@ -1,6 +1,6 @@
 40 columns                              |
 // Test collection literals.
-[
+var list = [
   [
     [
       [list + element1, list + element2, list + element3],

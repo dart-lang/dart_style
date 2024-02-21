@@ -1,6 +1,6 @@
 40 columns                              |
 // Test long split method chains.
-target
+var result = target
     .someMethod1(argument1, argument2, argument3)
     .someMethod2(argument1, argument2, argument3)
     .someMethod3(argument1, argument2, argument3)
