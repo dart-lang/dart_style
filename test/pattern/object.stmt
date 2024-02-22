@@ -165,18 +165,25 @@ if (obj case Foo(
 )) {
   ;
 }
->>> Split in type argument.
+>>> Split in type argument with no field subpatterns.
 if (obj case LongClassName<First, Second>()) {;}
 <<<
-### TODO(tall): It formats like this if there's no elements. Similarly with lists, maps etc.
 if (obj
     case LongClassName<
-        First,
-        Second
+          First,
+          Second
         >()) {
   ;
 }
->>> Split in type argument and body.
+>>> Prefer splitting in field subpatterns instead of type arguments.
+if (obj case Foo<First, Second>(first: 1)) {;}
+<<<
+if (obj case Foo<First, Second>(
+  first: 1,
+)) {
+  ;
+}
+>>> Split in type argument but not field subpatterns.
 if (obj case LongClassName<First, Second, Third>(first: 1, second: 2, third: 3)) {;}
 <<<
 if (obj case LongClassName<
@@ -184,5 +191,20 @@ if (obj case LongClassName<
   Second,
   Third
 >(first: 1, second: 2, third: 3)) {
+  ;
+}
+>>> Split in type arguments and field subpatterns.
+if (obj case LongClassName<First, Second, Third>(first: 1, second: 2, third: 3, fourth: 4)) {;}
+<<<
+if (obj case LongClassName<
+  First,
+  Second,
+  Third
+>(
+  first: 1,
+  second: 2,
+  third: 3,
+  fourth: 4,
+)) {
   ;
 }

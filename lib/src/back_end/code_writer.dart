@@ -153,15 +153,19 @@ class CodeWriter {
     var parentIndent = _indentStack.last.indent;
     var parentCollapse = _indentStack.last.collapsible;
 
-    if (canCollapse) {
-      // Increase the indent and the collapsible indent.
-      _indentStack.add(_Indent(parentIndent + indent, parentCollapse + indent));
-    } else if (parentCollapse > indent) {
-      // All new indent is collapsed with the existing collapsible indent.
-      _indentStack.add(_Indent(parentIndent, parentCollapse - indent));
+    if (parentCollapse == indent) {
+      // We're indenting by the same existing collapsible amount, so collapse
+      // this new indentation with that existing one.
+      _indentStack.add(_Indent(parentIndent, 0));
+    } else if (canCollapse) {
+      // We should never get multiple levels of nested collapsible indentation.
+      assert(parentCollapse == 0);
+
+      // Increase the indentation and note that it can be collapsed with
+      // further indentation.
+      _indentStack.add(_Indent(parentIndent + indent, indent));
     } else {
-      // Use up the collapsible indent (if any) and then indent by the rest.
-      indent -= parentCollapse;
+      // Regular indentation, so just increase the indent.
       _indentStack.add(_Indent(parentIndent + indent, 0));
     }
   }
