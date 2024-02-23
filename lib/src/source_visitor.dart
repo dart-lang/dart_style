@@ -2829,7 +2829,15 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     var hasTrailingComma =
         node.cases.isNotEmpty && node.cases.last.commaAfter != null;
-    _endBody(node.rightBracket, forceSplit: hasTrailingComma);
+
+    // TODO(rnystrom): If there is a line comment at the end of a case, make
+    // sure the switch expression splits. Looking for line comments explicitly
+    // instead of having them harden the surrounding rules is a hack. But this
+    // code will be going away when we move to the new Piece representation, so
+    // going with something expedient.
+    var forceSplit = _containsLineComments(node.cases, node.rightBracket);
+
+    _endBody(node.rightBracket, forceSplit: hasTrailingComma || forceSplit);
   }
 
   @override
