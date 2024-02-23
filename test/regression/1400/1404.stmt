@@ -1,0 +1,48 @@
+>>>
+int weird(Object o) {
+  return switch (o) {
+    int i => i, // evil comment
+    _ => 42
+  };
+}
+<<<
+int weird(Object o) {
+  return switch (o) {
+    int i => i, // evil comment
+    _ => 42
+  };
+}
+>>> line comment inside case value expression
+int weird(Object o) {
+  return switch (o) {
+    1 => f(// c
+    ),
+    _ => 42
+  };
+}
+<<<
+int weird(Object o) {
+  return switch (o) {
+    1 => f(// c
+        ),
+    _ => 42
+  };
+}
+>>> line comment inside case pattern
+int weird(Object o) {
+  return switch (o) {
+    [1 // c
+     ] => 2,
+    3 => 4
+  };
+}
+<<<
+int weird(Object o) {
+  return switch (o) {
+    [
+      1 // c
+    ] =>
+      2,
+    3 => 4
+  };
+}

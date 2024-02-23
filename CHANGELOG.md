@@ -1,5 +1,6 @@
 ## 2.3.5-wip
 
+* Ensure switch expressions containing line comments split (#1404).
 * Use language version `3.3` to parse so that code with extension types can be
   formatted.
 * Support formatting the `macro` modifier when the `macros` experiment flag
@@ -11,7 +12,7 @@
   formatting style (#1253).
 * Format extension types.
 * Normalize ignored whitespace and "escaped whitespace" on first line
-  of multiline string literals. (#1235)
+  of multiline string literals (#1235).
 
 ## 2.3.3
 
