@@ -14,7 +14,6 @@ import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
-import '../piece/for.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -707,70 +706,57 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitForElement(ForElement node) {
-    var forKeyword = buildPiece((b) {
-      b.modifier(node.awaitKeyword);
-      b.token(node.forKeyword);
-    });
-
-    var forPartsPiece = createForLoopParts(
-        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
-    var body = nodePiece(node.body);
-
-    var forPiece = ForPiece(forKeyword, forPartsPiece, body,
-        hasBlockBody: node.body.isSpreadCollection);
-
-    // It looks weird to have multiple nested control flow elements on the same
-    // line, so force the outer one to split if there is an inner one.
-    if (node.body.isControlFlowElement) {
-      forPiece.pin(State.split);
-    }
-
-    return forPiece;
+    return createFor(
+        awaitKeyword: node.awaitKeyword,
+        forKeyword: node.forKeyword,
+        leftParenthesis: node.leftParenthesis,
+        forLoopParts: node.forLoopParts,
+        rightParenthesis: node.rightParenthesis,
+        body: node.body,
+        hasBlockBody: node.body.isSpreadCollection,
+        forceSplitBody: node.body.isControlFlowElement);
   }
 
   @override
   Piece visitForStatement(ForStatement node) {
-    var forKeyword = buildPiece((b) {
-      b.modifier(node.awaitKeyword);
-      b.token(node.forKeyword);
-    });
-
-    var forPartsPiece = createForLoopParts(
-        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
-    var body = nodePiece(node.body);
-
-    return ForPiece(forKeyword, forPartsPiece, body,
+    return createFor(
+        awaitKeyword: node.awaitKeyword,
+        forKeyword: node.forKeyword,
+        leftParenthesis: node.leftParenthesis,
+        forLoopParts: node.forLoopParts,
+        rightParenthesis: node.rightParenthesis,
+        body: node.body,
         hasBlockBody: node.body is Block);
   }
 
   @override
   Piece visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithExpression(ForPartsWithExpression node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithPattern(ForPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
