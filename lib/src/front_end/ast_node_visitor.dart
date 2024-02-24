@@ -1306,14 +1306,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitObjectPattern(ObjectPattern node) {
-    return buildPiece((b) {
+    var header = buildPiece((b) {
       b.visit(node.type);
-      b.add(createCollection(
-        node.leftParenthesis,
-        node.fields,
-        node.rightParenthesis,
-      ));
+      b.token(node.leftParenthesis);
     });
+
+    var builder = DelimitedListBuilder(this);
+    builder.addLeftBracket(header);
+    node.fields.forEach(builder.visit);
+    builder.rightBracket(node.rightParenthesis);
+    return builder.build();
   }
 
   @override
