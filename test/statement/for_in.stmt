@@ -51,6 +51,14 @@ foo() async {
     body;
   }
 }
+>>> Split between variable type and name.
+for (VeryLongClassName reallyLongIdentifier in iteratableExpression) { body; }
+<<<
+for (VeryLongClassName
+    reallyLongIdentifier
+    in iteratableExpression) {
+  body;
+}
 >>> Split before `in`.
 for (var identifier in iteratableExpression) { body; }
 <<<
@@ -85,6 +93,14 @@ for (i in sequence) somethingMuchLonger(i);
 <<<
 for (i in sequence)
   somethingMuchLonger(i);
+>>> Split between type and variable name.
+for (SomeReallyLongTypeName andALongVariable in list) {;}
+<<<
+for (SomeReallyLongTypeName
+    andALongVariable
+    in list) {
+  ;
+}
 >>> Expression split in pattern.
 for (var (longIdentifier && anotherLongOne) in obj) {;}
 <<<

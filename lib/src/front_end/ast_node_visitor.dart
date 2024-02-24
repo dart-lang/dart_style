@@ -439,12 +439,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitDeclaredIdentifier(DeclaredIdentifier node) {
-    return buildPiece((b) {
-      b.metadata(node.metadata, inline: true);
-      b.modifier(node.keyword);
-      b.visit(node.type, spaceAfter: true);
-      b.token(node.name);
-    });
+    return createParameter(
+        metadata: node.metadata,
+        modifiers: [node.keyword],
+        node.type,
+        node.name);
   }
 
   @override
