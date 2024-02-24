@@ -525,13 +525,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           const ListStyle(
               spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
 
-      var leftBracket = buildPiece((b) {
+      builder.addLeftBracket(buildPiece((b) {
         b.add(header);
         b.space();
         b.token(node.leftBracket);
-      });
+      }));
 
-      builder.addLeftBracket(leftBracket);
       node.constants.forEach(builder.visit);
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
       metadataBuilder.add(builder.build());
@@ -1296,13 +1295,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitObjectPattern(ObjectPattern node) {
-    var header = buildPiece((b) {
+    var builder = DelimitedListBuilder(this);
+
+    builder.addLeftBracket(buildPiece((b) {
       b.visit(node.type);
       b.token(node.leftParenthesis);
-    });
+    }));
 
-    var builder = DelimitedListBuilder(this);
-    builder.addLeftBracket(header);
     node.fields.forEach(builder.visit);
     builder.rightBracket(node.rightParenthesis);
     return builder.build();
