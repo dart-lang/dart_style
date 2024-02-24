@@ -374,8 +374,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     Piece? initializerSeparator;
     Piece? initializers;
     if (node.redirectedConstructor case var constructor?) {
-      redirect = AssignPiece(
-          tokenPiece(node.separator!), nodePiece(constructor),
+      var separator = buildPiece((b) {
+        b.token(node.separator);
+        b.space();
+      });
+
+      redirect = AssignPiece(separator, nodePiece(constructor),
           canBlockSplitRight: false);
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
@@ -1844,15 +1848,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     for (var variable in node.variables) {
       if ((variable.equals, variable.initializer)
           case (var equals?, var initializer?)) {
-        var variablePiece = buildPiece((b) {
-          b.token(variable.name);
+        var variablePiece = tokenPiece(variable.name);
+
+        var equalsPiece = buildPiece((b) {
           b.space();
           b.token(equals);
         });
 
         var initializerPiece = nodePiece(initializer, commaAfter: true);
 
-        variables.add(AssignPiece(variablePiece, initializerPiece,
+        variables.add(AssignPiece(
+            left: variablePiece,
+            equalsPiece,
+            initializerPiece,
             canBlockSplitRight: initializer.canBlockSplit));
       } else {
         variables.add(tokenPiece(variable.name, commaAfter: true));

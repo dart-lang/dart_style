@@ -63,10 +63,14 @@ class AssignPiece extends Piece {
 
   /// The left-hand side of the operation. Includes the operator unless it is
   /// `in`.
-  final Piece _left;
+  final Piece? _left;
+
+  final Piece _operator;
 
   /// The right-hand side of the operation.
   final Piece _right;
+
+  final bool _splitBeforeOperator;
 
   /// If `true`, then the left side supports being block-formatted, like:
   ///
@@ -84,9 +88,14 @@ class AssignPiece extends Piece {
   ///     ];
   final bool _canBlockSplitRight;
 
-  AssignPiece(this._left, this._right,
-      {bool canBlockSplitLeft = false, bool canBlockSplitRight = false})
-      : _canBlockSplitLeft = canBlockSplitLeft,
+  AssignPiece(this._operator, this._right,
+      {Piece? left,
+      bool splitBeforeOperator = false,
+      bool canBlockSplitLeft = false,
+      bool canBlockSplitRight = false})
+      : _left = left,
+        _splitBeforeOperator = splitBeforeOperator,
+        _canBlockSplitLeft = canBlockSplitLeft,
         _canBlockSplitRight = canBlockSplitRight;
 
   // TODO(tall): The old formatter allows the first operand of a split
@@ -165,8 +174,11 @@ class AssignPiece extends Piece {
       writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
     }
 
-    writer.format(_left);
+    if (_left case var left?) writer.format(left);
+
+    if (!_splitBeforeOperator) writer.format(_operator);
     writer.splitIf(state == _atOperator);
+    if (_splitBeforeOperator) writer.format(_operator);
 
     if (indentLeft) writer.popIndent();
     writer.popAllowNewlines();
@@ -184,7 +196,8 @@ class AssignPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    callback(_left);
+    if (_left case var left?) callback(left);
+    callback(_operator);
     callback(_right);
   }
 }

@@ -1044,26 +1044,21 @@ mixin PieceFactory {
       _ => false
     };
 
-    Piece leftPiece;
-    Piece rightPiece;
-    if (splitBeforeOperator) {
-      leftPiece = nodePiece(leftHandSide);
+    var leftPiece = nodePiece(leftHandSide);
 
-      rightPiece = buildPiece((b) {
-        b.token(operator);
-        b.space();
-        b.visit(rightHandSide, commaAfter: includeComma);
-      });
-    } else {
-      leftPiece = buildPiece((b) {
-        b.visit(leftHandSide);
-        b.token(operator, spaceBefore: spaceBeforeOperator);
-      });
+    var operatorPiece = buildPiece((b) {
+      if (spaceBeforeOperator) b.space();
+      b.token(operator);
+      if (splitBeforeOperator) b.space();
+    });
 
-      rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
-    }
+    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
 
-    return AssignPiece(leftPiece, rightPiece,
+    return AssignPiece(
+        left: leftPiece,
+        operatorPiece,
+        rightPiece,
+        splitBeforeOperator: splitBeforeOperator,
         canBlockSplitLeft: canBlockSplitLeft,
         canBlockSplitRight: canBlockSplitRight);
   }
