@@ -7,9 +7,8 @@ class A {
 }
 <<<
 class A {
-  bool operator ==(
-    Object other,
-  ) => true;
+  bool operator ==(Object other) =>
+      true;
   int operator +(int other) {
     return value + other;
   }

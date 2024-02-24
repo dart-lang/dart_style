@@ -21,6 +21,13 @@ var [
   fourth,
   fifth,
 ] = value;
+>>> Split in initializer but not block-splittable pattern.
+var [first] = expression + anotherOperand + aThirdOperand;
+<<<
+var [first] =
+    expression +
+        anotherOperand +
+        aThirdOperand;
 >>> Split in map pattern.
 var {first: second, third: fourth, fifth: sixth} = value;
 <<<

@@ -61,8 +61,9 @@ for (var identifier
 >>> Split inside initializer.
 for (var identifier in someVeryLong + iterableExpression) { body; }
 <<<
-for (var identifier in someVeryLong +
-    iterableExpression) {
+for (var identifier
+    in someVeryLong +
+        iterableExpression) {
   body;
 }
 >>> Prefer block-like splitting after `in`.
@@ -120,5 +121,14 @@ for (var (longIdentifier &&
     in longValueExpression +
         anotherOperand +
         aThirdOperand) {
+  ;
+}
+>>> If pattern doesn't block split, then split in right splits at `in` too.
+for (var [i] in veryLongIterator +
+        longExpression) {;}
+<<<
+for (var [i]
+    in veryLongIterator +
+        longExpression) {
   ;
 }

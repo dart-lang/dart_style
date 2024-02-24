@@ -27,7 +27,8 @@ f() async {
 var list = [for (a in sequenceExpression + thatDoesNotFit) body];
 <<<
 var list = [
-  for (a in sequenceExpression +
-      thatDoesNotFit)
+  for (a
+      in sequenceExpression +
+          thatDoesNotFit)
     body,
 ];

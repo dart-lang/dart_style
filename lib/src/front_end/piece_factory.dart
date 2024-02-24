@@ -347,7 +347,7 @@ mixin PieceFactory {
           b.token(leftParenthesis);
           b.add(createAssignment(
               variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true, canBlockSplitLeft: true));
+              splitBeforeOperator: true));
           b.token(rightParenthesis);
         });
 
