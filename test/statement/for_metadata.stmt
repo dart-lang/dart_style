@@ -1,0 +1,141 @@
+40 columns                              |
+>>> Single metadata on for-in loop variable.
+main() {
+  for (   @a    var i in list) {;}
+}
+<<<
+main() {
+  for (@a var i in list) {
+    ;
+  }
+}
+>>> Multiple metadata on for-in loop variable.
+main() {
+  for (   @a  @b    var i in list) {;}
+}
+<<<
+main() {
+  for (@a @b var i in list) {
+    ;
+  }
+}
+>>> Long metadata on for-in loop variable.
+main() {
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) {;}
+}
+<<<
+main() {
+  for (@Annotation
+      @VeryLongMetadataAnnotation(1, 2)
+      var i
+      in veryLong.iterator +
+          expression) {
+    ;
+  }
+}
+>>> Single metadata on for loop.
+main() {
+  for (   @a    var i = x;;) {;}
+}
+<<<
+main() {
+  for (@a var i = x; ;) {
+    ;
+  }
+}
+>>> Multiple metadata on for loop.
+main() {
+  for (   @a  @b    var i = x;;) {;}
+}
+<<<
+main() {
+  for (@a @b var i = x; ;) {
+    ;
+  }
+}
+>>> Long metadata on for loop.
+main() {
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i = veryLong.iterator + expression;;) {;}
+}
+<<<
+main() {
+  for (
+    @Annotation
+    @VeryLongMetadataAnnotation(1, 2)
+    var i =
+        veryLong.iterator + expression;
+    ;
+  ) {
+    ;
+  }
+}
+>>> Single metadata on pattern for-in loop.
+main() {
+  for (   @a    var [i] in list) {;}
+}
+<<<
+main() {
+  for (@a var [i] in list) {
+    ;
+  }
+}
+>>> Multiple metadata on pattern for-in loop.
+main() {
+  for (   @a  @b    var [i] in list) {;}
+}
+<<<
+main() {
+  for (@a @b var [i] in list) {
+    ;
+  }
+}
+>>> Long metadata on pattern for-in loop.
+main() {
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] in veryLong.iterator + expression) {;}
+}
+<<<
+main() {
+  for (@Annotation
+      @VeryLongMetadataAnnotation(1, 2)
+      var [i]
+      in veryLong.iterator +
+          expression) {
+    ;
+  }
+}
+>>> Single metadata on pattern for loop.
+main() {
+  for (   @a    var [i] = x;;) {;}
+}
+<<<
+main() {
+  for (@a var [i] = x; ;) {
+    ;
+  }
+}
+>>> Multiple metadata on pattern for loop.
+main() {
+  for (   @a  @b    var [i] = x;;) {;}
+}
+<<<
+main() {
+  for (@a @b var [i] = x; ;) {
+    ;
+  }
+}
+>>> Long metadata on pattern for loop.
+main() {
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] = veryLong.iterator + expression;;) {;}
+}
+<<<
+main() {
+  for (
+    @Annotation
+    @VeryLongMetadataAnnotation(1, 2)
+    var [i] =
+        veryLong.iterator + expression;
+    ;
+  ) {
+    ;
+  }
+}

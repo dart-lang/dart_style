@@ -26,7 +26,7 @@ class IfPiece extends Piece {
 
   @override
   void applyConstraints(State state, Constrain constrain) {
-    // If an if element, any spread collection's split state must follow the
+    // In an if element, any spread collection's split state must follow the
     // surrounding if element's: we either split all the spreads or none of
     // them. And if any of the non-spread then or else branches split, then the
     // spreads do too.

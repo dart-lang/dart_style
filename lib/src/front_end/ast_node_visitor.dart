@@ -440,6 +440,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitDeclaredIdentifier(DeclaredIdentifier node) {
     return buildPiece((b) {
+      b.metadata(node.metadata, inline: true);
       b.modifier(node.keyword);
       b.visit(node.type, spaceAfter: true);
       b.token(node.name);
@@ -1385,7 +1386,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
     return buildPiece((b) {
-      b.metadata(node.metadata);
+      // If the variable is part of a for loop, it looks weird to force the
+      // metadata to split since it's in a sort of expression-ish location:
+      //
+      //     for (@meta var (x, y) in pairs) ...
+      b.metadata(node.metadata,
+          inline: node.parent is ForEachPartsWithPattern ||
+              node.parent is ForPartsWithPattern);
       b.token(node.keyword);
       b.space();
       b.add(createAssignment(node.pattern, node.equals, node.expression));
@@ -1834,7 +1841,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitVariableDeclarationList(VariableDeclarationList node) {
     var header = buildPiece((b) {
-      b.metadata(node.metadata);
+      // If the variable is part of a for loop, it looks weird to force the
+      // metadata to split since it's in a sort of expression-ish location:
+      //
+      //     for (@meta var x in list) ...
+      b.metadata(node.metadata,
+          inline: node.parent is ForPartsWithDeclarations);
       b.modifier(node.lateKeyword);
       b.modifier(node.keyword);
 

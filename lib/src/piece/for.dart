@@ -16,6 +16,20 @@ class ForPiece extends Piece {
 
   final Piece _body;
 
+  /// Whether the contents of the parentheses in the `for (...)` should be
+  /// expression indented or not.
+  ///
+  /// This is usually not necessary because the contents will either be a
+  /// [ListPiece] which adds its own block indentation, or an [AssignPiece]
+  /// which indents as necessary. But in the rare case the for-parts is a
+  /// variable or pattern variable declaration with metadata that splits, we
+  /// need to ensure that the metadata is indented, as in:
+  ///
+  ///     for (@LongAnnotation
+  ///         @AnotherAnnotation
+  ///         var element in list) { ... }
+  final bool _indentForParts;
+
   /// Whether the body of the loop is a block versus some other statement. If
   /// the body isn't a block, then we allow a discretionary split after the
   /// loop parts, as in:
@@ -25,8 +39,9 @@ class ForPiece extends Piece {
   final bool _hasBlockBody;
 
   ForPiece(this._forKeyword, this._forParts, this._body,
-      {required bool hasBlockBody})
-      : _hasBlockBody = hasBlockBody;
+      {required bool indentForParts, required bool hasBlockBody})
+      : _indentForParts = indentForParts,
+        _hasBlockBody = hasBlockBody;
 
   /// If there is at least one else or else-if clause, then it always splits.
   @override
@@ -38,7 +53,14 @@ class ForPiece extends Piece {
 
     writer.format(_forKeyword);
     writer.space();
+
+    if (_indentForParts) {
+      writer.pushIndent(Indent.expression, canCollapse: true);
+    }
+
     writer.format(_forParts);
+
+    if (_indentForParts) writer.popIndent();
 
     if (_hasBlockBody) {
       writer.space();

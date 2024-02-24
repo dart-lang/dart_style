@@ -352,23 +352,39 @@ mixin PieceFactory {
         });
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithPattern(:var keyword, :var pattern):
+            ForEachPartsWithPattern(:var keyword, :var metadata, :var pattern):
         forPartsPiece = buildPiece((b) {
           b.token(leftParenthesis);
-          b.token(keyword);
-          b.space();
 
-          b.add(createAssignment(
-              pattern, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true));
+          // Use a nested piece so that the metadata precedes the keyword and
+          // not the `(`.
+          b.add(buildPiece((b) {
+            b.metadata(metadata, inline: true);
+            b.token(keyword);
+            b.space();
+
+            b.add(createAssignment(
+                pattern, forEachParts.inKeyword, forEachParts.iterable,
+                splitBeforeOperator: true));
+          }));
           b.token(rightParenthesis);
         });
     }
 
     var bodyPiece = nodePiece(body);
 
+    // If there is metadata before the for loop variable or pattern, then make
+    // sure that the entire contents of the for loop parts are indented so that
+    // the annotations are indented.
+    var indentHeader = switch (forLoopParts) {
+      ForEachPartsWithDeclaration(:var loopVariable) =>
+        loopVariable.metadata.isNotEmpty,
+      ForEachPartsWithPattern(:var metadata) => metadata.isNotEmpty,
+      _ => false,
+    };
+
     var forPiece = ForPiece(forKeywordPiece, forPartsPiece, bodyPiece,
-        hasBlockBody: hasBlockBody);
+        indentForParts: indentHeader, hasBlockBody: hasBlockBody);
 
     if (forceSplitBody) forPiece.pin(State.split);
 
