@@ -521,7 +521,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           this,
           const ListStyle(
               spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-      builder.leftBracket(node.leftBracket, preceding: header);
+
+      var leftBracket = buildPiece((b) {
+        b.add(header);
+        b.space();
+        b.token(node.leftBracket);
+      });
+
+      builder.addLeftBracket(leftBracket);
       node.constants.forEach(builder.visit);
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
       metadataBuilder.add(builder.build());
@@ -677,11 +684,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     // If all parameters are optional, put the `[` or `{` right after `(`.
     var builder = DelimitedListBuilder(this);
-    if (node.parameters.isNotEmpty && firstOptional == 0) {
-      builder.leftBracket(node.leftParenthesis, delimiter: node.leftDelimiter);
-    } else {
-      builder.leftBracket(node.leftParenthesis);
-    }
+
+    builder.addLeftBracket(buildPiece((b) {
+      b.token(node.leftParenthesis);
+      if (node.parameters.isNotEmpty && firstOptional == 0) {
+        b.token(node.leftDelimiter);
+      }
+    }));
 
     for (var i = 0; i < node.parameters.length; i++) {
       // If this is the first optional parameter, put the delimiter before it.
@@ -1481,14 +1490,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var builder = DelimitedListBuilder(this, listStyle);
 
     // If all parameters are optional, put the `{` right after `(`.
-    if (positionalFields.isEmpty && namedFields != null) {
-      builder.leftBracket(
-        node.leftParenthesis,
-        delimiter: namedFields.leftBracket,
-      );
-    } else {
-      builder.leftBracket(node.leftParenthesis);
-    }
+    builder.addLeftBracket(buildPiece((b) {
+      b.token(node.leftParenthesis);
+      if (positionalFields.isEmpty && namedFields != null) {
+        b.token(namedFields.leftBracket);
+      }
+    }));
 
     for (var positionalField in positionalFields) {
       builder.visit(positionalField);
@@ -1678,7 +1685,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     var list = DelimitedListBuilder(this,
         const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-    list.leftBracket(node.leftBracket, preceding: value);
+
+    list.addLeftBracket(buildPiece((b) {
+      b.add(value);
+      b.space();
+      b.token(node.leftBracket);
+    }));
 
     for (var member in node.cases) {
       list.visit(member);
