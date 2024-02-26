@@ -19,9 +19,7 @@ abstract class Piece {
   /// This is [State.unsplit], which all pieces support, followed by any other
   /// [additionalStates].
   List<State> get states {
-    // Pinned pieces should be bound eagerly in the Solution so we shouldn't
-    // ever need to iterate over their states.
-    assert(_pinnedState == null);
+    if (_pinnedState case var pinned?) return [pinned];
     return [State.unsplit, ...additionalStates];
   }
 
@@ -132,6 +130,12 @@ abstract class Piece {
   /// Forces this piece to always use [state].
   void pin(State state) {
     _pinnedState = state;
+
+    // If this piece's pinned state constrains any child pieces, pin those too,
+    // recursively.
+    applyConstraints(state, (other, constrainedState) {
+      other.pin(constrainedState);
+    });
   }
 
   /// The name of this piece as it appears in debug output.

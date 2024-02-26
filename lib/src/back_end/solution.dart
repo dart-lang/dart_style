@@ -104,24 +104,6 @@ class Solution implements Comparable<Solution> {
     var pieceStates = <Piece, State>{};
     var cost = 0;
 
-    // Bind every pinned piece to its state and propagate any constraints from
-    // those.
-    void traversePinned(Piece piece) {
-      if (piece.pinnedState case var pinned?) {
-        var additionalCost = _tryBind(pieceStates, piece, pinned);
-
-        // Pieces should be implemented such that they never get pinned into a
-        // conflicting state because then there's no possible solution, so
-        // [_tryBind()] should always succeed and [additionalCost] won't be
-        // `null`.
-        cost += additionalCost!;
-      }
-
-      piece.forEachChild(traversePinned);
-    }
-
-    traversePinned(root);
-
     // If we're formatting a subtree of a larger Piece tree that binds [root]
     // to [rootState], then bind it in this solution too.
     if (rootState != null) {
@@ -149,10 +131,12 @@ class Solution implements Comparable<Solution> {
   /// The state this solution selects for [piece].
   ///
   /// If no state has been selected, defaults to the first state.
-  State pieceState(Piece piece) => _pieceStates[piece] ?? State.unsplit;
+  State pieceState(Piece piece) =>
+      piece.pinnedState ?? _pieceStates[piece] ?? State.unsplit;
 
-  /// Whether [piece] has been bound to a state in this set.
-  bool isBound(Piece piece) => _pieceStates.containsKey(piece);
+  /// Whether [piece] has been bound to a state in this set (or is pinned).
+  bool isBound(Piece piece) =>
+      piece.pinnedState != null || _pieceStates.containsKey(piece);
 
   /// Increases the total overflow for this solution by [overflow].
   ///
