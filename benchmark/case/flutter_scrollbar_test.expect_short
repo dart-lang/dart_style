@@ -1,0 +1,48 @@
+// This test is from a particularly slow to format part of:
+//
+// flutter/packages/test/material/scrollbar_test.dart.
+void main() {
+  testWidgets("Scrollbar doesn't show when scroll the inner scrollable widget",
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      Directionality(
+        textDirection: TextDirection.ltr,
+        child: MediaQuery(
+          data: const MediaQueryData(),
+          child: ScrollConfiguration(
+            behavior: const NoScrollbarBehavior(),
+            child: Scrollbar(
+              key: key2,
+              child: SingleChildScrollView(
+                key: outerKey,
+                child: SizedBox(
+                  height: 1000.0,
+                  width: double.infinity,
+                  child: Column(
+                    children: <Widget>[
+                      Scrollbar(
+                        key: key1,
+                        child: SizedBox(
+                          height: 300.0,
+                          width: double.infinity,
+                          child: SingleChildScrollView(
+                            key: innerKey,
+                            child: const SizedBox(
+                              key: Key('Inner scrollable'),
+                              height: 1000.0,
+                              width: double.infinity,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }, variant: TargetPlatformVariant.all());
+}

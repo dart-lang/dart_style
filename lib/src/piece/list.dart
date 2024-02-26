@@ -55,8 +55,9 @@ class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
-  ListPiece(this._before, this._elements, this._blanksAfter, this._after,
-      this._style) {
+  ListPiece(
+      this._before, this._elements, this._blanksAfter, this._after, this._style)
+      : assert(_elements.isNotEmpty) {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -89,12 +90,12 @@ class ListPiece extends Piece {
   }
 
   @override
-  List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void applyConstraints(State state, Constrain constrain) {
     // Give the last element a trailing comma only if the list is split.
-    if (_style.commas == Commas.trailing && _elements.isNotEmpty) {
+    if (_style.commas == Commas.trailing) {
       constrain(_elements.last,
           state == State.split ? ListElementPiece._appendComma : State.unsplit);
     }
@@ -367,6 +368,9 @@ final class ListElementPiece extends Piece {
     if (_content case var content?) callback(content);
     _hangingComments.forEach(callback);
   }
+
+  @override
+  String get debugName => 'ListElem';
 }
 
 /// Where commas should be added in a [ListPiece].
@@ -388,13 +392,20 @@ enum Commas {
 
 /// What kind of block formatting style can be applied to the element.
 enum BlockFormat {
-  /// The element is a function expression, which takes priority over other
-  /// kinds of block formatted elements.
+  /// The element is a function expression or immediately invoked function
+  /// expression, which takes priority over other kinds of block formatted
+  /// elements.
   function,
 
-  /// The element is a collection literal or some other kind expression that
-  /// can be block formatted.
-  block,
+  /// The element is a collection literal.
+  ///
+  /// These can be block formatted even when there are other arguments.
+  collection,
+
+  /// A function or method invocation.
+  ///
+  /// We only allow block formatting these if there are no other arguments.
+  invocation,
 
   /// The element is an adjacent strings expression that's in an list that
   /// requires its subsequent lines to be indented (because there are other

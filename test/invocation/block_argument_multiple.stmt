@@ -24,6 +24,12 @@ function([1, 2], () { body; }, {3, 4});
 function([1, 2], () {
   body;
 }, {3, 4});
+>>> Immediately invoked function takes precedence over other kinds of block arguments.
+function([1, 2], () { body; }(), {3, 4});
+<<<
+function([1, 2], () {
+  body;
+}(), {3, 4});
 >>> Multiple collections prevent block formatting.
 function([element, element], {key: value});
 <<<
@@ -38,19 +44,95 @@ function([], [
   element,
   element,
 ], <String>{});
->>> Multiple calls prevent block formatting.
-function(inner(argument), new SomeClass(argument));
+>>> Can't block format a function call with any preceding arguments.
+function(arg, innerFunction(veryLongArgumentExpression));
 <<<
 function(
-  inner(argument),
-  new SomeClass(argument),
+  arg,
+  innerFunction(
+    veryLongArgumentExpression,
+  ),
 );
->>> Empty and non-empty calls.
-function(a(), inner(argument), const C());
+>>> Can't block format a function call with any subsequent arguments.
+function(innerFunction(veryLongArgumentExpression), arg);
 <<<
-function(a(), inner(
-  argument,
-), const C());
+function(
+  innerFunction(
+    veryLongArgumentExpression,
+  ),
+  arg,
+);
+>>> Can't block format a method call with any preceding arguments.
+function(arg, target.inner(veryLongArgumentExpression));
+<<<
+function(
+  arg,
+  target.inner(
+    veryLongArgumentExpression,
+  ),
+);
+>>> Can't block format a method call with any subsequent arguments.
+function(target.inner(veryLongArgumentExpression), arg);
+<<<
+function(
+  target.inner(
+    veryLongArgumentExpression,
+  ),
+  arg,
+);
+>>> Can't block format an instance creation with any preceding arguments.
+function(arg, new SomeClass(veryLongArgumentExpression));
+<<<
+function(
+  arg,
+  new SomeClass(
+    veryLongArgumentExpression,
+  ),
+);
+>>> Can't block format an instance creation with any subsequent arguments.
+function(new SomeClass(veryLongArgumentExpression), arg);
+<<<
+function(
+  new SomeClass(
+    veryLongArgumentExpression,
+  ),
+  arg,
+);
+>>> List literal with other non-block arguments.
+function(before, [veryLongElement, anotherLongElement], after);
+<<<
+function(before, [
+  veryLongElement,
+  anotherLongElement,
+], after);
+>>> Map literal with other non-block arguments.
+function(before, {1: veryLongElement, 2: anotherLongElement}, after);
+<<<
+function(before, {
+  1: veryLongElement,
+  2: anotherLongElement,
+}, after);
+>>> Set literal with other non-block arguments.
+function(before, {veryLongElement, anotherLongElement}, after);
+<<<
+function(before, {
+  veryLongElement,
+  anotherLongElement,
+}, after);
+>>> Record literal with other non-block arguments.
+function(before, (veryLongElement, anotherLongElement), after);
+<<<
+function(before, (
+  veryLongElement,
+  anotherLongElement,
+), after);
+>>> Switch expression with other non-block arguments.
+function(before, switch (n) {1 => veryLongElement, 2 => anotherLongElement}, after);
+<<<
+function(before, switch (n) {
+  1 => veryLongElement,
+  2 => anotherLongElement,
+}, after);
 >>> Multiple switches prevent block formatting.
 function(switch (a) { 1 => 2 }, switch (b) { 1 => 2 });
 <<<

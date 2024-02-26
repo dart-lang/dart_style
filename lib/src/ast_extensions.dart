@@ -4,6 +4,8 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import 'piece/list.dart';
+
 extension AstNodeExtensions on AstNode {
   /// The first token at the beginning of this AST node, not including any
   /// tokens for leading doc comments.
@@ -149,58 +151,68 @@ extension ExpressionExtensions on Expression {
   ///
   /// Completely empty delimited constructs like `[]` and `foo()` don't allow
   /// splitting inside them, so are not considered block-like.
-  bool get canBlockSplit {
+  bool get canBlockSplit => blockFormatType != BlockFormat.none;
+
+  /// When this expression is in an argument list, what kind of block formatting
+  /// category it belongs to.
+  BlockFormat get blockFormatType {
     // Unwrap named expressions to get the real expression inside.
-    var expression = this;
-    if (expression is NamedExpression) {
-      expression = expression.expression;
+    if (this case NamedExpression named) {
+      return named.expression.blockFormatType;
     }
 
-    // TODO(tall): Consider whether immediately-invoked function expressions
-    // should be block argument candidates, like:
-    //
-    //     function(() {
-    //       body;
-    //     }());
-    return switch (expression) {
+    return switch (this) {
       // Allow the target of a single-section cascade to be block formatted.
-      CascadeExpression(:var target, :var cascadeSections) =>
-        cascadeSections.length == 1 && target.canBlockSplit,
+      CascadeExpression(:var target, :var cascadeSections)
+          when cascadeSections.length == 1 && target.canBlockSplit =>
+        BlockFormat.invocation,
 
       // A function expression can use either a non-empty parameter list or a
       // non-empty block body for block formatting.
-      FunctionExpression(:var parameters?, :var body) =>
-        parameters.parameters.canSplit(parameters.rightParenthesis) ||
-            (body is BlockFunctionBody &&
-                body.block.statements.canSplit(body.block.rightBracket)),
+      FunctionExpression(:var parameters?, :var body)
+          when parameters.parameters.canSplit(parameters.rightParenthesis) ||
+              (body is BlockFunctionBody &&
+                  body.block.statements.canSplit(body.block.rightBracket)) =>
+        BlockFormat.function,
+
+      // An immediately invoked function expression is formatted like a
+      // function expression.
+      FunctionExpressionInvocation(:FunctionExpression function)
+          when function.blockFormatType == BlockFormat.function =>
+        BlockFormat.function,
 
       // Non-empty collection literals can block split.
       ListLiteral(:var elements, :var rightBracket) ||
-      SetOrMapLiteral(:var elements, :var rightBracket) =>
-        elements.canSplit(rightBracket),
-      RecordLiteral(:var fields, :var rightParenthesis) =>
-        fields.canSplit(rightParenthesis),
-      SwitchExpression(:var cases, :var rightBracket) =>
-        cases.canSplit(rightBracket),
+      SetOrMapLiteral(:var elements, :var rightBracket)
+          when elements.canSplit(rightBracket) =>
+        BlockFormat.collection,
+      RecordLiteral(:var fields, :var rightParenthesis)
+          when fields.canSplit(rightParenthesis) =>
+        BlockFormat.collection,
+      SwitchExpression(:var cases, :var rightBracket)
+          when cases.canSplit(rightBracket) =>
+        BlockFormat.collection,
 
       // Function calls can block split if their argument lists can.
       InstanceCreationExpression(:var argumentList) ||
-      MethodInvocation(:var argumentList) =>
-        argumentList.arguments.canSplit(argumentList.rightParenthesis),
+      MethodInvocation(:var argumentList)
+          when argumentList.arguments.canSplit(argumentList.rightParenthesis) =>
+        BlockFormat.invocation,
 
       // Note: Using a separate case instead of `||` for this type because
       // Dart 3.0 reports an error that [argumentList] has a different type
       // here than in the previous two clauses.
-      FunctionExpressionInvocation(:var argumentList) =>
-        argumentList.arguments.canSplit(argumentList.rightParenthesis),
+      FunctionExpressionInvocation(:var argumentList)
+          when argumentList.arguments.canSplit(argumentList.rightParenthesis) =>
+        BlockFormat.invocation,
 
       // Multi-line strings can.
-      StringInterpolation(isMultiline: true) => true,
-      SimpleStringLiteral(isMultiline: true) => true,
+      StringInterpolation(isMultiline: true) => BlockFormat.collection,
+      SimpleStringLiteral(isMultiline: true) => BlockFormat.collection,
 
-      // Parenthesized expressions can if the inner one can.
-      ParenthesizedExpression(:var expression) => expression.canBlockSplit,
-      _ => false,
+      // Parenthesized expressions unwrap the inner expression.
+      ParenthesizedExpression(:var expression) => expression.blockFormatType,
+      _ => BlockFormat.none,
     };
   }
 

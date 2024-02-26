@@ -65,10 +65,22 @@ assert(inner(
   argument,
 ));
 >>> Allow block formatting of message.
-assert(true, inner(argument, argument, argument));
+assert(true, () {
+  return someSlowMessageComputation();
+}());
 <<<
-assert(true, inner(
-  argument,
-  argument,
-  argument,
-));
+assert(true, () {
+  return someSlowMessageComputation();
+}());
+>>> Block format immediately invoked function as condition.
+assert(() { return someSlow() + computation(); }());
+<<<
+assert(() {
+  return someSlow() + computation();
+}());
+>>> Block format immediately invoked function as condition with message.
+assert(() { return someSlow() + computation(); }(), 'Message.');
+<<<
+assert(() {
+  return someSlow() + computation();
+}(), 'Message.');

@@ -116,4 +116,7 @@ class SequenceElementPiece extends Piece {
       callback(comment);
     }
   }
+
+  @override
+  String get debugName => 'SeqElem';
 }

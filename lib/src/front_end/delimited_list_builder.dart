@@ -51,7 +51,16 @@ class DelimitedListBuilder {
 
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
-  ListPiece build() {
+  Piece build() {
+    // To simplify the piece tree, if there are no elements, just return the
+    // brackets concatenated together.
+    if (_elements.isEmpty) {
+      return _visitor.buildPiece((b) {
+        if (_leftBracket case var bracket?) b.add(bracket);
+        if (_rightBracket case var bracket?) b.add(bracket);
+      });
+    }
+
     _setBlockElementFormatting();
 
     var piece =
@@ -157,9 +166,8 @@ class DelimitedListBuilder {
       AdjacentStrings(indentStrings: true) =>
         BlockFormat.indentedAdjacentStrings,
       AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
-      FunctionExpression() when element.canBlockSplit => BlockFormat.function,
-      Expression() when element.canBlockSplit => BlockFormat.block,
-      DartPattern() when element.canBlockSplit => BlockFormat.block,
+      Expression() => element.blockFormatType,
+      DartPattern() when element.canBlockSplit => BlockFormat.collection,
       _ => BlockFormat.none,
     };
 
@@ -421,15 +429,18 @@ class DelimitedListBuilder {
   void _setBlockElementFormatting() {
     // TODO(tall): These heuristics will probably need some iteration.
     var functions = <int>[];
-    var others = <int>[];
+    var collections = <int>[];
+    var invocations = <int>[];
     var adjacentStrings = <int>[];
 
     for (var i = 0; i < _elements.length; i++) {
       switch (_elements[i].blockFormat) {
         case BlockFormat.function:
           functions.add(i);
-        case BlockFormat.block:
-          others.add(i);
+        case BlockFormat.collection:
+          collections.add(i);
+        case BlockFormat.invocation:
+          invocations.add(i);
         case BlockFormat.indentedAdjacentStrings:
         case BlockFormat.unindentedAdjacentStrings:
           adjacentStrings.add(i);
@@ -438,7 +449,7 @@ class DelimitedListBuilder {
       }
     }
 
-    switch ((functions, others, adjacentStrings)) {
+    switch ((functions, collections, invocations, adjacentStrings)) {
       // Only allow block formatting in an argument list containing adjacent
       // strings when:
       //
@@ -451,7 +462,7 @@ class DelimitedListBuilder {
       // but little else.
       // TODO(tall): We may want to iterate on these heuristics. For now,
       // starting with something very narrowly targeted.
-      case ([1], _, [0]):
+      case ([1], _, _, [0]):
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
         if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
@@ -462,9 +473,15 @@ class DelimitedListBuilder {
         _elements[1].allowNewlinesWhenUnsplit = true;
 
       // A function expression takes precedence over other block arguments.
-      case ([var blockArgument], _, _):
-      // Otherwise, if there one block argument, it can be block formatted.
-      case ([], [var blockArgument], _):
+      case ([var blockArgument], _, _, _):
+
+      // A single collection literal can be block formatted even if there are
+      // other arguments.
+      case ([], [var blockArgument], _, _):
+
+      // A single invocation can be block formatted only when there are no
+      // other arguments.
+      case ([], [], [var blockArgument], _) when _elements.length == 1:
         _elements[blockArgument].allowNewlinesWhenUnsplit = true;
     }
 
