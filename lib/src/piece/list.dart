@@ -5,7 +5,7 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for a splittable series of items.
+/// A piece for a non-empty splittable series of items.
 ///
 /// Items may optionally be delimited with brackets and may have commas added
 /// after elements.
@@ -55,6 +55,10 @@ class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
+  /// Creates a new [ListPiece].
+  ///
+  /// [_elements] must not be empty. (If there are no elements, just concatenate
+  /// the brackets directly.)
   ListPiece(
       this._before, this._elements, this._blanksAfter, this._after, this._style)
       : assert(_elements.isNotEmpty) {

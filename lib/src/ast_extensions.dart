@@ -156,12 +156,10 @@ extension ExpressionExtensions on Expression {
   /// When this expression is in an argument list, what kind of block formatting
   /// category it belongs to.
   BlockFormat get blockFormatType {
-    // Unwrap named expressions to get the real expression inside.
-    if (this case NamedExpression named) {
-      return named.expression.blockFormatType;
-    }
-
     return switch (this) {
+      // Unwrap named expressions to get the real expression inside.
+      NamedExpression(:var expression) => expression.blockFormatType,
+
       // Allow the target of a single-section cascade to be block formatted.
       CascadeExpression(:var target, :var cascadeSections)
           when cascadeSections.length == 1 && target.canBlockSplit =>

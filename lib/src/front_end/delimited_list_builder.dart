@@ -53,7 +53,8 @@ class DelimitedListBuilder {
   /// elements, and style.
   Piece build() {
     // To simplify the piece tree, if there are no elements, just return the
-    // brackets concatenated together.
+    // brackets concatenated together. We don't have to worry about comments
+    // here since they would be in the [_elements] list if there were any.
     if (_elements.isEmpty) {
       return _visitor.buildPiece((b) {
         if (_leftBracket case var bracket?) b.add(bracket);
