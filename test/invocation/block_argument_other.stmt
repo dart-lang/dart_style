@@ -1,28 +1,5 @@
 40 columns                              |
 ### Test other behavior related to block arguments.
->>> Can have non-block arguments before the block argument.
-function(first, second, [third, fourth, fifth]);
-<<<
-function(first, second, [
-  third,
-  fourth,
-  fifth,
-]);
->>> Can have non-block arguments after the block argument.
-function([first, second, third], fourth, fifth);
-<<<
-function([
-  first,
-  second,
-  third,
-], fourth, fifth);
->>> Can have non-block arguments before and after the block argument.
-function(first, second, [third, fourth], fifth);
-<<<
-function(first, second, [
-  third,
-  fourth,
-], fifth);
 >>> Don't block argument format if it fits better to not.
 function('a long leading argument', <String>[element, element]);
 <<<

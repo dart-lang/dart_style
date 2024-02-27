@@ -325,10 +325,10 @@ class BacktrackingSolver {
           javaBooleanAnd(
             javaBooleanAnd(
               javaBooleanAnd(
-                javaBooleanAnd(javaBooleanAnd(), _isEqualTokens(
-                  node.period,
-                  toNode.period,
-                )),
+                javaBooleanAnd(
+                  javaBooleanAnd(),
+                  _isEqualTokens(node.period, toNode.period),
+                ),
                 _isEqualNodes(node.name, toNode.name),
               ),
               _isEqualNodes(node.parameters, toNode.parameters),

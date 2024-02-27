@@ -65,19 +65,6 @@ function((// comment
 function((
   // comment
 ) => body);
->>> Empty block-bodied function expression with a block comment.
-function(() { /* fairly long comment */ });
-<<<
-function(() {
-  /* fairly long comment */
-});
->>> Empty block-bodied function expression with a line comment.
-function(() { // comment
-});
-<<<
-function(() {
-  // comment
-});
 >>> An empty block-bodied function expression is not a block argument.
 function_________________________(() {});
 <<<
@@ -164,6 +151,57 @@ function________________(new SomeClass());
 <<<
 function________________(
   new SomeClass(),
+);
+>>> Immediately invoked function.
+function(() { body; }());
+<<<
+function(() {
+  body;
+}());
+>>> Empty immediately invoked function with a block comment.
+function(() { /* fairly long comment */ }());
+<<<
+function(() {
+  /* fairly long comment */
+}());
+>>> Empty immediately invoked function with a line comment.
+function(() { // comment
+}());
+<<<
+function(() {
+  // comment
+}());
+>>> Immediately invoked function with parameters and arguments.
+function((p, r) { body; }(a, b));
+<<<
+function((p, r) {
+  body;
+}(a, b));
+>>> Immediately invoked function with parameters.
+function((parameter, anotherParameter) {}());
+<<<
+function((
+  parameter,
+  anotherParameter,
+) {}());
+>>> Immediately invoked function with block comment in the parameters.
+function((/* very long block comment */) {}());
+<<<
+function((
+  /* very long block comment */
+) {}());
+>>> Immediately invoked function with line comment in the parameters.
+function((// comment
+) {}());
+<<<
+function((
+  // comment
+) {}());
+>>> An empty immediately invoked function is not a block argument.
+function_________________________(() {}());
+<<<
+function_________________________(
+  () {}(),
 );
 >>> Function expression call.
 function((expression)(veryLongArgumentExpression));
