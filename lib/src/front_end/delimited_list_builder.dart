@@ -61,23 +61,13 @@ class DelimitedListBuilder {
   }
 
   /// Adds the opening [bracket] to the built list.
-  ///
-  /// If [delimiter] is given, it is a second bracket occurring immediately
-  /// after [bracket]. This is used for parameter lists where all parameters
-  /// are optional or named, as in:
-  ///
-  ///     function([parameter]);
-  ///
-  /// Here, [bracket] will be `(` and [delimiter] will be `[`.
-  void leftBracket(Token bracket, {Piece? preceding, Token? delimiter}) {
-    _leftBracket = _visitor.buildPiece((b) {
-      if (preceding != null) {
-        b.add(preceding);
-        b.space();
-      }
-      b.token(bracket);
-      b.token(delimiter);
-    });
+  void leftBracket(Token bracket) {
+    addLeftBracket(_visitor.tokenPiece(bracket));
+  }
+
+  /// Adds the opening bracket [piece] to the built list.
+  void addLeftBracket(Piece piece) {
+    _leftBracket = piece;
   }
 
   /// Adds the closing [bracket] to the built list along with any comments that

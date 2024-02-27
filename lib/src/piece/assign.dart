@@ -13,7 +13,7 @@ import 'piece.dart';
 /// "block-like" formatting of delimited expressions on the right, and for the
 /// `in` clause in for-in loops.
 ///
-/// These constructs can be formatted three ways:
+/// These constructs can be formatted four ways:
 ///
 /// [State.unsplit] No split at all:
 ///
@@ -26,47 +26,66 @@ import 'piece.dart';
 ///       element,
 ///     ];
 ///
-/// [_blockSplit] Block split in the operands that support it and expression
-/// split in the others. This state requires at least one operand to support
-/// block splitting. Examples:
+/// [_blockSplitLeft] Force the left-hand side, which must be a [ListPiece], to
+/// split. Allow the right side to split or not. Allows all of:
 ///
 ///     var [
 ///       element,
-///     ] = value;
+///     ] = unsplitRhs;
 ///
 ///     var [
 ///       element,
-///     ] = longOperand +
-///         anotherOperand;
+///     ] = [
+///       'block split RHS',
+///     ];
 ///
-///     var (longVariable &&
+///     var [
+///       element,
+///     ] = 'expression split' +
+///         'the right hand side';
+///
+/// [_blockSplitRight] Allow the right-hand side to block split or not, if it
+/// wants. Since [State.unsplit] and [_blockSplitLeft] also allow the
+/// right-hand side to block split, this state is only used when the left-hand
+/// side expression splits, like:
+///
+///     var (variable &&
 ///         anotherVariable) = [
 ///       element,
 ///     ];
 ///
 /// [_atOperator] Split at the `=` or `in` operator and allow expression
-/// splitting in either operand:
+/// splitting in either operand. Allows all of:
 ///
 ///     var (longVariable &&
 ///             anotherVariable) =
 ///         longOperand +
 ///             anotherOperand;
+///
+///     var [unsplitBlock] =
+///         longOperand +
+///             anotherOperand;
 class AssignPiece extends Piece {
-  /// Split at the operator.
-  ///
-  /// This is more costly because it's generally better to block split in one
-  /// or both of the operands.
-  static const State _atOperator = State(1, cost: 2);
+  /// Force the block left-hand side to split and allow the right-hand side to
+  /// split.
+  static const State _blockSplitLeft = State(1);
 
-  /// Block split in one or both of the operands.
-  static const State _blockSplit = State(2);
+  /// Allow the right-hand side to block split.
+  static const State _blockSplitRight = State(2);
+
+  /// Split at the operator.
+  static const State _atOperator = State(3);
 
   /// The left-hand side of the operation. Includes the operator unless it is
   /// `in`.
-  final Piece _left;
+  final Piece? _left;
+
+  final Piece _operator;
 
   /// The right-hand side of the operation.
   final Piece _right;
+
+  final bool _splitBeforeOperator;
 
   /// If `true`, then the left side supports being block-formatted, like:
   ///
@@ -84,9 +103,14 @@ class AssignPiece extends Piece {
   ///     ];
   final bool _canBlockSplitRight;
 
-  AssignPiece(this._left, this._right,
-      {bool canBlockSplitLeft = false, bool canBlockSplitRight = false})
-      : _canBlockSplitLeft = canBlockSplitLeft,
+  AssignPiece(this._operator, this._right,
+      {Piece? left,
+      bool splitBeforeOperator = false,
+      bool canBlockSplitLeft = false,
+      bool canBlockSplitRight = false})
+      : _left = left,
+        _splitBeforeOperator = splitBeforeOperator,
+        _canBlockSplitLeft = canBlockSplitLeft,
         _canBlockSplitRight = canBlockSplitRight;
 
   // TODO(tall): The old formatter allows the first operand of a split
@@ -128,9 +152,20 @@ class AssignPiece extends Piece {
   List<State> get additionalStates => [
         // If at least one operand can block split, allow splitting in operands
         // without splitting at the operator.
-        if (_canBlockSplitLeft || _canBlockSplitRight) _blockSplit,
+        if (_canBlockSplitLeft) _blockSplitLeft,
+        if (_canBlockSplitRight) _blockSplitRight,
         _atOperator,
       ];
+
+  /// Apply constraints between how the parameters may split and how the
+  /// initializers may split.
+  @override
+  void applyConstraints(State state, Constrain constrain) {
+    switch (state) {
+      case _blockSplitLeft:
+        constrain(_left!, State.split);
+    }
+  }
 
   @override
   void format(CodeWriter writer, State state) {
@@ -153,10 +188,11 @@ class AssignPiece extends Piece {
         indentLeft = true;
         indentRight = true;
 
-      case _blockSplit:
-        // Indent either operand if it doesn't block split.
-        indentLeft = !_canBlockSplitLeft;
+      case _blockSplitLeft:
         indentRight = !_canBlockSplitRight;
+        collapseIndent = true;
+
+      case _blockSplitRight:
         collapseIndent = true;
     }
 
@@ -165,8 +201,11 @@ class AssignPiece extends Piece {
       writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
     }
 
-    writer.format(_left);
+    if (_left case var left?) writer.format(left);
+
+    if (!_splitBeforeOperator) writer.format(_operator);
     writer.splitIf(state == _atOperator);
+    if (_splitBeforeOperator) writer.format(_operator);
 
     if (indentLeft) writer.popIndent();
     writer.popAllowNewlines();
@@ -184,7 +223,8 @@ class AssignPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    callback(_left);
+    if (_left case var left?) callback(left);
+    callback(_operator);
     callback(_right);
   }
 }

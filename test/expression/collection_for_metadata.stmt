@@ -1,0 +1,86 @@
+40 columns                              |
+>>> On for-in loop variable.
+var list = [
+  for (   @a  @b    var i in list) i
+];
+<<<
+var list = [
+  for (@a @b var i in list) i,
+];
+>>> Split on for-in loop variable.
+var list = [
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) i
+];
+<<<
+var list = [
+  for (@Annotation
+      @VeryLongMetadataAnnotation(1, 2)
+      var i
+      in veryLong.iterator + expression)
+    i,
+];
+>>> On for loop.
+var list = [
+  for (   @a  @b    var i = x;;) i
+];
+<<<
+var list = [for (@a @b var i = x; ;) i];
+>>> Split on for loop.
+var list = [
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i = veryLong.iterator + expression;;) i
+];
+<<<
+var list = [
+  for (
+    @Annotation
+    @VeryLongMetadataAnnotation(1, 2)
+    var i =
+        veryLong.iterator + expression;
+    ;
+  )
+    i,
+];
+>>> On pattern for-in loop.
+var list = [
+  for (   @a  @b    var [i] in list) i
+];
+<<<
+var list = [
+  for (@a @b var [i] in list) i,
+];
+>>> Split on pattern for-in loop.
+var list = [
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] in veryLong.iterator + longExpression) i
+];
+<<<
+var list = [
+  for (@Annotation
+      @VeryLongMetadataAnnotation(1, 2)
+      var [i]
+      in veryLong.iterator +
+          longExpression)
+    i,
+];
+>>> On pattern for loop.
+var list = [
+  for (   @a  @b    var [i] = x;;) i
+];
+<<<
+var list = [
+  for (@a @b var [i] = x; ;) i,
+];
+>>> Split on pattern for loop.
+var list = [
+  for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] = veryLong.iterator + expression;;) i
+];
+<<<
+var list = [
+  for (
+    @Annotation
+    @VeryLongMetadataAnnotation(1, 2)
+    var [i] =
+        veryLong.iterator + expression;
+    ;
+  )
+    i,
+];

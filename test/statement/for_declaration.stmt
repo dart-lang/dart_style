@@ -98,3 +98,15 @@ for (
 ) {
   ;
 }
+>>> Split between type and variable name.
+for (SomeReallyLongTypeName someLongVariable; someLongVariable < 100;
+someLongVariable++) {;}
+<<<
+for (
+  SomeReallyLongTypeName
+  someLongVariable;
+  someLongVariable < 100;
+  someLongVariable++
+) {
+  ;
+}

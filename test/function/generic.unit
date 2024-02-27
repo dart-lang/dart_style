@@ -29,9 +29,18 @@ longFunctionName<
   LongTypeParameterT,
   LongTypeParameterS
 >() => body;
->>> Split type parameters and value parameters, with expression body.
+>>> Split type parameters, with expression body.
 longFunctionName<LongTypeParameterT, LongTypeParameterS>(
 longParameter1, longParameter2) => body;
+<<<
+longFunctionName<
+  LongTypeParameterT,
+  LongTypeParameterS
+>(longParameter1, longParameter2) =>
+    body;
+>>> Split type parameters and value parameters, with expression body.
+longFunctionName<LongTypeParameterT, LongTypeParameterS>(
+longParameter1, longParameter2, longParameter3) => body;
 <<<
 longFunctionName<
   LongTypeParameterT,
@@ -39,4 +48,5 @@ longFunctionName<
 >(
   longParameter1,
   longParameter2,
+  longParameter3,
 ) => body;

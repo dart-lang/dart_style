@@ -14,7 +14,6 @@ import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
-import '../piece/for.dart';
 import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -375,8 +374,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     Piece? initializerSeparator;
     Piece? initializers;
     if (node.redirectedConstructor case var constructor?) {
-      redirect = AssignPiece(
-          tokenPiece(node.separator!), nodePiece(constructor),
+      var separator = buildPiece((b) {
+        b.token(node.separator);
+        b.space();
+      });
+
+      redirect = AssignPiece(separator, nodePiece(constructor),
           canBlockSplitRight: false);
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
@@ -436,11 +439,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitDeclaredIdentifier(DeclaredIdentifier node) {
-    return buildPiece((b) {
-      b.modifier(node.keyword);
-      b.visit(node.type, spaceAfter: true);
-      b.token(node.name);
-    });
+    return createParameter(
+        metadata: node.metadata,
+        modifiers: [node.keyword],
+        node.type,
+        node.name);
   }
 
   @override
@@ -521,7 +524,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           this,
           const ListStyle(
               spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-      builder.leftBracket(node.leftBracket, preceding: header);
+
+      builder.addLeftBracket(buildPiece((b) {
+        b.add(header);
+        b.space();
+        b.token(node.leftBracket);
+      }));
+
       node.constants.forEach(builder.visit);
       builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
       metadataBuilder.add(builder.build());
@@ -677,11 +686,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     // If all parameters are optional, put the `[` or `{` right after `(`.
     var builder = DelimitedListBuilder(this);
-    if (node.parameters.isNotEmpty && firstOptional == 0) {
-      builder.leftBracket(node.leftParenthesis, delimiter: node.leftDelimiter);
-    } else {
-      builder.leftBracket(node.leftParenthesis);
-    }
+
+    builder.addLeftBracket(buildPiece((b) {
+      b.token(node.leftParenthesis);
+      if (node.parameters.isNotEmpty && firstOptional == 0) {
+        b.token(node.leftDelimiter);
+      }
+    }));
 
     for (var i = 0; i < node.parameters.length; i++) {
       // If this is the first optional parameter, put the delimiter before it.
@@ -698,70 +709,57 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitForElement(ForElement node) {
-    var forKeyword = buildPiece((b) {
-      b.modifier(node.awaitKeyword);
-      b.token(node.forKeyword);
-    });
-
-    var forPartsPiece = createForLoopParts(
-        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
-    var body = nodePiece(node.body);
-
-    var forPiece = ForPiece(forKeyword, forPartsPiece, body,
-        hasBlockBody: node.body.isSpreadCollection);
-
-    // It looks weird to have multiple nested control flow elements on the same
-    // line, so force the outer one to split if there is an inner one.
-    if (node.body.isControlFlowElement) {
-      forPiece.pin(State.split);
-    }
-
-    return forPiece;
+    return createFor(
+        awaitKeyword: node.awaitKeyword,
+        forKeyword: node.forKeyword,
+        leftParenthesis: node.leftParenthesis,
+        forLoopParts: node.forLoopParts,
+        rightParenthesis: node.rightParenthesis,
+        body: node.body,
+        hasBlockBody: node.body.isSpreadCollection,
+        forceSplitBody: node.body.isControlFlowElement);
   }
 
   @override
   Piece visitForStatement(ForStatement node) {
-    var forKeyword = buildPiece((b) {
-      b.modifier(node.awaitKeyword);
-      b.token(node.forKeyword);
-    });
-
-    var forPartsPiece = createForLoopParts(
-        node.leftParenthesis, node.forLoopParts, node.rightParenthesis);
-    var body = nodePiece(node.body);
-
-    return ForPiece(forKeyword, forPartsPiece, body,
+    return createFor(
+        awaitKeyword: node.awaitKeyword,
+        forKeyword: node.forKeyword,
+        leftParenthesis: node.leftParenthesis,
+        forLoopParts: node.forLoopParts,
+        rightParenthesis: node.rightParenthesis,
+        body: node.body,
         hasBlockBody: node.body is Block);
   }
 
   @override
   Piece visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithExpression(ForPartsWithExpression node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
   Piece visitForPartsWithPattern(ForPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by visitForStatement().');
+    throw UnsupportedError('This node is handled by createFor().');
   }
 
   @override
@@ -1297,14 +1295,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitObjectPattern(ObjectPattern node) {
-    return buildPiece((b) {
+    var builder = DelimitedListBuilder(this);
+
+    builder.addLeftBracket(buildPiece((b) {
       b.visit(node.type);
-      b.add(createCollection(
-        node.leftParenthesis,
-        node.fields,
-        node.rightParenthesis,
-      ));
-    });
+      b.token(node.leftParenthesis);
+    }));
+
+    node.fields.forEach(builder.visit);
+    builder.rightBracket(node.rightParenthesis);
+    return builder.build();
   }
 
   @override
@@ -1384,7 +1384,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitPatternVariableDeclaration(PatternVariableDeclaration node) {
     return buildPiece((b) {
-      b.metadata(node.metadata);
+      // If the variable is part of a for loop, it looks weird to force the
+      // metadata to split since it's in a sort of expression-ish location:
+      //
+      //     for (@meta var (x, y) in pairs) ...
+      b.metadata(node.metadata,
+          inline: node.parent is ForEachPartsWithPattern ||
+              node.parent is ForPartsWithPattern);
       b.token(node.keyword);
       b.space();
       b.add(createAssignment(node.pattern, node.equals, node.expression));
@@ -1481,14 +1487,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var builder = DelimitedListBuilder(this, listStyle);
 
     // If all parameters are optional, put the `{` right after `(`.
-    if (positionalFields.isEmpty && namedFields != null) {
-      builder.leftBracket(
-        node.leftParenthesis,
-        delimiter: namedFields.leftBracket,
-      );
-    } else {
-      builder.leftBracket(node.leftParenthesis);
-    }
+    builder.addLeftBracket(buildPiece((b) {
+      b.token(node.leftParenthesis);
+      if (positionalFields.isEmpty && namedFields != null) {
+        b.token(namedFields.leftBracket);
+      }
+    }));
 
     for (var positionalField in positionalFields) {
       builder.visit(positionalField);
@@ -1678,7 +1682,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     var list = DelimitedListBuilder(this,
         const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-    list.leftBracket(node.leftBracket, preceding: value);
+
+    list.addLeftBracket(buildPiece((b) {
+      b.add(value);
+      b.space();
+      b.token(node.leftBracket);
+    }));
 
     for (var member in node.cases) {
       list.visit(member);
@@ -1830,7 +1839,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitVariableDeclarationList(VariableDeclarationList node) {
     var header = buildPiece((b) {
-      b.metadata(node.metadata);
+      // If the variable is part of a for loop, it looks weird to force the
+      // metadata to split since it's in a sort of expression-ish location:
+      //
+      //     for (@meta var x in list) ...
+      b.metadata(node.metadata,
+          inline: node.parent is ForPartsWithDeclarations);
       b.modifier(node.lateKeyword);
       b.modifier(node.keyword);
 
@@ -1844,15 +1858,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     for (var variable in node.variables) {
       if ((variable.equals, variable.initializer)
           case (var equals?, var initializer?)) {
-        var variablePiece = buildPiece((b) {
-          b.token(variable.name);
+        var variablePiece = tokenPiece(variable.name);
+
+        var equalsPiece = buildPiece((b) {
           b.space();
           b.token(equals);
         });
 
         var initializerPiece = nodePiece(initializer, commaAfter: true);
 
-        variables.add(AssignPiece(variablePiece, initializerPiece,
+        variables.add(AssignPiece(
+            left: variablePiece,
+            equalsPiece,
+            initializerPiece,
             canBlockSplitRight: initializer.canBlockSplit));
       } else {
         variables.add(tokenPiece(variable.name, commaAfter: true));

@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../ast_extensions.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
+import '../piece/for.dart';
 import '../piece/function.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
@@ -209,10 +210,22 @@ mixin PieceFactory {
     });
   }
 
-  /// Creates a piece for the parentheses and inner parts of a for statement or
-  /// for element.
-  Piece createForLoopParts(Token leftParenthesis, ForLoopParts forLoopParts,
-      Token rightParenthesis) {
+  /// Creates a piece for a for statement or element.
+  Piece createFor(
+      {required Token? awaitKeyword,
+      required Token forKeyword,
+      required Token leftParenthesis,
+      required ForLoopParts forLoopParts,
+      required Token rightParenthesis,
+      required AstNode body,
+      required bool hasBlockBody,
+      bool forceSplitBody = false}) {
+    var forKeywordPiece = buildPiece((b) {
+      b.modifier(awaitKeyword);
+      b.token(forKeyword);
+    });
+
+    Piece forPartsPiece;
     switch (forLoopParts) {
       // Edge case: A totally empty for loop is formatted just as `(;;)` with
       // no splits or spaces anywhere.
@@ -224,7 +237,7 @@ mixin PieceFactory {
             updaters: NodeList(isEmpty: true),
           )
           when rightParenthesis.precedingComments == null:
-        return buildPiece((b) {
+        forPartsPiece = buildPiece((b) {
           b.token(leftParenthesis);
           b.token(forLoopParts.leftSeparator);
           b.token(forLoopParts.rightSeparator);
@@ -285,7 +298,7 @@ mixin PieceFactory {
         }
 
         partsList.rightBracket(rightParenthesis);
-        return partsList.build();
+        forPartsPiece = partsList.build();
 
       case ForEachParts forEachParts &&
             ForEachPartsWithDeclaration(loopVariable: AstNode variable):
@@ -299,7 +312,7 @@ mixin PieceFactory {
         //     ]) {
         //       body;
         //     }
-        // TODO(tall): Passing `allowInnerSplit: true` allows output like:
+        // TODO(tall): Passing `canBlockSplitLeft: true` allows output like:
         //
         //     // 1
         //     for (variable in longExpression +
@@ -326,31 +339,56 @@ mixin PieceFactory {
         //
         // Currently, the formatter prefers 1 over 3. We may want to revisit
         // that and prefer 3 instead. Or perhaps we shouldn't pass
-        // `allowInnerSplit: true` and force the `in` to split if the
+        // `canBlockSplitLeft: true` and force the `in` to split if the
         // initializer does. That would be consistent with how we handle
         // splitting before `case` when the pattern has a newline in an if-case
         // statement or element.
-        return buildPiece((b) {
+        forPartsPiece = buildPiece((b) {
           b.token(leftParenthesis);
           b.add(createAssignment(
               variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true, canBlockSplitLeft: true));
+              splitBeforeOperator: true));
           b.token(rightParenthesis);
         });
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithPattern(:var keyword, :var pattern):
-        return buildPiece((b) {
+            ForEachPartsWithPattern(:var keyword, :var metadata, :var pattern):
+        forPartsPiece = buildPiece((b) {
           b.token(leftParenthesis);
-          b.token(keyword);
-          b.space();
 
-          b.add(createAssignment(
-              pattern, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true));
+          // Use a nested piece so that the metadata precedes the keyword and
+          // not the `(`.
+          b.add(buildPiece((b) {
+            b.metadata(metadata, inline: true);
+            b.token(keyword);
+            b.space();
+
+            b.add(createAssignment(
+                pattern, forEachParts.inKeyword, forEachParts.iterable,
+                splitBeforeOperator: true));
+          }));
           b.token(rightParenthesis);
         });
     }
+
+    var bodyPiece = nodePiece(body);
+
+    // If there is metadata before the for loop variable or pattern, then make
+    // sure that the entire contents of the for loop parts are indented so that
+    // the annotations are indented.
+    var indentHeader = switch (forLoopParts) {
+      ForEachPartsWithDeclaration(:var loopVariable) =>
+        loopVariable.metadata.isNotEmpty,
+      ForEachPartsWithPattern(:var metadata) => metadata.isNotEmpty,
+      _ => false,
+    };
+
+    var forPiece = ForPiece(forKeywordPiece, forPartsPiece, bodyPiece,
+        indentForParts: indentHeader, hasBlockBody: hasBlockBody);
+
+    if (forceSplitBody) forPiece.pin(State.split);
+
+    return forPiece;
   }
 
   /// Creates a normal (not function-typed) formal parameter with a name and/or
@@ -1022,26 +1060,21 @@ mixin PieceFactory {
       _ => false
     };
 
-    Piece leftPiece;
-    Piece rightPiece;
-    if (splitBeforeOperator) {
-      leftPiece = nodePiece(leftHandSide);
+    var leftPiece = nodePiece(leftHandSide);
 
-      rightPiece = buildPiece((b) {
-        b.token(operator);
-        b.space();
-        b.visit(rightHandSide, commaAfter: includeComma);
-      });
-    } else {
-      leftPiece = buildPiece((b) {
-        b.visit(leftHandSide);
-        b.token(operator, spaceBefore: spaceBeforeOperator);
-      });
+    var operatorPiece = buildPiece((b) {
+      if (spaceBeforeOperator) b.space();
+      b.token(operator);
+      if (splitBeforeOperator) b.space();
+    });
 
-      rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
-    }
+    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
 
-    return AssignPiece(leftPiece, rightPiece,
+    return AssignPiece(
+        left: leftPiece,
+        operatorPiece,
+        rightPiece,
+        splitBeforeOperator: splitBeforeOperator,
         canBlockSplitLeft: canBlockSplitLeft,
         canBlockSplitRight: canBlockSplitRight);
   }

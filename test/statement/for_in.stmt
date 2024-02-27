@@ -51,6 +51,14 @@ foo() async {
     body;
   }
 }
+>>> Split between variable type and name.
+for (VeryLongClassName reallyLongIdentifier in iteratableExpression) { body; }
+<<<
+for (VeryLongClassName
+    reallyLongIdentifier
+    in iteratableExpression) {
+  body;
+}
 >>> Split before `in`.
 for (var identifier in iteratableExpression) { body; }
 <<<
@@ -61,8 +69,9 @@ for (var identifier
 >>> Split inside initializer.
 for (var identifier in someVeryLong + iterableExpression) { body; }
 <<<
-for (var identifier in someVeryLong +
-    iterableExpression) {
+for (var identifier
+    in someVeryLong +
+        iterableExpression) {
   body;
 }
 >>> Prefer block-like splitting after `in`.
@@ -84,6 +93,14 @@ for (i in sequence) somethingMuchLonger(i);
 <<<
 for (i in sequence)
   somethingMuchLonger(i);
+>>> Split between type and variable name.
+for (SomeReallyLongTypeName andALongVariable in list) {;}
+<<<
+for (SomeReallyLongTypeName
+    andALongVariable
+    in list) {
+  ;
+}
 >>> Expression split in pattern.
 for (var (longIdentifier && anotherLongOne) in obj) {;}
 <<<
@@ -120,5 +137,14 @@ for (var (longIdentifier &&
     in longValueExpression +
         anotherOperand +
         aThirdOperand) {
+  ;
+}
+>>> If pattern doesn't block split, then split in right splits at `in` too.
+for (var [i] in veryLongIterator +
+        longExpression) {;}
+<<<
+for (var [i]
+    in veryLongIterator +
+        longExpression) {
   ;
 }
