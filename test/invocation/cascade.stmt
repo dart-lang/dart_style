@@ -225,3 +225,25 @@ object
   ?..[index]
   ..method()
   ..[index] = value;
+>>> Property chain in cascade.
+object..first.second.third
+    ..fourth.fifth.sixth;
+<<<
+object
+  ..first.second.third
+  ..fourth.fifth.sixth;
+>>> Split property chain in cascade.
+object..firstProperty.secondProperty.thirdProperty
+    ..fourthProperty.fifthProperty.sixthProperty;
+<<<
+object
+  ..firstProperty
+    .secondProperty
+    .thirdProperty
+  ..fourthProperty
+    .fifthProperty
+    .sixthProperty;
+>>> Cascade chained property access setter.
+object..a.b = value;
+<<<
+object..a.b = value;
