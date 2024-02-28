@@ -100,3 +100,36 @@ prefix._Foo.named()
     .method()
     .method()
     .method();
+>>> Split type arguments in chain.
+receiver.method<First, Second, Third, Fourth, Fifth>
+    (first, second, third, fourth, fifth)
+.method<First, Second, Third, Fourth, Fifth>
+    (first, second, third, fourth, fifth);
+<<<
+receiver
+    .method<
+      First,
+      Second,
+      Third,
+      Fourth,
+      Fifth
+    >(
+      first,
+      second,
+      third,
+      fourth,
+      fifth,
+    )
+    .method<
+      First,
+      Second,
+      Third,
+      Fourth,
+      Fifth
+    >(
+      first,
+      second,
+      third,
+      fourth,
+      fifth,
+    );

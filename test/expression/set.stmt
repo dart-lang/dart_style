@@ -34,3 +34,16 @@ var set =
         Sixth
       >
     >{};
+>>> Force split because of contained block.
+var s = {first, 1, fn, () {"fn";},third,fourth};
+<<<
+var s = {
+  first,
+  1,
+  fn,
+  () {
+    "fn";
+  },
+  third,
+  fourth,
+};

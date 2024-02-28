@@ -80,3 +80,19 @@ class Foo {
          'a message',
        );
 }
+>>> Allow block-formatting the assert arguments.
+class Foo {
+  Foo()
+    : assert(
+        () {
+          slowComputation();
+        }(),
+      );
+}
+<<<
+class Foo {
+  Foo()
+    : assert(() {
+        slowComputation();
+      }());
+}

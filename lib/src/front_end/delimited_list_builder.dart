@@ -62,7 +62,7 @@ class DelimitedListBuilder {
       });
     }
 
-    _setBlockElementFormatting();
+    if (_style.allowBlockElement) _setBlockElementFormatting();
 
     var piece =
         ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);

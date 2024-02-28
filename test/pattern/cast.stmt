@@ -1,10 +1,23 @@
 40 columns                              |
->>> Basic cast pattern. 
+>>> Basic cast pattern.
 if (object case x as int) {;}
 <<<
 if (object case x as int) {
   ;
 }
+>>> More complex type.
+if (o case   1   as   List < int > ?  ) {}
+<<<
+if (o case 1 as List<int>?) {}
+>>> Split inside type annotation.
+if (obj case value as SomeLongClass<FirstTypeArgument, SecondTypeArgument>) {}
+<<<
+if (obj
+    case value
+        as SomeLongClass<
+          FirstTypeArgument,
+          SecondTypeArgument
+        >) {}
 >>> Split before 'case'.
 if (object case constant as VeryLongType) {;}
 <<<

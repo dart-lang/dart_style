@@ -141,13 +141,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   Piece visitAssertInitializer(AssertInitializer node) {
     return buildPiece((b) {
       b.token(node.assertKeyword);
-      b.add(createList(
-        leftBracket: node.leftParenthesis,
+      b.add(createArgumentList(
+        node.leftParenthesis,
         [
           node.condition,
           if (node.message case var message?) message,
         ],
-        rightBracket: node.rightParenthesis,
+        node.rightParenthesis,
       ));
     });
   }
