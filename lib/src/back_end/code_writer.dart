@@ -266,7 +266,7 @@ class CodeWriter {
   /// writer's [_solution].
   void _formatSeparate(Piece piece) {
     var solution = _cache.find(
-        _pageWidth, piece, _solution.pieceState(piece), _pendingIndent);
+        _pageWidth, piece, _pendingIndent, _solution.pieceStateIfBound(piece));
 
     _pendingIndent = 0;
     _flushWhitespace();
