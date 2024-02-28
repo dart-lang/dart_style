@@ -171,9 +171,6 @@ class ChainBuilder {
   /// Given [expression], which is the expression for some call chain, traverses
   /// the selectors to fill in the list of [_calls].
   ///
-  /// If [_root] is a [CascadeSection], then this is called once for each
-  /// section in the cascade.
-  ///
   /// Otherwise, it's a method chain, and this recursively calls itself for the
   /// targets to unzip and flatten the nested selector expressions. Then it
   /// initializes [_target] with the innermost subexpression that isn't a part
