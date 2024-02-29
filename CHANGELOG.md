@@ -1,3 +1,7 @@
+## 2.3.7-wip
+
+* Remove temporary work around for analyzer 6.2.0 from dart_style 2.3.6.
+
 ## 2.3.6
 
 * Fix compile error when using dart_style with analyzer 6.2.0.
