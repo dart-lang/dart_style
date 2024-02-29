@@ -1,3 +1,8 @@
+## 2.3.6-wip
+
+There are no user-visible changes in this release. The only changes are behind
+the `tall-style` experiment flag.
+
 ## 2.3.5
 
 * Ensure switch expressions containing line comments split (#1404).
