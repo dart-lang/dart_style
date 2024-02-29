@@ -409,3 +409,25 @@ extension PatternExtensions on DartPattern {
         _ => false,
       };
 }
+
+// TODO(rnystrom): This is a gross hack because dart_style 2.3.5 has a bad
+// analyzer constraint which allows dart_style to be used with a version of
+// analyzer that doesn't publicly expose the `.macroKeyword` getter.
+// Fortunately, the oldest analyzer that dart_style allows *does* have the
+// getter on the ClassDeclarationImpl class.
+//
+// To get users off that bad version, we're publishing a new version of
+// dart_style that has the same constraint and gracefully handles that getter
+// not statically being visible.
+//
+// This hack will be removed immediately after publishing a version with that
+// fix.
+extension ClassDeclarationExtensions on ClassDeclaration {
+  /// If the [ClassDeclaration] is from a version of analyzer that has the
+  /// `macroKeyword` getter and the class has a `macro` keyword, returns that
+  /// token.
+  ///
+  /// Otherwise, returns `null`.
+  Token? get hackMacroKeywordForOlderAnalyzer =>
+      (this as dynamic).macroKeyword as Token?;
+}
