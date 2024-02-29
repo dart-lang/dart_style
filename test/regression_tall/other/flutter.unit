@@ -1,0 +1,14 @@
+>>> Unitialized late variable on cascade containing method chains.
+main() {
+  htmlElement
+    ..style.width = '100%'
+    ..style.height = '100%'
+    ..classList.add(_kClassName);
+}
+<<<
+main() {
+  htmlElement
+    ..style.width = '100%'
+    ..style.height = '100%'
+    ..classList.add(_kClassName);
+}
