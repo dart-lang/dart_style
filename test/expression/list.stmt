@@ -117,3 +117,14 @@ thirdElement];
     >
   >
 >[1, 2, 3];
+>>> Force split because of contained block.
+[first, () {"fn";},third,fourth];
+<<<
+[
+  first,
+  () {
+    "fn";
+  },
+  third,
+  fourth,
+];

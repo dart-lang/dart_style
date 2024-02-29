@@ -9,10 +9,17 @@ var map = {
 var map = {
   // comment
 };
->>> Inline block comment.
+>>> Inline block comment in empty map.
 var map = {  /* comment */  };
 <<<
 var map = {/* comment */};
+>>> Inline block comment after entry.
+var map = {first: one /* bang */, second: two};
+<<<
+var map = {
+  first: one /* bang */,
+  second: two,
+};
 >>> After entry.
 ({key: value // comment
 });

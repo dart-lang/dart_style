@@ -133,6 +133,23 @@ var list = [
   if (condition)
     if (another) longThingHereThatsLong,
 ];
+>>> Split outer if when subelement is for.
+var list = [
+  if (a) for (var b in c) thing
+];
+<<<
+var list = [
+  if (a)
+    for (var b in c) thing,
+];
+>>> Don't force split outer when subelement is nested inside collection.
+var list = [
+  if (a) [for (var b in c) d]
+];
+<<<
+var list = [
+  if (a) [for (var b in c) d],
+];
 >>> Nested if inside list doesn't force outer if to split.
 var list = [if (a) [if (b) c]];
 <<<

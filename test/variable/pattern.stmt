@@ -1,5 +1,23 @@
 40 columns                              |
 ### Pattern variable declaration statements.
+>>> Basic syntax.
+{
+  var  (  a  &&  b  )  =  o;
+  var  (  a  as  int  ,  String  ?  b  )  = o;
+  var  (  :  inferred  )  = o;
+  final  [  a  !  ,  Foo  (  :  b  ) , ... ]  = o;
+  final  {  'k'  :  _  ,  ...  } = o;
+  var  Foo  (  prop  :  value  ,  :  inferred  )  = o;
+}
+<<<
+{
+  var (a && b) = o;
+  var (a as int, String? b) = o;
+  var (:inferred) = o;
+  final [a!, Foo(:b), ...] = o;
+  final {'k': _, ...} = o;
+  var Foo(prop: value, :inferred) = o;
+}
 >>> Prefer to split at "=" instead of pattern.
 var (longIdentifier && anotherOne) = value;
 <<<

@@ -53,3 +53,13 @@ var list = [
   }(),
   4,
 ];
+>>> Spread cascade.
+var list = [1, ...thing..cascade()..another(), 4];
+<<<
+var list = [
+  1,
+  ...thing
+    ..cascade()
+    ..another(),
+  4,
+];

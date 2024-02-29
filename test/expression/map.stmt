@@ -139,3 +139,13 @@ const {first: 1, second: 2};
     AnotherLongTypeName
   >
 >{1: 'one', 2: 'two'};
+>>> Force split because of contained block.
+var m = {first: 1, fn: () {"fn";},third:fourth};
+<<<
+var m = {
+  first: 1,
+  fn: () {
+    "fn";
+  },
+  third: fourth,
+};

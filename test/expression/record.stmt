@@ -117,3 +117,14 @@ var record = (
     veryLongElement__________,
   ),
 );
+>>> Force split because of contained block.
+(first, () {"fn";},third,fourth);
+<<<
+(
+  first,
+  () {
+    "fn";
+  },
+  third,
+  fourth,
+);
