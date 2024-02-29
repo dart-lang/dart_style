@@ -1,4 +1,4 @@
-## 2.3.5-wip
+## 2.3.5
 
 * Ensure switch expressions containing line comments split (#1404).
 * Use language version `3.3` to parse so that code with extension types can be
