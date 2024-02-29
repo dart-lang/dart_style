@@ -51,27 +51,31 @@ class Solver {
   ///
   /// If [rootState] is given, then [root] is bound to that state.
   Solution format(Piece root, [State? rootState]) {
-    var solution = Solution(_cache, root,
-        pageWidth: _pageWidth,
-        leadingIndent: _leadingIndent,
-        rootState: rootState);
     if (debug.traceSolver) {
       var unsolved = <Piece>[];
       void traverse(Piece piece) {
-        if (piece.additionalStates.isNotEmpty &&
-            piece.pinnedState == null &&
-            !solution.isBound(piece)) {
-          unsolved.add(piece);
-        }
+        if (piece.states.length > 1) unsolved.add(piece);
 
         piece.forEachChild(traverse);
       }
 
       traverse(root);
 
-      debug.log(debug.bold('Solving $root for ${unsolved.join(' ')}:'));
+      var label = [
+        'Solving $root',
+        if (rootState != null) 'at state $rootState',
+        if (unsolved.isNotEmpty) 'for ${unsolved.join(', ')}',
+      ].join(' ');
+
+      debug.log(debug.bold('$label:'));
+      debug.indent();
       debug.log(debug.pieceTree(root));
     }
+
+    var solution = Solution(_cache, root,
+        pageWidth: _pageWidth,
+        leadingIndent: _leadingIndent,
+        rootState: rootState);
 
     _queue.add(solution);
 
@@ -87,7 +91,7 @@ class Solver {
       tries++;
 
       if (debug.traceSolver) {
-        debug.log(debug.bold('#$tries $solution'));
+        debug.log(debug.bold('Try #$tries $solution'));
         debug.log(solution.text);
         debug.log('');
       }
@@ -116,6 +120,7 @@ class Solver {
 
     // If we didn't find a solution without overflow, pick the least bad one.
     if (debug.traceSolver) {
+      debug.unindent();
       debug.log(debug.bold('Solved $root to $best:'));
       debug.log(best.text);
       debug.log('');

@@ -128,11 +128,16 @@ class Solution implements Comparable<Solution> {
     _nextPieceToExpand = nextPieceToExpand;
   }
 
-  /// The state this solution selects for [piece].
+  /// The state that [piece] is pinned to or that this solution selects.
   ///
   /// If no state has been selected, defaults to the first state.
-  State pieceState(Piece piece) =>
-      piece.pinnedState ?? _pieceStates[piece] ?? State.unsplit;
+  State pieceState(Piece piece) => pieceStateIfBound(piece) ?? State.unsplit;
+
+  /// The state that [piece] is pinned to or that this solution selects.
+  ///
+  /// If no state has been selected, returns `null`.
+  State? pieceStateIfBound(Piece piece) =>
+      piece.pinnedState ?? _pieceStates[piece];
 
   /// Whether [piece] has been bound to a state in this set (or is pinned).
   bool isBound(Piece piece) =>
@@ -278,7 +283,7 @@ class Solution implements Comparable<Solution> {
       if (overflow > 0) '($overflow over)',
       if (!isValid) '(invalid)',
       states.join(' '),
-    ].join(' ');
+    ].join(' ').trim();
   }
 
   /// Attempts to add a binding from [piece] to [state] in [boundStates], and
@@ -302,7 +307,7 @@ class Solution implements Comparable<Solution> {
       if (!success) return;
 
       // Apply the new binding if it doesn't conflict with an existing one.
-      switch (boundStates[thisPiece]) {
+      switch (thisPiece.pinnedState ?? boundStates[thisPiece]) {
         case null:
           // Binding a unbound piece to a state.
           additionalCost += thisPiece.stateCost(thisState);
