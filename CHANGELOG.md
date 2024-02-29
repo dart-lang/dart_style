@@ -1,7 +1,6 @@
-## 2.3.6-wip
+## 2.3.6
 
-There are no user-visible changes in this release. The only changes are behind
-the `tall-style` experiment flag.
+* Fix compile error when using dart_style with analyzer 6.2.0.
 
 ## 2.3.5
 

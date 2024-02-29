@@ -248,7 +248,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           node.interfaceKeyword,
           node.finalKeyword,
           node.sealedKeyword,
-          node.macroKeyword,
+          node.hackMacroKeywordForOlderAnalyzer,
           node.mixinKeyword,
           node.classKeyword,
         ],
