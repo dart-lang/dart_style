@@ -1,3 +1,6 @@
+// Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
+// for details. All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 import 'dart:isolate';
 
@@ -10,12 +13,16 @@ final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
-/// Get the absolute local file path to the package's "test" directory.
-Future<String> findTestDirectory() async {
+/// Get the absolute local file path to the dart_style package's root directory.
+Future<String> findPackageDirectory() async {
   var libraryUri = await Isolate.resolvePackageUri(
       Uri.parse('package:dart_style/src/testing/test_file.dart'));
-  return p
-      .normalize(p.join(p.dirname(libraryUri!.toFilePath()), '../../../test'));
+  return p.normalize(p.join(p.dirname(libraryUri!.toFilePath()), '../../..'));
+}
+
+/// Get the absolute local file path to the package's "test" directory.
+Future<String> findTestDirectory() async {
+  return p.normalize(p.join(await findPackageDirectory(), 'test'));
 }
 
 /// A file containing a series of formatting tests.

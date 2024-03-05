@@ -6,6 +6,7 @@ import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
+import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -139,6 +140,41 @@ Future<void> testDirectory(String name,
 Future<void> testFile(String path,
     {required bool tall, Iterable<StyleFix>? fixes}) async {
   _testFile(await TestFile.read(path), tall, fixes);
+}
+
+/// Format all of the benchmarks and ensure they produce their expected outputs.
+Future<void> testBenchmarks({required bool useTallStyle}) async {
+  var benchmarks = await Benchmark.findAll();
+
+  group('Benchmarks', () {
+    for (var benchmark in benchmarks) {
+      test(benchmark.name, () {
+        var formatter = DartFormatter(
+            pageWidth: benchmark.pageWidth,
+            experimentFlags: useTallStyle
+                ? const ['inline-class', 'macros', tallStyleExperimentFlag]
+                : const ['inline-class', 'macros']);
+
+        var actual = formatter.formatSource(SourceCode(benchmark.input));
+
+        // The test files always put a newline at the end of the expectation.
+        // Statements from the formatter (correctly) don't have that, so add
+        // one to line up with the expected result.
+        var actualText = actual.text;
+        if (!benchmark.isCompilationUnit) actualText += '\n';
+
+        var expected =
+            useTallStyle ? benchmark.tallOutput : benchmark.shortOutput;
+
+        // Fail with an explicit message because it's easier to read than
+        // the matcher output.
+        if (actualText != expected) {
+          fail('Formatting did not match expectation. Expected:\n'
+              '$expected\nActual:\n$actualText');
+        }
+      });
+    }
+  });
 }
 
 void _testFile(

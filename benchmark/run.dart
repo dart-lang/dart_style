@@ -11,6 +11,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
 import 'package:dart_style/src/source_visitor.dart';
+import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
@@ -19,28 +20,20 @@ const _formatsPerTrial = 10;
 
 final _benchmarkDirectory = p.dirname(p.fromUri(Platform.script));
 
-void main(List<String> arguments) {
-  var (:isShort, :baseline, :benchmarkPath) = _parseArguments(arguments);
+Future<void> main(List<String> arguments) async {
+  var (:isShort, :baseline, :benchmarks) = await _parseArguments(arguments);
 
-  var sourceLines = File(benchmarkPath).readAsLinesSync();
-
-  // The first line may have a "|" to indicate the page width.
-  var pageWidth = 80;
-  if (sourceLines[0].endsWith('|')) {
-    pageWidth = sourceLines[0].indexOf('|');
-    sourceLines.removeAt(0);
+  for (var benchmark in benchmarks) {
+    _runBenchmark(benchmark, baseline, isShort: isShort);
   }
+}
 
-  var sourceText = sourceLines.join('\n');
-  var source = SourceCode(sourceText);
+void _runBenchmark(Benchmark benchmark, double? baseline,
+    {required bool isShort}) {
+  var source = SourceCode(benchmark.input);
+  var expected = isShort ? benchmark.shortOutput : benchmark.tallOutput;
 
-  var expected =
-      File(p.setExtension(benchmarkPath, isShort ? '.expect_short' : '.expect'))
-          .readAsStringSync();
-
-  var benchmarkName = p.basenameWithoutExtension(benchmarkPath);
-
-  print('Benchmarking "$benchmarkName" '
+  print('Benchmarking "${benchmark.name}" '
       'using ${isShort ? 'short' : 'tall'} style...');
 
   if (baseline != null) {
@@ -59,7 +52,7 @@ void main(List<String> arguments) {
   );
 
   var formatter = DartFormatter(
-      pageWidth: pageWidth,
+      pageWidth: benchmark.pageWidth,
       lineEnding: '\n',
       experimentFlags: [if (!isShort) tallStyleExperimentFlag]);
 
@@ -103,8 +96,8 @@ void main(List<String> arguments) {
   _printResult('Best    ', baseline, best);
 }
 
-({bool isShort, double? baseline, String benchmarkPath}) _parseArguments(
-    List<String> arguments) {
+Future<({bool isShort, double? baseline, List<Benchmark> benchmarks})>
+    _parseArguments(List<String> arguments) async {
   var argParser = ArgParser();
   argParser.addFlag('help', negatable: false, help: 'Show usage information.');
   argParser.addOption('baseline',
@@ -117,24 +110,24 @@ void main(List<String> arguments) {
 
   var argResults = argParser.parse(arguments);
   if (argResults['help'] as bool) {
-    print('dart benchmark/run.dart benchmark/case/<benchmark>.unit '
-        '[--short] [--baseline=n]');
-    print('');
-    print(argParser.usage);
-    exit(0);
+    _usage(argParser, exitCode: 0);
   }
 
-  var benchmarkPath = '';
-  switch (argResults.rest) {
-    case []:
-      // Default to the large benchmark.
-      benchmarkPath = p.join(_benchmarkDirectory, 'case/large.unit');
-    case [var path]:
-      benchmarkPath = path;
-    default:
-      stderr.writeln('Usage: benchmark/run.dart [--short] <path to benchmark>');
-      exit(64);
-  }
+  var benchmarks = switch (argResults.rest) {
+    // Find all the benchmarks.
+    ['all'] => await Benchmark.findAll(),
+
+    // Default to the large benchmark.
+    [] => [
+        await Benchmark.read(p.join(_benchmarkDirectory, 'case/large.unit'))
+      ],
+
+    // The user-specified list of paths.
+    [...var paths] when paths.isNotEmpty => [
+        for (var path in paths) await Benchmark.read(path)
+      ],
+    _ => _usage(argParser, exitCode: 64),
+  };
 
   double? baseline;
   if (argResults.wasParsed('baseline')) {
@@ -144,7 +137,7 @@ void main(List<String> arguments) {
   return (
     isShort: argResults['short'] as bool,
     baseline: baseline,
-    benchmarkPath: benchmarkPath
+    benchmarks: benchmarks
   );
 }
 
@@ -157,4 +150,18 @@ void _printResult(String label, double? baseline, double time) {
     print('$label: ${percent.toStringAsFixed(3).padLeft(7)}% '
         "${'=' * (percent ~/ 2)}");
   }
+}
+
+/// Prints usage information.
+///
+/// If [exitCode] is non-zero, prints to stderr.
+Never _usage(ArgParser argParser, {required int exitCode}) {
+  var stream = exitCode == 0 ? stdout : stderr;
+
+  stream.writeln('dart benchmark/run.dart [benchmark/case/<benchmark>.unit] '
+      '[--short] [--baseline=n]');
+  stream.writeln('');
+  stream.writeln(argParser.usage);
+
+  exit(exitCode);
 }
