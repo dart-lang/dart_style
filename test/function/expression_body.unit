@@ -44,6 +44,14 @@ function() => {
   2: element,
   3: element,
 };
+>>> Prefer block-like splitting for records.
+function() => (longElement, longElement, longElement);
+<<<
+function() => (
+  longElement,
+  longElement,
+  longElement,
+);
 >>> Prefer block-like splitting for function calls.
 function() => another(argument, argument);
 <<<
