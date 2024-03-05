@@ -1,0 +1,76 @@
+40 columns                              |
+### Tests that nested collections force outer ones to split.
+>>> Nested non-empty list forces outer set to split.
+set = {[inner]};
+<<<
+set = {
+  [inner],
+};
+>>> Nested non-empty map forces outer set to split.
+set = {{key: inner}};
+<<<
+set = {
+  {key: inner},
+};
+>>> Nested non-empty set forces outer set to split.
+set = {{inner}};
+<<<
+set = {
+  {inner},
+};
+>>> Nested non-empty record does not force outer set to split.
+set = {(inner,)};
+<<<
+set = {(inner,)};
+>>> Nested empty collection does not force outer set to split.
+set = {[], {}, ()};
+<<<
+set = {[], {}, ()};
+### TODO: Clean up.
+>>> splits outer sets even if they fit
+var s = {a, {b, c}, d, {},
+    e, {f, {g, h} }  };
+<<<
+var s = {
+  a,
+  {b, c},
+  d,
+  {},
+  e,
+  {
+    f,
+    {g, h},
+  },
+};
+>>> split indirect outer
+var s = {a, function({b, inner})};
+<<<
+var s = {
+  a,
+  function({b, inner}),
+};
+>>> empty literal does not force outer split
+var s = {a, <int>{}, b, [], c, () {}};
+<<<
+var s = {a, <int>{}, b, [], c, () {}};
+>>> nested split set
+var s = {first, 1, second, {third, fourth}, fifth, 5, nested, {sixth, seventh, eighth, nine,
+    tenth, eleventh}};
+<<<
+var s = {
+  first,
+  1,
+  second,
+  {third, fourth},
+  fifth,
+  5,
+  nested,
+  {
+    sixth,
+    seventh,
+    eighth,
+    nine,
+    tenth,
+    eleventh,
+  },
+};

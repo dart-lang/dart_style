@@ -1,0 +1,48 @@
+40 columns                              |
+### Tests that nested collections force outer ones to split.
+>>> Nested non-empty list forces outer map to split.
+map = {key: [inner]};
+<<<
+map = {
+  key: [inner],
+};
+>>> Nested non-empty map forces outer map to split.
+map = {key: {key: inner}};
+<<<
+map = {
+  key: {key: inner},
+};
+>>> Nested non-empty set forces outer map to split.
+map = {key: {inner}};
+<<<
+map = {
+  key: {inner},
+};
+>>> Nested non-empty record does not force outer map to split.
+map = {key: (inner,)};
+<<<
+map = {key: (inner,)};
+>>> Nested empty collection does not force outer map to split.
+map = {a: [], b: {}, c: ()};
+<<<
+map = {a: [], b: {}, c: ()};
+>>> Indirect nesting still forces a split.
+map = {a: function({b: inner})};
+<<<
+map = {
+  a: function({b: inner}),
+};
+>>> Multiple nested collections.
+var m = {first: 1, second: [third, fourth], fifth: 5, nested: {sixth: seventh, eighth: nine,
+    tenth: eleventh}};
+<<<
+var m = {
+  first: 1,
+  second: [third, fourth],
+  fifth: 5,
+  nested: {
+    sixth: seventh,
+    eighth: nine,
+    tenth: eleventh,
+  },
+};

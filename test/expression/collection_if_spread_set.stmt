@@ -3,11 +3,15 @@
 >>> Spread then element stays unsplit if it fits.
 var set = {if (c) ...{1, 2}};
 <<<
-var set = {if (c) ...{1, 2}};
+var set = {
+  if (c) ...{1, 2},
+};
 >>> Spread else stays unsplit if it fits.
 var set = {if (c) 1 else ...{2, 3}};
 <<<
-var set = {if (c) 1 else ...{2, 3}};
+var set = {
+  if (c) 1 else ...{2, 3},
+};
 >>> Spread then and else stay unsplit if they fit.
 var set = {if (c) ...{1, 2} else ...{3, 4}};
 <<<
@@ -132,9 +136,9 @@ var set = {
 >>> A single-line list that isn't spread.
 var set = {if (a) {b}};
 <<<
-### TODO(tall): This will change if the new style gets the same rule as the old
-### where nested collections force outer ones to split.
-var set = {if (a) {b}};
+var set = {
+  if (a) {b},
+};
 >>> A collection that isn't spread wraps and indents.
 var set = {if (condition) {element1, element2, element3}};
 <<<

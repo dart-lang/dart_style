@@ -1,5 +1,5 @@
 40 columns                              |
->>> Basic record switch. 
+>>> Basic record switch.
 switch (obj) {
   case  (  )  :
   case  (  value  ,  )  :
@@ -164,3 +164,15 @@ if (e case (
   longPattern1,
   veryLongPattern2,
 )) {}
+>>> A nested non-empty list pattern doesn't force the record pattern to split.
+var ([v],) = value;
+<<<
+var ([v],) = value;
+>>> A nested non-empty map pattern doesn't force the record pattern to split.
+var ({k: v},) = value;
+<<<
+var ({k: v},) = value;
+>>> A nested non-empty record pattern doesn't force the record pattern to split.
+var ((v,),) = value;
+<<<
+var ((v,),) = value;
