@@ -133,3 +133,22 @@ receiver
       fourth,
       fifth,
     );
+>>> Prefer to split in target over chain.
+function({key: value}).method().method();
+<<<
+function({
+  key: value,
+}).method().method();
+>>> Split chain and target.
+function([longElement1, longElement2, longElement3]).method().method().method().method().method();
+<<<
+function([
+      longElement1,
+      longElement2,
+      longElement3,
+    ])
+    .method()
+    .method()
+    .method()
+    .method()
+    .method();

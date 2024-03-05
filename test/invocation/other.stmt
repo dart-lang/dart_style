@@ -1,0 +1,40 @@
+40 columns                              |
+>>> Force all arguments to split if an argument splits.
+foo(a, b, veryLongOperand + extremelyLongOperand, c);
+<<<
+foo(
+  a,
+  b,
+  veryLongOperand +
+      extremelyLongOperand,
+  c,
+);
+>>> Multiple nested collections inside a block argument.
+method(function([veryLongElement, veryLongElement],
+[veryLongElement, veryLongElement, veryLongElement]));
+<<<
+method(function(
+  [veryLongElement, veryLongElement],
+  [
+    veryLongElement,
+    veryLongElement,
+    veryLongElement,
+  ],
+));
+>>> Mixed named/positional arguments with collection arguments.
+function(argument, a: argument, argument, b: argument,
+[element, element, element, element],
+c: {'key': value, 'other key': value, 'third key': value});
+<<<
+function(
+  argument,
+  a: argument,
+  argument,
+  b: argument,
+  [element, element, element, element],
+  c: {
+    'key': value,
+    'other key': value,
+    'third key': value,
+  },
+);
