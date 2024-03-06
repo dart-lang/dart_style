@@ -134,11 +134,15 @@ var map = {
 >>> A control flow element in an inner list doesn't force the outer to split.
 var l = [for (;;) [if (c) d]];
 <<<
-var l = [for (;;) [if (c) d]];
+var l = [
+  for (;;) [if (c) d],
+];
 >>>
 var l = [for (;;) [for (c in d) e]];
 <<<
-var l = [for (;;) [for (c in d) e]];
+var l = [
+  for (;;) [for (c in d) e],
+];
 >>> Pattern for-in.
 var list = [
 for (var (longIdentifier && anotherLongOne) in obj) element

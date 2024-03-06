@@ -50,6 +50,18 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 /// To avoid that, we pick one concrete construct formatted by the function,
 /// usually the most common, and name it after that, as in [createImport()].
 mixin PieceFactory {
+  /// A stack that handles forcing nested list, map, and set literals to split.
+  ///
+  /// Each entry corresponds to a collection currently being visited and the
+  /// value is whether or not it should be forced to split because an inner
+  /// collection was found inside it.
+  ///
+  /// When we begin a collection, we set all of the existing elements to `true`
+  /// then push `false` for the new collection. When done visiting the elements,
+  /// we pop the last value, If it's `true`, we know we visited a nested
+  /// collection so we force this one to split.
+  final List<bool> _collectionSplits = [];
+
   PieceWriter get pieces;
 
   CommentWriter get comments;
@@ -118,6 +130,35 @@ mixin PieceFactory {
   }
 
   /// Creates a [ListPiece] for a collection literal or pattern.
+  ///
+  /// If [splitOnNestedCollection] is `true`, then this collection is forced to
+  /// split if it contains any non-empty collections where
+  /// [splitOnNestedCollection] is also `true`, even if the collection would
+  /// otherwise not need to split. This is `true` for list, map, and set
+  /// expressions because they are often used for composite data structures and
+  /// they're easier to read if they don't get packed too densely:
+  ///
+  ///     // Prefer:
+  ///     data = {
+  ///       'a': [1, 2, 3],
+  ///       'b': [
+  ///         4,
+  ///         [5],
+  ///         6,
+  ///       ]
+  ///       'c': [7, 8],
+  ///     };
+  ///
+  ///     // Over:
+  ///     data = {'a': [1, 2, 3], 'b': [4, [5], 6] 'c': [7, 8]};
+  ///
+  /// We don't do this for record expressions because those are not unbounded
+  /// in size and generally represent aggregations of data where the fields are
+  /// more "closely" bundled together. Record expressions are sort of like
+  /// constructor invocations for an anonymous constructor.
+  ///
+  /// We don't do this for patterns because it's better to fit a pattern on a
+  /// single line when possible for parallel cases in switches.
   Piece createCollection(
     Token leftBracket,
     List<AstNode> elements,
@@ -125,6 +166,7 @@ mixin PieceFactory {
     Token? constKeyword,
     TypeArgumentList? typeArguments,
     ListStyle style = const ListStyle(),
+    bool splitOnNestedCollection = false,
   }) {
     return buildPiece((b) {
       b.modifier(constKeyword);
@@ -141,12 +183,30 @@ mixin PieceFactory {
       // The formatter will preserve the newline after element 3 and the lack of
       // them after the other elements.
 
-      b.add(createList(
+      if (splitOnNestedCollection) {
+        // If this collection isn't empty, force all of the surrounding
+        // collections to split if they care to.
+        if (elements.isNotEmpty) {
+          _collectionSplits.fillRange(0, _collectionSplits.length, true);
+        }
+
+        // Add this collection to the stack.
+        _collectionSplits.add(false);
+      }
+
+      var collection = createList(
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
         style: style,
-      ));
+      );
+
+      // If there is a collection inside this one, force this one to split.
+      if (splitOnNestedCollection) {
+        if (_collectionSplits.removeLast()) collection.pin(State.split);
+      }
+
+      b.add(collection);
     });
   }
 

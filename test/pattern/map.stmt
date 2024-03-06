@@ -89,3 +89,15 @@ if (obj case {
 }) {
   ;
 }
+>>> A nested non-empty list pattern doesn't force the map pattern to split.
+var {k: [v]} = value;
+<<<
+var {k: [v]} = value;
+>>> A nested non-empty map pattern doesn't force the map pattern to split.
+var {k: {k: v}} = value;
+<<<
+var {k: {k: v}} = value;
+>>> A nested non-empty record pattern doesn't force the map pattern to split.
+var {k: (v,)} = value;
+<<<
+var {k: (v,)} = value;

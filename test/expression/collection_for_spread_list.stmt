@@ -3,7 +3,9 @@
 >>> Spread list inside for stays on one line if it fits.
 var list = [for (;;) ...[1, 2]];
 <<<
-var list = [for (;;) ...[1, 2]];
+var list = [
+  for (;;) ...[1, 2],
+];
 >>> Spread list inside for formats like block if it splits.
 var list = [for (;;) ...[element1, element2, element3]];
 <<<

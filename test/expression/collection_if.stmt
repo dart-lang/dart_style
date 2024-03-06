@@ -153,7 +153,9 @@ var list = [
 >>> Nested if inside list doesn't force outer if to split.
 var list = [if (a) [if (b) c]];
 <<<
-var list = [if (a) [if (b) c]];
+var list = [
+  if (a) [if (b) c],
+];
 >>> Chained if-else.
 var list = [if (condition1) thing1 else if (condition2) thing2];
 <<<

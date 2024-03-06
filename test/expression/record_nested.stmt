@@ -1,0 +1,22 @@
+40 columns                              |
+### Tests that nested collections do not force outer records to split.
+>>> Nested non-empty list does not force outer record to split.
+record = ([inner],);
+<<<
+record = ([inner],);
+>>> Nested non-empty map does not force outer record to split.
+record = ({key: inner},);
+<<<
+record = ({key: inner},);
+>>> Nested non-empty set does not force outer record to split.
+record = ({inner},);
+<<<
+record = ({inner},);
+>>> Nested non-empty record does not force outer record to split.
+record = ((inner,),);
+<<<
+record = ((inner,),);
+>>> Nested empty collection does not force outer record to split.
+record = ([], {}, ());
+<<<
+record = ([], {}, ());

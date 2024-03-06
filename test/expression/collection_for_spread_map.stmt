@@ -3,7 +3,9 @@
 >>> Spread list inside for stays on one line if it fits.
 var map = {for (;;) ...{1: 1, 2: 2}};
 <<<
-var map = {for (;;) ...{1: 1, 2: 2}};
+var map = {
+  for (;;) ...{1: 1, 2: 2},
+};
 >>> Spread list inside for formats like block if it splits.
 var map = {for (;;) ...{element1: 1, element2: 2, element3: 3}};
 <<<
