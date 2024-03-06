@@ -136,7 +136,7 @@ mixin PieceFactory {
   /// [splitOnNestedCollection] is also `true`, even if the collection would
   /// otherwise not need to split. This is `true` for list, map, and set
   /// expressions because they are often used for composite data structures and
-  /// they're easier to read if they don't get packed to densely:
+  /// they're easier to read if they don't get packed too densely:
   ///
   ///     // Prefer:
   ///     data = {
