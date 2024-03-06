@@ -17,6 +17,8 @@ void main() async {
   await testDirectory('splitting', tall: false);
   await testDirectory('whitespace', tall: false);
 
+  await testBenchmarks(useTallStyle: false);
+
   test('throws a FormatterException on failed parse', () {
     var formatter = DartFormatter();
     expect(() => formatter.format('wat?!'), throwsA(isA<FormatterException>()));

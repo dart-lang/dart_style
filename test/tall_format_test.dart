@@ -23,6 +23,8 @@ void main() async {
   await testDirectory('variable', tall: true);
   await testDirectory('regression_tall', tall: true);
 
+  await testBenchmarks(useTallStyle: true);
+
   test('throws a FormatterException on failed parse', () {
     var formatter = DartFormatter();
     expect(() => formatter.format('wat?!'), throwsA(isA<FormatterException>()));
