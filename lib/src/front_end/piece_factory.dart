@@ -911,12 +911,6 @@ mixin PieceFactory {
       // that aren't on the same line.
       if (atLineStart) builder.addCommentsBefore(element.beginToken);
 
-      // If the next element is on this same line, then include the comma in
-      // the row. Otherwise, let the surrounding DelimitedListBuilder handle
-      // it.
-      var includeComma = i < elements.length - 1 &&
-          !comments.hasNewlineBetween(
-              element.endToken, elements[i + 1].beginToken);
       lineBuilder.visit(element);
 
       // There is an element on this line now.
