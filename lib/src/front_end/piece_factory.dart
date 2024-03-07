@@ -72,7 +72,7 @@ mixin PieceFactory {
 
   /// Creates a [ListPiece] for an argument list.
   Piece createArgumentList(
-      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+      Token leftBracket, List<AstNode> elements, Token rightBracket) {
     return createList(
         leftBracket: leftBracket,
         elements,
@@ -159,6 +159,18 @@ mixin PieceFactory {
   ///
   /// We don't do this for patterns because it's better to fit a pattern on a
   /// single line when possible for parallel cases in switches.
+  ///
+  /// If [preserveNewlines] is `true`, then any newlines or lack of newlines
+  /// between pairs of elements in the input are preserved in the output. This
+  /// is used for collection literals that contain line comments to preserve
+  /// the author's deliberate structuring, as in:
+  ///
+  ///     matrix = [
+  ///       // X, Y, Z:
+  ///       1, 2, 3,
+  ///       4, 5, 6,
+  ///       7, 8, 9,
+  ///     ];
   Piece createCollection(
     Token leftBracket,
     List<AstNode> elements,
@@ -167,21 +179,11 @@ mixin PieceFactory {
     TypeArgumentList? typeArguments,
     ListStyle style = const ListStyle(),
     bool splitOnNestedCollection = false,
+    bool preserveNewlines = false,
   }) {
     return buildPiece((b) {
       b.modifier(constKeyword);
       b.visit(typeArguments);
-
-      // TODO(tall): Support a line comment inside a collection literal as a
-      // signal to preserve internal newlines. So if you have:
-      //
-      //     var list = [
-      //       1, 2, 3, // comment
-      //       4, 5, 6,
-      //     ];
-      //
-      // The formatter will preserve the newline after element 3 and the lack of
-      // them after the other elements.
 
       if (splitOnNestedCollection) {
         // If this collection isn't empty, force all of the surrounding
@@ -199,6 +201,7 @@ mixin PieceFactory {
         elements,
         rightBracket: rightBracket,
         style: style,
+        preserveNewlines: preserveNewlines,
       );
 
       // If there is a collection inside this one, force this one to split.
@@ -828,15 +831,91 @@ mixin PieceFactory {
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.
-  Piece createList(Iterable<AstNode> elements,
+  ///
+  /// If [preserveNewlines] is `true`, then any newlines or lack of newlines
+  /// between pairs of elements in the input are preserved in the output. This
+  /// is used for collection literals that contain line comments to preserve
+  /// the author's deliberate structuring, as in:
+  ///
+  ///     matrix = [
+  ///       1, 2, 3, //
+  ///       4, 5, 6,
+  ///       7, 8, 9,
+  ///     ];
+  Piece createList(List<AstNode> elements,
       {Token? leftBracket,
       Token? rightBracket,
-      ListStyle style = const ListStyle()}) {
+      ListStyle style = const ListStyle(),
+      bool preserveNewlines = false}) {
     var builder = DelimitedListBuilder(this, style);
+
     if (leftBracket != null) builder.leftBracket(leftBracket);
-    elements.forEach(builder.visit);
+
+    if (preserveNewlines && elements.containsLineComments(rightBracket!)) {
+      _preserveNewlinesInCollection(elements, builder);
+    } else {
+      elements.forEach(builder.visit);
+    }
+
     if (rightBracket != null) builder.rightBracket(rightBracket);
     return builder.build();
+  }
+
+  /// Writes [elements] into [builder], preserving the original newlines (or
+  /// lack thereof) between elements.
+  ///
+  /// This is used for formatting collection literals that contain at least one
+  /// line comment between elements. In that case, we use the line comment as a
+  /// single to prefer the author's chosen newlines between elements. For
+  /// example, if the user writes:
+  ///
+  ///     list = [
+  ///       1,2,   3, 4,
+  ///       // comment
+  ///       5,6,    7
+  ///     ];
+  ///
+  /// The formatter produces:
+  ///
+  ///     list = [
+  ///       1, 2, 3, 4,
+  ///       // comment
+  ///       5, 6, 7
+  ///     ];
+  void _preserveNewlinesInCollection(
+      List<AstNode> elements, DelimitedListBuilder builder) {
+    // Builder for all of the elements on a single line. We use a ListPiece for
+    // this too because even though we prefer to keep all elements that are on
+    // a single line in the input also on a single line in the output, we will
+    // split them if they don't fit.
+    var lineStyle = const ListStyle(commas: Commas.nonTrailing);
+    var lineBuilder = DelimitedListBuilder(this, lineStyle);
+    var atLineStart = true;
+
+    for (var i = 0; i < elements.length; i++) {
+      var element = elements[i];
+
+      if (!atLineStart &&
+          comments.hasNewlineBetween(
+              elements[i - 1].endToken, element.beginToken)) {
+        // This element begins a new line. Add the elements on the previous
+        // line to the list builder and start a new line.
+        builder.add(lineBuilder.build());
+        lineBuilder = DelimitedListBuilder(this, lineStyle);
+        atLineStart = true;
+      }
+
+      // Let the main list builder handle comments that occur between elements
+      // that aren't on the same line.
+      if (atLineStart) builder.addCommentsBefore(element.beginToken);
+
+      lineBuilder.visit(element);
+
+      // There is an element on this line now.
+      atLineStart = false;
+    }
+
+    if (!atLineStart) builder.add(lineBuilder.build());
   }
 
   /// Create a [VariablePiece] for a named or wildcard variable pattern.
@@ -887,6 +966,7 @@ mixin PieceFactory {
     List<AstNode> fields,
     Token rightParenthesis, {
     Token? constKeyword,
+    bool preserveNewlines = false,
   }) {
     var style = switch (fields) {
       // Record types or patterns with a single named field don't add a trailing
@@ -925,6 +1005,7 @@ mixin PieceFactory {
       fields,
       rightParenthesis,
       style: style,
+      preserveNewlines: preserveNewlines,
     );
   }
 
@@ -1050,7 +1131,7 @@ mixin PieceFactory {
 
   /// Creates a [ListPiece] for a type argument or type parameter list.
   Piece createTypeList(
-      Token leftBracket, Iterable<AstNode> elements, Token rightBracket) {
+      Token leftBracket, List<AstNode> elements, Token rightBracket) {
     return createList(
         leftBracket: leftBracket,
         elements,

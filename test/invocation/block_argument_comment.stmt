@@ -66,7 +66,8 @@ function(
 );
 >>> Line comment inside block argument.
 function(first, [// comment
-second, third]);
+second,
+third]);
 <<<
 function(first, [
   // comment
@@ -74,7 +75,8 @@ function(first, [
   third,
 ]);
 >>>
-function(first, [second, third // comment
+function(first, [second,
+third // comment
 ]);
 <<<
 function(first, [

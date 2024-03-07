@@ -70,3 +70,21 @@ function(
   // five
   another,
 );
+>>> Don't preserve newlines in argument lists with line comment.
+### For collection literals, a line comment is a signal to preserve the user's
+### original newlines. This test is just to validate that we *don't* do that
+### for argument lists.
+function(// yeah
+first, second, third,
+fourth, fifth,
+sixth);
+<<<
+function(
+  // yeah
+  first,
+  second,
+  third,
+  fourth,
+  fifth,
+  sixth,
+);

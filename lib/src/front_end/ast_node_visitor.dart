@@ -1131,6 +1131,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       node.elements,
       node.rightBracket,
       splitOnNestedCollection: true,
+      preserveNewlines: true,
     );
   }
 
@@ -1464,6 +1465,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       node.leftParenthesis,
       node.fields,
       node.rightParenthesis,
+      preserveNewlines: true,
     );
   }
 
@@ -1597,6 +1599,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       node.elements,
       node.rightBracket,
       splitOnNestedCollection: true,
+      preserveNewlines: true,
     );
   }
 
