@@ -131,19 +131,9 @@ extension AstIterableExtensions on Iterable<AstNode> {
   /// any elements.
   ///
   /// Comments within an element are ignored.
-  bool containsLineComments([Token? rightBracket]) {
-    // Look before each element.
-    for (var element in this) {
-      if (element.beginToken.hasLineCommentBefore) return true;
-    }
-
-    // Look before the closing bracket.
-    if (rightBracket != null) {
-      if (rightBracket.hasLineCommentBefore) return true;
-    }
-
-    return false;
-  }
+  bool containsLineComments([Token? rightBracket]) =>
+      any((element) => element.beginToken.hasLineCommentBefore) ||
+      (rightBracket?.hasLineCommentBefore ?? false);
 }
 
 extension ExpressionExtensions on Expression {
