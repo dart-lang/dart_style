@@ -1,0 +1,54 @@
+40 columns                              |
+### Tests for how a line comment in a set literal causes newlines to be kept.
+>>> Preserve newlines if set contains a line comment.
+var set = {
+  // yeah
+  a,b,c,d,
+  e,f,g,h
+};
+<<<
+var set = {
+  // yeah
+  a, b, c, d,
+  e, f, g, h,
+};
+>>> Don't preserve newlines if line comment is inside an element.
+var set = {
+  1, 2, 3,
+  f(
+    arg // c
+  ),
+};
+<<<
+var set = {
+  1,
+  2,
+  3,
+  f(
+    arg, // c
+  ),
+};
+>>> Wrap between elements when newlines are preserved if they don't fit.
+var set = {
+  element1, element2, element3, element4, element5,
+
+  element6, element7,
+
+  // comment
+  element8, element9, element10, element11,
+};
+<<<
+var set = {
+  element1,
+  element2,
+  element3,
+  element4,
+  element5,
+  element6, element7,
+
+  // comment
+  element8,
+  element9,
+  element10,
+  element11,
+};

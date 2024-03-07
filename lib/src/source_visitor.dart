@@ -1071,7 +1071,7 @@ class SourceVisitor extends ThrowingAstVisitor {
             // the constants is the hard rule used by the entire block and its
             // hardening state doesn't actually change. Instead, look
             // explicitly for a line comment here.
-            _containsLineComments(node.constants));
+            node.constants.containsLineComments());
   }
 
   @override
@@ -2835,7 +2835,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // instead of having them harden the surrounding rules is a hack. But this
     // code will be going away when we move to the new Piece representation, so
     // going with something expedient.
-    var forceSplit = _containsLineComments(node.cases, node.rightBracket);
+    var forceSplit = node.cases.containsLineComments(node.rightBracket);
 
     _endBody(node.rightBracket, forceSplit: hasTrailingComma || forceSplit);
   }
@@ -3669,7 +3669,7 @@ class SourceVisitor extends ThrowingAstVisitor {
     // If a collection contains a line comment, we assume it's a big complex
     // blob of data with some documented structure. In that case, the user
     // probably broke the elements into lines deliberately, so preserve those.
-    if (_containsLineComments(elements, rightBracket)) {
+    if (elements.containsLineComments(rightBracket)) {
       // Newlines are significant, so we'll explicitly write those. Elements
       // on the same line all share an argument-list-like rule that allows
       // splitting between zero, one, or all of them. This is faster in long
@@ -4007,35 +4007,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     if (rightHandSide is CascadeExpression) return Cost.assignBlock;
 
     return Cost.assign;
-  }
-
-  /// Returns `true` if the collection with [elements] delimited by
-  /// [rightBracket] contains any line comments.
-  ///
-  /// This only looks for comments at the element boundary. Comments within an
-  /// element are ignored.
-  bool _containsLineComments(Iterable<AstNode> elements,
-      [Token? rightBracket]) {
-    bool hasLineCommentBefore(Token token) {
-      Token? comment = token.precedingComments;
-      for (; comment != null; comment = comment.next) {
-        if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
-      }
-
-      return false;
-    }
-
-    // Look before each element.
-    for (var element in elements) {
-      if (hasLineCommentBefore(element.beginToken)) return true;
-    }
-
-    // Look before the closing bracket.
-    if (rightBracket != null) {
-      if (hasLineCommentBefore(rightBracket)) return true;
-    }
-
-    return false;
   }
 
   /// Begins writing a bracket-delimited body whose contents are a nested

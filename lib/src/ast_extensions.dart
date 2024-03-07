@@ -125,6 +125,25 @@ extension AstIterableExtensions on Iterable<AstNode> {
   /// but allow a split if there are elements or comments inside.
   bool canSplit(Token rightBracket) =>
       isNotEmpty || rightBracket.precedingComments != null;
+
+  /// Returns `true` if the collection containing these elements and terminated
+  /// by [rightBracket] contains any line comments before, between, or after
+  /// any elements.
+  ///
+  /// Comments within an element are ignored.
+  bool containsLineComments([Token? rightBracket]) {
+    // Look before each element.
+    for (var element in this) {
+      if (element.beginToken.hasLineCommentBefore) return true;
+    }
+
+    // Look before the closing bracket.
+    if (rightBracket != null) {
+      if (rightBracket.hasLineCommentBefore) return true;
+    }
+
+    return false;
+  }
 }
 
 extension ExpressionExtensions on Expression {
@@ -408,4 +427,17 @@ extension PatternExtensions on DartPattern {
           fields.canSplit(rightParenthesis),
         _ => false,
       };
+}
+
+extension TokenExtensions on Token {
+  /// Whether this token has a preceding comment that is a line comment.
+  bool get hasLineCommentBefore {
+    for (Token? comment = precedingComments;
+        comment != null;
+        comment = comment.next) {
+      if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
+    }
+
+    return false;
+  }
 }

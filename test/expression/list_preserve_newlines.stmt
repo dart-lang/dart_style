@@ -1,0 +1,83 @@
+40 columns                              |
+### Tests for how a line comment in a list literal causes newlines to be kept.
+>>> Preserve newlines if list contains a line comment.
+var list = [
+  a,b,c,d,
+  // yeah
+  e,f,g,h
+];
+<<<
+var list = [
+  a, b, c, d,
+  // yeah
+  e, f, g, h,
+];
+>>> Detect comment before first element.
+var list = [ // c
+  a,b,
+  c,d
+];
+<<<
+var list = [
+  // c
+  a, b,
+  c, d,
+];
+>>> Detect comment after last element.
+var list = [
+  a,b,
+  c,d// c
+];
+<<<
+var list = [
+  a, b,
+  c, d, // c
+];
+>>> Move brackets to their own lines.
+var list = [a,b,// c
+d,e,f];
+<<<
+var list = [
+  a, b, // c
+  d, e, f,
+];
+>>> Don't preserve newlines if line comment is inside an element.
+var list = [
+  1, 2, 3,
+  f(
+    arg // c
+  ),
+];
+<<<
+var list = [
+  1,
+  2,
+  3,
+  f(
+    arg, // c
+  ),
+];
+>>> Wrap between elements when newlines are preserved if they don't fit.
+var list = [
+  element1, element2, element3, element4, element5,
+
+  element6, element7,
+
+  // comment
+  element8, element9, element10, element11,
+];
+<<<
+var list = [
+  element1,
+  element2,
+  element3,
+  element4,
+  element5,
+  element6, element7,
+
+  // comment
+  element8,
+  element9,
+  element10,
+  element11,
+];

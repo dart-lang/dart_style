@@ -130,6 +130,10 @@ class CommentWriter {
     return comments;
   }
 
+  /// Whether there are any newlines between [from] and [to].
+  bool hasNewlineBetween(Token from, Token to) =>
+      _endLine(from) < _startLine(to);
+
   /// Gets the 1-based line number that the beginning of [token] lies on.
   int _startLine(Token token) => _lineInfo.getLocation(token.offset).lineNumber;
 
