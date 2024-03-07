@@ -903,9 +903,6 @@ mixin PieceFactory {
         builder.add(lineBuilder.build());
         lineBuilder = DelimitedListBuilder(this, lineStyle);
         atLineStart = true;
-      } else if (!atLineStart) {
-        // This element follows another on the same line.
-        // lineBuilder.space();
       }
 
       // Let the main list builder handle comments that occur between elements
