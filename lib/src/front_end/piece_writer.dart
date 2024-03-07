@@ -254,7 +254,8 @@ class PieceWriter {
     void traverse(Piece piece) {
       piece.forEachChild(traverse);
 
-      if (piece.fixedStateForPageWidth(_formatter.pageWidth) case var state?) {
+      if (piece.fixedStateForPageWidth(_formatter.pageWidth - _formatter.indent)
+          case var state?) {
         piece.pin(state);
       }
     }
@@ -262,7 +263,8 @@ class PieceWriter {
     traverse(rootPiece);
 
     var cache = SolutionCache();
-    var formatter = Solver(cache, pageWidth: _formatter.pageWidth);
+    var formatter = Solver(cache,
+        pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
     var result = formatter.format(rootPiece);
     var outputCode = result.text;
 
