@@ -25,46 +25,18 @@ function((parameter) { body; });
 function((parameter) {
   body;
 });
->>> Empty block-bodied function expression with parameters.
+>>> Empty block-bodied function expression with parameters is not a block argument.
 function((parameter, anotherParameter) {});
 <<<
-function((
-  parameter,
-  anotherParameter,
-) {});
->>> Expression-bodied function expression with parameters.
+function(
+  (parameter, anotherParameter) {},
+);
+>>> Expression-bodied function expression with parameters is not a block argument.
 function((parameter, anotherParameter) => body);
 <<<
-function((
-  parameter,
-  anotherParameter,
-) => body);
->>> Block-bodied function expression with block comment in the parameters.
-function((/* very long block comment */) {});
-<<<
-function((
-  /* very long block comment */
-) {});
->>> Block-bodied function expression with line comment in the parameters.
-function((// comment
-) {});
-<<<
-function((
-  // comment
-) {});
->>> Expression-bodied function expression with block comment in the parameters.
-function((/* very long block comment */) => body);
-<<<
-function((
-  /* very long block comment */
-) => body);
->>> Expression-bodied function expression with line comment in the parameters.
-function((// comment
-) => body);
-<<<
-function((
-  // comment
-) => body);
+function(
+  (parameter, anotherParameter) => body,
+);
 >>> An empty block-bodied function expression is not a block argument.
 function_________________________(() {});
 <<<
@@ -177,26 +149,12 @@ function((p, r) { body; }(a, b));
 function((p, r) {
   body;
 }(a, b));
->>> Immediately invoked function with parameters.
+>>> Immediately invoked empty function with parameters is not a block argument.
 function((parameter, anotherParameter) {}());
 <<<
-function((
-  parameter,
-  anotherParameter,
-) {}());
->>> Immediately invoked function with block comment in the parameters.
-function((/* very long block comment */) {}());
-<<<
-function((
-  /* very long block comment */
-) {}());
->>> Immediately invoked function with line comment in the parameters.
-function((// comment
-) {}());
-<<<
-function((
-  // comment
-) {}());
+function(
+  (parameter, anotherParameter) {}(),
+);
 >>> An empty immediately invoked function is not a block argument.
 function_________________________(() {}());
 <<<
