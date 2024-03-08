@@ -10,7 +10,7 @@ import 'package:dart_style/src/cli/output.dart';
 import 'package:dart_style/src/cli/show.dart';
 import 'package:dart_style/src/cli/summary.dart';
 import 'package:dart_style/src/io.dart';
-import 'package:dart_style/src/style_fix.dart';
+import 'package:dart_style/src/short/style_fix.dart';
 
 void main(List<String> args) async {
   var parser = ArgParser(allowTrailingOptions: true);

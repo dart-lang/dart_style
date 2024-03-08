@@ -3,5 +3,5 @@
 // BSD-style license that can be found in the LICENSE file.
 export 'src/dart_formatter.dart';
 export 'src/exceptions.dart';
+export 'src/short/style_fix.dart';
 export 'src/source_code.dart';
-export 'src/style_fix.dart';

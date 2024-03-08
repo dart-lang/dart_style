@@ -129,17 +129,15 @@ Future<TestProcess> runCommandOnDir([List<String>? args]) {
   return runCommand(['.', ...?args]);
 }
 
-/// Run tests defined in "*.unit" and "*.stmt" files inside directory [name].
-Future<void> testDirectory(String name,
-    {required bool tall, Iterable<StyleFix>? fixes}) async {
-  for (var test in await TestFile.listDirectory(name)) {
-    _testFile(test, tall, fixes);
+/// Run tests defined in "*.unit" and "*.stmt" files inside directory [path].
+Future<void> testDirectory(String path, {Iterable<StyleFix>? fixes}) async {
+  for (var test in await TestFile.listDirectory(path)) {
+    _testFile(test, fixes);
   }
 }
 
-Future<void> testFile(String path,
-    {required bool tall, Iterable<StyleFix>? fixes}) async {
-  _testFile(await TestFile.read(path), tall, fixes);
+Future<void> testFile(String path, {Iterable<StyleFix>? fixes}) async {
+  _testFile(await TestFile.read(path), fixes);
 }
 
 /// Format all of the benchmarks and ensure they produce their expected outputs.
@@ -177,8 +175,9 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
   });
 }
 
-void _testFile(
-    TestFile testFile, bool useTallStyle, Iterable<StyleFix>? baseFixes) {
+void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
+  var useTallStyle = testFile.path.startsWith('tall/');
+
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {

@@ -11,16 +11,16 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() async {
-  await testFile('fixes/named_default_separator.unit',
-      tall: false, fixes: [StyleFix.namedDefaultSeparator]);
-  await testFile('fixes/doc_comments.stmt',
-      tall: false, fixes: [StyleFix.docComments]);
-  await testFile('fixes/function_typedefs.unit',
-      tall: false, fixes: [StyleFix.functionTypedefs]);
-  await testFile('fixes/optional_const.unit',
-      tall: false, fixes: [StyleFix.optionalConst]);
-  await testFile('fixes/optional_new.stmt',
-      tall: false, fixes: [StyleFix.optionalNew]);
-  await testFile('fixes/single_cascade_statements.stmt',
-      tall: false, fixes: [StyleFix.singleCascadeStatements]);
+  await testFile('short/fixes/named_default_separator.unit',
+      fixes: [StyleFix.namedDefaultSeparator]);
+  await testFile('short/fixes/doc_comments.stmt',
+      fixes: [StyleFix.docComments]);
+  await testFile('short/fixes/function_typedefs.unit',
+      fixes: [StyleFix.functionTypedefs]);
+  await testFile('short/fixes/optional_const.unit',
+      fixes: [StyleFix.optionalConst]);
+  await testFile('short/fixes/optional_new.stmt',
+      fixes: [StyleFix.optionalNew]);
+  await testFile('short/fixes/single_cascade_statements.stmt',
+      fixes: [StyleFix.singleCascadeStatements]);
 }

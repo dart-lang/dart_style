@@ -7,9 +7,9 @@ library;
 
 import 'dart:math' as math;
 
-import 'chunk.dart';
-import 'line_splitting/rule_set.dart';
 import 'piece/piece.dart';
+import 'short/chunk.dart';
+import 'short/line_splitting/rule_set.dart';
 
 /// Set this to `true` to turn on diagnostic output while building chunks.
 bool traceChunkBuilder = false;

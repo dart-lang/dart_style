@@ -11,17 +11,17 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() async {
-  await testDirectory('declaration', tall: true);
-  await testDirectory('expression', tall: true);
-  await testDirectory('function', tall: true);
-  await testDirectory('invocation', tall: true);
-  await testDirectory('pattern', tall: true);
-  await testDirectory('selection', tall: true);
-  await testDirectory('statement', tall: true);
-  await testDirectory('top_level', tall: true);
-  await testDirectory('type', tall: true);
-  await testDirectory('variable', tall: true);
-  await testDirectory('regression_tall', tall: true);
+  await testDirectory('tall/declaration');
+  await testDirectory('tall/expression');
+  await testDirectory('tall/function');
+  await testDirectory('tall/invocation');
+  await testDirectory('tall/pattern');
+  await testDirectory('tall/selection');
+  await testDirectory('tall/statement');
+  await testDirectory('tall/top_level');
+  await testDirectory('tall/type');
+  await testDirectory('tall/variable');
+  await testDirectory('tall/regression');
 
   await testBenchmarks(useTallStyle: true);
 

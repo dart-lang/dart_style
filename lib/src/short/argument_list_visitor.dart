@@ -6,9 +6,9 @@ import 'dart:math' as math;
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
-import 'ast_extensions.dart';
+import '../ast_extensions.dart';
+import '../constants.dart';
 import 'chunk.dart';
-import 'constants.dart';
 import 'rule/argument.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';

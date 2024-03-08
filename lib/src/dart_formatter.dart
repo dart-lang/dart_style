@@ -18,10 +18,10 @@ import 'package:pub_semver/pub_semver.dart';
 import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
+import 'short/source_visitor.dart';
+import 'short/style_fix.dart';
 import 'source_code.dart';
-import 'source_visitor.dart';
 import 'string_compare.dart' as string_compare;
-import 'style_fix.dart';
 
 /// Dart source code formatter.
 class DartFormatter {
