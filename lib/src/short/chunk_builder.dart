@@ -3,16 +3,16 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math' as math;
 
+import '../comment_type.dart';
+import '../constants.dart';
+import '../dart_formatter.dart';
+import '../debug.dart' as debug;
+import '../source_code.dart';
 import 'chunk.dart';
-import 'comment_type.dart';
-import 'constants.dart';
-import 'dart_formatter.dart';
-import 'debug.dart' as debug;
 import 'line_writer.dart';
 import 'nesting_builder.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
-import 'source_code.dart';
 import 'source_comment.dart';
 import 'style_fix.dart';
 

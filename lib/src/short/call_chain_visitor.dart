@@ -4,8 +4,8 @@
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../ast_extensions.dart';
 import 'argument_list_visitor.dart';
-import 'ast_extensions.dart';
 import 'rule/argument.dart';
 import 'rule/rule.dart';
 import 'source_visitor.dart';

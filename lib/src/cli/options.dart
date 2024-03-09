@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:args/args.dart';
 
-import '../style_fix.dart';
+import '../short/style_fix.dart';
 
 void defineOptions(ArgParser parser,
     {bool oldCli = false, bool verbose = false}) {

@@ -10,19 +10,19 @@ import 'package:analyzer/source/line_info.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/clients/dart_style/rewrite_cascade.dart';
 
+import '../ast_extensions.dart';
+import '../comment_type.dart';
+import '../constants.dart';
+import '../dart_formatter.dart';
+import '../source_code.dart';
 import 'argument_list_visitor.dart';
-import 'ast_extensions.dart';
 import 'call_chain_visitor.dart';
 import 'chunk.dart';
 import 'chunk_builder.dart';
-import 'comment_type.dart';
-import 'constants.dart';
-import 'dart_formatter.dart';
 import 'rule/argument.dart';
 import 'rule/combinator.dart';
 import 'rule/rule.dart';
 import 'rule/type_argument.dart';
-import 'source_code.dart';
 import 'source_comment.dart';
 import 'style_fix.dart';
 

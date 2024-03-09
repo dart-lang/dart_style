@@ -44,18 +44,17 @@ Lines starting with `###` are treated as comments and are ignored.
 ## Test directories
 
 These expectation files are organized in subdirectories of `test/`. The
-formatter currently supports to separate formatting styles. Eventually support
-for the older "short" style will be removed.
+formatter currently supports two separate formatting styles.
 
 The older short style tests are organized like:
 
 ```
-comments/     - Test comment handling.
-fixes/        - Test `--fix`.
-regression/   - Regression tests. File names correspond to issues.
-selections/   - Test how the formatter preserves selection information.
-splitting/    - Test line splitting behavior.
-whitespace/   - Test whitespace insertion and removal.
+short/comments/     - Test comment handling.
+short/fixes/        - Test `--fix`.
+short/regression/   - Regression tests. File names correspond to issues.
+short/selections/   - Test how the formatter preserves selection information.
+short/splitting/    - Test line splitting behavior.
+short/whitespace/   - Test whitespace insertion and removal.
 ```
 
 These tests are all run by `short_format_test.dart`.
@@ -63,23 +62,21 @@ These tests are all run by `short_format_test.dart`.
 The newer tall style tests are:
 
 ```
-declaration/  - Typedef, class, enum, extension, mixin, and member declarations.
-                Includes constructors, getters, setters, methods, and fields,
-                but not functions and variables, which are in their own
-                directories below.
-expression/   - Expressions and collection elements.
-function/     - Function declarations.
-invocation/   - Function and member invocations.
-pattern/      - Patterns.
-selection/    - Test preserving selection information.
-statement/    - Statements.
-top_level/    - Top-level directives.
-type/         - Type annotations.
-variable/     - Top-level and local variable declarations.
+tall/declaration/  - Typedef, class, enum, extension, mixin, and member
+                     declarations. Includes constructors, getters, setters,
+                     methods, and fields, but not functions and variables,
+                     which are in their own directories below.
+tall/expression/   - Expressions and collection elements.
+tall/function/     - Function declarations.
+tall/invocation/   - Function and member invocations.
+tall/pattern/      - Patterns.
+tall/selection/    - Test preserving selection information.
+tall/statement/    - Statements.
+tall/top_level/    - Top-level directives.
+tall/type/         - Type annotations.
+tall/variable/     - Top-level and local variable declarations.
 ```
 
 These tests are all run by `tall_format_test.dart`.
 
-The directory naming is a little muddled right now, but the idea is that once
-the short style is no longer supported and can be removed, the remaining test
-directories will make sense.
+Eventually support for the older "short" style will be removed.

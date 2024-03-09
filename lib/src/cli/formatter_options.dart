@@ -4,8 +4,8 @@
 
 import 'dart:io';
 
+import '../short/style_fix.dart';
 import '../source_code.dart';
-import '../style_fix.dart';
 import 'output.dart';
 import 'show.dart';
 import 'summary.dart';

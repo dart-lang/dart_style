@@ -11,11 +11,11 @@ import 'package:test/test.dart';
 import 'utils.dart';
 
 void main() async {
-  await testDirectory('comments', tall: false);
-  await testDirectory('regression', tall: false);
-  await testDirectory('selections', tall: false);
-  await testDirectory('splitting', tall: false);
-  await testDirectory('whitespace', tall: false);
+  await testDirectory('short/comments');
+  await testDirectory('short/regression');
+  await testDirectory('short/selections');
+  await testDirectory('short/splitting');
+  await testDirectory('short/whitespace');
 
   await testBenchmarks(useTallStyle: false);
 

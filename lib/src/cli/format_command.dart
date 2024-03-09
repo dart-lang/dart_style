@@ -6,7 +6,7 @@ import 'dart:io';
 import 'package:args/command_runner.dart';
 
 import '../io.dart';
-import '../style_fix.dart';
+import '../short/style_fix.dart';
 import 'formatter_options.dart';
 import 'options.dart';
 import 'output.dart';
