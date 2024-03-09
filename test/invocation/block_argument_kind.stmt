@@ -37,6 +37,16 @@ function((parameter, anotherParameter) => body);
 function(
   (parameter, anotherParameter) => body,
 );
+>>> Expression-bodied function expression with many parameters is not a block argument.
+function((parameter, anotherParameter, thirdParameter) => body);
+<<<
+function(
+  (
+    parameter,
+    anotherParameter,
+    thirdParameter,
+  ) => body,
+);
 >>> An empty block-bodied function expression is not a block argument.
 function_________________________(() {});
 <<<
