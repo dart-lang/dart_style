@@ -174,12 +174,10 @@ extension ExpressionExtensions on Expression {
           when cascadeSections.length == 1 && target.canBlockSplit =>
         BlockFormat.invocation,
 
-      // A function expression can use either a non-empty parameter list or a
-      // non-empty block body for block formatting.
-      FunctionExpression(:var parameters?, :var body)
-          when parameters.parameters.canSplit(parameters.rightParenthesis) ||
-              (body is BlockFunctionBody &&
-                  body.block.statements.canSplit(body.block.rightBracket)) =>
+      // A function expression with a non-empty block body can block format.
+      FunctionExpression(:var body)
+          when body is BlockFunctionBody &&
+              body.block.statements.canSplit(body.block.rightBracket) =>
         BlockFormat.function,
 
       // An immediately invoked function expression is formatted like a
