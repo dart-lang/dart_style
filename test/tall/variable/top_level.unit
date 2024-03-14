@@ -3,7 +3,7 @@
 ### don't repeat all of the tests here. Instead, we just ensure that the basics
 ### are handled for top-level variables and rely on the local variable tests
 ### for everything else.
-<<< Untyped.
+>>> Untyped.
 late final longVariable = 1, anotherVariable = 2;
 <<<
 late final longVariable = 1,
