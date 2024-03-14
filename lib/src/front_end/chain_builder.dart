@@ -160,14 +160,17 @@ class ChainBuilder {
     // split argument list.
     //
     // Further, we allow the second-to-last call in the chain to be the block
-    // formatted call if the last call is a property or unsplittable call. This
-    // allows for common hanging operations like `toList()` as in:
+    // formatted call if the last call is a property or unsplittable call and
+    // the preceding call can block format. This allows for common hanging
+    // operations like `toList()` as in:
     //
     //     things.map((element) {
     //       return doStuffTo(element);
     //     }).toList();
     var lastCallIndex = _calls.length - 1;
-    if (!_calls[lastCallIndex].canSplit && _calls.length > 1) {
+    if (!_calls[lastCallIndex].canSplit &&
+        _calls.length > 1 &&
+        _calls[lastCallIndex - 1].type == CallType.blockFormatCall) {
       lastCallIndex = _calls.length - 2;
     }
 

@@ -125,13 +125,25 @@ target.method([
   element1,
   element2,
 ]).another();
->>> Don't allow a trailing non-empty call after a regular splittable call.
+>>> Don't allow a trailing property after a regular splittable call.
+target.method(argument1, argument2).property;
+<<<
+target
+    .method(argument1, argument2)
+    .property;
+>>> Don't allow a trailing empty call after a regular splittable call.
+target.method(argument1, argument2).another();
+<<<
+target
+    .method(argument1, argument2)
+    .another();
+>>> Don't allow a trailing non-empty call after a block-formatted call.
 target.method([element1, element2]).another(1);
 <<<
 target
     .method([element1, element2])
     .another(1);
->>> Don't allow a trailing non-empty call after a regular splittable call.
+>>> Don't allow a trailing non-empty call after a block-formatted call.
 target.method([element1, element2]).another(/* c */);
 <<<
 target
