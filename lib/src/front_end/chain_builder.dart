@@ -102,6 +102,7 @@ class ChainBuilder {
           _calls.length == 1 && _calls.single.canSplit ? 0 : -1;
 
       var chain = ChainPiece(_target, _calls,
+          cascade: true,
           indent: Indent.cascade,
           blockCallIndex: blockCallIndex,
           allowSplitInTarget: _allowSplitInTarget);
@@ -162,6 +163,7 @@ class ChainBuilder {
         _root.parent is CascadeExpression ? Indent.cascade : Indent.expression;
 
     return ChainPiece(_target, _calls,
+        cascade: false,
         indent: indent,
         leadingProperties: leadingProperties,
         blockCallIndex: blockCallIndex,
