@@ -167,15 +167,15 @@ new Foo(
   veryLongElement,
   veryLongElement,
 )..addAll(more);
->>> Prefer splitting inside collection instead of at cascade.
-[element1, element2, element3]
-  ..cascade();
-<<<
+>>> Prefer splitting at cascade instead of inside target.
 [
   element1,
   element2,
   element3,
 ]..cascade();
+<<<
+[element1, element2, element3]
+  ..cascade();
 >>> Don't force cascade to split on collection target if arg splits.
 [1, 2, 3, 4]..cascade(() {;});
 <<<

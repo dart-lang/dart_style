@@ -115,11 +115,14 @@ class ChainPiece extends Piece {
   /// cascades.
   final int _indent;
 
+  final bool _isCascade;
+
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
   ChainPiece(this._target, this._calls,
-      {int leadingProperties = 0,
+      {required bool cascade,
+      int leadingProperties = 0,
       int blockCallIndex = -1,
       int indent = Indent.expression,
       required bool allowSplitInTarget})
@@ -127,6 +130,7 @@ class ChainPiece extends Piece {
         _blockCallIndex = blockCallIndex,
         _indent = indent,
         _allowSplitInTarget = allowSplitInTarget,
+        _isCascade = cascade,
         // If there are no calls, we shouldn't have created a chain.
         assert(_calls.isNotEmpty);
 
@@ -136,6 +140,25 @@ class ChainPiece extends Piece {
         if (_leadingProperties > 0) _splitAfterProperties,
         State.split
       ];
+
+  @override
+  int stateCost(State state) {
+    // If the chain is a cascade, lower the cost so that we prefer splitting
+    // the cascades instead of the target. Prefers:
+    //
+    //     [element1, element2]
+    //       ..cascade();
+    //
+    // Over:
+    //
+    //     [
+    //       element1,
+    //       element2,
+    //     ]..cascade();
+    if (state == State.split) return _isCascade ? 0 : 1;
+
+    return super.stateCost(state);
+  }
 
   @override
   void format(CodeWriter writer, State state) {

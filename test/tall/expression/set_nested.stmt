@@ -26,8 +26,7 @@ set = {(inner,)};
 set = {[], {}, ()};
 <<<
 set = {[], {}, ()};
-### TODO: Clean up.
->>> splits outer sets even if they fit
+>>> Split outer sets even if they fit.
 var s = {a, {b, c}, d, {},
     e, {f, {g, h} }  };
 <<<
@@ -42,18 +41,18 @@ var s = {
     {g, h},
   },
 };
->>> split indirect outer
+>>> Split indirect outer set.
 var s = {a, function({b, inner})};
 <<<
 var s = {
   a,
   function({b, inner}),
 };
->>> empty literal does not force outer split
+>>> Empty literal does not force outer split.
 var s = {a, <int>{}, b, [], c, () {}};
 <<<
 var s = {a, <int>{}, b, [], c, () {}};
->>> nested split set
+>>> Nested split set.
 var s = {first, 1, second, {third, fourth}, fifth, 5, nested, {sixth, seventh, eighth, nine,
     tenth, eleventh}};
 <<<
