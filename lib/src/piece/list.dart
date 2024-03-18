@@ -55,6 +55,10 @@ class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
+  /// Whether any element in this argument list can be block formatted.
+  bool get hasBlockElement =>
+      _elements.any((element) => element.allowNewlinesWhenUnsplit);
+
   /// Creates a new [ListPiece].
   ///
   /// [_elements] must not be empty. (If there are no elements, just concatenate

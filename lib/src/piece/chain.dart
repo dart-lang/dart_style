@@ -93,7 +93,8 @@ class ChainPiece extends Piece {
   /// none can.
   ///
   /// This will either be the index of the last call, or the index of the
-  /// second to last call if the last call is a property or unsplittable.
+  /// second to last call if the last call is a property or unsplittable call
+  /// and the last call's argument list can be block formatted.
   final int _blockCallIndex;
 
   /// Whether the target expression may contain newlines when the chain is not
@@ -267,8 +268,10 @@ enum CallType {
   /// A method call with an empty argument list that can't split.
   unsplittableCall,
 
-  /// A method call with a non-empty argument list that can split.
+  /// A method call with a non-empty argument list that can split but not
+  /// block format.
   splittableCall,
 
+  /// A method call with a non-empty argument list that can be block formatted.
   blockFormatCall,
 }

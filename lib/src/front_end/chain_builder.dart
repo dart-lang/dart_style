@@ -8,6 +8,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../piece/chain.dart';
+import '../piece/list.dart';
 import '../piece/piece.dart';
 import 'piece_factory.dart';
 
@@ -92,26 +93,35 @@ class ChainBuilder {
   }
 
   Piece build() {
-    if (_root case CascadeExpression cascade) {
-      // If there is only a single section and it can block split, allow it:
-      //
-      //     target..cascade(
-      //       argument,
-      //     );
-      var blockCallIndex =
-          _calls.length == 1 && _calls.single.canSplit ? 0 : -1;
-
-      var chain = ChainPiece(_target, _calls,
-          cascade: true,
-          indent: Indent.cascade,
-          blockCallIndex: blockCallIndex,
-          allowSplitInTarget: _allowSplitInTarget);
-
-      if (!cascade.allowInline) chain.pin(State.split);
-
-      return chain;
+    if (_root is CascadeExpression) {
+      return _buildCascade();
+    } else {
+      return _buildCallChain();
     }
+  }
 
+  /// Builds a [ChainPiece] for a series of cascade sections.
+  Piece _buildCascade() {
+    // If there is only a single section and it can block split, allow it:
+    //
+    //     target..cascade(
+    //       argument,
+    //     );
+    var blockCallIndex = _calls.length == 1 && _calls.single.canSplit ? 0 : -1;
+
+    var chain = ChainPiece(_target, _calls,
+        cascade: true,
+        indent: Indent.cascade,
+        blockCallIndex: blockCallIndex,
+        allowSplitInTarget: _allowSplitInTarget);
+
+    if (!(_root as CascadeExpression).allowInline) chain.pin(State.split);
+
+    return chain;
+  }
+
+  /// Builds a [ChainPiece] for a series of method calls and property accesses.
+  Piece _buildCallChain() {
     // If there are no calls, there's no chain.
     if (_calls.isEmpty) return _target;
 
@@ -122,24 +132,56 @@ class ChainBuilder {
       leadingProperties++;
     }
 
-    // See if there is a call that we can block format. It can either be the
-    // very last call, if non-empty:
+    // Count the number of leading properties and unsplittable calls.
+    var leadingUnsplittable = leadingProperties;
+    while (leadingUnsplittable < _calls.length &&
+        !_calls[leadingUnsplittable].canSplit) {
+      leadingUnsplittable++;
+    }
+
+    // See if we can block format the chain on one of its calls. We allow the
+    // last call in a chain to block format:
     //
     //     target.property.method().last(
     //       argument,
     //     );
     //
-    // Or the second-to-last if the last call can't split:
+    // But we only allow it to do so if either the preceding calls can't split
+    // (as in the preceding example) or the last call is actually a block
+    // formatted argument list (like a collection or function literal) and not
+    // just a split argument list. So this is OK:
     //
-    //     target.property.method().penultimate(
-    //       argument,
-    //     ).toList();
-    var blockCallIndex = switch (_calls) {
-      [..., ChainCall(canSplit: true)] => _calls.length - 1,
-      [..., ChainCall(canSplit: true), ChainCall(canSplit: false)] =>
-        _calls.length - 2,
-      _ => -1,
-    };
+    //     target.method(1, 2).last([
+    //       element,
+    //     ]);
+    //
+    // Even though `method()` takes arguments and can split, we still allow the
+    // chain to block format on the last call because that call is itself a
+    // block formatted argument list with a collection literal, and not just a
+    // split argument list.
+    //
+    // Further, we allow the second-to-last call in the chain to be the block
+    // formatted call if the last call is a property or unsplittable call and
+    // the preceding call can block format. This allows for common hanging
+    // operations like `toList()` as in:
+    //
+    //     things.map((element) {
+    //       return doStuffTo(element);
+    //     }).toList();
+    var lastCallIndex = _calls.length - 1;
+    if (!_calls[lastCallIndex].canSplit &&
+        _calls.length > 1 &&
+        _calls[lastCallIndex - 1].type == CallType.blockFormatCall) {
+      lastCallIndex = _calls.length - 2;
+    }
+
+    var blockCallIndex = -1;
+    if (leadingUnsplittable == lastCallIndex &&
+        _calls[lastCallIndex].canSplit) {
+      blockCallIndex = lastCallIndex;
+    } else if (_calls[lastCallIndex].type == CallType.blockFormatCall) {
+      blockCallIndex = lastCallIndex;
+    }
 
     // If a method chain appears as the target of a cascade, then we only
     // indent the method chain +2. That way, with the cascade's own +2, the
@@ -202,17 +244,33 @@ class ChainBuilder {
       case MethodInvocation(:var target?):
         _unwrapCall(target);
 
+        var callType = CallType.unsplittableCall;
+
+        if (expression.argumentList.arguments
+            .canSplit(expression.argumentList.rightParenthesis)) {
+          callType = CallType.splittableCall;
+        }
+
         var callPiece = _visitor.buildPiece((b) {
           b.token(expression.operator);
           b.visit(expression.methodName);
           b.visit(expression.typeArguments);
-          b.visit(expression.argumentList);
+
+          // Create the argument piece manually so that we can see if it has a
+          // block argument or not.
+          var arguments = _visitor.createArgumentList(
+              expression.argumentList.leftParenthesis,
+              expression.argumentList.arguments,
+              expression.argumentList.rightParenthesis);
+
+          if (arguments is ListPiece && arguments.hasBlockElement) {
+            callType = CallType.blockFormatCall;
+          }
+
+          b.add(arguments);
         });
 
-        var canSplit = expression.argumentList.arguments
-            .canSplit(expression.argumentList.rightParenthesis);
-        _calls.add(ChainCall(callPiece,
-            canSplit ? CallType.splittableCall : CallType.unsplittableCall));
+        _calls.add(ChainCall(callPiece, callType));
 
       case PropertyAccess(:var target?):
         _unwrapCall(target);
