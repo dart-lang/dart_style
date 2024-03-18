@@ -65,14 +65,19 @@ class TestFile {
 
     var tests = <FormatTest>[];
 
-    String readLine() {
-      // Skip comment lines.
+    List<String> readComments() {
+      var comments = <String>[];
       while (lines[i].startsWith('###')) {
+        comments.add(lines[i]);
         i++;
       }
 
-      return lines[i++];
+      return comments;
     }
+
+    String readLine() => lines[i++];
+
+    var fileComments = readComments();
 
     while (i < lines.length) {
       var lineNumber = i + 1;
@@ -93,6 +98,8 @@ class TestFile {
         return '';
       });
 
+      var inputComments = readComments();
+
       var inputBuffer = StringBuffer();
       while (i < lines.length) {
         var line = readLine();
@@ -101,6 +108,8 @@ class TestFile {
       }
 
       var outputDescription = lines[i - 1].replaceAll('<<<', '');
+
+      var outputComments = readComments();
 
       var outputBuffer = StringBuffer();
       while (i < lines.length) {
@@ -120,14 +129,22 @@ class TestFile {
       var output = _extractSelection(_unescapeUnicode(outputBuffer.toString()),
           isCompilationUnit: isCompilationUnit);
 
-      tests.add(FormatTest(input, output, description.trim(),
-          outputDescription.trim(), lineNumber, fixes, leadingIndent));
+      tests.add(FormatTest(
+          input,
+          output,
+          description.trim(),
+          outputDescription.trim(),
+          lineNumber,
+          fixes,
+          leadingIndent,
+          inputComments,
+          outputComments));
     }
 
-    return TestFile._(relativePath, pageWidth, tests);
+    return TestFile._(relativePath, pageWidth, fileComments, tests);
   }
 
-  TestFile._(this.path, this.pageWidth, this.tests);
+  TestFile._(this.path, this.pageWidth, this.comments, this.tests);
 
   /// The path to the test file, relative to the `test/` directory.
   final String path;
@@ -135,6 +152,10 @@ class TestFile {
   /// The page width for tests in this file or `null` if the default should be
   /// used.
   final int? pageWidth;
+
+  /// The `###` comment lines at the beginning of the test file before any
+  /// tests.
+  final List<String> comments;
 
   /// The tests in this file.
   final List<FormatTest> tests;
@@ -153,8 +174,15 @@ class FormatTest {
   /// The optional description of the test.
   final String description;
 
+  /// The `###` comment lines appearing after the test description before the
+  /// input code.
+  final List<String> inputComments;
+
   /// If there is a remark on the "<<<" line, this is it.
   final String outputDescription;
+
+  /// The `###` comment lines appearing after the "<<<" before the output code.
+  final List<String> outputComments;
 
   /// The 1-based index of the line where this test begins.
   final int line;
@@ -166,8 +194,16 @@ class FormatTest {
   /// line.
   final int leadingIndent;
 
-  FormatTest(this.input, this.output, this.description, this.outputDescription,
-      this.line, this.fixes, this.leadingIndent);
+  FormatTest(
+      this.input,
+      this.output,
+      this.description,
+      this.outputDescription,
+      this.line,
+      this.fixes,
+      this.leadingIndent,
+      this.inputComments,
+      this.outputComments);
 
   /// The line and description of the test.
   String get label {

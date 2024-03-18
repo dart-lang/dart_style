@@ -4,6 +4,7 @@
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 
@@ -25,47 +26,53 @@ void main(List<String> arguments) async {
     exit(1);
   }
 
-  var unchanged = 0;
   for (var argument in arguments) {
     var path = p.join(await findTestDirectory(), argument);
     if (Directory(path).existsSync()) {
-      unchanged += await _updateDirectory(path);
+      await _updateDirectory(path);
     } else if (File(path).existsSync()) {
-      unchanged += await _updateFile(path);
+      await _updateFile(path);
     }
   }
 
-  print('$unchanged tests were unchanged.');
+  if (_totalTests > 0) {
+    print('Changed $_changedTests out of $_totalTests updated tests');
+  } else {
+    print('No updatable tests found');
+  }
+
+  if (_skippedFiles > 0) {
+    print('Skipped $_skippedFiles files '
+        'which contain selections or Unicode escapes');
+  }
 }
 
-final _unsupportedPaths = [
-  // These contain selections.
-  'selections/',
-  // These contain Unicode escapes.
-  'whitespace/trailing.unit',
-  'whitespace/unicode.unit',
-];
+int _totalTests = 0;
+int _changedTests = 0;
+int _skippedFiles = 0;
 
-Future<int> _updateDirectory(String path) async {
-  var unchanged = 0;
+Future<void> _updateDirectory(String path) async {
   for (var testFile in await TestFile.listDirectory(path)) {
-    unchanged += await _updateTestFile(testFile);
+    await _updateTestFile(testFile);
   }
-
-  return unchanged;
 }
 
-Future<int> _updateFile(String path) async {
-  return _updateTestFile(await TestFile.read(path));
+Future<void> _updateFile(String path) async {
+  await _updateTestFile(await TestFile.read(path));
 }
 
-Future<int> _updateTestFile(TestFile testFile) async {
-  if (_unsupportedPaths.any((path) => testFile.path.startsWith(path))) {
-    print('Skipping unsupported file ${testFile.path}. Update that manually.');
-    return 0;
+Future<void> _updateTestFile(TestFile testFile) async {
+  // TODO(rnystrom): The test updater doesn't know how to handle selection
+  // markers or Unicode escapes in tests, so just skip any file that contains
+  // tests with those in it.
+  var testSource = File(p.join('test', testFile.path)).readAsStringSync();
+  if (testSource.contains('‹') || testSource.contains('×')) {
+    print('Skipped ${testFile.path}');
+
+    _skippedFiles++;
+    return;
   }
 
-  var unchanged = 0;
   var buffer = StringBuffer();
 
   // Write the page width line if needed.
@@ -77,26 +84,40 @@ Future<int> _updateTestFile(TestFile testFile) async {
     buffer.writeln('|');
   }
 
+  // Write the file-level comments.
+  _writeComments(buffer, testFile.comments);
+
   // TODO(rnystrom): This is duplicating logic in fix_test.dart. Ideally, we'd
   // move the fix markers into the tests themselves, but since --fix is
   // probably going away, it's not worth it.
   var baseFixes = const {
-        'fixes/doc_comments.stmt': [StyleFix.docComments],
-        'fixes/function_typedefs.unit': [StyleFix.functionTypedefs],
-        'fixes/named_default_separator.unit': [StyleFix.namedDefaultSeparator],
-        'fixes/optional_const.unit': [StyleFix.optionalConst],
-        'fixes/optional_new.stmt': [StyleFix.optionalNew],
-        'fixes/single_cascade_statements.stmt': [
+        'short/fixes/doc_comments.stmt': [StyleFix.docComments],
+        'short/fixes/function_typedefs.unit': [StyleFix.functionTypedefs],
+        'short/fixes/named_default_separator.unit': [
+          StyleFix.namedDefaultSeparator
+        ],
+        'short/fixes/optional_const.unit': [StyleFix.optionalConst],
+        'short/fixes/optional_new.stmt': [StyleFix.optionalNew],
+        'short/fixes/single_cascade_statements.stmt': [
           StyleFix.singleCascadeStatements
         ],
       }[testFile.path] ??
       const <StyleFix>[];
 
+  var experiments = [
+    'inline-class',
+    'macros',
+    if (p.split(testFile.path).contains('tall')) tallStyleExperimentFlag
+  ];
+
+  _totalTests += testFile.tests.length;
+
   for (var formatTest in testFile.tests) {
     var formatter = DartFormatter(
         pageWidth: testFile.pageWidth,
         indent: formatTest.leadingIndent,
-        fixes: [...baseFixes, ...formatTest.fixes]);
+        fixes: [...baseFixes, ...formatTest.fixes],
+        experimentFlags: experiments);
 
     var actual = formatter.formatSource(formatTest.input);
 
@@ -105,8 +126,6 @@ Future<int> _updateTestFile(TestFile testFile) async {
     // one to line up with the expected result.
     var actualText = actual.text;
     if (!testFile.isCompilationUnit) actualText += '\n';
-
-    // TODO: Insert selection markers.
 
     // Insert a newline between each test, but not after the last.
     if (formatTest != testFile.tests.first) buffer.writeln();
@@ -118,9 +137,11 @@ Future<int> _updateTestFile(TestFile testFile) async {
     ];
 
     buffer.writeln('>>> ${descriptionParts.join(' ')}'.trim());
-
+    _writeComments(buffer, formatTest.inputComments);
     buffer.write(formatTest.input.text);
+
     buffer.writeln('<<< ${formatTest.outputDescription}'.trim());
+    _writeComments(buffer, formatTest.outputComments);
 
     var output = actual.text;
 
@@ -133,8 +154,7 @@ Future<int> _updateTestFile(TestFile testFile) async {
     // the matcher output.
     if (actualText != formatTest.output.text) {
       print('Updated ${testFile.path} ${formatTest.label}');
-    } else {
-      unchanged++;
+      _changedTests++;
     }
   }
 
@@ -142,6 +162,10 @@ Future<int> _updateTestFile(TestFile testFile) async {
   // test markers.
   var path = p.join(await findTestDirectory(), testFile.path);
   File(path).writeAsStringSync(buffer.toString());
+}
 
-  return unchanged;
+void _writeComments(StringBuffer buffer, List<String> comments) {
+  for (var comment in comments) {
+    buffer.writeln(comment);
+  }
 }
