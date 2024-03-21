@@ -48,6 +48,18 @@ e = switch (n) {
   1 => one, // comment
   2 => two, // comment
 };
+>>> Line comment before case body.
+e = switch (n) {
+0 =>
+// comment
+zero
+};
+<<<
+e = switch (n) {
+  0 =>
+    // comment
+    zero,
+};
 >>> Line comment in empty switch.
 e = switch (n) {
   // comment
