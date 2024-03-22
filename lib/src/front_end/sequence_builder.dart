@@ -93,7 +93,7 @@ class SequenceBuilder {
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
   void visit(AstNode node, {int? indent, bool allowBlankAfter = true}) {
-    addCommentsBefore(node.firstNonCommentToken);
+    addCommentsBefore(node.firstNonCommentToken, indent: indent);
     add(_visitor.nodePiece(node),
         indent: indent, allowBlankAfter: allowBlankAfter);
   }
@@ -109,7 +109,9 @@ class SequenceBuilder {
   ///
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
-  void addCommentsBefore(Token token) {
+  void addCommentsBefore(Token token, {int? indent}) {
+    indent ??= Indent.none;
+
     var comments = _visitor.comments.takeCommentsBefore(token);
 
     // Edge case: if we require a blank line, but there exists one between
@@ -142,7 +144,7 @@ class SequenceBuilder {
         }
 
         // Write the comment as its own sequence piece.
-        _add(Indent.none, comment);
+        _add(indent, comment);
       }
     }
 
