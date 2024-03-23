@@ -120,33 +120,10 @@ class AssignPiece extends Piece {
   //         ? thenValue
   //         : elseValue;
   //
-  // It's not clear if this behavior is deliberate or not. It does look OK,
-  // though. We could do the same thing here. If we do, I think it's worth
-  // considering allowing the same thing for infix expressions too:
-  //
-  //     var value = operand +
-  //         operand +
-  //         operand;
-  //
   // For now, we do not implement this special case behavior. Once more of the
   // language is implemented in the new back end and we can run the formatter
   // on a large corpus of code, we can try it out and see if the special case
   // behavior is worth it.
-  //
-  // If we don't do that, consider at least not adding another level of
-  // indentation for subsequent operands in an infix operator chain. So prefer:
-  //
-  //     var value =
-  //         operand +
-  //         operand +
-  //         operand;
-  //
-  // Over:
-  //
-  //     var value =
-  //         operand +
-  //             operand +
-  //             operand;
 
   @override
   List<State> get additionalStates => [

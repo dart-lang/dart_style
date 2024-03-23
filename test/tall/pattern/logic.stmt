@@ -49,3 +49,21 @@ if (object
         anotherLongVariableName) {
   ;
 }
+>>> Don't indent subsequent `||` operands when split inside a map key.
+var {key: longOperand2 || longOperand2 || longOperand3} = value;
+<<<
+var {
+  key:
+      longOperand2 ||
+      longOperand2 ||
+      longOperand3,
+} = value;
+>>> Don't indent subsequent `&&` operands when split inside a map key.
+var {key: longOperand2 && longOperand2 && longOperand3} = value;
+<<<
+var {
+  key:
+      longOperand2 &&
+      longOperand2 &&
+      longOperand3,
+} = value;

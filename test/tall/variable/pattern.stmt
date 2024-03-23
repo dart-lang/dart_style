@@ -44,8 +44,8 @@ var [first] = expression + anotherOperand + aThirdOperand;
 <<<
 var [first] =
     expression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Split in map pattern.
 var {first: second, third: fourth, fifth: sixth} = value;
 <<<
@@ -79,16 +79,16 @@ var (first, second, third) = longValueExpression + anotherOperand + aThirdOperan
 <<<
 var (first, second, third) =
     longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Expression split in both.
 var (longIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
 <<<
 var (longIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Block split in both.
 var (first, second, third, fourth, fifth) = (first, second, third, fourth, fifth);
 <<<

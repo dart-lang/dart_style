@@ -18,7 +18,7 @@ var list = [
   for (
     a =
         initializerExpression +
-            thatDoesNotFit;
+        thatDoesNotFit;
     a < 1;
     a++
   )

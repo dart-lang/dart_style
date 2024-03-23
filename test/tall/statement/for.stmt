@@ -47,8 +47,8 @@ aThirdOperand; cond; inc) {;}
 for (
   var (first, second, third) =
       longValueExpression +
-          anotherOperand +
-          aThirdOperand;
+      anotherOperand +
+      aThirdOperand;
   cond;
   inc
 ) {
@@ -62,8 +62,8 @@ for (
   var (longIdentifier &&
           anotherAlsoLongOne) =
       longValueExpression +
-          anotherOperand +
-          aThirdOperand;
+      anotherOperand +
+      aThirdOperand;
   cond;
   inc
 ) {

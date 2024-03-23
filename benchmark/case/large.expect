@@ -311,12 +311,11 @@ class BacktrackingSolver {
     // A deeply nested statement that's hard on the formatter.
     isTwoWay =
         !isEvent &&
-            bindings.isWhole &&
-            (isCustomTag ||
-                tag == 'input' && (name == 'value' || name == 'checked') ||
-                tag == 'select' &&
-                    (name == 'selectedindex' || name == 'value') ||
-                tag == 'textarea' && name == 'value');
+        bindings.isWhole &&
+        (isCustomTag ||
+            tag == 'input' && (name == 'value' || name == 'checked') ||
+            tag == 'select' && (name == 'selectedindex' || name == 'value') ||
+            tag == 'textarea' && name == 'value');
 
     // Even more deeply nested pathological example.
     if (javaBooleanAnd(

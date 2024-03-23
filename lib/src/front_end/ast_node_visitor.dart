@@ -42,6 +42,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   final CommentWriter comments;
 
+  /// The context set by the surrounding AstNode when visiting a child, or
+  /// [NodeContext.none] if the parent node doesn't set a context.
+  NodeContext _parentContext = NodeContext.none;
+
   /// Create a new visitor that will be called to visit the code in [source].
   factory AstNodeVisitor(
       DartFormatter formatter, LineInfo lineInfo, SourceCode source) {
@@ -188,6 +192,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     return createInfixChain<BinaryExpression>(
         node,
         precedence: node.operator.type.precedence,
+        indent: _parentContext != NodeContext.assignment,
         (expression) => (
               expression.leftOperand,
               expression.operator,
@@ -379,7 +384,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         b.space();
       });
 
-      redirect = AssignPiece(separator, nodePiece(constructor),
+      redirect = AssignPiece(
+          separator, nodePiece(constructor, context: NodeContext.assignment),
           canBlockSplitRight: false);
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
@@ -585,7 +591,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         b.token(node.functionDefinition);
       });
 
-      var expression = nodePiece(node.expression);
+      var expression =
+          nodePiece(node.expression, context: NodeContext.assignment);
 
       b.add(AssignPiece(operatorPiece, expression,
           canBlockSplitRight: node.expression.canBlockSplit));
@@ -1147,9 +1154,20 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitLogicalAndPattern(LogicalAndPattern node) {
+    // If a logical and pattern occurs inside a map pattern entry, we want to
+    // format the operands in parallel, like:
+    //
+    //     var {
+    //       key:
+    //         operand1 &&
+    //         operand2,
+    //     } = value;
+    var indent = _parentContext != NodeContext.assignment;
+
     return createInfixChain<LogicalAndPattern>(
         node,
         precedence: node.operator.type.precedence,
+        indent: indent,
         (expression) => (
               expression.leftOperand,
               expression.operator,
@@ -1159,11 +1177,24 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitLogicalOrPattern(LogicalOrPattern node) {
-    // If a logical or pattern is the outermost pattern in a switch expression
-    // case, we want to format it like parallel cases and not indent the
-    // subsequent operands.
-    var indent = node.parent is! GuardedPattern ||
-        node.parent!.parent is! SwitchExpressionCase;
+    // If a logical and pattern occurs inside a map pattern entry, we want to
+    // format the operands in parallel, like:
+    //
+    //     var {
+    //       key:
+    //         operand1 &&
+    //         operand2,
+    //     } = value;
+    //
+    // Also, if it's the outermost pattern in a switch expression case, we
+    // flatten the operands like parallel cases:
+    //
+    //     e = switch (obj) {
+    //       operand1 ||
+    //       operand2 => value,
+    //     };
+    var indent = _parentContext != NodeContext.assignment &&
+        _parentContext != NodeContext.switchExpressionCase;
 
     return createInfixChain<LogicalOrPattern>(
         node,
@@ -1704,7 +1735,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSwitchExpressionCase(SwitchExpressionCase node) {
-    var patternPiece = nodePiece(node.guardedPattern.pattern);
+    var patternPiece = nodePiece(node.guardedPattern.pattern,
+        context: NodeContext.switchExpressionCase);
 
     var guardPiece = optionalNodePiece(node.guardedPattern.whenClause);
     var arrowPiece = tokenPiece(node.arrow);
@@ -1870,7 +1902,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
           b.token(equals);
         });
 
-        var initializerPiece = nodePiece(initializer, commaAfter: true);
+        var initializerPiece = nodePiece(initializer,
+            commaAfter: true, context: NodeContext.assignment);
 
         variables.add(AssignPiece(
             left: variablePiece,
@@ -1940,8 +1973,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   /// If [commaAfter] is `true`, looks for a comma token after [node] and
   /// writes it to the piece as well.
   @override
-  Piece nodePiece(AstNode node, {bool commaAfter = false}) {
+  Piece nodePiece(AstNode node,
+      {bool commaAfter = false, NodeContext context = NodeContext.none}) {
+    var previousContext = _parentContext;
+    _parentContext = context;
     var result = node.accept(this)!;
+    _parentContext = previousContext;
 
     if (commaAfter) {
       var nextToken = node.endToken.next!;

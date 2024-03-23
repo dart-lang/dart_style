@@ -58,9 +58,9 @@ for (var x = very + long + initialization + expression; a; b) {}
 for (
   var x =
       very +
-          long +
-          initialization +
-          expression;
+      long +
+      initialization +
+      expression;
   a;
   b
 ) {}

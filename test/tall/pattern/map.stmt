@@ -85,7 +85,7 @@ if (obj case {
   firstKey: first,
   secondKey:
       secondLongPattern ||
-          thirdLongPattern,
+      thirdLongPattern,
 }) {
   ;
 }

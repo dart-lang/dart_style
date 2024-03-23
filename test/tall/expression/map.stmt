@@ -72,10 +72,10 @@ const {first: 1, second: 2};
 ({
   first:
       second +
-          third +
-          fourth +
-          fifth +
-          sixth,
+      third +
+      fourth +
+      fifth +
+      sixth,
 });
 >>> Remove blank lines around entries.
 ({

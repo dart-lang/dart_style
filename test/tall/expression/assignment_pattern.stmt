@@ -27,8 +27,8 @@
 <<<
 (first, second, third, fourth, fifth) =
     longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Split in infix pattern.
 (veryLongIdentifier && anotherAlsoLongOne) = value;
 <<<
@@ -80,16 +80,16 @@ Foo(
 <<<
 (first, second, third) =
     longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Expression split in both.
 (veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
 <<<
 (veryLongIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
-        anotherOperand +
-        aThirdOperand;
+    anotherOperand +
+    aThirdOperand;
 >>> Block split in both.
 (first, second, third, fourth, fifth, sixth) = (first, second, third, fourth, fifth);
 <<<
