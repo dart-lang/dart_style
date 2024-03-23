@@ -26,8 +26,8 @@ veryLongFunction() => argument + anotherArgument + aThirdArgument;
 <<<
 veryLongFunction() =>
     argument +
-        anotherArgument +
-        aThirdArgument;
+    anotherArgument +
+    aThirdArgument;
 >>> Prefer block-like splitting for lists.
 function() => [element, element, element];
 <<<
