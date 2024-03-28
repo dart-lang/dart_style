@@ -5,8 +5,7 @@
 implements /*k*/ I1 /*l*/ , /*m*/ I2 /*n*/ { /*o*/ } /*p*/
 <<<
 /*a*/
-extension /*b*/ type /*c*/ A
-/*d*/ ( /*e*/
+extension /*b*/ type /*c*/ A/*d*/ ( /*e*/
   @ /*f*/ override /*g*/
   int /*h*/ a /*i*/,
 ) /*j*/

@@ -225,7 +225,7 @@ class DelimitedListBuilder {
     // Add any hanging inline block comments to the previous element before the
     // subsequent ",".
     for (var comment in inlineComments) {
-      var commentPiece = _visitor.pieces.writeComment(comment);
+      var commentPiece = _visitor.pieces.commentPiece(comment);
       _elements.last.addComment(commentPiece, beforeDelimiter: true);
     }
 
@@ -233,7 +233,7 @@ class DelimitedListBuilder {
     // the ",".
     if (hangingComments.isNotEmpty) {
       for (var comment in hangingComments) {
-        var commentPiece = _visitor.pieces.writeComment(comment);
+        var commentPiece = _visitor.pieces.commentPiece(comment);
         _elements.last.addComment(commentPiece);
       }
     }
@@ -246,13 +246,13 @@ class DelimitedListBuilder {
         _blanksAfter.add(_elements.last);
       }
 
-      var commentPiece = _visitor.pieces.writeComment(comment);
+      var commentPiece = _visitor.pieces.commentPiece(comment);
       _elements.add(ListElementPiece.comment(commentPiece));
     }
 
     // Leading comments are written before the next element.
     for (var comment in leadingComments) {
-      var commentPiece = _visitor.pieces.writeComment(comment);
+      var commentPiece = _visitor.pieces.commentPiece(comment);
       _leadingComments.add(commentPiece);
     }
   }
