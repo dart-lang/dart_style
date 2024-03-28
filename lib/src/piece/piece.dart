@@ -170,6 +170,9 @@ class TextPiece extends Piece {
   /// empty [_lines] list on the first write.
   Whitespace _trailingWhitespace = Whitespace.newline;
 
+  /// RegExp that matches any valid Dart line terminator.
+  static final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
+
   /// Whether the line after the next newline written should be fixed at column
   /// one or indented to match the surrounding code.
   ///
@@ -190,7 +193,20 @@ class TextPiece extends Piece {
   ///
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
-  void append(String text) {
+  ///
+  /// If [selectionStart] and/or [selectionEnd] are given, then notes that the
+  /// corresponding selection markers appear that many code units from where
+  /// [text] will be appended.
+  void append(String text,
+      {required bool multiline, int? selectionStart, int? selectionEnd}) {
+    if (selectionStart != null) {
+      _selectionStart = _adjustSelection(selectionStart);
+    }
+
+    if (selectionEnd != null) {
+      _selectionEnd = _adjustSelection(selectionEnd);
+    }
+
     // Write any pending whitespace into the text.
     switch (_trailingWhitespace) {
       case Whitespace.none:
@@ -206,7 +222,15 @@ class TextPiece extends Piece {
     _trailingWhitespace = Whitespace.none;
     _flushLeft = false;
 
-    _lines.last.append(text);
+    if (multiline) {
+      var lines = text.split(_lineTerminatorPattern);
+      for (var i = 0; i < lines.length; i++) {
+        if (i > 0) _lines.add(_Line(flushLeft: true));
+        _lines.last.append(lines[i]);
+      }
+    } else {
+      _lines.last.append(text);
+    }
   }
 
   void space() {
@@ -239,18 +263,6 @@ class TextPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {}
-
-  /// Sets [selectionStart] to be [start] code units after the end of the
-  /// current text in this piece.
-  void startSelection(int start) {
-    _selectionStart = _adjustSelection(start);
-  }
-
-  /// Sets [selectionEnd] to be [end] code units after the end of the
-  /// current text in this piece.
-  void endSelection(int end) {
-    _selectionEnd = _adjustSelection(end);
-  }
 
   /// Adjust [offset] by the current length of this [TextPiece].
   int _adjustSelection(int offset) {

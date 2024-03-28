@@ -12,9 +12,6 @@ import '../piece/piece.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 
-/// RegExp that matches any valid Dart line terminator.
-final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
-
 /// Builds [TextPiece]s for [Token]s and comments.
 ///
 /// Handles updating selection markers and attaching comments to the tokens
@@ -98,7 +95,8 @@ class PieceWriter {
   Piece writeComment(SourceComment comment) {
     _currentText = TextPiece();
 
-    return _writeMultiLine(comment.text, offset: comment.offset);
+    _write(comment.text, comment.offset, multiline: true);
+    return _currentText;
   }
 
   /// Writes all of the comments that appear between [token] and the previous
@@ -183,50 +181,15 @@ class PieceWriter {
     _write(token.lexeme, token.offset, multiline: multiline);
   }
 
-  /// Writes multi-line [text] to the current [TextPiece].
-  ///
-  /// Handles breaking [text] into lines and adding them to the [TextPiece].
-  ///
-  /// The [offset] parameter is the offset in the original source code of the
-  /// beginning of multi-line lexeme.
-  Piece _writeMultiLine(String text, {required int offset}) {
-    var lines = text.split(_lineTerminatorPattern);
-    var currentOffset = offset;
-    for (var i = 0; i < lines.length; i++) {
-      if (i > 0) _currentText.newline(flushLeft: true);
-      _write(lines[i], currentOffset);
-      currentOffset += lines[i].length;
-    }
-
-    return _currentText;
-  }
-
   /// Writes [text] to the current [TextPiece].
   ///
   /// If [offset] is given and it contains any selection markers, then attaches
   /// those markers to the [TextPiece].
   void _write(String text, int offset, {bool multiline = false}) {
-    // If this text contains any of the selection endpoints, note their
-    // relative locations in the text piece.
-    if (_findSelectionStartWithin(offset, text.length) case var start?) {
-      _currentText.startSelection(start);
-    }
-
-    if (_findSelectionEndWithin(offset, text.length) case var end?) {
-      _currentText.endSelection(end);
-    }
-
-    if (multiline) {
-      var lines = text.split(_lineTerminatorPattern);
-      var currentOffset = offset;
-      for (var i = 0; i < lines.length; i++) {
-        if (i > 0) _currentText.newline(flushLeft: true);
-        _write(lines[i], currentOffset);
-        currentOffset += lines[i].length;
-      }
-    } else {
-      _currentText.append(text);
-    }
+    _currentText.append(text,
+        multiline: multiline,
+        selectionStart: _findSelectionStartWithin(offset, text.length),
+        selectionEnd: _findSelectionEndWithin(offset, text.length));
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output
