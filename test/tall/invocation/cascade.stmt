@@ -238,11 +238,11 @@ object..firstProperty.secondProperty.thirdProperty
 <<<
 object
   ..firstProperty
-    .secondProperty
-    .thirdProperty
+      .secondProperty
+      .thirdProperty
   ..fourthProperty
-    .fifthProperty
-    .sixthProperty;
+      .fifthProperty
+      .sixthProperty;
 >>> Cascade chained property access setter.
 object..a.b = value;
 <<<

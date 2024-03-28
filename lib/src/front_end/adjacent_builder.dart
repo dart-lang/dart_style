@@ -115,11 +115,12 @@ class AdjacentBuilder {
   void visit(AstNode? node,
       {bool spaceBefore = false,
       bool commaAfter = false,
-      bool spaceAfter = false}) {
+      bool spaceAfter = false,
+      NodeContext context = NodeContext.none}) {
     if (node == null) return;
 
     if (spaceBefore) space();
-    add(_visitor.nodePiece(node, commaAfter: commaAfter));
+    add(_visitor.nodePiece(node, commaAfter: commaAfter, context: context));
     if (spaceAfter) space();
   }
 

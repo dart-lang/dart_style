@@ -71,7 +71,7 @@ class ChainBuilder {
 
   ChainBuilder(this._visitor, this._root) {
     if (_root case CascadeExpression cascade) {
-      _visitTarget(cascade.target);
+      _visitTarget(cascade.target, cascadeTarget: true);
 
       // When [_root] is a cascade, the chain is the series of cascade sections.
       for (var section in cascade.cascadeSections) {
@@ -92,16 +92,8 @@ class ChainBuilder {
     }
   }
 
-  Piece build() {
-    if (_root is CascadeExpression) {
-      return _buildCascade();
-    } else {
-      return _buildCallChain();
-    }
-  }
-
   /// Builds a [ChainPiece] for a series of cascade sections.
-  Piece _buildCascade() {
+  Piece buildCascade() {
     // If there is only a single section and it can block split, allow it:
     //
     //     target..cascade(
@@ -121,7 +113,12 @@ class ChainBuilder {
   }
 
   /// Builds a [ChainPiece] for a series of method calls and property accesses.
-  Piece _buildCallChain() {
+  ///
+  /// If [isCascadeTarget] is `true`, then this call chain occurs as the target
+  /// of a cascade expression, as in:
+  ///
+  ///     call.chain()..cascade();
+  Piece build({required bool isCascadeTarget}) {
     // If there are no calls, there's no chain.
     if (_calls.isEmpty) return _target;
 
@@ -201,12 +198,9 @@ class ChainBuilder {
     //         .method()
     //       ..x = 1
     //       ..y = 2;
-    var indent =
-        _root.parent is CascadeExpression ? Indent.cascade : Indent.expression;
-
     return ChainPiece(_target, _calls,
         cascade: false,
-        indent: indent,
+        indent: isCascadeTarget ? Indent.cascade : Indent.expression,
         leadingProperties: leadingProperties,
         blockCallIndex: blockCallIndex,
         allowSplitInTarget: _allowSplitInTarget);
@@ -323,9 +317,13 @@ class ChainBuilder {
 
   /// Creates and stores the resulting Piece for [target] as well as whether it
   /// allows being split.
-  void _visitTarget(Expression target) {
+  ///
+  /// If [cascadeTarget] is `true`, then this is the target of a cascade
+  /// expression. Otherwise, it's the target of a call chain.
+  void _visitTarget(Expression target, {bool cascadeTarget = false}) {
     _allowSplitInTarget = target.canBlockSplit;
-    _target = _visitor.nodePiece(target);
+    _target = _visitor.nodePiece(target,
+        context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none);
   }
 
   void _unwrapPostfix(
