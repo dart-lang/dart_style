@@ -28,6 +28,41 @@ import 'sequence_builder.dart';
 /// Record type for a destructured binary operator-like syntactic construct.
 typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 
+/// The kind of syntax surrounding a node when being converted to a [Piece], if
+/// that surrounding syntax may affect how the child node is formatted.
+///
+/// For example, binary operators indent their subsequent operands in most
+/// places:
+///
+///     function(
+///       operand +
+///           operand,
+///     );
+///
+/// But not when they appear on the right-hand side of an assignment or
+/// assignment-like structure:
+///
+///     variable =
+///         operand +
+///         operand;
+///
+/// To handle this, when the code for a node recursively visits a child, it can
+/// pass in a context describing itself, which the child can then access to
+/// decide how it should be formatted.
+enum NodeContext {
+  /// No specified context.
+  none,
+
+  /// The child is the right-hand side of an assignment-like form.
+  ///
+  /// This includes assignments, variable declarations, named arguments, map
+  /// entries, and `=>` function bodies.
+  assignment,
+
+  /// The outermost pattern in a switch expression case.
+  switchExpressionCase
+}
+
 /// Utility methods for creating pieces that share formatting logic across
 /// multiple parts of the language.
 ///
@@ -66,7 +101,8 @@ mixin PieceFactory {
 
   CommentWriter get comments;
 
-  Piece nodePiece(AstNode node, {bool commaAfter = false});
+  Piece nodePiece(AstNode node,
+      {bool commaAfter = false, NodeContext context = NodeContext.none});
 
   Piece? optionalNodePiece(AstNode? node);
 
@@ -1217,7 +1253,10 @@ mixin PieceFactory {
       if (splitBeforeOperator) b.space();
     });
 
-    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
+    var rightPiece = nodePiece(rightHandSide,
+        commaAfter: includeComma,
+        context:
+            splitBeforeOperator ? NodeContext.none : NodeContext.assignment);
 
     return AssignPiece(
         left: leftPiece,

@@ -69,7 +69,8 @@ for  (  init
 <<<
 ### Looks weird, but users don't tend to put comments here.
 for (
-  init// comment
+  init
+  // comment
   ;
   cond;
   incr
@@ -145,7 +146,8 @@ for  (  init  ;  cond
 ### Looks weird, but users don't tend to put comments here.
 for (
   init;
-  cond// comment
+  cond
+  // comment
   ;
   incr
 ) {

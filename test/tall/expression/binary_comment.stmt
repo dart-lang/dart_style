@@ -48,7 +48,8 @@ foo
     // comment
     + bar;
 <<<
-foo // comment
+foo
+    // comment
     +
     bar;
 >>>

@@ -276,8 +276,13 @@ class CodePiece extends TextPiece {
   void format(CodeWriter writer, State state) {
     _formatSelection(writer);
 
-    for (var comment in _leadingComments) {
-      writer.format(comment);
+    if (_leadingComments.isNotEmpty) {
+      // Always put leading comments on a new line.
+      writer.newline();
+
+      for (var comment in _leadingComments) {
+        writer.format(comment);
+      }
     }
 
     _formatLines(writer);
