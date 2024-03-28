@@ -547,7 +547,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         for (var constant in node.constants) {
           members.addCommentsBefore(constant.firstNonCommentToken);
           members.add(createEnumConstant(constant,
-              hasMembers: true,
               isLastConstant: constant == node.constants.last,
               semicolon: node.semicolon));
         }

@@ -97,13 +97,11 @@ class AdjacentBuilder {
   /// Does nothing if [token] is `null`. If [spaceBefore] is `true`, writes a
   /// space before the token, likewise with [spaceAfter].
   void token(Token? token,
-      {Token? discardedToken,
-      bool spaceBefore = false,
-      bool spaceAfter = false}) {
+      {bool spaceBefore = false, bool spaceAfter = false}) {
     if (token == null) return;
 
     if (spaceBefore) space();
-    add(_visitor.pieces.tokenPiece(discardedToken: discardedToken, token));
+    add(_visitor.pieces.tokenPiece(token));
     if (spaceAfter) space();
   }
 
