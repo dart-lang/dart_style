@@ -56,8 +56,9 @@ class PieceWriter {
   ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {bool commaAfter = false}) {
-    _writeToken(token);
+  Piece tokenPiece(Token token,
+      {bool commaAfter = false, bool multiline = false}) {
+    _writeToken(token, multiline: multiline);
     var tokenPiece = _currentText;
 
     if (commaAfter) {
@@ -69,22 +70,6 @@ class PieceWriter {
     }
 
     return tokenPiece;
-  }
-
-  /// Creates a piece for a simple or interpolated string [literal].
-  ///
-  /// Handles splitting it into multiple lines in the resulting [TextPiece] if
-  /// [isMultiline] is `true`.
-  Piece stringLiteralPiece(Token literal, {required bool isMultiline}) {
-    if (!isMultiline) return tokenPiece(literal);
-
-    if (!_writeCommentsBefore(literal)) {
-      // We want this token to be in its own TextPiece, so if the comments
-      // didn't already lead to ending the previous TextPiece than do so now.
-      _currentText = TextPiece();
-    }
-
-    return _writeMultiLine(literal.lexeme, offset: literal.offset);
   }
 
   // TODO(tall): Much of the comment handling code in CommentWriter got moved
@@ -162,7 +147,7 @@ class PieceWriter {
         _currentText.newline();
       }
 
-      _write(comment.text, offset: comment.offset);
+      _write(comment.text, comment.offset);
     }
 
     // Output a trailing newline after the last comment if it needs one.
@@ -188,14 +173,14 @@ class PieceWriter {
 
   /// Writes [token] and any comments that precede it to the current [TextPiece]
   /// and updates any selection markers that appear in it.
-  void _writeToken(Token token) {
+  void _writeToken(Token token, {bool multiline = false}) {
     if (!_writeCommentsBefore(token)) {
       // We want this token to be in its own TextPiece, so if the comments
       // didn't already lead to ending the previous TextPiece than do so now.
       _currentText = TextPiece();
     }
 
-    _write(token.lexeme, offset: token.offset);
+    _write(token.lexeme, token.offset, multiline: multiline);
   }
 
   /// Writes multi-line [text] to the current [TextPiece].
@@ -209,7 +194,7 @@ class PieceWriter {
     var currentOffset = offset;
     for (var i = 0; i < lines.length; i++) {
       if (i > 0) _currentText.newline(flushLeft: true);
-      _write(lines[i], offset: currentOffset);
+      _write(lines[i], currentOffset);
       currentOffset += lines[i].length;
     }
 
@@ -220,20 +205,28 @@ class PieceWriter {
   ///
   /// If [offset] is given and it contains any selection markers, then attaches
   /// those markers to the [TextPiece].
-  void _write(String text, {int? offset}) {
-    if (offset != null) {
-      // If this text contains any of the selection endpoints, note their
-      // relative locations in the text piece.
-      if (_findSelectionStartWithin(offset, text.length) case var start?) {
-        _currentText.startSelection(start);
-      }
-
-      if (_findSelectionEndWithin(offset, text.length) case var end?) {
-        _currentText.endSelection(end);
-      }
+  void _write(String text, int offset, {bool multiline = false}) {
+    // If this text contains any of the selection endpoints, note their
+    // relative locations in the text piece.
+    if (_findSelectionStartWithin(offset, text.length) case var start?) {
+      _currentText.startSelection(start);
     }
 
-    _currentText.append(text);
+    if (_findSelectionEndWithin(offset, text.length) case var end?) {
+      _currentText.endSelection(end);
+    }
+
+    if (multiline) {
+      var lines = text.split(_lineTerminatorPattern);
+      var currentOffset = offset;
+      for (var i = 0; i < lines.length; i++) {
+        if (i > 0) _currentText.newline(flushLeft: true);
+        _write(lines[i], currentOffset);
+        currentOffset += lines[i].length;
+      }
+    } else {
+      _currentText.append(text);
+    }
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output

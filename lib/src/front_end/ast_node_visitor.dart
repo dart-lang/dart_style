@@ -1075,8 +1075,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitInterpolationString(InterpolationString node) {
-    return pieces.stringLiteralPiece(node.contents,
-        isMultiline: (node.parent as StringInterpolation).isMultiline);
+    return pieces.tokenPiece(node.contents,
+        multiline: (node.parent as StringInterpolation).isMultiline);
   }
 
   @override
@@ -1619,8 +1619,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSimpleStringLiteral(SimpleStringLiteral node) {
-    return pieces.stringLiteralPiece(node.literal,
-        isMultiline: node.isMultiline);
+    return pieces.tokenPiece(node.literal, multiline: node.isMultiline);
   }
 
   @override
