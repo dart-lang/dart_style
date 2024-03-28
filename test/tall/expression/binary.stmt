@@ -116,3 +116,65 @@ veryLongIdentifier +
     veryLongIdentifier /
         veryLongIdentifier -
     veryLongIdentifier;
+>>> Don't indent subsequent operands when split inside a variable declaration.
+var variable = longOperand2 + longOperand2 + longOperand3;
+<<<
+var variable =
+    longOperand2 +
+    longOperand2 +
+    longOperand3;
+>>> Don't indent subsequent operands when split inside a pattern variable declaration.
+var (x, y) = longOperand2 + longOperand2 + longOperand3;
+<<<
+var (x, y) =
+    longOperand2 +
+    longOperand2 +
+    longOperand3;
+>>> Don't indent subsequent operands when split inside an assignment.
+variable = longOperand2 + longOperand2 + longOperand3;
+<<<
+variable =
+    longOperand2 +
+    longOperand2 +
+    longOperand3;
+>>> Don't indent subsequent operands when split inside a pattern assignment.
+(x, y) = longOperand2 + longOperand2 + longOperand3;
+<<<
+(x, y) =
+    longOperand2 +
+    longOperand2 +
+    longOperand3;
+>>> Don't indent subsequent operands when split inside a `=>` body.
+function() => longOperand2 + longOperand2 + longOperand3;
+<<<
+function() =>
+    longOperand2 +
+    longOperand2 +
+    longOperand3;
+>>> Don't indent subsequent operands when split inside a named argument.
+function(name: longOperand2 + longOperand2 + longOperand3);
+<<<
+function(
+  name:
+      longOperand2 +
+      longOperand2 +
+      longOperand3,
+);
+>>> Don't indent subsequent operands when split inside a map key.
+map = {key: longOperand2 + longOperand2 + longOperand3};
+<<<
+map = {
+  key:
+      longOperand2 +
+      longOperand2 +
+      longOperand3,
+};
+>>> Don't indent subsequent operands when split inside a named record field.
+record = (key: longOperand2 + longOperand2 + longOperand3);
+<<<
+record = (
+  key:
+      longOperand2 +
+      longOperand2 +
+      longOperand3,
+);
