@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/token.dart';
 
+import '../back_end/code_writer.dart';
 import '../back_end/solution_cache.dart';
 import '../back_end/solver.dart';
 import '../dart_formatter.dart';
@@ -11,9 +12,6 @@ import '../piece/adjacent.dart';
 import '../piece/piece.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
-
-/// RegExp that matches any valid Dart line terminator.
-final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
 
 /// Builds [TextPiece]s for [Token]s and comments.
 ///
@@ -26,8 +24,12 @@ class PieceWriter {
 
   final CommentWriter _comments;
 
-  /// The current [TextPiece] being written to.
-  TextPiece _currentText = TextPiece();
+  /// The most recent previously-created [CodePiece].
+  ///
+  /// We hold a reference to this so we can attach hanging comments to it,
+  /// which we don't discover until we reach the token after the one used to
+  /// create this piece.
+  CodePiece? _previousCode;
 
   /// Whether we have reached a token or comment that lies at or beyond the
   /// selection start offset in the original code.
@@ -54,39 +56,27 @@ class PieceWriter {
   /// Creates a piece for [token], including any comments that should be
   /// attached to that token.
   ///
-  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
+  /// If [discardedToken] is given, it is a token immediately before [token]
+  /// that is going to be discarded. Passing it in here ensures any comments
+  /// before it are preserved.
   ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
-    _writeToken(token, lexeme: lexeme);
-    var tokenPiece = _currentText;
+  Piece tokenPiece(Token token,
+      {Token? discardedToken,
+      bool commaAfter = false,
+      bool multiline = false}) {
+    var tokenPiece = _makeCodePiece(
+        discardedToken: discardedToken, token, multiline: multiline);
 
     if (commaAfter) {
       var nextToken = token.next!;
       if (nextToken.lexeme == ',') {
-        _writeToken(nextToken);
-        return AdjacentPiece([tokenPiece, _currentText]);
+        return AdjacentPiece([tokenPiece, _makeCodePiece(nextToken)]);
       }
     }
 
     return tokenPiece;
-  }
-
-  /// Creates a piece for a simple or interpolated string [literal].
-  ///
-  /// Handles splitting it into multiple lines in the resulting [TextPiece] if
-  /// [isMultiline] is `true`.
-  Piece stringLiteralPiece(Token literal, {required bool isMultiline}) {
-    if (!isMultiline) return tokenPiece(literal);
-
-    if (!_writeCommentsBefore(literal)) {
-      // We want this token to be in its own TextPiece, so if the comments
-      // didn't already lead to ending the previous TextPiece than do so now.
-      _currentText = TextPiece();
-    }
-
-    return _writeMultiLine(literal.lexeme, offset: literal.offset);
   }
 
   // TODO(tall): Much of the comment handling code in CommentWriter got moved
@@ -94,150 +84,87 @@ class PieceWriter {
   // organize this code better? Or just combine CommentWriter with this class
   // completely?
 
-  /// Writes any comments before [token].
-  ///
-  /// Used to ensure comments before a token which will be discarded aren't
-  /// lost.
-  ///
-  /// If there are any comments before [token] that should end up in their own
-  /// piece, returns a piece for them.
-  Piece? writeCommentsBefore(Token token) {
-    // If we created a new piece while writing the comments, make sure it
-    // doesn't get lost.
-    if (_writeCommentsBefore(token)) return _currentText;
-
-    // Otherwise, there are no comments, or all comments are hanging off the
-    // previous TextPiece.
-    return null;
+  /// Creates a new [Piece] for [comment] and returns it.
+  Piece commentPiece(SourceComment comment,
+      [Whitespace trailingWhitespace = Whitespace.none]) {
+    var commentPiece = CommentPiece(trailingWhitespace);
+    _write(commentPiece, comment.text, comment.offset, multiline: true);
+    return commentPiece;
   }
 
-  /// Writes [comment] to a new [Piece] and returns it.
-  Piece writeComment(SourceComment comment) {
-    _currentText = TextPiece();
-
-    return _writeMultiLine(comment.text, offset: comment.offset);
-  }
-
-  /// Writes all of the comments that appear between [token] and the previous
-  /// one.
+  /// Creates a [CodePiece] for [token] and handles any comments that precede
+  /// it, which get attached either as hanging comments on the preceding
+  /// [CodePiece] or leading comments on this one.
   ///
-  /// Any hanging comments will be written to the current [TextPiece] for the
-  /// previous token. Remaining comments are written to a new [TextPiece].
-  /// Returns `true` if it created a new [TextPiece].
-  bool _writeCommentsBefore(Token token) {
+  /// If [discardedToken] is given, it is a token immediately before [token]
+  /// that is going to be discarded. Passing it in here ensures any comments
+  /// before it are preserved.
+  ///
+  /// If [multiline] is `true`, then [token]'s lexeme may contain internal
+  /// newlines. The lexeme will be split into separate lines. If omitted, then
+  /// [token] must not contain newlines.
+  CodePiece _makeCodePiece(Token token,
+      {Token? discardedToken, bool multiline = false}) {
     var comments = _comments.commentsBefore(token);
-    if (comments.isEmpty) return false;
 
-    var createdPiece = false;
+    // Include any comments on the preceding discarded token, if there is one.
+    if (discardedToken != null) {
+      comments = _comments.commentsBefore(discardedToken).concatenate(comments);
+    }
 
+    var piece = CodePiece(_splitComments(comments, token));
+    _write(piece, token.lexeme, token.offset, multiline: multiline);
+
+    // Remember it so we can attach hanging comments later.
+    return _previousCode = piece;
+  }
+
+  /// Splits [comments] which precede [token] into [CommentPiece]s that hang
+  /// off the preceding [CodePiece] and those that are leading comments on the
+  /// [CodePiece] for [token].
+  ///
+  /// Attaches hanging comments to [_previousCode]. Returns the list of leading
+  /// comments that should precede [token].
+  List<Piece> _splitComments(CommentSequence comments, Token token) {
+    if (comments.isEmpty) return const [];
+
+    var leadingComments = <Piece>[];
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
 
-      // The whitespace between the previous code or comment and this one.
+      // The whitespace after this comment before the next comment or code.
+      var trailingWhitespace = switch (token.lexeme) {
+        _ when comment.requiresNewline => Whitespace.newline,
+        // No space between a comment and delimiting punctuation.
+        ']' || '}' || ',' || ';' => Whitespace.none,
+        _ => Whitespace.space,
+      };
+
+      var piece = commentPiece(comment, trailingWhitespace);
+
       if (comments.isHanging(i)) {
-        // Write a space before hanging comments.
-        _currentText.space();
-      } else if (!createdPiece) {
-        // The previous piece must end in a newline before this comment.
-        _currentText.newline();
-
-        // Only split once between the last hanging comment and the remaining
-        // non-hanging ones. Otherwise, we would end up dropping comment pieces
-        // on the floor. So given:
-        //
-        //     before + // one
-        //        // two
-        //        // three
-        //        // four
-        //        after;
-        //
-        // The pieces are:
-        //
-        // - `before + // one`
-        // - `// two¬// three¬// four¬after`
-        // - `;`
-        _currentText = TextPiece();
-        createdPiece = true;
+        // Attach it to the previous CodePiece.
+        _previousCode!.addHangingComment(piece);
       } else {
-        // There are multiple comments before the token that each need to be on
-        // their own lines, so split between the previous one and this one.
-        _currentText.newline();
+        // Add it to the list of leading comments for the upcoming token.
+        leadingComments.add(piece);
       }
-
-      _write(comment.text, offset: comment.offset);
     }
 
-    // Output a trailing newline after the last comment if it needs one.
-    if (comments.last.requiresNewline) {
-      _currentText.newline();
-    } else if (_needsSpaceAfterComment(token.lexeme)) {
-      _currentText.space();
-    }
-
-    return createdPiece;
+    return leadingComments;
   }
 
-  /// Returns `true` if a space should be output after an inline comment
-  /// which is followed by [lexeme].
-  bool _needsSpaceAfterComment(String lexeme) {
-    // It gets a space unless the next token is a delimiting punctuation.
-    return lexeme != ')' &&
-        lexeme != ']' &&
-        lexeme != '}' &&
-        lexeme != ',' &&
-        lexeme != ';';
-  }
-
-  /// Writes [token] and any comments that precede it to the current [TextPiece]
-  /// and updates any selection markers that appear in it.
-  void _writeToken(Token token, {String? lexeme}) {
-    if (!_writeCommentsBefore(token)) {
-      // We want this token to be in its own TextPiece, so if the comments
-      // didn't already lead to ending the previous TextPiece than do so now.
-      _currentText = TextPiece();
-    }
-
-    lexeme ??= token.lexeme;
-
-    _write(lexeme, offset: token.offset);
-  }
-
-  /// Writes multi-line [text] to the current [TextPiece].
-  ///
-  /// Handles breaking [text] into lines and adding them to the [TextPiece].
+  /// Appends [text] to [piece] and updates any selection markers that fall
+  /// within it.
   ///
   /// The [offset] parameter is the offset in the original source code of the
-  /// beginning of multi-line lexeme.
-  Piece _writeMultiLine(String text, {required int offset}) {
-    var lines = text.split(_lineTerminatorPattern);
-    var currentOffset = offset;
-    for (var i = 0; i < lines.length; i++) {
-      if (i > 0) _currentText.newline(flushLeft: true);
-      _write(lines[i], offset: currentOffset);
-      currentOffset += lines[i].length;
-    }
-
-    return _currentText;
-  }
-
-  /// Writes [text] to the current [TextPiece].
-  ///
-  /// If [offset] is given and it contains any selection markers, then attaches
-  /// those markers to the [TextPiece].
-  void _write(String text, {int? offset}) {
-    if (offset != null) {
-      // If this text contains any of the selection endpoints, note their
-      // relative locations in the text piece.
-      if (_findSelectionStartWithin(offset, text.length) case var start?) {
-        _currentText.startSelection(start);
-      }
-
-      if (_findSelectionEndWithin(offset, text.length) case var end?) {
-        _currentText.endSelection(end);
-      }
-    }
-
-    _currentText.append(text);
+  /// beginning of where [text] appears.
+  void _write(TextPiece piece, String text, int offset,
+      {bool multiline = false}) {
+    piece.append(text,
+        multiline: multiline,
+        selectionStart: _findSelectionStartWithin(offset, text.length),
+        selectionEnd: _findSelectionEndWithin(offset, text.length));
   }
 
   /// Finishes writing and returns a [SourceCode] containing the final output

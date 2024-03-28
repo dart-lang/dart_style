@@ -94,27 +94,15 @@ class AdjacentBuilder {
   /// Emit [token], along with any comments and formatted whitespace that comes
   /// before it.
   ///
-  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
-  ///
   /// Does nothing if [token] is `null`. If [spaceBefore] is `true`, writes a
   /// space before the token, likewise with [spaceAfter].
   void token(Token? token,
-      {bool spaceBefore = false, bool spaceAfter = false, String? lexeme}) {
+      {bool spaceBefore = false, bool spaceAfter = false}) {
     if (token == null) return;
 
     if (spaceBefore) space();
-    add(_visitor.pieces.tokenPiece(token, lexeme: lexeme));
+    add(_visitor.pieces.tokenPiece(token));
     if (spaceAfter) space();
-  }
-
-  /// Writes any comments that appear before [token], which will be discarded.
-  ///
-  /// Used to ensure comments before a discarded token are preserved.
-  void commentsBefore(Token? token) {
-    if (token == null) return;
-
-    var piece = _visitor.pieces.writeCommentsBefore(token);
-    if (piece != null) add(piece);
   }
 
   /// Writes an optional modifier that precedes other code.

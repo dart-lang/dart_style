@@ -151,32 +151,18 @@ abstract class Piece {
 ///
 /// This may represent a series of tokens where no split can occur between them.
 /// It may also contain one or more comments.
-class TextPiece extends Piece {
+sealed class TextPiece extends Piece {
+  /// RegExp that matches any valid Dart line terminator.
+  static final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
+
   /// The lines of text in this piece.
   ///
-  /// Most [TextPieces] will contain only a single line, but a piece with
-  /// preceding comments that are on their own line will have multiple. These
-  /// are stored as separate lines instead of a single multi-line string so that
-  /// each line can be indented appropriately during formatting.
-  final List<_Line> _lines = [];
-
-  /// Whitespace at the end of this [TextPiece].
-  ///
-  /// This will be turned into actual text if non-whitespace is written after
-  /// the pending whitespace is set. Otherwise, it will be written to the output
-  /// when the [TextPiece] is formatted.
-  ///
-  /// Initially [Whitespace.newline] so that we insert a new string into the
-  /// empty [_lines] list on the first write.
-  Whitespace _trailingWhitespace = Whitespace.newline;
-
-  /// Whether the line after the next newline written should be fixed at column
-  /// one or indented to match the surrounding code.
-  ///
-  /// This is false for most lines, but is true for multiline strings where
-  /// subsequent lines in the string don't get any additional indentation from
-  /// formatting.
-  bool _flushLeft = false;
+  /// Most [TextPieces] will contain only a single line, but a piece for a
+  /// multi-line string or comment will have multiple lines. These are stored
+  /// as separate lines instead of a single multi-line Dart String so that
+  /// line endings are normalized and so that column calculation during line
+  /// splitting calculates each line in the piece separately.
+  final List<String> _lines = [''];
 
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
@@ -186,63 +172,34 @@ class TextPiece extends Piece {
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
 
-  /// Whether the last line of this piece's text ends with [text].
-  bool endsWith(String text) =>
-      _lines.isNotEmpty && _lines.last._text.endsWith(text);
-
   /// Append [text] to the end of this piece.
   ///
   /// If [text] internally contains a newline, then [containsNewline] should
   /// be `true`.
-  void append(String text) {
-    // Write any pending whitespace into the text.
-    switch (_trailingWhitespace) {
-      case Whitespace.none:
-        break; // Nothing to do.
-      case Whitespace.space:
-        _lines.last.append(' ');
-      case Whitespace.newline:
-        _lines.add(_Line(flushLeft: _flushLeft));
-      case Whitespace.blankLine:
-        throw UnsupportedError('No blank lines in TextPieces.');
+  ///
+  /// If [selectionStart] and/or [selectionEnd] are given, then notes that the
+  /// corresponding selection markers appear that many code units from where
+  /// [text] will be appended.
+  void append(String text,
+      {required bool multiline, int? selectionStart, int? selectionEnd}) {
+    if (selectionStart != null) {
+      _selectionStart = _adjustSelection(selectionStart);
     }
 
-    _trailingWhitespace = Whitespace.none;
-    _flushLeft = false;
-
-    _lines.last.append(text);
-  }
-
-  void space() {
-    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.space);
-  }
-
-  void newline({bool flushLeft = false}) {
-    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.newline);
-    _flushLeft = flushLeft;
-  }
-
-  @override
-  void format(CodeWriter writer, State state) {
-    if (_selectionStart case var start?) {
-      writer.startSelection(start);
+    if (selectionEnd != null) {
+      _selectionEnd = _adjustSelection(selectionEnd);
     }
 
-    if (_selectionEnd case var end?) {
-      writer.endSelection(end);
+    if (multiline) {
+      var lines = text.split(_lineTerminatorPattern);
+      for (var i = 0; i < lines.length; i++) {
+        if (i > 0) _lines.add('');
+        _lines.last += lines[i];
+      }
+    } else {
+      _lines.last += text;
     }
-
-    for (var i = 0; i < _lines.length; i++) {
-      var line = _lines[i];
-      if (i > 0) writer.newline(flushLeft: line._isFlushLeft);
-      writer.write(line._text);
-    }
-
-    writer.whitespace(_trailingWhitespace);
   }
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {}
 
   /// Sets [selectionStart] to be [start] code units after the end of the
   /// current text in this piece.
@@ -259,24 +216,38 @@ class TextPiece extends Piece {
   /// Adjust [offset] by the current length of this [TextPiece].
   int _adjustSelection(int offset) {
     for (var line in _lines) {
-      offset += line._text.length;
+      offset += line.length;
     }
-
-    if (_trailingWhitespace == Whitespace.space) offset++;
 
     return offset;
   }
 
+  void _formatSelection(CodeWriter writer) {
+    if (_selectionStart case var start?) {
+      writer.startSelection(start);
+    }
+
+    if (_selectionEnd case var end?) {
+      writer.endSelection(end);
+    }
+  }
+
+  void _formatLines(CodeWriter writer) {
+    for (var i = 0; i < _lines.length; i++) {
+      if (i > 0) writer.newline(flushLeft: i > 0);
+      writer.write(_lines[i]);
+    }
+  }
+
   @override
-  bool _calculateContainsNewline() =>
-      _lines.length > 1 || _trailingWhitespace.hasNewline;
+  bool _calculateContainsNewline() => _lines.length > 1;
 
   @override
   int _calculateTotalCharacters() {
     var total = 0;
 
     for (var line in _lines) {
-      total += line._text.length;
+      total += line.length;
     }
 
     return total;
@@ -286,23 +257,69 @@ class TextPiece extends Piece {
   String toString() => '`${_lines.join('¬')}`';
 }
 
-/// A single line of text within a [TextPiece].
-class _Line {
-  String _text = '';
+/// [TextPiece] for non-comment source code that may have comments attached to
+/// it.
+class CodePiece extends TextPiece {
+  /// Pieces for any comments that appear immediately before this code.
+  final List<Piece> _leadingComments;
 
-  /// Whether this line should start at column one or use the surrounding
-  /// indentation.
-  final bool _isFlushLeft;
+  /// Pieces for any comments that hang off the same line as this code.
+  final List<Piece> _hangingComments = [];
 
-  _Line({required bool flushLeft}) : _isFlushLeft = flushLeft;
+  CodePiece([this._leadingComments = const []]);
 
-  void append(String text) {
-    // TODO(perf): Consider a faster way of accumulating text.
-    _text += text;
+  void addHangingComment(Piece comment) {
+    _hangingComments.add(comment);
   }
 
   @override
-  String toString() => _text;
+  void format(CodeWriter writer, State state) {
+    _formatSelection(writer);
+
+    if (_leadingComments.isNotEmpty) {
+      // Always put leading comments on a new line.
+      writer.newline();
+
+      for (var comment in _leadingComments) {
+        writer.format(comment);
+      }
+    }
+
+    _formatLines(writer);
+
+    for (var comment in _hangingComments) {
+      writer.space();
+      writer.format(comment);
+    }
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    _leadingComments.forEach(callback);
+    _hangingComments.forEach(callback);
+  }
+}
+
+/// A [TextPiece] for a source code comment and the whitespace after it, if any.
+class CommentPiece extends TextPiece {
+  /// Whitespace at the end of the comment.
+  final Whitespace _trailingWhitespace;
+
+  CommentPiece([this._trailingWhitespace = Whitespace.none]);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    _formatSelection(writer);
+    _formatLines(writer);
+    writer.whitespace(_trailingWhitespace);
+  }
+
+  @override
+  bool _calculateContainsNewline() =>
+      _trailingWhitespace.hasNewline || super._calculateContainsNewline();
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {}
 }
 
 /// A piece that writes a single space.

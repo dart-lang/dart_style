@@ -280,13 +280,11 @@ mixin PieceFactory {
   /// Creates a [Piece] for an enum constant.
   ///
   /// If the constant is in an enum declaration that also declares members, then
-  /// [hasMembers] should be `true`, [semicolon] is the `;` token before the
-  /// members (if any), and [isLastConstant] is `true` if [node] is the last
-  /// constant before the members.
+  /// [semicolon] should be the `;` token before the members, and
+  /// [isLastConstant] is `true` if [node] is the last constant before the
+  /// members.
   Piece createEnumConstant(EnumConstantDeclaration node,
-      {bool hasMembers = false,
-      bool isLastConstant = false,
-      Token? semicolon}) {
+      {bool isLastConstant = false, Token? semicolon}) {
     return buildPiece((b) {
       b.metadata(node.metadata);
       b.token(node.name);
@@ -295,15 +293,14 @@ mixin PieceFactory {
         b.visit(arguments.argumentList);
       }
 
-      if (hasMembers) {
+      if (semicolon != null) {
         if (!isLastConstant) {
           b.token(node.commaAfter);
         } else {
           // Discard the trailing comma if there is one since there is a
           // semicolon to use as the separator, but preserve any comments before
           // the discarded comma.
-          b.commentsBefore(node.commaAfter);
-          b.token(semicolon);
+          b.add(pieces.tokenPiece(discardedToken: node.commaAfter, semicolon));
         }
       }
     });
@@ -1320,11 +1317,9 @@ mixin PieceFactory {
 
   /// Creates a piece for only [token].
   ///
-  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
-  ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
-    return pieces.tokenPiece(token, lexeme: lexeme, commaAfter: commaAfter);
+  Piece tokenPiece(Token token, {bool commaAfter = false}) {
+    return pieces.tokenPiece(token, commaAfter: commaAfter);
   }
 }

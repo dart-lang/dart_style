@@ -36,7 +36,10 @@ class CodeWriter {
   /// it as pending. This ensures that we don't write trailing whitespace,
   /// avoids writing spaces at the beginning of lines, and allows collapsing
   /// multiple redundant newlines.
-  Whitespace _pendingWhitespace = Whitespace.none;
+  ///
+  /// Initially [Whitespace.newline] so that we write the leading indentation
+  /// before the first token.
+  Whitespace _pendingWhitespace = Whitespace.newline;
 
   /// The number of spaces of indentation that should be begin the next line
   /// when [_pendingWhitespace] is [Whitespace.newline] or
@@ -103,8 +106,7 @@ class CodeWriter {
     _indentStack.add(_Indent(leadingIndent, 0));
 
     // Write the leading indent before the first line.
-    _buffer.write(' ' * leadingIndent);
-    _column = leadingIndent;
+    _pendingIndent = leadingIndent;
   }
 
   /// Returns the final formatted text and the next piece that can be expanded
@@ -350,9 +352,12 @@ class CodeWriter {
 
       case Whitespace.newline:
       case Whitespace.blankLine:
-        _finishLine();
-        _buffer.writeln();
-        if (_pendingWhitespace == Whitespace.blankLine) _buffer.writeln();
+        // Don't write any leading newlines at the top of the buffer.
+        if (_buffer.isNotEmpty) {
+          _finishLine();
+          _buffer.writeln();
+          if (_pendingWhitespace == Whitespace.blankLine) _buffer.writeln();
+        }
 
         _column = _pendingIndent;
         _buffer.write(' ' * _column);

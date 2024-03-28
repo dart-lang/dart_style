@@ -575,7 +575,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         for (var constant in node.constants) {
           members.addCommentsBefore(constant.firstNonCommentToken);
           members.add(createEnumConstant(constant,
-              hasMembers: true,
               isLastConstant: constant == node.constants.last,
               semicolon: node.semicolon));
         }
@@ -1104,8 +1103,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitInterpolationString(InterpolationString node) {
-    return pieces.stringLiteralPiece(node.contents,
-        isMultiline: (node.parent as StringInterpolation).isMultiline);
+    return pieces.tokenPiece(node.contents,
+        multiline: (node.parent as StringInterpolation).isMultiline);
   }
 
   @override
@@ -1638,9 +1637,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitScriptTag(ScriptTag node) {
-    // The lexeme includes the trailing newline. Strip it off since the
-    // formatter ensures it gets a newline after it.
-    return tokenPiece(node.scriptTag, lexeme: node.scriptTag.lexeme.trim());
+    return tokenPiece(node.scriptTag);
   }
 
   @override
@@ -1674,8 +1671,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSimpleStringLiteral(SimpleStringLiteral node) {
-    return pieces.stringLiteralPiece(node.literal,
-        isMultiline: node.isMultiline);
+    return pieces.tokenPiece(node.literal, multiline: node.isMultiline);
   }
 
   @override
