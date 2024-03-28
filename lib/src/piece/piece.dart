@@ -151,15 +151,9 @@ abstract class Piece {
 ///
 /// This may represent a series of tokens where no split can occur between them.
 /// It may also contain one or more comments.
-class TextPiece extends Piece {
+sealed class TextPiece extends Piece {
   /// RegExp that matches any valid Dart line terminator.
   static final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
-
-  /// Pieces for any comments that appear immediately before this code.
-  final List<Piece> _leadingComments;
-
-  /// Pieces for any comments that hang off the same line as this code.
-  final List<Piece> _hangingComments = [];
 
   /// The lines of text in this piece.
   ///
@@ -170,9 +164,6 @@ class TextPiece extends Piece {
   /// splitting calculates each line in the piece separately.
   final List<String> _lines = [''];
 
-  /// Whitespace at the end of the piece.
-  final Whitespace _trailingWhitespace;
-
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionStart;
@@ -180,12 +171,6 @@ class TextPiece extends Piece {
   /// The offset from the beginning of [text] where the selection ends, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
-
-  TextPiece(
-      {List<Piece> leadingComments = const [],
-      Whitespace trailingWhitespace = Whitespace.none})
-      : _leadingComments = leadingComments,
-        _trailingWhitespace = trailingWhitespace;
 
   /// Append [text] to the end of this piece.
   ///
@@ -216,10 +201,6 @@ class TextPiece extends Piece {
     }
   }
 
-  void addHangingComment(Piece comment) {
-    _hangingComments.add(comment);
-  }
-
   /// Sets [selectionStart] to be [start] code units after the end of the
   /// current text in this piece.
   void startSelection(int start) {
@@ -232,39 +213,6 @@ class TextPiece extends Piece {
     _selectionEnd = _adjustSelection(end);
   }
 
-  @override
-  void format(CodeWriter writer, State state) {
-    if (_selectionStart case var start?) {
-      writer.startSelection(start);
-    }
-
-    if (_selectionEnd case var end?) {
-      writer.endSelection(end);
-    }
-
-    for (var comment in _leadingComments) {
-      writer.format(comment);
-    }
-
-    for (var i = 0; i < _lines.length; i++) {
-      if (i > 0) writer.newline(flushLeft: i > 0);
-      writer.write(_lines[i]);
-    }
-
-    for (var comment in _hangingComments) {
-      writer.space();
-      writer.format(comment);
-    }
-
-    writer.whitespace(_trailingWhitespace);
-  }
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {
-    _leadingComments.forEach(callback);
-    _hangingComments.forEach(callback);
-  }
-
   /// Adjust [offset] by the current length of this [TextPiece].
   int _adjustSelection(int offset) {
     for (var line in _lines) {
@@ -274,9 +222,25 @@ class TextPiece extends Piece {
     return offset;
   }
 
+  void _formatSelection(CodeWriter writer) {
+    if (_selectionStart case var start?) {
+      writer.startSelection(start);
+    }
+
+    if (_selectionEnd case var end?) {
+      writer.endSelection(end);
+    }
+  }
+
+  void _formatLines(CodeWriter writer) {
+    for (var i = 0; i < _lines.length; i++) {
+      if (i > 0) writer.newline(flushLeft: i > 0);
+      writer.write(_lines[i]);
+    }
+  }
+
   @override
-  bool _calculateContainsNewline() =>
-      _trailingWhitespace.hasNewline || _lines.length > 1;
+  bool _calculateContainsNewline() => _lines.length > 1;
 
   @override
   int _calculateTotalCharacters() {
@@ -291,6 +255,66 @@ class TextPiece extends Piece {
 
   @override
   String toString() => '`${_lines.join('¬')}`';
+}
+
+/// [TextPiece] for non-comment source code that may have comments attached to
+/// it.
+class CodePiece extends TextPiece {
+  /// Pieces for any comments that appear immediately before this code.
+  final List<Piece> _leadingComments;
+
+  /// Pieces for any comments that hang off the same line as this code.
+  final List<Piece> _hangingComments = [];
+
+  CodePiece([this._leadingComments = const []]);
+
+  void addHangingComment(Piece comment) {
+    _hangingComments.add(comment);
+  }
+
+  @override
+  void format(CodeWriter writer, State state) {
+    _formatSelection(writer);
+
+    for (var comment in _leadingComments) {
+      writer.format(comment);
+    }
+
+    _formatLines(writer);
+
+    for (var comment in _hangingComments) {
+      writer.space();
+      writer.format(comment);
+    }
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    _leadingComments.forEach(callback);
+    _hangingComments.forEach(callback);
+  }
+}
+
+/// A [TextPiece] for a source code comment and the whitespace after it, if any.
+class CommentPiece extends TextPiece {
+  /// Whitespace at the end of the comment.
+  final Whitespace _trailingWhitespace;
+
+  CommentPiece([this._trailingWhitespace = Whitespace.none]);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    _formatSelection(writer);
+    _formatLines(writer);
+    writer.whitespace(_trailingWhitespace);
+  }
+
+  @override
+  bool _calculateContainsNewline() =>
+      _trailingWhitespace.hasNewline || super._calculateContainsNewline();
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {}
 }
 
 /// A piece that writes a single space.

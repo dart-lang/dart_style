@@ -24,8 +24,12 @@ class PieceWriter {
 
   final CommentWriter _comments;
 
-  /// The current [TextPiece] being written to.
-  TextPiece _currentText = TextPiece();
+  /// The most recent previously-created [CodePiece].
+  ///
+  /// We hold a reference to this so we can attach hanging comments to it,
+  /// which we don't discover until we reach the token after the one used to
+  /// create this piece.
+  CodePiece? _previousCode;
 
   /// Whether we have reached a token or comment that lies at or beyond the
   /// selection start offset in the original code.
@@ -83,14 +87,14 @@ class PieceWriter {
   /// Creates a new [Piece] for [comment] and returns it.
   Piece commentPiece(SourceComment comment,
       [Whitespace trailingWhitespace = Whitespace.none]) {
-    var commentPiece = TextPiece(trailingWhitespace: trailingWhitespace);
+    var commentPiece = CommentPiece(trailingWhitespace);
     _write(commentPiece, comment.text, comment.offset, multiline: true);
     return commentPiece;
   }
 
-  /// Creates a [TextPiece] for [token] and handles any comments that precede
+  /// Creates a [CodePiece] for [token] and handles any comments that precede
   /// it, which get attached either as hanging comments on the preceding
-  /// [TextPiece] or leading comments on this one.
+  /// [CodePiece] or leading comments on this one.
   ///
   /// If [discardedToken] is given, it is a token immediately before [token]
   /// that is going to be discarded. Passing it in here ensures any comments
@@ -102,7 +106,7 @@ class PieceWriter {
   ///
   /// If [lexeme] is given, then uses that lexeme string instead of [token]'s
   /// own lexeme.
-  TextPiece _makeCodePiece(Token token,
+  CodePiece _makeCodePiece(Token token,
       {Token? discardedToken, bool multiline = false}) {
     var comments = _comments.commentsBefore(token);
 
@@ -111,16 +115,16 @@ class PieceWriter {
       comments = _comments.commentsBefore(discardedToken).concatenate(comments);
     }
 
-    var piece = TextPiece(leadingComments: _splitComments(comments, token));
+    var piece = CodePiece(_splitComments(comments, token));
     _write(piece, token.lexeme, token.offset, multiline: multiline);
 
     // Remember it so we can attach hanging comments later.
-    return _currentText = piece;
+    return _previousCode = piece;
   }
 
-  /// Splits [comments] which precede [token] into [TextPiece]s that hang
-  /// off the preceding [TextPiece] and those that are leading comments on the
-  /// [TextPiece] for [token].
+  /// Splits [comments] which precede [token] into [CommentPiece]s that hang
+  /// off the preceding [CodePiece] and those that are leading comments on the
+  /// [CodePiece] for [token].
   ///
   /// Attaches hanging comments to [_previousCode]. Returns the list of leading
   /// comments that should precede [token].
@@ -142,8 +146,8 @@ class PieceWriter {
       var piece = commentPiece(comment, trailingWhitespace);
 
       if (comments.isHanging(i)) {
-        // Attach it to the previous TextPiece.
-        _currentText.addHangingComment(piece);
+        // Attach it to the previous CodePiece.
+        _previousCode!.addHangingComment(piece);
       } else {
         // Add it to the list of leading comments for the upcoming token.
         leadingComments.add(piece);
