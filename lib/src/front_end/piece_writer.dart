@@ -103,9 +103,6 @@ class PieceWriter {
   /// If [multiline] is `true`, then [token]'s lexeme may contain internal
   /// newlines. The lexeme will be split into separate lines. If omitted, then
   /// [token] must not contain newlines.
-  ///
-  /// If [lexeme] is given, then uses that lexeme string instead of [token]'s
-  /// own lexeme.
   CodePiece _makeCodePiece(Token token,
       {Token? discardedToken, bool multiline = false}) {
     var comments = _comments.commentsBefore(token);
@@ -159,6 +156,9 @@ class PieceWriter {
 
   /// Appends [text] to [piece] and updates any selection markers that fall
   /// within it.
+  ///
+  /// The [offset] parameter is the offset in the original source code of the
+  /// beginning of where [text] appears.
   void _write(TextPiece piece, String text, int offset,
       {bool multiline = false}) {
     piece.append(text,
