@@ -186,10 +186,6 @@ class TextPiece extends Piece {
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
 
-  /// Whether the last line of this piece's text ends with [text].
-  bool endsWith(String text) =>
-      _lines.isNotEmpty && _lines.last._text.endsWith(text);
-
   /// Append [text] to the end of this piece.
   ///
   /// If [text] internally contains a newline, then [containsNewline] should
