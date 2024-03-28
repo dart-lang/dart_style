@@ -97,22 +97,14 @@ class AdjacentBuilder {
   /// Does nothing if [token] is `null`. If [spaceBefore] is `true`, writes a
   /// space before the token, likewise with [spaceAfter].
   void token(Token? token,
-      {bool spaceBefore = false, bool spaceAfter = false}) {
+      {Token? discardedToken,
+      bool spaceBefore = false,
+      bool spaceAfter = false}) {
     if (token == null) return;
 
     if (spaceBefore) space();
-    add(_visitor.pieces.tokenPiece(token));
+    add(_visitor.pieces.tokenPiece(discardedToken: discardedToken, token));
     if (spaceAfter) space();
-  }
-
-  /// Writes any comments that appear before [token], which will be discarded.
-  ///
-  /// Used to ensure comments before a discarded token are preserved.
-  void commentsBefore(Token? token) {
-    if (token == null) return;
-
-    var piece = _visitor.pieces.writeCommentsBefore(token);
-    if (piece != null) add(piece);
   }
 
   /// Writes an optional modifier that precedes other code.

@@ -152,34 +152,26 @@ abstract class Piece {
 /// This may represent a series of tokens where no split can occur between them.
 /// It may also contain one or more comments.
 class TextPiece extends Piece {
-  /// The lines of text in this piece.
-  ///
-  /// Most [TextPieces] will contain only a single line, but a piece with
-  /// preceding comments that are on their own line will have multiple. These
-  /// are stored as separate lines instead of a single multi-line string so that
-  /// each line can be indented appropriately during formatting.
-  final List<_Line> _lines = [];
-
-  /// Whitespace at the end of this [TextPiece].
-  ///
-  /// This will be turned into actual text if non-whitespace is written after
-  /// the pending whitespace is set. Otherwise, it will be written to the output
-  /// when the [TextPiece] is formatted.
-  ///
-  /// Initially [Whitespace.newline] so that we insert a new string into the
-  /// empty [_lines] list on the first write.
-  Whitespace _trailingWhitespace = Whitespace.newline;
-
   /// RegExp that matches any valid Dart line terminator.
   static final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
 
-  /// Whether the line after the next newline written should be fixed at column
-  /// one or indented to match the surrounding code.
+  /// Pieces for any comments that appear immediately before this code.
+  final List<Piece> _leadingComments;
+
+  /// Pieces for any comments that hang off the same line as this code.
+  final List<Piece> _hangingComments = [];
+
+  /// The lines of text in this piece.
   ///
-  /// This is false for most lines, but is true for multiline strings where
-  /// subsequent lines in the string don't get any additional indentation from
-  /// formatting.
-  bool _flushLeft = false;
+  /// Most [TextPieces] will contain only a single line, but a piece for a
+  /// multi-line string or comment will have multiple lines. These are stored
+  /// as separate lines instead of a single multi-line Dart String so that
+  /// line endings are normalized and so that column calculation during line
+  /// splitting calculates each line in the piece separately.
+  final List<String> _lines = [''];
+
+  /// Whitespace at the end of the piece.
+  final Whitespace _trailingWhitespace;
 
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
@@ -188,6 +180,12 @@ class TextPiece extends Piece {
   /// The offset from the beginning of [text] where the selection ends, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
+
+  TextPiece(
+      {List<Piece> leadingComments = const [],
+      Whitespace trailingWhitespace = Whitespace.none})
+      : _leadingComments = leadingComments,
+        _trailingWhitespace = trailingWhitespace;
 
   /// Append [text] to the end of this piece.
   ///
@@ -207,39 +205,31 @@ class TextPiece extends Piece {
       _selectionEnd = _adjustSelection(selectionEnd);
     }
 
-    // Write any pending whitespace into the text.
-    switch (_trailingWhitespace) {
-      case Whitespace.none:
-        break; // Nothing to do.
-      case Whitespace.space:
-        _lines.last.append(' ');
-      case Whitespace.newline:
-        _lines.add(_Line(flushLeft: _flushLeft));
-      case Whitespace.blankLine:
-        throw UnsupportedError('No blank lines in TextPieces.');
-    }
-
-    _trailingWhitespace = Whitespace.none;
-    _flushLeft = false;
-
     if (multiline) {
       var lines = text.split(_lineTerminatorPattern);
       for (var i = 0; i < lines.length; i++) {
-        if (i > 0) _lines.add(_Line(flushLeft: true));
-        _lines.last.append(lines[i]);
+        if (i > 0) _lines.add('');
+        _lines.last += lines[i];
       }
     } else {
-      _lines.last.append(text);
+      _lines.last += text;
     }
   }
 
-  void space() {
-    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.space);
+  void addHangingComment(Piece comment) {
+    _hangingComments.add(comment);
   }
 
-  void newline({bool flushLeft = false}) {
-    _trailingWhitespace = _trailingWhitespace.collapse(Whitespace.newline);
-    _flushLeft = flushLeft;
+  /// Sets [selectionStart] to be [start] code units after the end of the
+  /// current text in this piece.
+  void startSelection(int start) {
+    _selectionStart = _adjustSelection(start);
+  }
+
+  /// Sets [selectionEnd] to be [end] code units after the end of the
+  /// current text in this piece.
+  void endSelection(int end) {
+    _selectionEnd = _adjustSelection(end);
   }
 
   @override
@@ -252,39 +242,48 @@ class TextPiece extends Piece {
       writer.endSelection(end);
     }
 
+    for (var comment in _leadingComments) {
+      writer.format(comment);
+    }
+
     for (var i = 0; i < _lines.length; i++) {
-      var line = _lines[i];
-      if (i > 0) writer.newline(flushLeft: line._isFlushLeft);
-      writer.write(line._text);
+      if (i > 0) writer.newline(flushLeft: i > 0);
+      writer.write(_lines[i]);
+    }
+
+    for (var comment in _hangingComments) {
+      writer.space();
+      writer.format(comment);
     }
 
     writer.whitespace(_trailingWhitespace);
   }
 
   @override
-  void forEachChild(void Function(Piece piece) callback) {}
+  void forEachChild(void Function(Piece piece) callback) {
+    _leadingComments.forEach(callback);
+    _hangingComments.forEach(callback);
+  }
 
   /// Adjust [offset] by the current length of this [TextPiece].
   int _adjustSelection(int offset) {
     for (var line in _lines) {
-      offset += line._text.length;
+      offset += line.length;
     }
-
-    if (_trailingWhitespace == Whitespace.space) offset++;
 
     return offset;
   }
 
   @override
   bool _calculateContainsNewline() =>
-      _lines.length > 1 || _trailingWhitespace.hasNewline;
+      _trailingWhitespace.hasNewline || _lines.length > 1;
 
   @override
   int _calculateTotalCharacters() {
     var total = 0;
 
     for (var line in _lines) {
-      total += line._text.length;
+      total += line.length;
     }
 
     return total;
@@ -292,25 +291,6 @@ class TextPiece extends Piece {
 
   @override
   String toString() => '`${_lines.join('¬')}`';
-}
-
-/// A single line of text within a [TextPiece].
-class _Line {
-  String _text = '';
-
-  /// Whether this line should start at column one or use the surrounding
-  /// indentation.
-  final bool _isFlushLeft;
-
-  _Line({required bool flushLeft}) : _isFlushLeft = flushLeft;
-
-  void append(String text) {
-    // TODO(perf): Consider a faster way of accumulating text.
-    _text += text;
-  }
-
-  @override
-  String toString() => _text;
 }
 
 /// A piece that writes a single space.

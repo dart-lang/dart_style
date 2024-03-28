@@ -131,7 +131,7 @@ class SequenceBuilder {
     }
 
     for (var i = 0; i < comments.length; i++) {
-      var comment = _visitor.pieces.writeComment(comments[i]);
+      var comment = _visitor.pieces.commentPiece(comments[i]);
 
       if (_elements.isNotEmpty && comments.isHanging(i)) {
         // Attach the comment to the previous element.

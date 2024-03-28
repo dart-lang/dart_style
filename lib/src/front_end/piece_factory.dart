@@ -266,8 +266,7 @@ mixin PieceFactory {
           // Discard the trailing comma if there is one since there is a
           // semicolon to use as the separator, but preserve any comments before
           // the discarded comma.
-          b.commentsBefore(node.commaAfter);
-          b.token(semicolon);
+          b.token(discardedToken: node.commaAfter, semicolon);
         }
       }
     });
