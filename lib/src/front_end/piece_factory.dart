@@ -1281,11 +1281,9 @@ mixin PieceFactory {
 
   /// Creates a piece for only [token].
   ///
-  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
-  ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
-    return pieces.tokenPiece(token, lexeme: lexeme, commaAfter: commaAfter);
+  Piece tokenPiece(Token token, {bool commaAfter = false}) {
+    return pieces.tokenPiece(token, commaAfter: commaAfter);
   }
 }

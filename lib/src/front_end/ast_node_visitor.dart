@@ -1585,9 +1585,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitScriptTag(ScriptTag node) {
-    // The lexeme includes the trailing newline. Strip it off since the
-    // formatter ensures it gets a newline after it.
-    return tokenPiece(node.scriptTag, lexeme: node.scriptTag.lexeme.trim());
+    return tokenPiece(node.scriptTag);
   }
 
   @override

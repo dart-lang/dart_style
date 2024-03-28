@@ -54,12 +54,10 @@ class PieceWriter {
   /// Creates a piece for [token], including any comments that should be
   /// attached to that token.
   ///
-  /// If [lexeme] is given, uses that for the token's lexeme instead of its own.
-  ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {String? lexeme, bool commaAfter = false}) {
-    _writeToken(token, lexeme: lexeme);
+  Piece tokenPiece(Token token, {bool commaAfter = false}) {
+    _writeToken(token);
     var tokenPiece = _currentText;
 
     if (commaAfter) {
@@ -190,16 +188,14 @@ class PieceWriter {
 
   /// Writes [token] and any comments that precede it to the current [TextPiece]
   /// and updates any selection markers that appear in it.
-  void _writeToken(Token token, {String? lexeme}) {
+  void _writeToken(Token token) {
     if (!_writeCommentsBefore(token)) {
       // We want this token to be in its own TextPiece, so if the comments
       // didn't already lead to ending the previous TextPiece than do so now.
       _currentText = TextPiece();
     }
 
-    lexeme ??= token.lexeme;
-
-    _write(lexeme, offset: token.offset);
+    _write(token.lexeme, offset: token.offset);
   }
 
   /// Writes multi-line [text] to the current [TextPiece].
