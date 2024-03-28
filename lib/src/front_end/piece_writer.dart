@@ -92,6 +92,12 @@ class PieceWriter {
     return commentPiece;
   }
 
+  /// Applies any hanging comments before [token] to the preceding [CodePiece]
+  /// and takes and returns any remaining leading comments.
+  List<Piece> takeCommentsBefore(Token token) {
+    return _splitComments(_comments.takeCommentsBefore(token), token);
+  }
+
   /// Creates a [CodePiece] for [token] and handles any comments that precede
   /// it, which get attached either as hanging comments on the preceding
   /// [CodePiece] or leading comments on this one.

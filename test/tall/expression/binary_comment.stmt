@@ -86,3 +86,11 @@ a + // one
     // four
     // five
     b;
+>>> Don't split infix operator with leading line comment before first operand.
+value =
+    // comment
+    a + b + c;
+<<<
+value =
+    // comment
+    a + b + c;

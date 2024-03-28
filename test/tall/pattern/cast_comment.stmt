@@ -27,3 +27,13 @@ if (obj
         Type) {
   ;
 }
+>>> Don't split `as` with leading line comment before first operand.
+if (obj case
+  // comment
+  constant as Type) {;}
+<<<
+if (obj
+    case // comment
+        constant as Type) {
+  ;
+}
