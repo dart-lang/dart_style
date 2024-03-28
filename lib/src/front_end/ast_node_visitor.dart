@@ -46,6 +46,28 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   /// [NodeContext.none] if the parent node doesn't set a context.
   NodeContext _parentContext = NodeContext.none;
 
+  // TODO(rnystrom): There are a number of places where the formatting of some
+  // syntax node is contextual on either its parent node or some of its
+  // children. Examples:
+  //
+  // - The way an argument list can be formatted depends on whether any of its
+  //   child arguments are block-formattable or not.
+  // - The way a method chain can be formatted depends on whether any of its
+  //   child call are splittable or block splittable.
+  // - Conditional expressions always split when nested inside other conditional
+  //   expressions.
+  // - Nested collection literals force outer ones to split.
+  // - Infix operators indent subsequent operands most of the time, but not
+  //   when the RHS of `=`, `:`, `=>`, etc.
+  //
+  // There are a variety of ways this context is tracked and handled. For
+  // arguments and method chains, we store what kind of AST node the child
+  // piece came from so the parent can see it. For conditional expressions, we
+  // look at the AST nodes parents. For splitting nested collections,
+  // PieceFactory maintains a `_collectionSplits` stack. For infix operator
+  // indentation, we use this `_parentContext` field. We should ideally have
+  // a single unified way of handling this, or at least fewer of them.
+
   /// Create a new visitor that will be called to visit the code in [source].
   factory AstNodeVisitor(
       DartFormatter formatter, LineInfo lineInfo, SourceCode source) {
