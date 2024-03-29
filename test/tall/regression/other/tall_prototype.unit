@@ -1,0 +1,104 @@
+>>> Don't prefer to split parameter list to block format body.
+Future<void> startServer({
+  bool? ensureCleanBuild,
+  List<String>? buildArgs,
+}) => _startServer('dart', [
+  '--packages=.dart_tool/package_config.json',
+  p.join('..', 'build_runner', 'bin', 'build_runner.dart'),
+  'serve',
+  '--verbose',
+  if (buildArgs != null) ...buildArgs,
+], ensureCleanBuild: ensureCleanBuild);
+<<<
+Future<void> startServer({bool? ensureCleanBuild, List<String>? buildArgs}) =>
+    _startServer('dart', [
+      '--packages=.dart_tool/package_config.json',
+      p.join('..', 'build_runner', 'bin', 'build_runner.dart'),
+      'serve',
+      '--verbose',
+      if (buildArgs != null) ...buildArgs,
+    ], ensureCleanBuild: ensureCleanBuild);
+>>> Don't block format a complex method chain.
+var stdErrLines = proc.stderr.transform(utf8.decoder).transform(
+  const LineSplitter(),
+).asBroadcastStream();
+<<<
+var stdErrLines =
+    proc.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .asBroadcastStream();
+>>> Don't block format a complex method chain.
+var keyLen = sortedEntries.map((e) => e.key).fold(
+  0,
+  (int len, String key) => max(len, key.length),
+);
+<<<
+var keyLen = sortedEntries
+    .map((e) => e.key)
+    .fold(0, (int len, String key) => max(len, key.length));
+>>> Prefer to split at outer nested function.
+Instantiator visitEmptyStatement(EmptyStatement node) => (arguments) =>
+      EmptyStatement();
+<<<
+Instantiator visitEmptyStatement(EmptyStatement node) =>
+    (arguments) => EmptyStatement();
+>>> Incorrect comment indentation.
+main() {
+  return this > 0
+    ? _shrBothPositive(other)
+    // For negative numbers we just clamp the shift-by amount.
+      // `this` could be negative but not have its 31st bit set.
+      // The ">>" would then shift in 0s instead of 1s. Therefore
+      // we cannot simply return 0xFFFFFFFF.
+      : JS('JSUInt32', r'(# >> #) >>> 0', this, other > 31 ? 31 : other);
+}
+<<<
+main() {
+  return this > 0
+      ? _shrBothPositive(other)
+      // For negative numbers we just clamp the shift-by amount.
+      // `this` could be negative but not have its 31st bit set.
+      // The ">>" would then shift in 0s instead of 1s. Therefore
+      // we cannot simply return 0xFFFFFFFF.
+      : JS('JSUInt32', r'(# >> #) >>> 0', this, other > 31 ? 31 : other);
+}
+>>> Avoid splitting parameter list.
+Future<void> invalidateCache(
+  pb.SettingId settingId,
+) async => invalidatedSettingIds.add(settingId);
+<<<
+Future<void> invalidateCache(pb.SettingId settingId) async =>
+    invalidatedSettingIds.add(settingId);
+>>> Split type parameters like argument lists.
+main() {
+  {
+    tearDown(() {
+      ControllerWidget.registerFakeController<
+          GroupExpenseReceiptPageController>(null);
+    });
+  }
+}
+<<<
+main() {
+  {
+    tearDown(() {
+      ControllerWidget.registerFakeController<
+        GroupExpenseReceiptPageController
+      >(null);
+    });
+  }
+}
+>>> Split cascade setter if value splits.
+final service = FakeInsightsService(features)..detailsList = [
+    anomaly_test_util.earnings,
+    anomaly_test_util.earnings2,
+    anomaly_test_util.earnings3,
+  ];
+<<<
+final service = FakeInsightsService(features)
+  ..detailsList = [
+    anomaly_test_util.earnings,
+    anomaly_test_util.earnings2,
+    anomaly_test_util.earnings3,
+  ];
