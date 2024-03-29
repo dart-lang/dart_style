@@ -839,8 +839,11 @@ mixin PieceFactory {
   Piece createInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
+    // Hoist any comments before the first operand so they don't force the
+    // infix operator to split.
+    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
+
     var builder = AdjacentBuilder(this);
-    late List<Piece> leadingComments;
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -856,12 +859,6 @@ mixin PieceFactory {
           traverse(right);
           return;
         }
-      }
-
-      // Hoist any comments before the first operand so they don't force the
-      // infix operator to split.
-      if (operands.isEmpty) {
-        leadingComments = pieces.takeCommentsBefore(e.firstNonCommentToken);
       }
 
       // Otherwise, just write the node itself.
