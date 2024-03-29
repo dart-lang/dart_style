@@ -20,6 +20,7 @@ import '../piece/type.dart';
 import '../piece/variable.dart';
 import 'adjacent_builder.dart';
 import 'ast_node_visitor.dart';
+import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
 import 'piece_writer.dart';
@@ -59,7 +60,19 @@ enum NodeContext {
   /// entries, and `=>` function bodies.
   assignment,
 
-  /// The outermost pattern in a switch expression case.
+  /// The child is the target of a cascade expression.
+  cascadeTarget,
+
+  /// The child is the then or else operand of a conditional expression.
+  conditionalBranch,
+
+  /// The child is a variable declaration in a for loop.
+  forLoopVariable,
+
+  /// The child is a string interpolation inside a multiline string.
+  multilineStringInterpolation,
+
+  /// The child is the outermost pattern in a switch expression case.
   switchExpressionCase
 }
 
@@ -100,6 +113,8 @@ mixin PieceFactory {
   PieceWriter get pieces;
 
   CommentWriter get comments;
+
+  NodeContext get parentContext;
 
   Piece nodePiece(AstNode node,
       {bool commaAfter = false, NodeContext context = NodeContext.none});
@@ -163,6 +178,11 @@ mixin PieceFactory {
       b.visit(label, spaceBefore: true);
       b.token(semicolon);
     });
+  }
+
+  Piece createChain(Expression node) {
+    return ChainBuilder(this, node)
+        .build(isCascadeTarget: parentContext == NodeContext.cascadeTarget);
   }
 
   /// Creates a [ListPiece] for a collection literal or pattern.
@@ -365,7 +385,7 @@ mixin PieceFactory {
         if (initializer != null) {
           partsList.addCommentsBefore(initializer.beginToken);
           partsList.add(buildPiece((b) {
-            b.visit(initializer);
+            b.visit(initializer, context: NodeContext.forLoopVariable);
             b.token(forParts.leftSeparator);
           }));
         } else {
@@ -443,7 +463,8 @@ mixin PieceFactory {
           b.token(leftParenthesis);
           b.add(createAssignment(
               variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true));
+              splitBeforeOperator: true,
+              leftHandSideContext: NodeContext.forLoopVariable));
           b.token(rightParenthesis);
         });
 
@@ -461,7 +482,8 @@ mixin PieceFactory {
 
             b.add(createAssignment(
                 pattern, forEachParts.inKeyword, forEachParts.iterable,
-                splitBeforeOperator: true));
+                splitBeforeOperator: true,
+                leftHandSideContext: NodeContext.forLoopVariable));
           }));
           b.token(rightParenthesis);
         });
@@ -1209,7 +1231,8 @@ mixin PieceFactory {
       {bool splitBeforeOperator = false,
       bool includeComma = false,
       bool spaceBeforeOperator = true,
-      bool canBlockSplitLeft = false}) {
+      bool canBlockSplitLeft = false,
+      NodeContext leftHandSideContext = NodeContext.none}) {
     // If an operand can have block formatting, then a newline in it doesn't
     // force the operator to split, as in:
     //
@@ -1234,7 +1257,7 @@ mixin PieceFactory {
       _ => false
     };
 
-    var leftPiece = nodePiece(leftHandSide);
+    var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
 
     var operatorPiece = buildPiece((b) {
       if (spaceBeforeOperator) b.space();

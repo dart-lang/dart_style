@@ -44,29 +44,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   /// The context set by the surrounding AstNode when visiting a child, or
   /// [NodeContext.none] if the parent node doesn't set a context.
+  @override
+  NodeContext get parentContext => _parentContext;
   NodeContext _parentContext = NodeContext.none;
-
-  // TODO(rnystrom): There are a number of places where the formatting of some
-  // syntax node is contextual on either its parent node or some of its
-  // children. Examples:
-  //
-  // - The way an argument list can be formatted depends on whether any of its
-  //   child arguments are block-formattable or not.
-  // - The way a method chain can be formatted depends on whether any of its
-  //   child call are splittable or block splittable.
-  // - Conditional expressions always split when nested inside other conditional
-  //   expressions.
-  // - Nested collection literals force outer ones to split.
-  // - Infix operators indent subsequent operands most of the time, but not
-  //   when the RHS of `=`, `:`, `=>`, etc.
-  //
-  // There are a variety of ways this context is tracked and handled. For
-  // arguments and method chains, we store what kind of AST node the child
-  // piece came from so the parent can see it. For conditional expressions, we
-  // look at the AST nodes parents. For splitting nested collections,
-  // PieceFactory maintains a `_collectionSplits` stack. For infix operator
-  // indentation, we use this `_parentContext` field. We should ideally have
-  // a single unified way of handling this, or at least fewer of them.
 
   /// Create a new visitor that will be called to visit the code in [source].
   factory AstNodeVisitor(
@@ -247,7 +227,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitCascadeExpression(CascadeExpression node) {
-    return ChainBuilder(this, node).build();
+    return ChainBuilder(this, node).buildCascade();
   }
 
   @override
@@ -337,20 +317,20 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var thenPiece = buildPiece((b) {
       b.token(node.question);
       b.space();
-      b.visit(node.thenExpression);
+      b.visit(node.thenExpression, context: NodeContext.conditionalBranch);
     });
 
     var elsePiece = buildPiece((b) {
       b.token(node.colon);
       b.space();
-      b.visit(node.elseExpression);
+      b.visit(node.elseExpression, context: NodeContext.conditionalBranch);
     });
 
     var piece = InfixPiece([condition, thenPiece, elsePiece]);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
-    if (node.parent is ConditionalExpression ||
+    if (_parentContext == NodeContext.conditionalBranch ||
         node.thenExpression is ConditionalExpression ||
         node.elseExpression is ConditionalExpression) {
       piece.pin(State.split);
@@ -1104,7 +1084,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   @override
   Piece visitInterpolationString(InterpolationString node) {
     return pieces.tokenPiece(node.contents,
-        multiline: (node.parent as StringInterpolation).isMultiline);
+        multiline: _parentContext == NodeContext.multilineStringInterpolation);
   }
 
   @override
@@ -1281,7 +1261,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       });
     }
 
-    return ChainBuilder(this, node).build();
+    return createChain(node);
   }
 
   @override
@@ -1443,8 +1423,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       //
       //     for (@meta var (x, y) in pairs) ...
       b.metadata(node.metadata,
-          inline: node.parent is ForEachPartsWithPattern ||
-              node.parent is ForPartsWithPattern);
+          inline: _parentContext == NodeContext.forLoopVariable);
       b.token(node.keyword);
       b.space();
       b.add(createAssignment(node.pattern, node.equals, node.expression));
@@ -1467,7 +1446,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitPrefixedIdentifier(PrefixedIdentifier node) {
-    return ChainBuilder(this, node).build();
+    return createChain(node);
   }
 
   @override
@@ -1496,7 +1475,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       });
     }
 
-    return ChainBuilder(this, node).build();
+    return createChain(node);
   }
 
   @override
@@ -1683,7 +1662,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   Piece visitStringInterpolation(StringInterpolation node) {
     return buildPiece((b) {
       for (var element in node.elements) {
-        b.visit(element);
+        b.visit(element,
+            context: node.isMultiline
+                ? NodeContext.multilineStringInterpolation
+                : NodeContext.none);
       }
     });
   }
@@ -1899,13 +1881,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       //
       //     for (@meta var x in list) ...
       b.metadata(node.metadata,
-          inline: node.parent is ForPartsWithDeclarations);
+          inline: _parentContext == NodeContext.forLoopVariable);
       b.modifier(node.lateKeyword);
       b.modifier(node.keyword);
-
-      // TODO(tall): Test how splits inside the type annotation (like in a type
-      // argument list or a function type's parameter list) affect the
-      // indentation and splitting of the surrounding variable declaration.
       b.visit(node.type);
     });
 
