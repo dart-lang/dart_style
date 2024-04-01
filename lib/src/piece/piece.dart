@@ -174,8 +174,8 @@ sealed class TextPiece extends Piece {
 
   /// Append [text] to the end of this piece.
   ///
-  /// If [text] internally contains a newline, then [containsNewline] should
-  /// be `true`.
+  /// If [text] may contain any newline characters, then [multiline] must be
+  /// `true`.
   ///
   /// If [selectionStart] and/or [selectionEnd] are given, then notes that the
   /// corresponding selection markers appear that many code units from where

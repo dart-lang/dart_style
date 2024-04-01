@@ -230,11 +230,6 @@ class ChainBuilder {
         _visitTarget(expression);
 
       // Selectors.
-      case AssignmentExpression():
-        var piece = _visitor.createAssignment(expression.leftHandSide,
-            expression.operator, expression.rightHandSide);
-        _calls.add(ChainCall(piece, CallType.property));
-
       case MethodInvocation(:var target?):
         _unwrapCall(target);
 
