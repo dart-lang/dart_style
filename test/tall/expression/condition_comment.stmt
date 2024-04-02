@@ -60,3 +60,11 @@ cond
     ? 1
     : 2 // c
     ;
+>>> Don't split with leading line comment before first operand.
+value =
+    // comment
+    a ? b : c;
+<<<
+value =
+    // comment
+    a ? b : c;

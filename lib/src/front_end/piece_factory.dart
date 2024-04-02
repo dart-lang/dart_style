@@ -817,6 +817,10 @@ mixin PieceFactory {
   /// separate tokens, as in `foo is! Bar`.
   Piece createInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
+    // Hoist any comments before the first operand so they don't force the
+    // infix operator to split.
+    var leadingComments = pieces.takeCommentsBefore(left.firstNonCommentToken);
+
     var leftPiece = buildPiece((b) {
       b.visit(left);
       if (hanging) {
@@ -836,7 +840,7 @@ mixin PieceFactory {
       b.visit(right);
     });
 
-    return InfixPiece([leftPiece, rightPiece]);
+    return InfixPiece(leadingComments, [leftPiece, rightPiece]);
   }
 
   /// Creates a chained infix operation: a binary operator expression, or
@@ -857,6 +861,10 @@ mixin PieceFactory {
   Piece createInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
+    // Hoist any comments before the first operand so they don't force the
+    // infix operator to split.
+    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
+
     var builder = AdjacentBuilder(this);
     var operands = <Piece>[];
 
@@ -882,7 +890,7 @@ mixin PieceFactory {
     traverse(node);
     operands.add(builder.build());
 
-    return InfixPiece(operands, indent: indent);
+    return InfixPiece(leadingComments, operands, indent: indent);
   }
 
   /// Creates a [ListPiece] for the given bracket-delimited set of elements.

@@ -9,6 +9,27 @@ import 'piece.dart';
 ///
 ///     a + b + c
 class InfixPiece extends Piece {
+  /// Pieces for leading comments that appear before the first operand.
+  ///
+  /// We hoist these comments out from the first operand's first token so that
+  /// a newline in these comments doesn't erroneously force the infix operator
+  /// to split. For example:
+  ///
+  ///     value =
+  ///         // comment
+  ///         a + b;
+  ///
+  /// Here, the `// comment` will be hoisted out and stored in
+  /// [_leadingComments] instead of being a leading comment in the [CodePiece]
+  /// for `a`. If we left the comment in `a`, then the newline after the line
+  /// comment would force the `+` operator to split yielding:
+  ///
+  ///     value =
+  ///         // comment
+  ///         a +
+  ///             b;
+  final List<Piece> _leadingComments;
+
   /// The series of operands.
   ///
   /// Since we don't split on both sides of the operator, the operators will be
@@ -20,13 +41,21 @@ class InfixPiece extends Piece {
   /// Whether operands after the first should be indented if split.
   final bool _indent;
 
-  InfixPiece(this._operands, {bool indent = true}) : _indent = indent;
+  InfixPiece(this._leadingComments, this._operands, {bool indent = true})
+      : _indent = indent;
 
   @override
   List<State> get additionalStates => const [State.split];
 
   @override
   void format(CodeWriter writer, State state) {
+    // Comments before the operands don't force the operator to split.
+    writer.pushAllowNewlines(true);
+    for (var comment in _leadingComments) {
+      writer.format(comment);
+    }
+    writer.popAllowNewlines();
+
     if (state == State.unsplit) {
       writer.pushAllowNewlines(false);
     } else if (_indent) {
@@ -52,6 +81,7 @@ class InfixPiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
+    _leadingComments.forEach(callback);
     _operands.forEach(callback);
   }
 

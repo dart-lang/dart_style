@@ -123,3 +123,19 @@ veryLongOperand is!/* c */VeryLongTypeName;
 <<<
 veryLongOperand
     is! /* c */ VeryLongTypeName;
+>>> Don't split `as` with leading line comment before first operand.
+value =
+    // comment
+    a as Foo;
+<<<
+value =
+    // comment
+    a as Foo;
+>>> Don't split `is` with leading line comment before first operand.
+value =
+    // comment
+    a is Foo;
+<<<
+value =
+    // comment
+    a is Foo;
