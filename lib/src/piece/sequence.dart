@@ -28,10 +28,8 @@ class SequencePiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.pushAllowNewlines(state == State.split);
-
     if (_leftBracket case var leftBracket?) {
-      writer.format(leftBracket);
+      writer.format(leftBracket, allowNewlines: state == State.split);
       writer.pushIndent(_elements.firstOrNull?._indent ?? 0);
       writer.splitIf(state == State.split, space: false);
     }
@@ -46,7 +44,8 @@ class SequencePiece extends Piece {
           (i > 0 || _leftBracket != null) &&
           (i < _elements.length - 1 || _rightBracket != null);
 
-      writer.format(element, separate: separate);
+      writer.format(element,
+          separate: separate, allowNewlines: state == State.split);
 
       if (i < _elements.length - 1) {
         if (_leftBracket != null || i > 0) writer.popIndent();
@@ -59,10 +58,8 @@ class SequencePiece extends Piece {
 
     if (_rightBracket case var rightBracket?) {
       writer.splitIf(state == State.split, space: false);
-      writer.format(rightBracket);
+      writer.format(rightBracket, allowNewlines: state == State.split);
     }
-
-    writer.popAllowNewlines();
   }
 
   @override

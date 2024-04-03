@@ -53,8 +53,7 @@ class IfPiece extends Piece {
       var section = _sections[i];
 
       // A split in the condition forces the branches to split.
-      writer.pushAllowNewlines(state == State.split);
-      writer.format(section.header);
+      writer.format(section.header, allowNewlines: state == State.split);
 
       if (!section.isBlock) {
         writer.pushIndent(Indent.block);
@@ -62,7 +61,7 @@ class IfPiece extends Piece {
       }
 
       // TODO(perf): Investigate whether it's worth using `separate:` here.
-      writer.format(section.statement);
+      writer.format(section.statement, allowNewlines: state == State.split);
 
       // Reset the indentation for the subsequent `else` or `} else` line.
       if (!section.isBlock) writer.popIndent();
@@ -70,8 +69,6 @@ class IfPiece extends Piece {
       if (i < _sections.length - 1) {
         writer.splitIf(state == State.split && !section.isBlock);
       }
-
-      writer.popAllowNewlines();
     }
   }
 }

@@ -56,10 +56,6 @@ class CodeWriter {
   /// for block nesting, expression wrapping, constructor initializers, etc.
   final List<_Indent> _indentStack = [];
 
-  /// The stack of regions created by pairs of calls to [pushAllowNewlines()]
-  /// and [popAllowNewlines()].
-  final List<bool> _allowNewlineStack = [true];
-
   /// Whether any newlines have been written during the [_currentPiece] being
   /// formatted.
   bool _hadNewline = false;
@@ -177,22 +173,6 @@ class CodeWriter {
     _indentStack.removeLast();
   }
 
-  /// Begins a region of formatting where newlines are allowed if [allow] is
-  /// `true` or prohibited otherwise.
-  ///
-  /// If a newline is written while the top of the stack is `false`, the entire
-  /// solution is considered invalid and gets discarded.
-  ///
-  /// The region is ended by a corresponding call to [popAllowNewlines()].
-  void pushAllowNewlines(bool allow) {
-    _allowNewlineStack.add(allow);
-  }
-
-  /// Ends the region begun by the most recent call to [pushAllowNewlines()].
-  void popAllowNewlines() {
-    _allowNewlineStack.removeLast();
-  }
-
   /// Inserts a newline if [condition] is true.
   ///
   /// If [space] is `true` and [condition] is `false`, writes a space.
@@ -234,7 +214,7 @@ class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      _handleNewline();
+      _handleNewline(allowNewlines: true);
       _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
     }
 
@@ -256,11 +236,11 @@ class CodeWriter {
   /// be `false`. It's up to the parent piece to only call this when it's safe
   /// to do so. In practice, this usually means when the parent piece knows that
   /// [piece] will have a newline before and after it.
-  void format(Piece piece, {bool separate = false}) {
+  void format(Piece piece, {bool separate = false, bool allowNewlines = true}) {
     if (separate) {
       _formatSeparate(piece);
     } else {
-      _formatInline(piece);
+      _formatInline(piece, allowNewlines: allowNewlines);
     }
   }
 
@@ -289,7 +269,7 @@ class CodeWriter {
   }
 
   /// Format [piece] writing directly into this [CodeWriter].
-  void _formatInline(Piece piece) {
+  void _formatInline(Piece piece, {required bool allowNewlines}) {
     // Begin a new formatting context for this child.
     var previousPiece = _currentPiece;
     _currentPiece = piece;
@@ -313,7 +293,8 @@ class CodeWriter {
     _currentPiece = previousPiece;
 
     // If the child contained a newline then the parent transitively does.
-    if (childHadNewline && _currentPiece != null) _handleNewline();
+    if (childHadNewline && _currentPiece != null)
+      _handleNewline(allowNewlines: allowNewlines);
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -332,8 +313,8 @@ class CodeWriter {
   ///
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
-  void _handleNewline() {
-    if (!_allowNewlineStack.last) _solution.invalidate(_currentPiece!);
+  void _handleNewline({required bool allowNewlines}) {
+    if (!allowNewlines) _solution.invalidate(_currentPiece!);
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.

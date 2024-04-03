@@ -50,17 +50,11 @@ class InfixPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     // Comments before the operands don't force the operator to split.
-    writer.pushAllowNewlines(true);
     for (var comment in _leadingComments) {
-      writer.format(comment);
+      writer.format(comment, allowNewlines: true);
     }
-    writer.popAllowNewlines();
 
-    if (state == State.unsplit) {
-      writer.pushAllowNewlines(false);
-    } else if (_indent) {
-      writer.pushIndent(Indent.expression);
-    }
+    if (_indent) writer.pushIndent(Indent.expression);
 
     for (var i = 0; i < _operands.length; i++) {
       // We can format each operand separately if the operand is on its own
@@ -68,15 +62,12 @@ class InfixPiece extends Piece {
       // or last operand.
       var separate = state == State.split && i > 0 && i < _operands.length - 1;
 
-      writer.format(_operands[i], separate: separate);
+      writer.format(_operands[i],
+          separate: separate, allowNewlines: state == State.split);
       if (i < _operands.length - 1) writer.splitIf(state == State.split);
     }
 
-    if (state == State.unsplit) {
-      writer.popAllowNewlines();
-    } else if (_indent) {
-      writer.popIndent();
-    }
+    if (_indent) writer.popIndent();
   }
 
   @override

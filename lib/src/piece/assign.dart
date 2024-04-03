@@ -173,29 +173,31 @@ class AssignPiece extends Piece {
         collapseIndent = true;
     }
 
-    writer.pushAllowNewlines(allowNewlinesInLeft);
     if (indentLeft) {
       writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
     }
 
-    if (_left case var left?) writer.format(left);
+    if (_left case var left?) {
+      writer.format(left, allowNewlines: allowNewlinesInLeft);
+    }
 
-    if (!_splitBeforeOperator) writer.format(_operator);
-    writer.splitIf(state == _atOperator);
-    if (_splitBeforeOperator) writer.format(_operator);
+    if (_splitBeforeOperator) {
+      writer.splitIf(state == _atOperator);
+      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
+    } else {
+      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
+      writer.splitIf(state == _atOperator);
+    }
 
     if (indentLeft) writer.popIndent();
-    writer.popAllowNewlines();
 
-    writer.pushAllowNewlines(allowNewlinesInRight);
     if (indentRight) {
       writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
     }
 
-    writer.format(_right);
+    writer.format(_right, allowNewlines: allowNewlinesInRight);
 
     if (indentRight) writer.popIndent();
-    writer.popAllowNewlines();
   }
 
   @override

@@ -99,29 +99,23 @@ class IfCasePiece extends Piece {
 
     if (state != State.unsplit) writer.pushIndent(Indent.expression);
 
-    writer.pushAllowNewlines(allowNewlineInValue);
-    writer.format(_value);
-    writer.popAllowNewlines();
+    writer.format(_value, allowNewlines: allowNewlineInValue);
 
     // The case clause and pattern.
-    writer.pushAllowNewlines(allowNewlineInPattern);
     writer.splitIf(state == _beforeCase || state == _beforeCaseAndWhen);
 
     if (!_canBlockSplitPattern) {
       writer.pushIndent(Indent.expression, canCollapse: true);
     }
 
-    writer.format(_pattern);
+    writer.format(_pattern, allowNewlines: allowNewlineInPattern);
 
     if (!_canBlockSplitPattern) writer.popIndent();
-    writer.popAllowNewlines();
 
     // The guard clause.
     if (_guard case var guard?) {
-      writer.pushAllowNewlines(allowNewlineInGuard);
       writer.splitIf(state == _beforeWhen || state == _beforeCaseAndWhen);
-      writer.format(guard);
-      writer.popAllowNewlines();
+      writer.format(guard, allowNewlines: allowNewlineInGuard);
     }
 
     if (state != State.unsplit) writer.popIndent();
