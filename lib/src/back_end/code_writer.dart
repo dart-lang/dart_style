@@ -293,8 +293,9 @@ class CodeWriter {
     _currentPiece = previousPiece;
 
     // If the child contained a newline then the parent transitively does.
-    if (childHadNewline && _currentPiece != null)
+    if (childHadNewline && _currentPiece != null) {
       _handleNewline(allowNewlines: allowNewlines);
+    }
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
