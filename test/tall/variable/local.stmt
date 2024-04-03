@@ -195,6 +195,15 @@ var longVariableName =
       argument,
       another,
     );
+>>> No block-like splitting for expression function call if splits in function.
+var variableName = (expression +
+    thatSplits)(argument1, argument2);
+<<<
+var variableName =
+    (expression + thatSplits)(
+      argument1,
+      argument2,
+    );
 >>> Use block-like splitting for switch expressions.
 var variableName = switch (value) { 1 => 'one', 2 => 'two' };
 <<<
@@ -214,6 +223,16 @@ var variableName = switch ([
   1 => 'one',
   2 => 'two',
 };
+>>> No block-like splitting if the switch value splits.
+var variableName = switch (expression +
+    thatSplits) {
+  _ => ok,
+};
+<<<
+var variableName =
+    switch (expression + thatSplits) {
+      _ => ok,
+    };
 >>> Use block-like splitting for block-bodied function expressions.
 var variableName = (parameter, parameter, parameter) { body; };
 <<<
@@ -224,7 +243,7 @@ var variableName = (
 ) {
   body;
 };
->>> Don't use block-like splitting for expression-bodied function expressions.
+>>> No block-like splitting for expression-bodied function expressions.
 var variableName = (parameter, parameter, parameter) => body;
 <<<
 var variableName =
@@ -238,6 +257,49 @@ var variableName = ([
   element,
   element,
 ]);
+>>> Block-like split method chain if last call block splits.
+var variableName = long.method.chain(argument, argument, argument);
+<<<
+var variableName = long.method.chain(
+  argument,
+  argument,
+  argument,
+);
+>>> Don't block-like split method chain if chain splits.
+var variableName = extraordinarily
+    .really
+    .long()
+    .method
+    .chain(
+      argument,
+      argument,
+      argument,
+    );
+<<<
+var variableName = extraordinarily.really
+    .long()
+    .method
+    .chain(
+      argument,
+      argument,
+      argument,
+    );
+>>> Allow target to start on first line if method chain splits.
+var variableName = target
+    .method(
+      argument,
+      argument,
+      argument,
+    )
+    .another(argument);
+<<<
+var variableName = target
+    .method(
+      argument,
+      argument,
+      argument,
+    )
+    .another(argument);
 >>>
 var variableName = (notDelimited + expression);
 <<<

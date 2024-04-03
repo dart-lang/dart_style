@@ -97,6 +97,7 @@ class ChainPiece extends Piece {
   /// and the last call's argument list can be block formatted.
   final int _blockCallIndex;
 
+  // TODO: This isn't right.
   /// Whether the target expression may contain newlines when the chain is not
   /// fully split. (It may always contain newlines when the chain splits.)
   ///
@@ -182,11 +183,14 @@ class ChainPiece extends Piece {
         writer.popIndent();
 
       case _blockFormatTrailingCall:
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        var targetSplit =
+            writer.format(_target, allowNewlines: _allowSplitInTarget);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
         }
+
+        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.block);
 
       case State.split:
         writer.pushIndent(_indent);

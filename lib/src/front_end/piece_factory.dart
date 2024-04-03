@@ -573,18 +573,22 @@ mixin PieceFactory {
 
     metadataBuilder.add(FunctionPiece(returnTypePiece, signature,
         isReturnTypeFunctionType: returnType is GenericFunctionType,
-        body: bodyPiece));
+        body: bodyPiece,
+        spaceBeforeBody: body is! EmptyFunctionBody,
+        bodyIsBlock: body is BlockFunctionBody));
 
     return metadataBuilder.build();
   }
 
+  // TODO: Remove?
   /// Creates a piece for a function, method, or constructor body.
   Piece createFunctionBody(FunctionBody body) {
-    return buildPiece((b) {
-      // Don't put a space before `;` bodies.
-      if (body is! EmptyFunctionBody) b.space();
-      b.visit(body);
-    });
+    return nodePiece(body);
+    // return buildPiece((b) {
+    //   // Don't put a space before `;` bodies.
+    //   if (body is! EmptyFunctionBody) b.space();
+    //   b.visit(body);
+    // });
   }
 
   /// Creates a function type or function-typed formal.

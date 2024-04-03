@@ -159,3 +159,20 @@ return switch (value) {
         operand4)
     .method()
     .chain(argument);
+>>> Split in target that can and does block split doesn't split chain.
+(operand1 + operand2)(argument1, argument2).method().chain(argument);
+<<<
+(operand1 + operand2)(
+  argument1,
+  argument2,
+).method().chain(argument);
+>>> Split in target that can but does not block split splits chain.
+(operand1 + operand2 + operand3 + operand4)
+(argument1, argument2).method().chain(argument);
+<<<
+(operand1 +
+        operand2 +
+        operand3 +
+        operand4)(argument1, argument2)
+    .method()
+    .chain(argument);

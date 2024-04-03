@@ -24,6 +24,23 @@ var variableName = [ /* some long comment */ ];
 var variableName = [
   /* some long comment */
 ];
+>>> No block-like splitting from comment in constructor.
+var variableName = new // comment
+    Something(
+      argument1,
+      argument2,
+      argument3,
+      argument4,
+    );
+<<<
+var variableName =
+    new // comment
+    Something(
+      argument1,
+      argument2,
+      argument3,
+      argument4,
+    );
 >>> Line comment before `=`.
 var variable // comment
 = value;

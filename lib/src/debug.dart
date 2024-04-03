@@ -23,6 +23,10 @@ bool traceSplitter = false;
 /// Set this to `true` to turn on diagnostic output while building pieces.
 bool tracePieceBuilder = false;
 
+/// Set this to `true` to turn on diagnostic output when potential solutions
+/// are enqueued.
+bool traceSolverEnqueueing = false;
+
 /// Set this to `true` to turn on diagnostic output while solving pieces.
 bool traceSolver = false;
 

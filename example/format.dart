@@ -15,17 +15,21 @@ void main(List<String> args) {
   debug.traceSplitter = true;
   debug.useAnsiColors = true;
   debug.tracePieceBuilder = true;
+  debug.traceSolverEnqueueing = true;
   debug.traceSolver = true;
 
   _formatStmt('''
-  1 + 2;
+function() =>
+    another(
+      veryLongArgument,
+    ).property.method(argument);
   ''');
 
-  _formatUnit('''
-  class C {}
-  ''');
+  // _formatUnit('''
+  // class C {}
+  // ''');
 
-  _runTest('selection/selection.stmt', 2);
+  // _runTest('tall/function/expression.stmt', 31);
 }
 
 void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {

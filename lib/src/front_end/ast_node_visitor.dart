@@ -12,6 +12,7 @@ import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
+import '../piece/call.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/if.dart';
@@ -404,6 +405,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     return ConstructorPiece(header, parameters, body,
         canSplitParameters: node.parameters.parameters
             .canSplit(node.parameters.rightParenthesis),
+        spaceBeforeBody: node.body is! EmptyFunctionBody,
         hasOptionalParameter: node.parameters.rightDelimiter != null,
         redirect: redirect,
         initializerSeparator: initializerSeparator,
@@ -802,11 +804,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitFunctionExpressionInvocation(FunctionExpressionInvocation node) {
-    return buildPiece((b) {
-      b.visit(node.function);
-      b.visit(node.typeArguments);
-      b.visit(node.argumentList);
-    });
+    return CallPiece(nodePiece(node.function),
+        optionalNodePiece(node.typeArguments), nodePiece(node.argumentList));
+    // return buildPiece((b) {
+    //   b.visit(node.function);
+    //   b.visit(node.typeArguments);
+    //   b.visit(node.argumentList);
+    // });
   }
 
   @override
@@ -1066,9 +1070,11 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       builder.visit(name);
     }
 
-    builder.visit(node.argumentList);
+    // builder.visit(node.argumentList);
 
-    return builder.build();
+    // return builder.build();
+    // TODO: Pass type args separately if constructor isn't named.
+    return CallPiece(builder.build(), null, nodePiece(node.argumentList));
   }
 
   @override
@@ -1256,13 +1262,19 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     // target and method together instead of including the method in the
     // subsequent method chain.
     if (node.target == null || node.looksLikeStaticCall) {
-      return buildPiece((b) {
+      // return buildPiece((b) {
+      //   b.visit(node.target);
+      //   b.token(node.operator);
+      //   b.visit(node.methodName);
+      //   b.visit(node.typeArguments);
+      //   b.visit(node.argumentList);
+      // });
+      // TODO: Make createCall()?
+      return CallPiece(buildPiece((b) {
         b.visit(node.target);
         b.token(node.operator);
         b.visit(node.methodName);
-        b.visit(node.typeArguments);
-        b.visit(node.argumentList);
-      });
+      }), optionalNodePiece(node.typeArguments), nodePiece(node.argumentList));
     }
 
     return createChain(node);
@@ -1333,16 +1345,25 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitObjectPattern(ObjectPattern node) {
-    var builder = DelimitedListBuilder(this);
+    // var builder = DelimitedListBuilder(this);
 
-    builder.addLeftBracket(buildPiece((b) {
-      b.visit(node.type);
-      b.token(node.leftParenthesis);
-    }));
+    // builder.addLeftBracket(buildPiece((b) {
+    //   b.visit(node.type);
+    //   b.token(node.leftParenthesis);
+    // }));
 
-    node.fields.forEach(builder.visit);
-    builder.rightBracket(node.rightParenthesis);
-    return builder.build();
+    // node.fields.forEach(builder.visit);
+    // builder.rightBracket(node.rightParenthesis);
+    // return builder.build();
+    // Hoist the type arguments out of the NamedType so that if they split, we
+    // force the object pattern fields to split too.
+    return CallPiece(
+        tokenPiece(node.type.name2),
+        optionalNodePiece(node.type.typeArguments),
+        createList(
+            leftBracket: node.leftParenthesis,
+            node.fields,
+            rightBracket: node.rightParenthesis));
   }
 
   @override
@@ -1353,20 +1374,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitParenthesizedExpression(ParenthesizedExpression node) {
-    return buildPiece((b) {
-      b.token(node.leftParenthesis);
-      b.visit(node.expression);
-      b.token(node.rightParenthesis);
-    });
+    return ParenthesizedPiece(tokenPiece(node.leftParenthesis),
+        nodePiece(node.expression), tokenPiece(node.rightParenthesis));
   }
 
   @override
   Piece visitParenthesizedPattern(ParenthesizedPattern node) {
-    return buildPiece((b) {
-      b.token(node.leftParenthesis);
-      b.visit(node.pattern);
-      b.token(node.rightParenthesis);
-    });
+    return ParenthesizedPiece(tokenPiece(node.leftParenthesis),
+        nodePiece(node.pattern), tokenPiece(node.rightParenthesis));
   }
 
   @override

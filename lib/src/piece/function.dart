@@ -39,10 +39,18 @@ class FunctionPiece extends Piece {
   /// to split at the return type, so make that high cost.
   final bool _isReturnTypeFunctionType;
 
+  final bool _bodyIsBlock;
+  final bool _spaceBeforeBody;
+
   FunctionPiece(this._returnType, this._signature,
-      {required bool isReturnTypeFunctionType, Piece? body})
+      {required bool isReturnTypeFunctionType,
+      Piece? body,
+      bool spaceBeforeBody = false,
+      bool bodyIsBlock = false})
       : _body = body,
-        _isReturnTypeFunctionType = isReturnTypeFunctionType;
+        _isReturnTypeFunctionType = isReturnTypeFunctionType,
+        _spaceBeforeBody = spaceBeforeBody,
+        _bodyIsBlock = bodyIsBlock;
 
   @override
   List<State> get additionalStates => [if (_returnType != null) State.split];
@@ -66,7 +74,13 @@ class FunctionPiece extends Piece {
 
     writer.format(_signature);
 
-    if (_body case var body?) writer.format(body);
+    if (_body case var body?) {
+      // Put a space before the `{`.
+      if (_spaceBeforeBody) writer.space();
+
+      var bodySplit = writer.format(body);
+      if (_bodyIsBlock) writer.setSplitType(bodySplit);
+    }
   }
 
   @override

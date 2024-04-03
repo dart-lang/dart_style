@@ -177,6 +177,8 @@ class ListPiece extends Piece {
 
       writer.format(after, allowNewlines: true);
     }
+
+    if (state == State.split) writer.setSplitType(SplitType.block);
   }
 
   @override

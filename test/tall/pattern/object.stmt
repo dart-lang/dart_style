@@ -183,18 +183,14 @@ if (obj case Foo<First, Second>(
 )) {
   ;
 }
->>> Split in type argument forces fields to split too.
+>>> Split in type arguments but not fields.
 if (obj case LongClassName<First, Second, Third>(first: 1, second: 2, third: 3)) {;}
 <<<
 if (obj case LongClassName<
   First,
   Second,
   Third
->(
-  first: 1,
-  second: 2,
-  third: 3,
-)) {
+>(first: 1, second: 2, third: 3)) {
   ;
 }
 >>> Split in type arguments and field subpatterns.

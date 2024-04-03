@@ -60,6 +60,10 @@ class SequencePiece extends Piece {
       writer.splitIf(state == State.split, space: false);
       writer.format(rightBracket, allowNewlines: state == State.split);
     }
+
+    // TODO: Is this right if there are no delimiters? Should we have a
+    // different piece for blocks?
+    if (_elements.isNotEmpty) writer.setSplitType(SplitType.block);
   }
 
   @override

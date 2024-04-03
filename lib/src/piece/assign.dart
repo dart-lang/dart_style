@@ -19,6 +19,7 @@ import 'piece.dart';
 ///
 ///     var x = 123;
 ///
+// TODO: Doc here.
 /// This state also allows splitting the right side if it can be block
 /// formatted:
 ///
@@ -44,7 +45,7 @@ import 'piece.dart';
 ///     ] = 'expression split' +
 ///         'the right hand side';
 ///
-/// [_blockSplitRight] Allow the right-hand side to block split or not, if it
+/// [_splitLeftBlockSplitRight] Allow the right-hand side to block split or not, if it
 /// wants. Since [State.unsplit] and [_blockSplitLeft] also allow the
 /// right-hand side to block split, this state is only used when the left-hand
 /// side expression splits, like:
@@ -66,15 +67,18 @@ import 'piece.dart';
 ///         longOperand +
 ///             anotherOperand;
 class AssignPiece extends Piece {
+  // TODO: Doc.
+  static const State _blockSplitRight = State(1, cost: 0);
+
   /// Force the block left-hand side to split and allow the right-hand side to
   /// split.
-  static const State _blockSplitLeft = State(1);
+  static const State _blockSplitLeft = State(2);
 
   /// Allow the right-hand side to block split.
-  static const State _blockSplitRight = State(2);
+  static const State _splitLeftBlockSplitRight = State(3);
 
   /// Split at the operator.
-  static const State _atOperator = State(3);
+  static const State _atOperator = State(4);
 
   /// The left-hand side of the operation. Includes the operator unless it is
   /// `in`.
@@ -129,8 +133,9 @@ class AssignPiece extends Piece {
   List<State> get additionalStates => [
         // If at least one operand can block split, allow splitting in operands
         // without splitting at the operator.
-        if (_canBlockSplitLeft) _blockSplitLeft,
         if (_canBlockSplitRight) _blockSplitRight,
+        if (_canBlockSplitLeft) _blockSplitLeft,
+        if (_canBlockSplitRight) _splitLeftBlockSplitRight,
         _atOperator,
       ];
 
@@ -140,7 +145,7 @@ class AssignPiece extends Piece {
   void applyConstraints(State state, Constrain constrain) {
     switch (state) {
       case _blockSplitLeft:
-        constrain(_left!, State.split);
+      // constrain(_left!, State.split);
     }
   }
 
@@ -155,9 +160,11 @@ class AssignPiece extends Piece {
     switch (state) {
       case State.unsplit:
         allowNewlinesInLeft = false;
+        allowNewlinesInRight = false;
 
-        // Always allow block-splitting the right side if it supports it.
-        allowNewlinesInRight = _canBlockSplitRight;
+      case _blockSplitRight:
+        allowNewlinesInLeft = false;
+        allowNewlinesInRight = true;
 
       case _atOperator:
         // When splitting at the operator, both operands may split or not and
@@ -169,7 +176,7 @@ class AssignPiece extends Piece {
         indentRight = !_canBlockSplitRight;
         collapseIndent = true;
 
-      case _blockSplitRight:
+      case _splitLeftBlockSplitRight:
         collapseIndent = true;
     }
 
@@ -178,7 +185,11 @@ class AssignPiece extends Piece {
     }
 
     if (_left case var left?) {
-      writer.format(left, allowNewlines: allowNewlinesInLeft);
+      var leftSplit = writer.format(left, allowNewlines: allowNewlinesInLeft);
+
+      if (state == _blockSplitLeft) {
+        writer.require(left, leftSplit, SplitType.block);
+      }
     }
 
     if (_splitBeforeOperator) {
@@ -195,7 +206,13 @@ class AssignPiece extends Piece {
       writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
     }
 
-    writer.format(_right, allowNewlines: allowNewlinesInRight);
+    var rightSplit = writer.format(_right, allowNewlines: allowNewlinesInRight);
+
+    // TODO: Cleaner API.
+    if (state == _blockSplitRight || state == _splitLeftBlockSplitRight) {
+      // print('$this $state requires $rightSplit to be block');
+      writer.require(_right, rightSplit, SplitType.block);
+    }
 
     if (indentRight) writer.popIndent();
   }

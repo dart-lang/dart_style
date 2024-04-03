@@ -90,6 +90,10 @@ class Solver {
       var solution = _queue.removeFirst();
       tries++;
 
+      if (debug.traceSolverEnqueueing && rootState == null) {
+        debug.log('#$tries Dequeue $solution');
+      }
+
       if (debug.traceSolver) {
         debug.log(debug.bold('Try #$tries $solution'));
         debug.log(solution.text);
@@ -114,6 +118,10 @@ class Solver {
       // options.
       for (var expanded in solution.expand(_cache, root,
           pageWidth: _pageWidth, leadingIndent: _leadingIndent)) {
+        if (debug.traceSolverEnqueueing && rootState == null) {
+          debug.log('- Enqueue $expanded');
+        }
+
         _queue.add(expanded);
       }
     }

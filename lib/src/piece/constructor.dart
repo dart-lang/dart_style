@@ -81,14 +81,19 @@ class ConstructorPiece extends Piece {
   /// The constructor body.
   final Piece _body;
 
+  // TODO: Hack.
+  final bool _spaceBeforeBody;
+
   ConstructorPiece(this._header, this._parameters, this._body,
       {required bool canSplitParameters,
       required bool hasOptionalParameter,
+      required bool spaceBeforeBody,
       Piece? redirect,
       Piece? initializerSeparator,
       Piece? initializers})
       : _canSplitParameters = canSplitParameters,
         _hasOptionalParameter = hasOptionalParameter,
+        _spaceBeforeBody = spaceBeforeBody,
         _redirect = redirect,
         _initializerSeparator = initializerSeparator,
         _initializers = initializers;
@@ -159,6 +164,7 @@ class ConstructorPiece extends Piece {
       writer.popIndent();
     }
 
+    if (_spaceBeforeBody) writer.space();
     writer.format(_body);
   }
 

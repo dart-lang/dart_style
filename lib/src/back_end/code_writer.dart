@@ -58,10 +58,12 @@ class CodeWriter {
 
   /// Whether any newlines have been written during the [_currentPiece] being
   /// formatted.
-  bool _hadNewline = false;
+  // bool _hadNewline = false;
 
   /// The current innermost piece being formatted by a call to [format()].
-  Piece? _currentPiece;
+  // Piece? _currentPiece;
+
+  final List<_PieceFormatState> _pieces = [];
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -173,6 +175,7 @@ class CodeWriter {
     _indentStack.removeLast();
   }
 
+  // TODO: Doc `type`.
   /// Inserts a newline if [condition] is true.
   ///
   /// If [space] is `true` and [condition] is `false`, writes a space.
@@ -191,6 +194,7 @@ class CodeWriter {
     whitespace(Whitespace.space);
   }
 
+  // TODO: Doc `type`.
   /// Inserts a line split in the output.
   ///
   /// If [blank] is `true`, writes an extra newline to produce a blank line.
@@ -203,6 +207,7 @@ class CodeWriter {
         flushLeft: flushLeft);
   }
 
+  // TODO: Doc `type`.
   /// Queues [whitespace] to be written to the output.
   ///
   /// If any non-whitespace is written after this call, then this whitespace
@@ -221,6 +226,18 @@ class CodeWriter {
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
   }
 
+  // TODO: Hacky API.
+  void setSplitType(SplitType type) {
+    _pieces.last.splitType = type;
+  }
+
+  void require(Piece child, SplitType? actual, SplitType expected) {
+    // print('require $actual $expected');
+    if (actual != expected) {
+      _solution.invalidate(child);
+    }
+  }
+
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
   ///
@@ -236,11 +253,14 @@ class CodeWriter {
   /// be `false`. It's up to the parent piece to only call this when it's safe
   /// to do so. In practice, this usually means when the parent piece knows that
   /// [piece] will have a newline before and after it.
-  void format(Piece piece, {bool separate = false, bool allowNewlines = true}) {
+  SplitType format(Piece piece,
+      {bool separate = false, bool allowNewlines = true}) {
     if (separate) {
       _formatSeparate(piece);
+      // TODO: Is this right?
+      return SplitType.other;
     } else {
-      _formatInline(piece, allowNewlines: allowNewlines);
+      return _formatInline(piece, allowNewlines: allowNewlines);
     }
   }
 
@@ -269,13 +289,9 @@ class CodeWriter {
   }
 
   /// Format [piece] writing directly into this [CodeWriter].
-  void _formatInline(Piece piece, {required bool allowNewlines}) {
+  SplitType _formatInline(Piece piece, {required bool allowNewlines}) {
     // Begin a new formatting context for this child.
-    var previousPiece = _currentPiece;
-    _currentPiece = piece;
-
-    var previousHadNewline = _hadNewline;
-    _hadNewline = false;
+    _pieces.add(_PieceFormatState(piece));
 
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
@@ -287,15 +303,17 @@ class CodeWriter {
     // Restore the surrounding piece's context.
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childHadNewline = _hadNewline;
-    _hadNewline = previousHadNewline;
-
-    _currentPiece = previousPiece;
+    var pieceState = _pieces.removeLast();
 
     // If the child contained a newline then the parent transitively does.
-    if (childHadNewline && _currentPiece != null) {
+    if (pieceState.hadNewline && _pieces.isNotEmpty) {
+      // TODO: Need control over how child splits cascade out.
       _handleNewline(allowNewlines: allowNewlines);
     }
+
+    // print('${pieceState.piece}${_solution.pieceState(piece)} '
+    //     'split = ${pieceState.splitType}');
+    return pieceState.splitType;
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -315,11 +333,18 @@ class CodeWriter {
   /// If this occurs in a place where newlines are prohibited, then invalidates
   /// the solution.
   void _handleNewline({required bool allowNewlines}) {
-    if (!allowNewlines) _solution.invalidate(_currentPiece!);
+    if (!allowNewlines) {
+      _solution.invalidate(_pieces.last.piece);
+    }
 
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
-    _hadNewline = true;
+    _pieces.last.hadNewline = true;
+
+    if (_pieces.last.splitType == SplitType.none) {
+      // We know at least some kind of split occurred.
+      _pieces.last.splitType = SplitType.other;
+    }
   }
 
   /// Write any pending whitespace.
@@ -404,6 +429,9 @@ enum Whitespace {
       };
 }
 
+// TODO: Docs.
+enum SplitType { none, mandatory, block, other }
+
 /// A level of indentation in the indentation stack.
 class _Indent {
   /// The total number of spaces of indentation.
@@ -413,4 +441,14 @@ class _Indent {
   final int collapsible;
 
   _Indent(this.indent, this.collapsible);
+}
+
+class _PieceFormatState {
+  final Piece piece;
+
+  bool hadNewline = false;
+
+  SplitType splitType = SplitType.none;
+
+  _PieceFormatState(this.piece);
 }
