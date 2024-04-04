@@ -45,8 +45,8 @@ import 'piece.dart';
 ///     ] = 'expression split' +
 ///         'the right hand side';
 ///
-/// [_splitLeftBlockSplitRight] Allow the right-hand side to block split or not, if it
-/// wants. Since [State.unsplit] and [_blockSplitLeft] also allow the
+/// [_splitLeftBlockSplitRight] Allow the right-hand side to block split or not,
+/// if it wants. Since [State.unsplit] and [_blockSplitLeft] also allow the
 /// right-hand side to block split, this state is only used when the left-hand
 /// side expression splits, like:
 ///

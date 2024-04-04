@@ -161,8 +161,9 @@ class ChainPiece extends Piece {
             break; // OK. No split in the target and chain.
 
           case SplitType.block:
-            // If the target block splits and the rest of the chain hangs off the
-            // end of the target line, then the whole thing block splits, as in:
+            // If the target block splits and the rest of the chain hangs off
+            // the end of the target line, then the whole thing block splits,
+            // as in:
             //
             //     [
             //       element,

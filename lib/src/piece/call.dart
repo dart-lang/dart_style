@@ -3,47 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
-import '../constants.dart';
-import 'list.dart';
 import 'piece.dart';
-
-/*
-// TODO: Docs.
-class BlockPiece extends Piece {
-  final Piece _header;
-  // TODO: Should be ListPiece. But DelimitedListBuilder sometimes returns
-  // non-ListPieces if the list is totally empty. In that case, we should also
-  // not create a BlockPiece and just use AdjacentPiece since it can't be
-  // block formatted anyway. We probably want a createBlock() (or some better
-  // name) function in PieceFactory for that.
-  final Piece _body;
-
-  BlockPiece(this._header, this._body);
-
-  @override
-  List<State> get additionalStates => const [State.blockSplit, State.split];
-
-  @override
-  int stateCost(State state) => 0;
-
-  @override
-  void format(CodeWriter writer, State state) {
-    writer.pushAllowNewlines(state == State.split);
-    writer.format(_header);
-    writer.popAllowNewlines();
-
-    writer.pushAllowNewlines(state != State.unsplit);
-    writer.format(_body);
-    writer.popAllowNewlines();
-  }
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {
-    callback(_header);
-    callback(_body);
-  }
-}
-*/
 
 // TODO: Docs.
 class CallPiece extends Piece {
