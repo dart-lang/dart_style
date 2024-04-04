@@ -97,19 +97,6 @@ class ChainPiece extends Piece {
   /// and the last call's argument list can be block formatted.
   final int _blockCallIndex;
 
-  // TODO: This isn't right.
-  /// Whether the target expression may contain newlines when the chain is not
-  /// fully split. (It may always contain newlines when the chain splits.)
-  ///
-  /// This is true for most expressions but false for delimited ones to avoid
-  /// this weird output:
-  ///
-  ///     function(
-  ///       argument,
-  ///     )
-  ///         .method();
-  final bool _allowSplitInTarget;
-
   /// How much to indent the chain when it splits.
   ///
   /// This is [Indent.expression] for regular chains and [Indent.cascade] for
@@ -125,12 +112,10 @@ class ChainPiece extends Piece {
       {required bool cascade,
       int leadingProperties = 0,
       int blockCallIndex = -1,
-      int indent = Indent.expression,
-      required bool allowSplitInTarget})
+      int indent = Indent.expression})
       : _leadingProperties = leadingProperties,
         _blockCallIndex = blockCallIndex,
         _indent = indent,
-        _allowSplitInTarget = allowSplitInTarget,
         _isCascade = cascade,
         // If there are no calls, we shouldn't have created a chain.
         assert(_calls.isNotEmpty);
@@ -214,8 +199,7 @@ class ChainPiece extends Piece {
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        var targetSplit =
-            writer.format(_target, allowNewlines: _allowSplitInTarget);
+        var targetSplit = writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
@@ -224,7 +208,16 @@ class ChainPiece extends Piece {
 
         writer.popIndent();
 
-        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.chain);
+        switch (targetSplit) {
+          case SplitType.none:
+            writer.setSplitType(SplitType.chain);
+
+          case SplitType.block:
+          case SplitType.chain:
+          case SplitType.other:
+            // Don't allow the target to split in this state.
+            writer.invalidate(_target);
+        }
 
       case State.split:
         writer.pushIndent(_indent);
