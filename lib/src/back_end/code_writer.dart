@@ -429,7 +429,6 @@ enum Whitespace {
 // TODO: Docs.
 enum SplitType {
   none,
-  mandatory,
   block,
 
   /// A call chain splitting at `.` where the target fits on a single line.

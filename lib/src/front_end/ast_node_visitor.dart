@@ -2007,7 +2007,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       var nextToken = node.endToken.next!;
       if (nextToken.lexeme == ',') {
         var comma = tokenPiece(nextToken);
-        result = AdjacentPiece([result, comma]);
+        result = CommaPiece(result, comma);
       }
     }
 

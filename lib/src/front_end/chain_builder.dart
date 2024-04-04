@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
 import '../constants.dart';
+import '../piece/call.dart';
 import '../piece/chain.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
@@ -284,11 +285,10 @@ class ChainBuilder {
       // Postfix expressions.
       case FunctionExpressionInvocation():
         _unwrapPostfix(expression.function, (target) {
-          return _visitor.buildPiece((b) {
-            b.add(target);
-            b.visit(expression.typeArguments);
-            b.visit(expression.argumentList);
-          });
+          return CallPiece(
+              target,
+              _visitor.optionalNodePiece(expression.typeArguments),
+              _visitor.nodePiece(expression.argumentList));
         });
 
       case IndexExpression():

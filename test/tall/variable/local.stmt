@@ -300,10 +300,10 @@ var variableName = target
     )
     .another(argument);
 >>> Allow target and properties on first line if chain splits.
-var variableName = (target + expression).prop.another.long()
+var variableName = (tar + get).a.b.long()
 .chain(argument, argument, argument);
 <<<
-var variableName = (target + expression).prop.another
+var variableName = (tar + get).a.b
     .long()
     .chain(
       argument,

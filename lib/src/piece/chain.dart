@@ -165,15 +165,57 @@ class ChainPiece extends Piece {
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        var targetSplit = writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: false);
         }
 
+        switch (targetSplit) {
+          case SplitType.none:
+            break; // OK. No split in the target and chain.
+
+          case SplitType.block:
+            // If the target block splits and the rest of the chain hangs off the
+            // end of the target line, then the whole thing block splits, as in:
+            //
+            //     [
+            //       element,
+            //     ].foo().bar();
+            writer.setSplitType(SplitType.block);
+
+          case SplitType.chain:
+          case SplitType.other:
+            // Only allow the target to block split in this state.
+            writer.invalidate(_target);
+        }
+
+      case _blockFormatTrailingCall:
+        var targetSplit = writer.format(_target);
+
+        for (var i = 0; i < _calls.length; i++) {
+          _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
+        }
+
+        switch (targetSplit) {
+          case SplitType.none:
+            writer.setSplitType(SplitType.block);
+
+          case SplitType.block:
+            // TODO: Not sure about this.
+            // writer.setSplitType(SplitType.block);
+            break;
+
+          case SplitType.chain:
+          case SplitType.other:
+            // Only allow the target to block split in this state.
+            writer.invalidate(_target);
+        }
+
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        var targetSplit =
+            writer.format(_target, allowNewlines: _allowSplitInTarget);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
@@ -182,15 +224,7 @@ class ChainPiece extends Piece {
 
         writer.popIndent();
 
-      case _blockFormatTrailingCall:
-        var targetSplit =
-            writer.format(_target, allowNewlines: _allowSplitInTarget);
-
-        for (var i = 0; i < _calls.length; i++) {
-          _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
-        }
-
-        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.block);
+        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.chain);
 
       case State.split:
         writer.pushIndent(_indent);

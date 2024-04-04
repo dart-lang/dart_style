@@ -275,3 +275,27 @@ class ParenthesizedPiece extends Piece {
     callback(_rightParenthesis);
   }
 }
+
+// TODO: Is this worth keeping? Maybe get rid of this and parenthesized and
+// instead have AdjacentPiece be able to plumb a SplitStyle through if there
+// is only a single non-SplitStyle.none result?
+class CommaPiece extends Piece {
+  final Piece _piece;
+  final Piece _comma;
+
+  CommaPiece(this._piece, this._comma);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    var splitType = writer.format(_piece);
+    writer.format(_comma);
+
+    writer.setSplitType(splitType);
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    callback(_piece);
+    callback(_comma);
+  }
+}
