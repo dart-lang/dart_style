@@ -599,8 +599,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       var expression =
           nodePiece(node.expression, context: NodeContext.assignment);
 
-      b.add(AssignPiece(operatorPiece, expression,
-          canBlockSplitRight: node.expression.canBlockSplit));
+      b.add(AssignPiece(operatorPiece, expression));
       b.token(node.semicolon);
     });
   }
@@ -1769,8 +1768,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
     return CaseExpressionPiece(patternPiece, guardPiece, arrowPiece, bodyPiece,
         canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
-        patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
-        canBlockSplitBody: node.expression.canBlockSplit);
+        patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern);
   }
 
   @override
@@ -1926,11 +1924,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         var initializerPiece = nodePiece(initializer,
             commaAfter: true, context: NodeContext.assignment);
 
-        variables.add(AssignPiece(
-            left: variablePiece,
-            equalsPiece,
-            initializerPiece,
-            canBlockSplitRight: initializer.canBlockSplit));
+        variables.add(
+            AssignPiece(left: variablePiece, equalsPiece, initializerPiece));
       } else {
         variables.add(tokenPiece(variable.name, commaAfter: true));
       }

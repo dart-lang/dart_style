@@ -1252,30 +1252,6 @@ mixin PieceFactory {
       bool includeComma = false,
       bool spaceBeforeOperator = true,
       NodeContext leftHandSideContext = NodeContext.none}) {
-    // If an operand can have block formatting, then a newline in it doesn't
-    // force the operator to split, as in:
-    //
-    //    var [
-    //      element,
-    //    ] = list;
-    //
-    // Or:
-    //
-    //    var list = [
-    //      element,
-    //    ];
-    var canBlockSplitLeft = switch (leftHandSide) {
-      Expression() => leftHandSide.canBlockSplit,
-      DartPattern() => leftHandSide.canBlockSplit,
-      _ => false
-    };
-
-    var canBlockSplitRight = switch (rightHandSide) {
-      Expression() => rightHandSide.canBlockSplit,
-      DartPattern() => rightHandSide.canBlockSplit,
-      _ => false
-    };
-
     var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
 
     var operatorPiece = buildPiece((b) {
@@ -1293,9 +1269,7 @@ mixin PieceFactory {
         left: leftPiece,
         operatorPiece,
         rightPiece,
-        splitBeforeOperator: splitBeforeOperator,
-        canBlockSplitLeft: canBlockSplitLeft,
-        canBlockSplitRight: canBlockSplitRight);
+        splitBeforeOperator: splitBeforeOperator);
   }
 
   /// Creates a piece for a parameter-like constructor: Either a simple formal

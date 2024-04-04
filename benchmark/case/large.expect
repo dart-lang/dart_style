@@ -753,15 +753,13 @@ class Traverser {
           }
 
           // Replace any overridden dependencies.
-          deps = deps
-              .map((dep) {
-                var override = _solver._overrides[dep.name];
-                if (override != null) return override;
+          deps = deps.map((dep) {
+            var override = _solver._overrides[dep.name];
+            if (override != null) return override;
 
-                // Not overridden.
-                return dep;
-              })
-              .toSet();
+            // Not overridden.
+            return dep;
+          }).toSet();
 
           // Make sure the package doesn't have any bad dependencies.
           for (var dep in deps) {

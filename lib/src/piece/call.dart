@@ -94,10 +94,7 @@ class CollectionPiece extends Piece {
     if (_typeArguments case var typeArguments?) writer.format(typeArguments);
 
     var elementSplit = writer.format(_elements);
-
-    if (elementSplit == SplitType.block) {
-      writer.setSplitType(SplitType.block);
-    }
+    if (elementSplit == SplitType.block) writer.setSplitType(SplitType.block);
   }
 
   @override

@@ -152,6 +152,8 @@ class DelimitedListBuilder {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.firstNonCommentToken);
 
+    // TODO: Ugh. This shouldn't be based on syntax either, but on how the
+    // elements actually split.
     // See if it's an expression that supports block formatting.
     var format = switch (element) {
       AdjacentStrings(indentStrings: true) =>

@@ -4,15 +4,19 @@
 
 import '../back_end/code_writer.dart';
 import '../constants.dart';
+import 'list.dart';
 import 'piece.dart';
 
 /// Piece for a case pattern, guard, and body in a switch expression.
 class CaseExpressionPiece extends Piece {
+  /// Block split the case body expression.
+  static const State _blockSplitBody = State(1, cost: 0);
+
   /// Split after the `=>` before the body.
-  static const State _beforeBody = State(1);
+  static const State _beforeBody = State(2);
 
   /// Split before the `when` guard clause and after the `=>`.
-  static const State _beforeWhenAndBody = State(2);
+  static const State _beforeWhenAndBody = State(3);
 
   /// The pattern the value is matched against along with the leading `case`.
   final Piece _pattern;
@@ -41,71 +45,86 @@ class CaseExpressionPiece extends Piece {
   ///     }
   final bool _patternIsLogicalOr;
 
-  // TODO: This needs to handle bodies that may or may not block format.
-  /// Whether the body expression can be block formatted.
-  final bool _canBlockSplitBody;
-
   CaseExpressionPiece(this._pattern, this._guard, this._arrow, this._body,
-      {required bool canBlockSplitPattern,
-      required bool patternIsLogicalOr,
-      required bool canBlockSplitBody})
+      {required bool canBlockSplitPattern, required bool patternIsLogicalOr})
       : _canBlockSplitPattern = canBlockSplitPattern,
-        _patternIsLogicalOr = patternIsLogicalOr,
-        _canBlockSplitBody = canBlockSplitBody;
+        _patternIsLogicalOr = patternIsLogicalOr;
 
   @override
   List<State> get additionalStates => [
+        _blockSplitBody,
         _beforeBody,
         if (_guard != null) ...[_beforeWhenAndBody],
       ];
 
   @override
   void format(CodeWriter writer, State state) {
-    var allowNewlineInPattern = false;
-    var allowNewlineInGuard = false;
-    var allowNewlineInBody = false;
-
     switch (state) {
       case State.unsplit:
-        allowNewlineInBody = _canBlockSplitBody;
+        _writePattern(writer);
+        _writeGuard(writer);
+        _writeBody(writer, allowNewlineInBody: false);
+
+      case _blockSplitBody:
+        _writePattern(writer);
+        _writeGuard(writer);
+        _writeBody(writer, allowNewlineInBody: true, requireBlockBody: true);
 
       case _beforeBody:
-        allowNewlineInPattern = _guard == null || _patternIsLogicalOr;
-        allowNewlineInBody = true;
+        _writePattern(writer,
+            allowNewlineInPattern: _guard == null || _patternIsLogicalOr);
+        _writeGuard(writer);
+        _writeBody(writer,
+            indent: true, splitBeforeBody: true, allowNewlineInBody: true);
 
       case _beforeWhenAndBody:
-        allowNewlineInPattern = true;
-        allowNewlineInGuard = true;
-        allowNewlineInBody = true;
+        _writePattern(writer,
+            allowNewlineInPattern: true, indentForGuard: true);
+        _writeGuard(writer, splitGuard: true);
+        _writeBody(writer,
+            indent: true, splitBeforeBody: true, allowNewlineInBody: true);
     }
+  }
 
+  void _writePattern(CodeWriter writer,
+      {bool allowNewlineInPattern = false, bool indentForGuard = false}) {
     // If there is a split guard, then indent the pattern past it.
-    var indentPatternForGuard = !_canBlockSplitPattern &&
-        !_patternIsLogicalOr &&
-        state == _beforeWhenAndBody;
+    var indentPatternForGuard =
+        indentForGuard && !_canBlockSplitPattern && !_patternIsLogicalOr;
 
     if (indentPatternForGuard) writer.pushIndent(Indent.expression);
 
     writer.format(_pattern, allowNewlines: allowNewlineInPattern);
 
     if (indentPatternForGuard) writer.popIndent();
+  }
 
+  void _writeGuard(CodeWriter writer, {bool splitGuard = false}) {
     if (_guard case var guard?) {
       writer.pushIndent(Indent.expression);
-      writer.splitIf(state == _beforeWhenAndBody);
-      writer.format(guard, allowNewlines: allowNewlineInGuard);
+      writer.splitIf(splitGuard);
+      writer.format(guard, allowNewlines: splitGuard);
       writer.popIndent();
     }
+  }
 
+  void _writeBody(CodeWriter writer,
+      {bool splitBeforeBody = false,
+      bool allowNewlineInBody = false,
+      bool indent = false,
+      bool requireBlockBody = false}) {
     writer.space();
     writer.format(_arrow);
 
-    if (state != State.unsplit) writer.pushIndent(Indent.block);
+    if (indent) writer.pushIndent(Indent.block);
 
-    writer.splitIf(state == _beforeBody || state == _beforeWhenAndBody);
-    writer.format(_body, allowNewlines: allowNewlineInBody);
+    writer.splitIf(splitBeforeBody);
+    var bodySplit = writer.format(_body, allowNewlines: allowNewlineInBody);
+    if (requireBlockBody && bodySplit != SplitType.block) {
+      writer.invalidate(_body);
+    }
 
-    if (state != State.unsplit) writer.popIndent();
+    if (indent) writer.popIndent();
   }
 
   @override

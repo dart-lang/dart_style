@@ -97,45 +97,10 @@ class AssignPiece extends Piece {
 
   final bool _splitBeforeOperator;
 
-  // TODO(perf): These two fields are purely optimizations. They avoid
-  // considering states that we know syntactically will never be valid because
-  // the operand can't block format anyway. Implementing these correctly is
-  // subtle because it means we need to make sure that any AST node that could
-  // possibly block format must set this to true.
-  //
-  // This seems to somewhat help the perf lost in adding support for SplitStyle,
-  // but it's still pretty slow. Committing for now so I don't lose it, but
-  // ideally these (and the extension methods in ast_extensions.dart) would go
-  // away.
-
-  // TODO: Should be able to get rid of these and rely on the child pieces
-  // telling us whether or not they block split, but it seems to still be
-  // useful for indentation somehow.
-  /// If `true`, then the left side supports being block-formatted, like:
-  ///
-  ///     var [
-  ///       element1,
-  ///       element2,
-  ///     ] = value;
-  final bool _canBlockSplitLeft;
-
-  /// If `true` then the right side supports being block-formatted, like:
-  ///
-  ///     var list = [
-  ///       element1,
-  ///       element2,
-  ///     ];
-  final bool _canBlockSplitRight;
-
   AssignPiece(this._operator, this._right,
-      {Piece? left,
-      bool splitBeforeOperator = false,
-      bool canBlockSplitLeft = false,
-      bool canBlockSplitRight = false})
+      {Piece? left, bool splitBeforeOperator = false})
       : _left = left,
-        _splitBeforeOperator = splitBeforeOperator,
-        _canBlockSplitLeft = canBlockSplitLeft,
-        _canBlockSplitRight = canBlockSplitRight;
+        _splitBeforeOperator = splitBeforeOperator;
 
   // TODO(tall): The old formatter allows the first operand of a split
   // conditional expression to be on the same line as the `=`, as in:
@@ -151,9 +116,9 @@ class AssignPiece extends Piece {
 
   @override
   List<State> get additionalStates => [
-        if (_canBlockSplitLeft && _canBlockSplitRight) _blockSplitBoth,
-        if (_canBlockSplitRight) _blockSplitRight,
-        if (_canBlockSplitLeft) _blockSplitLeft,
+        if (_left != null) _blockSplitBoth,
+        _blockSplitRight,
+        if (_left != null) _blockSplitLeft,
         _headerRight,
         _atOperator
       ];
