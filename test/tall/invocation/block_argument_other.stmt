@@ -48,6 +48,14 @@ function(name: [
   element,
   element,
 ]);
+>>> A non-function block argument can be named.
+function(name: <String>[element, element, element]);
+<<<
+function(name: <String>[
+  element,
+  element,
+  element,
+]);
 >>> A long argument name can prevent block formatting.
 veryLongFunctionName(veryLongArgumentName: [element]);
 <<<

@@ -54,6 +54,32 @@ var list = [
     element3,
   ],
 ];
+>>> Both spreads split if then spread splits with type arguments.
+var list = [if (c) ...<int>[element1, element2, element3] else ...<int>[1, 2]];
+<<<
+var list = [
+  if (c) ...<int>[
+    element1,
+    element2,
+    element3,
+  ] else ...<int>[
+    1,
+    2,
+  ],
+];
+>>> Both spreads split if else spread splits with type arguments.
+var list = [if (c) ...<int>[1, 2] else ...<int>[element1, element2, element3]];
+<<<
+var list = [
+  if (c) ...<int>[
+    1,
+    2,
+  ] else ...<int>[
+    element1,
+    element2,
+    element3,
+  ],
+];
 >>> An empty spread then is not treated like block.
 var list = [
   if (condition) ...[] else ...[veryLongElement,veryLongElement,veryLongElement,]

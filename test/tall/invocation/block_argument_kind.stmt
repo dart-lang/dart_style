@@ -209,6 +209,13 @@ function([
   veryLongElement,
   anotherLongElement,
 ]);
+>>> List literal with type argument.
+function(<String>[veryLongElement, anotherLongElement]);
+<<<
+function(<String>[
+  veryLongElement,
+  anotherLongElement,
+]);
 >>> Empty list literal with block comment.
 function([/* a very long block comment */]);
 <<<
@@ -235,10 +242,24 @@ function({
   1: veryLongElement,
   2: anotherLongElement,
 });
+>>> Map literal with type arguments.
+function(<int, String>{1: veryLongElement, 2: anotherLongElement});
+<<<
+function(<int, String>{
+  1: veryLongElement,
+  2: anotherLongElement,
+});
 >>> Set literal.
 function({veryLongElement, anotherLongElement});
 <<<
 function({
+  veryLongElement,
+  anotherLongElement,
+});
+>>> Set literal with type argument.
+function(<String>{veryLongElement, anotherLongElement});
+<<<
+function(<String>{
   veryLongElement,
   anotherLongElement,
 });

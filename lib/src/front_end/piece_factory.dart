@@ -6,6 +6,7 @@ import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
 import '../piece/assign.dart';
+import '../piece/call.dart';
 import '../piece/clause.dart';
 import '../piece/for.dart';
 import '../piece/function.dart';
@@ -237,36 +238,43 @@ mixin PieceFactory {
     bool splitOnNestedCollection = false,
     bool preserveNewlines = false,
   }) {
-    return buildPiece((b) {
-      b.modifier(constKeyword);
-      b.visit(typeArguments);
-
-      if (splitOnNestedCollection) {
-        // If this collection isn't empty, force all of the surrounding
-        // collections to split if they care to.
-        if (elements.isNotEmpty) {
-          _collectionSplits.fillRange(0, _collectionSplits.length, true);
-        }
-
-        // Add this collection to the stack.
-        _collectionSplits.add(false);
+    if (splitOnNestedCollection) {
+      // If this collection isn't empty, force all of the surrounding
+      // collections to split if they care to.
+      if (elements.isNotEmpty) {
+        _collectionSplits.fillRange(0, _collectionSplits.length, true);
       }
 
-      var collection = createList(
-        leftBracket: leftBracket,
-        elements,
-        rightBracket: rightBracket,
-        style: style,
-        preserveNewlines: preserveNewlines,
-      );
+      // Add this collection to the stack.
+      _collectionSplits.add(false);
+    }
 
-      // If there is a collection inside this one, force this one to split.
-      if (splitOnNestedCollection) {
-        if (_collectionSplits.removeLast()) collection.pin(State.split);
-      }
+    Piece? constPiece;
+    if (constKeyword != null) {
+      constPiece = buildPiece((b) {
+        b.modifier(constKeyword);
+      });
+    }
 
-      b.add(collection);
-    });
+    Piece? typeArgumentsPiece;
+    if (typeArguments != null) {
+      typeArgumentsPiece = nodePiece(typeArguments);
+    }
+
+    var elementsPiece = createList(
+      leftBracket: leftBracket,
+      elements,
+      rightBracket: rightBracket,
+      style: style,
+      preserveNewlines: preserveNewlines,
+    );
+
+    // If there is a collection inside this one, force this one to split.
+    if (splitOnNestedCollection) {
+      if (_collectionSplits.removeLast()) elementsPiece.pin(State.split);
+    }
+
+    return CollectionPiece(constPiece, typeArgumentsPiece, elementsPiece);
   }
 
   /// Visits the leading keyword and parenthesized expression at the beginning

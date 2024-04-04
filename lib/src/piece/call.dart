@@ -108,7 +108,6 @@ class CallPiece extends Piece {
   }
 }
 
-/*
 // TODO: Docs.
 class CollectionPiece extends Piece {
   final Piece? _constKeyword;
@@ -118,28 +117,33 @@ class CollectionPiece extends Piece {
   CollectionPiece(this._constKeyword, this._typeArguments, this._elements);
 
   @override
-  List<State> get additionalStates => const [State.blockSplit, State.split];
+  List<State> get additionalStates => const [State.split];
 
+  // TODO: explain just passing through.
   @override
   int stateCost(State state) => 0;
 
   @override
   void applyConstraints(State state, Constrain constrain) {
-    if (state == State.blockSplit) constrain(_elements, State.split);
+    if (state == State.split) constrain(_elements, State.split);
   }
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.pushAllowNewlines(state == State.split);
     if (_constKeyword case var constKeyword?) writer.format(constKeyword);
-    if (_typeArguments case var typeArguments?) writer.format(typeArguments);
-    writer.popAllowNewlines();
 
-    writer.pushAllowNewlines(state != State.unsplit);
-    writer.format(_elements);
-    writer.popAllowNewlines();
+    var typeArgumentsSplit = SplitType.none;
+    if (_typeArguments case var typeArguments?) {
+      typeArgumentsSplit = writer.format(typeArguments);
+    }
 
-    if (state == State.blockSplit) writer.setSplitType(SplitType.block);
+    var elementSplit = writer.format(_elements);
+
+    if (elementSplit == SplitType.block ||
+        typeArgumentsSplit == SplitType.block &&
+            elementSplit == SplitType.none) {
+      writer.setSplitType(SplitType.block);
+    }
   }
 
   @override
@@ -149,7 +153,6 @@ class CollectionPiece extends Piece {
     callback(_elements);
   }
 }
-*/
 
 // TODO: Docs.
 // ways it can format:

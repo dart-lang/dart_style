@@ -117,6 +117,8 @@ class ListPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
+    var splitBlockElement = false;
+
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
       writer.format(before,
@@ -152,10 +154,13 @@ class ListPiece extends Piece {
       var allowNewlines =
           element.allowNewlinesWhenUnsplit || state == State.split;
 
-      writer.format(element, separate: separate, allowNewlines: allowNewlines);
+      var elementSplit = writer.format(element,
+          separate: separate, allowNewlines: allowNewlines);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.popIndent();
+
+        if (elementSplit == SplitType.block) splitBlockElement = true;
       }
 
       // Write a space or newline between elements.
@@ -178,7 +183,9 @@ class ListPiece extends Piece {
       writer.format(after, allowNewlines: true);
     }
 
-    if (state == State.split) writer.setSplitType(SplitType.block);
+    if (splitBlockElement || state == State.split) {
+      writer.setSplitType(SplitType.block);
+    }
   }
 
   @override

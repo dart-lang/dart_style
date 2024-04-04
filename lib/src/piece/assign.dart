@@ -96,6 +96,9 @@ class AssignPiece extends Piece {
 
   final bool _splitBeforeOperator;
 
+  // TODO: Should be able to get rid of these and rely on the child pieces
+  // telling us whether or not they block split, but it seems to still be
+  // useful for indentation somehow.
   /// If `true`, then the left side supports being block-formatted, like:
   ///
   ///     var [

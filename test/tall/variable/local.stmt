@@ -265,9 +265,8 @@ var variableName = long.method.chain(
   argument,
   argument,
 );
->>> Don't block-like split method chain if chain splits.
-var variableName = extraordinarily
-    .really
+>>> Allow unsplit target expression on first line if method chain splits.
+var variableName = (target + expr)
     .long()
     .method
     .chain(
@@ -276,7 +275,7 @@ var variableName = extraordinarily
       argument,
     );
 <<<
-var variableName = extraordinarily.really
+var variableName = (target + expr)
     .long()
     .method
     .chain(
@@ -300,6 +299,17 @@ var variableName = target
       argument,
     )
     .another(argument);
+>>> Allow target and properties on first line if chain splits.
+var variableName = (target + expression).prop.another.long()
+.chain(argument, argument, argument);
+<<<
+var variableName = (target + expression).prop.another
+    .long()
+    .chain(
+      argument,
+      argument,
+      argument,
+    );
 >>>
 var variableName = (notDelimited + expression);
 <<<
