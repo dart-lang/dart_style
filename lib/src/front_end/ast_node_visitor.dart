@@ -1732,24 +1732,32 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitSwitchExpression(SwitchExpression node) {
-    var value = startControlFlow(node.switchKeyword, node.leftParenthesis,
-        node.expression, node.rightParenthesis);
+    var header = buildPiece((b) {
+      b.token(node.switchKeyword);
+      b.space();
+      b.token(node.leftParenthesis);
+    });
 
-    var list = DelimitedListBuilder(this,
+    var value = nodePiece(node.expression);
+
+    var separator = buildPiece((b) {
+      b.token(node.rightParenthesis);
+      b.space();
+    });
+
+    // TODO: Use createList().
+    var cases = DelimitedListBuilder(this,
         const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
 
-    list.addLeftBracket(buildPiece((b) {
-      b.add(value);
-      b.space();
-      b.token(node.leftBracket);
-    }));
+    cases.leftBracket(node.leftBracket);
 
     for (var member in node.cases) {
-      list.visit(member);
+      cases.visit(member);
     }
 
-    list.rightBracket(node.rightBracket);
-    return list.build();
+    cases.rightBracket(node.rightBracket);
+
+    return SwitchExpressionPiece(header, value, separator, cases.build());
   }
 
   @override

@@ -67,6 +67,11 @@ import 'piece.dart';
 ///         longOperand +
 ///             anotherOperand;
 class AssignPiece extends Piece {
+  // TODO: "block" isn't the right term for this because it also applies to
+  // split call chains, like:
+  //
+  //     x = target
+  //         .method();
   // TODO: Doc.
   static const State _blockSplitRight = State(1, cost: 0);
 
@@ -187,8 +192,8 @@ class AssignPiece extends Piece {
     if (_left case var left?) {
       var leftSplit = writer.format(left, allowNewlines: allowNewlinesInLeft);
 
-      if (state == _blockSplitLeft) {
-        writer.require(left, leftSplit, SplitType.block);
+      if (state == _blockSplitLeft && leftSplit != SplitType.block) {
+        writer.invalidate(left);
       }
     }
 
@@ -209,9 +214,12 @@ class AssignPiece extends Piece {
     var rightSplit = writer.format(_right, allowNewlines: allowNewlinesInRight);
 
     // TODO: Cleaner API.
+    // TODO: Doc.
     if (state == _blockSplitRight || state == _splitLeftBlockSplitRight) {
       // print('$this $state requires $rightSplit to be block');
-      writer.require(_right, rightSplit, SplitType.block);
+      if (rightSplit != SplitType.block && rightSplit != SplitType.chain) {
+        writer.invalidate(_right);
+      }
     }
 
     if (indentRight) writer.popIndent();

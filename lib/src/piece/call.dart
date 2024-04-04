@@ -149,6 +149,7 @@ class CollectionPiece extends Piece {
     callback(_elements);
   }
 }
+*/
 
 // TODO: Docs.
 // ways it can format:
@@ -208,50 +209,33 @@ class SwitchExpressionPiece extends Piece {
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
-        writer.pushAllowNewlines(false);
-        writer.format(_header);
-        writer.format(_value);
-        writer.format(_separator);
-        writer.format(_cases);
-        writer.popAllowNewlines();
+        writer.format(_header, allowNewlines: false);
+        writer.format(_value, allowNewlines: false);
+        writer.format(_separator, allowNewlines: false);
+        writer.format(_cases, allowNewlines: false);
 
       case _splitCases:
         writer.format(_header);
-
-        writer.pushAllowNewlines(false);
-        writer.format(_value);
-        writer.popAllowNewlines();
-
+        writer.format(_value, allowNewlines: false);
         writer.format(_separator);
-
-        writer.pushAllowNewlines(true);
         writer.format(_cases);
-        writer.popAllowNewlines();
 
         writer.setSplitType(SplitType.block);
 
       case _blockSplitValueSplitCases:
         writer.format(_header);
-
-        writer.pushAllowNewlines(true);
-        writer.format(_value, requireSplitType: SplitType.block);
-        writer.popAllowNewlines();
-
+        var valueSplit = writer.format(_value);
         writer.format(_separator);
-
-        writer.pushAllowNewlines(true);
         writer.format(_cases);
-        writer.popAllowNewlines();
 
+        if (valueSplit != SplitType.block) writer.invalidate(_value);
         writer.setSplitType(SplitType.block);
 
       case State.split:
-        writer.pushAllowNewlines(true);
         writer.format(_header);
         writer.format(_value);
         writer.format(_separator);
         writer.format(_cases);
-        writer.popAllowNewlines();
     }
   }
 
@@ -263,7 +247,6 @@ class SwitchExpressionPiece extends Piece {
     callback(_cases);
   }
 }
-*/
 
 class ParenthesizedPiece extends Piece {
   final Piece _leftParenthesis;

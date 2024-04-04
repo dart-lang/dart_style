@@ -231,11 +231,8 @@ class CodeWriter {
     _pieces.last.splitType = type;
   }
 
-  void require(Piece child, SplitType? actual, SplitType expected) {
-    // print('require $actual $expected');
-    if (actual != expected) {
-      _solution.invalidate(child);
-    }
+  void invalidate(Piece child) {
+    _solution.invalidate(child);
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -430,7 +427,15 @@ enum Whitespace {
 }
 
 // TODO: Docs.
-enum SplitType { none, mandatory, block, other }
+enum SplitType {
+  none,
+  mandatory,
+  block,
+
+  /// A call chain splitting at `.` where the target fits on a single line.
+  chain,
+  other,
+}
 
 /// A level of indentation in the indentation stack.
 class _Indent {

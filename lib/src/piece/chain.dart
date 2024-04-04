@@ -194,7 +194,7 @@ class ChainPiece extends Piece {
 
       case State.split:
         writer.pushIndent(_indent);
-        writer.format(_target);
+        var targetSplit = writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();
@@ -202,6 +202,8 @@ class ChainPiece extends Piece {
         }
 
         writer.popIndent();
+
+        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.chain);
     }
   }
 
