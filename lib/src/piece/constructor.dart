@@ -130,21 +130,21 @@ class ConstructorPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // If there's a newline in the header or parameters (like a line comment
     // after the `)`), then don't allow the initializers to remain unsplit.
-    writer.pushAllowNewlines(_initializers == null || state != State.unsplit);
+    var allowNewlines = _initializers == null || state != State.unsplit;
 
-    writer.format(_header);
-    writer.format(_parameters);
+    writer.format(_header, allowNewlines: allowNewlines);
+    writer.format(_parameters, allowNewlines: allowNewlines);
 
     if (_redirect case var redirect?) {
       writer.space();
-      writer.format(redirect);
+      writer.format(redirect, allowNewlines: allowNewlines);
     }
 
     if (_initializers case var initializers?) {
       writer.pushIndent(Indent.block);
       writer.splitIf(state == _splitBeforeInitializers);
 
-      writer.format(_initializerSeparator!);
+      writer.format(_initializerSeparator!, allowNewlines: allowNewlines);
       writer.space();
 
       // Indent subsequent initializers past the `:`.
@@ -154,12 +154,11 @@ class ConstructorPiece extends Piece {
         writer.pushIndent(Indent.initializer);
       }
 
-      writer.format(initializers);
+      writer.format(initializers, allowNewlines: allowNewlines);
       writer.popIndent();
       writer.popIndent();
     }
 
-    writer.popAllowNewlines();
     writer.format(_body);
   }
 

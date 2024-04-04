@@ -29,16 +29,14 @@ class PostfixPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     // If any operand splits, then force the postfix sequence to split too.
-    writer.pushAllowNewlines(state == State.split);
     writer.pushIndent(Indent.expression);
 
     for (var piece in pieces) {
       writer.splitIf(state == State.split);
-      writer.format(piece);
+      writer.format(piece, allowNewlines: state == State.split);
     }
 
     writer.popIndent();
-    writer.popAllowNewlines();
   }
 
   @override

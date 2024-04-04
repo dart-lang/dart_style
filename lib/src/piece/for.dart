@@ -49,16 +49,16 @@ class ForPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.pushAllowNewlines(_hasBlockBody || state != State.unsplit);
+    var allowNewlines = _hasBlockBody || state == State.split;
 
-    writer.format(_forKeyword);
+    writer.format(_forKeyword, allowNewlines: allowNewlines);
     writer.space();
 
     if (_indentForParts) {
       writer.pushIndent(Indent.expression, canCollapse: true);
     }
 
-    writer.format(_forParts);
+    writer.format(_forParts, allowNewlines: allowNewlines);
 
     if (_indentForParts) writer.popIndent();
 
@@ -69,10 +69,8 @@ class ForPiece extends Piece {
       writer.splitIf(state == State.split);
     }
 
-    writer.format(_body);
+    writer.format(_body, allowNewlines: allowNewlines);
     if (!_hasBlockBody) writer.popIndent();
-
-    writer.popAllowNewlines();
   }
 
   @override

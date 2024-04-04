@@ -57,15 +57,11 @@ class FunctionPiece extends Piece {
   void format(CodeWriter writer, State state) {
     if (_returnType case var returnType?) {
       // A split inside the return type forces splitting after the return type.
-      writer.pushAllowNewlines(state == State.split);
-      writer.format(returnType);
-      writer.popAllowNewlines();
+      writer.format(returnType, allowNewlines: state == State.split);
 
       // A split in the type parameters or parameters does not force splitting
       // after the return type.
-      writer.pushAllowNewlines(true);
       writer.splitIf(state == State.split);
-      writer.popAllowNewlines();
     }
 
     writer.format(_signature);

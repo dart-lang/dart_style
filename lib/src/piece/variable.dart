@@ -66,9 +66,6 @@ class VariablePiece extends Piece {
     // variables and their initializers.
     if (state == _betweenVariables) writer.pushIndent(Indent.expression);
 
-    // Force multiple variables to split if an initializer does.
-    writer.pushAllowNewlines(_variables.length == 1 || state != State.unsplit);
-
     // Split after the type annotation.
     writer.splitIf(state == _afterType);
 
@@ -77,12 +74,12 @@ class VariablePiece extends Piece {
       if (i > 0) writer.splitIf(state != State.unsplit);
 
       // TODO(perf): Investigate whether it's worth using `separate:` here.
-      writer.format(_variables[i]);
+      // Force multiple variables to split if an initializer does.
+      writer.format(_variables[i],
+          allowNewlines: _variables.length == 1 || state != State.unsplit);
     }
 
     if (state == _betweenVariables) writer.popIndent();
-
-    writer.popAllowNewlines();
   }
 
   @override

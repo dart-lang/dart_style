@@ -11,11 +11,8 @@ class CaseExpressionPiece extends Piece {
   /// Split after the `=>` before the body.
   static const State _beforeBody = State(1);
 
-  /// Split before the `when` guard clause.
-  static const State _beforeWhen = State(2);
-
   /// Split before the `when` guard clause and after the `=>`.
-  static const State _beforeWhenAndBody = State(3);
+  static const State _beforeWhenAndBody = State(2);
 
   /// The pattern the value is matched against along with the leading `case`.
   final Piece _pattern;
@@ -58,7 +55,7 @@ class CaseExpressionPiece extends Piece {
   @override
   List<State> get additionalStates => [
         _beforeBody,
-        if (_guard != null) ...[_beforeWhen, _beforeWhenAndBody],
+        if (_guard != null) ...[_beforeWhenAndBody],
       ];
 
   @override
@@ -70,15 +67,10 @@ class CaseExpressionPiece extends Piece {
     switch (state) {
       case State.unsplit:
         allowNewlineInBody = _canBlockSplitBody;
-        break;
 
       case _beforeBody:
         allowNewlineInPattern = _guard == null || _patternIsLogicalOr;
         allowNewlineInBody = true;
-
-      case _beforeWhen:
-        // Allow newlines only in the pattern if we split before `when`.
-        allowNewlineInPattern = true;
 
       case _beforeWhenAndBody:
         allowNewlineInPattern = true;
@@ -89,22 +81,18 @@ class CaseExpressionPiece extends Piece {
     // If there is a split guard, then indent the pattern past it.
     var indentPatternForGuard = !_canBlockSplitPattern &&
         !_patternIsLogicalOr &&
-        (state == _beforeWhen || state == _beforeWhenAndBody);
+        state == _beforeWhenAndBody;
 
     if (indentPatternForGuard) writer.pushIndent(Indent.expression);
 
-    writer.pushAllowNewlines(allowNewlineInPattern);
-    writer.format(_pattern);
-    writer.popAllowNewlines();
+    writer.format(_pattern, allowNewlines: allowNewlineInPattern);
 
     if (indentPatternForGuard) writer.popIndent();
 
     if (_guard case var guard?) {
       writer.pushIndent(Indent.expression);
-      writer.pushAllowNewlines(allowNewlineInGuard);
-      writer.splitIf(state == _beforeWhen || state == _beforeWhenAndBody);
-      writer.format(guard);
-      writer.popAllowNewlines();
+      writer.splitIf(state == _beforeWhenAndBody);
+      writer.format(guard, allowNewlines: allowNewlineInGuard);
       writer.popIndent();
     }
 
@@ -114,9 +102,7 @@ class CaseExpressionPiece extends Piece {
     if (state != State.unsplit) writer.pushIndent(Indent.block);
 
     writer.splitIf(state == _beforeBody || state == _beforeWhenAndBody);
-    writer.pushAllowNewlines(allowNewlineInBody);
-    writer.format(_body);
-    writer.popAllowNewlines();
+    writer.format(_body, allowNewlines: allowNewlineInBody);
 
     if (state != State.unsplit) writer.popIndent();
   }
@@ -164,21 +150,19 @@ class CaseStatementPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.pushAllowNewlines(_guard == null || state == State.split);
+    var allowNewlines = _guard == null || state == State.split;
 
     // If there is a guard, then indent the pattern past it.
     if (_guard != null) writer.pushIndent(Indent.expression);
-    writer.format(_pattern);
+    writer.format(_pattern, allowNewlines: allowNewlines);
     if (_guard != null) writer.popIndent();
 
     if (_guard case var guard?) {
       writer.pushIndent(Indent.expression);
       writer.splitIf(state == State.split);
-      writer.format(guard);
+      writer.format(guard, allowNewlines: allowNewlines);
       writer.popIndent();
     }
-
-    writer.popAllowNewlines();
   }
 
   @override

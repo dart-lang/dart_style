@@ -119,32 +119,20 @@ class ListPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
-      writer.pushAllowNewlines(
-          !_style.splitListIfBeforeSplits || state != State.unsplit);
+      writer.format(before,
+          allowNewlines:
+              !_style.splitListIfBeforeSplits || state == State.split);
 
-      writer.format(before);
-
-      writer.popAllowNewlines();
-      writer.pushAllowNewlines(state != State.unsplit);
-
-      if (state != State.unsplit) {
-        writer.pushIndent(Indent.block);
-      }
+      if (state != State.unsplit) writer.pushIndent(Indent.block);
 
       // Whitespace after the opening bracket.
-      writer.splitIf(state != State.unsplit,
+      writer.splitIf(state == State.split,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
     }
 
     // Format the elements.
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
-
-      // Only some elements (usually a single block element) allow newlines
-      // when the list itself isn't split.
-      if (_before != null || i > 0) writer.popAllowNewlines();
-      writer.pushAllowNewlines(
-          element.allowNewlinesWhenUnsplit || state == State.split);
 
       // If this element allows newlines when the list isn't split, add
       // indentation if it requires it.
@@ -159,7 +147,12 @@ class ListPiece extends Piece {
           (i > 0 || _before != null) &&
           (i < _elements.length - 1 || _after != null);
 
-      writer.format(element, separate: separate);
+      // Only some elements (usually a single block element) allow newlines
+      // when the list itself isn't split.
+      var allowNewlines =
+          element.allowNewlinesWhenUnsplit || state == State.split;
+
+      writer.format(element, separate: separate, allowNewlines: allowNewlines);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.popIndent();
@@ -167,7 +160,7 @@ class ListPiece extends Piece {
 
       // Write a space or newline between elements.
       if (i < _elements.length - 1) {
-        writer.splitIf(state != State.unsplit,
+        writer.splitIf(state == State.split,
             blank: _blanksAfter.contains(element),
             // No space after the "[" or "{" in a parameter list.
             space: element._delimiter.isEmpty);
@@ -176,18 +169,14 @@ class ListPiece extends Piece {
 
     // Format the closing bracket, if any.
     if (_after case var after?) {
-      if (state != State.unsplit) writer.popIndent();
+      if (state == State.split) writer.popIndent();
 
       // Whitespace before the closing bracket.
-      writer.splitIf(state != State.unsplit,
+      writer.splitIf(state == State.split,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
-      if (_before != null || _elements.isNotEmpty) writer.popAllowNewlines();
-      writer.pushAllowNewlines(true);
-      writer.format(after);
+      writer.format(after, allowNewlines: true);
     }
-
-    writer.popAllowNewlines();
   }
 
   @override

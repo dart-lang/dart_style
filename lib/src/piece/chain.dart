@@ -164,57 +164,45 @@ class ChainPiece extends Piece {
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
-        _formatTarget(writer);
+        writer.format(_target, allowNewlines: _allowSplitInTarget);
 
-        writer.pushAllowNewlines(false);
         for (var i = 0; i < _calls.length; i++) {
-          _formatCall(writer, state, i);
+          _formatCall(writer, state, i, allowNewlines: false);
         }
-        writer.popAllowNewlines();
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        _formatTarget(writer);
+        writer.format(_target, allowNewlines: _allowSplitInTarget);
 
         for (var i = 0; i < _calls.length; i++) {
-          writer.pushAllowNewlines(i >= _leadingProperties);
           writer.splitIf(i >= _leadingProperties, space: false);
-          _formatCall(writer, state, i);
-          writer.popAllowNewlines();
+          _formatCall(writer, state, i, allowNewlines: i >= _leadingProperties);
         }
 
         writer.popIndent();
 
       case _blockFormatTrailingCall:
-        _formatTarget(writer);
+        writer.format(_target, allowNewlines: _allowSplitInTarget);
 
         for (var i = 0; i < _calls.length; i++) {
-          writer.pushAllowNewlines(i == _blockCallIndex);
-          _formatCall(writer, state, i);
-          writer.popAllowNewlines();
+          _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
         }
 
       case State.split:
         writer.pushIndent(_indent);
         writer.format(_target);
 
-        writer.pushAllowNewlines(true);
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();
           _formatCall(writer, state, i);
         }
-        writer.popAllowNewlines();
+
         writer.popIndent();
     }
   }
 
-  void _formatTarget(CodeWriter writer) {
-    writer.pushAllowNewlines(_allowSplitInTarget);
-    writer.format(_target);
-    writer.popAllowNewlines();
-  }
-
-  void _formatCall(CodeWriter writer, State state, int i) {
+  void _formatCall(CodeWriter writer, State state, int i,
+      {bool allowNewlines = true}) {
     // If the chain is fully split, then every call except for the last will
     // be on its own line. If the chain is split after properties, then
     // every non-property call except the last will be on its own line.
@@ -224,7 +212,8 @@ class ChainPiece extends Piece {
       _ => false,
     };
 
-    writer.format(_calls[i]._call, separate: separate);
+    writer.format(_calls[i]._call,
+        separate: separate, allowNewlines: allowNewlines);
   }
 
   @override
