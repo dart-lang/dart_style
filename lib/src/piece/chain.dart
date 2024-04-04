@@ -161,16 +161,32 @@ class ChainPiece extends Piece {
             break; // OK. No split in the target and chain.
 
           case SplitType.block:
-            // If the target block splits and the rest of the chain hangs off
-            // the end of the target line, then the whole thing block splits,
-            // as in:
+            // Allow block splitting the target without splitting the rest of
+            // the chain, like:
             //
             //     [
             //       element,
-            //     ].foo().bar();
-            writer.setSplitType(SplitType.block);
+            //     ].method().another();
+            //
+            // This avoids an unsightly gap before the method chain:
+            //
+            //     [
+            //       element,
+            //     ]
+            //         .method()
+            //         .another();
+            //
+            // Note that we don't consider this chain to itself be block
+            // formatted in this case, because we want want to end up with
+            // large method chains packed into block-formatted assignments,
+            // like:
+            //
+            //     thing = target.someLongMethod(
+            //       argument,
+            //     ).a().lot().more().here();
+            break;
 
-          case SplitType.chain:
+          case SplitType.header:
           case SplitType.other:
             // Only allow the target to block split in this state.
             writer.invalidate(_target);
@@ -192,7 +208,7 @@ class ChainPiece extends Piece {
             // writer.setSplitType(SplitType.block);
             break;
 
-          case SplitType.chain:
+          case SplitType.header:
           case SplitType.other:
             // Only allow the target to block split in this state.
             writer.invalidate(_target);
@@ -200,7 +216,7 @@ class ChainPiece extends Piece {
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        var targetSplit = writer.format(_target);
+        var targetSplit = writer.format(_target, allowNewlines: false);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
@@ -211,10 +227,10 @@ class ChainPiece extends Piece {
 
         switch (targetSplit) {
           case SplitType.none:
-            writer.setSplitType(SplitType.chain);
+            writer.setSplitType(SplitType.header);
 
           case SplitType.block:
-          case SplitType.chain:
+          case SplitType.header:
           case SplitType.other:
             // Don't allow the target to split in this state.
             writer.invalidate(_target);
@@ -231,7 +247,9 @@ class ChainPiece extends Piece {
 
         writer.popIndent();
 
-        if (targetSplit == SplitType.none) writer.setSplitType(SplitType.chain);
+        if (targetSplit == SplitType.none) {
+          writer.setSplitType(SplitType.header);
+        }
     }
   }
 

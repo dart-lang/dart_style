@@ -41,6 +41,7 @@ class CaseExpressionPiece extends Piece {
   ///     }
   final bool _patternIsLogicalOr;
 
+  // TODO: This needs to handle bodies that may or may not block format.
   /// Whether the body expression can be block formatted.
   final bool _canBlockSplitBody;
 

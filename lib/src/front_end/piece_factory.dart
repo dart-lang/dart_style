@@ -1251,7 +1251,6 @@ mixin PieceFactory {
       {bool splitBeforeOperator = false,
       bool includeComma = false,
       bool spaceBeforeOperator = true,
-      bool canBlockSplitLeft = false,
       NodeContext leftHandSideContext = NodeContext.none}) {
     // If an operand can have block formatting, then a newline in it doesn't
     // force the operator to split, as in:
@@ -1265,7 +1264,7 @@ mixin PieceFactory {
     //    var list = [
     //      element,
     //    ];
-    canBlockSplitLeft |= switch (leftHandSide) {
+    var canBlockSplitLeft = switch (leftHandSide) {
       Expression() => leftHandSide.canBlockSplit,
       DartPattern() => leftHandSide.canBlockSplit,
       _ => false

@@ -391,8 +391,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       });
 
       redirect = AssignPiece(
-          separator, nodePiece(constructor, context: NodeContext.assignment),
-          canBlockSplitRight: false);
+          separator, nodePiece(constructor, context: NodeContext.assignment));
     } else if (node.initializers.isNotEmpty) {
       initializerSeparator = tokenPiece(node.separator!);
       initializers = createList(node.initializers,

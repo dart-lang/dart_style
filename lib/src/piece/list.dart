@@ -183,7 +183,7 @@ class ListPiece extends Piece {
       writer.format(after, allowNewlines: true);
     }
 
-    if (splitBlockElement || state == State.split) {
+    if (splitBlockElement || (state == State.split && _before != null)) {
       writer.setSplitType(SplitType.block);
     }
   }

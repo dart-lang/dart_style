@@ -91,17 +91,11 @@ class CollectionPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     if (_constKeyword case var constKeyword?) writer.format(constKeyword);
-
-    var typeArgumentsSplit = SplitType.none;
-    if (_typeArguments case var typeArguments?) {
-      typeArgumentsSplit = writer.format(typeArguments);
-    }
+    if (_typeArguments case var typeArguments?) writer.format(typeArguments);
 
     var elementSplit = writer.format(_elements);
 
-    if (elementSplit == SplitType.block ||
-        typeArgumentsSplit == SplitType.block &&
-            elementSplit == SplitType.none) {
+    if (elementSplit == SplitType.block) {
       writer.setSplitType(SplitType.block);
     }
   }

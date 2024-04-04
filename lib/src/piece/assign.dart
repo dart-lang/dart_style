@@ -5,6 +5,7 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
+// TODO: Rewrite docs.
 /// A piece for any construct where `=` is followed by an expression: variable
 /// initializer, assignment, constructor initializer, etc.
 ///
@@ -67,23 +68,23 @@ import 'piece.dart';
 ///         longOperand +
 ///             anotherOperand;
 class AssignPiece extends Piece {
-  // TODO: "block" isn't the right term for this because it also applies to
-  // split call chains, like:
-  //
-  //     x = target
-  //         .method();
-  // TODO: Doc.
-  static const State _blockSplitRight = State(1, cost: 0);
-
-  /// Force the block left-hand side to split and allow the right-hand side to
+  /// The left-hand side can split or not and the right-hand side must header
   /// split.
-  static const State _blockSplitLeft = State(2);
+  static const State _headerRight = State(2, cost: 0);
 
-  /// Allow the right-hand side to block split.
-  static const State _splitLeftBlockSplitRight = State(3);
+  /// The left-hand side can expression split or not, and the right-hand side
+  /// block splits.
+  static const State _blockSplitRight = State(3, cost: 0);
+
+  /// Both the left- and right-hand sides block split.
+  static const State _blockSplitBoth = State(4);
+
+  /// The left-hand side block splits and the right-hand side can expression
+  /// split or not.
+  static const State _blockSplitLeft = State(5);
 
   /// Split at the operator.
-  static const State _atOperator = State(4);
+  static const State _atOperator = State(6);
 
   /// The left-hand side of the operation. Includes the operator unless it is
   /// `in`.
@@ -95,6 +96,17 @@ class AssignPiece extends Piece {
   final Piece _right;
 
   final bool _splitBeforeOperator;
+
+  // TODO(perf): These two fields are purely optimizations. They avoid
+  // considering states that we know syntactically will never be valid because
+  // the operand can't block format anyway. Implementing these correctly is
+  // subtle because it means we need to make sure that any AST node that could
+  // possibly block format must set this to true.
+  //
+  // This seems to somewhat help the perf lost in adding support for SplitStyle,
+  // but it's still pretty slow. Committing for now so I don't lose it, but
+  // ideally these (and the extension methods in ast_extensions.dart) would go
+  // away.
 
   // TODO: Should be able to get rid of these and rely on the child pieces
   // telling us whether or not they block split, but it seems to still be
@@ -139,93 +151,77 @@ class AssignPiece extends Piece {
 
   @override
   List<State> get additionalStates => [
-        // If at least one operand can block split, allow splitting in operands
-        // without splitting at the operator.
+        if (_canBlockSplitLeft && _canBlockSplitRight) _blockSplitBoth,
         if (_canBlockSplitRight) _blockSplitRight,
         if (_canBlockSplitLeft) _blockSplitLeft,
-        if (_canBlockSplitRight) _splitLeftBlockSplitRight,
-        _atOperator,
+        _headerRight,
+        _atOperator
       ];
-
-  /// Apply constraints between how the parameters may split and how the
-  /// initializers may split.
-  @override
-  void applyConstraints(State state, Constrain constrain) {
-    switch (state) {
-      case _blockSplitLeft:
-      // constrain(_left!, State.split);
-    }
-  }
 
   @override
   void format(CodeWriter writer, State state) {
-    var allowNewlinesInLeft = true;
-    var indentLeft = false;
-    var allowNewlinesInRight = true;
-    var indentRight = false;
-    var collapseIndent = false;
-
     switch (state) {
       case State.unsplit:
-        allowNewlinesInLeft = false;
-        allowNewlinesInRight = false;
+        _writeLeft(writer, allowNewlines: false);
+        _writeOperator(writer, allowNewlines: false);
+        _writeRight(writer, allowNewlines: false);
+
+      case _headerRight:
+        writer.pushIndent(Indent.expression);
+        _writeLeft(writer);
+        _writeOperator(writer);
+        writer.popIndent();
+        _writeRight(writer, require: SplitType.header);
 
       case _blockSplitRight:
-        allowNewlinesInLeft = false;
-        allowNewlinesInRight = true;
+        _writeLeft(writer);
+        _writeOperator(writer);
+        _writeRight(writer, require: SplitType.block);
 
-      case _atOperator:
-        // When splitting at the operator, both operands may split or not and
-        // will be indented if they do.
-        indentLeft = true;
-        indentRight = true;
+      case _blockSplitBoth:
+        _writeLeft(writer, requireBlock: true);
+        _writeOperator(writer);
+        _writeRight(writer, require: SplitType.block);
 
       case _blockSplitLeft:
-        indentRight = !_canBlockSplitRight;
-        collapseIndent = true;
+        _writeLeft(writer, requireBlock: true);
+        writer.pushIndent(Indent.expression);
+        _writeOperator(writer);
+        _writeRight(writer);
+        writer.popIndent();
 
-      case _splitLeftBlockSplitRight:
-        collapseIndent = true;
+      case _atOperator:
+        writer.pushIndent(Indent.expression);
+        _writeLeft(writer);
+        _writeOperator(writer, split: true);
+        _writeRight(writer);
+        writer.popIndent();
     }
+  }
 
-    if (indentLeft) {
-      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
-    }
-
+  void _writeLeft(CodeWriter writer,
+      {bool allowNewlines = true, bool requireBlock = false}) {
     if (_left case var left?) {
-      var leftSplit = writer.format(left, allowNewlines: allowNewlinesInLeft);
-
-      if (state == _blockSplitLeft && leftSplit != SplitType.block) {
+      var leftSplit = writer.format(left, allowNewlines: allowNewlines);
+      if (requireBlock && leftSplit != SplitType.block) {
         writer.invalidate(left);
       }
     }
+  }
 
-    if (_splitBeforeOperator) {
-      writer.splitIf(state == _atOperator);
-      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
-    } else {
-      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
-      writer.splitIf(state == _atOperator);
+  void _writeOperator(CodeWriter writer,
+      {bool split = false, bool allowNewlines = true}) {
+    if (_splitBeforeOperator) writer.splitIf(split);
+    writer.format(_operator, allowNewlines: allowNewlines);
+    if (!_splitBeforeOperator) writer.splitIf(split);
+  }
+
+  void _writeRight(CodeWriter writer,
+      {bool allowNewlines = true, SplitType? require}) {
+    var rightSplit = writer.format(_right, allowNewlines: allowNewlines);
+    if (require != null && rightSplit != require) {
+      writer.invalidate(_right);
     }
-
-    if (indentLeft) writer.popIndent();
-
-    if (indentRight) {
-      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
-    }
-
-    var rightSplit = writer.format(_right, allowNewlines: allowNewlinesInRight);
-
-    // TODO: Cleaner API.
-    // TODO: Doc.
-    if (state == _blockSplitRight || state == _splitLeftBlockSplitRight) {
-      // print('$this $state requires $rightSplit to be block');
-      if (rightSplit != SplitType.block && rightSplit != SplitType.chain) {
-        writer.invalidate(_right);
-      }
-    }
-
-    if (indentRight) writer.popIndent();
   }
 
   @override

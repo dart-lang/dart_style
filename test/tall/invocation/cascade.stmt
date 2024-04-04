@@ -130,11 +130,12 @@ main() async {
 >>> Omit split if single section on map literal.
 var map = {1: veryLongElement,2: veryLongElement,3: veryLongElement,}..addAll(more);
 <<<
-var map = {
-  1: veryLongElement,
-  2: veryLongElement,
-  3: veryLongElement,
-}..addAll(more);
+var map =
+    {
+      1: veryLongElement,
+      2: veryLongElement,
+      3: veryLongElement,
+    }..addAll(more);
 >>> Omit split if single section on record literal.
 (veryLongElement,veryLongElement,veryLongElement,)..addAll(more);
 <<<

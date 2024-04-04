@@ -151,6 +151,7 @@ class CodeWriter {
   /// increased.
   void pushIndent(int indent, {bool canCollapse = false}) {
     var parentIndent = _indentStack.last.indent;
+    // TODO: is collapse still used?
     var parentCollapse = _indentStack.last.collapsible;
 
     if (parentCollapse == indent) {
@@ -427,12 +428,29 @@ enum Whitespace {
 }
 
 // TODO: Docs.
+// TODO: Rename to "shape"?
 enum SplitType {
   none,
   block,
 
-  /// A call chain splitting at `.` where the target fits on a single line.
-  chain,
+  /// An expression that has a single-line "header" that is fairly separate from
+  /// the rest of the expression which is on subsequent lines.
+  ///
+  /// This can either be a call chain that splits on `.` where the target fits
+  /// on a single line:
+  ///
+  ///     target
+  ///         .method()
+  ///         .another();
+  ///
+  /// Or a split conditional expression who condition fits on one line:
+  ///
+  ///     condition
+  ///         ? thenBranch
+  ///         : elseBranch;
+  // TODO: Implement conditional expression stuff.
+  header,
+
   other,
 }
 
