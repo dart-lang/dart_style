@@ -81,8 +81,8 @@ class CollectionPiece extends Piece {
   }
 
   @override
-  void applyConstraints(State state, Constrain constrain) {
-    if (state == State.split) constrain(_elements, State.split);
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    if (state == State.split) constrain(_elements, Shape.block);
   }
 
   @override
@@ -159,12 +159,8 @@ class SwitchExpressionPiece extends Piece {
   }
 
   @override
-  void applyConstraints(State state, Constrain constrain) {
-    if (state != State.unsplit) constrain(_cases, State.split);
-  }
-
-  @override
   void applyShapeConstraints(State state, ConstrainShape constrain) {
+    if (state != State.unsplit) constrain(_cases, Shape.block);
     if (state == _blockSplitValueSplitCases) constrain(_value, Shape.block);
   }
 

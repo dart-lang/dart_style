@@ -227,6 +227,9 @@ class CodeWriter {
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
   }
 
+  // TODO: Is it possible to get rid of allowNewlines and only use shape
+  // constraints? That would let us entirely validate solutions before
+  // formatting.
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
   ///

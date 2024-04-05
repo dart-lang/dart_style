@@ -25,15 +25,15 @@ class IfPiece extends Piece {
   List<State> get additionalStates => [State.split];
 
   @override
-  void applyConstraints(State state, Constrain constrain) {
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
     // In an if element, any spread collection's split state must follow the
     // surrounding if element's: we either split all the spreads or none of
     // them. And if any of the non-spread then or else branches split, then the
     // spreads do too.
-    if (!_isStatement) {
+    if (!_isStatement && state == State.split) {
       for (var section in _sections) {
         if (section.isBlock) {
-          constrain(section.statement, state);
+          constrain(section.statement, Shape.block);
         }
       }
     }

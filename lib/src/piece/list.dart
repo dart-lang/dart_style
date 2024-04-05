@@ -130,8 +130,6 @@ class ListPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    var splitBlockElement = false;
-
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
       writer.format(before,

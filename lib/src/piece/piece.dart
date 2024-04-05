@@ -84,6 +84,7 @@ abstract class Piece extends FastHash {
     return total;
   }
 
+  // TODO: Ideally, this would go away and we'd only have shape constraints.
   /// Apply any constraints that this piece places on other pieces when this
   /// piece is bound to [state].
   ///
