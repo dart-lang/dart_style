@@ -77,19 +77,19 @@ class InfixPiece extends Piece {
   }
 
   @override
-  State? fixedStateForPageWidth(int pageWidth) {
+  List<State>? fixedStateForPageWidth(int pageWidth) {
     var totalLength = 0;
 
     for (var operand in _operands) {
       // If any operand contains a newline, then we have to split.
-      if (operand.containsNewline) return State.split;
+      if (operand.containsNewline) return const [State.split];
 
       totalLength += operand.totalCharacters;
       if (totalLength > pageWidth) break;
     }
 
     // If the total length doesn't fit in the page, then we have to split.
-    if (totalLength > pageWidth) return State.split;
+    if (totalLength > pageWidth) return const [State.split];
 
     return null;
   }

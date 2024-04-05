@@ -204,12 +204,12 @@ class ListPiece extends Piece {
   }
 
   @override
-  State? fixedStateForPageWidth(int pageWidth) {
+  List<State>? fixedStateForPageWidth(int pageWidth) {
     var totalLength = 0;
     if (_before case var before?) {
       // A newline in the opening bracket (like a line comment after the
       // bracket) forces the list to split.
-      if (before.containsNewline) return State.split;
+      if (before.containsNewline) return const [State.split];
       totalLength += before.totalCharacters;
     }
 
@@ -218,7 +218,7 @@ class ListPiece extends Piece {
       // to split.
       if (element.allowNewlinesWhenUnsplit) continue;
 
-      if (element.containsNewline) return State.split;
+      if (element.containsNewline) return const [State.split];
       totalLength += element.totalCharacters;
       if (totalLength > pageWidth) break;
     }
@@ -231,7 +231,7 @@ class ListPiece extends Piece {
     }
 
     // If the entire list doesn't fit on one line, it will split.
-    if (totalLength >= pageWidth) return State.split;
+    if (totalLength >= pageWidth) return const [State.split];
 
     return null;
   }

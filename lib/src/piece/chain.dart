@@ -280,6 +280,38 @@ class ChainPiece extends Piece {
   }
 
   @override
+  List<State>? fixedStateForPageWidth(int pageWidth) {
+    // TODO: Returning [State.split] isn't entirely correct. The state
+    // _unsplitTargetSplitChain is also valid. Maybe we need to extend
+    // fixedStateForPageWidth() to allow returning a list of states and then
+    // the solution will rule out all others like how we do with shape
+    // constraints.
+    var totalLength = 0;
+
+    const splitChainStates = [
+      _splitAfterProperties,
+      _unsplitTargetSplitChain,
+      State.split,
+    ];
+
+    for (var i = _leadingProperties; i < _calls.length; i++) {
+      // Calls that can be block split won't necessarily force the chain to
+      // split.
+      if (i == _blockCallIndex) continue;
+
+      var call = _calls[i]._call;
+      if (call.containsNewline) return splitChainStates;
+      totalLength += call.totalCharacters;
+      if (totalLength > pageWidth) break;
+    }
+
+    // If the entire list doesn't fit on one line, it will split.
+    if (totalLength >= pageWidth) return splitChainStates;
+
+    return null;
+  }
+
+  @override
   void forEachChild(void Function(Piece piece) callback) {
     callback(_target);
 

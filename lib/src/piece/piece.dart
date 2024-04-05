@@ -112,6 +112,7 @@ abstract class Piece extends FastHash {
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
 
+  // TODO: Update docs.
   /// If the piece can determine that it will always end up in a certain state
   /// given [pageWidth] and size metrics returned by calling [containsNewline]
   /// and [totalCharacters] on its children, then returns that [State].
@@ -134,7 +135,8 @@ abstract class Piece extends FastHash {
   /// It is up to the [Piece] subclasses overriding this to ensure that they
   /// only return a non-`null` [State] if the piece really would always be
   /// solved to the returned state given its children.
-  State? fixedStateForPageWidth(int pageWidth) => null;
+  // TODO: Better name.
+  List<State>? fixedStateForPageWidth(int pageWidth) => null;
 
   /// The cost that this piece should apply to the solution when in [state].
   ///

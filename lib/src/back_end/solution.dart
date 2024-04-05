@@ -106,7 +106,23 @@ class Solution implements Comparable<Solution> {
   factory Solution(SolutionCache cache, Piece root,
       {required int pageWidth, required int leadingIndent, State? rootState}) {
     var pieceStates = <Piece, State>{};
+    // TODO: Better name.
     var shapeConstraints = <Piece, List<State>>{};
+
+    // See if it's possible to eagerly pin any of the pieces based just on the
+    // length and newlines in their children. This is faster, especially for
+    // larger outermost pieces, then relying on the solver to determine their
+    // state.
+    void traverse(Piece piece) {
+      piece.forEachChild(traverse);
+
+      if (piece.fixedStateForPageWidth(pageWidth - leadingIndent)
+          case var states?) {
+        shapeConstraints[piece] = states;
+      }
+    }
+
+    traverse(root);
 
     var cost = 0;
 
