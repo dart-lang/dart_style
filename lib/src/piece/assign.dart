@@ -138,66 +138,58 @@ class AssignPiece extends Piece {
   /// initializers may split.
   @override
   void applyConstraints(State state, Constrain constrain) {
-    switch (state) {
-      case _blockSplitLeft:
-        constrain(_left!, State.split);
-    }
+    if (state == _blockSplitLeft) constrain(_left!, State.split);
   }
 
   @override
   void format(CodeWriter writer, State state) {
-    var allowNewlinesInLeft = true;
-    var indentLeft = false;
-    var allowNewlinesInRight = true;
-    var indentRight = false;
-    var collapseIndent = false;
-
     switch (state) {
       case State.unsplit:
-        allowNewlinesInLeft = false;
-
+        _writeLeft(writer, allowNewlines: false);
+        _writeOperator(writer);
         // Always allow block-splitting the right side if it supports it.
-        allowNewlinesInRight = _canBlockSplitRight;
+        _writeRight(writer, allowNewlines: _canBlockSplitRight);
 
       case _atOperator:
         // When splitting at the operator, both operands may split or not and
         // will be indented if they do.
-        indentLeft = true;
-        indentRight = true;
+        writer.pushIndent(Indent.expression);
+        _writeLeft(writer);
+        _writeOperator(writer, split: state == _atOperator);
+        _writeRight(writer);
+        writer.popIndent();
 
       case _blockSplitLeft:
-        indentRight = !_canBlockSplitRight;
-        collapseIndent = true;
+        _writeLeft(writer);
+        _writeOperator(writer);
+        _writeRight(writer, indent: !_canBlockSplitRight);
 
       case _blockSplitRight:
-        collapseIndent = true;
+        _writeLeft(writer);
+        _writeOperator(writer, split: state == _atOperator);
+        _writeRight(writer);
     }
+  }
 
-    if (indentLeft) {
-      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
-    }
+  void _writeLeft(CodeWriter writer, {bool allowNewlines = true}) {
+    if (_left case var left?) writer.format(left, allowNewlines: allowNewlines);
+  }
 
-    if (_left case var left?) {
-      writer.format(left, allowNewlines: allowNewlinesInLeft);
-    }
+  void _writeOperator(CodeWriter writer, {bool split = false}) {
+    if (_splitBeforeOperator) writer.splitIf(split);
 
-    if (_splitBeforeOperator) {
-      writer.splitIf(state == _atOperator);
-      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
-    } else {
-      writer.format(_operator, allowNewlines: allowNewlinesInLeft);
-      writer.splitIf(state == _atOperator);
-    }
+    writer.pushIndent(Indent.expression);
+    writer.format(_operator);
+    writer.popIndent();
 
-    if (indentLeft) writer.popIndent();
+    if (!_splitBeforeOperator) writer.splitIf(split);
+  }
 
-    if (indentRight) {
-      writer.pushIndent(Indent.expression, canCollapse: collapseIndent);
-    }
-
-    writer.format(_right, allowNewlines: allowNewlinesInRight);
-
-    if (indentRight) writer.popIndent();
+  void _writeRight(CodeWriter writer,
+      {bool indent = false, bool allowNewlines = true}) {
+    if (indent) writer.pushIndent(Indent.expression);
+    writer.format(_right, allowNewlines: allowNewlines);
+    if (indent) writer.popIndent();
   }
 
   @override
