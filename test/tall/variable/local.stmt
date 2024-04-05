@@ -315,6 +315,22 @@ var variableName = (notDelimited + expression);
 <<<
 var variableName =
     (notDelimited + expression);
+>>> Use header style for split conditional expression if condition fits.
+var variableName = condition ? longThenBranch : elseBranch;
+<<<
+var variableName = condition
+    ? longThenBranch
+    : elseBranch;
+>>> No header style for conditional expression if condition splits.
+var variableName = (veryLong +
+        conditionExpression)
+    ? thenBranch
+    : elseBranch;
+<<<
+var variableName =
+    (veryLong + conditionExpression)
+        ? thenBranch
+        : elseBranch;
 >>> Split all variables if an initializer has a split internally.
 var a = 1, b = [element, element, element, element];
 <<<

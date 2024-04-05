@@ -330,7 +330,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       b.visit(node.elseExpression, context: NodeContext.conditionalBranch);
     });
 
-    var piece = InfixPiece(leadingComments, [condition, thenPiece, elsePiece]);
+    var piece = InfixPiece(leadingComments, [condition, thenPiece, elsePiece],
+        allowHeaderOperand: true);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.

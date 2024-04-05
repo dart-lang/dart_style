@@ -971,10 +971,9 @@ class Traverser {
       // Use the same source and description as the dependency override if one
       // exists. This is mainly used by the pkgbuild tests, which use dependency
       // overrides for all repo packages.
-      var pubDep =
-          override == null
-              ? new PackageDep(depName, "hosted", constraint, depName)
-              : override.withConstraint(constraint);
+      var pubDep = override == null
+          ? new PackageDep(depName, "hosted", constraint, depName)
+          : override.withConstraint(constraint);
       return _registerDependency(new Dependency(
         "pub itself",
         Version.none,
