@@ -28,6 +28,13 @@ class CallPiece extends Piece {
       ];
 
   @override
+  Shape shapeForState(State state) {
+    if (state == _splitArguments) return Shape.block;
+    // TODO: Could use block shape if type args split and args don't.
+    return Shape.other;
+  }
+
+  @override
   void applyConstraints(State state, Constrain constrain) {
     switch (state) {
       //   case _splitArguments:
@@ -70,6 +77,14 @@ class CallPiece extends Piece {
 
 // TODO: Docs.
 class CollectionPiece extends Piece {
+  // TODO: We might want separate states for "split only the elements" and
+  // "split anywhere even in the type args or const". The former would have
+  // shape block, the latter would not. If I do that, I'll have to tweak how
+  // IfPiece works because currently for spread collections, it constrains them
+  // to State.split to force them to all split in parallel. Ideally, I would
+  // be able to make that a shape constraint and then the three states here
+  // would work fine.
+
   final Piece? _constKeyword;
   final Piece? _typeArguments;
   final Piece _elements;
@@ -82,6 +97,12 @@ class CollectionPiece extends Piece {
   // TODO: explain just passing through.
   @override
   int stateCost(State state) => 0;
+
+  @override
+  Shape shapeForState(State state) {
+    if (state == State.split) return Shape.block;
+    return Shape.other;
+  }
 
   @override
   void applyConstraints(State state, Constrain constrain) {

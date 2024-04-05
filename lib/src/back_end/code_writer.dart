@@ -454,6 +454,16 @@ enum SplitType {
   other,
 }
 
+enum Shape {
+  // TODO: Shape for single-line?
+
+  block,
+
+  header,
+
+  other,
+}
+
 /// A level of indentation in the indentation stack.
 class _Indent {
   /// The total number of spaces of indentation.

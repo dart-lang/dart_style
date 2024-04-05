@@ -124,6 +124,37 @@ class AssignPiece extends Piece {
       ];
 
   @override
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    // TODO: Uncomment right constrains when format() isn't applying them.
+
+    switch (state) {
+      case State.unsplit:
+        // TODO: Can we do no-split constraints?
+        break;
+
+      case _headerRight:
+        // constrain(_right, Shape.header);
+        break;
+
+      case _blockSplitRight:
+        // TODO: Could combine with previous state if we allow multiple shapes.
+        // constrain(_right, Shape.block);
+        break;
+
+      case _blockSplitBoth:
+        constrain(_left!, Shape.block);
+        // constrain(_right, Shape.block);
+        break;
+
+      case _blockSplitLeft:
+        constrain(_left!, Shape.block);
+
+      case _atOperator:
+        break; // No constraints.
+    }
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
@@ -144,12 +175,12 @@ class AssignPiece extends Piece {
         _writeRight(writer, require: SplitType.block);
 
       case _blockSplitBoth:
-        _writeLeft(writer, requireBlock: true);
+        _writeLeft(writer);
         _writeOperator(writer);
         _writeRight(writer, require: SplitType.block);
 
       case _blockSplitLeft:
-        _writeLeft(writer, requireBlock: true);
+        _writeLeft(writer);
         writer.pushIndent(Indent.expression);
         _writeOperator(writer);
         _writeRight(writer);
@@ -164,13 +195,9 @@ class AssignPiece extends Piece {
     }
   }
 
-  void _writeLeft(CodeWriter writer,
-      {bool allowNewlines = true, bool requireBlock = false}) {
+  void _writeLeft(CodeWriter writer, {bool allowNewlines = true}) {
     if (_left case var left?) {
-      var leftSplit = writer.format(left, allowNewlines: allowNewlines);
-      if (requireBlock && leftSplit != SplitType.block) {
-        writer.invalidate(left);
-      }
+      writer.format(left, allowNewlines: allowNewlines);
     }
   }
 

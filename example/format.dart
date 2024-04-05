@@ -17,6 +17,7 @@ void main(List<String> args) {
   debug.tracePieceBuilder = true;
   // debug.traceSolverEnqueueing = true;
   debug.traceSolver = true;
+  debug.traceConstraints = true;
 
 //   _formatStmt('''
 // function() =>
@@ -27,14 +28,37 @@ void main(List<String> args) {
 //   ''');
 
 //   _formatStmt('''
-// var a = [veryLongElement, anotherElement], b;
-//   ''');
+// {
+//   var first = expression +
+//       anotherOperand +
+//       aThirdOperand;
+//   var [
+//     element1,
+//     element2,
+//     element3,
+//     element4,
+//   ] = expression +
+//       anotherOperand +
+//       aThirdOperand;
+// }
+// ''');
+
+//   _formatStmt('''
+// var [
+//   element1,
+//   element2,
+//   element3,
+//   element4,
+// ] = expression +
+//     anotherOperand +
+//     aThirdOperand;
+// ''');
 
   // _formatUnit('''
   // class C {}
   // ''');
 
-  _runTest('tall/invocation/chain_target.stmt', 162);
+  _runTest('tall/expression/list.stmt', 85);
 }
 
 void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {

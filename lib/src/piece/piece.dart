@@ -3,8 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
+import '../short/fast_hash.dart';
 
 typedef Constrain = void Function(Piece other, State constrainedState);
+
+typedef ConstrainShape = void Function(Piece other, Shape shape);
 
 /// Base class for the formatter's internal representation used for line
 /// splitting.
@@ -13,7 +16,8 @@ typedef Constrain = void Function(Piece other, State constrainedState);
 /// roughly follows the AST but includes comments and is optimized for
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
-abstract class Piece {
+// TODO: Just using FastHash for ids for debugging.
+abstract class Piece extends FastHash {
   /// The ordered list of ways this piece may split.
   ///
   /// This is [State.unsplit], which all pieces support, followed by any other
@@ -88,10 +92,13 @@ abstract class Piece {
   /// child piece and the state that child should be constrained to.
   void applyConstraints(State state, Constrain constrain) {}
 
+  Shape shapeForState(State state) => Shape.other;
+
+  void applyShapeConstraints(State state, ConstrainShape constrain) {}
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);
-
 
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
@@ -137,6 +144,10 @@ abstract class Piece {
     applyConstraints(state, (other, constrainedState) {
       other.pin(constrainedState);
     });
+
+    applyShapeConstraints(state, (other, constrainedShape) {
+      print('TODO: Implement shape constraining in pin()!');
+    });
   }
 
   /// The name of this piece as it appears in debug output.
@@ -145,7 +156,7 @@ abstract class Piece {
   String get debugName => runtimeType.toString().replaceAll('Piece', '');
 
   @override
-  String toString() => debugName;
+  String toString() => '$debugName$id';
 }
 
 /// A simple atomic piece of code.

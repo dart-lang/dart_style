@@ -30,6 +30,9 @@ bool traceSolverEnqueueing = false;
 /// Set this to `true` to turn on diagnostic output while solving pieces.
 bool traceSolver = false;
 
+/// Set this to `true` to turn on diagnostic output while applying constraints.
+bool traceConstraints = false;
+
 bool useAnsiColors = false;
 
 const unicodeSection = '\u00a7';

@@ -1,6 +1,7 @@
 // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import 'code_writer.dart';
 import 'solution_cache.dart';
@@ -315,6 +316,41 @@ class Solution implements Comparable<Solution> {
 
           // This piece may in turn place further constraints on others.
           thisPiece.applyConstraints(thisState, bind);
+
+          thisPiece.applyShapeConstraints(thisState, (other, constrainedShape) {
+            if (debug.traceConstraints) {
+              debug.log('$thisPiece$thisState constrains $other '
+                  'to $constrainedShape');
+            }
+            var validStates = [
+              for (var otherState in other.states)
+                if (other.shapeForState(otherState) == constrainedShape)
+                  otherState
+            ];
+
+            switch (validStates) {
+              case []:
+                if (debug.traceConstraints) {
+                  debug.log('  no matching states');
+                }
+                success = false;
+
+              case [var onlyState]:
+                if (debug.traceConstraints) {
+                  debug.log('  binding to only state $onlyState');
+                }
+                bind(other, onlyState);
+
+              default:
+                // TODO: Store this list in solution so that if we end up
+                // expanding [other] later, we only use these states.
+                if (debug.traceConstraints) {
+                  debug.log('  multiple matching states $validStates');
+                }
+                break;
+            }
+          });
+
         case var alreadyBound when alreadyBound != thisState:
           // Already bound to a different state, so there's a conflict.
           success = false;
