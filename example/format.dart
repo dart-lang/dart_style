@@ -44,21 +44,34 @@ void main(List<String> args) {
 // ''');
 
 //   _formatStmt('''
-// var [
-//   element1,
-//   element2,
-//   element3,
-//   element4,
-// ] = expression +
-//     anotherOperand +
-//     aThirdOperand;
+// var result = target
+//     .someMethod1(argument1, argument2, argument3)
+//     .someMethod2(argument1, argument2, argument3)
+//     .someMethod3(argument1, argument2, argument3)
+//     .someMethod4(argument1, argument2, argument3)
+//     .someMethod5(argument1, argument2, argument3)
+//     .someMethod6(argument1, argument2, argument3)
+//     .someMethod7(argument1, argument2, argument3)
+//     .someMethod8(argument1, argument2, argument3)
+//     .someMethod9(argument1, argument2, argument3)
+//     .someMethod10(argument1, argument2, argument3)
+//     .someMethod11(argument1, argument2, argument3)
+//     .someMethod12(argument1, argument2, argument3)
+//     .someMethod13(argument1, argument2, argument3)
+//     .someMethod14(argument1, argument2, argument3)
+//     .someMethod15(argument1, argument2, argument3)
+//     .someMethod16(argument1, argument2, argument3)
+//     .someMethod17(argument1, argument2, argument3)
+//     .someMethod18(argument1, argument2, argument3)
+//     .someMethod19(argument1, argument2, argument3)
+//     .someMethod20(argument1, argument2, argument3);
 // ''');
 
   // _formatUnit('''
   // class C {}
   // ''');
 
-  _runTest('tall/expression/list.stmt', 85);
+  _runTest('tall/variable/local.stmt', 226);
 }
 
 void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {

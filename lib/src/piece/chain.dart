@@ -5,6 +5,7 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
+// TODO: Rewrite.
 /// A dotted series of property access or method calls, like:
 ///
 ///     target.getter.method().another.method();
@@ -50,8 +51,14 @@ import 'piece.dart';
 ///           argument,
 ///         );
 class ChainPiece extends Piece {
+  /// Block split in the target but nowhere else.
+  static const State _blockFormatTarget = State(1, cost: 0);
+
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
-  static const State _blockFormatTrailingCall = State(1, cost: 0);
+  static const State _unsplitTargetBlockFormatTrailingCall = State(2, cost: 0);
+
+  /// Allow newlines in the last (or next-to-last) call but nowhere else.
+  static const State _blockFormatTrailingCall = State(3, cost: 0);
 
   // TODO(tall): Currently, we only allow a single call in the chain to be
   // block-formatted, and it must be the last or next-to-last. That covers
@@ -75,7 +82,9 @@ class ChainPiece extends Piece {
 
   /// Split the call chain at each method call, but leave the leading properties
   /// on the same line as the target.
-  static const State _splitAfterProperties = State(2);
+  static const State _splitAfterProperties = State(4);
+
+  static const State _unsplitTargetSplitChain = State(5);
 
   /// The target expression at the beginning of the call chain.
   final Piece _target;
@@ -122,10 +131,31 @@ class ChainPiece extends Piece {
 
   @override
   List<State> get additionalStates => [
-        if (_blockCallIndex != -1) _blockFormatTrailingCall,
+        _blockFormatTarget,
+        if (_blockCallIndex != -1) ...[
+          _unsplitTargetBlockFormatTrailingCall,
+          _blockFormatTrailingCall
+        ],
         if (_leadingProperties > 0) _splitAfterProperties,
+        _unsplitTargetSplitChain,
         State.split
       ];
+
+  @override
+  Shape shapeForState(State state) {
+    return switch (state) {
+      State.unsplit => Shape.other,
+      _blockFormatTarget => Shape.other,
+      _unsplitTargetBlockFormatTrailingCall => Shape.block,
+      _blockFormatTrailingCall => Shape.other,
+
+      // TODO: Should only be if target doesn't split.
+      _splitAfterProperties => Shape.header,
+      _unsplitTargetSplitChain => Shape.header,
+      State.split => Shape.other,
+      _ => throw StateError('Unexpected state $state.'),
+    };
+  }
 
   @override
   int stateCost(State state) {
@@ -147,76 +177,61 @@ class ChainPiece extends Piece {
   }
 
   @override
-  void format(CodeWriter writer, State state) {
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
     switch (state) {
       case State.unsplit:
-        var targetSplit = writer.format(_target);
+        // TODO: Support "no split" shapes and constrain here.
+        break;
+
+      case _blockFormatTarget:
+        constrain(_target, Shape.block);
+
+      case _unsplitTargetBlockFormatTrailingCall:
+        constrain(_calls[_blockCallIndex]._call, Shape.block);
+        break;
+
+      case _blockFormatTrailingCall:
+        constrain(_target, Shape.block);
+        constrain(_calls[_blockCallIndex]._call, Shape.block);
+        break;
+    }
+  }
+
+  @override
+  void format(CodeWriter writer, State state) {
+    // TODO: Refactor to reuse code.
+    switch (state) {
+      case State.unsplit:
+        writer.format(_target, allowNewlines: false);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: false);
         }
 
-        switch (targetSplit) {
-          case SplitType.none:
-            break; // OK. No split in the target and chain.
+      case _blockFormatTarget:
+        writer.format(_target);
 
-          case SplitType.block:
-            // Allow block splitting the target without splitting the rest of
-            // the chain, like:
-            //
-            //     [
-            //       element,
-            //     ].method().another();
-            //
-            // This avoids an unsightly gap before the method chain:
-            //
-            //     [
-            //       element,
-            //     ]
-            //         .method()
-            //         .another();
-            //
-            // Note that we don't consider this chain to itself be block
-            // formatted in this case, because we want want to end up with
-            // large method chains packed into block-formatted assignments,
-            // like:
-            //
-            //     thing = target.someLongMethod(
-            //       argument,
-            //     ).a().lot().more().here();
-            break;
-
-          case SplitType.header:
-          case SplitType.other:
-            // Only allow the target to block split in this state.
-            writer.invalidate(_target);
+        for (var i = 0; i < _calls.length; i++) {
+          _formatCall(writer, state, i, allowNewlines: false);
         }
 
-      case _blockFormatTrailingCall:
-        var targetSplit = writer.format(_target);
+      case _unsplitTargetBlockFormatTrailingCall:
+        writer.format(_target, allowNewlines: false);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
         }
 
-        switch (targetSplit) {
-          case SplitType.none:
-            writer.setSplitType(SplitType.block);
+      case _blockFormatTrailingCall:
+        writer.format(_target);
 
-          case SplitType.block:
-            // TODO: Not sure about this.
-            // writer.setSplitType(SplitType.block);
-            break;
-
-          case SplitType.header:
-          case SplitType.other:
-            // Only allow the target to block split in this state.
-            writer.invalidate(_target);
+        for (var i = 0; i < _calls.length; i++) {
+          _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
         }
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        var targetSplit = writer.format(_target, allowNewlines: false);
+        writer.format(_target, allowNewlines: false);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
@@ -225,20 +240,9 @@ class ChainPiece extends Piece {
 
         writer.popIndent();
 
-        switch (targetSplit) {
-          case SplitType.none:
-            writer.setSplitType(SplitType.header);
-
-          case SplitType.block:
-          case SplitType.header:
-          case SplitType.other:
-            // Don't allow the target to split in this state.
-            writer.invalidate(_target);
-        }
-
-      case State.split:
+      case _unsplitTargetSplitChain:
         writer.pushIndent(_indent);
-        var targetSplit = writer.format(_target);
+        writer.format(_target, allowNewlines: false);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();
@@ -247,9 +251,16 @@ class ChainPiece extends Piece {
 
         writer.popIndent();
 
-        if (targetSplit == SplitType.none) {
-          writer.setSplitType(SplitType.header);
+      case State.split:
+        writer.pushIndent(_indent);
+        writer.format(_target);
+
+        for (var i = 0; i < _calls.length; i++) {
+          writer.newline();
+          _formatCall(writer, state, i);
         }
+
+        writer.popIndent();
     }
   }
 
@@ -260,7 +271,7 @@ class ChainPiece extends Piece {
     // every non-property call except the last will be on its own line.
     var separate = switch (state) {
       _splitAfterProperties => i >= _leadingProperties && i < _calls.length - 1,
-      State.split => i < _calls.length - 1,
+      _unsplitTargetSplitChain || State.split => i < _calls.length - 1,
       _ => false,
     };
 

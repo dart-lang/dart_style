@@ -4,7 +4,6 @@
 
 import '../back_end/code_writer.dart';
 import '../constants.dart';
-import 'list.dart';
 import 'piece.dart';
 
 /// Piece for a case pattern, guard, and body in a switch expression.
@@ -58,6 +57,14 @@ class CaseExpressionPiece extends Piece {
       ];
 
   @override
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    switch (state) {
+      case _blockSplitBody:
+        constrain(_body, Shape.block);
+    }
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
@@ -68,7 +75,7 @@ class CaseExpressionPiece extends Piece {
       case _blockSplitBody:
         _writePattern(writer);
         _writeGuard(writer);
-        _writeBody(writer, allowNewlineInBody: true, requireBlockBody: true);
+        _writeBody(writer, allowNewlineInBody: true);
 
       case _beforeBody:
         _writePattern(writer,
@@ -111,18 +118,14 @@ class CaseExpressionPiece extends Piece {
   void _writeBody(CodeWriter writer,
       {bool splitBeforeBody = false,
       bool allowNewlineInBody = false,
-      bool indent = false,
-      bool requireBlockBody = false}) {
+      bool indent = false}) {
     writer.space();
     writer.format(_arrow);
 
     if (indent) writer.pushIndent(Indent.block);
 
     writer.splitIf(splitBeforeBody);
-    var bodySplit = writer.format(_body, allowNewlines: allowNewlineInBody);
-    if (requireBlockBody && bodySplit != SplitType.block) {
-      writer.invalidate(_body);
-    }
+    writer.format(_body, allowNewlines: allowNewlineInBody);
 
     if (indent) writer.popIndent();
   }

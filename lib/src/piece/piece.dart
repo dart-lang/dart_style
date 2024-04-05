@@ -96,6 +96,14 @@ abstract class Piece extends FastHash {
 
   void applyShapeConstraints(State state, ConstrainShape constrain) {}
 
+  /// The actual piece that should be constrained when a [Shape] constraint is
+  /// placed on this piece by a parent piece.
+  ///
+  /// This lets a piece transparently wrap some other piece and pass along any
+  /// constraints placed on it without having to mirror the inner piece's
+  /// states.
+  Piece forwardShapeConstraint() => this;
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);

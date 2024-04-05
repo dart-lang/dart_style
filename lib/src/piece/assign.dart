@@ -125,25 +125,23 @@ class AssignPiece extends Piece {
 
   @override
   void applyShapeConstraints(State state, ConstrainShape constrain) {
-    // TODO: Uncomment right constrains when format() isn't applying them.
-
     switch (state) {
       case State.unsplit:
         // TODO: Can we do no-split constraints?
         break;
 
       case _headerRight:
-        // constrain(_right, Shape.header);
+        constrain(_right, Shape.header);
         break;
 
       case _blockSplitRight:
         // TODO: Could combine with previous state if we allow multiple shapes.
-        // constrain(_right, Shape.block);
+        constrain(_right, Shape.block);
         break;
 
       case _blockSplitBoth:
         constrain(_left!, Shape.block);
-        // constrain(_right, Shape.block);
+        constrain(_right, Shape.block);
         break;
 
       case _blockSplitLeft:
@@ -167,17 +165,17 @@ class AssignPiece extends Piece {
         _writeLeft(writer);
         _writeOperator(writer);
         writer.popIndent();
-        _writeRight(writer, require: SplitType.header);
+        _writeRight(writer);
 
       case _blockSplitRight:
         _writeLeft(writer);
         _writeOperator(writer);
-        _writeRight(writer, require: SplitType.block);
+        _writeRight(writer);
 
       case _blockSplitBoth:
         _writeLeft(writer);
         _writeOperator(writer);
-        _writeRight(writer, require: SplitType.block);
+        _writeRight(writer);
 
       case _blockSplitLeft:
         _writeLeft(writer);
@@ -208,12 +206,8 @@ class AssignPiece extends Piece {
     if (!_splitBeforeOperator) writer.splitIf(split);
   }
 
-  void _writeRight(CodeWriter writer,
-      {bool allowNewlines = true, SplitType? require}) {
-    var rightSplit = writer.format(_right, allowNewlines: allowNewlines);
-    if (require != null && rightSplit != require) {
-      writer.invalidate(_right);
-    }
+  void _writeRight(CodeWriter writer, {bool allowNewlines = true}) {
+    writer.format(_right, allowNewlines: allowNewlines);
   }
 
   @override

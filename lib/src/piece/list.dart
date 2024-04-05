@@ -101,6 +101,19 @@ class ListPiece extends Piece {
   List<State> get additionalStates => const [State.split];
 
   @override
+  Shape shapeForState(State state) {
+    // If the list isn't delimited, it's not really a block-like structure, it's
+    // just a splittable sequence of things (usually inline metadata
+    // annotations).
+    if (_before == null) return Shape.other;
+
+    // TODO: Probably want separate state that forces block element to split.
+    if (state == State.split || hasBlockElement) return Shape.block;
+
+    return Shape.other;
+  }
+
+  @override
   void applyConstraints(State state, Constrain constrain) {
     // Give the last element a trailing comma only if the list is split.
     if (_style.commas == Commas.trailing) {
@@ -154,13 +167,10 @@ class ListPiece extends Piece {
       var allowNewlines =
           element.allowNewlinesWhenUnsplit || state == State.split;
 
-      var elementSplit = writer.format(element,
-          separate: separate, allowNewlines: allowNewlines);
+      writer.format(element, separate: separate, allowNewlines: allowNewlines);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.popIndent();
-
-        if (elementSplit == SplitType.block) splitBlockElement = true;
       }
 
       // Write a space or newline between elements.
@@ -181,10 +191,6 @@ class ListPiece extends Piece {
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
       writer.format(after, allowNewlines: true);
-    }
-
-    if (splitBlockElement || (state == State.split && _before != null)) {
-      writer.setSplitType(SplitType.block);
     }
   }
 

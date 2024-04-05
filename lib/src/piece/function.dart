@@ -65,6 +65,12 @@ class FunctionPiece extends Piece {
   }
 
   @override
+  Shape shapeForState(State state) {
+    if (_bodyIsBlock) return Shape.block;
+    return Shape.other;
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     if (_returnType case var returnType?) {
       // A split inside the return type forces splitting after the return type.
@@ -82,7 +88,6 @@ class FunctionPiece extends Piece {
       if (_spaceBeforeBody) writer.space();
 
       writer.format(body);
-      if (_bodyIsBlock) writer.setSplitType(SplitType.block);
     }
   }
 

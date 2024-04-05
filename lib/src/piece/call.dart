@@ -9,10 +9,7 @@ import 'piece.dart';
 class CallPiece extends Piece {
   static const State _splitArguments = State(1, cost: 0);
 
-  // split both
-  static const State _splitTypeArguments = State(2, cost: 0);
-
-  static const State _splitFunction = State(3, cost: 0);
+  static const State _splitFunction = State(2, cost: 0);
 
   final Piece _function;
   final Piece? _typeArguments;
@@ -21,11 +18,7 @@ class CallPiece extends Piece {
   CallPiece(this._function, this._typeArguments, this._arguments);
 
   @override
-  List<State> get additionalStates => [
-        _splitArguments,
-        if (_typeArguments != null) _splitTypeArguments,
-        _splitFunction
-      ];
+  List<State> get additionalStates => [_splitArguments, _splitFunction];
 
   @override
   Shape shapeForState(State state) {
@@ -35,21 +28,8 @@ class CallPiece extends Piece {
   }
 
   @override
-  void applyConstraints(State state, Constrain constrain) {
-    switch (state) {
-      //   case _splitArguments:
-      //     constrain(_arguments, State.split);
-
-      case _splitTypeArguments:
-      // constrain(_typeArguments!, State.split);
-      // constrain(_arguments, State.split);
-
-      //   case State.split:
-      //     if (_typeArguments case var typeArguments?) {
-      //       constrain(typeArguments, State.split);
-      //     }
-      //     constrain(_arguments, State.split);
-    }
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    if (state == _splitArguments) constrain(_arguments, Shape.block);
   }
 
   @override
@@ -57,14 +37,10 @@ class CallPiece extends Piece {
     writer.format(_function, allowNewlines: state == _splitFunction);
 
     if (_typeArguments case var typeArguments?) {
-      writer.format(typeArguments, allowNewlines: state == _splitTypeArguments);
+      writer.format(typeArguments, allowNewlines: state == _splitFunction);
     }
 
     writer.format(_arguments, allowNewlines: state != State.unsplit);
-
-    if (state == _splitArguments || state == _splitTypeArguments) {
-      writer.setSplitType(SplitType.block);
-    }
   }
 
   @override
@@ -114,8 +90,7 @@ class CollectionPiece extends Piece {
     if (_constKeyword case var constKeyword?) writer.format(constKeyword);
     if (_typeArguments case var typeArguments?) writer.format(typeArguments);
 
-    var elementSplit = writer.format(_elements);
-    if (elementSplit == SplitType.block) writer.setSplitType(SplitType.block);
+    writer.format(_elements);
   }
 
   @override
@@ -176,8 +151,21 @@ class SwitchExpressionPiece extends Piece {
   int stateCost(State state) => 0;
 
   @override
+  Shape shapeForState(State state) {
+    return switch (state) {
+      _splitCases || _blockSplitValueSplitCases => Shape.block,
+      _ => Shape.other,
+    };
+  }
+
+  @override
   void applyConstraints(State state, Constrain constrain) {
     if (state != State.unsplit) constrain(_cases, State.split);
+  }
+
+  @override
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    if (state == _blockSplitValueSplitCases) constrain(_value, Shape.block);
   }
 
   @override
@@ -195,16 +183,11 @@ class SwitchExpressionPiece extends Piece {
         writer.format(_separator);
         writer.format(_cases);
 
-        writer.setSplitType(SplitType.block);
-
       case _blockSplitValueSplitCases:
         writer.format(_header);
-        var valueSplit = writer.format(_value);
+        writer.format(_value);
         writer.format(_separator);
         writer.format(_cases);
-
-        if (valueSplit != SplitType.block) writer.invalidate(_value);
-        writer.setSplitType(SplitType.block);
 
       case State.split:
         writer.format(_header);
@@ -232,12 +215,13 @@ class ParenthesizedPiece extends Piece {
       this._leftParenthesis, this._piece, this._rightParenthesis);
 
   @override
+  Piece forwardShapeConstraint() => _piece;
+
+  @override
   void format(CodeWriter writer, State state) {
     writer.format(_leftParenthesis);
-    var splitType = writer.format(_piece);
+    writer.format(_piece);
     writer.format(_rightParenthesis);
-
-    writer.setSplitType(splitType);
   }
 
   @override
@@ -258,11 +242,12 @@ class CommaPiece extends Piece {
   CommaPiece(this._piece, this._comma);
 
   @override
-  void format(CodeWriter writer, State state) {
-    var splitType = writer.format(_piece);
-    writer.format(_comma);
+  Piece forwardShapeConstraint() => _piece;
 
-    writer.setSplitType(splitType);
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.format(_piece);
+    writer.format(_comma);
   }
 
   @override

@@ -227,15 +227,6 @@ class CodeWriter {
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
   }
 
-  // TODO: Hacky API.
-  void setSplitType(SplitType type) {
-    _pieces.last.splitType = type;
-  }
-
-  void invalidate(Piece child) {
-    _solution.invalidate(child);
-  }
-
   /// Format [piece] and insert the result into the code being written and
   /// returned by [finish()].
   ///
@@ -251,14 +242,11 @@ class CodeWriter {
   /// be `false`. It's up to the parent piece to only call this when it's safe
   /// to do so. In practice, this usually means when the parent piece knows that
   /// [piece] will have a newline before and after it.
-  SplitType format(Piece piece,
-      {bool separate = false, bool allowNewlines = true}) {
+  void format(Piece piece, {bool separate = false, bool allowNewlines = true}) {
     if (separate) {
       _formatSeparate(piece);
-      // TODO: Is this right?
-      return SplitType.other;
     } else {
-      return _formatInline(piece, allowNewlines: allowNewlines);
+      _formatInline(piece, allowNewlines: allowNewlines);
     }
   }
 
@@ -287,7 +275,7 @@ class CodeWriter {
   }
 
   /// Format [piece] writing directly into this [CodeWriter].
-  SplitType _formatInline(Piece piece, {required bool allowNewlines}) {
+  void _formatInline(Piece piece, {required bool allowNewlines}) {
     // Begin a new formatting context for this child.
     _pieces.add(_PieceFormatState(piece));
 
@@ -308,10 +296,6 @@ class CodeWriter {
       // TODO: Need control over how child splits cascade out.
       _handleNewline(allowNewlines: allowNewlines);
     }
-
-    // print('${pieceState.piece}${_solution.pieceState(piece)} '
-    //     'split = ${pieceState.splitType}');
-    return pieceState.splitType;
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -338,11 +322,6 @@ class CodeWriter {
     // Note that this piece contains a newline so that we can propagate that
     // up to containing pieces too.
     _pieces.last.hadNewline = true;
-
-    if (_pieces.last.splitType == SplitType.none) {
-      // We know at least some kind of split occurred.
-      _pieces.last.splitType = SplitType.other;
-    }
   }
 
   /// Write any pending whitespace.
@@ -428,32 +407,6 @@ enum Whitespace {
 }
 
 // TODO: Docs.
-// TODO: Rename to "shape"?
-enum SplitType {
-  none,
-  block,
-
-  /// An expression that has a single-line "header" that is fairly separate from
-  /// the rest of the expression which is on subsequent lines.
-  ///
-  /// This can either be a call chain that splits on `.` where the target fits
-  /// on a single line:
-  ///
-  ///     target
-  ///         .method()
-  ///         .another();
-  ///
-  /// Or a split conditional expression who condition fits on one line:
-  ///
-  ///     condition
-  ///         ? thenBranch
-  ///         : elseBranch;
-  // TODO: Implement conditional expression stuff.
-  header,
-
-  other,
-}
-
 enum Shape {
   // TODO: Shape for single-line?
 
@@ -479,8 +432,6 @@ class _PieceFormatState {
   final Piece piece;
 
   bool hadNewline = false;
-
-  SplitType splitType = SplitType.none;
 
   _PieceFormatState(this.piece);
 }

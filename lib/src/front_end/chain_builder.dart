@@ -225,25 +225,26 @@ class ChainBuilder {
           callType = CallType.splittableCall;
         }
 
-        var callPiece = _visitor.buildPiece((b) {
+        var function = _visitor.buildPiece((b) {
           b.token(expression.operator);
           b.visit(expression.methodName);
-          b.visit(expression.typeArguments);
-
-          // Create the argument piece manually so that we can see if it has a
-          // block argument or not.
-          var arguments = _visitor.createArgumentList(
-              expression.argumentList.leftParenthesis,
-              expression.argumentList.arguments,
-              expression.argumentList.rightParenthesis);
-
-          if (arguments is ListPiece && arguments.hasBlockElement) {
-            callType = CallType.blockFormatCall;
-          }
-
-          b.add(arguments);
         });
 
+        var typeArguments =
+            _visitor.optionalNodePiece(expression.typeArguments);
+
+        // Create the argument piece manually so that we can see if it has a
+        // block argument or not.
+        var arguments = _visitor.createArgumentList(
+            expression.argumentList.leftParenthesis,
+            expression.argumentList.arguments,
+            expression.argumentList.rightParenthesis);
+
+        if (arguments is ListPiece && arguments.hasBlockElement) {
+          callType = CallType.blockFormatCall;
+        }
+
+        var callPiece = CallPiece(function, typeArguments, arguments);
         _calls.add(ChainCall(callPiece, callType));
 
       case PropertyAccess(:var target?):

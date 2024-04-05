@@ -25,6 +25,9 @@ class Solution implements Comparable<Solution> {
   /// overflow.
   final Map<Piece, State> _pieceStates;
 
+  // TODO: Doc.
+  final Map<Piece, List<State>> _shapeConstraints;
+
   /// The amount of penalties applied based on the chosen line splits.
   int get cost => _cost;
   int _cost;
@@ -103,12 +106,15 @@ class Solution implements Comparable<Solution> {
   factory Solution(SolutionCache cache, Piece root,
       {required int pageWidth, required int leadingIndent, State? rootState}) {
     var pieceStates = <Piece, State>{};
+    var shapeConstraints = <Piece, List<State>>{};
+
     var cost = 0;
 
     // If we're formatting a subtree of a larger Piece tree that binds [root]
     // to [rootState], then bind it in this solution too.
     if (rootState != null) {
-      var additionalCost = _tryBind(pieceStates, root, rootState);
+      var additionalCost =
+          _tryBind(pieceStates, shapeConstraints, root, rootState);
 
       // Binding should always succeed since we should only get here when
       // formatting a subtree whose surrounding Solution successfully bound
@@ -116,11 +122,12 @@ class Solution implements Comparable<Solution> {
       cost += additionalCost!;
     }
 
-    return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
+    return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates,
+        shapeConstraints);
   }
 
   Solution._(SolutionCache cache, Piece root, int pageWidth, int leadingIndent,
-      this._cost, this._pieceStates) {
+      this._cost, this._pieceStates, this._shapeConstraints) {
     var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
     writer.format(root);
 
@@ -232,16 +239,24 @@ class Solution implements Comparable<Solution> {
     // that inherits all of the bindings of this one, and binds the expanding
     // piece to that state (along with any further pieces constrained by that
     // one).
-    for (var state in expandPiece.states) {
-      var newStates = {..._pieceStates};
+    // TODO: doc shapeconstraints
+    if (debug.traceConstraints && _shapeConstraints[expandPiece] != null) {
+      debug.log('Expanding $expandPiece using constrained states '
+          '${_shapeConstraints[expandPiece]}');
+    }
 
-      var additionalCost = _tryBind(newStates, expandPiece, state);
+    for (var state in _shapeConstraints[expandPiece] ?? expandPiece.states) {
+      var newStates = {..._pieceStates};
+      var shapeConstraints = {..._shapeConstraints};
+
+      var additionalCost =
+          _tryBind(newStates, shapeConstraints, expandPiece, state);
 
       // Discard the solution if we hit a constraint violation.
       if (additionalCost == null) continue;
 
       solutions.add(Solution._(cache, root, pageWidth, leadingIndent,
-          cost + additionalCost, newStates));
+          cost + additionalCost, newStates, shapeConstraints));
     }
 
     return solutions;
@@ -287,6 +302,7 @@ class Solution implements Comparable<Solution> {
     ].join(' ').trim();
   }
 
+  // TODO: Doc shapeConstraints.
   /// Attempts to add a binding from [piece] to [state] in [boundStates], and
   /// then adds any further bindings from constraints that [piece] applies to
   /// its children, recursively.
@@ -297,8 +313,8 @@ class Solution implements Comparable<Solution> {
   /// If successful, returns the additional cost required to bind [piece] to
   /// [state] (along with any other applied constrained pieces). Otherwise,
   /// returns `null` to indicate failure.
-  static int? _tryBind(
-      Map<Piece, State> boundStates, Piece piece, State state) {
+  static int? _tryBind(Map<Piece, State> boundStates,
+      Map<Piece, List<State>> shapeConstraints, Piece piece, State state) {
     var success = true;
     var additionalCost = 0;
 
@@ -318,17 +334,31 @@ class Solution implements Comparable<Solution> {
           thisPiece.applyConstraints(thisState, bind);
 
           thisPiece.applyShapeConstraints(thisState, (other, constrainedShape) {
+            // Allow child pieces to pass the constraint onto their children
+            // instead.
+            while (true) {
+              var propagated = other.forwardShapeConstraint();
+              if (propagated == other) break;
+
+              if (debug.traceConstraints) {
+                debug.log('Propagate from $other to $propagated');
+              }
+
+              other = propagated;
+            }
+
             if (debug.traceConstraints) {
               debug.log('$thisPiece$thisState constrains $other '
                   'to $constrainedShape');
             }
-            var validStates = [
+
+            var allowedStates = [
               for (var otherState in other.states)
                 if (other.shapeForState(otherState) == constrainedShape)
                   otherState
             ];
 
-            switch (validStates) {
+            switch (allowedStates) {
               case []:
                 if (debug.traceConstraints) {
                   debug.log('  no matching states');
@@ -345,8 +375,13 @@ class Solution implements Comparable<Solution> {
                 // TODO: Store this list in solution so that if we end up
                 // expanding [other] later, we only use these states.
                 if (debug.traceConstraints) {
-                  debug.log('  multiple matching states $validStates');
+                  debug.log('  multiple matching states $allowedStates');
                 }
+                // Multiple states are allowed, so we can't eagerly bind the
+                // other piece to a state, nor can we invalidate the state. But
+                // when the other piece later gets expanded, we'll only
+                // consider these allowed states.
+                shapeConstraints[other] = allowedStates;
                 break;
             }
           });

@@ -23,17 +23,16 @@ const {first, second};
 >>> Split in type argument.
 var set = <Inner<First, Second, Third, Fourth, Fifth, Sixth>>{};
 <<<
-var set =
-    <
-      Inner<
-        First,
-        Second,
-        Third,
-        Fourth,
-        Fifth,
-        Sixth
-      >
-    >{};
+var set = <
+  Inner<
+    First,
+    Second,
+    Third,
+    Fourth,
+    Fifth,
+    Sixth
+  >
+>{};
 >>> Force split because of contained block.
 var s = {first, 1, fn, () {"fn";},third,fourth};
 <<<
