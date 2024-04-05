@@ -39,7 +39,10 @@ class FunctionPiece extends Piece {
   /// to split at the return type, so make that high cost.
   final bool _isReturnTypeFunctionType;
 
+  /// Whether the function body is a non-empty block body that will always
+  /// contain a newline.
   final bool _bodyIsBlock;
+
   final bool _spaceBeforeBody;
 
   FunctionPiece(this._returnType, this._signature,
@@ -78,8 +81,8 @@ class FunctionPiece extends Piece {
       // Put a space before the `{`.
       if (_spaceBeforeBody) writer.space();
 
-      var bodySplit = writer.format(body);
-      if (_bodyIsBlock) writer.setSplitType(bodySplit);
+      writer.format(body);
+      if (_bodyIsBlock) writer.setSplitType(SplitType.block);
     }
   }
 

@@ -92,9 +92,6 @@ abstract class Piece {
   /// output.
   void format(CodeWriter writer, State state);
 
-  SplitType? handleChildSplit(State state, Piece child, SplitType split) {
-    return split;
-  }
 
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);

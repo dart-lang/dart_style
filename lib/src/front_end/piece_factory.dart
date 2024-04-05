@@ -583,7 +583,8 @@ mixin PieceFactory {
         isReturnTypeFunctionType: returnType is GenericFunctionType,
         body: bodyPiece,
         spaceBeforeBody: body is! EmptyFunctionBody,
-        bodyIsBlock: body is BlockFunctionBody));
+        bodyIsBlock: (body is BlockFunctionBody) &&
+            body.block.statements.canSplit(body.block.rightBracket)));
 
     return metadataBuilder.build();
   }
