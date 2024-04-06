@@ -112,31 +112,32 @@ abstract class Piece extends FastHash {
   /// Invokes [callback] on each piece contained in this piece.
   void forEachChild(void Function(Piece piece) callback);
 
-  // TODO: Update docs.
-  /// If the piece can determine that it will always end up in a certain state
-  /// given [pageWidth] and size metrics returned by calling [containsNewline]
-  /// and [totalCharacters] on its children, then returns that [State].
+  /// If the piece can determine that it can only successfully use a subset of
+  /// its states given [pageWidth] and size metrics returned by calling
+  /// [containsNewline] and [totalCharacters] on its children, then returns
+  /// that set of its [State]s.
   ///
   /// For example, a series of infix operators wider than a page will always
   /// split one per operator. If we can determine this eagerly just based on
-  /// the size of the children and the page width, then we can pin the Piece to
-  /// that State. That in turn heavily prunes the search space that the [Solver]
-  /// is exploring. In practice, for large expressions, many of the outermost
-  /// Pieces can be eagerly pinned to their fully split state. That avoids the
-  /// Solver wasting a lot of time trying in vain to pack those outer Pieces
-  /// into unsplit states when it's obvious just from the size of their contents
-  /// that they'll have to split.
+  /// the size of the children and the page width, then we can constrain the
+  /// Piece to that State. That in turn heavily prunes the search space that
+  /// the [Solver] is exploring.
+  ///
+  /// In practice, for large expressions, many of the outermost Pieces can be
+  /// eagerly constrained to their fully split state. That avoids the Solver
+  /// wasting time trying in vain to pack those outer Pieces into unsplit
+  /// states when it's obvious just from the size of their contents that they'll
+  /// have to split.
   ///
   /// If it's not possible to determine whether a piece will split from its
   /// metrics, this returns `null`.
   ///
   /// This is purely an optimization: Running the [Solver] without ever calling
-  /// this and pinning the resulting [State] should yield the same formatting.
-  /// It is up to the [Piece] subclasses overriding this to ensure that they
-  /// only return a non-`null` [State] if the piece really would always be
-  /// solved to the returned state given its children.
-  // TODO: Better name.
-  List<State>? fixedStateForPageWidth(int pageWidth) => null;
+  /// this should yield the same formatting. It is up to the [Piece] subclasses
+  /// overriding this to ensure that they only return a non-`null` list of
+  /// [State] if the piece really would always be solved to one of the returned
+  /// states given its children.
+  List<State>? constrainByPageWidth(int pageWidth) => null;
 
   /// The cost that this piece should apply to the solution when in [state].
   ///
@@ -156,9 +157,18 @@ abstract class Piece extends FastHash {
       other.pin(constrainedState);
     });
 
-    applyShapeConstraints(state, (other, constrainedShape) {
-      print('TODO: Implement shape constraining in pin()!');
-    });
+    // A piece should never be pinned in a way that would lead to it applying
+    // shape constraints onto other pieces. This is important because at the
+    // point that we're pinning, we don't have a way to remember these
+    // constraints.
+    assert(() {
+      var noShapeConstraints = true;
+      applyShapeConstraints(state, (other, constrainedShape) {
+        noShapeConstraints = false;
+      });
+
+      return noShapeConstraints;
+    }());
   }
 
   /// The name of this piece as it appears in debug output.

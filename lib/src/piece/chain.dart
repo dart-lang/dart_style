@@ -280,7 +280,7 @@ class ChainPiece extends Piece {
   }
 
   @override
-  List<State>? fixedStateForPageWidth(int pageWidth) {
+  List<State>? constrainByPageWidth(int pageWidth) {
     // TODO: Returning [State.split] isn't entirely correct. The state
     // _unsplitTargetSplitChain is also valid. Maybe we need to extend
     // fixedStateForPageWidth() to allow returning a list of states and then

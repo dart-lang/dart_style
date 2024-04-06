@@ -204,7 +204,7 @@ class ListPiece extends Piece {
   }
 
   @override
-  List<State>? fixedStateForPageWidth(int pageWidth) {
+  List<State>? constrainByPageWidth(int pageWidth) {
     var totalLength = 0;
     if (_before case var before?) {
       // A newline in the opening bracket (like a line comment after the

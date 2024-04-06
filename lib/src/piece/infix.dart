@@ -113,7 +113,7 @@ class InfixPiece extends Piece {
   }
 
   @override
-  List<State>? fixedStateForPageWidth(int pageWidth) {
+  List<State>? constrainByPageWidth(int pageWidth) {
     var totalLength = 0;
 
     var splitStates = _allowHeaderOperand
