@@ -72,7 +72,9 @@ class PieceWriter {
     if (commaAfter) {
       var nextToken = token.next!;
       if (nextToken.lexeme == ',') {
-        return AdjacentPiece([tokenPiece, _makeCodePiece(nextToken)]);
+        // Forward any shape constraint on the comma wrapper piece into the
+        // contents before the comma.
+        return AdjacentPiece([tokenPiece, _makeCodePiece(nextToken)], 0);
       }
     }
 

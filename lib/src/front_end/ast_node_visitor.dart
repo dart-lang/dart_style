@@ -9,6 +9,7 @@ import 'package:analyzer/source/line_info.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
+import '../piece/adjacent.dart';
 import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/call.dart';
@@ -1372,14 +1373,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitParenthesizedExpression(ParenthesizedExpression node) {
-    return ParenthesizedPiece(tokenPiece(node.leftParenthesis),
-        nodePiece(node.expression), tokenPiece(node.rightParenthesis));
+    return createParenthesized(
+        node.leftParenthesis, node.expression, node.rightParenthesis);
   }
 
   @override
   Piece visitParenthesizedPattern(ParenthesizedPattern node) {
-    return ParenthesizedPiece(tokenPiece(node.leftParenthesis),
-        nodePiece(node.pattern), tokenPiece(node.rightParenthesis));
+    return createParenthesized(
+        node.leftParenthesis, node.pattern, node.rightParenthesis);
   }
 
   @override
@@ -2001,7 +2002,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
       var nextToken = node.endToken.next!;
       if (nextToken.lexeme == ',') {
         var comma = tokenPiece(nextToken);
-        result = CommaPiece(result, comma);
+        // Forward any shape constraint on the comma wrapper piece into the
+        // contents before the comma.
+        result = AdjacentPiece([result, comma], 0);
       }
     }
 

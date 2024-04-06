@@ -8,7 +8,21 @@ import 'piece.dart';
 class AdjacentPiece extends Piece {
   final List<Piece> pieces;
 
-  AdjacentPiece(this.pieces);
+  /// The index of the child piece that any shape constraints applied to this
+  /// piece should be forwarded to, or -1 if no constraint should be forwarded.
+  final int _forwardShapeConstraintIndex;
+
+  AdjacentPiece(this.pieces, [this._forwardShapeConstraintIndex = -1]);
+
+  @override
+  Piece forwardShapeConstraint() {
+    if (_forwardShapeConstraintIndex != -1) {
+      return pieces[_forwardShapeConstraintIndex];
+    }
+
+    // Don't forward.
+    return this;
+  }
 
   @override
   void format(CodeWriter writer, State state) {

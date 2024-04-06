@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/call.dart';
 import '../piece/clause.dart';
@@ -992,6 +993,22 @@ mixin PieceFactory {
     }
 
     if (!atLineStart) builder.add(lineBuilder.build());
+  }
+
+  /// Creates a [Piece] for a parenthesized expression or pattern.
+  Piece createParenthesized(
+      Token leftParenthesis, AstNode contents, Token rightParenthesis) {
+    // Forward any shape constraint to the inner contents so that parentheses
+    // don't interfere with formatting as in:
+    //
+    //     blockStyle = ([
+    //       element,
+    //     ]);
+    return AdjacentPiece([
+      tokenPiece(leftParenthesis),
+      nodePiece(contents),
+      tokenPiece(rightParenthesis)
+    ], 1);
   }
 
   /// Create a [VariablePiece] for a named or wildcard variable pattern.
