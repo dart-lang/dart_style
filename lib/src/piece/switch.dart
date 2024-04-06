@@ -6,6 +6,130 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
+/// Piece for a switch expression.
+///
+/// A switch expression can format in a few ways:
+///
+/// [State.unsplit] The value and cases all fit on one line:
+///
+///     switch (foo) { _ => 1 };
+///
+/// [_splitCases] The cases split, but the value does not:
+///
+///     switch (foo) {
+///       _ => 1,
+///     }
+///
+/// [_blockSplitValueSplitCases] The value block splits and the cases split:
+///
+///     switch ([
+///       foo,
+///     ]) {
+///       _ => 1,
+///     }
+///
+/// [State.split] The value and cases split, but the value doesn't block split.
+///
+///     switch (foo +
+///         bar) {
+///       _ => 1,
+///     }
+///
+/// We make a distinction between the last two styles because the former is
+/// considered [Shape.block], but the latter is not, thus:
+///
+///     // Allowed:
+///     variable = switch ([
+///       foo,
+///     ]) {
+///       _ => 1,
+///     }
+///
+///     // Disallowed:
+///     variable = switch (foo +
+///         bar) {
+///       _ => 1,
+///     }
+///
+/// If the value splits, the cases always split.
+class SwitchExpressionPiece extends Piece {
+  /// State when the cases split but the value does not.
+  static const State _splitCases = State(1, cost: 0);
+
+  /// State when the value block splits and the cases split.
+  static const State _blockSplitValueSplitCases = State(2, cost: 0);
+
+  /// The `switch (` before the value.
+  final Piece _header;
+
+  /// The value expression.
+  final Piece _value;
+
+  /// The `) ` between the value and cases.
+  final Piece _separator;
+
+  /// The `{ ... }` cases.
+  final Piece _cases;
+
+  SwitchExpressionPiece(
+      this._header, this._value, this._separator, this._cases);
+
+  @override
+  List<State> get additionalStates =>
+      const [_splitCases, _blockSplitValueSplitCases, State.split];
+
+  @override
+  Shape shapeForState(State state) {
+    return switch (state) {
+      _splitCases || _blockSplitValueSplitCases => Shape.block,
+      _ => Shape.other,
+    };
+  }
+
+  @override
+  void applyShapeConstraints(State state, ConstrainShape constrain) {
+    if (state != State.unsplit) constrain(_cases, Shape.block);
+    if (state == _blockSplitValueSplitCases) constrain(_value, Shape.block);
+  }
+
+  @override
+  void format(CodeWriter writer, State state) {
+    switch (state) {
+      case State.unsplit:
+        writer.format(_header, allowNewlines: false);
+        writer.format(_value, allowNewlines: false);
+        writer.format(_separator, allowNewlines: false);
+        writer.format(_cases, allowNewlines: false);
+
+      case _splitCases:
+        writer.format(_header);
+        writer.format(_value, allowNewlines: false);
+        writer.format(_separator);
+        writer.format(_cases);
+
+      case _blockSplitValueSplitCases:
+        writer.format(_header);
+        writer.format(_value);
+        writer.format(_separator);
+        writer.format(_cases);
+
+      case State.split:
+        writer.format(_header);
+        writer.format(_value);
+        writer.format(_separator);
+        writer.format(_cases);
+    }
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    callback(_header);
+    callback(_value);
+    callback(_separator);
+    callback(_cases);
+  }
+}
+
 /// Piece for a case pattern, guard, and body in a switch expression.
 class CaseExpressionPiece extends Piece {
   /// Block split the case body expression.
