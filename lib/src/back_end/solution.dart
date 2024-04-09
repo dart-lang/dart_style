@@ -376,8 +376,6 @@ class Solution implements Comparable<Solution> {
               other = forwarded;
             }
 
-            if (debug.traceConstraints) {}
-
             var allowedStates = [
               for (var otherState in other.states)
                 if (other.shapeForState(otherState) == constrainedShape)
