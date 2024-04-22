@@ -57,8 +57,15 @@ class ChainPiece extends Piece {
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
   static const State _unsplitTargetBlockFormatTrailingCall = State(2, cost: 0);
 
-  /// Allow newlines in the last (or next-to-last) call but nowhere else.
+  /// Allow newlines in the target and the last (or next-to-last) call but
+  /// nowhere else.
   static const State _blockFormatTrailingCall = State(3, cost: 0);
+
+  /// Split the call chain at each method call, but leave the leading properties
+  /// on the same line as the target.
+  static const State _splitAfterProperties = State(4);
+
+  static const State _unsplitTargetSplitChain = State(5);
 
   // TODO(tall): Currently, we only allow a single call in the chain to be
   // block-formatted, and it must be the last or next-to-last. That covers
@@ -79,12 +86,6 @@ class ChainPiece extends Piece {
   // block calls are allowed when the chain is (possibly zero) leading
   // properties followed by only splittable calls and all splittable calls get
   // block formatted.
-
-  /// Split the call chain at each method call, but leave the leading properties
-  /// on the same line as the target.
-  static const State _splitAfterProperties = State(4);
-
-  static const State _unsplitTargetSplitChain = State(5);
 
   /// The target expression at the beginning of the call chain.
   final Piece _target;
@@ -148,8 +149,6 @@ class ChainPiece extends Piece {
       _blockFormatTarget => Shape.other,
       _unsplitTargetBlockFormatTrailingCall => Shape.block,
       _blockFormatTrailingCall => Shape.other,
-
-      // TODO: Should only be if target doesn't split.
       _splitAfterProperties => Shape.header,
       _unsplitTargetSplitChain => Shape.header,
       State.split => Shape.other,
