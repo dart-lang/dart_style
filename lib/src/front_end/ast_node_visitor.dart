@@ -18,6 +18,7 @@ import '../piece/if.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
+import '../piece/type.dart';
 import '../piece/variable.dart';
 import '../source_code.dart';
 import 'adjacent_builder.dart';
@@ -265,11 +266,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         withClause: node.withClause,
         implementsClause: node.implementsClause,
         nativeClause: node.nativeClause,
-        body: (
-          leftBracket: node.leftBracket,
-          members: node.members,
-          rightBracket: node.rightBracket
-        ));
+        body: () =>
+            createBody(node.leftBracket, node.members, node.rightBracket));
   }
 
   @override
@@ -291,7 +289,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         typeParameters: node.typeParameters,
         withClause: node.withClause,
         implementsClause: node.implementsClause,
-        semicolon: node.semicolon);
+        bodyType: TypeBodyType.semicolon,
+        body: () => tokenPiece(node.semicolon));
   }
 
   @override
@@ -516,71 +515,53 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitEnumDeclaration(EnumDeclaration node) {
-    var metadataBuilder = AdjacentBuilder(this);
-    metadataBuilder.metadata(node.metadata);
+    return createType(node.metadata, [node.enumKeyword], node.name,
+        typeParameters: node.typeParameters,
+        withClause: node.withClause,
+        implementsClause: node.implementsClause,
+        bodyType: node.members.isEmpty ? TypeBodyType.list : TypeBodyType.block,
+        body: () {
+      if (node.members.isEmpty) {
+        // If there are no members, format the constants like a delimited list.
+        // This keeps the enum declaration on one line if it fits.
+        // TODO(tall): The old style preserves blank lines and newlines between
+        // enum values. A newline will also force the enum to split even if it
+        // would otherwise fit. Do we want to do that with the new style too?
+        var builder =
+            DelimitedListBuilder(this, const ListStyle(spaceWhenUnsplit: true));
 
-    var header = buildPiece((b) {
-      b.token(node.enumKeyword);
-      b.space();
-      b.token(node.name);
-      b.visit(node.typeParameters);
-    });
-
-    if (node.members.isEmpty) {
-      // If there are no members, format the constants like a delimited list.
-      // This keeps the enum declaration on one line if it fits.
-      // TODO(tall): The old style preserves blank lines and newlines between
-      // enum values. A newline will also force the enum to split even if it
-      // would otherwise fit. Do we want to do that with the new style too?
-      var builder = DelimitedListBuilder(
-          this,
-          const ListStyle(
-              spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
-
-      builder.addLeftBracket(buildPiece((b) {
-        b.add(header);
-        b.space();
-        b.token(node.leftBracket);
-      }));
-
-      node.constants.forEach(builder.visit);
-      builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
-      metadataBuilder.add(builder.build());
-    } else {
-      metadataBuilder.add(buildPiece((b) {
-        b.add(header);
-        b.space();
-
+        builder.leftBracket(node.leftBracket);
+        node.constants.forEach(builder.visit);
+        builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
+        return builder.build();
+      } else {
         // If there are members, format it like a block where each constant and
         // member is on its own line.
-        var members = SequenceBuilder(this);
-        members.leftBracket(node.leftBracket);
+        var builder = SequenceBuilder(this);
+        builder.leftBracket(node.leftBracket);
 
         for (var constant in node.constants) {
-          members.addCommentsBefore(constant.firstNonCommentToken);
-          members.add(createEnumConstant(constant,
+          builder.addCommentsBefore(constant.firstNonCommentToken);
+          builder.add(createEnumConstant(constant,
               isLastConstant: constant == node.constants.last,
               semicolon: node.semicolon));
         }
 
         // Insert a blank line between the constants and members.
-        members.addBlank();
+        builder.addBlank();
 
         for (var node in node.members) {
-          members.visit(node);
+          builder.visit(node);
 
           // If the node has a non-empty braced body, then require a blank line
           // between it and the next node.
-          if (node.hasNonEmptyBody) members.addBlank();
+          if (node.hasNonEmptyBody) builder.addBlank();
         }
 
-        members.rightBracket(node.rightBracket);
-
-        b.add(members.build());
-      }));
-    }
-
-    return metadataBuilder.build();
+        builder.rightBracket(node.rightBracket);
+        return builder.build();
+      }
+    });
   }
 
   @override
@@ -624,11 +605,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     return createType(node.metadata, [node.extensionKeyword], node.name,
         typeParameters: node.typeParameters,
         onType: (node.onKeyword, node.extendedType),
-        body: (
-          leftBracket: node.leftBracket,
-          members: node.members,
-          rightBracket: node.rightBracket
-        ));
+        body: () =>
+            createBody(node.leftBracket, node.members, node.rightBracket));
   }
 
   @override
@@ -644,11 +622,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         typeParameters: node.typeParameters,
         representation: node.representation,
         implementsClause: node.implementsClause,
-        body: (
-          leftBracket: node.leftBracket,
-          members: node.members,
-          rightBracket: node.rightBracket
-        ));
+        body: () =>
+            createBody(node.leftBracket, node.members, node.rightBracket));
   }
 
   @override
@@ -1275,11 +1250,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
         typeParameters: node.typeParameters,
         onClause: node.onClause,
         implementsClause: node.implementsClause,
-        body: (
-          leftBracket: node.leftBracket,
-          members: node.members,
-          rightBracket: node.rightBracket
-        ));
+        body: () =>
+            createBody(node.leftBracket, node.members, node.rightBracket));
   }
 
   @override
@@ -1720,8 +1692,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     var value = startControlFlow(node.switchKeyword, node.leftParenthesis,
         node.expression, node.rightParenthesis);
 
-    var list = DelimitedListBuilder(this,
-        const ListStyle(spaceWhenUnsplit: true, splitListIfBeforeSplits: true));
+    var list =
+        DelimitedListBuilder(this, const ListStyle(spaceWhenUnsplit: true));
 
     list.addLeftBracket(buildPiece((b) {
       b.add(value);
