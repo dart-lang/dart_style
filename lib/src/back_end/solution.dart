@@ -124,9 +124,15 @@ class Solution implements Comparable<Solution> {
     void traverse(Piece piece) {
       piece.forEachChild(traverse);
 
-      if (piece.constrainByPageWidth(pageWidth - leadingIndent)
-          case var states?) {
-        pieceConstraints[piece] = states;
+      switch (piece.constrainByPageWidth(pageWidth - leadingIndent)) {
+        case [var state]:
+          piece.pin(state);
+        // TODO(https://github.com/dart-lang/sdk/issues/55543): Remove these
+        // ignores when the linked issue is fixed.
+        // ignore: receiver_of_type_never, dead_code
+        case var states? when states.length > 1:
+          // ignore: dead_code
+          pieceConstraints[piece] = states;
       }
     }
 
