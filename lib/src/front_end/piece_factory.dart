@@ -1101,8 +1101,8 @@ mixin PieceFactory {
       ImplementsClause? implementsClause,
       NativeClause? nativeClause,
       (Token, TypeAnnotation)? onType,
-      ({Token leftBracket, List<AstNode> members, Token rightBracket})? body,
-      Token? semicolon}) {
+      TypeBodyType bodyType = TypeBodyType.block,
+      required Piece Function() body}) {
     var metadataBuilder = AdjacentBuilder(this);
     metadataBuilder.metadata(metadata);
 
@@ -1180,15 +1180,10 @@ mixin PieceFactory {
           allowLeadingClause: extendsClause != null || onClause != null);
     }
 
-    Piece bodyPiece;
-    if (body != null) {
-      bodyPiece = createBody(body.leftBracket, body.members, body.rightBracket);
-    } else {
-      bodyPiece = tokenPiece(semicolon!);
-    }
+    var bodyPiece = body();
 
     metadataBuilder
-        .add(TypePiece(header, clausesPiece, bodyPiece, hasBody: body != null));
+        .add(TypePiece(header, clausesPiece, bodyPiece, bodyType: bodyType));
 
     return metadataBuilder.build();
   }

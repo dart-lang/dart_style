@@ -119,9 +119,7 @@ class ListPiece extends Piece {
   void format(CodeWriter writer, State state) {
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
-      writer.format(before,
-          allowNewlines:
-              !_style.splitListIfBeforeSplits || state == State.split);
+      writer.format(before);
 
       if (state != State.unsplit) writer.pushIndent(Indent.block);
 
@@ -449,36 +447,6 @@ class ListStyle {
   ///     //              ^                      ^
   final bool spaceWhenUnsplit;
 
-  /// Whether a split in the [_before] piece should force the list to split too.
-  /// Most of the time, this isn't relevant because the before part is usually
-  /// just a single bracket character.
-  ///
-  /// For collection literals with explicit type arguments, the [_before] piece
-  /// contains the type arguments. If those split, this is `false` to allow the
-  /// list itself to remain unsplit as in:
-  ///
-  ///     <
-  ///       VeryLongTypeName,
-  ///       AnotherLongTypeName,
-  ///     >{a: 1};
-  ///
-  /// For switch expressions, the `switch (value) {` part is in [_before] and
-  /// the body is the list. In that case, if the value splits, we want to force
-  /// the body to split too:
-  ///
-  ///     // Disallowed:
-  ///     e = switch (
-  ///       "a long string that must wrap"
-  ///     ) { 0 => "ok" };
-  ///
-  ///     // Instead:
-  ///     e = switch (
-  ///       "a long string that must wrap"
-  ///     ) {
-  ///       0 => "ok",
-  ///     };
-  final bool splitListIfBeforeSplits;
-
   /// Whether an element in the list is allowed to have block-like formatting,
   /// as in:
   ///
@@ -492,6 +460,5 @@ class ListStyle {
       {this.commas = Commas.trailing,
       this.splitCost = Cost.normal,
       this.spaceWhenUnsplit = false,
-      this.splitListIfBeforeSplits = false,
       this.allowBlockElement = false});
 }

@@ -1,0 +1,43 @@
+40 columns                              |
+>>> Unsplit with clause.
+enum E with M {a,b,c}
+<<<
+enum E with M { a, b, c }
+>>> Unsplit implements clause.
+enum E implements I {a,b,c}
+<<<
+enum E implements I { a, b, c }
+>>> Unsplit both clauses.
+enum E with M implements I {a,b,c}
+<<<
+enum E with M implements I { a, b, c }
+>>> Split with clause.
+enum VeryLongEnumTypeName with LongMixin {a,b,c}
+<<<
+enum VeryLongEnumTypeName
+    with LongMixin {
+  a,
+  b,
+  c,
+}
+>>> Split implements clause.
+enum VeryLongEnumTypeName implements LongInterface {a,b,c}
+<<<
+enum VeryLongEnumTypeName
+    implements LongInterface {
+  a,
+  b,
+  c,
+}
+>>> Both clauses split.
+enum SomeEnum with SomeLongMixin, AnotherMixin<int> implements SomeInterface<String, bool>, AnotherInterface {a}
+<<<
+enum SomeEnum
+    with
+        SomeLongMixin,
+        AnotherMixin<int>
+    implements
+        SomeInterface<String, bool>,
+        AnotherInterface {
+  a,
+}
