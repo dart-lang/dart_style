@@ -445,6 +445,14 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
+  Piece visitConstructorSelector(ConstructorSelector node) {
+    return buildPiece((b) {
+      b.token(node.period);
+      b.visit(node.name);
+    });
+  }
+
+  @override
   Piece visitContinueStatement(ContinueStatement node) {
     return createBreak(node.continueKeyword, node.label, node.semicolon);
   }

@@ -310,6 +310,7 @@ mixin PieceFactory {
       b.token(node.name);
       if (node.arguments case var arguments?) {
         b.visit(arguments.typeArguments);
+        b.visit(arguments.constructorSelector);
         b.visit(arguments.argumentList);
       }
 

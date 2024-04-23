@@ -94,6 +94,22 @@ enum Args {
     anotherNamed: argumentValue,
   ),
 }
+>>> Named constructor in value.
+enum Things {
+  unsplit.name(argument),
+  private._(argument),
+  splitInArgumentList.longerName(argument),
+  generic<int>.name(argument)
+}
+<<<
+enum Things {
+  unsplit.name(argument),
+  private._(argument),
+  splitInArgumentList.longerName(
+    argument,
+  ),
+  generic<int>.name(argument),
+}
 >>> Generic enum type.
 enum MagicNumbers< T    extends num   ,   S> {
   one(1), two(2),pi<double,String>(3.14159)
