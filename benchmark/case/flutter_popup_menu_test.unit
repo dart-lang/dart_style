@@ -1,0 +1,53 @@
+void main() {
+  await tester.pumpWidget(
+    MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: PopupMenuButton<String>(
+            key: popupMenuButtonKey,
+            child: const Text('button'),
+            onSelected: (String result) { },
+            itemBuilder: (BuildContext context) {
+              return <PopupMenuEntry<String>>[
+                // This menu item's height will be 48 because the default minimum height
+                // is 48 and the height of the text is less than 48.
+                const PopupMenuItem<String>(
+                  value: '0',
+                  child: Text('Item 0'),
+                ),
+                // This menu item's height parameter specifies its minimum height. The
+                // overall height of the menu item will be 50 because the child's
+                // height 40, is less than 50.
+                const PopupMenuItem<String>(
+                  height: 50,
+                  value: '1',
+                  child: SizedBox(
+                    height: 40,
+                    child: Text('Item 1'),
+                  ),
+                ),
+                // This menu item's height parameter specifies its minimum height, so the
+                // overall height of the menu item will be 75.
+                const PopupMenuItem<String>(
+                  height: 75,
+                  value: '2',
+                  child: SizedBox(
+                    child: Text('Item 2'),
+                  ),
+                ),
+                // This menu item's height will be 100.
+                const PopupMenuItem<String>(
+                  value: '3',
+                  child: SizedBox(
+                    height: 100,
+                    child: Text('Item 3'),
+                  ),
+                ),
+              ];
+            },
+          ),
+        ),
+      ),
+    ),
+  );
+}

@@ -421,7 +421,6 @@ class DelimitedListBuilder {
     // TODO(tall): These heuristics will probably need some iteration.
     var functions = <int>[];
     var collections = <int>[];
-    var invocations = <int>[];
     var adjacentStrings = <int>[];
 
     for (var i = 0; i < _elements.length; i++) {
@@ -431,7 +430,30 @@ class DelimitedListBuilder {
         case BlockFormat.collection:
           collections.add(i);
         case BlockFormat.invocation:
-          invocations.add(i);
+          // We don't allow function calls as block elements partially for style
+          // and partially for performance. It often doesn't look great to let
+          // nested function calls pack arbitrarily deeply as block arguments:
+          //
+          //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+          //         content: Text(
+          //       localizations.demoSnackbarsAction,
+          //     )));
+          //
+          // This is better when expanded like:
+          //
+          //     ScaffoldMessenger.of(context).showSnackBar(
+          //       SnackBar(
+          //         content: Text(
+          //           localizations.demoSnackbarsAction,
+          //         ),
+          //       ),
+          //     );
+          //
+          // Also, when invocations can be block arguments, which themselves
+          // may contain block arguments, it's easy to run into combinatorial
+          // performance in the solver as it tries to determine which of the
+          // nested calls should and shouldn't be block formatted.
+          break;
         case BlockFormat.indentedAdjacentStrings:
         case BlockFormat.unindentedAdjacentStrings:
           adjacentStrings.add(i);
@@ -440,7 +462,7 @@ class DelimitedListBuilder {
       }
     }
 
-    switch ((functions, collections, invocations, adjacentStrings)) {
+    switch ((functions, collections, adjacentStrings)) {
       // Only allow block formatting in an argument list containing adjacent
       // strings when:
       //
@@ -453,7 +475,7 @@ class DelimitedListBuilder {
       // but little else.
       // TODO(tall): We may want to iterate on these heuristics. For now,
       // starting with something very narrowly targeted.
-      case ([1], _, _, [0]):
+      case ([1], _, [0]):
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
         if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
@@ -464,31 +486,16 @@ class DelimitedListBuilder {
         _elements[1].allowNewlinesWhenUnsplit = true;
 
       // A function expression takes precedence over other block arguments.
-      case ([var blockArgument], _, _, _):
+      case ([var element], _, _):
+        _elements[element].allowNewlinesWhenUnsplit = true;
 
       // A single collection literal can be block formatted even if there are
       // other arguments.
-      case ([], [var blockArgument], _, _):
-
-      // A single invocation can be block formatted only when there are no
-      // other arguments.
-      case ([], [], [var blockArgument], _) when _elements.length == 1:
-        _elements[blockArgument].allowNewlinesWhenUnsplit = true;
+      case ([], [var element], _):
+        _elements[element].allowNewlinesWhenUnsplit = true;
     }
 
-    // If we get here, there are no block arguments, or it's ambiguous as to
+    // If we get here, there are no block element, or it's ambiguous as to
     // which one should be it so none are.
-    // TODO(tall): The old formatter allows multiple block arguments, like:
-    //
-    //     function(() {
-    //       body;
-    //     }, () {
-    //       more;
-    //     });
-    //
-    // This doesn't seem very common in the Flutter repo, but does occur
-    // sometimes. We'll probably want to experiment to see if it's worth
-    // supporting multiple block arguments. If so, we should at least require
-    // them to be contiguous with no non-block arguments in the middle.
   }
 }
