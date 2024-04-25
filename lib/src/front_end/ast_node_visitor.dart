@@ -20,6 +20,7 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
+import '../profile.dart';
 import '../source_code.dart';
 import 'adjacent_builder.dart';
 import 'chain_builder.dart';
@@ -67,6 +68,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
   SourceCode run(AstNode node) {
+    Profile.begin('AstNodeVisitor.run()');
+
+    Profile.begin('AstNodeVisitor build Piece tree');
+
     // Always treat the code being formatted as contained in a sequence, even
     // if we aren't formatting an entire compilation unit. That way, comments
     // before and after the node are handled properly.
@@ -111,8 +116,16 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
     // Write any comments at the end of the code.
     sequence.addCommentsBefore(node.endToken.next!);
 
+    var unitPiece = sequence.build();
+
+    Profile.end('AstNodeVisitor build Piece tree');
+
     // Finish writing and return the complete result.
-    return pieces.finish(sequence.build());
+    var result = pieces.finish(unitPiece);
+
+    Profile.end('AstNodeVisitor.run()');
+
+    return result;
   }
 
   @override

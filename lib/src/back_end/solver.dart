@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 
 import '../debug.dart' as debug;
 import '../piece/piece.dart';
+import '../profile.dart';
 import 'solution.dart';
 import 'solution_cache.dart';
 
@@ -77,7 +78,9 @@ class Solver {
         leadingIndent: _leadingIndent,
         rootState: rootState);
 
+    Profile.begin('Solver enqueue');
     _queue.add(solution);
+    Profile.end('Solver enqueue');
 
     // The lowest cost solution found so far that does overflow.
     var best = solution;
@@ -87,10 +90,12 @@ class Solver {
     // TODO(perf): Consider bailing out after a certain maximum number of tries,
     // so that it outputs suboptimal formatting instead of hanging entirely.
     while (_queue.isNotEmpty) {
+      Profile.begin('Solver dequeue');
       var solution = _queue.removeFirst();
-      tries++;
+      Profile.end('Solver dequeue');
 
       if (debug.traceSolver) {
+        tries++;
         debug.log(debug.bold('Try #$tries $solution'));
         debug.log(solution.text);
         debug.log('');
@@ -114,7 +119,9 @@ class Solver {
       // options.
       for (var expanded in solution.expand(_cache, root,
           pageWidth: _pageWidth, leadingIndent: _leadingIndent)) {
+        Profile.begin('Solver enqueue');
         _queue.add(expanded);
+        Profile.end('Solver enqueue');
       }
     }
 
