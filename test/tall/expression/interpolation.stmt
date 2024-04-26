@@ -3,18 +3,16 @@
 " ${   interp+olate } and ${fn  (  1 ) } end";
 <<<
 " ${interp + olate} and ${fn(1)} end";
->>> Allow splitting in interpolation if there is nowhere else.
+>>> Don't split in interpolation, even if the result doesn't fit.
 "some text that is long ${interpolate + a + thing} more";
 <<<
-"some text that is long ${interpolate +
-    a +
-    thing} more";
->>> Prefer not splitting in interpolation.
+"some text that is long ${interpolate + a + thing} more";
+>>> Split elsewhere when possible since interpolation doesn't split.
 "first string ${has + interpolation}" + "another ${inter + polated}";
 <<<
 "first string ${has + interpolation}" +
     "another ${inter + polated}";
->>> Split interpolation in multi-line string.
+>>> Don't split interpolation in multi-line string.
 """
 some text that is pretty long
 some more text that is pretty long ${    interpolate + a + thing   } more text
@@ -22,19 +20,14 @@ some more text that is pretty long ${    interpolate + a + thing   } more text
 <<<
 """
 some text that is pretty long
-some more text that is pretty long ${interpolate +
-    a +
-    thing} more text
+some more text that is pretty long ${interpolate + a + thing} more text
 """;
->>> Split in nested interpolation.
+>>> Don't split in nested interpolation.
 "some text that is ${pretty +  'long ${    interpolate +
 a + thing   } more'} text";
 <<<
-"some text that is ${pretty +
-    'long ${interpolate +
-        a +
-        thing} more'} text";
->>> Mandatory newline in interpolation.
+"some text that is ${pretty + 'long ${interpolate + a + thing} more'} text";
+>>> Allow mandatory newlines in interpolation.
 "before ${(){statement();statement();statement();}} after";
 <<<
 "before ${() {
@@ -58,14 +51,10 @@ j ${k
 l}''';
 <<<
 '''a
-${b +
-    """c
-${d +
-        '''e
-f''' +
-        g}
-h""" +
-    i}
+${b + """c
+${d + '''e
+f''' + g}
+h""" + i}
 j ${k + l}''';
 >>> Line comment at beginning of interpolation.
 "before ${// comment

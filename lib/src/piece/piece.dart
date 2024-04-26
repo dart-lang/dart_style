@@ -134,6 +134,12 @@ abstract class Piece {
 
   /// Forces this piece to always use [state].
   void pin(State state) {
+    // Only pin a piece once. This can happen if the contents of an
+    // interpolation expression (which are pinned to prevent splitting) are
+    // large enough for [fixedStateForPageWidth()] to also try to pin it to its
+    // fully split state.
+    if (_pinnedState != null) return;
+
     _pinnedState = state;
 
     // If this piece's pinned state constrains any child pieces, pin those too,
@@ -143,13 +149,19 @@ abstract class Piece {
     });
   }
 
+  /// Pin the piece to whatever state is needed to prevent it from splitting.
+  void preventSplit() {
+    // For most pieces, the initial state does it.
+    pin(State.unsplit);
+  }
+
   /// The name of this piece as it appears in debug output.
   ///
   /// By default, this is the class's name with `Piece` removed.
   String get debugName => runtimeType.toString().replaceAll('Piece', '');
 
   @override
-  String toString() => debugName;
+  String toString() => '$debugName${_pinnedState ?? ''}';
 }
 
 /// A simple atomic piece of code.

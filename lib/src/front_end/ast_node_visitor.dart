@@ -1074,11 +1074,28 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
 
   @override
   Piece visitInterpolationExpression(InterpolationExpression node) {
-    return buildPiece((b) {
+    var piece = buildPiece((b) {
       b.token(node.leftBracket);
       b.visit(node.expression);
       b.token(node.rightBracket);
     });
+
+    // Don't allow splitting inside interpolated expressions (except for
+    // mandatory splits from comments and sequences). Splits inside
+    // interpolations almost never look good. It's usually better to just let
+    // the lines overflow. More importantly, a single string literal with many
+    // interpolations can easily lead to combinatorial performance in the
+    // solver.
+    // TODO(rnystrom): Traversing the entire interpolation Piece tree and
+    // pinning it feels sort of inelegant. Is there a cleaner approach?
+    void traverse(Piece piece) {
+      piece.preventSplit();
+      piece.forEachChild(traverse);
+    }
+
+    traverse(piece);
+
+    return piece;
   }
 
   @override

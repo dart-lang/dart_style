@@ -1,0 +1,20 @@
+main() {
+  var a = '''
+      {
+        selected:
+          hovered: $hoverColor, otherwise: ${colorScheme?.primary.withOpacity(0.04)},
+          focused: $focusColor, otherwise: ${colorScheme?.primary.withOpacity(0.12)},
+          pressed: $splashColor, otherwise: ${colorScheme?.primary.withOpacity(0.16)},
+        unselected:
+          hovered: $hoverColor, otherwise: ${colorScheme?.onSurface.withOpacity(0.04)},
+          focused: $focusColor, otherwise: ${colorScheme?.onSurface.withOpacity(0.12)},
+          pressed: $splashColor, otherwise: ${colorScheme?.onSurface.withOpacity(0.16)},
+        otherwise: null,
+      }
+      ''';
+
+  log.writeln(
+      '  (name:"${stats.channel}" type:"${stats.type}" codec:"${stats.codec}" upBytes:${stats.upBytes} upBytes_avg:${stats.averageUpPayload.toStringAsFixed(1)} downBytes:${stats.downBytes} downBytes_avg:${stats.averageDownPayload.toStringAsFixed(1)})');
+
+  var b = '${objectRuntimeType(this, 'BoundedFrictionSimulation')}(cₓ: ${_drag.toStringAsFixed(1)}, x₀: ${_x.toStringAsFixed(1)}, dx₀: ${_v.toStringAsFixed(1)}, x: ${_minX.toStringAsFixed(1)}..${_maxX.toStringAsFixed(1)})';
+}
