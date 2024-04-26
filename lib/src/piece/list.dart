@@ -365,6 +365,12 @@ final class ListElementPiece extends Piece {
   }
 
   @override
+  void preventSplit() {
+    // Don't pin the ListElementPiece. Its state is only used to determine
+    // whether or not to write a comma.
+  }
+
+  @override
   String get debugName => 'ListElem';
 }
 
