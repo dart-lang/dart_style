@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../piece/piece.dart';
+import '../profile.dart';
 import 'code_writer.dart';
 import 'solution_cache.dart';
 
@@ -120,10 +121,12 @@ class Solution implements Comparable<Solution> {
 
   Solution._(SolutionCache cache, Piece root, int pageWidth, int leadingIndent,
       this._cost, this._pieceStates) {
+    Profile.count('create Solution');
+
     var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
     writer.format(root);
-
     var (text, nextPieceToExpand) = writer.finish();
+
     _text = text;
     _nextPieceToExpand = nextPieceToExpand;
   }
@@ -156,6 +159,8 @@ class Solution implements Comparable<Solution> {
   /// This is called when a subtree of a Piece tree is solved separately and
   /// the resulting solution is being merged with this one.
   void mergeSubtree(Solution subtreeSolution) {
+    Profile.begin('Solution.mergeSubtree()');
+
     _overflow += subtreeSolution._overflow;
 
     // Add the subtree's bound pieces to this one. Make sure to not double
@@ -166,6 +171,8 @@ class Solution implements Comparable<Solution> {
         return state;
       });
     });
+
+    Profile.end('Solution.mergeSubtree()');
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
+import '../profile.dart';
 
 typedef Constrain = void Function(Piece other, State constrainedState);
 
@@ -78,6 +79,10 @@ abstract class Piece {
     });
 
     return total;
+  }
+
+  Piece() {
+    Profile.count('create Piece');
   }
 
   /// Apply any constraints that this piece places on other pieces when this
