@@ -10,17 +10,17 @@ foo(
   c,
 );
 >>> Multiple nested collections inside a block argument.
-method(function([veryLongElement, veryLongElement],
-[veryLongElement, veryLongElement, veryLongElement]));
+method({[veryLongElement, veryLongElement],
+[veryLongElement, veryLongElement, veryLongElement]});
 <<<
-method(function(
+method({
   [veryLongElement, veryLongElement],
   [
     veryLongElement,
     veryLongElement,
     veryLongElement,
   ],
-));
+});
 >>> Mixed named/positional arguments with collection arguments.
 function(argument, a: argument, argument, b: argument,
 [element, element, element, element],

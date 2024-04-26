@@ -59,75 +59,87 @@ function_______________________(() => null);
 function_______________________(
   () => null,
 );
->>> Function call.
+>>> Function call is not a block argument.
 function(innerFunction(veryLongArgumentExpression));
 <<<
-function(innerFunction(
-  veryLongArgumentExpression,
-));
->>> Zero-argument function call with block comment.
+function(
+  innerFunction(
+    veryLongArgumentExpression,
+  ),
+);
+>>> A zero-argument function call with block comment is not a block argument.
 function(innerFunction(/* long comment */));
 <<<
-function(innerFunction(
-  /* long comment */
-));
->>> Zero-argument function call with line comment.
+function(
+  innerFunction(/* long comment */),
+);
+>>> Zero-argument function call with line comment is not a block argument.
 function(innerFunction(// comment
 ));
 <<<
-function(innerFunction(
-  // comment
-));
+function(
+  innerFunction(
+    // comment
+  ),
+);
 >>> A zero-argument function call is not a block argument.
 function_______________________(inner());
 <<<
 function_______________________(
   inner(),
 );
->>> Method call.
+>>> A method call is not a block argument.
 function(target.inner(veryLongArgumentExpression));
 <<<
-function(target.inner(
-  veryLongArgumentExpression,
-));
->>> Zero-argument method call with block comment.
+function(
+  target.inner(
+    veryLongArgumentExpression,
+  ),
+);
+>>> A zero-argument method call with block comment is not a block argument.
 function(target.inner(/* long comment */));
 <<<
-function(target.inner(
-  /* long comment */
-));
->>> Zero-argument method call with line comment.
+function(
+  target.inner(/* long comment */),
+);
+>>> A zero-argument method call with line comment is not a block argument.
 function(target.inner(// comment
 ));
 <<<
-function(target.inner(
-  // comment
-));
+function(
+  target.inner(
+    // comment
+  ),
+);
 >>> A zero-argument method call is not a block argument.
 function________________(target.inner());
 <<<
 function________________(
   target.inner(),
 );
->>> Instance creation expression.
+>>> An instance creation expression is not a block argument.
 function(new SomeClass(veryLongArgumentExpression));
 <<<
-function(new SomeClass(
-  veryLongArgumentExpression,
-));
->>> Zero-argument instance creation expression with block comment.
+function(
+  new SomeClass(
+    veryLongArgumentExpression,
+  ),
+);
+>>> A zero-argument instance creation expression with block comment is not a block argument.
 function(new SomeClass(/* long comment */));
 <<<
-function(new SomeClass(
-  /* long comment */
-));
->>> Zero-argument instance creation expression with line comment.
+function(
+  new SomeClass(/* long comment */),
+);
+>>> A zero-argument instance creation expression with line comment is not a block argument.
 function(new SomeClass(// comment
 ));
 <<<
-function(new SomeClass(
-  // comment
-));
+function(
+  new SomeClass(
+    // comment
+  ),
+);
 >>> A zero-argument instance creation expression is not a block argument.
 function________________(new SomeClass());
 <<<
@@ -171,37 +183,43 @@ function_________________________(() {}());
 function_________________________(
   () {}(),
 );
->>> Function expression call.
+>>> A function expression call is not a block argument.
 function((expression)(veryLongArgumentExpression));
 <<<
-function((expression)(
-  veryLongArgumentExpression,
-));
->>> Zero-argument function expression call with block comment.
+function(
+  (expression)(
+    veryLongArgumentExpression,
+  ),
+);
+>>> A zero-argument function expression call with block comment is not a block argument.
 function((expression)(/* long comment */));
 <<<
-function((expression)(
-  /* long comment */
-));
->>> Zero-argument function expression call with line comment.
+function(
+  (expression)(/* long comment */),
+);
+>>> A zero-argument function expression call with line comment is not a block argument.
 function((expression)(// comment
 ));
 <<<
-function((expression)(
-  // comment
-));
+function(
+  (expression)(
+    // comment
+  ),
+);
 >>> A zero-argument function expression call is not a block argument.
 function_______________________((expr)());
 <<<
 function_______________________(
   (expr)(),
 );
->>> Parenthesized expression where inner expression is a block argument.
-function((innerFunction(veryLongArgumentExpression)));
+>>> A parenthesized expression where inner expression is a block argument.
+function(([element1, element2, element3]));
 <<<
-function((innerFunction(
-  veryLongArgumentExpression,
-)));
+function(([
+  element1,
+  element2,
+  element3,
+]));
 >>> List literal.
 function([veryLongElement, anotherLongElement]);
 <<<

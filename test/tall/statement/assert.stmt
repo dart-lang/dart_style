@@ -57,13 +57,14 @@ assert(
   veryLongArgument2,
 );
 >>> Allow block formatting of condition.
-assert(inner(argument, argument, argument));
+assert([element1, element2, element3, element4]);
 <<<
-assert(inner(
-  argument,
-  argument,
-  argument,
-));
+assert([
+  element1,
+  element2,
+  element3,
+  element4,
+]);
 >>> Allow block formatting of message.
 assert(true, () {
   return someSlowMessageComputation();
