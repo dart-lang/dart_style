@@ -116,6 +116,24 @@ class Solution implements Comparable<Solution> {
       cost += additionalCost!;
     }
 
+    // Given the page width (minus any leading indentation), we may be able to
+    // eagerly tell that some pieces must bind to a certain state. If so, do
+    // that now. We do that here instead of pinning the pieces because when
+    // this is called while separately formatting a piece subtree, the greater
+    // leading indentation gives a narrower remaining page width and makes it
+    // more likely we can tell that a piece will be forced to split.
+    void traverse(Piece piece) {
+      piece.forEachChild(traverse);
+
+      if (piece.fixedStateForPageWidth(pageWidth - leadingIndent)
+          case var state?) {
+        var additionalCost = _tryBind(pieceStates, piece, state);
+        cost += additionalCost!;
+      }
+    }
+
+    traverse(root);
+
     return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
   }
 

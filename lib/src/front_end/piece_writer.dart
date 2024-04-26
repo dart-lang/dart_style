@@ -181,25 +181,6 @@ class PieceWriter {
       debug.log(debug.pieceTree(rootPiece));
     }
 
-    Profile.begin('PieceWriter.finish() traverse and pin');
-
-    // See if it's possible to eagerly pin any of the pieces based just on the
-    // length and newlines in their children. This is faster, especially for
-    // larger outermost pieces, then relying on the solver to determine their
-    // state.
-    void traverse(Piece piece) {
-      piece.forEachChild(traverse);
-
-      if (piece.fixedStateForPageWidth(_formatter.pageWidth - _formatter.indent)
-          case var state?) {
-        piece.pin(state);
-      }
-    }
-
-    traverse(rootPiece);
-
-    Profile.end('PieceWriter.finish() traverse and pin');
-
     Profile.begin('PieceWriter.finish() format piece tree');
 
     var cache = SolutionCache();

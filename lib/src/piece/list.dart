@@ -211,8 +211,9 @@ class ListPiece extends Piece {
     if (_after case var after?) {
       totalLength += after.totalCharacters;
 
-      // Note that in `_after` does *not* force the list to split, so we ignore
-      // it here. This is typically a line comment after the closing bracket.
+      // Note that a newline in `_after` does *not* force the list to split, so
+      // we ignore it here. This is typically a line comment after the closing
+      // bracket.
     }
 
     // If the entire list doesn't fit on one line, it will split.
