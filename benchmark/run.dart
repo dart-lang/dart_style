@@ -220,18 +220,19 @@ void _printStats(String benchmark, List<double> times) {
 
   var baseline = '  (none)';
   if (_baseline[benchmark] case var baseLineFastest?) {
-    // Show as a percentage of the baseline time. So 100% means "same time as
-    // the baseline", "50%" means "half the time as the baseline" or twice as
-    // fast.
-    var percent = fastest / baseLineFastest * 100;
+    // Show the baseline's time as a percentage of the measured time. So:
+    // -  50% means it took twice the time or half as hast.
+    // - 100% means it took the same time as the baseline.
+    // - 200% means it ran in half the time or twice as fast.
+    var percent = baseLineFastest / fastest * 100;
     baseline = '${percent.toStringAsFixed(1).padLeft(7)}%';
 
     // If the difference is (probably) bigger than the noise, then show it in
     // color to make it clearer that smaller number is better.
     if (percent < 98) {
-      baseline = debug.green(baseline);
-    } else if (percent > 102) {
       baseline = debug.red(baseline);
+    } else if (percent > 102) {
+      baseline = debug.green(baseline);
     }
   }
 
