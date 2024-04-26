@@ -10,6 +10,7 @@ import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
+import 'package:dart_style/src/profile.dart';
 import 'package:dart_style/src/short/source_visitor.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:path/path.dart' as p;
@@ -94,6 +95,8 @@ void _runBenchmark(Benchmark benchmark, double? baseline,
   }
 
   _printResult('Best    ', baseline, best);
+
+  Profile.report();
 }
 
 Future<({bool isShort, double? baseline, List<Benchmark> benchmarks})>

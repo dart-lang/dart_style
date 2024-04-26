@@ -4,6 +4,7 @@
 import 'dart:math';
 
 import '../piece/piece.dart';
+import '../profile.dart';
 import 'solution.dart';
 import 'solution_cache.dart';
 
@@ -238,8 +239,12 @@ class CodeWriter {
   /// [piece] will have a newline before and after it.
   void format(Piece piece, {bool separate = false, bool allowNewlines = true}) {
     if (separate) {
+      Profile.count('CodeWriter.format() piece separate');
+
       _formatSeparate(piece);
     } else {
+      Profile.count('CodeWriter.format() piece inline');
+
       _formatInline(piece, allowNewlines: allowNewlines);
     }
   }
@@ -265,7 +270,9 @@ class CodeWriter {
       _solution.endSelection(_buffer.length + end);
     }
 
+    Profile.begin('CodeWriter.format() write separate piece text');
     _buffer.write(solution.text);
+    Profile.end('CodeWriter.format() write separate piece text');
   }
 
   /// Format [piece] writing directly into this [CodeWriter].

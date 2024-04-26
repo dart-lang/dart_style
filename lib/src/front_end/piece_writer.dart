@@ -10,6 +10,7 @@ import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/adjacent.dart';
 import '../piece/piece.dart';
+import '../profile.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
 
@@ -180,11 +181,15 @@ class PieceWriter {
       debug.log(debug.pieceTree(rootPiece));
     }
 
+    Profile.begin('PieceWriter.finish() format piece tree');
+
     var cache = SolutionCache();
     var formatter = Solver(cache,
         pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
     var result = formatter.format(rootPiece);
     var outputCode = result.text;
+
+    Profile.end('PieceWriter.finish() format piece tree');
 
     // Be a good citizen, end with a newline.
     if (_source.isCompilationUnit) outputCode += _formatter.lineEnding!;
