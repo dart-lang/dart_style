@@ -1,3 +1,7 @@
 # https://dart.dev/guides/libraries/private-files
 .dart_tool/
 pubspec.lock
+
+# Don't commit the baseline file since it's used for local performance
+# measurement and comparison.
+benchmark/baseline.json
