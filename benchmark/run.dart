@@ -13,6 +13,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
+import 'package:dart_style/src/profile.dart';
 import 'package:dart_style/src/short/source_visitor.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:path/path.dart' as p;
@@ -84,6 +85,8 @@ Future<void> main(List<String> arguments) async {
   for (var (benchmark, measuredTimes) in results) {
     _printStats(benchmark.name, measuredTimes);
   }
+
+  Profile.report();
 
   if (_writeBaseline) {
     var data = <String, Object?>{};

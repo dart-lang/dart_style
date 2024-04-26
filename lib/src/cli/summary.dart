@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
+import '../profile.dart';
 import '../source_code.dart';
 import 'formatter_options.dart';
 
@@ -110,6 +111,8 @@ class _ProfileSummary implements Summary {
       var s = _elided > 1 ? 's' : '';
       print('...$_elided more file$s each took less than 10ms.');
     }
+
+    Profile.report();
   }
 
   /// Called when [file] is about to be formatted.
