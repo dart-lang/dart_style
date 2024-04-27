@@ -125,6 +125,10 @@ class Solution implements Comparable<Solution> {
     void traverse(Piece piece) {
       piece.forEachChild(traverse);
 
+      // If the piece is already pinned (for example, by being inside a string
+      // interpolation), then there's nothing else to do.
+      if (piece.pinnedState != null) return;
+
       if (piece.fixedStateForPageWidth(pageWidth - leadingIndent)
           case var state?) {
         var additionalCost = _tryBind(pieceStates, piece, state);
