@@ -2,13 +2,16 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
+import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
 import 'package:dart_style/src/profile.dart';
 import 'package:dart_style/src/short/source_visitor.dart';
@@ -16,100 +19,170 @@ import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
-const _totalTrials = 100;
+/// The number of trials to run before measuring results.
+const _warmUpTrials = 100;
+
+/// The number of trials whose results are measured.
+///
+/// Should be an odd number so that we can grab the median easily.
+const _measuredTrials = 51;
+
+/// The number of times to format the benchmark in a single timed trial.
+///
+/// This is more than one because formatting small examples can be so fast that
+/// it is dwarfed by noise and measuring overhead.
 const _formatsPerTrial = 10;
+
+/// Where to read and write the baseline file.
+const _baselinePath = 'benchmark/baseline.json';
 
 final _benchmarkDirectory = p.dirname(p.fromUri(Platform.script));
 
-Future<void> main(List<String> arguments) async {
-  var (:isShort, :baseline, :benchmarks) = await _parseArguments(arguments);
+/// Whether to use the short or tall style formatter.
+bool _isShort = false;
 
+/// If `true`, write the results to a baseline file for later comparison.
+bool _writeBaseline = false;
+
+/// If there is an existing baseline file, this contains the best time for each
+/// named benchmark in the baseline file.
+Map<String, double> _baseline = {};
+
+Future<void> main(List<String> arguments) async {
+  var benchmarks = await _parseArguments(arguments);
+
+  // Don't read the baseline if this run is supposed to be creating a baseline.
+  if (!_writeBaseline) {
+    try {
+      var baselineFile = File(_baselinePath);
+      if (baselineFile.existsSync()) {
+        var data =
+            jsonDecode(baselineFile.readAsStringSync()) as Map<String, Object?>;
+        data.forEach((name, metrics) {
+          var fastest = (metrics as Map<String, Object?>)['fastest'] as double;
+          _baseline[name] = fastest;
+        });
+      }
+    } on IOException catch (error) {
+      print('Failed to read baseline file "$_baselinePath".\n$error');
+    }
+  }
+
+  await _warmUp();
+
+  var results = <(Benchmark, List<double>)>[];
   for (var benchmark in benchmarks) {
-    _runBenchmark(benchmark, baseline, isShort: isShort);
+    var times = _runTrials('Benchmarking', benchmark, _measuredTrials);
+    results.add((benchmark, times));
+  }
+
+  print('');
+  var style = _isShort ? 'short' : 'tall';
+  print('${"Benchmark ($style)".padRight(30)}  '
+      'fastest   median  slowest  average  baseline');
+  print('-----------------------------  '
+      '--------  -------  -------  -------  --------');
+  for (var (benchmark, measuredTimes) in results) {
+    _printStats(benchmark.name, measuredTimes);
+  }
+
+  Profile.report();
+
+  if (_writeBaseline) {
+    var data = <String, Object?>{};
+    for (var (benchmark, measuredTimes) in results) {
+      data[benchmark.name] = {'fastest': measuredTimes.first};
+    }
+
+    var json = const JsonEncoder.withIndent('  ').convert(data);
+    File(_baselinePath).writeAsStringSync(json);
+    print('Wrote baseline to "$_baselinePath".');
   }
 }
 
-void _runBenchmark(Benchmark benchmark, double? baseline,
-    {required bool isShort}) {
+/// Run the large benchmark several times to warm up the JIT.
+///
+/// Since the benchmarks are run on the VM, JIT warm-up has a large impact on
+/// performance. Warming up the VM gives it time for the optimized compiler to
+/// kick in.
+Future<void> _warmUp() async {
+  var benchmark = await Benchmark.read('benchmark/case/large.unit');
+  _runTrials('Warming up', benchmark, _warmUpTrials);
+}
+
+/// Runs [benchmark] [trials] times.
+///
+/// Returns the list of execution times sorted from shortest to longest.
+List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   var source = SourceCode(benchmark.input);
-  var expected = isShort ? benchmark.shortOutput : benchmark.tallOutput;
-
-  print('Benchmarking "${benchmark.name}" '
-      'using ${isShort ? 'short' : 'tall'} style...');
-
-  if (baseline != null) {
-    print('Comparing to baseline where 100% = ${baseline.toStringAsFixed(3)}ms'
-        ' (shorter is better)');
-  }
+  var expected = _isShort ? benchmark.shortOutput : benchmark.tallOutput;
 
   // Parse the source outside of the main benchmark loop. That way, analyzer
   // parse time (which we don't control) isn't part of the benchmark.
   var parseResult = parseString(
-    content: source.text,
-    featureSet: FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: Version(3, 3, 0), flags: const []),
-    path: source.uri,
-    throwIfDiagnostics: false,
-  );
+      content: source.text,
+      featureSet: FeatureSet.fromEnableFlags2(
+          sdkLanguageVersion: Version(3, 3, 0), flags: const []),
+      path: source.uri,
+      throwIfDiagnostics: false);
 
   var formatter = DartFormatter(
       pageWidth: benchmark.pageWidth,
       lineEnding: '\n',
-      experimentFlags: [if (!isShort) tallStyleExperimentFlag]);
+      experimentFlags: [if (!_isShort) tallStyleExperimentFlag]);
 
-  // Run the benchmark several times. This ensures the VM is warmed up and lets
-  // us see how much variance there is.
-  var best = 99999999.0;
-  for (var i = 0; i <= _totalTrials; i++) {
-    var stopwatch = Stopwatch()..start();
-
-    // For a single benchmark, format the source multiple times.
-    String? result;
-    for (var j = 0; j < _formatsPerTrial; j++) {
-      if (isShort) {
-        var visitor = SourceVisitor(formatter, parseResult.lineInfo, source);
-        result = visitor.run(parseResult.unit).text;
-      } else {
-        var visitor = AstNodeVisitor(formatter, parseResult.lineInfo, source);
-        result = visitor.run(parseResult.unit).text;
-      }
-    }
-
-    var elapsed = stopwatch.elapsedMicroseconds / 1000 / _formatsPerTrial;
-
-    // Keep track of the best run so far.
-    if (elapsed >= best) continue;
-    best = elapsed;
-
-    // Sanity check to make sure the output is what we expect and to make sure
-    // the VM doesn't optimize "dead" code away.
-    if (result != expected) {
-      print('Incorrect output:\n$result');
-      exit(1);
-    }
-
-    // Don't print the first run. It's always terrible since the VM hasn't
-    // warmed up yet.
-    if (i == 0) continue;
-    _printResult("Run ${'#$i'.padLeft(4)}", baseline, elapsed);
+  var measuredTimes = <double>[];
+  for (var i = 1; i <= trials; i++) {
+    stdout.write('\r');
+    stdout.write('$verb "${benchmark.name}" trial $i/$trials...');
+    measuredTimes.add(_runTrial(formatter, parseResult, source, expected));
   }
 
-  _printResult('Best    ', baseline, best);
+  stdout.writeln();
 
-  Profile.report();
+  measuredTimes.sort();
+  return measuredTimes;
 }
 
-Future<({bool isShort, double? baseline, List<Benchmark> benchmarks})>
-    _parseArguments(List<String> arguments) async {
+double _runTrial(DartFormatter formatter, ParseStringResult parseResult,
+    SourceCode source, String expected) {
+  var stopwatch = Stopwatch()..start();
+
+  // For a single benchmark, format the source multiple times.
+  String? result;
+  for (var j = 0; j < _formatsPerTrial; j++) {
+    if (_isShort) {
+      var visitor = SourceVisitor(formatter, parseResult.lineInfo, source);
+      result = visitor.run(parseResult.unit).text;
+    } else {
+      var visitor = AstNodeVisitor(formatter, parseResult.lineInfo, source);
+      result = visitor.run(parseResult.unit).text;
+    }
+  }
+
+  var elapsed = stopwatch.elapsedMicroseconds / 1000 / _formatsPerTrial;
+
+  // Sanity check to make sure the output is what we expect and to make sure
+  // the VM doesn't optimize "dead" code away.
+  if (result != expected) {
+    print('Incorrect output:\n$result');
+    exit(1);
+  }
+
+  return elapsed;
+}
+
+Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
   var argParser = ArgParser();
   argParser.addFlag('help', negatable: false, help: 'Show usage information.');
-  argParser.addOption('baseline',
-      abbr: 'b',
-      help: 'The millisecond count of the baseline to compare the results to.');
   argParser.addFlag('short',
       abbr: 's',
       negatable: false,
       help: 'Whether the formatter should use short or tall style.');
+  argParser.addFlag('write-baseline',
+      abbr: 'w',
+      negatable: false,
+      help: 'Write the output as a baseline file for later comparison.');
 
   var argResults = argParser.parse(arguments);
   if (argResults['help'] as bool) {
@@ -132,27 +205,42 @@ Future<({bool isShort, double? baseline, List<Benchmark> benchmarks})>
     _ => _usage(argParser, exitCode: 64),
   };
 
-  double? baseline;
-  if (argResults.wasParsed('baseline')) {
-    baseline = double.parse(argResults['baseline'] as String);
-  }
+  _isShort = argResults['short'] as bool;
+  _writeBaseline = argResults['write-baseline'] as bool;
 
-  return (
-    isShort: argResults['short'] as bool,
-    baseline: baseline,
-    benchmarks: benchmarks
-  );
+  return benchmarks;
 }
 
-void _printResult(String label, double? baseline, double time) {
-  if (baseline == null) {
-    print('$label: ${time.toStringAsFixed(3).padLeft(7)}ms '
-        "${'=' * ((time * 5).toInt())}");
-  } else {
-    var percent = 100 * time / baseline;
-    print('$label: ${percent.toStringAsFixed(3).padLeft(7)}% '
-        "${'=' * (percent ~/ 2)}");
+void _printStats(String benchmark, List<double> times) {
+  debug.useAnsiColors = true;
+
+  var slowest = times.last;
+  var fastest = times.first;
+  var mean = times.reduce((a, b) => a + b) / _measuredTrials;
+  var median = times[times.length ~/ 2];
+
+  String number(double value) => value.toStringAsFixed(3).padLeft(7);
+
+  var baseline = '  (none)';
+  if (_baseline[benchmark] case var baseLineFastest?) {
+    // Show the baseline's time as a percentage of the measured time. So:
+    // -  50% means it took twice the time or half as hast.
+    // - 100% means it took the same time as the baseline.
+    // - 200% means it ran in half the time or twice as fast.
+    var percent = baseLineFastest / fastest * 100;
+    baseline = '${percent.toStringAsFixed(1).padLeft(7)}%';
+
+    // If the difference is (probably) bigger than the noise, then show it in
+    // color to make it clearer that smaller number is better.
+    if (percent < 98) {
+      baseline = debug.red(baseline);
+    } else if (percent > 102) {
+      baseline = debug.green(baseline);
+    }
   }
+
+  print('${benchmark.padRight(30)}  ${number(fastest)}  ${number(median)}'
+      '  ${number(slowest)}  ${number(mean)}  $baseline');
 }
 
 /// Prints usage information.

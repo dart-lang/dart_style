@@ -45,6 +45,7 @@ void unindent() {
 /// Constants for ANSI color escape codes.
 final _gray = _color('\u001b[1;30m');
 final _green = _color('\u001b[32m');
+final _red = _color('\u001b[31m');
 final _none = _color('\u001b[0m');
 final _bold = _color('\u001b[1m');
 
@@ -63,6 +64,9 @@ String gray(Object message) => '$_gray$message$_none';
 
 /// Wraps [message] in green ANSI escape codes if enabled.
 String green(Object message) => '$_green$message$_none';
+
+/// Wraps [message] in green ANSI escape codes if enabled.
+String red(Object message) => '$_red$message$_none';
 
 /// Wraps [message] in bold ANSI escape codes if enabled.
 String bold(Object message) => '$_bold$message$_none';
