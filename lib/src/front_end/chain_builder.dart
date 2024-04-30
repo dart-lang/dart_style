@@ -240,23 +240,25 @@ class ChainBuilder {
           callType = CallType.splittableCall;
         }
 
-        var callPiece = _visitor.buildPiece((b) {
-          b.token(expression.operator);
-          b.visit(expression.methodName);
-          b.visit(expression.typeArguments);
+        var callPiece = _visitor.pieces.build(() {
+          _visitor.pieces.token(expression.operator);
+          _visitor.pieces.visit(expression.methodName);
+          _visitor.pieces.visit(expression.typeArguments);
 
           // Create the argument piece manually so that we can see if it has a
           // block argument or not.
-          var arguments = _visitor.createArgumentList(
-              expression.argumentList.leftParenthesis,
-              expression.argumentList.arguments,
-              expression.argumentList.rightParenthesis);
+          var arguments = _visitor.pieces.build(() {
+            _visitor.writeArgumentList(
+                expression.argumentList.leftParenthesis,
+                expression.argumentList.arguments,
+                expression.argumentList.rightParenthesis);
+          });
 
           if (arguments is ListPiece && arguments.hasBlockElement) {
             callType = CallType.blockFormatCall;
           }
 
-          b.add(arguments);
+          _visitor.pieces.add(arguments);
         });
 
         _calls.add(ChainCall(callPiece, callType));
@@ -264,9 +266,9 @@ class ChainBuilder {
       case PropertyAccess(:var target?):
         _unwrapCall(target);
 
-        var piece = _visitor.buildPiece((b) {
-          b.token(expression.operator);
-          b.visit(expression.propertyName);
+        var piece = _visitor.pieces.build(() {
+          _visitor.pieces.token(expression.operator);
+          _visitor.pieces.visit(expression.propertyName);
         });
 
         _calls.add(ChainCall(piece, CallType.property));
@@ -274,9 +276,9 @@ class ChainBuilder {
       case PrefixedIdentifier(:var prefix):
         _unwrapCall(prefix);
 
-        var piece = _visitor.buildPiece((b) {
-          b.token(expression.period);
-          b.visit(expression.identifier);
+        var piece = _visitor.pieces.build(() {
+          _visitor.pieces.token(expression.period);
+          _visitor.pieces.visit(expression.identifier);
         });
 
         _calls.add(ChainCall(piece, CallType.property));
@@ -284,23 +286,26 @@ class ChainBuilder {
       // Postfix expressions.
       case FunctionExpressionInvocation():
         _unwrapPostfix(expression.function, (target) {
-          return _visitor.buildPiece((b) {
-            b.add(target);
-            b.visit(expression.typeArguments);
-            b.visit(expression.argumentList);
+          return _visitor.pieces.build(() {
+            _visitor.pieces.add(target);
+            _visitor.pieces.visit(expression.typeArguments);
+            _visitor.pieces.visit(expression.argumentList);
           });
         });
 
       case IndexExpression():
         _unwrapPostfix(expression.target!, (target) {
-          return _visitor.createIndexExpression(target, expression);
+          return _visitor.pieces.build(() {
+            _visitor.pieces.add(target);
+            _visitor.writeIndexExpression(expression);
+          });
         });
 
       case PostfixExpression() when expression.operator.type == TokenType.BANG:
         _unwrapPostfix(expression.operand, (target) {
-          return _visitor.buildPiece((b) {
-            b.add(target);
-            b.token(expression.operator);
+          return _visitor.pieces.build(() {
+            _visitor.pieces.add(target);
+            _visitor.pieces.token(expression.operator);
           });
         });
 

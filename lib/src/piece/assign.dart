@@ -80,6 +80,14 @@ class AssignPiece extends Piece {
   /// `in`.
   final Piece? _left;
 
+  // TODO(perf): Most AssignPieces don't allow splitting between [_left] and
+  // [_operator]. Also, in the common case where the AssignPiece is for a named
+  // argument, then both [_left] and [_operator] will be simple CodePieces. If
+  // we used a single piece for both, they can often be concatenated into a
+  // single [CodePiece]. We only store [_operator] separately for for-in loops.
+  // Consider handling those with a separate Piece class and merging [_left]
+  // and [_operator] in this one.
+
   final Piece _operator;
 
   /// The right-hand side of the operation.

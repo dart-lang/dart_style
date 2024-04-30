@@ -1,6 +1,7 @@
 // Copyright (c) 2023, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../back_end/code_writer.dart';
@@ -9,10 +10,14 @@ import '../back_end/solver.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/adjacent.dart';
+import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../profile.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';
+import 'delimited_list_builder.dart';
+import 'piece_factory.dart';
+import 'sequence_builder.dart';
 
 /// Builds [TextPiece]s for [Token]s and comments.
 ///
@@ -52,23 +57,186 @@ class PieceWriter {
   /// This can only be accessed if there is a selection.
   late final int _selectionEnd = _findSelectionEnd();
 
+  /// The stack of pieces being built by calls to [build()].
+  ///
+  /// Each call to [build()] pushes a new list onto this stack. All of the
+  /// pieces written during that call to [build()] end up in that list and are
+  /// returned by as an [AdjacentPiece] (or just the single piece if there is
+  /// only one).
+  final List<List<Piece>> _pieces = [];
+
+  /// The most recent piece, if it's a [CodePiece] that can have more code
+  /// appended to it.
+  CodePiece? _currentCode;
+
+  /// If [space()] has been called and we haven't appended a space to the
+  /// previous code or adding a [SpacePiece] yet.
+  bool _pendingSpace = false;
+
   PieceWriter(this._formatter, this._source, this._comments);
 
-  /// Creates a piece for [token], including any comments that should be
-  /// attached to that token.
+  /// Wires the [PieceWriter] to the [AstNodeVisitor] (which implements
+  /// [PieceFactory]) so that [PieceWriter] can visit nodes.
+  void bindVisitor(PieceFactory visitor) {
+    _visitor = visitor;
+  }
+
+  late final PieceFactory _visitor;
+
+  /// Writes [token] to the piece currently being written.
+  ///
+  /// Does nothing if [token] is `null`. If [spaceBefore] is `true`, writes a
+  /// space before the token, likewise with [spaceAfter].
+  void token(Token? token,
+      {bool spaceBefore = false, bool spaceAfter = false}) {
+    if (token == null) return;
+
+    if (spaceBefore) space();
+
+    // TODO(perf): If [_currentCode] is `null` but [_pendingSpace] is `true`,
+    // it should be possible to create a new code piece and write the leading
+    // space to it instead of having a leading SpacePiece. Unfortunately, that
+    // sometimes leads to duplicate spaces in the output, so it might take some
+    // tweaking to get working.
+
+    if (token.precedingComments != null) {
+      // Don't append to the previous token if there is a comment after it.
+      _beginCodeToken(token);
+    } else if (_currentCode case var code?) {
+      // Append to the current code piece.
+      if (_pendingSpace) {
+        code.append(' ');
+        _pendingSpace = false;
+      }
+
+      _write(code, token.lexeme, token.offset);
+    } else {
+      _beginCodeToken(token);
+    }
+
+    if (spaceAfter) space();
+  }
+
+  /// Writes [token], which may contain internal newlines.
+  void multilineToken(Token token) {
+    var comments = _comments.commentsBefore(token);
+
+    var piece = CodePiece(_splitComments(comments, token));
+    _write(piece, token.lexeme, token.offset, multiline: true);
+
+    // Remember it so we can attach hanging comments later.
+    _previousCode = piece;
+
+    // Multiline tokens are always their own pieces.
+    add(piece);
+  }
+
+  /// Visits [node] if not `null` and writes the result.
+  void visit(AstNode? node,
+      {bool spaceBefore = false,
+      bool spaceAfter = false,
+      NodeContext context = NodeContext.none}) {
+    if (node == null) return;
+
+    if (spaceBefore) space();
+    _visitor.visitNode(node, context);
+    if (spaceAfter) space();
+  }
+
+  /// Appends a space before the previous code being written and the next.
+  void space() {
+    _pendingSpace = true;
+  }
+
+  /// Writes an optional modifier that precedes other code.
+  void modifier(Token? keyword) {
+    token(keyword, spaceAfter: true);
+  }
+
+  /// Adds [piece] to the current piece being built.
+  void add(Piece piece) {
+    _flushSpace();
+    _pieces.last.add(piece);
+    _currentCode = null;
+  }
+
+  /// Creates a returns a new piece.
+  ///
+  /// Invokes [buildCallback]. All tokens and AST nodes written during that
+  /// callback are collected into the returned piece.
+  ///
+  /// If [metadata] is non-empty, then wraps the resulting piece in another
+  /// piece beginning with that metadata. If [inlineMetadata] is `true`, then
+  /// the metadata is allowed to stay on the same line as the content.
+  /// Otherwise, a newline is inserted after every annotation.
+  Piece build(void Function() buildCallback,
+      {List<Annotation> metadata = const [], bool inlineMetadata = false}) {
+    _flushSpace();
+    _currentCode = null;
+
+    var metadataPieces = const <Piece>[];
+    if (metadata.isNotEmpty) {
+      metadataPieces = [
+        for (var annotation in metadata) _visitor.nodePiece(annotation)
+      ];
+    }
+
+    _pieces.add([]);
+
+    buildCallback();
+
+    _flushSpace();
+    _currentCode = null;
+
+    var builtPieces = _pieces.removeLast();
+    assert(builtPieces.isNotEmpty);
+
+    var builtPiece = builtPieces.length == 1
+        ? builtPieces.first
+        : AdjacentPiece(builtPieces);
+
+    if (metadataPieces.isEmpty) {
+      // No metadata, so return the content piece directly.
+      return builtPiece;
+    } else if (inlineMetadata) {
+      // Wrap the metadata and content in a splittable list.
+      var list = DelimitedListBuilder(
+          _visitor,
+          const ListStyle(
+            commas: Commas.none,
+            spaceWhenUnsplit: true,
+          ));
+
+      for (var piece in metadataPieces) {
+        list.add(piece);
+      }
+
+      list.add(builtPiece);
+      return list.build();
+    } else {
+      // Wrap the metadata and content in a sequence.
+      var sequence = SequenceBuilder(_visitor);
+      for (var piece in metadataPieces) {
+        sequence.add(piece);
+      }
+
+      sequence.add(builtPiece);
+      return sequence.build(forceSplit: true);
+    }
+  }
+
+  /// Creates a separate piece for [token], including any comments that should
+  /// be attached to that token.
   ///
   /// If [discardedToken] is given, it is a token immediately before [token]
   /// that is going to be discarded. Passing it in here ensures any comments
   /// before it are preserved.
   ///
-  /// If [commaAfter] is `true`, will look for and write a comma following the
+  /// If [commaAfter] is `true`, looks for and writes a comma following the
   /// token if there is one.
   Piece tokenPiece(Token token,
-      {Token? discardedToken,
-      bool commaAfter = false,
-      bool multiline = false}) {
-    var tokenPiece = _makeCodePiece(
-        discardedToken: discardedToken, token, multiline: multiline);
+      {Token? discardedToken, bool commaAfter = false}) {
+    var tokenPiece = _makeCodePiece(discardedToken: discardedToken, token);
 
     if (commaAfter) {
       var nextToken = token.next!;
@@ -80,6 +248,24 @@ class PieceWriter {
     return tokenPiece;
   }
 
+  /// Writes [metadata] followed by the code written by [buildCallback].
+  ///
+  /// If [metadata] is empty, then invokes [buildCallback] directly. Otherwise,
+  /// creates a new [Piece] that contains the pieces written from [metadata]
+  /// followed by the code written by [buildCallback].
+  void withMetadata(List<Annotation> metadata, void Function() buildCallback,
+      {bool inlineMetadata = false}) {
+    // If there's no metadata (the common case), then call the callback
+    // directly instead of creating a separate AdjacentBuilder. That way, we
+    // avoid splitting pieces at the boundary here if not needed.
+    if (metadata.isEmpty) {
+      buildCallback();
+    } else {
+      add(build(buildCallback,
+          metadata: metadata, inlineMetadata: inlineMetadata));
+    }
+  }
+
   // TODO(tall): Much of the comment handling code in CommentWriter got moved
   // into here, so there isn't great separation of concerns anymore. Can we
   // organize this code better? Or just combine CommentWriter with this class
@@ -88,15 +274,36 @@ class PieceWriter {
   /// Creates a new [Piece] for [comment] and returns it.
   Piece commentPiece(SourceComment comment,
       [Whitespace trailingWhitespace = Whitespace.none]) {
-    var commentPiece = CommentPiece(trailingWhitespace);
-    _write(commentPiece, comment.text, comment.offset, multiline: true);
-    return commentPiece;
+    var piece = CommentPiece(trailingWhitespace);
+    _write(piece, comment.text, comment.offset,
+        multiline: comment.type.mayBeMultiline);
+    return piece;
   }
 
   /// Applies any hanging comments before [token] to the preceding [CodePiece]
   /// and takes and returns any remaining leading comments.
   List<Piece> takeCommentsBefore(Token token) {
     return _splitComments(_comments.takeCommentsBefore(token), token);
+  }
+
+  /// Begins a new [CodeToken] that can potentially have more code written to
+  /// it.
+  void _beginCodeToken(Token token) {
+    _flushSpace();
+    var code = _makeCodePiece(token);
+    _pieces.last.add(code);
+    _currentCode = code;
+  }
+
+  /// Outputs any pending space before more code is written or the current
+  /// piece is completed.
+  void _flushSpace() {
+    if (!_pendingSpace) return;
+
+    // TODO(perf): See if we can make SpacePiece a constant to avoid creating
+    // multiple.
+    _pieces.last.add(SpacePiece());
+    _pendingSpace = false;
   }
 
   /// Creates a [CodePiece] for [token] and handles any comments that precede
@@ -106,12 +313,7 @@ class PieceWriter {
   /// If [discardedToken] is given, it is a token immediately before [token]
   /// that is going to be discarded. Passing it in here ensures any comments
   /// before it are preserved.
-  ///
-  /// If [multiline] is `true`, then [token]'s lexeme may contain internal
-  /// newlines. The lexeme will be split into separate lines. If omitted, then
-  /// [token] must not contain newlines.
-  CodePiece _makeCodePiece(Token token,
-      {Token? discardedToken, bool multiline = false}) {
+  CodePiece _makeCodePiece(Token token, {Token? discardedToken}) {
     var comments = _comments.commentsBefore(token);
 
     // Include any comments on the preceding discarded token, if there is one.
@@ -120,7 +322,7 @@ class PieceWriter {
     }
 
     var piece = CodePiece(_splitComments(comments, token));
-    _write(piece, token.lexeme, token.offset, multiline: multiline);
+    _write(piece, token.lexeme, token.offset);
 
     // Remember it so we can attach hanging comments later.
     return _previousCode = piece;
