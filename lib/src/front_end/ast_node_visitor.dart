@@ -9,7 +9,6 @@ import 'package:analyzer/source/line_info.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
-import '../piece/adjacent.dart';
 import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
