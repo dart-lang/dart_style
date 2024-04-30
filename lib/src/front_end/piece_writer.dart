@@ -60,13 +60,15 @@ class PieceWriter {
   /// The stack of pieces being built by calls to [build()].
   ///
   /// Each call to [build()] pushes a new list onto this stack. All of the
-  /// pieces written during that call to [build()] end up in that list and are
-  /// returned by as an [AdjacentPiece] (or just the single piece if there is
+  /// pieces written during that call to [build()] end up in that list. When
+  /// the [build()] callback returns, the topmost list is popped and the result
+  /// returned as an [AdjacentPiece] (or just the single piece if there is
   /// only one).
   final List<List<Piece>> _pieces = [];
 
-  /// The most recent piece, if it's a [CodePiece] that can have more code
-  /// appended to it.
+  /// The last piece in [_elements], if it's a [CodePiece] that can have more
+  /// code appended to it or `null` if there is no trailing element or the
+  /// trailing piece can't be appended to.
   CodePiece? _currentCode;
 
   /// If [space()] has been called and we haven't appended a space to the
