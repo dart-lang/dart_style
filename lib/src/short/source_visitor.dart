@@ -1275,9 +1275,9 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visit(node.typeParameters);
     soloSplit();
-    token(node.onKeyword);
+    token(node.onClause?.onKeyword);
     space();
-    visit(node.extendedType);
+    visit(node.onClause?.extendedType);
     space();
     builder.unnest();
     _visitBody(node.leftBracket, node.members, node.rightBracket);
@@ -2278,6 +2278,11 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitMixinOnClause(MixinOnClause node) {
+    _visitCombinator(node.onKeyword, node.superclassConstraints);
+  }
+
+  @override
   void visitNamedExpression(NamedExpression node) {
     visitNamedNode(node.name.label.token, node.name.colon, node.expression);
   }
@@ -2363,11 +2368,6 @@ class SourceVisitor extends ThrowingAstVisitor {
     visit(node.type);
     _visitCollectionLiteral(
         node.leftParenthesis, node.fields, node.rightParenthesis);
-  }
-
-  @override
-  void visitOnClause(OnClause node) {
-    _visitCombinator(node.onKeyword, node.superclassConstraints);
   }
 
   @override

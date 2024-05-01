@@ -1126,11 +1126,11 @@ mixin PieceFactory {
       NamedType? superclass,
       RepresentationDeclaration? representation,
       ExtendsClause? extendsClause,
-      OnClause? onClause,
+      MixinOnClause? onClause,
       WithClause? withClause,
       ImplementsClause? implementsClause,
       NativeClause? nativeClause,
-      (Token, TypeAnnotation)? onType,
+      ExtensionOnClause? onType,
       TypeBodyType bodyType = TypeBodyType.block,
       required Piece Function() body}) {
     // Begin a piece to attach the metadata to the type.
@@ -1194,8 +1194,8 @@ mixin PieceFactory {
             implementsClause.implementsKeyword, implementsClause.interfaces);
       }
 
-      if (onType case (var onKeyword, var onType)?) {
-        typeClause(onKeyword, [onType]);
+      if (onType != null) {
+        typeClause(onType.onKeyword, [onType.extendedType]);
       }
 
       if (nativeClause != null) {

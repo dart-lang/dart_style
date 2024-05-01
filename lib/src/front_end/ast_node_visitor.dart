@@ -598,8 +598,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitExtensionDeclaration(ExtensionDeclaration node) {
     writeType(node.metadata, [node.extensionKeyword], node.name,
-        typeParameters: node.typeParameters,
-        onType: (node.onKeyword, node.extendedType), body: () {
+        typeParameters: node.typeParameters, onType: node.onClause, body: () {
       return pieces.build(() {
         writeBody(node.leftBracket, node.members, node.rightBracket);
       });
@@ -1271,6 +1270,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
+  void visitMixinOnClause(MixinOnClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
+  }
+
+  @override
   void visitNamedExpression(NamedExpression node) {
     writeAssignment(node.name.label, node.name.colon, node.expression,
         spaceBeforeOperator: false);
@@ -1334,12 +1339,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     node.fields.forEach(builder.visit);
     builder.rightBracket(node.rightParenthesis);
     pieces.add(builder.build());
-  }
-
-  @override
-  void visitOnClause(OnClause node) {
-    throw UnsupportedError(
-        'This node is handled by PieceFactory.createType().');
   }
 
   @override
