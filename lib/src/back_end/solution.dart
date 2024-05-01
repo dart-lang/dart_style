@@ -116,28 +116,6 @@ class Solution implements Comparable<Solution> {
       cost += additionalCost!;
     }
 
-    // Given the page width (minus any leading indentation), we may be able to
-    // eagerly tell that some pieces must bind to a certain state. If so, do
-    // that now. We do that here instead of pinning the pieces because when
-    // this is called while separately formatting a piece subtree, the greater
-    // leading indentation gives a narrower remaining page width and makes it
-    // more likely we can tell that a piece will be forced to split.
-    void traverse(Piece piece) {
-      piece.forEachChild(traverse);
-
-      // If the piece is already pinned (for example, by being inside a string
-      // interpolation), then there's nothing else to do.
-      if (piece.pinnedState != null) return;
-
-      if (piece.fixedStateForPageWidth(pageWidth - leadingIndent)
-          case var state?) {
-        var additionalCost = _tryBind(pieceStates, piece, state);
-        cost += additionalCost!;
-      }
-    }
-
-    traverse(root);
-
     return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
   }
 
@@ -151,6 +129,22 @@ class Solution implements Comparable<Solution> {
 
     _text = text;
     _nextPieceToExpand = nextPieceToExpand;
+  }
+
+  /// Attempt to eagerly bind [piece] to a state given that it must fit within
+  /// [pageWidth] (which is the overall page width minus any leading indentation
+  /// in the solution where this is called).
+  ///
+  /// If it can, binds the piece to that state in this solution and returns
+  /// `true`. Otherwise returns `false`.
+  bool tryBindByPageWidth(Piece piece, int pageWidth) {
+    if (piece.fixedStateForPageWidth(pageWidth) case var state?) {
+      var cost = _tryBind(_pieceStates, piece, state);
+      _cost += cost!;
+      return true;
+    }
+
+    return false;
   }
 
   /// The state that [piece] is pinned to or that this solution selects.

@@ -286,6 +286,22 @@ class CodeWriter {
 
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
+
+    // See if we can immediately bind it based on the page width and the piece's
+    // contents.
+    if (isUnsolved) {
+      // If the solution doesn't bind the piece already, we may be able to
+      // eagerly bind it to a state knowing just the page width (minus any
+      // leading indentation). If so, do that now. We do that here instead of
+      // pinning the pieces because doing so here lets us take leading
+      // indication into account which may vary based on the surrounding pieces
+      // when we get here.
+      Profile.begin('CodeWriter try to bind by page width');
+      isUnsolved = !_solution.tryBindByPageWidth(
+          piece, _pageWidth - _indentStack.first.indent);
+      Profile.end('CodeWriter try to bind by page width');
+    }
+
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
     // Format the child piece.
