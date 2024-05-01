@@ -1275,8 +1275,11 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     visit(node.typeParameters);
     soloSplit();
+    // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
+    // ignore: deprecated_member_use
     token(node.onKeyword);
     space();
+    // ignore: deprecated_member_use
     visit(node.extendedType);
     space();
     builder.unnest();
@@ -2366,6 +2369,8 @@ class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
+  // ignore: deprecated_member_use
   void visitOnClause(OnClause node) {
     _visitCombinator(node.onKeyword, node.superclassConstraints);
   }
