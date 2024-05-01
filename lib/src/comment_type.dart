@@ -22,5 +22,8 @@ enum CommentType {
   ///
   ///     code /* comment
   ///       more */
-  inlineBlock,
+  inlineBlock;
+
+  /// Whether a comment of this type may contain newlines inside its lexeme.
+  bool get mayBeMultiline => this != line;
 }

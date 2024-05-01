@@ -56,9 +56,9 @@ class DelimitedListBuilder {
     // brackets concatenated together. We don't have to worry about comments
     // here since they would be in the [_elements] list if there were any.
     if (_elements.isEmpty) {
-      return _visitor.buildPiece((b) {
-        if (_leftBracket case var bracket?) b.add(bracket);
-        if (_rightBracket case var bracket?) b.add(bracket);
+      return _visitor.pieces.build(() {
+        if (_leftBracket case var bracket?) _visitor.pieces.add(bracket);
+        if (_rightBracket case var bracket?) _visitor.pieces.add(bracket);
       });
     }
 
@@ -121,9 +121,9 @@ class DelimitedListBuilder {
 
     _addComments(commentsBefore, hasElementAfter: false);
 
-    _rightBracket = _visitor.buildPiece((b) {
-      b.token(delimiter);
-      b.token(bracket);
+    _rightBracket = _visitor.pieces.build(() {
+      _visitor.pieces.token(delimiter);
+      _visitor.pieces.token(bracket);
     });
   }
 

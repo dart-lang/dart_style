@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
 import '../piece/for.dart';
@@ -18,7 +19,6 @@ import '../piece/sequence.dart';
 import '../piece/try.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
-import 'adjacent_builder.dart';
 import 'ast_node_visitor.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
@@ -116,23 +116,19 @@ mixin PieceFactory {
 
   NodeContext get parentContext;
 
-  Piece nodePiece(AstNode node,
-      {bool commaAfter = false, NodeContext context = NodeContext.none});
+  void visitNode(AstNode node, NodeContext context);
 
-  Piece? optionalNodePiece(AstNode? node);
-
-  /// Creates a [ListPiece] for an argument list.
-  Piece createArgumentList(
+  /// Writes a [ListPiece] for an argument list.
+  void writeArgumentList(
       Token leftBracket, List<AstNode> elements, Token rightBracket) {
-    return createList(
+    writeList(
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
         style: const ListStyle(allowBlockElement: true));
   }
 
-  /// Creates a [SequencePiece] for a given bracket-delimited block or
-  /// declaration body.
+  /// Writes a bracket-delimited block or declaration body.
   ///
   /// If [forceSplit] is `true`, then the block will split even if empty. This
   /// is used, for example, with empty blocks in `if` statements followed by
@@ -140,9 +136,16 @@ mixin PieceFactory {
   ///
   ///     if (condition) {
   ///     } else {}
-  Piece createBody(
-      Token leftBracket, List<AstNode> contents, Token rightBracket,
+  void writeBody(Token leftBracket, List<AstNode> contents, Token rightBracket,
       {bool forceSplit = false}) {
+    // If the body is completely empty, write the brackets directly inline so
+    // that we create fewer pieces.
+    if (!forceSplit && !contents.canSplit(rightBracket)) {
+      pieces.token(leftBracket);
+      pieces.token(rightBracket);
+      return;
+    }
+
     var sequence = SequenceBuilder(this);
     sequence.leftBracket(leftBracket);
 
@@ -155,10 +158,10 @@ mixin PieceFactory {
     }
 
     sequence.rightBracket(rightBracket);
-    return sequence.build(forceSplit: forceSplit);
+    pieces.add(sequence.build(forceSplit: forceSplit));
   }
 
-  /// Creates a [SequencePiece] for a given [Block].
+  /// Writes a [SequencePiece] for a given [Block].
   ///
   /// If [forceSplit] is `true`, then the block will split even if empty. This
   /// is used, for example, with empty blocks in `if` statements followed by
@@ -166,26 +169,24 @@ mixin PieceFactory {
   ///
   ///     if (condition) {
   ///     } else {}
-  Piece createBlock(Block block, {bool forceSplit = false}) {
-    return createBody(block.leftBracket, block.statements, block.rightBracket,
+  void writeBlock(Block block, {bool forceSplit = false}) {
+    writeBody(block.leftBracket, block.statements, block.rightBracket,
         forceSplit: forceSplit);
   }
 
-  /// Creates a piece for a `break` or `continue` statement.
-  Piece createBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
-    return buildPiece((b) {
-      b.token(keyword);
-      b.visit(label, spaceBefore: true);
-      b.token(semicolon);
-    });
+  /// Writes a piece for a `break` or `continue` statement.
+  void writeBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
+    pieces.token(keyword);
+    pieces.visit(label, spaceBefore: true);
+    pieces.token(semicolon);
   }
 
-  Piece createChain(Expression node) {
-    return ChainBuilder(this, node)
-        .build(isCascadeTarget: parentContext == NodeContext.cascadeTarget);
+  void writeChain(Expression node) {
+    pieces.add(ChainBuilder(this, node)
+        .build(isCascadeTarget: parentContext == NodeContext.cascadeTarget));
   }
 
-  /// Creates a [ListPiece] for a collection literal or pattern.
+  /// Writes a [ListPiece] for a collection literal or pattern.
   ///
   /// If [splitOnNestedCollection] is `true`, then this collection is forced to
   /// split if it contains any non-empty collections where
@@ -227,7 +228,7 @@ mixin PieceFactory {
   ///       4, 5, 6,
   ///       7, 8, 9,
   ///     ];
-  Piece createCollection(
+  void writeCollection(
     Token leftBracket,
     List<AstNode> elements,
     Token rightBracket, {
@@ -237,64 +238,75 @@ mixin PieceFactory {
     bool splitOnNestedCollection = false,
     bool preserveNewlines = false,
   }) {
-    return buildPiece((b) {
-      b.modifier(constKeyword);
-      b.visit(typeArguments);
+    pieces.modifier(constKeyword);
+    pieces.visit(typeArguments);
 
-      if (splitOnNestedCollection) {
-        // If this collection isn't empty, force all of the surrounding
-        // collections to split if they care to.
-        if (elements.isNotEmpty) {
-          _collectionSplits.fillRange(0, _collectionSplits.length, true);
-        }
+    // If the list is completely empty, write the brackets inline so we create
+    // fewer pieces.
+    if (!elements.canSplit(rightBracket)) {
+      pieces.token(leftBracket);
+      pieces.token(rightBracket);
+      return;
+    }
 
-        // Add this collection to the stack.
-        _collectionSplits.add(false);
+    if (splitOnNestedCollection) {
+      // If this collection isn't empty, force all of the surrounding
+      // collections to split if they care to.
+      if (elements.isNotEmpty) {
+        _collectionSplits.fillRange(0, _collectionSplits.length, true);
       }
 
-      var collection = createList(
+      // Add this collection to the stack.
+      _collectionSplits.add(false);
+    }
+
+    var collection = pieces.build(() {
+      writeList(
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
         style: style,
         preserveNewlines: preserveNewlines,
       );
-
-      // If there is a collection inside this one, force this one to split.
-      if (splitOnNestedCollection) {
-        if (_collectionSplits.removeLast()) collection.pin(State.split);
-      }
-
-      b.add(collection);
     });
+
+    // If there is a collection inside this one, force this one to split.
+    if (splitOnNestedCollection) {
+      if (_collectionSplits.removeLast()) collection.pin(State.split);
+    }
+
+    pieces.add(collection);
   }
 
-  /// Visits the leading keyword and parenthesized expression at the beginning
+  /// Creates a comma-separated [ListPiece] for [nodes].
+  Piece createCommaSeparated(Iterable<AstNode> nodes) {
+    var builder =
+        DelimitedListBuilder(this, const ListStyle(commas: Commas.nonTrailing));
+    nodes.forEach(builder.visit);
+    return builder.build();
+  }
+
+  /// Writes the leading keyword and parenthesized expression at the beginning
   /// of an `if`, `while`, or `switch` expression or statement.
-  Piece startControlFlow(Token keyword, Token leftParenthesis, Expression value,
-      Token rightParenthesis) {
-    // Attach the keyword to the `(`.
-    return buildPiece((b) {
-      b.token(keyword);
-      b.space();
-      b.token(leftParenthesis);
-      b.visit(value);
-      b.token(rightParenthesis);
-    });
+  void writeControlFlowStart(Token keyword, Token leftParenthesis,
+      Expression value, Token rightParenthesis) {
+    pieces.token(keyword);
+    pieces.space();
+    pieces.token(leftParenthesis);
+    pieces.visit(value);
+    pieces.token(rightParenthesis);
   }
 
-  /// Creates a dotted or qualified identifier.
-  Piece createDotted(NodeList<SimpleIdentifier> components) {
-    return buildPiece((b) {
-      for (var component in components) {
-        // Write the preceding ".".
-        if (component != components.first) {
-          b.token(component.beginToken.previous!);
-        }
-
-        b.visit(component);
+  /// Writes a dotted or qualified identifier.
+  void writeDotted(NodeList<SimpleIdentifier> components) {
+    for (var component in components) {
+      // Write the preceding ".".
+      if (component != components.first) {
+        pieces.token(component.beginToken.previous!);
       }
-    });
+
+      pieces.visit(component);
+    }
   }
 
   /// Creates a [Piece] for an enum constant.
@@ -305,30 +317,30 @@ mixin PieceFactory {
   /// members.
   Piece createEnumConstant(EnumConstantDeclaration node,
       {bool isLastConstant = false, Token? semicolon}) {
-    return buildPiece((b) {
-      b.metadata(node.metadata);
-      b.token(node.name);
+    return pieces.build(metadata: node.metadata, () {
+      pieces.token(node.name);
       if (node.arguments case var arguments?) {
-        b.visit(arguments.typeArguments);
-        b.visit(arguments.constructorSelector);
-        b.visit(arguments.argumentList);
+        pieces.visit(arguments.typeArguments);
+        pieces.visit(arguments.constructorSelector);
+        pieces.visit(arguments.argumentList);
       }
 
       if (semicolon != null) {
         if (!isLastConstant) {
-          b.token(node.commaAfter);
+          pieces.token(node.commaAfter);
         } else {
           // Discard the trailing comma if there is one since there is a
           // semicolon to use as the separator, but preserve any comments before
           // the discarded comma.
-          b.add(pieces.tokenPiece(discardedToken: node.commaAfter, semicolon));
+          pieces.add(
+              pieces.tokenPiece(discardedToken: node.commaAfter, semicolon));
         }
       }
     });
   }
 
-  /// Creates a piece for a for statement or element.
-  Piece createFor(
+  /// Writes a piece for a for statement or element.
+  void writeFor(
       {required Token? awaitKeyword,
       required Token forKeyword,
       required Token leftParenthesis,
@@ -337,9 +349,9 @@ mixin PieceFactory {
       required AstNode body,
       required bool hasBlockBody,
       bool forceSplitBody = false}) {
-    var forKeywordPiece = buildPiece((b) {
-      b.modifier(awaitKeyword);
-      b.token(forKeyword);
+    var forKeywordPiece = pieces.build(() {
+      pieces.modifier(awaitKeyword);
+      pieces.token(forKeyword);
     });
 
     Piece forPartsPiece;
@@ -354,11 +366,11 @@ mixin PieceFactory {
             updaters: NodeList(isEmpty: true),
           )
           when rightParenthesis.precedingComments == null:
-        forPartsPiece = buildPiece((b) {
-          b.token(leftParenthesis);
-          b.token(forLoopParts.leftSeparator);
-          b.token(forLoopParts.rightSeparator);
-          b.token(rightParenthesis);
+        forPartsPiece = pieces.build(() {
+          pieces.token(leftParenthesis);
+          pieces.token(forLoopParts.leftSeparator);
+          pieces.token(forLoopParts.rightSeparator);
+          pieces.token(rightParenthesis);
         });
 
       case ForParts forParts &&
@@ -385,9 +397,9 @@ mixin PieceFactory {
         // The initializer clause.
         if (initializer != null) {
           partsList.addCommentsBefore(initializer.beginToken);
-          partsList.add(buildPiece((b) {
-            b.visit(initializer, context: NodeContext.forLoopVariable);
-            b.token(forParts.leftSeparator);
+          partsList.add(pieces.build(() {
+            pieces.visit(initializer, context: NodeContext.forLoopVariable);
+            pieces.token(forParts.leftSeparator);
           }));
         } else {
           // No initializer, so look at the comments before `;`.
@@ -398,9 +410,9 @@ mixin PieceFactory {
         // The condition clause.
         if (forParts.condition case var conditionExpression?) {
           partsList.addCommentsBefore(conditionExpression.beginToken);
-          partsList.add(buildPiece((b) {
-            b.visit(conditionExpression);
-            b.token(forParts.rightSeparator);
+          partsList.add(pieces.build(() {
+            pieces.visit(conditionExpression);
+            pieces.token(forParts.rightSeparator);
           }));
         } else {
           partsList.addCommentsBefore(forParts.rightSeparator);
@@ -410,8 +422,7 @@ mixin PieceFactory {
         // The update clauses.
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
-          partsList.add(createList(forParts.updaters,
-              style: const ListStyle(commas: Commas.nonTrailing)));
+          partsList.add(createCommaSeparated(forParts.updaters));
         }
 
         partsList.rightBracket(rightParenthesis);
@@ -460,33 +471,32 @@ mixin PieceFactory {
         // initializer does. That would be consistent with how we handle
         // splitting before `case` when the pattern has a newline in an if-case
         // statement or element.
-        forPartsPiece = buildPiece((b) {
-          b.token(leftParenthesis);
-          b.add(createAssignment(
+        forPartsPiece = pieces.build(() {
+          pieces.token(leftParenthesis);
+          writeAssignment(
               variable, forEachParts.inKeyword, forEachParts.iterable,
               splitBeforeOperator: true,
-              leftHandSideContext: NodeContext.forLoopVariable));
-          b.token(rightParenthesis);
+              leftHandSideContext: NodeContext.forLoopVariable);
+          pieces.token(rightParenthesis);
         });
 
       case ForEachParts forEachParts &&
             ForEachPartsWithPattern(:var keyword, :var metadata, :var pattern):
-        forPartsPiece = buildPiece((b) {
-          b.token(leftParenthesis);
+        forPartsPiece = pieces.build(() {
+          pieces.token(leftParenthesis);
 
           // Use a nested piece so that the metadata precedes the keyword and
           // not the `(`.
-          b.add(buildPiece((b) {
-            b.metadata(metadata, inline: true);
-            b.token(keyword);
-            b.space();
+          pieces.withMetadata(metadata, inlineMetadata: true, () {
+            pieces.token(keyword);
+            pieces.space();
 
-            b.add(createAssignment(
+            writeAssignment(
                 pattern, forEachParts.inKeyword, forEachParts.iterable,
                 splitBeforeOperator: true,
-                leftHandSideContext: NodeContext.forLoopVariable));
-          }));
-          b.token(rightParenthesis);
+                leftHandSideContext: NodeContext.forLoopVariable);
+          });
+          pieces.token(rightParenthesis);
         });
     }
 
@@ -507,19 +517,19 @@ mixin PieceFactory {
 
     if (forceSplitBody) forPiece.pin(State.split);
 
-    return forPiece;
+    pieces.add(forPiece);
   }
 
-  /// Creates a normal (not function-typed) formal parameter with a name and/or
+  /// Writes a normal (not function-typed) formal parameter with a name and/or
   /// type annotation.
   ///
   /// If [mutableKeyword] is given, it should be the `var` or `final` keyword.
   /// If [fieldKeyword] and [period] are given, the former should be the `this`
   /// or `super` keyword for an initializing formal or super parameter.
-  Piece createFormalParameter(
+  void writeFormalParameter(
       NormalFormalParameter node, TypeAnnotation? type, Token? name,
       {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
-    return createParameter(
+    writeParameter(
         metadata: node.metadata,
         modifiers: [
           node.requiredKeyword,
@@ -532,14 +542,14 @@ mixin PieceFactory {
         name);
   }
 
-  /// Creates a function, method, getter, or setter declaration.
+  /// Writes a function, method, getter, or setter declaration.
   ///
   /// If [modifierKeyword] is given, it should be the `static` or `abstract`
   /// modifier on a method declaration. If [operatorKeyword] is given, it
   /// should be the `operator` keyword on an operator declaration. If
   /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
   /// getter or setter declaration.
-  Piece createFunction(
+  void writeFunction(
       {List<Annotation> metadata = const [],
       List<Token?> modifiers = const [],
       TypeAnnotation? returnType,
@@ -549,46 +559,52 @@ mixin PieceFactory {
       TypeParameterList? typeParameters,
       FormalParameterList? parameters,
       required FunctionBody body}) {
-    var metadataBuilder = AdjacentBuilder(this);
-    metadataBuilder.metadata(metadata);
-
-    var builder = AdjacentBuilder(this);
-    for (var keyword in modifiers) {
-      builder.modifier(keyword);
+    void writeModifiers() {
+      for (var keyword in modifiers) {
+        pieces.modifier(keyword);
+      }
     }
 
-    Piece? returnTypePiece;
-    if (returnType != null) {
-      builder.visit(returnType);
-      returnTypePiece = builder.build();
-    }
+    // Create a piece to attach metadata to the function.
+    pieces.withMetadata(metadata, () {
+      Piece? returnTypePiece;
+      // Create a piece for the return type if there is one.
+      if (returnType != null) {
+        returnTypePiece = pieces.build(() {
+          writeModifiers();
+          pieces.visit(returnType);
+        });
+      }
 
-    builder.modifier(operatorKeyword);
-    builder.modifier(propertyKeyword);
-    builder.token(name);
-    builder.visit(typeParameters);
-    builder.visit(parameters);
-    var signature = builder.build();
+      var signature = pieces.build(() {
+        // If there's no return type, attach modifiers to the signature.
+        if (returnType == null) writeModifiers();
 
-    var bodyPiece = createFunctionBody(body);
+        pieces.modifier(operatorKeyword);
+        pieces.modifier(propertyKeyword);
+        pieces.token(name);
+        pieces.visit(typeParameters);
+        pieces.visit(parameters);
+      });
 
-    metadataBuilder.add(FunctionPiece(returnTypePiece, signature,
-        isReturnTypeFunctionType: returnType is GenericFunctionType,
-        body: bodyPiece));
+      var bodyPiece = createFunctionBody(body);
 
-    return metadataBuilder.build();
+      pieces.add(FunctionPiece(returnTypePiece, signature,
+          isReturnTypeFunctionType: returnType is GenericFunctionType,
+          body: bodyPiece));
+    });
   }
 
   /// Creates a piece for a function, method, or constructor body.
   Piece createFunctionBody(FunctionBody body) {
-    return buildPiece((b) {
+    return pieces.build(() {
       // Don't put a space before `;` bodies.
-      if (body is! EmptyFunctionBody) b.space();
-      b.visit(body);
+      if (body is! EmptyFunctionBody) pieces.space();
+      pieces.visit(body);
     });
   }
 
-  /// Creates a function type or function-typed formal.
+  /// Writes a function type or function-typed formal.
   ///
   /// If creating a piece for a function-typed formal, then [parameter] is the
   /// formal parameter.
@@ -596,7 +612,7 @@ mixin PieceFactory {
   /// If this is a function-typed initializing formal (`this.foo()`), then
   /// [fieldKeyword] is `this` and [period] is the `.`. Likewise, for a
   /// function-typed super parameter, [fieldKeyword] is `super`.
-  Piece createFunctionType(
+  void writeFunctionType(
       TypeAnnotation? returnType,
       Token functionKeywordOrName,
       TypeParameterList? typeParameters,
@@ -605,90 +621,102 @@ mixin PieceFactory {
       {FormalParameter? parameter,
       Token? fieldKeyword,
       Token? period}) {
-    var builder = AdjacentBuilder(this);
-
-    if (parameter != null) {
-      builder.metadata(parameter.metadata, inline: true);
-      builder.modifier(parameter.requiredKeyword);
-      builder.modifier(parameter.covariantKeyword);
-    }
-
     Piece? returnTypePiece;
-    if (returnType != null) {
-      builder.visit(returnType);
-      returnTypePiece = builder.build();
+    if (parameter != null && returnType != null) {
+      // Attach any parameter metadata and modifiers to the return type.
+      returnTypePiece =
+          pieces.build(metadata: parameter.metadata, inlineMetadata: true, () {
+        pieces.modifier(parameter.requiredKeyword);
+        pieces.modifier(parameter.covariantKeyword);
+        pieces.visit(returnType);
+      });
+    } else if (returnType != null) {
+      returnTypePiece = nodePiece(returnType);
     }
 
-    builder.token(fieldKeyword);
-    builder.token(period);
-    builder.token(functionKeywordOrName);
-    builder.visit(typeParameters);
-    builder.visit(parameters);
-    builder.token(question);
+    // If there's no return type, attach the metadata to the signature.
+    var signatureMetadata = const <Annotation>[];
+    if (parameter != null && returnType == null) {
+      signatureMetadata = parameter.metadata;
+    }
 
-    builder.add(FunctionPiece(returnTypePiece, builder.build(),
-        isReturnTypeFunctionType: returnType is GenericFunctionType));
-
-    return builder.build();
-  }
-
-  /// Creates a piece for the header -- everything from the `if` keyword to the
-  /// closing `)` -- of an if statement, if element, if-case statement, or
-  /// if-case element.
-  Piece createIfCondition(Token ifKeyword, Token leftParenthesis,
-      Expression expression, CaseClause? caseClause, Token rightParenthesis) {
-    return buildPiece((b) {
-      b.token(ifKeyword);
-      b.space();
-      b.token(leftParenthesis);
-
-      var expressionPiece = nodePiece(expression);
-
-      if (caseClause != null) {
-        var casePiece = buildPiece((b) {
-          b.token(caseClause.caseKeyword);
-          b.space();
-          b.visit(caseClause.guardedPattern.pattern);
-        });
-
-        var guardPiece =
-            optionalNodePiece(caseClause.guardedPattern.whenClause);
-
-        b.add(IfCasePiece(expressionPiece, casePiece, guardPiece,
-            canBlockSplitPattern:
-                caseClause.guardedPattern.pattern.canBlockSplit));
-      } else {
-        b.add(expressionPiece);
+    var signature =
+        pieces.build(metadata: signatureMetadata, inlineMetadata: true, () {
+      // If there's no return type, attach the parameter modifiers to the
+      // signature.
+      if (parameter != null && returnType == null) {
+        pieces.modifier(parameter.requiredKeyword);
+        pieces.modifier(parameter.covariantKeyword);
       }
 
-      b.token(rightParenthesis);
+      pieces.token(fieldKeyword);
+      pieces.token(period);
+      pieces.token(functionKeywordOrName);
+      pieces.visit(typeParameters);
+      pieces.visit(parameters);
+      pieces.token(question);
     });
+
+    pieces.add(FunctionPiece(returnTypePiece, signature,
+        isReturnTypeFunctionType: returnType is GenericFunctionType));
   }
 
-  /// Creates a [TryPiece] for try statement.
-  Piece createTry(TryStatement tryStatement) {
+  /// Writes a piece for the header -- everything from the `if` keyword to the
+  /// closing `)` -- of an if statement, if element, if-case statement, or
+  /// if-case element.
+  void writeIfCondition(Token ifKeyword, Token leftParenthesis,
+      Expression expression, CaseClause? caseClause, Token rightParenthesis) {
+    pieces.token(ifKeyword);
+    pieces.space();
+    pieces.token(leftParenthesis);
+
+    if (caseClause != null) {
+      var expressionPiece = nodePiece(expression);
+
+      var casePiece = pieces.build(() {
+        pieces.token(caseClause.caseKeyword);
+        pieces.space();
+        pieces.visit(caseClause.guardedPattern.pattern);
+      });
+
+      var guardPiece = optionalNodePiece(caseClause.guardedPattern.whenClause);
+
+      pieces.add(IfCasePiece(expressionPiece, casePiece, guardPiece,
+          canBlockSplitPattern:
+              caseClause.guardedPattern.pattern.canBlockSplit));
+    } else {
+      pieces.visit(expression);
+    }
+
+    pieces.token(rightParenthesis);
+  }
+
+  /// Writes a [TryPiece] for try statement.
+  void writeTry(TryStatement tryStatement) {
     var piece = TryPiece();
 
     var tryHeader = tokenPiece(tryStatement.tryKeyword);
-    var tryBlock = createBlock(tryStatement.body);
+    var tryBlock = pieces.build(() {
+      writeBlock(tryStatement.body);
+    });
     piece.add(tryHeader, tryBlock);
 
     for (var i = 0; i < tryStatement.catchClauses.length; i++) {
       var catchClause = tryStatement.catchClauses[i];
 
-      var catchClauseHeader = buildPiece((b) {
+      var catchClauseHeader = pieces.build(() {
         if (catchClause.onKeyword case var onKeyword?) {
-          b.token(onKeyword, spaceAfter: true);
-          b.visit(catchClause.exceptionType);
+          pieces.token(onKeyword, spaceAfter: true);
+          pieces.visit(catchClause.exceptionType);
         }
 
         if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
-          b.space();
+          pieces.space();
         }
 
         if (catchClause.catchKeyword case var catchKeyword?) {
-          b.token(catchKeyword);
-          b.space();
+          pieces.token(catchKeyword);
+          pieces.space();
 
           var parameters = DelimitedListBuilder(this);
           parameters.leftBracket(catchClause.leftParenthesis!);
@@ -699,7 +727,7 @@ mixin PieceFactory {
             parameters.visit(stackTraceParameter);
           }
           parameters.rightBracket(catchClause.rightParenthesis!);
-          b.add(parameters.build());
+          pieces.add(parameters.build());
         }
       });
 
@@ -714,82 +742,80 @@ mixin PieceFactory {
       //     }
       var forceSplit = i < tryStatement.catchClauses.length - 1 ||
           tryStatement.finallyBlock != null;
-      var catchClauseBody =
-          createBlock(catchClause.body, forceSplit: forceSplit);
+      var catchClauseBody = pieces.build(() {
+        writeBlock(catchClause.body, forceSplit: forceSplit);
+      });
       piece.add(catchClauseHeader, catchClauseBody);
     }
 
     if (tryStatement.finallyBlock case var finallyBlock?) {
       var finallyHeader = tokenPiece(tryStatement.finallyKeyword!);
-      var finallyBody = createBlock(finallyBlock);
+      var finallyBody = pieces.build(() {
+        writeBlock(finallyBlock);
+      });
       piece.add(finallyHeader, finallyBody);
     }
 
-    return piece;
+    pieces.add(piece);
   }
 
-  /// Creates an [ImportPiece] for an import or export directive.
-  Piece createImport(NamespaceDirective directive, Token keyword,
+  /// Writes an [ImportPiece] for an import or export directive.
+  void writeImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
-    var builder = AdjacentBuilder(this);
-    builder.metadata(directive.metadata);
-    builder.token(keyword);
-    builder.space();
-    builder.visit(directive.uri);
+    pieces.withMetadata(directive.metadata, () {
+      pieces.token(keyword);
+      pieces.space();
+      pieces.visit(directive.uri);
 
-    if (directive.configurations.isNotEmpty) {
-      var configurations = <Piece>[];
-      for (var configuration in directive.configurations) {
-        configurations.add(nodePiece(configuration));
-      }
-
-      builder.add(PostfixPiece(configurations));
-    }
-
-    if (asKeyword != null) {
-      builder.add(PostfixPiece([
-        buildPiece((b) {
-          b.token(deferredKeyword, spaceAfter: true);
-          b.token(asKeyword);
-          b.space();
-          b.visit(prefix!);
-        })
-      ]));
-    }
-
-    if (directive.combinators.isNotEmpty) {
-      var combinators = <ClausePiece>[];
-      for (var combinatorNode in directive.combinators) {
-        var combinatorKeyword = tokenPiece(combinatorNode.keyword);
-
-        switch (combinatorNode) {
-          case HideCombinator(hiddenNames: var names):
-          case ShowCombinator(shownNames: var names):
-            var parts = <Piece>[];
-            for (var name in names) {
-              parts.add(tokenPiece(name.token, commaAfter: true));
-            }
-
-            var combinator = ClausePiece(combinatorKeyword, parts);
-            combinators.add(combinator);
-          default:
-            throw StateError('Unknown combinator type $combinatorNode.');
+      if (directive.configurations.isNotEmpty) {
+        var configurations = <Piece>[];
+        for (var configuration in directive.configurations) {
+          configurations.add(nodePiece(configuration));
         }
+
+        pieces.add(PostfixPiece(configurations));
       }
 
-      builder.add(ClausesPiece(combinators));
-    }
+      if (asKeyword != null) {
+        pieces.add(PostfixPiece([
+          pieces.build(() {
+            pieces.token(deferredKeyword, spaceAfter: true);
+            pieces.token(asKeyword);
+            pieces.space();
+            pieces.visit(prefix!);
+          })
+        ]));
+      }
 
-    builder.token(directive.semicolon);
-    return builder.build();
+      if (directive.combinators.isNotEmpty) {
+        var combinators = <ClausePiece>[];
+        for (var combinatorNode in directive.combinators) {
+          var combinatorKeyword = tokenPiece(combinatorNode.keyword);
+
+          switch (combinatorNode) {
+            case HideCombinator(hiddenNames: var names):
+            case ShowCombinator(shownNames: var names):
+              var parts = <Piece>[];
+              for (var name in names) {
+                parts.add(tokenPiece(name.token, commaAfter: true));
+              }
+
+              var combinator = ClausePiece(combinatorKeyword, parts);
+              combinators.add(combinator);
+            default:
+              throw StateError('Unknown combinator type $combinatorNode.');
+          }
+        }
+
+        pieces.add(ClausesPiece(combinators));
+      }
+
+      pieces.token(directive.semicolon);
+    });
   }
 
-  /// Creates a [Piece] for an index expression whose [target] has already been
-  /// converted to a piece.
-  ///
-  /// The [target] may be `null` if [index] is an index expression for a
-  /// cascade section.
-  Piece createIndexExpression(Piece? target, IndexExpression index) {
+  /// Writes a [Piece] for an index expression.
+  void writeIndexExpression(IndexExpression index) {
     // TODO(tall): Consider whether we should allow splitting between
     // successive index expressions, like:
     //
@@ -798,17 +824,14 @@ mixin PieceFactory {
     //
     // The current formatter allows it, but it's very rarely used (0.021% of
     // index expressions in a corpus of pub packages).
-    return buildPiece((b) {
-      if (target != null) b.add(target);
-      b.token(index.question);
-      b.token(index.period);
-      b.token(index.leftBracket);
-      b.visit(index.index);
-      b.token(index.rightBracket);
-    });
+    pieces.token(index.question);
+    pieces.token(index.period);
+    pieces.token(index.leftBracket);
+    pieces.visit(index.index);
+    pieces.token(index.rightBracket);
   }
 
-  /// Creates a single infix operation.
+  /// Writes a single infix operation.
   ///
   /// If [hanging] is `true` then the operator goes at the end of the first
   /// line, like `+`. Otherwise, it goes at the beginning of the second, like
@@ -816,35 +839,35 @@ mixin PieceFactory {
   ///
   /// The [operator2] parameter may be passed if the "operator" is actually two
   /// separate tokens, as in `foo is! Bar`.
-  Piece createInfix(AstNode left, Token operator, AstNode right,
+  void writeInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
     // Hoist any comments before the first operand so they don't force the
     // infix operator to split.
     var leadingComments = pieces.takeCommentsBefore(left.firstNonCommentToken);
 
-    var leftPiece = buildPiece((b) {
-      b.visit(left);
+    var leftPiece = pieces.build(() {
+      pieces.visit(left);
       if (hanging) {
-        b.space();
-        b.token(operator);
-        b.token(operator2);
+        pieces.space();
+        pieces.token(operator);
+        pieces.token(operator2);
       }
     });
 
-    var rightPiece = buildPiece((b) {
+    var rightPiece = pieces.build(() {
       if (!hanging) {
-        b.token(operator);
-        b.token(operator2);
-        b.space();
+        pieces.token(operator);
+        pieces.token(operator2);
+        pieces.space();
       }
 
-      b.visit(right);
+      pieces.visit(right);
     });
 
-    return InfixPiece(leadingComments, [leftPiece, rightPiece]);
+    pieces.add(InfixPiece(leadingComments, [leftPiece, rightPiece]));
   }
 
-  /// Creates a chained infix operation: a binary operator expression, or
+  /// Writes a chained infix operation: a binary operator expression, or
   /// binary pattern.
   ///
   /// In a tree of binary AST nodes, all operators at the same precedence are
@@ -859,14 +882,13 @@ mixin PieceFactory {
   ///
   /// If [precedence] is given, then this only flattens binary nodes with that
   /// same precedence.
-  Piece createInfixChain<T extends AstNode>(
+  void writeInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
     // Hoist any comments before the first operand so they don't force the
     // infix operator to split.
     var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
 
-    var builder = AdjacentBuilder(this);
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -875,26 +897,29 @@ mixin PieceFactory {
       if (e is T) {
         var (left, operator, right) = destructure(e);
         if (precedence == null || operator.type.precedence == precedence) {
-          traverse(left);
-          builder.space();
-          builder.token(operator);
-          operands.add(builder.build());
+          operands.add(pieces.build(() {
+            traverse(left);
+            pieces.space();
+            pieces.token(operator);
+          }));
+
           traverse(right);
           return;
         }
       }
 
       // Otherwise, just write the node itself.
-      builder.visit(e);
+      pieces.visit(e);
     }
 
-    traverse(node);
-    operands.add(builder.build());
+    operands.add(pieces.build(() {
+      traverse(node);
+    }));
 
-    return InfixPiece(leadingComments, operands, indent: indent);
+    pieces.add(InfixPiece(leadingComments, operands, indent: indent));
   }
 
-  /// Creates a [ListPiece] for the given bracket-delimited set of elements.
+  /// Writes a [ListPiece] for the given bracket-delimited set of elements.
   ///
   /// If [preserveNewlines] is `true`, then any newlines or lack of newlines
   /// between pairs of elements in the input are preserved in the output. This
@@ -906,23 +931,31 @@ mixin PieceFactory {
   ///       4, 5, 6,
   ///       7, 8, 9,
   ///     ];
-  Piece createList(List<AstNode> elements,
-      {Token? leftBracket,
-      Token? rightBracket,
+  void writeList(List<AstNode> elements,
+      {required Token leftBracket,
+      required Token rightBracket,
       ListStyle style = const ListStyle(),
       bool preserveNewlines = false}) {
+    // If the list is completely empty, write the brackets directly inline so
+    // that we create fewer pieces.
+    if (!elements.canSplit(rightBracket)) {
+      pieces.token(leftBracket);
+      pieces.token(rightBracket);
+      return;
+    }
+
     var builder = DelimitedListBuilder(this, style);
 
-    if (leftBracket != null) builder.leftBracket(leftBracket);
+    builder.leftBracket(leftBracket);
 
-    if (preserveNewlines && elements.containsLineComments(rightBracket!)) {
+    if (preserveNewlines && elements.containsLineComments(rightBracket)) {
       _preserveNewlinesInCollection(elements, builder);
     } else {
       elements.forEach(builder.visit);
     }
 
-    if (rightBracket != null) builder.rightBracket(rightBracket);
-    return builder.build();
+    builder.rightBracket(rightBracket);
+    pieces.add(builder.build());
   }
 
   /// Writes [elements] into [builder], preserving the original newlines (or
@@ -982,50 +1015,46 @@ mixin PieceFactory {
     if (!atLineStart) builder.add(lineBuilder.build());
   }
 
-  /// Create a [VariablePiece] for a named or wildcard variable pattern.
-  Piece createPatternVariable(
-      Token? keyword, TypeAnnotation? type, Token name) {
+  /// Writes a [VariablePiece] for a named or wildcard variable pattern.
+  void writePatternVariable(Token? keyword, TypeAnnotation? type, Token name) {
     // If it's a wildcard with no declaration keyword or type, there is just a
     // name token.
-    if (keyword == null && type == null) return tokenPiece(name);
+    if (keyword == null && type == null) {
+      pieces.token(name);
+      return;
+    }
 
-    var header = buildPiece((b) {
-      b.modifier(keyword);
-      b.visit(type);
+    var header = pieces.build(() {
+      pieces.modifier(keyword);
+      pieces.visit(type);
     });
-    return VariablePiece(
-      header,
-      [tokenPiece(name)],
-      hasType: type != null,
-    );
+
+    pieces
+        .add(VariablePiece(header, [tokenPiece(name)], hasType: type != null));
   }
 
-  /// Creates a [Piece] for an AST node followed by an unsplittable token.
-  Piece createPostfix(AstNode node, Token? operator) {
-    return buildPiece((b) {
-      b.visit(node);
-      b.token(operator);
-    });
+  /// Writes a [Piece] for an AST node followed by an unsplittable token.
+  void writePostfix(AstNode node, Token? operator) {
+    pieces.visit(node);
+    pieces.token(operator);
   }
 
-  /// Creates a [Piece] for an AST node preceded by an unsplittable token.
+  /// Writes a [Piece] for an AST node preceded by an unsplittable token.
   ///
   /// If [space] is `true` and there is an operator, writes a space between the
   /// operator and operand.
-  Piece createPrefix(Token? operator, AstNode? node, {bool space = false}) {
-    return buildPiece((b) {
-      b.token(operator, spaceAfter: space);
-      b.visit(node);
-    });
+  void writePrefix(Token? operator, AstNode? node, {bool space = false}) {
+    pieces.token(operator, spaceAfter: space);
+    pieces.visit(node);
   }
 
-  /// Creates an [AdjacentPiece] for a given record type field.
-  Piece createRecordTypeField(RecordTypeAnnotationField node) {
-    return createParameter(metadata: node.metadata, node.type, node.name);
+  /// Writes an [AdjacentPiece] for a given record type field.
+  void writeRecordTypeField(RecordTypeAnnotationField node) {
+    writeParameter(metadata: node.metadata, node.type, node.name);
   }
 
-  /// Creates a [ListPiece] for a record literal or pattern.
-  Piece createRecord(
+  /// Writes a [ListPiece] for a record literal or pattern.
+  void writeRecord(
     Token leftParenthesis,
     List<AstNode> fields,
     Token rightParenthesis, {
@@ -1063,7 +1092,8 @@ mixin PieceFactory {
       // commas when split.
       _ => const ListStyle(commas: Commas.trailing)
     };
-    return createCollection(
+
+    writeCollection(
       constKeyword: constKeyword,
       leftParenthesis,
       fields,
@@ -1073,7 +1103,7 @@ mixin PieceFactory {
     );
   }
 
-  /// Creates a class, enum, extension, extension type, mixin, or mixin
+  /// Writes a class, enum, extension, extension type, mixin, or mixin
   /// application class declaration.
   ///
   /// The [keywords] list is the ordered list of modifiers and keywords at the
@@ -1089,7 +1119,7 @@ mixin PieceFactory {
   ///
   /// If the type is an extension type, then [representation] is the primary
   /// constructor for it.
-  Piece createType(
+  void writeType(
       NodeList<Annotation> metadata, List<Token?> keywords, Token? name,
       {TypeParameterList? typeParameters,
       Token? equals,
@@ -1105,95 +1135,93 @@ mixin PieceFactory {
       (Token, TypeAnnotation)? onType,
       TypeBodyType bodyType = TypeBodyType.block,
       required Piece Function() body}) {
-    var metadataBuilder = AdjacentBuilder(this);
-    metadataBuilder.metadata(metadata);
+    // Begin a piece to attach the metadata to the type.
+    pieces.withMetadata(metadata, () {
+      var header = pieces.build(() {
+        var space = false;
+        for (var keyword in keywords) {
+          if (space) pieces.space();
+          pieces.token(keyword);
+          if (keyword != null) space = true;
+        }
 
-    var header = buildPiece((b) {
-      var space = false;
-      for (var keyword in keywords) {
-        if (space) b.space();
-        b.token(keyword);
-        if (keyword != null) space = true;
+        pieces.token(name, spaceBefore: true);
+
+        if (typeParameters != null) {
+          pieces.visit(typeParameters);
+        }
+
+        // Mixin application classes have ` = Superclass` after the declaration
+        // name.
+        if (equals != null) {
+          pieces.space();
+          pieces.token(equals);
+          pieces.space();
+          pieces.visit(superclass!);
+        }
+
+        // Extension types have a representation type.
+        if (representation != null) {
+          pieces.visit(representation);
+        }
+      });
+
+      var clauses = <ClausePiece>[];
+
+      void typeClause(Token keyword, List<AstNode> types) {
+        var keywordPiece = tokenPiece(keyword);
+
+        var typePieces = <Piece>[];
+        for (var type in types) {
+          typePieces.add(nodePiece(type, commaAfter: true));
+        }
+
+        clauses.add(ClausePiece(keywordPiece, typePieces));
       }
 
-      b.token(name, spaceBefore: true);
-
-      if (typeParameters != null) {
-        b.visit(typeParameters);
+      if (extendsClause != null) {
+        typeClause(extendsClause.extendsKeyword, [extendsClause.superclass]);
       }
 
-      // Mixin application classes have ` = Superclass` after the declaration
-      // name.
-      if (equals != null) {
-        b.space();
-        b.token(equals);
-        b.space();
-        b.visit(superclass!);
+      if (onClause != null) {
+        typeClause(onClause.onKeyword, onClause.superclassConstraints);
       }
 
-      // Extension types have a representation type.
-      if (representation != null) {
-        b.visit(representation);
+      if (withClause != null) {
+        typeClause(withClause.withKeyword, withClause.mixinTypes);
       }
+
+      if (implementsClause != null) {
+        typeClause(
+            implementsClause.implementsKeyword, implementsClause.interfaces);
+      }
+
+      if (onType case (var onKeyword, var onType)?) {
+        typeClause(onKeyword, [onType]);
+      }
+
+      if (nativeClause != null) {
+        typeClause(nativeClause.nativeKeyword,
+            [if (nativeClause.name case var name?) name]);
+      }
+
+      ClausesPiece? clausesPiece;
+      if (clauses.isNotEmpty) {
+        clausesPiece = ClausesPiece(clauses,
+            allowLeadingClause: extendsClause != null || onClause != null);
+      }
+
+      var bodyPiece = body();
+
+      pieces
+          .add(TypePiece(header, clausesPiece, bodyPiece, bodyType: bodyType));
     });
-
-    var clauses = <ClausePiece>[];
-
-    void typeClause(Token keyword, List<AstNode> types) {
-      var keywordPiece = tokenPiece(keyword);
-
-      var typePieces = <Piece>[];
-      for (var type in types) {
-        typePieces.add(nodePiece(type, commaAfter: true));
-      }
-
-      clauses.add(ClausePiece(keywordPiece, typePieces));
-    }
-
-    if (extendsClause != null) {
-      typeClause(extendsClause.extendsKeyword, [extendsClause.superclass]);
-    }
-
-    if (onClause != null) {
-      typeClause(onClause.onKeyword, onClause.superclassConstraints);
-    }
-
-    if (withClause != null) {
-      typeClause(withClause.withKeyword, withClause.mixinTypes);
-    }
-
-    if (implementsClause != null) {
-      typeClause(
-          implementsClause.implementsKeyword, implementsClause.interfaces);
-    }
-
-    if (onType case (var onKeyword, var onType)?) {
-      typeClause(onKeyword, [onType]);
-    }
-
-    if (nativeClause != null) {
-      typeClause(nativeClause.nativeKeyword,
-          [if (nativeClause.name case var name?) name]);
-    }
-
-    ClausesPiece? clausesPiece;
-    if (clauses.isNotEmpty) {
-      clausesPiece = ClausesPiece(clauses,
-          allowLeadingClause: extendsClause != null || onClause != null);
-    }
-
-    var bodyPiece = body();
-
-    metadataBuilder
-        .add(TypePiece(header, clausesPiece, bodyPiece, bodyType: bodyType));
-
-    return metadataBuilder.build();
   }
 
-  /// Creates a [ListPiece] for a type argument or type parameter list.
-  Piece createTypeList(
+  /// Writes a [ListPiece] for a type argument or type parameter list.
+  void writeTypeList(
       Token leftBracket, List<AstNode> elements, Token rightBracket) {
-    return createList(
+    writeList(
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
@@ -1201,14 +1229,14 @@ mixin PieceFactory {
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
-  void functionBodyModifiers(FunctionBody body, AdjacentBuilder builder) {
+  void writeFunctionBodyModifiers(FunctionBody body) {
     // The `async` or `sync` keyword.
-    builder.token(body.keyword);
-    builder.token(body.star);
-    if (body.keyword != null) builder.space();
+    pieces.token(body.keyword);
+    pieces.token(body.star);
+    if (body.keyword != null) pieces.space();
   }
 
-  /// Creates a [Piece] with "assignment-like" splitting.
+  /// Writes a [Piece] with "assignment-like" splitting.
   ///
   /// This is used, obviously, for assignments and variable declarations to
   /// handle splitting after the `=`, but is also used in any context where an
@@ -1232,7 +1260,7 @@ mixin PieceFactory {
   ///     var [
   ///       element,
   ///     ] = list;
-  Piece createAssignment(
+  void writeAssignment(
       AstNode leftHandSide, Token operator, AstNode rightHandSide,
       {bool splitBeforeOperator = false,
       bool includeComma = false,
@@ -1265,10 +1293,10 @@ mixin PieceFactory {
 
     var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
 
-    var operatorPiece = buildPiece((b) {
-      if (spaceBeforeOperator) b.space();
-      b.token(operator);
-      if (splitBeforeOperator) b.space();
+    var operatorPiece = pieces.build(() {
+      if (spaceBeforeOperator) pieces.space();
+      pieces.token(operator);
+      if (splitBeforeOperator) pieces.space();
     });
 
     var rightPiece = nodePiece(rightHandSide,
@@ -1276,72 +1304,91 @@ mixin PieceFactory {
         context:
             splitBeforeOperator ? NodeContext.none : NodeContext.assignment);
 
-    return AssignPiece(
+    pieces.add(AssignPiece(
         left: leftPiece,
         operatorPiece,
         rightPiece,
         splitBeforeOperator: splitBeforeOperator,
         canBlockSplitLeft: canBlockSplitLeft,
-        canBlockSplitRight: canBlockSplitRight);
+        canBlockSplitRight: canBlockSplitRight));
   }
 
-  /// Creates a piece for a parameter-like constructor: Either a simple formal
+  /// Writes a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a
   /// parameter.
-  Piece createParameter(TypeAnnotation? type, Token? name,
+  void writeParameter(TypeAnnotation? type, Token? name,
       {List<Annotation> metadata = const [],
       List<Token?> modifiers = const [],
       Token? fieldKeyword,
       Token? period}) {
-    var builder = AdjacentBuilder(this);
-    builder.metadata(metadata, inline: true);
-
-    Piece? typePiece;
-    if (type != null) {
-      typePiece = buildPiece((b) {
-        for (var keyword in modifiers) {
-          b.modifier(keyword);
-        }
-
-        b.visit(type);
-      });
-    }
-
-    Piece? namePiece;
-    if (name != null) {
-      namePiece = buildPiece((b) {
-        // If there is a type annotation, the modifiers will be before the type.
-        // Otherwise, they go before the name.
-        if (type == null) {
+    // Begin a piece to attach metadata to the parameter.
+    pieces.withMetadata(metadata, inlineMetadata: true, () {
+      Piece? typePiece;
+      if (type != null) {
+        typePiece = pieces.build(() {
           for (var keyword in modifiers) {
-            b.modifier(keyword);
+            pieces.modifier(keyword);
           }
-        }
 
-        b.token(fieldKeyword);
-        b.token(period);
-        b.token(name);
-      });
-    }
+          pieces.visit(type);
+        });
+      }
 
-    if (typePiece != null && namePiece != null) {
-      // We have both a type and name, allow splitting between them.
-      builder.add(VariablePiece(typePiece, [namePiece], hasType: true));
-    } else if (typePiece != null) {
-      builder.add(typePiece);
-    } else if (namePiece != null) {
-      builder.add(namePiece);
-    }
+      Piece? namePiece;
+      if (name != null) {
+        namePiece = pieces.build(() {
+          // If there is a type annotation, the modifiers will be before the
+          // type. Otherwise, they go before the name.
+          if (type == null) {
+            for (var keyword in modifiers) {
+              pieces.modifier(keyword);
+            }
+          }
 
-    return builder.build();
+          pieces.token(fieldKeyword);
+          pieces.token(period);
+          pieces.token(name);
+        });
+      }
+
+      if (typePiece != null && namePiece != null) {
+        // We have both a type and name, allow splitting between them.
+        pieces.add(VariablePiece(typePiece, [namePiece], hasType: true));
+      } else if (typePiece != null) {
+        pieces.add(typePiece);
+      } else if (namePiece != null) {
+        pieces.add(namePiece);
+      }
+    });
   }
 
-  /// Invokes [buildCallback] with a new [AdjacentBuilder] and returns the
-  /// built result.
-  Piece buildPiece(void Function(AdjacentBuilder) buildCallback) {
-    var builder = AdjacentBuilder(this);
-    buildCallback(builder);
-    return builder.build();
+  /// Visits [node] and creates a piece from it.
+  ///
+  /// If [commaAfter] is `true`, looks for a comma token after [node] and
+  /// writes it to the piece as well.
+  Piece nodePiece(AstNode node,
+      {bool commaAfter = false, NodeContext context = NodeContext.none}) {
+    var result = pieces.build(() {
+      visitNode(node, context);
+    });
+
+    if (commaAfter) {
+      var nextToken = node.endToken.next!;
+      if (nextToken.lexeme == ',') {
+        var comma = tokenPiece(nextToken);
+        result = AdjacentPiece([result, comma]);
+      }
+    }
+
+    return result;
+  }
+
+  /// Visits [node] and creates a piece from it if not `null`.
+  ///
+  /// Otherwise returns `null`.
+  Piece? optionalNodePiece(AstNode? node) {
+    if (node == null) return null;
+    return nodePiece(node);
   }
 
   /// Creates a piece for only [token].
