@@ -625,6 +625,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   Piece visitExtensionDeclaration(ExtensionDeclaration node) {
     return createType(node.metadata, [node.extensionKeyword], node.name,
         typeParameters: node.typeParameters,
+        // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
+        // ignore: deprecated_member_use
         onType: (node.onKeyword, node.extendedType),
         body: () =>
             createBody(node.leftBracket, node.members, node.rightBracket));
@@ -1356,6 +1358,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<Piece> with PieceFactory {
   }
 
   @override
+  // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
+  // ignore: deprecated_member_use
   Piece visitOnClause(OnClause node) {
     throw UnsupportedError(
         'This node is handled by PieceFactory.createType().');
