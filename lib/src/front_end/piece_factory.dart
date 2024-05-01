@@ -1096,6 +1096,8 @@ mixin PieceFactory {
       NamedType? superclass,
       RepresentationDeclaration? representation,
       ExtendsClause? extendsClause,
+      // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
+      // ignore: deprecated_member_use
       OnClause? onClause,
       WithClause? withClause,
       ImplementsClause? implementsClause,
