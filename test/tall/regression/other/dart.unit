@@ -1,0 +1,42 @@
+>>> Large argument list with block formatting.
+class C {
+  Future<void> startServer({bool? ensureCleanBuild, List<String>? buildArgs}) =>
+      _startServer(
+        'dart',
+        [
+          '--packages=.dart_tool/package_config.json',
+          p.join('..', 'build_runner', 'bin', 'build_runner.dart'),
+          'serve',
+          '--verbose',
+          if (buildArgs != null) ...buildArgs,
+        ],
+        ensureCleanBuild: ensureCleanBuild,
+      );
+}
+<<<
+class C {
+  Future<void> startServer({bool? ensureCleanBuild, List<String>? buildArgs}) =>
+      _startServer('dart', [
+        '--packages=.dart_tool/package_config.json',
+        p.join('..', 'build_runner', 'bin', 'build_runner.dart'),
+        'serve',
+        '--verbose',
+        if (buildArgs != null) ...buildArgs,
+      ], ensureCleanBuild: ensureCleanBuild);
+}
+>>> Long method chain.
+main() {
+  var stdErrLines = proc.stderr.transform(utf8.decoder).transform(
+    const LineSplitter(),
+  ).asBroadcastStream();
+}
+<<<
+### TODO(rnystrom): It would be nice if we could put the target of a split
+### method chain on the same line as the assignment.
+main() {
+  var stdErrLines =
+      proc.stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .asBroadcastStream();
+}
