@@ -32,7 +32,7 @@ class JitChangeDetection extends ChangeDetection {
 <<<
 var defaultPipes = {
   "iterableDiff": [new IterableChangesFactory(), new NullPipeFactory()],
-  "keyValDiff": [new KeyValueChangesFactory(), new NullPipeFactory()]
+  "keyValDiff": [new KeyValueChangesFactory(), new NullPipeFactory()],
 };
 
 /**
@@ -41,11 +41,14 @@ var defaultPipes = {
 class DynamicChangeDetection extends ChangeDetection {
   PipeRegistry registry;
   DynamicChangeDetection(PipeRegistry registry) : super() {
-    /* super call moved to initializer */;
+    /* super call moved to initializer */
+    ;
     this.registry = registry;
   }
-  ProtoChangeDetector createProtoChangeDetector(String name,
-      [String changeControlStrategy = DEFAULT]) {
+  ProtoChangeDetector createProtoChangeDetector(
+    String name, [
+    String changeControlStrategy = DEFAULT,
+  ]) {
     return new DynamicProtoChangeDetector(this.registry, changeControlStrategy);
   }
 }
@@ -56,11 +59,14 @@ class DynamicChangeDetection extends ChangeDetection {
 class JitChangeDetection extends ChangeDetection {
   PipeRegistry registry;
   JitChangeDetection(PipeRegistry registry) : super() {
-    /* super call moved to initializer */;
+    /* super call moved to initializer */
+    ;
     this.registry = registry;
   }
-  ProtoChangeDetector createProtoChangeDetector(String name,
-      [String changeControlStrategy = DEFAULT]) {
+  ProtoChangeDetector createProtoChangeDetector(
+    String name, [
+    String changeControlStrategy = DEFAULT,
+  ]) {
     return new JitProtoChangeDetector(this.registry, changeControlStrategy);
   }
 }
