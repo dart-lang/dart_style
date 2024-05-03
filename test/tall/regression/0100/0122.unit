@@ -5,10 +5,13 @@ var xsrfValue = _urlIsSameOrigin(url) ?
     defaults.xsrfCookieName] :
     null;
 <<<
-var xsrfValue = _urlIsSameOrigin(url)
-    ? _cookies[
-        xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName]
-    : null;
+### TODO(rnystrom): Should allow the condition on the first line.
+var xsrfValue =
+    _urlIsSameOrigin(url)
+        ? _cookies[xsrfCookieName != null
+            ? xsrfCookieName
+            : defaults.xsrfCookieName]
+        : null;
 >>>
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
@@ -17,9 +20,11 @@ class _Streams {
       new HashMap.from(inheritStreams._typeCounts);
 }
 <<<
+### TODO(rnystrom): Should allow the condition on the first line.
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
-      : _typeCounts = inheritStreams == null
-            ? new HashMap<String, int>()
-            : new HashMap.from(inheritStreams._typeCounts);
+    : _typeCounts =
+          inheritStreams == null
+              ? new HashMap<String, int>()
+              : new HashMap.from(inheritStreams._typeCounts);
 }

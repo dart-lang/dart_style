@@ -2,5 +2,7 @@
     var partOf = unit.directives.firstWhere((d) => d is PartOfDirective,
         orElse: () => null);
 <<<
-    var partOf = unit.directives
-        .firstWhere((d) => d is PartOfDirective, orElse: () => null);
+    var partOf = unit.directives.firstWhere(
+      (d) => d is PartOfDirective,
+      orElse: () => null,
+    );

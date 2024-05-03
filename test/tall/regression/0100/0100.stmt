@@ -8,7 +8,10 @@
 <<<
   void incrementalAdd(Constraint c) {
     int mark = newMark();
-    for (Constraint overridden = c.satisfy(mark);
-        overridden != null;
-        overridden = overridden.satisfy(mark));
+    for (
+      Constraint overridden = c.satisfy(mark);
+      overridden != null;
+      overridden = overridden.satisfy(mark)
+    )
+      ;
   }
