@@ -5,6 +5,9 @@
             ;
         }));
 <<<
-    zoop("zoop description here", spang(() {
-      ;
-    }));
+    zoop(
+      "zoop description here",
+      spang(() {
+        ;
+      }),
+    );

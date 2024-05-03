@@ -3,7 +3,10 @@
         .withSourceInformation(sourceInformationFactory.forContext(element)
             .buildDeclaration(element));
 <<<
-    return new js.Fun(parameters, body, asyncModifier: asyncModifier)
-        .withSourceInformation(sourceInformationFactory
-            .forContext(element)
-            .buildDeclaration(element));
+    return new js.Fun(
+      parameters,
+      body,
+      asyncModifier: asyncModifier,
+    ).withSourceInformation(
+      sourceInformationFactory.forContext(element).buildDeclaration(element),
+    );
