@@ -4,8 +4,10 @@ foo() {
 }
 <<<
 foo() {
-  assert(argument != argument &&
-      (argument.isDynamic || argument.isSubTypeOf(argument, argument)));
+  assert(
+    argument != argument &&
+        (argument.isDynamic || argument.isSubTypeOf(argument, argument)),
+  );
 }
 >>>
 foo() {
@@ -33,7 +35,8 @@ foo() {
 
     if (yyy) {
       if (!ggggggggggg(p2.type, p1.type) &&
-          !(jjjj && hhhhhhhhhhhhhhhh(p2.type, p1.type))) return false;
+          !(jjjj && hhhhhhhhhhhhhhhh(p2.type, p1.type)))
+        return false;
       if (!ggggggggggg(p2.type, p1.type) &&
           !(jjjj && hhhhhhhhhhhhhhhh(p2.type, p1.type))) {
         return false;
@@ -45,8 +48,9 @@ foo() {
 assert(say('Bob', 'Howdy', 'smoke signal') ==
 'Bob says Howdy with a smoke signal');
 <<<
-assert(say('Bob', 'Howdy', 'smoke signal') ==
-    'Bob says Howdy with a smoke signal');
+assert(
+  say('Bob', 'Howdy', 'smoke signal') == 'Bob says Howdy with a smoke signal',
+);
 >>>
 void main() {
   var xxxxxxxYyyyyyyy = aaaabbb
@@ -54,8 +58,11 @@ void main() {
       : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }
 <<<
+### TODO(rnystrom): Should allow condition on same line as `=` if it fits and
+### conditional expression splits.
 void main() {
-  var xxxxxxxYyyyyyyy = aaaabbb
-      ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
-      : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
+  var xxxxxxxYyyyyyyy =
+      aaaabbb
+          ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
+          : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }

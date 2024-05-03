@@ -8,9 +8,12 @@ httpClient.getUrl(url)
     body;
   });
 <<<
-httpClient.getUrl(url).then((HttpClientRequest request) {
-  print('have request');
-  return request.close();
-}).then((HttpClientResponse response) {
-  body;
-});
+httpClient
+    .getUrl(url)
+    .then((HttpClientRequest request) {
+      print('have request');
+      return request.close();
+    })
+    .then((HttpClientResponse response) {
+      body;
+    });

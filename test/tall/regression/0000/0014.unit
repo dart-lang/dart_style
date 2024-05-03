@@ -11,9 +11,9 @@ class A {
 class A {
   final Map x;
   A()
-      : x = {
-          // comment
-          'foo': 1,
-          'bar': 2,
-        };
+    : x = {
+        // comment
+        'foo': 1,
+        'bar': 2,
+      };
 }

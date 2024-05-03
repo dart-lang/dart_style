@@ -10,7 +10,9 @@ class AstComparator implements AstVisitor<bool> {
   bool visitClassDeclaration(ClassDeclaration node) {
     ClassDeclaration other = this._other as ClassDeclaration;
     return _isEqualNodes(
-            node.documentationComment, other.documentationComment) &&
+          node.documentationComment,
+          other.documentationComment,
+        ) &&
         _isEqualNodeLists(node.metadata, other.metadata) &&
         _isEqualTokens(node.abstractKeyword, other.abstractKeyword) &&
         _isEqualTokens(node.classKeyword, other.classKeyword) &&
