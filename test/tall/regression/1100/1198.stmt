@@ -1,0 +1,25 @@
+40 columns                              |
+>>>
+switch (e) {}
+<<<
+switch (e) {}
+>>>
+switch ("a long string that must wrap") {}
+<<<
+switch ("a long string that must wrap") {}
+>>>
+switch ([1,]) {}
+<<<
+switch ([1]) {}
+>>>
+e = switch (e) {};
+<<<
+e = switch (e) {};
+>>>
+e = switch ("a long string that must wrap") {};
+<<<
+e = switch ("a long string that must wrap") {};
+>>>
+e = switch ([1,]) {};
+<<<
+e = switch ([1]) {};

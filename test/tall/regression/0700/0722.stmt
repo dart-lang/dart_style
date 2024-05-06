@@ -1,0 +1,36 @@
+>>>
+Widget(
+child: project.locked
+    ? Icon(Icons.lock)
+    : project.fav
+        ? Icon(Icons.star)
+        : project.taps == null
+            ? Icon(Icons.notifications)
+            : Text(
+                suffixNumber(project.taps),
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18.0,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+);
+<<<
+### TODO(1465): Should put first condition after `child:`.
+Widget(
+  child:
+      project.locked
+          ? Icon(Icons.lock)
+          : project.fav
+              ? Icon(Icons.star)
+              : project.taps == null
+                  ? Icon(Icons.notifications)
+                  : Text(
+                    suffixNumber(project.taps),
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+);

@@ -1,0 +1,9 @@
+>>> (indent 8)
+        localsHandler.directLocals[localsHandler
+            .getTypeVariableAsLocal(typeVariable)] = param;
+<<<
+### TODO(rnystrom): This is pretty strange.
+        localsHandler.directLocals[localsHandler.getTypeVariableAsLocal(
+              typeVariable,
+            )] =
+            param;

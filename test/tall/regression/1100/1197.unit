@@ -1,0 +1,106 @@
+>>>
+main() {
+  {
+    return TextFieldTapRegion(
+      onLongPressMoveUpdate: (longPressMoveUpdateDetails) {
+        (switch (Theme.of(this.context).platform) {
+          TargetPlatform.iOS || TargetPlatform.macOS =>
+            _renderEditable.selectPositionAt(
+            from: longPressMoveUpdateDetails.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          ),
+          TargetPlatform.android ||
+                TargetPlatform.fuchsia ||
+                TargetPlatform.linux ||
+                TargetPlatform.windows =>
+            _renderEditable.selectWordsInRange(
+            from: longPressMoveUpdateDetails.globalPosition -
+                longPressMoveUpdateDetails.offsetFromOrigin,
+            to: longPressMoveUpdateDetails.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          )
+        });
+      },
+    );
+  }
+}
+<<<
+main() {
+  {
+    return TextFieldTapRegion(onLongPressMoveUpdate: (
+      longPressMoveUpdateDetails,
+    ) {
+      (switch (Theme.of(this.context).platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
+            .selectPositionAt(
+              from: longPressMoveUpdateDetails.globalPosition,
+              cause: SelectionChangedCause.longPress,
+            ),
+        TargetPlatform.android ||
+        TargetPlatform.fuchsia ||
+        TargetPlatform.linux ||
+        TargetPlatform.windows =>
+          _renderEditable.selectWordsInRange(
+            from:
+                longPressMoveUpdateDetails.globalPosition -
+                longPressMoveUpdateDetails.offsetFromOrigin,
+            to: longPressMoveUpdateDetails.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          ),
+      });
+    });
+  }
+}
+>>>
+main() {
+  {
+    return TextFieldTapRegion(
+      onLongPressMoveUpdate: (longPressMoveUpdateDetails) =>
+          switch (Theme.of(this.context).platform) {
+        TargetPlatform.iOS || TargetPlatform.macOS =>
+          _renderEditable.selectPositionAt(
+          from: longPressMoveUpdateDetails.globalPosition,
+          cause: SelectionChangedCause.longPress,
+        ),
+        TargetPlatform.android ||
+              TargetPlatform.fuchsia ||
+              TargetPlatform.linux ||
+              TargetPlatform.windows =>
+          _renderEditable.selectWordsInRange(
+          from: longPressMoveUpdateDetails.globalPosition -
+              longPressMoveUpdateDetails.offsetFromOrigin,
+          to: longPressMoveUpdateDetails.globalPosition,
+          cause: SelectionChangedCause.longPress,
+        )
+      },
+    );
+  }
+}
+<<<
+main() {
+  {
+    return TextFieldTapRegion(
+      onLongPressMoveUpdate:
+          (longPressMoveUpdateDetails) => switch (Theme.of(
+            this.context,
+          ).platform) {
+            TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
+                .selectPositionAt(
+                  from: longPressMoveUpdateDetails.globalPosition,
+                  cause: SelectionChangedCause.longPress,
+                ),
+            TargetPlatform.android ||
+            TargetPlatform.fuchsia ||
+            TargetPlatform.linux ||
+            TargetPlatform.windows =>
+              _renderEditable.selectWordsInRange(
+                from:
+                    longPressMoveUpdateDetails.globalPosition -
+                    longPressMoveUpdateDetails.offsetFromOrigin,
+                to: longPressMoveUpdateDetails.globalPosition,
+                cause: SelectionChangedCause.longPress,
+              ),
+          },
+    );
+  }
+}

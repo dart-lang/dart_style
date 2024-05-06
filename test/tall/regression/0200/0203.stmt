@@ -1,0 +1,19 @@
+>>>
+var constructedRequest = new Request()
+    ..campaignId =
+    (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
+<<<
+### TODO(1466): Should allow target on the first line.
+var constructedRequest =
+    new Request()
+      ..campaignId =
+          (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
+>>> (indent 2)
+  var constructedRequest = new Request()
+      ..campaignId =
+      (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
+<<<
+  var constructedRequest =
+      new Request()
+        ..campaignId =
+            (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);

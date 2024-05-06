@@ -1,0 +1,27 @@
+>>>
+test() {
+  var fooService,
+      ids,
+      objectName,
+      results;
+
+  var futures = ids
+      .map((id) => fooService
+          .getItem(objectName, id)
+          .then((item) => results.add(item.name.value)))
+      .toList();
+}
+<<<
+### TODO(1466): Should allow "ids" after the "=".
+test() {
+  var fooService, ids, objectName, results;
+
+  var futures =
+      ids
+          .map(
+            (id) => fooService
+                .getItem(objectName, id)
+                .then((item) => results.add(item.name.value)),
+          )
+          .toList();
+}

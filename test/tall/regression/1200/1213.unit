@@ -1,0 +1,19 @@
+>>>
+main() {
+  final a = (
+    element,
+    element,
+  )
+      .getter;
+
+  final b = [
+    element,
+    element,
+  ].getter;
+}
+<<<
+main() {
+  final a = (element, element).getter;
+
+  final b = [element, element].getter;
+}

@@ -1,0 +1,11 @@
+>>> (indent 4)
+     var handler = new Cascade()
+         .add((_) => new Response.notFound('handler 1'))
+         .add((_) => new Response.ok('handler 2')).handler;
+<<<
+### TODO(1466): Should allow the target on the first line.
+    var handler =
+        new Cascade()
+            .add((_) => new Response.notFound('handler 1'))
+            .add((_) => new Response.ok('handler 2'))
+            .handler;
