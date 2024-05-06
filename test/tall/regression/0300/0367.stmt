@@ -6,7 +6,7 @@
       }))
           .asBroadcastStream();
 <<<
-### TODO(rnystrom): Should allow the target and property after the "=".
+### TODO(1466): Should allow the target and property after the "=".
       identifier__ =
           identifier_____.identifier___
               .transform(
