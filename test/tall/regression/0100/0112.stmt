@@ -5,7 +5,7 @@
             something.field.where((i) => i is SomeClassGoesHere),
             key: (i) => i.someField.name);
 <<<
-### TODO(rnystrom): Should allow the condition on the first line.
+### TODO(1465): Should allow the condition on the first line.
     var initializers =
         something == null
             ? {}
@@ -18,7 +18,7 @@
             outputDir, uri, results.libraries, results.rules, formatOutput) :
         new JSGenerator(outputDir, uri, results.libraries, results.rules);
 <<<
-### TODO(rnystrom): Should allow the condition on the first line.
+### TODO(1465): Should allow the condition on the first line.
     var cg =
         outputDart
             ? new DartGenerator(
