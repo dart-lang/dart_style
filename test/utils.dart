@@ -181,10 +181,16 @@ void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
+        var fixes = [...?baseFixes, ...formatTest.fixes];
+
+        if (useTallStyle && fixes.isNotEmpty) {
+          fail('Test error: Tall style does not support applying fixes.');
+        }
+
         var formatter = DartFormatter(
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
-            fixes: [...?baseFixes, ...formatTest.fixes],
+            fixes: fixes,
             experimentFlags: useTallStyle
                 ? const ['inline-class', 'macros', tallStyleExperimentFlag]
                 : const ['inline-class', 'macros']);
