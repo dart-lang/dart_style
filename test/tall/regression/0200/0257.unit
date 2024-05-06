@@ -6,7 +6,7 @@ class FooConstructor {
           : bar.myField;
 }
 <<<
-### TODO(rnystrom): Should allow `(bar == null)` after the `=`.
+### TODO(1465): Should allow `(bar == null)` after the `=`.
 class FooConstructor {
   FooConstructor(Object bar)
     : foo =
