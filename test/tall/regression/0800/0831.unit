@@ -12,6 +12,6 @@ foo() {
     if (longVariableName == 'do nothing but be long')
       ...[]
     else if (longVariableName == 'show the welcome message')
-      'Hello'
+      'Hello',
   ];
 }

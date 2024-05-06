@@ -47,13 +47,13 @@ main() {
   final args = [
     if (_configuration.useBlobs) ...[
       "--snapshot-kind=app-aot-blobs",
-      "--blobs_container_filename=$tempDir/out.aotsnapshot"
+      "--blobs_container_filename=$tempDir/out.aotsnapshot",
     ] else if (_configuration.useElf) ...[
       "--snapshot-kind=app-aot-elf",
-      "--elf=$tempDir/out.aotsnapshot"
+      "--elf=$tempDir/out.aotsnapshot",
     ] else ...[
       "--snapshot-kind=app-aot-assembly",
-      "--assembly=$tempDir/out.S"
+      "--assembly=$tempDir/out.S",
     ],
     if (_isAndroid && _isArm) '--no-sim-use-hardfp',
     if (_configuration.isMinified) '--obfuscate',
@@ -64,13 +64,13 @@ main() {
   final args2 = [
     if (_configuration.useBlobs) ...[
       "--snapshot-kind=app-aot-blobs",
-      "--blobs_container_filename=$tempDir/out.aotsnapshot"
+      "--blobs_container_filename=$tempDir/out.aotsnapshot",
     ] else if (_configuration.useElf) ...[
       "--snapshot-kind=app-aot-elf",
-      "--elf=$tempDir/out.aotsnapshot"
+      "--elf=$tempDir/out.aotsnapshot",
     ] else ...[
       "--snapshot-kind=app-aot-assembly",
-      "--assembly=$tempDir/out.S"
+      "--assembly=$tempDir/out.S",
     ],
     if (_isAndroid && _isArm) '--no-sim-use-hardfp',
     if (_configuration.isMinified) '--obfuscate',
