@@ -6,7 +6,4 @@ error(
       message: 'Block was left open',
     ));
 <<<
-error(offset: 10, (
-  code: 'unclosed-block',
-  message: 'Block was left open',
-));
+error(offset: 10, (code: 'unclosed-block', message: 'Block was left open'));

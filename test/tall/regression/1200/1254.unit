@@ -8,5 +8,5 @@ enum EE {
 enum EE {
   a,
   b, // 'b'
-  c
+  c,
 }
