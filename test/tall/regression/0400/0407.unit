@@ -7,10 +7,13 @@ void main() {
 <<<
 void main() {
   model
-    ..account = (new Account()
-      ..accountId = new Int64(111)
-      ..tags = (new Account_Tags()
-        ..accountHotlist.add(new Hotlist()..hotlistId = new Int64(10))));
+    ..account =
+        (new Account()
+          ..accountId = new Int64(111)
+          ..tags =
+              (new Account_Tags()..accountHotlist.add(
+                new Hotlist()..hotlistId = new Int64(10),
+              )));
 }
 >>> (indent 4)
 main() {
@@ -24,12 +27,15 @@ receiver
 <<<
     main() {
       receiver
-        ..formattedTotal = _total == 0
-            ? ""
-            : _chartType == "PieChart"
-                ? _formatter.formatAsPercent(item.value / _total,
-                    fractionDigits: 1)
-                : _formatter.formatValue(item.value, item.valueType);
+        ..formattedTotal =
+            _total == 0
+                ? ""
+                : _chartType == "PieChart"
+                    ? _formatter.formatAsPercent(
+                      item.value / _total,
+                      fractionDigits: 1,
+                    )
+                    : _formatter.formatValue(item.value, item.valueType);
     }
 >>> (indent 6)
 main() {
@@ -43,10 +49,13 @@ receiver
 <<<
       main() {
         receiver
-          ..formattedTotal = _total == 0
-              ? ""
-              : _chartType == "PieChart"
-                  ? _formatter.formatAsPercent(item.value / _total,
-                      fractionDigits: 1)
-                  : _formatter.formatValue(item.value, item.valueType);
+          ..formattedTotal =
+              _total == 0
+                  ? ""
+                  : _chartType == "PieChart"
+                      ? _formatter.formatAsPercent(
+                        item.value / _total,
+                        fractionDigits: 1,
+                      )
+                      : _formatter.formatValue(item.value, item.valueType);
       }

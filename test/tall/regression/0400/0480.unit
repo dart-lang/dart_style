@@ -17,9 +17,10 @@ class XXXElement extends PolymerElement {
     if (condition.containsKey('userUpdatingTest')) {
       conditionType = TriggerValueType.userUpdatingConditionType;
       if (condition['userUpdatingTest'].containsKey('userIsRole')) {
-        userUpdatingCriteriaSelectIndex = userValueTypeIndexFromName(
-                condition['userUpdatingTest']['userIsRole']['user']
-                    .toString()) +
+        userUpdatingCriteriaSelectIndex =
+            userValueTypeIndexFromName(
+              condition['userUpdatingTest']['userIsRole']['user'].toString(),
+            ) +
             1;
       }
     }

@@ -13,10 +13,16 @@ class FilterBarTest {
 <<<
 class FilterBarTest {
   FilterBarTest() {
-    model = new FilterModel([
-      const TestComparisonPredicate('test1'),
-      const TestComparisonPredicate('test2')
-    ], suggestionProvider, filterTypeProvider, saveFilterAction,
-        hasReadOnlyMode: true, valueEditorProvider: valueEditorProvider);
+    model = new FilterModel(
+      [
+        const TestComparisonPredicate('test1'),
+        const TestComparisonPredicate('test2'),
+      ],
+      suggestionProvider,
+      filterTypeProvider,
+      saveFilterAction,
+      hasReadOnlyMode: true,
+      valueEditorProvider: valueEditorProvider,
+    );
   }
 }

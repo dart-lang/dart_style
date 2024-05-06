@@ -12,10 +12,9 @@ void allTests() {
 void allTests() {
   describe('inliner', () {
     it('should inline `templateUrl` values', () async {
-      expect(view.namedParameters
-              .firstWhere((p) => p.name == 'templateUrl')
-              .value)
-          .toContain('template.html');
+      expect(
+        view.namedParameters.firstWhere((p) => p.name == 'templateUrl').value,
+      ).toContain('template.html');
     });
   });
 }

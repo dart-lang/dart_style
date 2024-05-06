@@ -8,6 +8,9 @@ class Foo {
 <<<
 class Foo {
   Stream<api.CreateRecipientSourceFromGroupResponse>
-      createRecipientSourceFromGroup(
-          String groupName, int campaignId, String languagePreference);
+  createRecipientSourceFromGroup(
+    String groupName,
+    int campaignId,
+    String languagePreference,
+  );
 }

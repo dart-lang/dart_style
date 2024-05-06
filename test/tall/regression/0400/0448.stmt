@@ -27,8 +27,11 @@
       if (outputSize.width / outputSize.height >
           sourceSize.width / sourceSize.height)
         destinationSize = new Size(
-            sourceSize.width * outputSize.height / sourceSize.height,
-            outputSize.height);
+          sourceSize.width * outputSize.height / sourceSize.height,
+          outputSize.height,
+        );
       else
-        destinationSize = new Size(outputSize.width,
-            sourceSize.height * outputSize.width / sourceSize.width);
+        destinationSize = new Size(
+          outputSize.width,
+          sourceSize.height * outputSize.width / sourceSize.width,
+        );

@@ -12,6 +12,6 @@
 
       return identifier_____________[id] ??=
           await identifier_______.identifier____________________(
-              identifier___________________________.create()
-                ..identifier____ = id);
+            identifier___________________________.create()..identifier____ = id,
+          );
     }
