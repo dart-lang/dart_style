@@ -3,10 +3,12 @@ class C {
   int get currentAngleDigits => _currentSunAngleDeg < 0 ? 1 : _currentSunAngleDeg < 10 ? 2 : 3;
 }
 <<<
+### TODO(1465): Should allow condition after the `=>`.
 class C {
-  int get currentAngleDigits => _currentSunAngleDeg < 0
-      ? 1
-      : _currentSunAngleDeg < 10
-          ? 2
-          : 3;
+  int get currentAngleDigits =>
+      _currentSunAngleDeg < 0
+          ? 1
+          : _currentSunAngleDeg < 10
+              ? 2
+              : 3;
 }
