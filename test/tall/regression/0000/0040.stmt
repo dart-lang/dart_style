@@ -1,0 +1,28 @@
+>>> (indent 4)
+    var s = new Serialization()
+            ..addRuleFor(Various, constructor: "Foo", constructorFields: [
+          "d",
+          "e"
+        ]);
+<<<
+### TODO(rnystrom): Would be better with target on first line and split at `..`.
+    var s =
+        new Serialization()..addRuleFor(
+          Various,
+          constructor: "Foo",
+          constructorFields: ["d", "e"],
+        );
+>>> (indent 6)
+    var s = new Serialization()
+            ..addRuleFor(Various, constructor: "Foo", constructorFields: [
+          "d",
+          "e"
+        ]);
+<<<
+### TODO(rnystrom): Would be better with target on first line and split at `..`.
+      var s =
+          new Serialization()..addRuleFor(
+            Various,
+            constructor: "Foo",
+            constructorFields: ["d", "e"],
+          );
