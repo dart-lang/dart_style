@@ -1,0 +1,12 @@
+>>>
+switch (e) {
+  case E.e1:
+    break;
+  case E.e2:
+}
+<<<
+switch (e) {
+  case E.e1:
+    break;
+  case E.e2:
+}
