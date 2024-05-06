@@ -213,6 +213,18 @@ class AssignPiece extends Piece {
     // assignment to still not end up splitting at the operator.
     if (_canBlockSplitLeft || _canBlockSplitRight) return null;
 
+    // Edge case: If the left operand is only a single character, then splitting
+    // at the operator won't actually make the line any smaller, so don't apply
+    // the optimization in that case:
+    //
+    //     e = someVeryLongExpression;
+    //
+    // Is no worse than:
+    //
+    //     e =
+    //         someVeryLongExpression;
+    if (_left case var left? when left.totalCharacters == 1) return null;
+
     // If either operand contains a newline or the whole assignment doesn't
     // fit then it will split at the operator since there's no other way it
     // can split because there are no block operands.
