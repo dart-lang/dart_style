@@ -2,11 +2,11 @@
 @meta(const Foo(const []))
 library foo;
 <<<
-@meta(Foo([]))
+@meta(const Foo(const []))
 library foo;
 >>> (fix optional-const)
 @meta(const Foo(const []))
 import 'foo.dart';
 <<<
-@meta(Foo([]))
+@meta(const Foo(const []))
 import 'foo.dart';
