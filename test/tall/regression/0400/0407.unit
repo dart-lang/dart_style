@@ -25,6 +25,7 @@ receiver
           : _formatter.formatValue(item.value, item.valueType);
 }
 <<<
+### TODO(1465): Allow the conditional after the `=`.
     main() {
       receiver
         ..formattedTotal =
@@ -47,6 +48,7 @@ receiver
               : _formatter.formatValue(item.value, item.valueType);
 }
 <<<
+### TODO(1465): Allow the conditional after the `=`.
       main() {
         receiver
           ..formattedTotal =
