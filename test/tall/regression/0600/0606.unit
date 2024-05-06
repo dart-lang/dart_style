@@ -58,6 +58,7 @@ enum ErrorKind {
   Unspecified,
 }
 <<<
+### TODO(1469): Should we keep the blank lines between elements?
 enum ErrorKind {
   AbstractNotSync,
   AsciiControlCharacter,
@@ -79,7 +80,6 @@ enum ErrorKind {
   /// Dart Language Specification) Dart VM native clauses. See
   /// [dart_vm_native.dart].
   ExpectedClassBodyToSkip,
-
   ExpectedDeclaration,
   ExpectedExpression,
   ExpectedFunctionBody,
@@ -113,6 +113,5 @@ enum ErrorKind {
   UnterminatedToken,
   YieldAsIdentifier,
   YieldNotGenerator,
-
   Unspecified,
 }
