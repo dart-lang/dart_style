@@ -1,0 +1,14 @@
+>>>
+class MummyMatchers {
+  MummyMatchers([List<ResultPublisher> publishers]) : publishers = publishers !=
+          null ? publishers : defaultPublishers.add(unittestPublisher);
+}
+<<<
+### TODO(1465): Should allow "publishers != null" after the "=".
+class MummyMatchers {
+  MummyMatchers([List<ResultPublisher> publishers])
+    : publishers =
+          publishers != null
+              ? publishers
+              : defaultPublishers.add(unittestPublisher);
+}
