@@ -1,0 +1,18 @@
+>>>
+class SomeLongNameForAComponent {
+    SomeLongNameForAComponent(DirectiveInjector injector,
+        RenderSyncZoneAccess zoneAccess,
+        this._formatters,
+        this._element,
+        this._scope);
+}
+<<<
+class SomeLongNameForAComponent {
+  SomeLongNameForAComponent(
+    DirectiveInjector injector,
+    RenderSyncZoneAccess zoneAccess,
+    this._formatters,
+    this._element,
+    this._scope,
+  );
+}
