@@ -88,3 +88,11 @@ class Foo {
     @foo() @baz super.another,
   ]);
 }
+>>> Function typed parameter with default value.
+f([@metadata @another(argument, argument) callback() = constantFunction]) {}
+<<<
+f([
+  @metadata
+  @another(argument, argument)
+  callback() = constantFunction,
+]) {}
