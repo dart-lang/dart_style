@@ -95,6 +95,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         sequence.visit(directive);
       }
 
+      // Add a blank line between directives and declarations.
+      sequence.addBlank();
+
       for (var declaration in node.declarations) {
         var hasBody = declaration is ClassDeclaration ||
             declaration is EnumDeclaration ||
@@ -312,7 +315,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitCompilationUnit(CompilationUnit node) {
     throw UnsupportedError(
-        'CompilationUnit should be handled directly by format().');
+        'CompilationUnit should be handled directly by run().');
   }
 
   @override
