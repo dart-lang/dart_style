@@ -101,3 +101,49 @@ void b() => body;
 void c() {
   ;
 }
+>>> Preserve one blank line between a leading comment and declaration.
+// comment
+
+
+
+var a = 1;
+<<<
+// comment
+
+var a = 1;
+>>> Preserve one blank line between a leading comment and directive.
+// comment
+
+
+
+import 'x.dart';
+<<<
+// comment
+
+import 'x.dart';
+>>> Preserve one blank line between comments and declarations.
+// comment
+var a = 1;
+
+// comment
+
+var b = 2;
+
+
+
+// comment
+
+
+
+var c = 3;
+<<<
+// comment
+var a = 1;
+
+// comment
+
+var b = 2;
+
+// comment
+
+var c = 3;
