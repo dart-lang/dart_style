@@ -619,24 +619,24 @@ mixin PieceFactory {
   /// Otherwise, just writes [parameter].
   void writeDefaultValue(
       Piece parameter, (Token separator, Expression value)? defaultValue) {
-    if (defaultValue case (var separator, var value)) {
-      var operatorPiece = pieces.build(() {
-        if (separator.type == TokenType.EQ) pieces.space();
-        pieces.token(separator);
-        if (separator.type != TokenType.EQ) pieces.space();
-      });
-
-      var valuePiece = nodePiece(value, context: NodeContext.assignment);
-
-      pieces.add(AssignPiece(
-          left: parameter,
-          operatorPiece,
-          valuePiece,
-          canBlockSplitRight: value.canBlockSplit));
-    } else {
-      // No default value.
+    if (defaultValue == null) {
       pieces.add(parameter);
+      return;
     }
+    var (separator, value) = defaultValue;
+    var operatorPiece = pieces.build(() {
+      if (separator.type == TokenType.EQ) pieces.space();
+      pieces.token(separator);
+      if (separator.type != TokenType.EQ) pieces.space();
+    });
+
+    var valuePiece = nodePiece(value, context: NodeContext.assignment);
+
+    pieces.add(AssignPiece(
+        left: parameter,
+        operatorPiece,
+        valuePiece,
+        canBlockSplitRight: value.canBlockSplit));
   }
 
   /// Writes a function type or function-typed formal.
