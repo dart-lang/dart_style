@@ -233,27 +233,11 @@ class Solution implements Comparable<Solution> {
     // end (or a winner).
     if (expandPiece == null) return const [];
 
-    // TODO(perf): If `_invalidPiece == expandPiece`, then we know that the
-    // first state leads to an invalid solution, so there's no point in trying
-    // to expand to a solution that binds `expandPiece` to
-    // `expandPiece.states[0]`. We should be able to do:
-    //
-    //     Iterable<State> states = expandPiece.states;
-    //     if (_invalidPiece == expandPiece) {
-    //       print('skip $expandPiece ${states.first}');
-    //       states = states.skip(1);
-    //     }
-    //
-    // And then use `states` below. But when I tried that, it didn't seem to
-    // make any noticeable performance difference on the one pathological
-    // example I tried. Leaving this here as a TODO to investigate more when
-    // there are other benchmarks we can try.
-    var solutions = <Solution>[];
-
     // For each state that the expanding piece can be in, create a new solution
     // that inherits all of the bindings of this one, and binds the expanding
     // piece to that state (along with any further pieces constrained by that
     // one).
+    var solutions = <Solution>[];
     for (var state in expandPiece.states) {
       var newStates = {..._pieceStates};
 

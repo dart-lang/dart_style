@@ -302,8 +302,6 @@ class PieceWriter {
   void _flushSpace() {
     if (!_pendingSpace) return;
 
-    // TODO(perf): See if we can make SpacePiece a constant to avoid creating
-    // multiple.
     _pieces.last.add(SpacePiece());
     _pendingSpace = false;
   }

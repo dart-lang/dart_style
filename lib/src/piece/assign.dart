@@ -121,18 +121,6 @@ class AssignPiece extends Piece {
         _canBlockSplitLeft = canBlockSplitLeft,
         _canBlockSplitRight = canBlockSplitRight;
 
-  // TODO(tall): The old formatter allows the first operand of a split
-  // conditional expression to be on the same line as the `=`, as in:
-  //
-  //     var value = condition
-  //         ? thenValue
-  //         : elseValue;
-  //
-  // For now, we do not implement this special case behavior. Once more of the
-  // language is implemented in the new back end and we can run the formatter
-  // on a large corpus of code, we can try it out and see if the special case
-  // behavior is worth it.
-
   @override
   List<State> get additionalStates => [
         // If at least one operand can block split, allow splitting in operands

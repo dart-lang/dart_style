@@ -47,7 +47,6 @@ someReceiverObject.property1.property2
     .property5
     .property6;
 <<<
-### TODO(tall): Allow splitting between successive indexes.
 someReceiverObject
     .property1
     .property2
