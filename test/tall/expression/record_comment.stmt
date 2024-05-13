@@ -100,5 +100,6 @@ var record = (
 
   // comment
   element,
+
   element,
 );

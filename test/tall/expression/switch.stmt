@@ -31,7 +31,7 @@ e = switch (c) {
     veryLongExpression + thatSplits,
   third => c,
 };
->>> Discard newlines between cases.
+>>> Remove blank lines before first and last case. Preserve one between.
 e = switch (obj) {
 
 
@@ -49,7 +49,9 @@ e = switch (obj) {
 <<<
 e = switch (obj) {
   0 => a,
+
   1 => b,
+
   2 => c,
 };
 >>> Don't split at parentheses.

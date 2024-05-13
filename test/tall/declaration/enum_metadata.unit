@@ -26,6 +26,7 @@ enum Foo { a,
 <<<
 enum Foo {
   a,
+
   @meta
   b,
 }

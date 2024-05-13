@@ -22,5 +22,6 @@ return $.Div(inner: [
     ]),
     $.Img(src: "math.png", width: "350px", height: "42px", clazz: "center"),
   ]),
+
   $.Footer(inner: [$.P(id: "notes", inner: "${seeds} seeds")]),
 ]);

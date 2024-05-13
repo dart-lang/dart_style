@@ -128,3 +128,45 @@ var record = (
   third,
   fourth,
 );
+>>> Remove blank lines before first and last entries. Preserve one between.
+var record = (
+
+
+  firstField: 1,
+
+
+
+  secondField: 2,
+
+
+
+  thirdField: 3
+
+
+);
+<<<
+var record = (
+  firstField: 1,
+
+  secondField: 2,
+
+  thirdField: 3,
+);
+>>> Discard blank lines if doesn't need to split.
+var record = (
+
+
+  a: 1,
+
+
+
+  b: 2,
+
+
+
+  c: 3
+
+
+);
+<<<
+var record = (a: 1, b: 2, c: 3);

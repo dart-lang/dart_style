@@ -63,6 +63,7 @@ enum A {
 <<<
 enum A {
   B,
+
   // comment
 }
 >>> Ensure blank line above doc comments.

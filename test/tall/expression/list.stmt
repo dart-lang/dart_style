@@ -47,7 +47,7 @@ const [1, 2, 3];
       fourth +
       fifth,
 ];
->>> Remove blank lines around elements.
+>>> Remove blank lines before first and last elements. Preserve one between.
 [
 
 
@@ -66,9 +66,29 @@ const [1, 2, 3];
 <<<
 [
   firstElement,
+
   secondElement,
+
   thirdElement,
 ];
+>>> Discard blank lines if doesn't need to split.
+[
+
+
+  1,
+
+
+
+  2,
+
+
+
+  3,
+
+
+];
+<<<
+[1, 2, 3];
 >>> With type argument.
 <  int  >  [  1  ,  2  ,  3  ];
 <<<

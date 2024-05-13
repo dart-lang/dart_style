@@ -52,6 +52,7 @@ var map = {
 ({
   // comment
   element: 1,
+
   noComment: 2,
 
   // comment
