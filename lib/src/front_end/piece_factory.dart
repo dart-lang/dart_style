@@ -623,6 +623,7 @@ mixin PieceFactory {
       pieces.add(parameter);
       return;
     }
+
     var (separator, value) = defaultValue;
     var operatorPiece = pieces.build(() {
       if (separator.type == TokenType.EQ) pieces.space();
