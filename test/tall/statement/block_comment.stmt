@@ -97,3 +97,20 @@ line */
   b:
   c;
 }
+>>> Preserve one blank line between a leading comment and statement.
+{
+
+
+
+// comment
+
+
+
+a;
+}
+<<<
+{
+  // comment
+
+  a;
+}

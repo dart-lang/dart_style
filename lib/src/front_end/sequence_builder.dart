@@ -107,6 +107,9 @@ class SequenceBuilder {
 
   /// Writes any comments appearing before [token] to the sequence.
   ///
+  /// Also handles blank lines between preceding comments and elements and the
+  /// subsequent element.
+  ///
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
   void addCommentsBefore(Token token, {int? indent}) {
@@ -152,7 +155,13 @@ class SequenceBuilder {
     if (comments.requiresNewline) _mustSplit = true;
 
     // Write a blank before the token if there should be one.
-    if (comments.linesBeforeNextToken > 1) addBlank();
+    if (comments.linesBeforeNextToken > 1) {
+      // If we just wrote a comment, then allow a blank line between it and the
+      // element.
+      if (comments.isNotEmpty) _allowBlank = true;
+
+      addBlank();
+    }
   }
 
   void _add(int indent, Piece piece) {
