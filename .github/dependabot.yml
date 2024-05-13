@@ -9,6 +9,7 @@ updates:
       interval: monthly
     labels:
       - autosubmit
+      - infrastructure
     groups:
       github-actions:
         patterns:
