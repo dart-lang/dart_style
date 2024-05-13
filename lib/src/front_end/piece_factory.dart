@@ -527,8 +527,16 @@ mixin PieceFactory {
   /// If [fieldKeyword] and [period] are given, the former should be the `this`
   /// or `super` keyword for an initializing formal or super parameter.
   void writeFormalParameter(
-      NormalFormalParameter node, TypeAnnotation? type, Token? name,
+      FormalParameter node, TypeAnnotation? type, Token? name,
       {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
+    // If the parameter has a default value, the parameter node will be wrapped
+    // in a DefaultFormalParameter node containing the default.
+    (Token separator, Expression value)? defaultValueRecord;
+    if (node.parent
+        case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
+      defaultValueRecord = (separator, defaultValue);
+    }
+
     writeParameter(
         metadata: node.metadata,
         modifiers: [
@@ -539,7 +547,8 @@ mixin PieceFactory {
         type,
         fieldKeyword: fieldKeyword,
         period: period,
-        name);
+        name,
+        defaultValue: defaultValueRecord);
   }
 
   /// Writes a function, method, getter, or setter declaration.
@@ -604,10 +613,38 @@ mixin PieceFactory {
     });
   }
 
+  /// If [parameter] has a [defaultValue] then writes a piece for the parameter
+  /// followed by that default value.
+  ///
+  /// Otherwise, just writes [parameter].
+  void writeDefaultValue(
+      Piece parameter, (Token separator, Expression value)? defaultValue) {
+    if (defaultValue == null) {
+      pieces.add(parameter);
+      return;
+    }
+
+    var (separator, value) = defaultValue;
+    var operatorPiece = pieces.build(() {
+      if (separator.type == TokenType.EQ) pieces.space();
+      pieces.token(separator);
+      if (separator.type != TokenType.EQ) pieces.space();
+    });
+
+    var valuePiece = nodePiece(value, context: NodeContext.assignment);
+
+    pieces.add(AssignPiece(
+        left: parameter,
+        operatorPiece,
+        valuePiece,
+        canBlockSplitRight: value.canBlockSplit));
+  }
+
   /// Writes a function type or function-typed formal.
   ///
   /// If creating a piece for a function-typed formal, then [parameter] is the
-  /// formal parameter.
+  /// formal parameter. If there is a default value, then [defaultValue] is
+  /// the `=` or `:` separator followed by the constant expression.
   ///
   /// If this is a function-typed initializing formal (`this.foo()`), then
   /// [fieldKeyword] is `this` and [period] is the `.`. Likewise, for a
@@ -621,44 +658,58 @@ mixin PieceFactory {
       {FormalParameter? parameter,
       Token? fieldKeyword,
       Token? period}) {
-    Piece? returnTypePiece;
-    if (parameter != null && returnType != null) {
-      // Attach any parameter metadata and modifiers to the return type.
-      returnTypePiece =
-          pieces.build(metadata: parameter.metadata, inlineMetadata: true, () {
-        pieces.modifier(parameter.requiredKeyword);
-        pieces.modifier(parameter.covariantKeyword);
-        pieces.visit(returnType);
-      });
-    } else if (returnType != null) {
-      returnTypePiece = nodePiece(returnType);
+    // If the type is a function-typed parameter with a default value, then
+    // grab the default value from the parent node.
+    (Token separator, Expression value)? defaultValueRecord;
+    if (parameter?.parent
+        case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
+      defaultValueRecord = (separator, defaultValue);
     }
 
-    // If there's no return type, attach the metadata to the signature.
-    var signatureMetadata = const <Annotation>[];
-    if (parameter != null && returnType == null) {
-      signatureMetadata = parameter.metadata;
-    }
+    var metadata = parameter?.metadata ?? const <Annotation>[];
+    pieces.withMetadata(metadata, inlineMetadata: true, () {
+      Piece? returnTypePiece;
+      if (returnType != null) {
+        returnTypePiece = pieces.build(() {
+          // Attach any parameter modifiers to the return type.
+          if (parameter != null) {
+            pieces.modifier(parameter.requiredKeyword);
+            pieces.modifier(parameter.covariantKeyword);
+          }
 
-    var signature =
-        pieces.build(metadata: signatureMetadata, inlineMetadata: true, () {
-      // If there's no return type, attach the parameter modifiers to the
-      // signature.
-      if (parameter != null && returnType == null) {
-        pieces.modifier(parameter.requiredKeyword);
-        pieces.modifier(parameter.covariantKeyword);
+          pieces.visit(returnType);
+        });
       }
 
-      pieces.token(fieldKeyword);
-      pieces.token(period);
-      pieces.token(functionKeywordOrName);
-      pieces.visit(typeParameters);
-      pieces.visit(parameters);
-      pieces.token(question);
-    });
+      var signature = pieces.build(() {
+        // If there's no return type, attach the parameter modifiers to the
+        // signature.
+        if (parameter != null && returnType == null) {
+          pieces.modifier(parameter.requiredKeyword);
+          pieces.modifier(parameter.covariantKeyword);
+        }
 
-    pieces.add(FunctionPiece(returnTypePiece, signature,
-        isReturnTypeFunctionType: returnType is GenericFunctionType));
+        pieces.token(fieldKeyword);
+        pieces.token(period);
+        pieces.token(functionKeywordOrName);
+        pieces.visit(typeParameters);
+        pieces.visit(parameters);
+        pieces.token(question);
+      });
+
+      var function = FunctionPiece(returnTypePiece, signature,
+          isReturnTypeFunctionType: returnType is GenericFunctionType);
+
+      // TODO(rnystrom): It would be good if the AssignPiece created for the
+      // default value could treat the parameter list on the left-hand side as
+      // block-splittable. But since it's a FunctionPiece and not directly a
+      // ListPiece, AssignPiece doesn't support block-splitting it. If #1466 is
+      // fixed, that may enable us to handle block-splitting here too. In
+      // practice, it doesn't really matter since function-typed formals are
+      // deprecated, default values on function-typed parameters are rare, and
+      // when both occur, they rarely split.
+      writeDefaultValue(function, defaultValueRecord);
+    });
   }
 
   /// Writes a piece for the header -- everything from the `if` keyword to the
@@ -1316,11 +1367,15 @@ mixin PieceFactory {
   /// Writes a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a
   /// parameter.
+  ///
+  /// If the parameter has a default value, then [defaultValue] contains the
+  /// `:` or `=` separator and the constant value expression.
   void writeParameter(TypeAnnotation? type, Token? name,
       {List<Annotation> metadata = const [],
       List<Token?> modifiers = const [],
       Token? fieldKeyword,
-      Token? period}) {
+      Token? period,
+      (Token separator, Expression value)? defaultValue}) {
     // Begin a piece to attach metadata to the parameter.
     pieces.withMetadata(metadata, inlineMetadata: true, () {
       Piece? typePiece;
@@ -1351,14 +1406,20 @@ mixin PieceFactory {
         });
       }
 
+      Piece parameterPiece;
       if (typePiece != null && namePiece != null) {
         // We have both a type and name, allow splitting between them.
-        pieces.add(VariablePiece(typePiece, [namePiece], hasType: true));
-      } else if (typePiece != null) {
-        pieces.add(typePiece);
-      } else if (namePiece != null) {
-        pieces.add(namePiece);
+        parameterPiece = VariablePiece(typePiece, [namePiece], hasType: true);
+      } else {
+        // Will have at least a type or name.
+        parameterPiece = typePiece ?? namePiece!;
       }
+
+      // If there's a default value, include it. We do that inside here so that
+      // any metadata surrounds the entire assignment instead of being part of
+      // the assignment's left-hand side where a split in the metadata would
+      // force a split at the default value separator.
+      writeDefaultValue(parameterPiece, defaultValue);
     });
   }
 

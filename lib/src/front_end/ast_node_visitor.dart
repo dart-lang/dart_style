@@ -465,12 +465,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    if (node.separator case var separator?) {
-      writeAssignment(node.parameter, separator, node.defaultValue!,
-          spaceBeforeOperator: separator.type == TokenType.EQ);
-    } else {
-      pieces.visit(node.parameter);
-    }
+    // Visit the inner parameter. It will then access its parent to extract the
+    // default value.
+    pieces.visit(node.parameter);
   }
 
   @override
