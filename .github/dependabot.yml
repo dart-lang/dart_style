@@ -10,6 +10,10 @@ updates:
     labels:
       - autosubmit
       - infrastructure
+    groups:
+      github-actions:
+        patterns:
+          - "*"
 
   # We check daily for major version dependency updates to capture releases of
   # package:analyzer.
