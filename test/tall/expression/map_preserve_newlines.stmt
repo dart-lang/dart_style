@@ -42,6 +42,7 @@ var map = {
   element3: 3,
   element4: 4,
   element5: 5,
+
   element6: 6, element7: 7,
 
   // comment

@@ -212,3 +212,49 @@ if (obj case LongClassName<
 )) {
   ;
 }
+>>> Remove blank lines before first and last entries. Preserve one between.
+if (obj case C(
+
+
+  firstField: 1,
+
+
+
+  secondField: 2,
+
+
+
+  thirdField: 3
+
+
+)) {;}
+<<<
+if (obj case C(
+  firstField: 1,
+
+  secondField: 2,
+
+  thirdField: 3,
+)) {
+  ;
+}
+>>> Discard blank lines if doesn't need to split.
+if (obj case C(
+
+
+  a: 1,
+
+
+
+  b: 2,
+
+
+
+  c: 3
+
+
+)) {;}
+<<<
+if (obj case C(a: 1, b: 2, c: 3)) {
+  ;
+}

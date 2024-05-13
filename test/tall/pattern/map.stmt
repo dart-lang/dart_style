@@ -101,3 +101,49 @@ var {k: {k: v}} = value;
 var {k: (v,)} = value;
 <<<
 var {k: (v,)} = value;
+>>> Remove blank lines before first and last entries. Preserve one between.
+if (obj case {
+
+
+  firstField: 1,
+
+
+
+  secondField: 2,
+
+
+
+  thirdField: 3
+
+
+}) {;}
+<<<
+if (obj case {
+  firstField: 1,
+
+  secondField: 2,
+
+  thirdField: 3,
+}) {
+  ;
+}
+>>> Discard blank lines if doesn't need to split.
+if (obj case {
+
+
+  a: 1,
+
+
+
+  b: 2,
+
+
+
+  c: 3
+
+
+}) {;}
+<<<
+if (obj case {a: 1, b: 2, c: 3}) {
+  ;
+}

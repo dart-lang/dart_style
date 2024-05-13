@@ -131,3 +131,45 @@ enum SomeEnumType<
   b,
   c,
 }
+>>> Remove blank lines before first and last value. Preserve one between.
+enum E {
+
+
+  firstConstant,
+
+
+
+  secondConstant,
+
+
+
+  thirdConstant
+
+
+}
+<<<
+enum E {
+  firstConstant,
+
+  secondConstant,
+
+  thirdConstant,
+}
+>>> Discard blank lines if doesn't need to split.
+enum E {
+
+
+  a,
+
+
+
+  b,
+
+
+
+  c,
+
+
+}
+<<<
+enum E { a, b, c }

@@ -19,6 +19,7 @@ e = switch (n) {
 e = switch (n) {
   // comment
   0 => a,
+
   // comment
   1 => b,
 

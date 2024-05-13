@@ -81,3 +81,45 @@ someFunctionOne(
   someArgument,
   someArgument,
 );
+>>> Remove blank lines before first and last arguments. Preserve one between.
+function(
+
+
+  firstElement,
+
+
+
+  secondElement,
+
+
+
+  thirdElement
+
+
+);
+<<<
+function(
+  firstElement,
+
+  secondElement,
+
+  thirdElement,
+);
+>>> Discard blank lines if doesn't need to split.
+f(
+
+
+  1,
+
+
+
+  2,
+
+
+
+  3,
+
+
+);
+<<<
+f(1, 2, 3);

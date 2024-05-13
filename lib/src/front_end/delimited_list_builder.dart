@@ -207,7 +207,11 @@ class DelimitedListBuilder {
   /// before the closing delimiter.
   void _addComments(CommentSequence comments, {required bool hasElementAfter}) {
     // Early out if there's nothing to do.
-    if (_commentsBeforeComma.isEmpty && comments.isEmpty) return;
+    if (_commentsBeforeComma.isEmpty &&
+        comments.isEmpty &&
+        comments.linesBeforeNextToken <= 1) {
+      return;
+    }
 
     if (_commentsBeforeComma.requiresNewline || comments.requiresNewline) {
       _mustSplit = true;
@@ -236,6 +240,11 @@ class DelimitedListBuilder {
         var commentPiece = _visitor.pieces.commentPiece(comment);
         _elements.last.addComment(commentPiece);
       }
+    }
+
+    // Preserve one blank line between successive elements.
+    if (_elements.isNotEmpty && comments.linesBeforeNextToken > 1) {
+      _blanksAfter.add(_elements.last);
     }
 
     // Comments that are neither hanging nor leading are treated like their own
