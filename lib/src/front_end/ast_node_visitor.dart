@@ -523,9 +523,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       if (node.members.isEmpty) {
         // If there are no members, format the constants like a delimited list.
         // This keeps the enum declaration on one line if it fits.
-        // TODO(tall): The old style preserves blank lines and newlines between
-        // enum values. A newline will also force the enum to split even if it
-        // would otherwise fit. Do we want to do that with the new style too?
         var builder =
             DelimitedListBuilder(this, const ListStyle(spaceWhenUnsplit: true));
 

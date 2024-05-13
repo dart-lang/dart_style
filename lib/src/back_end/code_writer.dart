@@ -118,15 +118,11 @@ class CodeWriter {
   ///
   /// If [text] contains any internal newlines, the caller is responsible for
   /// also calling [handleNewline()].
+  ///
+  /// When possible, avoid calling this directly. Instead, any input code
+  /// lexemes should be written to TextPieces which then call this. That way,
+  /// selections inside lexemes are correctly updated.
   void write(String text) {
-    // TODO(tall): Calling this directly from pieces outside of TextPiece may
-    // not handle selections as gracefully as we could. A selection marker may
-    // get pushed past the text written here. Currently, this is only called
-    // directly for commas in list-like things, and `;` in for loops. In
-    // general, it's better for all text written to the output to live inside
-    // TextPieces because that will preserve selection markers. Consider doing
-    // something smarter for commas in lists and semicolons in for loops.
-
     _flushWhitespace();
     _buffer.write(text);
     _column += text.length;
