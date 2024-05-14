@@ -80,3 +80,78 @@ class ForPiece extends Piece {
     callback(_body);
   }
 }
+
+/// A piece for the `<variable> in <expression>` part of a for-in loop.
+///
+/// Can be formatted two ways:
+///
+/// [State.unsplit] No split at all:
+///
+///     for (var x in y) ...
+///
+/// This state also allows splitting the sequence expression if it can be block
+/// formatted:
+///
+///     for (var i in [
+///       element1,
+///       element2,
+///       element3,
+///     ];
+///
+/// [State.split] Split at the `in` operator and allow expression splitting on
+/// either side. Allows:
+///
+///     for (var (longVariable &&
+///             anotherVariable)
+///         in longOperand +
+///             anotherOperand) {
+///       ...
+///     }
+class ForInPiece extends Piece {
+  /// The variable or pattern initialized with each loop iteration.
+  final Piece _variable;
+
+  /// The `in` keyword followed by the sequence expression.
+  final Piece _sequence;
+
+  /// If `true` then the sequence expression supports being block-formatted,
+  /// like:
+  ///
+  ///     for (var e in [
+  ///       element1,
+  ///       element2,
+  ///     ]) {
+  ///       // ...
+  ///     }
+  final bool _canBlockSplitSequence;
+
+  ForInPiece(this._variable, this._sequence,
+      {bool canBlockSplitSequence = false})
+      : _canBlockSplitSequence = canBlockSplitSequence;
+
+  @override
+  List<State> get additionalStates => const [State.split];
+
+  @override
+  void format(CodeWriter writer, State state) {
+    // When splitting at `in`, both operands may split or not and will be
+    // indented if they do.
+    if (state == State.split) writer.pushIndent(Indent.expression);
+
+    writer.format(_variable, allowNewlines: state == State.split);
+
+    writer.splitIf(state == State.split);
+
+    // Always allow block-splitting the sequence if it supports it.
+    writer.format(_sequence,
+        allowNewlines: _canBlockSplitSequence || state == State.split);
+
+    if (state == State.split) writer.popIndent();
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    callback(_variable);
+    callback(_sequence);
+  }
+}

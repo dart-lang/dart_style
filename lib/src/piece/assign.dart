@@ -5,13 +5,15 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for any construct where `=` is followed by an expression: variable
-/// initializer, assignment, constructor initializer, etc.
+/// A piece for an assignment-like construct where an operator is followed by
+/// an expression but where the left side of the operator isn't also an
+/// expression. Used for:
 ///
-/// This piece is also used for map entries and named arguments where `:` is
-/// followed by an expression or element because those also want to support the
-/// "block-like" formatting of delimited expressions on the right, and for the
-/// `in` clause in for-in loops.
+/// - Assignment (`=`, `+=`, etc.)
+/// - Named arguments (`:`)
+/// - Map entries (`:`)
+/// - Record fields (`:`)
+/// - Expression function bodies (`=>`)
 ///
 /// These constructs can be formatted four ways:
 ///
@@ -76,24 +78,20 @@ class AssignPiece extends Piece {
   /// Split at the operator.
   static const State _atOperator = State(3);
 
-  /// The left-hand side of the operation. Includes the operator unless it is
-  /// `in`.
+  /// The left-hand side of the operation.
   final Piece? _left;
 
-  // TODO(perf): Most AssignPieces don't allow splitting between [_left] and
-  // [_operator]. Also, in the common case where the AssignPiece is for a named
-  // argument, then both [_left] and [_operator] will be simple CodePieces. If
-  // we used a single piece for both, they can often be concatenated into a
-  // single [CodePiece]. We only store [_operator] separately for for-in loops.
-  // Consider handling those with a separate Piece class and merging [_left]
-  // and [_operator] in this one.
+  // TODO(rnystrom): If it wasn't for the need to constraint [_left] to split
+  // in [applyConstraints()], we could write the operator into the same piece
+  // as [_left]. In the common case where the AssignPiece is for a named
+  // argument, the name and `:` would then end up in a single atomic
+  // [CodePiece].
 
+  /// The `=` or other operator.
   final Piece _operator;
 
   /// The right-hand side of the operation.
   final Piece _right;
-
-  final bool _splitBeforeOperator;
 
   /// If `true`, then the left side supports being block-formatted, like:
   ///
@@ -113,11 +111,9 @@ class AssignPiece extends Piece {
 
   AssignPiece(this._operator, this._right,
       {Piece? left,
-      bool splitBeforeOperator = false,
       bool canBlockSplitLeft = false,
       bool canBlockSplitRight = false})
       : _left = left,
-        _splitBeforeOperator = splitBeforeOperator,
         _canBlockSplitLeft = canBlockSplitLeft,
         _canBlockSplitRight = canBlockSplitRight;
 
@@ -130,10 +126,16 @@ class AssignPiece extends Piece {
         _atOperator,
       ];
 
-  /// Apply constraints between how the parameters may split and how the
-  /// initializers may split.
   @override
   void applyConstraints(State state, Constrain constrain) {
+    // Force the left side to block split when in that state.
+    //
+    // Otherwise, the solver may instead leave it unsplit and then split the
+    // right side incorrectly as in:
+    //
+    //  (x, y) = longOperand2 +
+    //      longOperand2 +
+    //      longOperand3;
     if (state == _blockSplitLeft) constrain(_left!, State.split);
   }
 
@@ -172,13 +174,10 @@ class AssignPiece extends Piece {
   }
 
   void _writeOperator(CodeWriter writer, {bool split = false}) {
-    if (_splitBeforeOperator) writer.splitIf(split);
-
     writer.pushIndent(Indent.expression);
     writer.format(_operator);
     writer.popIndent();
-
-    if (!_splitBeforeOperator) writer.splitIf(split);
+    writer.splitIf(split);
   }
 
   void _writeRight(CodeWriter writer,
