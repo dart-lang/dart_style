@@ -81,7 +81,7 @@ class AssignPiece extends Piece {
   /// The left-hand side of the operation.
   final Piece? _left;
 
-  // TODO(rnystrom): If it wasn't for the need to constraint [_left] to split
+  // TODO(rnystrom): If it wasn't for the need to constrain [_left] to split
   // in [applyConstraints()], we could write the operator into the same piece
   // as [_left]. In the common case where the AssignPiece is for a named
   // argument, the name and `:` would then end up in a single atomic
