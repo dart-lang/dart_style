@@ -473,10 +473,7 @@ mixin PieceFactory {
         // statement or element.
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
-          writeAssignment(
-              variable, forEachParts.inKeyword, forEachParts.iterable,
-              splitBeforeOperator: true,
-              leftHandSideContext: NodeContext.forLoopVariable);
+          writeForIn(variable, forEachParts.inKeyword, forEachParts.iterable);
           pieces.token(rightParenthesis);
         });
 
@@ -491,10 +488,7 @@ mixin PieceFactory {
             pieces.token(keyword);
             pieces.space();
 
-            writeAssignment(
-                pattern, forEachParts.inKeyword, forEachParts.iterable,
-                splitBeforeOperator: true,
-                leftHandSideContext: NodeContext.forLoopVariable);
+            writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
           });
           pieces.token(rightParenthesis);
         });
@@ -1299,11 +1293,6 @@ mixin PieceFactory {
   /// * Expression (`=>`) function body
   /// * Named argument or named record field (`:`)
   /// * Map entry (`:`)
-  /// * For-in loop iterator (`in`)
-  ///
-  /// If [splitBeforeOperator] is `true`, then puts [operator] at the beginning
-  /// of the next line when it splits. Otherwise, puts the operator at the end
-  /// of the preceding line.
   ///
   /// If [canBlockSplitLeft] is `true`, then the left-hand operand supports
   /// being block-formatted without indenting it farther, like:
@@ -1313,9 +1302,7 @@ mixin PieceFactory {
   ///     ] = list;
   void writeAssignment(
       AstNode leftHandSide, Token operator, AstNode rightHandSide,
-      {bool splitBeforeOperator = false,
-      bool includeComma = false,
-      bool spaceBeforeOperator = true,
+      {bool includeComma = false,
       bool canBlockSplitLeft = false,
       NodeContext leftHandSideContext = NodeContext.none}) {
     // If an operand can have block formatting, then a newline in it doesn't
@@ -1345,23 +1332,36 @@ mixin PieceFactory {
     var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
 
     var operatorPiece = pieces.build(() {
-      if (spaceBeforeOperator) pieces.space();
+      if (operator.type != TokenType.COLON) pieces.space();
       pieces.token(operator);
-      if (splitBeforeOperator) pieces.space();
     });
 
     var rightPiece = nodePiece(rightHandSide,
-        commaAfter: includeComma,
-        context:
-            splitBeforeOperator ? NodeContext.none : NodeContext.assignment);
+        commaAfter: includeComma, context: NodeContext.assignment);
 
     pieces.add(AssignPiece(
         left: leftPiece,
         operatorPiece,
         rightPiece,
-        splitBeforeOperator: splitBeforeOperator,
         canBlockSplitLeft: canBlockSplitLeft,
         canBlockSplitRight: canBlockSplitRight));
+  }
+
+  /// Writes a [Piece] for the `<variable> in <expression>` part of a for-in
+  /// loop.
+  void writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
+    var leftPiece =
+        nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+
+    var sequencePiece = pieces.build(() {
+      // Put the `in` at the beginning of the sequence.
+      pieces.token(inKeyword);
+      pieces.space();
+      pieces.visit(sequence);
+    });
+
+    pieces.add(ForInPiece(leftPiece, sequencePiece,
+        canBlockSplitSequence: sequence.canBlockSplit));
   }
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal

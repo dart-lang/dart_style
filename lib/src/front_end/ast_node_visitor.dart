@@ -1204,8 +1204,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    writeAssignment(node.key, node.separator, node.value,
-        spaceBeforeOperator: false);
+    writeAssignment(node.key, node.separator, node.value);
   }
 
   @override
@@ -1220,8 +1219,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapPatternEntry(MapPatternEntry node) {
-    writeAssignment(node.key, node.separator, node.value,
-        spaceBeforeOperator: false);
+    writeAssignment(node.key, node.separator, node.value);
   }
 
   @override
@@ -1271,8 +1269,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    writeAssignment(node.name.label, node.name.colon, node.expression,
-        spaceBeforeOperator: false);
+    writeAssignment(node.name.label, node.name.colon, node.expression);
   }
 
   @override

@@ -113,9 +113,10 @@ for (var (longIdentifier &&
 for (var [longIdentifier, anotherLongOne] in obj) {;}
 <<<
 for (var [
-  longIdentifier,
-  anotherLongOne,
-] in obj) {
+      longIdentifier,
+      anotherLongOne,
+    ]
+    in obj) {
   ;
 }
 >>> With pattern, split in value.
