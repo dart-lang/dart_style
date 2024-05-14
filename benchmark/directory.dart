@@ -5,6 +5,7 @@
 import 'dart:io';
 
 import 'package:args/args.dart';
+import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/profile.dart';
@@ -24,7 +25,7 @@ void main(List<String> arguments) async {
   // matter for performance, but since the JIT is warming up as it goes through
   // the files, different orders could potentially affect how it chooses to
   // optimize.
-  entries.sort((a, b) => a.path.compareTo(b.path));
+  entries.sortBy((entry) => entry.path);
 
   print('Reading sources...');
   var sources = <String>[];
