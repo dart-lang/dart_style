@@ -58,20 +58,22 @@ class Profile {
   static void begin(String label) {
     if (!enabled) return;
 
+    // Indent to show nesting of profiled regions.
+    label = '${'  ' * _running.length}$label';
+
     _running.add((label, Timeline.now));
+
+    // Add the label eagerly to the map so that labels are printed in the
+    // order they were began.
+    _accumulatedTimes.putIfAbsent(label, () => 0);
   }
 
-  static void end(String label) {
+  static void end(String _) {
     if (!enabled) return;
 
-    var (startLabel, start) = _running.removeLast();
-
-    // Must push and pop in stack order.
-    assert(label == startLabel);
+    var (label, start) = _running.removeLast();
     var elapsed = Timeline.now - start;
-
-    _accumulatedTimes.update(label, (accumulated) => accumulated + elapsed,
-        ifAbsent: () => elapsed);
+    _accumulatedTimes.update(label, (accumulated) => accumulated + elapsed);
   }
 
   /// Discards all recorded profiling data.
@@ -105,8 +107,6 @@ class Profile {
     print(header);
 
     var labels = data.keys.toList();
-    labels.sort();
-
     var longestLabel =
         labels.fold(0, (length, label) => max(length, label.length));
 
