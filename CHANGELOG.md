@@ -1,6 +1,7 @@
 ## 2.3.7-wip
 
 * Remove temporary work around for analyzer 6.2.0 from dart_style 2.3.6.
+* Require `package:analyzer` `>=6.5.0 <7.0.0`.
 
 ## 2.3.6
 
