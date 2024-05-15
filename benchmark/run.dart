@@ -38,6 +38,9 @@ const _baselinePath = 'benchmark/baseline.json';
 
 final _benchmarkDirectory = p.dirname(p.fromUri(Platform.script));
 
+/// Whether to run a number of trials before measuring to warm up the JIT.
+bool _runWarmupTrials = false;
+
 /// Whether to use the short or tall style formatter.
 bool _isShort = false;
 
@@ -68,7 +71,9 @@ Future<void> main(List<String> arguments) async {
     }
   }
 
-  await _warmUp();
+  if (_runWarmupTrials) {
+    await _warmUp();
+  }
 
   var results = <(Benchmark, List<double>)>[];
   for (var benchmark in benchmarks) {
@@ -175,10 +180,15 @@ double _runTrial(DartFormatter formatter, ParseStringResult parseResult,
 Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
   var argParser = ArgParser();
   argParser.addFlag('help', negatable: false, help: 'Show usage information.');
+  argParser.addFlag('aot',
+      negatable: false,
+      help: 'Whether the benchmark should run in AOT mode versus JIT.');
   argParser.addFlag('short',
       abbr: 's',
       negatable: false,
       help: 'Whether the formatter should use short or tall style.');
+  argParser.addFlag('no-warmup',
+      negatable: false, help: 'Skip the JIT warmup runs.');
   argParser.addFlag('write-baseline',
       abbr: 'w',
       negatable: false,
@@ -187,6 +197,14 @@ Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
   var argResults = argParser.parse(arguments);
   if (argResults['help'] as bool) {
     _usage(argParser, exitCode: 0);
+  }
+
+  if (argResults['aot'] as bool) {
+    await rerunAsAot([
+      for (var argument in arguments)
+        if (argument != '--aot') argument,
+      '--no-warmup',
+    ]);
   }
 
   var benchmarks = switch (argResults.rest) {
@@ -205,6 +223,7 @@ Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
     _ => _usage(argParser, exitCode: 64),
   };
 
+  _runWarmupTrials = !(argResults['no-warmup'] as bool);
   _isShort = argResults['short'] as bool;
   _writeBaseline = argResults['write-baseline'] as bool;
 
@@ -250,7 +269,7 @@ Never _usage(ArgParser argParser, {required int exitCode}) {
   var stream = exitCode == 0 ? stdout : stderr;
 
   stream.writeln('dart benchmark/run.dart [benchmark/case/<benchmark>.unit] '
-      '[--short] [--baseline=n]');
+      '[--aot] [--short] [--baseline=n]');
   stream.writeln('');
   stream.writeln(argParser.usage);
 

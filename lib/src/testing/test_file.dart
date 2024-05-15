@@ -15,9 +15,16 @@ final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
-  var libraryUri = await Isolate.resolvePackageUri(
-      Uri.parse('package:dart_style/src/testing/test_file.dart'));
-  return p.normalize(p.join(p.dirname(libraryUri!.toFilePath()), '../../..'));
+  var libraryPath = (await Isolate.resolvePackageUri(
+          Uri.parse('package:dart_style/src/testing/test_file.dart')))
+      ?.toFilePath();
+
+  // Fallback, if we can't resolve the package URI because we're running in an
+  // AOT snapshot, just assume we're running from the root directory of the
+  // package.
+  libraryPath ??= 'lib/src/testing/test_file.dart';
+
+  return p.normalize(p.join(p.dirname(libraryPath), '../../..'));
 }
 
 /// Get the absolute local file path to the package's "test" directory.

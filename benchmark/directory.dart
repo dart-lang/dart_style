@@ -4,23 +4,28 @@
 
 import 'dart:io';
 
+import 'package:args/args.dart';
+import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/profile.dart';
+import 'package:dart_style/src/testing/benchmark.dart';
 
 /// Reads a given directory of Dart files and repeatedly formats their contents.
 ///
 /// This allows getting profile information on a large real-world codebase
 /// while also factoring out the file IO time from the process.
-void main(List<String> args) {
-  if (args.length != 1) {
-    stderr.writeln('Usage: dart run directory.dart <directory to format>');
-    exit(65);
-  }
+void main(List<String> arguments) async {
+  var directory = await _parseArguments(arguments);
 
-  var directory = args[0];
   print('Listing entries in $directory...');
   var entries = Directory(directory).listSync(recursive: true);
+
+  // Make sure the benchmark is deterministic. The order shouldn't really
+  // matter for performance, but since the JIT is warming up as it goes through
+  // the files, different orders could potentially affect how it chooses to
+  // optimize.
+  entries.sortBy((entry) => entry.path);
 
   print('Reading sources...');
   var sources = <String>[];
@@ -64,4 +69,45 @@ void _runFormatter(String source) {
   } on FormatterException catch (error) {
     print(error.message());
   }
+}
+
+/// Parses the command line arguments and options.
+///
+/// Returns the path to the directory that should be formatted.
+Future<String> _parseArguments(List<String> arguments) async {
+  var argParser = ArgParser();
+  argParser.addFlag('help', negatable: false, help: 'Show usage information.');
+  argParser.addFlag('aot',
+      negatable: false,
+      help: 'Whether the benchmark should run in AOT mode versus JIT.');
+
+  var argResults = argParser.parse(arguments);
+  if (argResults['help'] as bool) {
+    _usage(argParser, exitCode: 0);
+  }
+
+  if (argResults.rest.length != 1) {
+    stderr.writeln('Missing directory path to format.');
+    stderr.writeln();
+    _usage(argParser, exitCode: 0);
+  }
+
+  if (argResults['aot'] as bool) {
+    await rerunAsAot([argResults.rest.single]);
+  }
+
+  return argResults.rest.single;
+}
+
+/// Prints usage information.
+///
+/// If [exitCode] is non-zero, prints to stderr.
+Never _usage(ArgParser argParser, {required int exitCode}) {
+  var stream = exitCode == 0 ? stdout : stderr;
+
+  stream.writeln('dart benchmark/directory.dart [--aot] <directory>');
+  stream.writeln('');
+  stream.writeln(argParser.usage);
+
+  exit(exitCode);
 }
