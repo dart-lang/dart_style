@@ -12,3 +12,41 @@ main() {
     ..style.height = '100%'
     ..classList.add(_kClassName);
 }
+>>>
+### When a subtree is formatted separately, the mergeSubtree() step mostly has
+### no effect because the subtree's cost and overflow doesn't affect the
+### winning solution. But it sometimes does. None of the existing tests happen
+### to hit a case that does, but when formatting a corpus with subtree merging
+### on and off, this was a relatively simple example where the behavior differs.
+class C {
+  void paint(PaintingContext context, Offset offset) {
+    final (double visualPosition, Color leftColor, Color rightColor) =
+        switch (textDirection) {
+          TextDirection.rtl => (
+            1.0 - _position.value,
+            _activeColor,
+            trackColor,
+          ),
+          TextDirection.ltr => (_position.value, trackColor, _activeColor),
+        };
+
+    final double trackCenter = offset.dy + size.height / 2.0;
+    final double trackLeft = offset.dx + _trackLeft;
+  }
+}
+<<<
+class C {
+  void paint(PaintingContext context, Offset offset) {
+    final (
+      double visualPosition,
+      Color leftColor,
+      Color rightColor,
+    ) = switch (textDirection) {
+      TextDirection.rtl => (1.0 - _position.value, _activeColor, trackColor),
+      TextDirection.ltr => (_position.value, trackColor, _activeColor),
+    };
+
+    final double trackCenter = offset.dy + size.height / 2.0;
+    final double trackLeft = offset.dx + _trackLeft;
+  }
+}
