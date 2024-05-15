@@ -9,7 +9,7 @@ environment:
   sdk: "^3.0.0"
 
 dependencies:
-  analyzer: '^6.3.0'
+  analyzer: '^6.5.0'
   args: ">=1.0.0 <3.0.0"
   collection: "^1.17.0"
   path: ^1.0.0

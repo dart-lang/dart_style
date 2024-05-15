@@ -594,11 +594,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitExtensionDeclaration(ExtensionDeclaration node) {
+    (Token, TypeAnnotation)? onType;
+    if (node.onClause case var onClause?) {
+      onType = (onClause.onKeyword, onClause.extendedType);
+    }
+
     writeType(node.metadata, [node.extensionKeyword], node.name,
-        typeParameters: node.typeParameters,
-        // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
-        // ignore: deprecated_member_use
-        onType: (node.onKeyword, node.extendedType), body: () {
+        typeParameters: node.typeParameters, onType: onType, body: () {
       return pieces.build(() {
         writeBody(node.leftBracket, node.members, node.rightBracket);
       });
@@ -1268,6 +1270,12 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
+  void visitMixinOnClause(MixinOnClause node) {
+    throw UnsupportedError(
+        'This node is handled by PieceFactory.createType().');
+  }
+
+  @override
   void visitNamedExpression(NamedExpression node) {
     writeAssignment(node.name.label, node.name.colon, node.expression);
   }
@@ -1330,14 +1338,6 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     node.fields.forEach(builder.visit);
     builder.rightBracket(node.rightParenthesis);
     pieces.add(builder.build());
-  }
-
-  @override
-  // TODO(rnystrom): Move to the new analyzer API after Dart 3.4 ships.
-  // ignore: deprecated_member_use
-  void visitOnClause(OnClause node) {
-    throw UnsupportedError(
-        'This node is handled by PieceFactory.createType().');
   }
 
   @override
