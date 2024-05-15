@@ -188,7 +188,7 @@ Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
       negatable: false,
       help: 'Whether the formatter should use short or tall style.');
   argParser.addFlag('no-warmup',
-      negatable: false, help: 'Skip the JIT warmum runs.');
+      negatable: false, help: 'Skip the JIT warmup runs.');
   argParser.addFlag('write-baseline',
       abbr: 'w',
       negatable: false,
