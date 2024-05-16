@@ -324,21 +324,44 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     // conditional expression to split.
     var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
 
-    var condition = nodePiece(node.condition);
+    // Flatten a series of else-if-like chained conditionals into a single long
+    // infix piece. This produces a flattened style like:
+    //
+    //     condition
+    //     ? thenBranch
+    //     : condition2
+    //     ? thenBranch2
+    //     : elseBranch;
+    //
+    // This (arguably) looks nicer. More importantly, it means that all but the
+    // last operand can be formatted separately, which is important to avoid
+    // pathological performance in the solved with long nested conditional
+    // chains.
+    var operands = [nodePiece(node.condition)];
 
-    var thenPiece = pieces.build(() {
-      pieces.token(node.question);
-      pieces.space();
-      pieces.visit(node.thenExpression, context: NodeContext.conditionalBranch);
-    });
+    void addOperand(Token operator, Expression operand) {
+      operands.add(pieces.build(() {
+        pieces.token(operator);
+        pieces.space();
+        pieces.visit(operand, context: NodeContext.conditionalBranch);
+      }));
+    }
 
-    var elsePiece = pieces.build(() {
-      pieces.token(node.colon);
-      pieces.space();
-      pieces.visit(node.elseExpression, context: NodeContext.conditionalBranch);
-    });
+    var conditional = node;
+    while (true) {
+      addOperand(conditional.question, conditional.thenExpression);
 
-    var piece = InfixPiece(leadingComments, [condition, thenPiece, elsePiece]);
+      var elseBranch = conditional.elseExpression;
+      if (elseBranch is ConditionalExpression) {
+        addOperand(conditional.colon, elseBranch.condition);
+        conditional = elseBranch;
+      } else {
+        addOperand(conditional.colon, conditional.elseExpression);
+        break;
+      }
+    }
+
+    var piece = InfixPiece(leadingComments, operands);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.

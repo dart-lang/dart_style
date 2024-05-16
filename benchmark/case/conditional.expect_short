@@ -1,0 +1,32 @@
+void securityItem() {
+  return SelectableText(
+    itemSecurityScheme.securitySchemeType == SecuritySchemeType.QueryAPIKey
+        ? Constants.oneTwoThreeTxt
+        : itemSecurityScheme.securitySchemeType ==
+                    SecuritySchemeType.HeaderAPIKey ||
+                itemSecurityScheme.securitySchemeType ==
+                    SecuritySchemeType.CookieAPIKey
+            ? Constants.oneTwoThreeTxt
+            : itemSecurityScheme.securitySchemeType ==
+                    SecuritySchemeType.BasicHTTP
+                ? Constants.demoUsernameTxt
+                : itemSecurityScheme.securitySchemeType ==
+                        SecuritySchemeType.BearerHTTP
+                    ? Constants.oneTwoThreeTxt
+                    : itemSecurityScheme.securitySchemeType ==
+                            SecuritySchemeType.DigestHTTP
+                        ? Constants.digestDemoTxt
+                        : itemSecurityScheme.securitySchemeType ==
+                                    SecuritySchemeType.OAuth2PasswordFlow ||
+                                itemSecurityScheme.securitySchemeType ==
+                                    SecuritySchemeType.OAuth2ClientFlow
+                            ? Constants.emptyTxt
+                            : itemSecurityScheme.securitySchemeType ==
+                                    SecuritySchemeType.OAuth2ImplicitFlow
+                                ? Constants.emptyTxt
+                                : itemSecurityScheme.securitySchemeType ==
+                                        SecuritySchemeType.OAuth2CodeFlow
+                                    ? Constants.emptyTxt
+                                    : Constants.emptyTxt,
+  );
+}

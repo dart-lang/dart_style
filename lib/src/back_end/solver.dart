@@ -9,6 +9,13 @@ import '../profile.dart';
 import 'solution.dart';
 import 'solution_cache.dart';
 
+/// To ensure the solver doesn't go totally pathological on giant code, we cap
+/// it at a fixed number of attempts.
+///
+/// If the optimal solution isn't found after this many tries, it just uses the
+/// best it found so far.
+const _maxAttempts = 10000;
+
 /// Selects states for each piece in a tree of pieces to find the best set of
 /// line splits that minimizes overflow characters and line splitting costs.
 ///
@@ -85,18 +92,17 @@ class Solver {
     // The lowest cost solution found so far that does overflow.
     var best = solution;
 
-    var tries = 0;
+    var attempts = 0;
 
-    // TODO(perf): Consider bailing out after a certain maximum number of tries,
-    // so that it outputs suboptimal formatting instead of hanging entirely.
-    while (_queue.isNotEmpty) {
+    while (_queue.isNotEmpty && attempts < _maxAttempts) {
       Profile.begin('Solver dequeue');
       var solution = _queue.removeFirst();
       Profile.end('Solver dequeue');
 
+      attempts++;
+
       if (debug.traceSolver) {
-        tries++;
-        debug.log(debug.bold('Try #$tries $solution'));
+        debug.log(debug.bold('Try #$attempts $solution'));
         debug.log(solution.text);
         debug.log('');
       }

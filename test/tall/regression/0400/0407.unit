@@ -32,11 +32,11 @@ receiver
             _total == 0
                 ? ""
                 : _chartType == "PieChart"
-                    ? _formatter.formatAsPercent(
-                      item.value / _total,
-                      fractionDigits: 1,
-                    )
-                    : _formatter.formatValue(item.value, item.valueType);
+                ? _formatter.formatAsPercent(
+                  item.value / _total,
+                  fractionDigits: 1,
+                )
+                : _formatter.formatValue(item.value, item.valueType);
     }
 >>> (indent 6)
 main() {
@@ -55,9 +55,9 @@ receiver
               _total == 0
                   ? ""
                   : _chartType == "PieChart"
-                      ? _formatter.formatAsPercent(
-                        item.value / _total,
-                        fractionDigits: 1,
-                      )
-                      : _formatter.formatValue(item.value, item.valueType);
+                  ? _formatter.formatAsPercent(
+                    item.value / _total,
+                    fractionDigits: 1,
+                  )
+                  : _formatter.formatValue(item.value, item.valueType);
       }
