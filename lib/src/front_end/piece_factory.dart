@@ -16,7 +16,6 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/postfix.dart';
 import '../piece/sequence.dart';
-import '../piece/try.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
 import 'ast_node_visitor.dart';
@@ -738,43 +737,40 @@ mixin PieceFactory {
 
   /// Writes a [TryPiece] for try statement.
   void writeTry(TryStatement tryStatement) {
-    var piece = TryPiece();
-
-    var tryHeader = tokenPiece(tryStatement.tryKeyword);
-    var tryBlock = pieces.build(() {
-      writeBlock(tryStatement.body);
-    });
-    piece.add(tryHeader, tryBlock);
+    pieces.token(tryStatement.tryKeyword);
+    pieces.space();
+    writeBlock(tryStatement.body);
 
     for (var i = 0; i < tryStatement.catchClauses.length; i++) {
       var catchClause = tryStatement.catchClauses[i];
 
-      var catchClauseHeader = pieces.build(() {
-        if (catchClause.onKeyword case var onKeyword?) {
-          pieces.token(onKeyword, spaceAfter: true);
-          pieces.visit(catchClause.exceptionType);
-        }
+      pieces.space();
+      if (catchClause.onKeyword case var onKeyword?) {
+        pieces.token(onKeyword, spaceAfter: true);
+        pieces.visit(catchClause.exceptionType);
+      }
 
-        if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
-          pieces.space();
-        }
+      if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
+        pieces.space();
+      }
 
-        if (catchClause.catchKeyword case var catchKeyword?) {
-          pieces.token(catchKeyword);
-          pieces.space();
+      if (catchClause.catchKeyword case var catchKeyword?) {
+        pieces.token(catchKeyword);
+        pieces.space();
 
-          var parameters = DelimitedListBuilder(this);
-          parameters.leftBracket(catchClause.leftParenthesis!);
-          if (catchClause.exceptionParameter case var exceptionParameter?) {
-            parameters.visit(exceptionParameter);
-          }
-          if (catchClause.stackTraceParameter case var stackTraceParameter?) {
-            parameters.visit(stackTraceParameter);
-          }
-          parameters.rightBracket(catchClause.rightParenthesis!);
-          pieces.add(parameters.build());
+        var parameters = DelimitedListBuilder(this);
+        parameters.leftBracket(catchClause.leftParenthesis!);
+        if (catchClause.exceptionParameter case var exceptionParameter?) {
+          parameters.visit(exceptionParameter);
         }
-      });
+        if (catchClause.stackTraceParameter case var stackTraceParameter?) {
+          parameters.visit(stackTraceParameter);
+        }
+        parameters.rightBracket(catchClause.rightParenthesis!);
+        pieces.add(parameters.build());
+      }
+
+      pieces.space();
 
       // Edge case: When there's another catch/on/finally after this one, we
       // want to force the block to split even if it's empty.
@@ -787,21 +783,15 @@ mixin PieceFactory {
       //     }
       var forceSplit = i < tryStatement.catchClauses.length - 1 ||
           tryStatement.finallyBlock != null;
-      var catchClauseBody = pieces.build(() {
-        writeBlock(catchClause.body, forceSplit: forceSplit);
-      });
-      piece.add(catchClauseHeader, catchClauseBody);
+      writeBlock(catchClause.body, forceSplit: forceSplit);
     }
 
     if (tryStatement.finallyBlock case var finallyBlock?) {
-      var finallyHeader = tokenPiece(tryStatement.finallyKeyword!);
-      var finallyBody = pieces.build(() {
-        writeBlock(finallyBlock);
-      });
-      piece.add(finallyHeader, finallyBody);
+      pieces.space();
+      pieces.token(tryStatement.finallyKeyword!);
+      pieces.space();
+      writeBlock(finallyBlock);
     }
-
-    pieces.add(piece);
   }
 
   /// Writes an [ImportPiece] for an import or export directive.
