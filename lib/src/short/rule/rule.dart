@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../../constants.dart';
+import '../../profile.dart';
 import '../chunk.dart';
 import '../fast_hash.dart';
 
@@ -80,10 +81,14 @@ class Rule extends FastHash {
   /// rules.
   bool get splitsOnInnerRules => true;
 
-  Rule([this._cost = Cost.normal]);
+  Rule([this._cost = Cost.normal]) {
+    Profile.count('Create Rule');
+  }
 
   /// Creates a new rule that is already fully split.
   Rule.hard() : _cost = 0 {
+    Profile.count('Create Rule');
+
     // Set the cost to zero since it will always be applied, so there's no
     // point in penalizing it.
     //

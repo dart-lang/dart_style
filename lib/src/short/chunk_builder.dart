@@ -7,6 +7,7 @@ import '../comment_type.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
+import '../profile.dart';
 import '../source_code.dart';
 import 'chunk.dart';
 import 'line_writer.dart';
@@ -653,9 +654,13 @@ class ChunkBuilder {
       debug.log();
     }
 
+    Profile.begin('ChunkBuilder run line splitter');
+
     var writer = LineWriter(_formatter, _chunks);
     var result =
         writer.writeLines(isCompilationUnit: _source.isCompilationUnit);
+
+    Profile.end('ChunkBuilder run line splitter');
 
     int? selectionStart;
     int? selectionLength;

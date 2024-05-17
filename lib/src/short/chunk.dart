@@ -1,6 +1,7 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import '../profile.dart';
 import 'fast_hash.dart';
 import 'marking_scheme.dart';
 import 'nesting_level.dart';
@@ -100,7 +101,9 @@ class Chunk extends Selection {
       : _text = '',
         _flushLeft = flushLeft,
         _isDouble = isDouble,
-        _spaceWhenUnsplit = space;
+        _spaceWhenUnsplit = space {
+    Profile.count('Create Chunk');
+  }
 
   /// Creates a dummy chunk.
   ///
@@ -113,7 +116,9 @@ class Chunk extends Selection {
         nesting = NestingLevel(),
         _spaceWhenUnsplit = false,
         _flushLeft = false,
-        _isDouble = false;
+        _isDouble = false {
+    Profile.count('Create Chunk');
+  }
 
   /// Append [text] to the end of the chunk's text.
   void appendText(String text) {

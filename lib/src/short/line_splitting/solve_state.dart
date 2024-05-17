@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import '../../constants.dart';
 import '../../debug.dart' as debug;
+import '../../profile.dart';
 import '../chunk.dart';
 import '../nesting_level.dart';
 import '../rule/rule.dart';
@@ -108,6 +109,8 @@ class SolveState {
       _initBoundRulesInUnboundLines();
 
   SolveState(this._splitter, this._ruleValues) {
+    Profile.count('Create SolveState');
+
     _calculateSplits();
     _calculateCost();
   }

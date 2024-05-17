@@ -86,6 +86,7 @@ class Solver {
         rootState: rootState);
 
     Profile.begin('Solver enqueue');
+    Profile.count('Solver enqueue');
     _queue.add(solution);
     Profile.end('Solver enqueue');
 
@@ -95,9 +96,8 @@ class Solver {
     var attempts = 0;
 
     while (_queue.isNotEmpty && attempts < _maxAttempts) {
-      Profile.begin('Solver dequeue');
+      Profile.count('Solver dequeue');
       var solution = _queue.removeFirst();
-      Profile.end('Solver dequeue');
 
       attempts++;
 
@@ -125,9 +125,8 @@ class Solver {
       // options.
       for (var expanded in solution.expand(_cache, root,
           pageWidth: _pageWidth, leadingIndent: _leadingIndent)) {
-        Profile.begin('Solver enqueue');
+        Profile.count('Solver enqueue');
         _queue.add(expanded);
-        Profile.end('Solver enqueue');
       }
     }
 
