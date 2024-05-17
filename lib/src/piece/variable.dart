@@ -8,7 +8,8 @@ import 'piece.dart';
 /// A variable declaration.
 ///
 /// Used for local variable declaration statements, top-level variable
-/// declarations and field declarations.
+/// declarations and field declarations. Also used to handle splitting between
+/// a function or function type's return type and the rest of the function.
 ///
 /// Typed and untyped variables have slightly different splitting logic.
 /// Untyped variables never split after the keyword but do indent subsequent
@@ -60,7 +61,7 @@ class VariablePiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.format(_header);
+    writer.format(_header, allowNewlines: state != State.unsplit);
 
     // If we split at the variables (but not the type), then indent the
     // variables and their initializers.

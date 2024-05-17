@@ -56,7 +56,8 @@ var list = [
     LongGenericTypeName<
       TypeArg,
       AnotherTypeArgument
-    > a = 0;
+    >
+    a = 0;
     a < 1;
     a++
   )
@@ -70,7 +71,8 @@ var list = [
     LongGenericTypeName<
       TypeArg,
       AnotherTypeArgument
-    > a;
+    >
+    a;
     ;
   )
     body,

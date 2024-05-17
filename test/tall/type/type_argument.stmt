@@ -10,7 +10,8 @@ Generic<
   LongTypeName,
   AnotherLongType,
   ThirdOne
-> g;
+>
+g;
 >>> Splitting in type argument forces outer type argument list to split.
 Generic<Map<LongTypeName, AnotherReallyLongType>, ThirdOne> g;
 <<<
@@ -20,7 +21,8 @@ Generic<
     AnotherReallyLongType
   >,
   ThirdOne
-> g;
+>
+g;
 >>> Nullable type argument.
 Map<  int  ?  , List<String  ?  > ? > m;
 <<<
@@ -40,4 +42,5 @@ GenericClass<
     fourth,
     fifth,
   )
-> f;
+>
+f;

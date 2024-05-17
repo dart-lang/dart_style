@@ -37,14 +37,16 @@ Function<T, R>(longParameterName, anotherLongParameter) f;
 Function<T, R>(
   longParameterName,
   anotherLongParameter,
-) f;
+)
+f;
 >>> Split type parameters.
 Function<LongTypeName, AnotherLongTypeName>(parameter) f;
 <<<
 Function<
   LongTypeName,
   AnotherLongTypeName
->(parameter) f;
+>(parameter)
+f;
 >>> Split type parameters and value parameters.
 Function<LongTypeName, AnotherLongTypeName>(longParameterName, anotherLongParameter) f;
 <<<
@@ -54,7 +56,8 @@ Function<
 >(
   longParameterName,
   anotherLongParameter,
-) f;
+)
+f;
 >>> Nullable types.
 int  ?  Function  (  int  ?  i  , {  String  ?  s  }  )  ?  f;
 <<<
@@ -67,7 +70,8 @@ void Function(
   second,
   third,
   fourth,
-) f;
+)
+f;
 >>> Split parameters all optional.
 void Function([first, second, third, fourth]) f;
 <<<
@@ -76,7 +80,8 @@ void Function([
   second,
   third,
   fourth,
-]) f;
+])
+f;
 >>> Split parameters all named.
 void Function({bool first, double second, int third}) f;
 <<<
@@ -84,7 +89,8 @@ void Function({
   bool first,
   double second,
   int third,
-}) f;
+})
+f;
 >>> Split parameters with optional.
 void Function(first, second, [third, fourth]) f;
 <<<
@@ -93,7 +99,8 @@ void Function(
   second, [
   third,
   fourth,
-]) f;
+])
+f;
 >>> Split parameters with named.
 void Function(first, second, {bool third, double fourth}) f;
 <<<
@@ -102,7 +109,8 @@ void Function(
   second, {
   bool third,
   double fourth,
-}) f;
+})
+f;
 >>> Remove trailing comma from mandatory if unsplit.
 Function(
   first,
@@ -132,7 +140,8 @@ Function(parameter1, void printFn(param1, param2)) f;
 Function(
   parameter1,
   void printFn(param1, param2),
-) f;
+)
+f;
 >>> Split function typed parameter.
 Function(int callback(parameter1, parameter2, parameter3, parameter4)) f;
 <<<
@@ -143,7 +152,8 @@ Function(
     parameter3,
     parameter4,
   ),
-) f;
+)
+f;
 >>> Required function typed formal.
 Function  (  {  required  void  callback  (  )  }  )  f  ;
 <<<
@@ -154,7 +164,8 @@ Function(VerylongParameterType longParameterName) f;
 Function(
   VerylongParameterType
   longParameterName,
-) f;
+)
+f;
 >>> Split in parameter type does not split before parameter.
 Function(Generic<LongTypeArgument, AnotherLongTypeName> parameter) f;
 <<<
@@ -162,8 +173,10 @@ Function(
   Generic<
     LongTypeArgument,
     AnotherLongTypeName
-  > parameter,
-) f;
+  >
+  parameter,
+)
+f;
 >>> Split in nested function type forces outer split.
 Function(int, String, Function(parameter1, parameter2, parameter3)) f;
 <<<
@@ -175,7 +188,8 @@ Function(
     parameter2,
     parameter3,
   ),
-) f;
+)
+f;
 >>> Split in type arguments.
 Function<Parameter1, Parameter2, Parameter3>() f;
 <<<
@@ -183,19 +197,22 @@ Function<
   Parameter1,
   Parameter2,
   Parameter3
->() f;
+>()
+f;
 >>> Split after return type.
 GenericClass<Parameter1, Parameter2> Function() f;
 <<<
 GenericClass<Parameter1, Parameter2>
-Function() f;
+Function()
+f;
 >>> Chained return types.
 Function<Argument>(String) Function<Argument>(num) Function<Argument>(int) Function<Argument>(bool) longVariable;
 <<<
 Function<Argument>(String)
 Function<Argument>(num)
 Function<Argument>(int)
-Function<Argument>(bool) longVariable;
+Function<Argument>(bool)
+longVariable;
 >>> Split before `required`.
 longMethod({required parameterNameHere}) {}
 <<<
@@ -227,12 +244,13 @@ function(
   ;
 }
 >>> Split single long positional record type field.
-function((VeryLongTypeName___________________,) param) {;}
+function((VeryLongTypeName________________,) /* comment */ param) {;}
 <<<
 function(
   (
-    VeryLongTypeName___________________,
-  ) param,
+    VeryLongTypeName________________,
+  ) /* comment */
+  param,
 ) {
   ;
 }
@@ -246,7 +264,8 @@ function(
     TypeName,
     TypeName,
     TypeName,
-  ) record,
+  )
+  record,
 ) {
   ;
 }
