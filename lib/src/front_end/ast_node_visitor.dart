@@ -1763,10 +1763,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             pieces.space();
 
             var patternPiece = nodePiece(member.guardedPattern.pattern);
-            var guardPiece =
-                optionalNodePiece(member.guardedPattern.whenClause);
 
-            pieces.add(CaseStatementPiece(patternPiece, guardPiece));
+            if (member.guardedPattern.whenClause case var whenClause?) {
+              pieces.add(
+                  InfixPiece(const [], [patternPiece, nodePiece(whenClause)]));
+            } else {
+              pieces.add(patternPiece);
+            }
 
           case SwitchDefault():
             break; // Nothing to do.
