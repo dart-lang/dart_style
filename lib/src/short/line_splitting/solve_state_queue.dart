@@ -1,6 +1,7 @@
 // Copyright (c) 2015, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import '../../profile.dart';
 import 'line_splitter.dart';
 import 'solve_state.dart';
 
@@ -39,6 +40,8 @@ class SolveStateQueue {
   ///
   /// Grows the capacity if the backing list is full.
   void add(SolveState state) {
+    Profile.count('SolveStateQueue.add()');
+
     if (_tryOverlap(state)) return;
 
     if (_length == _queue.length) {
@@ -55,6 +58,8 @@ class SolveStateQueue {
 
   SolveState removeFirst() {
     assert(_length > 0);
+
+    Profile.count('SolveStateQueue.removeFirst()');
 
     // Remove the highest priority state.
     var result = _queue[0]!;

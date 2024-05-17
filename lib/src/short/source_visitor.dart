@@ -14,6 +14,7 @@ import '../ast_extensions.dart';
 import '../comment_type.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
+import '../profile.dart';
 import '../source_code.dart';
 import 'argument_list_visitor.dart';
 import 'call_chain_visitor.dart';
@@ -119,12 +120,16 @@ class SourceVisitor extends ThrowingAstVisitor {
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
   SourceCode run(AstNode node) {
+    Profile.begin('SourceVisitor create Chunks');
+
     visit(node);
 
     // Output trailing comments.
     writePrecedingCommentsAndNewlines(node.endToken.next!);
 
     assert(_constNesting == 0, 'Should have exited all const contexts.');
+
+    Profile.end('SourceVisitor create Chunks');
 
     // Finish writing and return the complete result.
     return builder.end();
