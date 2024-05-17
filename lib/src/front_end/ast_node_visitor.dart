@@ -9,7 +9,6 @@ import 'package:analyzer/source/line_info.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
-import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
@@ -133,8 +132,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
-    pieces.add(AdjacentStringsPiece(node.strings.map(nodePiece).toList(),
-        indent: node.indentStrings));
+    var piece = InfixPiece(const [], node.strings.map(nodePiece).toList(),
+        indent: node.indentStrings);
+
+    // Adjacent strings always split.
+    piece.pin(State.split);
+
+    pieces.add(piece);
   }
 
   @override
