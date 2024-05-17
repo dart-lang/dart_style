@@ -14,7 +14,6 @@ import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
-import '../piece/postfix.dart';
 import '../piece/sequence.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
@@ -798,28 +797,36 @@ mixin PieceFactory {
   void writeImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
     pieces.withMetadata(directive.metadata, () {
-      pieces.token(keyword);
-      pieces.space();
-      pieces.visit(directive.uri);
+      if (directive.configurations.isEmpty && asKeyword == null) {
+        // If there are no configurations or prefix (the common case), just
+        // write the import directly inline.
+        pieces.token(keyword);
+        pieces.space();
+        pieces.visit(directive.uri);
+      } else {
+        // Otherwise, allow splitting between the configurations and prefix.
+        var sections = [
+          pieces.build(() {
+            pieces.token(keyword);
+            pieces.space();
+            pieces.visit(directive.uri);
+          })
+        ];
 
-      if (directive.configurations.isNotEmpty) {
-        var configurations = <Piece>[];
         for (var configuration in directive.configurations) {
-          configurations.add(nodePiece(configuration));
+          sections.add(nodePiece(configuration));
         }
 
-        pieces.add(PostfixPiece(configurations));
-      }
-
-      if (asKeyword != null) {
-        pieces.add(PostfixPiece([
-          pieces.build(() {
+        if (asKeyword != null) {
+          sections.add(pieces.build(() {
             pieces.token(deferredKeyword, spaceAfter: true);
             pieces.token(asKeyword);
             pieces.space();
             pieces.visit(prefix!);
-          })
-        ]));
+          }));
+        }
+
+        pieces.add(InfixPiece(const [], sections));
       }
 
       if (directive.combinators.isNotEmpty) {
