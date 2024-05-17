@@ -833,26 +833,22 @@ mixin PieceFactory {
       }
 
       if (directive.combinators.isNotEmpty) {
-        var combinators = <ClausePiece>[];
+        var combinators = <Piece>[];
         for (var combinatorNode in directive.combinators) {
-          var combinatorKeyword = tokenPiece(combinatorNode.keyword);
-
           switch (combinatorNode) {
             case HideCombinator(hiddenNames: var names):
             case ShowCombinator(shownNames: var names):
-              var parts = <Piece>[];
-              for (var name in names) {
-                parts.add(tokenPiece(name.token, commaAfter: true));
-              }
-
-              var combinator = ClausePiece(combinatorKeyword, parts);
-              combinators.add(combinator);
+              combinators.add(InfixPiece(const [], [
+                tokenPiece(combinatorNode.keyword),
+                for (var name in names)
+                  tokenPiece(name.token, commaAfter: true),
+              ]));
             default:
               throw StateError('Unknown combinator type $combinatorNode.');
           }
         }
 
-        pieces.add(ClausesPiece(combinators));
+        pieces.add(ClausePiece(combinators));
       }
 
       pieces.token(directive.semicolon);
@@ -1209,17 +1205,13 @@ mixin PieceFactory {
         }
       });
 
-      var clauses = <ClausePiece>[];
+      var clauses = <Piece>[];
 
       void typeClause(Token keyword, List<AstNode> types) {
-        var keywordPiece = tokenPiece(keyword);
-
-        var typePieces = <Piece>[];
-        for (var type in types) {
-          typePieces.add(nodePiece(type, commaAfter: true));
-        }
-
-        clauses.add(ClausePiece(keywordPiece, typePieces));
+        clauses.add(InfixPiece(const [], [
+          tokenPiece(keyword),
+          for (var type in types) nodePiece(type, commaAfter: true),
+        ]));
       }
 
       if (extendsClause != null) {
@@ -1248,9 +1240,9 @@ mixin PieceFactory {
             [if (nativeClause.name case var name?) name]);
       }
 
-      ClausesPiece? clausesPiece;
+      ClausePiece? clausesPiece;
       if (clauses.isNotEmpty) {
-        clausesPiece = ClausesPiece(clauses,
+        clausesPiece = ClausePiece(clauses,
             allowLeadingClause: extendsClause != null || onClause != null);
       }
 
