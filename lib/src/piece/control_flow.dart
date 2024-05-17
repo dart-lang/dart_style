@@ -5,20 +5,20 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for an if statement or element.
-///
-/// We also use this for while statements, which are formatted exactly like an
-/// if statement with no else clause.
-class IfPiece extends Piece {
+/// A piece for an if statement or element, while statement, or for statement
+/// without a block body.
+class ControlFlowPiece extends Piece {
   /// Whether this is an if statement versus if collection element.
+  ///
+  /// It's not meaningful for while and for statements/elements.
   final bool _isStatement;
 
-  final List<_IfSection> _sections = [];
+  final List<_Section> _sections = [];
 
-  IfPiece({required bool isStatement}) : _isStatement = isStatement;
+  ControlFlowPiece({bool isStatement = true}) : _isStatement = isStatement;
 
   void add(Piece header, Piece statement, {required bool isBlock}) {
-    _sections.add(_IfSection(header, statement, isBlock));
+    _sections.add(_Section(header, statement, isBlock));
   }
 
   @override
@@ -71,16 +71,19 @@ class IfPiece extends Piece {
       }
     }
   }
+
+  @override
+  String get debugName => 'Ctrl';
 }
 
-/// A single section in a chain of if-elses.
+/// A single branch in a chain of if-elses or body of a for or while.
 ///
 /// For the first then branch, the [header] is the `if (condition)` part and
 /// the statement is the then branch. For all `else if` branches, the [header]
 /// is the `else if (condition)` and the statement is the subsequent then
 /// branch. For the final `else` branch, if there is one, the [header] is just
 /// `else` and the statement is the else branch.
-class _IfSection {
+class _Section {
   final Piece header;
   final Piece statement;
 
@@ -88,5 +91,5 @@ class _IfSection {
   /// literal.
   final bool isBlock;
 
-  _IfSection(this.header, this.statement, this.isBlock);
+  _Section(this.header, this.statement, this.isBlock);
 }

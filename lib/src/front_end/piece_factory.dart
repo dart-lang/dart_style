@@ -8,6 +8,7 @@ import '../ast_extensions.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
+import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/function.dart';
 import '../piece/if_case.dart';
@@ -504,12 +505,21 @@ mixin PieceFactory {
       _ => false,
     };
 
-    var forPiece = ForPiece(forKeywordPiece, forPartsPiece, bodyPiece,
-        indentForParts: indentHeader, hasBlockBody: hasBlockBody);
+    if (hasBlockBody) {
+      pieces
+          .add(ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader));
+      pieces.space();
+      pieces.add(bodyPiece);
+    } else {
+      var forPiece = ControlFlowPiece();
+      forPiece.add(
+          ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader),
+          bodyPiece,
+          isBlock: false);
 
-    if (forceSplitBody) forPiece.pin(State.split);
-
-    pieces.add(forPiece);
+      if (forceSplitBody) forPiece.pin(State.split);
+      pieces.add(forPiece);
+    }
   }
 
   /// Writes a normal (not function-typed) formal parameter with a name and/or

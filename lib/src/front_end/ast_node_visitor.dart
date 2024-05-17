@@ -12,7 +12,7 @@ import '../dart_formatter.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
-import '../piece/if.dart';
+import '../piece/control_flow.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
@@ -877,7 +877,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIfElement(IfElement node) {
-    var piece = IfPiece(isStatement: false);
+    var piece = ControlFlowPiece(isStatement: false);
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -964,7 +964,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIfStatement(IfStatement node) {
-    var piece = IfPiece(isStatement: true);
+    var piece = ControlFlowPiece();
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -1919,7 +1919,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     var body = nodePiece(node.body);
 
-    var piece = IfPiece(isStatement: true);
+    var piece = ControlFlowPiece();
     piece.add(condition, body, isBlock: node.body is Block);
     pieces.add(piece);
   }

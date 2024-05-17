@@ -5,16 +5,14 @@ import '../back_end/code_writer.dart';
 import '../constants.dart';
 import 'piece.dart';
 
-/// A piece for a for statement.
+/// A piece for the `for (...)` part of a for statement or element.
 class ForPiece extends Piece {
   /// The `for` keyword.
   final Piece _forKeyword;
 
   /// The part inside `( ... )`, including the parentheses themselves, at the
   /// header of a for statement.
-  final Piece _forParts;
-
-  final Piece _body;
+  final Piece _parts;
 
   /// Whether the contents of the parentheses in the `for (...)` should be
   /// expression indented or not.
@@ -28,56 +26,24 @@ class ForPiece extends Piece {
   ///     for (@LongAnnotation
   ///         @AnotherAnnotation
   ///         var element in list) { ... }
-  final bool _indentForParts;
+  final bool _indent;
 
-  /// Whether the body of the loop is a block versus some other statement. If
-  /// the body isn't a block, then we allow a discretionary split after the
-  /// loop parts, as in:
-  ///
-  ///     for (;;)
-  ///       print("ok");
-  final bool _hasBlockBody;
-
-  ForPiece(this._forKeyword, this._forParts, this._body,
-      {required bool indentForParts, required bool hasBlockBody})
-      : _indentForParts = indentForParts,
-        _hasBlockBody = hasBlockBody;
-
-  /// If there is at least one else or else-if clause, then it always splits.
-  @override
-  List<State> get additionalStates => [if (!_hasBlockBody) State.split];
+  ForPiece(this._forKeyword, this._parts, {required bool indent})
+      : _indent = indent;
 
   @override
   void format(CodeWriter writer, State state) {
-    var allowNewlines = _hasBlockBody || state == State.split;
-
-    writer.format(_forKeyword, allowNewlines: allowNewlines);
+    writer.format(_forKeyword);
     writer.space();
-
-    if (_indentForParts) {
-      writer.pushIndent(Indent.expression, canCollapse: true);
-    }
-
-    writer.format(_forParts, allowNewlines: allowNewlines);
-
-    if (_indentForParts) writer.popIndent();
-
-    if (_hasBlockBody) {
-      writer.space();
-    } else {
-      writer.pushIndent(Indent.block);
-      writer.splitIf(state == State.split);
-    }
-
-    writer.format(_body, allowNewlines: allowNewlines);
-    if (!_hasBlockBody) writer.popIndent();
+    if (_indent) writer.pushIndent(Indent.expression, canCollapse: true);
+    writer.format(_parts);
+    if (_indent) writer.popIndent();
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
     callback(_forKeyword);
-    callback(_forParts);
-    callback(_body);
+    callback(_parts);
   }
 }
 
