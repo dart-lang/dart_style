@@ -61,11 +61,11 @@ import 'piece.dart';
 ///
 /// This ensures that when any wrapping occurs, the keywords are always at the
 /// beginning of the line.
-class ClausesPiece extends Piece {
+class ClausePiece extends Piece {
   /// State where we split between the clauses but not before the first one.
   static const State _betweenClauses = State(1);
 
-  final List<ClausePiece> _clauses;
+  final List<Piece> _clauses;
 
   /// If `true`, then we're allowed to split between the clauses without
   /// splitting before the first one too.
@@ -80,7 +80,7 @@ class ClausesPiece extends Piece {
   ///     }
   final bool _allowLeadingClause;
 
-  ClausesPiece(this._clauses, {bool allowLeadingClause = false})
+  ClausePiece(this._clauses, {bool allowLeadingClause = false})
       : _allowLeadingClause = allowLeadingClause;
 
   @override
@@ -112,39 +112,5 @@ class ClausesPiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {
     _clauses.forEach(callback);
-  }
-}
-
-/// A keyword followed by a comma-separated list of items described by that
-/// keyword.
-class ClausePiece extends Piece {
-  final Piece _keyword;
-
-  /// The list of items in the clause.
-  final List<Piece> _parts;
-
-  ClausePiece(this._keyword, this._parts);
-
-  @override
-  List<State> get additionalStates => const [State.split];
-
-  @override
-  void format(CodeWriter writer, State state) {
-    // If any of the parts inside the clause split, split the list.
-    writer.pushIndent(Indent.expression);
-
-    writer.format(_keyword, allowNewlines: state == State.split);
-    for (var part in _parts) {
-      writer.splitIf(state == State.split);
-      writer.format(part, allowNewlines: state == State.split);
-    }
-
-    writer.popIndent();
-  }
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {
-    callback(_keyword);
-    _parts.forEach(callback);
   }
 }

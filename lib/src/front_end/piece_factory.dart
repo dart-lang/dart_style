@@ -8,15 +8,14 @@ import '../ast_extensions.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
+import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/function.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
-import '../piece/postfix.dart';
 import '../piece/sequence.dart';
-import '../piece/try.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
 import 'ast_node_visitor.dart';
@@ -506,12 +505,21 @@ mixin PieceFactory {
       _ => false,
     };
 
-    var forPiece = ForPiece(forKeywordPiece, forPartsPiece, bodyPiece,
-        indentForParts: indentHeader, hasBlockBody: hasBlockBody);
+    if (hasBlockBody) {
+      pieces
+          .add(ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader));
+      pieces.space();
+      pieces.add(bodyPiece);
+    } else {
+      var forPiece = ControlFlowPiece();
+      forPiece.add(
+          ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader),
+          bodyPiece,
+          isBlock: false);
 
-    if (forceSplitBody) forPiece.pin(State.split);
-
-    pieces.add(forPiece);
+      if (forceSplitBody) forPiece.pin(State.split);
+      pieces.add(forPiece);
+    }
   }
 
   /// Writes a normal (not function-typed) formal parameter with a name and/or
@@ -738,43 +746,40 @@ mixin PieceFactory {
 
   /// Writes a [TryPiece] for try statement.
   void writeTry(TryStatement tryStatement) {
-    var piece = TryPiece();
-
-    var tryHeader = tokenPiece(tryStatement.tryKeyword);
-    var tryBlock = pieces.build(() {
-      writeBlock(tryStatement.body);
-    });
-    piece.add(tryHeader, tryBlock);
+    pieces.token(tryStatement.tryKeyword);
+    pieces.space();
+    writeBlock(tryStatement.body);
 
     for (var i = 0; i < tryStatement.catchClauses.length; i++) {
       var catchClause = tryStatement.catchClauses[i];
 
-      var catchClauseHeader = pieces.build(() {
-        if (catchClause.onKeyword case var onKeyword?) {
-          pieces.token(onKeyword, spaceAfter: true);
-          pieces.visit(catchClause.exceptionType);
-        }
+      pieces.space();
+      if (catchClause.onKeyword case var onKeyword?) {
+        pieces.token(onKeyword, spaceAfter: true);
+        pieces.visit(catchClause.exceptionType);
+      }
 
-        if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
-          pieces.space();
-        }
+      if (catchClause.onKeyword != null && catchClause.catchKeyword != null) {
+        pieces.space();
+      }
 
-        if (catchClause.catchKeyword case var catchKeyword?) {
-          pieces.token(catchKeyword);
-          pieces.space();
+      if (catchClause.catchKeyword case var catchKeyword?) {
+        pieces.token(catchKeyword);
+        pieces.space();
 
-          var parameters = DelimitedListBuilder(this);
-          parameters.leftBracket(catchClause.leftParenthesis!);
-          if (catchClause.exceptionParameter case var exceptionParameter?) {
-            parameters.visit(exceptionParameter);
-          }
-          if (catchClause.stackTraceParameter case var stackTraceParameter?) {
-            parameters.visit(stackTraceParameter);
-          }
-          parameters.rightBracket(catchClause.rightParenthesis!);
-          pieces.add(parameters.build());
+        var parameters = DelimitedListBuilder(this);
+        parameters.leftBracket(catchClause.leftParenthesis!);
+        if (catchClause.exceptionParameter case var exceptionParameter?) {
+          parameters.visit(exceptionParameter);
         }
-      });
+        if (catchClause.stackTraceParameter case var stackTraceParameter?) {
+          parameters.visit(stackTraceParameter);
+        }
+        parameters.rightBracket(catchClause.rightParenthesis!);
+        pieces.add(parameters.build());
+      }
+
+      pieces.space();
 
       // Edge case: When there's another catch/on/finally after this one, we
       // want to force the block to split even if it's empty.
@@ -787,72 +792,70 @@ mixin PieceFactory {
       //     }
       var forceSplit = i < tryStatement.catchClauses.length - 1 ||
           tryStatement.finallyBlock != null;
-      var catchClauseBody = pieces.build(() {
-        writeBlock(catchClause.body, forceSplit: forceSplit);
-      });
-      piece.add(catchClauseHeader, catchClauseBody);
+      writeBlock(catchClause.body, forceSplit: forceSplit);
     }
 
     if (tryStatement.finallyBlock case var finallyBlock?) {
-      var finallyHeader = tokenPiece(tryStatement.finallyKeyword!);
-      var finallyBody = pieces.build(() {
-        writeBlock(finallyBlock);
-      });
-      piece.add(finallyHeader, finallyBody);
+      pieces.space();
+      pieces.token(tryStatement.finallyKeyword!);
+      pieces.space();
+      writeBlock(finallyBlock);
     }
-
-    pieces.add(piece);
   }
 
   /// Writes an [ImportPiece] for an import or export directive.
   void writeImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
     pieces.withMetadata(directive.metadata, () {
-      pieces.token(keyword);
-      pieces.space();
-      pieces.visit(directive.uri);
+      if (directive.configurations.isEmpty && asKeyword == null) {
+        // If there are no configurations or prefix (the common case), just
+        // write the import directly inline.
+        pieces.token(keyword);
+        pieces.space();
+        pieces.visit(directive.uri);
+      } else {
+        // Otherwise, allow splitting between the configurations and prefix.
+        var sections = [
+          pieces.build(() {
+            pieces.token(keyword);
+            pieces.space();
+            pieces.visit(directive.uri);
+          })
+        ];
 
-      if (directive.configurations.isNotEmpty) {
-        var configurations = <Piece>[];
         for (var configuration in directive.configurations) {
-          configurations.add(nodePiece(configuration));
+          sections.add(nodePiece(configuration));
         }
 
-        pieces.add(PostfixPiece(configurations));
-      }
-
-      if (asKeyword != null) {
-        pieces.add(PostfixPiece([
-          pieces.build(() {
+        if (asKeyword != null) {
+          sections.add(pieces.build(() {
             pieces.token(deferredKeyword, spaceAfter: true);
             pieces.token(asKeyword);
             pieces.space();
             pieces.visit(prefix!);
-          })
-        ]));
+          }));
+        }
+
+        pieces.add(InfixPiece(const [], sections));
       }
 
       if (directive.combinators.isNotEmpty) {
-        var combinators = <ClausePiece>[];
+        var combinators = <Piece>[];
         for (var combinatorNode in directive.combinators) {
-          var combinatorKeyword = tokenPiece(combinatorNode.keyword);
-
           switch (combinatorNode) {
             case HideCombinator(hiddenNames: var names):
             case ShowCombinator(shownNames: var names):
-              var parts = <Piece>[];
-              for (var name in names) {
-                parts.add(tokenPiece(name.token, commaAfter: true));
-              }
-
-              var combinator = ClausePiece(combinatorKeyword, parts);
-              combinators.add(combinator);
+              combinators.add(InfixPiece(const [], [
+                tokenPiece(combinatorNode.keyword),
+                for (var name in names)
+                  tokenPiece(name.token, commaAfter: true),
+              ]));
             default:
               throw StateError('Unknown combinator type $combinatorNode.');
           }
         }
 
-        pieces.add(ClausesPiece(combinators));
+        pieces.add(ClausePiece(combinators));
       }
 
       pieces.token(directive.semicolon);
@@ -1209,17 +1212,13 @@ mixin PieceFactory {
         }
       });
 
-      var clauses = <ClausePiece>[];
+      var clauses = <Piece>[];
 
       void typeClause(Token keyword, List<AstNode> types) {
-        var keywordPiece = tokenPiece(keyword);
-
-        var typePieces = <Piece>[];
-        for (var type in types) {
-          typePieces.add(nodePiece(type, commaAfter: true));
-        }
-
-        clauses.add(ClausePiece(keywordPiece, typePieces));
+        clauses.add(InfixPiece(const [], [
+          tokenPiece(keyword),
+          for (var type in types) nodePiece(type, commaAfter: true),
+        ]));
       }
 
       if (extendsClause != null) {
@@ -1248,9 +1247,9 @@ mixin PieceFactory {
             [if (nativeClause.name case var name?) name]);
       }
 
-      ClausesPiece? clausesPiece;
+      ClausePiece? clausesPiece;
       if (clauses.isNotEmpty) {
-        clausesPiece = ClausesPiece(clauses,
+        clausesPiece = ClausePiece(clauses,
             allowLeadingClause: extendsClause != null || onClause != null);
       }
 

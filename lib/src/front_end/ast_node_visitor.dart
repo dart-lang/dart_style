@@ -9,11 +9,10 @@ import 'package:analyzer/source/line_info.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
-import '../piece/adjacent_strings.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
-import '../piece/if.dart';
+import '../piece/control_flow.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
@@ -133,8 +132,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
-    pieces.add(AdjacentStringsPiece(node.strings.map(nodePiece).toList(),
-        indent: node.indentStrings));
+    var piece = InfixPiece(const [], node.strings.map(nodePiece).toList(),
+        indent: node.indentStrings);
+
+    // Adjacent strings always split.
+    piece.pin(State.split);
+
+    pieces.add(piece);
   }
 
   @override
@@ -873,7 +877,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIfElement(IfElement node) {
-    var piece = IfPiece(isStatement: false);
+    var piece = ControlFlowPiece(isStatement: false);
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -960,7 +964,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIfStatement(IfStatement node) {
-    var piece = IfPiece(isStatement: true);
+    var piece = ControlFlowPiece();
 
     // Recurses through the else branches to flatten them into a linear if-else
     // chain handled by a single [IfPiece].
@@ -1759,10 +1763,13 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             pieces.space();
 
             var patternPiece = nodePiece(member.guardedPattern.pattern);
-            var guardPiece =
-                optionalNodePiece(member.guardedPattern.whenClause);
 
-            pieces.add(CaseStatementPiece(patternPiece, guardPiece));
+            if (member.guardedPattern.whenClause case var whenClause?) {
+              pieces.add(
+                  InfixPiece(const [], [patternPiece, nodePiece(whenClause)]));
+            } else {
+              pieces.add(patternPiece);
+            }
 
           case SwitchDefault():
             break; // Nothing to do.
@@ -1912,7 +1919,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     var body = nodePiece(node.body);
 
-    var piece = IfPiece(isStatement: true);
+    var piece = ControlFlowPiece();
     piece.add(condition, body, isBlock: node.body is Block);
     pieces.add(piece);
   }

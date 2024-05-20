@@ -13,7 +13,7 @@ class TypePiece extends Piece {
   final Piece _header;
 
   /// The `extends`, `with`, and/or `implements` clauses, if there are any.
-  final ClausesPiece? _clauses;
+  final ClausePiece? _clauses;
 
   /// The `native` clause, if any, and the type body.
   final Piece _body;
