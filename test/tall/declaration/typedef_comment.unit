@@ -16,13 +16,14 @@ typedef Alias = // c
 Type;
 <<<
 typedef Alias = // c
-Type;
+    Type;
 >>> Line comment after type.
 typedef Alias = Type // c
 ;
 <<<
-typedef Alias = Type // c
-;
+typedef Alias =
+    Type // c
+    ;
 >>> Line comment after `;`.
 typedef Alias = Type; // c
 <<<

@@ -7,7 +7,8 @@ value, String label) x;
   int // comment
   value,
   String label,
-) x;
+)
+x;
 >>> Comment after field and comma.
 (int value, // comment
 String label) x;
@@ -15,7 +16,8 @@ String label) x;
 (
   int value, // comment
   String label,
-) x;
+)
+x;
 >>> Comment before field and comma.
 (int value // comment
 ,String label) x;
@@ -23,25 +25,28 @@ String label) x;
 (
   int value, // comment
   String label,
-) x;
+)
+x;
 >>> Comment between positional and named delimiter.
 (int value, // comment
-{String label}) 
+{String label})
 x;
 <<<
 (
   int value, { // comment
   String label,
-}) x;
+})
+x;
 >>> Comment after named left delimiter.
 (int value, {  // comment
-String label}) 
+String label})
 x;
 <<<
 (
   int value, { // comment
   String label,
-}) x;
+})
+x;
 >>> Comment after named right delimiter.
 (int value, {String label}  // comment
 )
@@ -50,13 +55,15 @@ x;
 (
   int value, {
   String label, // comment
-}) x;
+})
+x;
 >>> Comment between record type and nullable question mark.
 (int value  , ) // comment
 ? x;
 <<<
 (int value,) // comment
-? x;
+?
+x;
 >>> Comment after record type.
 (int value,     String label) // comment
 x;

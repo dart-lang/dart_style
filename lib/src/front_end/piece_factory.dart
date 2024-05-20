@@ -10,7 +10,6 @@ import '../piece/assign.dart';
 import '../piece/clause.dart';
 import '../piece/control_flow.dart';
 import '../piece/for.dart';
-import '../piece/function.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -570,49 +569,56 @@ mixin PieceFactory {
       TypeParameterList? typeParameters,
       FormalParameterList? parameters,
       required FunctionBody body}) {
-    void writeModifiers() {
-      for (var keyword in modifiers) {
-        pieces.modifier(keyword);
-      }
-    }
-
     // Create a piece to attach metadata to the function.
     pieces.withMetadata(metadata, () {
-      Piece? returnTypePiece;
-      // Create a piece for the return type if there is one.
-      if (returnType != null) {
-        returnTypePiece = pieces.build(() {
-          writeModifiers();
-          pieces.visit(returnType);
-        });
-      }
-
-      var signature = pieces.build(() {
+      writeFunctionAndReturnType(modifiers, returnType, () {
         // If there's no return type, attach modifiers to the signature.
-        if (returnType == null) writeModifiers();
+        if (returnType == null) {
+          for (var keyword in modifiers) {
+            pieces.modifier(keyword);
+          }
+        }
 
         pieces.modifier(operatorKeyword);
         pieces.modifier(propertyKeyword);
         pieces.token(name);
         pieces.visit(typeParameters);
         pieces.visit(parameters);
+        pieces.visit(body);
       });
-
-      var bodyPiece = createFunctionBody(body);
-
-      pieces.add(FunctionPiece(returnTypePiece, signature,
-          isReturnTypeFunctionType: returnType is GenericFunctionType,
-          body: bodyPiece));
     });
   }
 
-  /// Creates a piece for a function, method, or constructor body.
-  Piece createFunctionBody(FunctionBody body) {
-    return pieces.build(() {
-      // Don't put a space before `;` bodies.
-      if (body is! EmptyFunctionBody) pieces.space();
-      pieces.visit(body);
+  /// Writes a return type followed by either a function signature (when writing
+  /// a function type annotation or function-typed formal) or a signature and a
+  /// body (when writing a function declaration).
+  ///
+  /// The [writeFunction] callback should write the function's signature and
+  /// body if there is one.
+  ///
+  /// If there is no return type, invokes [writeFunction] directly and returns.
+  /// Otherwise, writes the return type and function and wraps them in a piece
+  /// to allow splitting after the return type.
+  void writeFunctionAndReturnType(List<Token?> modifiers,
+      TypeAnnotation? returnType, void Function() writeFunction) {
+    if (returnType == null) {
+      writeFunction();
+      return;
+    }
+
+    var returnTypePiece = pieces.build(() {
+      for (var keyword in modifiers) {
+        pieces.modifier(keyword);
+      }
+
+      pieces.visit(returnType);
     });
+
+    var signature = pieces.build(() {
+      writeFunction();
+    });
+
+    pieces.add(VariablePiece(returnTypePiece, [signature], hasType: true));
   }
 
   /// If [parameter] has a [defaultValue] then writes a piece for the parameter
@@ -660,30 +666,9 @@ mixin PieceFactory {
       {FormalParameter? parameter,
       Token? fieldKeyword,
       Token? period}) {
-    // If the type is a function-typed parameter with a default value, then
-    // grab the default value from the parent node.
-    (Token separator, Expression value)? defaultValueRecord;
-    if (parameter?.parent
-        case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
-      defaultValueRecord = (separator, defaultValue);
-    }
-
     var metadata = parameter?.metadata ?? const <Annotation>[];
     pieces.withMetadata(metadata, inlineMetadata: true, () {
-      Piece? returnTypePiece;
-      if (returnType != null) {
-        returnTypePiece = pieces.build(() {
-          // Attach any parameter modifiers to the return type.
-          if (parameter != null) {
-            pieces.modifier(parameter.requiredKeyword);
-            pieces.modifier(parameter.covariantKeyword);
-          }
-
-          pieces.visit(returnType);
-        });
-      }
-
-      var signature = pieces.build(() {
+      void write() {
         // If there's no return type, attach the parameter modifiers to the
         // signature.
         if (parameter != null && returnType == null) {
@@ -697,10 +682,11 @@ mixin PieceFactory {
         pieces.visit(typeParameters);
         pieces.visit(parameters);
         pieces.token(question);
-      });
+      }
 
-      var function = FunctionPiece(returnTypePiece, signature,
-          isReturnTypeFunctionType: returnType is GenericFunctionType);
+      var returnTypeModifiers = parameter != null
+          ? [parameter.requiredKeyword, parameter.covariantKeyword]
+          : const <Token?>[];
 
       // TODO(rnystrom): It would be good if the AssignPiece created for the
       // default value could treat the parameter list on the left-hand side as
@@ -710,7 +696,19 @@ mixin PieceFactory {
       // practice, it doesn't really matter since function-typed formals are
       // deprecated, default values on function-typed parameters are rare, and
       // when both occur, they rarely split.
-      writeDefaultValue(function, defaultValueRecord);
+      // If the type is a function-typed parameter with a default value, then
+      // grab the default value from the parent node and attach it to the
+      // function.
+      if (parameter?.parent
+          case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
+        var function = pieces.build(() {
+          writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+        });
+
+        writeDefaultValue(function, (separator, defaultValue));
+      } else {
+        writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+      }
     });
   }
 

@@ -124,7 +124,8 @@ Generic<LongTypeArgument, AnotherLongTypeName> variable;
 Generic<
   LongTypeArgument,
   AnotherLongTypeName
-> variable;
+>
+variable;
 >>> Prefer to split at "=" over infix operator.
 int variableName = argument * argument + argument;
 <<<

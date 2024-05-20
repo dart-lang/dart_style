@@ -223,6 +223,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitBlockFunctionBody(BlockFunctionBody node) {
+    pieces.space();
     writeFunctionBodyModifiers(node);
     pieces.visit(node.block);
   }
@@ -430,7 +431,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       initializers = createCommaSeparated(node.initializers);
     }
 
-    var body = createFunctionBody(node.body);
+    var body = nodePiece(node.body);
 
     pieces.add(ConstructorPiece(header, parameters, body,
         canSplitParameters: node.parameters.parameters
@@ -595,6 +596,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitExpressionFunctionBody(ExpressionFunctionBody node) {
     var operatorPiece = pieces.build(() {
+      pieces.space();
       writeFunctionBodyModifiers(node);
       pieces.token(node.functionDefinition);
     });
@@ -860,12 +862,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      pieces.token(node.equals);
-      // Don't bother allowing splitting after the `=`. It's always better to
-      // split inside the type parameter, type argument, or parameter lists of
-      // the typedef or the aliased type.
-      pieces.space();
-      pieces.visit(node.type);
+      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
       pieces.token(node.semicolon);
     });
   }
@@ -1324,6 +1321,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNativeFunctionBody(NativeFunctionBody node) {
+    pieces.space();
     pieces.token(node.nativeKeyword);
     pieces.visit(node.stringLiteral, spaceBefore: true);
     pieces.token(node.semicolon);
@@ -1859,43 +1857,44 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitVariableDeclarationList(VariableDeclarationList node) {
-    var header = pieces.build(
-        metadata: node.metadata,
+    pieces.withMetadata(node.metadata,
         // If the variable is part of a for loop, it looks weird to force the
         // metadata to split since it's in a sort of expression-ish location:
         //
         //     for (@meta var x in list) ...
         inlineMetadata: _parentContext == NodeContext.forLoopVariable, () {
-      pieces.modifier(node.lateKeyword);
-      pieces.modifier(node.keyword);
-      pieces.visit(node.type);
-    });
+      var header = pieces.build(() {
+        pieces.modifier(node.lateKeyword);
+        pieces.modifier(node.keyword);
+        pieces.visit(node.type);
+      });
 
-    var variables = <Piece>[];
-    for (var variable in node.variables) {
-      if ((variable.equals, variable.initializer)
-          case (var equals?, var initializer?)) {
-        var variablePiece = tokenPiece(variable.name);
+      var variables = <Piece>[];
+      for (var variable in node.variables) {
+        if ((variable.equals, variable.initializer)
+            case (var equals?, var initializer?)) {
+          var variablePiece = tokenPiece(variable.name);
 
-        var equalsPiece = pieces.build(() {
-          pieces.space();
-          pieces.token(equals);
-        });
+          var equalsPiece = pieces.build(() {
+            pieces.space();
+            pieces.token(equals);
+          });
 
-        var initializerPiece = nodePiece(initializer,
-            commaAfter: true, context: NodeContext.assignment);
+          var initializerPiece = nodePiece(initializer,
+              commaAfter: true, context: NodeContext.assignment);
 
-        variables.add(AssignPiece(
-            left: variablePiece,
-            equalsPiece,
-            initializerPiece,
-            canBlockSplitRight: initializer.canBlockSplit));
-      } else {
-        variables.add(tokenPiece(variable.name, commaAfter: true));
+          variables.add(AssignPiece(
+              left: variablePiece,
+              equalsPiece,
+              initializerPiece,
+              canBlockSplitRight: initializer.canBlockSplit));
+        } else {
+          variables.add(tokenPiece(variable.name, commaAfter: true));
+        }
       }
-    }
 
-    pieces.add(VariablePiece(header, variables, hasType: node.type != null));
+      pieces.add(VariablePiece(header, variables, hasType: node.type != null));
+    });
   }
 
   @override
