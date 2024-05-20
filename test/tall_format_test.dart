@@ -3,7 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 @TestOn('vm')
-library dart_style.test.tall_format_test;
+library;
 
 import 'package:dart_style/dart_style.dart';
 import 'package:test/test.dart';
