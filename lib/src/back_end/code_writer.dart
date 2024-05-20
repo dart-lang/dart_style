@@ -72,22 +72,18 @@ class CodeWriter {
   /// this line.
   bool _foundExpandLine = false;
 
-  /// The first solvable piece on the first overflowing or invalid line, if
-  /// we've found one.
+  /// The solvable pieces on the first overflowing or invalid line, if we've
+  /// found any.
   ///
   /// A piece is "solvable" if we haven't already bound it to a state and there
   /// are multiple states it accepts. This is the piece whose states will be
   /// bound when we expand the [Solution] that this [CodeWriter] is building
   /// into further solutions.
   ///
-  /// If [_foundExpandLine] is `false`, then this is the first solvable piece
-  /// that has written text to the current line. It may not actually be an
-  /// expand piece. We don't know until we reach the end of the line to see if
-  /// it overflows or is invalid. If the line is OK, then [_nextPieceToExpand]
-  /// is cleared when the next line begins. If [_foundExpandLine] is `true`,
-  /// then this known to be the piece that will be expanded next for this
-  /// solution.
-  Piece? _nextPieceToExpand;
+  /// If [_foundExpandLine] is `true`, then this contains the list of unsolved
+  /// pieces that were being formatted when text was written to the first
+  /// problematic line.
+  final List<Piece> _expandPieces = [];
 
   /// The stack of solvable pieces currently being formatted.
   ///
@@ -95,6 +91,10 @@ class CodeWriter {
   /// current line so that we know which piece should be expanded in the next
   /// solution if the line ends up overflowing.
   final List<Piece> _currentUnsolvedPieces = [];
+
+  /// The set of unsolved pieces that were being formatted when text was
+  /// written to the current line.
+  final Set<Piece> _currentLinePieces = {};
 
   /// [leadingIndent] is the number of spaces of leading indentation at the
   /// beginning of each line independent of indentation created by pieces being
@@ -106,12 +106,12 @@ class CodeWriter {
     _pendingIndent = leadingIndent;
   }
 
-  /// Returns the final formatted text and the next piece that can be expanded
+  /// Returns the final formatted text and the next pieces that can be expanded
   /// from the solution this [CodeWriter] is writing, if any.
-  (String, Piece?) finish() {
+  (String, List<Piece>) finish() {
     _finishLine();
 
-    return (_buffer.toString(), _nextPieceToExpand);
+    return (_buffer.toString(), _expandPieces);
   }
 
   /// Appends [text] to the output.
@@ -128,11 +128,9 @@ class CodeWriter {
     _column += text.length;
 
     // If we haven't found an overflowing line yet, then this line might be one
-    // so keep track of the pieces we've encountered.
-    if (!_foundExpandLine &&
-        _nextPieceToExpand == null &&
-        _currentUnsolvedPieces.isNotEmpty) {
-      _nextPieceToExpand = _currentUnsolvedPieces.first;
+    // so keep track of the unsolved pieces we've encountered on it.
+    if (!_foundExpandLine) {
+      _currentLinePieces.addAll(_currentUnsolvedPieces);
     }
   }
 
@@ -377,17 +375,16 @@ class CodeWriter {
       _solution.addOverflow(_column - _pageWidth);
     }
 
-    // If we found a problematic line, and there is a piece on the line that
-    // we can try to split, then remember that piece so that the solution will
-    // expand it next.
-    if (!_foundExpandLine &&
-        _nextPieceToExpand != null &&
-        (_column > _pageWidth || !_solution.isValid)) {
-      // We found a problematic line, so remember it and the piece on it.
+    // If we found a problematic line, and there is are pieces on the line that
+    // we can try to split, then remember them so that the solution will expand
+    // them next.
+    if (!_foundExpandLine && (_column > _pageWidth || !_solution.isValid)) {
+      // We found a problematic line, so remember the pieces on it.
       _foundExpandLine = true;
+      _expandPieces.addAll(_currentLinePieces);
     } else if (!_foundExpandLine) {
       // This line was OK, so we don't need to expand the piece on it.
-      _nextPieceToExpand = null;
+      _currentLinePieces.clear();
     }
   }
 }

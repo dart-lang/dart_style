@@ -15,15 +15,6 @@ typedef Constrain = void Function(Piece other, State constrainedState);
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
 abstract class Piece {
-  /// The ordered list of ways this piece may split.
-  ///
-  /// This is [State.unsplit], which all pieces support, followed by any other
-  /// [additionalStates].
-  List<State> get states {
-    if (_pinnedState case var pinned?) return [pinned];
-    return [State.unsplit, ...additionalStates];
-  }
-
   /// The ordered list of all possible ways this piece could split.
   ///
   /// Piece subclasses should override this if they support being split in

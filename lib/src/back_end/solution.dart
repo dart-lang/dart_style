@@ -72,20 +72,20 @@ class Solution implements Comparable<Solution> {
   ///
   /// So we skip past any pieces that aren't on overflowing lines or on lines
   /// whose newline led to an invalid solution. Further, it's also the case
-  /// that splitting an earlier pieces will often reshuffle the formatting of
-  /// much of the code following it.
+  /// that splitting earlier pieces will often reshuffle the formatting of much
+  /// of the code following it.
   ///
-  /// Thus we only worry about the *first* unsolved piece on the first
-  /// problematic line when expanding. If selecting states for that piece still
-  /// doesn't help, the solver will work its way through later pieces from those
-  /// subsequenct partial solutions.
+  /// Thus we only worry about unsolved pieces on the *first* problematic line
+  /// when expanding. If selecting states for those pieces still doesn't help,
+  /// the solver will work its way through later pieces from those subsequent
+  /// partial solutions.
   ///
   /// This lets us efficiently skip through almost all of the pieces that don't
   /// need to be touched in order to find a valid solution.
   ///
-  /// If this is `null`, then there are no further solutions to generate from
+  /// If this is empty, then there are no further solutions to generate from
   /// this one. It's either a dead end or a winner.
-  late final Piece? _nextPieceToExpand;
+  late final List<Piece> _expandPieces;
 
   /// The offset in [text] where the selection starts, or `null` if there is
   /// no selection.
@@ -125,10 +125,10 @@ class Solution implements Comparable<Solution> {
 
     var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
     writer.format(root);
-    var (text, nextPieceToExpand) = writer.finish();
+    var (text, expandPieces) = writer.finish();
 
     _text = text;
-    _nextPieceToExpand = nextPieceToExpand;
+    _expandPieces = expandPieces;
   }
 
   /// Attempt to eagerly bind [piece] to a state given that it must fit within
@@ -215,8 +215,8 @@ class Solution implements Comparable<Solution> {
     _invalidPiece = piece;
   }
 
-  /// Derives new potential solutions from this one by binding
-  /// [_nextPieceToExpand] to all of its possible states.
+  /// Derives new potential solutions from this one by binding [_expandPieces]
+  /// to all of their possible states.
   ///
   /// If there is no potential piece to expand, or all attempts to expand it
   /// fail, returns an empty list.
@@ -227,27 +227,48 @@ class Solution implements Comparable<Solution> {
     // the same way, so discard the whole solution tree hanging off this one.
     if (_invalidPiece case var piece? when isBound(piece)) return const [];
 
-    var expandPiece = _nextPieceToExpand;
-
     // If there is no piece that we can expand on this solution, it's a dead
     // end (or a winner).
-    if (expandPiece == null) return const [];
+    if (_expandPieces.isEmpty) return const [];
 
-    // For each state that the expanding piece can be in, create a new solution
-    // that inherits all of the bindings of this one, and binds the expanding
-    // piece to that state (along with any further pieces constrained by that
-    // one).
     var solutions = <Solution>[];
-    for (var state in expandPiece.states) {
-      var newStates = {..._pieceStates};
+    for (var i = 0; i < _expandPieces.length; i++) {
+      // For each non-default state that the expanding piece can be in, create
+      // a new solution that inherits all of the bindings of this one, and binds
+      // the expanding piece to that state (along with any further pieces
+      // constrained by that one).
+      var expandPiece = _expandPieces[i];
+      for (var state in expandPiece.additionalStates) {
+        var newStates = {..._pieceStates};
 
-      var additionalCost = _tryBind(newStates, expandPiece, state);
+        // Bind all preceding expand pieces to their unsplit state. Their
+        // other states have already been expanded by earlier iterations of
+        // the outer for loop.
+        var valid = true;
+        var additionalCost = 0;
+        for (var j = 0; j < i; j++) {
+          if (_tryBind(newStates, _expandPieces[j], State.unsplit)
+              case var cost?) {
+            additionalCost += cost;
+          } else {
+            valid = false;
+            break;
+          }
+        }
 
-      // Discard the solution if we hit a constraint violation.
-      if (additionalCost == null) continue;
+        // Discard the solution if we hit a constraint violation.
+        if (!valid) continue;
 
-      solutions.add(Solution._(cache, root, pageWidth, leadingIndent,
-          cost + additionalCost, newStates));
+        if (_tryBind(newStates, expandPiece, state) case var cost?) {
+          additionalCost += cost;
+        } else {
+          // Discard the solution if we hit a constraint violation.
+          continue;
+        }
+
+        solutions.add(Solution._(cache, root, pageWidth, leadingIndent,
+            cost + additionalCost, newStates));
+      }
     }
 
     return solutions;

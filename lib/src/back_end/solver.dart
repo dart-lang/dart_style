@@ -62,7 +62,7 @@ class Solver {
     if (debug.traceSolver) {
       var unsolved = <Piece>[];
       void traverse(Piece piece) {
-        if (piece.states.length > 1) unsolved.add(piece);
+        if (piece.additionalStates.isNotEmpty) unsolved.add(piece);
 
         piece.forEachChild(traverse);
       }
