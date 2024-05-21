@@ -9,7 +9,9 @@
 >>> Empty block containing inline block comment.
 {   /* comment */  }
 <<<
-{/* comment */}
+{
+  /* comment */
+}
 >>> Empty block containing non-inline block comment.
 {
 

@@ -20,7 +20,9 @@ class C {
 >>> Empty class containing inline block comment.
 class C {   /* comment */  }
 <<<
-class C {/* comment */}
+class C {
+  /* comment */
+}
 >>> Empty class containing non-inline block comment.
 class C {
 

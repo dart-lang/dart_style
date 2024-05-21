@@ -196,3 +196,20 @@ class SpacePiece extends Piece {
   @override
   int calculateTotalCharacters() => 1;
 }
+
+/// A piece that writes a single newline.
+class NewlinePiece extends Piece {
+  @override
+  void forEachChild(void Function(Piece piece) callback) {}
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.newline();
+  }
+
+  @override
+  bool calculateContainsNewline() => true;
+
+  @override
+  int calculateTotalCharacters() => 0;
+}
