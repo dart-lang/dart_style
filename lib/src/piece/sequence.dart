@@ -23,7 +23,7 @@ class SequencePiece extends Piece {
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
 
-      writer.format(element, separate: true, allowNewlines: true);
+      writer.format(element, separate: true);
 
       if (i < _elements.length - 1) {
         writer.popIndent();
@@ -66,15 +66,13 @@ class BlockPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.format(_leftBracket, allowNewlines: true);
+    writer.format(_leftBracket);
     writer.pushIndent(Indent.block);
     writer.newline();
-
     writer.format(_elements);
-
     writer.popIndent();
     writer.newline();
-    writer.format(_rightBracket, allowNewlines: true);
+    writer.format(_rightBracket);
   }
 
   @override

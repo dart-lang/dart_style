@@ -36,15 +36,19 @@ class TypePiece extends Piece {
   }
 
   @override
-  void format(CodeWriter writer, State state) {
+  bool allowNewlineInChild(State state, Piece child) {
+    if (child == _body) return true;
+
     // If the body may or may not split, then a newline in the header or
     // clauses forces the body to split.
-    var allowSplitInHeader =
-        _bodyType != TypeBodyType.list || state == State.split;
+    return _bodyType != TypeBodyType.list || state == State.split;
+  }
 
-    writer.format(_header, allowNewlines: allowSplitInHeader);
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.format(_header);
     if (_clauses case var clauses?) {
-      writer.format(clauses, allowNewlines: allowSplitInHeader);
+      writer.format(clauses);
     }
 
     if (_bodyType != TypeBodyType.semicolon) writer.space();

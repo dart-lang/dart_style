@@ -88,6 +88,18 @@ class ClausePiece extends Piece {
       [if (_allowLeadingClause) _betweenClauses, State.split];
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    if (_allowLeadingClause && child == _clauses.first) {
+      // A split inside the first clause forces a split before the keyword.
+      return state == State.split;
+    } else {
+      // For the other clauses (or if there is no leading one), any split
+      // inside a clause forces all of them to split.
+      return state != State.unsplit;
+    }
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(Indent.expression);
 
@@ -96,13 +108,13 @@ class ClausePiece extends Piece {
         // Before the leading clause, only split when in the fully split state.
         // A split inside the first clause forces a split before the keyword.
         writer.splitIf(state == State.split);
-        writer.format(clause, allowNewlines: state == State.split);
+        writer.format(clause);
       } else {
         // For the other clauses (or if there is no leading one), split in the
         // fully split state and any split inside and clause forces all of them
         // to split.
         writer.splitIf(state != State.unsplit);
-        writer.format(clause, allowNewlines: state != State.unsplit);
+        writer.format(clause);
       }
     }
 

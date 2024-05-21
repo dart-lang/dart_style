@@ -140,6 +140,18 @@ class AssignPiece extends Piece {
   }
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    if (state == State.unsplit) {
+      if (child == _left) return false;
+
+      // Always allow block-splitting the right side if it supports it.
+      if (child == _right) return _canBlockSplitRight;
+    }
+
+    return true;
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
@@ -170,7 +182,7 @@ class AssignPiece extends Piece {
   }
 
   void _writeLeft(CodeWriter writer, {bool allowNewlines = true}) {
-    if (_left case var left?) writer.format(left, allowNewlines: allowNewlines);
+    if (_left case var left?) writer.format(left);
   }
 
   void _writeOperator(CodeWriter writer, {bool split = false}) {
@@ -183,7 +195,7 @@ class AssignPiece extends Piece {
   void _writeRight(CodeWriter writer,
       {bool indent = false, bool allowNewlines = true}) {
     if (indent) writer.pushIndent(Indent.expression);
-    writer.format(_right, allowNewlines: allowNewlines);
+    writer.format(_right);
     if (indent) writer.popIndent();
   }
 

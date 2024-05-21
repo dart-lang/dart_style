@@ -60,8 +60,17 @@ class VariablePiece extends Piece {
       ];
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    if (child == _header) {
+      return state != State.unsplit;
+    } else {
+      return _variables.length == 1 || state != State.unsplit;
+    }
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
-    writer.format(_header, allowNewlines: state != State.unsplit);
+    writer.format(_header);
 
     // If we split at the variables (but not the type), then indent the
     // variables and their initializers.
@@ -75,9 +84,7 @@ class VariablePiece extends Piece {
       if (i > 0) writer.splitIf(state != State.unsplit);
 
       // TODO(perf): Investigate whether it's worth using `separate:` here.
-      // Force multiple variables to split if an initializer does.
-      writer.format(_variables[i],
-          allowNewlines: _variables.length == 1 || state != State.unsplit);
+      writer.format(_variables[i]);
     }
 
     if (state == _betweenVariables) writer.popIndent();

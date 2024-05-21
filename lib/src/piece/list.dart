@@ -116,6 +116,17 @@ class ListPiece extends Piece {
   }
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    if (state == State.split) return true;
+    if (child == _before) return true;
+    if (child == _after) return true;
+
+    // Only some elements (usually a single block element) allow newlines
+    // when the list itself isn't split.
+    return child is ListElementPiece && child.allowNewlinesWhenUnsplit;
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     // Format the opening bracket, if there is one.
     if (_before case var before?) {
@@ -144,13 +155,7 @@ class ListPiece extends Piece {
       var separate = state == State.split &&
           (i > 0 || _before != null) &&
           (i < _elements.length - 1 || _after != null);
-
-      // Only some elements (usually a single block element) allow newlines
-      // when the list itself isn't split.
-      var allowNewlines =
-          element.allowNewlinesWhenUnsplit || state == State.split;
-
-      writer.format(element, separate: separate, allowNewlines: allowNewlines);
+      writer.format(element, separate: separate);
 
       if (state == State.unsplit && element.indentWhenBlockFormatted) {
         writer.popIndent();
@@ -173,7 +178,7 @@ class ListPiece extends Piece {
       writer.splitIf(state == State.split,
           space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
 
-      writer.format(after, allowNewlines: true);
+      writer.format(after);
     }
   }
 

@@ -48,10 +48,17 @@ class InfixPiece extends Piece {
   List<State> get additionalStates => const [State.split];
 
   @override
-  void format(CodeWriter writer, State state) {
+  bool allowNewlineInChild(State state, Piece child) {
+    if (state == State.split) return true;
+
     // Comments before the operands don't force the operator to split.
+    return _leadingComments.contains(child);
+  }
+
+  @override
+  void format(CodeWriter writer, State state) {
     for (var comment in _leadingComments) {
-      writer.format(comment, allowNewlines: true);
+      writer.format(comment);
     }
 
     if (_indent) writer.pushIndent(Indent.expression);
@@ -62,8 +69,7 @@ class InfixPiece extends Piece {
       // or last operand.
       var separate = state == State.split && i > 0 && i < _operands.length - 1;
 
-      writer.format(_operands[i],
-          separate: separate, allowNewlines: state == State.split);
+      writer.format(_operands[i], separate: separate);
       if (i < _operands.length - 1) writer.splitIf(state == State.split);
     }
 

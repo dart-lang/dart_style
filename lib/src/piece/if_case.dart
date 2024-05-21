@@ -70,36 +70,28 @@ class IfCasePiece extends Piece {
       ];
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    return switch (state) {
+      // When not splitting before `case` or `when`, we only allow newlines
+      // in block-formatted patterns.
+      State.unsplit when child == _pattern => _canBlockSplitPattern,
+
+      // Allow newlines only in the guard if we split before `when`.
+      _beforeWhen when child == _guard => true,
+
+      // Only allow the guard on the same line as the pattern if it doesn't
+      // split.
+      _beforeCase when child != _guard => true,
+      _beforeCaseAndWhen => true,
+      _ => false,
+    };
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
-    var allowNewlineInValue = false;
-    var allowNewlineInPattern = false;
-    var allowNewlineInGuard = false;
-
-    switch (state) {
-      case State.unsplit:
-        // When not splitting before `case` or `when`, we only allow newlines
-        // in block-formatted patterns.
-        allowNewlineInPattern = _canBlockSplitPattern;
-
-      case _beforeWhen:
-        // Allow newlines only in the guard if we split before `when`.
-        allowNewlineInGuard = true;
-
-      case _beforeCase:
-        // Only allow the guard on the same line as the pattern if it doesn't
-        // split.
-        allowNewlineInValue = true;
-        allowNewlineInPattern = true;
-
-      case _beforeCaseAndWhen:
-        allowNewlineInValue = true;
-        allowNewlineInPattern = true;
-        allowNewlineInGuard = true;
-    }
-
     if (state != State.unsplit) writer.pushIndent(Indent.expression);
 
-    writer.format(_value, allowNewlines: allowNewlineInValue);
+    writer.format(_value);
 
     // The case clause and pattern.
     writer.splitIf(state == _beforeCase || state == _beforeCaseAndWhen);
@@ -108,14 +100,14 @@ class IfCasePiece extends Piece {
       writer.pushIndent(Indent.expression, canCollapse: true);
     }
 
-    writer.format(_pattern, allowNewlines: allowNewlineInPattern);
+    writer.format(_pattern);
 
     if (!_canBlockSplitPattern) writer.popIndent();
 
     // The guard clause.
     if (_guard case var guard?) {
       writer.splitIf(state == _beforeWhen || state == _beforeCaseAndWhen);
-      writer.format(guard, allowNewlines: allowNewlineInGuard);
+      writer.format(guard);
     }
 
     if (state != State.unsplit) writer.popIndent();

@@ -40,12 +40,7 @@ class ControlFlowPiece extends Piece {
   }
 
   @override
-  void forEachChild(void Function(Piece piece) callback) {
-    for (var section in _sections) {
-      callback(section.header);
-      callback(section.statement);
-    }
-  }
+  bool allowNewlineInChild(State state, Piece child) => state == State.split;
 
   @override
   void format(CodeWriter writer, State state) {
@@ -53,7 +48,7 @@ class ControlFlowPiece extends Piece {
       var section = _sections[i];
 
       // A split in the condition forces the branches to split.
-      writer.format(section.header, allowNewlines: state == State.split);
+      writer.format(section.header);
 
       if (!section.isBlock) {
         writer.pushIndent(Indent.block);
@@ -61,7 +56,7 @@ class ControlFlowPiece extends Piece {
       }
 
       // TODO(perf): Investigate whether it's worth using `separate:` here.
-      writer.format(section.statement, allowNewlines: state == State.split);
+      writer.format(section.statement);
 
       // Reset the indentation for the subsequent `else` or `} else` line.
       if (!section.isBlock) writer.popIndent();
@@ -69,6 +64,14 @@ class ControlFlowPiece extends Piece {
       if (i < _sections.length - 1) {
         writer.splitIf(state == State.split && !section.isBlock);
       }
+    }
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    for (var section in _sections) {
+      callback(section.header);
+      callback(section.statement);
     }
   }
 

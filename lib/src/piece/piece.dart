@@ -84,6 +84,10 @@ abstract class Piece {
   /// child piece and the state that child should be constrained to.
   void applyConstraints(State state, Constrain constrain) {}
 
+  /// Whether the [child] of this piece should be allowed to contain newlines
+  /// (directly or transitively) when this piece is in [state].
+  bool allowNewlineInChild(State state, Piece child) => true;
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);
