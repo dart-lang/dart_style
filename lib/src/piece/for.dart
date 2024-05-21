@@ -99,18 +99,22 @@ class ForInPiece extends Piece {
   List<State> get additionalStates => const [State.split];
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    if (state == State.split) return true;
+
+    // Always allow block-splitting the sequence if it supports it.
+    return child == _sequence && _canBlockSplitSequence;
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     // When splitting at `in`, both operands may split or not and will be
     // indented if they do.
     if (state == State.split) writer.pushIndent(Indent.expression);
 
-    writer.format(_variable, allowNewlines: state == State.split);
-
+    writer.format(_variable);
     writer.splitIf(state == State.split);
-
-    // Always allow block-splitting the sequence if it supports it.
-    writer.format(_sequence,
-        allowNewlines: _canBlockSplitSequence || state == State.split);
+    writer.format(_sequence);
 
     if (state == State.split) writer.popIndent();
   }

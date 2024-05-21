@@ -209,7 +209,7 @@ class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      _handleNewline(allowNewlines: true);
+      _hadNewline = true;
       _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
     }
 
@@ -231,7 +231,7 @@ class CodeWriter {
   /// be `false`. It's up to the parent piece to only call this when it's safe
   /// to do so. In practice, this usually means when the parent piece knows that
   /// [piece] will have a newline before and after it.
-  void format(Piece piece, {bool separate = false, bool allowNewlines = true}) {
+  void format(Piece piece, {bool separate = false}) {
     if (separate) {
       Profile.count('CodeWriter.format() piece separate');
 
@@ -239,7 +239,7 @@ class CodeWriter {
     } else {
       Profile.count('CodeWriter.format() piece inline');
 
-      _formatInline(piece, allowNewlines: allowNewlines);
+      _formatInline(piece);
     }
   }
 
@@ -270,7 +270,7 @@ class CodeWriter {
   }
 
   /// Format [piece] writing directly into this [CodeWriter].
-  void _formatInline(Piece piece, {required bool allowNewlines}) {
+  void _formatInline(Piece piece) {
     // Begin a new formatting context for this child.
     var previousPiece = _currentPiece;
     _currentPiece = piece;
@@ -309,9 +309,25 @@ class CodeWriter {
 
     _currentPiece = previousPiece;
 
-    // If the child contained a newline then the parent transitively does.
-    if (childHadNewline && _currentPiece != null) {
-      _handleNewline(allowNewlines: allowNewlines);
+    // If the child contained a newline then invalidate the solution if any of
+    // the containing pieces don't allow one at this point in the tree.
+    if (childHadNewline) {
+      // TODO(rnystrom): We already do much of the newline constraint validation
+      // when the Solution is first created before we format. For performance,
+      // it would be good to do *all* of it before formatting. The missing part
+      // is that pieces containing hard newlines (comments, multiline strings,
+      // sequences, etc.) do not constrain their parents when the solution is
+      // first created. If we can get that working, then this check can be
+      // removed.
+      if (_currentPiece case var parent?
+          when !parent.allowNewlineInChild(
+              _solution.pieceState(parent), piece)) {
+        _solution.invalidate(_currentPiece!);
+      }
+
+      // Note that this piece contains a newline so that we can propagate that
+      // up to containing pieces too.
+      _hadNewline = true;
     }
   }
 
@@ -325,18 +341,6 @@ class CodeWriter {
   void endSelection(int end) {
     _flushWhitespace();
     _solution.endSelection(_buffer.length + end);
-  }
-
-  /// Notes that a newline has been written.
-  ///
-  /// If this occurs in a place where newlines are prohibited, then invalidates
-  /// the solution.
-  void _handleNewline({required bool allowNewlines}) {
-    if (!allowNewlines) _solution.invalidate(_currentPiece!);
-
-    // Note that this piece contains a newline so that we can propagate that
-    // up to containing pieces too.
-    _hadNewline = true;
   }
 
   /// Write any pending whitespace.

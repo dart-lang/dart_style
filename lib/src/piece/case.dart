@@ -59,25 +59,20 @@ class CaseExpressionPiece extends Piece {
       ];
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    return switch (state) {
+      _ when child == _arrow => true,
+      State.unsplit when child == _body && _canBlockSplitBody => true,
+      _beforeBody when child == _pattern =>
+        _guard == null || _patternIsLogicalOr,
+      _beforeBody when child == _body => true,
+      _beforeWhenAndBody => true,
+      _ => false,
+    };
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
-    var allowNewlineInPattern = false;
-    var allowNewlineInGuard = false;
-    var allowNewlineInBody = false;
-
-    switch (state) {
-      case State.unsplit:
-        allowNewlineInBody = _canBlockSplitBody;
-
-      case _beforeBody:
-        allowNewlineInPattern = _guard == null || _patternIsLogicalOr;
-        allowNewlineInBody = true;
-
-      case _beforeWhenAndBody:
-        allowNewlineInPattern = true;
-        allowNewlineInGuard = true;
-        allowNewlineInBody = true;
-    }
-
     // If there is a split guard, then indent the pattern past it.
     var indentPatternForGuard = !_canBlockSplitPattern &&
         !_patternIsLogicalOr &&
@@ -85,14 +80,14 @@ class CaseExpressionPiece extends Piece {
 
     if (indentPatternForGuard) writer.pushIndent(Indent.expression);
 
-    writer.format(_pattern, allowNewlines: allowNewlineInPattern);
+    writer.format(_pattern);
 
     if (indentPatternForGuard) writer.popIndent();
 
     if (_guard case var guard?) {
       writer.pushIndent(Indent.expression);
       writer.splitIf(state == _beforeWhenAndBody);
-      writer.format(guard, allowNewlines: allowNewlineInGuard);
+      writer.format(guard);
       writer.popIndent();
     }
 
@@ -102,7 +97,7 @@ class CaseExpressionPiece extends Piece {
     if (state != State.unsplit) writer.pushIndent(Indent.block);
 
     writer.splitIf(state == _beforeBody || state == _beforeWhenAndBody);
-    writer.format(_body, allowNewlines: allowNewlineInBody);
+    writer.format(_body);
 
     if (state != State.unsplit) writer.popIndent();
   }

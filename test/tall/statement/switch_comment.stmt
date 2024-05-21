@@ -135,13 +135,19 @@ switch (e) {
 switch (e) {/* comment */
 }
 <<<
-switch (e) {/* comment */}
+switch (e) {
+  /* comment */
+}
 >>> Block comment with leading newline.
 switch (e) {
   /* comment */}
 <<<
-switch (e) {/* comment */}
+switch (e) {
+  /* comment */
+}
 >>> Inline block comment.
 switch (e) {  /* comment */  }
 <<<
-switch (e) {/* comment */}
+switch (e) {
+  /* comment */
+}

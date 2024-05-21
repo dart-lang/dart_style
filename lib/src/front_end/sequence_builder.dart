@@ -8,6 +8,7 @@ import '../ast_extensions.dart';
 import '../constants.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
+import '../piece/text.dart';
 import 'piece_factory.dart';
 
 /// Incrementally builds a [SequencePiece], including handling comments and
@@ -38,9 +39,6 @@ class SequenceBuilder {
 
   SequenceBuilder(this._visitor);
 
-  bool _mustSplit = false;
-  bool get mustSplit => _mustSplit;
-
   Piece build({bool forceSplit = false}) {
     // If the sequence only contains a single piece, just return it directly
     // and discard the unnecessary wrapping.
@@ -51,17 +49,27 @@ class SequenceBuilder {
       return _elements.single.piece;
     }
 
-    // Discard any trailing blank line after the last element.
-    if (_elements.isNotEmpty) {
-      _elements.last.blankAfter = false;
+    // If there are no elements, don't bother making a SequencePiece or
+    // BlockPiece.
+    if (_elements.isEmpty) {
+      return _visitor.pieces.build(() {
+        _visitor.pieces.add(_leftBracket!);
+        if (forceSplit) {
+          _visitor.pieces.add(NewlinePiece());
+        }
+        _visitor.pieces.add(_rightBracket!);
+      });
     }
 
-    var piece = SequencePiece(_elements,
-        leftBracket: _leftBracket, rightBracket: _rightBracket);
+    // Discard any trailing blank line after the last element.
+    _elements.last.blankAfter = false;
 
-    if (mustSplit || forceSplit) piece.pin(State.split);
+    var sequence = SequencePiece(_elements);
+    if ((_leftBracket, _rightBracket) case (var left?, var right?)) {
+      return BlockPiece(left, sequence, right);
+    }
 
-    return piece;
+    return sequence;
   }
 
   /// Adds the opening [bracket] to the built sequence.
@@ -82,12 +90,9 @@ class SequenceBuilder {
   /// The caller should have already called [addCommentsBefore()] with the
   /// first token in [piece].
   void add(Piece piece, {int? indent, bool allowBlankAfter = true}) {
-    _add(indent ?? Indent.none, piece);
+    _elements.add(SequenceElementPiece(indent ?? Indent.none, piece));
 
     _allowBlank = allowBlankAfter;
-
-    // There is at least one non-comment element in the sequence, so it splits.
-    _mustSplit = true;
   }
 
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
@@ -147,12 +152,9 @@ class SequenceBuilder {
         }
 
         // Write the comment as its own sequence piece.
-        _add(indent, comment);
+        _elements.add(SequenceElementPiece(indent, comment));
       }
     }
-
-    // If the sequence contains any line comments, make sure it splits.
-    if (comments.requiresNewline) _mustSplit = true;
 
     // Write a blank before the token if there should be one.
     if (comments.linesBeforeNextToken > 1) {
@@ -162,12 +164,5 @@ class SequenceBuilder {
 
       addBlank();
     }
-  }
-
-  void _add(int indent, Piece piece) {
-    // If there are brackets, add a level of block indentation.
-    if (_leftBracket != null) indent += Indent.block;
-
-    _elements.add(SequenceElementPiece(indent, piece));
   }
 }

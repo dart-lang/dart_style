@@ -161,10 +161,31 @@ class ChainPiece extends Piece {
   }
 
   @override
+  bool allowNewlineInChild(State state, Piece child) {
+    switch (state) {
+      case _ when child == _target:
+        return _allowSplitInTarget || state == State.split;
+
+      case State.unsplit:
+        return false;
+
+      case _splitAfterProperties:
+        for (var i = 0; i < _leadingProperties; i++) {
+          if (_calls[i]._call == child) return false;
+        }
+
+      case _blockFormatTrailingCall:
+        return _calls[_blockCallIndex]._call == child;
+    }
+
+    return true;
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     switch (state) {
       case State.unsplit:
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: false);
@@ -172,7 +193,7 @@ class ChainPiece extends Piece {
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
@@ -182,7 +203,7 @@ class ChainPiece extends Piece {
         writer.popIndent();
 
       case _blockFormatTrailingCall:
-        writer.format(_target, allowNewlines: _allowSplitInTarget);
+        writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
           _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
@@ -212,8 +233,7 @@ class ChainPiece extends Piece {
       _ => false,
     };
 
-    writer.format(_calls[i]._call,
-        separate: separate, allowNewlines: allowNewlines);
+    writer.format(_calls[i]._call, separate: separate);
   }
 
   @override

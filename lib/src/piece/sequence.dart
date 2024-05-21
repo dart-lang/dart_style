@@ -3,78 +3,95 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
+import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a series of statements or members inside a block or declaration
-/// body.
+/// body or at the top level of a program.
 ///
-/// Usually constructed using a [SequenceBuilder].
+/// Constructed using a [SequenceBuilder].
 class SequencePiece extends Piece {
-  /// The opening delimiter, if any.
-  final Piece? _leftBracket;
-
   /// The series of members or statements.
   final List<SequenceElementPiece> _elements;
 
-  SequencePiece(this._elements, {Piece? leftBracket, Piece? rightBracket})
-      : _leftBracket = leftBracket,
-        _rightBracket = rightBracket;
-
-  /// The closing delimiter, if any.
-  final Piece? _rightBracket;
-
-  @override
-  List<State> get additionalStates => [if (_elements.isNotEmpty) State.split];
+  SequencePiece(this._elements);
 
   @override
   void format(CodeWriter writer, State state) {
-    if (_leftBracket case var leftBracket?) {
-      writer.format(leftBracket, allowNewlines: state == State.split);
-      writer.pushIndent(_elements.firstOrNull?._indent ?? 0);
-      writer.splitIf(state == State.split, space: false);
-    }
+    writer.pushIndent(Indent.none);
 
     for (var i = 0; i < _elements.length; i++) {
       var element = _elements[i];
 
-      // We can format an element separately if the element is on its own line.
-      // This happens when the sequence is split and there is something before
-      // and after the element, either brackets or other items.
-      var separate = state == State.split &&
-          (i > 0 || _leftBracket != null) &&
-          (i < _elements.length - 1 || _rightBracket != null);
-
-      writer.format(element,
-          separate: separate, allowNewlines: state == State.split);
+      writer.format(element, separate: true);
 
       if (i < _elements.length - 1) {
-        if (_leftBracket != null || i > 0) writer.popIndent();
+        writer.popIndent();
         writer.pushIndent(_elements[i + 1]._indent);
         writer.newline(blank: element.blankAfter);
       }
     }
 
-    if (_leftBracket != null || _elements.length > 1) writer.popIndent();
-
-    if (_rightBracket case var rightBracket?) {
-      writer.splitIf(state == State.split, space: false);
-      writer.format(rightBracket, allowNewlines: state == State.split);
-    }
+    writer.popIndent();
   }
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
-    if (_leftBracket case var leftBracket?) callback(leftBracket);
-
     for (var element in _elements) {
       callback(element);
     }
-
-    if (_rightBracket case var rightBracket?) callback(rightBracket);
   }
+
+  /// If there are multiple elements, there are newlines between them.
+  @override
+  bool calculateContainsHardNewline() => _elements.length > 1;
 
   @override
   String get debugName => 'Seq';
+}
+
+/// A piece for a non-empty brace-delimited series of statements or members
+/// inside a block or declaration body.
+///
+/// Unlike [ListPiece], always splits between the elements.
+///
+/// Constructed using a [SequenceBuilder].
+class BlockPiece extends Piece {
+  /// The opening delimiter.
+  final Piece _leftBracket;
+
+  /// The series of members or statements.
+  final SequencePiece _elements;
+
+  /// The closing delimiter.
+  final Piece _rightBracket;
+
+  BlockPiece(this._leftBracket, this._elements, this._rightBracket);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.format(_leftBracket);
+    writer.pushIndent(Indent.block);
+    writer.newline();
+    writer.format(_elements);
+    writer.popIndent();
+    writer.newline();
+    writer.format(_rightBracket);
+  }
+
+  @override
+  void forEachChild(void Function(Piece piece) callback) {
+    callback(_leftBracket);
+    callback(_elements);
+    callback(_rightBracket);
+  }
+
+  /// A [BlockPiece] is never empty and always splits between the delimiters.
+  @override
+  bool calculateContainsHardNewline() => true;
+
+  @override
+  String get debugName => 'Block';
 }
 
 /// An element inside a [SequencePiece].

@@ -12,6 +12,7 @@ import '../debug.dart' as debug;
 import '../piece/adjacent.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
+import '../piece/text.dart';
 import '../profile.dart';
 import '../source_code.dart';
 import 'comment_writer.dart';

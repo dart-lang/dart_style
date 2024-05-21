@@ -43,13 +43,13 @@ abstract class Piece {
   ///
   /// This is lazily computed and cached for performance, so should only be
   /// accessed after all of the piece's children are known.
-  late final bool containsNewline = _calculateContainsNewline();
+  late final bool containsHardNewline = calculateContainsHardNewline();
 
-  bool _calculateContainsNewline() {
+  bool calculateContainsHardNewline() {
     var anyHasNewline = false;
 
     forEachChild((child) {
-      anyHasNewline |= child.containsNewline;
+      anyHasNewline |= child.containsHardNewline;
     });
 
     return anyHasNewline;
@@ -60,9 +60,9 @@ abstract class Piece {
   ///
   /// This is lazily computed and cached for performance, so should only be
   /// accessed after all of the piece's children are known.
-  late final int totalCharacters = _calculateTotalCharacters();
+  late final int totalCharacters = calculateTotalCharacters();
 
-  int _calculateTotalCharacters() {
+  int calculateTotalCharacters() {
     var total = 0;
 
     forEachChild((child) {
@@ -84,6 +84,22 @@ abstract class Piece {
   /// child piece and the state that child should be constrained to.
   void applyConstraints(State state, Constrain constrain) {}
 
+  /// Whether the [child] of this piece should be allowed to contain newlines
+  /// (directly or transitively) when this piece is in [state].
+  bool allowNewlineInChild(State state, Piece child) => true;
+
+  /// Whether this piece contains a newline when this piece is in [state].
+  ///
+  /// This should only return `true` if the piece will *always* write at least
+  /// one newline -- either itself or one of its children -- when in this state.
+  /// If a piece may contain a newline or may not in some state, this should
+  /// return `false`.
+  ///
+  /// By default, we assume that any piece not in [State.unsplit] or that has a
+  /// hard newline will contain a newline.
+  bool containsNewline(State state) =>
+      state != State.unsplit || containsHardNewline;
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);
@@ -92,8 +108,9 @@ abstract class Piece {
   void forEachChild(void Function(Piece piece) callback);
 
   /// If the piece can determine that it will always end up in a certain state
-  /// given [pageWidth] and size metrics returned by calling [containsNewline]
-  /// and [totalCharacters] on its children, then returns that [State].
+  /// given [pageWidth] and size metrics returned by calling
+  /// [containsHardNewline] and [totalCharacters] on its children, then returns
+  /// that [State].
   ///
   /// For example, a series of infix operators wider than a page will always
   /// split one per operator. If we can determine this eagerly just based on
@@ -146,6 +163,29 @@ abstract class Piece {
     pin(State.unsplit);
   }
 
+  /// All of the transitive children of this piece (including the piece itself)
+  /// that have more than state.
+  ///
+  /// This calculated and cached because it's faster than traversing the child
+  /// tree and having to skip past all of the stateless [AdjacentPiece],
+  /// [SpacePiece], [SequencePiece], etc.
+  late final List<Piece> statefulOffspring = _calculateStatelessOffspring();
+
+  List<Piece> _calculateStatelessOffspring() {
+    // TODO(rnystrom): Traversing and storing the transitive list of stateless
+    // offspring at every level of the Piece tree might be slow. Is it? If so,
+    // is there a faster way to propagate constraints to the relevant parts of
+    // the subtree?
+    var result = <Piece>[];
+    void traverse(Piece piece) {
+      if (piece.additionalStates.isNotEmpty) result.add(piece);
+      piece.forEachChild(traverse);
+    }
+
+    traverse(this);
+    return result;
+  }
+
   /// The name of this piece as it appears in debug output.
   ///
   /// By default, this is the class's name with `Piece` removed.
@@ -153,198 +193,6 @@ abstract class Piece {
 
   @override
   String toString() => '$debugName${_pinnedState ?? ''}';
-}
-
-/// A simple atomic piece of code.
-///
-/// This may represent a series of tokens where no split can occur between them.
-/// It may also contain one or more comments.
-sealed class TextPiece extends Piece {
-  /// RegExp that matches any valid Dart line terminator.
-  static final _lineTerminatorPattern = RegExp(r'\r\n?|\n');
-
-  /// The lines of text in this piece.
-  ///
-  /// Most [TextPieces] will contain only a single line, but a piece for a
-  /// multi-line string or comment will have multiple lines. These are stored
-  /// as separate lines instead of a single multi-line Dart String so that
-  /// line endings are normalized and so that column calculation during line
-  /// splitting calculates each line in the piece separately.
-  final List<String> _lines = [''];
-
-  /// The offset from the beginning of [text] where the selection starts, or
-  /// `null` if the selection does not start within this chunk.
-  int? _selectionStart;
-
-  /// The offset from the beginning of [text] where the selection ends, or
-  /// `null` if the selection does not start within this chunk.
-  int? _selectionEnd;
-
-  /// Append [text] to the end of this piece.
-  ///
-  /// If [text] may contain any newline characters, then [multiline] must be
-  /// `true`.
-  ///
-  /// If [selectionStart] and/or [selectionEnd] are given, then notes that the
-  /// corresponding selection markers appear that many code units from where
-  /// [text] will be appended.
-  void append(String text,
-      {bool multiline = false, int? selectionStart, int? selectionEnd}) {
-    if (selectionStart != null) {
-      _selectionStart = _adjustSelection(selectionStart);
-    }
-
-    if (selectionEnd != null) {
-      _selectionEnd = _adjustSelection(selectionEnd);
-    }
-
-    if (multiline) {
-      var lines = text.split(_lineTerminatorPattern);
-      for (var i = 0; i < lines.length; i++) {
-        if (i > 0) _lines.add('');
-        _lines.last += lines[i];
-      }
-    } else {
-      _lines.last += text;
-    }
-  }
-
-  /// Sets [selectionStart] to be [start] code units after the end of the
-  /// current text in this piece.
-  void startSelection(int start) {
-    _selectionStart = _adjustSelection(start);
-  }
-
-  /// Sets [selectionEnd] to be [end] code units after the end of the
-  /// current text in this piece.
-  void endSelection(int end) {
-    _selectionEnd = _adjustSelection(end);
-  }
-
-  /// Adjust [offset] by the current length of this [TextPiece].
-  int _adjustSelection(int offset) {
-    for (var line in _lines) {
-      offset += line.length;
-    }
-
-    return offset;
-  }
-
-  void _formatSelection(CodeWriter writer) {
-    if (_selectionStart case var start?) {
-      writer.startSelection(start);
-    }
-
-    if (_selectionEnd case var end?) {
-      writer.endSelection(end);
-    }
-  }
-
-  void _formatLines(CodeWriter writer) {
-    for (var i = 0; i < _lines.length; i++) {
-      if (i > 0) writer.newline(flushLeft: i > 0);
-      writer.write(_lines[i]);
-    }
-  }
-
-  @override
-  bool _calculateContainsNewline() => _lines.length > 1;
-
-  @override
-  int _calculateTotalCharacters() {
-    var total = 0;
-
-    for (var line in _lines) {
-      total += line.length;
-    }
-
-    return total;
-  }
-
-  @override
-  String toString() => '`${_lines.join('¬')}`';
-}
-
-/// [TextPiece] for non-comment source code that may have comments attached to
-/// it.
-class CodePiece extends TextPiece {
-  /// Pieces for any comments that appear immediately before this code.
-  final List<Piece> _leadingComments;
-
-  /// Pieces for any comments that hang off the same line as this code.
-  final List<Piece> _hangingComments = [];
-
-  CodePiece([this._leadingComments = const []]);
-
-  void addHangingComment(Piece comment) {
-    _hangingComments.add(comment);
-  }
-
-  @override
-  void format(CodeWriter writer, State state) {
-    _formatSelection(writer);
-
-    if (_leadingComments.isNotEmpty) {
-      // Always put leading comments on a new line.
-      writer.newline();
-
-      for (var comment in _leadingComments) {
-        writer.format(comment);
-      }
-    }
-
-    _formatLines(writer);
-
-    for (var comment in _hangingComments) {
-      writer.space();
-      writer.format(comment);
-    }
-  }
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {
-    _leadingComments.forEach(callback);
-    _hangingComments.forEach(callback);
-  }
-}
-
-/// A [TextPiece] for a source code comment and the whitespace after it, if any.
-class CommentPiece extends TextPiece {
-  /// Whitespace at the end of the comment.
-  final Whitespace _trailingWhitespace;
-
-  CommentPiece([this._trailingWhitespace = Whitespace.none]);
-
-  @override
-  void format(CodeWriter writer, State state) {
-    _formatSelection(writer);
-    _formatLines(writer);
-    writer.whitespace(_trailingWhitespace);
-  }
-
-  @override
-  bool _calculateContainsNewline() =>
-      _trailingWhitespace.hasNewline || super._calculateContainsNewline();
-
-  @override
-  void forEachChild(void Function(Piece piece) callback) {}
-}
-
-/// A piece that writes a single space.
-class SpacePiece extends Piece {
-  @override
-  void forEachChild(void Function(Piece piece) callback) {}
-
-  @override
-  void format(CodeWriter writer, State state) {
-    writer.space();
-  }
-
-  @override
-  bool _calculateContainsNewline() => false;
-
-  @override
-  int _calculateTotalCharacters() => 1;
 }
 
 /// A state that a piece can be in.

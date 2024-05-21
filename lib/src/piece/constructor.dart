@@ -127,24 +127,33 @@ class ConstructorPiece extends Piece {
   }
 
   @override
-  void format(CodeWriter writer, State state) {
+  bool allowNewlineInChild(State state, Piece child) {
+    if (child == _body) return true;
+
     // If there's a newline in the header or parameters (like a line comment
     // after the `)`), then don't allow the initializers to remain unsplit.
-    var allowNewlines = _initializers == null || state != State.unsplit;
+    return _initializers == null || state != State.unsplit;
+  }
 
-    writer.format(_header, allowNewlines: allowNewlines);
-    writer.format(_parameters, allowNewlines: allowNewlines);
+  @override
+  bool containsNewline(State state) =>
+      state == _splitBeforeInitializers || super.containsNewline(state);
+
+  @override
+  void format(CodeWriter writer, State state) {
+    writer.format(_header);
+    writer.format(_parameters);
 
     if (_redirect case var redirect?) {
       writer.space();
-      writer.format(redirect, allowNewlines: allowNewlines);
+      writer.format(redirect);
     }
 
     if (_initializers case var initializers?) {
       writer.pushIndent(Indent.block);
       writer.splitIf(state == _splitBeforeInitializers);
 
-      writer.format(_initializerSeparator!, allowNewlines: allowNewlines);
+      writer.format(_initializerSeparator!);
       writer.space();
 
       // Indent subsequent initializers past the `:`.
@@ -154,7 +163,7 @@ class ConstructorPiece extends Piece {
         writer.pushIndent(Indent.initializer);
       }
 
-      writer.format(initializers, allowNewlines: allowNewlines);
+      writer.format(initializers);
       writer.popIndent();
       writer.popIndent();
     }
