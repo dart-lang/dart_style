@@ -98,7 +98,7 @@ sealed class TextPiece extends Piece {
   }
 
   @override
-  bool calculateContainsNewline() => _lines.length > 1;
+  bool calculateContainsHardNewline() => _lines.length > 1;
 
   @override
   int calculateTotalCharacters() {
@@ -173,8 +173,8 @@ class CommentPiece extends TextPiece {
   }
 
   @override
-  bool calculateContainsNewline() =>
-      _trailingWhitespace.hasNewline || super.calculateContainsNewline();
+  bool calculateContainsHardNewline() =>
+      _trailingWhitespace.hasNewline || super.calculateContainsHardNewline();
 
   @override
   void forEachChild(void Function(Piece piece) callback) {}
@@ -191,7 +191,7 @@ class SpacePiece extends Piece {
   }
 
   @override
-  bool calculateContainsNewline() => false;
+  bool calculateContainsHardNewline() => false;
 
   @override
   int calculateTotalCharacters() => 1;
@@ -208,7 +208,7 @@ class NewlinePiece extends Piece {
   }
 
   @override
-  bool calculateContainsNewline() => true;
+  bool calculateContainsHardNewline() => true;
 
   @override
   int calculateTotalCharacters() => 0;

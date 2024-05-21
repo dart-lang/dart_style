@@ -229,7 +229,7 @@ class AssignPiece extends Piece {
     // can split because there are no block operands.
     var totalLength = 0;
     if (_left case var left? when !_canBlockSplitLeft) {
-      if (left.containsNewline) return _atOperator;
+      if (left.containsHardNewline) return _atOperator;
 
       totalLength += left.totalCharacters;
     }
@@ -237,7 +237,7 @@ class AssignPiece extends Piece {
     totalLength += _operator.totalCharacters;
 
     if (!_canBlockSplitRight) {
-      if (_right.containsNewline) return _atOperator;
+      if (_right.containsHardNewline) return _atOperator;
       totalLength += _right.totalCharacters;
     }
 

@@ -199,7 +199,7 @@ class ListPiece extends Piece {
     if (_before case var before?) {
       // A newline in the opening bracket (like a line comment after the
       // bracket) forces the list to split.
-      if (before.containsNewline) return State.split;
+      if (before.containsHardNewline) return State.split;
       totalLength += before.totalCharacters;
     }
 
@@ -208,7 +208,7 @@ class ListPiece extends Piece {
       // to split.
       if (element.allowNewlinesWhenUnsplit) continue;
 
-      if (element.containsNewline) return State.split;
+      if (element.containsHardNewline) return State.split;
       totalLength += element.totalCharacters;
       if (totalLength > pageWidth) break;
     }

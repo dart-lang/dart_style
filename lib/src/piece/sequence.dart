@@ -42,6 +42,10 @@ class SequencePiece extends Piece {
     }
   }
 
+  /// If there are multiple elements, there are newlines between them.
+  @override
+  bool calculateContainsHardNewline() => _elements.length > 1;
+
   @override
   String get debugName => 'Seq';
 }
@@ -84,7 +88,7 @@ class BlockPiece extends Piece {
 
   /// A [BlockPiece] is never empty and always splits between the delimiters.
   @override
-  bool calculateContainsNewline() => true;
+  bool calculateContainsHardNewline() => true;
 
   @override
   String get debugName => 'Block';

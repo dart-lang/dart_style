@@ -88,7 +88,7 @@ class InfixPiece extends Piece {
 
     for (var operand in _operands) {
       // If any operand contains a newline, then we have to split.
-      if (operand.containsNewline) return State.split;
+      if (operand.containsHardNewline) return State.split;
 
       totalLength += operand.totalCharacters;
       if (totalLength > pageWidth) break;

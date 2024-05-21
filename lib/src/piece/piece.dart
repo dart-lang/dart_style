@@ -43,13 +43,13 @@ abstract class Piece {
   ///
   /// This is lazily computed and cached for performance, so should only be
   /// accessed after all of the piece's children are known.
-  late final bool containsNewline = calculateContainsNewline();
+  late final bool containsHardNewline = calculateContainsHardNewline();
 
-  bool calculateContainsNewline() {
+  bool calculateContainsHardNewline() {
     var anyHasNewline = false;
 
     forEachChild((child) {
-      anyHasNewline |= child.containsNewline;
+      anyHasNewline |= child.containsHardNewline;
     });
 
     return anyHasNewline;
@@ -96,8 +96,9 @@ abstract class Piece {
   void forEachChild(void Function(Piece piece) callback);
 
   /// If the piece can determine that it will always end up in a certain state
-  /// given [pageWidth] and size metrics returned by calling [containsNewline]
-  /// and [totalCharacters] on its children, then returns that [State].
+  /// given [pageWidth] and size metrics returned by calling
+  /// [containsHardNewline] and [totalCharacters] on its children, then returns
+  /// that [State].
   ///
   /// For example, a series of infix operators wider than a page will always
   /// split one per operator. If we can determine this eagerly just based on
