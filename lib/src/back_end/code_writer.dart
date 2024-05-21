@@ -312,6 +312,13 @@ class CodeWriter {
     // If the child contained a newline then invalidate the solution if any of
     // the containing pieces don't allow one at this point in the tree.
     if (childHadNewline) {
+      // TODO(rnystrom): We already do much of the newline constraint validation
+      // when the Solution is first created before we format. For performance,
+      // it would be good to do *all* of it before formatting. The missing part
+      // is that pieces containing hard newlines (comments, multiline strings,
+      // sequences, etc.) do not constrain their parents when the solution is
+      // first created. If we can get that working, then this check can be
+      // removed.
       if (_currentPiece case var parent?
           when !parent.allowNewlineInChild(
               _solution.pieceState(parent), piece)) {

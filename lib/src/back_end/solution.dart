@@ -25,6 +25,15 @@ class Solution implements Comparable<Solution> {
   /// overflow.
   final Map<Piece, State> _pieceStates;
 
+  /// The set of states that pieces are allowed to be in without violating
+  /// constraints of already bound pieces.
+  ///
+  /// Each key is a constrained piece and the values are the remaining states
+  /// that the piece may take which aren't known to violate existing
+  /// constraints. If a piece is not in this map, then there are no constraints
+  /// on it.
+  final Map<Piece, List<State>> _allowedStates;
+
   /// The amount of penalties applied based on the chosen line splits.
   int get cost => _cost;
   int _cost;
@@ -33,16 +42,19 @@ class Solution implements Comparable<Solution> {
   String get text => _text;
   late final String _text;
 
-  /// Whether this score is for a valid solution or not.
+  /// False if this Solution contains a newline where one is prohibited.
   ///
-  /// An invalid solution is one where a hard newline appears in a context
-  /// where splitting isn't allowed. This is considered worse than any other
-  /// solution.
-  bool get isValid => _invalidPiece == null;
+  /// An invalid solution may have no overflow characters and the lowest score,
+  /// but is still considered worse than any other valid solution.
+  bool get isValid => _isValid;
+  bool _isValid = true;
 
-  /// The piece that forbid newlines when an invalid newline was written, or
-  /// `null` if no invalid newline has occurred.
-  Piece? _invalidPiece;
+  /// Whether the solution contains an invalid newline and the piece that
+  /// prohibits the newline is bound in this solution.
+  ///
+  /// When this is `true`, it means this solution and every solution that could
+  /// be derived from it is invalid so the whole solution tree can be discarded.
+  bool _isDeadEnd = false;
 
   /// The total number of characters that do not fit inside the page width.
   int get overflow => _overflow;
@@ -102,33 +114,20 @@ class Solution implements Comparable<Solution> {
   /// another state).
   factory Solution(SolutionCache cache, Piece root,
       {required int pageWidth, required int leadingIndent, State? rootState}) {
-    var pieceStates = <Piece, State>{};
-    var cost = 0;
-
-    // If we're formatting a subtree of a larger Piece tree that binds [root]
-    // to [rootState], then bind it in this solution too.
-    if (rootState != null) {
-      var additionalCost = _tryBind(pieceStates, root, rootState);
-
-      // Binding should always succeed since we should only get here when
-      // formatting a subtree whose surrounding Solution successfully bound
-      // this piece to this state.
-      cost += additionalCost!;
-    }
-
-    return Solution._(cache, root, pageWidth, leadingIndent, cost, pieceStates);
+    var solution =
+        Solution._(cache, root, pageWidth, leadingIndent, 0, {}, {}, rootState);
+    solution._format(cache, root, pageWidth, leadingIndent);
+    return solution;
   }
 
   Solution._(SolutionCache cache, Piece root, int pageWidth, int leadingIndent,
-      this._cost, this._pieceStates) {
+      this._cost, this._pieceStates, this._allowedStates,
+      [State? rootState]) {
     Profile.count('create Solution');
 
-    var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
-    writer.format(root);
-    var (text, expandPieces) = writer.finish();
-
-    _text = text;
-    _expandPieces = expandPieces;
+    // If we're formatting a subtree of a larger Piece tree that binds [root]
+    // to [rootState], then bind it in this solution too.
+    if (rootState != null) _bind(root, rootState);
   }
 
   /// Attempt to eagerly bind [piece] to a state given that it must fit within
@@ -139,8 +138,7 @@ class Solution implements Comparable<Solution> {
   /// `true`. Otherwise returns `false`.
   bool tryBindByPageWidth(Piece piece, int pageWidth) {
     if (piece.fixedStateForPageWidth(pageWidth) case var state?) {
-      var cost = _tryBind(_pieceStates, piece, state);
-      _cost += cost!;
+      _bind(piece, state);
       return true;
     }
 
@@ -212,7 +210,11 @@ class Solution implements Comparable<Solution> {
   ///
   /// This should only be called by [CodeWriter].
   void invalidate(Piece piece) {
-    _invalidPiece = piece;
+    _isValid = false;
+
+    // If the piece whose newline constraint was violated is already bound to
+    // one state, then every solution derived from this one will also fail.
+    if (!_isDeadEnd && isBound(piece)) _isDeadEnd = true;
   }
 
   /// Derives new potential solutions from this one by binding [_expandPieces]
@@ -222,11 +224,6 @@ class Solution implements Comparable<Solution> {
   /// fail, returns an empty list.
   List<Solution> expand(SolutionCache cache, Piece root,
       {required int pageWidth, required int leadingIndent}) {
-    // If the piece whose newline constraint was violated is already bound to
-    // one state, then every solution derived from this one will also fail in
-    // the same way, so discard the whole solution tree hanging off this one.
-    if (_invalidPiece case var piece? when isBound(piece)) return const [];
-
     // If there is no piece that we can expand on this solution, it's a dead
     // end (or a winner).
     if (_expandPieces.isEmpty) return const [];
@@ -238,19 +235,19 @@ class Solution implements Comparable<Solution> {
       // the expanding piece to that state (along with any further pieces
       // constrained by that one).
       var expandPiece = _expandPieces[i];
-      for (var state in expandPiece.additionalStates) {
-        var newStates = {..._pieceStates};
+      for (var state
+          in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
+        var expanded = Solution._(cache, root, pageWidth, leadingIndent, cost,
+            {..._pieceStates}, {..._allowedStates});
 
         // Bind all preceding expand pieces to their unsplit state. Their
         // other states have already been expanded by earlier iterations of
         // the outer for loop.
         var valid = true;
-        var additionalCost = 0;
         for (var j = 0; j < i; j++) {
-          if (_tryBind(newStates, _expandPieces[j], State.unsplit)
-              case var cost?) {
-            additionalCost += cost;
-          } else {
+          expanded._bind(_expandPieces[j], State.unsplit);
+
+          if (expanded._isDeadEnd) {
             valid = false;
             break;
           }
@@ -259,15 +256,19 @@ class Solution implements Comparable<Solution> {
         // Discard the solution if we hit a constraint violation.
         if (!valid) continue;
 
-        if (_tryBind(newStates, expandPiece, state) case var cost?) {
-          additionalCost += cost;
-        } else {
-          // Discard the solution if we hit a constraint violation.
-          continue;
-        }
+        expanded._bind(expandPiece, state);
 
-        solutions.add(Solution._(cache, root, pageWidth, leadingIndent,
-            cost + additionalCost, newStates));
+        // Discard the solution if we hit a constraint violation.
+        if (!expanded._isDeadEnd) {
+          expanded._format(cache, root, pageWidth, leadingIndent);
+
+          // TODO(rnystrom): These come mostly (entirely?) from hard newlines
+          // in sequences, comments, and multiline strings. It should be
+          // possible to handle those during piece construction too. If we do,
+          // remove this check.
+          // We may not detect some newline violations until formatting.
+          if (!expanded._isDeadEnd) solutions.add(expanded);
+        }
       }
     }
 
@@ -314,45 +315,112 @@ class Solution implements Comparable<Solution> {
     ].join(' ').trim();
   }
 
-  /// Attempts to add a binding from [piece] to [state] in [boundStates], and
+  /// Run a [CodeWriter] on this solution to produce the final formatted output
+  /// and calculate the overflow and expand pieces.
+  void _format(
+      SolutionCache cache, Piece root, int pageWidth, int leadingIndent) {
+    var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
+    writer.format(root);
+    var (text, expandPieces) = writer.finish();
+
+    _text = text;
+    _expandPieces = expandPieces;
+  }
+
+  /// Attempts to add a binding from [piece] to [state] to the solution, and
   /// then adds any further bindings from constraints that [piece] applies to
   /// its children, recursively.
   ///
-  /// This may fail if [piece] is already bound to a different [state], or if
-  /// any constrained pieces are bound to different states.
+  /// This may invalidate the solution if [piece] is already bound to a
+  /// different [state], or if any constrained pieces are bound to different
+  /// states.
   ///
-  /// If successful, returns the additional cost required to bind [piece] to
-  /// [state] (along with any other applied constrained pieces). Otherwise,
-  /// returns `null` to indicate failure.
-  static int? _tryBind(
-      Map<Piece, State> boundStates, Piece piece, State state) {
-    var success = true;
-    var additionalCost = 0;
+  /// If successful, adds the cost required to bind [piece] to [state] (along
+  /// with any other applied constrained pieces). Otherwise, marks the solution
+  /// as a dead end.
+  void _bind(Piece piece, State state) {
+    // If we've already failed from a previous violation, early out.
+    if (_isDeadEnd) return;
 
-    void bind(Piece thisPiece, State thisState) {
-      // If we've already failed from a previous sibling's constraint violation,
-      // early out.
-      if (!success) return;
+    // Apply the new binding if it doesn't conflict with an existing one.
+    switch (pieceStateIfBound(piece)) {
+      case null:
+        // Binding a unbound piece to a state.
+        _cost += piece.stateCost(state);
+        _pieceStates[piece] = state;
 
-      // Apply the new binding if it doesn't conflict with an existing one.
-      switch (thisPiece.pinnedState ?? boundStates[thisPiece]) {
-        case null:
-          // Binding a unbound piece to a state.
-          additionalCost += thisPiece.stateCost(thisState);
-          boundStates[thisPiece] = thisState;
+        // This piece may in turn place further constraints on others.
+        piece.applyConstraints(state, _bind);
 
-          // This piece may in turn place further constraints on others.
-          thisPiece.applyConstraints(thisState, bind);
-        case var alreadyBound when alreadyBound != thisState:
-          // Already bound to a different state, so there's a conflict.
-          success = false;
-        default:
-          break; // Already bound to the same state, so nothing to do.
+        // If this piece's state prevents some of its children from having
+        // newlines, then further constrain those children.
+        if (!_isDeadEnd) {
+          piece.forEachChild((child) {
+            // Stop as soon as we fail.
+            if (_isDeadEnd) return;
+
+            // If the child can have newlines, there is no constraint.
+            if (piece.allowNewlineInChild(state, child)) return;
+
+            // Otherwise, don't let any piece under [child] contain newlines.
+            _constrainOffspring(child);
+          });
+        }
+
+      case var alreadyBound when alreadyBound != state:
+        // Already bound to a different state, so there's a conflict.
+        _isDeadEnd = true;
+        _isValid = false;
+
+      default:
+        break; // Already bound to the same state, so nothing to do.
+    }
+  }
+
+  /// For [piece] and its transitive offspring subtree, eliminate any state that
+  /// will always produce a newline since that state is not permitted because
+  /// the parent of [piece] doesn't allow [piece] to have any newlines.
+  void _constrainOffspring(Piece piece) {
+    for (var offspring in piece.statefulOffspring) {
+      if (_isDeadEnd) break;
+
+      if (pieceStateIfBound(offspring) case var boundState?) {
+        // This offspring is already pinned or bound to a state. If that
+        // state will emit newlines, then this solution is invalid.
+        if (offspring.containsNewline(boundState)) {
+          _isDeadEnd = true;
+          _isValid = false;
+        }
+      } else if (!_allowedStates.containsKey(offspring)) {
+        // If we get here, the offspring isn't bound to a state and we haven't
+        // already constrained it. Eliminate any of its states that will emit
+        // newlines.
+        var allowedUnsplit = !offspring.containsNewline(State.unsplit);
+
+        var states = offspring.additionalStates;
+        var remainingStates = <State>[];
+        for (var state in states) {
+          if (!offspring.containsNewline(state)) {
+            remainingStates.add(state);
+          }
+        }
+
+        if (!allowedUnsplit && remainingStates.isEmpty) {
+          // There is no state this child can take that won't emit newlines,
+          // and it's not allowed to, so this solution is bad.
+          _isDeadEnd = true;
+          _isValid = false;
+        } else if (remainingStates.isEmpty) {
+          // The only valid state is unsplit so bind it to that.
+          _bind(offspring, State.unsplit);
+        } else if (!allowedUnsplit && remainingStates.length == 1) {
+          // There's only one valid state, so bind it to that.
+          _bind(offspring, remainingStates.first);
+        } else if (remainingStates.length < states.length) {
+          // There are some constrained states, so keep the remaining ones.
+          _allowedStates[offspring] = remainingStates;
+        }
       }
     }
-
-    bind(piece, state);
-
-    return success ? additionalCost : null;
   }
 }

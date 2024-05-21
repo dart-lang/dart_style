@@ -43,6 +43,17 @@ class ControlFlowPiece extends Piece {
   bool allowNewlineInChild(State state, Piece child) => state == State.split;
 
   @override
+  bool containsNewline(State state) {
+    if (state == State.split) {
+      for (var section in _sections) {
+        if (!section.isBlock) return true;
+      }
+    }
+
+    return super.containsNewline(state);
+  }
+
+  @override
   void format(CodeWriter writer, State state) {
     for (var i = 0; i < _sections.length; i++) {
       var section = _sections[i];

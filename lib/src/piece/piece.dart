@@ -88,6 +88,18 @@ abstract class Piece {
   /// (directly or transitively) when this piece is in [state].
   bool allowNewlineInChild(State state, Piece child) => true;
 
+  /// Whether this piece contains a newline when this piece is in [state].
+  ///
+  /// This should only return `true` if the piece will *always* write at least
+  /// one newline -- either itself or one of its children -- when in this state.
+  /// If a piece may contain a newline or may not in some state, this should
+  /// return `false`.
+  ///
+  /// By default, we assume that any piece not in [State.unsplit] or that has a
+  /// hard newline will contain a newline.
+  bool containsNewline(State state) =>
+      state != State.unsplit || containsHardNewline;
+
   /// Given that this piece is in [state], use [writer] to produce its formatted
   /// output.
   void format(CodeWriter writer, State state);
@@ -96,9 +108,8 @@ abstract class Piece {
   void forEachChild(void Function(Piece piece) callback);
 
   /// If the piece can determine that it will always end up in a certain state
-  /// given [pageWidth] and size metrics returned by calling
-  /// [containsHardNewline] and [totalCharacters] on its children, then returns
-  /// that [State].
+  /// given [pageWidth] and size metrics returned by calling [containsHardNewline]
+  /// and [totalCharacters] on its children, then returns that [State].
   ///
   /// For example, a series of infix operators wider than a page will always
   /// split one per operator. If we can determine this eagerly just based on
@@ -149,6 +160,29 @@ abstract class Piece {
   void preventSplit() {
     // For most pieces, the initial state does it.
     pin(State.unsplit);
+  }
+
+  /// All of the transitive children of this piece (including the piece itself)
+  /// that have more than state.
+  ///
+  /// This calculated and cached because it's faster than traversing the child
+  /// tree and having to skip past all of the stateless [AdjacentPiece],
+  /// [SpacePiece], [SequencePiece], etc.
+  late final List<Piece> statefulOffspring = _calculateStatelessOffspring();
+
+  List<Piece> _calculateStatelessOffspring() {
+    // TODO(rnystrom): Traversing and storing the transitive list of stateless
+    // offspring at every level of the Piece tree might be slow. Is it? If so,
+    // is there a faster way to propagate constraints to the relevant parts of
+    // the subtree?
+    var result = <Piece>[];
+    void traverse(Piece piece) {
+      if (piece.additionalStates.isNotEmpty) result.add(piece);
+      piece.forEachChild(traverse);
+    }
+
+    traverse(this);
+    return result;
   }
 
   /// The name of this piece as it appears in debug output.

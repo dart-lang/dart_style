@@ -136,9 +136,11 @@ class ConstructorPiece extends Piece {
   }
 
   @override
+  bool containsNewline(State state) =>
+      state == _splitBeforeInitializers || super.containsNewline(state);
+
+  @override
   void format(CodeWriter writer, State state) {
-    // If there's a newline in the header or parameters (like a line comment
-    // after the `)`), then don't allow the initializers to remain unsplit.
     writer.format(_header);
     writer.format(_parameters);
 
