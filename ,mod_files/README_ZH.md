@@ -1,11 +1,11 @@
 ---
-English | [中文](./README_ZH.md)
+[English](./README.md) |中文
 ---
 
-This is a fork of the [dart_style](https://github.com/dart-lang/dart_style) package that is slightly modified for my own needs. Current changes are:
+这是一个[dart_style](https://github.com/dart-lang/dart_style)包的分支，为了满足我自己的需求做了一些轻微的修改。当前的更改包括：
 
-- [x]  4 space indentation instead of 2 space one. 
-- [x]  Removed space between closing bracket and colon in the constructor:
+- [x] 将缩进从2个空格改为4个空格
+- [x] 在构造函数中移除了闭括号和冒号之间的空格：
 
 ```dart
 class BN {
@@ -19,28 +19,28 @@ class BN {
 }
 ```
 
-Inspired by [this](https://github.com/mkakabaev/dart_style) repository's ideas.
+受到 [这个](https://github.com/mkakabaev/dart_style) 项目的启发
 
-## Building your own formatter
+## 编译自己的代码格式化工具
 
-1. Clone this repository
-3. Compile the package.
+1. 克隆[本仓库](https://github.com/kennydiff/my_dart_style.git)
+2. 编译此包
 
 ```sh
 dart pub get
 dart compile exe bin/format.dart -o build/my_dartfmt
 ```
 
-3. Move the executable tp the directory in PATH. I personally use my own `~/bin`
+3. 将可执行文件移动到 PATH 目录中。我个人使用我自己的 `~/bin`
 
 ```sh
-mv build/my_dartfmt ~/bin   # any directory in PATH, I use my own `~/bin`
+mv build/my_dartfmt ~/bin   # PATH 中的任何目录，我使用`~/bin`目录
 ```
 
-## Enable the new formatter in VSCode
+## 在 VSCode 中启用新的格式化工具
 
-1. Install the [Custom Local Formatters](https://github.com/JKillian/vscode-custom-local-formatters) extension
-2. Add to VSCode's settings JSON (global, workspace, folder - at your choice):
+1. 在VSCode插件管理器里安装 [Custom Local Formatters](https://github.com/JKillian/vscode-custom-local-formatters) 这个插件
+2. 添加到 VSCode 的设置 JSON 中（全局、工作区、文件夹 - 根据您的选择）:
 
 ```jsonc
 "dart.enableSdkFormatter": false,
@@ -61,9 +61,9 @@ mv build/my_dartfmt ~/bin   # any directory in PATH, I use my own `~/bin`
 
 ```
 
-## Precautions
+## 注意事项
 
-This branch only modified the following two files. It is recommended not to use VSCode for modifications to this project, as VSCode's modified code formatting tool will reformat these two files, which may cause merge conflicts when executing the `Sync Fork` command in the future.
+这个分支只修改了以下2个文件，对这个项目的修改，建议不要使用VSCode，因为VSCode的改版的代码格式化工具会让这两个文件重新格式化，导致未来执行 `Sync Fork`的时候产生合并冲突。
 ```shell
 lib/src/constants.dart
 lib/src/short/source_visitor.dart
@@ -71,7 +71,7 @@ lib/src/short/source_visitor.dart
 
 
 
-Original README text below...
+以下是原始的 README ...
 
 ---
 
