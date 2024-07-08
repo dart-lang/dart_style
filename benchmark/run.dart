@@ -16,6 +16,7 @@ import 'package:dart_style/src/front_end/ast_node_visitor.dart';
 import 'package:dart_style/src/profile.dart';
 import 'package:dart_style/src/short/source_visitor.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
+import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
@@ -71,9 +72,7 @@ Future<void> main(List<String> arguments) async {
     }
   }
 
-  if (_runWarmupTrials) {
-    await _warmUp();
-  }
+  if (_runWarmupTrials) _warmUp();
 
   var results = <(Benchmark, List<double>)>[];
   for (var benchmark in benchmarks) {
@@ -110,8 +109,8 @@ Future<void> main(List<String> arguments) async {
 /// Since the benchmarks are run on the VM, JIT warm-up has a large impact on
 /// performance. Warming up the VM gives it time for the optimized compiler to
 /// kick in.
-Future<void> _warmUp() async {
-  var benchmark = await Benchmark.read('benchmark/case/large.unit');
+void _warmUp() {
+  var benchmark = Benchmark.read('benchmark/case/large.unit');
   _runTrials('Warming up', benchmark, _warmUpTrials);
 }
 
@@ -209,16 +208,14 @@ Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
 
   var benchmarks = switch (argResults.rest) {
     // Find all the benchmarks.
-    ['all'] => await Benchmark.findAll(),
+    ['all'] => Benchmark.findAll(await findPackageDirectory()),
 
     // Default to the large benchmark.
-    [] => [
-        await Benchmark.read(p.join(_benchmarkDirectory, 'case/large.unit'))
-      ],
+    [] => [Benchmark.read(p.join(_benchmarkDirectory, 'case/large.unit'))],
 
     // The user-specified list of paths.
     [...var paths] when paths.isNotEmpty => [
-        for (var path in paths) await Benchmark.read(path)
+        for (var path in paths) Benchmark.read(path)
       ],
     _ => _usage(argParser, exitCode: 64),
   };

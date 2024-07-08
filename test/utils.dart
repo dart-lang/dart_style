@@ -142,7 +142,7 @@ Future<void> testFile(String path, {Iterable<StyleFix>? fixes}) async {
 
 /// Format all of the benchmarks and ensure they produce their expected outputs.
 Future<void> testBenchmarks({required bool useTallStyle}) async {
-  var benchmarks = await Benchmark.findAll();
+  var benchmarks = Benchmark.findAll(await findPackageDirectory());
 
   group('Benchmarks', () {
     for (var benchmark in benchmarks) {
