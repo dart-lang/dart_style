@@ -6,18 +6,15 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-import 'test_file.dart';
-
 class Benchmark {
-  /// Finds all of the benchmarks in the `benchmark/cases` directory.
-  static Future<List<Benchmark>> findAll() async {
-    var casesDirectory =
-        Directory(p.join(await findPackageDirectory(), 'benchmark/case'));
+  /// Finds all of the benchmarks in the `benchmark/cases` directory, relative
+  /// to [packageDirectory].
+  static List<Benchmark> findAll(String packageDirectory) {
+    var casesDirectory = Directory(p.join(packageDirectory, 'benchmark/case'));
 
     var benchmarks = [
       for (var entry in casesDirectory.listSync())
-        if (p.extension(entry.path) case '.unit' || '.stmt')
-          await read(entry.path)
+        if (p.extension(entry.path) case '.unit' || '.stmt') read(entry.path)
     ];
 
     benchmarks.sort((a, b) => a.name.compareTo(b.name));
@@ -30,8 +27,8 @@ class Benchmark {
   /// This should point to a `.unit` or `.stmt` file that has a corresponding
   /// `.expect` and `expect_short` file in the same directory with those
   /// expectations.
-  static Future<Benchmark> read(String path) async {
-    var inputLines = await File(path).readAsLines();
+  static Benchmark read(String path) {
+    var inputLines = File(path).readAsLinesSync();
 
     // The first line may have a "|" to indicate the page width.
     var pageWidth = 80;
@@ -43,8 +40,8 @@ class Benchmark {
     var input = inputLines.join('\n');
 
     var shortOutput =
-        await File(p.setExtension(path, '.expect_short')).readAsString();
-    var tallOutput = await File(p.setExtension(path, '.expect')).readAsString();
+        File(p.setExtension(path, '.expect_short')).readAsStringSync();
+    var tallOutput = File(p.setExtension(path, '.expect')).readAsStringSync();
 
     return Benchmark(
         name: p.basenameWithoutExtension(path),
