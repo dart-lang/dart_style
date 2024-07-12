@@ -35,8 +35,18 @@ class Solution implements Comparable<Solution> {
   final Map<Piece, List<State>> _allowedStates;
 
   /// The amount of penalties applied based on the chosen line splits.
-  int get cost => _cost;
+  int get cost => _cost + _subtreeCost;
+
+  /// The cost of this solution based on pieces it has bound to states itself,
+  /// excluding pieces from separately formatted subtrees.
   int _cost;
+
+  /// The cost of this solution from branches of the piece tree that were
+  /// separately formatted and merged in using [mergeSubtree()].
+  ///
+  /// We track this separately so that when expanding a solution, we don't
+  /// double count the cost of separately formatted branches.
+  int _subtreeCost = 0;
 
   /// The formatted code.
   String get text => _text;
@@ -173,20 +183,8 @@ class Solution implements Comparable<Solution> {
   /// This is called when a subtree of a Piece tree is solved separately and
   /// the resulting solution is being merged with this one.
   void mergeSubtree(Solution subtreeSolution) {
-    Profile.begin('Solution.mergeSubtree()');
-
     _overflow += subtreeSolution._overflow;
-
-    // Add the subtree's bound pieces to this one. Make sure to not double
-    // count costs for pieces that are already bound in this one.
-    subtreeSolution._pieceStates.forEach((piece, state) {
-      _pieceStates.putIfAbsent(piece, () {
-        _cost += piece.stateCost(state);
-        return state;
-      });
-    });
-
-    Profile.end('Solution.mergeSubtree()');
+    _subtreeCost += subtreeSolution.cost;
   }
 
   /// Sets [selectionStart] to be [start] code units into the output.
@@ -237,7 +235,7 @@ class Solution implements Comparable<Solution> {
       var expandPiece = _expandPieces[i];
       for (var state
           in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
-        var expanded = Solution._(cache, root, pageWidth, leadingIndent, cost,
+        var expanded = Solution._(cache, root, pageWidth, leadingIndent, _cost,
             {..._pieceStates}, {..._allowedStates});
 
         // Bind all preceding expand pieces to their unsplit state. Their
@@ -308,7 +306,7 @@ class Solution implements Comparable<Solution> {
     ];
 
     return [
-      '\$$cost',
+      '\$$cost ($_cost + $_subtreeCost)',
       if (overflow > 0) '($overflow over)',
       if (!isValid) '(invalid)',
       states.join(' '),
