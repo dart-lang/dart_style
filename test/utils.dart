@@ -176,7 +176,8 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 }
 
 void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
-  var useTallStyle = testFile.path.startsWith('tall/');
+  var useTallStyle =
+      testFile.path.startsWith('tall/') || testFile.path.startsWith('tall\\');
 
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
