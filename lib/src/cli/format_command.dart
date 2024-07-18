@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
+import '../format_service.dart';
 import '../io.dart';
 import '../short/style_fix.dart';
 import 'formatter_options.dart';
@@ -153,7 +154,10 @@ class FormatCommand extends Command<int> {
     if (argResults.rest.isEmpty) {
       await formatStdin(options, selection, stdinName);
     } else {
-      formatPaths(options, argResults.rest);
+      var service = FormatService(options);
+      await service.format(argResults.rest);
+
+      // await formatPaths(options, argResults.rest);
       options.summary.show();
     }
 

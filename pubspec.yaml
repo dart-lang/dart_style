@@ -13,6 +13,7 @@ dependencies:
   args: ">=1.0.0 <3.0.0"
   collection: "^1.17.0"
   path: ^1.0.0
+  pool: ^1.5.1
   pub_semver: ">=1.4.4 <3.0.0"
   source_span: ^1.4.0
 
