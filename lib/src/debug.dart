@@ -26,6 +26,8 @@ bool tracePieceBuilder = false;
 /// Set this to `true` to turn on diagnostic output while solving pieces.
 bool traceSolver = false;
 
+bool traceWorkers = false;
+
 bool useAnsiColors = false;
 
 const unicodeSection = '\u00a7';

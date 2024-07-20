@@ -72,8 +72,22 @@ class Profile {
     if (!enabled) return;
 
     var (label, start) = _running.removeLast();
+
     var elapsed = Timeline.now - start;
     _accumulatedTimes.update(label, (accumulated) => accumulated + elapsed);
+  }
+
+  // TODO: Temporary.
+  static void begin2(String kind, [String? instance]) {
+    var label = '>>> ${Timeline.now} $kind';
+    if (instance != null) label += ' | $instance';
+    print(label);
+  }
+
+  static void end2(String kind, [String? instance]) {
+    var label = '<<< ${Timeline.now} $kind';
+    if (instance != null) label += ' | $instance';
+    print(label);
   }
 
   /// Discards all recorded profiling data.

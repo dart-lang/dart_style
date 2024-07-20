@@ -1,0 +1,711 @@
+>>> 4483409785568 FormatService.format()
+>>> 4483409786014 list paths
+<<< 4483409851396 list paths
+>>> 4483409851415 read files
+<<< 4483409871359 read files
+>>> 4483409871379 start workers
+>>> 4483409871940 start worker | 1
+<<< 4483409875555 start worker | 1
+<<< 4483409877598 start workers
+>>> 4483409877608 format everything
+>>> 4483409877844 request and wait for format | ./benchmark/directory.dart
+>>> 4483409877958 send format request | ./benchmark/directory.dart
+<<< 4483409878993 send format request | ./benchmark/directory.dart
+>>> 4483409879004 format | ./benchmark/directory.dart
+<<< 4483409939581 format | ./benchmark/directory.dart
+>>> 4483409939604 send format response | ./benchmark/directory.dart
+<<< 4483409939846 send format response | ./benchmark/directory.dart
+<<< 4483409940021 request and wait for format | ./benchmark/directory.dart
+>>> 4483409940277 request and wait for format | ./benchmark/run.dart
+>>> 4483409940284 send format request | ./benchmark/run.dart
+<<< 4483409940303 send format request | ./benchmark/run.dart
+>>> 4483409940311 format | ./benchmark/run.dart
+<<< 4483410000153 format | ./benchmark/run.dart
+>>> 4483410000182 send format response | ./benchmark/run.dart
+<<< 4483410000213 send format response | ./benchmark/run.dart
+<<< 4483410000441 request and wait for format | ./benchmark/run.dart
+>>> 4483410000457 request and wait for format | ./bin/format.dart
+>>> 4483410000463 send format request | ./bin/format.dart
+<<< 4483410000485 send format request | ./bin/format.dart
+>>> 4483410000489 format | ./bin/format.dart
+<<< 4483410060233 format | ./bin/format.dart
+>>> 4483410060258 send format response | ./bin/format.dart
+<<< 4483410060290 send format response | ./bin/format.dart
+<<< 4483410060450 request and wait for format | ./bin/format.dart
+>>> 4483410060466 request and wait for format | ./example/format.dart
+>>> 4483410060471 send format request | ./example/format.dart
+<<< 4483410060491 send format request | ./example/format.dart
+>>> 4483410060495 format | ./example/format.dart
+<<< 4483410120263 format | ./example/format.dart
+>>> 4483410120294 send format response | ./example/format.dart
+<<< 4483410120338 send format response | ./example/format.dart
+<<< 4483410120519 request and wait for format | ./example/format.dart
+>>> 4483410120537 request and wait for format | ./lib/dart_style.dart
+>>> 4483410120543 send format request | ./lib/dart_style.dart
+<<< 4483410120563 send format request | ./lib/dart_style.dart
+>>> 4483410120567 format | ./lib/dart_style.dart
+<<< 4483410180216 format | ./lib/dart_style.dart
+>>> 4483410180223 send format response | ./lib/dart_style.dart
+<<< 4483410180238 send format response | ./lib/dart_style.dart
+<<< 4483410180368 request and wait for format | ./lib/dart_style.dart
+>>> 4483410180382 request and wait for format | ./lib/src/ast_extensions.dart
+>>> 4483410180386 send format request | ./lib/src/ast_extensions.dart
+<<< 4483410180400 send format request | ./lib/src/ast_extensions.dart
+>>> 4483410180403 format | ./lib/src/ast_extensions.dart
+<<< 4483410239943 format | ./lib/src/ast_extensions.dart
+>>> 4483410239951 send format response | ./lib/src/ast_extensions.dart
+<<< 4483410239965 send format response | ./lib/src/ast_extensions.dart
+<<< 4483410240101 request and wait for format | ./lib/src/ast_extensions.dart
+>>> 4483410240129 request and wait for format | ./lib/src/back_end/code_writer.dart
+>>> 4483410240134 send format request | ./lib/src/back_end/code_writer.dart
+<<< 4483410240151 send format request | ./lib/src/back_end/code_writer.dart
+>>> 4483410240155 format | ./lib/src/back_end/code_writer.dart
+<<< 4483410300214 format | ./lib/src/back_end/code_writer.dart
+>>> 4483410300257 send format response | ./lib/src/back_end/code_writer.dart
+<<< 4483410300301 send format response | ./lib/src/back_end/code_writer.dart
+<<< 4483410300506 request and wait for format | ./lib/src/back_end/code_writer.dart
+>>> 4483410300530 request and wait for format | ./lib/src/back_end/solution.dart
+>>> 4483410300540 send format request | ./lib/src/back_end/solution.dart
+<<< 4483410300565 send format request | ./lib/src/back_end/solution.dart
+>>> 4483410300571 format | ./lib/src/back_end/solution.dart
+<<< 4483410360165 format | ./lib/src/back_end/solution.dart
+>>> 4483410360193 send format response | ./lib/src/back_end/solution.dart
+<<< 4483410360242 send format response | ./lib/src/back_end/solution.dart
+<<< 4483410360417 request and wait for format | ./lib/src/back_end/solution.dart
+>>> 4483410360432 request and wait for format | ./lib/src/back_end/solution_cache.dart
+>>> 4483410360441 send format request | ./lib/src/back_end/solution_cache.dart
+<<< 4483410360460 send format request | ./lib/src/back_end/solution_cache.dart
+>>> 4483410360464 format | ./lib/src/back_end/solution_cache.dart
+<<< 4483410420084 format | ./lib/src/back_end/solution_cache.dart
+>>> 4483410420090 send format response | ./lib/src/back_end/solution_cache.dart
+<<< 4483410420102 send format response | ./lib/src/back_end/solution_cache.dart
+<<< 4483410420219 request and wait for format | ./lib/src/back_end/solution_cache.dart
+>>> 4483410420229 request and wait for format | ./lib/src/back_end/solver.dart
+>>> 4483410420238 send format request | ./lib/src/back_end/solver.dart
+<<< 4483410420250 send format request | ./lib/src/back_end/solver.dart
+>>> 4483410420254 format | ./lib/src/back_end/solver.dart
+<<< 4483410479941 format | ./lib/src/back_end/solver.dart
+>>> 4483410479956 send format response | ./lib/src/back_end/solver.dart
+<<< 4483410479969 send format response | ./lib/src/back_end/solver.dart
+<<< 4483410480077 request and wait for format | ./lib/src/back_end/solver.dart
+>>> 4483410480087 request and wait for format | ./lib/src/cli/format_command.dart
+>>> 4483410480090 send format request | ./lib/src/cli/format_command.dart
+<<< 4483410480102 send format request | ./lib/src/cli/format_command.dart
+>>> 4483410480104 format | ./lib/src/cli/format_command.dart
+<<< 4483410539840 format | ./lib/src/cli/format_command.dart
+>>> 4483410539847 send format response | ./lib/src/cli/format_command.dart
+<<< 4483410539866 send format response | ./lib/src/cli/format_command.dart
+<<< 4483410540012 request and wait for format | ./lib/src/cli/format_command.dart
+>>> 4483410540028 request and wait for format | ./lib/src/cli/formatter_options.dart
+>>> 4483410540031 send format request | ./lib/src/cli/formatter_options.dart
+<<< 4483410540047 send format request | ./lib/src/cli/formatter_options.dart
+>>> 4483410540049 format | ./lib/src/cli/formatter_options.dart
+<<< 4483410599973 format | ./lib/src/cli/formatter_options.dart
+>>> 4483410599981 send format response | ./lib/src/cli/formatter_options.dart
+<<< 4483410600001 send format response | ./lib/src/cli/formatter_options.dart
+<<< 4483410600136 request and wait for format | ./lib/src/cli/formatter_options.dart
+>>> 4483410600152 request and wait for format | ./lib/src/cli/options.dart
+>>> 4483410600155 send format request | ./lib/src/cli/options.dart
+<<< 4483410600170 send format request | ./lib/src/cli/options.dart
+>>> 4483410600173 format | ./lib/src/cli/options.dart
+<<< 4483410659791 format | ./lib/src/cli/options.dart
+>>> 4483410659816 send format response | ./lib/src/cli/options.dart
+<<< 4483410659852 send format response | ./lib/src/cli/options.dart
+<<< 4483410660009 request and wait for format | ./lib/src/cli/options.dart
+>>> 4483410660025 request and wait for format | ./lib/src/cli/output.dart
+>>> 4483410660028 send format request | ./lib/src/cli/output.dart
+<<< 4483410660048 send format request | ./lib/src/cli/output.dart
+>>> 4483410660050 format | ./lib/src/cli/output.dart
+<<< 4483410719590 format | ./lib/src/cli/output.dart
+>>> 4483410719595 send format response | ./lib/src/cli/output.dart
+<<< 4483410719610 send format response | ./lib/src/cli/output.dart
+<<< 4483410719741 request and wait for format | ./lib/src/cli/output.dart
+>>> 4483410719755 request and wait for format | ./lib/src/cli/show.dart
+>>> 4483410719759 send format request | ./lib/src/cli/show.dart
+<<< 4483410719773 send format request | ./lib/src/cli/show.dart
+>>> 4483410719775 format | ./lib/src/cli/show.dart
+<<< 4483410779642 format | ./lib/src/cli/show.dart
+>>> 4483410779650 send format response | ./lib/src/cli/show.dart
+<<< 4483410779667 send format response | ./lib/src/cli/show.dart
+<<< 4483410779805 request and wait for format | ./lib/src/cli/show.dart
+>>> 4483410779819 request and wait for format | ./lib/src/cli/summary.dart
+>>> 4483410779822 send format request | ./lib/src/cli/summary.dart
+<<< 4483410779837 send format request | ./lib/src/cli/summary.dart
+>>> 4483410779839 format | ./lib/src/cli/summary.dart
+<<< 4483410839551 format | ./lib/src/cli/summary.dart
+>>> 4483410839557 send format response | ./lib/src/cli/summary.dart
+<<< 4483410839572 send format response | ./lib/src/cli/summary.dart
+<<< 4483410839696 request and wait for format | ./lib/src/cli/summary.dart
+>>> 4483410839708 request and wait for format | ./lib/src/comment_type.dart
+>>> 4483410839710 send format request | ./lib/src/comment_type.dart
+<<< 4483410839724 send format request | ./lib/src/comment_type.dart
+>>> 4483410839726 format | ./lib/src/comment_type.dart
+<<< 4483410899439 format | ./lib/src/comment_type.dart
+>>> 4483410899453 send format response | ./lib/src/comment_type.dart
+<<< 4483410899478 send format response | ./lib/src/comment_type.dart
+<<< 4483410899629 request and wait for format | ./lib/src/comment_type.dart
+>>> 4483410899642 request and wait for format | ./lib/src/constants.dart
+>>> 4483410899647 send format request | ./lib/src/constants.dart
+<<< 4483410899661 send format request | ./lib/src/constants.dart
+>>> 4483410899664 format | ./lib/src/constants.dart
+<<< 4483410959152 format | ./lib/src/constants.dart
+>>> 4483410959157 send format response | ./lib/src/constants.dart
+<<< 4483410959168 send format response | ./lib/src/constants.dart
+<<< 4483410959295 request and wait for format | ./lib/src/constants.dart
+>>> 4483410959306 request and wait for format | ./lib/src/dart_formatter.dart
+>>> 4483410959309 send format request | ./lib/src/dart_formatter.dart
+<<< 4483410959321 send format request | ./lib/src/dart_formatter.dart
+>>> 4483410959323 format | ./lib/src/dart_formatter.dart
+<<< 4483411018985 format | ./lib/src/dart_formatter.dart
+>>> 4483411018990 send format response | ./lib/src/dart_formatter.dart
+<<< 4483411019000 send format response | ./lib/src/dart_formatter.dart
+<<< 4483411019115 request and wait for format | ./lib/src/dart_formatter.dart
+>>> 4483411019122 request and wait for format | ./lib/src/debug.dart
+>>> 4483411019125 send format request | ./lib/src/debug.dart
+<<< 4483411019155 send format request | ./lib/src/debug.dart
+>>> 4483411019158 format | ./lib/src/debug.dart
+<<< 4483411078927 format | ./lib/src/debug.dart
+>>> 4483411078947 send format response | ./lib/src/debug.dart
+<<< 4483411078975 send format response | ./lib/src/debug.dart
+<<< 4483411079094 request and wait for format | ./lib/src/debug.dart
+>>> 4483411079106 request and wait for format | ./lib/src/exceptions.dart
+>>> 4483411079109 send format request | ./lib/src/exceptions.dart
+<<< 4483411079124 send format request | ./lib/src/exceptions.dart
+>>> 4483411079126 format | ./lib/src/exceptions.dart
+<<< 4483411138879 format | ./lib/src/exceptions.dart
+>>> 4483411138885 send format response | ./lib/src/exceptions.dart
+<<< 4483411138899 send format response | ./lib/src/exceptions.dart
+<<< 4483411139026 request and wait for format | ./lib/src/exceptions.dart
+>>> 4483411139037 request and wait for format | ./lib/src/format_service.dart
+>>> 4483411139040 send format request | ./lib/src/format_service.dart
+<<< 4483411139054 send format request | ./lib/src/format_service.dart
+>>> 4483411139056 format | ./lib/src/format_service.dart
+<<< 4483411198820 format | ./lib/src/format_service.dart
+>>> 4483411198844 send format response | ./lib/src/format_service.dart
+<<< 4483411198879 send format response | ./lib/src/format_service.dart
+<<< 4483411199047 request and wait for format | ./lib/src/format_service.dart
+>>> 4483411199059 request and wait for format | ./lib/src/front_end/ast_node_visitor.dart
+>>> 4483411199062 send format request | ./lib/src/front_end/ast_node_visitor.dart
+<<< 4483411199079 send format request | ./lib/src/front_end/ast_node_visitor.dart
+>>> 4483411199081 format | ./lib/src/front_end/ast_node_visitor.dart
+<<< 4483411258690 format | ./lib/src/front_end/ast_node_visitor.dart
+>>> 4483411258696 send format response | ./lib/src/front_end/ast_node_visitor.dart
+<<< 4483411258711 send format response | ./lib/src/front_end/ast_node_visitor.dart
+<<< 4483411258847 request and wait for format | ./lib/src/front_end/ast_node_visitor.dart
+>>> 4483411258857 request and wait for format | ./lib/src/front_end/chain_builder.dart
+>>> 4483411258860 send format request | ./lib/src/front_end/chain_builder.dart
+<<< 4483411258874 send format request | ./lib/src/front_end/chain_builder.dart
+>>> 4483411258876 format | ./lib/src/front_end/chain_builder.dart
+<<< 4483411318888 format | ./lib/src/front_end/chain_builder.dart
+>>> 4483411318908 send format response | ./lib/src/front_end/chain_builder.dart
+<<< 4483411318943 send format response | ./lib/src/front_end/chain_builder.dart
+<<< 4483411319097 request and wait for format | ./lib/src/front_end/chain_builder.dart
+>>> 4483411319107 request and wait for format | ./lib/src/front_end/comment_writer.dart
+>>> 4483411319111 send format request | ./lib/src/front_end/comment_writer.dart
+<<< 4483411319127 send format request | ./lib/src/front_end/comment_writer.dart
+>>> 4483411319129 format | ./lib/src/front_end/comment_writer.dart
+<<< 4483411378687 format | ./lib/src/front_end/comment_writer.dart
+>>> 4483411378694 send format response | ./lib/src/front_end/comment_writer.dart
+<<< 4483411378713 send format response | ./lib/src/front_end/comment_writer.dart
+<<< 4483411378853 request and wait for format | ./lib/src/front_end/comment_writer.dart
+>>> 4483411378867 request and wait for format | ./lib/src/front_end/delimited_list_builder.dart
+>>> 4483411378870 send format request | ./lib/src/front_end/delimited_list_builder.dart
+<<< 4483411378889 send format request | ./lib/src/front_end/delimited_list_builder.dart
+>>> 4483411378891 format | ./lib/src/front_end/delimited_list_builder.dart
+<<< 4483411438537 format | ./lib/src/front_end/delimited_list_builder.dart
+>>> 4483411438542 send format response | ./lib/src/front_end/delimited_list_builder.dart
+<<< 4483411438554 send format response | ./lib/src/front_end/delimited_list_builder.dart
+<<< 4483411438675 request and wait for format | ./lib/src/front_end/delimited_list_builder.dart
+>>> 4483411438684 request and wait for format | ./lib/src/front_end/piece_factory.dart
+>>> 4483411438687 send format request | ./lib/src/front_end/piece_factory.dart
+<<< 4483411438700 send format request | ./lib/src/front_end/piece_factory.dart
+>>> 4483411438702 format | ./lib/src/front_end/piece_factory.dart
+<<< 4483411498335 format | ./lib/src/front_end/piece_factory.dart
+>>> 4483411498341 send format response | ./lib/src/front_end/piece_factory.dart
+<<< 4483411498351 send format response | ./lib/src/front_end/piece_factory.dart
+<<< 4483411498473 request and wait for format | ./lib/src/front_end/piece_factory.dart
+>>> 4483411498482 request and wait for format | ./lib/src/front_end/piece_writer.dart
+>>> 4483411498484 send format request | ./lib/src/front_end/piece_writer.dart
+<<< 4483411498497 send format request | ./lib/src/front_end/piece_writer.dart
+>>> 4483411498500 format | ./lib/src/front_end/piece_writer.dart
+<<< 4483411558136 format | ./lib/src/front_end/piece_writer.dart
+>>> 4483411558141 send format response | ./lib/src/front_end/piece_writer.dart
+<<< 4483411558151 send format response | ./lib/src/front_end/piece_writer.dart
+<<< 4483411558262 request and wait for format | ./lib/src/front_end/piece_writer.dart
+>>> 4483411558273 request and wait for format | ./lib/src/front_end/sequence_builder.dart
+>>> 4483411558276 send format request | ./lib/src/front_end/sequence_builder.dart
+<<< 4483411558285 send format request | ./lib/src/front_end/sequence_builder.dart
+>>> 4483411558288 format | ./lib/src/front_end/sequence_builder.dart
+<<< 4483411618241 format | ./lib/src/front_end/sequence_builder.dart
+>>> 4483411618250 send format response | ./lib/src/front_end/sequence_builder.dart
+<<< 4483411618274 send format response | ./lib/src/front_end/sequence_builder.dart
+<<< 4483411618492 request and wait for format | ./lib/src/front_end/sequence_builder.dart
+>>> 4483411618524 request and wait for format | ./lib/src/io.dart
+>>> 4483411618529 send format request | ./lib/src/io.dart
+<<< 4483411618557 send format request | ./lib/src/io.dart
+>>> 4483411618561 format | ./lib/src/io.dart
+<<< 4483411678363 format | ./lib/src/io.dart
+>>> 4483411678376 send format response | ./lib/src/io.dart
+<<< 4483411678406 send format response | ./lib/src/io.dart
+<<< 4483411678559 request and wait for format | ./lib/src/io.dart
+>>> 4483411678572 request and wait for format | ./lib/src/piece/adjacent.dart
+>>> 4483411678575 send format request | ./lib/src/piece/adjacent.dart
+<<< 4483411678590 send format request | ./lib/src/piece/adjacent.dart
+>>> 4483411678593 format | ./lib/src/piece/adjacent.dart
+<<< 4483411738283 format | ./lib/src/piece/adjacent.dart
+>>> 4483411738288 send format response | ./lib/src/piece/adjacent.dart
+<<< 4483411738303 send format response | ./lib/src/piece/adjacent.dart
+<<< 4483411738428 request and wait for format | ./lib/src/piece/adjacent.dart
+>>> 4483411738437 request and wait for format | ./lib/src/piece/assign.dart
+>>> 4483411738439 send format request | ./lib/src/piece/assign.dart
+<<< 4483411738452 send format request | ./lib/src/piece/assign.dart
+>>> 4483411738454 format | ./lib/src/piece/assign.dart
+<<< 4483411798327 format | ./lib/src/piece/assign.dart
+>>> 4483411798336 send format response | ./lib/src/piece/assign.dart
+<<< 4483411798358 send format response | ./lib/src/piece/assign.dart
+<<< 4483411798519 request and wait for format | ./lib/src/piece/assign.dart
+>>> 4483411798536 request and wait for format | ./lib/src/piece/case.dart
+>>> 4483411798541 send format request | ./lib/src/piece/case.dart
+<<< 4483411798563 send format request | ./lib/src/piece/case.dart
+>>> 4483411798573 format | ./lib/src/piece/case.dart
+<<< 4483411858352 format | ./lib/src/piece/case.dart
+>>> 4483411858384 send format response | ./lib/src/piece/case.dart
+<<< 4483411858438 send format response | ./lib/src/piece/case.dart
+<<< 4483411858633 request and wait for format | ./lib/src/piece/case.dart
+>>> 4483411858648 request and wait for format | ./lib/src/piece/chain.dart
+>>> 4483411858653 send format request | ./lib/src/piece/chain.dart
+<<< 4483411858676 send format request | ./lib/src/piece/chain.dart
+>>> 4483411858679 format | ./lib/src/piece/chain.dart
+<<< 4483411918590 format | ./lib/src/piece/chain.dart
+>>> 4483411918596 send format response | ./lib/src/piece/chain.dart
+<<< 4483411918619 send format response | ./lib/src/piece/chain.dart
+<<< 4483411918751 request and wait for format | ./lib/src/piece/chain.dart
+>>> 4483411918765 request and wait for format | ./lib/src/piece/clause.dart
+>>> 4483411918769 send format request | ./lib/src/piece/clause.dart
+<<< 4483411918783 send format request | ./lib/src/piece/clause.dart
+>>> 4483411918785 format | ./lib/src/piece/clause.dart
+<<< 4483411978665 format | ./lib/src/piece/clause.dart
+>>> 4483411978726 send format response | ./lib/src/piece/clause.dart
+<<< 4483411978833 send format response | ./lib/src/piece/clause.dart
+<<< 4483411979184 request and wait for format | ./lib/src/piece/clause.dart
+>>> 4483411979214 request and wait for format | ./lib/src/piece/constructor.dart
+>>> 4483411979219 send format request | ./lib/src/piece/constructor.dart
+<<< 4483411979254 send format request | ./lib/src/piece/constructor.dart
+>>> 4483411979260 format | ./lib/src/piece/constructor.dart
+<<< 4483412039073 format | ./lib/src/piece/constructor.dart
+>>> 4483412039079 send format response | ./lib/src/piece/constructor.dart
+<<< 4483412039095 send format response | ./lib/src/piece/constructor.dart
+<<< 4483412039233 request and wait for format | ./lib/src/piece/constructor.dart
+>>> 4483412039246 request and wait for format | ./lib/src/piece/control_flow.dart
+>>> 4483412039249 send format request | ./lib/src/piece/control_flow.dart
+<<< 4483412039262 send format request | ./lib/src/piece/control_flow.dart
+>>> 4483412039264 format | ./lib/src/piece/control_flow.dart
+<<< 4483412098742 format | ./lib/src/piece/control_flow.dart
+>>> 4483412098748 send format response | ./lib/src/piece/control_flow.dart
+<<< 4483412098760 send format response | ./lib/src/piece/control_flow.dart
+<<< 4483412098883 request and wait for format | ./lib/src/piece/control_flow.dart
+>>> 4483412098893 request and wait for format | ./lib/src/piece/for.dart
+>>> 4483412098895 send format request | ./lib/src/piece/for.dart
+<<< 4483412098907 send format request | ./lib/src/piece/for.dart
+>>> 4483412098909 format | ./lib/src/piece/for.dart
+<<< 4483412158540 format | ./lib/src/piece/for.dart
+>>> 4483412158545 send format response | ./lib/src/piece/for.dart
+<<< 4483412158554 send format response | ./lib/src/piece/for.dart
+<<< 4483412158676 request and wait for format | ./lib/src/piece/for.dart
+>>> 4483412158684 request and wait for format | ./lib/src/piece/if_case.dart
+>>> 4483412158687 send format request | ./lib/src/piece/if_case.dart
+<<< 4483412158697 send format request | ./lib/src/piece/if_case.dart
+>>> 4483412158699 format | ./lib/src/piece/if_case.dart
+<<< 4483412218195 format | ./lib/src/piece/if_case.dart
+>>> 4483412218200 send format response | ./lib/src/piece/if_case.dart
+<<< 4483412218210 send format response | ./lib/src/piece/if_case.dart
+<<< 4483412218330 request and wait for format | ./lib/src/piece/if_case.dart
+>>> 4483412218339 request and wait for format | ./lib/src/piece/infix.dart
+>>> 4483412218341 send format request | ./lib/src/piece/infix.dart
+<<< 4483412218352 send format request | ./lib/src/piece/infix.dart
+>>> 4483412218354 format | ./lib/src/piece/infix.dart
+<<< 4483412278224 format | ./lib/src/piece/infix.dart
+>>> 4483412278236 send format response | ./lib/src/piece/infix.dart
+<<< 4483412278260 send format response | ./lib/src/piece/infix.dart
+<<< 4483412278419 request and wait for format | ./lib/src/piece/infix.dart
+>>> 4483412278432 request and wait for format | ./lib/src/piece/list.dart
+>>> 4483412278435 send format request | ./lib/src/piece/list.dart
+<<< 4483412278454 send format request | ./lib/src/piece/list.dart
+>>> 4483412278456 format | ./lib/src/piece/list.dart
+<<< 4483412338347 format | ./lib/src/piece/list.dart
+>>> 4483412338394 send format response | ./lib/src/piece/list.dart
+<<< 4483412338466 send format response | ./lib/src/piece/list.dart
+<<< 4483412338682 request and wait for format | ./lib/src/piece/list.dart
+>>> 4483412338701 request and wait for format | ./lib/src/piece/piece.dart
+>>> 4483412338707 send format request | ./lib/src/piece/piece.dart
+<<< 4483412338732 send format request | ./lib/src/piece/piece.dart
+>>> 4483412338735 format | ./lib/src/piece/piece.dart
+<<< 4483412398591 format | ./lib/src/piece/piece.dart
+>>> 4483412398599 send format response | ./lib/src/piece/piece.dart
+<<< 4483412398616 send format response | ./lib/src/piece/piece.dart
+<<< 4483412398753 request and wait for format | ./lib/src/piece/piece.dart
+>>> 4483412398770 request and wait for format | ./lib/src/piece/sequence.dart
+>>> 4483412398774 send format request | ./lib/src/piece/sequence.dart
+<<< 4483412398790 send format request | ./lib/src/piece/sequence.dart
+>>> 4483412398792 format | ./lib/src/piece/sequence.dart
+<<< 4483412458483 format | ./lib/src/piece/sequence.dart
+>>> 4483412458502 send format response | ./lib/src/piece/sequence.dart
+<<< 4483412458527 send format response | ./lib/src/piece/sequence.dart
+<<< 4483412458691 request and wait for format | ./lib/src/piece/sequence.dart
+>>> 4483412458702 request and wait for format | ./lib/src/piece/text.dart
+>>> 4483412458705 send format request | ./lib/src/piece/text.dart
+<<< 4483412458720 send format request | ./lib/src/piece/text.dart
+>>> 4483412458722 format | ./lib/src/piece/text.dart
+<<< 4483412518328 format | ./lib/src/piece/text.dart
+>>> 4483412518333 send format response | ./lib/src/piece/text.dart
+<<< 4483412518344 send format response | ./lib/src/piece/text.dart
+<<< 4483412518468 request and wait for format | ./lib/src/piece/text.dart
+>>> 4483412518477 request and wait for format | ./lib/src/piece/type.dart
+>>> 4483412518480 send format request | ./lib/src/piece/type.dart
+<<< 4483412518490 send format request | ./lib/src/piece/type.dart
+>>> 4483412518492 format | ./lib/src/piece/type.dart
+<<< 4483412578004 format | ./lib/src/piece/type.dart
+>>> 4483412578016 send format response | ./lib/src/piece/type.dart
+<<< 4483412578036 send format response | ./lib/src/piece/type.dart
+<<< 4483412578177 request and wait for format | ./lib/src/piece/type.dart
+>>> 4483412578190 request and wait for format | ./lib/src/piece/variable.dart
+>>> 4483412578193 send format request | ./lib/src/piece/variable.dart
+<<< 4483412578207 send format request | ./lib/src/piece/variable.dart
+>>> 4483412578210 format | ./lib/src/piece/variable.dart
+<<< 4483412637767 format | ./lib/src/piece/variable.dart
+>>> 4483412637774 send format response | ./lib/src/piece/variable.dart
+<<< 4483412637799 send format response | ./lib/src/piece/variable.dart
+<<< 4483412638072 request and wait for format | ./lib/src/piece/variable.dart
+>>> 4483412638092 request and wait for format | ./lib/src/profile.dart
+>>> 4483412638096 send format request | ./lib/src/profile.dart
+<<< 4483412638114 send format request | ./lib/src/profile.dart
+>>> 4483412638116 format | ./lib/src/profile.dart
+<<< 4483412697834 format | ./lib/src/profile.dart
+>>> 4483412697869 send format response | ./lib/src/profile.dart
+<<< 4483412697883 send format response | ./lib/src/profile.dart
+<<< 4483412698003 request and wait for format | ./lib/src/profile.dart
+>>> 4483412698015 request and wait for format | ./lib/src/short/argument_list_visitor.dart
+>>> 4483412698018 send format request | ./lib/src/short/argument_list_visitor.dart
+<<< 4483412698029 send format request | ./lib/src/short/argument_list_visitor.dart
+>>> 4483412698032 format | ./lib/src/short/argument_list_visitor.dart
+<<< 4483412757663 format | ./lib/src/short/argument_list_visitor.dart
+>>> 4483412757669 send format response | ./lib/src/short/argument_list_visitor.dart
+<<< 4483412757679 send format response | ./lib/src/short/argument_list_visitor.dart
+<<< 4483412757798 request and wait for format | ./lib/src/short/argument_list_visitor.dart
+>>> 4483412757807 request and wait for format | ./lib/src/short/call_chain_visitor.dart
+>>> 4483412757811 send format request | ./lib/src/short/call_chain_visitor.dart
+<<< 4483412757820 send format request | ./lib/src/short/call_chain_visitor.dart
+>>> 4483412757822 format | ./lib/src/short/call_chain_visitor.dart
+<<< 4483412817525 format | ./lib/src/short/call_chain_visitor.dart
+>>> 4483412817530 send format response | ./lib/src/short/call_chain_visitor.dart
+<<< 4483412817543 send format response | ./lib/src/short/call_chain_visitor.dart
+<<< 4483412817668 request and wait for format | ./lib/src/short/call_chain_visitor.dart
+>>> 4483412817679 request and wait for format | ./lib/src/short/chunk.dart
+>>> 4483412817682 send format request | ./lib/src/short/chunk.dart
+<<< 4483412817696 send format request | ./lib/src/short/chunk.dart
+>>> 4483412817698 format | ./lib/src/short/chunk.dart
+<<< 4483412877340 format | ./lib/src/short/chunk.dart
+>>> 4483412877344 send format response | ./lib/src/short/chunk.dart
+<<< 4483412877354 send format response | ./lib/src/short/chunk.dart
+<<< 4483412877462 request and wait for format | ./lib/src/short/chunk.dart
+>>> 4483412877470 request and wait for format | ./lib/src/short/chunk_builder.dart
+>>> 4483412877473 send format request | ./lib/src/short/chunk_builder.dart
+<<< 4483412877483 send format request | ./lib/src/short/chunk_builder.dart
+>>> 4483412877485 format | ./lib/src/short/chunk_builder.dart
+<<< 4483412937141 format | ./lib/src/short/chunk_builder.dart
+>>> 4483412937147 send format response | ./lib/src/short/chunk_builder.dart
+<<< 4483412937159 send format response | ./lib/src/short/chunk_builder.dart
+<<< 4483412937286 request and wait for format | ./lib/src/short/chunk_builder.dart
+>>> 4483412937298 request and wait for format | ./lib/src/short/fast_hash.dart
+>>> 4483412937301 send format request | ./lib/src/short/fast_hash.dart
+<<< 4483412937315 send format request | ./lib/src/short/fast_hash.dart
+>>> 4483412937319 format | ./lib/src/short/fast_hash.dart
+<<< 4483412996856 format | ./lib/src/short/fast_hash.dart
+>>> 4483412996861 send format response | ./lib/src/short/fast_hash.dart
+<<< 4483412996872 send format response | ./lib/src/short/fast_hash.dart
+<<< 4483412996990 request and wait for format | ./lib/src/short/fast_hash.dart
+>>> 4483412997000 request and wait for format | ./lib/src/short/line_splitting/line_splitter.dart
+>>> 4483412997002 send format request | ./lib/src/short/line_splitting/line_splitter.dart
+<<< 4483412997013 send format request | ./lib/src/short/line_splitting/line_splitter.dart
+>>> 4483412997015 format | ./lib/src/short/line_splitting/line_splitter.dart
+<<< 4483413056620 format | ./lib/src/short/line_splitting/line_splitter.dart
+>>> 4483413056626 send format response | ./lib/src/short/line_splitting/line_splitter.dart
+<<< 4483413056638 send format response | ./lib/src/short/line_splitting/line_splitter.dart
+<<< 4483413056760 request and wait for format | ./lib/src/short/line_splitting/line_splitter.dart
+>>> 4483413056774 request and wait for format | ./lib/src/short/line_splitting/rule_set.dart
+>>> 4483413056778 send format request | ./lib/src/short/line_splitting/rule_set.dart
+<<< 4483413056790 send format request | ./lib/src/short/line_splitting/rule_set.dart
+>>> 4483413056792 format | ./lib/src/short/line_splitting/rule_set.dart
+<<< 4483413116354 format | ./lib/src/short/line_splitting/rule_set.dart
+>>> 4483413116359 send format response | ./lib/src/short/line_splitting/rule_set.dart
+<<< 4483413116368 send format response | ./lib/src/short/line_splitting/rule_set.dart
+<<< 4483413116482 request and wait for format | ./lib/src/short/line_splitting/rule_set.dart
+>>> 4483413116491 request and wait for format | ./lib/src/short/line_splitting/solve_state.dart
+>>> 4483413116493 send format request | ./lib/src/short/line_splitting/solve_state.dart
+<<< 4483413116505 send format request | ./lib/src/short/line_splitting/solve_state.dart
+>>> 4483413116507 format | ./lib/src/short/line_splitting/solve_state.dart
+<<< 4483413176114 format | ./lib/src/short/line_splitting/solve_state.dart
+>>> 4483413176120 send format response | ./lib/src/short/line_splitting/solve_state.dart
+<<< 4483413176131 send format response | ./lib/src/short/line_splitting/solve_state.dart
+<<< 4483413176251 request and wait for format | ./lib/src/short/line_splitting/solve_state.dart
+>>> 4483413176261 request and wait for format | ./lib/src/short/line_splitting/solve_state_queue.dart
+>>> 4483413176263 send format request | ./lib/src/short/line_splitting/solve_state_queue.dart
+<<< 4483413176273 send format request | ./lib/src/short/line_splitting/solve_state_queue.dart
+>>> 4483413176275 format | ./lib/src/short/line_splitting/solve_state_queue.dart
+<<< 4483413235787 format | ./lib/src/short/line_splitting/solve_state_queue.dart
+>>> 4483413235794 send format response | ./lib/src/short/line_splitting/solve_state_queue.dart
+<<< 4483413235805 send format response | ./lib/src/short/line_splitting/solve_state_queue.dart
+<<< 4483413235932 request and wait for format | ./lib/src/short/line_splitting/solve_state_queue.dart
+>>> 4483413235945 request and wait for format | ./lib/src/short/line_writer.dart
+>>> 4483413235948 send format request | ./lib/src/short/line_writer.dart
+<<< 4483413235959 send format request | ./lib/src/short/line_writer.dart
+>>> 4483413235961 format | ./lib/src/short/line_writer.dart
+<<< 4483413295651 format | ./lib/src/short/line_writer.dart
+>>> 4483413295658 send format response | ./lib/src/short/line_writer.dart
+<<< 4483413295673 send format response | ./lib/src/short/line_writer.dart
+<<< 4483413295804 request and wait for format | ./lib/src/short/line_writer.dart
+>>> 4483413295815 request and wait for format | ./lib/src/short/marking_scheme.dart
+>>> 4483413295818 send format request | ./lib/src/short/marking_scheme.dart
+<<< 4483413295830 send format request | ./lib/src/short/marking_scheme.dart
+>>> 4483413295833 format | ./lib/src/short/marking_scheme.dart
+<<< 4483413355670 format | ./lib/src/short/marking_scheme.dart
+>>> 4483413355675 send format response | ./lib/src/short/marking_scheme.dart
+<<< 4483413355689 send format response | ./lib/src/short/marking_scheme.dart
+<<< 4483413355811 request and wait for format | ./lib/src/short/marking_scheme.dart
+>>> 4483413355821 request and wait for format | ./lib/src/short/nesting_builder.dart
+>>> 4483413355824 send format request | ./lib/src/short/nesting_builder.dart
+<<< 4483413355838 send format request | ./lib/src/short/nesting_builder.dart
+>>> 4483413355840 format | ./lib/src/short/nesting_builder.dart
+<<< 4483413415427 format | ./lib/src/short/nesting_builder.dart
+>>> 4483413415432 send format response | ./lib/src/short/nesting_builder.dart
+<<< 4483413415446 send format response | ./lib/src/short/nesting_builder.dart
+<<< 4483413415573 request and wait for format | ./lib/src/short/nesting_builder.dart
+>>> 4483413415586 request and wait for format | ./lib/src/short/nesting_level.dart
+>>> 4483413415589 send format request | ./lib/src/short/nesting_level.dart
+<<< 4483413415605 send format request | ./lib/src/short/nesting_level.dart
+>>> 4483413415607 format | ./lib/src/short/nesting_level.dart
+<<< 4483413475225 format | ./lib/src/short/nesting_level.dart
+>>> 4483413475233 send format response | ./lib/src/short/nesting_level.dart
+<<< 4483413475252 send format response | ./lib/src/short/nesting_level.dart
+<<< 4483413475396 request and wait for format | ./lib/src/short/nesting_level.dart
+>>> 4483413475411 request and wait for format | ./lib/src/short/rule/argument.dart
+>>> 4483413475414 send format request | ./lib/src/short/rule/argument.dart
+<<< 4483413475428 send format request | ./lib/src/short/rule/argument.dart
+>>> 4483413475429 format | ./lib/src/short/rule/argument.dart
+<<< 4483413535067 format | ./lib/src/short/rule/argument.dart
+>>> 4483413535075 send format response | ./lib/src/short/rule/argument.dart
+<<< 4483413535099 send format response | ./lib/src/short/rule/argument.dart
+<<< 4483413535248 request and wait for format | ./lib/src/short/rule/argument.dart
+>>> 4483413535264 request and wait for format | ./lib/src/short/rule/combinator.dart
+>>> 4483413535267 send format request | ./lib/src/short/rule/combinator.dart
+<<< 4483413535285 send format request | ./lib/src/short/rule/combinator.dart
+>>> 4483413535286 format | ./lib/src/short/rule/combinator.dart
+<<< 4483413595902 format | ./lib/src/short/rule/combinator.dart
+>>> 4483413595920 send format response | ./lib/src/short/rule/combinator.dart
+<<< 4483413595957 send format response | ./lib/src/short/rule/combinator.dart
+<<< 4483413596119 request and wait for format | ./lib/src/short/rule/combinator.dart
+>>> 4483413596133 request and wait for format | ./lib/src/short/rule/rule.dart
+>>> 4483413596137 send format request | ./lib/src/short/rule/rule.dart
+<<< 4483413596154 send format request | ./lib/src/short/rule/rule.dart
+>>> 4483413596157 format | ./lib/src/short/rule/rule.dart
+<<< 4483413655998 format | ./lib/src/short/rule/rule.dart
+>>> 4483413656005 send format response | ./lib/src/short/rule/rule.dart
+<<< 4483413656020 send format response | ./lib/src/short/rule/rule.dart
+<<< 4483413656155 request and wait for format | ./lib/src/short/rule/rule.dart
+>>> 4483413656167 request and wait for format | ./lib/src/short/rule/type_argument.dart
+>>> 4483413656170 send format request | ./lib/src/short/rule/type_argument.dart
+<<< 4483413656184 send format request | ./lib/src/short/rule/type_argument.dart
+>>> 4483413656186 format | ./lib/src/short/rule/type_argument.dart
+<<< 4483413716068 format | ./lib/src/short/rule/type_argument.dart
+>>> 4483413716111 send format response | ./lib/src/short/rule/type_argument.dart
+<<< 4483413716186 send format response | ./lib/src/short/rule/type_argument.dart
+<<< 4483413716438 request and wait for format | ./lib/src/short/rule/type_argument.dart
+>>> 4483413716461 request and wait for format | ./lib/src/short/selection.dart
+>>> 4483413716467 send format request | ./lib/src/short/selection.dart
+<<< 4483413716495 send format request | ./lib/src/short/selection.dart
+>>> 4483413716501 format | ./lib/src/short/selection.dart
+<<< 4483413776072 format | ./lib/src/short/selection.dart
+>>> 4483413776080 send format response | ./lib/src/short/selection.dart
+<<< 4483413776109 send format response | ./lib/src/short/selection.dart
+<<< 4483413776288 request and wait for format | ./lib/src/short/selection.dart
+>>> 4483413776307 request and wait for format | ./lib/src/short/source_comment.dart
+>>> 4483413776311 send format request | ./lib/src/short/source_comment.dart
+<<< 4483413776330 send format request | ./lib/src/short/source_comment.dart
+>>> 4483413776333 format | ./lib/src/short/source_comment.dart
+<<< 4483413836203 format | ./lib/src/short/source_comment.dart
+>>> 4483413836239 send format response | ./lib/src/short/source_comment.dart
+<<< 4483413836307 send format response | ./lib/src/short/source_comment.dart
+<<< 4483413836519 request and wait for format | ./lib/src/short/source_comment.dart
+>>> 4483413836542 request and wait for format | ./lib/src/short/source_visitor.dart
+>>> 4483413836547 send format request | ./lib/src/short/source_visitor.dart
+<<< 4483413836576 send format request | ./lib/src/short/source_visitor.dart
+>>> 4483413836590 format | ./lib/src/short/source_visitor.dart
+<<< 4483413896465 format | ./lib/src/short/source_visitor.dart
+>>> 4483413896470 send format response | ./lib/src/short/source_visitor.dart
+<<< 4483413896483 send format response | ./lib/src/short/source_visitor.dart
+<<< 4483413896611 request and wait for format | ./lib/src/short/source_visitor.dart
+>>> 4483413896620 request and wait for format | ./lib/src/short/style_fix.dart
+>>> 4483413896622 send format request | ./lib/src/short/style_fix.dart
+<<< 4483413896634 send format request | ./lib/src/short/style_fix.dart
+>>> 4483413896635 format | ./lib/src/short/style_fix.dart
+<<< 4483413956515 format | ./lib/src/short/style_fix.dart
+>>> 4483413956534 send format response | ./lib/src/short/style_fix.dart
+<<< 4483413956563 send format response | ./lib/src/short/style_fix.dart
+<<< 4483413956712 request and wait for format | ./lib/src/short/style_fix.dart
+>>> 4483413956724 request and wait for format | ./lib/src/source_code.dart
+>>> 4483413956727 send format request | ./lib/src/source_code.dart
+<<< 4483413956744 send format request | ./lib/src/source_code.dart
+>>> 4483413956746 format | ./lib/src/source_code.dart
+<<< 4483414016298 format | ./lib/src/source_code.dart
+>>> 4483414016301 send format response | ./lib/src/source_code.dart
+<<< 4483414016309 send format response | ./lib/src/source_code.dart
+<<< 4483414016424 request and wait for format | ./lib/src/source_code.dart
+>>> 4483414016431 request and wait for format | ./lib/src/string_compare.dart
+>>> 4483414016433 send format request | ./lib/src/string_compare.dart
+<<< 4483414016442 send format request | ./lib/src/string_compare.dart
+>>> 4483414016444 format | ./lib/src/string_compare.dart
+<<< 4483414075977 format | ./lib/src/string_compare.dart
+>>> 4483414075985 send format response | ./lib/src/string_compare.dart
+<<< 4483414075999 send format response | ./lib/src/string_compare.dart
+<<< 4483414076143 request and wait for format | ./lib/src/string_compare.dart
+>>> 4483414076154 request and wait for format | ./lib/src/testing/benchmark.dart
+>>> 4483414076156 send format request | ./lib/src/testing/benchmark.dart
+<<< 4483414076170 send format request | ./lib/src/testing/benchmark.dart
+>>> 4483414076177 format | ./lib/src/testing/benchmark.dart
+<<< 4483414136083 format | ./lib/src/testing/benchmark.dart
+>>> 4483414136107 send format response | ./lib/src/testing/benchmark.dart
+<<< 4483414136154 send format response | ./lib/src/testing/benchmark.dart
+<<< 4483414136344 request and wait for format | ./lib/src/testing/benchmark.dart
+>>> 4483414136357 request and wait for format | ./lib/src/testing/test_file.dart
+>>> 4483414136361 send format request | ./lib/src/testing/test_file.dart
+<<< 4483414136380 send format request | ./lib/src/testing/test_file.dart
+>>> 4483414136382 format | ./lib/src/testing/test_file.dart
+<<< 4483414196036 format | ./lib/src/testing/test_file.dart
+>>> 4483414196048 send format response | ./lib/src/testing/test_file.dart
+<<< 4483414196074 send format response | ./lib/src/testing/test_file.dart
+<<< 4483414196237 request and wait for format | ./lib/src/testing/test_file.dart
+>>> 4483414196252 request and wait for format | ./lib/src/worker.dart
+>>> 4483414196255 send format request | ./lib/src/worker.dart
+<<< 4483414196272 send format request | ./lib/src/worker.dart
+>>> 4483414196273 format | ./lib/src/worker.dart
+<<< 4483414255961 format | ./lib/src/worker.dart
+>>> 4483414255966 send format response | ./lib/src/worker.dart
+<<< 4483414255977 send format response | ./lib/src/worker.dart
+<<< 4483414256097 request and wait for format | ./lib/src/worker.dart
+>>> 4483414256107 request and wait for format | ./test/command_line_test.dart
+>>> 4483414256109 send format request | ./test/command_line_test.dart
+<<< 4483414256120 send format request | ./test/command_line_test.dart
+>>> 4483414256122 format | ./test/command_line_test.dart
+<<< 4483414315807 format | ./test/command_line_test.dart
+>>> 4483414315816 send format response | ./test/command_line_test.dart
+<<< 4483414315839 send format response | ./test/command_line_test.dart
+<<< 4483414316154 request and wait for format | ./test/command_line_test.dart
+>>> 4483414316176 request and wait for format | ./test/command_test.dart
+>>> 4483414316181 send format request | ./test/command_test.dart
+<<< 4483414316206 send format request | ./test/command_test.dart
+>>> 4483414316208 format | ./test/command_test.dart
+<<< 4483414376857 format | ./test/command_test.dart
+>>> 4483414376883 send format response | ./test/command_test.dart
+<<< 4483414376917 send format response | ./test/command_test.dart
+<<< 4483414377065 request and wait for format | ./test/command_test.dart
+>>> 4483414377078 request and wait for format | ./test/fix_test.dart
+>>> 4483414377081 send format request | ./test/fix_test.dart
+<<< 4483414377098 send format request | ./test/fix_test.dart
+>>> 4483414377099 format | ./test/fix_test.dart
+<<< 4483414436655 format | ./test/fix_test.dart
+>>> 4483414436661 send format response | ./test/fix_test.dart
+<<< 4483414436676 send format response | ./test/fix_test.dart
+<<< 4483414436802 request and wait for format | ./test/fix_test.dart
+>>> 4483414436816 request and wait for format | ./test/io_test.dart
+>>> 4483414436819 send format request | ./test/io_test.dart
+<<< 4483414436834 send format request | ./test/io_test.dart
+>>> 4483414436835 format | ./test/io_test.dart
+<<< 4483414496561 format | ./test/io_test.dart
+>>> 4483414496565 send format response | ./test/io_test.dart
+<<< 4483414496579 send format response | ./test/io_test.dart
+<<< 4483414496709 request and wait for format | ./test/io_test.dart
+>>> 4483414496724 request and wait for format | ./test/short_format_test.dart
+>>> 4483414496726 send format request | ./test/short_format_test.dart
+<<< 4483414496743 send format request | ./test/short_format_test.dart
+>>> 4483414496744 format | ./test/short_format_test.dart
+<<< 4483414556947 format | ./test/short_format_test.dart
+>>> 4483414556968 send format response | ./test/short_format_test.dart
+<<< 4483414557014 send format response | ./test/short_format_test.dart
+<<< 4483414557175 request and wait for format | ./test/short_format_test.dart
+>>> 4483414557191 request and wait for format | ./test/source_code_test.dart
+>>> 4483414557193 send format request | ./test/source_code_test.dart
+<<< 4483414557214 send format request | ./test/source_code_test.dart
+>>> 4483414557216 format | ./test/source_code_test.dart
+<<< 4483414616943 format | ./test/source_code_test.dart
+>>> 4483414616947 send format response | ./test/source_code_test.dart
+<<< 4483414616954 send format response | ./test/source_code_test.dart
+<<< 4483414617059 request and wait for format | ./test/source_code_test.dart
+>>> 4483414617066 request and wait for format | ./test/string_compare_test.dart
+>>> 4483414617068 send format request | ./test/string_compare_test.dart
+<<< 4483414617077 send format request | ./test/string_compare_test.dart
+>>> 4483414617078 format | ./test/string_compare_test.dart
+<<< 4483414676612 format | ./test/string_compare_test.dart
+>>> 4483414676615 send format response | ./test/string_compare_test.dart
+<<< 4483414676622 send format response | ./test/string_compare_test.dart
+<<< 4483414676729 request and wait for format | ./test/string_compare_test.dart
+>>> 4483414676738 request and wait for format | ./test/tall_format_test.dart
+>>> 4483414676740 send format request | ./test/tall_format_test.dart
+<<< 4483414676752 send format request | ./test/tall_format_test.dart
+>>> 4483414676754 format | ./test/tall_format_test.dart
+<<< 4483414736577 format | ./test/tall_format_test.dart
+>>> 4483414736590 send format response | ./test/tall_format_test.dart
+<<< 4483414736609 send format response | ./test/tall_format_test.dart
+<<< 4483414736725 request and wait for format | ./test/tall_format_test.dart
+>>> 4483414736734 request and wait for format | ./test/utils.dart
+>>> 4483414736737 send format request | ./test/utils.dart
+<<< 4483414736748 send format request | ./test/utils.dart
+>>> 4483414736749 format | ./test/utils.dart
+<<< 4483414796258 format | ./test/utils.dart
+>>> 4483414796262 send format response | ./test/utils.dart
+<<< 4483414796271 send format response | ./test/utils.dart
+<<< 4483414796400 request and wait for format | ./test/utils.dart
+>>> 4483414796409 request and wait for format | ./tool/change_metrics.dart
+>>> 4483414796413 send format request | ./tool/change_metrics.dart
+<<< 4483414796423 send format request | ./tool/change_metrics.dart
+>>> 4483414796424 format | ./tool/change_metrics.dart
+<<< 4483414856377 format | ./tool/change_metrics.dart
+>>> 4483414856390 send format response | ./tool/change_metrics.dart
+<<< 4483414856426 send format response | ./tool/change_metrics.dart
+<<< 4483414856586 request and wait for format | ./tool/change_metrics.dart
+>>> 4483414856599 request and wait for format | ./tool/command_shell.dart
+>>> 4483414856601 send format request | ./tool/command_shell.dart
+<<< 4483414856617 send format request | ./tool/command_shell.dart
+>>> 4483414856618 format | ./tool/command_shell.dart
+<<< 4483414916253 format | ./tool/command_shell.dart
+>>> 4483414916257 send format response | ./tool/command_shell.dart
+<<< 4483414916269 send format response | ./tool/command_shell.dart
+<<< 4483414916398 request and wait for format | ./tool/command_shell.dart
+>>> 4483414916409 request and wait for format | ./tool/grind.dart
+>>> 4483414916411 send format request | ./tool/grind.dart
+<<< 4483414916423 send format request | ./tool/grind.dart
+>>> 4483414916424 format | ./tool/grind.dart
+<<< 4483414976057 format | ./tool/grind.dart
+>>> 4483414976060 send format response | ./tool/grind.dart
+<<< 4483414976071 send format response | ./tool/grind.dart
+<<< 4483414976188 request and wait for format | ./tool/grind.dart
+>>> 4483414976200 request and wait for format | ./tool/time.dart
+>>> 4483414976201 send format request | ./tool/time.dart
+<<< 4483414976212 send format request | ./tool/time.dart
+>>> 4483414976213 format | ./tool/time.dart
+<<< 4483415035851 format | ./tool/time.dart
+>>> 4483415035857 send format response | ./tool/time.dart
+<<< 4483415035872 send format response | ./tool/time.dart
+<<< 4483415036001 request and wait for format | ./tool/time.dart
+>>> 4483415036012 request and wait for format | ./tool/update_tests.dart
+>>> 4483415036015 send format request | ./tool/update_tests.dart
+<<< 4483415036030 send format request | ./tool/update_tests.dart
+>>> 4483415036031 format | ./tool/update_tests.dart
+<<< 4483415095625 format | ./tool/update_tests.dart
+>>> 4483415095629 send format response | ./tool/update_tests.dart
+<<< 4483415095641 send format response | ./tool/update_tests.dart
+<<< 4483415095763 request and wait for format | ./tool/update_tests.dart
+<<< 4483415095946 format everything
+>>> 4483415095954 quit workers
+<<< 4483415098645 quit workers
+<<< 4483415098652 FormatService.format()
+Formatted 87 files (0 changed) in 5.31 seconds.
