@@ -23,7 +23,11 @@ void main(List<String> arguments) async {
       var time = int.parse(match[1]!);
       var label = match[2]!;
 
-      var start = starts.remove(label)!;
+      var start = starts.remove(label);
+      if (start == null) {
+        print('No start for "$label"');
+        throw '!';
+      }
       var elapsed = time - start;
 
       var kind = label;
@@ -36,8 +40,21 @@ void main(List<String> arguments) async {
     }
   }
 
+  var tracked = [
+    // Nested:
+    'format everything',
+    'request and wait for format',
+    'Worker._processFormatRequest()',
+    // 'DartFormatter.formatSource()',
+    // Sequential:
+    // 'parse',
+    // 'SourceVisitor visit AST',
+    // 'SourceVisitor format',
+  ];
+  var trackedTimes = <String, double>{};
+
   var kinds = cumulative.keys.toList();
-  kinds.sort((a, b) => cumulative[a]!.compareTo(cumulative[b]!));
+  kinds.sort();
   for (var kind in kinds) {
     var time = cumulative[kind]!;
     var total = (time / 1000).toStringAsFixed(3).padLeft(12);
@@ -49,5 +66,16 @@ void main(List<String> arguments) async {
       line += ', $count count ave $each';
     }
     print(line);
+
+    if (tracked.contains(kind)) {
+      trackedTimes[kind] = time / 1000;
+    }
   }
+
+  print(tracked.map((t) => '"$t"').join(','));
+  var trackedTimesSorted = <double>[];
+  for (var kind in tracked) {
+    trackedTimesSorted.add(trackedTimes[kind]!);
+  }
+  print(trackedTimesSorted.map((t) => '"$t"').join(','));
 }

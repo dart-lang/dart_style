@@ -122,17 +122,23 @@ class SourceVisitor extends ThrowingAstVisitor {
   SourceCode run(AstNode node) {
     Profile.begin('SourceVisitor create Chunks');
 
+    Profile.begin2('SourceVisitor visit AST', _source.uri);
     visit(node);
 
     // Output trailing comments.
     writePrecedingCommentsAndNewlines(node.endToken.next!);
+
+    Profile.end2('SourceVisitor visit AST', _source.uri);
 
     assert(_constNesting == 0, 'Should have exited all const contexts.');
 
     Profile.end('SourceVisitor create Chunks');
 
     // Finish writing and return the complete result.
-    return builder.end();
+    Profile.begin2('SourceVisitor format', _source.uri);
+    var result = builder.end();
+    Profile.end2('SourceVisitor format', _source.uri);
+    return result;
   }
 
   @override

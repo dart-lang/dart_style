@@ -87,20 +87,22 @@ class Worker {
 
   static WorkerFormatResponse _processFormatRequest(
       _WorkerFormatRequest request) {
-    var source = SourceCode(request.source, uri: request.filePath);
-
-    var formatter = DartFormatter(
-        indent: request.indent,
-        pageWidth: request.pageWidth,
-        fixes: request.fixes,
-        experimentFlags: request.experimentFlags);
+    Profile.begin2('Worker._processFormatRequest()', request.filePath);
     try {
-      var output = formatter.formatSource(source);
+      var source = SourceCode(request.source, uri: request.filePath);
 
-      // TODO: Temporary code to replace the actual formatting logic with some
-      // other CPU-intensive task. Comment out the above line and uncomment this
-      // block to try it.
-      /*
+      var formatter = DartFormatter(
+          indent: request.indent,
+          pageWidth: request.pageWidth,
+          fixes: request.fixes,
+          experimentFlags: request.experimentFlags);
+      try {
+        var output = formatter.formatSource(source);
+
+        // TODO: Temporary code to replace the actual formatting logic with some
+        // other CPU-intensive task. Comment out the above line and uncomment this
+        // block to try it.
+        /*
       // Do some dumb slow computation.
       int fib(int n) {
         if (n <= 1) return n;
@@ -112,53 +114,47 @@ class Worker {
       var output = source;
       */
 
-      return (
-        path: request.filePath,
-        text: output.text,
-        isChanged: source.text != output.text,
-        selectionStart: output.selectionStart,
-        selectionLength: output.selectionLength
-      );
-    } on FormatterException catch (err) {
-      // TODO: Probably want all error reporting to happen on main isolate.
-      var color = Platform.operatingSystem != 'windows' &&
-          stdioType(stderr) == StdioType.terminal;
+        return (
+          path: request.filePath,
+          text: output.text,
+          isChanged: source.text != output.text,
+          selectionStart: output.selectionStart,
+          selectionLength: output.selectionLength
+        );
+      } on FormatterException catch (err) {
+        // TODO: Probably want all error reporting to happen on main isolate.
+        var color = Platform.operatingSystem != 'windows' &&
+            stdioType(stderr) == StdioType.terminal;
 
-      stderr.writeln(err.message(color: color));
-    } on UnexpectedOutputException catch (err) {
-      // TODO: Probably want all error reporting to happen on main isolate.
-      // TODO: Should show display path.
-      stderr.writeln(
-          '''Hit a bug in the formatter when formatting ${request.filePath}.
+        stderr.writeln(err.message(color: color));
+      } on UnexpectedOutputException catch (err) {
+        // TODO: Probably want all error reporting to happen on main isolate.
+        // TODO: Should show display path.
+        stderr.writeln(
+            '''Hit a bug in the formatter when formatting ${request.filePath}.
 $err
 Please report at github.com/dart-lang/dart_style/issues.''');
-    } catch (err, stack) {
-      // TODO: Probably want all error reporting to happen on main isolate.
-      // TODO: Should show display path.
-      stderr.writeln(
-          '''Hit a bug in the formatter when formatting ${request.filePath}.
+      } catch (err, stack) {
+        // TODO: Probably want all error reporting to happen on main isolate.
+        // TODO: Should show display path.
+        stderr.writeln(
+            '''Hit a bug in the formatter when formatting ${request.filePath}.
 Please report at github.com/dart-lang/dart_style/issues.
 $err
 $stack''');
+      }
+
+      // TODO: Temp.
+      return (
+        path: request.filePath,
+        text: 'ERROR',
+        isChanged: false,
+        selectionStart: null,
+        selectionLength: null
+      );
+    } finally {
+      Profile.end2('Worker._processFormatRequest()', request.filePath);
     }
-
-    // TODO: Temp.
-    return (
-      path: request.filePath,
-      text: 'ERROR',
-      isChanged: false,
-      selectionStart: null,
-      selectionLength: null
-    );
-
-    // } on FormatterException catch (err) {
-    //   // TODO: Color?
-    //   return (_ErrorType.formatter, err.message());
-    // } on UnexpectedOutputException catch (err) {
-    //   return (_ErrorType.unexpectedOutput, err.toString());
-    // } catch (err, stack) {
-    //   return (_ErrorType.other, '$err\n$stack');
-    // }
   }
 
   final int _id;

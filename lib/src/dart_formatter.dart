@@ -18,6 +18,7 @@ import 'package:pub_semver/pub_semver.dart';
 import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
+import 'profile.dart';
 import 'short/source_visitor.dart';
 import 'short/style_fix.dart';
 import 'source_code.dart';
@@ -97,104 +98,116 @@ class DartFormatter {
   /// Returns a new [SourceCode] containing the formatted code and the resulting
   /// selection, if any.
   SourceCode formatSource(SourceCode source) {
-    var inputOffset = 0;
-    var text = source.text;
-    var unitSourceCode = source;
+    Profile.begin2('DartFormatter.formatSource()', source.uri);
+    try {
+      var inputOffset = 0;
+      var text = source.text;
+      var unitSourceCode = source;
 
-    // If we're parsing a single statement, wrap the source in a fake function.
-    if (!source.isCompilationUnit) {
-      var prefix = 'void foo() { ';
-      inputOffset = prefix.length;
-      text = '$prefix$text }';
-      unitSourceCode = SourceCode(
-        text,
-        uri: source.uri,
-        isCompilationUnit: false,
-        selectionStart: source.selectionStart != null
-            ? source.selectionStart! + inputOffset
-            : null,
-        selectionLength: source.selectionLength,
-      );
-    }
-
-    // Parse it.
-    var parseResult = _parse(text, source.uri, patterns: true);
-
-    // If we couldn't parse it with patterns enabled, it may be because of
-    // one of the breaking syntax changes to switch cases. Try parsing it
-    // again without patterns.
-    if (parseResult.errors.isNotEmpty) {
-      var withoutPatternsResult = _parse(text, source.uri, patterns: false);
-
-      // If we succeeded this time, use this parse instead.
-      if (withoutPatternsResult.errors.isEmpty) {
-        parseResult = withoutPatternsResult;
+      // If we're parsing a single statement, wrap the source in a fake function.
+      if (!source.isCompilationUnit) {
+        var prefix = 'void foo() { ';
+        inputOffset = prefix.length;
+        text = '$prefix$text }';
+        unitSourceCode = SourceCode(
+          text,
+          uri: source.uri,
+          isCompilationUnit: false,
+          selectionStart: source.selectionStart != null
+              ? source.selectionStart! + inputOffset
+              : null,
+          selectionLength: source.selectionLength,
+        );
       }
-    }
 
-    // Infer the line ending if not given one. Do it here since now we know
-    // where the lines start.
-    if (lineEnding == null) {
-      // If the first newline is "\r\n", use that. Otherwise, use "\n".
-      var lineStarts = parseResult.lineInfo.lineStarts;
-      if (lineStarts.length > 1 &&
-          lineStarts[1] >= 2 &&
-          text[lineStarts[1] - 2] == '\r') {
-        lineEnding = '\r\n';
+      // Parse it.
+      Profile.begin2('parse', source.uri);
+      ParseStringResult parseResult;
+      AstNode node;
+      try {
+        parseResult = _parse(text, source.uri, patterns: true);
+
+        // If we couldn't parse it with patterns enabled, it may be because of
+        // one of the breaking syntax changes to switch cases. Try parsing it
+        // again without patterns.
+        if (parseResult.errors.isNotEmpty) {
+          var withoutPatternsResult = _parse(text, source.uri, patterns: false);
+
+          // If we succeeded this time, use this parse instead.
+          if (withoutPatternsResult.errors.isEmpty) {
+            parseResult = withoutPatternsResult;
+          }
+        }
+
+        // Infer the line ending if not given one. Do it here since now we know
+        // where the lines start.
+        if (lineEnding == null) {
+          // If the first newline is "\r\n", use that. Otherwise, use "\n".
+          var lineStarts = parseResult.lineInfo.lineStarts;
+          if (lineStarts.length > 1 &&
+              lineStarts[1] >= 2 &&
+              text[lineStarts[1] - 2] == '\r') {
+            lineEnding = '\r\n';
+          } else {
+            lineEnding = '\n';
+          }
+        }
+
+        // Throw if there are syntactic errors.
+        var syntacticErrors = parseResult.errors.where((error) {
+          return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
+        }).toList();
+        if (syntacticErrors.isNotEmpty) {
+          throw FormatterException(syntacticErrors);
+        }
+
+        if (source.isCompilationUnit) {
+          node = parseResult.unit;
+        } else {
+          var function =
+              parseResult.unit.declarations[0] as FunctionDeclaration;
+          var body = function.functionExpression.body as BlockFunctionBody;
+          node = body.block.statements[0];
+
+          // Make sure we consumed all of the source.
+          var token = node.endToken.next!;
+          if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
+            var stringSource = StringSource(text, source.uri);
+            var error = AnalysisError.tmp(
+                source: stringSource,
+                offset: token.offset - inputOffset,
+                length: math.max(token.length, 1),
+                errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
+                arguments: [token.lexeme]);
+            throw FormatterException([error]);
+          }
+        }
+      } finally {
+        Profile.end2('parse', source.uri);
+      }
+
+      // Format it.
+      var lineInfo = parseResult.lineInfo;
+
+      SourceCode output;
+      if (experimentFlags.contains(tallStyleExperimentFlag)) {
+        var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
+        output = visitor.run(node);
       } else {
-        lineEnding = '\n';
+        var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
+        output = visitor.run(node);
       }
-    }
 
-    // Throw if there are syntactic errors.
-    var syntacticErrors = parseResult.errors.where((error) {
-      return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
-    }).toList();
-    if (syntacticErrors.isNotEmpty) {
-      throw FormatterException(syntacticErrors);
-    }
-
-    AstNode node;
-    if (source.isCompilationUnit) {
-      node = parseResult.unit;
-    } else {
-      var function = parseResult.unit.declarations[0] as FunctionDeclaration;
-      var body = function.functionExpression.body as BlockFunctionBody;
-      node = body.block.statements[0];
-
-      // Make sure we consumed all of the source.
-      var token = node.endToken.next!;
-      if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
-        var stringSource = StringSource(text, source.uri);
-        var error = AnalysisError.tmp(
-            source: stringSource,
-            offset: token.offset - inputOffset,
-            length: math.max(token.length, 1),
-            errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
-            arguments: [token.lexeme]);
-        throw FormatterException([error]);
+      // Sanity check that only whitespace was changed if that's all we expect.
+      if (fixes.isEmpty &&
+          !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
+        throw UnexpectedOutputException(source.text, output.text);
       }
+
+      return output;
+    } finally {
+      Profile.end2('DartFormatter.formatSource()', source.uri);
     }
-
-    // Format it.
-    var lineInfo = parseResult.lineInfo;
-
-    SourceCode output;
-    if (experimentFlags.contains(tallStyleExperimentFlag)) {
-      var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node);
-    } else {
-      var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node);
-    }
-
-    // Sanity check that only whitespace was changed if that's all we expect.
-    if (fixes.isEmpty &&
-        !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw UnexpectedOutputException(source.text, output.text);
-    }
-
-    return output;
   }
 
   /// Parse [source] from [uri].
