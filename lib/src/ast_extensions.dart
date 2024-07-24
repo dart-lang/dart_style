@@ -18,6 +18,9 @@ extension AstNodeExtensions on AstNode {
     return switch (this) {
       AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
       AnnotatedNode(firstTokenAfterCommentAndMetadata: var token) => token,
+      // DefaultFormalParameter is not an AnnotatedNode, but its first child
+      // (parameter) *is* an AnnotatedNode, so we can't just use beginToken.
+      DefaultFormalParameter(:var parameter) => parameter.firstNonCommentToken,
       _ => beginToken
     };
   }
