@@ -18,7 +18,6 @@ import 'package:dart_style/src/short/source_visitor.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 
 /// The number of trials to run before measuring results.
 const _warmUpTrials = 100;
@@ -126,7 +125,8 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   var parseResult = parseString(
       content: source.text,
       featureSet: FeatureSet.fromEnableFlags2(
-          sdkLanguageVersion: Version(3, 3, 0), flags: const []),
+          sdkLanguageVersion: DartFormatter.latestLanguageVersion,
+          flags: const []),
       path: source.uri,
       throwIfDiagnostics: false);
 

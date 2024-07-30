@@ -1,5 +1,8 @@
 ## 2.3.7-wip
 
+* Allow passing a language version to `DartFomatter()`. Formatted code will be
+  parsed at that version. If omitted, defaults to the latest version. In a
+  future release, this parameter will become required.
 * Remove temporary work around for analyzer 6.2.0 from dart_style 2.3.6.
 * Require `package:analyzer` `>=6.5.0 <7.0.0`.
 
