@@ -454,6 +454,67 @@ void main() {
     });
   });
 
+  group('language version', () {
+    // It's hard to validate that the formatter uses the *exact* latest
+    // language version supported by the formatter, but at least test that a
+    // new-ish language feature can be parsed.
+    const extensionTypeBefore = '''
+extension type Meters(int value) {
+  Meters operator+(Meters other) => Meters(value+other.value);
+}''';
+
+    const extensionTypeAfter = '''
+extension type Meters(int value) {
+  Meters operator +(Meters other) => Meters(value + other.value);
+}
+''';
+
+    test('defaults to latest language version if omitted', () async {
+      await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
+
+      var process = await runCommandOnDir();
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
+    });
+
+    test('uses the given language version', () async {
+      const before = 'main() { switch (o) { case 1+2: break; } }';
+
+      const after = '''
+main() {
+  switch (o) {
+    case 1 + 2:
+      break;
+  }
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      // Use an older language version where `1 + 2` was still a valid switch
+      // case.
+      var process = await runCommandOnDir(['--language-version=2.19']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
+    });
+
+    test('uses the latest language version if "latest"', () async {
+      await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
+
+      var process = await runCommandOnDir(['--language-version=latest']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
+    });
+
+    test("errors if the language version can't be parsed", () async {
+      var process = await runCommand(['--language-version=123']);
+      await process.shouldExit(64);
+    });
+  });
+
   group('--enable-experiment', () {
     test('passes experiment flags to parser', () async {
       var process =

@@ -67,6 +67,13 @@ void defineOptions(ArgParser parser,
         },
         defaultsTo: 'line',
         hide: !verbose);
+
+    parser.addOption('language-version',
+        help: 'Language version of formatted code.\n'
+            'Use "latest" to parse as the latest supported version.\n'
+            'Omit to look for a surrounding package config.',
+        // TODO(rnystrom): Show this when package config support is implemented.
+        hide: true);
   }
 
   parser.addFlag('set-exit-if-changed',
