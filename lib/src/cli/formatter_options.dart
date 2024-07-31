@@ -4,6 +4,8 @@
 
 import 'dart:io';
 
+import 'package:pub_semver/pub_semver.dart';
+
 import '../short/style_fix.dart';
 import '../source_code.dart';
 import 'output.dart';
@@ -15,6 +17,10 @@ const dartStyleVersion = '2.3.6';
 
 /// Global options that affect how the formatter produces and uses its outputs.
 class FormatterOptions {
+  /// The language version formatted code should be parsed at or `null` if not
+  /// specified.
+  final Version? languageVersion;
+
   /// The number of spaces of indentation to prefix the output with.
   final int indent;
 
@@ -45,7 +51,8 @@ class FormatterOptions {
   final List<String> experimentFlags;
 
   FormatterOptions(
-      {this.indent = 0,
+      {this.languageVersion,
+      this.indent = 0,
       this.pageWidth = 80,
       this.followLinks = false,
       Iterable<StyleFix>? fixes,

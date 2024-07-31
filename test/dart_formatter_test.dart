@@ -33,6 +33,7 @@ void main() async {
       expect(() => formatter.format('main() {switch (o) {case 1+2: break;}}'),
           throwsA(isA<FormatterException>()));
     });
+
     test('@dart comment overrides version', () {
       // Use a language version after patterns were supported and `1 + 2` is an
       // error.

@@ -4,7 +4,9 @@
 import 'dart:io';
 
 import 'package:args/command_runner.dart';
+import 'package:pub_semver/pub_semver.dart';
 
+import '../dart_formatter.dart';
 import '../io.dart';
 import '../short/style_fix.dart';
 import 'formatter_options.dart';
@@ -87,6 +89,20 @@ class FormatCommand extends Command<int> {
       usageException('Cannot print a summary with JSON output.');
     }
 
+    Version? languageVersion;
+    if (argResults['language-version'] case String version) {
+      var versionPattern = RegExp(r'^([0-9]+)\.([0-9]+)$');
+      if (version == 'latest') {
+        languageVersion = DartFormatter.latestLanguageVersion;
+      } else if (versionPattern.firstMatch(version) case var match?) {
+        languageVersion =
+            Version(int.parse(match[1]!), int.parse(match[2]!), 0);
+      } else {
+        usageException('--language-version must be a version like "3.2" or '
+            '"latest", was "$version".');
+      }
+    }
+
     var pageWidth = int.tryParse(argResults['line-length'] as String) ??
         usageException('--line-length must be an integer, was '
             '"${argResults['line-length']}".');
@@ -140,6 +156,7 @@ class FormatCommand extends Command<int> {
     var stdinName = argResults['stdin-name'] as String;
 
     var options = FormatterOptions(
+        languageVersion: languageVersion,
         indent: indent,
         pageWidth: pageWidth,
         followLinks: followLinks,
