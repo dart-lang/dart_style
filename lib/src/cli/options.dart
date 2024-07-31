@@ -72,7 +72,7 @@ void defineOptions(ArgParser parser,
         help: 'Language version of formatted code.\n'
             'Use "latest" to parse as the latest supported version.\n'
             'Omit to look for a surrounding package config.',
-        // TODO(rnystrom): Show this when package config support is implemented.
+        // TODO(rnystrom): Show this when the tall-style experiment ships.
         hide: true);
   }
 
