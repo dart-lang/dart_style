@@ -1,0 +1,14 @@
+40 columns                              |
+>>>
+someLongExpression..prop.cascade(
+  argument,
+  argument,
+  argument,
+);
+<<<
+someLongExpression
+  ..prop.cascade(
+    argument,
+    argument,
+    argument,
+  );

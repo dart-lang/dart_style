@@ -24,7 +24,7 @@ void main() async {
   });
 }
 <<<
-### TODO(1466): Should allow the `FakeRequestHandler()` target after the `=>`.
+### TODO(1466): Should allow the `FakeRequestHandler()` target after the `=`.
 void main() async {
   group('my group', () {
     setUp(() async {
@@ -33,13 +33,14 @@ void main() async {
             ..when(
               withServiceName(Ng2ProtoFooBarBazService.serviceName),
             ).thenRespond(
-              FooBarBazListResponse()..entities.add(
-                FooBarBaz()
-                  ..fooBarBazEntityId = entityId
-                  ..name = 'Test entity'
-                  ..baseFooBarBazId = baseFooBarBazId
-                  ..entityFooBarBazId = entityFooBarBazId,
-              ),
+              FooBarBazListResponse()
+                ..entities.add(
+                  FooBarBaz()
+                    ..fooBarBazEntityId = entityId
+                    ..name = 'Test entity'
+                    ..baseFooBarBazId = baseFooBarBazId
+                    ..entityFooBarBazId = entityFooBarBazId,
+                ),
             )
             ..when(
               allOf(
