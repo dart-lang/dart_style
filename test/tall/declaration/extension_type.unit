@@ -48,7 +48,8 @@ extension type LongExtensionType(LongTypeName a) implements Something {
 <<<
 extension type LongExtensionType(
   LongTypeName a,
-) implements Something {
+)
+    implements Something {
   method() {
     ;
   }

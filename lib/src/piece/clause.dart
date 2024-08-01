@@ -65,6 +65,10 @@ class ClausePiece extends Piece {
   /// State where we split between the clauses but not before the first one.
   static const State _betweenClauses = State(1);
 
+  /// The leading construct the clauses are applied to: a class declaration,
+  /// import directive, etc.
+  final Piece _header;
+
   final List<Piece> _clauses;
 
   /// If `true`, then we're allowed to split between the clauses without
@@ -80,7 +84,7 @@ class ClausePiece extends Piece {
   ///     }
   final bool _allowLeadingClause;
 
-  ClausePiece(this._clauses, {bool allowLeadingClause = false})
+  ClausePiece(this._header, this._clauses, {bool allowLeadingClause = false})
       : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
 
   @override
@@ -89,7 +93,10 @@ class ClausePiece extends Piece {
 
   @override
   bool allowNewlineInChild(State state, Piece child) {
-    if (_allowLeadingClause && child == _clauses.first) {
+    if (child == _header) {
+      // If the header splits, force the clauses to split too.
+      return state == State.split;
+    } else if (_allowLeadingClause && child == _clauses.first) {
       // A split inside the first clause forces a split before the keyword.
       return state == State.split;
     } else {
@@ -101,6 +108,8 @@ class ClausePiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
+    writer.format(_header);
+
     writer.pushIndent(Indent.expression);
 
     for (var clause in _clauses) {
@@ -123,6 +132,7 @@ class ClausePiece extends Piece {
 
   @override
   void forEachChild(void Function(Piece piece) callback) {
+    callback(_header);
     _clauses.forEach(callback);
   }
 }

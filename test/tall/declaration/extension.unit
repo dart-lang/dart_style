@@ -35,7 +35,8 @@ extension Extension<LongTypeParameter, Another> on BaseClass {}
 extension Extension<
   LongTypeParameter,
   Another
-> on BaseClass {}
+>
+    on BaseClass {}
 >>> Unnamed.
 extension on String {}
 <<<
