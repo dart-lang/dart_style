@@ -78,11 +78,25 @@ class ChainBuilder {
         var piece = _visitor.nodePiece(section);
 
         var callType = switch (section) {
+          // If the section is itself a method chain, then force the cascade to
+          // split if the method does, as in:
+          //
+          //     cascadeTarget
+          //       ..methodTarget.method(
+          //         argument,
+          //       );
+          MethodInvocation(target: _?) => CallType.unsplittableCall,
+
+          // Otherwise, allow a direct method call in the cascade to not split
+          // the cascade if the arguments can split, as in:
+          //
+          //     cascadeTarget..method(
+          //       argument,
+          //     );
           MethodInvocation(argumentList: var args)
               when args.arguments.canSplit(args.rightParenthesis) =>
             CallType.splittableCall,
-          MethodInvocation() => CallType.unsplittableCall,
-          _ => CallType.property,
+          _ => CallType.unsplittableCall,
         };
 
         _calls.add(ChainCall(piece, callType));
