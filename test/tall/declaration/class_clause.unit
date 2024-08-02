@@ -252,3 +252,20 @@ class C extends A
           LongTypeArgument,
           AnotherLongType
         > {}
+>>> Split in class type parameters forces clause to split.
+class C<LongTypeParameter, AnotherLongType> extends Other {}
+<<<
+class C<
+  LongTypeParameter,
+  AnotherLongType
+>
+    extends Other {}
+>>> Split in class type parameters forces clauses to split.
+class C<LongTypeParameter, AnotherLongType> extends Other with Mixin {}
+<<<
+class C<
+  LongTypeParameter,
+  AnotherLongType
+>
+    extends Other
+    with Mixin {}

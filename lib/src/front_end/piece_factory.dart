@@ -805,55 +805,48 @@ mixin PieceFactory {
   void writeImport(NamespaceDirective directive, Token keyword,
       {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
     pieces.withMetadata(directive.metadata, () {
-      if (directive.configurations.isEmpty && asKeyword == null) {
-        // If there are no configurations or prefix (the common case), just
-        // write the import directly inline.
+      // Build a piece for the directive itself.
+      var directivePiece = pieces.build(() {
         pieces.token(keyword);
         pieces.space();
         pieces.visit(directive.uri);
-      } else {
-        // Otherwise, allow splitting between the configurations and prefix.
-        var sections = [
-          pieces.build(() {
-            pieces.token(keyword);
-            pieces.space();
-            pieces.visit(directive.uri);
-          })
-        ];
+      });
 
-        for (var configuration in directive.configurations) {
-          sections.add(nodePiece(configuration));
-        }
-
-        if (asKeyword != null) {
-          sections.add(pieces.build(() {
-            pieces.token(deferredKeyword, spaceAfter: true);
-            pieces.token(asKeyword);
-            pieces.space();
-            pieces.visit(prefix!);
-          }));
-        }
-
-        pieces.add(InfixPiece(const [], sections));
+      // Include any `if` clauses.
+      var clauses = <Piece>[];
+      for (var configuration in directive.configurations) {
+        clauses.add(nodePiece(configuration));
       }
 
-      if (directive.combinators.isNotEmpty) {
-        var combinators = <Piece>[];
-        for (var combinatorNode in directive.combinators) {
-          switch (combinatorNode) {
-            case HideCombinator(hiddenNames: var names):
-            case ShowCombinator(shownNames: var names):
-              combinators.add(InfixPiece(const [], [
-                tokenPiece(combinatorNode.keyword),
-                for (var name in names)
-                  tokenPiece(name.token, commaAfter: true),
-              ]));
-            default:
-              throw StateError('Unknown combinator type $combinatorNode.');
-          }
-        }
+      // Include the `as` clause.
+      if (asKeyword != null) {
+        clauses.add(pieces.build(() {
+          pieces.token(deferredKeyword, spaceAfter: true);
+          pieces.token(asKeyword);
+          pieces.space();
+          pieces.visit(prefix!);
+        }));
+      }
 
-        pieces.add(ClausePiece(combinators));
+      // Include the `show` and `hide` clauses.
+      for (var combinatorNode in directive.combinators) {
+        switch (combinatorNode) {
+          case HideCombinator(hiddenNames: var names):
+          case ShowCombinator(shownNames: var names):
+            clauses.add(InfixPiece(const [], [
+              tokenPiece(combinatorNode.keyword),
+              for (var name in names) tokenPiece(name.token, commaAfter: true),
+            ]));
+          default:
+            throw StateError('Unknown combinator type $combinatorNode.');
+        }
+      }
+
+      // If there are clauses, include them.
+      if (clauses.isNotEmpty) {
+        pieces.add(ClausePiece(directivePiece, clauses));
+      } else {
+        pieces.add(directivePiece);
       }
 
       pieces.token(directive.semicolon);
@@ -1245,16 +1238,12 @@ mixin PieceFactory {
             [if (nativeClause.name case var name?) name]);
       }
 
-      ClausePiece? clausesPiece;
       if (clauses.isNotEmpty) {
-        clausesPiece = ClausePiece(clauses,
+        header = ClausePiece(header, clauses,
             allowLeadingClause: extendsClause != null || onClause != null);
       }
 
-      var bodyPiece = body();
-
-      pieces
-          .add(TypePiece(header, clausesPiece, bodyPiece, bodyType: bodyType));
+      pieces.add(TypePiece(header, body(), bodyType: bodyType));
     });
   }
 
