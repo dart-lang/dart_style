@@ -1,0 +1,23 @@
+>>>
+@Deprecated('loooooooooooooooooooooooong text string' 'loooooooooooooooooooooooong text string')
+void f(
+  @Deprecated('loooooooooooooooooooooooong text string' 'loooooooooooooooooooooooong text string')
+      x,
+) {
+  'loooooooooooooooooooooooong text string' 'loooooooooooooooooooooooong text string';
+}
+<<<
+@Deprecated(
+  'loooooooooooooooooooooooong text string'
+  'loooooooooooooooooooooooong text string',
+)
+void f(
+  @Deprecated(
+    'loooooooooooooooooooooooong text string'
+    'loooooooooooooooooooooooong text string',
+  )
+  x,
+) {
+  'loooooooooooooooooooooooong text string'
+      'loooooooooooooooooooooooong text string';
+}

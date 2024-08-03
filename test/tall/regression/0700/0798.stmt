@@ -1,0 +1,49 @@
+>>>
+if (false) { // a
+  var b = 1; // b
+} // c
+<<<
+if (false) {
+  // a
+  var b = 1; // b
+} // c
+>>> (indent 8)
+        f(
+          actions: <Widget>[
+            IconButton( // action button
+              icon: Icon(choices[0].icon),
+              onPressed: () { _select(choices[0]); },
+            ),
+            IconButton( // action button
+              icon: Icon(choices[1].icon),
+              onPressed: () { _select(choices[1]); },
+            ),
+            PopupMenuButton<Choice>( // overflow menu
+              onSelected: _select,
+              itemBuilder: (BuildContext context) {;}
+            )
+          ]);
+<<<
+        f(actions: <Widget>[
+          IconButton(
+            // action button
+            icon: Icon(choices[0].icon),
+            onPressed: () {
+              _select(choices[0]);
+            },
+          ),
+          IconButton(
+            // action button
+            icon: Icon(choices[1].icon),
+            onPressed: () {
+              _select(choices[1]);
+            },
+          ),
+          PopupMenuButton<Choice>(
+            // overflow menu
+            onSelected: _select,
+            itemBuilder: (BuildContext context) {
+              ;
+            },
+          ),
+        ]);

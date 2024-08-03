@@ -20,20 +20,3 @@ SomeVeryLongReturnType someFunctionName(
         .then(________traverseDeps_depender__deps_);
   }
 }
->>> Split in long type parameter clause.
-abstract class StreamNotifierProviderBase<
-  NotifierT extends AsyncNotifierBase<T>,
-  T
-> extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
-    with FutureModifier<T> {
-  // ...
-}
-<<<
-abstract class StreamNotifierProviderBase<
-  NotifierT extends AsyncNotifierBase<T>,
-  T
->
-    extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
-    with FutureModifier<T> {
-  // ...
-}

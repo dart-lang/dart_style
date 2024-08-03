@@ -1,0 +1,7 @@
+>>>
+Zone.current.scheduleMicrotask(
+    Zone.current.bindCallback(callback, runGuarded: true));
+<<<
+Zone.current.scheduleMicrotask(
+  Zone.current.bindCallback(callback, runGuarded: true),
+);

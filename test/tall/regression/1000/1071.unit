@@ -1,0 +1,10 @@
+>>>
+class C {
+  external Pointer/*<SAFEARRAY>*/ parray;
+  external Pointer<Pointer/*<SAFEARRAY>*/ > pparray;
+}
+<<<
+class C {
+  external Pointer /*<SAFEARRAY>*/ parray;
+  external Pointer<Pointer /*<SAFEARRAY>*/> pparray;
+}

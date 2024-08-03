@@ -1,0 +1,15 @@
+>>> (indent 8)
+        await _loadProfileView(
+          userId: profileView.userId,
+          setLikeActionType: LikeActionType.block,
+          // Remove star too from any user that is blocked
+          setStarAction: false, onUserActionChanged: widget.onUserActionChanged,
+        );
+<<<
+        await _loadProfileView(
+          userId: profileView.userId,
+          setLikeActionType: LikeActionType.block,
+          // Remove star too from any user that is blocked
+          setStarAction: false,
+          onUserActionChanged: widget.onUserActionChanged,
+        );

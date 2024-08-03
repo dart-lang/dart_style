@@ -1,0 +1,15 @@
+>>>
+main() {
+  foo.bar.create(Thing()
+    ..a = b
+    ..c = d)
+    ..method().chain((_) => lambda);
+}
+<<<
+main() {
+  foo.bar.create(
+    Thing()
+      ..a = b
+      ..c = d,
+  )..method().chain((_) => lambda);
+}

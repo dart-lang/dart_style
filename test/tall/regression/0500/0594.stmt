@@ -1,0 +1,12 @@
+>>> (indent 6)
+      body = combineStatements(
+          new ExpressionStatement(lvalue
+              .buildAssignment(new VariableGet(variable), voidContext: true)),
+          body);
+<<<
+      body = combineStatements(
+        new ExpressionStatement(
+          lvalue.buildAssignment(new VariableGet(variable), voidContext: true),
+        ),
+        body,
+      );

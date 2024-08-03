@@ -1,0 +1,48 @@
+>>>
+class PestoStyle extends TextStyle {
+  const PestoStyle({
+    double fontSize = 12.0, // comment to force split
+  }) : super(
+          inherit: false, // comment to force split
+        );
+}
+<<<
+class PestoStyle extends TextStyle {
+  const PestoStyle({
+    double fontSize = 12.0, // comment to force split
+  }) : super(
+         inherit: false, // comment to force split
+       );
+}
+>>>
+class A {
+  A(
+    a, // comment to force split
+  ) : parameter =
+            "some very very very very very very very very very long param";
+}
+<<<
+class A {
+  A(
+    a, // comment to force split
+  ) : parameter =
+          "some very very very very very very very very very long param";
+}
+>>>
+class A {
+  final a;
+  const A.c1(
+    p, // comment to force split
+  ) : super(
+          a: p, // comment to force split
+        );
+}
+<<<
+class A {
+  final a;
+  const A.c1(
+    p, // comment to force split
+  ) : super(
+        a: p, // comment to force split
+      );
+}

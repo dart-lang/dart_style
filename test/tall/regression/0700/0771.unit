@@ -1,0 +1,15 @@
+>>>
+class C {
+  void
+      _SomethingWithAVeryLongName(
+          List<int> sixteenLetterers, String fiver, List<int> eightish)
+      native 'SomethingWithAVeryLongName'; // ignore: native_function_body_in_non
+}
+<<<
+class C {
+  void _SomethingWithAVeryLongName(
+    List<int> sixteenLetterers,
+    String fiver,
+    List<int> eightish,
+  ) native 'SomethingWithAVeryLongName'; // ignore: native_function_body_in_non
+}

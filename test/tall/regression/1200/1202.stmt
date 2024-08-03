@@ -1,0 +1,56 @@
+40 columns                              |
+>>>
+SomeLongFunctionName(
+  argument: () => [
+    listElement,
+    listElement,
+    listElement,
+  ],
+);
+<<<
+SomeLongFunctionName(
+  argument:
+      () => [
+        listElement,
+        listElement,
+        listElement,
+      ],
+);
+>>>
+SomeLongFunctionName(
+  argument: (longParameterName______) =>
+      <LongTypeArgument>[
+    listElement,
+    listElement,
+    listElement,
+  ],
+);
+<<<
+SomeLongFunctionName(
+  argument:
+      (longParameterName______) =>
+          <LongTypeArgument>[
+            listElement,
+            listElement,
+            listElement,
+          ],
+);
+>>>
+SomeLongFunctionName(
+  argument: (longParameterName______) =>
+      switch (e) {
+    1 => listElement,
+    2 => listElement,
+    3 => listElement,
+  },
+);
+<<<
+SomeLongFunctionName(
+  argument:
+      (longParameterName______) =>
+          switch (e) {
+            1 => listElement,
+            2 => listElement,
+            3 => listElement,
+          },
+);

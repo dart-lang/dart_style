@@ -1,0 +1,39 @@
+>>> (indent 2)
+  void onLink(DynamicLinkEvent event) {
+    var link = event.data?.link?.toString();
+    if (link != null && _firebaseAuth.isSignInWithEmailLink(link)) {
+      var url = Uri.parse(event.data.link.queryParameters['continueUrl']);
+      var email = url.queryParameters['e'];
+      if (email != null) {
+        _firebaseAuth
+            .signInWithEmailLink(
+          email: email,
+          emailLink: link,
+        )
+            .catchError(
+          (error) {
+            print('Auth Error $error');
+          },
+          test: (e) => e is FirebaseAuthException,
+        ).catchError(
+          () {},
+        );
+      }
+    }
+  }
+<<<
+  void onLink(DynamicLinkEvent event) {
+    var link = event.data?.link?.toString();
+    if (link != null && _firebaseAuth.isSignInWithEmailLink(link)) {
+      var url = Uri.parse(event.data.link.queryParameters['continueUrl']);
+      var email = url.queryParameters['e'];
+      if (email != null) {
+        _firebaseAuth
+            .signInWithEmailLink(email: email, emailLink: link)
+            .catchError((error) {
+              print('Auth Error $error');
+            }, test: (e) => e is FirebaseAuthException)
+            .catchError(() {});
+      }
+    }
+  }

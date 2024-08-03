@@ -1,0 +1,16 @@
+>>>
+abstract class StreamNotifierProviderBase<
+        NotifierT extends AsyncNotifierBase<T>,
+        T> extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
+    with FutureModifier<T> {
+// ...
+}
+<<<
+abstract class StreamNotifierProviderBase<
+  NotifierT extends AsyncNotifierBase<T>,
+  T
+>
+    extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
+    with FutureModifier<T> {
+  // ...
+}

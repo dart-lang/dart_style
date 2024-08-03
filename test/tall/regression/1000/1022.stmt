@@ -1,0 +1,120 @@
+>>>
+final documentChanges = (json['documentChanges'] is List && (json['documentChanges'].every((item) => TextDocumentEdit.canParse(item, nullLspJsonReporter))))
+        ? Either2<List<TextDocumentEdit>, List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>>.t1(
+            json['documentChanges']
+                ?.map((item) =>
+                    item != null ? TextDocumentEdit.fromJson(item) : null)
+                ?.cast<TextDocumentEdit>()
+                ?.toList())
+        : ((json['documentChanges'] is List && (json['documentChanges'].every((item) => (TextDocumentEdit.canParse(item, nullLspJsonReporter) || CreateFile.canParse(item, nullLspJsonReporter) || RenameFile.canParse(item, nullLspJsonReporter) || DeleteFile.canParse(item, nullLspJsonReporter)))))
+            ? Either2<List<TextDocumentEdit>, List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>>.t2(json['documentChanges']
+                ?.map((item) => TextDocumentEdit.canParse(item, nullLspJsonReporter)
+                    ? Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>.t1(
+                        item != null ? TextDocumentEdit.fromJson(item) : null)
+                    : (CreateFile.canParse(item, nullLspJsonReporter)
+                        ? Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>.t2(item != null ? CreateFile.fromJson(item) : null)
+                        : (RenameFile.canParse(item, nullLspJsonReporter) ? Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>.t3(item != null ? RenameFile.fromJson(item) : null) : (DeleteFile.canParse(item, nullLspJsonReporter) ? Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>.t4(item != null ? DeleteFile.fromJson(item) : null) : (item == null ? null : (throw '''$item was not one of (TextDocumentEdit, CreateFile, RenameFile, DeleteFile)'''))))))
+                ?.cast<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>()
+                ?.toList())
+            : (json['documentChanges'] == null ? null : (throw '''${json['documentChanges']} was not one of (List<TextDocumentEdit>, List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>)''')));
+<<<
+final documentChanges =
+    (json['documentChanges'] is List &&
+            (json['documentChanges'].every(
+              (item) => TextDocumentEdit.canParse(item, nullLspJsonReporter),
+            )))
+        ? Either2<
+          List<TextDocumentEdit>,
+          List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>
+        >.t1(
+          json['documentChanges']
+              ?.map(
+                (item) => item != null ? TextDocumentEdit.fromJson(item) : null,
+              )
+              ?.cast<TextDocumentEdit>()
+              ?.toList(),
+        )
+        : ((json['documentChanges'] is List &&
+                (json['documentChanges'].every(
+                  (item) =>
+                      (TextDocumentEdit.canParse(item, nullLspJsonReporter) ||
+                          CreateFile.canParse(item, nullLspJsonReporter) ||
+                          RenameFile.canParse(item, nullLspJsonReporter) ||
+                          DeleteFile.canParse(item, nullLspJsonReporter)),
+                )))
+            ? Either2<
+              List<TextDocumentEdit>,
+              List<
+                Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>
+              >
+            >.t2(
+              json['documentChanges']
+                  ?.map(
+                    (item) =>
+                        TextDocumentEdit.canParse(item, nullLspJsonReporter)
+                            ? Either4<
+                              TextDocumentEdit,
+                              CreateFile,
+                              RenameFile,
+                              DeleteFile
+                            >.t1(
+                              item != null
+                                  ? TextDocumentEdit.fromJson(item)
+                                  : null,
+                            )
+                            : (CreateFile.canParse(item, nullLspJsonReporter)
+                                ? Either4<
+                                  TextDocumentEdit,
+                                  CreateFile,
+                                  RenameFile,
+                                  DeleteFile
+                                >.t2(
+                                  item != null
+                                      ? CreateFile.fromJson(item)
+                                      : null,
+                                )
+                                : (RenameFile.canParse(
+                                      item,
+                                      nullLspJsonReporter,
+                                    )
+                                    ? Either4<
+                                      TextDocumentEdit,
+                                      CreateFile,
+                                      RenameFile,
+                                      DeleteFile
+                                    >.t3(
+                                      item != null
+                                          ? RenameFile.fromJson(item)
+                                          : null,
+                                    )
+                                    : (DeleteFile.canParse(
+                                          item,
+                                          nullLspJsonReporter,
+                                        )
+                                        ? Either4<
+                                          TextDocumentEdit,
+                                          CreateFile,
+                                          RenameFile,
+                                          DeleteFile
+                                        >.t4(
+                                          item != null
+                                              ? DeleteFile.fromJson(item)
+                                              : null,
+                                        )
+                                        : (item == null
+                                            ? null
+                                            : (throw '''$item was not one of (TextDocumentEdit, CreateFile, RenameFile, DeleteFile)'''))))),
+                  )
+                  ?.cast<
+                    Either4<
+                      TextDocumentEdit,
+                      CreateFile,
+                      RenameFile,
+                      DeleteFile
+                    >
+                  >()
+                  ?.toList(),
+            )
+            : (json['documentChanges'] == null
+                ? null
+                : (throw '''${json['documentChanges']} was not one of (List<TextDocumentEdit>, List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>)''')));

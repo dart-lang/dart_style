@@ -1,0 +1,12 @@
+>>>
+void main() {
+  var controller = new StreamController<T>(sync: true, onCancel: () {
+    return Future.wait(operationSet.map((operation) => operation.cancel()));
+  });
+}
+<<<
+void main() {
+  var controller = new StreamController<T>(sync: true, onCancel: () {
+    return Future.wait(operationSet.map((operation) => operation.cancel()));
+  });
+}

@@ -1,0 +1,73 @@
+>>>
+_Rule OR(
+        [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, //
+        t, u, v, w, x, y, z])  =>
+    _compileMultiRule(
+        (a is List && b == null) // Backward compat. OR([a, b]) => OR(a, b).
+            ? a
+            : _unspread(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s,
+                t, u, v, w, x, y, z),
+        false,
+        (compiledRules, valueCount, reducer) => new _ChoiceRule(compiledRules));
+<<<
+_Rule OR([
+  a,
+  b,
+  c,
+  d,
+  e,
+  f,
+  g,
+  h,
+  i,
+  j,
+  k,
+  l,
+  m,
+  n,
+  o,
+  p,
+  q,
+  r,
+  s, //
+  t,
+  u,
+  v,
+  w,
+  x,
+  y,
+  z,
+]) => _compileMultiRule(
+  (a is List && b == null) // Backward compat. OR([a, b]) => OR(a, b).
+      ? a
+      : _unspread(
+        a,
+        b,
+        c,
+        d,
+        e,
+        f,
+        g,
+        h,
+        i,
+        j,
+        k,
+        l,
+        m,
+        n,
+        o,
+        p,
+        q,
+        r,
+        s,
+        t,
+        u,
+        v,
+        w,
+        x,
+        y,
+        z,
+      ),
+  false,
+  (compiledRules, valueCount, reducer) => new _ChoiceRule(compiledRules),
+);
