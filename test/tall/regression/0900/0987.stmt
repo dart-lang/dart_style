@@ -1,0 +1,22 @@
+>>> (indent 10)
+          print([
+            Class(
+                aaaaaaaaaaaaaaaaaaaaaaaaaaa, 'Aaaa-aaaaa aaaaaaa aaaaaaaaaaaaaaa',
+                aaaAaaaa: 130,
+                ccccccc:
+                    'Aaa aaaaaaa aaaaaa aa aaaaaaaaaaaaaa aaaaa aaaaaaaa aa '
+                    'aaaaaaaaaaaaaa aaaa aa aaaaaaaa aa Aaaa-aaaaa.',
+                aaaaaaaAaAaaaaaaAaa: true),
+          ]);
+<<<
+          print([
+            Class(
+              aaaaaaaaaaaaaaaaaaaaaaaaaaa,
+              'Aaaa-aaaaa aaaaaaa aaaaaaaaaaaaaaa',
+              aaaAaaaa: 130,
+              ccccccc:
+                  'Aaa aaaaaaa aaaaaa aa aaaaaaaaaaaaaa aaaaa aaaaaaaa aa '
+                  'aaaaaaaaaaaaaa aaaa aa aaaaaaaa aa Aaaa-aaaaa.',
+              aaaaaaaAaAaaaaaaAaa: true,
+            ),
+          ]);

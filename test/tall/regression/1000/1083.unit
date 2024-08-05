@@ -1,0 +1,164 @@
+>>>
+//GOOD: block body
+test0a() {
+  func1(() {
+    print('foo');
+    print('bar');
+  });
+}
+
+//BAD: multiline expression body
+test0b() => func1(() {
+      print('foo');
+      print('bar');
+    });
+<<<
+//GOOD: block body
+test0a() {
+  func1(() {
+    print('foo');
+    print('bar');
+  });
+}
+
+//BAD: multiline expression body
+test0b() => func1(() {
+  print('foo');
+  print('bar');
+});
+>>>
+test1a() {
+  //GOOD: block body
+  func1(() {
+    func1(() {
+      print('foo');
+      print('bar');
+    });
+  });
+}
+
+test1b() {
+  //BAD: multiline expression body
+  func1(() => func1(() {
+        print('foo');
+        print('bar');
+      }));
+}
+
+test1c() {
+  //GOOD: multiline expression body if we insert an extra last comma in parma list
+  func1(
+    () => func1(() {
+      print('foo');
+      print('bar');
+    }),
+  );
+}
+<<<
+test1a() {
+  //GOOD: block body
+  func1(() {
+    func1(() {
+      print('foo');
+      print('bar');
+    });
+  });
+}
+
+test1b() {
+  //BAD: multiline expression body
+  func1(
+    () => func1(() {
+      print('foo');
+      print('bar');
+    }),
+  );
+}
+
+test1c() {
+  //GOOD: multiline expression body if we insert an extra last comma in parma list
+  func1(
+    () => func1(() {
+      print('foo');
+      print('bar');
+    }),
+  );
+}
+>>>
+test2a() {
+  //GOOD: block body
+  func2(1, () {
+    func1(() {
+      print('foo');
+    });
+  });
+}
+
+test2b() {
+  //GOOD: block body, add extra comma  in param list
+  func2(
+    1,
+    () {
+      func1(() {
+        print('foo');
+      });
+    },
+  );
+}
+
+test2c() {
+  //BAD: multiline expression body, not only BAD indentation but also BAD new line
+  func2(
+      1,
+      () => func1(() {
+            print('foo');
+          }));
+}
+
+test2d() {
+  //GOOD: multiline expression body, add extra comma  in param list
+  func2(
+    1,
+    () => func1(() {
+      print('foo');
+    }),
+  );
+}
+<<<
+test2a() {
+  //GOOD: block body
+  func2(1, () {
+    func1(() {
+      print('foo');
+    });
+  });
+}
+
+test2b() {
+  //GOOD: block body, add extra comma  in param list
+  func2(1, () {
+    func1(() {
+      print('foo');
+    });
+  });
+}
+
+test2c() {
+  //BAD: multiline expression body, not only BAD indentation but also BAD new line
+  func2(
+    1,
+    () => func1(() {
+      print('foo');
+    }),
+  );
+}
+
+test2d() {
+  //GOOD: multiline expression body, add extra comma  in param list
+  func2(
+    1,
+    () => func1(() {
+      print('foo');
+    }),
+  );
+}

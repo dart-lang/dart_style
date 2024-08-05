@@ -1,0 +1,20 @@
+>>>
+class A{
+  A(this.name): super();
+  final String name;
+}
+
+class B{
+  B(this.name);
+  final String name;
+}
+<<<
+class A {
+  A(this.name) : super();
+  final String name;
+}
+
+class B {
+  B(this.name);
+  final String name;
+}

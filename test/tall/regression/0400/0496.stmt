@@ -1,0 +1,23 @@
+>>> (indent 4)
+    selection.callMethod('enter').callMethod('append', ["svg"]).callMethod(
+            'attr', ["class", "box"]).callMethod('attr', ["width", width])
+        .callMethod('attr', ["height", height]).callMethod('append', ["g"])
+        .callMethod(
+            'attr', ["transform", 'translate(${margin[3]},${margin[0]})'])
+        .callMethod('append', ["text"]).callMethod('attr', ["class", "label"])
+        .callMethod('text', [(_, i, __) => groups[i]]);
+<<<
+    selection
+        .callMethod('enter')
+        .callMethod('append', ["svg"])
+        .callMethod('attr', ["class", "box"])
+        .callMethod('attr', ["width", width])
+        .callMethod('attr', ["height", height])
+        .callMethod('append', ["g"])
+        .callMethod('attr', [
+          "transform",
+          'translate(${margin[3]},${margin[0]})',
+        ])
+        .callMethod('append', ["text"])
+        .callMethod('attr', ["class", "label"])
+        .callMethod('text', [(_, i, __) => groups[i]]);

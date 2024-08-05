@@ -1,0 +1,56 @@
+>>>
+void testFormatting(List<String> list) {
+  list.reversed
+      .map((it) {
+        if (it.contains("a")) {
+          return it.toUpperCase();
+        } else {
+          return it.toLowerCase();
+        }
+      })
+      .expand((it) => it.runes)
+      .firstWhere((it) => it < "T".runes.first);
+}
+<<<
+void testFormatting(List<String> list) {
+  list.reversed
+      .map((it) {
+        if (it.contains("a")) {
+          return it.toUpperCase();
+        } else {
+          return it.toLowerCase();
+        }
+      })
+      .expand((it) => it.runes)
+      .firstWhere((it) => it < "T".runes.first);
+}
+>>>
+void testFormatting(List<String> list) {
+  list.reversed
+      .map((it) {
+        if (it.contains("a")) {
+          return it.toUpperCase();
+        } else {
+          return it.toLowerCase();
+        }
+      })
+        .map((it) => it.toString())
+          .map((it) => it.toString())
+            .map((it) => it.toString())
+        	  .map((it) => it.toString());
+}
+<<<
+void testFormatting(List<String> list) {
+  list.reversed
+      .map((it) {
+        if (it.contains("a")) {
+          return it.toUpperCase();
+        } else {
+          return it.toLowerCase();
+        }
+      })
+      .map((it) => it.toString())
+      .map((it) => it.toString())
+      .map((it) => it.toString())
+      .map((it) => it.toString());
+}

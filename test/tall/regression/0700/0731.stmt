@@ -1,0 +1,109 @@
+>>> (indent 4)
+    filterUpdateSubscription = sl
+        .get<EventManager>()
+        .updateFilterCommand
+        .results
+        .mergeWith([sl.get<PlaceManager>().updateFilterCommand.results]).listen(
+            (filterState) async {
+      AppKeys.mapView?.currentState?.activateMapOverlay();
+      await Future.delayed(Duration(milliseconds: 100));
+      setState(() {
+        filterIsActive = filterState;
+      });
+    });
+<<<
+    filterUpdateSubscription = sl
+        .get<EventManager>()
+        .updateFilterCommand
+        .results
+        .mergeWith([sl.get<PlaceManager>().updateFilterCommand.results])
+        .listen((filterState) async {
+          AppKeys.mapView?.currentState?.activateMapOverlay();
+          await Future.delayed(Duration(milliseconds: 100));
+          setState(() {
+            filterIsActive = filterState;
+          });
+        });
+>>>
+{
+  var placeManagerUpdateResults___________________________ = [
+    sl.get<PlaceManager>().updateFilterCommand.results
+  ];
+
+  var filterUpdateSubscription = sl
+      .get<EventManager>()
+      .updateFilterCommand
+      .results
+      .mergeWith(placeManagerUpdateResults___________________________)
+      .listen((filterState) async {
+    AppKeys.mapView?.currentState?.activateMapOverlay();
+    await Future.delayed(Duration(milliseconds: 100));
+    setState(() {
+      filterIsActive = filterState;
+    });
+  });
+}
+<<<
+{
+  var placeManagerUpdateResults___________________________ = [
+    sl.get<PlaceManager>().updateFilterCommand.results,
+  ];
+
+  var filterUpdateSubscription = sl
+      .get<EventManager>()
+      .updateFilterCommand
+      .results
+      .mergeWith(placeManagerUpdateResults___________________________)
+      .listen((filterState) async {
+        AppKeys.mapView?.currentState?.activateMapOverlay();
+        await Future.delayed(Duration(milliseconds: 100));
+        setState(() {
+          filterIsActive = filterState;
+        });
+      });
+}
+>>> (indent 4)
+    return Observable(_databaseService.getChatEntries(
+      event,
+    )).map((entryList) {
+      entryList.forEach(
+          (entry) => entry.isFromCurrentUser = (entry.userId == _userManager.currentUser.id));
+      return entryList;
+    });
+<<<
+    return Observable(_databaseService.getChatEntries(event)).map((entryList) {
+      entryList.forEach(
+        (entry) =>
+            entry.isFromCurrentUser =
+                (entry.userId == _userManager.currentUser.id),
+      );
+      return entryList;
+    });
+>>> (indent 4)
+    return Observable(_databaseService.getChatEntries(
+      event,
+    )).map((entryList) {
+        entryList.forEach(
+            (entry) => entry.isFromCurrentUser = (entry.userId == _userManager.currentUser.id));
+        return entryList;
+      }).where((entry) {
+          return entry != null;
+        }).map((entry) {
+            return entry.toString();
+          });
+<<<
+    return Observable(_databaseService.getChatEntries(event))
+        .map((entryList) {
+          entryList.forEach(
+            (entry) =>
+                entry.isFromCurrentUser =
+                    (entry.userId == _userManager.currentUser.id),
+          );
+          return entryList;
+        })
+        .where((entry) {
+          return entry != null;
+        })
+        .map((entry) {
+          return entry.toString();
+        });

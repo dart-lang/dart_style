@@ -1,0 +1,68 @@
+>>>
+void assertThatImageLoadingSucceeds(NetworkImageWithRetry subject) {
+  subject
+      .load(
+    subject,
+    _ambiguate(PaintingBinding.instance)!.instantiateImageCodec,
+  )
+      .addListener(
+    ImageStreamListener(
+      expectAsync2((ImageInfo image, bool synchronousCall) {
+	expect(image.image.height, 1);
+	expect(image.image.width, 1);
+      }),
+    ),
+  );
+}
+<<<
+void assertThatImageLoadingSucceeds(NetworkImageWithRetry subject) {
+  subject
+      .load(
+        subject,
+        _ambiguate(PaintingBinding.instance)!.instantiateImageCodec,
+      )
+      .addListener(
+        ImageStreamListener(
+          expectAsync2((ImageInfo image, bool synchronousCall) {
+            expect(image.image.height, 1);
+            expect(image.image.width, 1);
+          }),
+        ),
+      );
+}
+>>>
+main() {
+_httpCacheManager
+    ._(
+  url,
+  cacheKey: cacheKey,
+  cacheDir: cacheDir,
+  headers: headers,
+  chunkEvents: chunkEvents,
+  cancelable: cancelable,
+)
+    .then((value) {
+  completer.complete(value);
+}).catchError((dynamic error, StackTrace stackTrace) {
+  completer.completeError(error, stackTrace);
+}).whenComplete(() => _tasks.remove(url));
+}
+<<<
+main() {
+  _httpCacheManager
+      ._(
+        url,
+        cacheKey: cacheKey,
+        cacheDir: cacheDir,
+        headers: headers,
+        chunkEvents: chunkEvents,
+        cancelable: cancelable,
+      )
+      .then((value) {
+        completer.complete(value);
+      })
+      .catchError((dynamic error, StackTrace stackTrace) {
+        completer.completeError(error, stackTrace);
+      })
+      .whenComplete(() => _tasks.remove(url));
+}

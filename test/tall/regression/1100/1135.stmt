@@ -1,0 +1,40 @@
+>>> (indent 2)
+  file
+      .readAsBytes()
+      .then(
+        (bytes) => ApiClient.instance.files.upload(
+          ownershipType: ownershipType,
+          file: MultipartFile.fromBytes(
+            bytes,
+            filename: filename,
+          ),
+        ),
+      )
+      .then(
+    (storageFile) {
+      _value = _value.add(id, FileUpload.fromStorageFile(storageFile));
+      notifyListeners();
+    },
+  ).catchError(
+    (Object e) {
+      _value = _value.add(id, FileUpload.error(error: e, name: filename));
+      notifyListeners();
+    },
+  );
+<<<
+  file
+      .readAsBytes()
+      .then(
+        (bytes) => ApiClient.instance.files.upload(
+          ownershipType: ownershipType,
+          file: MultipartFile.fromBytes(bytes, filename: filename),
+        ),
+      )
+      .then((storageFile) {
+        _value = _value.add(id, FileUpload.fromStorageFile(storageFile));
+        notifyListeners();
+      })
+      .catchError((Object e) {
+        _value = _value.add(id, FileUpload.error(error: e, name: filename));
+        notifyListeners();
+      });

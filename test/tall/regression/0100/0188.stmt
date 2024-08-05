@@ -1,0 +1,26 @@
+>>> (indent 2)
+  method() => Intl.message("This comes from a method",
+        name: 'method', desc: 'This is a method with a '
+        'long description which spans '
+        'multiple lines.');
+<<<
+  method() => Intl.message(
+    "This comes from a method",
+    name: 'method',
+    desc:
+        'This is a method with a '
+        'long description which spans '
+        'multiple lines.',
+  );
+>>> (indent 6)
+      testHtml('DOM clobbering of attributes with multiple nodes', validator,
+          "<form onmouseover='alert(1)'><input name='attributes'>"
+          "<input name='attributes'>", "");
+<<<
+      testHtml(
+        'DOM clobbering of attributes with multiple nodes',
+        validator,
+        "<form onmouseover='alert(1)'><input name='attributes'>"
+            "<input name='attributes'>",
+        "",
+      );

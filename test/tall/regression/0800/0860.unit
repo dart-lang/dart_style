@@ -1,0 +1,45 @@
+>>>
+class SomeClassName {
+  bool aNotCrazyLongField;
+  SomeClassName(
+      @Inject(someThing)
+          bool aLongArgumentNameThatHasSomeWordsInIt,
+      @Inject(aReallyReallyReallySuperLongNameThatTakesUpManyCharactersOnItsOwnHere)
+          bool anotherVeryLongArgumentNameToMatchAbove)
+      : aNotCrazyLongField = aLongArgumentNameThatHasSomeWordsInIt || anotherVeryLongArgumentNameToMatchAbove;
+}
+
+class AnotherClass {
+  bool aNotCrazyLongField;
+  AnotherClass(
+      @Inject(someThing)
+          bool aLongArgumentNameThatHasSomeWordsInIt,
+      @Inject(aSlightlyShorterNameThatStillCausesTheAnnotationSplitButNotPast80)
+          bool anotherVeryLongArgumentNameToMatchAbove)
+      : aNotCrazyLongField = aLongArgumentNameThatHasSomeWordsInIt ||
+            anotherVeryLongArgumentNameToMatchAbove;
+}
+<<<
+class SomeClassName {
+  bool aNotCrazyLongField;
+  SomeClassName(
+    @Inject(someThing) bool aLongArgumentNameThatHasSomeWordsInIt,
+    @Inject(
+      aReallyReallyReallySuperLongNameThatTakesUpManyCharactersOnItsOwnHere,
+    )
+    bool anotherVeryLongArgumentNameToMatchAbove,
+  ) : aNotCrazyLongField =
+          aLongArgumentNameThatHasSomeWordsInIt ||
+          anotherVeryLongArgumentNameToMatchAbove;
+}
+
+class AnotherClass {
+  bool aNotCrazyLongField;
+  AnotherClass(
+    @Inject(someThing) bool aLongArgumentNameThatHasSomeWordsInIt,
+    @Inject(aSlightlyShorterNameThatStillCausesTheAnnotationSplitButNotPast80)
+    bool anotherVeryLongArgumentNameToMatchAbove,
+  ) : aNotCrazyLongField =
+          aLongArgumentNameThatHasSomeWordsInIt ||
+          anotherVeryLongArgumentNameToMatchAbove;
+}

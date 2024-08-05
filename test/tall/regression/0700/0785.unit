@@ -1,0 +1,36 @@
+>>>
+class C {
+  static HandlerResponse<RouteState> handleRouteReplaced(
+    ReplaceRoute action,
+    RouteState state,
+  ) =>
+      HandlerResponse.updateOnly(
+        state.copy(active: action.route, history: state.history),
+      );
+}
+<<<
+class C {
+  static HandlerResponse<RouteState> handleRouteReplaced(
+    ReplaceRoute action,
+    RouteState state,
+  ) => HandlerResponse.updateOnly(
+    state.copy(active: action.route, history: state.history),
+  );
+}
+>>>
+class C {
+  @override
+  Future<void> report({
+    String tag,
+    String messageVeryLongParameterToForceSplit
+  }) =>
+      Future.value(null);
+}
+<<<
+class C {
+  @override
+  Future<void> report({
+    String tag,
+    String messageVeryLongParameterToForceSplit,
+  }) => Future.value(null);
+}

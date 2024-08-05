@@ -1,0 +1,53 @@
+>>> (indent 4)
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+      'relocationOffered': relocation,
+      'workSituation': workSituation,
+      'zipCode': zipCode,
+    });
+<<<
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+          'relocationOffered': relocation,
+          'workSituation': workSituation,
+          'zipCode': zipCode,
+        });
+>>> (indent 4)
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+      'relocationOffered': relocation,
+      'workSituation': workSituation,
+      'zipCode': zipCode,
+    }).then((value) => null);
+<<<
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+          'relocationOffered': relocation,
+          'workSituation': workSituation,
+          'zipCode': zipCode,
+        })
+        .then((value) => null);
+>>> (indent 4)
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+          'relocationOffered': relocation,
+          'workSituation': workSituation,
+          'zipCode': zipCode,
+        })
+        .then((value) => null)
+        .then((value) => null);
+<<<
+    _firestore //
+        .doc('$_usersCollection/$uid/streams/$streamId')
+        .update(<String, dynamic>{
+          'relocationOffered': relocation,
+          'workSituation': workSituation,
+          'zipCode': zipCode,
+        })
+        .then((value) => null)
+        .then((value) => null);

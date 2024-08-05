@@ -1,0 +1,28 @@
+>>>
+var s1 = <String>[
+  'a'
+  'b' + 'c',
+  'd' + 'e'
+  'f',
+];
+var s2 = <String>[
+  'a' 'b' + 'c',
+  'd' + 'e' 'f',
+];
+<<<
+var s1 = <String>[
+  'a'
+          'b' +
+      'c',
+  'd' +
+      'e'
+          'f',
+];
+var s2 = <String>[
+  'a'
+          'b' +
+      'c',
+  'd' +
+      'e'
+          'f',
+];

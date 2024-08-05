@@ -1,0 +1,28 @@
+>>>
+class C {
+  Future<
+          (
+            List<SomeLongTypeName_____________> param1,
+            List<SomeLongTypeName____> parameter2,
+            String parameter3
+          )>
+      _someLongMethodName_______________(
+          SomeLongTypeName____________ parameter) async {
+    ;
+  }
+}
+<<<
+class C {
+  Future<
+    (
+      List<SomeLongTypeName_____________> param1,
+      List<SomeLongTypeName____> parameter2,
+      String parameter3,
+    )
+  >
+  _someLongMethodName_______________(
+    SomeLongTypeName____________ parameter,
+  ) async {
+    ;
+  }
+}

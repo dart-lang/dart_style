@@ -1,0 +1,157 @@
+>>>
+void main() async {
+  (await {
+    'asdf': 'fdsa', // comment to force split
+  }.toString())
+      .foo(bar('baz'), // comment to force split
+      );
+}
+<<<
+void main() async {
+  (await {
+        'asdf': 'fdsa', // comment to force split
+      }.toString())
+      .foo(
+        bar('baz'), // comment to force split
+      );
+}
+>>>
+Future<void> a() {
+  dynamic foo;
+  return foo.aaaaaaaaaa
+      .aaaaaaaaaa()
+      .aaaaaaaaaa
+      .aaaaaaaaaa
+      .aaaaaaaaaa()
+      .catchError((e) {
+    print('');
+  });
+}
+<<<
+Future<void> a() {
+  dynamic foo;
+  return foo.aaaaaaaaaa
+      .aaaaaaaaaa()
+      .aaaaaaaaaa
+      .aaaaaaaaaa
+      .aaaaaaaaaa()
+      .catchError((e) {
+        print('');
+      });
+}
+>>>
+class x {
+  static void y() {
+    http
+        .post(
+      Uri.parse('https://'),
+      body: jsonEncode({}),
+    )
+        .then((value) {
+      print("ok");
+    }).catchError((error) {
+      print("fail");
+    });
+  }
+}
+<<<
+class x {
+  static void y() {
+    http
+        .post(Uri.parse('https://'), body: jsonEncode({}))
+        .then((value) {
+          print("ok");
+        })
+        .catchError((error) {
+          print("fail");
+        });
+  }
+}
+>>>
+main() {
+  return getIt
+        .getAsync<DbDao>()
+        .asStream()
+        .switchMap(
+          (dao) => dao.fetchValues(
+            id,
+            id2,
+            id3,
+          ),
+        )
+        .map((values) => {for (var v in values) v.id: v})
+        .distinct((prev, next) => mapEquals(prev, next))
+        .map((values) {
+      print("1");
+      print("2");
+      for (var value in values) {
+        print("3");
+        while (value.next != null) {
+          print("4");
+          print("5");
+        }
+        print("6");
+      }
+      return values;
+    });
+}
+<<<
+main() {
+  return getIt
+      .getAsync<DbDao>()
+      .asStream()
+      .switchMap((dao) => dao.fetchValues(id, id2, id3))
+      .map((values) => {for (var v in values) v.id: v})
+      .distinct((prev, next) => mapEquals(prev, next))
+      .map((values) {
+        print("1");
+        print("2");
+        for (var value in values) {
+          print("3");
+          while (value.next != null) {
+            print("4");
+            print("5");
+          }
+          print("6");
+        }
+        return values;
+      });
+}
+>>> (indent 8)
+        main() {
+          return Stream.value(null)
+              .flatMap(
+            (value) => _client
+                .apiUserLoginPost(
+                  body: LoginRequest(email: email, password: password),
+                )
+                .asStream(),
+          )
+              .doOnData((response) {
+            if (response.error != null) {
+              throw Exception(response.error);
+            }
+          }).map((tokenResponse) {
+            return tokenResponse.body!.token!;
+          });
+        }
+<<<
+        main() {
+          return Stream.value(null)
+              .flatMap(
+                (value) =>
+                    _client
+                        .apiUserLoginPost(
+                          body: LoginRequest(email: email, password: password),
+                        )
+                        .asStream(),
+              )
+              .doOnData((response) {
+                if (response.error != null) {
+                  throw Exception(response.error);
+                }
+              })
+              .map((tokenResponse) {
+                return tokenResponse.body!.token!;
+              });
+        }

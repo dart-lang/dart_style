@@ -1,0 +1,8 @@
+>>>
+assert(
+    someLongCondition, 'Some long assert message that is a longish sentence.');
+<<<
+assert(
+  someLongCondition,
+  'Some long assert message that is a longish sentence.',
+);

@@ -1,0 +1,58 @@
+>>>
+class PublicType {
+  const factory PublicType.constructor(
+    String a,
+    Type b,
+  ) = PublicTypeImpl._;
+
+  factory PublicType.constructor(
+    String a,
+    Type b,
+  ) =>
+      new PublicTypeImpl._(a, b);
+}
+<<<
+class PublicType {
+  const factory PublicType.constructor(String a, Type b) = PublicTypeImpl._;
+
+  factory PublicType.constructor(String a, Type b) => new PublicTypeImpl._(
+    a,
+    b,
+  );
+}
+>>>
+class PublicType {
+  const factory PublicType.constructor1234567890121416182022242628303234363840(
+    a,
+    b,
+  ) = PublicTypeImpl._;
+
+  factory PublicType.constructor1234567890121416182022242628303234363840(
+    a,
+    b,
+  ) => new PublicTypeImpl._(a, b);
+
+  const factory PublicType.constructor(a, b) =
+      PublicTypeImpl._1234567890121416182022242628303234363840;
+
+  factory PublicType.constructor(a, b) =>
+      new PublicTypeImpl._1234567890121416182022242628303234363840(a, b);
+}
+<<<
+class PublicType {
+  const factory PublicType.constructor1234567890121416182022242628303234363840(
+    a,
+    b,
+  ) = PublicTypeImpl._;
+
+  factory PublicType.constructor1234567890121416182022242628303234363840(
+    a,
+    b,
+  ) => new PublicTypeImpl._(a, b);
+
+  const factory PublicType.constructor(a, b) =
+      PublicTypeImpl._1234567890121416182022242628303234363840;
+
+  factory PublicType.constructor(a, b) =>
+      new PublicTypeImpl._1234567890121416182022242628303234363840(a, b);
+}

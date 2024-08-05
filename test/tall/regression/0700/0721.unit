@@ -1,0 +1,34 @@
+>>>
+_icon(Project project, context) =>
+  ClickIcon(
+    diameter: 56.0,
+    iconUrl: project.iconUrl,
+    margin: EdgeInsets.only(right: 8.0),
+    linkUrl: _linkRouter(project, project.www),
+    callback: _clickRouter(project, context),
+    copy: !project.locked,
+  );
+<<<
+_icon(Project project, context) => ClickIcon(
+  diameter: 56.0,
+  iconUrl: project.iconUrl,
+  margin: EdgeInsets.only(right: 8.0),
+  linkUrl: _linkRouter(project, project.www),
+  callback: _clickRouter(project, context),
+  copy: !project.locked,
+);
+>>>
+class C {
+  static token() => FirebaseMessaging().getToken();
+
+  static unsubscribe(String topic) =>
+      FirebaseMessaging().unsubscribeFromTopic(topic);
+}
+<<<
+class C {
+  static token() => FirebaseMessaging().getToken();
+
+  static unsubscribe(String topic) => FirebaseMessaging().unsubscribeFromTopic(
+    topic,
+  );
+}

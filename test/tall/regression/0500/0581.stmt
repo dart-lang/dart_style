@@ -1,0 +1,13 @@
+>>> (indent 10)
+          expect(
+              events[0],
+              invokesMethod('file').on(fs).withPositionalArguments(
+                  <String>['/foo']).withResult(isFile));
+<<<
+          expect(
+            events[0],
+            invokesMethod('file')
+                .on(fs)
+                .withPositionalArguments(<String>['/foo'])
+                .withResult(isFile),
+          );

@@ -1,0 +1,24 @@
+>>>
+f() {
+  a.b().m(
+    t: '', // comment to force split
+  );
+  a.b.m(
+    t: '', // comment to force split
+  );
+  a.m(
+    t: '', // comment to force split
+  );
+}
+<<<
+f() {
+  a.b().m(
+    t: '', // comment to force split
+  );
+  a.b.m(
+    t: '', // comment to force split
+  );
+  a.m(
+    t: '', // comment to force split
+  );
+}

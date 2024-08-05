@@ -1,0 +1,13 @@
+>>>
+it('should complete with an error if the name or website is null or both '
+    'are unchanged', async(() {
+  ICouldDoAnything();
+}));
+<<<
+it(
+  'should complete with an error if the name or website is null or both '
+  'are unchanged',
+  async(() {
+    ICouldDoAnything();
+  }),
+);

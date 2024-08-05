@@ -1,0 +1,44 @@
+>>> (indent 4)
+main() {
+    return maps
+        .where((map) => map != null)
+        .expand((map) => map!.entries)
+        .fold({}, (merged, entry) {
+      merged[kp(entry.key)] = vp(entry.value);
+      return merged;
+    });
+}
+<<<
+    main() {
+      return maps
+          .where((map) => map != null)
+          .expand((map) => map!.entries)
+          .fold({}, (merged, entry) {
+            merged[kp(entry.key)] = vp(entry.value);
+            return merged;
+          });
+    }
+>>>
+class C {
+  static List<V> spaceBetween<V>(
+    List<V> collection,
+    V spacer, {
+    bool? bothEnds = false,
+    bool? leftEnd = false,
+    bool? rightEnd = false,
+  }) {
+    ;
+  }
+}
+<<<
+class C {
+  static List<V> spaceBetween<V>(
+    List<V> collection,
+    V spacer, {
+    bool? bothEnds = false,
+    bool? leftEnd = false,
+    bool? rightEnd = false,
+  }) {
+    ;
+  }
+}

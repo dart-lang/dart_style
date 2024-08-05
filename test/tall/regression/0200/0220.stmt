@@ -1,0 +1,40 @@
+>>>
+expect(b, 0,
+    reason: 'we pick the "package:" url as the canonical url for script tags.');
+<<<
+expect(
+  b,
+  0,
+  reason: 'we pick the "package:" url as the canonical url for script tags.',
+);
+>>> (indent 2)
+expect(b, 0,
+    reason: 'we pick the "package:" url as the canonical url for script tags.');
+<<<
+  expect(
+    b,
+    0,
+    reason: 'we pick the "package:" url as the canonical url for script tags.',
+  );
+>>> (indent 4)
+expect(b, 0,
+    reason: 'we pick the "package:" url as the canonical url for script tags.');
+<<<
+    expect(
+      b,
+      0,
+      reason:
+          'we pick the "package:" url as the canonical url for script tags.',
+    );
+>>> (indent 6)
+expect(b, 0,
+    reason: 'we pick the "package:" url as the canonical url for script '
+        'tags.');
+<<<
+      expect(
+        b,
+        0,
+        reason:
+            'we pick the "package:" url as the canonical url for script '
+            'tags.',
+      );
