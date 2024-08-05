@@ -1,0 +1,149 @@
+>>>
+class C {
+  late final Command<MessageUpdateRequest, void> addNewMessageCommand =
+  Command.createAsyncNoResult<MessageUpdateRequest>((newMessage) async {
+      final chatApi = ChatsApi(di<ApiClient>());
+      if (_target == null) {
+        assert(_chatPartner != null);
+        _target = await chatApi.sendMessageToUserAndCreateChatIfNeeded(
+            _chatPartner!.id.toString(),
+            messageUpdateRequest: newMessage);
+      } else {
+        await chatApi.addMessageToChat(chatId, messageUpdateRequest: newMessage);
+      }
+      notifyListeners();
+    },
+      errorFilter: ApiErrorFilter(
+        (error) => error.code == 412 || error.code == 403,
+        ErrorReaction.localHandler,
+      ),debugName: cmdAddMessage)
+    ..errors.listen((ex,_) {
+      final apiError = ex!.error as ApiException;
+
+    /// TODO adjust to chatmessagesource
+    items.removeLast();
+    lastMessage = null;
+    refreshItemCOunt();
+    if (apiError.message?.contains('limited to 15 people') ?? false) {
+      di<InteractionManager>().pushToastWithBuilder(
+        (context) => ToastConfig(
+          context.l10n.messagingLimitPerDay,
+        ),
+      );
+    } else if (apiError.message?.contains('Permission denied') ?? false) {
+      di<InteractionManager>().pushToastWithBuilder(
+        (context) => ToastConfig(
+          context.l10n.defaultMessagingRestriction,
+        ),
+      );
+    }
+  });
+}
+<<<
+class C {
+  late final Command<MessageUpdateRequest, void> addNewMessageCommand =
+      Command.createAsyncNoResult<MessageUpdateRequest>(
+          (newMessage) async {
+            final chatApi = ChatsApi(di<ApiClient>());
+            if (_target == null) {
+              assert(_chatPartner != null);
+              _target =
+                  await chatApi.sendMessageToUserAndCreateChatIfNeeded(
+                    _chatPartner!.id.toString(),
+                    messageUpdateRequest: newMessage,
+                  );
+            } else {
+              await chatApi.addMessageToChat(
+                chatId,
+                messageUpdateRequest: newMessage,
+              );
+            }
+            notifyListeners();
+          },
+          errorFilter: ApiErrorFilter(
+            (error) => error.code == 412 || error.code == 403,
+            ErrorReaction.localHandler,
+          ),
+          debugName: cmdAddMessage,
+        )
+        ..errors.listen((ex, _) {
+          final apiError = ex!.error as ApiException;
+
+          /// TODO adjust to chatmessagesource
+          items.removeLast();
+          lastMessage = null;
+          refreshItemCOunt();
+          if (apiError.message?.contains('limited to 15 people') ?? false) {
+            di<InteractionManager>().pushToastWithBuilder(
+              (context) => ToastConfig(context.l10n.messagingLimitPerDay),
+            );
+          } else if (apiError.message?.contains('Permission denied') ?? false) {
+            di<InteractionManager>().pushToastWithBuilder(
+              (context) => ToastConfig(
+                context.l10n.defaultMessagingRestriction,
+              ),
+            );
+          }
+        });
+}
+>>>
+class C {
+  late final Command<MessageUpdateRequest, void> addNewMessageCommand =
+  Command.createAsyncNoResult<MessageUpdateRequest>(_addNewMessage,
+      errorFilter: ApiErrorFilter(
+        (error) => error.code == 412 || error.code == 403,
+        ErrorReaction.localHandler,
+      ),debugName: cmdAddMessage)
+    ..errors.listen((ex,_) {
+      final apiError = ex!.error as ApiException;
+
+    /// TODO adjust to chatmessagesource
+    items.removeLast();
+    lastMessage = null;
+    refreshItemCOunt();
+    if (apiError.message?.contains('limited to 15 people') ?? false) {
+      di<InteractionManager>().pushToastWithBuilder(
+        (context) => ToastConfig(
+          context.l10n.messagingLimitPerDay,
+        ),
+      );
+    } else if (apiError.message?.contains('Permission denied') ?? false) {
+      di<InteractionManager>().pushToastWithBuilder(
+        (context) => ToastConfig(
+          context.l10n.defaultMessagingRestriction,
+        ),
+      );
+    }
+  });
+}
+<<<
+class C {
+  late final Command<MessageUpdateRequest, void> addNewMessageCommand =
+      Command.createAsyncNoResult<MessageUpdateRequest>(
+          _addNewMessage,
+          errorFilter: ApiErrorFilter(
+            (error) => error.code == 412 || error.code == 403,
+            ErrorReaction.localHandler,
+          ),
+          debugName: cmdAddMessage,
+        )
+        ..errors.listen((ex, _) {
+          final apiError = ex!.error as ApiException;
+
+          /// TODO adjust to chatmessagesource
+          items.removeLast();
+          lastMessage = null;
+          refreshItemCOunt();
+          if (apiError.message?.contains('limited to 15 people') ?? false) {
+            di<InteractionManager>().pushToastWithBuilder(
+              (context) => ToastConfig(context.l10n.messagingLimitPerDay),
+            );
+          } else if (apiError.message?.contains('Permission denied') ?? false) {
+            di<InteractionManager>().pushToastWithBuilder(
+              (context) => ToastConfig(
+                context.l10n.defaultMessagingRestriction,
+              ),
+            );
+          }
+        });
+}
