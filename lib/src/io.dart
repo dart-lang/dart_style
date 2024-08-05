@@ -6,10 +6,13 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 import 'cli/formatter_options.dart';
+import 'constants.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
+import 'language_version_cache.dart';
 import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
@@ -59,11 +62,21 @@ $stack''');
 }
 
 /// Formats all of the files and directories given by [paths].
-void formatPaths(FormatterOptions options, List<String> paths) {
+Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
+  // If the user didn't specify a language version, then look for surrounding
+  // package configs so we know what language versions to use for the files.
+  LanguageVersionCache? cache;
+  if (options.languageVersion == null) {
+    // TODO(rnystrom): Remove the experiment check when the experiment ships.
+    if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
+      cache = LanguageVersionCache();
+    }
+  }
+
   for (var path in paths) {
     var directory = Directory(path);
     if (directory.existsSync()) {
-      if (!processDirectory(options, directory)) {
+      if (!await _processDirectory(cache, options, directory)) {
         exitCode = 65;
       }
       continue;
@@ -71,7 +84,7 @@ void formatPaths(FormatterOptions options, List<String> paths) {
 
     var file = File(path);
     if (file.existsSync()) {
-      if (!processFile(options, file)) {
+      if (!await _processFile(cache, options, file)) {
         exitCode = 65;
       }
     } else {
@@ -85,7 +98,8 @@ void formatPaths(FormatterOptions options, List<String> paths) {
 ///
 /// Returns `true` if successful or `false` if an error occurred in any of the
 /// files.
-bool processDirectory(FormatterOptions options, Directory directory) {
+Future<bool> _processDirectory(LanguageVersionCache? cache,
+    FormatterOptions options, Directory directory) async {
   options.showDirectory(directory.path);
 
   var success = true;
@@ -125,7 +139,9 @@ bool processDirectory(FormatterOptions options, Directory directory) {
       continue;
     }
 
-    if (!processFile(options, entry, displayPath: displayPath)) success = false;
+    if (!await _processFile(cache, options, entry, displayPath: displayPath)) {
+      success = false;
+    }
   }
 
   return success;
@@ -134,15 +150,39 @@ bool processDirectory(FormatterOptions options, Directory directory) {
 /// Runs the formatter on [file].
 ///
 /// Returns `true` if successful or `false` if an error occurred.
-bool processFile(FormatterOptions options, File file, {String? displayPath}) {
+Future<bool> _processFile(
+    LanguageVersionCache? cache, FormatterOptions options, File file,
+    {String? displayPath}) async {
   displayPath ??= file.path;
 
+  // Determine what language version to use. If we have a language version
+  // cache, that implies that we should use the surrounding package config to
+  // infer the file's language version. Otherwise, use the user-provided
+  // version.
+  Version? languageVersion;
+  if (cache != null) {
+    try {
+      // Look for a package config. If we don't find one, default to the latest
+      // language version.
+      languageVersion = await cache.find(file);
+    } catch (error) {
+      stderr.writeln('Could not read package configuration for '
+          '$displayPath:\n$error');
+      stderr.writeln('To avoid searching for a package configuration, '
+          'specify a language version using "--language-version".');
+      return false;
+    }
+  } else {
+    languageVersion = options.languageVersion;
+  }
+
   var formatter = DartFormatter(
-      languageVersion: options.languageVersion,
+      languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
       indent: options.indent,
       pageWidth: options.pageWidth,
       fixes: options.fixes,
       experimentFlags: options.experimentFlags);
+
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);
     options.beforeFile(file, displayPath);

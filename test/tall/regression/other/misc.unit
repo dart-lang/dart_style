@@ -20,3 +20,15 @@ SomeVeryLongReturnType someFunctionName(
         .then(________traverseDeps_depender__deps_);
   }
 }
+>>> Function expression body in expression body member.
+ItemRenderer<Project> get projectRenderer => (HasUIDisplayName item) =>
+  item.uiDisplayName;
+<<<
+ItemRenderer<Project> get projectRenderer =>
+    (HasUIDisplayName item) => item.uiDisplayName;
+>>> Call chain body after long member header.
+Future<String> executeShellCommand(String command) async =>
+    _api.executeShellCommand(command);
+<<<
+Future<String> executeShellCommand(String command) async => _api
+    .executeShellCommand(command);
