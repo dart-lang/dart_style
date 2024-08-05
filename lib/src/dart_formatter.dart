@@ -244,10 +244,9 @@ class DartFormatter {
         sdkLanguageVersion: version, flags: experiments);
 
     return parseString(
-      content: source,
-      featureSet: featureSet,
-      path: uri,
-      throwIfDiagnostics: false,
-    );
+        content: source,
+        featureSet: featureSet,
+        path: uri,
+        throwIfDiagnostics: false);
   }
 }
