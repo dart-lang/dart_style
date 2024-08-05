@@ -223,3 +223,22 @@ void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
     }
   });
 }
+
+/// Create a test `.dart_tool` directory with a package config for a package
+/// with [packageName] and language version [major].[minor].
+d.DirectoryDescriptor packageConfig(String packageName, int major, int minor) {
+  var config = '''
+  {
+    "configVersion": 2,
+    "packages": [
+      {
+        "name": "$packageName",
+        "rootUri": "../",
+        "packageUri": "lib/",
+        "languageVersion": "$major.$minor"
+      }
+    ]
+  }''';
+
+  return d.dir('.dart_tool', [d.file('package_config.json', config)]);
+}

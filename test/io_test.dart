@@ -21,8 +21,7 @@ void main() {
       d.file('a.dart', unformattedSource),
     ]).create();
 
-    var dir = Directory(d.sandbox);
-    processDirectory(overwriteOptions, dir);
+    await formatPaths(overwriteOptions, [d.sandbox]);
 
     await d.dir('code.dart', [
       d.file('a.dart', formattedSource),
@@ -44,8 +43,7 @@ void main() {
     // Wait a bit so the mod time of a formatted file will be different.
     await Future<void>.delayed(const Duration(seconds: 1));
 
-    var dir = Directory(p.join(d.sandbox, 'code'));
-    processDirectory(overwriteOptions, dir);
+    await formatPaths(overwriteOptions, [p.join(d.sandbox, 'code')]);
 
     // Should be touched.
     var badAfter = modTime('bad.dart');
@@ -61,8 +59,7 @@ void main() {
       d.dir('.skip', [d.file('a.dart', unformattedSource)])
     ]).create();
 
-    var dir = Directory(d.sandbox);
-    processDirectory(overwriteOptions, dir);
+    await formatPaths(overwriteOptions, [d.sandbox]);
 
     await d.dir('code', [
       d.dir('.skip', [d.file('a.dart', unformattedSource)])
@@ -73,8 +70,7 @@ void main() {
       () async {
     await d.dir('.code', [d.file('a.dart', unformattedSource)]).create();
 
-    var dir = Directory(p.join(d.sandbox, '.code'));
-    processDirectory(overwriteOptions, dir);
+    await formatPaths(overwriteOptions, [p.join(d.sandbox, '.code')]);
 
     await d.dir('.code', [d.file('a.dart', formattedSource)]).validate();
   });
@@ -92,8 +88,7 @@ void main() {
     Link(p.join(d.sandbox, 'code', 'linked_dir'))
         .createSync(p.join(d.sandbox, 'target_dir'));
 
-    var dir = Directory(p.join(d.sandbox, 'code'));
-    processDirectory(overwriteOptions, dir);
+    await formatPaths(overwriteOptions, [p.join(d.sandbox, 'code')]);
 
     await d.dir('code', [
       d.file('a.dart', formattedSource),
@@ -116,8 +111,7 @@ void main() {
     Link(p.join(d.sandbox, 'code', 'linked_dir'))
         .createSync(p.join(d.sandbox, 'target_dir'));
 
-    var dir = Directory(p.join(d.sandbox, 'code'));
-    processDirectory(followOptions, dir);
+    await formatPaths(followOptions, [p.join(d.sandbox, 'code')]);
 
     await d.dir('code', [
       d.file('a.dart', formattedSource),
@@ -135,8 +129,7 @@ void main() {
 
       Process.runSync('chmod', ['-w', p.join(d.sandbox, 'a.dart')]);
 
-      var file = File(p.join(d.sandbox, 'a.dart'));
-      processFile(overwriteOptions, file);
+      await formatPaths(overwriteOptions, [p.join(d.sandbox, 'a.dart')]);
 
       // Should not have been formatted.
       await d.file('a.dart', unformattedSource).validate();
@@ -150,8 +143,7 @@ void main() {
       Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
           .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      var dir = Directory(p.join(d.sandbox, 'code'));
-      processDirectory(overwriteOptions, dir);
+      await formatPaths(overwriteOptions, [p.join(d.sandbox, 'code')]);
 
       await d.dir('code', [
         d.file('linked_file.dart', unformattedSource),
@@ -166,8 +158,7 @@ void main() {
       Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
           .createSync(p.join(d.sandbox, 'target_file.dart'));
 
-      var dir = Directory(p.join(d.sandbox, 'code'));
-      processDirectory(followOptions, dir);
+      await formatPaths(followOptions, [p.join(d.sandbox, 'code')]);
 
       await d.dir('code', [
         d.file('linked_file.dart', formattedSource),

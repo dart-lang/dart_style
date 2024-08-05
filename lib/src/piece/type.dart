@@ -2,18 +2,15 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import 'clause.dart';
 import 'piece.dart';
 
 /// Piece for a type declaration with a body containing members.
 ///
 /// Used for class, enum, and extension declarations.
 class TypePiece extends Piece {
-  /// The leading keywords and modifiers, type name, and type parameters.
+  /// The leading keywords and modifiers, type name, type parameters, and any
+  /// other `extends`, `with`, etc. clauses.
   final Piece _header;
-
-  /// The `extends`, `with`, and/or `implements` clauses, if there are any.
-  final ClausePiece? _clauses;
 
   /// The `native` clause, if any, and the type body.
   final Piece _body;
@@ -21,8 +18,7 @@ class TypePiece extends Piece {
   /// What kind of body the type has.
   final TypeBodyType _bodyType;
 
-  TypePiece(this._header, this._clauses, this._body,
-      {required TypeBodyType bodyType})
+  TypePiece(this._header, this._body, {required TypeBodyType bodyType})
       : _bodyType = bodyType;
 
   @override
@@ -47,10 +43,6 @@ class TypePiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_header);
-    if (_clauses case var clauses?) {
-      writer.format(clauses);
-    }
-
     if (_bodyType != TypeBodyType.semicolon) writer.space();
     writer.format(_body);
   }
@@ -58,7 +50,6 @@ class TypePiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {
     callback(_header);
-    if (_clauses case var clauses?) callback(clauses);
     callback(_body);
   }
 }

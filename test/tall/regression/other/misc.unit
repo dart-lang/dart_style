@@ -32,3 +32,20 @@ Future<String> executeShellCommand(String command) async =>
 <<<
 Future<String> executeShellCommand(String command) async => _api
     .executeShellCommand(command);
+>>> Split in long type parameter clause.
+abstract class StreamNotifierProviderBase<
+  NotifierT extends AsyncNotifierBase<T>,
+  T
+> extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
+    with FutureModifier<T> {
+  // ...
+}
+<<<
+abstract class StreamNotifierProviderBase<
+  NotifierT extends AsyncNotifierBase<T>,
+  T
+>
+    extends ProviderWithNotifier<AsyncValue<T>, NotifierT>
+    with FutureModifier<T> {
+  // ...
+}

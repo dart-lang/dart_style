@@ -138,7 +138,7 @@ void main(List<String> args) async {
   if (argResults.rest.isEmpty) {
     await formatStdin(options, selection, argResults['stdin-name'] as String);
   } else {
-    formatPaths(options, argResults.rest);
+    await formatPaths(options, argResults.rest);
   }
 
   options.summary.show();
