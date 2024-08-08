@@ -389,29 +389,24 @@ class PieceWriter {
     var cache = SolutionCache();
     var formatter = Solver(cache,
         pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
-    var result = formatter.format(rootPiece);
-    var outputCode = result.text;
+    var solution = formatter.format(rootPiece);
+    var (:code, :selectionStart, :selectionEnd) = solution.code.build();
 
     Profile.end('PieceWriter.finish() format piece tree');
 
     // Be a good citizen, end with a newline.
-    if (_source.isCompilationUnit) outputCode += _formatter.lineEnding!;
+    if (_source.isCompilationUnit) code += _formatter.lineEnding!;
 
-    int? selectionStart;
     int? selectionLength;
     if (_source.selectionStart != null) {
-      selectionStart = result.selectionStart;
-      var selectionEnd = result.selectionEnd;
-
       // If we haven't hit the beginning and/or end of the selection yet, they
       // must be at the very end of the code.
-      selectionStart ??= outputCode.length;
-      selectionEnd ??= outputCode.length;
-
+      selectionStart ??= code.length;
+      selectionEnd ??= code.length;
       selectionLength = selectionEnd - selectionStart;
     }
 
-    return SourceCode(outputCode,
+    return SourceCode(code,
         uri: _source.uri,
         isCompilationUnit: _source.isCompilationUnit,
         selectionStart: selectionStart,

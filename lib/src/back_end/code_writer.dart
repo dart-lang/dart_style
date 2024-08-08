@@ -5,6 +5,7 @@ import 'dart:math';
 
 import '../piece/piece.dart';
 import '../profile.dart';
+import 'code.dart';
 import 'solution.dart';
 import 'solution_cache.dart';
 
@@ -28,8 +29,8 @@ class CodeWriter {
   /// The solution this [CodeWriter] is generating code for.
   final Solution _solution;
 
-  /// Buffer for the code being written.
-  final StringBuffer _buffer = StringBuffer();
+  /// The code being written.
+  final GroupCode _code = GroupCode();
 
   /// What whitespace should be written before the next non-whitespace text.
   ///
@@ -106,12 +107,12 @@ class CodeWriter {
     _pendingIndent = leadingIndent;
   }
 
-  /// Returns the final formatted text and the next pieces that can be expanded
+  /// Returns the final formatted code and the next pieces that can be expanded
   /// from the solution this [CodeWriter] is writing, if any.
-  (String, List<Piece>) finish() {
+  (GroupCode, List<Piece>) finish() {
     _finishLine();
 
-    return (_buffer.toString(), _expandPieces);
+    return (_code, _expandPieces);
   }
 
   /// Appends [text] to the output.
@@ -124,7 +125,7 @@ class CodeWriter {
   /// selections inside lexemes are correctly updated.
   void write(String text) {
     _flushWhitespace();
-    _buffer.write(text);
+    _code.write(text);
     _column += text.length;
 
     // If we haven't found an overflowing line yet, then this line might be one
@@ -253,20 +254,7 @@ class CodeWriter {
     _flushWhitespace();
 
     _solution.mergeSubtree(solution);
-
-    // If a selection marker was in the child piece, set it in this piece,
-    // relative to where the child's code is appended.
-    if (solution.selectionStart case var start?) {
-      _solution.startSelection(_buffer.length + start);
-    }
-
-    if (solution.selectionEnd case var end?) {
-      _solution.endSelection(_buffer.length + end);
-    }
-
-    Profile.begin('CodeWriter.format() write separate piece text');
-    _buffer.write(solution.text);
-    Profile.end('CodeWriter.format() write separate piece text');
+    _code.group(solution.code);
   }
 
   /// Format [piece] writing directly into this [CodeWriter].
@@ -334,13 +322,13 @@ class CodeWriter {
   /// Sets [selectionStart] to be [start] code units into the output.
   void startSelection(int start) {
     _flushWhitespace();
-    _solution.startSelection(_buffer.length + start);
+    _code.startSelection(start);
   }
 
   /// Sets [selectionEnd] to be [end] code units into the output.
   void endSelection(int end) {
     _flushWhitespace();
-    _solution.endSelection(_buffer.length + end);
+    _code.endSelection(end);
   }
 
   /// Write any pending whitespace.
@@ -355,18 +343,13 @@ class CodeWriter {
 
       case Whitespace.newline:
       case Whitespace.blankLine:
-        // Don't write any leading newlines at the top of the buffer.
-        if (_buffer.isNotEmpty) {
-          _finishLine();
-          _buffer.writeln();
-          if (_pendingWhitespace == Whitespace.blankLine) _buffer.writeln();
-        }
-
+        _finishLine();
         _column = _pendingIndent;
-        _buffer.write(' ' * _column);
+        _code.newline(
+            blank: _pendingWhitespace == Whitespace.blankLine, indent: _column);
 
       case Whitespace.space:
-        _buffer.write(' ');
+        _code.write(' ');
         _column++;
     }
 
