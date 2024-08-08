@@ -4,7 +4,7 @@
 
 /// Base class for an object that represents fully formatted code.
 ///
-/// We use this instead of immediately generated a string for the resulting
+/// We use this instead of immediately generating a string for the resulting
 /// formatted code because of separate formatting. Often, a subtree of the
 /// [Piece] tree can be solved and formatted separately. The resulting
 /// [Solution] may be used by multiple different surrounding solutions while
