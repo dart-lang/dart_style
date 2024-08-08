@@ -387,10 +387,11 @@ class PieceWriter {
     Profile.begin('PieceWriter.finish() format piece tree');
 
     var cache = SolutionCache();
-    var formatter = Solver(cache,
+    var solver = Solver(cache,
         pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
-    var solution = formatter.format(rootPiece);
-    var (:code, :selectionStart, :selectionEnd) = solution.code.build();
+    var solution = solver.format(rootPiece);
+    var (:code, :selectionStart, :selectionEnd) =
+        solution.code.build(_formatter.lineEnding);
 
     Profile.end('PieceWriter.finish() format piece tree');
 

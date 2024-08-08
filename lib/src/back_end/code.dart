@@ -54,13 +54,19 @@ final class GroupCode extends Code {
 
   /// Traverse the [Code] tree and build the final formatted string.
   ///
+  /// Whenever a newline is written, writes [lineEnding]. If omitted, defaults
+  /// to '\n'.
+  ///
   /// Returns the formatted string and the selection markers if there are any.
-  ({String code, int? selectionStart, int? selectionEnd}) build() {
+  ({String code, int? selectionStart, int? selectionEnd}) build(
+      [String? lineEnding]) {
+    lineEnding ??= '\n';
+
     var buffer = StringBuffer();
     int? selectionStart;
     int? selectionEnd;
 
-    _build(buffer, (marker, offset) {
+    _build(buffer, lineEnding, (marker, offset) {
       if (marker == _Marker.start) {
         selectionStart = offset;
       } else {
@@ -75,7 +81,7 @@ final class GroupCode extends Code {
     );
   }
 
-  void _build(StringBuffer buffer,
+  void _build(StringBuffer buffer, String lineEnding,
       void Function(_Marker marker, int offset) markSelection) {
     for (var i = 0; i < _children.length; i++) {
       var child = _children[i];
@@ -83,8 +89,8 @@ final class GroupCode extends Code {
         case _NewlineCode():
           // Don't write any leading newlines at the top of the buffer.
           if (i > 0) {
-            buffer.writeln();
-            if (child._blank) buffer.writeln();
+            buffer.write(lineEnding);
+            if (child._blank) buffer.write(lineEnding);
           }
 
           buffer.write(_indents[child._indent] ?? (' ' * child._indent));
@@ -93,7 +99,7 @@ final class GroupCode extends Code {
           buffer.write(child._text);
 
         case GroupCode():
-          child._build(buffer, markSelection);
+          child._build(buffer, lineEnding, markSelection);
 
         case _MarkerCode():
           markSelection(child._marker, buffer.length + child._offset);
