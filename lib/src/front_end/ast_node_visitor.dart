@@ -1574,7 +1574,8 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitRepresentationDeclaration(RepresentationDeclaration node) {
     pieces.visit(node.constructorName);
 
-    var builder = DelimitedListBuilder(this);
+    var builder =
+        DelimitedListBuilder(this, const ListStyle(commas: Commas.nonTrailing));
     builder.leftBracket(node.leftParenthesis);
     builder.add(pieces.build(() {
       writeParameter(

@@ -12,7 +12,7 @@ extension type const A.name(int a) {}
 extension type A<T extends int, R>(int a) {}
 <<<
 extension type A<T extends int, R>(
-  int a,
+  int a
 ) {}
 >>> Indentation in body.
 extension type A(int a) {
@@ -39,7 +39,7 @@ extension type E(T i) implements I, J {}
 extension type LongExtensionType(LongTypeName a) {}
 <<<
 extension type LongExtensionType(
-  LongTypeName a,
+  LongTypeName a
 ) {}
 >>> Split in representation with implements clause.
 extension type LongExtensionType(LongTypeName a) implements Something {
@@ -47,7 +47,7 @@ extension type LongExtensionType(LongTypeName a) implements Something {
 }
 <<<
 extension type LongExtensionType(
-  LongTypeName a,
+  LongTypeName a
 )
     implements Something {
   method() {
