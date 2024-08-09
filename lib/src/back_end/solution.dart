@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import '../piece/piece.dart';
 import '../profile.dart';
+import 'code.dart';
 import 'code_writer.dart';
 import 'solution_cache.dart';
 
@@ -49,8 +50,8 @@ class Solution implements Comparable<Solution> {
   int _subtreeCost = 0;
 
   /// The formatted code.
-  String get text => _text;
-  late final String _text;
+  GroupCode get code => _code;
+  late final GroupCode _code;
 
   /// False if this Solution contains a newline where one is prohibited.
   ///
@@ -108,16 +109,6 @@ class Solution implements Comparable<Solution> {
   /// If this is empty, then there are no further solutions to generate from
   /// this one. It's either a dead end or a winner.
   late final List<Piece> _expandPieces;
-
-  /// The offset in [text] where the selection starts, or `null` if there is
-  /// no selection.
-  int? get selectionStart => _selectionStart;
-  int? _selectionStart;
-
-  /// The offset in [text] where the selection ends, or `null` if there is
-  /// no selection.
-  int? get selectionEnd => _selectionEnd;
-  int? _selectionEnd;
 
   /// Creates a new [Solution] with no pieces set to any state (which
   /// implicitly means they have state [State.unsplit] unless they're pinned to
@@ -185,22 +176,6 @@ class Solution implements Comparable<Solution> {
   void mergeSubtree(Solution subtreeSolution) {
     _overflow += subtreeSolution._overflow;
     _subtreeCost += subtreeSolution.cost;
-  }
-
-  /// Sets [selectionStart] to be [start] code units into the output.
-  ///
-  /// This should only be called by [CodeWriter].
-  void startSelection(int start) {
-    assert(_selectionStart == null);
-    _selectionStart = start;
-  }
-
-  /// Sets [selectionEnd] to be [end] code units into the output.
-  ///
-  /// This should only be called by [CodeWriter].
-  void endSelection(int end) {
-    assert(_selectionEnd == null);
-    _selectionEnd = end;
   }
 
   /// Mark this solution as having a newline where none is permitted by [piece]
@@ -319,9 +294,9 @@ class Solution implements Comparable<Solution> {
       SolutionCache cache, Piece root, int pageWidth, int leadingIndent) {
     var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
     writer.format(root);
-    var (text, expandPieces) = writer.finish();
 
-    _text = text;
+    var (code, expandPieces) = writer.finish();
+    _code = code;
     _expandPieces = expandPieces;
   }
 
