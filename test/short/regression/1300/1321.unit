@@ -1,0 +1,38 @@
+>>> `super.` parameter.
+class A {
+  A(int foo<T>(int a));
+}
+class B extends A {
+  B.sub1(int super.bar1<T1>(int a1),);
+  B.sub2(int super.bar2<T2>(int a2),);
+}
+main() {}
+<<<
+class A {
+  A(int foo<T>(int a));
+}
+
+class B extends A {
+  B.sub1(
+    int super.bar1<T1>(int a1),
+  );
+  B.sub2(
+    int super.bar2<T2>(int a2),
+  );
+}
+
+main() {}
+>>> `this.` parameter.
+class A {
+  A.sub1(int this.bar1<T1>(int a1),);
+  A.sub2(int this.bar2<T2>(int a2),);
+}
+<<<
+class A {
+  A.sub1(
+    int this.bar1<T1>(int a1),
+  );
+  A.sub2(
+    int this.bar2<T2>(int a2),
+  );
+}

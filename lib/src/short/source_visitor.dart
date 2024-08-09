@@ -1339,6 +1339,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.thisKeyword);
       token(node.period);
       token(node.name);
+      visit(node.typeParameters);
       visit(node.parameters);
       token(node.question);
       _endFormalParameter(node);
@@ -2801,6 +2802,7 @@ class SourceVisitor extends ThrowingAstVisitor {
       token(node.superKeyword);
       token(node.period);
       token(node.name);
+      visit(node.typeParameters);
       visit(node.parameters);
       token(node.question);
       _endFormalParameter(node);
