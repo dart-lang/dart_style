@@ -8,7 +8,7 @@ implements /*k*/ I1 /*l*/ , /*m*/ I2 /*n*/ { /*o*/ } /*p*/
 extension /*b*/ type /*c*/ A
 /*d*/ ( /*e*/
   @ /*f*/ override /*g*/
-  int /*h*/ a /*i*/,
+  int /*h*/ a /*i*/
 ) /*j*/
     implements /*k*/
         I1 /*l*/, /*m*/
@@ -54,7 +54,7 @@ name // j
   @ // l
   required // m
   int // n
-  a, // o
+  a // o
 ) // p
     implements // q
         I // r
