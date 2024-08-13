@@ -1,0 +1,65 @@
+40 columns                              |
+>>> Selection start inside disabled formatting.
+main() {
+  here   +   gets   +   format‹ted    ;
+  // dart format off
+  here   +   does  ›  +    not   ;
+  // dart format on
+  but   +   here   +    does   ;
+}
+<<<
+main() {
+  here + gets + format‹ted;
+  // dart format off
+  here   +   does  ›  +    not   ;
+  // dart format on
+  but + here + does;
+}
+>>> Selection end inside disabled formatting.
+main() {
+  here   +   gets   +   formatted    ;
+  // dart format off
+  here   +   does  ‹  +    not   ;
+  // dart format on
+  but   +   here   +    do›es   ;
+}
+<<<
+main() {
+  here + gets + formatted;
+  // dart format off
+  here   +   does  ‹  +    not   ;
+  // dart format on
+  but + here + do›es;
+}
+>>> Selection inside disabled formatting.
+main() {
+  here   +   gets   +   formatted    ;
+  // dart format off
+  here  ‹ +   does    + ›   not   ;
+  // dart format on
+  but   +   here   +    does   ;
+}
+<<<
+main() {
+  here + gets + formatted;
+  // dart format off
+  here  ‹ +   does    + ›   not   ;
+  // dart format on
+  but + here + does;
+}
+>>> Selection around disabled formatting.
+main() {
+  here   +   gets   +   format‹ted    ;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but   +   here   +    do›es   ;
+}
+<<<
+main() {
+  here + gets + format‹ted;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but + here + do›es;
+}

@@ -1,0 +1,196 @@
+40 columns                              |
+### Tests for disabling formatting on regions of code.
+>>> Simple unformatted region.
+main() {
+  here   +   gets   +   formatted    ;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but   +   here   +    does   ;
+}
+<<<
+main() {
+  here + gets + formatted;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but + here + does;
+}
+>>> Multiple unformatted regions.
+main() {
+  here   +   gets   +   formatted    ;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but   +   here   +    does   ;
+
+  {
+    more  +  formatted  ;
+    // dart format off
+    more   +   unformatted   ;
+    multiple   +   lines   ;
+    // dart format on
+  }
+}
+<<<
+main() {
+  here + gets + formatted;
+  // dart format off
+  here   +   does    +    not   ;
+  // dart format on
+  but + here + does;
+
+  {
+    more + formatted;
+    // dart format off
+    more   +   unformatted   ;
+    multiple   +   lines   ;
+    // dart format on
+  }
+}
+>>> Begin outside block and end inside.
+main() {
+  before  ;
+  // dart format off
+  inside  +  region  +  outside  +  block  ;
+  {
+    inside  +  block  +  and  +  region  ;
+    // dart format on
+    inside  +  block  +  outside  +  region  ;
+  }
+  outside  +  block  ;
+}
+<<<
+main() {
+  before;
+  // dart format off
+  inside  +  region  +  outside  +  block  ;
+  {
+    inside  +  block  +  and  +  region  ;
+    // dart format on
+    inside + block + outside + region;
+  }
+  outside + block;
+}
+>>> Begin inside block and end outside.
+main() {
+  before  ;
+  {
+    inside  +  block  +  outside  +  region  ;
+    // dart format off
+    inside  +  block  +  and  +  region  ;
+  }
+  outside  +  block  +  inside  +  region  ;
+  // dart format on
+  outside  +  block  ;
+}
+<<<
+main() {
+  before;
+  {
+    inside + block + outside + region;
+    // dart format off
+    inside  +  block  +  and  +  region  ;
+  }
+  outside  +  block  +  inside  +  region  ;
+  // dart format on
+  outside + block;
+}
+>>> Preserve indentation in region but not region marker comments.
+main() {
+      too  +  much  ;
+      // dart format off
+      still  +  too  +  much  ;
+      // dart format on
+      again  +  too  +  much  ;
+}
+<<<
+main() {
+  too + much;
+  // dart format off
+      still  +  too  +  much  ;
+      // dart format on
+  again + too + much;
+}
+>>> On without off does nothing.
+main() {
+  before  +  marker  ;
+  // dart format on
+  after  +  marker  ;
+}
+<<<
+main() {
+  before + marker;
+  // dart format on
+  after + marker;
+}
+>>> Off without on leaves rest of file unformatted.
+main() {
+  before  +  marker  ;
+  // dart format off
+  after  +  marker  ;
+}
+<<<
+main() {
+  before + marker;
+  // dart format off
+  after  +  marker  ;
+}
+>>> Markers do not nest.
+main() {
+  one  ;
+  // dart format off
+  two  ;
+  // dart format off
+  three  ;
+  // dart format on
+  four  ;
+  // dart format on
+  five  ;
+}
+<<<
+main() {
+  one;
+  // dart format off
+  two  ;
+  // dart format off
+  three  ;
+  // dart format on
+  four;
+  // dart format on
+  five;
+}
+>>> Formatted code on same line before format off comment.
+main() {
+  long  +  code  +  before  +  comment  +  // dart format off
+  unformatted  +  code  +
+  // dart format on
+  after  +  region;
+}
+<<<
+main() {
+  long +
+      code +
+      before +
+      comment + // dart format off
+  unformatted  +  code  +
+  // dart format on
+      after +
+      region;
+}
+>>> Unformatted code on same line before format on comment.
+main() {
+  before  +  region  +
+  // dart format off
+  unformatted  +  code  +  // dart format on
+  after  +  region;
+}
+<<<
+main() {
+  before +
+      region +
+      // dart format off
+  unformatted  +  code  +  // dart format on
+      after +
+      region;
+}

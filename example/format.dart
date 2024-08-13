@@ -25,7 +25,7 @@ void main(List<String> args) {
   class C {}
   ''');
 
-  _runTest('selection/selection.stmt', 2);
+  _runTest('other/selection.stmt', 2);
 }
 
 void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {
@@ -68,7 +68,7 @@ void _drawRuler(String label, int width) {
 /// directory.
 Future<void> _runTest(String path, int line,
     {int pageWidth = 40, bool tall = true}) async {
-  var testFile = await TestFile.read(path);
+  var testFile = await TestFile.read('${tall ? 'tall' : 'short'}/$path');
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
 
   var formatter = DartFormatter(

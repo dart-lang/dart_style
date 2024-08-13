@@ -219,7 +219,7 @@ class DartFormatter {
     SourceCode output;
     if (experimentFlags.contains(tallStyleExperimentFlag)) {
       var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node);
+      output = visitor.run(unitSourceCode, node);
     } else {
       var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(node);
