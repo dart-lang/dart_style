@@ -1,4 +1,10 @@
 40 columns                              |
+>>> Empty compilation unit.
+
+
+
+<<<
+
 >>> Force at least one newline between directives.
 import 'a.dart';import 'b.dart';export 'c.dart';
 <<<
