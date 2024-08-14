@@ -307,7 +307,7 @@ class _StringBuilder {
           // end.
           //
           // We know the beginning of the unformatted region is at offset 15
-          // (just after the comment) in the original ource. We know the
+          // (just after the comment) in the original source. We know the
           // selection marker is at offset 21 in the original source. From that,
           // we know the selection marker should end up 6 code points after the
           // beginning of the unformatted region in the resulting output.
