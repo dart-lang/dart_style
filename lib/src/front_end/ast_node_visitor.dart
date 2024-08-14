@@ -66,7 +66,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  SourceCode run(AstNode node) {
+  SourceCode run(SourceCode source, AstNode node) {
     Profile.begin('AstNodeVisitor.run()');
 
     Profile.begin('AstNodeVisitor build Piece tree');
@@ -123,7 +123,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     Profile.end('AstNodeVisitor build Piece tree');
 
     // Finish writing and return the complete result.
-    var result = pieces.finish(unitPiece);
+    var result = pieces.finish(source, unitPiece);
 
     Profile.end('AstNodeVisitor.run()');
 

@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import '../source_code.dart';
+
 /// Base class for an object that represents fully formatted code.
 ///
 /// We use this instead of immediately generating a string for the resulting
@@ -13,13 +15,58 @@
 /// to be fast. Appending strings to a [StringBuffer] is fairly fast, but not
 /// as fast simply appending a single [GroupCode] to the parent solution's
 /// [GroupCode].
-sealed class Code {}
+sealed class Code {
+  /// Traverse the [Code] tree and generate a string for debugging purposes.
+  String toDebugString() {
+    var buffer = StringBuffer();
+    var prefix = '';
+
+    void write(String text) {
+      if (buffer.isNotEmpty) buffer.write(prefix);
+      buffer.writeln(text);
+    }
+
+    void trace(Code code) {
+      switch (code) {
+        case _NewlineCode():
+          write('Newline(blank: ${code._blank}, indent: ${code._indent})');
+
+        case _TextCode():
+          write('`${code._text}`');
+
+        case GroupCode():
+          write('Group(indent: ${code._indent}):');
+          prefix += '| ';
+          for (var child in code._children) {
+            trace(child);
+          }
+          prefix = prefix.substring(2);
+
+        case _MarkerCode():
+          write('Marker(${code._marker}, offset: ${code._offset})');
+
+        case _EnableFormattingCode():
+          write('EnableFormattingCode(enabled: ${code._enabled}, '
+              'offset: ${code._sourceOffset})');
+      }
+    }
+
+    trace(this);
+
+    return buffer.toString();
+  }
+}
 
 /// A [Code] object which can be written to and contain other child [Code]
 /// objects.
 final class GroupCode extends Code {
+  /// How many spaces the first text inside this group should be indented.
+  final int _indent;
+
   /// The child [Code] objects contained in this group.
   final List<Code> _children = [];
+
+  GroupCode(this._indent);
 
   /// Appends [text] to this code.
   void write(String text) {
@@ -32,7 +79,10 @@ final class GroupCode extends Code {
   /// single newline is written. The [indent] parameter is the number of spaces
   /// of leading indentation on the next line after the newline.
   void newline({required bool blank, required int indent}) {
-    _children.add(_NewlineCode(blank: blank, indent: indent));
+    // Don't insert a redundant newline at the top of a group.
+    if (_children.isNotEmpty) {
+      _children.add(_NewlineCode(blank: blank, indent: indent));
+    }
   }
 
   /// Adds an entire existing code [group] as a child of this one.
@@ -52,65 +102,32 @@ final class GroupCode extends Code {
     _children.add(_MarkerCode(_Marker.end, offset));
   }
 
+  /// Disables or re-enables formatting in a region of code.
+  void setFormattingEnabled(bool enabled, int sourceOffset) {
+    _children.add(_EnableFormattingCode(enabled, sourceOffset));
+  }
+
   /// Traverse the [Code] tree and build the final formatted string.
   ///
   /// Whenever a newline is written, writes [lineEnding]. If omitted, defaults
   /// to '\n'.
   ///
   /// Returns the formatted string and the selection markers if there are any.
-  ({String code, int? selectionStart, int? selectionEnd}) build(
-      [String? lineEnding]) {
+  SourceCode build(SourceCode source, [String? lineEnding]) {
     lineEnding ??= '\n';
 
-    var buffer = StringBuffer();
-    int? selectionStart;
-    int? selectionEnd;
-
-    _build(buffer, lineEnding, (marker, offset) {
-      if (marker == _Marker.start) {
-        selectionStart = offset;
-      } else {
-        selectionEnd = offset;
-      }
-    });
-
-    return (
-      code: buffer.toString(),
-      selectionStart: selectionStart,
-      selectionEnd: selectionEnd
-    );
-  }
-
-  void _build(StringBuffer buffer, String lineEnding,
-      void Function(_Marker marker, int offset) markSelection) {
-    for (var i = 0; i < _children.length; i++) {
-      var child = _children[i];
-      switch (child) {
-        case _NewlineCode():
-          // Don't write any leading newlines at the top of the buffer.
-          if (i > 0) {
-            buffer.write(lineEnding);
-            if (child._blank) buffer.write(lineEnding);
-          }
-
-          buffer.write(_indents[child._indent] ?? (' ' * child._indent));
-
-        case _TextCode():
-          buffer.write(child._text);
-
-        case GroupCode():
-          child._build(buffer, lineEnding, markSelection);
-
-        case _MarkerCode():
-          markSelection(child._marker, buffer.length + child._offset);
-      }
-    }
+    var builder = _StringBuilder(source, lineEnding);
+    builder.traverse(this);
+    return builder.finish();
   }
 }
 
 /// A [Code] object for a newline followed by any leading indentation.
 final class _NewlineCode extends Code {
+  /// True if a blank line (two newlines) should be written.
   final bool _blank;
+
+  /// The number of spaces of indentation after this newline.
   final int _indent;
 
   _NewlineCode({required bool blank, required int indent})
@@ -132,49 +149,230 @@ final class _MarkerCode extends Code {
   /// What kind of selection endpoint is being marked.
   final _Marker _marker;
 
-  /// The number of characters past this object where the marker should appear
-  /// in the resulting code.
+  /// The number of characters into the next [Code] object where the marker
+  /// should appear in the resulting output.
   final int _offset;
 
   _MarkerCode(this._marker, this._offset);
 }
 
+final class _EnableFormattingCode extends Code {
+  /// Whether this comment disables formatting (`format off`) or re-enables it
+  /// (`format on`).
+  final bool _enabled;
+
+  /// The number of code points from the beginning of the unformatted source
+  /// where the unformatted code should begin or end.
+  ///
+  /// If this piece is for `// dart format off`, then the offset is just past
+  /// the `off`. If this piece is for `// dart format on`, it points to just
+  /// before `//`.
+  final int _sourceOffset;
+
+  _EnableFormattingCode(this._enabled, this._sourceOffset);
+}
+
 /// Which selection marker is pointed to by a [_MarkerCode].
 enum _Marker { start, end }
 
-/// Pre-calculated whitespace strings for various common levels of indentation.
-///
-/// Generating these ahead of time is faster than concatenating multiple spaces
-/// at runtime.
-const _indents = {
-  2: '  ',
-  4: '    ',
-  6: '      ',
-  8: '        ',
-  10: '          ',
-  12: '            ',
-  14: '              ',
-  16: '                ',
-  18: '                  ',
-  20: '                    ',
-  22: '                      ',
-  24: '                        ',
-  26: '                          ',
-  28: '                            ',
-  30: '                              ',
-  32: '                                ',
-  34: '                                  ',
-  36: '                                    ',
-  38: '                                      ',
-  40: '                                        ',
-  42: '                                          ',
-  44: '                                            ',
-  46: '                                              ',
-  48: '                                                ',
-  50: '                                                  ',
-  52: '                                                    ',
-  54: '                                                      ',
-  56: '                                                        ',
-  58: '                                                          ',
-  60: '                                                            ',
-};
+/// Traverses a [Code] tree and produces the final string of output code and
+/// the selection markers, if any.
+class _StringBuilder {
+  /// Pre-calculated whitespace strings for various common levels of
+  /// indentation.
+  ///
+  /// Generating these ahead of time is faster than concatenating multiple
+  /// spaces at runtime.
+  static const _indents = {
+    2: '  ',
+    4: '    ',
+    6: '      ',
+    8: '        ',
+    10: '          ',
+    12: '            ',
+    14: '              ',
+    16: '                ',
+    18: '                  ',
+    20: '                    ',
+    22: '                      ',
+    24: '                        ',
+    26: '                          ',
+    28: '                            ',
+    30: '                              ',
+    32: '                                ',
+    34: '                                  ',
+    36: '                                    ',
+    38: '                                      ',
+    40: '                                        ',
+    42: '                                          ',
+    44: '                                            ',
+    46: '                                              ',
+    48: '                                                ',
+    50: '                                                  ',
+    52: '                                                    ',
+    54: '                                                      ',
+    56: '                                                        ',
+    58: '                                                          ',
+    60: '                                                            ',
+  };
+
+  final SourceCode _source;
+  final String _lineEnding;
+  final StringBuffer _buffer = StringBuffer();
+
+  /// The offset from the beginning of the source to where the selection start
+  /// marker is, if there is one.
+  int? _selectionStart;
+
+  /// The offset from the beginning of the source to where the selection end
+  /// marker is, if there is one.
+  int? _selectionEnd;
+
+  /// How many spaces of indentation should be written before the next text.
+  int _indent = 0;
+
+  /// If formatting has been disabled, then this is the offset from the
+  /// beginning of the source, to where the disabled formatting begins.
+  ///
+  /// Otherwise, -1 to indicate that formatting is enabled.
+  int _disableFormattingStart = -1;
+
+  _StringBuilder(this._source, this._lineEnding);
+
+  void traverse(Code code) {
+    switch (code) {
+      case _NewlineCode():
+        // If formatting has been disabled, then don't write the formatted
+        // output. The unformatted output will be written when formatting is
+        // re-enabled.
+        if (_disableFormattingStart == -1) {
+          _buffer.write(_lineEnding);
+          if (code._blank) _buffer.write(_lineEnding);
+          _indent = code._indent;
+        }
+
+      case _TextCode():
+        // If formatting has been disabled, then don't write the formatted
+        // output. The unformatted output will be written when formatting is
+        // re-enabled.
+        if (_disableFormattingStart == -1) {
+          // Write any pending indentation.
+          _buffer.write(_indents[_indent] ?? (' ' * _indent));
+          _indent = 0;
+
+          _buffer.write(code._text);
+        }
+
+      case GroupCode():
+        _indent = code._indent;
+        for (var i = 0; i < code._children.length; i++) {
+          var child = code._children[i];
+          traverse(child);
+        }
+
+      case _MarkerCode():
+        if (_disableFormattingStart == -1) {
+          // Calculate the absolute offset from the beginning of the formatted
+          // output where the selection marker will appear based on how much
+          // formatted output we've written, pending indentation, and then the
+          // relative offset of the marker into the subsequent [Code] we will
+          // write.
+          var absolutePosition = _buffer.length + _indent + code._offset;
+          switch (code._marker) {
+            case _Marker.start:
+              _selectionStart = absolutePosition;
+            case _Marker.end:
+              _selectionEnd = absolutePosition;
+          }
+        } else {
+          // The marker appears inside a region where formatting is disabled.
+          // In that case, calculating where the marker will end up in the
+          // final formatted output is more complicated because we haven't
+          // actually written any of the code between the `// dart format off`
+          // comment and this marker to [_buffer] yet. However, we do know the
+          // *absolute* position of the selection markers in the original
+          // source.
+          //
+          // Let's say the source file looks like:
+          //
+          //               1         2         3
+          //     0123456789012345678901234567890123456789
+          //     bef  +  ore off code | inside on more
+          //
+          // Here, `bef  +  ore` is some amount of code appearing before
+          // formatting is disabled, `off` is the `// dart format off` comment,
+          // `code` is some code inside the unformatted region, `|` is the
+          // selection marker, `inside` is more code in the unformatted region,
+          // `on` turns formatting back on, and `more` is formatted code at the
+          // end.
+          //
+          // We know the beginning of the unformatted region is at offset 15
+          // (just after the comment) in the original source. We know the
+          // selection marker is at offset 21 in the original source. From that,
+          // we know the selection marker should end up 6 code points after the
+          // beginning of the unformatted region in the resulting output.
+          switch (code._marker) {
+            case _Marker.start:
+              // Calculate how far into the unformatted code where the marker
+              // should appear.
+              var markerOffsetInUnformatted =
+                  _source.selectionStart! - _disableFormattingStart;
+              _selectionStart = _buffer.length + markerOffsetInUnformatted;
+
+            case _Marker.end:
+              var end = _source.selectionStart! + _source.selectionLength!;
+
+              // Calculate how far into the unformatted code where the marker
+              // should appear.
+              var markerOffsetInUnformatted = end - _disableFormattingStart;
+              _selectionEnd = _buffer.length + markerOffsetInUnformatted;
+          }
+        }
+
+      case _EnableFormattingCode(_enabled: false):
+        // Region markers don't nest. If we've already turned off formatting,
+        // then ignore any subsequent `// dart format off` comments until it's
+        // been turned back on.
+        if (_disableFormattingStart == -1) {
+          _disableFormattingStart = code._sourceOffset;
+        }
+
+      case _EnableFormattingCode(_enabled: true):
+        // If we didn't disable formatting, then enabling it does nothing.
+        if (_disableFormattingStart != -1) {
+          // Write all of the unformatted text from the `// dart format off`
+          // comment to the end of the `// dart format on` comment.
+          _buffer.write(_source.text
+              .substring(_disableFormattingStart, code._sourceOffset));
+          _disableFormattingStart = -1;
+        }
+    }
+  }
+
+  SourceCode finish() {
+    if (_disableFormattingStart != -1) {
+      // Formatting was disabled and never re-enabled, so write the rest of the
+      // source file as unformatted text.
+      _buffer.write(_source.text.substring(_disableFormattingStart));
+    } else if (_source.isCompilationUnit) {
+      // Be a good citizen, end with a newline.
+      _buffer.write(_lineEnding);
+    }
+
+    var selectionStart = _selectionStart;
+    int? selectionLength;
+    if (_source.selectionStart != null) {
+      // If we haven't hit the beginning and/or end of the selection yet, they
+      // must be at the very end of the code.
+      selectionStart ??= _buffer.length;
+      var selectionEnd = _selectionEnd ?? _buffer.length;
+      selectionLength = selectionEnd - selectionStart;
+    }
+
+    return SourceCode(_buffer.toString(),
+        uri: _source.uri,
+        isCompilationUnit: _source.isCompilationUnit,
+        selectionStart: selectionStart,
+        selectionLength: selectionLength);
+  }
+}

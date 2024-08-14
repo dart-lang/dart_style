@@ -160,7 +160,7 @@ double _runTrial(DartFormatter formatter, ParseStringResult parseResult,
       result = visitor.run(parseResult.unit).text;
     } else {
       var visitor = AstNodeVisitor(formatter, parseResult.lineInfo, source);
-      result = visitor.run(parseResult.unit).text;
+      result = visitor.run(source, parseResult.unit).text;
     }
   }
 

@@ -277,7 +277,18 @@ class PieceWriter {
   /// Creates a new [Piece] for [comment] and returns it.
   Piece commentPiece(SourceComment comment,
       [Whitespace trailingWhitespace = Whitespace.none]) {
-    var piece = CommentPiece(trailingWhitespace);
+    var piece = switch (comment.text) {
+      '// dart format off' => EnableFormattingCommentPiece(
+          enable: false,
+          comment.offset + comment.text.length,
+          trailingWhitespace),
+      '// dart format on' => EnableFormattingCommentPiece(
+          enable: true,
+          comment.offset + comment.text.length,
+          trailingWhitespace),
+      _ => CommentPiece(trailingWhitespace),
+    };
+
     _write(piece, comment.text, comment.offset,
         multiline: comment.type.mayBeMultiline);
     return piece;
@@ -379,7 +390,7 @@ class PieceWriter {
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
-  SourceCode finish(Piece rootPiece) {
+  SourceCode finish(SourceCode source, Piece rootPiece) {
     if (debug.tracePieceBuilder) {
       debug.log(debug.pieceTree(rootPiece));
     }
@@ -390,28 +401,11 @@ class PieceWriter {
     var solver = Solver(cache,
         pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
     var solution = solver.format(rootPiece);
-    var (:code, :selectionStart, :selectionEnd) =
-        solution.code.build(_formatter.lineEnding);
+    var output = solution.code.build(source, _formatter.lineEnding);
 
     Profile.end('PieceWriter.finish() format piece tree');
 
-    // Be a good citizen, end with a newline.
-    if (_source.isCompilationUnit) code += _formatter.lineEnding!;
-
-    int? selectionLength;
-    if (_source.selectionStart != null) {
-      // If we haven't hit the beginning and/or end of the selection yet, they
-      // must be at the very end of the code.
-      selectionStart ??= code.length;
-      selectionEnd ??= code.length;
-      selectionLength = selectionEnd - selectionStart;
-    }
-
-    return SourceCode(code,
-        uri: _source.uri,
-        isCompilationUnit: _source.isCompilationUnit,
-        selectionStart: selectionStart,
-        selectionLength: selectionLength);
+    return output;
   }
 
   /// Returns the number of characters past [position] in the source where the

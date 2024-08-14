@@ -103,7 +103,7 @@ class Solver {
 
       if (debug.traceSolver) {
         debug.log(debug.bold('Try #$attempts $solution'));
-        debug.log(solution.code.build().code);
+        debug.log(solution.code.toDebugString());
         debug.log('');
       }
 
@@ -133,8 +133,8 @@ class Solver {
     // If we didn't find a solution without overflow, pick the least bad one.
     if (debug.traceSolver) {
       debug.unindent();
-      debug.log(debug.bold('Solved $root to $best:'));
-      debug.log(solution.code.build().code);
+      debug.log(debug.bold('Solved $root to $best'));
+      debug.log(solution.code.toDebugString());
       debug.log('');
     }
 

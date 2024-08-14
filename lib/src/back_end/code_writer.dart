@@ -30,7 +30,7 @@ class CodeWriter {
   final Solution _solution;
 
   /// The code being written.
-  final GroupCode _code = GroupCode();
+  final GroupCode _code;
 
   /// What whitespace should be written before the next non-whitespace text.
   ///
@@ -41,7 +41,7 @@ class CodeWriter {
   ///
   /// Initially [Whitespace.newline] so that we write the leading indentation
   /// before the first token.
-  Whitespace _pendingWhitespace = Whitespace.newline;
+  Whitespace _pendingWhitespace = Whitespace.none;
 
   /// The number of spaces of indentation that should be begin the next line
   /// when [_pendingWhitespace] is [Whitespace.newline] or
@@ -100,11 +100,13 @@ class CodeWriter {
   /// [leadingIndent] is the number of spaces of leading indentation at the
   /// beginning of each line independent of indentation created by pieces being
   /// written.
-  CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution) {
+  CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution)
+      : _code = GroupCode(leadingIndent) {
     _indentStack.add(_Indent(leadingIndent, 0));
 
-    // Write the leading indent before the first line.
+    // Track the leading indent before the first line.
     _pendingIndent = leadingIndent;
+    _column = _pendingIndent;
   }
 
   /// Returns the final formatted code and the next pieces that can be expanded
@@ -329,6 +331,11 @@ class CodeWriter {
   void endSelection(int end) {
     _flushWhitespace();
     _code.endSelection(end);
+  }
+
+  /// Disables or re-enables formatting in a region of code.
+  void setFormattingEnabled(bool enabled, int sourceOffset) {
+    _code.setFormattingEnabled(enabled, sourceOffset);
   }
 
   /// Write any pending whitespace.
