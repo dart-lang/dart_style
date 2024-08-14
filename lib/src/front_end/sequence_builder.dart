@@ -53,11 +53,13 @@ class SequenceBuilder {
     // BlockPiece.
     if (_elements.isEmpty) {
       return _visitor.pieces.build(() {
-        _visitor.pieces.add(_leftBracket!);
-        if (forceSplit) {
+        if (_leftBracket case var bracket?) _visitor.pieces.add(bracket);
+
+        if (forceSplit || _leftBracket == null) {
           _visitor.pieces.add(NewlinePiece());
         }
-        _visitor.pieces.add(_rightBracket!);
+
+        if (_rightBracket case var bracket?) _visitor.pieces.add(bracket);
       });
     }
 
