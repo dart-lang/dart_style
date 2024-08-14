@@ -28,7 +28,6 @@ class C {
 class C {
   static token() => FirebaseMessaging().getToken();
 
-  static unsubscribe(String topic) => FirebaseMessaging().unsubscribeFromTopic(
-    topic,
-  );
+  static unsubscribe(String topic) =>
+      FirebaseMessaging().unsubscribeFromTopic(topic);
 }

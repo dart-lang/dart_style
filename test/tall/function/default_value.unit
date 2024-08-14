@@ -66,9 +66,10 @@ f([
 f([callback(SomeType parameter) = const CallableClass(someLongConstantArgument, anotherConstantArgument)]) {}
 <<<
 f([
-  callback(SomeType parameter) =
-      const CallableClass(
-        someLongConstantArgument,
-        anotherConstantArgument,
-      ),
+  callback(
+    SomeType parameter,
+  ) = const CallableClass(
+    someLongConstantArgument,
+    anotherConstantArgument,
+  ),
 ]) {}

@@ -2,7 +2,5 @@
 bool
     listEquals<T>(List<T> a, List<T> b) => const ListEquality<T>().equals(a, b);
 <<<
-bool listEquals<T>(List<T> a, List<T> b) => const ListEquality<T>().equals(
-  a,
-  b,
-);
+bool listEquals<T>(List<T> a, List<T> b) =>
+    const ListEquality<T>().equals(a, b);

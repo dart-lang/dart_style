@@ -39,9 +39,8 @@
           });
         },
         setter:
-            (value, ExprCont ek, ExprCont k) => ek(
-              "NoSuchMethodError: method not found: '${names[i]}='",
-            ),
+            (value, ExprCont ek, ExprCont k) =>
+                ek("NoSuchMethodError: method not found: '${names[i]}='"),
       );
     }
   };

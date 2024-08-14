@@ -79,9 +79,8 @@ class C {
             );
           } else if (apiError.message?.contains('Permission denied') ?? false) {
             di<InteractionManager>().pushToastWithBuilder(
-              (context) => ToastConfig(
-                context.l10n.defaultMessagingRestriction,
-              ),
+              (context) =>
+                  ToastConfig(context.l10n.defaultMessagingRestriction),
             );
           }
         });
@@ -140,9 +139,8 @@ class C {
             );
           } else if (apiError.message?.contains('Permission denied') ?? false) {
             di<InteractionManager>().pushToastWithBuilder(
-              (context) => ToastConfig(
-                context.l10n.defaultMessagingRestriction,
-              ),
+              (context) =>
+                  ToastConfig(context.l10n.defaultMessagingRestriction),
             );
           }
         });

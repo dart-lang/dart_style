@@ -3,8 +3,8 @@ Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
     .firstWhere((annotation) => _isAnnotationType(annotation, name),
         orElse: () => null);
 <<<
-Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
-    .firstWhere(
+Annotation _getAnnotation(AnnotatedNode node, String name) =>
+    nodeMetadata.firstWhere(
       (annotation) => _isAnnotationType(annotation, name),
       orElse: () => null,
     );
@@ -13,8 +13,8 @@ Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
       .firstWhere((annotation) => _isAnnotationType(annotation, name),
           orElse: () => null);
 <<<
-  Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
-      .firstWhere(
+  Annotation _getAnnotation(AnnotatedNode node, String name) =>
+      nodeMetadata.firstWhere(
         (annotation) => _isAnnotationType(annotation, name),
         orElse: () => null,
       );
