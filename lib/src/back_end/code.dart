@@ -306,9 +306,9 @@ class _StringBuilder {
           // `on` turns formatting back on, and `more` is formatted code at the
           // end.
           //
-          // We know the beginning of the unformatted region is at offset 10
+          // We know the beginning of the unformatted region is at offset 15
           // (just after the comment) in the original ource. We know the
-          // selection marker is at offset 16 in the original source. From that,
+          // selection marker is at offset 21 in the original source. From that,
           // we know the selection marker should end up 6 code points after the
           // beginning of the unformatted region in the resulting output.
           switch (code._marker) {
