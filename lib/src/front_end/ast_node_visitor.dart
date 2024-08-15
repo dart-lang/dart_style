@@ -605,7 +605,9 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         nodePiece(node.expression, context: NodeContext.assignment);
 
     pieces.add(AssignPiece(operatorPiece, expression,
-        canBlockSplitRight: node.expression.canBlockSplit));
+        canBlockSplitRight: node.expression.canBlockSplit,
+        avoidBlockSplitRight:
+            node.expression.blockFormatType == BlockFormat.invocation));
     pieces.token(node.semicolon);
   }
 

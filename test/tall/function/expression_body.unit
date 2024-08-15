@@ -52,13 +52,11 @@ function() => (
   longElement,
   longElement,
 );
->>> Prefer block-like splitting for function calls.
+>>> Avoid block-like splitting for function calls.
 function() => another(argument, argument);
 <<<
-function() => another(
-  argument,
-  argument,
-);
+function() =>
+    another(argument, argument);
 >>> Use block-like splitting for switch expressions.
 function() => switch (value) { 1 => 'one', 2 => 'two' };
 <<<

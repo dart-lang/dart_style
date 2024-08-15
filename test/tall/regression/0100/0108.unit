@@ -276,10 +276,8 @@ class ElementBinder {
           eventName,
           (_) => zone.run(
             () => bindAssignableProps.forEach(
-              (propAndExp) => propAndExp[1].assign(
-                scope.context,
-                jsNode[propAndExp[0]],
-              ),
+              (propAndExp) =>
+                  propAndExp[1].assign(scope.context, jsNode[propAndExp[0]]),
             ),
           ),
         ),

@@ -382,21 +382,13 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   'advance_0': new MethodTrampoline(0, (Parser target) => target._advance()),
   'appendScalarValue_5': new MethodTrampoline(
     5,
-    (Parser target, arg0, arg1, arg2, arg3, arg4) => target._appendScalarValue(
-      arg0,
-      arg1,
-      arg2,
-      arg3,
-      arg4,
-    ),
+    (Parser target, arg0, arg1, arg2, arg3, arg4) =>
+        target._appendScalarValue(arg0, arg1, arg2, arg3, arg4),
   ),
   'computeStringValue_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._computeStringValue(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._computeStringValue(arg0, arg1, arg2),
   ),
   'convertToFunctionDeclaration_1': new MethodTrampoline(
     1,
@@ -561,11 +553,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseClassTypeAlias_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._parseClassTypeAlias(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseClassTypeAlias(arg0, arg1, arg2),
   ),
   'parseCombinator_0': new MethodTrampoline(
     0,
@@ -662,19 +651,13 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseFunctionBody_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._parseFunctionBody(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseFunctionBody(arg0, arg1, arg2),
   ),
   'parseFunctionDeclaration_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._parseFunctionDeclaration(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseFunctionDeclaration(arg0, arg1, arg2),
   ),
   'parseFunctionDeclarationStatement_0': new MethodTrampoline(
     0,
@@ -682,8 +665,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseFunctionDeclarationStatementAfterReturnType_2': new MethodTrampoline(
     2,
-    (Parser target, arg0, arg1) => target
-        ._parseFunctionDeclarationStatementAfterReturnType(arg0, arg1),
+    (Parser target, arg0, arg1) =>
+        target._parseFunctionDeclarationStatementAfterReturnType(arg0, arg1),
   ),
   'parseFunctionTypeAlias_2': new MethodTrampoline(
     2,
@@ -691,12 +674,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseGetter_4': new MethodTrampoline(
     4,
-    (Parser target, arg0, arg1, arg2, arg3) => target._parseGetter(
-      arg0,
-      arg1,
-      arg2,
-      arg3,
-    ),
+    (Parser target, arg0, arg1, arg2, arg3) =>
+        target._parseGetter(arg0, arg1, arg2, arg3),
   ),
   'parseIdentifierList_0': new MethodTrampoline(
     0,
@@ -712,8 +691,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseInitializedIdentifierList_4': new MethodTrampoline(
     4,
-    (Parser target, arg0, arg1, arg2, arg3) => target
-        ._parseInitializedIdentifierList(arg0, arg1, arg2, arg3),
+    (Parser target, arg0, arg1, arg2, arg3) =>
+        target._parseInitializedIdentifierList(arg0, arg1, arg2, arg3),
   ),
   'parseInstanceCreationExpression_1': new MethodTrampoline(
     1,
@@ -745,8 +724,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseMethodDeclarationAfterParameters_7': new MethodTrampoline(
     7,
-    (Parser target, arg0, arg1, arg2, arg3, arg4, arg5, arg6) => target
-        ._parseMethodDeclarationAfterParameters(
+    (Parser target, arg0, arg1, arg2, arg3, arg4, arg5, arg6) =>
+        target._parseMethodDeclarationAfterParameters(
           arg0,
           arg1,
           arg2,
@@ -758,8 +737,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseMethodDeclarationAfterReturnType_4': new MethodTrampoline(
     4,
-    (Parser target, arg0, arg1, arg2, arg3) => target
-        ._parseMethodDeclarationAfterReturnType(arg0, arg1, arg2, arg3),
+    (Parser target, arg0, arg1, arg2, arg3) =>
+        target._parseMethodDeclarationAfterReturnType(arg0, arg1, arg2, arg3),
   ),
   'parseModifiers_0': new MethodTrampoline(
     0,
@@ -783,11 +762,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseOperator_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._parseOperator(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseOperator(arg0, arg1, arg2),
   ),
   'parseOptionalReturnType_0': new MethodTrampoline(
     0,
@@ -823,12 +799,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseSetter_4': new MethodTrampoline(
     4,
-    (Parser target, arg0, arg1, arg2, arg3) => target._parseSetter(
-      arg0,
-      arg1,
-      arg2,
-      arg3,
-    ),
+    (Parser target, arg0, arg1, arg2, arg3) =>
+        target._parseSetter(arg0, arg1, arg2, arg3),
   ),
   'parseShiftExpression_0': new MethodTrampoline(
     0,
@@ -880,24 +852,23 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'parseVariableDeclarationListAfterMetadata_1': new MethodTrampoline(
     1,
-    (Parser target, arg0) => target._parseVariableDeclarationListAfterMetadata(
-      arg0,
-    ),
+    (Parser target, arg0) =>
+        target._parseVariableDeclarationListAfterMetadata(arg0),
   ),
   'parseVariableDeclarationListAfterType_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target
-        ._parseVariableDeclarationListAfterType(arg0, arg1, arg2),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseVariableDeclarationListAfterType(arg0, arg1, arg2),
   ),
   'parseVariableDeclarationStatementAfterMetadata_1': new MethodTrampoline(
     1,
-    (Parser target, arg0) => target
-        ._parseVariableDeclarationStatementAfterMetadata(arg0),
+    (Parser target, arg0) =>
+        target._parseVariableDeclarationStatementAfterMetadata(arg0),
   ),
   'parseVariableDeclarationStatementAfterType_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target
-        ._parseVariableDeclarationStatementAfterType(arg0, arg1, arg2),
+    (Parser target, arg0, arg1, arg2) =>
+        target._parseVariableDeclarationStatementAfterType(arg0, arg1, arg2),
   ),
   'parseWhileStatement_0': new MethodTrampoline(
     0,
@@ -918,26 +889,18 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'reportErrorForCurrentToken_2': new MethodTrampoline(
     2,
-    (Parser target, arg0, arg1) => target._reportErrorForCurrentToken(
-      arg0,
-      arg1,
-    ),
+    (Parser target, arg0, arg1) =>
+        target._reportErrorForCurrentToken(arg0, arg1),
   ),
   'reportErrorForNode_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._reportErrorForNode(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._reportErrorForNode(arg0, arg1, arg2),
   ),
   'reportErrorForToken_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._reportErrorForToken(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._reportErrorForToken(arg0, arg1, arg2),
   ),
   'skipBlock_0': new MethodTrampoline(
     0,
@@ -1005,11 +968,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'translateCharacter_3': new MethodTrampoline(
     3,
-    (Parser target, arg0, arg1, arg2) => target._translateCharacter(
-      arg0,
-      arg1,
-      arg2,
-    ),
+    (Parser target, arg0, arg1, arg2) =>
+        target._translateCharacter(arg0, arg1, arg2),
   ),
   'unlockErrorListener_0': new MethodTrampoline(
     0,
@@ -1037,14 +997,13 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'validateModifiersForFunctionDeclarationStatement_1': new MethodTrampoline(
     1,
-    (Parser target, arg0) => target
-        ._validateModifiersForFunctionDeclarationStatement(arg0),
+    (Parser target, arg0) =>
+        target._validateModifiersForFunctionDeclarationStatement(arg0),
   ),
   'validateModifiersForGetterOrSetterOrMethod_1': new MethodTrampoline(
     1,
-    (Parser target, arg0) => target._validateModifiersForGetterOrSetterOrMethod(
-      arg0,
-    ),
+    (Parser target, arg0) =>
+        target._validateModifiersForGetterOrSetterOrMethod(arg0),
   ),
   'validateModifiersForOperator_1': new MethodTrampoline(
     1,
@@ -1052,9 +1011,8 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   ),
   'validateModifiersForTopLevelDeclaration_1': new MethodTrampoline(
     1,
-    (Parser target, arg0) => target._validateModifiersForTopLevelDeclaration(
-      arg0,
-    ),
+    (Parser target, arg0) =>
+        target._validateModifiersForTopLevelDeclaration(arg0),
   ),
   'validateModifiersForTopLevelFunction_1': new MethodTrampoline(
     1,

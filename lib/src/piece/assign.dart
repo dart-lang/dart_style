@@ -73,7 +73,7 @@ class AssignPiece extends Piece {
   static const State _blockSplitLeft = State(1);
 
   /// Allow the right-hand side to block split.
-  static const State _blockSplitRight = State(2);
+  static const State _blockSplitRight = State(2, cost: 0);
 
   /// Split at the operator.
   static const State _atOperator = State(3);
@@ -109,13 +109,34 @@ class AssignPiece extends Piece {
   ///     ];
   final bool _canBlockSplitRight;
 
+  /// If `true` then prefer to split at the operator instead of block splitting
+  /// the right side.
+  ///
+  /// This is `true` for `=>` functions whose body is a function call. This
+  /// keeps the called function next to its arguments instead having the
+  /// function name stick to the `=>` while the arguments split. In other words,
+  /// prefer:
+  ///
+  ///     someMethod() =>
+  ///         someFunction(argument, another);
+  ///
+  /// Over:
+  ///
+  ///     someMethod() => someFunction(
+  ///       argument,
+  ///       another,
+  ///     );
+  final bool _avoidBlockSplitRight;
+
   AssignPiece(this._operator, this._right,
       {Piece? left,
       bool canBlockSplitLeft = false,
-      bool canBlockSplitRight = false})
+      bool canBlockSplitRight = false,
+      bool avoidBlockSplitRight = false})
       : _left = left,
         _canBlockSplitLeft = canBlockSplitLeft,
-        _canBlockSplitRight = canBlockSplitRight;
+        _canBlockSplitRight = canBlockSplitRight,
+        _avoidBlockSplitRight = avoidBlockSplitRight;
 
   @override
   List<State> get additionalStates => [
@@ -125,6 +146,16 @@ class AssignPiece extends Piece {
         if (_canBlockSplitRight) _blockSplitRight,
         _atOperator,
       ];
+
+  @override
+  int stateCost(State state) {
+    // Allow block splitting the right side, but increase the cost so that we
+    // prefer splitting at the operator and not splitting in the right piece if
+    // possible.
+    if (state == _blockSplitRight && _avoidBlockSplitRight) return 1;
+
+    return super.stateCost(state);
+  }
 
   @override
   void applyConstraints(State state, Constrain constrain) {
@@ -140,63 +171,35 @@ class AssignPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (state == State.unsplit) {
-      if (child == _left) return false;
-
-      // Always allow block-splitting the right side if it supports it.
-      if (child == _right) return _canBlockSplitRight;
-    }
-
-    return true;
-  }
+  bool allowNewlineInChild(State state, Piece child) => state != State.unsplit;
 
   @override
   void format(CodeWriter writer, State state) {
-    switch (state) {
-      case State.unsplit:
-        _writeLeft(writer, allowNewlines: false);
-        _writeOperator(writer);
-        // Always allow block-splitting the right side if it supports it.
-        _writeRight(writer, allowNewlines: _canBlockSplitRight);
+    // When splitting at the operator, both operands may split or not and
+    // will be indented if they do.
+    if (state == _atOperator) writer.pushIndent(Indent.expression);
 
-      case _atOperator:
-        // When splitting at the operator, both operands may split or not and
-        // will be indented if they do.
-        writer.pushIndent(Indent.expression);
-        _writeLeft(writer);
-        _writeOperator(writer, split: state == _atOperator);
-        _writeRight(writer);
-        writer.popIndent();
-
-      case _blockSplitLeft:
-        _writeLeft(writer);
-        _writeOperator(writer);
-        _writeRight(writer, indent: !_canBlockSplitRight);
-
-      case _blockSplitRight:
-        _writeLeft(writer);
-        _writeOperator(writer, split: state == _atOperator);
-        _writeRight(writer);
-    }
-  }
-
-  void _writeLeft(CodeWriter writer, {bool allowNewlines = true}) {
     if (_left case var left?) writer.format(left);
-  }
 
-  void _writeOperator(CodeWriter writer, {bool split = false}) {
     writer.pushIndent(Indent.expression);
     writer.format(_operator);
     writer.popIndent();
-    writer.splitIf(split);
-  }
+    writer.splitIf(state == _atOperator);
 
-  void _writeRight(CodeWriter writer,
-      {bool indent = false, bool allowNewlines = true}) {
-    if (indent) writer.pushIndent(Indent.expression);
+    // If the left side block splits and the right doesn't, then indent the
+    // right side if it splits as in:
+    //
+    //     var [
+    //       a,
+    //       b,
+    //     ] = long +
+    //         expression;
+    var indentRight = state == _blockSplitLeft && !_canBlockSplitRight;
+    if (indentRight) writer.pushIndent(Indent.expression);
     writer.format(_right);
-    if (indent) writer.popIndent();
+    if (indentRight) writer.popIndent();
+
+    if (state == _atOperator) writer.popIndent();
   }
 
   @override

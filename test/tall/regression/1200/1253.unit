@@ -1,0 +1,41 @@
+>>>
+class C {
+  T visitVariableDeclarationList(
+    VariableDeclarationList node,
+  ) => visitExpression(node);
+
+  T visitAssignment(Assignment node) => visitExpression(node);
+
+  T visitVariableInitialization(VariableInitialization node) => visitExpression(
+    node,
+  );
+}
+<<<
+class C {
+  T visitVariableDeclarationList(VariableDeclarationList node) =>
+      visitExpression(node);
+
+  T visitAssignment(Assignment node) => visitExpression(node);
+
+  T visitVariableInitialization(VariableInitialization node) =>
+      visitExpression(node);
+}
+>>>
+class C {
+  Instantiator visitLiteralStatement(LiteralStatement node) => TODO(
+    'visitLiteralStatement',
+  );
+}
+<<<
+class C {
+  Instantiator visitLiteralStatement(LiteralStatement node) =>
+      TODO('visitLiteralStatement');
+}
+>>>
+ModifiableCssSupportsRule copyWithoutChildren() => ModifiableCssSupportsRule(
+  condition,
+  span,
+);
+<<<
+ModifiableCssSupportsRule copyWithoutChildren() =>
+    ModifiableCssSupportsRule(condition, span);

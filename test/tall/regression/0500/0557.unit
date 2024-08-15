@@ -15,10 +15,8 @@ class PublicType {
 class PublicType {
   const factory PublicType.constructor(String a, Type b) = PublicTypeImpl._;
 
-  factory PublicType.constructor(String a, Type b) => new PublicTypeImpl._(
-    a,
-    b,
-  );
+  factory PublicType.constructor(String a, Type b) =>
+      new PublicTypeImpl._(a, b);
 }
 >>>
 class PublicType {
