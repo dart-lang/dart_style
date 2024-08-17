@@ -42,9 +42,9 @@
         },
       };
 >>> (indent 2)
-  T? get valueOrNull => switch (this) { Data(:var value) => value, _ => null };
+  T? valueOrNull() => switch (this) { Data(:var value) => value, _ => null };
 <<<
-  T? get valueOrNull => switch (this) {
+  T? valueOrNull() => switch (this) {
     Data(:var value) => value,
     _ => null,
   };
