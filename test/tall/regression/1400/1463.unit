@@ -47,11 +47,10 @@ class C {
             final chatApi = ChatsApi(di<ApiClient>());
             if (_target == null) {
               assert(_chatPartner != null);
-              _target =
-                  await chatApi.sendMessageToUserAndCreateChatIfNeeded(
-                    _chatPartner!.id.toString(),
-                    messageUpdateRequest: newMessage,
-                  );
+              _target = await chatApi.sendMessageToUserAndCreateChatIfNeeded(
+                _chatPartner!.id.toString(),
+                messageUpdateRequest: newMessage,
+              );
             } else {
               await chatApi.addMessageToChat(
                 chatId,

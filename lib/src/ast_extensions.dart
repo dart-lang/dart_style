@@ -220,6 +220,9 @@ extension ExpressionExtensions on Expression {
 
       // Parenthesized expressions unwrap the inner expression.
       ParenthesizedExpression(:var expression) => expression.blockFormatType,
+
+      // Await expressions unwrap the inner expression.
+      AwaitExpression(:var expression) => expression.blockFormatType,
       _ => BlockFormat.none,
     };
   }
