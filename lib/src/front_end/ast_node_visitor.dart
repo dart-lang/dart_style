@@ -1718,7 +1718,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     list.rightBracket(node.rightBracket);
-    pieces.add(list.build());
+    pieces.add(list.build(forceSplit: node.cases.isNotEmpty));
   }
 
   @override

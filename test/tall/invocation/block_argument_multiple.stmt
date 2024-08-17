@@ -137,8 +137,12 @@ function(before, switch (n) {
 function(switch (a) { 1 => 2 }, switch (b) { 1 => 2 });
 <<<
 function(
-  switch (a) { 1 => 2 },
-  switch (b) { 1 => 2 },
+  switch (a) {
+    1 => 2,
+  },
+  switch (b) {
+    1 => 2,
+  },
 );
 >>> Empty and non-empty switches.
 function(switch (a) {}, switch (b) { 1 => 2 }, switch (c) {});
