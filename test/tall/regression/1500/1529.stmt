@@ -1,0 +1,67 @@
+>>> (indent 4)
+    return switch (that) { Family() => that, $FamilyOverride() => that.from };
+<<<
+    return switch (that) {
+      Family() => that,
+      $FamilyOverride() => that.from,
+    };
+>>> (indent 6)
+      x = switch (event) {
+        ProviderDisposeEvent() => switch (event
+            .debugOrigin) { ProviderDisposeEvent e => [e.refenaId], _ => null },
+      };
+<<<
+      x = switch (event) {
+        ProviderDisposeEvent() => switch (event.debugOrigin) {
+          ProviderDisposeEvent e => [e.refenaId],
+          _ => null,
+        },
+      };
+>>> (indent 6)
+      x = switch (event) {
+        RebuildEvent() => switch (event
+            .debugOrigin) { BaseReduxAction a => a.refenaId, _ => null },
+        ActionDispatchedEvent() => switch (event
+            .debugOriginRef) { BaseReduxAction a => a.refenaId, _ => null },
+        MessageEvent() => switch (event
+            .origin) { BaseReduxAction a => a.refenaId, _ => null },
+      };
+<<<
+      x = switch (event) {
+        RebuildEvent() => switch (event.debugOrigin) {
+          BaseReduxAction a => a.refenaId,
+          _ => null,
+        },
+        ActionDispatchedEvent() => switch (event.debugOriginRef) {
+          BaseReduxAction a => a.refenaId,
+          _ => null,
+        },
+        MessageEvent() => switch (event.origin) {
+          BaseReduxAction a => a.refenaId,
+          _ => null,
+        },
+      };
+>>> (indent 2)
+  T? valueOrNull() => switch (this) { Data(:var value) => value, _ => null };
+<<<
+  T? valueOrNull() => switch (this) {
+    Data(:var value) => value,
+    _ => null,
+  };
+>>> (indent 2)
+  String transcription(Locale intl) => switch (intl
+      .languageCode) { 'zh' => zhCN(this), 'be' => be(this), _ => basic(this) };
+<<<
+  String transcription(Locale intl) => switch (intl.languageCode) {
+    'zh' => zhCN(this),
+    'be' => be(this),
+    _ => basic(this),
+  };
+>>> (indent 4)
+    return switch (x) { <= 1 => x, >= 3 => x - 4, _ => 2 - x };
+<<<
+    return switch (x) {
+      <= 1 => x,
+      >= 3 => x - 4,
+      _ => 2 - x,
+    };

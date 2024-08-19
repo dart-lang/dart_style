@@ -3,10 +3,13 @@
 e = switch(y) {};
 <<<
 e = switch (y) {};
->>> All one line.
+>>> Always split cases even if they would fit.
 e = switch (c) { 0 => a, 1 => b };
 <<<
-e = switch (c) { 0 => a, 1 => b };
+e = switch (c) {
+  0 => a,
+  1 => b,
+};
 >>> One case per line.
 e = switch (c) { 0 => first, 1 => second };
 <<<
@@ -14,10 +17,6 @@ e = switch (c) {
   0 => first,
   1 => second,
 };
->>> Remove trailing comma if cases fit on one line.
-e = switch (c) { 0 => a, 1 => b, };
-<<<
-e = switch (c) { 0 => a, 1 => b };
 >>> Split some cases at "=>" but not all.
 e = switch (c) {
   first => a,
