@@ -244,6 +244,17 @@ var variableName = (notDelimited + expression);
 <<<
 var variableName =
     (notDelimited + expression);
+>>> Use block-like splitting for await whose inner expression is block-like.
+main() async {
+  var variableName = await function(argument, argument);
+}
+<<<
+main() async {
+  var variableName = await function(
+    argument,
+    argument,
+  );
+}
 >>> Split all variables if an initializer has a split internally.
 var a = 1, b = [element, element, element, element];
 <<<
