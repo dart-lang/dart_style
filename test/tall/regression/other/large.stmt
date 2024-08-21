@@ -1,0 +1,241 @@
+>>> (indent 4)
+    aaaaaaaaaAaaaa!
+        .aaaAaaaaaaaaAaaa(_aaaaaaaAaaaaaa.aaaaAaaa == AaaaAaaa.aaaaaa)
+        .aaaAaaaaaAaaaAaaaaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaAaaaaaaaaa)
+        .aaaAaaaaaAaaaAaaaAaaaaa(
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa)
+        .aaaAaaaaaAaaaAaaaAaaaaa(
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa)
+        .aaaAaaaaaaaAaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaAaaaAaaaaaaa,
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaAaaaAaaaaaaa)
+        .aaaAaaaa(
+            _aaaaaAaaaAaaaa.aaaaa.aaAaaa(),
+            aaaaaAaaaaaa((aaaa) => aaaa.aaaaAa.aa),
+            /* aaAaaaAaaaAa = */
+            aaaaaAaaaaaa(
+                (aaaa) => _aaaaaAaaaAaaaa.aaaaAaaaAaa.aaaaaaaa(aaaa.aaaaAa.aa)),
+            /* aaaaaaAaaaAaaaaAaaaAaaaaaaaAa = */
+            aaaaaAaaaaaa((aaaa) => _aaAaaaaAaaaAaaa(aaaa)),
+            /* aaaaaaAaaaAaaaaAaaaaAaaaaaaaAa = */
+            aaaaaAaaaaaa((aaaa) => _aaAaaaaAaaaAaaa(aaaa)),
+            aaaaaAaaaaaa((aaaa) => _aaaaaaaAaaaAaaaa(aaaa)))
+        .aaaAaaaa(
+            _aaaaaAaaaAaaaa.aaaaa.aaAaaa(),
+            aaaaaAaaaaaa((aaaa) => aaaa.aaaaaaAa),
+            aaaaaAaaaaaa((aaaa) => aaaa.aaaaaaAa),
+            aaaaaAaaaaaa((aaaa) => aaaa.aaAaaaaaaaaaaaa),
+            aaaaaAaaaaaa((aaaa) => _aaAaaaAaaa(aaaa)))
+        .aaaaAaaaaAaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaAaaaaAaaaaaa)
+        .aaaAaaaAaaaaaaAa(aaaaaAaaaaaa((aaaa) =>
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaAaAaaaaaaa
+                ? '${aaaa.aaaa}: ${aaaa.aaaaa}'
+                : '${aaaa.aaaa}'))
+        .aaaAaaaAaaaaaaAa(aaaaaAaaaaaa((aaaa) {
+          if (!aaAaaaaAaaaaa && !aaAaaaaaAaaaaa) {
+            return '${aaaa.aaaaa}';
+          }
+          aaaaa aaaaaAaAaaaaaaaa = aaaa.aaaaa.aaaaa(',').aaaaaa;
+          return aaaaaAaAaaaaaaaa > 1
+              ? '${aaaa.aaaaaaaaAaaaAaaAaaaaa.aaaaa} + ${aaaaaAaAaaaaaaaa - 1} aaaa'
+              : '${aaaa.aaaaa}';
+        }))
+        .aaaAaaaAaaaaaAaaaaAa(aaaaaAaaaaaa((aaaa) =>
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
+                ? null
+                : _aaAaaaAaaaaaAaaaaaa(aaaa)))
+        .aaaAaaaAaaaaAaaaAa(aaaaaAaaaaaa((aaaa) => aaaaAaaaAaaaaaa()))
+        .aaaAaaaaaaaaAaaaaaaa(
+            aaaaaAaaaaaa((aaaaaaaaAaaaa) => _aaAaaaaAaaaaaaa(aaaaaaaaAaaaa)))
+        .aaaAaaaaaAaaaaAaaaaaaa(aaaaaAaaaaaa((aaaaaaAaaaa) =>
+            _aaaaaAaaaaaaaaaaAaaaaaa.aaaaaaAaaaa =
+                Aaaa<Aaaa>.aaaa(aaaaaaAaaaa)))
+        .aaaAaaaAaaaaAa(aaaaaAaaaaaa((aaaa, aaaaa) =>
+            aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
+                ? null
+                : _aaAaaaAaaaaaa(aaaa, aaaaa)))
+        .aaaAaaaAaaaaAa(
+            aaaaaAaaaaaa((aaaa, aaaaa) => _aaAaaaAaaaaaa(aaaa, aaaaa)))
+        .aaaAaaaAaaaaaAa(aaaaaAaaaaaa((aaaa) => _aaaaAaAaaaaAaaa(aaaa, _aaaaaaaAaaaaaAaaaaaaaaAaaaaAaaaaaa.aaaaAaaaaaaaAaaaaaa)))
+        .aaaAaaaaAaaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaAaaaaaaa)
+        .aaaAaaaAaaaaaaAaaa(!aaAaaaaAaaaaa)
+        .aaaAaaaaaaAaaaAaaaaAa(aaaaaAaaaaaa((aaaa) => _aaaaaaaAaaaAaaaaa.aaaaAaaaaAaaAaaa(aaaa)), aaaaaAaaaaaa((aaaaa) => _aaaaaaaAaaaAaaaaa.aaaaAaaaaAaaAaaaaaaaAaaaa(Aaaa<Aaaa>.aaaa(aaaaa))))
+        .aaaAaaaAaaaAa(aaaaaAaaaaaa((aaaa) => aaaaAaaa(aaaa)))
+        .aaaAaaaAaaaAaaaAa(aaaaaAaaaaaa((aaaa) {
+          if (aaAaaaaaAaaaaa && aaaa.aaaaaaaaaa.aaaaaaaaAaa('aaaa_aaaa')) {
+            return aaa.aaaAaaaa(aaaa.aaaaaaaaaa['aaaa_aaaa']!.aaaaaa.aaaaa) ??
+                20;
+          }
+          return 20;
+        }))
+        .aaaAaaaAaaaaAa(aaaaaAaaaaaa((aaaa) {
+          // Aa AaaaaaAaaaAaaaa aaaaaa, aaaaaaa aaaaaa (0~1) aa aaaaa (0~3),
+          // aaaaaaaaa return aaa aaaaaaa aaaaa = 3
+          return aaAaaaaaAaaaaa && aaaa.aaaAaaaaa != null
+              ? aaaa.aaaAaaaaa * 3
+              : 3;
+        }))
+        .aaaAaaaAaaaaAa(aaaaaAaaaaaa((aaaa) => aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa ? '${aaaa.aaaaa}' : ''))
+        .aaaAaaaAaaaaAa(aaaaaAaaaaaa((aaaa) {
+          if (!aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa) {
+            return '';
+          }
+          if (aaAaaaaAaaaaa) {
+            return '${aaaaaaAaaaaaaaa.aaaaaa(aaaa.aaaaaAaaaAaaaa)}';
+          }
+          aaaaa aaaaaAaAaaaaaaaa = aaaa.aaaaa.aaaaa(',').aaaaaa;
+          if (aaAaaaaaAaaaaa) {
+            return '${aaaa.aaaaaaAaAaaaaaaaa}';
+          }
+          return aaaaaAaAaaaaaaaa > 1
+              ? '$aaaaaAaAaaaaaaaa+ aaaaaaaaa'
+              : '${aaaa.aaaaa}';
+        }))
+        .aaaaaa('#aaaaaaaaa-aaaaa', /*aaaAaaaaAaAaaAaa=*/ false);
+<<<
+    aaaaaaaaaAaaaa!
+        .aaaAaaaaaaaaAaaa(_aaaaaaaAaaaaaa.aaaaAaaa == AaaaAaaa.aaaaaa)
+        .aaaAaaaaaAaaaAaaaaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaAaaaaaaaaa)
+        .aaaAaaaaaAaaaAaaaAaaaaa(
+          aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa,
+        )
+        .aaaAaaaaaAaaaAaaaAaaaaa(
+          aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa,
+        )
+        .aaaAaaaaaaaAaaaa(
+          aaaaaaaaaAaaaaAaaAaaaaa!.aaaAaaaAaaaaaaa,
+          aaaaaaaaaAaaaaAaaAaaaaa!.aaaAaaaAaaaaaaa,
+        )
+        .aaaAaaaa(
+          _aaaaaAaaaAaaaa.aaaaa.aaAaaa(),
+          aaaaaAaaaaaa((aaaa) => aaaa.aaaaAa.aa),
+          /* aaAaaaAaaaAa = */
+          aaaaaAaaaaaa(
+            (aaaa) => _aaaaaAaaaAaaaa.aaaaAaaaAaa.aaaaaaaa(aaaa.aaaaAa.aa),
+          ),
+          /* aaaaaaAaaaAaaaaAaaaAaaaaaaaAa = */
+          aaaaaAaaaaaa((aaaa) => _aaAaaaaAaaaAaaa(aaaa)),
+          /* aaaaaaAaaaAaaaaAaaaaAaaaaaaaAa = */
+          aaaaaAaaaaaa((aaaa) => _aaAaaaaAaaaAaaa(aaaa)),
+          aaaaaAaaaaaa((aaaa) => _aaaaaaaAaaaAaaaa(aaaa)),
+        )
+        .aaaAaaaa(
+          _aaaaaAaaaAaaaa.aaaaa.aaAaaa(),
+          aaaaaAaaaaaa((aaaa) => aaaa.aaaaaaAa),
+          aaaaaAaaaaaa((aaaa) => aaaa.aaaaaaAa),
+          aaaaaAaaaaaa((aaaa) => aaaa.aaAaaaaaaaaaaaa),
+          aaaaaAaaaaaa((aaaa) => _aaAaaaAaaa(aaaa)),
+        )
+        .aaaaAaaaaAaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaAaaaaAaaaaaa)
+        .aaaAaaaAaaaaaaAa(
+          aaaaaAaaaaaa(
+            (aaaa) =>
+                aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaAaAaaaaaaa
+                    ? '${aaaa.aaaa}: ${aaaa.aaaaa}'
+                    : '${aaaa.aaaa}',
+          ),
+        )
+        .aaaAaaaAaaaaaaAa(
+          aaaaaAaaaaaa((aaaa) {
+            if (!aaAaaaaAaaaaa && !aaAaaaaaAaaaaa) {
+              return '${aaaa.aaaaa}';
+            }
+            aaaaa aaaaaAaAaaaaaaaa = aaaa.aaaaa.aaaaa(',').aaaaaa;
+            return aaaaaAaAaaaaaaaa > 1
+                ? '${aaaa.aaaaaaaaAaaaAaaAaaaaa.aaaaa} + ${aaaaaAaAaaaaaaaa - 1} aaaa'
+                : '${aaaa.aaaaa}';
+          }),
+        )
+        .aaaAaaaAaaaaaAaaaaAa(
+          aaaaaAaaaaaa(
+            (aaaa) =>
+                aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
+                    ? null
+                    : _aaAaaaAaaaaaAaaaaaa(aaaa),
+          ),
+        )
+        .aaaAaaaAaaaaAaaaAa(aaaaaAaaaaaa((aaaa) => aaaaAaaaAaaaaaa()))
+        .aaaAaaaaaaaaAaaaaaaa(
+          aaaaaAaaaaaa((aaaaaaaaAaaaa) => _aaAaaaaAaaaaaaa(aaaaaaaaAaaaa)),
+        )
+        .aaaAaaaaaAaaaaAaaaaaaa(
+          aaaaaAaaaaaa(
+            (aaaaaaAaaaa) =>
+                _aaaaaAaaaaaaaaaaAaaaaaa.aaaaaaAaaaa = Aaaa<Aaaa>.aaaa(
+                  aaaaaaAaaaa,
+                ),
+          ),
+        )
+        .aaaAaaaAaaaaAa(
+          aaaaaAaaaaaa(
+            (aaaa, aaaaa) =>
+                aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
+                    ? null
+                    : _aaAaaaAaaaaaa(aaaa, aaaaa),
+          ),
+        )
+        .aaaAaaaAaaaaAa(
+          aaaaaAaaaaaa((aaaa, aaaaa) => _aaAaaaAaaaaaa(aaaa, aaaaa)),
+        )
+        .aaaAaaaAaaaaaAa(
+          aaaaaAaaaaaa(
+            (aaaa) => _aaaaAaAaaaaAaaa(
+              aaaa,
+              _aaaaaaaAaaaaaAaaaaaaaaAaaaaAaaaaaa.aaaaAaaaaaaaAaaaaaa,
+            ),
+          ),
+        )
+        .aaaAaaaaAaaaaaaa(aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaAaaaaaaa)
+        .aaaAaaaAaaaaaaAaaa(!aaAaaaaAaaaaa)
+        .aaaAaaaaaaAaaaAaaaaAa(
+          aaaaaAaaaaaa((aaaa) => _aaaaaaaAaaaAaaaaa.aaaaAaaaaAaaAaaa(aaaa)),
+          aaaaaAaaaaaa(
+            (aaaaa) => _aaaaaaaAaaaAaaaaa.aaaaAaaaaAaaAaaaaaaaAaaaa(
+              Aaaa<Aaaa>.aaaa(aaaaa),
+            ),
+          ),
+        )
+        .aaaAaaaAaaaAa(aaaaaAaaaaaa((aaaa) => aaaaAaaa(aaaa)))
+        .aaaAaaaAaaaAaaaAa(
+          aaaaaAaaaaaa((aaaa) {
+            if (aaAaaaaaAaaaaa && aaaa.aaaaaaaaaa.aaaaaaaaAaa('aaaa_aaaa')) {
+              return aaa.aaaAaaaa(aaaa.aaaaaaaaaa['aaaa_aaaa']!.aaaaaa.aaaaa) ??
+                  20;
+            }
+            return 20;
+          }),
+        )
+        .aaaAaaaAaaaaAa(
+          aaaaaAaaaaaa((aaaa) {
+            // Aa AaaaaaAaaaAaaaa aaaaaa, aaaaaaa aaaaaa (0~1) aa aaaaa (0~3),
+            // aaaaaaaaa return aaa aaaaaaa aaaaa = 3
+            return aaAaaaaaAaaaaa && aaaa.aaaAaaaaa != null
+                ? aaaa.aaaAaaaaa * 3
+                : 3;
+          }),
+        )
+        .aaaAaaaAaaaaAa(
+          aaaaaAaaaaaa(
+            (aaaa) =>
+                aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa
+                    ? '${aaaa.aaaaa}'
+                    : '',
+          ),
+        )
+        .aaaAaaaAaaaaAa(
+          aaaaaAaaaaaa((aaaa) {
+            if (!aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa) {
+              return '';
+            }
+            if (aaAaaaaAaaaaa) {
+              return '${aaaaaaAaaaaaaaa.aaaaaa(aaaa.aaaaaAaaaAaaaa)}';
+            }
+            aaaaa aaaaaAaAaaaaaaaa = aaaa.aaaaa.aaaaa(',').aaaaaa;
+            if (aaAaaaaaAaaaaa) {
+              return '${aaaa.aaaaaaAaAaaaaaaaa}';
+            }
+            return aaaaaAaAaaaaaaaa > 1
+                ? '$aaaaaAaAaaaaaaaa+ aaaaaaaaa'
+                : '${aaaa.aaaaa}';
+          }),
+        )
+        .aaaaaa('#aaaaaaaaa-aaaaa', /*aaaAaaaaAaAaaAaa=*/ false);
