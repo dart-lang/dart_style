@@ -62,8 +62,6 @@ class DelimitedListBuilder {
       });
     }
 
-    if (_style.allowBlockElement) _setBlockElementFormatting();
-
     var piece =
         ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
     if (_mustSplit || forceSplit) piece.pin(State.split);
@@ -134,8 +132,8 @@ class DelimitedListBuilder {
   /// [addCommentsBefore()] for the first token in the [piece].
   ///
   /// Assumes there is no comma after this piece.
-  void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
-    _elements.add(ListElementPiece(_leadingComments, piece, format));
+  void add(Piece piece) {
+    _elements.add(ListElementPiece(_leadingComments, piece));
     _leadingComments.clear();
     _commentsBeforeComma = CommentSequence.empty;
   }
@@ -152,23 +150,31 @@ class DelimitedListBuilder {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.firstNonCommentToken);
 
-    // See if it's an expression that supports block formatting.
-    var format = switch (element) {
-      AdjacentStrings(indentStrings: true) =>
-        BlockFormat.indentedAdjacentStrings,
-      AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
-      Expression() => element.blockFormatType,
-      DartPattern() when element.canBlockSplit => BlockFormat.collection,
-      _ => BlockFormat.none,
-    };
-
     // Traverse the element itself.
-    add(_visitor.nodePiece(element), format);
+    add(_visitor.nodePiece(element));
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
       _commentsBeforeComma = _visitor.comments.takeCommentsBefore(nextToken);
     }
+  }
+
+  /// Visits a list of [elements].
+  ///
+  /// If [allowBlockArgument] is `true`, then allows one element to receive
+  /// block formatting if appropriate, as in:
+  ///
+  ///     function(argument, [
+  ///       block,
+  ///       like,
+  ///     ], argument);
+  void visitAll(List<AstNode> elements, {bool allowBlockArgument = false}) {
+    for (var i = 0; i < elements.length; i++) {
+      var element = elements[i];
+      visit(element);
+    }
+
+    if (allowBlockArgument) _setBlockArgument(elements);
   }
 
   /// Inserts an inner left delimiter between two elements.
@@ -398,6 +404,14 @@ class DelimitedListBuilder {
     );
   }
 
+  /// Given an argument list, determines which if any of the arguments should
+  /// get special block-like formatting as in the list literal in:
+  ///
+  ///     function(argument, [
+  ///       block,
+  ///       like,
+  ///     ], argument);
+  ///
   /// Looks at the [BlockFormat] types of all of the elements to determine if
   /// one of them should be block formatted.
   ///
@@ -426,14 +440,29 @@ class DelimitedListBuilder {
   ///
   /// Stores the result of this calculation by setting flags on the
   /// [ListElement]s.
-  void _setBlockElementFormatting() {
-    // TODO(tall): These heuristics will probably need some iteration.
+  void _setBlockArgument(List<AstNode> arguments) {
+    var firstIsUnindentedAdjacentStrings = false;
     var functions = <int>[];
     var collections = <int>[];
     var adjacentStrings = <int>[];
 
-    for (var i = 0; i < _elements.length; i++) {
-      switch (_elements[i].blockFormat) {
+    for (var i = 0; i < arguments.length; i++) {
+      var argument = arguments[i];
+      // See if it's an expression that supports block formatting.
+      var format = switch (argument) {
+        AdjacentStrings(indentStrings: true) =>
+          BlockFormat.indentedAdjacentStrings,
+        AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
+        Expression() => argument.blockFormatType,
+        DartPattern() when argument.canBlockSplit => BlockFormat.collection,
+        _ => BlockFormat.none,
+      };
+
+      if (i == 0 && format == BlockFormat.unindentedAdjacentStrings) {
+        firstIsUnindentedAdjacentStrings = true;
+      }
+
+      switch (format) {
         case BlockFormat.function:
           functions.add(i);
         case BlockFormat.collection:
@@ -471,6 +500,7 @@ class DelimitedListBuilder {
       }
     }
 
+    // TODO(tall): These heuristics will probably need some iteration.
     switch ((functions, collections, adjacentStrings)) {
       // Only allow block formatting in an argument list containing adjacent
       // strings when:
@@ -487,7 +517,7 @@ class DelimitedListBuilder {
       case ([1], _, [0]):
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
-        if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
+        if (firstIsUnindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
 
@@ -503,8 +533,5 @@ class DelimitedListBuilder {
       case ([], [var element], _):
         _elements[element].allowNewlinesWhenUnsplit = true;
     }
-
-    // If we get here, there are no block element, or it's ambiguous as to
-    // which one should be it so none are.
   }
 }

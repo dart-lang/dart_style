@@ -252,9 +252,6 @@ final class ListElementPiece extends Piece {
 
   final Piece? _content;
 
-  /// What kind of block formatting can be applied to this element.
-  final BlockFormat blockFormat;
-
   /// Whether newlines are allowed in this element when this list is unsplit.
   ///
   /// This is generally only true for a single "block" element, as in:
@@ -312,16 +309,13 @@ final class ListElementPiece extends Piece {
   /// delimiter (here `,` and 2).
   int _commentsBeforeDelimiter = 0;
 
-  ListElementPiece(
-      List<Piece> leadingComments, Piece element, BlockFormat format)
+  ListElementPiece(List<Piece> leadingComments, Piece element)
       : _leadingComments = [...leadingComments],
-        _content = element,
-        blockFormat = format;
+        _content = element;
 
   ListElementPiece.comment(Piece comment)
       : _leadingComments = const [],
-        _content = null,
-        blockFormat = BlockFormat.none {
+        _content = null {
     _hangingComments.add(comment);
   }
 
@@ -459,18 +453,8 @@ class ListStyle {
   ///     //              ^                      ^
   final bool spaceWhenUnsplit;
 
-  /// Whether an element in the list is allowed to have block-like formatting,
-  /// as in:
-  ///
-  ///     function(argument, [
-  ///       block,
-  ///       like,
-  ///     ], argument);
-  final bool allowBlockElement;
-
   const ListStyle(
       {this.commas = Commas.trailing,
       this.splitCost = Cost.normal,
-      this.spaceWhenUnsplit = false,
-      this.allowBlockElement = false});
+      this.spaceWhenUnsplit = false});
 }
