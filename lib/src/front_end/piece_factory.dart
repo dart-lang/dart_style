@@ -837,8 +837,6 @@ mixin PieceFactory {
               tokenPiece(combinatorNode.keyword),
               for (var name in names) tokenPiece(name.token, commaAfter: true),
             ]));
-          default:
-            throw StateError('Unknown combinator type $combinatorNode.');
         }
       }
 
