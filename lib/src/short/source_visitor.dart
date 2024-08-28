@@ -1955,8 +1955,6 @@ class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(node.uri);
 
-      _visitConfigurations(node.configurations);
-
       if (node.asKeyword != null) {
         soloSplit();
         token(node.deferredKeyword, after: space);
@@ -1965,6 +1963,7 @@ class SourceVisitor extends ThrowingAstVisitor {
         visit(node.prefix);
       }
 
+      _visitConfigurations(node.configurations);
       _visitCombinators(node.combinators);
     });
   }

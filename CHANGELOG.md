@@ -9,6 +9,7 @@
   flag (#361).
 * Preserve type parameters on old-style function-typed formals that also use
   `this.` or `super.` (#1321).
+* Correctly format imports with both `as` and `if` clauses (#1544).
 * Remove temporary work around for analyzer 6.2.0 from dart_style 2.3.6.
 * Require `package:analyzer` `>=6.5.0 <7.0.0`.
 

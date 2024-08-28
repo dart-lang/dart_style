@@ -812,13 +812,8 @@ mixin PieceFactory {
         pieces.visit(directive.uri);
       });
 
-      // Include any `if` clauses.
-      var clauses = <Piece>[];
-      for (var configuration in directive.configurations) {
-        clauses.add(nodePiece(configuration));
-      }
-
       // Include the `as` clause.
+      var clauses = <Piece>[];
       if (asKeyword != null) {
         clauses.add(pieces.build(() {
           pieces.token(deferredKeyword, spaceAfter: true);
@@ -826,6 +821,11 @@ mixin PieceFactory {
           pieces.space();
           pieces.visit(prefix!);
         }));
+      }
+
+      // Include any `if` clauses.
+      for (var configuration in directive.configurations) {
+        clauses.add(nodePiece(configuration));
       }
 
       // Include the `show` and `hide` clauses.
