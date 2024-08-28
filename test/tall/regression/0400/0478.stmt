@@ -38,9 +38,12 @@
         }));
 <<<
         statusBarWidgets.add(
-          new IconButton(icon: "action/swap_vert", onPressed: () {
-            setState(() {
-              _showSplitView = !_showSplitView;
-            });
-          }),
+          new IconButton(
+            icon: "action/swap_vert",
+            onPressed: () {
+              setState(() {
+                _showSplitView = !_showSplitView;
+              });
+            },
+          ),
         );

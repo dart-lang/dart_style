@@ -398,9 +398,10 @@ enum BlockFormat {
   /// elements.
   function,
 
-  /// The element is a collection literal.
+  /// The element is a collection literal or multiline string literal.
   ///
-  /// These can be block formatted even when there are other arguments.
+  /// If there is only one of these and no [BlockFormat.function] elements, then
+  /// it can be block formatted.
   collection,
 
   /// A function or method invocation.
@@ -410,7 +411,7 @@ enum BlockFormat {
 
   /// The element is an adjacent strings expression that's in an list that
   /// requires its subsequent lines to be indented (because there are other
-  /// string literal in the list).
+  /// string literals in the list).
   indentedAdjacentStrings,
 
   /// The element is an adjacent strings expression that's in an list that

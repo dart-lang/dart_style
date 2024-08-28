@@ -1,0 +1,104 @@
+40 columns                              |
+### Test how block formatting functions like test(), group(), that start with
+### leading adjacent strings behaves.
+>>> Adjacent strings preceding a function expression doesn't prevent block formatting.
+test('First adjacent string' 'second adjacent string'
+'third adjacent string', () async {
+  ;
+});
+<<<
+test('First adjacent string'
+    'second adjacent string'
+    'third adjacent string', () async {
+  ;
+});
+>>> Don't block format a function with a preceding adjacent string if it doesn't fit.
+test('First adjacent string' 'second long adjacent string', () async {
+  ;
+});
+<<<
+test(
+  'First adjacent string'
+  'second long adjacent string',
+  () async {
+    ;
+  },
+);
+>>> Don't block format adjacent strings preceding a non-function block argument.
+test('First adjacent string'
+    'second adjacent string'
+    'third adjacent string', [
+  element1,
+  element2,
+  element3,
+  element4,
+]);
+<<<
+test(
+  'First adjacent string'
+  'second adjacent string'
+  'third adjacent string',
+  [
+    element1,
+    element2,
+    element3,
+    element4,
+  ],
+);
+>>> Another string argument doesn't prevent block formatting.
+test('First string line 1' 'first string line 2', () {
+  ;
+}, 'Another simple string');
+<<<
+test('First string line 1'
+    'first string line 2', () {
+  ;
+}, 'Another simple string');
+>>> Multiple trailing arguments prevent block formatting.
+test('First string line 1' 'first string line 2', () {
+  ;
+}, trailing, another);
+<<<
+test(
+  'First string line 1'
+  'first string line 2',
+  () {
+    ;
+  },
+  trailing,
+  another,
+);
+>>> Don't block format if the leading string is named.
+test(named: 'First string line 1' 'first string line 2', () {
+  ;
+});
+<<<
+test(
+  named:
+      'First string line 1'
+      'first string line 2',
+  () {
+    ;
+  },
+);
+>>> Don't block format if the leading function is named.
+test('First string line 1' 'first string line 2', named: () {
+  ;
+});
+<<<
+test(
+  'First string line 1'
+  'first string line 2',
+  named: () {
+    ;
+  },
+);
+>>> Allow block formatting when the trailing argument is named.
+test('First string line 1' 'first string line 2', () {
+  ;
+}, named: arg);
+<<<
+test('First string line 1'
+    'first string line 2', () {
+  ;
+}, named: arg);

@@ -1,6 +1,6 @@
 40 columns                              |
-### Test multi-line strings as block arguments.
->>> Allow block formatting a multi-line string.
+### Test multiline strings as block arguments.
+>>> Allow block formatting a multiline string.
 someMethod("""first line fits in here
 more stuff down here too that is long
 """);
@@ -16,7 +16,7 @@ more stuff down here too that is long
 someMethod('''first line fits in here
 more stuff down here too that is long
 ''');
->>> Allow block formatting a multi-line string with interpolation.
+>>> Allow block formatting a multiline string with interpolation.
 someMethod("""first line fits in here
 more stuff $down here too that is long
 """);
@@ -40,7 +40,7 @@ someMethod(
   """first line does not fit here
 """,
 );
->>> Block format multi-line string with non-block arguments before.
+>>> Block format multiline string with non-block arguments before.
 someMethod("foo", "bar", """
 some
 text
@@ -50,17 +50,31 @@ someMethod("foo", "bar", """
 some
 text
 """);
->>> Block format multi-line string with non-block arguments after.
+>>> Block format multiline string with one argument after.
+someMethod("""
+some
+text
+""", "foo");
+<<<
+someMethod("""
+some
+text
+""", "foo");
+>>> Don't block format multiline string with multiple arguments after.
 someMethod("""
 some
 text
 """, "foo", "bar");
 <<<
-someMethod("""
+someMethod(
+  """
 some
 text
-""", "foo", "bar");
->>> Block format multi-line string with non-block arguments before and after.
+""",
+  "foo",
+  "bar",
+);
+>>> Block format multiline string with non-block arguments before and after.
 someMethod("foo", """
 some
 text
@@ -71,7 +85,7 @@ someMethod("foo", """
 some
 text
 """, "bar");
->>> Can't have multiple block formatted multi-line strings.
+>>> Can't have multiple block formatted multiline strings.
 someMethod("""
 some
 text

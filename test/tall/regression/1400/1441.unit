@@ -32,9 +32,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Center(
-      child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-        const Text('你好'),
-      ]),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [const Text('你好')],
+      ),
     );
   }
 }

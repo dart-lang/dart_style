@@ -150,7 +150,7 @@ function(switch (a) {}, switch (b) { 1 => 2 }, switch (c) {});
 function(switch (a) {}, switch (b) {
   1 => 2,
 }, switch (c) {});
->>> Collection and multi-line string prevents block formatting.
+>>> Collection and multiline string prevents block formatting.
 function([element, element], '''multiple
 lines''');
 <<<
@@ -158,71 +158,4 @@ function(
   [element, element],
   '''multiple
 lines''',
-);
->>> Adjacent strings preceding a function expression doesn't prevent block formatting.
-test('First adjacent string' 'second adjacent string'
-'third adjacent string', () async {
-  ;
-});
-<<<
-test('First adjacent string'
-    'second adjacent string'
-    'third adjacent string', () async {
-  ;
-});
->>> Don't block format a function with a preceding adjacent string if it doesn't fit.
-test('First adjacent string' 'second long adjacent string', () async {
-  ;
-});
-<<<
-test(
-  'First adjacent string'
-  'second long adjacent string',
-  () async {
-    ;
-  },
-);
->>> Don't block format adjacent strings preceding a non-function block argument.
-test('First adjacent string'
-    'second adjacent string'
-    'third adjacent string', [
-  element1,
-  element2,
-  element3,
-  element4,
-]);
-<<<
-test(
-  'First adjacent string'
-  'second adjacent string'
-  'third adjacent string',
-  [
-    element1,
-    element2,
-    element3,
-    element4,
-  ],
-);
->>> Other string arguments don't prevent block formatting.
-test('First string line 1' 'first string line 2', () {
-  ;
-}, 'Another simple string');
-<<<
-test('First string line 1'
-    'first string line 2', () {
-  ;
-}, 'Another simple string');
->>> Other adjacent string arguments prevent block formatting.
-test('First string line 1' 'first string line 2', () {
-  ;
-}, 'Another adjacent' 'string argument');
-<<<
-test(
-  'First string line 1'
-      'first string line 2',
-  () {
-    ;
-  },
-  'Another adjacent'
-      'string argument',
 );
