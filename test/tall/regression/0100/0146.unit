@@ -3,18 +3,13 @@ main() {
   foo([1, 2, 4, 5, 6, 7, 8, 20], argument, argument, argument, argument, argument);
 }
 <<<
-### TODO(rnystrom): This would look better with the list unsplit and the
-### argument list split. Should we take the number of elements into account
-### when deciding whether or not to do a block argument?
 main() {
-  foo([
-    1,
-    2,
-    4,
-    5,
-    6,
-    7,
-    8,
-    20,
-  ], argument, argument, argument, argument, argument);
+  foo(
+    [1, 2, 4, 5, 6, 7, 8, 20],
+    argument,
+    argument,
+    argument,
+    argument,
+    argument,
+  );
 }

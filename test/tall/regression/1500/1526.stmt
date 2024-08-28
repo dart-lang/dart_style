@@ -30,10 +30,13 @@
             'nameStartsWith': cleanNameFilter,
         }, cancelToken: cancelToken);
 <<<
-    final response = await _get('characters', queryParameters:
-        <String, Object?>{
-          'offset': offset,
-          if (limit != null) 'limit': limit,
-          if (cleanNameFilter != null && cleanNameFilter.isNotEmpty)
-            'nameStartsWith': cleanNameFilter,
-        }, cancelToken: cancelToken);
+    final response = await _get(
+      'characters',
+      queryParameters: <String, Object?>{
+        'offset': offset,
+        if (limit != null) 'limit': limit,
+        if (cleanNameFilter != null && cleanNameFilter.isNotEmpty)
+          'nameStartsWith': cleanNameFilter,
+      },
+      cancelToken: cancelToken,
+    );

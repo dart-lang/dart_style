@@ -44,19 +44,23 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Widget buildRow() =>
-      Row(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Image.asset('images/pic1.jpg'),
-        Image.asset('images/pic2.jpg'),
-        Image.asset('images/pic3.jpg'),
-      ]);
+  Widget buildRow() => Row(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      Image.asset('images/pic1.jpg'),
+      Image.asset('images/pic2.jpg'),
+      Image.asset('images/pic3.jpg'),
+    ],
+  );
 
-  Widget buildColumn() =>
-      Column(mainAxisAlignment: MainAxisAlignment.spaceEvenly, children: [
-        Image.asset('images/pic1.jpg'),
-        Image.asset('images/pic2.jpg'),
-        Image.asset('images/pic3.jpg'),
-      ]);
+  Widget buildColumn() => Column(
+    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    children: [
+      Image.asset('images/pic1.jpg'),
+      Image.asset('images/pic2.jpg'),
+      Image.asset('images/pic3.jpg'),
+    ],
+  );
 }
 >>>
 class MyApp extends StatelessWidget {

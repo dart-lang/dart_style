@@ -10,13 +10,16 @@ class MyAmazingComponent {
   var a = [[[1]]];
 }
 <<<
-@Component(selector: 'my-selector', properties: const [
-  'property-1',
-  'property-2',
-  'property-3',
-  'property-4',
-  'property-5',
-])
+@Component(
+  selector: 'my-selector',
+  properties: const [
+    'property-1',
+    'property-2',
+    'property-3',
+    'property-4',
+    'property-5',
+  ],
+)
 @View(
   directives: const [
     OtherComponent1,
@@ -52,13 +55,16 @@ class MyAmazingComponent {
   var a = [[[1]]];
 }
 <<<
-@Component(selector: 'my-selector', properties: const [
-  'property-1',
-  'property-2',
-  'property-3',
-  'property-4',
-  'property-5',
-])
+@Component(
+  selector: 'my-selector',
+  properties: const [
+    'property-1',
+    'property-2',
+    'property-3',
+    'property-4',
+    'property-5',
+  ],
+)
 @View(
   directives: const [
     OtherComponent1,

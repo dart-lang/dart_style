@@ -15,18 +15,23 @@ variable = await function(
           HttpHeaders.contentTypeHeader: ContentType.json.value,
         }, body: json.encode(discordPayload));
 <<<
-    final response = await post(Uri.parse(webhookUrl), headers: {
-      HttpHeaders.contentTypeHeader: ContentType.json.value,
-    }, body: json.encode(discordPayload));
+    final response = await post(
+      Uri.parse(webhookUrl),
+      headers: {HttpHeaders.contentTypeHeader: ContentType.json.value},
+      body: json.encode(discordPayload),
+    );
 >>> (indent 2)
   final token =
       await jwt.verify('<TOKEN>', issuer: '<ISSUER>', audience: {
         '<AUDIENCE>',
       }, publicKeysUrl: '<PUBLIC_KEYS_URL>');
 <<<
-  final token = await jwt.verify('<TOKEN>', issuer: '<ISSUER>', audience: {
-    '<AUDIENCE>',
-  }, publicKeysUrl: '<PUBLIC_KEYS_URL>');
+  final token = await jwt.verify(
+    '<TOKEN>',
+    issuer: '<ISSUER>',
+    audience: {'<AUDIENCE>'},
+    publicKeysUrl: '<PUBLIC_KEYS_URL>',
+  );
 >>> (indent 6)
       final connection =
           await connectSocket(

@@ -6,7 +6,10 @@ void main() {
 }
 <<<
 void main() {
-  var controller = new StreamController<T>(sync: true, onCancel: () {
-    return Future.wait(operationSet.map((operation) => operation.cancel()));
-  });
+  var controller = new StreamController<T>(
+    sync: true,
+    onCancel: () {
+      return Future.wait(operationSet.map((operation) => operation.cancel()));
+    },
+  );
 }

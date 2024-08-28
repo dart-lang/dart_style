@@ -123,7 +123,7 @@ mixin PieceFactory {
         leftBracket: leftBracket,
         elements,
         rightBracket: rightBracket,
-        style: const ListStyle(allowBlockElement: true));
+        allowBlockArgument: true);
   }
 
   /// Writes a bracket-delimited block or declaration body.
@@ -972,7 +972,8 @@ mixin PieceFactory {
       {required Token leftBracket,
       required Token rightBracket,
       ListStyle style = const ListStyle(),
-      bool preserveNewlines = false}) {
+      bool preserveNewlines = false,
+      bool allowBlockArgument = false}) {
     // If the list is completely empty, write the brackets directly inline so
     // that we create fewer pieces.
     if (!elements.canSplit(rightBracket)) {
@@ -988,7 +989,7 @@ mixin PieceFactory {
     if (preserveNewlines && elements.containsLineComments(rightBracket)) {
       _preserveNewlinesInCollection(elements, builder);
     } else {
-      elements.forEach(builder.visit);
+      builder.visitAll(elements, allowBlockArgument: allowBlockArgument);
     }
 
     builder.rightBracket(rightBracket);

@@ -62,8 +62,6 @@ class DelimitedListBuilder {
       });
     }
 
-    if (_style.allowBlockElement) _setBlockElementFormatting();
-
     var piece =
         ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
     if (_mustSplit || forceSplit) piece.pin(State.split);
@@ -134,8 +132,8 @@ class DelimitedListBuilder {
   /// [addCommentsBefore()] for the first token in the [piece].
   ///
   /// Assumes there is no comma after this piece.
-  void add(Piece piece, [BlockFormat format = BlockFormat.none]) {
-    _elements.add(ListElementPiece(_leadingComments, piece, format));
+  void add(Piece piece) {
+    _elements.add(ListElementPiece(_leadingComments, piece));
     _leadingComments.clear();
     _commentsBeforeComma = CommentSequence.empty;
   }
@@ -152,23 +150,31 @@ class DelimitedListBuilder {
     // Handle comments between the preceding element and this one.
     addCommentsBefore(element.firstNonCommentToken);
 
-    // See if it's an expression that supports block formatting.
-    var format = switch (element) {
-      AdjacentStrings(indentStrings: true) =>
-        BlockFormat.indentedAdjacentStrings,
-      AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
-      Expression() => element.blockFormatType,
-      DartPattern() when element.canBlockSplit => BlockFormat.collection,
-      _ => BlockFormat.none,
-    };
-
     // Traverse the element itself.
-    add(_visitor.nodePiece(element), format);
+    add(_visitor.nodePiece(element));
 
     var nextToken = element.endToken.next!;
     if (nextToken.lexeme == ',') {
       _commentsBeforeComma = _visitor.comments.takeCommentsBefore(nextToken);
     }
+  }
+
+  /// Visits a list of [elements].
+  ///
+  /// If [allowBlockArgument] is `true`, then allows one element to receive
+  /// block formatting if appropriate, as in:
+  ///
+  ///     function(argument, [
+  ///       block,
+  ///       like,
+  ///     ], argument);
+  void visitAll(List<AstNode> elements, {bool allowBlockArgument = false}) {
+    for (var i = 0; i < elements.length; i++) {
+      var element = elements[i];
+      visit(element);
+    }
+
+    if (allowBlockArgument) _setBlockArgument(elements);
   }
 
   /// Inserts an inner left delimiter between two elements.
@@ -398,6 +404,14 @@ class DelimitedListBuilder {
     );
   }
 
+  /// Given an argument list, determines which if any of the arguments should
+  /// get special block-like formatting as in the list literal in:
+  ///
+  ///     function(argument, [
+  ///       block,
+  ///       like,
+  ///     ], argument);
+  ///
   /// Looks at the [BlockFormat] types of all of the elements to determine if
   /// one of them should be block formatted.
   ///
@@ -426,85 +440,112 @@ class DelimitedListBuilder {
   ///
   /// Stores the result of this calculation by setting flags on the
   /// [ListElement]s.
-  void _setBlockElementFormatting() {
-    // TODO(tall): These heuristics will probably need some iteration.
-    var functions = <int>[];
-    var collections = <int>[];
-    var adjacentStrings = <int>[];
+  void _setBlockArgument(List<AstNode> arguments) {
+    var candidateIndex = _candidateBlockArgument(arguments);
+    if (candidateIndex == -1) return;
 
-    for (var i = 0; i < _elements.length; i++) {
-      switch (_elements[i].blockFormat) {
-        case BlockFormat.function:
-          functions.add(i);
-        case BlockFormat.collection:
-          collections.add(i);
-        case BlockFormat.invocation:
-          // We don't allow function calls as block elements partially for style
-          // and partially for performance. It often doesn't look great to let
-          // nested function calls pack arbitrarily deeply as block arguments:
-          //
-          //     ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          //         content: Text(
-          //       localizations.demoSnackbarsAction,
-          //     )));
-          //
-          // This is better when expanded like:
-          //
-          //     ScaffoldMessenger.of(context).showSnackBar(
-          //       SnackBar(
-          //         content: Text(
-          //           localizations.demoSnackbarsAction,
-          //         ),
-          //       ),
-          //     );
-          //
-          // Also, when invocations can be block arguments, which themselves
-          // may contain block arguments, it's easy to run into combinatorial
-          // performance in the solver as it tries to determine which of the
-          // nested calls should and shouldn't be block formatted.
-          break;
-        case BlockFormat.indentedAdjacentStrings:
-        case BlockFormat.unindentedAdjacentStrings:
-          adjacentStrings.add(i);
-        case BlockFormat.none:
-          break; // Not a block element.
+    // Only allow up to one trailing argument after the block argument. This
+    // handles the common `tags` and `timeout` named arguments in `test()` and
+    // `group()` while still mostly having the block argument be at the end of
+    // the argument list.
+    if (candidateIndex < arguments.length - 2) return;
+
+    // If there are multiple named arguments, they should never end up on
+    // separate lines (unless the whole argument list fully splits). Otherwise,
+    // it's too easy for an argument name to get buried in the middle of a line.
+    // So we look for named arguments before, on, and after the candidate
+    // argument. If more than one of those sections of arguments has a named
+    // argument, then we don't allow the block argument.
+    var namedSections = 0;
+    bool hasNamedArgument(int from, int to) {
+      for (var i = from; i < to; i++) {
+        if (arguments[i] is NamedExpression) return true;
       }
+
+      return false;
     }
 
-    switch ((functions, collections, adjacentStrings)) {
-      // Only allow block formatting in an argument list containing adjacent
-      // strings when:
-      //
-      // 1. The block argument is a function expression.
-      // 2. It is the second argument, following an adjacent strings expression.
-      // 3. There are no other adjacent strings in the argument list.
-      //
-      // This matches the `test()` and `group()` and other similar APIs where
-      // you have a message string followed by a block-like function expression
-      // but little else.
-      // TODO(tall): We may want to iterate on these heuristics. For now,
-      // starting with something very narrowly targeted.
-      case ([1], _, [0]):
+    if (hasNamedArgument(0, candidateIndex)) namedSections++;
+    if (hasNamedArgument(candidateIndex, candidateIndex + 1)) namedSections++;
+    if (hasNamedArgument(candidateIndex + 1, arguments.length)) namedSections++;
+
+    if (namedSections > 1) return;
+
+    // Edge case: If the first argument is adjacent strings and the second
+    // argument is a function literal, with optionally a third non-block
+    // argument, then treat the function as the block argument.
+    //
+    // This matches the `test()` and `group()` and other similar APIs where
+    // you have a message string followed by a block-like function expression
+    // but little else, as in:
+    //
+    //     test('Some long test description '
+    //         'that splits into multiple lines.', () {
+    //       expect(1 + 2, 3);
+    //     });
+    if (candidateIndex == 1 &&
+        arguments[0] is! NamedExpression &&
+        arguments[1] is! NamedExpression) {
+      if ((arguments[0].blockFormatType, arguments[1].blockFormatType)
+          case (
+            BlockFormat.unindentedAdjacentStrings ||
+                BlockFormat.indentedAdjacentStrings,
+            BlockFormat.function
+          )) {
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
-        if (_elements[0].blockFormat == BlockFormat.unindentedAdjacentStrings) {
+        if (arguments[0].blockFormatType ==
+            BlockFormat.unindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
 
         // The block-formattable function.
         _elements[1].allowNewlinesWhenUnsplit = true;
-
-      // A function expression takes precedence over other block arguments.
-      case ([var element], _, _):
-        _elements[element].allowNewlinesWhenUnsplit = true;
-
-      // A single collection literal can be block formatted even if there are
-      // other arguments.
-      case ([], [var element], _):
-        _elements[element].allowNewlinesWhenUnsplit = true;
+        return;
+      }
     }
 
-    // If we get here, there are no block element, or it's ambiguous as to
-    // which one should be it so none are.
+    // If we get here, we have a block argument.
+    _elements[candidateIndex].allowNewlinesWhenUnsplit = true;
+  }
+
+  /// If an argument in [arguments] is a candidate to be block formatted,
+  /// returns its index.
+  ///
+  /// Otherwise, returns `-1`.
+  int _candidateBlockArgument(List<AstNode> arguments) {
+    var functionIndex = -1;
+    var collectionIndex = -1;
+    // var stringIndex = -1;
+
+    for (var i = 0; i < arguments.length; i++) {
+      // See if it's an expression that supports block formatting.
+      switch (arguments[i].blockFormatType) {
+        case BlockFormat.function:
+          if (functionIndex >= 0) {
+            functionIndex = -2;
+          } else {
+            functionIndex = i;
+          }
+
+        case BlockFormat.collection:
+          if (collectionIndex >= 0) {
+            collectionIndex = -2;
+          } else {
+            collectionIndex = i;
+          }
+
+        case BlockFormat.invocation:
+        case BlockFormat.indentedAdjacentStrings:
+        case BlockFormat.unindentedAdjacentStrings:
+        case BlockFormat.none:
+          break; // Normal argument.
+      }
+    }
+
+    if (functionIndex >= 0) return functionIndex;
+    if (collectionIndex >= 0) return collectionIndex;
+
+    return -1;
   }
 }

@@ -1,0 +1,66 @@
+40 columns                              |
+### Test how named arguments interact with block formatting.
+>>> Block format all positional.
+function(be, fore, [element, element], after);
+<<<
+function(be, fore, [
+  element,
+  element,
+], after);
+>>> Block format named only leading.
+function(a: be, b: fore, [element, element], after);
+<<<
+function(a: be, b: fore, [
+  element,
+  element,
+], after);
+>>> Block format named only block argument.
+function(be, fore, a: [element, element], after);
+<<<
+function(be, fore, a: [
+  element,
+  element,
+], after);
+>>> Block format named only trailing.
+function(be, fore, [element, element], a: after);
+<<<
+function(be, fore, [
+  element,
+  element,
+], a: after);
+>>> Don't block format named leading and block argument.
+function(a: be, fore, b: [element, element], after);
+<<<
+function(
+  a: be,
+  fore,
+  b: [element, element],
+  after,
+);
+>>> Don't block format named leading and trailing.
+function(a: be, fore, [element, element], b: after);
+<<<
+function(
+  a: be,
+  fore,
+  [element, element],
+  b: after,
+);
+>>> Don't block format named block argument and trailing.
+function(be, fore, a: [element, element], b: after);
+<<<
+function(
+  be,
+  fore,
+  a: [element, element],
+  b: after,
+);
+>>> Don't block format all named.
+function(a: be, b: fore, c: [element, element], d: after);
+<<<
+function(
+  a: be,
+  b: fore,
+  c: [element, element],
+  d: after,
+);

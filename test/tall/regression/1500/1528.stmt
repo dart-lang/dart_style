@@ -1,0 +1,9 @@
+>>> (indent 10)
+          result = ProviderScope(overrides: [
+            selectedCharacterId.overrideWithValue(split.last),
+          ], child: const CharacterView());
+<<<
+          result = ProviderScope(
+            overrides: [selectedCharacterId.overrideWithValue(split.last)],
+            child: const CharacterView(),
+          );

@@ -1,0 +1,114 @@
+>>>
+class C {
+  Result<Res> chain<Res>(Res Function(T value) cb) {
+    return when(data: (value) {
+      try {
+        return Result.data(cb(value));
+      } catch (err, stack) {
+        return Result.error(err, stack);
+      }
+    }, error: Result.error);
+  }
+
+  T get dataOrThrow {
+    return when(data: (value) => value, error: (err, stack) {
+      // ignore: only_throw_errors
+      throw err;
+    });
+  }
+}
+<<<
+class C {
+  Result<Res> chain<Res>(Res Function(T value) cb) {
+    return when(
+      data: (value) {
+        try {
+          return Result.data(cb(value));
+        } catch (err, stack) {
+          return Result.error(err, stack);
+        }
+      },
+      error: Result.error,
+    );
+  }
+
+  T get dataOrThrow {
+    return when(
+      data: (value) => value,
+      error: (err, stack) {
+        // ignore: only_throw_errors
+        throw err;
+      },
+    );
+  }
+}
+>>>
+main() {
+  test(
+    'Test stuff',
+    () {
+      // Oof, too much indentation...
+      expect(stuff, otherStuff);
+    },
+    tags: ['hi'],
+  );
+}
+<<<
+main() {
+  test('Test stuff', () {
+    // Oof, too much indentation...
+    expect(stuff, otherStuff);
+  }, tags: ['hi']);
+}
+>>> (indent 2)
+  main() {
+    return Scaffold(
+      body: Center(child: AnimatedDigit(value: value % 10)),
+      floatingActionButton: FloatingActionButton(onPressed: () {
+        setState(() {
+          value += 1;
+        });
+      }, tooltip: 'Increment Digit', child: const Icon(Icons.add)),
+    );
+  }
+<<<
+  main() {
+    return Scaffold(
+      body: Center(child: AnimatedDigit(value: value % 10)),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          setState(() {
+            value += 1;
+          });
+        },
+        tooltip: 'Increment Digit',
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+>>>
+final CatmullRomSpline path = CatmullRomSpline(const <Offset>[
+  Offset(0.05, 0.75),
+  Offset(0.18, 0.23),
+  Offset(0.32, 0.04),
+  Offset(0.73, 0.5),
+  Offset(0.42, 0.74),
+  Offset(0.73, 0.01),
+  Offset(0.93, 0.93),
+  Offset(0.05, 0.75),
+], startHandle: const Offset(0.93, 0.93), endHandle: const Offset(0.18, 0.23));
+<<<
+final CatmullRomSpline path = CatmullRomSpline(
+  const <Offset>[
+    Offset(0.05, 0.75),
+    Offset(0.18, 0.23),
+    Offset(0.32, 0.04),
+    Offset(0.73, 0.5),
+    Offset(0.42, 0.74),
+    Offset(0.73, 0.01),
+    Offset(0.93, 0.93),
+    Offset(0.05, 0.75),
+  ],
+  startHandle: const Offset(0.93, 0.93),
+  endHandle: const Offset(0.18, 0.23),
+);

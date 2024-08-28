@@ -7,6 +7,16 @@ import 'package:analyzer/dart/ast/token.dart';
 import 'piece/list.dart';
 
 extension AstNodeExtensions on AstNode {
+  /// When this node is in an argument list, what kind of block formatting
+  /// category it belongs to.
+  BlockFormat get blockFormatType => switch (this) {
+        AdjacentStrings(indentStrings: true) =>
+          BlockFormat.indentedAdjacentStrings,
+        AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
+        Expression(:var blockFormatType) => blockFormatType,
+        _ => BlockFormat.none,
+      };
+
   /// The first token at the beginning of this AST node, not including any
   /// tokens for leading doc comments.
   ///

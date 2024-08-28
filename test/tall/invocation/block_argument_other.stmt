@@ -64,3 +64,11 @@ veryLongFunctionName(
     element,
   ],
 );
+>>> Multiple trailing arguments prevent block formatting.
+function([element, element, element], trailing, argument);
+<<<
+function(
+  [element, element, element],
+  trailing,
+  argument,
+);
