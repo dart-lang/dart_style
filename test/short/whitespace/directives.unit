@@ -66,3 +66,8 @@ export 'a' if (b.c == 'd') 'e';
 part   of'uri.dart'     ;
 <<<
 part of 'uri.dart';
+>>> Both configuration and prefix.
+import 'foo.dart' as foo if (config == 'value') 'other.dart';
+<<<
+import 'foo.dart' as foo
+    if (config == 'value') 'other.dart';

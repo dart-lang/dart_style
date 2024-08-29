@@ -68,3 +68,9 @@ import 'some/uri.dart' if (config.name.debug == 'string') 'c';
 import 'some/uri.dart'
     if (config.name.debug ==
         'string') 'c';
+>>> Both configuration and prefix.
+import 'foo.dart' as foo if (config == 'value') 'other.dart';
+<<<
+import 'foo.dart'
+    as foo
+    if (config == 'value') 'other.dart';
