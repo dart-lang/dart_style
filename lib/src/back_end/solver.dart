@@ -134,7 +134,7 @@ class Solver {
     if (debug.traceSolver) {
       debug.unindent();
       debug.log(debug.bold('Solved $root to $best'));
-      debug.log(solution.code.toDebugString());
+      debug.log(best.code.toDebugString());
       debug.log('');
     }
 

@@ -75,9 +75,29 @@ class ChainBuilder {
 
       // When [_root] is a cascade, the chain is the series of cascade sections.
       for (var section in cascade.cascadeSections) {
-        var piece = _visitor.nodePiece(section);
+        // Hoist any leading comment out so that if the cascade section is a
+        // setter, we don't unnecessarily split at the `=` like:
+        //
+        //     target
+        //       // comment
+        //         ..setter =
+        //             value;
+        var leadingComments =
+            _visitor.pieces.takeCommentsBefore(section.firstNonCommentToken);
+
+        var piece = _visitor.prependLeadingComments(
+            leadingComments, _visitor.nodePiece(section));
 
         var callType = switch (section) {
+          // Force the cascade to split if there are leading comments before
+          // the cascade section to avoid:
+          //
+          //     target// comment
+          //     ..method(
+          //       argument,
+          //     );
+          _ when leadingComments.isNotEmpty => CallType.unsplittableCall,
+
           // If the section is itself a method chain, then force the cascade to
           // split if the method does, as in:
           //

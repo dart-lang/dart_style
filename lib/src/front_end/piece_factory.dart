@@ -12,6 +12,7 @@ import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
+import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
@@ -282,6 +283,15 @@ mixin PieceFactory {
         DelimitedListBuilder(this, const ListStyle(commas: Commas.nonTrailing));
     nodes.forEach(builder.visit);
     return builder.build();
+  }
+
+  /// If [leadingComments] is not empty, returns [piece] wrapped in a
+  /// [LeadingCommentPiece] that prepends them.
+  ///
+  /// Otherwise, just returns [piece].
+  Piece prependLeadingComments(List<Piece> leadingComments, Piece piece) {
+    if (leadingComments.isEmpty) return piece;
+    return LeadingCommentPiece(leadingComments, piece);
   }
 
   /// Writes the leading keyword and parenthesized expression at the beginning
@@ -833,7 +843,7 @@ mixin PieceFactory {
         switch (combinatorNode) {
           case HideCombinator(hiddenNames: var names):
           case ShowCombinator(shownNames: var names):
-            clauses.add(InfixPiece(const [], [
+            clauses.add(InfixPiece([
               tokenPiece(combinatorNode.keyword),
               for (var name in names) tokenPiece(name.token, commaAfter: true),
             ]));
@@ -901,7 +911,8 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(InfixPiece(leadingComments, [leftPiece, rightPiece]));
+    pieces.add(prependLeadingComments(
+        leadingComments, InfixPiece([leftPiece, rightPiece])));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -953,7 +964,8 @@ mixin PieceFactory {
       traverse(node);
     }));
 
-    pieces.add(InfixPiece(leadingComments, operands, indent: indent));
+    pieces.add(prependLeadingComments(
+        leadingComments, InfixPiece(operands, indent: indent)));
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
@@ -1205,7 +1217,7 @@ mixin PieceFactory {
       var clauses = <Piece>[];
 
       void typeClause(Token keyword, List<AstNode> types) {
-        clauses.add(InfixPiece(const [], [
+        clauses.add(InfixPiece([
           tokenPiece(keyword),
           for (var type in types) nodePiece(type, commaAfter: true),
         ]));
@@ -1301,6 +1313,26 @@ mixin PieceFactory {
     //      element,
     //    ];
     canBlockSplitLeft |= switch (leftHandSide) {
+      // Treat method chains and cascades on the LHS as if they were blocks.
+      // They don't really fit the "block" term, but it looks much better to
+      // force a method chain to split on the left than to try to avoid
+      // splitting it and split at the assignment instead:
+      //
+      //    // Worse:
+      //    target.method(
+      //          argument,
+      //        ).setter =
+      //        value;
+      //
+      //    // Better:
+      //    target.method(argument)
+      //        .setter = value;
+      //
+      MethodInvocation() => true,
+      PropertyAccess() => true,
+      PrefixedIdentifier() => true,
+
+      // Otherwise, it must be an actual block construct.
       Expression() => leftHandSide.canBlockSplit,
       DartPattern() => leftHandSide.canBlockSplit,
       _ => false

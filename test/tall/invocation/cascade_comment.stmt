@@ -48,3 +48,19 @@ receiver
   ..cascade2()
   // comment 3
   ..cascade3();
+>>> Comment before setter.
+target
+  // comment
+  ..setter = value;
+<<<
+target
+  // comment
+  ..setter = value;
+>>> Comment before single method cascade.
+target
+// comment
+  ..method(argument);
+<<<
+target
+  // comment
+  ..method(argument);

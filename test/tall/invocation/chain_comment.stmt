@@ -91,3 +91,9 @@ target
     .third(
       // c3
     );
+>>> Line comment before setter.
+target // c
+.prop = value;
+<<<
+target // c
+    .prop = value;
