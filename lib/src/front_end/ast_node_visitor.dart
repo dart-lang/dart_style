@@ -132,7 +132,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
-    var piece = InfixPiece(const [], node.strings.map(nodePiece).toList(),
+    var piece = InfixPiece(node.strings.map(nodePiece).toList(),
         indent: node.indentStrings);
 
     // Adjacent strings always split.
@@ -366,7 +366,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       }
     }
 
-    var piece = InfixPiece(leadingComments, operands);
+    var piece = InfixPiece(operands);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
@@ -376,7 +376,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       piece.pin(State.split);
     }
 
-    pieces.add(piece);
+    pieces.add(prependLeadingComments(leadingComments, piece));
   }
 
   @override
@@ -1766,8 +1766,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             var patternPiece = nodePiece(member.guardedPattern.pattern);
 
             if (member.guardedPattern.whenClause case var whenClause?) {
-              pieces.add(
-                  InfixPiece(const [], [patternPiece, nodePiece(whenClause)]));
+              pieces.add(InfixPiece([patternPiece, nodePiece(whenClause)]));
             } else {
               pieces.add(patternPiece);
             }

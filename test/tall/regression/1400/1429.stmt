@@ -1,0 +1,110 @@
+>>>
+main() {
+  target
+    ..first()
+    // comment
+        ..setter =
+        value
+    ..another();
+}
+<<<
+main() {
+  target
+    ..first()
+    // comment
+    ..setter = value
+    ..another();
+}
+>>> (indent 2)
+  model
+    ..setOnUpdate(onUpdate: updateCallback, updateOnChange: updateOnChange)
+        // Models for components within a page will be disposed by the page's model,
+        // so we don't want the component widget to dispose them until the page is
+        // itself disposed.
+        ..disposeOnWidgetDisposal =
+        false;
+<<<
+  model
+    ..setOnUpdate(onUpdate: updateCallback, updateOnChange: updateOnChange)
+    // Models for components within a page will be disposed by the page's model,
+    // so we don't want the component widget to dispose them until the page is
+    // itself disposed.
+    ..disposeOnWidgetDisposal = false;
+>>> (indent 4)
+    final reactComponentClass =
+        createReactDartComponentClass(
+            dartInteropStatics,
+            componentStatics,
+            jsConfig,
+          )
+          // ignore: invalid_use_of_protected_member
+              ..dartComponentVersion =
+              ReactDartComponentVersion.component
+              // This is redundant since we also set `name` below, but some code may depend on reading displayName
+              // so we'll leave this in place for now.
+              ..displayName =
+              displayName;
+<<<
+    final reactComponentClass =
+        createReactDartComponentClass(
+            dartInteropStatics,
+            componentStatics,
+            jsConfig,
+          )
+          // ignore: invalid_use_of_protected_member
+          ..dartComponentVersion = ReactDartComponentVersion.component
+          // This is redundant since we also set `name` below, but some code may depend on reading displayName
+          // so we'll leave this in place for now.
+          ..displayName = displayName;
+>>> (indent 4)
+    PdfDocumentHelper.getHelper(
+          _helper.crossTable!.document!,
+        ).catalog.beginSaveList ??=
+        <SavePdfPrimitiveCallback>[];
+<<<
+    PdfDocumentHelper.getHelper(_helper.crossTable!.document!)
+        .catalog
+        .beginSaveList ??= <SavePdfPrimitiveCallback>[];
+>>> (indent 12)
+            PdfSecurityHelper.getHelper(
+                  _helper._security!,
+                ).encryptor.encryptOnlyAttachment =
+                false;
+<<<
+            PdfSecurityHelper.getHelper(_helper._security!)
+                .encryptor
+                .encryptOnlyAttachment = false;
+>>> (indent 6)
+      PdfGridHelper.getHelper(
+            PdfGridRowHelper.getHelper(_helper.row!).grid,
+          ).hasColumnSpan =
+          true;
+<<<
+      PdfGridHelper.getHelper(PdfGridRowHelper.getHelper(_helper.row!).grid)
+          .hasColumnSpan = true;
+>>> (indent 2)
+  Widget build(BuildContext context) => CompositionRoot(
+    configureOverrides: configureOverrides,
+    compose:
+        (builder) =>
+            builder
+            //Adds a singleton CounterController to the container
+            ..addSingleton((container) => CounterController()),
+    child:
+    //We need the BuildContext from the Builder here so the children
+    //can access the container in the CompositionRoot
+    Builder(elided),
+  );
+<<<
+  Widget build(BuildContext context) => CompositionRoot(
+    configureOverrides: configureOverrides,
+    compose:
+        (builder) =>
+            builder
+              //Adds a singleton CounterController to the container
+              ..addSingleton((container) => CounterController()),
+    child:
+    //We need the BuildContext from the Builder here so the children
+    //can access the container in the CompositionRoot
+    Builder(elided),
+  );
