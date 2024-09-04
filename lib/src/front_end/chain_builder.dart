@@ -327,8 +327,8 @@ class ChainBuilder {
           });
         });
 
-      case IndexExpression():
-        _unwrapPostfix(expression.target!, (target) {
+      case IndexExpression(:var target?):
+        _unwrapPostfix(target, (target) {
           return _visitor.pieces.build(() {
             _visitor.pieces.add(target);
             _visitor.writeIndexExpression(expression);
