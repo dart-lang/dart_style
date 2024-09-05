@@ -34,20 +34,6 @@ function(
     element,
   ],
 );
->>> A function block argument can be named.
-function(name: () { body; });
-<<<
-function(name: () {
-  body;
-});
->>> A non-function block argument can be named.
-function(name: [element, element, element]);
-<<<
-function(name: [
-  element,
-  element,
-  element,
-]);
 >>> A long argument name can prevent block formatting.
 veryLongFunctionName(veryLongArgumentName: [element]);
 <<<

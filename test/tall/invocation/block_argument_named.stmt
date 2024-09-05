@@ -1,66 +1,52 @@
 40 columns                              |
 ### Test how named arguments interact with block formatting.
->>> Block format all positional.
-function(be, fore, [element, element], after);
-<<<
-function(be, fore, [
-  element,
-  element,
-], after);
->>> Block format named only leading.
-function(a: be, b: fore, [element, element], after);
-<<<
-function(a: be, b: fore, [
-  element,
-  element,
-], after);
->>> Block format named only block argument.
-function(be, fore, a: [element, element], after);
-<<<
-function(be, fore, a: [
-  element,
-  element,
-], after);
->>> Block format named only trailing.
-function(be, fore, [element, element], a: after);
-<<<
-function(be, fore, [
-  element,
-  element,
-], a: after);
->>> Don't block format named leading and block argument.
-function(a: be, fore, b: [element, element], after);
+>>> A function block argument can't be named.
+function(name: () {;});
 <<<
 function(
-  a: be,
-  fore,
-  b: [element, element],
-  after,
+  name: () {
+    ;
+  },
 );
->>> Don't block format named leading and trailing.
-function(a: be, fore, [element, element], b: after);
+>>> A collection block argument can't be named.
+function(name: [element, element, element, element]);
 <<<
 function(
-  a: be,
-  fore,
-  [element, element],
-  b: after,
+  name: [
+    element,
+    element,
+    element,
+    element,
+  ],
 );
->>> Don't block format named block argument and trailing.
-function(be, fore, a: [element, element], b: after);
+>>> If there are multiple functions, don't block format, even if only one is positional.
+function(a: () {;}, () {;});
 <<<
 function(
-  be,
-  fore,
-  a: [element, element],
-  b: after,
+  a: () {
+    ;
+  },
+  () {
+    ;
+  },
 );
->>> Don't block format all named.
-function(a: be, b: fore, c: [element, element], d: after);
+>>> If there are multiple collections, don't block format, even if only one is positional.
+function(a: [element], [element, element, element, element, element]);
 <<<
 function(
-  a: be,
-  b: fore,
-  c: [element, element],
-  d: after,
+  a: [element],
+  [
+    element,
+    element,
+    element,
+    element,
+    element,
+  ],
 );
+>>> Other non-block arguments can be named or not.
+function(1, a: 2, 3, b: 4, [element, element], c: 5);
+<<<
+function(1, a: 2, 3, b: 4, [
+  element,
+  element,
+], c: 5);
