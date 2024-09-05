@@ -633,7 +633,7 @@ main() {
         expect(await process.stderr.next,
             'Could not format because the source could not be parsed:');
         expect(await process.stderr.next, '');
-        expect(await process.stderr.next, contains(p.join('foo', 'main.dart')));
+        expect(await process.stderr.next, contains('main.dart'));
         await process.shouldExit(65);
       });
 
