@@ -37,3 +37,7 @@ object
   ..cascade()!
   ..cascade()[index]
   ..cascade()(arg);
+>>> Chain with index target.
+object..[index].method();
+<<<
+object..[index].method();
