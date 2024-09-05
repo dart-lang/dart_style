@@ -328,6 +328,11 @@ class ChainBuilder {
         });
 
       case IndexExpression(:var target?):
+        // We check for a non-null target because the target may be `null` if
+        // the chain we are building is itself in a cascade section that begins
+        // with an index expression like:
+        //
+        //     object..[index].chain();
         _unwrapPostfix(target, (target) {
           return _visitor.pieces.build(() {
             _visitor.pieces.add(target);
