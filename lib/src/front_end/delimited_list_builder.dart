@@ -444,32 +444,14 @@ class DelimitedListBuilder {
     var candidateIndex = _candidateBlockArgument(arguments);
     if (candidateIndex == -1) return;
 
+    // The block argument must be positional.
+    if (arguments[candidateIndex] is NamedExpression) return;
+
     // Only allow up to one trailing argument after the block argument. This
     // handles the common `tags` and `timeout` named arguments in `test()` and
     // `group()` while still mostly having the block argument be at the end of
     // the argument list.
     if (candidateIndex < arguments.length - 2) return;
-
-    // If there are multiple named arguments, they should never end up on
-    // separate lines (unless the whole argument list fully splits). Otherwise,
-    // it's too easy for an argument name to get buried in the middle of a line.
-    // So we look for named arguments before, on, and after the candidate
-    // argument. If more than one of those sections of arguments has a named
-    // argument, then we don't allow the block argument.
-    var namedSections = 0;
-    bool hasNamedArgument(int from, int to) {
-      for (var i = from; i < to; i++) {
-        if (arguments[i] is NamedExpression) return true;
-      }
-
-      return false;
-    }
-
-    if (hasNamedArgument(0, candidateIndex)) namedSections++;
-    if (hasNamedArgument(candidateIndex, candidateIndex + 1)) namedSections++;
-    if (hasNamedArgument(candidateIndex + 1, arguments.length)) namedSections++;
-
-    if (namedSections > 1) return;
 
     // Edge case: If the first argument is adjacent strings and the second
     // argument is a function literal, with optionally a third non-block
@@ -484,18 +466,15 @@ class DelimitedListBuilder {
     //       expect(1 + 2, 3);
     //     });
     if (candidateIndex == 1 &&
-        arguments[0] is! NamedExpression &&
-        arguments[1] is! NamedExpression) {
-      if ((arguments[0].blockFormatType, arguments[1].blockFormatType)
-          case (
-            BlockFormat.unindentedAdjacentStrings ||
-                BlockFormat.indentedAdjacentStrings,
-            BlockFormat.function
-          )) {
+        arguments[1].blockFormatType == BlockFormat.function &&
+        arguments[0] is! NamedExpression) {
+      var firstArgumentFormatType = arguments[0].blockFormatType;
+      if (firstArgumentFormatType
+          case BlockFormat.unindentedAdjacentStrings ||
+              BlockFormat.indentedAdjacentStrings) {
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
-        if (arguments[0].blockFormatType ==
-            BlockFormat.unindentedAdjacentStrings) {
+        if (firstArgumentFormatType == BlockFormat.unindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
 
@@ -512,11 +491,18 @@ class DelimitedListBuilder {
   /// If an argument in [arguments] is a candidate to be block formatted,
   /// returns its index.
   ///
-  /// Otherwise, returns `-1`.
+  /// If there is a single non-empty block bodied function expression in
+  /// [arguments], returns its index. Otherwise, if there is a single non-empty
+  /// collection literal in [arguments], returns its index. Otherwise, returns
+  /// `-1`.
   int _candidateBlockArgument(List<AstNode> arguments) {
+    // The index of the function expression argument, or -1 if none has been
+    // found or -2 if there are multiple.
     var functionIndex = -1;
+
+    // The index of the collection literal argument, or -1 if none has been
+    // found or -2 if there are multiple.
     var collectionIndex = -1;
-    // var stringIndex = -1;
 
     for (var i = 0; i < arguments.length; i++) {
       // See if it's an expression that supports block formatting.

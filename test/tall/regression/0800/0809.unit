@@ -106,15 +106,19 @@ class MyApp extends StatelessWidget {
     );
   }
 
-  Widget buildRow() => Row(children: [
-    Image.asset('images/pic1.jpg'),
-    Image.asset('images/pic2.jpg'),
-    Image.asset('images/pic3.jpg'),
-  ]);
+  Widget buildRow() => Row(
+    children: [
+      Image.asset('images/pic1.jpg'),
+      Image.asset('images/pic2.jpg'),
+      Image.asset('images/pic3.jpg'),
+    ],
+  );
 
-  Widget buildColumn() => Column(children: [
-    Image.asset('images/pic1.jpg'),
-    Image.asset('images/pic2.jpg'),
-    Image.asset('images/pic3.jpg'),
-  ]);
+  Widget buildColumn() => Column(
+    children: [
+      Image.asset('images/pic1.jpg'),
+      Image.asset('images/pic2.jpg'),
+      Image.asset('images/pic3.jpg'),
+    ],
+  );
 }

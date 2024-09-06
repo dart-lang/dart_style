@@ -19,23 +19,25 @@ void main() {
                   child: SizedBox(
                     height: 1000.0,
                     width: double.infinity,
-                    child: Column(children: <Widget>[
-                      Scrollbar(
-                        key: key1,
-                        child: SizedBox(
-                          height: 300.0,
-                          width: double.infinity,
-                          child: SingleChildScrollView(
-                            key: innerKey,
-                            child: const SizedBox(
-                              key: Key('Inner scrollable'),
-                              height: 1000.0,
-                              width: double.infinity,
+                    child: Column(
+                      children: <Widget>[
+                        Scrollbar(
+                          key: key1,
+                          child: SizedBox(
+                            height: 300.0,
+                            width: double.infinity,
+                            child: SingleChildScrollView(
+                              key: innerKey,
+                              child: const SizedBox(
+                                key: Key('Inner scrollable'),
+                                height: 1000.0,
+                                width: double.infinity,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                    ]),
+                      ],
+                    ),
                   ),
                 ),
               ),
