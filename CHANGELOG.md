@@ -1,4 +1,4 @@
-## 2.3.7-wip
+## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be
   parsed at that version. If omitted, defaults to the latest version. In a
