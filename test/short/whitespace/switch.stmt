@@ -227,7 +227,7 @@ var x = switch (obj) {
   1 => 'one',
   var two => 'two'
 };
->>> handle cases that are not valid patterns
+>>> (version 2.19) handle cases in old code that are not valid patterns
 switch (obj) {
   case {1, 2}:
   case -pi:

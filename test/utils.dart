@@ -148,6 +148,7 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
     for (var benchmark in benchmarks) {
       test(benchmark.name, () {
         var formatter = DartFormatter(
+            languageVersion: DartFormatter.latestLanguageVersion,
             pageWidth: benchmark.pageWidth,
             experimentFlags: useTallStyle
                 ? const ['inline-class', 'macros', tallStyleExperimentFlag]
@@ -189,6 +190,7 @@ void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
         }
 
         var formatter = DartFormatter(
+            languageVersion: formatTest.languageVersion,
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
             fixes: fixes,
