@@ -74,7 +74,6 @@ Future<void> _runTest(String path, int line,
   var formatter = DartFormatter(
       pageWidth: testFile.pageWidth,
       indent: formatTest.leadingIndent,
-      fixes: formatTest.fixes,
       experimentFlags: tall
           ? const ['inline-class', tallStyleExperimentFlag]
           : const ['inline-class']);

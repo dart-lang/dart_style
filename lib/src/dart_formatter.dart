@@ -19,7 +19,6 @@ import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'short/source_visitor.dart';
-import 'short/style_fix.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
 
@@ -54,8 +53,6 @@ class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
-  final Set<StyleFix> fixes;
-
   /// Flags to enable experimental language features.
   ///
   /// See dart.dev/go/experiments for details.
@@ -77,20 +74,16 @@ class DartFormatter {
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  ///
-  /// While formatting, also applies any of the given [fixes].
   DartFormatter(
       {Version? languageVersion,
       this.lineEnding,
       int? pageWidth,
       int? indent,
-      Iterable<StyleFix>? fixes,
       List<String>? experimentFlags})
       : languageVersion = languageVersion ?? latestLanguageVersion,
         _omittedLanguageVersion = languageVersion == null,
         pageWidth = pageWidth ?? 80,
         indent = indent ?? 0,
-        fixes = {...?fixes},
         experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation
@@ -226,8 +219,7 @@ class DartFormatter {
     }
 
     // Sanity check that only whitespace was changed if that's all we expect.
-    if (fixes.isEmpty &&
-        !string_compare.equalIgnoringWhitespace(source.text, output.text)) {
+    if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
       throw UnexpectedOutputException(source.text, output.text);
     }
 

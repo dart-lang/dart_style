@@ -50,7 +50,6 @@ The older short style tests are organized like:
 
 ```
 short/comments/     - Test comment handling.
-short/fixes/        - Test `--fix`.
 short/regression/   - Regression tests. File names correspond to issues.
 short/selections/   - Test how the formatter preserves selection information.
 short/splitting/    - Test line splitting behavior.

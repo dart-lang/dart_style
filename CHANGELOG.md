@@ -1,3 +1,19 @@
+## 3.0.0-wip
+
+* Remove support for fixes and `--fix`. The tools that come with the Dart SDK
+  provide two ways to apply automated changes to code: `dart format --fix` and
+  `dart fix`. The former is older and used to be faster. But it can only apply
+  a few fixes and hasn't been maintained in many years. The `dart fix` command
+  is actively maintained, can apply all of the fixes that `dart format --fix`
+  could apply and many many more.
+
+  In order to avoid duplicate engineering effort, we decided to consolidate on
+  `dart fix` as the one way to make automated changes that go beyond the simple
+  formatting and style changes that `dart format` applies.
+
+  The ability to apply fixes is also removed from the `DartFormatter()` library
+  API.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be

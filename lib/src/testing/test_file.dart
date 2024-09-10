@@ -9,7 +9,6 @@ import 'package:path/path.dart' as p;
 import '../../dart_style.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
-final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -89,19 +88,12 @@ class TestFile {
     while (i < lines.length) {
       var lineNumber = i + 1;
       var description = readLine().replaceAll('>>>', '');
-      var fixes = <StyleFix>[];
 
       // Let the test specify a leading indentation. This is handy for
       // regression tests which often come from a chunk of nested code.
       var leadingIndent = 0;
       description = description.replaceAllMapped(_indentPattern, (match) {
         leadingIndent = int.parse(match[1]!);
-        return '';
-      });
-
-      // Let the test specify fixes to apply.
-      description = description.replaceAllMapped(_fixPattern, (match) {
-        fixes.add(StyleFix.all.firstWhere((fix) => fix.name == match[1]));
         return '';
       });
 
@@ -142,7 +134,6 @@ class TestFile {
           description.trim(),
           outputDescription.trim(),
           lineNumber,
-          fixes,
           leadingIndent,
           inputComments,
           outputComments));
@@ -194,23 +185,12 @@ class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
-  /// The style fixes this test is applying.
-  final List<StyleFix> fixes;
-
   /// The number of spaces of leading indentation that should be added to each
   /// line.
   final int leadingIndent;
 
-  FormatTest(
-      this.input,
-      this.output,
-      this.description,
-      this.outputDescription,
-      this.line,
-      this.fixes,
-      this.leadingIndent,
-      this.inputComments,
-      this.outputComments);
+  FormatTest(this.input, this.output, this.description, this.outputDescription,
+      this.line, this.leadingIndent, this.inputComments, this.outputComments);
 
   /// The line and description of the test.
   String get label {
