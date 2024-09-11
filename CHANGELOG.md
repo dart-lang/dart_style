@@ -1,3 +1,27 @@
+## 3.0.0-wip
+
+* **Remove the old formatter executables and CLI options.**
+
+  Before the `dart format` command was added to the core Dart SDK, users
+  accessed the formatter by running a separate `dartfmt` executable that was
+  included with the Dart SDK. That executable had a different CLI interface.
+  For example, you had to pass `-w` to get it to overwrite files and if you
+  passed no arguments at all, it silently sat there waiting for input on stdin.
+  When we added `dart format`, we took that opportunity to revamp the CLI
+  options.
+
+  However, the dart_style package still exposed an executable with the old CLI.
+  If you ran `dart pub global activate dart_style`, this would give you a
+  `dartfmt` (and `dartformat`) executable with the old CLI options. Now that
+  almost everyone is using `dart format`, we have removed the old CLI and the
+  old package executables.
+
+  You can still run the formatter on the CLI through the package (for example,
+  if you want to use a particular version of dart_style instead of the one
+  bundled with your Dart SDK). But it now uses the exact same CLI options and
+  arguments as the `dart format` command. You can invoke it with
+  `dart run dart_style:format <args...>`.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be

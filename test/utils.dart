@@ -20,113 +20,61 @@ const formattedSource = 'void main() => print("hello");\n';
 /// [TestProcess] filters those when it strips command line output into lines.
 const formattedOutput = 'void main() => print("hello");';
 
-/// If tool/command_shell.dart has been compiled to a snapshot, this is the path
-/// to it.
-String? _commandExecutablePath;
+/// If `bin/format.dart` has been compiled to a snapshot, this is the path to
+/// it.
+String? _formatterPath;
 
-/// If bin/format.dart has been compiled to a snapshot, this is the path to it.
-String? _formatterExecutablePath;
-
-/// Compiles format.dart to a native executable for tests to use.
+/// Compiles `bin/format.dart` to a native executable for tests to use.
 ///
-/// Calls [setupAll()] and [tearDownAll()] to coordinate this when the
+/// Calls [setupAll()] and [tearDownAll()] to coordinate this with the
 /// subsequent tests and to clean up the executable.
-void compileFormatterExecutable() {
+void compileFormatter() {
   setUpAll(() async {
-    _formatterExecutablePath = await _compileSnapshot('bin/format.dart');
+    var tempDir =
+        await Directory.systemTemp.createTemp(p.withoutExtension('format'));
+    _formatterPath = p.join(tempDir.path, 'format.dart.snapshot');
+    var scriptPath =
+        p.normalize(p.join(await findTestDirectory(), '../bin/format.dart'));
+
+    var compileResult = await Process.run(Platform.resolvedExecutable, [
+      '--snapshot-kind=app-jit',
+      '--snapshot=$_formatterPath',
+      scriptPath,
+      '--help'
+    ]);
+
+    if (compileResult.exitCode != 0) {
+      fail('Could not compile format.dart to a snapshot (exit code '
+          '${compileResult.exitCode}):\n${compileResult.stdout}\n\n'
+          '${compileResult.stderr}');
+    }
   });
 
   tearDownAll(() async {
-    await _deleteSnapshot(_formatterExecutablePath!);
-    _formatterExecutablePath = null;
+    try {
+      await Directory(p.dirname(_formatterPath!)).delete(recursive: true);
+    } on IOException {
+      // Do nothing if we failed to delete it. The OS will eventually clean it
+      // up.
+    }
   });
 }
 
-/// Compiles command_shell.dart to a native executable for tests to use.
-///
-/// Calls [setupAll()] and [tearDownAll()] to coordinate this when the
-/// subsequent tests and to clean up the executable.
-void compileCommandExecutable() {
-  setUpAll(() async {
-    _commandExecutablePath = await _compileSnapshot('tool/command_shell.dart');
-  });
-
-  tearDownAll(() async {
-    await _deleteSnapshot(_commandExecutablePath!);
-    _commandExecutablePath = null;
-  });
-}
-
-/// Compile the Dart [script] to an app-JIT snapshot.
-///
-/// We do this instead of spawning the script from source each time because it's
-/// much faster when the same script needs to be run several times.
-Future<String> _compileSnapshot(String script) async {
-  var scriptName = p.basename(script);
-  var tempDir =
-      await Directory.systemTemp.createTemp(p.withoutExtension(scriptName));
-  var snapshot = p.join(tempDir.path, '$scriptName.snapshot');
-  var scriptPath = p.normalize(p.join(await findTestDirectory(), '..', script));
-
-  var compileResult = await Process.run(Platform.resolvedExecutable, [
-    '--snapshot-kind=app-jit',
-    '--snapshot=$snapshot',
-    scriptPath,
-    '--help'
-  ]);
-
-  if (compileResult.exitCode != 0) {
-    fail('Could not compile $scriptName to a snapshot (exit code '
-        '${compileResult.exitCode}):\n${compileResult.stdout}\n\n'
-        '${compileResult.stderr}');
-  }
-
-  return snapshot;
-}
-
-/// Attempts to delete to temporary directory created for [snapshot] by
-/// [_compileSnapshot()].
-Future<void> _deleteSnapshot(String snapshot) async {
-  try {
-    await Directory(p.dirname(snapshot)).delete(recursive: true);
-  } on IOException {
-    // Do nothing if we failed to delete it. The OS will eventually clean it
-    // up.
-  }
-}
-
-/// Runs the command line formatter, passing it [args].
+/// Runs the command-line formatter, passing it [args].
 Future<TestProcess> runFormatter([List<String>? args]) {
-  if (_formatterExecutablePath == null) {
-    fail('Must call createFormatterExecutable() before running commands.');
-  }
-
-  return TestProcess.start(
-      Platform.resolvedExecutable, [_formatterExecutablePath!, ...?args],
-      workingDirectory: d.sandbox);
-}
-
-/// Runs the command line formatter, passing it the test directory followed by
-/// [args].
-Future<TestProcess> runFormatterOnDir([List<String>? args]) {
-  return runFormatter(['.', ...?args]);
-}
-
-/// Runs the test shell for the [Command]-based formatter, passing it [args].
-Future<TestProcess> runCommand([List<String>? args]) {
-  if (_commandExecutablePath == null) {
+  if (_formatterPath == null) {
     fail('Must call createCommandExecutable() before running commands.');
   }
 
-  return TestProcess.start(Platform.resolvedExecutable,
-      [_commandExecutablePath!, 'format', ...?args],
+  return TestProcess.start(
+      Platform.resolvedExecutable, [_formatterPath!, ...?args],
       workingDirectory: d.sandbox);
 }
 
-/// Runs the test shell for the [Command]-based formatter, passing it the test
-/// directory followed by [args].
-Future<TestProcess> runCommandOnDir([List<String>? args]) {
-  return runCommand(['.', ...?args]);
+/// Runs the command-line formatter, passing it the test directory followed by
+/// [args].
+Future<TestProcess> runFormatterOnDir([List<String>? args]) {
+  return runFormatter(['.', ...?args]);
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [path].

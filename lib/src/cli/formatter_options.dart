@@ -95,21 +95,4 @@ class FormatterOptions {
     // Set the exit code.
     if (setExitIfChanged && changed) exitCode = 1;
   }
-
-  /// Describes the directory whose contents are about to be processed.
-  void showDirectory(String path) {
-    if (output != Output.json) {
-      show.directory(path);
-    }
-  }
-
-  /// Describes the symlink at [path] that wasn't followed.
-  void showSkippedLink(String path) {
-    show.skippedLink(path);
-  }
-
-  /// Describes the hidden [path] that wasn't processed.
-  void showHiddenPath(String path) {
-    show.hiddenPath(path);
-  }
 }

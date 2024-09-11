@@ -100,46 +100,23 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
 /// files.
 Future<bool> _processDirectory(LanguageVersionCache? cache,
     FormatterOptions options, Directory directory) async {
-  options.showDirectory(directory.path);
-
   var success = true;
-  var shownHiddenPaths = <String>{};
 
   var entries =
       directory.listSync(recursive: true, followLinks: options.followLinks);
   entries.sort((a, b) => a.path.compareTo(b.path));
 
   for (var entry in entries) {
-    var displayPath = options.show.displayPath(directory.path, entry.path);
-
-    if (entry is Link) {
-      options.showSkippedLink(displayPath);
-      continue;
-    }
+    if (entry is Link) continue;
 
     if (entry is! File || !entry.path.endsWith('.dart')) continue;
 
     // If the path is in a subdirectory starting with ".", ignore it.
     var parts = p.split(p.relative(entry.path, from: directory.path));
-    int? hiddenIndex;
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i].startsWith('.')) {
-        hiddenIndex = i;
-        break;
-      }
-    }
+    if (parts.any((part) => part.startsWith('.'))) continue;
 
-    if (hiddenIndex != null) {
-      // Since we'll hide everything inside the directory starting with ".",
-      // show the directory name once instead of once for each file.
-      var hiddenPath = p.joinAll(parts.take(hiddenIndex + 1));
-      if (shownHiddenPaths.add(hiddenPath)) {
-        options.showHiddenPath(hiddenPath);
-      }
-      continue;
-    }
-
-    if (!await _processFile(cache, options, entry, displayPath: displayPath)) {
+    if (!await _processFile(cache, options, entry,
+        displayPath: p.normalize(entry.path))) {
       success = false;
     }
   }
