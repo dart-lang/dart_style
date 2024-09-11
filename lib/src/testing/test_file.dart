@@ -5,11 +5,13 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 import '../../dart_style.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _fixPattern = RegExp(r'\(fix ([a-x-]+)\)');
+final _versionPattern = RegExp(r'\(version (\d+)\.(\d+)\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -99,6 +101,15 @@ class TestFile {
         return '';
       });
 
+      // Let the test specify a language version to parse it at.
+      var languageVersion = DartFormatter.latestLanguageVersion;
+      description = description.replaceAllMapped(_versionPattern, (match) {
+        var major = int.parse(match[1]!);
+        var minor = int.parse(match[2]!);
+        languageVersion = Version(major, minor, 0);
+        return '';
+      });
+
       // Let the test specify fixes to apply.
       description = description.replaceAllMapped(_fixPattern, (match) {
         fixes.add(StyleFix.all.firstWhere((fix) => fix.name == match[1]));
@@ -142,6 +153,7 @@ class TestFile {
           description.trim(),
           outputDescription.trim(),
           lineNumber,
+          languageVersion,
           fixes,
           leadingIndent,
           inputComments,
@@ -194,6 +206,9 @@ class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
+  /// The language version the test code should be parsed at.
+  final Version languageVersion;
+
   /// The style fixes this test is applying.
   final List<StyleFix> fixes;
 
@@ -207,6 +222,7 @@ class FormatTest {
       this.description,
       this.outputDescription,
       this.line,
+      this.languageVersion,
       this.fixes,
       this.leadingIndent,
       this.inputComments,

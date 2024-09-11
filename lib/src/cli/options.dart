@@ -71,9 +71,7 @@ void defineOptions(ArgParser parser,
     parser.addOption('language-version',
         help: 'Language version of formatted code.\n'
             'Use "latest" to parse as the latest supported version.\n'
-            'Omit to look for a surrounding package config.',
-        // TODO(rnystrom): Show this when the tall-style experiment ships.
-        hide: true);
+            'Omit to look for a surrounding package config.');
   }
 
   parser.addFlag('set-exit-if-changed',

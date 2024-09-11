@@ -22,7 +22,7 @@ void _runTests({required bool isTall}) {
   DartFormatter makeFormatter(
       {Version? languageVersion, int? indent, String? lineEnding}) {
     return DartFormatter(
-        languageVersion: languageVersion,
+        languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
         indent: indent,
         lineEnding: lineEnding,
         experimentFlags: [if (isTall) tallStyleExperimentFlag]);

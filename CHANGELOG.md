@@ -1,3 +1,7 @@
+## 3.0.0-wip
+
+* Make the language version parameter to `DartFormatter()` mandatory.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be

@@ -64,6 +64,7 @@ void main(List<String> arguments) async {
 void _runFormatter(String source) {
   try {
     var formatter = DartFormatter(
+        languageVersion: DartFormatter.latestLanguageVersion,
         experimentFlags: [if (!_isShort) tallStyleExperimentFlag]);
 
     var result = formatter.format(source);
