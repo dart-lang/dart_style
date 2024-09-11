@@ -1,4 +1,4 @@
-// Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
+// Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
@@ -11,7 +11,7 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'utils.dart';
 
 void main() {
-  compileCommandExecutable();
+  compileFormatter();
 
   test('formats a directory', () async {
     await d.dir('code', [
@@ -20,7 +20,7 @@ void main() {
       d.file('c.dart', unformattedSource)
     ]).create();
 
-    var process = await runCommandOnDir();
+    var process = await runFormatterOnDir();
     expect(await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
     expect(await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
     expect(await process.stdout.next,
@@ -41,8 +41,8 @@ void main() {
       d.file('c.dart', unformattedSource)
     ]).create();
 
-    var process =
-        await runCommand([p.join('code', 'subdir'), p.join('code', 'c.dart')]);
+    var process = await runFormatter(
+        [p.join('code', 'subdir'), p.join('code', 'c.dart')]);
     expect(await process.stdout.next,
         'Formatted ${p.join('code', 'subdir', 'a.dart')}');
     expect(await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
@@ -61,14 +61,14 @@ void main() {
   });
 
   test('exits with 64 on a command line argument error', () async {
-    var process = await runCommand(['-wat']);
+    var process = await runFormatter(['-wat']);
     await process.shouldExit(64);
   });
 
   test('exits with 65 on a parse error', () async {
     await d.dir('code', [d.file('a.dart', 'herp derp i are a dart')]).create();
 
-    var process = await runCommandOnDir();
+    var process = await runFormatterOnDir();
     await process.shouldExit(65);
   });
 
@@ -80,7 +80,7 @@ void main() {
         d.file('c.dart', unformattedSource)
       ]).create();
 
-      var process = await runCommandOnDir(['--show=all']);
+      var process = await runFormatterOnDir(['--show=all']);
       expect(
           await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
       expect(
@@ -99,7 +99,7 @@ void main() {
         d.file('c.dart', unformattedSource)
       ]).create();
 
-      var process = await runCommandOnDir(['--show=none']);
+      var process = await runFormatterOnDir(['--show=none']);
       expect(await process.stdout.next,
           startsWith(r'Formatted 3 files (2 changed)'));
       await process.shouldExit(0);
@@ -112,7 +112,7 @@ void main() {
         d.file('c.dart', unformattedSource)
       ]).create();
 
-      var process = await runCommandOnDir(['--show=changed']);
+      var process = await runFormatterOnDir(['--show=changed']);
       expect(
           await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
       expect(
@@ -131,7 +131,7 @@ void main() {
           d.file('b.dart', formattedSource)
         ]).create();
 
-        var process = await runCommandOnDir(['--output=show']);
+        var process = await runFormatterOnDir(['--output=show']);
         expect(await process.stdout.next, formattedOutput);
         expect(await process.stdout.next, formattedOutput);
         expect(await process.stdout.next,
@@ -148,7 +148,7 @@ void main() {
           d.file('b.dart', formattedSource)
         ]).create();
 
-        var process = await runCommandOnDir(['--output=show', '--show=all']);
+        var process = await runFormatterOnDir(['--output=show', '--show=all']);
         expect(
             await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next, formattedOutput);
@@ -170,7 +170,7 @@ void main() {
         ]).create();
 
         var process =
-            await runCommandOnDir(['--output=show', '--show=changed']);
+            await runFormatterOnDir(['--output=show', '--show=changed']);
         expect(
             await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next, formattedOutput);
@@ -202,7 +202,7 @@ void main() {
           'selection': {'offset': -1, 'length': -1}
         });
 
-        var process = await runCommandOnDir(['--output=json']);
+        var process = await runFormatterOnDir(['--output=json']);
 
         expect(await process.stdout.next, jsonA);
         expect(await process.stdout.next, jsonB);
@@ -211,7 +211,7 @@ void main() {
 
       test('errors if the summary is not none', () async {
         var process =
-            await runCommandOnDir(['--output=json', '--summary=line']);
+            await runFormatterOnDir(['--output=json', '--summary=line']);
         await process.shouldExit(64);
       });
     });
@@ -223,7 +223,7 @@ void main() {
           d.file('b.dart', formattedSource)
         ]).create();
 
-        var process = await runCommandOnDir(['--output=none', '--show=all']);
+        var process = await runFormatterOnDir(['--output=none', '--show=all']);
         expect(
             await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(
@@ -243,7 +243,7 @@ void main() {
         ]).create();
 
         var process =
-            await runCommandOnDir(['--output=none', '--show=changed']);
+            await runFormatterOnDir(['--output=none', '--show=changed']);
         expect(
             await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
         expect(await process.stdout.next,
@@ -263,7 +263,7 @@ void main() {
         d.file('b.dart', formattedSource)
       ]).create();
 
-      var process = await runCommandOnDir(['--summary=line']);
+      var process = await runFormatterOnDir(['--summary=line']);
       expect(
           await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
       expect(await process.stdout.next,
@@ -273,7 +273,7 @@ void main() {
   });
 
   test('--version prints the version number', () async {
-    var process = await runCommand(['--version']);
+    var process = await runFormatter(['--version']);
 
     // Match something roughly semver-like.
     expect(await process.stdout.next, matches(RegExp(r'\d+\.\d+\.\d+.*')));
@@ -282,7 +282,7 @@ void main() {
 
   group('--help', () {
     test('non-verbose shows description and common options', () async {
-      var process = await runCommand(['--help']);
+      var process = await runFormatter(['--help']);
       expect(
           await process.stdout.next, 'Idiomatically format Dart source code.');
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
@@ -291,7 +291,7 @@ void main() {
     });
 
     test('verbose shows description and all options', () async {
-      var process = await runCommand(['--help', '--verbose']);
+      var process = await runFormatter(['--help', '--verbose']);
       expect(
           await process.stdout.next, 'Idiomatically format Dart source code.');
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
@@ -302,14 +302,14 @@ void main() {
   });
 
   test('--verbose errors if not used with --help', () async {
-    var process = await runCommandOnDir(['--verbose']);
+    var process = await runFormatterOnDir(['--verbose']);
     expect(await process.stderr.next, 'Can only use --verbose with --help.');
     await process.shouldExit(64);
   });
 
   group('--indent', () {
     test('sets the leading indentation of the output', () async {
-      var process = await runCommand(['--indent=3']);
+      var process = await runFormatter(['--indent=3']);
       process.stdin.writeln("main() {'''");
       process.stdin.writeln("a flush left multi-line string''';}");
       await process.stdin.close();
@@ -322,10 +322,10 @@ void main() {
     });
 
     test('errors if the indent is not a non-negative number', () async {
-      var process = await runCommand(['--indent=notanum']);
+      var process = await runFormatter(['--indent=notanum']);
       await process.shouldExit(64);
 
-      process = await runCommand(['--indent=-4']);
+      process = await runFormatter(['--indent=-4']);
       await process.shouldExit(64);
     });
   });
@@ -334,14 +334,14 @@ void main() {
     test('gives exit code 0 if there are no changes', () async {
       await d.dir('code', [d.file('a.dart', formattedSource)]).create();
 
-      var process = await runCommandOnDir(['--set-exit-if-changed']);
+      var process = await runFormatterOnDir(['--set-exit-if-changed']);
       await process.shouldExit(0);
     });
 
     test('gives exit code 1 if there are changes', () async {
       await d.dir('code', [d.file('a.dart', unformattedSource)]).create();
 
-      var process = await runCommandOnDir(['--set-exit-if-changed']);
+      var process = await runFormatterOnDir(['--set-exit-if-changed']);
       await process.shouldExit(1);
     });
 
@@ -349,32 +349,32 @@ void main() {
       await d.dir('code', [d.file('a.dart', unformattedSource)]).create();
 
       var process =
-          await runCommandOnDir(['--set-exit-if-changed', '--show=none']);
+          await runFormatterOnDir(['--set-exit-if-changed', '--show=none']);
       await process.shouldExit(1);
     });
   });
 
   group('--selection', () {
     test('errors if given path', () async {
-      var process = await runCommand(['--selection', 'path']);
+      var process = await runFormatter(['--selection', 'path']);
       await process.shouldExit(64);
     });
 
     test('errors on wrong number of components', () async {
-      var process = await runCommand(['--selection', '1']);
+      var process = await runFormatter(['--selection', '1']);
       await process.shouldExit(64);
 
-      process = await runCommand(['--selection', '1:2:3']);
+      process = await runFormatter(['--selection', '1:2:3']);
       await process.shouldExit(64);
     });
 
     test('errors on non-integer component', () async {
-      var process = await runCommand(['--selection', '1:2.3']);
+      var process = await runFormatter(['--selection', '1:2.3']);
       await process.shouldExit(64);
     });
 
     test('updates selection', () async {
-      var process = await runCommand(['--output=json', '--selection=6:10']);
+      var process = await runFormatter(['--output=json', '--selection=6:10']);
       process.stdin.writeln(unformattedSource);
       await process.stdin.close();
 
@@ -391,7 +391,7 @@ void main() {
 
   group('--stdin-name', () {
     test('errors if given path', () async {
-      var process = await runCommand(['--stdin-name=name', 'path']);
+      var process = await runFormatter(['--stdin-name=name', 'path']);
       await process.shouldExit(64);
     });
   });
@@ -414,7 +414,7 @@ extension type Meters(int value) {
     test('defaults to latest language version if omitted', () async {
       await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
 
-      var process = await runCommandOnDir();
+      var process = await runFormatterOnDir();
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
@@ -436,7 +436,7 @@ main() {
 
       // Use an older language version where `1 + 2` was still a valid switch
       // case.
-      var process = await runCommandOnDir(['--language-version=2.19']);
+      var process = await runFormatterOnDir(['--language-version=2.19']);
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', after)]).validate();
@@ -445,14 +445,14 @@ main() {
     test('uses the latest language version if "latest"', () async {
       await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
 
-      var process = await runCommandOnDir(['--language-version=latest']);
+      var process = await runFormatterOnDir(['--language-version=latest']);
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
     });
 
     test("errors if the language version can't be parsed", () async {
-      var process = await runCommand(['--language-version=123']);
+      var process = await runFormatter(['--language-version=123']);
       await process.shouldExit(64);
     });
   });
@@ -460,7 +460,7 @@ main() {
   group('--enable-experiment', () {
     test('passes experiment flags to parser', () async {
       var process =
-          await runCommand(['--enable-experiment=test-experiment,variance']);
+          await runFormatter(['--enable-experiment=test-experiment,variance']);
       process.stdin.writeln('class Writer<in T> {}');
       await process.stdin.close();
 
@@ -484,19 +484,19 @@ main() {
 
   group('with no paths', () {
     test('errors on --output=write', () async {
-      var process = await runCommand(['--output=write']);
+      var process = await runFormatter(['--output=write']);
       await process.shouldExit(64);
     });
 
     test('exits with 65 on parse error', () async {
-      var process = await runCommand();
+      var process = await runFormatter();
       process.stdin.writeln('herp derp i are a dart');
       await process.stdin.close();
       await process.shouldExit(65);
     });
 
     test('reads from stdin', () async {
-      var process = await runCommand();
+      var process = await runFormatter();
       process.stdin.writeln(unformattedSource);
       await process.stdin.close();
 
@@ -507,7 +507,7 @@ main() {
 
     test('allows specifying stdin path name', () async {
       var path = p.join('some', 'path.dart');
-      var process = await runCommand(['--stdin-name=$path']);
+      var process = await runFormatter(['--stdin-name=$path']);
       process.stdin.writeln('herp');
       await process.stdin.close();
 
@@ -531,7 +531,7 @@ main() {
           d.file('main.dart', 'main(){    }'),
         ]).create();
 
-        var process = await runCommandOnDir();
+        var process = await runFormatterOnDir();
         await process.shouldExit(0);
 
         // Should format the file without any error reading the package config.
@@ -548,7 +548,7 @@ main() {
           d.file('main.dart', 'main(){    }'),
         ]).create();
 
-        var process = await runCommandOnDir(
+        var process = await runFormatterOnDir(
             ['--language-version=latest', '--enable-experiment=tall-style']);
         await process.shouldExit(0);
 
@@ -570,7 +570,7 @@ main() {
         var path = p.join(d.sandbox, 'foo', 'main.dart');
         // TODO(rnystrom): Remove experiment flag when it ships.
         var process =
-            await runCommand([path, '--enable-experiment=tall-style']);
+            await runFormatter([path, '--enable-experiment=tall-style']);
 
         expect(await process.stderr.next,
             'Could not format because the source could not be parsed:');
@@ -593,7 +593,7 @@ main() {
           '''),
         ]).create();
 
-        var process = await runCommandOnDir();
+        var process = await runFormatterOnDir();
         await process.shouldExit(0);
 
         // Formats the file.
@@ -620,7 +620,7 @@ main() {
         var path = p.join(d.sandbox, 'foo', 'main.dart');
         // TODO(rnystrom): Remove experiment flag when it ships.
         var process =
-            await runCommand([path, '--enable-experiment=tall-style']);
+            await runFormatter([path, '--enable-experiment=tall-style']);
 
         expect(
             await process.stderr.next,
