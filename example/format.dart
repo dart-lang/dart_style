@@ -40,6 +40,7 @@ void _runFormatter(String source, int pageWidth,
     {required bool tall, required bool isCompilationUnit}) {
   try {
     var formatter = DartFormatter(
+        languageVersion: DartFormatter.latestLanguageVersion,
         pageWidth: pageWidth,
         experimentFlags: [if (tall) tallStyleExperimentFlag]);
 
@@ -72,6 +73,7 @@ Future<void> _runTest(String path, int line,
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
 
   var formatter = DartFormatter(
+      languageVersion: formatTest.languageVersion,
       pageWidth: testFile.pageWidth,
       indent: formatTest.leadingIndent,
       experimentFlags: tall

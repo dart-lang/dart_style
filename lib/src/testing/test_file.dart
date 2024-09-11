@@ -5,10 +5,12 @@ import 'dart:io';
 import 'dart:isolate';
 
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 import '../../dart_style.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
+final _versionPattern = RegExp(r'\(version (\d+)\.(\d+)\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -97,6 +99,15 @@ class TestFile {
         return '';
       });
 
+      // Let the test specify a language version to parse it at.
+      var languageVersion = DartFormatter.latestLanguageVersion;
+      description = description.replaceAllMapped(_versionPattern, (match) {
+        var major = int.parse(match[1]!);
+        var minor = int.parse(match[2]!);
+        languageVersion = Version(major, minor, 0);
+        return '';
+      });
+
       var inputComments = readComments();
 
       var inputBuffer = StringBuffer();
@@ -134,6 +145,7 @@ class TestFile {
           description.trim(),
           outputDescription.trim(),
           lineNumber,
+          languageVersion,
           leadingIndent,
           inputComments,
           outputComments));
@@ -185,12 +197,23 @@ class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
+  /// The language version the test code should be parsed at.
+  final Version languageVersion;
+
   /// The number of spaces of leading indentation that should be added to each
   /// line.
   final int leadingIndent;
 
-  FormatTest(this.input, this.output, this.description, this.outputDescription,
-      this.line, this.leadingIndent, this.inputComments, this.outputComments);
+  FormatTest(
+      this.input,
+      this.output,
+      this.description,
+      this.outputDescription,
+      this.line,
+      this.languageVersion,
+      this.leadingIndent,
+      this.inputComments,
+      this.outputComments);
 
   /// The line and description of the test.
   String get label {

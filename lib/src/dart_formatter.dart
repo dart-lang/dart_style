@@ -4,7 +4,6 @@
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
-import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
@@ -28,17 +27,10 @@ class DartFormatter {
   /// version of the formatter.
   static final latestLanguageVersion = Version(3, 3, 0);
 
-  /// The highest Dart language version without support for patterns.
-  static final _lastNonPatternsVersion = Version(2, 19, 0);
-
   /// The Dart language version that formatted code should be parsed as.
   ///
   /// Note that a `// @dart=` comment inside the code overrides this.
   final Version languageVersion;
-
-  /// Whether the user passed in a non-`null` language version.
-  // TODO(rnystrom): Remove this when the language version is required.
-  final bool _omittedLanguageVersion;
 
   /// The string that newlines should use.
   ///
@@ -60,14 +52,6 @@ class DartFormatter {
 
   /// Creates a new formatter for Dart code at [languageVersion].
   ///
-  /// If [languageVersion] is omitted, then it defaults to
-  /// [latestLanguageVersion]. In a future major release of dart_style, the
-  /// language version will affect the applied formatting style. At that point,
-  /// this parameter will become required so that the applied style doesn't
-  /// change unexpectedly. It is optional now so that users can migrate to
-  /// versions of dart_style that accept this parameter and be ready for the
-  /// major version when it's released.
-  ///
   /// If [lineEnding] is given, that will be used for any newlines in the
   /// output. Otherwise, the line separator will be inferred from the line
   /// endings in the source file.
@@ -75,14 +59,12 @@ class DartFormatter {
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
   DartFormatter(
-      {Version? languageVersion,
+      {required this.languageVersion,
       this.lineEnding,
       int? pageWidth,
       int? indent,
       List<String>? experimentFlags})
-      : languageVersion = languageVersion ?? latestLanguageVersion,
-        _omittedLanguageVersion = languageVersion == null,
-        pageWidth = pageWidth ?? 80,
+      : pageWidth = pageWidth ?? 80,
         indent = indent ?? 0,
         experimentFlags = [...?experimentFlags];
 
@@ -134,33 +116,18 @@ class DartFormatter {
       );
     }
 
+    // Don't pass the formatter's own experiment flag to the parser.
+    var experiments = experimentFlags.toList();
+    experiments.remove(tallStyleExperimentFlag);
+    var featureSet = FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: languageVersion, flags: experiments);
+
     // Parse it.
-    var parseResult = _parse(text, source.uri, languageVersion);
-
-    // If we couldn't parse it, and the language version supports patterns, it
-    // may be because of the breaking syntax changes to switch cases. Try
-    // parsing it again without pattern support.
-    // TODO(rnystrom): This is a pretty big hack. Before Dart 3.0, every
-    // language version was a strict syntactic superset of all previous
-    // versions. When patterns were added, a small number of switch cases
-    // became syntax errors.
-    //
-    // For most of its history, the formatter simply parsed every file at the
-    // latest language version without having to detect each file's actual
-    // version. We are moving towards requiring the language version when
-    // formatting, but for now, try to degrade gracefully if the user omits the
-    // version.
-    //
-    // Remove this when the languageVersion constructor parameter is required.
-    if (_omittedLanguageVersion && parseResult.errors.isNotEmpty) {
-      var withoutPatternsResult =
-          _parse(text, source.uri, _lastNonPatternsVersion);
-
-      // If we succeeded this time, use this parse instead.
-      if (withoutPatternsResult.errors.isEmpty) {
-        parseResult = withoutPatternsResult;
-      }
-    }
+    var parseResult = parseString(
+        content: text,
+        featureSet: featureSet,
+        path: source.uri,
+        throwIfDiagnostics: false);
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
@@ -224,21 +191,5 @@ class DartFormatter {
     }
 
     return output;
-  }
-
-  /// Parse [source] from [uri] at language [version].
-  ParseStringResult _parse(String source, String? uri, Version version) {
-    // Don't pass the formatter's own experiment flag to the parser.
-    var experiments = experimentFlags.toList();
-    experiments.remove(tallStyleExperimentFlag);
-
-    var featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: version, flags: experiments);
-
-    return parseString(
-        content: source,
-        featureSet: featureSet,
-        path: uri,
-        throwIfDiagnostics: false);
   }
 }
