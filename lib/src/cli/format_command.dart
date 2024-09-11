@@ -8,7 +8,6 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../dart_formatter.dart';
 import '../io.dart';
-import '../short/style_fix.dart';
 import 'formatter_options.dart';
 import 'options.dart';
 import 'output.dart';
@@ -116,18 +115,6 @@ class FormatCommand extends Command<int> {
           '"${argResults['indent']}".');
     }
 
-    var fixes = <StyleFix>[];
-    if (argResults['fix'] as bool) fixes.addAll(StyleFix.all);
-    for (var fix in StyleFix.all) {
-      if (argResults['fix-${fix.name}'] as bool) {
-        if (argResults['fix'] as bool) {
-          usageException('--fix-${fix.name} is redundant with --fix.');
-        }
-
-        fixes.add(fix);
-      }
-    }
-
     List<int>? selection;
     try {
       selection = parseSelection(argResults, 'selection');
@@ -160,7 +147,6 @@ class FormatCommand extends Command<int> {
         indent: indent,
         pageWidth: pageWidth,
         followLinks: followLinks,
-        fixes: fixes,
         show: show,
         output: output,
         summary: summary,

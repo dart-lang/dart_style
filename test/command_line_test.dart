@@ -134,7 +134,6 @@ void main() {
       await expectLater(process.stdout, emitsThrough(contains('--overwrite')));
       await expectLater(
           process.stdout, emitsThrough(contains('--set-exit-if-changed')));
-      await expectLater(process.stdout, emitsThrough(contains('--fix')));
       await process.shouldExit(0);
     });
   });
@@ -299,62 +298,6 @@ void main() {
       var process =
           await runFormatterOnDir(['--set-exit-if-changed', '--dry-run']);
       await process.shouldExit(1);
-    });
-  });
-
-  group('fix', () {
-    test('--fix applies all fixes', () async {
-      var process = await runFormatter(['--fix']);
-      process.stdin.writeln('foo({a:1}) {');
-      process.stdin.writeln('  new Bar(const Baz(const []));}');
-      await process.stdin.close();
-
-      expect(await process.stdout.next, 'foo({a = 1}) {');
-      expect(await process.stdout.next, '  Bar(const Baz([]));');
-      expect(await process.stdout.next, '}');
-      await process.shouldExit(0);
-    });
-
-    test('--fix-named-default-separator', () async {
-      var process = await runFormatter(['--fix-named-default-separator']);
-      process.stdin.writeln('foo({a:1}) {');
-      process.stdin.writeln('  new Bar();}');
-      await process.stdin.close();
-
-      expect(await process.stdout.next, 'foo({a = 1}) {');
-      expect(await process.stdout.next, '  new Bar();');
-      expect(await process.stdout.next, '}');
-      await process.shouldExit(0);
-    });
-
-    test('--fix-optional-const', () async {
-      var process = await runFormatter(['--fix-optional-const']);
-      process.stdin.writeln('foo({a:1}) {');
-      process.stdin.writeln('  const Bar(const Baz());}');
-      await process.stdin.close();
-
-      expect(await process.stdout.next, 'foo({a: 1}) {');
-      expect(await process.stdout.next, '  const Bar(Baz());');
-      expect(await process.stdout.next, '}');
-      await process.shouldExit(0);
-    });
-
-    test('--fix-optional-new', () async {
-      var process = await runFormatter(['--fix-optional-new']);
-      process.stdin.writeln('foo({a:1}) {');
-      process.stdin.writeln('  new Bar();}');
-      await process.stdin.close();
-
-      expect(await process.stdout.next, 'foo({a: 1}) {');
-      expect(await process.stdout.next, '  Bar();');
-      expect(await process.stdout.next, '}');
-      await process.shouldExit(0);
-    });
-
-    test('errors with --fix and specific fix flag', () async {
-      var process =
-          await runFormatter(['--fix', '--fix-named-default-separator']);
-      await process.shouldExit(64);
     });
   });
 

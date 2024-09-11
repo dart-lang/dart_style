@@ -76,7 +76,6 @@ Future<void> _runTest(String path, int line,
       languageVersion: formatTest.languageVersion,
       pageWidth: testFile.pageWidth,
       indent: formatTest.leadingIndent,
-      fixes: formatTest.fixes,
       experimentFlags: tall
           ? const ['inline-class', tallStyleExperimentFlag]
           : const ['inline-class']);

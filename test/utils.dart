@@ -130,14 +130,14 @@ Future<TestProcess> runCommandOnDir([List<String>? args]) {
 }
 
 /// Run tests defined in "*.unit" and "*.stmt" files inside directory [path].
-Future<void> testDirectory(String path, {Iterable<StyleFix>? fixes}) async {
+Future<void> testDirectory(String path) async {
   for (var test in await TestFile.listDirectory(path)) {
-    _testFile(test, fixes);
+    _testFile(test);
   }
 }
 
-Future<void> testFile(String path, {Iterable<StyleFix>? fixes}) async {
-  _testFile(await TestFile.read(path), fixes);
+Future<void> testFile(String path) async {
+  _testFile(await TestFile.read(path));
 }
 
 /// Format all of the benchmarks and ensure they produce their expected outputs.
@@ -176,24 +176,17 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
   });
 }
 
-void _testFile(TestFile testFile, Iterable<StyleFix>? baseFixes) {
+void _testFile(TestFile testFile) {
   var useTallStyle =
       testFile.path.startsWith('tall/') || testFile.path.startsWith('tall\\');
 
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
-        var fixes = [...?baseFixes, ...formatTest.fixes];
-
-        if (useTallStyle && fixes.isNotEmpty) {
-          fail('Test error: Tall style does not support applying fixes.');
-        }
-
         var formatter = DartFormatter(
             languageVersion: formatTest.languageVersion,
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
-            fixes: fixes,
             experimentFlags: useTallStyle
                 ? const ['inline-class', 'macros', tallStyleExperimentFlag]
                 : const ['inline-class', 'macros']);

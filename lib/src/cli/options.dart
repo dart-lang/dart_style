@@ -3,8 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:args/args.dart';
 
-import '../short/style_fix.dart';
-
 void defineOptions(ArgParser parser,
     {bool oldCli = false, bool verbose = false}) {
   if (oldCli) {
@@ -77,15 +75,6 @@ void defineOptions(ArgParser parser,
   parser.addFlag('set-exit-if-changed',
       negatable: false,
       help: 'Return exit code 1 if there are any formatting changes.');
-
-  if (verbose) parser.addSeparator('Non-whitespace fixes (off by default):');
-  parser.addFlag('fix',
-      negatable: false, help: 'Apply all style fixes.', hide: !verbose);
-
-  for (var fix in StyleFix.all) {
-    parser.addFlag('fix-${fix.name}',
-        negatable: false, help: fix.description, hide: !verbose);
-  }
 
   if (verbose) parser.addSeparator('Other options:');
 

@@ -6,7 +6,6 @@ import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
 
-import '../short/style_fix.dart';
 import '../source_code.dart';
 import 'output.dart';
 import 'show.dart';
@@ -31,9 +30,6 @@ class FormatterOptions {
   /// Whether symlinks should be traversed when formatting a directory.
   final bool followLinks;
 
-  /// The style fixes to apply while formatting.
-  final List<StyleFix> fixes;
-
   /// Which affected files should be shown.
   final Show show;
 
@@ -55,14 +51,12 @@ class FormatterOptions {
       this.indent = 0,
       this.pageWidth = 80,
       this.followLinks = false,
-      Iterable<StyleFix>? fixes,
       this.show = Show.changed,
       this.output = Output.write,
       this.summary = Summary.none,
       this.setExitIfChanged = false,
       List<String>? experimentFlags})
-      : fixes = [...?fixes],
-        experimentFlags = [...?experimentFlags];
+      : experimentFlags = [...?experimentFlags];
 
   /// Called when [file] is about to be formatted.
   ///

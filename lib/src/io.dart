@@ -34,7 +34,6 @@ Future<void> formatStdin(
             options.languageVersion ?? DartFormatter.latestLanguageVersion,
         indent: options.indent,
         pageWidth: options.pageWidth,
-        fixes: options.fixes,
         experimentFlags: options.experimentFlags);
     try {
       options.beforeFile(null, name);
@@ -181,7 +180,6 @@ Future<bool> _processFile(
       languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
       indent: options.indent,
       pageWidth: options.pageWidth,
-      fixes: options.fixes,
       experimentFlags: options.experimentFlags);
 
   try {
