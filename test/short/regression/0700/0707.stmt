@@ -1,4 +1,6 @@
->>> (indent 4) (fix optional-new)
+### This test used to test --fix behavior but since that feature was removed,
+### the test now just verifies that the formatter preserves the original code.
+>>> (indent 4)
     sink.write('FILE ACCESSED ${new DateTime.now()}\n');
 <<<
-    sink.write('FILE ACCESSED ${DateTime.now()}\n');
+    sink.write('FILE ACCESSED ${new DateTime.now()}\n');

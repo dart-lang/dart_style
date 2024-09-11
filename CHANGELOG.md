@@ -1,14 +1,46 @@
 ## 3.0.0-wip
 
-* **Remove the old formatter executables and CLI options.**
+* **Remove support for fixes and `--fix`.** The tools that come with the Dart
+  SDK provide two ways to apply automated changes to code: `dart format --fix`
+  and `dart fix`. The former is older and used to be faster. But it can only
+  apply a few fixes and hasn't been maintained in many years. The `dart fix`
+  command is actively maintained, can apply all of the fixes that
+  `dart format --fix` could apply and many many more.
 
-  Before the `dart format` command was added to the core Dart SDK, users
-  accessed the formatter by running a separate `dartfmt` executable that was
-  included with the Dart SDK. That executable had a different CLI interface.
-  For example, you had to pass `-w` to get it to overwrite files and if you
-  passed no arguments at all, it silently sat there waiting for input on stdin.
-  When we added `dart format`, we took that opportunity to revamp the CLI
-  options.
+  In order to avoid duplicate engineering effort, we decided to consolidate on
+  `dart fix` as the one way to make automated changes that go beyond the simple
+  formatting and style changes that `dart format` applies.
+
+  The ability to apply fixes is also removed from the `DartFormatter()` library
+  API.
+
+* **Make the language version parameter to `DartFormatter()` mandatory.** This
+  way, the formatter always knows what language version the input is intended
+  to be treated as. Note that a `// @dart=` language version comment if present
+  overrides the specified language version. You can think of the version passed
+  to the `DartFormatter()` constructor as a "default" language version which
+  the file's contents may then override.
+
+  If you don't particularly care about the version of what you're formatting,
+  you can pass in `DartFormatter.latestLanguageVersion` to unconditionally get
+  the latest language version that the formatter supports. Note that doing so
+  means you will also implicitly opt into the new tall style when that style
+  becomes available.
+
+  This change only affects the library API. When using the formatter from the
+  command line, you can use `--language-version=` to specify a language version
+  or pass `--language-version=latest` to use the latest supported version. If
+  omitted, the formatter will look up the surrounding directories for a package
+  config file and infer the language version for the package from that, similar
+  to how other Dart tools behave like `dart analyze` and `dart run`.
+
+* **Remove the old formatter executables and CLI options.** Before the
+  `dart format` command was added to the core Dart SDK, users accessed the
+  formatter by running a separate `dartfmt` executable that was included with
+  the Dart SDK. That executable had a different CLI interface. For example, you
+  had to pass `-w` to get it to overwrite files and if you passed no arguments
+  at all, it silently sat there waiting for input on stdin. When we added
+  `dart format`, we took that opportunity to revamp the CLI options.
 
   However, the dart_style package still exposed an executable with the old CLI.
   If you ran `dart pub global activate dart_style`, this would give you a

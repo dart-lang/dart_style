@@ -1,8 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:math' as math;
-
 import '../comment_type.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
@@ -15,20 +13,9 @@ import 'nesting_builder.dart';
 import 'nesting_level.dart';
 import 'rule/rule.dart';
 import 'source_comment.dart';
-import 'style_fix.dart';
 
 /// Matches if the last character of a string is an identifier character.
 final _trailingIdentifierChar = RegExp(r'[a-zA-Z0-9_]$');
-
-/// Matches a JavaDoc-style doc comment that starts with "/**" and ends with
-/// "*/" or "**/".
-final _javaDocComment = RegExp(r'^/\*\*([^*/][\s\S]*?)\*?\*/$');
-
-/// Matches the leading "*" in a line in the middle of a JavaDoc-style comment.
-final _javaDocLine = RegExp(r'^\s*\*(.*)');
-
-/// Matches spaces at the beginning of as string.
-final _leadingIndentation = RegExp(r'^(\s*)');
 
 /// Takes the incremental serialized output of [SourceVisitor]--the source text
 /// along with any comments and preserved whitespace--and produces a coherent
@@ -241,24 +228,6 @@ class ChunkBuilder {
       }
     }
 
-    // Edge case: if the previous output was also from a call to
-    // [writeComments()] which ended with a line comment, force a newline.
-    // Normally, comments are strictly interleaved with tokens and you never
-    // get two sequences of comments in a row. However, when applying a fix
-    // that removes a token (like `new`), it's possible to get two sets of
-    // comments in a row, as in:
-    //
-    //     // a
-    //     new // b
-    //     Foo();
-    //
-    // When that happens, we need to make sure to preserve the split at the end
-    // of the first sequence of comments if there is one.
-    if (_afterComment && _pendingNewlines > 0) {
-      comments.first.linesBefore = 1;
-      _pendingNewlines = 0;
-    }
-
     // Edge case: if the comments are completely inline (i.e. just a series of
     // block comments with no newlines before, after, or between them), then
     // they will eat any pending newlines. Make sure that doesn't happen by
@@ -311,7 +280,7 @@ class ChunkBuilder {
         _emitPendingWhitespace(isDouble: _needsBlankLineBeforeComment(comment));
       }
 
-      _writeCommentText(comment, chunk);
+      _writeText(comment.text, chunk);
 
       if (comment.selectionStart != null) {
         startSelectionFromEnd(comment.text.length - comment.selectionStart!);
@@ -350,66 +319,6 @@ class ChunkBuilder {
     // it needs a trailing space.
     _pendingSpace = _needsSpaceAfterComment(comments.last, token);
     _afterComment = true;
-  }
-
-  /// Writes the text of [comment].
-  ///
-  /// If it's a JavaDoc comment that should be fixed to use `///`, fixes it.
-  void _writeCommentText(SourceComment comment, [Chunk? chunk]) {
-    if (!_formatter.fixes.contains(StyleFix.docComments)) {
-      _writeText(comment.text, chunk);
-      return;
-    }
-
-    // See if it's a JavaDoc comment.
-    var match = _javaDocComment.firstMatch(comment.text);
-    if (match == null) {
-      _writeText(comment.text, chunk);
-      return;
-    }
-
-    var lines = match[1]!.split('\n').toList();
-    var leastIndentation = comment.text.length;
-
-    for (var i = 0; i < lines.length; i++) {
-      // Trim trailing whitespace and turn any all-whitespace lines to "".
-      var line = lines[i].trimRight();
-
-      // Remove any leading "*" from the middle lines.
-      if (i > 0 && i < lines.length - 1) {
-        var match = _javaDocLine.firstMatch(line);
-        if (match != null) {
-          line = match[1]!;
-        }
-      }
-
-      // Find the line with the least indentation.
-      if (line.isNotEmpty) {
-        var indentation = _leadingIndentation.firstMatch(line)![1]!.length;
-        leastIndentation = math.min(leastIndentation, indentation);
-      }
-
-      lines[i] = line;
-    }
-
-    // Trim the first and last lines if empty.
-    if (lines.first.isEmpty) lines.removeAt(0);
-    if (lines.isNotEmpty && lines.last.isEmpty) lines.removeLast();
-
-    // Don't completely eliminate an empty block comment.
-    if (lines.isEmpty) lines.add('');
-
-    for (var line in lines) {
-      _writeText('///', chunk);
-      if (line.isNotEmpty) {
-        // Discard any indentation shared by all lines.
-        line = line.substring(leastIndentation);
-        _writeText(' $line', chunk);
-      }
-
-      writeNewline();
-      _emitPendingWhitespace();
-    }
   }
 
   /// Creates a new indentation level [spaces] deeper than the current one.

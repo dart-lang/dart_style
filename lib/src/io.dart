@@ -30,10 +30,10 @@ Future<void> formatStdin(
   var input = StringBuffer();
   stdin.transform(const Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = DartFormatter(
-        languageVersion: options.languageVersion,
+        languageVersion:
+            options.languageVersion ?? DartFormatter.latestLanguageVersion,
         indent: options.indent,
         pageWidth: options.pageWidth,
-        fixes: options.fixes,
         experimentFlags: options.experimentFlags);
     try {
       options.beforeFile(null, name);
@@ -157,7 +157,6 @@ Future<bool> _processFile(
       languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
       indent: options.indent,
       pageWidth: options.pageWidth,
-      fixes: options.fixes,
       experimentFlags: options.experimentFlags);
 
   try {

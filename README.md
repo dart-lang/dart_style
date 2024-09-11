@@ -32,29 +32,6 @@ if (tag == 'style' ||
 The formatter will never break your code&mdash;you can safely invoke it
 automatically from build and presubmit scripts.
 
-## Style fixes
-
-The formatter can also apply non-whitespace changes to make your code
-consistently idiomatic. You must opt into these by passing either `--fix` which
-applies all style fixes, or any of the `--fix-`-prefixed flags to apply specific
-fixes.
-
-For example, running with `--fix-named-default-separator` changes this:
-
-```dart
-greet(String name, {String title: "Captain"}) {
-  print("Greetings, $title $name!");
-}
-```
-
-into:
-
-```dart
-greet(String name, {String title = "Captain"}) {
-  print("Greetings, $title $name!");
-}
-```
-
 ## Using the formatter
 
 The formatter is part of the unified [`dart`][] developer tool included in the

@@ -1,12 +1,14 @@
->>> (fix optional-const)
+### This test used to test --fix behavior but since that feature was removed,
+### the test now just verifies that the formatter preserves the original code.
+>>>
 @meta(const Foo(const []))
 library foo;
 <<<
-@meta(Foo([]))
+@meta(const Foo(const []))
 library foo;
->>> (fix optional-const)
+>>>
 @meta(const Foo(const []))
 import 'foo.dart';
 <<<
-@meta(Foo([]))
+@meta(const Foo(const []))
 import 'foo.dart';

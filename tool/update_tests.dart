@@ -87,23 +87,6 @@ Future<void> _updateTestFile(TestFile testFile) async {
   // Write the file-level comments.
   _writeComments(buffer, testFile.comments);
 
-  // TODO(rnystrom): This is duplicating logic in fix_test.dart. Ideally, we'd
-  // move the fix markers into the tests themselves, but since --fix is
-  // probably going away, it's not worth it.
-  var baseFixes = const {
-        'short/fixes/doc_comments.stmt': [StyleFix.docComments],
-        'short/fixes/function_typedefs.unit': [StyleFix.functionTypedefs],
-        'short/fixes/named_default_separator.unit': [
-          StyleFix.namedDefaultSeparator
-        ],
-        'short/fixes/optional_const.unit': [StyleFix.optionalConst],
-        'short/fixes/optional_new.stmt': [StyleFix.optionalNew],
-        'short/fixes/single_cascade_statements.stmt': [
-          StyleFix.singleCascadeStatements
-        ],
-      }[testFile.path] ??
-      const <StyleFix>[];
-
   var experiments = [
     'inline-class',
     'macros',
@@ -114,9 +97,9 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   for (var formatTest in testFile.tests) {
     var formatter = DartFormatter(
+        languageVersion: formatTest.languageVersion,
         pageWidth: testFile.pageWidth,
         indent: formatTest.leadingIndent,
-        fixes: [...baseFixes, ...formatTest.fixes],
         experimentFlags: experiments);
 
     var actual = formatter.formatSource(formatTest.input);
@@ -132,7 +115,9 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
     var descriptionParts = [
       if (formatTest.leadingIndent != 0) '(indent ${formatTest.leadingIndent})',
-      for (var fix in formatTest.fixes) '(fix ${fix.name})',
+      if (formatTest.languageVersion != DartFormatter.latestLanguageVersion)
+        '(version ${formatTest.languageVersion.major}.'
+            '${formatTest.languageVersion.minor})',
       formatTest.description
     ];
 
