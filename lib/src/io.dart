@@ -41,6 +41,8 @@ Future<void> formatStdin(
   // If they didn't specify a version or a path, default to the latest.
   languageVersion ??= DartFormatter.latestLanguageVersion;
 
+  var name = path ?? 'stdin';
+
   var completer = Completer<void>();
   var input = StringBuffer();
   stdin.transform(const Utf8Decoder()).listen(input.write, onDone: () {
@@ -50,13 +52,13 @@ Future<void> formatStdin(
         pageWidth: options.pageWidth,
         experimentFlags: options.experimentFlags);
     try {
-      options.beforeFile(null, path ?? 'stdin');
+      options.beforeFile(null, name);
       var source = SourceCode(input.toString(),
           uri: path,
           selectionStart: selectionStart,
           selectionLength: selectionLength);
       var output = formatter.formatSource(source);
-      options.afterFile(null, path ?? 'stdin', output,
+      options.afterFile(null, name, output,
           changed: source.text != output.text);
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
