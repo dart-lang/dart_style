@@ -54,6 +54,19 @@
   arguments as the `dart format` command. You can invoke it with
   `dart run dart_style:format <args...>`.
 
+* **Treat the `--stdin-name` name as a path when inferring language version.**
+  When reading input on stdin, the formatter still needs to know what language
+  version to parse the code as. If the `--stdin-name` option is set, then that
+  is treated as a file path and the formatter looks for a package config
+  surrounding that file path to infer the language version from.
+
+  If you don't want that behavior, pass in an explicit language version using
+  `--language-version=`, or use `--language-version=latest` to parse the input
+  using the latest language version supported by the formatter.
+
+  If `--stdin-name` and `--language-version` are both omitted, then parses
+  stdin using the latest supported language version.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be

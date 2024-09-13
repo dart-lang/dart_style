@@ -107,8 +107,12 @@ class FormatCommand extends Command<int> {
         help: 'Track selection (given as "start:length") through formatting.',
         hide: !verbose);
     argParser.addOption('stdin-name',
-        help: 'Use this path in error messages when input is read from stdin.',
-        defaultsTo: 'stdin',
+        help:
+            'The path that code read from stdin is treated as coming from.\n\n'
+            'This path is used in error messages and also to locate a\n'
+            'surrounding package to infer the code\'s language version.\n'
+            'To avoid searching for a surrounding package config, pass\n'
+            'in a language version using --language-version.',
         hide: !verbose);
   }
 
@@ -223,7 +227,7 @@ class FormatCommand extends Command<int> {
     if (argResults.wasParsed('stdin-name') && argResults.rest.isNotEmpty) {
       usageException('Cannot pass --stdin-name when not reading from stdin.');
     }
-    var stdinName = argResults['stdin-name'] as String;
+    var stdinName = argResults['stdin-name'] as String?;
 
     var options = FormatterOptions(
         languageVersion: languageVersion,

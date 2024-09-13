@@ -17,7 +17,7 @@ import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
 Future<void> formatStdin(
-    FormatterOptions options, List<int>? selection, String name) async {
+    FormatterOptions options, List<int>? selection, String? path) async {
   var selectionStart = 0;
   var selectionLength = 0;
 
@@ -26,19 +26,35 @@ Future<void> formatStdin(
     selectionLength = selection[1];
   }
 
+  var languageVersion = options.languageVersion;
+  if (languageVersion == null && path != null) {
+    // TODO(rnystrom): Remove the experiment check when the experiment ships.
+    if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
+      var cache = LanguageVersionCache();
+      languageVersion = await cache.find(File(path), path);
+
+      // If the lookup failed, don't try to parse the code.
+      if (languageVersion == null) return;
+    }
+  }
+
+  // If they didn't specify a version or a path, default to the latest.
+  languageVersion ??= DartFormatter.latestLanguageVersion;
+
+  var name = path ?? 'stdin';
+
   var completer = Completer<void>();
   var input = StringBuffer();
   stdin.transform(const Utf8Decoder()).listen(input.write, onDone: () {
     var formatter = DartFormatter(
-        languageVersion:
-            options.languageVersion ?? DartFormatter.latestLanguageVersion,
+        languageVersion: languageVersion!,
         indent: options.indent,
         pageWidth: options.pageWidth,
         experimentFlags: options.experimentFlags);
     try {
       options.beforeFile(null, name);
       var source = SourceCode(input.toString(),
-          uri: name,
+          uri: path,
           selectionStart: selectionStart,
           selectionLength: selectionLength);
       var output = formatter.formatSource(source);
@@ -138,17 +154,10 @@ Future<bool> _processFile(
   // version.
   Version? languageVersion;
   if (cache != null) {
-    try {
-      // Look for a package config. If we don't find one, default to the latest
-      // language version.
-      languageVersion = await cache.find(file);
-    } catch (error) {
-      stderr.writeln('Could not read package configuration for '
-          '$displayPath:\n$error');
-      stderr.writeln('To avoid searching for a package configuration, '
-          'specify a language version using "--language-version".');
-      return false;
-    }
+    languageVersion = await cache.find(file, displayPath);
+
+    // If the lookup failed, don't try to parse the file.
+    if (languageVersion == null) return false;
   } else {
     languageVersion = options.languageVersion;
   }
