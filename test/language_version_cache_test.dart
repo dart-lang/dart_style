@@ -108,11 +108,11 @@ void main() {
 
 Future<void> _expectVersion(
     LanguageVersionCache cache, String path, int major, int minor) async {
-  expect(await cache.find(_expectedFile(path)), Version(major, minor, 0));
+  expect(await cache.find(_expectedFile(path), path), Version(major, minor, 0));
 }
 
 Future<void> _expectNullVersion(LanguageVersionCache cache, String path) async {
-  expect(await cache.find(_expectedFile(path)), null);
+  expect(await cache.find(_expectedFile(path), path), null);
 }
 
 /// Normalize path separators to the host OS separator since that's what the

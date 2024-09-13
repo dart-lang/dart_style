@@ -33,7 +33,7 @@ class LanguageVersionCache {
 
   /// Looks for a package surrounding [file] and, if found, returns the default
   /// language version specified by that package.
-  Future<Version?> find(File file) async {
+  Future<Version?> find(File file, String displayPath) async {
     Profile.begin('look up package config');
     try {
       // Use the cached version (which may be `null`) if present.
@@ -55,6 +55,12 @@ class LanguageVersionCache {
 
       // We weren't able to resolve this file's directory, so don't try again.
       return _directoryVersions[directory] = null;
+    } catch (error) {
+      stderr.writeln('Could not read package configuration for '
+          '$displayPath:\n$error');
+      stderr.writeln('To avoid searching for a package configuration, '
+          'specify a language version using "--language-version".');
+      return null;
     } finally {
       Profile.end('look up package config');
     }

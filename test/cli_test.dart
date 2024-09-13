@@ -394,6 +394,60 @@ void main() {
       var process = await runFormatter(['--stdin-name=name', 'path']);
       await process.shouldExit(64);
     });
+
+    test('infers language version from surrounding package', () async {
+      // The package config sets the language version to 3.1, but the switch
+      // case uses a syntax which is valid in earlier versions of Dart but an
+      // error in 3.0 and later. Verify that the error is reported.
+      await d.dir('foo', [
+        packageConfig('foo', 2, 19),
+      ]).create();
+
+      var process = await runFormatter(
+          ['--enable-experiment=tall-style', '--stdin-name=foo/main.dart']);
+      // Write a switch whose syntax is valid in 2.19, but an error in later
+      // versions.
+      process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
+      await process.stdin.close();
+
+      expect(await process.stdout.next, 'main() {');
+      expect(await process.stdout.next, '  switch (o) {');
+      expect(await process.stdout.next, '    case 1 + 2:');
+      expect(await process.stdout.next, '      break;');
+      expect(await process.stdout.next, '  }');
+      expect(await process.stdout.next, '}');
+      await process.shouldExit(0);
+    });
+
+    test('no package search if language version is specified', () async {
+      // Put the stdin-name in a directory with a malformed package config. If
+      // we search for it, we should get an error.
+      await d.dir('foo', [
+        d.dir('.dart_tool', [
+          d.file('package_config.json', 'this no good json is bad json'),
+        ]),
+        d.file('main.dart', 'main(){    }'),
+      ]).create();
+
+      var process = await runFormatter([
+        '--language-version=2.19',
+        '--enable-experiment=tall-style',
+        '--stdin-name=foo/main.dart'
+      ]);
+
+      // Write a switch whose syntax is valid in 2.19, but an error in later
+      // versions.
+      process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
+      await process.stdin.close();
+
+      expect(await process.stdout.next, 'main() {');
+      expect(await process.stdout.next, '  switch (o) {');
+      expect(await process.stdout.next, '    case 1 + 2:');
+      expect(await process.stdout.next, '      break;');
+      expect(await process.stdout.next, '  }');
+      expect(await process.stdout.next, '}');
+      await process.shouldExit(0);
+    });
   });
 
   group('language version', () {
