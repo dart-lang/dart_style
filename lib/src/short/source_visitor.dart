@@ -2473,7 +2473,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 
     token(node.leftParenthesis);
 
-    final rule = PositionalRule(null, argumentCount: 1);
+    var rule = PositionalRule(null, argumentCount: 1);
 
     builder.startRule(rule);
     rule.beforeArgument(zeroSplit());

@@ -525,7 +525,7 @@ class SolveState {
     var unboundConstraints = <Rule, Set<int>>{};
     for (var unbound in _unboundRules) {
       // Lazily create and add the set to the constraints only if needed.
-      late final disallowedValues = unboundConstraints[unbound] = {};
+      late var disallowedValues = unboundConstraints[unbound] = {};
 
       for (var bound in unbound.constrainedRules) {
         if (!_boundRules.contains(bound)) continue;
