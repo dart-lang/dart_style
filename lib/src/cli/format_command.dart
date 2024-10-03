@@ -189,9 +189,12 @@ class FormatCommand extends Command<int> {
       }
     }
 
-    var pageWidth = int.tryParse(argResults['line-length'] as String) ??
-        usageException('--line-length must be an integer, was '
-            '"${argResults['line-length']}".');
+    int? pageWidth;
+    if (argResults.wasParsed('line-length')) {
+      pageWidth = int.tryParse(argResults['line-length'] as String) ??
+          usageException('--line-length must be an integer, was '
+              '"${argResults['line-length']}".');
+    }
 
     var indent = int.tryParse(argResults['indent'] as String) ??
         usageException('--indent must be an integer, was '

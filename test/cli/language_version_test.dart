@@ -114,7 +114,7 @@ main() {
       // case uses a syntax which is valid in earlier versions of Dart but an
       // error in 3.0 and later. Verify that the error is reported.
       await d.dir('foo', [
-        packageConfig('foo', 3, 1),
+        packageConfig('foo', version: '3.1'),
         d.file('main.dart', 'main() { switch (o) { case 1 + 2: break; } }'),
       ]).create();
 
@@ -136,7 +136,7 @@ main() {
       // error in 3.0 and later. Verify that no error is reported since this
       // file opts to the older version.
       await d.dir('foo', [
-        packageConfig('foo', 3, 1),
+        packageConfig('foo', version: '3.1'),
         d.file('main.dart', '''
           // @dart=2.19
           main() { switch (obj) { case 1 + 2: // Error in 3.1.
@@ -187,7 +187,7 @@ main() {
       // case uses a syntax which is valid in earlier versions of Dart but an
       // error in 3.0 and later. Verify that the error is reported.
       await d.dir('foo', [
-        packageConfig('foo', 2, 19),
+        packageConfig('foo', version: '2.19'),
       ]).create();
 
       var process = await runFormatter(

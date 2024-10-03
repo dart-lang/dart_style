@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
@@ -168,20 +169,66 @@ void _testFile(TestFile testFile) {
 }
 
 /// Create a test `.dart_tool` directory with a package config for a package
-/// with [packageName] and language version [major].[minor].
-d.DirectoryDescriptor packageConfig(String packageName, int major, int minor) {
-  var config = '''
-  {
-    "configVersion": 2,
-    "packages": [
-      {
-        "name": "$packageName",
-        "rootUri": "../",
-        "packageUri": "lib/",
-        "languageVersion": "$major.$minor"
-      }
-    ]
-  }''';
+/// with [rootPackageName] and language version [major].[minor].
+///
+/// If [packages] is given, it should be a map from package names to root URIs
+/// for each package.
+d.DirectoryDescriptor packageConfig(String rootPackageName,
+    {String version = '3.5', Map<String, String>? packages}) {
+  Map<String, dynamic> package(String name, String rootUri) => {
+        'name': name,
+        'rootUri': rootUri,
+        'packageUri': 'lib/',
+        'languageVersion': version
+      };
 
-  return d.dir('.dart_tool', [d.file('package_config.json', config)]);
+  var config = {
+    'configVersion': 2,
+    'packages': [
+      package(rootPackageName, '../'),
+      if (packages != null)
+        for (var name in packages.keys) package(name, packages[name]!),
+    ]
+  };
+
+  return d.dir('.dart_tool', [
+    d.file('package_config.json', jsonEncode(config)),
+  ]);
+}
+
+/// Creates the YAML string contents of an analysis options file.
+///
+/// If [pageWidth] is given, then the result has a "formatter" section to
+/// specify the page width. If [include] is given, then adds an "include" key
+/// to include another analysis options file. If [other] is given, then those
+/// are added as other top-level keys in the YAML.
+String analysisOptions(
+    {int? pageWidth, String? include, Map<String, Object>? other}) {
+  var yaml = StringBuffer();
+
+  if (include != null) {
+    yaml.writeln('include: $include');
+  }
+
+  if (pageWidth != null) {
+    yaml.writeln('formatter:');
+    yaml.writeln('  page_width: $pageWidth');
+  }
+
+  if (other != null) {
+    other.forEach((key, value) {
+      yaml.writeln('$key:');
+      yaml.writeln('  $value');
+    });
+  }
+
+  return yaml.toString();
+}
+
+/// Creates a file named "analysis_options.yaml" containing the given YAML
+/// options to configure the [pageWidth] and [include] file, if any.
+d.FileDescriptor analysisOptionsFile(
+    {String name = 'analysis_options.yaml', int? pageWidth, String? include}) {
+  var yaml = analysisOptions(pageWidth: pageWidth, include: include);
+  return d.FileDescriptor(name, yaml.toString());
 }

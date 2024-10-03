@@ -6,6 +6,8 @@ import 'package:dart_style/src/analysis_options/analysis_options_file.dart';
 import 'package:dart_style/src/testing/test_file_system.dart';
 import 'package:test/test.dart';
 
+import '../utils.dart';
+
 void main() {
   group('findAnalysisOptionsoptions()', () {
     test('returns an empty map if no analysis options is found', () async {
@@ -17,7 +19,7 @@ void main() {
 
     test('finds a file in the given directory', () async {
       var testFS = TestFileSystem({
-        'dir|analysis_options.yaml': _makeOptions(pageWidth: 100),
+        'dir|analysis_options.yaml': analysisOptions(pageWidth: 100),
       });
 
       var options =
@@ -27,8 +29,8 @@ void main() {
 
     test('stops at the nearest analysis options file', () async {
       var testFS = TestFileSystem({
-        'dir|analysis_options.yaml': _makeOptions(pageWidth: 120),
-        'dir|sub|analysis_options.yaml': _makeOptions(pageWidth: 100)
+        'dir|analysis_options.yaml': analysisOptions(pageWidth: 120),
+        'dir|sub|analysis_options.yaml': analysisOptions(pageWidth: 100)
       });
 
       var options =
@@ -39,8 +41,8 @@ void main() {
     test('uses the nearest file even if it doesn\'t have the setting',
         () async {
       var testFS = TestFileSystem({
-        'dir|analysis_options.yaml': _makeOptions(pageWidth: 120),
-        'dir|sub|analysis_options.yaml': _makeOptions()
+        'dir|analysis_options.yaml': analysisOptions(pageWidth: 120),
+        'dir|sub|analysis_options.yaml': analysisOptions()
       });
 
       var options =
@@ -49,9 +51,10 @@ void main() {
     });
   });
 
-  group('readAnalysisOptionsoptions()', () {
+  group('readAnalysisOptionsOptions()', () {
     test('reads an analysis options file', () async {
-      var testFS = TestFileSystem({'file.yaml': _makeOptions(pageWidth: 120)});
+      var testFS =
+          TestFileSystem({'file.yaml': analysisOptions(pageWidth: 120)});
 
       var options =
           await readAnalysisOptions(testFS, TestFileSystemPath('file.yaml'));
@@ -60,19 +63,19 @@ void main() {
 
     test('merges included files', () async {
       var testFS = TestFileSystem({
-        'dir|a.yaml': _makeOptions(include: 'b.yaml', other: {
+        'dir|a.yaml': analysisOptions(include: 'b.yaml', other: {
           'a': 'from a',
           'ab': 'from a',
           'ac': 'from a',
           'abc': 'from a',
         }),
-        'dir|b.yaml': _makeOptions(include: 'c.yaml', other: {
+        'dir|b.yaml': analysisOptions(include: 'c.yaml', other: {
           'ab': 'from b',
           'abc': 'from b',
           'b': 'from b',
           'bc': 'from b',
         }),
-        'dir|c.yaml': _makeOptions(other: {
+        'dir|c.yaml': analysisOptions(other: {
           'ac': 'from c',
           'abc': 'from c',
           'bc': 'from c',
@@ -93,8 +96,8 @@ void main() {
 
     test('removes the include key after merging', () async {
       var testFS = TestFileSystem({
-        'dir|main.yaml': _makeOptions(pageWidth: 120, include: 'a.yaml'),
-        'dir|a.yaml': _makeOptions(other: {'a': 123}),
+        'dir|main.yaml': analysisOptions(pageWidth: 120, include: 'a.yaml'),
+        'dir|a.yaml': analysisOptions(other: {'a': 123}),
       });
 
       var options = await readAnalysisOptions(
@@ -104,13 +107,13 @@ void main() {
 
     test('locates includes relative to the parent directory', () async {
       var testFS = TestFileSystem({
-        'dir|a.yaml': _makeOptions(include: 'sub|b.yaml', other: {
+        'dir|a.yaml': analysisOptions(include: 'sub|b.yaml', other: {
           'a': 'from a',
         }),
-        'dir|sub|b.yaml': _makeOptions(include: 'more|c.yaml', other: {
+        'dir|sub|b.yaml': analysisOptions(include: 'more|c.yaml', other: {
           'b': 'from b',
         }),
-        'dir|sub|more|c.yaml': _makeOptions(other: {
+        'dir|sub|more|c.yaml': analysisOptions(other: {
           'c': 'from c',
         }),
       });
@@ -122,29 +125,6 @@ void main() {
       expect(options['c'], 'from c');
     });
   });
-}
-
-String _makeOptions(
-    {int? pageWidth, String? include, Map<String, Object>? other}) {
-  var result = StringBuffer();
-
-  if (include != null) {
-    result.writeln('include: $include');
-  }
-
-  if (pageWidth != null) {
-    result.writeln('formatter:');
-    result.writeln('  page_width: $pageWidth');
-  }
-
-  if (other != null) {
-    other.forEach((key, value) {
-      result.writeln('$key:');
-      result.writeln('  $value');
-    });
-  }
-
-  return result.toString();
 }
 
 /// Reads the `formatter/page_width` key from [options] if present and returns
