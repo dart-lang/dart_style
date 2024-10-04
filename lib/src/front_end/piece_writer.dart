@@ -399,7 +399,8 @@ class PieceWriter {
 
     var cache = SolutionCache();
     var solver = Solver(cache,
-        pageWidth: _formatter.pageWidth, leadingIndent: _formatter.indent);
+        pageWidth: _comments.pageWidthFromComment ?? _formatter.pageWidth,
+        leadingIndent: _formatter.indent);
     var solution = solver.format(rootPiece);
     var output = solution.code.build(source, _formatter.lineEnding);
 

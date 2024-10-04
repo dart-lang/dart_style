@@ -42,11 +42,28 @@ import '../comment_type.dart';
 /// written. When that [TextPiece] is output later, it will include the comments
 /// as well.
 class CommentWriter {
+  /// Regular expression that matches a format width comment like:
+  ///
+  ///     // dart format width=123
+  static final RegExp _widthCommentPattern =
+      RegExp(r'^// dart format width=(\d+)$');
+
   final LineInfo _lineInfo;
 
   /// The tokens whose preceding comments have already been taken by calls to
   /// [takeCommentsBefore()].
   final Set<Token> _takenTokens = {};
+
+  /// If we have encountered a comment that sets an explicit page width, that
+  /// width, otherwise `null`.
+  ///
+  /// The comment looks like:
+  ///
+  ///     // dart format width=123
+  ///
+  /// If there are multiple of these comments, the first one wins.
+  int? get pageWidthFromComment => _pageWidthFromComment;
+  int? _pageWidthFromComment;
 
   CommentWriter(this._lineInfo);
 
@@ -104,6 +121,14 @@ class CommentWriter {
 
         // Always add a blank line (if possible) before a doc comment block.
         if (comment == token.precedingComments) linesBefore = 2;
+      }
+
+      // If this comment configures the page width, remember it.
+      if (_widthCommentPattern.firstMatch(text) case var match?
+          when _pageWidthFromComment == null) {
+        // If integer parsing fails for some reason, the returned `null`
+        // means we correctly ignore the comment.
+        _pageWidthFromComment = int.tryParse(match[1]!);
       }
 
       CommentType type;

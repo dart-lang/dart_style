@@ -1,0 +1,118 @@
+40 columns                              |
+### Tests for the comment to set formatting width.
+>>> Comment sets page width.
+main() {
+  // dart format width=30
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart format width=30
+  fitsUnsplitAt40 +
+      butNotAt30;
+}
+>>> Comment anywhere affects all code.
+main() {
+  fitsUnsplitAt40   +   butNotAt30;
+}
+// dart format width=30
+<<<
+main() {
+  fitsUnsplitAt40 +
+      butNotAt30;
+}
+
+// dart format width=30
+>>> If multiple comments, first one wins.
+main() {
+  // dart format width=30
+  // dart format width=60
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart format width=30
+  // dart format width=60
+  fitsUnsplitAt40 +
+      butNotAt30;
+}
+>>> Does nothing if width is not an integer.
+main() {
+  // dart format width=wat
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart format width=wat
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Can't have trailing text.
+main() {
+  // dart format width=30 some more text
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart format width=30 some more text
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Whitespace must match exactly.
+main() {
+  //dart format width=30
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  //dart format width=30
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Whitespace must match exactly.
+main() {
+  // dart   format width=30
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart   format width=30
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Whitespace must match exactly.
+main() {
+  // dart format width = 30
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  // dart format width = 30
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Can't be doc comment.
+main() {
+  /// dart format width=30
+  fitsUnsplitAt40 + butNotAt30;
+}
+<<<
+main() {
+  /// dart format width=30
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Can't be nested inside other comment.
+main() {
+  /* // dart format width=30 */
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  /* // dart format width=30 */
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> Can't be inside string literal.
+main() {
+  var c = '// dart format width=30';
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+main() {
+  var c = '// dart format width=30';
+  fitsUnsplitAt40 + butNotAt30;
+}

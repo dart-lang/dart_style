@@ -194,3 +194,133 @@ main() {
       after +
       region;
 }
+>>> "dart format off" whitespace must match exactly.
+main() {
+  //dart format off
+  unformatted  +  code;
+  // dart format on
+
+  //   dart format off
+  unformatted  +  code;
+  // dart format on
+
+  // dart   format off
+  unformatted  +  code;
+  // dart format on
+
+  // dart format   off
+  unformatted  +  code;
+  // dart format on
+}
+<<<
+main() {
+  //dart format off
+  unformatted + code;
+  // dart format on
+
+  //   dart format off
+  unformatted + code;
+  // dart format on
+
+  // dart   format off
+  unformatted + code;
+  // dart format on
+
+  // dart format   off
+  unformatted + code;
+  // dart format on
+}
+>>> "dart format on" whitespace must match exactly.
+main() {
+  // dart format off
+  // Doesn't actually turn back on:
+  //dart format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted  +  code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  //   dart format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted  +  code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  // dart   format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted  +  code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  // dart format   on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted  +  code;
+}
+<<<
+main() {
+  // dart format off
+  // Doesn't actually turn back on:
+  //dart format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted + code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  //   dart format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted + code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  // dart   format on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted + code;
+
+  // dart format off
+  // Doesn't actually turn back on:
+  // dart format   on
+  unformatted  +  code;
+
+  // Does now:
+  // dart format on
+  unformatted + code;
+}
+>>> Can't be doc comment.
+main() {
+  here   +   gets   +   formatted    ;
+  /// dart format off
+  here   +   does    +    too   ;
+  /// dart format on
+  and   +   here   +    does   ;
+}
+<<<
+main() {
+  here + gets + formatted;
+
+  /// dart format off
+  here + does + too;
+
+  /// dart format on
+  and + here + does;
+}
