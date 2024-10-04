@@ -12,6 +12,11 @@ import 'merge_options.dart';
 /// (It's JSON-*like* and not JSON because maps in it may have non-string keys.)
 typedef AnalysisOptions = Map<Object?, Object?>;
 
+/// Interface for taking a "package:" URI that may appear in an analysis
+/// options file's "include" key and resolving it to a file path which can be
+/// passed to [FileSystem.join()].
+typedef ResolvePackageUri = Future<String?> Function(Uri packageUri);
+
 /// Reads an `analysis_options.yaml` file in [directory] or in the nearest
 /// surrounding folder that contains that file using [fileSystem].
 ///
@@ -23,12 +28,18 @@ typedef AnalysisOptions = Map<Object?, Object?>;
 /// [YamlMap]. If the map contains an `include` key whose value is a list, then
 /// reads any of the other referenced YAML files and merges them into this one.
 /// Returns the resulting map with the `include` key removed.
+///
+/// If there any "package:" includes, then they are resolved to file paths
+/// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
+/// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> findAnalysisOptions(
-    FileSystem fileSystem, FileSystemPath directory) async {
+    FileSystem fileSystem, FileSystemPath directory,
+    {ResolvePackageUri? resolvePackageUri}) async {
   while (true) {
     var optionsPath = await fileSystem.join(directory, 'analysis_options.yaml');
     if (await fileSystem.fileExists(optionsPath)) {
-      return readAnalysisOptions(fileSystem, optionsPath);
+      return readAnalysisOptions(fileSystem, optionsPath,
+          resolvePackageUri: resolvePackageUri);
     }
 
     var parent = await fileSystem.parentDirectory(directory);
@@ -40,8 +51,18 @@ Future<AnalysisOptions> findAnalysisOptions(
   return const {};
 }
 
+/// Uses [fileSystem] to read the analysis options file at [optionsPath].
+///
+/// If there any "package:" includes, then they are resolved to file paths
+/// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
+/// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> readAnalysisOptions(
-    FileSystem fileSystem, FileSystemPath optionsPath) async {
+        FileSystem fileSystem, FileSystemPath optionsPath,
+        {ResolvePackageUri? resolvePackageUri}) async =>
+    _readAnalysisOptions(fileSystem, resolvePackageUri, optionsPath);
+
+Future<AnalysisOptions> _readAnalysisOptions(FileSystem fileSystem,
+    ResolvePackageUri? resolvePackageUri, FileSystemPath optionsPath) async {
   var yaml = loadYamlNode(await fileSystem.readFile(optionsPath));
 
   // Lower the YAML to a regular map.
@@ -53,13 +74,43 @@ Future<AnalysisOptions> readAnalysisOptions(
   if (options['include'] case String include) {
     options.remove('include');
 
+    // If the include path is "package:", resolve it to a file path first.
+    var includeUri = Uri.tryParse(include);
+    if (includeUri != null && includeUri.scheme == 'package') {
+      if (resolvePackageUri != null) {
+        var filePath = await resolvePackageUri(includeUri);
+        if (filePath != null) {
+          include = filePath;
+        } else {
+          throw PackageResolutionException(
+              'Failed to resolve package URI "$include" in include.');
+        }
+      } else {
+        throw PackageResolutionException(
+            'Couldn\'t resolve package URI "$include" in include because '
+            'no package resolver was provided.');
+      }
+    }
+
     // The include path may be relative to the directory containing the current
     // options file.
     var includePath = await fileSystem.join(
         (await fileSystem.parentDirectory(optionsPath))!, include);
-    var includeFile = await readAnalysisOptions(fileSystem, includePath);
+    var includeFile =
+        await _readAnalysisOptions(fileSystem, resolvePackageUri, includePath);
     options = merge(includeFile, options) as AnalysisOptions;
   }
 
   return options;
+}
+
+/// Exception thrown when an analysis options file contains a "package:" URI in
+/// an include and resolving the URI to a file path failed.
+class PackageResolutionException implements Exception {
+  final String _message;
+
+  PackageResolutionException(this._message);
+
+  @override
+  String toString() => _message;
 }

@@ -12,9 +12,8 @@ abstract interface class FileSystem {
 
   /// Joins [from] and [to] into a single path with appropriate path separators.
   ///
-  /// Note that [to] may be an absolute path or a "package:" URI and an
-  /// implementation of [join()] should be prepared to handle that by ignoring
-  /// [from] and generating a [FileSystemPath] for [to].
+  /// Note that [to] may be an absolute path implementation of [join()] should
+  /// be prepared to handle that by ignoring [from].
   Future<FileSystemPath> join(FileSystemPath from, String to);
 
   /// Returns a path for the directory containing [path].

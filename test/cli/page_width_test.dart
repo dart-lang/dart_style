@@ -85,6 +85,63 @@ void main() {
     await d.dir('foo', [d.file('main.dart', _formatted30)]).validate();
   });
 
+  test('resolve "package:" includes', () async {
+    await d.dir('dir', [
+      d.dir('foo', [
+        packageConfig('foo', packages: {
+          'bar': '../../bar',
+          'baz': '../../baz',
+        }),
+        analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
+        d.file('main.dart', _unformatted),
+      ]),
+      d.dir('bar', [
+        d.dir('lib', [
+          analysisOptionsFile(include: 'package:baz/analysis_options.yaml'),
+        ]),
+      ]),
+      d.dir('baz', [
+        d.dir('lib', [
+          analysisOptionsFile(pageWidth: 30),
+        ]),
+      ]),
+    ]).create();
+
+    var process = await runFormatterOnDir([
+      '--language-version=latest', // Error to not have language version.
+      '--enable-experiment=tall-style'
+    ]);
+    await process.shouldExit(0);
+
+    // Should format the file at 30.
+    await d.dir('dir', [
+      d.dir('foo', [d.file('main.dart', _formatted30)])
+    ]).validate();
+  });
+
+  test('ignore "package:" resolution errors', () async {
+    await d.dir('dir', [
+      d.dir('foo', [
+        packageConfig('foo', packages: {
+          'bar': '../../bar',
+        }),
+        analysisOptionsFile(include: 'package:not_bar/analysis_options.yaml'),
+        d.file('main.dart', _unformatted),
+      ]),
+    ]).create();
+
+    var process = await runFormatterOnDir([
+      '--language-version=latest', // Error to not have language version.
+      '--enable-experiment=tall-style'
+    ]);
+    await process.shouldExit(0);
+
+    // Should format the file at 80.
+    await d.dir('dir', [
+      d.dir('foo', [d.file('main.dart', _formatted80)])
+    ]).validate();
+  });
+
   group('stdin', () {
     test('use page width from surrounding package', () async {
       await d.dir('foo', [

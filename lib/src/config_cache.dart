@@ -91,14 +91,21 @@ class ConfigCache {
       return _directoryPageWidths[directory];
     }
 
-    // Look for a surrounding analysis_options.yaml file.
-    var options = await findAnalysisOptions(
-        _fileSystem, await _fileSystem.makePath(file.path));
+    try {
+      // Look for a surrounding analysis_options.yaml file.
+      var options = await findAnalysisOptions(
+          _fileSystem, await _fileSystem.makePath(file.path),
+          resolvePackageUri: (uri) => _resolvePackageUri(file, uri));
 
-    if (options['formatter'] case Map<Object?, Object?> formatter) {
-      if (formatter['page_width'] case int pageWidth) {
-        return _directoryPageWidths[directory] = pageWidth;
+      if (options['formatter'] case Map<Object?, Object?> formatter) {
+        if (formatter['page_width'] case int pageWidth) {
+          return _directoryPageWidths[directory] = pageWidth;
+        }
       }
+    } on PackageResolutionException {
+      // Silently ignore any errors coming from the processing the analyis
+      // options. If there are any issues, we just use the default page width
+      // and keep going.
     }
 
     // If we get here, the options file either doesn't specify the page width,
@@ -136,5 +143,19 @@ class ConfigCache {
     } finally {
       Profile.end('look up package config');
     }
+  }
+
+  /// Resolves a "package:" [packageUri] using the nearest package config file
+  /// surrounding [file].
+  ///
+  /// If there is no package config file around [file], or the package config
+  /// doesn't contain the package for [packageUri], returns `null`. Otherwise,
+  /// returns an absolute file path for where [packageUri] can be found on disk.
+  Future<String?> _resolvePackageUri(File file, Uri packageUri) async {
+    var config =
+        await _findPackageConfig(file, file.path, forLanguageVersion: false);
+    if (config == null) return null;
+
+    return config.resolve(packageUri)?.toFilePath();
   }
 }

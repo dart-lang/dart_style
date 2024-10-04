@@ -10,12 +10,8 @@ import 'file_system.dart';
 
 /// An implementation of [FileSystem] using `dart:io`.
 class IOFileSystem implements FileSystem {
-  Future<IOFileSystemPath> makePath(String path) async {
-    // TODO(rnystrom): If [path] is a "package:" URI, then look for a
-    // surrounding package_config.json and resolve the URI to a file path using
-    // that.
-    return IOFileSystemPath._(path);
-  }
+  Future<IOFileSystemPath> makePath(String path) async =>
+      IOFileSystemPath._(path);
 
   @override
   Future<bool> fileExists(FileSystemPath path) => File(path.ioPath).exists();

@@ -124,6 +124,56 @@ void main() {
       expect(options['b'], 'from b');
       expect(options['c'], 'from c');
     });
+
+    test('resolves "package:" includes', () async {
+      var testFS = TestFileSystem({
+        'dir|a.yaml':
+            analysisOptions(include: 'package:b/b_options.yaml', other: {
+          'a': 'from a',
+        }),
+        '|b|b_options.yaml':
+            analysisOptions(include: 'package:c/c_options.yaml', other: {
+          'b': 'from b',
+        }),
+        '|c|c_options.yaml': analysisOptions(other: {
+          'c': 'from c',
+        }),
+      });
+
+      Future<String?> resolve(Uri packageUri) async {
+        return '|${packageUri.pathSegments.join('|')}';
+      }
+
+      var options = await readAnalysisOptions(
+          testFS, TestFileSystemPath('dir|a.yaml'),
+          resolvePackageUri: resolve);
+      expect(options['a'], 'from a');
+      expect(options['b'], 'from b');
+      expect(options['c'], 'from c');
+    });
+
+    test('throws on a "package:" include with no package resolver', () async {
+      var testFS = TestFileSystem({
+        'options.yaml': analysisOptions(include: 'package:foo/options.yaml'),
+      });
+
+      expect(readAnalysisOptions(testFS, TestFileSystemPath('options.yaml')),
+          throwsA(isA<PackageResolutionException>()));
+    });
+
+    test('throws on a "package:" resolution failure', () async {
+      var testFS = TestFileSystem({
+        'options.yaml': analysisOptions(include: 'package:foo/options.yaml'),
+      });
+
+      // A resolver that always fails.
+      Future<String?> failingResolver(Uri uri) async => null;
+
+      expect(
+          readAnalysisOptions(testFS, TestFileSystemPath('options.yaml'),
+              resolvePackageUri: failingResolver),
+          throwsA(isA<PackageResolutionException>()));
+    });
   });
 }
 

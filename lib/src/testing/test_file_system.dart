@@ -8,6 +8,8 @@ import '../analysis_options/file_system.dart';
 ///
 /// Uses `|` as directory separator to make sure that the implementating code
 /// calling into this doesn't assume a directory separator character.
+///
+/// A path starting with `|` is considered absolute for purposes of joining.
 class TestFileSystem implements FileSystem {
   final Map<String, String> _files = {};
 
@@ -21,6 +23,8 @@ class TestFileSystem implements FileSystem {
 
   @override
   Future<FileSystemPath> join(FileSystemPath from, String to) async {
+    // If it's an absolute path, discard [from].
+    if (to.startsWith('|')) return TestFileSystemPath(to);
     return TestFileSystemPath('${from.testPath}|$to');
   }
 

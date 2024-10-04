@@ -204,6 +204,129 @@ void main() {
 
       await _expectWidth(width: 30);
     });
+
+    test('resolve "package:" includes', () async {
+      await d.dir('dir', [
+        d.dir('foo', [
+          packageConfig('foo', packages: {
+            'bar': '../../bar',
+            'baz': '../../baz',
+          }),
+          analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
+          d.file('main.dart', 'main() {}'),
+        ]),
+        d.dir('bar', [
+          d.dir('lib', [
+            analysisOptionsFile(include: 'package:baz/analysis_options.yaml'),
+          ]),
+        ]),
+        d.dir('baz', [
+          d.dir('lib', [
+            analysisOptionsFile(pageWidth: 30),
+          ]),
+        ]),
+      ]).create();
+
+      var cache = ConfigCache();
+      expect(await cache.findPageWidth(_expectedFile('dir/foo/main.dart')), 30);
+    });
+
+    test('use the root file\'s config for transitive "package:" includes',
+        () async {
+      // This tests a tricky edge case. Consider:
+      //
+      // Package my_app has analysis_options.yaml:
+      //
+      //     include: "package:foo/options.yaml"
+      //
+      // my_app also has a package config that resolves bar to `bar_1.0.0/`.
+      //
+      // Package foo has analysis_options.yaml:
+      //
+      //     include: "package:bar/options.yaml"
+      //
+      // foo also has a package config that resolves bar to `bar_2.0.0/`.
+      //
+      // Package bar_1.0.0 has options.yaml with a page width of 40.
+      // Package bar_2.0.0 has options.yaml with a page width of 60.
+      //
+      // Which page width do files in my_app get? If we resolve every "package:"
+      // include using the package config surrounding the analysis options file
+      // containing that include, you will get 60. If we resolve every
+      // "package:" include using the package config surrounding the original
+      // source file that we're formatting, you'll get 40.
+      //
+      // The answer we want is 40. A file is being formatted in the context of
+      // some package and we want that package's own transitive dependency solve
+      // to be used for analysis options, look up, not the dependency solves of
+      // those dependencies.
+      await d.dir('dir', [
+        d.dir('foo', [
+          packageConfig('foo', packages: {
+            'bar': '../../bar',
+            'baz': '../../baz',
+          }),
+          analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
+          d.file('main.dart', 'main() {}'),
+        ]),
+        d.dir('bar', [
+          packageConfig('foo', packages: {
+            'baz': '../../evil_baz',
+          }),
+          d.dir('lib', [
+            analysisOptionsFile(include: 'package:baz/analysis_options.yaml'),
+          ]),
+        ]),
+        d.dir('baz', [
+          d.dir('lib', [
+            analysisOptionsFile(pageWidth: 30),
+          ]),
+        ]),
+        d.dir('evil_baz', [
+          d.dir('lib', [
+            analysisOptionsFile(pageWidth: 666),
+          ]),
+        ]),
+      ]).create();
+
+      var cache = ConfigCache();
+      expect(await cache.findPageWidth(_expectedFile('dir/foo/main.dart')), 30);
+    });
+
+    test('nested package', () async {
+      // Both packages have a package config for resolving "bar" but each
+      // resolves to a different "bar" directory. Test that when resolving a
+      // "package:bar" include, we use the nearest surrounding package config.
+      await d.dir('dir', [
+        d.dir('outer', [
+          packageConfig('outer', packages: {
+            'bar': '../../outer_bar',
+          }),
+          d.dir('inner', [
+            packageConfig('inner', packages: {
+              'bar': '../../../inner_bar',
+            }),
+            analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
+            d.file('main.dart', 'f() {}'),
+          ]),
+          analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
+          d.file('main.dart', 'f() {}'),
+        ]),
+        d.dir('outer_bar', [
+          d.dir('lib', [analysisOptionsFile(pageWidth: 20)])
+        ]),
+        d.dir('inner_bar', [
+          d.dir('lib', [analysisOptionsFile(pageWidth: 30)])
+        ]),
+      ]).create();
+
+      var cache = ConfigCache();
+      expect(
+          await cache.findPageWidth(_expectedFile('dir/outer/main.dart')), 20);
+      expect(
+          await cache.findPageWidth(_expectedFile('dir/outer/inner/main.dart')),
+          30);
+    });
   });
 }
 
