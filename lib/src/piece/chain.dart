@@ -49,7 +49,7 @@ import 'piece.dart';
 ///           argument,
 ///           argument,
 ///         );
-class ChainPiece extends Piece {
+final class ChainPiece extends Piece {
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
   static const State _blockFormatTrailingCall = State(1, cost: 0);
 
@@ -248,7 +248,7 @@ class ChainPiece extends Piece {
 
 /// A method or getter call in a call chain, along with any postfix operations
 /// applies to it.
-class ChainCall {
+final class ChainCall {
   /// Piece for the call.
   Piece _call;
 

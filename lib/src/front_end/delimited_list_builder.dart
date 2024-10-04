@@ -18,7 +18,7 @@ import 'piece_factory.dart';
 /// delimiter token. Then call [add()] for each [AstNode] that is inside the
 /// delimiters. The [rightBracket()] with the closing delimiter and finally
 /// [build()] to get the resulting [ListPiece].
-class DelimitedListBuilder {
+final class DelimitedListBuilder {
   final PieceFactory _visitor;
 
   /// The opening bracket before the elements, if any.

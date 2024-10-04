@@ -8,7 +8,7 @@ import 'line_splitting/line_splitter.dart';
 
 /// Given a series of chunks, splits them into lines and writes the result to
 /// a buffer.
-class LineWriter {
+final class LineWriter {
   final _buffer = StringBuffer();
 
   final List<Chunk> _chunks;
@@ -208,7 +208,7 @@ class LineWriter {
 /// To cache formatted blocks, we just need to know which block it is (the
 /// index of its parent chunk) and how far it was indented when we formatted it
 /// (the starting column).
-class _BlockKey {
+final class _BlockKey {
   /// The index of the chunk in the surrounding chunk list that contains this
   /// block.
   final Chunk chunk;
@@ -229,7 +229,7 @@ class _BlockKey {
 }
 
 /// The result of formatting a series of chunks.
-class FormatResult {
+final class FormatResult {
   /// The resulting formatted text, including newlines and leading whitespace
   /// to reach the proper column.
   final String text;

@@ -14,7 +14,7 @@ typedef Constrain = void Function(Piece other, State constrainedState);
 /// roughly follows the AST but includes comments and is optimized for
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
-abstract class Piece {
+abstract base class Piece {
   /// The ordered list of all possible ways this piece could split.
   ///
   /// Piece subclasses should override this if they support being split in
@@ -199,7 +199,7 @@ abstract class Piece {
 ///
 /// Each state identifies one way that a piece can be split into multiple lines.
 /// Each piece determines how its states are interpreted.
-class State implements Comparable<State> {
+final class State implements Comparable<State> {
   static const unsplit = State(0, cost: 0);
 
   /// The maximally split state a piece can be in.

@@ -22,7 +22,7 @@ import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
 
 /// Dart source code formatter.
-class DartFormatter {
+final class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
   static final latestLanguageVersion = Version(3, 3, 0);

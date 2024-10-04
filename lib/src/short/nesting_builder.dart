@@ -12,7 +12,7 @@ import 'nesting_level.dart';
 /// stratified from each other. Expression nesting is always inside block
 /// indentation, which means it is an error to try to change the block
 /// indentation while any expression nesting is in effect.
-class NestingBuilder {
+final class NestingBuilder {
   /// The block indentation levels.
   ///
   /// This is tracked as a stack of numbers, each of which is the total number

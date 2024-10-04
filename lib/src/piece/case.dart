@@ -7,7 +7,7 @@ import '../constants.dart';
 import 'piece.dart';
 
 /// Piece for a case pattern, guard, and body in a switch expression.
-class CaseExpressionPiece extends Piece {
+final class CaseExpressionPiece extends Piece {
   /// Split after the `=>` before the body.
   static const State _beforeBody = State(1);
 

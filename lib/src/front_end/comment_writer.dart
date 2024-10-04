@@ -41,7 +41,7 @@ import '../comment_type.dart';
 /// construct. These get directly embedded in the [TextPiece] of the code being
 /// written. When that [TextPiece] is output later, it will include the comments
 /// as well.
-class CommentWriter {
+final class CommentWriter {
   final LineInfo _lineInfo;
 
   /// The tokens whose preceding comments have already been taken by calls to
@@ -147,7 +147,7 @@ class CommentWriter {
 
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
-class SourceComment {
+final class SourceComment {
   /// The text of the comment, including `//`, `/*`, and `*/`.
   final String text;
 
@@ -210,7 +210,7 @@ class SourceComment {
 /// * 2 newlines between `/* c2 */` and `/* c3 */`
 /// * Comment `/* c3 */`
 /// * 3 newlines between `/* c3 */` and `b`
-class CommentSequence extends ListBase<SourceComment> {
+final class CommentSequence extends ListBase<SourceComment> {
   static const CommentSequence empty = CommentSequence._([0], []);
 
   /// The number of newlines between a pair of comments or the preceding or

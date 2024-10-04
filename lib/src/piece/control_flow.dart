@@ -7,7 +7,7 @@ import 'piece.dart';
 
 /// A piece for an if statement or element, while statement, or for statement
 /// without a block body.
-class ControlFlowPiece extends Piece {
+final class ControlFlowPiece extends Piece {
   /// Whether this is an if statement versus if collection element.
   ///
   /// It's not meaningful for while and for statements/elements.
@@ -97,7 +97,7 @@ class ControlFlowPiece extends Piece {
 /// is the `else if (condition)` and the statement is the subsequent then
 /// branch. For the final `else` branch, if there is one, the [header] is just
 /// `else` and the statement is the else branch.
-class _Section {
+final class _Section {
   final Piece header;
   final Piece statement;
 

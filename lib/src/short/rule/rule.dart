@@ -9,7 +9,7 @@ import '../fast_hash.dart';
 
 /// A constraint that determines the different ways a related set of chunks may
 /// be split.
-class Rule extends FastHash {
+base class Rule with FastHash {
   /// The rule used for dummy chunks.
   static final Rule dummy = Rule.hard();
 
@@ -219,7 +219,7 @@ class Rule extends FastHash {
 }
 
 /// A rule that may contain splits which don't force it to split.
-class SplitContainingRule extends Rule {
+base class SplitContainingRule extends Rule {
   /// If true, then inner rules that are written will force this rule to split.
   ///
   /// Temporarily disabled while writing collection arguments so that they can
@@ -248,7 +248,7 @@ class SplitContainingRule extends Rule {
 ///
 /// If the first rule's selected value is within [min], [max] (inclusive), then
 /// the other rule's value is forced to be [otherValue].
-class _Constraint {
+final class _Constraint {
   /// The minimum of the range of values that rule can have to enable the
   /// constraint.
   final int min;

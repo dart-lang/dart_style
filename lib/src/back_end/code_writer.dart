@@ -20,7 +20,7 @@ import 'solution_cache.dart';
 /// an instance of this class. It has methods that the piece can call to add
 /// output text to the resulting code, recursively format child pieces, insert
 /// whitespace, etc.
-class CodeWriter {
+final class CodeWriter {
   final int _pageWidth;
 
   /// Previously cached formatted subtrees.
@@ -415,7 +415,7 @@ enum Whitespace {
 }
 
 /// A level of indentation in the indentation stack.
-class _Indent {
+final class _Indent {
   /// The total number of spaces of indentation.
   final int indent;
 

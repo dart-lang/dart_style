@@ -105,7 +105,7 @@ sealed class TextPiece extends Piece {
 
 /// [TextPiece] for non-comment source code that may have comments attached to
 /// it.
-class CodePiece extends TextPiece {
+final class CodePiece extends TextPiece {
   /// Pieces for any comments that appear immediately before this code.
   final List<Piece> _leadingComments;
 
@@ -147,7 +147,7 @@ class CodePiece extends TextPiece {
 }
 
 /// A [TextPiece] for a source code comment and the whitespace after it, if any.
-class CommentPiece extends TextPiece {
+final class CommentPiece extends TextPiece {
   /// Whitespace at the end of the comment.
   final Whitespace _trailingWhitespace;
 
@@ -170,7 +170,7 @@ class CommentPiece extends TextPiece {
 
 /// A piece for the special `// dart format off` and `// dart format on`
 /// comments that are used to opt a region of code out of being formatted.
-class EnableFormattingCommentPiece extends CommentPiece {
+final class EnableFormattingCommentPiece extends CommentPiece {
   /// Whether this comment disables formatting (`format off`) or re-enables it
   /// (`format on`).
   final bool _enabled;
@@ -195,7 +195,7 @@ class EnableFormattingCommentPiece extends CommentPiece {
 }
 
 /// A piece that writes a single space.
-class SpacePiece extends Piece {
+final class SpacePiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {}
 
@@ -212,7 +212,7 @@ class SpacePiece extends Piece {
 }
 
 /// A piece that writes a single newline.
-class NewlinePiece extends Piece {
+final class NewlinePiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {}
 

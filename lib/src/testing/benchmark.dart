@@ -6,7 +6,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-class Benchmark {
+final class Benchmark {
   /// Finds all of the benchmarks in the `benchmark/cases` directory, relative
   /// to [packageDirectory].
   static List<Benchmark> findAll(String packageDirectory) {

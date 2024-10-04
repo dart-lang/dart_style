@@ -36,7 +36,7 @@ import 'piece.dart';
 ///     if (obj
 ///         case pattern
 ///         when cond) ...
-class IfCasePiece extends Piece {
+final class IfCasePiece extends Piece {
   /// Split before the `when` guard clause.
   static const State _beforeWhen = State(1);
 

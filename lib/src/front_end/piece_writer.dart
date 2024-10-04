@@ -24,7 +24,7 @@ import 'sequence_builder.dart';
 ///
 /// Handles updating selection markers and attaching comments to the tokens
 /// before and after the comments.
-class PieceWriter {
+final class PieceWriter {
   final DartFormatter _formatter;
 
   final SourceCode _source;

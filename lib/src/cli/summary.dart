@@ -8,7 +8,7 @@ import '../source_code.dart';
 import 'formatter_options.dart';
 
 /// The kind of summary shown after all formatting is complete.
-class Summary {
+final class Summary {
   static const Summary none = Summary._();
 
   /// Creates a Summary that tracks how many files were formatted and the total
@@ -41,7 +41,7 @@ class Summary {
 }
 
 /// Tracks how many files were formatted and the total time.
-class _LineSummary extends Summary {
+final class _LineSummary extends Summary {
   final DateTime _start = DateTime.now();
 
   /// The number of processed files.
@@ -81,7 +81,7 @@ class _LineSummary extends Summary {
 }
 
 /// Reports how long it took for format each file.
-class _ProfileSummary implements Summary {
+final class _ProfileSummary implements Summary {
   /// The files that have been started but have not completed yet.
   ///
   /// Maps a file label to the time that it started being formatted.

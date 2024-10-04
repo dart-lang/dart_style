@@ -26,7 +26,7 @@ import 'source_comment.dart';
 
 /// Visits every token of the AST and passes all of the relevant bits to a
 /// [ChunkBuilder].
-class SourceVisitor extends ThrowingAstVisitor {
+final class SourceVisitor extends ThrowingAstVisitor {
   /// The builder for the block that is currently being visited.
   ChunkBuilder builder;
 
@@ -4298,7 +4298,7 @@ class SourceVisitor extends ThrowingAstVisitor {
 /// Used to share formatting logic between binary operators, logic operators,
 /// logic patterns, etc.
 // TODO: Remove this and just use a record when those are available.
-class BinaryNode {
+final class BinaryNode {
   final AstNode left;
   final Token operator;
   final AstNode right;

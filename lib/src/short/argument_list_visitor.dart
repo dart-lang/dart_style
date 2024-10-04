@@ -16,7 +16,7 @@ import 'source_visitor.dart';
 /// Helper class for [SourceVisitor] that handles visiting and writing an
 /// [ArgumentList], including all of the special code needed to handle
 /// block-formatted arguments.
-class ArgumentListVisitor {
+final class ArgumentListVisitor {
   final SourceVisitor _visitor;
 
   /// The "(" before the argument list.
@@ -291,7 +291,7 @@ class ArgumentListVisitor {
 /// when an argument list has block functions in the middle, the arguments
 /// before and after the functions are treated as separate independent lists.
 /// In that case, there will be two of these.
-class ArgumentSublist {
+final class ArgumentSublist {
   /// The full argument list from the AST.
   final List<Expression> _allArguments;
 

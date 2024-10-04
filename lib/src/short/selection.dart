@@ -4,7 +4,7 @@
 
 /// A region of text selected by an optional start and end index, measured in
 /// UTF-16 code units.
-abstract class Selection {
+abstract base class Selection {
   /// The chunk of text.
   String get text;
 

@@ -42,7 +42,7 @@ const _maxAttempts = 10000;
 ///     use it across different Solutions. This enables us to both divide and
 ///     conquer the Piece tree and solve portions separately, while also
 ///     reusing work across different solutions.
-class Solver {
+final class Solver {
   final SolutionCache _cache;
 
   final int _pageWidth;

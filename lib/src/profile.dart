@@ -10,7 +10,7 @@ import 'dart:math';
 /// Using a general-purpose sampling profiler is difficult with the formatter
 /// because so much of its code is recursive. Manual instrumentation can provide
 /// more concise, meaningful data.
-class Profile {
+final class Profile {
   /// Whether profiling is enabled.
   ///
   /// Enabling profiling has a noticeable effect on overall performance. When
