@@ -26,10 +26,12 @@ extension type Meters(int value) {
 }
 ''';
 
-    test('defaults to latest language version if omitted', () async {
+    test('uses latest language version if no surrounding package', () async {
       await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
 
-      var process = await runFormatterOnDir();
+      // Enable the experiment to be sure that we're opting in to the new
+      // package config search.
+      var process = await runFormatterOnDir(['--enable-experiment=tall-style']);
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
@@ -160,24 +162,26 @@ main() {
       ]).validate();
     });
 
-    test('malformed', () async {
+    test('use the latest version if the package config is malformed', () async {
       await d.dir('foo', [
         d.dir('.dart_tool', [
           d.file('package_config.json', 'this no good json is bad json'),
         ]),
-        d.file('main.dart', 'main() {}'),
+        d.file('main.dart', 'main() {var (a,b)=(1,2);}'),
       ]).create();
 
-      var path = p.join(d.sandbox, 'foo', 'main.dart');
       // TODO(rnystrom): Remove experiment flag when it ships.
-      var process =
-          await runFormatter([path, '--enable-experiment=tall-style']);
+      var process = await runFormatterOnDir(['--enable-experiment=tall-style']);
+      await process.shouldExit(0);
 
-      expect(
-          await process.stderr.next,
-          allOf(startsWith('Could not read package configuration for'),
-              contains(p.join('foo', 'main.dart'))));
-      await process.shouldExit(65);
+      // Formats the file.
+      await d.dir('foo', [
+        d.file('main.dart', '''
+main() {
+  var (a, b) = (1, 2);
+}
+''')
+      ]).validate();
     });
   });
 
@@ -232,6 +236,21 @@ main() {
       expect(await process.stdout.next, '    case 1 + 2:');
       expect(await process.stdout.next, '      break;');
       expect(await process.stdout.next, '  }');
+      expect(await process.stdout.next, '}');
+      await process.shouldExit(0);
+    });
+
+    test('use latest language version if no surrounding package', () async {
+      await d.dir('foo', []).create();
+
+      var process = await runFormatter(
+          ['--enable-experiment=tall-style', '--stdin-name=foo/main.dart']);
+      // Use some relatively recent syntax.
+      process.stdin.writeln('main() {var (a,b)=(1,2);}');
+      await process.stdin.close();
+
+      expect(await process.stdout.next, 'main() {');
+      expect(await process.stdout.next, '  var (a, b) = (1, 2);');
       expect(await process.stdout.next, '}');
       await process.shouldExit(0);
     });

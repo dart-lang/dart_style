@@ -35,12 +35,10 @@ Future<void> formatStdin(
   if (languageVersion == null && path != null && cache != null) {
     // We have a stdin-name, so look for a surrounding package config.
     languageVersion = await cache.findLanguageVersion(File(path), path);
-
-    // If the lookup failed, don't try to parse the code.
-    if (languageVersion == null) return;
   }
 
-  // If they didn't specify a version or a path, default to the latest.
+  // If they didn't specify a version or a path, or couldn't find a package
+  // surrounding the path, then default to the latest version.
   languageVersion ??= DartFormatter.latestLanguageVersion;
 
   // Determine the page width.
@@ -164,13 +162,11 @@ Future<bool> _processFile(
   var languageVersion = options.languageVersion;
   if (languageVersion == null && cache != null) {
     languageVersion = await cache.findLanguageVersion(file, displayPath);
-
-    // If the lookup failed, don't try to parse the file.
-    if (languageVersion == null) return false;
-  } else {
-    // If they didn't specify a version or a path, default to the latest.
-    languageVersion ??= DartFormatter.latestLanguageVersion;
   }
+
+  // If they didn't specify a version and we couldn't find a surrounding
+  // package, then default to the latest version.
+  languageVersion ??= DartFormatter.latestLanguageVersion;
 
   // Determine the page width.
   var pageWidth = options.pageWidth;
