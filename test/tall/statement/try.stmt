@@ -111,3 +111,32 @@ try {
 } on BarException {
   doSomething();
 }
+>>> Split inside catch clause without stack trace.
+try {
+  doSomething();
+} catch (someSurprisinglyLongVariableName) {
+  doSomething();
+}
+<<<
+try {
+  doSomething();
+} catch (
+  someSurprisinglyLongVariableName
+) {
+  doSomething();
+}
+>>> Split inside catch clause with stack trace.
+try {
+  doSomething();
+} catch (longErrorVariable, longStackTrace) {
+  doSomething();
+}
+<<<
+try {
+  doSomething();
+} catch (
+  longErrorVariable,
+  longStackTrace
+) {
+  doSomething();
+}
