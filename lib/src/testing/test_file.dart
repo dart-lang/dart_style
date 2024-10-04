@@ -34,7 +34,7 @@ Future<String> findTestDirectory() async {
 }
 
 /// A file containing a series of formatting tests.
-class TestFile {
+final class TestFile {
   /// Finds all test files in the given directory relative to the package's
   /// `test/` directory.
   static Future<List<TestFile>> listDirectory(String name) async {
@@ -174,7 +174,7 @@ class TestFile {
 }
 
 /// A single formatting test inside a [TestFile].
-class FormatTest {
+final class FormatTest {
   /// The unformatted input.
   final SourceCode input;
 

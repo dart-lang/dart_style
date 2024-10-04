@@ -34,7 +34,7 @@ import 'sequence_builder.dart';
 /// To avoid this class becoming a monolith, functionality is divided into a
 /// couple of mixins, one for each area of functionality. This class then
 /// contains only shared state and the visitor methods for the AST.
-class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
+final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   final PieceWriter pieces;
 

@@ -12,7 +12,7 @@ import '../rule/rule.dart';
 ///
 /// Internally, this then just stores the values in a sparse list whose indices
 /// are the indices of the rules.
-class RuleSet {
+final class RuleSet {
   List<int?> _values;
 
   RuleSet(int numRules) : this._(List.filled(numRules, null));
@@ -126,7 +126,7 @@ class RuleSet {
 /// Internally, this uses a list where each element corresponds to the column
 /// of the chunk at that index in the chunk list, or `-1` if that chunk did not
 /// split. This had about a 10% perf improvement over using a [Set] of splits.
-class SplitSet {
+final class SplitSet {
   final List<int> _columns;
 
   /// The cost of the solution that led to these splits.

@@ -19,7 +19,7 @@ import 'rule.dart';
 ///
 /// If there is only one type argument, the last two cases collapse and there
 /// are only two values.
-class TypeArgumentRule extends Rule {
+final class TypeArgumentRule extends Rule {
   /// The chunks prior to each positional type argument.
   final List<Chunk> _arguments = [];
 

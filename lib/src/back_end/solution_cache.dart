@@ -22,7 +22,7 @@ import 'solver.dart';
 /// the same child Piece and wanting to format it separately with the same
 /// indentation. When that happens, sharing this cache allows us to reuse that
 /// cached subtree Solution.
-class SolutionCache {
+final class SolutionCache {
   final _cache = <_Key, Solution>{};
 
   /// Returns a previously cached solution for formatting [root] with leading

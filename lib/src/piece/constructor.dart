@@ -48,7 +48,7 @@ import 'piece.dart';
 ///     ]) : firstInitializer = 1,
 ///          second = 2;
 ///     //  ^ Five spaces of indentation.
-class ConstructorPiece extends Piece {
+final class ConstructorPiece extends Piece {
   static const _splitBeforeInitializers = State(1, cost: 1);
 
   static const _splitBetweenInitializers = State(2, cost: 2);

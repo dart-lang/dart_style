@@ -5,7 +5,7 @@ import '../back_end/code_writer.dart';
 import 'piece.dart';
 
 /// A simple piece that just writes its child pieces one after the other.
-class AdjacentPiece extends Piece {
+final class AdjacentPiece extends Piece {
   final List<Piece> pieces;
 
   AdjacentPiece(this.pieces);

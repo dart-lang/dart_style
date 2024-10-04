@@ -41,7 +41,7 @@ import 'piece_factory.dart';
 ///
 /// This lets us create a single [ChainPiece] for the entire series of dotted
 /// operations, so that we can control splitting them or not as a unit.
-class ChainBuilder {
+final class ChainBuilder {
   final PieceFactory _visitor;
 
   /// The outermost expression being converted to a chain.

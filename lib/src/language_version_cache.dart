@@ -23,7 +23,7 @@ import 'profile.dart';
 /// looking for package configs for each file as it did formatting if we don't
 /// cache. Caching makes it ~10x faster to find the language version for each
 /// file.)
-class LanguageVersionCache {
+final class LanguageVersionCache {
   /// The previously cached default language version for all files immediately
   /// within a given directory.
   ///
