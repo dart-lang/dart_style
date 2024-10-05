@@ -66,7 +66,10 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  SourceCode run(SourceCode source, AstNode node) {
+  ///
+  /// If there is a `// dart format width=123` comment before the formatted
+  /// code, then [pageWidthFromComment] is that width.
+  SourceCode run(SourceCode source, AstNode node, [int? pageWidthFromComment]) {
     Profile.begin('AstNodeVisitor.run()');
 
     Profile.begin('AstNodeVisitor build Piece tree');
@@ -123,7 +126,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     Profile.end('AstNodeVisitor build Piece tree');
 
     // Finish writing and return the complete result.
-    var result = pieces.finish(source, unitPiece);
+    var result = pieces.finish(source, unitPiece, pageWidthFromComment);
 
     Profile.end('AstNodeVisitor.run()');
 
