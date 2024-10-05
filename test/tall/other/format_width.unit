@@ -1,118 +1,116 @@
 40 columns                              |
 ### Tests for the comment to set formatting width.
 >>> Comment sets page width.
-main() {
-  // dart format width=30
-  fitsUnsplitAt40   +   butNotAt30;
-}
-<<<
-main() {
-  // dart format width=30
-  fitsUnsplitAt40 +
-      butNotAt30;
-}
->>> Comment anywhere affects all code.
-main() {
-  fitsUnsplitAt40   +   butNotAt30;
-}
 // dart format width=30
+main() {
+  fitsUnsplitAt40   +   butNotAt30;
+}
 <<<
+// dart format width=30
 main() {
   fitsUnsplitAt40 +
       butNotAt30;
 }
-
-// dart format width=30
->>> If multiple comments, first one wins.
+>>> Comment only takes effect if it appears before code.
 main() {
   // dart format width=30
-  // dart format width=60
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
 main() {
   // dart format width=30
-  // dart format width=60
+  fitsUnsplitAt40 + butNotAt30;
+}
+>>> If there are multiple comments, first one wins.
+// dart format width=30
+// dart format width=60
+main() {
+  fitsUnsplitAt40   +   butNotAt30;
+}
+<<<
+// dart format width=30
+// dart format width=60
+main() {
   fitsUnsplitAt40 +
       butNotAt30;
 }
 >>> Does nothing if width is not an integer.
+// dart format width=wat
 main() {
-  // dart format width=wat
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+// dart format width=wat
 main() {
-  // dart format width=wat
   fitsUnsplitAt40 + butNotAt30;
 }
 >>> Can't have trailing text.
+// dart format width=30 some more text
 main() {
-  // dart format width=30 some more text
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+// dart format width=30 some more text
 main() {
-  // dart format width=30 some more text
   fitsUnsplitAt40 + butNotAt30;
 }
 >>> Whitespace must match exactly.
+//dart format width=30
 main() {
-  //dart format width=30
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+//dart format width=30
 main() {
-  //dart format width=30
   fitsUnsplitAt40 + butNotAt30;
 }
 >>> Whitespace must match exactly.
+// dart   format width=30
 main() {
-  // dart   format width=30
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+// dart   format width=30
 main() {
-  // dart   format width=30
   fitsUnsplitAt40 + butNotAt30;
 }
 >>> Whitespace must match exactly.
+// dart format width = 30
 main() {
-  // dart format width = 30
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+// dart format width = 30
 main() {
-  // dart format width = 30
   fitsUnsplitAt40 + butNotAt30;
 }
->>> Can't be doc comment.
+>>> Can't be a doc comment.
+/// dart format width=30
 main() {
-  /// dart format width=30
   fitsUnsplitAt40 + butNotAt30;
 }
 <<<
+/// dart format width=30
 main() {
-  /// dart format width=30
   fitsUnsplitAt40 + butNotAt30;
 }
->>> Can't be nested inside other comment.
+>>> Can't be nested inside another comment.
+/* // dart format width=30 */
 main() {
-  /* // dart format width=30 */
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+/* // dart format width=30 */
 main() {
-  /* // dart format width=30 */
   fitsUnsplitAt40 + butNotAt30;
 }
->>> Can't be inside string literal.
+>>> Can't be inside a string literal.
+var c = '// dart format width=30';
 main() {
-  var c = '// dart format width=30';
   fitsUnsplitAt40   +   butNotAt30;
 }
 <<<
+var c = '// dart format width=30';
 main() {
-  var c = '// dart format width=30';
   fitsUnsplitAt40 + butNotAt30;
 }

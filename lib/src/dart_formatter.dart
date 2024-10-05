@@ -21,6 +21,11 @@ import 'short/source_visitor.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
 
+/// Regular expression that matches a format width comment like:
+///
+///     // dart format width=123
+final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
+
 /// Dart source code formatter.
 class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
@@ -178,8 +183,21 @@ class DartFormatter {
 
     SourceCode output;
     if (experimentFlags.contains(tallStyleExperimentFlag)) {
+      // Look for a page width comment before the code.
+      int? pageWidthFromComment;
+      for (Token? comment = node.beginToken.precedingComments;
+          comment != null;
+          comment = comment.next) {
+        if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
+          // If integer parsing fails for some reason, the returned `null`
+          // means we correctly ignore the comment.
+          pageWidthFromComment = int.tryParse(match[1]!);
+          break;
+        }
+      }
+
       var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(unitSourceCode, node);
+      output = visitor.run(unitSourceCode, node, pageWidthFromComment);
     } else {
       var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(node);

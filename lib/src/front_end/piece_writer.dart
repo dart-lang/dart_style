@@ -390,7 +390,11 @@ class PieceWriter {
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
-  SourceCode finish(SourceCode source, Piece rootPiece) {
+  ///
+  /// If there is a `// dart format width=123` comment before the formatted
+  /// code, then [pageWidthFromComment] is that width.
+  SourceCode finish(
+      SourceCode source, Piece rootPiece, int? pageWidthFromComment) {
     if (debug.tracePieceBuilder) {
       debug.log(debug.pieceTree(rootPiece));
     }
@@ -399,7 +403,7 @@ class PieceWriter {
 
     var cache = SolutionCache();
     var solver = Solver(cache,
-        pageWidth: _comments.pageWidthFromComment ?? _formatter.pageWidth,
+        pageWidth: pageWidthFromComment ?? _formatter.pageWidth,
         leadingIndent: _formatter.indent);
     var solution = solver.format(rootPiece);
     var output = solution.code.build(source, _formatter.lineEnding);
