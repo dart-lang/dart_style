@@ -69,7 +69,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   ///
   /// If there is a `// dart format width=123` comment before the formatted
   /// code, then [pageWidthFromComment] is that width.
-  SourceCode run(SourceCode source, AstNode node, int? pageWidthFromComment) {
+  SourceCode run(SourceCode source, AstNode node, [int? pageWidthFromComment]) {
     Profile.begin('AstNodeVisitor.run()');
 
     Profile.begin('AstNodeVisitor build Piece tree');
