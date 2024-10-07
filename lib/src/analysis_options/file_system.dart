@@ -8,18 +8,18 @@
 /// files.
 abstract interface class FileSystem {
   /// Returns `true` if there is a file at [path].
-  Future<bool> fileExists(FileSystemPath path);
+  Future<bool> fileExists(covariant FileSystemPath path);
 
   /// Joins [from] and [to] into a single path with appropriate path separators.
   ///
   /// Note that [to] may be an absolute path implementation of [join()] should
   /// be prepared to handle that by ignoring [from].
-  Future<FileSystemPath> join(FileSystemPath from, String to);
+  Future<FileSystemPath> join(covariant FileSystemPath from, String to);
 
   /// Returns a path for the directory containing [path].
   ///
   /// If [path] is a root path, then returns `null`.
-  Future<FileSystemPath?> parentDirectory(FileSystemPath path);
+  Future<FileSystemPath?> parentDirectory(covariant FileSystemPath path);
 
   /// Returns the series of directories surrounding [path], from innermost out.
   ///
@@ -30,7 +30,7 @@ abstract interface class FileSystem {
 
   /// Reads the contents of the file as [path], which should exist and contain
   /// UTF-8 encoded text.
-  Future<String> readFile(FileSystemPath path);
+  Future<String> readFile(covariant FileSystemPath path);
 }
 
 /// Abstraction over a file or directory in a [FileSystem].

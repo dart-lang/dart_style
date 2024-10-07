@@ -14,27 +14,29 @@ class IOFileSystem implements FileSystem {
       IOFileSystemPath._(path);
 
   @override
-  Future<bool> fileExists(FileSystemPath path) => File(path.ioPath).exists();
+  Future<bool> fileExists(covariant IOFileSystemPath path) =>
+      File(path.path).exists();
 
   @override
-  Future<FileSystemPath> join(FileSystemPath from, String to) =>
-      makePath(p.join(from.ioPath, to));
+  Future<FileSystemPath> join(covariant IOFileSystemPath from, String to) =>
+      makePath(p.join(from.path, to));
 
   @override
-  Future<FileSystemPath?> parentDirectory(FileSystemPath path) async {
+  Future<FileSystemPath?> parentDirectory(
+      covariant IOFileSystemPath path) async {
     // Make [path] absolute (if not already) so that we can walk outside of the
     // literal path string passed.
-    var result = p.dirname(p.absolute(path.ioPath));
+    var result = p.dirname(p.absolute(path.path));
 
     // If the parent directory is the same as [path], we must be at the root.
-    if (result == path.ioPath) return null;
+    if (result == path.path) return null;
 
     return makePath(result);
   }
 
   @override
-  Future<String> readFile(FileSystemPath path) =>
-      File(path.ioPath).readAsString();
+  Future<String> readFile(covariant IOFileSystemPath path) =>
+      File(path.path).readAsString();
 }
 
 /// An abstraction over a file path string, used by [IOFileSystem].
@@ -45,8 +47,4 @@ class IOFileSystemPath implements FileSystemPath {
   final String path;
 
   IOFileSystemPath._(this.path);
-}
-
-extension on FileSystemPath {
-  String get ioPath => (this as IOFileSystemPath).path;
 }

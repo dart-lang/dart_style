@@ -9,7 +9,7 @@ import 'package:test/test.dart';
 import '../utils.dart';
 
 void main() {
-  group('findAnalysisOptionsoptions()', () {
+  group('findAnalysisOptions()', () {
     test('returns an empty map if no analysis options is found', () async {
       var testFS = TestFileSystem();
       var options =
@@ -42,7 +42,8 @@ void main() {
         () async {
       var testFS = TestFileSystem({
         'dir|analysis_options.yaml': analysisOptions(pageWidth: 120),
-        'dir|sub|analysis_options.yaml': analysisOptions()
+        'dir|sub|analysis_options.yaml':
+            analysisOptions(other: {'other': 'stuff'})
       });
 
       var options =
@@ -59,6 +60,14 @@ void main() {
       var options =
           await readAnalysisOptions(testFS, TestFileSystemPath('file.yaml'));
       expect(_pageWidth(options), 120);
+    });
+
+    test('yields an empty map if the file isn\'t a YAML map', () async {
+      var testFS = TestFileSystem({'file.yaml': '123'});
+      var options =
+          await readAnalysisOptions(testFS, TestFileSystemPath('file.yaml'));
+      expect(options, isA<Map>());
+      expect(options, isEmpty);
     });
 
     test('merges included files', () async {

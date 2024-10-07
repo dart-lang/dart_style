@@ -57,16 +57,15 @@ Future<AnalysisOptions> findAnalysisOptions(
 /// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
 /// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> readAnalysisOptions(
-        FileSystem fileSystem, FileSystemPath optionsPath,
-        {ResolvePackageUri? resolvePackageUri}) async =>
-    _readAnalysisOptions(fileSystem, resolvePackageUri, optionsPath);
-
-Future<AnalysisOptions> _readAnalysisOptions(FileSystem fileSystem,
-    ResolvePackageUri? resolvePackageUri, FileSystemPath optionsPath) async {
+    FileSystem fileSystem, FileSystemPath optionsPath,
+    {ResolvePackageUri? resolvePackageUri}) async {
   var yaml = loadYamlNode(await fileSystem.readFile(optionsPath));
 
-  // Lower the YAML to a regular map.
+  // If for some reason the YAML isn't a map, consider it malformed and yield
+  // a default empty map.
   if (yaml is! YamlMap) return const {};
+
+  // Lower the YAML to a regular map.
   var options = {...yaml};
 
   // If there is an `include:` key, then load that and merge it with these
@@ -96,8 +95,8 @@ Future<AnalysisOptions> _readAnalysisOptions(FileSystem fileSystem,
     // options file.
     var includePath = await fileSystem.join(
         (await fileSystem.parentDirectory(optionsPath))!, include);
-    var includeFile =
-        await _readAnalysisOptions(fileSystem, resolvePackageUri, includePath);
+    var includeFile = await readAnalysisOptions(fileSystem, includePath,
+        resolvePackageUri: resolvePackageUri);
     options = merge(includeFile, options) as AnalysisOptions;
   }
 
