@@ -3,3 +3,30 @@ include: package:dart_flutter_team_lints/analysis_options.yaml
 analyzer:
   errors:
     comment_references: ignore
+linter:
+  rules:
+    # Either "unnecessary_final" or "prefer_final_locals" should be used so
+    # that the codebase consistently uses either "var" or "final" for local
+    # variables. Choosing the former because the latter also requires "final"
+    # even on local variables and pattern variables that have type annotations,
+    # as in:
+    #
+    #     final Object upcast = 123;
+    #     //^^^ Unnecessarily verbose.
+    #
+    #     switch (json) {
+    #       case final List list: ...
+    #         // ^^^^^ Unnecessarily verbose.
+    #     }
+    #
+    # Using "unnecessary_final" allows those to be:
+    #
+    #     Object upcast = 123;
+    #
+    #     switch (json) {
+    #       case List list: ...
+    #     }
+    #
+    # Also, making local variables non-final is consistent with parameters,
+    # which are also non-final.
+    - unnecessary_final

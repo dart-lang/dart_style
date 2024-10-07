@@ -24,8 +24,11 @@ final class FormatterOptions {
   final int indent;
 
   /// The number of columns that formatted output should be constrained to fit
-  /// within.
-  final int pageWidth;
+  /// within or `null` if not specified.
+  ///
+  /// If omitted, the formatter defaults to a page width of
+  /// [DartFormatter.defaultPageWidth].
+  final int? pageWidth;
 
   /// Whether symlinks should be traversed when formatting a directory.
   final bool followLinks;
@@ -49,7 +52,7 @@ final class FormatterOptions {
   FormatterOptions(
       {this.languageVersion,
       this.indent = 0,
-      this.pageWidth = 80,
+      this.pageWidth,
       this.followLinks = false,
       this.show = Show.changed,
       this.output = Output.write,

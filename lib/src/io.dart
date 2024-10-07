@@ -6,13 +6,12 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart';
 
 import 'cli/formatter_options.dart';
+import 'config_cache.dart';
 import 'constants.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
-import 'language_version_cache.dart';
 import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
@@ -26,20 +25,34 @@ Future<void> formatStdin(
     selectionLength = selection[1];
   }
 
-  var languageVersion = options.languageVersion;
-  if (languageVersion == null && path != null) {
-    // TODO(rnystrom): Remove the experiment check when the experiment ships.
-    if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
-      var cache = LanguageVersionCache();
-      languageVersion = await cache.find(File(path), path);
+  ConfigCache? cache;
+  // TODO(rnystrom): Remove the experiment check when the experiment ships.
+  if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
+    cache = ConfigCache();
+  }
 
-      // If the lookup failed, don't try to parse the code.
-      if (languageVersion == null) return;
-    }
+  var languageVersion = options.languageVersion;
+  if (languageVersion == null && path != null && cache != null) {
+    // We have a stdin-name, so look for a surrounding package config.
+    languageVersion = await cache.findLanguageVersion(File(path), path);
+
+    // If the lookup failed, don't try to parse the code.
+    if (languageVersion == null) return;
   }
 
   // If they didn't specify a version or a path, default to the latest.
   languageVersion ??= DartFormatter.latestLanguageVersion;
+
+  // Determine the page width.
+  var pageWidth = options.pageWidth;
+  if (pageWidth == null && path != null && cache != null) {
+    // We have a stdin-name, so look for a surrounding analyisis_options.yaml.
+    pageWidth = await cache.findPageWidth(File(path));
+  }
+
+  // Use a default page width if we don't have a specified one and couldn't
+  // find a configured one.
+  pageWidth ??= DartFormatter.defaultPageWidth;
 
   var name = path ?? 'stdin';
 
@@ -49,7 +62,7 @@ Future<void> formatStdin(
     var formatter = DartFormatter(
         languageVersion: languageVersion!,
         indent: options.indent,
-        pageWidth: options.pageWidth,
+        pageWidth: pageWidth,
         experimentFlags: options.experimentFlags);
     try {
       options.beforeFile(null, name);
@@ -81,12 +94,11 @@ $stack''');
 Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   // If the user didn't specify a language version, then look for surrounding
   // package configs so we know what language versions to use for the files.
-  LanguageVersionCache? cache;
-  if (options.languageVersion == null) {
-    // TODO(rnystrom): Remove the experiment check when the experiment ships.
-    if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
-      cache = LanguageVersionCache();
-    }
+  ConfigCache? cache;
+  // TODO(rnystrom): Remove the experiment check when the experiment ships and
+  // make cache non-nullable.
+  if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
+    cache = ConfigCache();
   }
 
   for (var path in paths) {
@@ -114,8 +126,8 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
 ///
 /// Returns `true` if successful or `false` if an error occurred in any of the
 /// files.
-Future<bool> _processDirectory(LanguageVersionCache? cache,
-    FormatterOptions options, Directory directory) async {
+Future<bool> _processDirectory(
+    ConfigCache? cache, FormatterOptions options, Directory directory) async {
   var success = true;
 
   var entries =
@@ -144,28 +156,36 @@ Future<bool> _processDirectory(LanguageVersionCache? cache,
 ///
 /// Returns `true` if successful or `false` if an error occurred.
 Future<bool> _processFile(
-    LanguageVersionCache? cache, FormatterOptions options, File file,
+    ConfigCache? cache, FormatterOptions options, File file,
     {String? displayPath}) async {
   displayPath ??= file.path;
 
-  // Determine what language version to use. If we have a language version
-  // cache, that implies that we should use the surrounding package config to
-  // infer the file's language version. Otherwise, use the user-provided
-  // version.
-  Version? languageVersion;
-  if (cache != null) {
-    languageVersion = await cache.find(file, displayPath);
+  // Determine what language version to use.
+  var languageVersion = options.languageVersion;
+  if (languageVersion == null && cache != null) {
+    languageVersion = await cache.findLanguageVersion(file, displayPath);
 
     // If the lookup failed, don't try to parse the file.
     if (languageVersion == null) return false;
   } else {
-    languageVersion = options.languageVersion;
+    // If they didn't specify a version or a path, default to the latest.
+    languageVersion ??= DartFormatter.latestLanguageVersion;
   }
 
+  // Determine the page width.
+  var pageWidth = options.pageWidth;
+  if (pageWidth == null && cache != null) {
+    pageWidth = await cache.findPageWidth(file);
+  }
+
+  // Use a default page width if we don't have a specified one and couldn't
+  // find a configured one.
+  pageWidth ??= DartFormatter.defaultPageWidth;
+
   var formatter = DartFormatter(
-      languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
+      languageVersion: languageVersion,
       indent: options.indent,
-      pageWidth: options.pageWidth,
+      pageWidth: pageWidth,
       experimentFlags: options.experimentFlags);
 
   try {

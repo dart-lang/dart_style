@@ -32,6 +32,10 @@ final class DartFormatter {
   /// version of the formatter.
   static final latestLanguageVersion = Version(3, 3, 0);
 
+  /// The page width that the formatter tries to fit code inside if no other
+  /// width is specified.
+  static const defaultPageWidth = 80;
+
   /// The Dart language version that formatted code should be parsed as.
   ///
   /// Note that a `// @dart=` comment inside the code overrides this.
@@ -69,7 +73,7 @@ final class DartFormatter {
       int? pageWidth,
       int? indent,
       List<String>? experimentFlags})
-      : pageWidth = pageWidth ?? 80,
+      : pageWidth = pageWidth ?? defaultPageWidth,
         indent = indent ?? 0,
         experimentFlags = [...?experimentFlags];
 
