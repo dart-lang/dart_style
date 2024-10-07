@@ -14,7 +14,7 @@ import 'output.dart';
 import 'show.dart';
 import 'summary.dart';
 
-class FormatCommand extends Command<int> {
+final class FormatCommand extends Command<int> {
   @override
   String get name => 'format';
 

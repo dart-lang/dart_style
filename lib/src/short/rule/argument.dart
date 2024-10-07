@@ -5,7 +5,7 @@ import '../chunk.dart';
 import 'rule.dart';
 
 /// Base class for a rule that handles argument or parameter lists.
-abstract class ArgumentRule extends SplitContainingRule {
+abstract base class ArgumentRule extends SplitContainingRule {
   /// The chunks prior to each positional argument.
   final List<Chunk?> _arguments = [];
 
@@ -33,7 +33,7 @@ abstract class ArgumentRule extends SplitContainingRule {
 /// Finally, if there are collection arguments, there is another value that
 /// splits before all of the non-collection arguments, but does not split
 /// before the collections, so that they can split internally.
-class PositionalRule extends ArgumentRule {
+final class PositionalRule extends ArgumentRule {
   /// The number of leading collection arguments.
   ///
   /// This and [_trailingCollections] cannot both be positive. If every
@@ -163,7 +163,7 @@ class PositionalRule extends ArgumentRule {
 /// * Do not split at all.
 /// * Split only before first argument.
 /// * Split before all arguments.
-class NamedRule extends ArgumentRule {
+final class NamedRule extends ArgumentRule {
   @override
   int get numValues => 3;
 

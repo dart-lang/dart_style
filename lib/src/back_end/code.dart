@@ -177,7 +177,7 @@ enum _Marker { start, end }
 
 /// Traverses a [Code] tree and produces the final string of output code and
 /// the selection markers, if any.
-class _StringBuilder {
+final class _StringBuilder {
   /// Pre-calculated whitespace strings for various common levels of
   /// indentation.
   ///

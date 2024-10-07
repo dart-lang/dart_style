@@ -24,7 +24,7 @@ final _trailingIdentifierChar = RegExp(r'[a-zA-Z0-9_]$');
 /// Keeps track of leading indentation, expression nesting, and all of the hairy
 /// code required to seamlessly integrate existing comments into the pure
 /// output produced by [SourceVisitor].
-class ChunkBuilder {
+final class ChunkBuilder {
   final DartFormatter _formatter;
 
   /// The builder for the code surrounding the block that this writer is for, or

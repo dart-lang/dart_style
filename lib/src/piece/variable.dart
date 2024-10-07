@@ -29,7 +29,7 @@ import 'piece.dart';
 ///     VeryLongTypeName
 ///     longVariableName = initializer,
 ///     anotherVariable = anotherInitializer;
-class VariablePiece extends Piece {
+final class VariablePiece extends Piece {
   /// Split between each variable in a multiple variable declaration.
   static const State _betweenVariables = State(1);
 

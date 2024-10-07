@@ -105,7 +105,7 @@ Future<AnalysisOptions> readAnalysisOptions(
 
 /// Exception thrown when an analysis options file contains a "package:" URI in
 /// an include and resolving the URI to a file path failed.
-class PackageResolutionException implements Exception {
+final class PackageResolutionException implements Exception {
   final String _message;
 
   PackageResolutionException(this._message);

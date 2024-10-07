@@ -61,7 +61,7 @@ import 'piece.dart';
 ///
 /// This ensures that when any wrapping occurs, the keywords are always at the
 /// beginning of the line.
-class ClausePiece extends Piece {
+final class ClausePiece extends Piece {
   /// State where we split between the clauses but not before the first one.
   static const State _betweenClauses = State(1);
 

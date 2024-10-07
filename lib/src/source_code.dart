@@ -4,7 +4,7 @@
 
 /// Describes a chunk of source code that is to be formatted or has been
 /// formatted.
-class SourceCode {
+final class SourceCode {
   /// The [uri] where the source code is from.
   ///
   /// Used in error messages if the code cannot be parsed.

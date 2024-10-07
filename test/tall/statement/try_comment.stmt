@@ -27,7 +27,7 @@ try {
   body;
 } catch (
   // comment
-  e,
+  e
 ) {
   print(e);
 }
@@ -38,7 +38,7 @@ try { body; } catch (e// comment
 try {
   body;
 } catch (
-  e, // comment
+  e // comment
 ) {
   print(e);
 }

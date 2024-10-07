@@ -6,7 +6,7 @@ import 'selection.dart';
 
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
-class SourceComment extends Selection {
+final class SourceComment extends Selection {
   /// The text of the comment, including `//`, `/*`, and `*/`.
   @override
   final String text;

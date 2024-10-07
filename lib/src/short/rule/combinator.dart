@@ -42,7 +42,7 @@ import 'rule.dart';
 ///
 /// This ensures that when any wrapping occurs, the keywords are always at
 /// the beginning of the line.
-class CombinatorRule extends Rule {
+final class CombinatorRule extends Rule {
   /// The set of chunks before the combinators.
   final _combinators = <Chunk>{};
 

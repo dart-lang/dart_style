@@ -8,7 +8,7 @@ import 'piece.dart';
 /// A piece for a series of binary expressions at the same precedence, like:
 ///
 ///     a + b + c
-class InfixPiece extends Piece {
+final class InfixPiece extends Piece {
   /// The series of operands.
   ///
   /// Since we don't split on both sides of the operator, the operators will be

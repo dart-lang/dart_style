@@ -22,7 +22,7 @@ import 'rule_set.dart';
 /// From a given solve state, we can explore the search tree to more refined
 /// solve states by producing new ones that add more bound rules to the current
 /// state.
-class SolveState {
+final class SolveState {
   final LineSplitter _splitter;
   final RuleSet _ruleValues;
 

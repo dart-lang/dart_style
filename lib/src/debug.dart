@@ -277,7 +277,7 @@ String pieceTree(Piece piece) {
 }
 
 /// A stringified representation of a tree of pieces for debug output.
-class _PieceDebugTree {
+final class _PieceDebugTree {
   final String label;
   final List<_PieceDebugTree> children = [];
 

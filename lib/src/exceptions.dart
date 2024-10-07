@@ -7,7 +7,7 @@ import 'package:source_span/source_span.dart';
 
 /// Thrown when one or more errors occurs while parsing the code to be
 /// formatted.
-class FormatterException implements Exception {
+final class FormatterException implements Exception {
   /// The [AnalysisError]s that occurred.
   final List<AnalysisError> errors;
 
@@ -53,7 +53,7 @@ class FormatterException implements Exception {
 
 /// Exception thrown when the internal sanity check that only whitespace
 /// changes are made fails.
-class UnexpectedOutputException implements Exception {
+final class UnexpectedOutputException implements Exception {
   /// The source being formatted.
   final String _input;
 

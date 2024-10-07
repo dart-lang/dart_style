@@ -67,6 +67,12 @@
   If `--stdin-name` and `--language-version` are both omitted, then parses
   stdin using the latest supported language version.
 
+* **Apply class modifiers to API classes.** The dart_style package exposes only
+  a few classes in its public API: `DartFormatter`, `SourceCode`,
+  `FormatterException`, and `UnexpectedOutputException`. None were ever
+  intended to be extended or implemented. They are now all marked `final` to
+  make that intention explicit.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be

@@ -34,7 +34,7 @@ import 'sequence_builder.dart';
 /// To avoid this class becoming a monolith, functionality is divided into a
 /// couple of mixins, one for each area of functionality. This class then
 /// contains only shared state and the visitor methods for the AST.
-class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
+final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   final PieceWriter pieces;
 
@@ -66,7 +66,10 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  SourceCode run(SourceCode source, AstNode node) {
+  ///
+  /// If there is a `// dart format width=123` comment before the formatted
+  /// code, then [pageWidthFromComment] is that width.
+  SourceCode run(SourceCode source, AstNode node, [int? pageWidthFromComment]) {
     Profile.begin('AstNodeVisitor.run()');
 
     Profile.begin('AstNodeVisitor build Piece tree');
@@ -123,7 +126,7 @@ class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     Profile.end('AstNodeVisitor build Piece tree');
 
     // Finish writing and return the complete result.
-    var result = pieces.finish(source, unitPiece);
+    var result = pieces.finish(source, unitPiece, pageWidthFromComment);
 
     Profile.end('AstNodeVisitor.run()');
 

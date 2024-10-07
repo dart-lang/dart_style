@@ -9,7 +9,7 @@ import 'package:path/path.dart' as p;
 import 'file_system.dart';
 
 /// An implementation of [FileSystem] using `dart:io`.
-class IOFileSystem implements FileSystem {
+final class IOFileSystem implements FileSystem {
   Future<IOFileSystemPath> makePath(String path) async =>
       IOFileSystemPath._(path);
 
@@ -42,7 +42,7 @@ class IOFileSystem implements FileSystem {
 /// An abstraction over a file path string, used by [IOFileSystem].
 ///
 /// To create an instance of this, use [IOFileSystem.makePath()].
-class IOFileSystemPath implements FileSystemPath {
+final class IOFileSystemPath implements FileSystemPath {
   /// The underlying physical file system path.
   final String path;
 

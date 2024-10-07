@@ -30,7 +30,7 @@ import 'selection.dart';
 ///
 /// A split controls the leading spacing of the line before the chunk's text,
 /// both block-based [indent] and expression-wrapping-based [nesting].
-class Chunk extends Selection {
+final class Chunk extends Selection {
   /// The literal text output for the chunk.
   @override
   String get text => _text;
@@ -195,7 +195,7 @@ class Chunk extends Selection {
 ///      |  |- Chunk         "element,"
 ///      |  '- (text)      "];"
 ///      '- (text)       "}"
-class BlockChunk extends Chunk {
+final class BlockChunk extends Chunk {
   /// If this block is for a collection literal in an argument list, this will
   /// be the chunk preceding this literal argument.
   ///
@@ -241,7 +241,7 @@ class BlockChunk extends Chunk {
 
 /// The in-progress state for a [Span] that has been started but has not yet
 /// been completed.
-class OpenSpan {
+final class OpenSpan {
   /// Index of the first chunk contained in this span.
   final int start;
 
@@ -268,7 +268,7 @@ class OpenSpan {
 /// Spans can be marked during processing in an algorithm but should be left
 /// unmarked when the algorithm finishes to make marking work in subsequent
 /// calls.
-class Span extends FastHash with Markable {
+final class Span with FastHash, Markable {
   /// The cost applied when the span is split across multiple lines or `null`
   /// if the span is for a multisplit.
   final int cost;
