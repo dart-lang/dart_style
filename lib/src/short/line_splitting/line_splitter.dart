@@ -93,7 +93,7 @@ const _maxAttempts = 5000;
 /// require a lot of exploring to find an optimal solution. To make that fast,
 /// this code is carefully profiled and optimized. If you modify this, make
 /// sure to test against the benchmark to ensure you don't regress performance.
-class LineSplitter {
+final class LineSplitter {
   final LineWriter writer;
 
   /// The list of chunks being split.

@@ -28,7 +28,7 @@ import 'profile.dart';
 ///
 /// This class also directly caches the language versions and page widths that
 /// are then inferred from the package config and analysis_options.yaml files.
-class ConfigCache {
+final class ConfigCache {
   /// The previously cached package config for all files immediately within a
   /// given directory.
   final Map<String, PackageConfig?> _directoryConfigs = {};

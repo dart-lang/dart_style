@@ -24,7 +24,7 @@ import 'marking_scheme.dart';
 /// NestingLEvels can be marked during processing in an algorithm but should be
 /// left unmarked when the algorithm finishes to make marking work in subsequent
 /// calls.
-class NestingLevel extends FastHash with Markable {
+final class NestingLevel with FastHash, Markable {
   /// The nesting level surrounding this one, or `null` if this is represents
   /// top level code in a block.
   final NestingLevel? parent;

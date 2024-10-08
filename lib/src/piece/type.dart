@@ -7,7 +7,7 @@ import 'piece.dart';
 /// Piece for a type declaration with a body containing members.
 ///
 /// Used for class, enum, and extension declarations.
-class TypePiece extends Piece {
+final class TypePiece extends Piece {
   /// The leading keywords and modifiers, type name, type parameters, and any
   /// other `extends`, `with`, etc. clauses.
   final Piece _header;

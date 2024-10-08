@@ -35,7 +35,7 @@ import 'source_visitor.dart';
 /// accesses. Then each of those may have one or more postfix selectors
 /// attached: indexers, null-assertions, or invocations. This mirrors how they
 /// are formatted.
-class CallChainVisitor {
+final class CallChainVisitor {
   final SourceVisitor _visitor;
 
   /// The initial target of the call chain.
@@ -408,7 +408,7 @@ class CallChainVisitor {
 ///         .method(arg)[index]
 ///         .another()!
 ///         .third();
-abstract class _Selector {
+sealed class _Selector {
   /// The series of index and/or null-assertion postfix selectors that follow
   /// and are attached to this one.
   ///
@@ -454,7 +454,7 @@ abstract class _Selector {
   void writeSelector(CallChainVisitor visitor);
 }
 
-class _MethodSelector extends _Selector {
+final class _MethodSelector extends _Selector {
   final MethodInvocation _node;
 
   _MethodSelector(this._node);
@@ -481,7 +481,7 @@ class _MethodSelector extends _Selector {
   }
 }
 
-class _PrefixedSelector extends _Selector {
+final class _PrefixedSelector extends _Selector {
   final PrefixedIdentifier _node;
 
   _PrefixedSelector(this._node);
@@ -493,7 +493,7 @@ class _PrefixedSelector extends _Selector {
   }
 }
 
-class _PropertySelector extends _Selector {
+final class _PropertySelector extends _Selector {
   final PropertyAccess _node;
 
   _PropertySelector(this._node);

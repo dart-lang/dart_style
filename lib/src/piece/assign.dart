@@ -67,7 +67,7 @@ import 'piece.dart';
 ///     var [unsplitBlock] =
 ///         longOperand +
 ///             anotherOperand;
-class AssignPiece extends Piece {
+final class AssignPiece extends Piece {
   /// Force the block left-hand side to split and allow the right-hand side to
   /// split.
   static const State _blockSplitLeft = State(1);

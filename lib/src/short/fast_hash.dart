@@ -4,7 +4,7 @@
 
 /// A mixin for classes with identity equality that need to be frequently
 /// hashed.
-abstract class FastHash {
+mixin FastHash {
   static int _nextId = 0;
 
   /// A semi-unique numeric identifier for the object.

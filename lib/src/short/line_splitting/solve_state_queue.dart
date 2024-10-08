@@ -14,7 +14,7 @@ import 'solve_state.dart';
 /// States are stored internally in a heap ordered by cost, the number of
 /// overflow characters. When a new state is added to the heap, it will be
 /// discarded, or a previously enqueued one will be discarded, if two overlap.
-class SolveStateQueue {
+final class SolveStateQueue {
   /// Initial capacity of a queue when created.
   ///
   /// Number can be any positive value. Picking a size that gives a whole

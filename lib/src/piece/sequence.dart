@@ -10,7 +10,7 @@ import 'piece.dart';
 /// body or at the top level of a program.
 ///
 /// Constructed using a [SequenceBuilder].
-class SequencePiece extends Piece {
+final class SequencePiece extends Piece {
   /// The series of members or statements.
   final List<SequenceElementPiece> _elements;
 
@@ -56,7 +56,7 @@ class SequencePiece extends Piece {
 /// Unlike [ListPiece], always splits between the elements.
 ///
 /// Constructed using a [SequenceBuilder].
-class BlockPiece extends Piece {
+final class BlockPiece extends Piece {
   /// The opening delimiter.
   final Piece _leftBracket;
 
@@ -97,7 +97,7 @@ class BlockPiece extends Piece {
 /// An element inside a [SequencePiece].
 ///
 /// Tracks the underlying [Piece] along with surrounding whitespace.
-class SequenceElementPiece extends Piece {
+final class SequenceElementPiece extends Piece {
   /// The number of spaces of indentation on the line before this element,
   /// relative to the surrounding [Piece].
   final int _indent;

@@ -17,7 +17,7 @@ import 'solution_cache.dart';
 /// of the pieces in the tree so they can format themselves. That in turn
 /// yields a total number of overflow characters, cost, and formatted output,
 /// which are all stored here.
-class Solution implements Comparable<Solution> {
+final class Solution implements Comparable<Solution> {
   /// The states that pieces have been bound to.
   ///
   /// Note that order that keys are inserted into this map is significant. When

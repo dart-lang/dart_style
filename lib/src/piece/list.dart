@@ -38,7 +38,7 @@ import 'piece.dart';
 ///
 /// ListPieces are usually constructed using [createList()] or
 /// [DelimitedListBuilder].
-class ListPiece extends Piece {
+final class ListPiece extends Piece {
   /// The opening bracket before the elements, if any.
   final Piece? _before;
 
@@ -435,7 +435,7 @@ enum BlockFormat {
 /// they vary in whether or not a trailing comma is allowed, whether there
 /// should be spaces inside the delimiters when the elements aren't split, etc.
 /// This class captures those options.
-class ListStyle {
+final class ListStyle {
   /// How commas should be handled by the list.
   ///
   /// Most lists use [Commas.trailing]. Type parameters and type arguments use

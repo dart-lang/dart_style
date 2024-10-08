@@ -775,7 +775,8 @@ mixin PieceFactory {
         pieces.token(catchKeyword);
         pieces.space();
 
-        var parameters = DelimitedListBuilder(this);
+        var parameters = DelimitedListBuilder(
+            this, const ListStyle(commas: Commas.nonTrailing));
         parameters.leftBracket(catchClause.leftParenthesis!);
         if (catchClause.exceptionParameter case var exceptionParameter?) {
           parameters.visit(exceptionParameter);

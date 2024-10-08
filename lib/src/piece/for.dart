@@ -6,7 +6,7 @@ import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for the `for (...)` part of a for statement or element.
-class ForPiece extends Piece {
+final class ForPiece extends Piece {
   /// The `for` keyword.
   final Piece _forKeyword;
 
@@ -73,7 +73,7 @@ class ForPiece extends Piece {
 ///             anotherOperand) {
 ///       ...
 ///     }
-class ForInPiece extends Piece {
+final class ForInPiece extends Piece {
   /// The variable or pattern initialized with each loop iteration.
   final Piece _variable;
 

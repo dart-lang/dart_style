@@ -15,7 +15,7 @@ import 'summary.dart';
 const dartStyleVersion = '2.3.7';
 
 /// Global options that affect how the formatter produces and uses its outputs.
-class FormatterOptions {
+final class FormatterOptions {
   /// The language version formatted code should be parsed at or `null` if not
   /// specified.
   final Version? languageVersion;

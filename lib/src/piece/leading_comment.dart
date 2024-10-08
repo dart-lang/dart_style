@@ -23,7 +23,7 @@ import 'piece.dart';
 ///         // comment
 ///         a +
 ///             b;
-class LeadingCommentPiece extends Piece {
+final class LeadingCommentPiece extends Piece {
   final List<Piece> _comments;
   final Piece _piece;
 

@@ -10,7 +10,7 @@ import '../analysis_options/file_system.dart';
 /// calling into this doesn't assume a directory separator character.
 ///
 /// A path starting with `|` is considered absolute for purposes of joining.
-class TestFileSystem implements FileSystem {
+final class TestFileSystem implements FileSystem {
   final Map<String, String> _files = {};
 
   TestFileSystem([Map<String, String>? files]) {
@@ -18,40 +18,38 @@ class TestFileSystem implements FileSystem {
   }
 
   @override
-  Future<bool> fileExists(FileSystemPath path) async =>
-      _files.containsKey(path.testPath);
+  Future<bool> fileExists(covariant TestFileSystemPath path) async =>
+      _files.containsKey(path._path);
 
   @override
-  Future<FileSystemPath> join(FileSystemPath from, String to) async {
+  Future<FileSystemPath> join(
+      covariant TestFileSystemPath from, String to) async {
     // If it's an absolute path, discard [from].
     if (to.startsWith('|')) return TestFileSystemPath(to);
-    return TestFileSystemPath('${from.testPath}|$to');
+    return TestFileSystemPath('${from._path}|$to');
   }
 
   @override
-  Future<FileSystemPath?> parentDirectory(FileSystemPath path) async {
-    var parts = path.testPath.split('|');
+  Future<FileSystemPath?> parentDirectory(
+      covariant TestFileSystemPath path) async {
+    var parts = path._path.split('|');
     if (parts.length == 1) return null;
 
     return TestFileSystemPath(parts.sublist(0, parts.length - 1).join('|'));
   }
 
   @override
-  Future<String> readFile(FileSystemPath path) async {
-    if (_files[path.testPath] case var contents?) return contents;
+  Future<String> readFile(covariant TestFileSystemPath path) async {
+    if (_files[path._path] case var contents?) return contents;
     throw Exception('No file at "$path".');
   }
 }
 
-class TestFileSystemPath implements FileSystemPath {
+final class TestFileSystemPath implements FileSystemPath {
   final String _path;
 
   TestFileSystemPath(this._path);
 
   @override
   String toString() => _path;
-}
-
-extension on FileSystemPath {
-  String get testPath => (this as TestFileSystemPath)._path;
 }
