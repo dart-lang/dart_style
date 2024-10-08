@@ -10,7 +10,6 @@ import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/assign.dart';
-import '../piece/bound.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
@@ -18,6 +17,7 @@ import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/type.dart';
+import '../piece/type_parameter_bound.dart';
 import '../piece/variable.dart';
 import '../profile.dart';
 import '../source_code.dart';
@@ -1852,7 +1852,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           pieces.visit(bound);
         });
 
-        pieces.add(BoundPiece(typeParameterPiece, boundPiece));
+        pieces.add(TypeParameterBoundPiece(typeParameterPiece, boundPiece));
       } else {
         // No bound.
         pieces.token(node.name);
