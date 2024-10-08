@@ -10,6 +10,7 @@ import '../ast_extensions.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../piece/assign.dart';
+import '../piece/bound.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
@@ -1840,12 +1841,21 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitTypeParameter(TypeParameter node) {
     pieces.withMetadata(node.metadata, inlineMetadata: true, () {
-      pieces.token(node.name);
       if (node.bound case var bound?) {
-        pieces.space();
-        pieces.token(node.extendsKeyword);
-        pieces.space();
-        pieces.visit(bound);
+        var typeParameterPiece = pieces.build(() {
+          pieces.token(node.name);
+        });
+
+        var boundPiece = pieces.build(() {
+          pieces.token(node.extendsKeyword);
+          pieces.space();
+          pieces.visit(bound);
+        });
+
+        pieces.add(BoundPiece(typeParameterPiece, boundPiece));
+      } else {
+        // No bound.
+        pieces.token(node.name);
       }
     });
   }
