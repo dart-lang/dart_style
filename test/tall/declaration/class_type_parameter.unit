@@ -19,6 +19,23 @@ class LongClassName<
   Second,
   Third
 > {}
+>>> Split inside bound.
+class LongClassName<VeryLongTypeParameter extends VeryLongBoundName> {}
+<<<
+class LongClassName<
+  VeryLongTypeParameter
+      extends VeryLongBoundName
+> {}
+>>> Split at `extends` and inside bound type arguments.
+class LongClassName<VeryLongTypeParameter extends
+VeryLongBoundName<LongTypeArgument>> {}
+<<<
+class LongClassName<
+  VeryLongTypeParameter
+      extends VeryLongBoundName<
+        LongTypeArgument
+      >
+> {}
 >>> Split inside type parameter bound splits type parameters.
 class LongClassName<T extends Map<LongTypeArgument, Another>> {}
 <<<

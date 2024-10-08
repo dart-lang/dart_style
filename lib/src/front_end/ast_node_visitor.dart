@@ -17,6 +17,7 @@ import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/type.dart';
+import '../piece/type_parameter_bound.dart';
 import '../piece/variable.dart';
 import '../profile.dart';
 import '../source_code.dart';
@@ -1840,12 +1841,21 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitTypeParameter(TypeParameter node) {
     pieces.withMetadata(node.metadata, inlineMetadata: true, () {
-      pieces.token(node.name);
       if (node.bound case var bound?) {
-        pieces.space();
-        pieces.token(node.extendsKeyword);
-        pieces.space();
-        pieces.visit(bound);
+        var typeParameterPiece = pieces.build(() {
+          pieces.token(node.name);
+        });
+
+        var boundPiece = pieces.build(() {
+          pieces.token(node.extendsKeyword);
+          pieces.space();
+          pieces.visit(bound);
+        });
+
+        pieces.add(TypeParameterBoundPiece(typeParameterPiece, boundPiece));
+      } else {
+        // No bound.
+        pieces.token(node.name);
       }
     });
   }
