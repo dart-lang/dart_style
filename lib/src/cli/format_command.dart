@@ -78,11 +78,18 @@ final class FormatCommand extends Command<int> {
 
     if (verbose) argParser.addSeparator('Other options:');
 
+    argParser.addOption('page-width',
+        help: 'Try to keep lines no longer than this.',
+        defaultsTo: '80',
+        hide: !verbose);
+    // This is the old name for "--page-width". We keep it for backwards
+    // compatibility but don't show it in the help output.
     argParser.addOption('line-length',
         abbr: 'l',
         help: 'Wrap lines longer than this.',
         defaultsTo: '80',
         hide: true);
+
     argParser.addOption('indent',
         abbr: 'i',
         help: 'Add this many spaces of leading indentation.',
@@ -189,11 +196,23 @@ final class FormatCommand extends Command<int> {
       }
     }
 
+    // Allow the old option name if the new one wasn't passed.
+    String? pageWidthString;
+    if (argResults.wasParsed('page-width')) {
+      pageWidthString = argResults['page-width'] as String;
+    } else if (argResults.wasParsed('line-length')) {
+      pageWidthString = argResults['line-length'] as String;
+    }
+
     int? pageWidth;
-    if (argResults.wasParsed('line-length')) {
-      pageWidth = int.tryParse(argResults['line-length'] as String) ??
-          usageException('--line-length must be an integer, was '
-              '"${argResults['line-length']}".');
+    if (pageWidthString != null) {
+      pageWidth = int.tryParse(pageWidthString);
+      if (pageWidth == null) {
+        usageException(
+            'Page width must be an integer, was "$pageWidthString".');
+      } else if (pageWidth <= 0) {
+        usageException('Page width must be a positive number, was $pageWidth.');
+      }
     }
 
     var indent = int.tryParse(argResults['indent'] as String) ??

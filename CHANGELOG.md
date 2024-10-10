@@ -73,6 +73,16 @@
   intended to be extended or implemented. They are now all marked `final` to
   make that intention explicit.
 
+* **Rename the `--line-length` option to `--page-width`.** This is consistent
+  with the public API, internal implementation, and docs, which all use "page
+  width" to refer to the limit that the formatter tries to fit code into.
+
+  The `--line-length` name is still supported for backwards compatibility, but
+  may be removed at some point in the future. You're encouraged to move to
+  `--page-width`. Use of this option (however its named) is rare, and will
+  likely be even rarer now that project-wide configuration is supported, so
+  this shouldn't affect many users.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be
