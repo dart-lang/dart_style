@@ -14,12 +14,12 @@ void main() {
 
   group('--page-width', () {
     test('must be a number', () async {
-      var process = await runFormatter(['--page-width=12.34']);
+      var process = await runFormatter(['--page-width=notint']);
       await process.shouldExit(64);
     });
 
     test('must be an integer', () async {
-      var process = await runFormatter(['--page-width=notint']);
+      var process = await runFormatter(['--page-width=12.34']);
       await process.shouldExit(64);
     });
 
