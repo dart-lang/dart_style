@@ -12,6 +12,54 @@ import '../utils.dart';
 void main() {
   compileFormatter();
 
+  group('--page-width', () {
+    test('must be a number', () async {
+      var process = await runFormatter(['--page-width=12.34']);
+      await process.shouldExit(64);
+    });
+
+    test('must be an integer', () async {
+      var process = await runFormatter(['--page-width=notint']);
+      await process.shouldExit(64);
+    });
+
+    test('must be positive', () async {
+      var process = await runFormatter(['--page-width=-123']);
+      await process.shouldExit(64);
+
+      process = await runFormatter(['--page-width=0']);
+      await process.shouldExit(64);
+    });
+
+    test('format at given width', () async {
+      await d.dir('foo', [
+        d.file('main.dart', _unformatted),
+      ]).create();
+
+      var process = await runFormatterOnDir([
+        '--enable-experiment=tall-style',
+        '--page-width=30',
+      ]);
+      await process.shouldExit(0);
+
+      await d.dir('foo', [d.file('main.dart', _formatted30)]).validate();
+    });
+
+    test('support old --line-length option name', () async {
+      await d.dir('foo', [
+        d.file('main.dart', _unformatted),
+      ]).create();
+
+      var process = await runFormatterOnDir([
+        '--enable-experiment=tall-style',
+        '--line-length=30',
+      ]);
+      await process.shouldExit(0);
+
+      await d.dir('foo', [d.file('main.dart', _formatted30)]).validate();
+    });
+  });
+
   test('no options search if experiment is off', () async {
     await d.dir('foo', [
       analysisOptionsFile(pageWidth: 20),
@@ -33,7 +81,7 @@ void main() {
 
     var process = await runFormatterOnDir([
       '--language-version=latest', // Error to not have language version.
-      '--line-length=30',
+      '--page-width=30',
       '--enable-experiment=tall-style'
     ]);
     await process.shouldExit(0);
@@ -173,7 +221,7 @@ void main() {
       var process = await runFormatter([
         '--language-version=latest',
         '--enable-experiment=tall-style',
-        '--line-length=30',
+        '--page-width=30',
         '--stdin-name=foo/main.dart'
       ]);
 
