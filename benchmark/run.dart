@@ -10,7 +10,6 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
 import 'package:dart_style/src/profile.dart';
@@ -131,10 +130,11 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
       throwIfDiagnostics: false);
 
   var formatter = DartFormatter(
-      languageVersion: DartFormatter.latestLanguageVersion,
+      languageVersion: _isShort
+          ? DartFormatter.latestShortStyleLanguageVersion
+          : DartFormatter.latestLanguageVersion,
       pageWidth: benchmark.pageWidth,
-      lineEnding: '\n',
-      experimentFlags: [if (!_isShort) tallStyleExperimentFlag]);
+      lineEnding: '\n');
 
   var measuredTimes = <double>[];
   for (var i = 1; i <= trials; i++) {

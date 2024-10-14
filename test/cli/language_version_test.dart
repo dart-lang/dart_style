@@ -29,9 +29,7 @@ extension type Meters(int value) {
     test('uses latest language version if no surrounding package', () async {
       await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
 
-      // Enable the experiment to be sure that we're opting in to the new
-      // package config search.
-      var process = await runFormatterOnDir(['--enable-experiment=tall-style']);
+      var process = await runFormatterOnDir();
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
@@ -75,24 +73,6 @@ main() {
   });
 
   group('package config', () {
-    // TODO(rnystrom): Remove this test when the experiment ships.
-    test('no package search if experiment is off', () async {
-      // Put the file in a directory with a malformed package config. If we
-      // search for it, we should get an error.
-      await d.dir('foo', [
-        d.dir('.dart_tool', [
-          d.file('package_config.json', 'this no good json is bad json'),
-        ]),
-        d.file('main.dart', 'main(){    }'),
-      ]).create();
-
-      var process = await runFormatterOnDir();
-      await process.shouldExit(0);
-
-      // Should format the file without any error reading the package config.
-      await d.dir('foo', [d.file('main.dart', 'main() {}\n')]).validate();
-    });
-
     test('no package search if language version is specified', () async {
       // Put the file in a directory with a malformed package config. If we
       // search for it, we should get an error.
@@ -103,8 +83,7 @@ main() {
         d.file('main.dart', 'main(){    }'),
       ]).create();
 
-      var process = await runFormatterOnDir(
-          ['--language-version=latest', '--enable-experiment=tall-style']);
+      var process = await runFormatterOnDir(['--language-version=latest']);
       await process.shouldExit(0);
 
       // Should format the file without any error reading the package config.
@@ -112,18 +91,16 @@ main() {
     });
 
     test('default to language version of surrounding package', () async {
-      // The package config sets the language version to 3.1, but the switch
-      // case uses a syntax which is valid in earlier versions of Dart but an
-      // error in 3.0 and later. Verify that the error is reported.
+      // The package config sets the language version to 2.19, but pattern
+      // variables are only available in 3.0 and later. Verify that the error
+      // is reported.
       await d.dir('foo', [
-        packageConfig('foo', version: '3.1'),
-        d.file('main.dart', 'main() { switch (o) { case 1 + 2: break; } }'),
+        packageConfig('foo', version: '2.19'),
+        d.file('main.dart', 'main() { var (a, b) = (1, 2); }'),
       ]).create();
 
       var path = p.join(d.sandbox, 'foo', 'main.dart');
-      // TODO(rnystrom): Remove experiment flag when it ships.
-      var process =
-          await runFormatter([path, '--enable-experiment=tall-style']);
+      var process = await runFormatter([path]);
 
       expect(await process.stderr.next,
           'Could not format because the source could not be parsed:');
@@ -170,8 +147,7 @@ main() {
         d.file('main.dart', 'main() {var (a,b)=(1,2);}'),
       ]).create();
 
-      // TODO(rnystrom): Remove experiment flag when it ships.
-      var process = await runFormatterOnDir(['--enable-experiment=tall-style']);
+      var process = await runFormatterOnDir();
       await process.shouldExit(0);
 
       // Formats the file.
@@ -187,15 +163,14 @@ main() {
 
   group('stdin', () {
     test('infers language version from surrounding package', () async {
-      // The package config sets the language version to 3.1, but the switch
-      // case uses a syntax which is valid in earlier versions of Dart but an
-      // error in 3.0 and later. Verify that the error is reported.
+      // The package config sets the language version to 2.19, when switch
+      // cases still allowed arbitrary constant expressions like `1 + 2`.
+      // Verify that the code is formatted without error.
       await d.dir('foo', [
         packageConfig('foo', version: '2.19'),
       ]).create();
 
-      var process = await runFormatter(
-          ['--enable-experiment=tall-style', '--stdin-name=foo/main.dart']);
+      var process = await runFormatter(['--stdin-name=foo/main.dart']);
       // Write a switch whose syntax is valid in 2.19, but an error in later
       // versions.
       process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
@@ -222,8 +197,7 @@ main() {
 
       var process = await runFormatter([
         '--language-version=2.19',
-        '--enable-experiment=tall-style',
-        '--stdin-name=foo/main.dart'
+        '--stdin-name=foo/main.dart',
       ]);
 
       // Write a switch whose syntax is valid in 2.19, but an error in later
@@ -243,8 +217,7 @@ main() {
     test('use latest language version if no surrounding package', () async {
       await d.dir('foo', []).create();
 
-      var process = await runFormatter(
-          ['--enable-experiment=tall-style', '--stdin-name=foo/main.dart']);
+      var process = await runFormatter(['--stdin-name=foo/main.dart']);
       // Use some relatively recent syntax.
       process.stdin.writeln('main() {var (a,b)=(1,2);}');
       await process.stdin.close();
@@ -253,6 +226,45 @@ main() {
       expect(await process.stdout.next, '  var (a, b) = (1, 2);');
       expect(await process.stdout.next, '}');
       await process.shouldExit(0);
+    });
+  });
+
+  group('style', () {
+    test('uses the short style on 3.6 or earlier', () async {
+      const before = 'main() { f(argument, // comment\nanother);}';
+      const after = '''
+main() {
+  f(
+      argument, // comment
+      another);
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      var process = await runFormatterOnDir(['--language-version=3.6']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
+    });
+
+    test('uses the tall style on 3.7 or earlier', () async {
+      const before = 'main() { f(argument, // comment\nanother);}';
+      const after = '''
+main() {
+  f(
+    argument, // comment
+    another,
+  );
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      var process = await runFormatterOnDir(['--language-version=3.7']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
     });
   });
 }

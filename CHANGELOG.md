@@ -1,5 +1,87 @@
 ## 3.0.0-wip
 
+This is a large change. Under the hood, the formatter was almost completely
+rewritten, with the codebase now containing both the old and new
+implementations. The old formatter exists to support the older "short" style
+and the new code implements [the new "tall" style][tall].
+
+[tall]: https://github.com/dart-lang/dart_style/issues/1253
+
+The formatter uses the language version of the formatted code to determine
+which style you get. If the language version is 3.6 or lower, the code is
+formatted with the old style. If 3.7 or later, you get the new tall style. You
+typically control the language version by [setting a min SDK constraint in your
+package's pubspec][versioning].
+
+[versioning]: https://dart.dev/guides/language/evolution
+
+In addition to the new formatting style, a number of other API and CLI changes
+are included, some of them breaking:
+
+* **Support project-wide page width configuration.** By long request, you can
+  now configure your preferred formatting page width on a project-wide basis.
+  When formatting files, the formatter will look in the file's directory and
+  any surrounding directories for an `analysis_options.yaml` file. If it finds
+  one, it looks for the following YAML:
+
+  ```yaml
+  formatter:
+    page_width: 123
+  ```
+
+  If it finds a `formatter` key containing a map with a `page_width` key whose
+  value is an integer, then that is the page width that the file is formatted
+  using. Since the formatter will walk the surrounding directories until it
+  finds an `analysis_options.yaml` file, this can be used to globally set the
+  page width for an entire directory, package, or even collection of packages.
+
+* **Support overriding the page width for a single file.** In code formatted
+  using the new tall style, you can use a special marker comment to control the
+  page width that it's formatted using:
+
+  ```dart
+  // dart format width=30
+  main() {
+    someExpression +
+        thatSplitsAt30;
+  }
+  ```
+
+  This comment must appear before any code in the file and must match that
+  format exactly. The width set by the comment overrides the width set by any
+  surrounding `analysis_options.yaml` file.
+
+  This feature is mainly for code generators that generate and immediately
+  format code but don't know about any surrounding `analysis_options.yaml`
+  that might be configuring the page width. By inserting this comment in the
+  generated code before formatting, it ensures that the code generator's
+  behavior matches the behavior of `dart format`.
+
+  End users should mostly use `analysis_options.yaml` for configuring their
+  preferred page width (or do nothing and use the default page width of 80).
+
+* **Support opting out a region of code from formatting.** In code formatted
+  using the new tall style, you can use a pair of special marker comments to
+  opt a region of code out of automated formatting:
+
+  ```dart
+  main() {
+    this.isFormatted();
+    // dart format off
+    no   +   formatting
+      +
+        here;
+    // dart format on
+    formatting.isBackOnHere();
+  }
+  ```
+
+  The comments must be exactly `// dart format off` and `// dart format on`.
+  A file may have multiple regions, but they can't overlap or nest.
+
+  This can be useful for highly structured data where custom layout can help
+  a reader understand the data, like large lists of numbers.
+
 * **Remove support for fixes and `--fix`.** The tools that come with the Dart
   SDK provide two ways to apply automated changes to code: `dart format --fix`
   and `dart fix`. The former is older and used to be faster. But it can only
@@ -16,21 +98,20 @@
 
 * **Make the language version parameter to `DartFormatter()` mandatory.** This
   way, the formatter always knows what language version the input is intended
-  to be treated as. Note that a `// @dart=` language version comment if present
-  overrides the specified language version. You can think of the version passed
-  to the `DartFormatter()` constructor as a "default" language version which
-  the file's contents may then override.
+  to be treated as. Note that a `// @dart=` language version comment, if
+  present, overrides the specified language version. You can think of the
+  version passed to the `DartFormatter()` constructor as a "default" language
+  version which the file's contents may then override.
 
   If you don't particularly care about the version of what you're formatting,
   you can pass in `DartFormatter.latestLanguageVersion` to unconditionally get
   the latest language version that the formatter supports. Note that doing so
-  means you will also implicitly opt into the new tall style when that style
-  becomes available.
+  means you will also implicitly opt into the new tall style.
 
   This change only affects the library API. When using the formatter from the
   command line, you can use `--language-version=` to specify a language version
   or pass `--language-version=latest` to use the latest supported version. If
-  omitted, the formatter will look up the surrounding directories for a package
+  omitted, the formatter will look in the surrounding directories for a package
   config file and infer the language version for the package from that, similar
   to how other Dart tools behave like `dart analyze` and `dart run`.
 
@@ -38,9 +119,8 @@
   `dart format` command was added to the core Dart SDK, users accessed the
   formatter by running a separate `dartfmt` executable that was included with
   the Dart SDK. That executable had a different CLI interface. For example, you
-  had to pass `-w` to get it to overwrite files and if you passed no arguments
-  at all, it silently sat there waiting for input on stdin. When we added
-  `dart format`, we took that opportunity to revamp the CLI options.
+  had to pass `-w` to get it to overwrite files. When we added `dart format`,
+  we took that opportunity to revamp the CLI options.
 
   However, the dart_style package still exposed an executable with the old CLI.
   If you ran `dart pub global activate dart_style`, this would give you a
@@ -64,14 +144,8 @@
   `--language-version=`, or use `--language-version=latest` to parse the input
   using the latest language version supported by the formatter.
 
-  If `--stdin-name` and `--language-version` are both omitted, then parses
-  stdin using the latest supported language version.
-
-* **Apply class modifiers to API classes.** The dart_style package exposes only
-  a few classes in its public API: `DartFormatter`, `SourceCode`,
-  `FormatterException`, and `UnexpectedOutputException`. None were ever
-  intended to be extended or implemented. They are now all marked `final` to
-  make that intention explicit.
+  If `--stdin-name` and `--language-version` are both omitted, then the
+  formatter parses stdin using the latest supported language version.
 
 * **Rename the `--line-length` option to `--page-width`.** This is consistent
   with the public API, internal implementation, and docs, which all use "page
@@ -79,9 +153,15 @@
 
   The `--line-length` name is still supported for backwards compatibility, but
   may be removed at some point in the future. You're encouraged to move to
-  `--page-width`. Use of this option (however its named) is rare, and will
+  `--page-width`. Use of this option (however it's named) is rare, and will
   likely be even rarer now that project-wide configuration is supported, so
   this shouldn't affect many users.
+
+* **Apply class modifiers to API classes.** The dart_style package exposes only
+  a few classes in its public API: `DartFormatter`, `SourceCode`,
+  `FormatterException`, and `UnexpectedOutputException`. None were ever
+  intended to be extended or implemented. They are now all marked `final` to
+  make that intention explicit.
 
 ## 2.3.7
 

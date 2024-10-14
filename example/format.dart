@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/testing/test_file.dart';
 
@@ -40,9 +39,10 @@ void _runFormatter(String source, int pageWidth,
     {required bool tall, required bool isCompilationUnit}) {
   try {
     var formatter = DartFormatter(
-        languageVersion: DartFormatter.latestLanguageVersion,
-        pageWidth: pageWidth,
-        experimentFlags: [if (tall) tallStyleExperimentFlag]);
+        languageVersion: tall
+            ? DartFormatter.latestLanguageVersion
+            : DartFormatter.latestShortStyleLanguageVersion,
+        pageWidth: pageWidth);
 
     String result;
     if (isCompilationUnit) {
@@ -75,10 +75,7 @@ Future<void> _runTest(String path, int line,
   var formatter = DartFormatter(
       languageVersion: formatTest.languageVersion,
       pageWidth: testFile.pageWidth,
-      indent: formatTest.leadingIndent,
-      experimentFlags: tall
-          ? const ['inline-class', tallStyleExperimentFlag]
-          : const ['inline-class']);
+      indent: formatTest.leadingIndent);
 
   var actual = formatter.formatSource(formatTest.input);
 

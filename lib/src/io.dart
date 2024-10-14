@@ -9,7 +9,6 @@ import 'package:path/path.dart' as p;
 
 import 'cli/formatter_options.dart';
 import 'config_cache.dart';
-import 'constants.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
 import 'source_code.dart';
@@ -25,14 +24,10 @@ Future<void> formatStdin(
     selectionLength = selection[1];
   }
 
-  ConfigCache? cache;
-  // TODO(rnystrom): Remove the experiment check when the experiment ships.
-  if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
-    cache = ConfigCache();
-  }
+  var cache = ConfigCache();
 
   var languageVersion = options.languageVersion;
-  if (languageVersion == null && path != null && cache != null) {
+  if (languageVersion == null && path != null) {
     // We have a stdin-name, so look for a surrounding package config.
     languageVersion = await cache.findLanguageVersion(File(path), path);
   }
@@ -43,7 +38,7 @@ Future<void> formatStdin(
 
   // Determine the page width.
   var pageWidth = options.pageWidth;
-  if (pageWidth == null && path != null && cache != null) {
+  if (pageWidth == null && path != null) {
     // We have a stdin-name, so look for a surrounding analyisis_options.yaml.
     pageWidth = await cache.findPageWidth(File(path));
   }
@@ -92,12 +87,7 @@ $stack''');
 Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   // If the user didn't specify a language version, then look for surrounding
   // package configs so we know what language versions to use for the files.
-  ConfigCache? cache;
-  // TODO(rnystrom): Remove the experiment check when the experiment ships and
-  // make cache non-nullable.
-  if (options.experimentFlags.contains(tallStyleExperimentFlag)) {
-    cache = ConfigCache();
-  }
+  var cache = ConfigCache();
 
   for (var path in paths) {
     var directory = Directory(path);
@@ -125,7 +115,7 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
 /// Returns `true` if successful or `false` if an error occurred in any of the
 /// files.
 Future<bool> _processDirectory(
-    ConfigCache? cache, FormatterOptions options, Directory directory) async {
+    ConfigCache cache, FormatterOptions options, Directory directory) async {
   var success = true;
 
   var entries =
@@ -154,25 +144,20 @@ Future<bool> _processDirectory(
 ///
 /// Returns `true` if successful or `false` if an error occurred.
 Future<bool> _processFile(
-    ConfigCache? cache, FormatterOptions options, File file,
+    ConfigCache cache, FormatterOptions options, File file,
     {String? displayPath}) async {
   displayPath ??= file.path;
 
   // Determine what language version to use.
-  var languageVersion = options.languageVersion;
-  if (languageVersion == null && cache != null) {
-    languageVersion = await cache.findLanguageVersion(file, displayPath);
-  }
+  var languageVersion = options.languageVersion ??
+      await cache.findLanguageVersion(file, displayPath);
 
   // If they didn't specify a version and we couldn't find a surrounding
   // package, then default to the latest version.
   languageVersion ??= DartFormatter.latestLanguageVersion;
 
   // Determine the page width.
-  var pageWidth = options.pageWidth;
-  if (pageWidth == null && cache != null) {
-    pageWidth = await cache.findPageWidth(file);
-  }
+  var pageWidth = options.pageWidth ?? await cache.findPageWidth(file);
 
   // Use a default page width if we don't have a specified one and couldn't
   // find a configured one.
