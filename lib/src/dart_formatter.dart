@@ -14,7 +14,6 @@ import 'package:analyzer/src/dart/scanner/scanner.dart';
 import 'package:analyzer/src/string_source.dart';
 import 'package:pub_semver/pub_semver.dart';
 
-import 'constants.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'short/source_visitor.dart';
@@ -30,7 +29,14 @@ final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
 final class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
-  static final latestLanguageVersion = Version(3, 3, 0);
+  static final latestLanguageVersion = Version(3, 7, 0);
+
+  /// The latest Dart language version that will be formatted using the older
+  /// "short" style.
+  ///
+  /// Any Dart code at a language version later than this will be formatted
+  /// using the new "tall" style.
+  static final latestShortStyleLanguageVersion = Version(3, 6, 0);
 
   /// The page width that the formatter tries to fit code inside if no other
   /// width is specified.
@@ -125,11 +131,8 @@ final class DartFormatter {
       );
     }
 
-    // Don't pass the formatter's own experiment flag to the parser.
-    var experiments = experimentFlags.toList();
-    experiments.remove(tallStyleExperimentFlag);
     var featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: languageVersion, flags: experiments);
+        sdkLanguageVersion: languageVersion, flags: experimentFlags);
 
     // Parse it.
     var parseResult = parseString(
@@ -185,8 +188,9 @@ final class DartFormatter {
     // Format it.
     var lineInfo = parseResult.lineInfo;
 
+    // Use language version to determine what formatting style to apply.
     SourceCode output;
-    if (experimentFlags.contains(tallStyleExperimentFlag)) {
+    if (languageVersion > latestShortStyleLanguageVersion) {
       // Look for a page width comment before the code.
       int? pageWidthFromComment;
       for (Token? comment = node.beginToken.precedingComments;
@@ -203,6 +207,7 @@ final class DartFormatter {
       var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(unitSourceCode, node, pageWidthFromComment);
     } else {
+      // Use the old style.
       var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
       output = visitor.run(node);
     }

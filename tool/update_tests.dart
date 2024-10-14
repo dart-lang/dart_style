@@ -4,7 +4,6 @@
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 
@@ -87,12 +86,6 @@ Future<void> _updateTestFile(TestFile testFile) async {
   // Write the file-level comments.
   _writeComments(buffer, testFile.comments);
 
-  var experiments = [
-    'inline-class',
-    'macros',
-    if (p.split(testFile.path).contains('tall')) tallStyleExperimentFlag
-  ];
-
   _totalTests += testFile.tests.length;
 
   for (var formatTest in testFile.tests) {
@@ -100,7 +93,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
         languageVersion: formatTest.languageVersion,
         pageWidth: testFile.pageWidth,
         indent: formatTest.leadingIndent,
-        experimentFlags: experiments);
+        experimentFlags: const ['macros']);
 
     var actual = formatter.formatSource(formatTest.input);
 
@@ -113,9 +106,13 @@ Future<void> _updateTestFile(TestFile testFile) async {
     // Insert a newline between each test, but not after the last.
     if (formatTest != testFile.tests.first) buffer.writeln();
 
+    var defaultLanguageVersion = p.split(testFile.path).contains('tall')
+        ? DartFormatter.latestLanguageVersion
+        : DartFormatter.latestShortStyleLanguageVersion;
+
     var descriptionParts = [
       if (formatTest.leadingIndent != 0) '(indent ${formatTest.leadingIndent})',
-      if (formatTest.languageVersion != DartFormatter.latestLanguageVersion)
+      if (formatTest.languageVersion != defaultLanguageVersion)
         '(version ${formatTest.languageVersion.major}.'
             '${formatTest.languageVersion.minor})',
       formatTest.description

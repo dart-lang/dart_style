@@ -99,8 +99,11 @@ final class TestFile {
         return '';
       });
 
-      // Let the test specify a language version to parse it at.
-      var languageVersion = DartFormatter.latestLanguageVersion;
+      // Let the test specify a language version to parse it at. If not, use
+      // a default version for the style being tested.
+      var languageVersion = p.split(file.path).contains('tall')
+          ? DartFormatter.latestLanguageVersion
+          : DartFormatter.latestShortStyleLanguageVersion;
       description = description.replaceAllMapped(_versionPattern, (match) {
         var major = int.parse(match[1]!);
         var minor = int.parse(match[2]!);

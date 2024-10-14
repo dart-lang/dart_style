@@ -62,6 +62,7 @@ final class ConfigCache {
     // Otherwise, walk the file system and look for it.
     var config =
         await _findPackageConfig(file, displayPath, forLanguageVersion: true);
+
     if (config?.packageOf(file.absolute.uri)?.languageVersion
         case var languageVersion?) {
       // Store the version as pub_semver's [Version] type because that's

@@ -36,10 +36,7 @@ void main() {
         d.file('main.dart', _unformatted),
       ]).create();
 
-      var process = await runFormatterOnDir([
-        '--enable-experiment=tall-style',
-        '--page-width=30',
-      ]);
+      var process = await runFormatterOnDir(['--page-width=30']);
       await process.shouldExit(0);
 
       await d.dir('foo', [d.file('main.dart', _formatted30)]).validate();
@@ -50,27 +47,11 @@ void main() {
         d.file('main.dart', _unformatted),
       ]).create();
 
-      var process = await runFormatterOnDir([
-        '--enable-experiment=tall-style',
-        '--line-length=30',
-      ]);
+      var process = await runFormatterOnDir(['--line-length=30']);
       await process.shouldExit(0);
 
       await d.dir('foo', [d.file('main.dart', _formatted30)]).validate();
     });
-  });
-
-  test('no options search if experiment is off', () async {
-    await d.dir('foo', [
-      analysisOptionsFile(pageWidth: 20),
-      d.file('main.dart', _unformatted),
-    ]).create();
-
-    var process = await runFormatterOnDir();
-    await process.shouldExit(0);
-
-    // Should format the file at the default width.
-    await d.dir('foo', [d.file('main.dart', _formatted80)]).validate();
   });
 
   test('no options search if page width is specified on the CLI', () async {
@@ -79,11 +60,7 @@ void main() {
       d.file('main.dart', _unformatted),
     ]).create();
 
-    var process = await runFormatterOnDir([
-      '--language-version=latest', // Error to not have language version.
-      '--page-width=30',
-      '--enable-experiment=tall-style'
-    ]);
+    var process = await runFormatterOnDir(['--page-width=30']);
     await process.shouldExit(0);
 
     // Should format the file at 30, not 20 or 80.
@@ -123,10 +100,7 @@ void main() {
       d.file('main.dart', _unformatted),
     ]).create();
 
-    var process = await runFormatterOnDir([
-      '--language-version=latest', // Error to not have language version.
-      '--enable-experiment=tall-style'
-    ]);
+    var process = await runFormatterOnDir();
     await process.shouldExit(0);
 
     // Should format the file at 30.
@@ -155,10 +129,7 @@ void main() {
       ]),
     ]).create();
 
-    var process = await runFormatterOnDir([
-      '--language-version=latest', // Error to not have language version.
-      '--enable-experiment=tall-style'
-    ]);
+    var process = await runFormatterOnDir();
     await process.shouldExit(0);
 
     // Should format the file at 30.
@@ -178,10 +149,7 @@ void main() {
       ]),
     ]).create();
 
-    var process = await runFormatterOnDir([
-      '--language-version=latest', // Error to not have language version.
-      '--enable-experiment=tall-style'
-    ]);
+    var process = await runFormatterOnDir();
     await process.shouldExit(0);
 
     // Should format the file at 80.
@@ -196,12 +164,7 @@ void main() {
         analysisOptionsFile(pageWidth: 30),
       ]).create();
 
-      var process = await runFormatter([
-        '--language-version=latest', // Error to not have language version.
-        '--enable-experiment=tall-style',
-        '--stdin-name=foo/main.dart',
-      ]);
-
+      var process = await runFormatter(['--stdin-name=foo/main.dart']);
       process.stdin.writeln(_unformatted);
       await process.stdin.close();
 
@@ -219,10 +182,8 @@ void main() {
       ]).create();
 
       var process = await runFormatter([
-        '--language-version=latest',
-        '--enable-experiment=tall-style',
         '--page-width=30',
-        '--stdin-name=foo/main.dart'
+        '--stdin-name=foo/main.dart',
       ]);
 
       process.stdin.writeln(_unformatted);
@@ -274,10 +235,7 @@ Future<void> _testWithOptions(Object? options,
     d.file('main.dart', _unformatted),
   ]).create();
 
-  var process = await runFormatterOnDir([
-    '--language-version=latest', // Error to not have language version.
-    '--enable-experiment=tall-style'
-  ]);
+  var process = await runFormatterOnDir();
   await process.shouldExit(0);
 
   // Should format the file at the expected width.

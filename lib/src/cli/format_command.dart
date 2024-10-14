@@ -69,8 +69,7 @@ final class FormatCommand extends Command<int> {
         help: 'Language version of formatted code.\n'
             'Use "latest" to parse as the latest supported version.\n'
             'Omit to look for a surrounding package config.',
-        // TODO(rnystrom): Show this when the tall-style experiment ships.
-        hide: true);
+        hide: !verbose);
 
     argParser.addFlag('set-exit-if-changed',
         negatable: false,
