@@ -4,7 +4,7 @@ an expected output.
 
 ## Formatting file format
 
-The actual formatting logic live in test data files ending in ".unit" or
+The formatting test expectations live in test data files ending in ".unit" or
 ".stmt". The ".unit" extension is for tests whose input should be parsed as an
 entire Dart compilation unit (roughly library or part file). The ".stmt" files
 parse each expectation as a statement.
@@ -20,15 +20,15 @@ var a=1+2/(3*-b~/4);
 ```
 
 If the first line contains a `|`, then it indicates the page width that all
-tests in this file should be formatted using. All other text on that line are
-ignored. This is mainly used so that tests can test line wrapping behavior
-without having to create long code to force things to wrap.
+tests in this file should be formatted using. All other text on that line is
+ignored. This is used so that tests can test line wrapping behavior without
+having to create long code to force things to wrap.
 
 The `>>>` line begins a test. It may have comment text afterwards describing the
-test. If the line contains `(indent <n>)` for some `n`, then formatter is told
-to run with that level of indentation. This is mainly for regression tests where
-the erroneous code appeared deeply nested inside some class or function and the
-test wants to reproduce that same surrounding indentation.
+test. If the line contains `(indent <n>)` for some `n`, then the formatter is
+told to run with that level of indentation. This is mainly for regression tests
+where the erroneous code appeared deeply nested inside some class or function
+and the test wants to reproduce that same surrounding indentation.
 
 Lines after the `>>>` line are the input code to be formatted.
 
@@ -68,8 +68,8 @@ tall/declaration/  - Typedef, class, enum, extension, mixin, and member
 tall/expression/   - Expressions and collection elements.
 tall/function/     - Function declarations.
 tall/invocation/   - Function and member invocations.
+tall/other/        - Selections, comment markers, and other odds and ends.
 tall/pattern/      - Patterns.
-tall/selection/    - Test preserving selection information.
 tall/statement/    - Statements.
 tall/top_level/    - Top-level directives.
 tall/type/         - Type annotations.

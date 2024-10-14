@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 
@@ -21,22 +20,24 @@ void main() async {
 void _runTests({required bool isTall}) {
   DartFormatter makeFormatter(
       {Version? languageVersion, int? indent, String? lineEnding}) {
+    languageVersion ??= isTall
+        ? DartFormatter.latestLanguageVersion
+        : DartFormatter.latestShortStyleLanguageVersion;
+
     return DartFormatter(
-        languageVersion: languageVersion ?? DartFormatter.latestLanguageVersion,
+        languageVersion: languageVersion,
         indent: indent,
-        lineEnding: lineEnding,
-        experimentFlags: [if (isTall) tallStyleExperimentFlag]);
+        lineEnding: lineEnding);
   }
 
   group('language version', () {
     test('defaults to latest if omitted', () {
       var formatter = makeFormatter();
-      expect(formatter.languageVersion, DartFormatter.latestLanguageVersion);
-    });
-
-    test('defaults to latest if null', () {
-      var formatter = makeFormatter(languageVersion: null);
-      expect(formatter.languageVersion, DartFormatter.latestLanguageVersion);
+      expect(
+          formatter.languageVersion,
+          isTall
+              ? DartFormatter.latestLanguageVersion
+              : DartFormatter.latestShortStyleLanguageVersion);
     });
 
     test('parses at given older language version', () {

@@ -7,7 +7,6 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/profile.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 
@@ -64,8 +63,9 @@ void main(List<String> arguments) async {
 void _runFormatter(String source) {
   try {
     var formatter = DartFormatter(
-        languageVersion: DartFormatter.latestLanguageVersion,
-        experimentFlags: [if (!_isShort) tallStyleExperimentFlag]);
+        languageVersion: _isShort
+            ? DartFormatter.latestShortStyleLanguageVersion
+            : DartFormatter.latestLanguageVersion);
 
     var result = formatter.format(source);
 

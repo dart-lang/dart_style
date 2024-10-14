@@ -6,7 +6,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
-import 'package:dart_style/src/constants.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
@@ -97,11 +96,11 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
     for (var benchmark in benchmarks) {
       test(benchmark.name, () {
         var formatter = DartFormatter(
-            languageVersion: DartFormatter.latestLanguageVersion,
+            languageVersion: useTallStyle
+                ? DartFormatter.latestLanguageVersion
+                : DartFormatter.latestShortStyleLanguageVersion,
             pageWidth: benchmark.pageWidth,
-            experimentFlags: useTallStyle
-                ? const ['inline-class', 'macros', tallStyleExperimentFlag]
-                : const ['inline-class', 'macros']);
+            experimentFlags: const ['macros']);
 
         var actual = formatter.formatSource(SourceCode(benchmark.input));
 
@@ -126,9 +125,6 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 }
 
 void _testFile(TestFile testFile) {
-  var useTallStyle =
-      testFile.path.startsWith('tall/') || testFile.path.startsWith('tall\\');
-
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
@@ -136,9 +132,7 @@ void _testFile(TestFile testFile) {
             languageVersion: formatTest.languageVersion,
             pageWidth: testFile.pageWidth,
             indent: formatTest.leadingIndent,
-            experimentFlags: useTallStyle
-                ? const ['inline-class', 'macros', tallStyleExperimentFlag]
-                : const ['inline-class', 'macros']);
+            experimentFlags: const ['macros']);
 
         var actual = formatter.formatSource(formatTest.input);
 
@@ -174,7 +168,10 @@ void _testFile(TestFile testFile) {
 /// If [packages] is given, it should be a map from package names to root URIs
 /// for each package.
 d.DirectoryDescriptor packageConfig(String rootPackageName,
-    {String version = '3.5', Map<String, String>? packages}) {
+    {String? version, Map<String, String>? packages}) {
+  var defaultVersion = DartFormatter.latestLanguageVersion;
+  version ??= '${defaultVersion.major}.${defaultVersion.minor}';
+
   Map<String, dynamic> package(String name, String rootUri) => {
         'name': name,
         'rootUri': rootUri,
