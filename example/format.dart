@@ -40,8 +40,8 @@ void _runFormatter(String source, int pageWidth,
   try {
     var formatter = DartFormatter(
         languageVersion: tall
-            ? DartFormatter.latestShortStyleLanguageVersion
-            : DartFormatter.latestLanguageVersion,
+            ? DartFormatter.latestLanguageVersion
+            : DartFormatter.latestShortStyleLanguageVersion,
         pageWidth: pageWidth);
 
     String result;
