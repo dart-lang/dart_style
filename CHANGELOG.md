@@ -52,7 +52,7 @@ are included, some of them breaking:
   surrounding `analysis_options.yaml` file.
 
   This feature is mainly for code generators that generate and immediately
-  format code but don't know what about any surrounding `analysis_options.yaml`
+  format code but don't know about any surrounding `analysis_options.yaml`
   that might be configuring the page width. By inserting this comment in the
   generated code before formatting, it ensures that the code generator's
   behavior matches the behavior of `dart format`.
