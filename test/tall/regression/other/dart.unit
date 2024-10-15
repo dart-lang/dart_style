@@ -40,3 +40,18 @@ main() {
           .transform(const LineSplitter())
           .asBroadcastStream();
 }
+>>> Don't split return type if comment after metadata annotation.
+class Benchmark {
+  @override
+  // A rate of one run per 2s, with a millisecond of noise.  Some variation is
+  // needed for Golem's noise-based filtering and regression detection.
+  double
+  measure() => (2000 + Random().nextDouble() - 0.5) * 1000;
+}
+<<<
+class Benchmark {
+  @override
+  // A rate of one run per 2s, with a millisecond of noise.  Some variation is
+  // needed for Golem's noise-based filtering and regression detection.
+  double measure() => (2000 + Random().nextDouble() - 0.5) * 1000;
+}

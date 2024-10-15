@@ -96,3 +96,13 @@ f([
   @another(argument, argument)
   callback() = constantFunction,
 ]) {}
+>>> Don't split return type if comment after metadata.
+@meta
+// Comment.
+int f() {;}
+<<<
+@meta
+// Comment.
+int f() {
+  ;
+}

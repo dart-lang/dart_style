@@ -616,6 +616,19 @@ mixin PieceFactory {
       return;
     }
 
+    // Hoist any comments before the function so they don't force a split
+    // between the return type and function. In most cases, this doesn't matter
+    // because the [SequenceBuilder] for the surrounding code will separate out
+    // the leading comment. But if there is a metadata annotation followed by
+    // a comment, then the function, then the comment doesn't get captured by
+    // the [SequenceBuilder], as in:
+    //
+    //     @meta
+    //     // Weird place for comment.
+    //     int f() {}
+    var leadingComments =
+        pieces.takeCommentsBefore(returnType.firstNonCommentToken);
+
     var returnTypePiece = pieces.build(() {
       for (var keyword in modifiers) {
         pieces.modifier(keyword);
@@ -628,7 +641,8 @@ mixin PieceFactory {
       writeFunction();
     });
 
-    pieces.add(VariablePiece(returnTypePiece, [signature], hasType: true));
+    pieces.add(prependLeadingComments(leadingComments,
+        VariablePiece(returnTypePiece, [signature], hasType: true)));
   }
 
   /// If [parameter] has a [defaultValue] then writes a piece for the parameter
