@@ -407,43 +407,45 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConstructorDeclaration(ConstructorDeclaration node) {
-    var header = pieces.build(metadata: node.metadata, () {
-      pieces.modifier(node.externalKeyword);
-      pieces.modifier(node.constKeyword);
-      pieces.modifier(node.factoryKeyword);
-      pieces.visit(node.returnType);
-      pieces.token(node.period);
-      pieces.token(node.name);
-    });
-
-    var parameters = nodePiece(node.parameters);
-
-    Piece? redirect;
-    Piece? initializerSeparator;
-    Piece? initializers;
-    if (node.redirectedConstructor case var constructor?) {
-      var separator = pieces.build(() {
-        pieces.token(node.separator);
-        pieces.space();
+    pieces.withMetadata(node.metadata, () {
+      var header = pieces.build(() {
+        pieces.modifier(node.externalKeyword);
+        pieces.modifier(node.constKeyword);
+        pieces.modifier(node.factoryKeyword);
+        pieces.visit(node.returnType);
+        pieces.token(node.period);
+        pieces.token(node.name);
       });
 
-      redirect = AssignPiece(
-          separator, nodePiece(constructor, context: NodeContext.assignment),
-          canBlockSplitRight: false);
-    } else if (node.initializers.isNotEmpty) {
-      initializerSeparator = tokenPiece(node.separator!);
-      initializers = createCommaSeparated(node.initializers);
-    }
+      var parameters = nodePiece(node.parameters);
 
-    var body = nodePiece(node.body);
+      Piece? redirect;
+      Piece? initializerSeparator;
+      Piece? initializers;
+      if (node.redirectedConstructor case var constructor?) {
+        var separator = pieces.build(() {
+          pieces.token(node.separator);
+          pieces.space();
+        });
 
-    pieces.add(ConstructorPiece(header, parameters, body,
-        canSplitParameters: node.parameters.parameters
-            .canSplit(node.parameters.rightParenthesis),
-        hasOptionalParameter: node.parameters.rightDelimiter != null,
-        redirect: redirect,
-        initializerSeparator: initializerSeparator,
-        initializers: initializers));
+        redirect = AssignPiece(
+            separator, nodePiece(constructor, context: NodeContext.assignment),
+            canBlockSplitRight: false);
+      } else if (node.initializers.isNotEmpty) {
+        initializerSeparator = tokenPiece(node.separator!);
+        initializers = createCommaSeparated(node.initializers);
+      }
+
+      var body = nodePiece(node.body);
+
+      pieces.add(ConstructorPiece(header, parameters, body,
+          canSplitParameters: node.parameters.parameters
+              .canSplit(node.parameters.rightParenthesis),
+          hasOptionalParameter: node.parameters.rightDelimiter != null,
+          redirect: redirect,
+          initializerSeparator: initializerSeparator,
+          initializers: initializers));
+    });
   }
 
   @override
