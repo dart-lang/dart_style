@@ -55,3 +55,14 @@ class Benchmark {
   // needed for Golem's noise-based filtering and regression detection.
   double measure() => (2000 + Random().nextDouble() - 0.5) * 1000;
 }
+>>>
+class Uint8ClampedList {
+  @patch
+  factory Uint8ClampedList.fromList(List<int> elements) = NativeUint8ClampedList.fromList;
+}
+<<<
+class Uint8ClampedList {
+  @patch
+  factory Uint8ClampedList.fromList(List<int> elements) =
+      NativeUint8ClampedList.fromList;
+}
