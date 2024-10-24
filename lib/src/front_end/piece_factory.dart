@@ -1082,7 +1082,7 @@ mixin PieceFactory {
               elements[i - 1].endToken, element.beginToken)) {
         // This element begins a new line. Add the elements on the previous
         // line to the list builder and start a new line.
-        builder.add(lineBuilder.build());
+        builder.addLineBuilder(lineBuilder);
         lineBuilder = DelimitedListBuilder(this, lineStyle);
         atLineStart = true;
       }
@@ -1097,7 +1097,8 @@ mixin PieceFactory {
       atLineStart = false;
     }
 
-    if (!atLineStart) builder.add(lineBuilder.build());
+    // Finish the last line if there is anything on it.
+    if (!atLineStart) builder.addLineBuilder(lineBuilder);
   }
 
   /// Writes a [VariablePiece] for a named or wildcard variable pattern.
