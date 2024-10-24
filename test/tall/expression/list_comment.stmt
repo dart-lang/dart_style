@@ -144,3 +144,25 @@ var list = [
 var list = [1,/* a */ 2 /* b */  , 3];
 <<<
 var list = [1, /* a */ 2 /* b */, 3];
+>>> Comment before comma with other comments.
+var x = [
+  1 // Comment 1.
+  ,
+  2 // Comment 2.
+];
+<<<
+var x = [
+  1, // Comment 1.
+  2, // Comment 2.
+];
+>>> Comment before comma with other comments.
+var x = [
+  1 // Comment 1.
+  ,
+  // Comment 2.
+];
+<<<
+var x = [
+  1, // Comment 1.
+  // Comment 2.
+];

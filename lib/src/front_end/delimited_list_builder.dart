@@ -138,6 +138,20 @@ final class DelimitedListBuilder {
     _commentsBeforeComma = CommentSequence.empty;
   }
 
+  /// Adds the contents of [lineBuilder] to this outer [DelimitedListBuilder].
+  ///
+  /// This is used when preserving newlines inside a collection literal. The
+  /// [lineBuilder] will be used for the elements that should be packed onto a
+  /// single line, and this builder is for the rows that are each on their own
+  /// line.
+  void addLineBuilder(DelimitedListBuilder lineBuilder) {
+    // Add the elements of the line to this builder.
+    add(lineBuilder.build());
+
+    // Make sure that any trailing comments on the line aren't lost.
+    _commentsBeforeComma = lineBuilder._commentsBeforeComma;
+  }
+
   /// Writes any comments appearing before [token] to the list.
   void addCommentsBefore(Token token) {
     // Handle comments between the preceding element and this one.

@@ -6,7 +6,7 @@ description: >-
   Provides an API and a CLI tool.
 repository: https://github.com/dart-lang/dart_style
 environment:
-  sdk: "^3.0.0"
+  sdk: "^3.4.0"
 
 dependencies:
   analyzer: '^6.5.0'
