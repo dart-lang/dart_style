@@ -1,0 +1,10 @@
+>>>
+main() {
+  /// Doc comment.
+  final (a, b) = c;
+}
+<<<
+main() {
+  /// Doc comment.
+  final (a, b) = c;
+}

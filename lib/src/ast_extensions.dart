@@ -26,11 +26,19 @@ extension AstNodeExtensions on AstNode {
   /// (if there is any), or the beginning of the code.
   Token get firstNonCommentToken {
     return switch (this) {
+      // If the node is annotated, skip past the doc comments, but not the
+      // metadata.
       AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
       AnnotatedNode(firstTokenAfterCommentAndMetadata: var token) => token,
+
       // DefaultFormalParameter is not an AnnotatedNode, but its first child
       // (parameter) *is* an AnnotatedNode, so we can't just use beginToken.
       DefaultFormalParameter(:var parameter) => parameter.firstNonCommentToken,
+
+      // A pattern variable statement isn't itself an AnnotatedNode, but the
+      // [PatternVariableDeclaration] that it wraps is.
+      PatternVariableDeclarationStatement(:var declaration) =>
+        declaration.firstNonCommentToken,
       _ => beginToken
     };
   }
