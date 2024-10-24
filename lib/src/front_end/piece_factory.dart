@@ -627,8 +627,8 @@ mixin PieceFactory {
     //     @meta
     //     // Weird place for comment.
     //     int f() {}
-    var firstToken = modifiers.firstWhereOrNull((token) => token != null) ??
-        returnType.firstNonCommentToken;
+    var firstToken =
+        modifiers.nonNulls.firstOrNull ?? returnType.firstNonCommentToken;
     var leadingComments = pieces.takeCommentsBefore(firstToken);
 
     var returnTypePiece = pieces.build(() {
