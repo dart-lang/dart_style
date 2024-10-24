@@ -22,3 +22,33 @@ class Foo {
     ;
   }
 }
+>>> Comment after `external`.
+class C {
+  external /* c */ int x;
+  external /* c */ int f();
+  external /* c */ int get g;
+}
+<<<
+class C {
+  external /* c */ int x;
+  external /* c */ int f();
+  external /* c */ int get g;
+}
+>>> Comment after `covariant` on function typed parameter.
+class C {
+  method(covariant /* c */ int Function() f) {}
+}
+<<<
+class C {
+  method(
+    covariant /* c */ int Function() f,
+  ) {}
+}
+>>> Comment after `static` on method.
+class C {
+  static /* c */ int method() {}
+}
+<<<
+class C {
+  static /* c */ int method() {}
+}

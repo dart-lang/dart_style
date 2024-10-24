@@ -38,3 +38,9 @@ function(
 f({   required    callback()}) {}
 <<<
 f({required callback()}) {}
+>>> Comment after `required` on function type.
+f({required /* c */ int Function() f}) {}
+<<<
+f({
+  required /* c */ int Function() f,
+}) {}
