@@ -1,0 +1,18 @@
+>>>
+class AaaaAaaaa {
+  external Aaaaaa get aa;
+  external Aaaaaa get aaAaa;
+  external Aaaaaa get aa;
+  external aaaa get aaaa;
+  external /*AaaaaaAaaa*/ aaa get aa;
+  external Aaaaaa get aaa;
+}
+<<<
+class AaaaAaaaa {
+  external Aaaaaa get aa;
+  external Aaaaaa get aaAaa;
+  external Aaaaaa get aa;
+  external aaaa get aaaa;
+  external /*AaaaaaAaaa*/ aaa get aa;
+  external Aaaaaa get aaa;
+}

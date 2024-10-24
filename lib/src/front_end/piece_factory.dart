@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:collection/collection.dart';
 
 import '../ast_extensions.dart';
 import '../piece/adjacent.dart';
@@ -626,8 +627,9 @@ mixin PieceFactory {
     //     @meta
     //     // Weird place for comment.
     //     int f() {}
-    var leadingComments =
-        pieces.takeCommentsBefore(returnType.firstNonCommentToken);
+    var firstToken = modifiers.firstWhereOrNull((token) => token != null) ??
+        returnType.firstNonCommentToken;
+    var leadingComments = pieces.takeCommentsBefore(firstToken);
 
     var returnTypePiece = pieces.build(() {
       for (var keyword in modifiers) {
