@@ -67,11 +67,11 @@ time they save a file.
 Here's a simple example of using the formatter on the command line:
 
 ```sh
-$ dart format test.dart
+$ dart format my_file.dart
 ```
 
-This command formats the `test.dart` file and writes the result back to the same
-file.
+This command formats the `my_file.dart` file and writes the result back to the
+same file.
 
 The `dart format` command takes a list of paths, which can point to directories
 or files. If the path is a directory, it processes every `.dart` file in that
