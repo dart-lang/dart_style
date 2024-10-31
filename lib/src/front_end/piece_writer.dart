@@ -96,11 +96,11 @@ final class PieceWriter {
 
     if (spaceBefore) space();
 
-    // TODO(perf): If [_currentCode] is `null` but [_pendingSpace] is `true`,
-    // it should be possible to create a new code piece and write the leading
-    // space to it instead of having a leading SpacePiece. Unfortunately, that
-    // sometimes leads to duplicate spaces in the output, so it might take some
-    // tweaking to get working.
+    // TODO(rnystrom): If [_currentCode] is `null` but [_pendingSpace] is
+    // `true`, it should be possible to create a new code piece and write the
+    // leading space to it instead of having a leading SpacePiece.
+    // Unfortunately, that sometimes leads to duplicate spaces in the output,
+    // so it might take some tweaking to get working.
 
     if (token.precedingComments != null) {
       // Don't append to the previous token if there is a comment after it.
@@ -268,11 +268,6 @@ final class PieceWriter {
           metadata: metadata, inlineMetadata: inlineMetadata));
     }
   }
-
-  // TODO(tall): Much of the comment handling code in CommentWriter got moved
-  // into here, so there isn't great separation of concerns anymore. Can we
-  // organize this code better? Or just combine CommentWriter with this class
-  // completely?
 
   /// Creates a new [Piece] for [comment] and returns it.
   Piece commentPiece(SourceComment comment,

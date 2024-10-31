@@ -66,7 +66,7 @@ final class ControlFlowPiece extends Piece {
         writer.splitIf(state == State.split);
       }
 
-      // TODO(perf): Investigate whether it's worth using `separate:` here.
+      // TODO(rnystrom): Investigate whether it's worth using `separate:` here.
       writer.format(section.statement);
 
       // Reset the indentation for the subsequent `else` or `} else` line.

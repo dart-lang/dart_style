@@ -53,26 +53,6 @@ final class ChainPiece extends Piece {
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
   static const State _blockFormatTrailingCall = State(1, cost: 0);
 
-  // TODO(tall): Currently, we only allow a single call in the chain to be
-  // block-formatted, and it must be the last or next-to-last. That covers
-  // the majority of common use cases (>90% of Flutter call chains), but there
-  // are some cases (<1%) where it might be good to support multiple block
-  // calls in a chain, like:
-  //
-  //     future.then((_) {
-  //       doStuff();
-  //     }).then((_) {
-  //       moreStuff();
-  //     }).catchError((error) {
-  //       print('Oh no!');
-  //     });
-  //
-  // Decide if we want to support this and, if so, which calls are allowed to
-  // be block formatted. A reasonable approach would be to say that multiple
-  // block calls are allowed when the chain is (possibly zero) leading
-  // properties followed by only splittable calls and all splittable calls get
-  // block formatted.
-
   /// Split the call chain at each method call, but leave the leading properties
   /// on the same line as the target.
   static const State _splitAfterProperties = State(2);

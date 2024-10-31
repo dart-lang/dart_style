@@ -136,8 +136,6 @@ abstract base class Piece {
   ///
   /// This is usually just the state's cost, but some pieces may want to tweak
   /// the cost in certain circumstances.
-  // TODO(tall): Given that we have this API now, consider whether it makes
-  // sense to remove the cost field from State entirely.
   int stateCost(State state) => state.cost;
 
   /// Forces this piece to always use [state].

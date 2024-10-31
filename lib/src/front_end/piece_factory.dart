@@ -449,7 +449,7 @@ mixin PieceFactory {
         //     ]) {
         //       body;
         //     }
-        // TODO(tall): Passing `canBlockSplitLeft: true` allows output like:
+        // TODO(rnystrom): Passing `canBlockSplitLeft: true` allows output like:
         //
         //     // 1
         //     for (variable in longExpression +
@@ -900,7 +900,7 @@ mixin PieceFactory {
 
   /// Writes a [Piece] for an index expression.
   void writeIndexExpression(IndexExpression index) {
-    // TODO(tall): Consider whether we should allow splitting between
+    // TODO(rnystrom): Consider whether we should allow splitting between
     // successive index expressions, like:
     //
     //     jsonData['some long key']

@@ -25,7 +25,12 @@ import 'string_compare.dart' as string_compare;
 ///     // dart format width=123
 final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
 
-/// Dart source code formatter.
+/// A Dart source code formatter.
+///
+/// This is a lightweight class that mostly bundles formatting options so that
+/// you don't have to pass a long argument list to [format()] and
+/// [formatStatement()]. You can efficiently create a new instance of this for
+/// every format invocation.
 final class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
