@@ -2,12 +2,12 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-// TODO(tall): Now that the formatter may add and remove trailing commas and
-// reposition comments relative to `,`, `[`, `]`, `{`, and `}`, this function
-// is getting less and less precise. (For example, a bug in the formatter that
-// dropped all `[` tokens on the floor would still pass.) Consider a more
-// sophisticated approach for determining that the formatter preserved all of
-// the original code.
+// TODO(rnystrom): Now that the formatter may add and remove trailing commas
+// and reposition comments relative to `,`, `[`, `]`, `{`, and `}`, this
+// function is getting less and less precise. (For example, a bug in the
+// formatter that dropped all `[` tokens on the floor would still pass.)
+// Consider a more sophisticated approach for determining that the formatter
+// preserved all of the original code.
 
 /// Returns `true` if [c] represents a whitespace code unit allowed in Dart
 /// source code.
