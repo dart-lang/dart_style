@@ -200,11 +200,18 @@ d.DirectoryDescriptor packageConfig(String rootPackageName,
 /// to include another analysis options file. If [other] is given, then those
 /// are added as other top-level keys in the YAML.
 String analysisOptions(
-    {int? pageWidth, String? include, Map<String, Object>? other}) {
+    {int? pageWidth,
+    Object? /* String | List<String> */ include,
+    Map<String, Object>? other}) {
   var yaml = StringBuffer();
 
-  if (include != null) {
+  if (include is String) {
     yaml.writeln('include: $include');
+  } else if (include is List<String>) {
+    yaml.writeln('include:');
+    for (var path in include) {
+      yaml.writeln('  - $path');
+    }
   }
 
   if (pageWidth != null) {

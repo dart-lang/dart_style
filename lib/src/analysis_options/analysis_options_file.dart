@@ -68,11 +68,7 @@ Future<AnalysisOptions> readAnalysisOptions(
   // Lower the YAML to a regular map.
   var options = {...yaml};
 
-  // If there is an `include:` key, then load that and merge it with these
-  // options.
-  if (options['include'] case String include) {
-    options.remove('include');
-
+  Future<Map<Object?, Object?>> optionsFromInclude(String include) async {
     // If the include path is "package:", resolve it to a file path first.
     var includeUri = Uri.tryParse(include);
     if (includeUri != null && includeUri.scheme == 'package') {
@@ -95,9 +91,39 @@ Future<AnalysisOptions> readAnalysisOptions(
     // options file.
     var includePath = await fileSystem.join(
         (await fileSystem.parentDirectory(optionsPath))!, include);
-    var includeFile = await readAnalysisOptions(fileSystem, includePath,
+    return await readAnalysisOptions(fileSystem, includePath,
         resolvePackageUri: resolvePackageUri);
-    options = merge(includeFile, options) as AnalysisOptions;
+  }
+
+  // If there is an `include:` key with a String value, then load that and merge
+  // it with these options. If there is an `include:` key with a List value,
+  // then load each value, merging successive included options, overriding
+  // previous results with each set of included options, finally merging with
+  // these options.
+  switch (options['include']) {
+    case String include:
+      options.remove('include');
+      var includeOptions = await optionsFromInclude(include);
+      options = merge(includeOptions, options) as AnalysisOptions;
+    case List<Object?> includeList:
+      options.remove('include');
+      var mergedIncludeOptions = AnalysisOptions();
+      for (var include in includeList) {
+        if (include is! String) {
+          throw PackageResolutionException(
+              'Unsupported "include" value in analysis options include list: '
+              '"$include".');
+        }
+        var includeOptions = await optionsFromInclude(include);
+        mergedIncludeOptions =
+            merge(mergedIncludeOptions, includeOptions) as AnalysisOptions;
+      }
+      options = merge(mergedIncludeOptions, options) as AnalysisOptions;
+    case null:
+      break;
+    case Object include:
+      throw PackageResolutionException(
+          'Unsupported "include" value in analysis options: "$include".');
   }
 
   return options;
