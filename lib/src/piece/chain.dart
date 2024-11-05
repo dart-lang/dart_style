@@ -168,7 +168,7 @@ final class ChainPiece extends Piece {
         writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
-          _formatCall(writer, state, i, allowNewlines: false);
+          writer.format(_calls[i]._call);
         }
 
       case _splitAfterProperties:
@@ -177,7 +177,10 @@ final class ChainPiece extends Piece {
 
         for (var i = 0; i < _calls.length; i++) {
           writer.splitIf(i >= _leadingProperties, space: false);
-          _formatCall(writer, state, i, allowNewlines: i >= _leadingProperties);
+
+          // Every non-property call except the last will be on its own line.
+          writer.format(_calls[i]._call,
+              separate: i >= _leadingProperties && i < _calls.length - 1);
         }
 
         writer.popIndent();
@@ -186,7 +189,7 @@ final class ChainPiece extends Piece {
         writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
-          _formatCall(writer, state, i, allowNewlines: i == _blockCallIndex);
+          writer.format(_calls[i]._call);
         }
 
       case State.split:
@@ -195,25 +198,14 @@ final class ChainPiece extends Piece {
 
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();
-          _formatCall(writer, state, i);
+
+          // The chain is fully split so every call except for the last is on
+          // its own line.
+          writer.format(_calls[i]._call, separate: i < _calls.length - 1);
         }
 
         writer.popIndent();
     }
-  }
-
-  void _formatCall(CodeWriter writer, State state, int i,
-      {bool allowNewlines = true}) {
-    // If the chain is fully split, then every call except for the last will
-    // be on its own line. If the chain is split after properties, then
-    // every non-property call except the last will be on its own line.
-    var separate = switch (state) {
-      _splitAfterProperties => i >= _leadingProperties && i < _calls.length - 1,
-      State.split => i < _calls.length - 1,
-      _ => false,
-    };
-
-    writer.format(_calls[i]._call, separate: separate);
   }
 
   @override
