@@ -77,18 +77,29 @@ void main() {
           'ab': 'from a',
           'ac': 'from a',
           'abc': 'from a',
+          'ad': 'from a',
         }),
-        'dir|b.yaml': analysisOptions(include: 'c.yaml', other: {
+        'dir|b.yaml': analysisOptions(include: [
+          'c.yaml',
+          'd.yaml'
+        ], other: {
           'ab': 'from b',
           'abc': 'from b',
           'b': 'from b',
           'bc': 'from b',
+          'bd': 'from b',
         }),
         'dir|c.yaml': analysisOptions(other: {
           'ac': 'from c',
           'abc': 'from c',
           'bc': 'from c',
           'c': 'from c',
+          'cd': 'from c',
+        }),
+        'dir|d.yaml': analysisOptions(other: {
+          'ad': 'from d',
+          'bd': 'from d',
+          'cd': 'from d',
         }),
       });
 
@@ -97,10 +108,13 @@ void main() {
       expect(options['a'], 'from a');
       expect(options['ab'], 'from a');
       expect(options['ac'], 'from a');
+      expect(options['ad'], 'from a');
       expect(options['abc'], 'from a');
       expect(options['b'], 'from b');
       expect(options['bc'], 'from b');
+      expect(options['bd'], 'from b');
       expect(options['c'], 'from c');
+      expect(options['cd'], 'from d');
     });
 
     test('removes the include key after merging', () async {
