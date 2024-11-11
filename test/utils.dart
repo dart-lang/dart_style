@@ -205,13 +205,14 @@ String analysisOptions(
     Map<String, Object>? other}) {
   var yaml = StringBuffer();
 
-  if (include is String) {
-    yaml.writeln('include: $include');
-  } else if (include is List<String>) {
-    yaml.writeln('include:');
-    for (var path in include) {
-      yaml.writeln('  - $path');
-    }
+  switch (include) {
+    case String _:
+      yaml.writeln('include: $include');
+    case List<String> _:
+      yaml.writeln('include:');
+      for (var path in include) {
+        yaml.writeln('  - $path');
+      }
   }
 
   if (pageWidth != null) {
