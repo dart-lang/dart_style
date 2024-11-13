@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
+import '../fast_hash.dart';
 import '../profile.dart';
 
 typedef Constrain = void Function(Piece other, State constrainedState);
@@ -14,7 +15,7 @@ typedef Constrain = void Function(Piece other, State constrainedState);
 /// roughly follows the AST but includes comments and is optimized for
 /// formatting and line splitting. The final output is then determined by
 /// deciding which pieces split and how.
-abstract base class Piece {
+abstract base class Piece with FastHash {
   /// The ordered list of all possible ways this piece could split.
   ///
   /// Piece subclasses should override this if they support being split in
@@ -190,7 +191,7 @@ abstract base class Piece {
   String get debugName => runtimeType.toString().replaceAll('Piece', '');
 
   @override
-  String toString() => '$debugName${_pinnedState ?? ''}';
+  String toString() => '$debugName$id${_pinnedState ?? ''}';
 }
 
 /// A state that a piece can be in.

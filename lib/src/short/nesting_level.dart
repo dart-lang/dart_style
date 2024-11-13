@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'fast_hash.dart';
+import '../fast_hash.dart';
 import 'marking_scheme.dart';
 
 /// A single level of expression nesting.
