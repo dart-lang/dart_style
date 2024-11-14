@@ -193,9 +193,15 @@ final class DartFormatter {
     // Format it.
     var lineInfo = parseResult.lineInfo;
 
+    // If the code has an `@dart=` comment, use that to determine the style.
+    var sourceLanguageVersion = languageVersion;
+    if (parseResult.unit.languageVersionToken case var token?) {
+      sourceLanguageVersion = Version(token.major, token.minor, 0);
+    }
+
     // Use language version to determine what formatting style to apply.
     SourceCode output;
-    if (languageVersion > latestShortStyleLanguageVersion) {
+    if (sourceLanguageVersion > latestShortStyleLanguageVersion) {
       // Look for a page width comment before the code.
       int? pageWidthFromComment;
       for (Token? comment = node.beginToken.precedingComments;

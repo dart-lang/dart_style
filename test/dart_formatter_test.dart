@@ -81,6 +81,62 @@ main() {
     });
   });
 
+  test('language version comment override opts into short style', () async {
+    // Use a language version with tall style.
+    var formatter = makeFormatter(languageVersion: Version(3, 7, 0));
+
+    // But the code has a comment to opt into the short style.
+    const before = '''
+// @dart=3.6
+main() { f(argument, // comment
+another);}
+''';
+    const after = '''
+// @dart=3.6
+main() {
+  f(
+      argument, // comment
+      another);
+}
+''';
+
+    expect(formatter.format(before), after);
+  });
+
+  test('language version comment override opts into tall style', () async {
+    // Use a language version with short style.
+    var formatter = makeFormatter(languageVersion: Version(3, 6, 0));
+
+    // But the code has a comment to opt into the tall style.
+    //
+    // Note that in real-world code it doesn't make sense for a language
+    // version comment to be *higher* than the specified default language
+    // version before you can't use a comment that's higher than the minimum
+    // version in the package's SDK constraint. (Otherwise, you could end up
+    // trying to run a library whose language version isn't supported by the
+    // SDK you are running it in.)
+    //
+    // But we support it in the formatter since it's possible to specify a
+    // default language version using mechanisms other than the pubspec SDK
+    // constraint.
+    const before = '''
+// @dart=3.7
+main() { f(argument, // comment
+another);}
+''';
+    const after = '''
+// @dart=3.7
+main() {
+  f(
+    argument, // comment
+    another,
+  );
+}
+''';
+
+    expect(formatter.format(before), after);
+  });
+
   test('throws a FormatterException on failed parse', () {
     var formatter = makeFormatter();
     expect(() => formatter.format('wat?!'), throwsA(isA<FormatterException>()));
