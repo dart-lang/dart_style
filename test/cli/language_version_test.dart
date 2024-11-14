@@ -266,5 +266,62 @@ main() {
 
       await d.dir('code', [d.file('a.dart', after)]).validate();
     });
+
+    test('language version comment override opts into short style', () async {
+      const before = '''
+// @dart=3.6
+main() { f(argument, // comment
+another);}
+''';
+      const after = '''
+// @dart=3.6
+main() {
+  f(
+      argument, // comment
+      another);
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      var process = await runFormatterOnDir(['--language-version=3.7']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
+    });
+
+    test('language version comment override opts into tall style', () async {
+      // Note that in real-world code it doesn't make sense for a language
+      // version comment to be *higher* than the specified default language
+      // version before you can't use a comment that's higher than the minimum
+      // version in the package's SDK constraint. (Otherwise, you could end up
+      // trying to run a library whose language version isn't supported by the
+      // SDK you are running it in.)
+      //
+      // But we support it in the formatter since it's possible to specify a
+      // default language version using mechanisms other than the pubspec SDK
+      // constraint.
+      const before = '''
+// @dart=3.7
+main() { f(argument, // comment
+another);}
+''';
+      const after = '''
+// @dart=3.7
+main() {
+  f(
+    argument, // comment
+    another,
+  );
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      var process = await runFormatterOnDir(['--language-version=3.6']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
+    });
   });
 }
