@@ -163,6 +163,8 @@ are included, some of them breaking:
   intended to be extended or implemented. They are now all marked `final` to
   make that intention explicit.
 
+* Require `package:analyzer` `>=6.5.0 <8.0.0`.
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be
