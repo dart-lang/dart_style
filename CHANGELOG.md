@@ -1,4 +1,4 @@
-## 3.0.0-wip
+## 3.0.0
 
 This is a large change. Under the hood, the formatter was almost completely
 rewritten, with the codebase now containing both the old and new
