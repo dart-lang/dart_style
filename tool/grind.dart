@@ -23,7 +23,7 @@ Future<void> validate() async {
   Analyzer.analyze('bin/format.dart', fatalWarnings: true);
 
   // Format it.
-  Dart.run('bin/format.dart', arguments: ['-w', '.']);
+  Dart.run('bin/format.dart', arguments: ['.']);
 }
 
 /// Gets ready to publish a new version of the package.
