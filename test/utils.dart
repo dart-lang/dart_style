@@ -143,8 +143,8 @@ void _testFile(TestFile testFile) {
 
         // Make sure that formatting is idempotent. Format the output and make
         // sure we get the same result.
-        _validateFormat(formatter, actual, formatTest.output,
-            'was not idempotent', testFile.isCompilationUnit);
+        _validateFormat(formatter, actual, actual, 'was not idempotent',
+            testFile.isCompilationUnit);
       });
     }
   });
@@ -159,17 +159,11 @@ SourceCode _validateFormat(DartFormatter formatter, SourceCode input,
     SourceCode expected, String reason, bool isCompilationUnit) {
   var actual = formatter.formatSource(input);
 
-  // The test files always put a newline at the end of the expectation.
-  // Statements from the formatter (correctly) don't have that, so add
-  // one to line up with the expected result.
-  var actualText = actual.text;
-  if (!isCompilationUnit) actualText += '\n';
-
   // Fail with an explicit message because it's easier to read than
   // the matcher output.
-  if (actualText != expected.text) {
+  if (actual.text != expected.text) {
     fail('Formatting $reason. Expected:\n'
-        '${expected.text}\nActual:\n$actualText');
+        '${expected.text}\nActual:\n${actual.text}');
   } else if (actual.selectionStart != expected.selectionStart ||
       actual.selectionLength != expected.selectionLength) {
     fail('Selection $reason. Expected:\n'
