@@ -1,4 +1,4 @@
-## 3.0.0-wip
+## 3.0.1-wip
 
 * Ensure comment formatting is idempotent (#1606).
 
