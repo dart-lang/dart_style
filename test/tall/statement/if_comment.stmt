@@ -92,3 +92,43 @@ if (true) {
 } else {
   other;
 } // comment
+>>> Hanging line comment before infix condition.
+if (// comment
+a && b) { body; }
+<<<
+### The indentation is odd here because it's an odd place for a comment.
+if ( // comment
+a && b) {
+  body;
+}
+>>> Non-hanging line comment before infix condition.
+if (
+  // comment
+a && b) { body; }
+<<<
+### The indentation is odd here because it's an odd place for a comment.
+if (
+// comment
+a && b) {
+  body;
+}
+>>> Hanging line comment before infix chain condition.
+if (// comment
+a && b && c) { body; }
+<<<
+### The indentation is odd here because it's an odd place for a comment.
+if ( // comment
+a && b && c) {
+  body;
+}
+>>> Non-hanging line comment before infix chain condition.
+if (
+// comment
+a && b && c) { body; }
+<<<
+### The indentation is odd here because it's an odd place for a comment.
+if (
+// comment
+a && b && c) {
+  body;
+}

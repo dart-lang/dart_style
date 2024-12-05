@@ -33,7 +33,8 @@ if (obj case
   constant as Type) {;}
 <<<
 if (obj
-    case // comment
+    case
+        // comment
         constant as Type) {
   ;
 }

@@ -7,11 +7,13 @@ import 'foo.dart'
     hide
         First, //
         Second;
->>> Don't split `==` because of leading comment before left operand.
+>>> Don't split `==` because of comment before left operand.
 import 'uri.dart' if (
   // comment
 config == 'value') 'c';
 <<<
+### The indentation is odd here because it's an odd place for a comment.
 import 'uri.dart'
-    if (// comment
+    if (
+    // comment
     config == 'value') 'c';

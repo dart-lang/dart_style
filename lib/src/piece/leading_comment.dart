@@ -31,6 +31,13 @@ final class LeadingCommentPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
+    // If a piece has a leading comment, that comment should not also be a
+    // hanging comment, so ensure it begins its own line. This is also important
+    // to ensure that formatting is idempotent: If we don't do this, a comment
+    // might be a leading comment in the input and then get output on the same
+    // line as some preceding code, which would lead it to be a hanging comment
+    // the next time the formatter runs.
+    writer.newline();
     for (var comment in _comments) {
       writer.format(comment);
     }
