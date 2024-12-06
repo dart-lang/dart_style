@@ -1,6 +1,7 @@
 ## 3.0.1-wip
 
 * Ensure comment formatting is idempotent (#1606).
+* Handle trailing commas in for-loop updaters (#1354).
 
 ## 3.0.0
 

@@ -156,3 +156,18 @@ for (
   third = 3,
   fourth = 4
 ) {}
+>>> Discard trailing comma in unsplit increments.
+for (foo; bar; first = 1, second = 2,) {}
+<<<
+for (foo; bar; first = 1, second = 2) {}
+>>> Discard trailing comma in split increments.
+for (foo; bar; first = 1, second = 2, third = 3, fourth = 4,) {}
+<<<
+for (
+  foo;
+  bar;
+  first = 1,
+  second = 2,
+  third = 3,
+  fourth = 4
+) {}

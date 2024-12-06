@@ -223,6 +223,22 @@ for (
 ) {
   body;
 }
+>>> Preserve comments around discarded increment trailing comma.
+for (
+  init;
+  cond;
+  incr /* c1 */ , /* c2 */
+) {
+  body;
+}
+<<<
+for (
+  init;
+  cond;
+  incr /* c1 */ /* c2 */
+) {
+  body;
+}
 >>> Line comment before first `;` in fully empty clauses.
 for  (  // comment
 ;  ;  )  {  body;  }

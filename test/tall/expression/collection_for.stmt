@@ -171,3 +171,17 @@ var list = [
   )
     element,
 ];
+>>> Trailing comma in increments.
+var list = [
+  for (
+    x = 1;
+    true;
+    x += 1, x += 2,
+  )
+    element,
+];
+<<<
+var list = [
+  for (x = 1; true; x += 1, x += 2)
+    element,
+];
