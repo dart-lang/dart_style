@@ -12,7 +12,6 @@ import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
-import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
@@ -283,15 +282,6 @@ mixin PieceFactory {
         DelimitedListBuilder(this, const ListStyle(commas: Commas.nonTrailing));
     nodes.forEach(builder.visit);
     return builder.build();
-  }
-
-  /// If [leadingComments] is not empty, returns [piece] wrapped in a
-  /// [LeadingCommentPiece] that prepends them.
-  ///
-  /// Otherwise, just returns [piece].
-  Piece prependLeadingComments(List<Piece> leadingComments, Piece piece) {
-    if (leadingComments.isEmpty) return piece;
-    return LeadingCommentPiece(leadingComments, piece);
   }
 
   /// Writes the leading keyword and parenthesized expression at the beginning
@@ -628,22 +618,21 @@ mixin PieceFactory {
     //     int f() {}
     var firstToken =
         modifiers.nonNulls.firstOrNull ?? returnType.firstNonCommentToken;
-    var leadingComments = pieces.takeCommentsBefore(firstToken);
+    pieces.hoistLeadingComments(firstToken, () {
+      var returnTypePiece = pieces.build(() {
+        for (var keyword in modifiers) {
+          pieces.modifier(keyword);
+        }
 
-    var returnTypePiece = pieces.build(() {
-      for (var keyword in modifiers) {
-        pieces.modifier(keyword);
-      }
+        pieces.visit(returnType);
+      });
 
-      pieces.visit(returnType);
+      var signature = pieces.build(() {
+        writeFunction();
+      });
+
+      return VariablePiece(returnTypePiece, [signature], hasType: true);
     });
-
-    var signature = pieces.build(() {
-      writeFunction();
-    });
-
-    pieces.add(prependLeadingComments(leadingComments,
-        VariablePiece(returnTypePiece, [signature], hasType: true)));
   }
 
   /// If [parameter] has a [defaultValue] then writes a piece for the parameter
@@ -924,10 +913,6 @@ mixin PieceFactory {
   /// separate tokens, as in `foo is! Bar`.
   void writeInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(left.firstNonCommentToken);
-
     var leftPiece = pieces.build(() {
       pieces.visit(left);
       if (hanging) {
@@ -947,8 +932,7 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece([leftPiece, rightPiece])));
+    pieces.add(InfixPiece([leftPiece, rightPiece]));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -969,10 +953,6 @@ mixin PieceFactory {
   void writeInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
-
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -1000,8 +980,7 @@ mixin PieceFactory {
       traverse(node);
     }));
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece(operands, indent: indent)));
+    pieces.add(InfixPiece(operands, indent: indent));
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
