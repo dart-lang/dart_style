@@ -1,0 +1,37 @@
+>>>
+class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
+  @aaaaaaaa
+  AaaaaAaaaAaaaAaaaaaaa get aaaaAaaaAaaaaaaa => aaaaaaaaAaaaaaaaaAaaaaa
+      ? (AaaaaaaaaAaaAaaaaaaa()
+        // AAA/Aaaaa aaaaaaaaa aaaaaaaa aaaa AAAAAAAA aaaaaaaaa aaaaaa aaaaaaaa.
+        ..aaaaAaaaaaaaaAaaaaaAaagetaaa =
+            AaaaAaaaaaaaaAaaaaaAaagetaaa.aaaaAaaaaa(aaaaaaaa: [
+          AaaaaaaaAaaaaaa()..aaaaaaaa = AaaaaaaaAA_Aaaaaaaa.AAAAA,
+        ], aaaaaaAaaaaa: [
+          AaaaaaAaaaaaAaaaaaa()
+            ..aaaaaaAaaaaa = AaaaaaAaaaaa.AAAAAA_AAAAAAAAAA_AAAAAA,
+          AaaaaaAaaaaaAaaaaaa()..aaaaaaAaaaaa = AaaaaaAaaaaa.AAAAAA_AAAA_AAAAAAA
+        ]))
+      : AaaaAaaaaaaAaaaaaaAaaaaaaa();
+}
+<<<
+class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
+  @aaaaaaaa
+  AaaaaAaaaAaaaAaaaaaaa get aaaaAaaaAaaaaaaa =>
+      aaaaaaaaAaaaaaaaaAaaaaa
+          ? (AaaaaaaaaAaaAaaaaaaa()
+            // AAA/Aaaaa aaaaaaaaa aaaaaaaa aaaa AAAAAAAA aaaaaaaaa aaaaaa aaaaaaaa.
+            ..aaaaAaaaaaaaaAaaaaaAaagetaaa =
+                AaaaAaaaaaaaaAaaaaaAaagetaaa.aaaaAaaaaa(
+                  aaaaaaaa: [
+                    AaaaaaaaAaaaaaa()..aaaaaaaa = AaaaaaaaAA_Aaaaaaaa.AAAAA,
+                  ],
+                  aaaaaaAaaaaa: [
+                    AaaaaaAaaaaaAaaaaaa()
+                      ..aaaaaaAaaaaa = AaaaaaAaaaaa.AAAAAA_AAAAAAAAAA_AAAAAA,
+                    AaaaaaAaaaaaAaaaaaa()
+                      ..aaaaaaAaaaaa = AaaaaaAaaaaa.AAAAAA_AAAA_AAAAAAA,
+                  ],
+                ))
+          : AaaaAaaaaaaAaaaaaaAaaaaaaa();
+}

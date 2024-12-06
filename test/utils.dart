@@ -134,32 +134,44 @@ void _testFile(TestFile testFile) {
             indent: formatTest.leadingIndent,
             experimentFlags: const ['macros']);
 
-        var actual = formatter.formatSource(formatTest.input);
+        var actual = _validateFormat(
+            formatter,
+            formatTest.input,
+            formatTest.output,
+            'did not match expectation',
+            testFile.isCompilationUnit);
 
-        // The test files always put a newline at the end of the expectation.
-        // Statements from the formatter (correctly) don't have that, so add
-        // one to line up with the expected result.
-        var actualText = actual.text;
-        if (!testFile.isCompilationUnit) actualText += '\n';
-
-        // Fail with an explicit message because it's easier to read than
-        // the matcher output.
-        if (actualText != formatTest.output.text) {
-          fail('Formatting did not match expectation. Expected:\n'
-              '${formatTest.output.text}\nActual:\n$actualText');
-        } else if (actual.selectionStart != formatTest.output.selectionStart ||
-            actual.selectionLength != formatTest.output.selectionLength) {
-          fail('Selection did not match expectation. Expected:\n'
-              '${formatTest.output.textWithSelectionMarkers}\n'
-              'Actual:\n${actual.textWithSelectionMarkers}');
-        }
-
-        expect(actual.selectionStart, equals(formatTest.output.selectionStart));
-        expect(
-            actual.selectionLength, equals(formatTest.output.selectionLength));
+        // Make sure that formatting is idempotent. Format the output and make
+        // sure we get the same result.
+        _validateFormat(formatter, actual, actual, 'was not idempotent',
+            testFile.isCompilationUnit);
       });
     }
   });
+}
+
+/// Run [formatter] on [input] and validate that the result matches [expected].
+///
+/// If not, fails with an error using [reason].
+///
+/// Returns the formatted output.
+SourceCode _validateFormat(DartFormatter formatter, SourceCode input,
+    SourceCode expected, String reason, bool isCompilationUnit) {
+  var actual = formatter.formatSource(input);
+
+  // Fail with an explicit message because it's easier to read than
+  // the matcher output.
+  if (actual.text != expected.text) {
+    fail('Formatting $reason. Expected:\n'
+        '${expected.text}\nActual:\n${actual.text}');
+  } else if (actual.selectionStart != expected.selectionStart ||
+      actual.selectionLength != expected.selectionLength) {
+    fail('Selection $reason. Expected:\n'
+        '${expected.textWithSelectionMarkers}\n'
+        'Actual:\n${actual.textWithSelectionMarkers}');
+  }
+
+  return actual;
 }
 
 /// Create a test `.dart_tool` directory with a package config for a package

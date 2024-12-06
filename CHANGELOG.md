@@ -1,3 +1,7 @@
+## 3.0.1-wip
+
+* Ensure comment formatting is idempotent (#1606).
+
 ## 3.0.0
 
 This is a large change. Under the hood, the formatter was almost completely

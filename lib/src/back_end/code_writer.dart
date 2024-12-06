@@ -372,12 +372,13 @@ final class CodeWriter {
     // If we found a problematic line, and there is are pieces on the line that
     // we can try to split, then remember them so that the solution will expand
     // them next.
-    if (!_foundExpandLine && (_column > _pageWidth || !_solution.isValid)) {
-      // We found a problematic line, so remember the pieces on it.
-      _foundExpandLine = true;
+    if (_foundExpandLine) return;
+    if (_currentLinePieces.isNotEmpty &&
+        (_column > _pageWidth || !_solution.isValid)) {
       _expandPieces.addAll(_currentLinePieces);
-    } else if (!_foundExpandLine) {
-      // This line was OK, so we don't need to expand the piece on it.
+      _foundExpandLine = true;
+    } else {
+      // This line was OK, so we don't need to expand the pieces on it.
       _currentLinePieces.clear();
     }
   }

@@ -124,7 +124,7 @@ final class DartFormatter {
     if (!source.isCompilationUnit) {
       var prefix = 'void foo() { ';
       inputOffset = prefix.length;
-      text = '$prefix$text }';
+      text = '$prefix$text\n }';
       unitSourceCode = SourceCode(
         text,
         uri: source.uri,

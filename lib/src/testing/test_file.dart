@@ -137,9 +137,19 @@ final class TestFile {
       }
 
       var isCompilationUnit = file.path.endsWith('.unit');
+
+      // The output always has a trailing newline. When formatting a statement,
+      // the formatter (correctly) doesn't output trailing newlines when
+      // formatting a statement, so remove it from the expectation to match.
+      var outputText = outputBuffer.toString();
+      if (!isCompilationUnit) {
+        assert(outputText.endsWith('\n'));
+        outputText = outputText.substring(0, outputText.length - 1);
+      }
+
       var input = _extractSelection(_unescapeUnicode(inputBuffer.toString()),
           isCompilationUnit: isCompilationUnit);
-      var output = _extractSelection(_unescapeUnicode(outputBuffer.toString()),
+      var output = _extractSelection(_unescapeUnicode(outputText),
           isCompilationUnit: isCompilationUnit);
 
       tests.add(FormatTest(
