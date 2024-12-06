@@ -1,0 +1,57 @@
+40 columns                              |
+>>> Comment between metadata and variable doesn't force type to split.
+@meta
+// c
+var a;
+
+@meta
+// c
+int b;
+
+@meta
+// c
+final int c;
+
+@meta
+// c
+late var d;
+
+@meta
+// c
+late int e;
+
+@meta
+// c
+late final int f;
+<<<
+@meta
+// c
+var a;
+
+@meta
+// c
+int b;
+
+@meta
+// c
+final int c;
+
+@meta
+// c
+late var d;
+
+@meta
+// c
+late int e;
+
+@meta
+// c
+late final int f;
+>>> Comment between metadata and function doesn't force return type to split.
+@meta
+// c
+int a() {}
+<<<
+@meta
+// c
+int a() {}

@@ -1,6 +1,7 @@
 ## 3.0.1-wip
 
 * Ensure comment formatting is idempotent (#1606).
+* Handle comments and metadata before variables more gracefully (#1604).
 
 ## 3.0.0
 
