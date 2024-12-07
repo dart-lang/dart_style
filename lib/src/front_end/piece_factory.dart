@@ -437,9 +437,16 @@ mixin PieceFactory {
         forPartsPiece = partsList.build();
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithDeclaration(loopVariable: AstNode variable):
+            ForEachPartsWithDeclaration(:var loopVariable):
+        forPartsPiece = pieces.build(() {
+          pieces.token(leftParenthesis);
+          _writeDeclaredForIn(
+              loopVariable, forEachParts.inKeyword, forEachParts.iterable);
+          pieces.token(rightParenthesis);
+        });
+
       case ForEachParts forEachParts &&
-            ForEachPartsWithIdentifier(identifier: AstNode variable):
+            ForEachPartsWithIdentifier(:var identifier):
         // If a for-in loop, treat the for parts like an assignment, so they
         // split like:
         //
@@ -481,7 +488,8 @@ mixin PieceFactory {
         // statement or element.
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
-          writeForIn(variable, forEachParts.inKeyword, forEachParts.iterable);
+          _writeForIn(
+              identifier, forEachParts.inKeyword, forEachParts.iterable);
           pieces.token(rightParenthesis);
         });
 
@@ -490,14 +498,23 @@ mixin PieceFactory {
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
 
+          // Hoist any leading comments so they don't force the for-in clauses
+          // to split.
+          var leadingComments = const <Piece>[];
+          if (metadata.isEmpty) {
+            leadingComments = pieces.takeCommentsBefore(keyword);
+          }
+
           // Use a nested piece so that the metadata precedes the keyword and
           // not the `(`.
-          pieces.withMetadata(metadata, inlineMetadata: true, () {
+          var forInPiece =
+              pieces.build(metadata: metadata, inlineMetadata: true, () {
             pieces.token(keyword);
             pieces.space();
-
-            writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
+            _writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
           });
+
+          pieces.add(prependLeadingComments(leadingComments, forInPiece));
           pieces.token(rightParenthesis);
         });
     }
@@ -1399,21 +1416,66 @@ mixin PieceFactory {
         canBlockSplitRight: canBlockSplitRight));
   }
 
-  /// Writes a [Piece] for the `<variable> in <expression>` part of a for-in
-  /// loop.
-  void writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
+  /// Writes the `<variable> in <expression>` part of an identifier or pattern
+  /// for-in loop.
+  void _writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
+    // Hoist any leading comments so they don't force the for-in clauses to
+    // split.
+    var leadingComments =
+        pieces.takeCommentsBefore(leftHandSide.firstNonCommentToken);
+
     var leftPiece =
         nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+    var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-    var sequencePiece = pieces.build(() {
+    pieces.add(prependLeadingComments(
+        leadingComments,
+        ForInPiece(leftPiece, sequencePiece,
+            canBlockSplitSequence: sequence.canBlockSplit)));
+  }
+
+  /// Writes the `<variable> in <expression>` part of a for-in loop when the
+  /// part before `in` is a variable declaration.
+  ///
+  /// A for-in loop with a variable declaration can have metadata before it,
+  /// which requires some special handling so that we don't push the metadata
+  /// and any comments after it into the left child piece of [ForInPiece].
+  void _writeDeclaredForIn(
+      DeclaredIdentifier identifier, Token inKeyword, Expression sequence) {
+    // Hoist any leading comments so they don't force the for-in clauses
+    // to split.
+    var leadingComments = const <Piece>[];
+    if (identifier.metadata.isEmpty) {
+      leadingComments = pieces
+          .takeCommentsBefore(identifier.firstTokenAfterCommentAndMetadata);
+    }
+
+    // Use a nested piece so that the metadata precedes the keyword and
+    // not the `(`.
+    var forInPiece =
+        pieces.build(metadata: identifier.metadata, inlineMetadata: true, () {
+      var leftPiece = pieces.build(() {
+        writeParameter(
+            modifiers: [identifier.keyword], identifier.type, identifier.name);
+      });
+
+      var sequencePiece = _createForInSequence(inKeyword, sequence);
+
+      pieces.add(ForInPiece(leftPiece, sequencePiece,
+          canBlockSplitSequence: sequence.canBlockSplit));
+    });
+
+    pieces.add(prependLeadingComments(leadingComments, forInPiece));
+  }
+
+  /// Creates a piece for the `in <sequence>` part of a for-in loop.
+  Piece _createForInSequence(Token inKeyword, Expression sequence) {
+    return pieces.build(() {
       // Put the `in` at the beginning of the sequence.
       pieces.token(inKeyword);
       pieces.space();
       pieces.visit(sequence);
     });
-
-    pieces.add(ForInPiece(leftPiece, sequencePiece,
-        canBlockSplitSequence: sequence.canBlockSplit));
   }
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal
