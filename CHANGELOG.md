@@ -1,5 +1,6 @@
 ## 3.0.1-wip
 
+* Handle trailing commas in for-loop updaters (#1354).
 * Handle comments and metadata before variables more gracefully (#1604).
 * Ensure comment formatting is idempotent (#1606).
 * Better indentation of leading comments on property accesses in binary operator

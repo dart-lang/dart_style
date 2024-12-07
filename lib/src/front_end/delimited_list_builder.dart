@@ -143,18 +143,18 @@ final class DelimitedListBuilder {
     pieces.forEach(add);
   }
 
-  /// Adds the contents of [lineBuilder] to this outer [DelimitedListBuilder].
+  /// Adds the contents of [inner] to this outer [DelimitedListBuilder].
   ///
-  /// This is used when preserving newlines inside a collection literal. The
-  /// [lineBuilder] will be used for the elements that should be packed onto a
-  /// single line, and this builder is for the rows that are each on their own
-  /// line.
-  void addLineBuilder(DelimitedListBuilder lineBuilder) {
+  /// This is used when a [DelimiterListBuilder] is building a piece that will
+  /// then become an element in a surrounding [DelimitedListBuilder]. It ensures
+  /// that any comments around a trailing comma after [inner] don't get lost and
+  /// are instead hoisted up to be captured by this builder.
+  void addInnerBuilder(DelimitedListBuilder inner) {
     // Add the elements of the line to this builder.
-    add(lineBuilder.build());
+    add(inner.build());
 
     // Make sure that any trailing comments on the line aren't lost.
-    _commentsBeforeComma = lineBuilder._commentsBeforeComma;
+    _commentsBeforeComma = inner._commentsBeforeComma;
   }
 
   /// Writes any comments appearing before [token] to the list.

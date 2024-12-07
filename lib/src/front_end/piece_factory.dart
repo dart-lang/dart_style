@@ -420,7 +420,16 @@ mixin PieceFactory {
         // The update clauses.
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
-          partsList.add(createCommaSeparated(forParts.updaters));
+
+          // Create a nested list builder for the updaters so that they can
+          // remain unsplit even while the clauses split.
+          var updaterBuilder = DelimitedListBuilder(
+              this, const ListStyle(commas: Commas.nonTrailing));
+          forParts.updaters.forEach(updaterBuilder.visit);
+
+          // Add the updater builder to the clause builder so that any comments
+          // around a trailing comma after the updaters don't get dropped.
+          partsList.addInnerBuilder(updaterBuilder);
         }
 
         partsList.rightBracket(rightParenthesis);
@@ -1076,7 +1085,7 @@ mixin PieceFactory {
               elements[i - 1].endToken, element.beginToken)) {
         // This element begins a new line. Add the elements on the previous
         // line to the list builder and start a new line.
-        builder.addLineBuilder(lineBuilder);
+        builder.addInnerBuilder(lineBuilder);
         lineBuilder = DelimitedListBuilder(this, lineStyle);
         atLineStart = true;
       }
@@ -1092,7 +1101,7 @@ mixin PieceFactory {
     }
 
     // Finish the last line if there is anything on it.
-    if (!atLineStart) builder.addLineBuilder(lineBuilder);
+    if (!atLineStart) builder.addInnerBuilder(lineBuilder);
   }
 
   /// Writes a [VariablePiece] for a named or wildcard variable pattern.
