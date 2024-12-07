@@ -490,21 +490,18 @@ mixin PieceFactory {
 
           // Hoist any leading comments so they don't force the for-in clauses
           // to split.
-          var leadingComments = const <Piece>[];
-          if (metadata.isEmpty) {
-            leadingComments = pieces.takeCommentsBefore(keyword);
-          }
-
-          // Use a nested piece so that the metadata precedes the keyword and
-          // not the `(`.
-          var forInPiece =
-              pieces.build(metadata: metadata, inlineMetadata: true, () {
-            pieces.token(keyword);
-            pieces.space();
-            _writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
+          pieces.hoistLeadingComments(
+              metadata.firstOrNull?.beginToken ?? keyword, () {
+            // Use a nested piece so that the metadata precedes the keyword and
+            // not the `(`.
+            return pieces.build(metadata: metadata, inlineMetadata: true, () {
+              pieces.token(keyword);
+              pieces.space();
+              _writeForIn(
+                  pattern, forEachParts.inKeyword, forEachParts.iterable);
+            });
           });
 
-          pieces.add(prependLeadingComments(leadingComments, forInPiece));
           pieces.token(rightParenthesis);
         });
     }
@@ -1400,17 +1397,14 @@ mixin PieceFactory {
   void _writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
     // Hoist any leading comments so they don't force the for-in clauses to
     // split.
-    var leadingComments =
-        pieces.takeCommentsBefore(leftHandSide.firstNonCommentToken);
+    pieces.hoistLeadingComments(leftHandSide.firstNonCommentToken, () {
+      var leftPiece =
+          nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+      var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-    var leftPiece =
-        nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
-    var sequencePiece = _createForInSequence(inKeyword, sequence);
-
-    pieces.add(prependLeadingComments(
-        leadingComments,
-        ForInPiece(leftPiece, sequencePiece,
-            canBlockSplitSequence: sequence.canBlockSplit)));
+      return ForInPiece(leftPiece, sequencePiece,
+          canBlockSplitSequence: sequence.canBlockSplit);
+    });
   }
 
   /// Writes the `<variable> in <expression>` part of a for-in loop when the
@@ -1423,28 +1417,24 @@ mixin PieceFactory {
       DeclaredIdentifier identifier, Token inKeyword, Expression sequence) {
     // Hoist any leading comments so they don't force the for-in clauses
     // to split.
-    var leadingComments = const <Piece>[];
-    if (identifier.metadata.isEmpty) {
-      leadingComments = pieces
-          .takeCommentsBefore(identifier.firstTokenAfterCommentAndMetadata);
-    }
+    pieces.hoistLeadingComments(identifier.beginToken, () {
+      // Use a nested piece so that the metadata precedes the keyword and
+      // not the `(`.
+      return pieces.build(metadata: identifier.metadata, inlineMetadata: true,
+          () {
+        var leftPiece = pieces.build(() {
+          writeParameter(
+              modifiers: [identifier.keyword],
+              identifier.type,
+              identifier.name);
+        });
 
-    // Use a nested piece so that the metadata precedes the keyword and
-    // not the `(`.
-    var forInPiece =
-        pieces.build(metadata: identifier.metadata, inlineMetadata: true, () {
-      var leftPiece = pieces.build(() {
-        writeParameter(
-            modifiers: [identifier.keyword], identifier.type, identifier.name);
+        var sequencePiece = _createForInSequence(inKeyword, sequence);
+
+        pieces.add(ForInPiece(leftPiece, sequencePiece,
+            canBlockSplitSequence: sequence.canBlockSplit));
       });
-
-      var sequencePiece = _createForInSequence(inKeyword, sequence);
-
-      pieces.add(ForInPiece(leftPiece, sequencePiece,
-          canBlockSplitSequence: sequence.canBlockSplit));
     });
-
-    pieces.add(prependLeadingComments(leadingComments, forInPiece));
   }
 
   /// Creates a piece for the `in <sequence>` part of a for-in loop.
