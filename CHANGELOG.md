@@ -1,7 +1,9 @@
 ## 3.0.1-wip
 
-* Ensure comment formatting is idempotent (#1606).
 * Handle comments and metadata before variables more gracefully (#1604).
+* Ensure comment formatting is idempotent (#1606).
+* Better indentation of leading comments on property accesses in binary operator
+  operands (#1611).
 
 ## 3.0.0
 

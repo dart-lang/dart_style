@@ -12,7 +12,6 @@ import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
-import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
@@ -285,15 +284,6 @@ mixin PieceFactory {
     return builder.build();
   }
 
-  /// If [leadingComments] is not empty, returns [piece] wrapped in a
-  /// [LeadingCommentPiece] that prepends them.
-  ///
-  /// Otherwise, just returns [piece].
-  Piece prependLeadingComments(List<Piece> leadingComments, Piece piece) {
-    if (leadingComments.isEmpty) return piece;
-    return LeadingCommentPiece(leadingComments, piece);
-  }
-
   /// Writes the leading keyword and parenthesized expression at the beginning
   /// of an `if`, `while`, or `switch` expression or statement.
   void writeControlFlowStart(Token keyword, Token leftParenthesis,
@@ -500,21 +490,18 @@ mixin PieceFactory {
 
           // Hoist any leading comments so they don't force the for-in clauses
           // to split.
-          var leadingComments = const <Piece>[];
-          if (metadata.isEmpty) {
-            leadingComments = pieces.takeCommentsBefore(keyword);
-          }
-
-          // Use a nested piece so that the metadata precedes the keyword and
-          // not the `(`.
-          var forInPiece =
-              pieces.build(metadata: metadata, inlineMetadata: true, () {
-            pieces.token(keyword);
-            pieces.space();
-            _writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
+          pieces.hoistLeadingComments(
+              metadata.firstOrNull?.beginToken ?? keyword, () {
+            // Use a nested piece so that the metadata precedes the keyword and
+            // not the `(`.
+            return pieces.build(metadata: metadata, inlineMetadata: true, () {
+              pieces.token(keyword);
+              pieces.space();
+              _writeForIn(
+                  pattern, forEachParts.inKeyword, forEachParts.iterable);
+            });
           });
 
-          pieces.add(prependLeadingComments(leadingComments, forInPiece));
           pieces.token(rightParenthesis);
         });
     }
@@ -645,22 +632,21 @@ mixin PieceFactory {
     //     int f() {}
     var firstToken =
         modifiers.nonNulls.firstOrNull ?? returnType.firstNonCommentToken;
-    var leadingComments = pieces.takeCommentsBefore(firstToken);
+    pieces.hoistLeadingComments(firstToken, () {
+      var returnTypePiece = pieces.build(() {
+        for (var keyword in modifiers) {
+          pieces.modifier(keyword);
+        }
 
-    var returnTypePiece = pieces.build(() {
-      for (var keyword in modifiers) {
-        pieces.modifier(keyword);
-      }
+        pieces.visit(returnType);
+      });
 
-      pieces.visit(returnType);
+      var signature = pieces.build(() {
+        writeFunction();
+      });
+
+      return VariablePiece(returnTypePiece, [signature], hasType: true);
     });
-
-    var signature = pieces.build(() {
-      writeFunction();
-    });
-
-    pieces.add(prependLeadingComments(leadingComments,
-        VariablePiece(returnTypePiece, [signature], hasType: true)));
   }
 
   /// If [parameter] has a [defaultValue] then writes a piece for the parameter
@@ -941,10 +927,6 @@ mixin PieceFactory {
   /// separate tokens, as in `foo is! Bar`.
   void writeInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(left.firstNonCommentToken);
-
     var leftPiece = pieces.build(() {
       pieces.visit(left);
       if (hanging) {
@@ -964,8 +946,7 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece([leftPiece, rightPiece])));
+    pieces.add(InfixPiece([leftPiece, rightPiece]));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -986,10 +967,6 @@ mixin PieceFactory {
   void writeInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
-
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -1017,8 +994,7 @@ mixin PieceFactory {
       traverse(node);
     }));
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece(operands, indent: indent)));
+    pieces.add(InfixPiece(operands, indent: indent));
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
@@ -1421,17 +1397,14 @@ mixin PieceFactory {
   void _writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
     // Hoist any leading comments so they don't force the for-in clauses to
     // split.
-    var leadingComments =
-        pieces.takeCommentsBefore(leftHandSide.firstNonCommentToken);
+    pieces.hoistLeadingComments(leftHandSide.firstNonCommentToken, () {
+      var leftPiece =
+          nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+      var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-    var leftPiece =
-        nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
-    var sequencePiece = _createForInSequence(inKeyword, sequence);
-
-    pieces.add(prependLeadingComments(
-        leadingComments,
-        ForInPiece(leftPiece, sequencePiece,
-            canBlockSplitSequence: sequence.canBlockSplit)));
+      return ForInPiece(leftPiece, sequencePiece,
+          canBlockSplitSequence: sequence.canBlockSplit);
+    });
   }
 
   /// Writes the `<variable> in <expression>` part of a for-in loop when the
@@ -1444,28 +1417,24 @@ mixin PieceFactory {
       DeclaredIdentifier identifier, Token inKeyword, Expression sequence) {
     // Hoist any leading comments so they don't force the for-in clauses
     // to split.
-    var leadingComments = const <Piece>[];
-    if (identifier.metadata.isEmpty) {
-      leadingComments = pieces
-          .takeCommentsBefore(identifier.firstTokenAfterCommentAndMetadata);
-    }
+    pieces.hoistLeadingComments(identifier.beginToken, () {
+      // Use a nested piece so that the metadata precedes the keyword and
+      // not the `(`.
+      return pieces.build(metadata: identifier.metadata, inlineMetadata: true,
+          () {
+        var leftPiece = pieces.build(() {
+          writeParameter(
+              modifiers: [identifier.keyword],
+              identifier.type,
+              identifier.name);
+        });
 
-    // Use a nested piece so that the metadata precedes the keyword and
-    // not the `(`.
-    var forInPiece =
-        pieces.build(metadata: identifier.metadata, inlineMetadata: true, () {
-      var leftPiece = pieces.build(() {
-        writeParameter(
-            modifiers: [identifier.keyword], identifier.type, identifier.name);
+        var sequencePiece = _createForInSequence(inKeyword, sequence);
+
+        pieces.add(ForInPiece(leftPiece, sequencePiece,
+            canBlockSplitSequence: sequence.canBlockSplit));
       });
-
-      var sequencePiece = _createForInSequence(inKeyword, sequence);
-
-      pieces.add(ForInPiece(leftPiece, sequencePiece,
-          canBlockSplitSequence: sequence.canBlockSplit));
     });
-
-    pieces.add(prependLeadingComments(leadingComments, forInPiece));
   }
 
   /// Creates a piece for the `in <sequence>` part of a for-in loop.

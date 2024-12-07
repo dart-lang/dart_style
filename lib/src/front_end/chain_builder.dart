@@ -8,6 +8,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../ast_extensions.dart';
 import '../constants.dart';
 import '../piece/chain.dart';
+import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import 'piece_factory.dart';
@@ -75,18 +76,7 @@ final class ChainBuilder {
 
       // When [_root] is a cascade, the chain is the series of cascade sections.
       for (var section in cascade.cascadeSections) {
-        // Hoist any leading comment out so that if the cascade section is a
-        // setter, we don't unnecessarily split at the `=` like:
-        //
-        //     target
-        //       // comment
-        //         ..setter =
-        //             value;
-        var leadingComments =
-            _visitor.pieces.takeCommentsBefore(section.firstNonCommentToken);
-
-        var piece = _visitor.prependLeadingComments(
-            leadingComments, _visitor.nodePiece(section));
+        var piece = _visitor.nodePiece(section);
 
         var callType = switch (section) {
           // Force the cascade to split if there are leading comments before
@@ -96,7 +86,7 @@ final class ChainBuilder {
           //     ..method(
           //       argument,
           //     );
-          _ when leadingComments.isNotEmpty => CallType.unsplittableCall,
+          _ when piece is LeadingCommentPiece => CallType.unsplittableCall,
 
           // If the section is itself a method chain, then force the cascade to
           // split if the method does, as in:
