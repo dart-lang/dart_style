@@ -1416,7 +1416,8 @@ mixin PieceFactory {
         canBlockSplitRight: canBlockSplitRight));
   }
 
-  /// Writes the `<variable> in <expression>` part of a for-in loop.
+  /// Writes the `<variable> in <expression>` part of an identifier or pattern
+  /// for-in loop.
   void _writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
     // Hoist any leading comments so they don't force the for-in clauses to
     // split.
