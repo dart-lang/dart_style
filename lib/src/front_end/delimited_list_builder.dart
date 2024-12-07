@@ -138,6 +138,11 @@ final class DelimitedListBuilder {
     _commentsBeforeComma = CommentSequence.empty;
   }
 
+  /// Adds all of [pieces] to the built list.
+  void addAll(Iterable<Piece> pieces) {
+    pieces.forEach(add);
+  }
+
   /// Adds the contents of [inner] to this outer [DelimitedListBuilder].
   ///
   /// This is used when a [DelimiterListBuilder] is building a piece that will

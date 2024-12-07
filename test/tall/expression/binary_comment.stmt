@@ -95,3 +95,25 @@ value =
 value =
     // comment
     a + b + c;
+>>> Comment before unsplit call chain operand.
+firstOperand &&
+    // Comment.
+    longTarget.someLongProperty &&
+    lastOperand;
+<<<
+firstOperand &&
+    // Comment.
+    longTarget.someLongProperty &&
+    lastOperand;
+>>> Comment before split call chain operand.
+firstOperand &&
+    // Comment.
+    longTarget.someLongProperty.anotherProperty &&
+    lastOperand;
+<<<
+firstOperand &&
+    // Comment.
+    longTarget
+        .someLongProperty
+        .anotherProperty &&
+    lastOperand;

@@ -14,6 +14,7 @@ import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
 import '../piece/infix.dart';
+import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/type.dart';
@@ -329,10 +330,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConditionalExpression(ConditionalExpression node) {
-    // Hoist any comments before the condition operand so they don't force the
-    // conditional expression to split.
-    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
-
     // Flatten a series of else-if-like chained conditionals into a single long
     // infix piece. This produces a flattened style like:
     //
@@ -380,7 +377,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       piece.pin(State.split);
     }
 
-    pieces.add(prependLeadingComments(leadingComments, piece));
+    pieces.add(piece);
   }
 
   @override
@@ -390,7 +387,17 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     pieces.token(node.leftParenthesis);
 
     if (node.equalToken case var equals?) {
-      writeInfix(node.name, equals, node.value!, hanging: true);
+      // Hoist comments so that they don't force the `==` to split.
+      pieces.hoistLeadingComments(node.name.firstNonCommentToken, () {
+        return InfixPiece([
+          pieces.build(() {
+            pieces.visit(node.name);
+            pieces.space();
+            pieces.token(equals);
+          }),
+          nodePiece(node.value!)
+        ]);
+      });
     } else {
       pieces.visit(node.name);
     }
@@ -765,32 +772,32 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
   void visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
   void visitForEachPartsWithPattern(ForEachPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
   void visitForPartsWithDeclarations(ForPartsWithDeclarations node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
   void visitForPartsWithExpression(ForPartsWithExpression node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
   void visitForPartsWithPattern(ForPartsWithPattern node) {
-    throw UnsupportedError('This node is handled by createFor().');
+    throw UnsupportedError('This node is handled by writeFor().');
   }
 
   @override
@@ -1966,7 +1973,46 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var previousContext = _parentContext;
     _parentContext = context;
 
-    node.accept(this);
+    // If there are comments before this node, then some of them may be leading
+    // comments. If so, capture them now. We do this here so that the comments
+    // are wrapped around the outermost possible Piece for the AST node. For
+    // example:
+    //
+    //     // Comment
+    //     a.b && c || d ? e : f;
+    //
+    // Here, the node that actually owns the token before the comment is `a`,
+    // which is an identifier expression inside a property access inside an
+    // `&&` expression inside an `||` expression inside `?:` expression. If we
+    // attach the comment to the identifier expression, then the newline from
+    // the comment will force all of those surrounding pieces to split:
+    //
+    //     // Comment
+    //     a
+    //                 .b &&
+    //             c ||
+    //             d
+    //         ? e
+    //         : f;
+    //
+    // Instead, we hoist the comment out of all of those and then have comment
+    // precede them all so that they don't split.
+    var firstToken = node.firstNonCommentToken;
+    if (firstToken.precedingComments != null) {
+      var comments = pieces.takeCommentsBefore(firstToken);
+      var piece = pieces.build(() {
+        node.accept(this);
+      });
+
+      // Check again because the preceding comments may not necessarily end up
+      // as leading comments.
+      if (comments.isNotEmpty) piece = LeadingCommentPiece(comments, piece);
+
+      pieces.add(piece);
+    } else {
+      // No preceding comments, so just visit it inline.
+      node.accept(this);
+    }
 
     _parentContext = previousContext;
   }

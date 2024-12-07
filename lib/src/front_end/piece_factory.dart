@@ -12,7 +12,6 @@ import '../piece/control_flow.dart';
 import '../piece/for.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
-import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
@@ -285,15 +284,6 @@ mixin PieceFactory {
     return builder.build();
   }
 
-  /// If [leadingComments] is not empty, returns [piece] wrapped in a
-  /// [LeadingCommentPiece] that prepends them.
-  ///
-  /// Otherwise, just returns [piece].
-  Piece prependLeadingComments(List<Piece> leadingComments, Piece piece) {
-    if (leadingComments.isEmpty) return piece;
-    return LeadingCommentPiece(leadingComments, piece);
-  }
-
   /// Writes the leading keyword and parenthesized expression at the beginning
   /// of an `if`, `while`, or `switch` expression or statement.
   void writeControlFlowStart(Token keyword, Token leftParenthesis,
@@ -446,9 +436,16 @@ mixin PieceFactory {
         forPartsPiece = partsList.build();
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithDeclaration(loopVariable: AstNode variable):
+            ForEachPartsWithDeclaration(:var loopVariable):
+        forPartsPiece = pieces.build(() {
+          pieces.token(leftParenthesis);
+          _writeDeclaredForIn(
+              loopVariable, forEachParts.inKeyword, forEachParts.iterable);
+          pieces.token(rightParenthesis);
+        });
+
       case ForEachParts forEachParts &&
-            ForEachPartsWithIdentifier(identifier: AstNode variable):
+            ForEachPartsWithIdentifier(:var identifier):
         // If a for-in loop, treat the for parts like an assignment, so they
         // split like:
         //
@@ -490,7 +487,8 @@ mixin PieceFactory {
         // statement or element.
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
-          writeForIn(variable, forEachParts.inKeyword, forEachParts.iterable);
+          _writeForIn(
+              identifier, forEachParts.inKeyword, forEachParts.iterable);
           pieces.token(rightParenthesis);
         });
 
@@ -499,14 +497,20 @@ mixin PieceFactory {
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
 
-          // Use a nested piece so that the metadata precedes the keyword and
-          // not the `(`.
-          pieces.withMetadata(metadata, inlineMetadata: true, () {
-            pieces.token(keyword);
-            pieces.space();
-
-            writeForIn(pattern, forEachParts.inKeyword, forEachParts.iterable);
+          // Hoist any leading comments so they don't force the for-in clauses
+          // to split.
+          pieces.hoistLeadingComments(
+              metadata.firstOrNull?.beginToken ?? keyword, () {
+            // Use a nested piece so that the metadata precedes the keyword and
+            // not the `(`.
+            return pieces.build(metadata: metadata, inlineMetadata: true, () {
+              pieces.token(keyword);
+              pieces.space();
+              _writeForIn(
+                  pattern, forEachParts.inKeyword, forEachParts.iterable);
+            });
           });
+
           pieces.token(rightParenthesis);
         });
     }
@@ -637,22 +641,21 @@ mixin PieceFactory {
     //     int f() {}
     var firstToken =
         modifiers.nonNulls.firstOrNull ?? returnType.firstNonCommentToken;
-    var leadingComments = pieces.takeCommentsBefore(firstToken);
+    pieces.hoistLeadingComments(firstToken, () {
+      var returnTypePiece = pieces.build(() {
+        for (var keyword in modifiers) {
+          pieces.modifier(keyword);
+        }
 
-    var returnTypePiece = pieces.build(() {
-      for (var keyword in modifiers) {
-        pieces.modifier(keyword);
-      }
+        pieces.visit(returnType);
+      });
 
-      pieces.visit(returnType);
+      var signature = pieces.build(() {
+        writeFunction();
+      });
+
+      return VariablePiece(returnTypePiece, [signature], hasType: true);
     });
-
-    var signature = pieces.build(() {
-      writeFunction();
-    });
-
-    pieces.add(prependLeadingComments(leadingComments,
-        VariablePiece(returnTypePiece, [signature], hasType: true)));
   }
 
   /// If [parameter] has a [defaultValue] then writes a piece for the parameter
@@ -933,10 +936,6 @@ mixin PieceFactory {
   /// separate tokens, as in `foo is! Bar`.
   void writeInfix(AstNode left, Token operator, AstNode right,
       {bool hanging = false, Token? operator2}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(left.firstNonCommentToken);
-
     var leftPiece = pieces.build(() {
       pieces.visit(left);
       if (hanging) {
@@ -956,8 +955,7 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece([leftPiece, rightPiece])));
+    pieces.add(InfixPiece([leftPiece, rightPiece]));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -978,10 +976,6 @@ mixin PieceFactory {
   void writeInfixChain<T extends AstNode>(
       T node, BinaryOperation Function(T node) destructure,
       {int? precedence, bool indent = true}) {
-    // Hoist any comments before the first operand so they don't force the
-    // infix operator to split.
-    var leadingComments = pieces.takeCommentsBefore(node.firstNonCommentToken);
-
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -1009,8 +1003,7 @@ mixin PieceFactory {
       traverse(node);
     }));
 
-    pieces.add(prependLeadingComments(
-        leadingComments, InfixPiece(operands, indent: indent)));
+    pieces.add(InfixPiece(operands, indent: indent));
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
@@ -1408,21 +1401,59 @@ mixin PieceFactory {
         canBlockSplitRight: canBlockSplitRight));
   }
 
-  /// Writes a [Piece] for the `<variable> in <expression>` part of a for-in
-  /// loop.
-  void writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
-    var leftPiece =
-        nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+  /// Writes the `<variable> in <expression>` part of an identifier or pattern
+  /// for-in loop.
+  void _writeForIn(AstNode leftHandSide, Token inKeyword, Expression sequence) {
+    // Hoist any leading comments so they don't force the for-in clauses to
+    // split.
+    pieces.hoistLeadingComments(leftHandSide.firstNonCommentToken, () {
+      var leftPiece =
+          nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+      var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-    var sequencePiece = pieces.build(() {
+      return ForInPiece(leftPiece, sequencePiece,
+          canBlockSplitSequence: sequence.canBlockSplit);
+    });
+  }
+
+  /// Writes the `<variable> in <expression>` part of a for-in loop when the
+  /// part before `in` is a variable declaration.
+  ///
+  /// A for-in loop with a variable declaration can have metadata before it,
+  /// which requires some special handling so that we don't push the metadata
+  /// and any comments after it into the left child piece of [ForInPiece].
+  void _writeDeclaredForIn(
+      DeclaredIdentifier identifier, Token inKeyword, Expression sequence) {
+    // Hoist any leading comments so they don't force the for-in clauses
+    // to split.
+    pieces.hoistLeadingComments(identifier.beginToken, () {
+      // Use a nested piece so that the metadata precedes the keyword and
+      // not the `(`.
+      return pieces.build(metadata: identifier.metadata, inlineMetadata: true,
+          () {
+        var leftPiece = pieces.build(() {
+          writeParameter(
+              modifiers: [identifier.keyword],
+              identifier.type,
+              identifier.name);
+        });
+
+        var sequencePiece = _createForInSequence(inKeyword, sequence);
+
+        pieces.add(ForInPiece(leftPiece, sequencePiece,
+            canBlockSplitSequence: sequence.canBlockSplit));
+      });
+    });
+  }
+
+  /// Creates a piece for the `in <sequence>` part of a for-in loop.
+  Piece _createForInSequence(Token inKeyword, Expression sequence) {
+    return pieces.build(() {
       // Put the `in` at the beginning of the sequence.
       pieces.token(inKeyword);
       pieces.space();
       pieces.visit(sequence);
     });
-
-    pieces.add(ForInPiece(leftPiece, sequencePiece,
-        canBlockSplitSequence: sequence.canBlockSplit));
   }
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal

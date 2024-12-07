@@ -17,3 +17,99 @@ class C {}
 ) // deprecated
 @Experimental()
 class C {}
+>>> Comment between metadata and field doesn't force type to split.
+class C {
+  @meta
+  // c
+  var a;
+
+  @meta
+  // c
+  int b;
+
+  @meta
+  // c
+  final int c;
+
+  @meta
+  // c
+  late var d;
+
+  @meta
+  // c
+  late int e;
+
+  @meta
+  // c
+  late final int f;
+
+  @meta
+  // c
+  static var g;
+
+  @meta
+  // c
+  static int h;
+
+  @meta
+  // c
+  static final int y;
+}
+<<<
+class C {
+  @meta
+  // c
+  var a;
+
+  @meta
+  // c
+  int b;
+
+  @meta
+  // c
+  final int c;
+
+  @meta
+  // c
+  late var d;
+
+  @meta
+  // c
+  late int e;
+
+  @meta
+  // c
+  late final int f;
+
+  @meta
+  // c
+  static var g;
+
+  @meta
+  // c
+  static int h;
+
+  @meta
+  // c
+  static final int y;
+}
+>>> Comment between metadata and method doesn't force return type to split.
+class C {
+  @meta
+  // c
+  int a() {}
+
+  @meta
+  // c
+  static int b() {}
+}
+<<<
+class C {
+  @meta
+  // c
+  int a() {}
+
+  @meta
+  // c
+  static int b() {}
+}

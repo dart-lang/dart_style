@@ -1,0 +1,38 @@
+>>>
+aaaa aaAaaAaaaaAaaaaaaaaaAaaAaaAaaAaaaaaa(
+  AaaaaaaaaaAaaaAaaaaaaaaAaaaaaa aaaaAaaaaaa,
+) =>
+    // Aaaa for Aaaaaaa AA aaaaaaaa.
+    aaAaAaaaaaaaAaaaaaa &&
+    // Aaaaaaaaaa is aaaaaaaa aaaa aaa Aaa Aaaaa Aaaaa aaaaaaaaaa.
+        aaaaAaaaaaa
+        .aaaAaaaAaaAaaaAaaa(
+          AaaaAaaaaaaaaaAaaa_Aaaa.AAA_AAA_AAAAA_AAA_AAAAAAAAAA__AAAA,
+          aAaaaaaaAaAaaaaaaaaAaaaaaAaaaaaaaAaaaaaa: true,
+        )
+        .aaAaAaaAaaaaaaaa &&
+    aaaaAaaaaaa
+        .aaaAaaaAaaAaaaAaaa(
+          AaaaAaaaaaaaaaAaaa_Aaaa.AAA_AA_AAAAAAA_AAA_AAA_A1__AAAA,
+          aAaaaaaaAaAaaaaaaaaAaaaaaAaaaaaaaAaaaaaa: true,
+        )
+        .aaAaAaaAaaaaaaaa;
+<<<
+aaaa aaAaaAaaaaAaaaaaaaaaAaaAaaAaaAaaaaaa(
+  AaaaaaaaaaAaaaAaaaaaaaaAaaaaaa aaaaAaaaaaa,
+) =>
+    // Aaaa for Aaaaaaa AA aaaaaaaa.
+    aaAaAaaaaaaaAaaaaaa &&
+    // Aaaaaaaaaa is aaaaaaaa aaaa aaa Aaa Aaaaa Aaaaa aaaaaaaaaa.
+    aaaaAaaaaaa
+        .aaaAaaaAaaAaaaAaaa(
+          AaaaAaaaaaaaaaAaaa_Aaaa.AAA_AAA_AAAAA_AAA_AAAAAAAAAA__AAAA,
+          aAaaaaaaAaAaaaaaaaaAaaaaaAaaaaaaaAaaaaaa: true,
+        )
+        .aaAaAaaAaaaaaaaa &&
+    aaaaAaaaaaa
+        .aaaAaaaAaaAaaaAaaa(
+          AaaaAaaaaaaaaaAaaa_Aaaa.AAA_AA_AAAAAAA_AAA_AAA_A1__AAAA,
+          aAaaaaaaAaAaaaaaaaaAaaaaaAaaaaaaaAaaaaaa: true,
+        )
+        .aaAaAaaAaaaaaaaa;
