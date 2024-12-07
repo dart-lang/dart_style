@@ -178,11 +178,18 @@ final class PieceWriter {
     _flushSpace();
     _currentCode = null;
 
-    var metadataPieces = const <Piece>[];
+    var leadingPieces = const <Piece>[];
     if (metadata.isNotEmpty) {
-      metadataPieces = [
+      leadingPieces = [
         for (var annotation in metadata) _visitor.nodePiece(annotation)
       ];
+
+      // If there are comments between the metadata and declaration, then hoist
+      // them out too so they don't get embedded inside the beginning piece of
+      // the declaration. [SequenceBuilder] handles that for most comments
+      // preceding a declaration but won't see these ones because they come
+      // after the metadata.
+      leadingPieces.addAll(takeCommentsBefore(metadata.last.endToken.next!));
     }
 
     _pieces.add([]);
@@ -199,7 +206,7 @@ final class PieceWriter {
         ? builtPieces.first
         : AdjacentPiece(builtPieces);
 
-    if (metadataPieces.isEmpty) {
+    if (leadingPieces.isEmpty) {
       // No metadata, so return the content piece directly.
       return builtPiece;
     } else if (inlineMetadata) {
@@ -211,7 +218,7 @@ final class PieceWriter {
             spaceWhenUnsplit: true,
           ));
 
-      for (var piece in metadataPieces) {
+      for (var piece in leadingPieces) {
         list.add(piece);
       }
 
@@ -220,7 +227,7 @@ final class PieceWriter {
     } else {
       // Wrap the metadata and content in a sequence.
       var sequence = SequenceBuilder(_visitor);
-      for (var piece in metadataPieces) {
+      for (var piece in leadingPieces) {
         sequence.add(piece);
       }
 

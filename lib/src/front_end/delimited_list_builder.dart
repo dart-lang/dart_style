@@ -138,6 +138,11 @@ final class DelimitedListBuilder {
     _commentsBeforeComma = CommentSequence.empty;
   }
 
+  /// Adds all of [pieces] to the built list.
+  void addAll(Iterable<Piece> pieces) {
+    pieces.forEach(add);
+  }
+
   /// Adds the contents of [lineBuilder] to this outer [DelimitedListBuilder].
   ///
   /// This is used when preserving newlines inside a collection literal. The

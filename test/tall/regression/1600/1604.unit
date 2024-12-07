@@ -1,0 +1,12 @@
+>>>
+class C {
+  @override
+  // ignore: hash_and_equals
+  final int hashCode;
+}
+<<<
+class C {
+  @override
+  // ignore: hash_and_equals
+  final int hashCode;
+}

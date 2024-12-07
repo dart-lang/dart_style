@@ -139,3 +139,48 @@ main() {
     ;
   }
 }
+>>> Comment after metadata on for-in loop variable.
+main() {
+  for (   @a
+// c
+var i in list) {;}
+}
+<<<
+main() {
+  for (@a
+      // c
+      var i in list) {
+    ;
+  }
+}
+>>> Comment after metadata on for loop variable.
+main() {
+  for (   @a
+// c
+var i = x;;) {;}
+}
+<<<
+main() {
+  for (
+    @a
+    // c
+    var i = x;
+    ;
+  ) {
+    ;
+  }
+}
+>>> Comment after metadata on pattern for-in variable.
+main() {
+  for (   @a
+// c
+var [i] in x) {;}
+}
+<<<
+main() {
+  for (@a
+      // c
+      var [i] in x) {
+    ;
+  }
+}
