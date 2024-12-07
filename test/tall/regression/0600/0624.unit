@@ -1,0 +1,52 @@
+>>>
+var x = [
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere"
+];
+
+get y => [
+      "long value that won't fit everywhere",
+      "long value that won't fit everywhere",
+      "long value that won't fit everywhere"
+    ];
+<<<
+var x = [
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere",
+];
+
+get y => [
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere",
+  "long value that won't fit everywhere",
+];
+>>>
+class C {
+  @override
+  List<Source> get outputs => const <Source>[
+    Source.pattern('{OUTPUT_DIR}/vm_snapshot_data'),
+    Source.pattern('{OUTPUT_DIR}/isolate_snapshot_data'),
+    Source.pattern('{OUTPUT_DIR}/kernel_blob.bin'),
+  ];
+
+  @override
+  List<String> get depfiles => <String>[
+    'flutter_assets.d', // Force split.
+  ];
+}
+<<<
+class C {
+  @override
+  List<Source> get outputs => const <Source>[
+    Source.pattern('{OUTPUT_DIR}/vm_snapshot_data'),
+    Source.pattern('{OUTPUT_DIR}/isolate_snapshot_data'),
+    Source.pattern('{OUTPUT_DIR}/kernel_blob.bin'),
+  ];
+
+  @override
+  List<String> get depfiles => <String>[
+    'flutter_assets.d', // Force split.
+  ];
+}
