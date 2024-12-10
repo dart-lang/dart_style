@@ -1,0 +1,15 @@
+typedef Map1<T1, R> = R Function(T1 arg1);
+
+typedef Map8<T1, T2, T3, T4, T5, T6, T7, T8, R> = R Function(
+    T1 arg1, T2 arg2, T3 arg3, T4 arg4, T5 arg5, T6 arg6, T7 arg7, T8 arg8);
+
+extension Curry8<T1, T2, T3, T4, T5, T6, T7, T8, R>
+    on Map8<T1, T2, T3, T4, T5, T6, T7, T8, R> {
+  Map1<
+          T1,
+          Map1<T2,
+              Map1<T3, Map1<T4, Map1<T5, Map1<T6, Map1<T7, Map1<T8, R>>>>>>>>
+      get curry => (T1 arg1) => (T2 arg2) => (T3 arg3) => (T4 arg4) =>
+          (T5 arg5) => (T6 arg6) => (T7 arg7) =>
+              (T8 arg8) => this(arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+}
