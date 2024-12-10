@@ -120,8 +120,7 @@ e = switch (obj) {
 e = switch (obj) {
   oneConstant ||
   twoConstant ||
-  threeConstant =>
-    body,
+  threeConstant => body,
 };
 >>> Nested logic-or operands are indented.
 e = switch (obj) {
@@ -175,4 +174,15 @@ e = switch (obj) {
       veryLongElement,
       veryLongElement,
     ),
+};
+>>> Prefer to split `||` pattern instead of case body.
+e = switch (obj) {
+  pattern || another => function(
+    argument,
+  ),
+};
+<<<
+e = switch (obj) {
+  pattern ||
+  another => function(argument),
 };
