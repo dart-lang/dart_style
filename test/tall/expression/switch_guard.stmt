@@ -96,8 +96,7 @@ e = switch (obj) {
 <<<
 e = switch (obj) {
   veryVeryLongPattern ||
-  reallyMustSplitHere when true =>
-    body,
+  reallyMustSplitHere when true => body,
 };
 >>> Outermost logic-or split in pattern, expression split in guard.
 e = switch (obj) {
