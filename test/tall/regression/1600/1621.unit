@@ -1,0 +1,24 @@
+>>>
+/*member: readLocalInAnonymousClosure:*/
+readLocalInAnonymousClosure(/**/ parameter) {
+  var /**/ local = parameter;
+  return /*fields=[local],free=[local]*/ () => local;
+}
+<<<
+/*member: readLocalInAnonymousClosure:*/
+readLocalInAnonymousClosure(/**/ parameter) {
+  var /**/ local = parameter;
+  return /*fields=[local],free=[local]*/ () => local;
+}
+>>>
+class C {
+  @override
+  // ignore: overridden_fields
+  final FunctionEntity _member;
+}
+<<<
+class C {
+  @override
+  // ignore: overridden_fields
+  final FunctionEntity _member;
+}
