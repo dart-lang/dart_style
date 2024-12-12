@@ -31,14 +31,18 @@ extension AstNodeExtensions on AstNode {
       AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
       AnnotatedNode(firstTokenAfterCommentAndMetadata: var token) => token,
 
-      // DefaultFormalParameter is not an AnnotatedNode, but its first child
-      // (parameter) *is* an AnnotatedNode, so we can't just use beginToken.
+      // The inner [NormalFormalParameter] is an [AnnotatedNode].
       DefaultFormalParameter(:var parameter) => parameter.firstNonCommentToken,
 
-      // A pattern variable statement isn't itself an AnnotatedNode, but the
-      // [PatternVariableDeclaration] that it wraps is.
+      // The inner [PatternVariableDeclaration] is an [AnnotatedNode].
       PatternVariableDeclarationStatement(:var declaration) =>
         declaration.firstNonCommentToken,
+
+      // The inner [VariableDeclarationList] is an [AnnotatedNode].
+      VariableDeclarationStatement(:var variables) =>
+        variables.firstNonCommentToken,
+
+      // Otherwise, we don't have to worry about doc comments.
       _ => beginToken
     };
   }

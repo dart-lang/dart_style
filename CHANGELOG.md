@@ -6,6 +6,7 @@
 * Ensure comment formatting is idempotent (#1606).
 * Better indentation of leading comments on property accesses in binary operator
   operands (#1611).
+* Don't crash on doc comments in local variable declarations (#1621).
 
 ## 3.0.0
 
