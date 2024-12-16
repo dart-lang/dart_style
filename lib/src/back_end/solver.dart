@@ -90,6 +90,14 @@ final class Solver {
     _queue.add(solution);
     Profile.end('Solver enqueue');
 
+    if (debug.traceSolverEnqueing) {
+      debug.log(debug.bold('Enqueue initial $solution'));
+      if (debug.traceSolverShowCode) {
+        debug.log(solution.code.toDebugString());
+        debug.log('');
+      }
+    }
+
     // The lowest cost solution found so far that does overflow.
     var best = solution;
 
@@ -101,10 +109,12 @@ final class Solver {
 
       attempts++;
 
-      if (debug.traceSolver) {
+      if (debug.traceSolverDequeing) {
         debug.log(debug.bold('Try #$attempts $solution'));
-        debug.log(solution.code.toDebugString());
-        debug.log('');
+        if (debug.traceSolverShowCode) {
+          debug.log(solution.code.toDebugString());
+          debug.log('');
+        }
       }
 
       if (solution.isValid) {
@@ -127,6 +137,14 @@ final class Solver {
           pageWidth: _pageWidth, leadingIndent: _leadingIndent)) {
         Profile.count('Solver enqueue');
         _queue.add(expanded);
+
+        if (debug.traceSolverEnqueing) {
+          debug.log(debug.bold('Enqueue $expanded'));
+          if (debug.traceSolverShowCode) {
+            debug.log(expanded.code.toDebugString());
+            debug.log('');
+          }
+        }
       }
     }
 

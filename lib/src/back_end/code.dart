@@ -16,8 +16,9 @@ import '../source_code.dart';
 /// as fast simply appending a single [GroupCode] to the parent solution's
 /// [GroupCode].
 sealed class Code {
-  /// Traverse the [Code] tree and generate a string for debugging purposes.
-  String toDebugString() {
+  /// Traverse the [Code] tree and generate a string showing the [Code] tree's
+  /// structure for debugging purposes.
+  String toCodeTree() {
     var buffer = StringBuffer();
     var prefix = '';
 
@@ -54,6 +55,14 @@ sealed class Code {
     trace(this);
 
     return buffer.toString();
+  }
+
+  /// Write the [Code] to a string of output code, ignoring selection and
+  /// format on/off markers.
+  String toDebugString() {
+    var builder = _DebugStringBuilder();
+    builder.traverse(this);
+    return builder.finish();
   }
 }
 
@@ -375,4 +384,44 @@ final class _StringBuilder {
         selectionStart: selectionStart,
         selectionLength: selectionLength);
   }
+}
+
+/// Traverses a [Code] tree and produces a string of output code, ignoring
+/// selection and format on/off markers.
+///
+/// This is a simpler version of [_StringBuilder] that doesn't require having
+/// access to the original [SourceCode] and line ending.
+final class _DebugStringBuilder {
+  final StringBuffer _buffer = StringBuffer();
+
+  /// How many spaces of indentation should be written before the next text.
+  int _indent = 0;
+
+  void traverse(Code code) {
+    switch (code) {
+      case _NewlineCode():
+        _buffer.writeln();
+        if (code._blank) _buffer.writeln();
+        _indent = code._indent;
+
+      case _TextCode():
+        // Write any pending indentation.
+        _buffer.write(' ' * _indent);
+        _indent = 0;
+        _buffer.write(code._text);
+
+      case GroupCode():
+        _indent = code._indent;
+        for (var i = 0; i < code._children.length; i++) {
+          traverse(code._children[i]);
+        }
+
+      case _MarkerCode():
+      case _EnableFormattingCode():
+        // The debug output doesn't support disabled formatting or selections.
+        break;
+    }
+  }
+
+  String finish() => _buffer.toString();
 }
