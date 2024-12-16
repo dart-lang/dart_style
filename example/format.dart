@@ -15,6 +15,9 @@ void main(List<String> args) {
   debug.useAnsiColors = true;
   debug.tracePieceBuilder = true;
   debug.traceSolver = true;
+  debug.traceSolverEnqueing = true;
+  debug.traceSolverDequeing = true;
+  debug.traceSolverShowCode = true;
 
   _formatStmt('''
   1 + 2;

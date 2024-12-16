@@ -26,6 +26,18 @@ bool tracePieceBuilder = false;
 /// Set this to `true` to turn on diagnostic output while solving pieces.
 bool traceSolver = false;
 
+/// Set this to `true` to turn on diagnostic output when the solver enqueues a
+/// potential solution.
+bool traceSolverEnqueing = false;
+
+/// Set this to `true` to turn on diagnostic output when the solver dequeues a
+/// potential solution.
+bool traceSolverDequeing = false;
+
+/// Set this to `true` to show the formatted code for a given solution when the
+/// solver it printing diagnostic output.
+bool traceSolverShowCode = false;
+
 bool useAnsiColors = false;
 
 const unicodeSection = '\u00a7';
