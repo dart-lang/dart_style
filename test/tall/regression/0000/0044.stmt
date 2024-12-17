@@ -63,6 +63,6 @@ void main() {
 void main() {
   var xxxxxxxYyyyyyyy =
       aaaabbb
-          ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
-          : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
+      ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
+      : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }

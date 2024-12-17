@@ -6,9 +6,9 @@ String type = status == 'OK'
 ### TODO(1465): Should put condition after `=`.
 String type =
     status == 'OK'
-        ? 'notices'
-        : status == 'NO'
-        ? 'warnings'
-        : status == 'BAD'
-        ? 'errors'
-        : '';
+    ? 'notices'
+    : status == 'NO'
+    ? 'warnings'
+    : status == 'BAD'
+    ? 'errors'
+    : '';
