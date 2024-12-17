@@ -1,12 +1,52 @@
 ## 3.0.1-wip
 
-* Handle trailing commas in for-loop updaters (#1354).
-* Format `||` patterns like fallthrough cases in switch expressions (#1602).
-* Handle comments and metadata before variables more gracefully (#1604).
-* Ensure comment formatting is idempotent (#1606).
-* Better indentation of leading comments on property accesses in binary operator
-  operands (#1611).
-* Don't crash on doc comments in local variable declarations (#1621).
+*   Handle trailing commas in for-loop updaters (#1354).
+*   Format `||` patterns like fallthrough cases in switch expressions (#1602).
+*   Handle comments and metadata before variables more gracefully (#1604).
+*   Ensure comment formatting is idempotent (#1606).
+*   Better indentation of leading comments on property accesses in binary operator
+    operands (#1611).
+*   Don't crash on doc comments in local variable declarations (#1621).
+
+*   Don't indent conditional branches redundantly after `=`, `:`, and `=>`.
+
+    ```dart
+    // Before:
+    function(
+      argument:
+          condition
+              ? thenBranch
+              : elseBranch,
+    )
+
+    // After:
+    function(
+      argument:
+          condition
+          ? thenBranch
+          : elseBranch,
+    )
+    ```
+
+*   Indent conditional branches past the operators (#1534).
+
+    ```dart
+    // Before:
+    condition
+        ? thenBranch +
+            anotherOperand
+        : elseBranch(
+          argument,
+        );
+
+    // After:
+    condition
+        ? thenBranch +
+              anotherOperand
+        : elseBranch(
+            argument,
+          );
+    ```
 
 ## 3.0.0
 
