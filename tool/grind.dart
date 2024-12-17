@@ -26,48 +26,57 @@ Future<void> validate() async {
   Dart.run('bin/format.dart', arguments: ['.']);
 }
 
+/// Increments the patch version of the current version.
+@Task()
+Future<void> patch() async {
+  var version = _readVersion();
+  _updateVersion(
+      Version(version.major, version.minor, version.patch + 1, pre: 'wip'));
+}
+
+/// Increments the minor version of the current version.
+@Task()
+Future<void> minor() async {
+  var version = _readVersion();
+  _updateVersion(Version(version.major, version.minor + 1, 0, pre: 'wip'));
+}
+
+/// Increments the major version of the current version.
+@Task()
+Future<void> major() async {
+  var version = _readVersion();
+  _updateVersion(Version(version.major + 1, 0, 0, pre: 'wip'));
+}
+
 /// Gets ready to publish a new version of the package.
 ///
 /// To publish a version, you need to:
 ///
-///   1. Make sure the version in the pubspec is a "-dev" number. This should
-///      already be the case since you've already landed patches that change
-///      the formatter and bumped to that as a consequence.
+/// 1.  Make sure the version in the pubspec is a "-wip" number. This should
+///     already be the case since you've already landed patches that change
+///     the formatter and bumped to that as a consequence.
 ///
-///   2. Run this task:
+/// 2.  Run this task:
 ///
-///         pub run grinder bump
+///     ```
+///     pub run grinder bump
+///     ```
 ///
-///   3. Commit the change to a branch.
+/// 3.  Commit the change to a branch, push it to GitHub, and review and merge
+///     it there.
 ///
-///   4. Send it out for review:
+/// 4.  After the PR is merged using the publishing automation to publish the
+///     new version:
 ///
-///         git cl upload
-///
-///   5. After the review is complete, land it:
-///
-///         git cl land
-///
-///   6. Tag the commit:
-///
-///         git tag -a "<version>" -m "<version>"
-///         git push origin <version>
-///
-///   7. Publish the package:
-///
-///         pub lish
+///     https://github.com/dart-lang/ecosystem/wiki/Publishing-automation
 @Task()
 @Depends(validate)
-Future<void> bump() async {
-  // Read the version from the pubspec.
-  var pubspecFile = getFile('pubspec.yaml');
-  var pubspec = pubspecFile.readAsStringSync();
-  var version =
-      Version.parse((yaml.loadYaml(pubspec) as Map)['version'] as String);
+Future<void> ship() async {
+  var version = _readVersion();
 
-  // Require a "-dev" version since we don't otherwise know what to bump it to.
+  // Require a "-wip" version since we don't otherwise know what to bump it to.
   if (!version.isPreRelease) {
-    throw StateError('Cannot publish non-dev version $version.');
+    throw StateError('Cannot publish non-wip version $version.');
   }
 
   // Don't allow versions like "1.2.3-dev+4" because it's not clear if the
@@ -76,25 +85,37 @@ Future<void> bump() async {
     throw StateError('Cannot publish build version $version.');
   }
 
-  var bumped = Version(version.major, version.minor, version.patch);
+  // Remove the pre-release suffix.
+  _updateVersion(Version(version.major, version.minor, version.patch));
+}
+
+/// Reads the current package version from the pubspec.
+Version _readVersion() {
+  var pubspecFile = getFile('pubspec.yaml');
+  var pubspec = pubspecFile.readAsStringSync();
+  return Version.parse((yaml.loadYaml(pubspec) as Map)['version'] as String);
+}
+
+/// Sets version numbers in the dart_style repository with [version].
+void _updateVersion(Version version) {
+  // Read the version from the pubspec.
+  var pubspecFile = getFile('pubspec.yaml');
+  var pubspec = pubspecFile.readAsStringSync();
 
   // Update the version in the pubspec.
-  pubspec = pubspec.replaceAll(_versionPattern, 'version: $bumped');
+  pubspec = pubspec.replaceAll(_versionPattern, 'version: $version');
   pubspecFile.writeAsStringSync(pubspec);
 
-  // Update the version constant in formatter_options.dart.
+  // Update the version constant in formatter_options.dart (minus any
+  // pre-release prefix). We do this eagerly so that the version number shown
+  // by `dart format --version` is the version that *will* be published, even
+  // though we roll into the Dart SDK before publishing the final version.
+  var withoutPrerelease = Version(version.major, version.minor, version.patch);
   var versionFile = getFile('lib/src/cli/formatter_options.dart');
   var versionSource = versionFile.readAsStringSync().replaceAll(
       RegExp(r"const dartStyleVersion = '[^']+';"),
-      "const dartStyleVersion = '$bumped';");
+      "const dartStyleVersion = '$withoutPrerelease';");
   versionFile.writeAsStringSync(versionSource);
 
-  // Update the version in the CHANGELOG.
-  var changelogFile = getFile('CHANGELOG.md');
-  var changelog = changelogFile
-      .readAsStringSync()
-      .replaceAll(version.toString(), bumped.toString());
-  changelogFile.writeAsStringSync(changelog);
-
-  log("Updated version to '$bumped'.");
+  log("Updated version to '$version'.");
 }
