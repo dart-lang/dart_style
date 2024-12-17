@@ -26,18 +26,25 @@ final class SolutionCache {
   final _cache = <_Key, Solution>{};
 
   /// Returns a previously cached solution for formatting [root] with leading
-  /// [indent] or produces a new solution, caches it, and returns it.
+  /// [indent] (and [subsequentIndent] for lines after the first) or produces a
+  /// new solution, caches it, and returns it.
   ///
   /// If [root] is already bound to a state in the surrounding piece tree's
   /// [Solution], then [stateIfBound] is that state. Otherwise, it is treated
   /// as unbound and the cache will find a state for [root] as well as its
   /// children.
-  Solution find(int pageWidth, Piece root, int indent, State? stateIfBound) {
+  Solution find(Piece root, State? stateIfBound,
+      {required int pageWidth,
+      required int indent,
+      required int subsequentIndent}) {
     // See if we've already formatted this piece at this indentation. If not,
     // format it and store the result.
     return _cache.putIfAbsent(
-        (root, indent: indent),
-        () => Solver(this, pageWidth: pageWidth, leadingIndent: indent)
+        (root, indent: indent, subsequentIndent: subsequentIndent),
+        () => Solver(this,
+                pageWidth: pageWidth,
+                leadingIndent: indent,
+                subsequentIndent: subsequentIndent)
             .format(root, stateIfBound));
   }
 }
@@ -51,4 +58,4 @@ final class SolutionCache {
 /// In particular, note that if surrounding pieces split in *different* ways
 /// that still end up producing the same overall leading indentation, we are
 /// able to reuse a previously cached Solution for some Piece.
-typedef _Key = (Piece, {int indent});
+typedef _Key = (Piece, {int indent, int subsequentIndent});

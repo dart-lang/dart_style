@@ -20,7 +20,12 @@ final class InfixPiece extends Piece {
   /// Whether operands after the first should be indented if split.
   final bool _indent;
 
-  InfixPiece(this._operands, {bool indent = true}) : _indent = indent;
+  /// Whether this piece is for a conditional expression.
+  final bool _isConditional;
+
+  InfixPiece(this._operands, {bool indent = true, bool conditional = false})
+      : _indent = indent,
+        _isConditional = conditional;
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -32,14 +37,21 @@ final class InfixPiece extends Piece {
   void format(CodeWriter writer, State state) {
     if (_indent) writer.pushIndent(Indent.expression);
 
-    for (var i = 0; i < _operands.length; i++) {
+    writer.format(_operands[0]);
+
+    for (var i = 1; i < _operands.length; i++) {
+      writer.splitIf(state == State.split);
+
+      // If this is a branch of a conditional expression, then indent the
+      // branch's contents past the `?` or `:`.
+      if (_isConditional) writer.pushIndent(Indent.block);
+
       // We can format each operand separately if the operand is on its own
       // line. This happens when the operator is split and we aren't the first
       // or last operand.
-      var separate = state == State.split && i > 0 && i < _operands.length - 1;
-
+      var separate = state == State.split && i < _operands.length - 1;
       writer.format(_operands[i], separate: separate);
-      if (i < _operands.length - 1) writer.splitIf(state == State.split);
+      if (_isConditional) writer.popIndent();
     }
 
     if (_indent) writer.popIndent();

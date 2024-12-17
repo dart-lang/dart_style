@@ -109,7 +109,7 @@ main() {
         ..field = s.column
         ..sortOrder =
             s.isAscending
-                ? OrderBySortOrder.ASCENDING
-                : OrderBySortOrder.DESCENDING)
+            ? OrderBySortOrder.ASCENDING
+            : OrderBySortOrder.DESCENDING)
       .toList();
 }

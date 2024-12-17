@@ -98,15 +98,24 @@ final class CodeWriter {
   final Set<Piece> _currentLinePieces = {};
 
   /// [leadingIndent] is the number of spaces of leading indentation at the
-  /// beginning of each line independent of indentation created by pieces being
+  /// beginning of the first line and [subsequentIndent] is the indentation of
+  /// each line after that, independent of indentation created by pieces being
   /// written.
-  CodeWriter(this._pageWidth, int leadingIndent, this._cache, this._solution)
+  CodeWriter(this._pageWidth, int leadingIndent, int subsequentIndent,
+      this._cache, this._solution)
       : _code = GroupCode(leadingIndent) {
     _indentStack.add(_Indent(leadingIndent, 0));
 
     // Track the leading indent before the first line.
     _pendingIndent = leadingIndent;
     _column = _pendingIndent;
+
+    // If there is additional indentation on subsequent lines, then push that
+    // onto the stack. When the first newline is written, [_pendingIndent] will
+    // pick this up and use it for subsequent lines.
+    if (subsequentIndent > leadingIndent) {
+      _indentStack.add(_Indent(subsequentIndent, 0));
+    }
   }
 
   /// Returns the final formatted code and the next pieces that can be expanded
@@ -249,8 +258,10 @@ final class CodeWriter {
   /// Format [piece] using a separate [Solver] and merge the result into this
   /// writer's [_solution].
   void _formatSeparate(Piece piece) {
-    var solution = _cache.find(
-        _pageWidth, piece, _pendingIndent, _solution.pieceStateIfBound(piece));
+    var solution = _cache.find(piece, _solution.pieceStateIfBound(piece),
+        pageWidth: _pageWidth,
+        indent: _pendingIndent,
+        subsequentIndent: _indentStack.last.indent);
 
     _pendingIndent = 0;
     _flushWhitespace();

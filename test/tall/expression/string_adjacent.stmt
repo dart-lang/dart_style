@@ -206,18 +206,18 @@ var string = condition ? "adjacent"
 <<<
 var string =
     condition
-        ? "adjacent"
-            "string"
-        : "other";
+    ? "adjacent"
+          "string"
+    : "other";
 >>> Indent in else branch of `?:`.
 var string = condition ? "other" : "adjacent"
 "string";
 <<<
 var string =
     condition
-        ? "other"
-        : "adjacent"
-            "string";
+    ? "other"
+    : "adjacent"
+          "string";
 >>> Don't indent in initializer.
 var longVariableName = "very long adjacent"
 "string";
