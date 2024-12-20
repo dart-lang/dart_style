@@ -1,4 +1,4 @@
-## 3.0.1-wip
+## 3.0.1
 
 * Handle trailing commas in for-loop updaters (#1354).
 * Format `||` patterns like fallthrough cases in switch expressions (#1602).
