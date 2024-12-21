@@ -11,6 +11,6 @@ class FooConstructor {
   FooConstructor(Object bar)
     : foo =
           (bar == null)
-              ? 'bar is null this is a very long string that causes a split'
-              : bar.myField;
+          ? 'bar is null this is a very long string that causes a split'
+          : bar.myField;
 }

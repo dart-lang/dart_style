@@ -346,6 +346,10 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var operands = [nodePiece(node.condition)];
 
     void addOperand(Token operator, Expression operand) {
+      // If there are comments before a branch, then hoist them so they aren't
+      // indented with the branch body.
+      operands.addAll(pieces.takeCommentsBefore(operator));
+
       operands.add(pieces.build(() {
         pieces.token(operator);
         pieces.space();
@@ -367,7 +371,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       }
     }
 
-    var piece = InfixPiece(operands);
+    // Don't redundantly indent a split conditional in an assignment context.
+    var piece = InfixPiece(operands,
+        indent: _parentContext != NodeContext.assignment, conditional: true);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.

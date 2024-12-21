@@ -33,7 +33,7 @@ cond ? // c
 ### Looks weird, but users generally won't put comments here.
 cond
     ? // c
-    1
+      1
     : 2;
 >>> Line comment before `:`.
 cond ? 1 // c
@@ -50,7 +50,7 @@ cond ? 1 : // c
 cond
     ? 1
     : // c
-    2;
+      2;
 >>> Line comment after else.
 cond ? 1 : 2 // c
 ;
@@ -59,7 +59,7 @@ cond ? 1 : 2 // c
 cond
     ? 1
     : 2 // c
-    ;
+      ;
 >>> Don't split with leading line comment before first operand.
 value =
     // comment

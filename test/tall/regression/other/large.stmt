@@ -130,8 +130,8 @@
           aaaaaAaaaaaa(
             (aaaa) =>
                 aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaAaAaaaaaaa
-                    ? '${aaaa.aaaa}: ${aaaa.aaaaa}'
-                    : '${aaaa.aaaa}',
+                ? '${aaaa.aaaa}: ${aaaa.aaaaa}'
+                : '${aaaa.aaaa}',
           ),
         )
         .aaaAaaaAaaaaaaAa(
@@ -149,8 +149,8 @@
           aaaaaAaaaaaa(
             (aaaa) =>
                 aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
-                    ? null
-                    : _aaAaaaAaaaaaAaaaaaa(aaaa),
+                ? null
+                : _aaAaaaAaaaaaAaaaaaa(aaaa),
           ),
         )
         .aaaAaaaAaaaaAaaaAa(aaaaaAaaaaaa((aaaa) => aaaaAaaaAaaaaaa()))
@@ -169,8 +169,8 @@
           aaaaaAaaaaaa(
             (aaaa, aaaaa) =>
                 aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaaAaaaAaaaaa
-                    ? null
-                    : _aaAaaaAaaaaaa(aaaa, aaaaa),
+                ? null
+                : _aaAaaaAaaaaaa(aaaa, aaaaa),
           ),
         )
         .aaaAaaaAaaaaAa(
@@ -217,8 +217,8 @@
           aaaaaAaaaaaa(
             (aaaa) =>
                 aaaaaaaaaAaaaaAaaAaaaaa!.aaaaaaAaaaaaaAaaaAaaaaa
-                    ? '${aaaa.aaaaa}'
-                    : '',
+                ? '${aaaa.aaaaa}'
+                : '',
           ),
         )
         .aaaAaaaAaaaaAa(
