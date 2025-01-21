@@ -1,3 +1,7 @@
+## 3.0.2-wip
+
+* Add tests for digit separators.
+
 ## 3.0.1
 
 * Handle trailing commas in for-loop updaters (#1354).
