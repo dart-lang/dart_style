@@ -27,7 +27,7 @@ import 'string_compare.dart' as string_compare;
 class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
-  static final latestLanguageVersion = Version(3, 3, 0);
+  static final latestLanguageVersion = Version(3, 6, 0);
 
   /// The highest Dart language version without support for patterns.
   static final _lastNonPatternsVersion = Version(2, 19, 0);
