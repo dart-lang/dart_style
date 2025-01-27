@@ -1,3 +1,8 @@
+## 2.3.8
+
+* Default to parsing at language version 3.6, which supports digit separators
+  (#1630).
+
 ## 2.3.7
 
 * Allow passing a language version to `DartFomatter()`. Formatted code will be
