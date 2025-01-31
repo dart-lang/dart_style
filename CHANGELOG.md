@@ -1,3 +1,8 @@
+## 3.0.2-wip
+
+* Don't add a trailing comma in lists that don't allow it, even when there is
+  a trailing comment (#1639).
+
 ## 3.0.1
 
 * Handle trailing commas in for-loop updaters (#1354).

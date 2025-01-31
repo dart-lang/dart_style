@@ -1,0 +1,33 @@
+>>>
+class C<T
+// 1
+// 2
+// 3
+> {}
+<<<
+class C<
+  T
+  // 1
+  // 2
+  // 3
+> {}
+>>> (indent 2)
+  void Function<
+    Y extends A<FcovCyclicCoBound<Function(Function(FutureOr<Object>))>>
+    //          ^
+    // [cfe] Type argument 'dynamic Function(dynamic Function(FutureOr<Object>))' doesn't conform to the bound 'dynamic Function(X)' of the type variable 'X' on 'FcovCyclicCoBound'.
+    //                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // [analyzer] COMPILE_TIME_ERROR.TYPE_ARGUMENT_NOT_MATCHING_BOUNDS
+  >()
+  x264;
+  void Function<Y extends A<CFcov<Object>>>() x265;
+<<<
+  void Function<
+    Y extends A<FcovCyclicCoBound<Function(Function(FutureOr<Object>))>>
+    //          ^
+    // [cfe] Type argument 'dynamic Function(dynamic Function(FutureOr<Object>))' doesn't conform to the bound 'dynamic Function(X)' of the type variable 'X' on 'FcovCyclicCoBound'.
+    //                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    // [analyzer] COMPILE_TIME_ERROR.TYPE_ARGUMENT_NOT_MATCHING_BOUNDS
+  >()
+  x264;
+  void Function<Y extends A<CFcov<Object>>>() x265;
