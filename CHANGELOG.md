@@ -1,5 +1,6 @@
 ## 3.0.2-wip
 
+* Add tests for digit separators.
 * Don't add a trailing comma in lists that don't allow it, even when there is
   a trailing comment (#1639).
 
