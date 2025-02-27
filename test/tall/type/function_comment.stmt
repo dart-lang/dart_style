@@ -444,3 +444,15 @@ Function(
   direction,
 ])
 x;
+>>> After type parameter on its own line.
+Function<
+Y
+// Comment.
+>()
+x;
+<<<
+Function<
+  Y
+  // Comment.
+>()
+x;

@@ -55,6 +55,10 @@ final class ListPiece extends Piece {
   /// The details of how this particular list should be formatted.
   final ListStyle _style;
 
+  /// The index of the last element in [_elements] that has content and isn't
+  /// a comment, or `-1` if all elements are comments.
+  final int _lastNonCommentElement;
+
   /// Whether any element in this argument list can be block formatted.
   bool get hasBlockElement =>
       _elements.any((element) => element.allowNewlinesWhenUnsplit);
@@ -64,8 +68,10 @@ final class ListPiece extends Piece {
   /// [_elements] must not be empty. (If there are no elements, just concatenate
   /// the brackets directly.)
   ListPiece(
-      this._before, this._elements, this._blanksAfter, this._after, this._style)
-      : assert(_elements.isNotEmpty) {
+      this._before, this._elements, this._blanksAfter, this._after, this._style,
+      {required int lastNonCommentElement})
+      : assert(_elements.isNotEmpty),
+        _lastNonCommentElement = lastNonCommentElement {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -80,13 +86,13 @@ final class ListPiece extends Piece {
           // Always has a comma after every element except the last. The last
           // will be constrained to have one or not depending on whether the
           // list splits. See applyConstraints().
-          if (i < _elements.length - 1) {
+          if (i < _lastNonCommentElement) {
             element.pin(ListElementPiece._appendComma);
           }
 
         case Commas.nonTrailing:
           // Never a trailing comma after the last element.
-          element.pin(i < _elements.length - 1
+          element.pin(i < _lastNonCommentElement
               ? ListElementPiece._appendComma
               : State.unsplit);
 
@@ -103,8 +109,8 @@ final class ListPiece extends Piece {
   @override
   void applyConstraints(State state, Constrain constrain) {
     // Give the last element a trailing comma only if the list is split.
-    if (_style.commas == Commas.trailing) {
-      constrain(_elements.last,
+    if (_style.commas == Commas.trailing && _lastNonCommentElement != -1) {
+      constrain(_elements[_lastNonCommentElement],
           state == State.split ? ListElementPiece._appendComma : State.unsplit);
     }
   }
@@ -318,6 +324,15 @@ final class ListElementPiece extends Piece {
         _content = null {
     _hangingComments.add(comment);
   }
+
+  /// Whether this piece is a comment-only element, like the second element in:
+  ///
+  ///     [
+  ///       real,
+  ///       // Comment.
+  ///       anotherReal,
+  ///     ]
+  bool get isComment => _content == null;
 
   void addComment(Piece comment, {bool beforeDelimiter = false}) {
     _hangingComments.add(comment);

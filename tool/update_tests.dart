@@ -92,8 +92,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
     var formatter = DartFormatter(
         languageVersion: formatTest.languageVersion,
         pageWidth: testFile.pageWidth,
-        indent: formatTest.leadingIndent,
-        experimentFlags: const ['macros']);
+        indent: formatTest.leadingIndent);
 
     var actual = formatter.formatSource(formatTest.input);
 

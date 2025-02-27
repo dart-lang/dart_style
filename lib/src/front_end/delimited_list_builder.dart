@@ -62,8 +62,21 @@ final class DelimitedListBuilder {
       });
     }
 
-    var piece =
-        ListPiece(_leftBracket, _elements, _blanksAfter, _rightBracket, _style);
+    // Find the index of the last non-comment element. The list may have
+    // trailing elements that are just comments. In that case, those are
+    // not considered the last element when it comes to deciding whether to add
+    // a trailing comma on the last element.
+    var lastNonCommentElement = -1;
+    for (var i = _elements.length - 1; i >= 0; i--) {
+      if (!_elements[i].isComment) {
+        lastNonCommentElement = i;
+        break;
+      }
+    }
+
+    var piece = ListPiece(
+        _leftBracket, _elements, _blanksAfter, _rightBracket, _style,
+        lastNonCommentElement: lastNonCommentElement);
     if (_mustSplit || forceSplit) piece.pin(State.split);
     return piece;
   }

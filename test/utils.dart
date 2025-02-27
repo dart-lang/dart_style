@@ -99,8 +99,7 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
             languageVersion: useTallStyle
                 ? DartFormatter.latestLanguageVersion
                 : DartFormatter.latestShortStyleLanguageVersion,
-            pageWidth: benchmark.pageWidth,
-            experimentFlags: const ['macros']);
+            pageWidth: benchmark.pageWidth);
 
         var actual = formatter.formatSource(SourceCode(benchmark.input));
 
@@ -131,8 +130,7 @@ void _testFile(TestFile testFile) {
         var formatter = DartFormatter(
             languageVersion: formatTest.languageVersion,
             pageWidth: testFile.pageWidth,
-            indent: formatTest.leadingIndent,
-            experimentFlags: const ['macros']);
+            indent: formatTest.leadingIndent);
 
         var actual = _validateFormat(
             formatter,

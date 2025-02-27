@@ -1,0 +1,25 @@
+>>>
+bool f(bool b, int i) {
+  return // Check b.
+  b == true || i.isEven;
+}
+<<<
+bool f(bool b, int i) {
+  return // Check b.
+  b == true || i.isEven;
+}
+>>>
+bool f(bool b, int i) {
+  return // Check b.
+  b == true ||
+          // Check i.
+          i
+          .isEven;
+}
+<<<
+bool f(bool b, int i) {
+  return // Check b.
+  b == true ||
+      // Check i.
+      i.isEven;
+}

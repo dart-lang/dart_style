@@ -273,7 +273,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           node.interfaceKeyword,
           node.finalKeyword,
           node.sealedKeyword,
-          node.macroKeyword,
           node.mixinKeyword,
           node.classKeyword,
         ],

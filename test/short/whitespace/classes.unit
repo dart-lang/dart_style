@@ -244,10 +244,3 @@ abstract mixin class C12 = Object
     with Mixin;
 abstract base mixin class C13 = Object
     with Mixin;
->>> macro class
-macro  class C1 {}
-abstract  macro  class C6 {}
-<<<
-macro class C1 {}
-
-abstract macro class C6 {}
