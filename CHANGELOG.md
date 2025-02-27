@@ -1,8 +1,48 @@
 ## 3.0.2-wip
 
-* Add tests for digit separators.
+* Don't indent conditional branches redundantly after `=`, `:`, and `=>`.
+
+  ```dart
+  // Before:
+  function(
+    argument:
+        condition
+            ? thenBranch
+            : elseBranch,
+  )
+
+  // After:
+  function(
+    argument:
+        condition
+        ? thenBranch
+        : elseBranch,
+  )
+  ```
+
+* Indent conditional branches past the operators (#1534).
+
+  ```dart
+  // Before:
+  condition
+      ? thenBranch +
+          anotherOperand
+      : elseBranch(
+        argument,
+      );
+
+  // After:
+  condition
+      ? thenBranch +
+            anotherOperand
+      : elseBranch(
+          argument,
+        );
+  ```
+
 * Don't add a trailing comma in lists that don't allow it, even when there is
   a trailing comment (#1639).
+* Add tests for digit separators.
 
 ## 3.0.1
 

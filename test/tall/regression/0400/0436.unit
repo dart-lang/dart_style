@@ -11,7 +11,7 @@ class Foo {
   void main() {
     List<TypeParameterElement> typeParameterElements =
         interfaceTypeContext.element != null
-            ? interfaceTypeContext.element.typeParameters
-            : null;
+        ? interfaceTypeContext.element.typeParameters
+        : null;
   }
 }

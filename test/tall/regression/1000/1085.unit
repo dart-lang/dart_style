@@ -11,9 +11,9 @@ void main() {
 void main() {
   var result =
       condition
-          ? doA(
-            param1, // comment to force split
-            param2,
-          )
-          : doB();
+      ? doA(
+          param1, // comment to force split
+          param2,
+        )
+      : doB();
 }

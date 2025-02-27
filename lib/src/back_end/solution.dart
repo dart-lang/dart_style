@@ -114,15 +114,17 @@ final class Solution implements Comparable<Solution> {
   /// implicitly means they have state [State.unsplit] unless they're pinned to
   /// another state).
   factory Solution(SolutionCache cache, Piece root,
-      {required int pageWidth, required int leadingIndent, State? rootState}) {
-    var solution =
-        Solution._(cache, root, pageWidth, leadingIndent, 0, {}, {}, rootState);
-    solution._format(cache, root, pageWidth, leadingIndent);
+      {required int pageWidth,
+      required int leadingIndent,
+      required int subsequentIndent,
+      State? rootState}) {
+    var solution = Solution._(cache, root, 0, {}, {}, rootState);
+    solution._format(cache, root, pageWidth, leadingIndent, subsequentIndent);
     return solution;
   }
 
-  Solution._(SolutionCache cache, Piece root, int pageWidth, int leadingIndent,
-      this._cost, this._pieceStates, this._allowedStates,
+  Solution._(SolutionCache cache, Piece root, this._cost, this._pieceStates,
+      this._allowedStates,
       [State? rootState]) {
     Profile.count('create Solution');
 
@@ -196,7 +198,9 @@ final class Solution implements Comparable<Solution> {
   /// If there is no potential piece to expand, or all attempts to expand it
   /// fail, returns an empty list.
   List<Solution> expand(SolutionCache cache, Piece root,
-      {required int pageWidth, required int leadingIndent}) {
+      {required int pageWidth,
+      required int leadingIndent,
+      required int subsequentIndent}) {
     // If there is no piece that we can expand on this solution, it's a dead
     // end (or a winner).
     if (_expandPieces.isEmpty) return const [];
@@ -210,8 +214,8 @@ final class Solution implements Comparable<Solution> {
       var expandPiece = _expandPieces[i];
       for (var state
           in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
-        var expanded = Solution._(cache, root, pageWidth, leadingIndent, _cost,
-            {..._pieceStates}, {..._allowedStates});
+        var expanded = Solution._(
+            cache, root, _cost, {..._pieceStates}, {..._allowedStates});
 
         // Bind all preceding expand pieces to their unsplit state. Their
         // other states have already been expanded by earlier iterations of
@@ -233,7 +237,8 @@ final class Solution implements Comparable<Solution> {
 
         // Discard the solution if we hit a constraint violation.
         if (!expanded._isDeadEnd) {
-          expanded._format(cache, root, pageWidth, leadingIndent);
+          expanded._format(
+              cache, root, pageWidth, leadingIndent, subsequentIndent);
 
           // TODO(rnystrom): These come mostly (entirely?) from hard newlines
           // in sequences, comments, and multiline strings. It should be
@@ -290,9 +295,10 @@ final class Solution implements Comparable<Solution> {
 
   /// Run a [CodeWriter] on this solution to produce the final formatted output
   /// and calculate the overflow and expand pieces.
-  void _format(
-      SolutionCache cache, Piece root, int pageWidth, int leadingIndent) {
-    var writer = CodeWriter(pageWidth, leadingIndent, cache, this);
+  void _format(SolutionCache cache, Piece root, int pageWidth,
+      int leadingIndent, int subsequentIndent) {
+    var writer =
+        CodeWriter(pageWidth, leadingIndent, subsequentIndent, cache, this);
     writer.format(root);
 
     var (code, expandPieces) = writer.finish();

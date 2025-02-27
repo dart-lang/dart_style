@@ -976,8 +976,8 @@ class Traverser {
         // overrides for all repo packages.
         var pubDep =
             override == null
-                ? new PackageDep(depName, "hosted", constraint, depName)
-                : override.withConstraint(constraint);
+            ? new PackageDep(depName, "hosted", constraint, depName)
+            : override.withConstraint(constraint);
         return _registerDependency(
           new Dependency("pub itself", Version.none, pubDep),
         );
