@@ -40,6 +40,27 @@
         );
   ```
 
+* Block format record types in typedefs (#1651):
+
+  ```dart
+  // Before:
+  typedef ExampleRecordTypedef =
+      (
+        String firstParameter,
+        int secondParameter,
+        String thirdParameter,
+        String fourthParameter,
+      );
+
+  // After:
+  typedef ExampleRecordTypedef = (
+    String firstParameter,
+    int secondParameter,
+    String thirdParameter,
+    String fourthParameter,
+  );
+  ```
+
 * Don't add a trailing comma in lists that don't allow it, even when there is
   a trailing comment (#1639).
 * Add tests for digit separators.

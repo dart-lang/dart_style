@@ -158,3 +158,10 @@ typedef Generic<T, R> =
       T param,
       R another,
     );
+>>> Allow block-formatting a record typedef.
+typedef SomeType = (int first, int second);
+<<<
+typedef SomeType = (
+  int first,
+  int second,
+);
