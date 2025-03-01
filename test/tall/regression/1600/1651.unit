@@ -1,0 +1,15 @@
+>>>
+typedef ExampleRecordTypedef =
+    (
+      String firstParameter,
+      int secondParameter,
+      String thirdParameter,
+      String fourthParameter,
+    );
+<<<
+typedef ExampleRecordTypedef = (
+  String firstParameter,
+  int secondParameter,
+  String thirdParameter,
+  String fourthParameter,
+);

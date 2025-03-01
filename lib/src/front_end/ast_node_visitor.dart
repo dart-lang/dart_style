@@ -882,7 +882,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
+      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type),
+          canBlockSplitRight: node.type is RecordTypeAnnotation));
       pieces.token(node.semicolon);
     });
   }
