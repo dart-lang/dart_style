@@ -1,5 +1,7 @@
 ## 3.0.2-wip
 
+* Format null-aware elements.
+
 * Don't indent conditional branches redundantly after `=`, `:`, and `=>`.
 
   ```dart

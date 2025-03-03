@@ -1338,7 +1338,10 @@ mixin PieceFactory {
       AstNode leftHandSide, Token operator, AstNode rightHandSide,
       {bool includeComma = false,
       bool canBlockSplitLeft = false,
-      NodeContext leftHandSideContext = NodeContext.none}) {
+      NodeContext leftHandSideContext = NodeContext.none,
+      bool includeLeftHandSideQuestion = false,
+      bool includeRightHandSideQuestion = false,
+      String? rightHandSidePrefix}) {
     // If an operand can have block formatting, then a newline in it doesn't
     // force the operator to split, as in:
     //
@@ -1383,7 +1386,9 @@ mixin PieceFactory {
       _ => false
     };
 
-    var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
+    var leftPiece = nodePiece(leftHandSide,
+        questionBefore: includeLeftHandSideQuestion,
+        context: leftHandSideContext);
 
     var operatorPiece = pieces.build(() {
       if (operator.type != TokenType.COLON) pieces.space();
@@ -1391,7 +1396,9 @@ mixin PieceFactory {
     });
 
     var rightPiece = nodePiece(rightHandSide,
-        commaAfter: includeComma, context: NodeContext.assignment);
+        commaAfter: includeComma,
+        questionBefore: includeRightHandSideQuestion,
+        context: NodeContext.assignment);
 
     pieces.add(AssignPiece(
         left: leftPiece,
@@ -1520,7 +1527,9 @@ mixin PieceFactory {
   /// If [commaAfter] is `true`, looks for a comma token after [node] and
   /// writes it to the piece as well.
   Piece nodePiece(AstNode node,
-      {bool commaAfter = false, NodeContext context = NodeContext.none}) {
+      {bool commaAfter = false,
+      bool questionBefore = false,
+      NodeContext context = NodeContext.none}) {
     var result = pieces.build(() {
       visitNode(node, context);
     });
@@ -1530,6 +1539,14 @@ mixin PieceFactory {
       if (nextToken.lexeme == ',') {
         var comma = tokenPiece(nextToken);
         result = AdjacentPiece([result, comma]);
+      }
+    }
+
+    if (questionBefore) {
+      var previousToken = node.beginToken.previous!;
+      if (previousToken.lexeme == '?') {
+        var question = tokenPiece(previousToken);
+        result = AdjacentPiece([question, result]);
       }
     }
 

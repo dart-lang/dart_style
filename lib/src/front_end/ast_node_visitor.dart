@@ -1251,7 +1251,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    writeAssignment(node.key, node.separator, node.value);
+    writeAssignment(node.key, node.separator, node.value,
+        includeLeftHandSideQuestion: true, includeRightHandSideQuestion: true);
   }
 
   @override
@@ -1351,6 +1352,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitNullAssertPattern(NullAssertPattern node) {
     writePostfix(node.pattern, node.operator);
+  }
+
+  @override
+  void visitNullAwareElement(NullAwareElement node) {
+    writePrefix(node.question, node.value);
   }
 
   @override
