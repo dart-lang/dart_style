@@ -1,0 +1,34 @@
+40 columns                              |
+>>> (experiment null-aware-elements) Inline comment after `?`.
+var list = [  ?  /* c */  x  ];
+<<<
+var list = [? /* c */ x];
+>>> (experiment null-aware-elements)
+var map = {  ?  /* c */  key  :  ?  /* c */  value  };
+<<<
+var map = {
+  ? /* c */ key: ? /* c */ value,
+};
+>>> (experiment null-aware-elements) Line comment after `?`.
+var list = [  ?  // c
+x  ];
+<<<
+### This is an odd place for a comment so the formatting is odd, but we want to
+### at least pin it down with a test.
+var list = [
+  ? // c
+  x,
+];
+>>> (experiment null-aware-elements)
+var map = {  ?  // c
+key  :  ?  // c
+value  };
+<<<
+### This is an odd place for a comment so the formatting is odd, but we want to
+### at least pin it down with a test.
+var map = {
+  ? // c
+      key:
+      ? // c
+      value,
+};

@@ -130,7 +130,8 @@ void _testFile(TestFile testFile) {
         var formatter = DartFormatter(
             languageVersion: formatTest.languageVersion,
             pageWidth: testFile.pageWidth,
-            indent: formatTest.leadingIndent);
+            indent: formatTest.leadingIndent,
+            experimentFlags: formatTest.experimentFlags);
 
         var actual = _validateFormat(
             formatter,

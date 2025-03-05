@@ -11,6 +11,7 @@ import '../../dart_style.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _versionPattern = RegExp(r'\(version (\d+)\.(\d+)\)');
+final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -111,6 +112,14 @@ final class TestFile {
         return '';
       });
 
+      // Let the test enable experiments for features that are supported but not
+      // released yet.
+      var experiments = <String>[];
+      description = description.replaceAllMapped(_experimentPattern, (match) {
+        experiments.add(match[1]!);
+        return '';
+      });
+
       var inputComments = readComments();
 
       var inputBuffer = StringBuffer();
@@ -160,6 +169,7 @@ final class TestFile {
           lineNumber,
           languageVersion,
           leadingIndent,
+          experiments,
           inputComments,
           outputComments));
     }
@@ -217,6 +227,9 @@ final class FormatTest {
   /// line.
   final int leadingIndent;
 
+  /// Experiments that should be enabled when running this test.
+  final List<String> experimentFlags;
+
   FormatTest(
       this.input,
       this.output,
@@ -225,6 +238,7 @@ final class FormatTest {
       this.line,
       this.languageVersion,
       this.leadingIndent,
+      this.experimentFlags,
       this.inputComments,
       this.outputComments);
 
