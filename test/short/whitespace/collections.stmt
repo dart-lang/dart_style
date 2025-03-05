@@ -93,33 +93,3 @@ f() async {
 f() async {
   var l = [await for (x in y) x];
 }
->>> null-aware elements
-foo1(int? x) => [
-  ?x];
-<<<
-foo1(int? x) => [?x];
->>>
-foo2(int? x) => {
-  ?x};
-<<<
-foo2(int? x) => {?x};
->>>
-bar0() => {
-  "key": #value};
-<<<
-bar0() => {"key": #value};
->>>
-bar1(int? x) => {
-  ?x: "value"};
-<<<
-bar1(int? x) => {?x: "value"};
->>>
-bar2(String? y) => {
-  "key": ?y};
-<<<
-bar2(String? y) => {"key": ?y};
->>>
-bar3(int? x, String? y) => {
-  ?x: ?y};
-<<<
-bar3(int? x, String? y) => {?x: ?y};

@@ -92,7 +92,8 @@ Future<void> _updateTestFile(TestFile testFile) async {
     var formatter = DartFormatter(
         languageVersion: formatTest.languageVersion,
         pageWidth: testFile.pageWidth,
-        indent: formatTest.leadingIndent);
+        indent: formatTest.leadingIndent,
+        experimentFlags: formatTest.experimentFlags);
 
     var actual = formatter.formatSource(formatTest.input);
 
@@ -110,6 +111,8 @@ Future<void> _updateTestFile(TestFile testFile) async {
         : DartFormatter.latestShortStyleLanguageVersion;
 
     var descriptionParts = [
+      for (var experiment in formatTest.experimentFlags)
+        '(experiment $experiment)',
       if (formatTest.leadingIndent != 0) '(indent ${formatTest.leadingIndent})',
       if (formatTest.languageVersion != defaultLanguageVersion)
         '(version ${formatTest.languageVersion.major}.'

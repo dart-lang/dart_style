@@ -1251,8 +1251,24 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    writeAssignment(node.key, node.separator, node.value,
-        includeLeftHandSideQuestion: true, includeRightHandSideQuestion: true);
+    var leftPiece = pieces.build(() {
+      pieces.token(node.keyQuestion);
+      pieces.visit(node.key);
+    });
+
+    var operatorPiece = tokenPiece(node.separator);
+
+    var rightPiece = pieces.build(() {
+      pieces.token(node.valueQuestion);
+      pieces.visit(node.value, context: NodeContext.assignment);
+    });
+
+    pieces.add(AssignPiece(
+        left: leftPiece,
+        operatorPiece,
+        rightPiece,
+        canBlockSplitLeft: node.key.canBlockSplit,
+        canBlockSplitRight: node.value.canBlockSplit));
   }
 
   @override

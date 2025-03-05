@@ -78,7 +78,8 @@ Future<void> _runTest(String path, int line,
   var formatter = DartFormatter(
       languageVersion: formatTest.languageVersion,
       pageWidth: testFile.pageWidth,
-      indent: formatTest.leadingIndent);
+      indent: formatTest.leadingIndent,
+      experimentFlags: formatTest.experimentFlags);
 
   var actual = formatter.formatSource(formatTest.input);
 
