@@ -33,9 +33,13 @@ final class Summary {
   /// [changed] will be false.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  void afterFile(FormatterOptions options, File? file, String displayPath,
-      SourceCode output,
-      {required bool changed}) {}
+  void afterFile(
+    FormatterOptions options,
+    File? file,
+    String displayPath,
+    SourceCode output, {
+    required bool changed,
+  }) {}
 
   void show() {}
 }
@@ -57,9 +61,13 @@ final class _LineSummary extends Summary {
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
   @override
-  void afterFile(FormatterOptions options, File? file, String displayPath,
-      SourceCode output,
-      {required bool changed}) {
+  void afterFile(
+    FormatterOptions options,
+    File? file,
+    String displayPath,
+    SourceCode output, {
+    required bool changed,
+  }) {
     _files++;
     if (changed) _changed++;
   }
@@ -126,9 +134,13 @@ final class _ProfileSummary implements Summary {
   /// If the contents of the file are the same as the formatted output,
   /// [changed] will be false.
   @override
-  void afterFile(FormatterOptions options, File? file, String displayPath,
-      SourceCode output,
-      {required bool changed}) {
+  void afterFile(
+    FormatterOptions options,
+    File? file,
+    String displayPath,
+    SourceCode output, {
+    required bool changed,
+  }) {
     var elapsed = DateTime.now().difference(_ongoing.remove(displayPath)!);
     if (elapsed.inMilliseconds >= 10) {
       _elapsed[displayPath] = elapsed;

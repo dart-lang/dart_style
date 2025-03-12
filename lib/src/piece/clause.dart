@@ -85,11 +85,13 @@ final class ClausePiece extends Piece {
   final bool _allowLeadingClause;
 
   ClausePiece(this._header, this._clauses, {bool allowLeadingClause = false})
-      : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
+    : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
 
   @override
-  List<State> get additionalStates =>
-      [if (_allowLeadingClause) _betweenClauses, State.split];
+  List<State> get additionalStates => [
+    if (_allowLeadingClause) _betweenClauses,
+    State.split,
+  ];
 
   @override
   bool allowNewlineInChild(State state, Piece child) {

@@ -125,11 +125,14 @@ final class ChainBuilder {
     //     );
     var blockCallIndex = _calls.length == 1 && _calls.single.canSplit ? 0 : -1;
 
-    var chain = ChainPiece(_target, _calls,
-        cascade: true,
-        indent: Indent.cascade,
-        blockCallIndex: blockCallIndex,
-        allowSplitInTarget: _allowSplitInTarget);
+    var chain = ChainPiece(
+      _target,
+      _calls,
+      cascade: true,
+      indent: Indent.cascade,
+      blockCallIndex: blockCallIndex,
+      allowSplitInTarget: _allowSplitInTarget,
+    );
 
     if (!(_root as CascadeExpression).allowInline) chain.pin(State.split);
 
@@ -222,12 +225,15 @@ final class ChainBuilder {
     //         .method()
     //       ..x = 1
     //       ..y = 2;
-    return ChainPiece(_target, _calls,
-        cascade: false,
-        indent: isCascadeTarget ? Indent.cascade : Indent.expression,
-        leadingProperties: leadingProperties,
-        blockCallIndex: blockCallIndex,
-        allowSplitInTarget: _allowSplitInTarget);
+    return ChainPiece(
+      _target,
+      _calls,
+      cascade: false,
+      indent: isCascadeTarget ? Indent.cascade : Indent.expression,
+      leadingProperties: leadingProperties,
+      blockCallIndex: blockCallIndex,
+      allowSplitInTarget: _allowSplitInTarget,
+    );
   }
 
   /// Given [expression], which is the expression for some call chain, traverses
@@ -259,8 +265,9 @@ final class ChainBuilder {
 
         var callType = CallType.unsplittableCall;
 
-        if (expression.argumentList.arguments
-            .canSplit(expression.argumentList.rightParenthesis)) {
+        if (expression.argumentList.arguments.canSplit(
+          expression.argumentList.rightParenthesis,
+        )) {
           callType = CallType.splittableCall;
         }
 
@@ -273,9 +280,10 @@ final class ChainBuilder {
           // block argument or not.
           var arguments = _visitor.pieces.build(() {
             _visitor.writeArgumentList(
-                expression.argumentList.leftParenthesis,
-                expression.argumentList.arguments,
-                expression.argumentList.rightParenthesis);
+              expression.argumentList.leftParenthesis,
+              expression.argumentList.arguments,
+              expression.argumentList.rightParenthesis,
+            );
           });
 
           if (arguments is ListPiece && arguments.hasBlockElement) {
@@ -351,12 +359,16 @@ final class ChainBuilder {
   /// expression. Otherwise, it's the target of a call chain.
   void _visitTarget(Expression target, {bool cascadeTarget = false}) {
     _allowSplitInTarget = target.canBlockSplit;
-    _target = _visitor.nodePiece(target,
-        context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none);
+    _target = _visitor.nodePiece(
+      target,
+      context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none,
+    );
   }
 
   void _unwrapPostfix(
-      Expression operand, Piece Function(Piece target) createPostfix) {
+    Expression operand,
+    Piece Function(Piece target) createPostfix,
+  ) {
     _unwrapCall(operand);
 
     // If we don't have a preceding call to hang the postfix expression off of,

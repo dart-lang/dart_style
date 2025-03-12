@@ -75,8 +75,13 @@ final class DelimitedListBuilder {
     }
 
     var piece = ListPiece(
-        _leftBracket, _elements, _blanksAfter, _rightBracket, _style,
-        lastNonCommentElement: lastNonCommentElement);
+      _leftBracket,
+      _elements,
+      _blanksAfter,
+      _rightBracket,
+      _style,
+      lastNonCommentElement: lastNonCommentElement,
+    );
     if (_mustSplit || forceSplit) piece.pin(State.split);
     return piece;
   }
@@ -231,8 +236,9 @@ final class DelimitedListBuilder {
     // (In practice, it's such an unusual place for a comment that it doesn't
     // matter that much where it goes and this seems to be simple and
     // reasonable looking.)
-    _commentsBeforeComma = _commentsBeforeComma
-        .concatenate(_visitor.comments.takeCommentsBefore(delimiter));
+    _commentsBeforeComma = _commentsBeforeComma.concatenate(
+      _visitor.comments.takeCommentsBefore(delimiter),
+    );
 
     // Attach the delimiter to the previous element.
     _elements.last.setDelimiter(delimiter.lexeme);
@@ -261,7 +267,7 @@ final class DelimitedListBuilder {
       inline: inlineComments,
       hanging: hangingComments,
       separate: separateComments,
-      leading: leadingComments
+      leading: leadingComments,
     ) = _splitCommaComments(comments, hasElementAfter: hasElementAfter);
 
     // Add any hanging inline block comments to the previous element before the
@@ -335,14 +341,18 @@ final class DelimitedListBuilder {
     CommentSequence inline,
     CommentSequence hanging,
     CommentSequence separate,
-    CommentSequence leading
-  }) _splitCommaComments(CommentSequence commentsBeforeElement,
-      {required bool hasElementAfter}) {
+    CommentSequence leading,
+  })
+  _splitCommaComments(
+    CommentSequence commentsBeforeElement, {
+    required bool hasElementAfter,
+  }) {
     // If we're on the final comma after the last element, the comma isn't
     // meaningful because there can't be leading comments after it.
     if (!hasElementAfter) {
-      _commentsBeforeComma =
-          _commentsBeforeComma.concatenate(commentsBeforeElement);
+      _commentsBeforeComma = _commentsBeforeComma.concatenate(
+        commentsBeforeElement,
+      );
       commentsBeforeElement = CommentSequence.empty;
     }
 
@@ -377,8 +387,8 @@ final class DelimitedListBuilder {
       }
     }
 
-    var (inlineComments, remainingCommentsBeforeComma) =
-        _commentsBeforeComma.splitAt(inlineCommentCount);
+    var (inlineComments, remainingCommentsBeforeComma) = _commentsBeforeComma
+        .splitAt(inlineCommentCount);
 
     var hangingCommentCount = 0;
     if (_elements.isNotEmpty) {
@@ -390,8 +400,10 @@ final class DelimitedListBuilder {
       }
     }
 
-    var (hangingComments, separateCommentsBeforeComma) =
-        remainingCommentsBeforeComma.splitAt(hangingCommentCount);
+    var (
+      hangingComments,
+      separateCommentsBeforeComma,
+    ) = remainingCommentsBeforeComma.splitAt(hangingCommentCount);
 
     // Inline block comments on the same line as the next element lead at the
     // beginning of that line, as in:
@@ -425,14 +437,15 @@ final class DelimitedListBuilder {
     //       argument,
     //       // another
     //     );
-    var separateComments =
-        separateCommentsBeforeComma.concatenate(separateCommentsAfterComma);
+    var separateComments = separateCommentsBeforeComma.concatenate(
+      separateCommentsAfterComma,
+    );
 
     return (
       inline: inlineComments,
       hanging: hangingComments,
       separate: separateComments,
-      leading: leadingComments
+      leading: leadingComments,
     );
   }
 

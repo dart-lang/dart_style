@@ -68,10 +68,14 @@ final class ListPiece extends Piece {
   /// [_elements] must not be empty. (If there are no elements, just concatenate
   /// the brackets directly.)
   ListPiece(
-      this._before, this._elements, this._blanksAfter, this._after, this._style,
-      {required int lastNonCommentElement})
-      : assert(_elements.isNotEmpty),
-        _lastNonCommentElement = lastNonCommentElement {
+    this._before,
+    this._elements,
+    this._blanksAfter,
+    this._after,
+    this._style, {
+    required int lastNonCommentElement,
+  }) : assert(_elements.isNotEmpty),
+       _lastNonCommentElement = lastNonCommentElement {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -92,9 +96,11 @@ final class ListPiece extends Piece {
 
         case Commas.nonTrailing:
           // Never a trailing comma after the last element.
-          element.pin(i < _lastNonCommentElement
-              ? ListElementPiece._appendComma
-              : State.unsplit);
+          element.pin(
+            i < _lastNonCommentElement
+                ? ListElementPiece._appendComma
+                : State.unsplit,
+          );
 
         case Commas.none:
           // No comma after any element.
@@ -110,8 +116,10 @@ final class ListPiece extends Piece {
   void applyConstraints(State state, Constrain constrain) {
     // Give the last element a trailing comma only if the list is split.
     if (_style.commas == Commas.trailing && _lastNonCommentElement != -1) {
-      constrain(_elements[_lastNonCommentElement],
-          state == State.split ? ListElementPiece._appendComma : State.unsplit);
+      constrain(
+        _elements[_lastNonCommentElement],
+        state == State.split ? ListElementPiece._appendComma : State.unsplit,
+      );
     }
   }
 
@@ -141,8 +149,10 @@ final class ListPiece extends Piece {
       if (state != State.unsplit) writer.pushIndent(Indent.block);
 
       // Whitespace after the opening bracket.
-      writer.splitIf(state == State.split,
-          space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
+      writer.splitIf(
+        state == State.split,
+        space: _style.spaceWhenUnsplit && _elements.isNotEmpty,
+      );
     }
 
     // Format the elements.
@@ -158,7 +168,8 @@ final class ListPiece extends Piece {
       // We can format each list item separately if the item is on its own line.
       // This happens when the list is split and there is something before and
       // after the item, either brackets or other items.
-      var separate = state == State.split &&
+      var separate =
+          state == State.split &&
           (i > 0 || _before != null) &&
           (i < _elements.length - 1 || _after != null);
       writer.format(element, separate: separate);
@@ -169,10 +180,12 @@ final class ListPiece extends Piece {
 
       // Write a space or newline between elements.
       if (i < _elements.length - 1) {
-        writer.splitIf(state == State.split,
-            blank: _blanksAfter.contains(element),
-            // No space after the "[" or "{" in a parameter list.
-            space: element._delimiter.isEmpty);
+        writer.splitIf(
+          state == State.split,
+          blank: _blanksAfter.contains(element),
+          // No space after the "[" or "{" in a parameter list.
+          space: element._delimiter.isEmpty,
+        );
       }
     }
 
@@ -181,8 +194,10 @@ final class ListPiece extends Piece {
       if (state == State.split) writer.popIndent();
 
       // Whitespace before the closing bracket.
-      writer.splitIf(state == State.split,
-          space: _style.spaceWhenUnsplit && _elements.isNotEmpty);
+      writer.splitIf(
+        state == State.split,
+        space: _style.spaceWhenUnsplit && _elements.isNotEmpty,
+      );
 
       writer.format(after);
     }
@@ -316,12 +331,12 @@ final class ListElementPiece extends Piece {
   int _commentsBeforeDelimiter = 0;
 
   ListElementPiece(List<Piece> leadingComments, Piece element)
-      : _leadingComments = [...leadingComments],
-        _content = element;
+    : _leadingComments = [...leadingComments],
+      _content = element;
 
   ListElementPiece.comment(Piece comment)
-      : _leadingComments = const [],
-        _content = null {
+    : _leadingComments = const [],
+      _content = null {
     _hangingComments.add(comment);
   }
 
@@ -469,8 +484,9 @@ final class ListStyle {
   ///     //              ^                      ^
   final bool spaceWhenUnsplit;
 
-  const ListStyle(
-      {this.commas = Commas.trailing,
-      this.splitCost = Cost.normal,
-      this.spaceWhenUnsplit = false});
+  const ListStyle({
+    this.commas = Commas.trailing,
+    this.splitCost = Cost.normal,
+    this.spaceWhenUnsplit = false,
+  });
 }

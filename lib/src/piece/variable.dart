@@ -51,13 +51,13 @@ final class VariablePiece extends Piece {
   /// The [hasType] parameter should be `true` if the variable declaration has
   /// a type annotation.
   VariablePiece(this._header, this._variables, {required bool hasType})
-      : _hasType = hasType;
+    : _hasType = hasType;
 
   @override
   List<State> get additionalStates => [
-        if (_variables.length > 1) _betweenVariables,
-        if (_hasType) _afterType,
-      ];
+    if (_variables.length > 1) _betweenVariables,
+    if (_hasType) _afterType,
+  ];
 
   @override
   bool allowNewlineInChild(State state, Piece child) {

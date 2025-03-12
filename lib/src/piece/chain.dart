@@ -100,26 +100,28 @@ final class ChainPiece extends Piece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  ChainPiece(this._target, this._calls,
-      {required bool cascade,
-      int leadingProperties = 0,
-      int blockCallIndex = -1,
-      int indent = Indent.expression,
-      required bool allowSplitInTarget})
-      : _leadingProperties = leadingProperties,
-        _blockCallIndex = blockCallIndex,
-        _indent = indent,
-        _allowSplitInTarget = allowSplitInTarget,
-        _isCascade = cascade,
-        // If there are no calls, we shouldn't have created a chain.
-        assert(_calls.isNotEmpty);
+  ChainPiece(
+    this._target,
+    this._calls, {
+    required bool cascade,
+    int leadingProperties = 0,
+    int blockCallIndex = -1,
+    int indent = Indent.expression,
+    required bool allowSplitInTarget,
+  }) : _leadingProperties = leadingProperties,
+       _blockCallIndex = blockCallIndex,
+       _indent = indent,
+       _allowSplitInTarget = allowSplitInTarget,
+       _isCascade = cascade,
+       // If there are no calls, we shouldn't have created a chain.
+       assert(_calls.isNotEmpty);
 
   @override
   List<State> get additionalStates => [
-        if (_blockCallIndex != -1) _blockFormatTrailingCall,
-        if (_leadingProperties > 0) _splitAfterProperties,
-        State.split
-      ];
+    if (_blockCallIndex != -1) _blockFormatTrailingCall,
+    if (_leadingProperties > 0) _splitAfterProperties,
+    State.split,
+  ];
 
   @override
   int stateCost(State state) {
@@ -179,8 +181,10 @@ final class ChainPiece extends Piece {
           writer.splitIf(i >= _leadingProperties, space: false);
 
           // Every non-property call except the last will be on its own line.
-          writer.format(_calls[i]._call,
-              separate: i >= _leadingProperties && i < _calls.length - 1);
+          writer.format(
+            _calls[i]._call,
+            separate: i >= _leadingProperties && i < _calls.length - 1,
+          );
         }
 
         writer.popIndent();

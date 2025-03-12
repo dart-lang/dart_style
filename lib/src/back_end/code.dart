@@ -47,8 +47,10 @@ sealed class Code {
           write('Marker(${code._marker}, offset: ${code._offset})');
 
         case _EnableFormattingCode():
-          write('EnableFormattingCode(enabled: ${code._enabled}, '
-              'offset: ${code._sourceOffset})');
+          write(
+            'EnableFormattingCode(enabled: ${code._enabled}, '
+            'offset: ${code._sourceOffset})',
+          );
       }
     }
 
@@ -140,8 +142,8 @@ final class _NewlineCode extends Code {
   final int _indent;
 
   _NewlineCode({required bool blank, required int indent})
-      : _indent = indent,
-        _blank = blank;
+    : _indent = indent,
+      _blank = blank;
 }
 
 /// A [Code] object for literal source text.
@@ -351,8 +353,9 @@ final class _StringBuilder {
         if (_disableFormattingStart != -1) {
           // Write all of the unformatted text from the `// dart format off`
           // comment to the end of the `// dart format on` comment.
-          _buffer.write(_source.text
-              .substring(_disableFormattingStart, code._sourceOffset));
+          _buffer.write(
+            _source.text.substring(_disableFormattingStart, code._sourceOffset),
+          );
           _disableFormattingStart = -1;
         }
     }
@@ -378,11 +381,13 @@ final class _StringBuilder {
       selectionLength = selectionEnd - selectionStart;
     }
 
-    return SourceCode(_buffer.toString(),
-        uri: _source.uri,
-        isCompilationUnit: _source.isCompilationUnit,
-        selectionStart: selectionStart,
-        selectionLength: selectionLength);
+    return SourceCode(
+      _buffer.toString(),
+      uri: _source.uri,
+      isCompilationUnit: _source.isCompilationUnit,
+      selectionStart: selectionStart,
+      selectionLength: selectionLength,
+    );
   }
 }
 

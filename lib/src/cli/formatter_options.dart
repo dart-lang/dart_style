@@ -49,17 +49,17 @@ final class FormatterOptions {
   /// See dart.dev/go/experiments for details.
   final List<String> experimentFlags;
 
-  FormatterOptions(
-      {this.languageVersion,
-      this.indent = 0,
-      this.pageWidth,
-      this.followLinks = false,
-      this.show = Show.changed,
-      this.output = Output.write,
-      this.summary = Summary.none,
-      this.setExitIfChanged = false,
-      List<String>? experimentFlags})
-      : experimentFlags = [...?experimentFlags];
+  FormatterOptions({
+    this.languageVersion,
+    this.indent = 0,
+    this.pageWidth,
+    this.followLinks = false,
+    this.show = Show.changed,
+    this.output = Output.write,
+    this.summary = Summary.none,
+    this.setExitIfChanged = false,
+    List<String>? experimentFlags,
+  }) : experimentFlags = [...?experimentFlags];
 
   /// Called when [file] is about to be formatted.
   ///
@@ -74,8 +74,12 @@ final class FormatterOptions {
   /// [changed] will be false.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  void afterFile(File? file, String displayPath, SourceCode result,
-      {required bool changed}) {
+  void afterFile(
+    File? file,
+    String displayPath,
+    SourceCode result, {
+    required bool changed,
+  }) {
     summary.afterFile(this, file, displayPath, result, changed: changed);
 
     // Save the results to disc.

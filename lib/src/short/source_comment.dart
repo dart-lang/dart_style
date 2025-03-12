@@ -26,6 +26,10 @@ final class SourceComment extends Selection {
   /// re-indented.
   final bool flushLeft;
 
-  SourceComment(this.text, this.type, this.linesBefore,
-      {required this.flushLeft});
+  SourceComment(
+    this.text,
+    this.type,
+    this.linesBefore, {
+    required this.flushLeft,
+  });
 }

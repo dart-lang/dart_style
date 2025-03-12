@@ -51,9 +51,7 @@ void main() {
         d.file('main.dart', 'f() {}'),
         d.dir('sub', [
           d.file('another.dart', 'f() {}'),
-          d.dir('further', [
-            d.file('third.dart', 'f() {}'),
-          ]),
+          d.dir('further', [d.file('third.dart', 'f() {}')]),
         ]),
       ]).create();
 
@@ -67,9 +65,7 @@ void main() {
       await d.dir('parent', [
         _makePackage('foo', '3.4'),
         d.file('outside.dart', 'f() {}'),
-        d.dir('sub', [
-          d.file('another.dart', 'f() {}'),
-        ]),
+        d.dir('sub', [d.file('another.dart', 'f() {}')]),
       ]).create();
 
       var cache = ConfigCache();
@@ -95,9 +91,7 @@ void main() {
     test('nested package', () async {
       await _makePackage('outer', '3.4', [
         d.file('out_main.dart', 'f() {}'),
-        _makePackage('inner', '3.5', [
-          d.file('in_main.dart', 'f() {}'),
-        ])
+        _makePackage('inner', '3.5', [d.file('in_main.dart', 'f() {}')]),
       ]).create();
 
       var cache = ConfigCache();
@@ -108,9 +102,7 @@ void main() {
 
   group('findPageWidth()', () {
     test('null page width if no surrounding options', () async {
-      await d.dir('dir', [
-        d.file('main.dart', 'main() {}'),
-      ]).create();
+      await d.dir('dir', [d.file('main.dart', 'main() {}')]).create();
 
       var cache = ConfigCache();
       expect(await cache.findPageWidth(_expectedFile('dir/main.dart')), isNull);
@@ -130,9 +122,7 @@ void main() {
         analysisOptionsFile(pageWidth: 30),
         d.dir('some', [
           d.dir('sub', [
-            d.dir('directory', [
-              d.file('main.dart', 'f() {}'),
-            ]),
+            d.dir('directory', [d.file('main.dart', 'f() {}')]),
           ]),
         ]),
       ]).create();
@@ -169,7 +159,7 @@ void main() {
         d.FileDescriptor(
           'analysis_options.yaml',
           jsonEncode({
-            'formatter': {'no': 'page_width'}
+            'formatter': {'no': 'page_width'},
           }),
         ),
         d.file('main.dart', 'main() {}'),
@@ -183,7 +173,7 @@ void main() {
         d.FileDescriptor(
           'analysis_options.yaml',
           jsonEncode({
-            'formatter': {'page_width': 'not an int'}
+            'formatter': {'page_width': 'not an int'},
           }),
         ),
         d.file('main.dart', 'main() {}'),
@@ -196,9 +186,7 @@ void main() {
       await d.dir('dir', [
         analysisOptionsFile(include: 'other.yaml'),
         analysisOptionsFile(name: 'other.yaml', include: 'sub/third.yaml'),
-        d.dir('sub', [
-          analysisOptionsFile(name: 'third.yaml', pageWidth: 30),
-        ]),
+        d.dir('sub', [analysisOptionsFile(name: 'third.yaml', pageWidth: 30)]),
         d.file('main.dart', 'main() {}'),
       ]).create();
 
@@ -208,10 +196,10 @@ void main() {
     test('resolve "package:" includes', () async {
       await d.dir('dir', [
         d.dir('foo', [
-          packageConfig('foo', packages: {
-            'bar': '../../bar',
-            'baz': '../../baz',
-          }),
+          packageConfig(
+            'foo',
+            packages: {'bar': '../../bar', 'baz': '../../baz'},
+          ),
           analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
           d.file('main.dart', 'main() {}'),
         ]),
@@ -221,9 +209,7 @@ void main() {
           ]),
         ]),
         d.dir('baz', [
-          d.dir('lib', [
-            analysisOptionsFile(pageWidth: 30),
-          ]),
+          d.dir('lib', [analysisOptionsFile(pageWidth: 30)]),
         ]),
       ]).create();
 
@@ -231,8 +217,8 @@ void main() {
       expect(await cache.findPageWidth(_expectedFile('dir/foo/main.dart')), 30);
     });
 
-    test('use the root file\'s config for transitive "package:" includes',
-        () async {
+    test('use the root file\'s config for transitive "package:" '
+        'includes', () async {
       // This tests a tricky edge case. Consider:
       //
       // Package my_app has analysis_options.yaml:
@@ -262,30 +248,24 @@ void main() {
       // those dependencies.
       await d.dir('dir', [
         d.dir('foo', [
-          packageConfig('foo', packages: {
-            'bar': '../../bar',
-            'baz': '../../baz',
-          }),
+          packageConfig(
+            'foo',
+            packages: {'bar': '../../bar', 'baz': '../../baz'},
+          ),
           analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
           d.file('main.dart', 'main() {}'),
         ]),
         d.dir('bar', [
-          packageConfig('foo', packages: {
-            'baz': '../../evil_baz',
-          }),
+          packageConfig('foo', packages: {'baz': '../../evil_baz'}),
           d.dir('lib', [
             analysisOptionsFile(include: 'package:baz/analysis_options.yaml'),
           ]),
         ]),
         d.dir('baz', [
-          d.dir('lib', [
-            analysisOptionsFile(pageWidth: 30),
-          ]),
+          d.dir('lib', [analysisOptionsFile(pageWidth: 30)]),
         ]),
         d.dir('evil_baz', [
-          d.dir('lib', [
-            analysisOptionsFile(pageWidth: 666),
-          ]),
+          d.dir('lib', [analysisOptionsFile(pageWidth: 666)]),
         ]),
       ]).create();
 
@@ -299,13 +279,9 @@ void main() {
       // "package:bar" include, we use the nearest surrounding package config.
       await d.dir('dir', [
         d.dir('outer', [
-          packageConfig('outer', packages: {
-            'bar': '../../outer_bar',
-          }),
+          packageConfig('outer', packages: {'bar': '../../outer_bar'}),
           d.dir('inner', [
-            packageConfig('inner', packages: {
-              'bar': '../../../inner_bar',
-            }),
+            packageConfig('inner', packages: {'bar': '../../../inner_bar'}),
             analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
             d.file('main.dart', 'f() {}'),
           ]),
@@ -313,27 +289,36 @@ void main() {
           d.file('main.dart', 'f() {}'),
         ]),
         d.dir('outer_bar', [
-          d.dir('lib', [analysisOptionsFile(pageWidth: 20)])
+          d.dir('lib', [analysisOptionsFile(pageWidth: 20)]),
         ]),
         d.dir('inner_bar', [
-          d.dir('lib', [analysisOptionsFile(pageWidth: 30)])
+          d.dir('lib', [analysisOptionsFile(pageWidth: 30)]),
         ]),
       ]).create();
 
       var cache = ConfigCache();
       expect(
-          await cache.findPageWidth(_expectedFile('dir/outer/main.dart')), 20);
+        await cache.findPageWidth(_expectedFile('dir/outer/main.dart')),
+        20,
+      );
       expect(
-          await cache.findPageWidth(_expectedFile('dir/outer/inner/main.dart')),
-          30);
+        await cache.findPageWidth(_expectedFile('dir/outer/inner/main.dart')),
+        30,
+      );
     });
   });
 }
 
 Future<void> _expectVersion(
-    ConfigCache cache, String path, int major, int minor) async {
-  expect(await cache.findLanguageVersion(_expectedFile(path), path),
-      Version(major, minor, 0));
+  ConfigCache cache,
+  String path,
+  int major,
+  int minor,
+) async {
+  expect(
+    await cache.findLanguageVersion(_expectedFile(path), path),
+    Version(major, minor, 0),
+  );
 }
 
 Future<void> _expectNullVersion(ConfigCache cache, String path) async {
@@ -342,17 +327,18 @@ Future<void> _expectNullVersion(ConfigCache cache, String path) async {
 
 /// Test that a [file] with some some surrounding analysis_options.yaml is
 /// interpreted as having the given page [width].
-Future<void> _expectWidth(
-    {String file = 'dir/main.dart', required int? width}) async {
+Future<void> _expectWidth({
+  String file = 'dir/main.dart',
+  required int? width,
+}) async {
   var cache = ConfigCache();
   expect(await cache.findPageWidth(_expectedFile(file)), width);
 }
 
 /// Normalize path separators to the host OS separator since that's what the
 /// cache uses.
-File _expectedFile(String path) => File(
-      p.joinAll([d.sandbox, ...p.posix.split(path)]),
-    );
+File _expectedFile(String path) =>
+    File(p.joinAll([d.sandbox, ...p.posix.split(path)]));
 
 /// Create a test package with [packageName] containing a package config with
 /// language version [major].[minor].

@@ -33,13 +33,18 @@ typedef ResolvePackageUri = Future<String?> Function(Uri packageUri);
 /// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
 /// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> findAnalysisOptions(
-    FileSystem fileSystem, FileSystemPath directory,
-    {ResolvePackageUri? resolvePackageUri}) async {
+  FileSystem fileSystem,
+  FileSystemPath directory, {
+  ResolvePackageUri? resolvePackageUri,
+}) async {
   while (true) {
     var optionsPath = await fileSystem.join(directory, 'analysis_options.yaml');
     if (await fileSystem.fileExists(optionsPath)) {
-      return readAnalysisOptions(fileSystem, optionsPath,
-          resolvePackageUri: resolvePackageUri);
+      return readAnalysisOptions(
+        fileSystem,
+        optionsPath,
+        resolvePackageUri: resolvePackageUri,
+      );
     }
 
     var parent = await fileSystem.parentDirectory(directory);
@@ -57,8 +62,10 @@ Future<AnalysisOptions> findAnalysisOptions(
 /// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
 /// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> readAnalysisOptions(
-    FileSystem fileSystem, FileSystemPath optionsPath,
-    {ResolvePackageUri? resolvePackageUri}) async {
+  FileSystem fileSystem,
+  FileSystemPath optionsPath, {
+  ResolvePackageUri? resolvePackageUri,
+}) async {
   var yaml = loadYamlNode(await fileSystem.readFile(optionsPath));
 
   // If for some reason the YAML isn't a map, consider it malformed and yield
@@ -78,21 +85,28 @@ Future<AnalysisOptions> readAnalysisOptions(
           include = filePath;
         } else {
           throw PackageResolutionException(
-              'Failed to resolve package URI "$include" in include.');
+            'Failed to resolve package URI "$include" in include.',
+          );
         }
       } else {
         throw PackageResolutionException(
-            'Couldn\'t resolve package URI "$include" in include because '
-            'no package resolver was provided.');
+          'Couldn\'t resolve package URI "$include" in include because '
+          'no package resolver was provided.',
+        );
       }
     }
 
     // The include path may be relative to the directory containing the current
     // options file.
     var includePath = await fileSystem.join(
-        (await fileSystem.parentDirectory(optionsPath))!, include);
-    return await readAnalysisOptions(fileSystem, includePath,
-        resolvePackageUri: resolvePackageUri);
+      (await fileSystem.parentDirectory(optionsPath))!,
+      include,
+    );
+    return await readAnalysisOptions(
+      fileSystem,
+      includePath,
+      resolvePackageUri: resolvePackageUri,
+    );
   }
 
   // If there is an `include:` key with a String value, then load that and merge
@@ -111,8 +125,9 @@ Future<AnalysisOptions> readAnalysisOptions(
       for (var include in includeList) {
         if (include is! String) {
           throw PackageResolutionException(
-              'Unsupported "include" value in analysis options include list: '
-              '"$include".');
+            'Unsupported "include" value in analysis options include list: '
+            '"$include".',
+          );
         }
         var includeOptions = await optionsFromInclude(include);
         mergedIncludeOptions =
@@ -123,7 +138,8 @@ Future<AnalysisOptions> readAnalysisOptions(
       break;
     case Object include:
       throw PackageResolutionException(
-          'Unsupported "include" value in analysis options: "$include".');
+        'Unsupported "include" value in analysis options: "$include".',
+      );
   }
 
   return options;

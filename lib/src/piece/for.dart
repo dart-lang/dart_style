@@ -29,7 +29,7 @@ final class ForPiece extends Piece {
   final bool _indent;
 
   ForPiece(this._forKeyword, this._parts, {required bool indent})
-      : _indent = indent;
+    : _indent = indent;
 
   @override
   void format(CodeWriter writer, State state) {
@@ -91,9 +91,11 @@ final class ForInPiece extends Piece {
   ///     }
   final bool _canBlockSplitSequence;
 
-  ForInPiece(this._variable, this._sequence,
-      {bool canBlockSplitSequence = false})
-      : _canBlockSplitSequence = canBlockSplitSequence;
+  ForInPiece(
+    this._variable,
+    this._sequence, {
+    bool canBlockSplitSequence = false,
+  }) : _canBlockSplitSequence = canBlockSplitSequence;
 
   @override
   List<State> get additionalStates => const [State.split];

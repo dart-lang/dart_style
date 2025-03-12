@@ -96,12 +96,17 @@ final class Chunk extends Selection {
   final spans = <Span>[];
 
   /// Creates a new empty chunk with the given split properties.
-  Chunk(this.rule, this.indent, this.nesting,
-      {required bool space, required bool flushLeft, required bool isDouble})
-      : _text = '',
-        _flushLeft = flushLeft,
-        _isDouble = isDouble,
-        _spaceWhenUnsplit = space {
+  Chunk(
+    this.rule,
+    this.indent,
+    this.nesting, {
+    required bool space,
+    required bool flushLeft,
+    required bool isDouble,
+  }) : _text = '',
+       _flushLeft = flushLeft,
+       _isDouble = isDouble,
+       _spaceWhenUnsplit = space {
     Profile.count('Create Chunk');
   }
 
@@ -110,13 +115,13 @@ final class Chunk extends Selection {
   /// This is returned in some places by [ChunkBuilder] when there is no useful
   /// chunk to yield and it will not end up being used by the caller anyway.
   Chunk.dummy()
-      : _text = '(dummy)',
-        rule = Rule.dummy,
-        indent = 0,
-        nesting = NestingLevel(),
-        _spaceWhenUnsplit = false,
-        _flushLeft = false,
-        _isDouble = false {
+    : _text = '(dummy)',
+      rule = Rule.dummy,
+      indent = 0,
+      nesting = NestingLevel(),
+      _spaceWhenUnsplit = false,
+      _flushLeft = false,
+      _isDouble = false {
     Profile.count('Create Chunk');
   }
 
@@ -162,7 +167,7 @@ final class Chunk extends Selection {
       if (flushLeft) 'flush',
       '$rule${rule.isHardened ? '!' : ''}',
       if (rule.constrainedRules.isNotEmpty)
-        "-> ${rule.constrainedRules.join(' ')}"
+        "-> ${rule.constrainedRules.join(' ')}",
     ];
 
     return '[${parts.join(' ')}] `$text`';
@@ -206,9 +211,14 @@ final class BlockChunk extends Chunk {
   /// The child chunks in this block.
   final List<Chunk> children = [];
 
-  BlockChunk(this.argument, super.rule, super.indent, super.nesting,
-      {required super.space, required super.flushLeft})
-      : super(isDouble: false);
+  BlockChunk(
+    this.argument,
+    super.rule,
+    super.indent,
+    super.nesting, {
+    required super.space,
+    required super.flushLeft,
+  }) : super(isDouble: false);
 
   /// The unsplit length of all of this chunk's block contents.
   ///

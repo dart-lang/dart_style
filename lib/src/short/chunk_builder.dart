@@ -102,9 +102,7 @@ final class ChunkBuilder {
   /// The current innermost rule.
   Rule get rule => _rules.last;
 
-  ChunkBuilder(this._formatter, this._source)
-      : _parent = null,
-        _chunks = [] {
+  ChunkBuilder(this._formatter, this._source) : _parent = null, _chunks = [] {
     indent(_formatter.indent);
     startBlockArgumentNesting();
   }
@@ -157,8 +155,11 @@ final class ChunkBuilder {
   /// `true`, the next line will start at column 1 and ignore indentation and
   /// nesting. If [nest] is `true` then the next line will use expression
   /// nesting.
-  void writeNewline(
-      {bool isDouble = false, bool flushLeft = false, bool nest = false}) {
+  void writeNewline({
+    bool isDouble = false,
+    bool flushLeft = false,
+    bool nest = false,
+  }) {
     _pendingNewlines = isDouble ? 2 : 1;
     _pendingFlushLeft = flushLeft;
     _pendingNested = nest;
@@ -202,7 +203,10 @@ final class ChunkBuilder {
   /// [linesBeforeToken] is the number of lines between the last comment (or
   /// previous token if there are no comments) and the next token.
   void writeComments(
-      List<SourceComment> comments, int linesBeforeToken, String token) {
+    List<SourceComment> comments,
+    int linesBeforeToken,
+    String token,
+  ) {
     // Edge case: if we require a blank line, but there exists one between
     // some of the comments, or after the last one, then we don't need to
     // enforce one before the first comment. Example:
@@ -267,9 +271,10 @@ final class ChunkBuilder {
           if (comment.linesBefore > 0 &&
               (_afterComment || comment.type != CommentType.inlineBlock)) {
             writeNewline(
-                isDouble: _needsBlankLineBeforeComment(comment),
-                flushLeft: comment.flushLeft,
-                nest: true);
+              isDouble: _needsBlankLineBeforeComment(comment),
+              flushLeft: comment.flushLeft,
+              nest: true,
+            );
           } else if (_chunks.isNotEmpty) {
             _pendingSpace = _needsSpaceBeforeComment(comment, _chunks.last);
           }
@@ -311,7 +316,9 @@ final class ChunkBuilder {
 
       if (linesAfter > 0) {
         writeNewline(
-            isDouble: _pendingNewlines == 2 || linesAfter > 1, nest: true);
+          isDouble: _pendingNewlines == 2 || linesAfter > 1,
+          nest: true,
+        );
       }
     }
 
@@ -482,14 +489,22 @@ final class ChunkBuilder {
   /// Starts a new block chunk and returns the [ChunkBuilder] for it.
   ///
   /// Nested blocks are handled using their own independent [LineWriter].
-  ChunkBuilder startBlock(
-      {Chunk? argumentChunk, bool indent = true, bool space = false}) {
+  ChunkBuilder startBlock({
+    Chunk? argumentChunk,
+    bool indent = true,
+    bool space = false,
+  }) {
     // Start a block chunk for the block. It will contain the chunks for the
     // contents of the block, and its own text will be the closing block
     // delimiter.
-    var chunk = BlockChunk(argumentChunk, _rules.last, _nesting.indentation,
-        _blockArgumentNesting.last,
-        space: space, flushLeft: _pendingFlushLeft);
+    var chunk = BlockChunk(
+      argumentChunk,
+      _rules.last,
+      _nesting.indentation,
+      _blockArgumentNesting.last,
+      space: space,
+      flushLeft: _pendingFlushLeft,
+    );
     _chunks.add(chunk);
     _pendingFlushLeft = false;
 
@@ -566,8 +581,9 @@ final class ChunkBuilder {
     Profile.begin('ChunkBuilder run line splitter');
 
     var writer = LineWriter(_formatter, _chunks);
-    var result =
-        writer.writeLines(isCompilationUnit: _source.isCompilationUnit);
+    var result = writer.writeLines(
+      isCompilationUnit: _source.isCompilationUnit,
+    );
 
     Profile.end('ChunkBuilder run line splitter');
 
@@ -585,11 +601,13 @@ final class ChunkBuilder {
       selectionLength = selectionEnd - selectionStart;
     }
 
-    return SourceCode(result.text,
-        uri: _source.uri,
-        isCompilationUnit: _source.isCompilationUnit,
-        selectionStart: selectionStart,
-        selectionLength: selectionLength);
+    return SourceCode(
+      result.text,
+      uri: _source.uri,
+      isCompilationUnit: _source.isCompilationUnit,
+      selectionStart: selectionStart,
+      selectionLength: selectionLength,
+    );
   }
 
   void preventSplit() {
@@ -605,15 +623,18 @@ final class ChunkBuilder {
   ///
   /// This should only be called after source lines have been preserved to turn
   /// any ambiguous whitespace into a concrete choice.
-  void _emitPendingWhitespace(
-      {bool isDouble = false, bool mergeEmptySplits = true}) {
+  void _emitPendingWhitespace({
+    bool isDouble = false,
+    bool mergeEmptySplits = true,
+  }) {
     if (_pendingNewlines == 0) return;
 
     if (_pendingNewlines == 2) isDouble = true;
     _writeSplit(
-        isDouble: isDouble,
-        nest: _pendingNested,
-        mergeEmptySplits: mergeEmptySplits);
+      isDouble: isDouble,
+      nest: _pendingNested,
+      mergeEmptySplits: mergeEmptySplits,
+    );
   }
 
   /// Tries to find an existing chunk to append [comment] to.
@@ -740,12 +761,13 @@ final class ChunkBuilder {
   /// Starts a new chunk with the given split information.
   ///
   /// Returns the chunk.
-  Chunk _writeSplit(
-      {bool isHard = true,
-      bool isDouble = false,
-      required bool nest,
-      bool space = false,
-      bool mergeEmptySplits = true}) {
+  Chunk _writeSplit({
+    bool isHard = true,
+    bool isDouble = false,
+    required bool nest,
+    bool space = false,
+    bool mergeEmptySplits = true,
+  }) {
     Chunk chunk;
     // If we've already just created a split (i.e. we have a new chunk but it's
     // still empty) then update that split with the new information. This avoids
@@ -767,8 +789,12 @@ final class ChunkBuilder {
 
       chunk.updateSplit(flushLeft: _pendingFlushLeft, isDouble: isDouble);
     } else {
-      chunk = _startChunk(nest ? _nesting.nesting : NestingLevel(),
-          isHard: isHard, isDouble: isDouble, space: space);
+      chunk = _startChunk(
+        nest ? _nesting.nesting : NestingLevel(),
+        isHard: isHard,
+        isDouble: isDouble,
+        space: space,
+      );
     }
 
     if (chunk.rule.isHardened) _handleHardSplit();
@@ -795,12 +821,22 @@ final class ChunkBuilder {
     chunk.appendText(text);
   }
 
-  Chunk _startChunk(NestingLevel nesting,
-      {required bool isHard, bool isDouble = false, bool space = false}) {
+  Chunk _startChunk(
+    NestingLevel nesting, {
+    required bool isHard,
+    bool isDouble = false,
+    bool space = false,
+  }) {
     var rule = isHard ? Rule.hard() : _rules.last;
 
-    var chunk = Chunk(rule, _nesting.indentation, nesting,
-        space: space, flushLeft: _pendingFlushLeft, isDouble: isDouble);
+    var chunk = Chunk(
+      rule,
+      _nesting.indentation,
+      nesting,
+      space: space,
+      flushLeft: _pendingFlushLeft,
+      isDouble: isDouble,
+    );
     _chunks.add(chunk);
 
     _pendingFlushLeft = false;

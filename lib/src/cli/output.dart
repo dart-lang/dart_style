@@ -30,8 +30,10 @@ enum Output {
     try {
       file!.writeAsStringSync(result.text);
     } on FileSystemException catch (err) {
-      stderr.writeln('Could not overwrite $displayPath: '
-          '${err.osError!.message} (error code ${err.osError!.errorCode})');
+      stderr.writeln(
+        'Could not overwrite $displayPath: '
+        '${err.osError!.message} (error code ${err.osError!.errorCode})',
+      );
     }
 
     return true;
@@ -51,14 +53,16 @@ enum Output {
         // the command line, this will never be used, which is why it's
         // hard-coded to -1, -1. If we add support for passing in a selection,
         // put the real result here.
-        print(jsonEncode({
-          'path': path,
-          'source': result.text,
-          'selection': {
-            'offset': result.selectionStart ?? -1,
-            'length': result.selectionLength ?? -1
-          }
-        }));
+        print(
+          jsonEncode({
+            'path': path,
+            'source': result.text,
+            'selection': {
+              'offset': result.selectionStart ?? -1,
+              'length': result.selectionLength ?? -1,
+            },
+          }),
+        );
         break;
 
       case Output.write:

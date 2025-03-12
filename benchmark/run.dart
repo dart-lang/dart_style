@@ -80,10 +80,14 @@ Future<void> main(List<String> arguments) async {
 
   print('');
   var style = _isShort ? 'short' : 'tall';
-  print('${"Benchmark ($style)".padRight(30)}  '
-      'fastest   median  slowest  average  baseline');
-  print('-----------------------------  '
-      '--------  -------  -------  -------  --------');
+  print(
+    '${"Benchmark ($style)".padRight(30)}  '
+    'fastest   median  slowest  average  baseline',
+  );
+  print(
+    '-----------------------------  '
+    '--------  -------  -------  -------  --------',
+  );
   for (var (benchmark, measuredTimes) in results) {
     _printStats(benchmark.name, measuredTimes);
   }
@@ -122,19 +126,23 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   // Parse the source outside of the main benchmark loop. That way, analyzer
   // parse time (which we don't control) isn't part of the benchmark.
   var parseResult = parseString(
-      content: source.text,
-      featureSet: FeatureSet.fromEnableFlags2(
-          sdkLanguageVersion: DartFormatter.latestLanguageVersion,
-          flags: const []),
-      path: source.uri,
-      throwIfDiagnostics: false);
+    content: source.text,
+    featureSet: FeatureSet.fromEnableFlags2(
+      sdkLanguageVersion: DartFormatter.latestLanguageVersion,
+      flags: const [],
+    ),
+    path: source.uri,
+    throwIfDiagnostics: false,
+  );
 
   var formatter = DartFormatter(
-      languageVersion: _isShort
-          ? DartFormatter.latestShortStyleLanguageVersion
-          : DartFormatter.latestLanguageVersion,
-      pageWidth: benchmark.pageWidth,
-      lineEnding: '\n');
+    languageVersion:
+        _isShort
+            ? DartFormatter.latestShortStyleLanguageVersion
+            : DartFormatter.latestLanguageVersion,
+    pageWidth: benchmark.pageWidth,
+    lineEnding: '\n',
+  );
 
   var measuredTimes = <double>[];
   for (var i = 1; i <= trials; i++) {
@@ -149,8 +157,12 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   return measuredTimes;
 }
 
-double _runTrial(DartFormatter formatter, ParseStringResult parseResult,
-    SourceCode source, String expected) {
+double _runTrial(
+  DartFormatter formatter,
+  ParseStringResult parseResult,
+  SourceCode source,
+  String expected,
+) {
   var stopwatch = Stopwatch()..start();
 
   // For a single benchmark, format the source multiple times.
@@ -180,19 +192,28 @@ double _runTrial(DartFormatter formatter, ParseStringResult parseResult,
 Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
   var argParser = ArgParser();
   argParser.addFlag('help', negatable: false, help: 'Show usage information.');
-  argParser.addFlag('aot',
-      negatable: false,
-      help: 'Whether the benchmark should run in AOT mode versus JIT.');
-  argParser.addFlag('short',
-      abbr: 's',
-      negatable: false,
-      help: 'Whether the formatter should use short or tall style.');
-  argParser.addFlag('no-warmup',
-      negatable: false, help: 'Skip the JIT warmup runs.');
-  argParser.addFlag('write-baseline',
-      abbr: 'w',
-      negatable: false,
-      help: 'Write the output as a baseline file for later comparison.');
+  argParser.addFlag(
+    'aot',
+    negatable: false,
+    help: 'Whether the benchmark should run in AOT mode versus JIT.',
+  );
+  argParser.addFlag(
+    'short',
+    abbr: 's',
+    negatable: false,
+    help: 'Whether the formatter should use short or tall style.',
+  );
+  argParser.addFlag(
+    'no-warmup',
+    negatable: false,
+    help: 'Skip the JIT warmup runs.',
+  );
+  argParser.addFlag(
+    'write-baseline',
+    abbr: 'w',
+    negatable: false,
+    help: 'Write the output as a baseline file for later comparison.',
+  );
 
   var argResults = argParser.parse(arguments);
   if (argResults['help'] as bool) {
@@ -216,8 +237,9 @@ Future<List<Benchmark>> _parseArguments(List<String> arguments) async {
 
     // The user-specified list of paths.
     [...var paths] when paths.isNotEmpty => [
-        for (var path in paths) Benchmark.read(path)
-      ],
+      for (var path in paths) Benchmark.read(path),
+    ],
+
     _ => _usage(argParser, exitCode: 64),
   };
 
@@ -256,8 +278,10 @@ void _printStats(String benchmark, List<double> times) {
     }
   }
 
-  print('${benchmark.padRight(30)}  ${number(fastest)}  ${number(median)}'
-      '  ${number(slowest)}  ${number(mean)}  $baseline');
+  print(
+    '${benchmark.padRight(30)}  ${number(fastest)}  ${number(median)}'
+    '  ${number(slowest)}  ${number(mean)}  $baseline',
+  );
 }
 
 /// Prints usage information.
@@ -266,8 +290,10 @@ void _printStats(String benchmark, List<double> times) {
 Never _usage(ArgParser argParser, {required int exitCode}) {
   var stream = exitCode == 0 ? stdout : stderr;
 
-  stream.writeln('dart benchmark/run.dart [benchmark/case/<benchmark>.unit] '
-      '[--aot] [--short] [--baseline=n]');
+  stream.writeln(
+    'dart benchmark/run.dart [benchmark/case/<benchmark>.unit] '
+    '[--aot] [--short] [--baseline=n]',
+  );
   stream.writeln('');
   stream.writeln(argParser.usage);
 

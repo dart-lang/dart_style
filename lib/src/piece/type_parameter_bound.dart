@@ -42,11 +42,11 @@ final class TypeParameterBoundPiece extends Piece {
 
   @override
   bool allowNewlineInChild(State state, Piece child) => switch (state) {
-        State.unsplit => false,
-        _insideBound => child == _bound,
-        _beforeExtends => true,
-        _ => throw ArgumentError('Unexpected state.'),
-      };
+    State.unsplit => false,
+    _insideBound => child == _bound,
+    _beforeExtends => true,
+    _ => throw ArgumentError('Unexpected state.'),
+  };
 
   @override
   void format(CodeWriter writer, State state) {

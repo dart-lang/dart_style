@@ -12,8 +12,10 @@ void main() {
   group('findAnalysisOptions()', () {
     test('returns an empty map if no analysis options is found', () async {
       var testFS = TestFileSystem();
-      var options =
-          await findAnalysisOptions(testFS, TestFileSystemPath('dir|sub'));
+      var options = await findAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|sub'),
+      );
       expect(options, isEmpty);
     });
 
@@ -22,89 +24,106 @@ void main() {
         'dir|analysis_options.yaml': analysisOptions(pageWidth: 100),
       });
 
-      var options =
-          await findAnalysisOptions(testFS, TestFileSystemPath('dir'));
+      var options = await findAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir'),
+      );
       expect(_pageWidth(options), equals(100));
     });
 
     test('stops at the nearest analysis options file', () async {
       var testFS = TestFileSystem({
         'dir|analysis_options.yaml': analysisOptions(pageWidth: 120),
-        'dir|sub|analysis_options.yaml': analysisOptions(pageWidth: 100)
+        'dir|sub|analysis_options.yaml': analysisOptions(pageWidth: 100),
       });
 
-      var options =
-          await findAnalysisOptions(testFS, TestFileSystemPath('dir|sub'));
+      var options = await findAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|sub'),
+      );
       expect(_pageWidth(options), equals(100));
     });
 
-    test('uses the nearest file even if it doesn\'t have the setting',
-        () async {
+    test('uses the nearest file even if it doesn\'t have the '
+        'setting', () async {
       var testFS = TestFileSystem({
         'dir|analysis_options.yaml': analysisOptions(pageWidth: 120),
-        'dir|sub|analysis_options.yaml':
-            analysisOptions(other: {'other': 'stuff'})
+        'dir|sub|analysis_options.yaml': analysisOptions(
+          other: {'other': 'stuff'},
+        ),
       });
 
-      var options =
-          await findAnalysisOptions(testFS, TestFileSystemPath('dir|sub'));
+      var options = await findAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|sub'),
+      );
       expect(_pageWidth(options), isNull);
     });
   });
 
   group('readAnalysisOptionsOptions()', () {
     test('reads an analysis options file', () async {
-      var testFS =
-          TestFileSystem({'file.yaml': analysisOptions(pageWidth: 120)});
+      var testFS = TestFileSystem({
+        'file.yaml': analysisOptions(pageWidth: 120),
+      });
 
-      var options =
-          await readAnalysisOptions(testFS, TestFileSystemPath('file.yaml'));
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('file.yaml'),
+      );
       expect(_pageWidth(options), 120);
     });
 
     test('yields an empty map if the file isn\'t a YAML map', () async {
       var testFS = TestFileSystem({'file.yaml': '123'});
-      var options =
-          await readAnalysisOptions(testFS, TestFileSystemPath('file.yaml'));
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('file.yaml'),
+      );
       expect(options, isA<Map>());
       expect(options, isEmpty);
     });
 
     test('merges included files', () async {
       var testFS = TestFileSystem({
-        'dir|a.yaml': analysisOptions(include: 'b.yaml', other: {
-          'a': 'from a',
-          'ab': 'from a',
-          'ac': 'from a',
-          'abc': 'from a',
-          'ad': 'from a',
-        }),
-        'dir|b.yaml': analysisOptions(include: [
-          'c.yaml',
-          'd.yaml'
-        ], other: {
-          'ab': 'from b',
-          'abc': 'from b',
-          'b': 'from b',
-          'bc': 'from b',
-          'bd': 'from b',
-        }),
-        'dir|c.yaml': analysisOptions(other: {
-          'ac': 'from c',
-          'abc': 'from c',
-          'bc': 'from c',
-          'c': 'from c',
-          'cd': 'from c',
-        }),
-        'dir|d.yaml': analysisOptions(other: {
-          'ad': 'from d',
-          'bd': 'from d',
-          'cd': 'from d',
-        }),
+        'dir|a.yaml': analysisOptions(
+          include: 'b.yaml',
+          other: {
+            'a': 'from a',
+            'ab': 'from a',
+            'ac': 'from a',
+            'abc': 'from a',
+            'ad': 'from a',
+          },
+        ),
+        'dir|b.yaml': analysisOptions(
+          include: ['c.yaml', 'd.yaml'],
+          other: {
+            'ab': 'from b',
+            'abc': 'from b',
+            'b': 'from b',
+            'bc': 'from b',
+            'bd': 'from b',
+          },
+        ),
+        'dir|c.yaml': analysisOptions(
+          other: {
+            'ac': 'from c',
+            'abc': 'from c',
+            'bc': 'from c',
+            'c': 'from c',
+            'cd': 'from c',
+          },
+        ),
+        'dir|d.yaml': analysisOptions(
+          other: {'ad': 'from d', 'bd': 'from d', 'cd': 'from d'},
+        ),
       });
 
-      var options =
-          await readAnalysisOptions(testFS, TestFileSystemPath('dir|a.yaml'));
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|a.yaml'),
+      );
       expect(options['a'], 'from a');
       expect(options['ab'], 'from a');
       expect(options['ac'], 'from a');
@@ -124,25 +143,29 @@ void main() {
       });
 
       var options = await readAnalysisOptions(
-          testFS, TestFileSystemPath('dir|main.yaml'));
+        testFS,
+        TestFileSystemPath('dir|main.yaml'),
+      );
       expect(options['include'], isNull);
     });
 
     test('locates includes relative to the parent directory', () async {
       var testFS = TestFileSystem({
-        'dir|a.yaml': analysisOptions(include: 'sub|b.yaml', other: {
-          'a': 'from a',
-        }),
-        'dir|sub|b.yaml': analysisOptions(include: 'more|c.yaml', other: {
-          'b': 'from b',
-        }),
-        'dir|sub|more|c.yaml': analysisOptions(other: {
-          'c': 'from c',
-        }),
+        'dir|a.yaml': analysisOptions(
+          include: 'sub|b.yaml',
+          other: {'a': 'from a'},
+        ),
+        'dir|sub|b.yaml': analysisOptions(
+          include: 'more|c.yaml',
+          other: {'b': 'from b'},
+        ),
+        'dir|sub|more|c.yaml': analysisOptions(other: {'c': 'from c'}),
       });
 
-      var options =
-          await readAnalysisOptions(testFS, TestFileSystemPath('dir|a.yaml'));
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|a.yaml'),
+      );
       expect(options['a'], 'from a');
       expect(options['b'], 'from b');
       expect(options['c'], 'from c');
@@ -150,17 +173,15 @@ void main() {
 
     test('resolves "package:" includes', () async {
       var testFS = TestFileSystem({
-        'dir|a.yaml':
-            analysisOptions(include: 'package:b/b_options.yaml', other: {
-          'a': 'from a',
-        }),
-        '|b|b_options.yaml':
-            analysisOptions(include: 'package:c/c_options.yaml', other: {
-          'b': 'from b',
-        }),
-        '|c|c_options.yaml': analysisOptions(other: {
-          'c': 'from c',
-        }),
+        'dir|a.yaml': analysisOptions(
+          include: 'package:b/b_options.yaml',
+          other: {'a': 'from a'},
+        ),
+        '|b|b_options.yaml': analysisOptions(
+          include: 'package:c/c_options.yaml',
+          other: {'b': 'from b'},
+        ),
+        '|c|c_options.yaml': analysisOptions(other: {'c': 'from c'}),
       });
 
       Future<String?> resolve(Uri packageUri) async {
@@ -168,8 +189,10 @@ void main() {
       }
 
       var options = await readAnalysisOptions(
-          testFS, TestFileSystemPath('dir|a.yaml'),
-          resolvePackageUri: resolve);
+        testFS,
+        TestFileSystemPath('dir|a.yaml'),
+        resolvePackageUri: resolve,
+      );
       expect(options['a'], 'from a');
       expect(options['b'], 'from b');
       expect(options['c'], 'from c');
@@ -180,8 +203,10 @@ void main() {
         'options.yaml': analysisOptions(include: 'package:foo/options.yaml'),
       });
 
-      expect(readAnalysisOptions(testFS, TestFileSystemPath('options.yaml')),
-          throwsA(isA<PackageResolutionException>()));
+      expect(
+        readAnalysisOptions(testFS, TestFileSystemPath('options.yaml')),
+        throwsA(isA<PackageResolutionException>()),
+      );
     });
 
     test('throws on a "package:" resolution failure', () async {
@@ -193,9 +218,13 @@ void main() {
       Future<String?> failingResolver(Uri uri) async => null;
 
       expect(
-          readAnalysisOptions(testFS, TestFileSystemPath('options.yaml'),
-              resolvePackageUri: failingResolver),
-          throwsA(isA<PackageResolutionException>()));
+        readAnalysisOptions(
+          testFS,
+          TestFileSystemPath('options.yaml'),
+          resolvePackageUri: failingResolver,
+        ),
+        throwsA(isA<PackageResolutionException>()),
+      );
     });
   });
 }

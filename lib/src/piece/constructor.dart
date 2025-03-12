@@ -81,24 +81,26 @@ final class ConstructorPiece extends Piece {
   /// The constructor body.
   final Piece _body;
 
-  ConstructorPiece(this._header, this._parameters, this._body,
-      {required bool canSplitParameters,
-      required bool hasOptionalParameter,
-      Piece? redirect,
-      Piece? initializerSeparator,
-      Piece? initializers})
-      : _canSplitParameters = canSplitParameters,
-        _hasOptionalParameter = hasOptionalParameter,
-        _redirect = redirect,
-        _initializerSeparator = initializerSeparator,
-        _initializers = initializers;
+  ConstructorPiece(
+    this._header,
+    this._parameters,
+    this._body, {
+    required bool canSplitParameters,
+    required bool hasOptionalParameter,
+    Piece? redirect,
+    Piece? initializerSeparator,
+    Piece? initializers,
+  }) : _canSplitParameters = canSplitParameters,
+       _hasOptionalParameter = hasOptionalParameter,
+       _redirect = redirect,
+       _initializerSeparator = initializerSeparator,
+       _initializers = initializers;
 
   @override
   List<State> get additionalStates => [
-        if (_initializers != null) _splitBeforeInitializers,
-        if (_canSplitParameters && _initializers != null)
-          _splitBetweenInitializers
-      ];
+    if (_initializers != null) _splitBeforeInitializers,
+    if (_canSplitParameters && _initializers != null) _splitBetweenInitializers,
+  ];
 
   /// Apply constraints between how the parameters may split and how the
   /// initializers may split.

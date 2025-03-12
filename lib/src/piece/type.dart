@@ -19,11 +19,12 @@ final class TypePiece extends Piece {
   final TypeBodyType _bodyType;
 
   TypePiece(this._header, this._body, {required TypeBodyType bodyType})
-      : _bodyType = bodyType;
+    : _bodyType = bodyType;
 
   @override
-  List<State> get additionalStates =>
-      [if (_bodyType == TypeBodyType.list) State.split];
+  List<State> get additionalStates => [
+    if (_bodyType == TypeBodyType.list) State.split,
+  ];
 
   @override
   void applyConstraints(State state, Constrain constrain) {

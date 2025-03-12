@@ -118,9 +118,11 @@ final class LineSplitter {
   /// Creates a new splitter for [_writer] that tries to fit [chunks] into the
   /// page width.
   LineSplitter(this.writer, this.chunks, this.blockIndentation)
-      : // Collect the set of rules that we need to select values for.
-        rules =
-            chunks.map((chunk) => chunk.rule).toSet().toList(growable: false) {
+    : // Collect the set of rules that we need to select values for.
+      rules = chunks
+          .map((chunk) => chunk.rule)
+          .toSet()
+          .toList(growable: false) {
     _queue.bindSplitter(this);
 
     // Store the rule's index in the rule so we can get from a chunk to a rule

@@ -61,7 +61,11 @@ final class RuleSet {
   /// If an unbound rule gets constrained to `-1` (meaning it must split, but
   /// can split any way it wants), invokes [onSplitRule] with it.
   bool tryBind(
-      List<Rule> rules, Rule rule, int value, void Function(Rule) onSplitRule) {
+    List<Rule> rules,
+    Rule rule,
+    int value,
+    void Function(Rule) onSplitRule,
+  ) {
     assert(!rule.isHardened);
 
     _values[rule.index!] = value;
@@ -159,7 +163,7 @@ final class SplitSet {
   String toString() {
     return [
       for (var i = 0; i < _columns.length; i++)
-        if (_columns[i] != -1) '$i:${_columns[i]}'
+        if (_columns[i] != -1) '$i:${_columns[i]}',
     ].join(' ');
   }
 }

@@ -18,18 +18,26 @@ void main() {
       await d.dir('code', [
         d.file('a.dart', unformattedSource),
         d.file('b.dart', formattedSource),
-        d.file('c.dart', unformattedSource)
+        d.file('c.dart', unformattedSource),
       ]).create();
 
       var process = await runFormatterOnDir(['--show=all']);
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'a.dart')}',
+      );
       expect(
-          await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
+        await process.stdout.next,
+        'Unchanged ${p.join('code', 'b.dart')}',
+      );
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
-      expect(await process.stdout.next,
-          startsWith(r'Formatted 3 files (2 changed)'));
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'c.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        startsWith(r'Formatted 3 files (2 changed)'),
+      );
       await process.shouldExit(0);
     });
 
@@ -37,12 +45,14 @@ void main() {
       await d.dir('code', [
         d.file('a.dart', unformattedSource),
         d.file('b.dart', formattedSource),
-        d.file('c.dart', unformattedSource)
+        d.file('c.dart', unformattedSource),
       ]).create();
 
       var process = await runFormatterOnDir(['--show=none']);
-      expect(await process.stdout.next,
-          startsWith(r'Formatted 3 files (2 changed)'));
+      expect(
+        await process.stdout.next,
+        startsWith(r'Formatted 3 files (2 changed)'),
+      );
       await process.shouldExit(0);
     });
 
@@ -50,16 +60,22 @@ void main() {
       await d.dir('code', [
         d.file('a.dart', unformattedSource),
         d.file('b.dart', formattedSource),
-        d.file('c.dart', unformattedSource)
+        d.file('c.dart', unformattedSource),
       ]).create();
 
       var process = await runFormatterOnDir(['--show=changed']);
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'a.dart')}',
+      );
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
-      expect(await process.stdout.next,
-          startsWith(r'Formatted 3 files (2 changed)'));
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'c.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        startsWith(r'Formatted 3 files (2 changed)'),
+      );
       await process.shouldExit(0);
     });
   });
@@ -69,14 +85,16 @@ void main() {
       test('prints only formatted output by default', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', formattedSource)
+          d.file('b.dart', formattedSource),
         ]).create();
 
         var process = await runFormatterOnDir(['--output=show']);
         expect(await process.stdout.next, formattedOutput);
         expect(await process.stdout.next, formattedOutput);
-        expect(await process.stdout.next,
-            startsWith(r'Formatted 2 files (1 changed)'));
+        expect(
+          await process.stdout.next,
+          startsWith(r'Formatted 2 files (1 changed)'),
+        );
         await process.shouldExit(0);
 
         // Does not overwrite files.
@@ -86,18 +104,24 @@ void main() {
       test('with --show=all prints all files and names first', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', formattedSource)
+          d.file('b.dart', formattedSource),
         ]).create();
 
         var process = await runFormatterOnDir(['--output=show', '--show=all']);
         expect(
-            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
+          await process.stdout.next,
+          'Changed ${p.join('code', 'a.dart')}',
+        );
         expect(await process.stdout.next, formattedOutput);
         expect(
-            await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
+          await process.stdout.next,
+          'Unchanged ${p.join('code', 'b.dart')}',
+        );
         expect(await process.stdout.next, formattedOutput);
-        expect(await process.stdout.next,
-            startsWith(r'Formatted 2 files (1 changed)'));
+        expect(
+          await process.stdout.next,
+          startsWith(r'Formatted 2 files (1 changed)'),
+        );
         await process.shouldExit(0);
 
         // Does not overwrite files.
@@ -107,16 +131,22 @@ void main() {
       test('with --show=changed prints only changed files', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', formattedSource)
+          d.file('b.dart', formattedSource),
         ]).create();
 
-        var process =
-            await runFormatterOnDir(['--output=show', '--show=changed']);
+        var process = await runFormatterOnDir([
+          '--output=show',
+          '--show=changed',
+        ]);
         expect(
-            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
+          await process.stdout.next,
+          'Changed ${p.join('code', 'a.dart')}',
+        );
         expect(await process.stdout.next, formattedOutput);
-        expect(await process.stdout.next,
-            startsWith(r'Formatted 2 files (1 changed)'));
+        expect(
+          await process.stdout.next,
+          startsWith(r'Formatted 2 files (1 changed)'),
+        );
         await process.shouldExit(0);
 
         // Does not overwrite files.
@@ -128,19 +158,19 @@ void main() {
       test('writes each output as json', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', unformattedSource)
+          d.file('b.dart', unformattedSource),
         ]).create();
 
         var jsonA = jsonEncode({
           'path': p.join('code', 'a.dart'),
           'source': formattedSource,
-          'selection': {'offset': -1, 'length': -1}
+          'selection': {'offset': -1, 'length': -1},
         });
 
         var jsonB = jsonEncode({
           'path': p.join('code', 'b.dart'),
           'source': formattedSource,
-          'selection': {'offset': -1, 'length': -1}
+          'selection': {'offset': -1, 'length': -1},
         });
 
         var process = await runFormatterOnDir(['--output=json']);
@@ -151,8 +181,10 @@ void main() {
       });
 
       test('errors if the summary is not none', () async {
-        var process =
-            await runFormatterOnDir(['--output=json', '--summary=line']);
+        var process = await runFormatterOnDir([
+          '--output=json',
+          '--summary=line',
+        ]);
         await process.shouldExit(64);
       });
     });
@@ -161,16 +193,22 @@ void main() {
       test('with --show=all prints only names', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', formattedSource)
+          d.file('b.dart', formattedSource),
         ]).create();
 
         var process = await runFormatterOnDir(['--output=none', '--show=all']);
         expect(
-            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
+          await process.stdout.next,
+          'Changed ${p.join('code', 'a.dart')}',
+        );
         expect(
-            await process.stdout.next, 'Unchanged ${p.join('code', 'b.dart')}');
-        expect(await process.stdout.next,
-            startsWith(r'Formatted 2 files (1 changed)'));
+          await process.stdout.next,
+          'Unchanged ${p.join('code', 'b.dart')}',
+        );
+        expect(
+          await process.stdout.next,
+          startsWith(r'Formatted 2 files (1 changed)'),
+        );
         await process.shouldExit(0);
 
         // Does not overwrite files.
@@ -180,15 +218,21 @@ void main() {
       test('with --show=changed prints only changed names', () async {
         await d.dir('code', [
           d.file('a.dart', unformattedSource),
-          d.file('b.dart', formattedSource)
+          d.file('b.dart', formattedSource),
         ]).create();
 
-        var process =
-            await runFormatterOnDir(['--output=none', '--show=changed']);
+        var process = await runFormatterOnDir([
+          '--output=none',
+          '--show=changed',
+        ]);
         expect(
-            await process.stdout.next, 'Changed ${p.join('code', 'a.dart')}');
-        expect(await process.stdout.next,
-            startsWith(r'Formatted 2 files (1 changed)'));
+          await process.stdout.next,
+          'Changed ${p.join('code', 'a.dart')}',
+        );
+        expect(
+          await process.stdout.next,
+          startsWith(r'Formatted 2 files (1 changed)'),
+        );
         await process.shouldExit(0);
 
         // Does not overwrite files.
@@ -201,14 +245,18 @@ void main() {
     test('line', () async {
       await d.dir('code', [
         d.file('a.dart', unformattedSource),
-        d.file('b.dart', formattedSource)
+        d.file('b.dart', formattedSource),
       ]).create();
 
       var process = await runFormatterOnDir(['--summary=line']);
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
-      expect(await process.stdout.next,
-          matches(r'Formatted 2 files \(1 changed\) in \d+\.\d+ seconds.'));
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'a.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        matches(r'Formatted 2 files \(1 changed\) in \d+\.\d+ seconds.'),
+      );
       await process.shouldExit(0);
     });
   });

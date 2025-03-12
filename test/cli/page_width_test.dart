@@ -32,9 +32,7 @@ void main() {
     });
 
     test('format at given width', () async {
-      await d.dir('foo', [
-        d.file('main.dart', _unformatted),
-      ]).create();
+      await d.dir('foo', [d.file('main.dart', _unformatted)]).create();
 
       var process = await runFormatterOnDir(['--page-width=30']);
       await process.shouldExit(0);
@@ -43,9 +41,7 @@ void main() {
     });
 
     test('support old --line-length option name', () async {
-      await d.dir('foo', [
-        d.file('main.dart', _unformatted),
-      ]).create();
+      await d.dir('foo', [d.file('main.dart', _unformatted)]).create();
 
       var process = await runFormatterOnDir(['--line-length=30']);
       await process.shouldExit(0);
@@ -68,35 +64,27 @@ void main() {
   });
 
   test('default to page width of surrounding options', () async {
-    await _testWithOptions(
-      {
-        'formatter': {'page_width': 20}
-      },
-      expectedWidth: 20,
-    );
+    await _testWithOptions({
+      'formatter': {'page_width': 20},
+    }, expectedWidth: 20);
   });
 
   test('use default page width on invalid analysis options', () async {
     await _testWithOptions({'unrelated': 'stuff'}, expectedWidth: 80);
     await _testWithOptions({'formatter': 'not a map'}, expectedWidth: 80);
     await _testWithOptions({
-      'formatter': {'no': 'page_width'}
+      'formatter': {'no': 'page_width'},
     }, expectedWidth: 80);
-    await _testWithOptions(
-      {
-        'formatter': {'page_width': 'not an int'}
-      },
-      expectedWidth: 80,
-    );
+    await _testWithOptions({
+      'formatter': {'page_width': 'not an int'},
+    }, expectedWidth: 80);
   });
 
   test('get page width from included options file', () async {
     await d.dir('foo', [
       analysisOptionsFile(include: 'other.yaml'),
       analysisOptionsFile(name: 'other.yaml', include: 'sub/third.yaml'),
-      d.dir('sub', [
-        analysisOptionsFile(name: 'third.yaml', pageWidth: 30),
-      ]),
+      d.dir('sub', [analysisOptionsFile(name: 'third.yaml', pageWidth: 30)]),
       d.file('main.dart', _unformatted),
     ]).create();
 
@@ -110,10 +98,10 @@ void main() {
   test('resolve "package:" includes', () async {
     await d.dir('dir', [
       d.dir('foo', [
-        packageConfig('foo', packages: {
-          'bar': '../../bar',
-          'baz': '../../baz',
-        }),
+        packageConfig(
+          'foo',
+          packages: {'bar': '../../bar', 'baz': '../../baz'},
+        ),
         analysisOptionsFile(include: 'package:bar/analysis_options.yaml'),
         d.file('main.dart', _unformatted),
       ]),
@@ -123,9 +111,7 @@ void main() {
         ]),
       ]),
       d.dir('baz', [
-        d.dir('lib', [
-          analysisOptionsFile(pageWidth: 30),
-        ]),
+        d.dir('lib', [analysisOptionsFile(pageWidth: 30)]),
       ]),
     ]).create();
 
@@ -134,16 +120,14 @@ void main() {
 
     // Should format the file at 30.
     await d.dir('dir', [
-      d.dir('foo', [d.file('main.dart', _formatted30)])
+      d.dir('foo', [d.file('main.dart', _formatted30)]),
     ]).validate();
   });
 
   test('ignore "package:" resolution errors', () async {
     await d.dir('dir', [
       d.dir('foo', [
-        packageConfig('foo', packages: {
-          'bar': '../../bar',
-        }),
+        packageConfig('foo', packages: {'bar': '../../bar'}),
         analysisOptionsFile(include: 'package:not_bar/analysis_options.yaml'),
         d.file('main.dart', _unformatted),
       ]),
@@ -154,15 +138,13 @@ void main() {
 
     // Should format the file at 80.
     await d.dir('dir', [
-      d.dir('foo', [d.file('main.dart', _formatted80)])
+      d.dir('foo', [d.file('main.dart', _formatted80)]),
     ]).validate();
   });
 
   group('stdin', () {
     test('use page width from surrounding package', () async {
-      await d.dir('foo', [
-        analysisOptionsFile(pageWidth: 30),
-      ]).create();
+      await d.dir('foo', [analysisOptionsFile(pageWidth: 30)]).create();
 
       var process = await runFormatter(['--stdin-name=foo/main.dart']);
       process.stdin.writeln(_unformatted);
@@ -221,8 +203,10 @@ var x = operand + another * andAnother;
 
 /// Test that formatting a file with surrounding analysis_options.yaml
 /// containing [options] formats the input with a page width of [expectedWidth].
-Future<void> _testWithOptions(Object? options,
-    {required int expectedWidth}) async {
+Future<void> _testWithOptions(
+  Object? options, {
+  required int expectedWidth,
+}) async {
   var expected = switch (expectedWidth) {
     20 => _formatted20,
     30 => _formatted30,

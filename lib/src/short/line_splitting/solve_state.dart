@@ -560,23 +560,26 @@ final class SolveState {
   String toString() {
     var buffer = StringBuffer();
 
-    buffer.writeAll(_splitter.rules.map((rule) {
-      var valueLength = '${rule.fullySplitValue}'.length;
+    buffer.writeAll(
+      _splitter.rules.map((rule) {
+        var valueLength = '${rule.fullySplitValue}'.length;
 
-      var value = '?';
-      if (_ruleValues.contains(rule)) {
-        value = '${_ruleValues.getValue(rule)}';
-      }
+        var value = '?';
+        if (_ruleValues.contains(rule)) {
+          value = '${_ruleValues.getValue(rule)}';
+        }
 
-      value = value.padLeft(valueLength);
-      if (_liveRules.contains(rule)) {
-        value = debug.bold(value);
-      } else {
-        value = debug.gray(value);
-      }
+        value = value.padLeft(valueLength);
+        if (_liveRules.contains(rule)) {
+          value = debug.bold(value);
+        } else {
+          value = debug.gray(value);
+        }
 
-      return value;
-    }), ' ');
+        return value;
+      }),
+      ' ',
+    );
 
     buffer.write('   \$${splits.cost}');
 

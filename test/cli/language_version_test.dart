@@ -102,8 +102,10 @@ main() {
       var path = p.join(d.sandbox, 'foo', 'main.dart');
       var process = await runFormatter([path]);
 
-      expect(await process.stderr.next,
-          'Could not format because the source could not be parsed:');
+      expect(
+        await process.stderr.next,
+        'Could not format because the source could not be parsed:',
+      );
       expect(await process.stderr.next, '');
       expect(await process.stderr.next, contains('main.dart'));
       await process.shouldExit(65);
@@ -135,7 +137,7 @@ main() {
     case 1 + 2: // Error in 3.1.
   }
 }
-''')
+'''),
       ]).validate();
     });
 
@@ -156,7 +158,7 @@ main() {
 main() {
   var (a, b) = (1, 2);
 }
-''')
+'''),
       ]).validate();
     });
   });
@@ -166,9 +168,7 @@ main() {
       // The package config sets the language version to 2.19, when switch
       // cases still allowed arbitrary constant expressions like `1 + 2`.
       // Verify that the code is formatted without error.
-      await d.dir('foo', [
-        packageConfig('foo', version: '2.19'),
-      ]).create();
+      await d.dir('foo', [packageConfig('foo', version: '2.19')]).create();
 
       var process = await runFormatter(['--stdin-name=foo/main.dart']);
       // Write a switch whose syntax is valid in 2.19, but an error in later

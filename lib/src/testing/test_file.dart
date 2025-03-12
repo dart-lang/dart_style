@@ -17,9 +17,10 @@ final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
-  var libraryPath = (await Isolate.resolvePackageUri(
-          Uri.parse('package:dart_style/src/testing/test_file.dart')))
-      ?.toFilePath();
+  var libraryPath =
+      (await Isolate.resolvePackageUri(
+        Uri.parse('package:dart_style/src/testing/test_file.dart'),
+      ))?.toFilePath();
 
   // Fallback, if we can't resolve the package URI because we're running in an
   // AOT snapshot, just assume we're running from the root directory of the
@@ -40,15 +41,16 @@ final class TestFile {
   /// `test/` directory.
   static Future<List<TestFile>> listDirectory(String name) async {
     var testDir = await findTestDirectory();
-    var entries = Directory(p.join(testDir, name))
-        .listSync(recursive: true, followLinks: false);
+    var entries = Directory(
+      p.join(testDir, name),
+    ).listSync(recursive: true, followLinks: false);
     entries.sort((a, b) => a.path.compareTo(b.path));
 
     return [
       for (var entry in entries)
         if (entry is File &&
             (entry.path.endsWith('.stmt') || entry.path.endsWith('.unit')))
-          TestFile._load(entry, p.relative(entry.path, from: testDir))
+          TestFile._load(entry, p.relative(entry.path, from: testDir)),
     ];
   }
 
@@ -102,9 +104,10 @@ final class TestFile {
 
       // Let the test specify a language version to parse it at. If not, use
       // a default version for the style being tested.
-      var languageVersion = p.split(file.path).contains('tall')
-          ? DartFormatter.latestLanguageVersion
-          : DartFormatter.latestShortStyleLanguageVersion;
+      var languageVersion =
+          p.split(file.path).contains('tall')
+              ? DartFormatter.latestLanguageVersion
+              : DartFormatter.latestShortStyleLanguageVersion;
       description = description.replaceAllMapped(_versionPattern, (match) {
         var major = int.parse(match[1]!);
         var minor = int.parse(match[2]!);
@@ -156,12 +159,17 @@ final class TestFile {
         outputText = outputText.substring(0, outputText.length - 1);
       }
 
-      var input = _extractSelection(_unescapeUnicode(inputBuffer.toString()),
-          isCompilationUnit: isCompilationUnit);
-      var output = _extractSelection(_unescapeUnicode(outputText),
-          isCompilationUnit: isCompilationUnit);
+      var input = _extractSelection(
+        _unescapeUnicode(inputBuffer.toString()),
+        isCompilationUnit: isCompilationUnit,
+      );
+      var output = _extractSelection(
+        _unescapeUnicode(outputText),
+        isCompilationUnit: isCompilationUnit,
+      );
 
-      tests.add(FormatTest(
+      tests.add(
+        FormatTest(
           input,
           output,
           description.trim(),
@@ -171,7 +179,9 @@ final class TestFile {
           leadingIndent,
           experiments,
           inputComments,
-          outputComments));
+          outputComments,
+        ),
+      );
     }
 
     return TestFile._(relativePath, pageWidth, fileComments, tests);
@@ -231,16 +241,17 @@ final class FormatTest {
   final List<String> experimentFlags;
 
   FormatTest(
-      this.input,
-      this.output,
-      this.description,
-      this.outputDescription,
-      this.line,
-      this.languageVersion,
-      this.leadingIndent,
-      this.experimentFlags,
-      this.inputComments,
-      this.outputComments);
+    this.input,
+    this.output,
+    this.description,
+    this.outputDescription,
+    this.line,
+    this.languageVersion,
+    this.leadingIndent,
+    this.experimentFlags,
+    this.inputComments,
+    this.outputComments,
+  );
 
   /// The line and description of the test.
   String get label {
@@ -270,10 +281,12 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
   var end = source.indexOf('›');
   source = source.replaceAll('›', '');
 
-  return SourceCode(source,
-      isCompilationUnit: isCompilationUnit,
-      selectionStart: start == -1 ? null : start,
-      selectionLength: end == -1 ? null : end - start);
+  return SourceCode(
+    source,
+    isCompilationUnit: isCompilationUnit,
+    selectionStart: start == -1 ? null : start,
+    selectionLength: end == -1 ? null : end - start,
+  );
 }
 
 /// Turn the special Unicode escape marker syntax used in the tests into real

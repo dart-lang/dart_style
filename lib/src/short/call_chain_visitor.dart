@@ -167,11 +167,23 @@ final class CallChainVisitor {
     }
 
     return CallChainVisitor._(
-        visitor, target, properties, calls, blockCalls, hangingCall);
+      visitor,
+      target,
+      properties,
+      calls,
+      blockCalls,
+      hangingCall,
+    );
   }
 
-  CallChainVisitor._(this._visitor, this._target, this._properties, this._calls,
-      this._blockCalls, this._hangingCall);
+  CallChainVisitor._(
+    this._visitor,
+    this._target,
+    this._properties,
+    this._calls,
+    this._blockCalls,
+    this._hangingCall,
+  );
 
   /// Builds chunks for the call chain.
   void visit() {
@@ -475,8 +487,10 @@ final class _MethodSelector extends _Selector {
 
     visitor._visitor.builder.nestExpression();
     visitor._visitor.visit(_node.typeArguments);
-    visitor._visitor
-        .visitArgumentList(_node.argumentList, nestExpression: false);
+    visitor._visitor.visitArgumentList(
+      _node.argumentList,
+      nestExpression: false,
+    );
     visitor._visitor.builder.unnest();
   }
 }
@@ -567,7 +581,10 @@ Expression _unwrapTarget(Expression node, List<_Selector> calls) {
 }
 
 Expression _unwrapPostfix(
-    Expression node, Expression target, List<_Selector> calls) {
+  Expression node,
+  Expression target,
+  List<_Selector> calls,
+) {
   target = _unwrapTarget(target, calls);
 
   // If we don't have a preceding selector to hang the postfix expression off
@@ -582,7 +599,10 @@ Expression _unwrapPostfix(
 }
 
 Expression _unwrapSelector(
-    Expression target, _Selector selector, List<_Selector> calls) {
+  Expression target,
+  _Selector selector,
+  List<_Selector> calls,
+) {
   target = _unwrapTarget(target, calls);
   calls.add(selector);
   return target;

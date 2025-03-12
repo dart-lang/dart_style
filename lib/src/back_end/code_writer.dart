@@ -101,9 +101,13 @@ final class CodeWriter {
   /// beginning of the first line and [subsequentIndent] is the indentation of
   /// each line after that, independent of indentation created by pieces being
   /// written.
-  CodeWriter(this._pageWidth, int leadingIndent, int subsequentIndent,
-      this._cache, this._solution)
-      : _code = GroupCode(leadingIndent) {
+  CodeWriter(
+    this._pageWidth,
+    int leadingIndent,
+    int subsequentIndent,
+    this._cache,
+    this._solution,
+  ) : _code = GroupCode(leadingIndent) {
     _indentStack.add(_Indent(leadingIndent, 0));
 
     // Track the leading indent before the first line.
@@ -206,8 +210,10 @@ final class CodeWriter {
   /// any surrounding indentation. This is used for multi-line block comments
   /// and multi-line strings.
   void newline({bool blank = false, bool flushLeft = false}) {
-    whitespace(blank ? Whitespace.blankLine : Whitespace.newline,
-        flushLeft: flushLeft);
+    whitespace(
+      blank ? Whitespace.blankLine : Whitespace.newline,
+      flushLeft: flushLeft,
+    );
   }
 
   /// Queues [whitespace] to be written to the output.
@@ -258,10 +264,13 @@ final class CodeWriter {
   /// Format [piece] using a separate [Solver] and merge the result into this
   /// writer's [_solution].
   void _formatSeparate(Piece piece) {
-    var solution = _cache.find(piece, _solution.pieceStateIfBound(piece),
-        pageWidth: _pageWidth,
-        indent: _pendingIndent,
-        subsequentIndent: _indentStack.last.indent);
+    var solution = _cache.find(
+      piece,
+      _solution.pieceStateIfBound(piece),
+      pageWidth: _pageWidth,
+      indent: _pendingIndent,
+      subsequentIndent: _indentStack.last.indent,
+    );
 
     _pendingIndent = 0;
     _flushWhitespace();
@@ -292,8 +301,11 @@ final class CodeWriter {
       // indication into account which may vary based on the surrounding pieces
       // when we get here.
       Profile.begin('CodeWriter try to bind by page width');
-      isUnsolved = !_solution.tryBindByPageWidth(
-          piece, _pageWidth - _indentStack.first.indent);
+      isUnsolved =
+          !_solution.tryBindByPageWidth(
+            piece,
+            _pageWidth - _indentStack.first.indent,
+          );
       Profile.end('CodeWriter try to bind by page width');
     }
 
@@ -322,7 +334,9 @@ final class CodeWriter {
       // removed.
       if (_currentPiece case var parent?
           when !parent.allowNewlineInChild(
-              _solution.pieceState(parent), piece)) {
+            _solution.pieceState(parent),
+            piece,
+          )) {
         _solution.invalidate(_currentPiece!);
       }
 
@@ -364,7 +378,9 @@ final class CodeWriter {
         _finishLine();
         _column = _pendingIndent;
         _code.newline(
-            blank: _pendingWhitespace == Whitespace.blankLine, indent: _column);
+          blank: _pendingWhitespace == Whitespace.blankLine,
+          indent: _column,
+        );
 
       case Whitespace.space:
         _code.write(' ');
@@ -421,9 +437,9 @@ enum Whitespace {
 
   /// Whether this whitespace contains at least one newline.
   bool get hasNewline => switch (this) {
-        newline || blankLine => true,
-        _ => false,
-      };
+    newline || blankLine => true,
+    _ => false,
+  };
 }
 
 /// A level of indentation in the indentation stack.

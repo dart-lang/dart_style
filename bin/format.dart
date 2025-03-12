@@ -7,12 +7,21 @@ import 'package:args/command_runner.dart';
 import 'package:dart_style/src/cli/format_command.dart';
 
 void main(List<String> arguments) async {
-  var runner =
-      CommandRunner<int>('format', 'Idiomatically format Dart source code.');
-  runner.argParser.addFlag('verbose',
-      abbr: 'v', negatable: false, help: 'Show verbose help.');
-  runner.addCommand(FormatCommand(
-      verbose: arguments.contains('-v') || arguments.contains('--verbose')));
+  var runner = CommandRunner<int>(
+    'format',
+    'Idiomatically format Dart source code.',
+  );
+  runner.argParser.addFlag(
+    'verbose',
+    abbr: 'v',
+    negatable: false,
+    help: 'Show verbose help.',
+  );
+  runner.addCommand(
+    FormatCommand(
+      verbose: arguments.contains('-v') || arguments.contains('--verbose'),
+    ),
+  );
 
   try {
     await runner.runCommand(runner.parse(['format', ...arguments]));

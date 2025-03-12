@@ -33,19 +33,24 @@ final class SolutionCache {
   /// [Solution], then [stateIfBound] is that state. Otherwise, it is treated
   /// as unbound and the cache will find a state for [root] as well as its
   /// children.
-  Solution find(Piece root, State? stateIfBound,
-      {required int pageWidth,
-      required int indent,
-      required int subsequentIndent}) {
+  Solution find(
+    Piece root,
+    State? stateIfBound, {
+    required int pageWidth,
+    required int indent,
+    required int subsequentIndent,
+  }) {
     // See if we've already formatted this piece at this indentation. If not,
     // format it and store the result.
     return _cache.putIfAbsent(
-        (root, indent: indent, subsequentIndent: subsequentIndent),
-        () => Solver(this,
-                pageWidth: pageWidth,
-                leadingIndent: indent,
-                subsequentIndent: subsequentIndent)
-            .format(root, stateIfBound));
+      (root, indent: indent, subsequentIndent: subsequentIndent),
+      () => Solver(
+        this,
+        pageWidth: pageWidth,
+        leadingIndent: indent,
+        subsequentIndent: subsequentIndent,
+      ).format(root, stateIfBound),
+    );
   }
 }
 

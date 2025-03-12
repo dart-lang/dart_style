@@ -44,9 +44,7 @@ final class NestingLevel with FastHash, Markable {
 
   bool get isNested => parent != null;
 
-  NestingLevel()
-      : parent = null,
-        indent = 0;
+  NestingLevel() : parent = null, indent = 0;
 
   NestingLevel._(this.parent, this.indent);
 
