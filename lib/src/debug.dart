@@ -133,7 +133,9 @@ void dumpChunks(int start, List<Chunk> chunks) {
     var rules = chunks.map((chunk) => chunk.rule).toSet();
     var constrainedRules = rule.constrainedRules.toSet().intersection(rules);
     writeIf(
-        constrainedRules.isNotEmpty, () => "-> ${constrainedRules.join(" ")}");
+      constrainedRules.isNotEmpty,
+      () => "-> ${constrainedRules.join(" ")}",
+    );
 
     var properties = [
       if (chunk.flushLeft) 'fl',

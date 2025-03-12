@@ -57,20 +57,32 @@ final class ArgumentListVisitor {
 
   factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
     return ArgumentListVisitor.forArguments(
-        visitor, node.leftParenthesis, node.rightParenthesis, node.arguments);
+      visitor,
+      node.leftParenthesis,
+      node.rightParenthesis,
+      node.arguments,
+    );
   }
 
   factory ArgumentListVisitor.forArguments(
-      SourceVisitor visitor,
-      Token leftParenthesis,
-      Token rightParenthesis,
-      List<Expression> arguments) {
+    SourceVisitor visitor,
+    Token leftParenthesis,
+    Token rightParenthesis,
+    List<Expression> arguments,
+  ) {
     var functionRange = _contiguousFunctions(arguments);
 
     if (functionRange == null) {
       // No functions, so there is just a single argument list.
-      return ArgumentListVisitor._(visitor, leftParenthesis, rightParenthesis,
-          arguments, ArgumentSublist(arguments, arguments), null, null);
+      return ArgumentListVisitor._(
+        visitor,
+        leftParenthesis,
+        rightParenthesis,
+        arguments,
+        ArgumentSublist(arguments, arguments),
+        null,
+        null,
+      );
     }
 
     // Split the arguments into two independent argument lists with the
@@ -80,25 +92,28 @@ final class ArgumentListVisitor {
     var argumentsAfter = arguments.skip(functionRange[1]).toList();
 
     return ArgumentListVisitor._(
-        visitor,
-        leftParenthesis,
-        rightParenthesis,
-        arguments,
-        ArgumentSublist(arguments, argumentsBefore),
-        functions,
-        ArgumentSublist(arguments, argumentsAfter));
+      visitor,
+      leftParenthesis,
+      rightParenthesis,
+      arguments,
+      ArgumentSublist(arguments, argumentsBefore),
+      functions,
+      ArgumentSublist(arguments, argumentsAfter),
+    );
   }
 
   ArgumentListVisitor._(
-      this._visitor,
-      this._leftParenthesis,
-      this._rightParenthesis,
-      this._allArguments,
-      this._arguments,
-      this._functions,
-      this._argumentsAfterFunctions)
-      : assert(_functions == null || _argumentsAfterFunctions != null,
-            'If _functions is passed, _argumentsAfterFunctions must be too.');
+    this._visitor,
+    this._leftParenthesis,
+    this._rightParenthesis,
+    this._allArguments,
+    this._arguments,
+    this._functions,
+    this._argumentsAfterFunctions,
+  ) : assert(
+        _functions == null || _argumentsAfterFunctions != null,
+        'If _functions is passed, _argumentsAfterFunctions must be too.',
+      );
 
   /// Builds chunks for the argument list.
   void visit() {
@@ -329,7 +344,9 @@ final class ArgumentSublist {
   Chunk? _previousSplit;
 
   factory ArgumentSublist(
-      List<Expression> allArguments, List<Expression> arguments) {
+    List<Expression> allArguments,
+    List<Expression> arguments,
+  ) {
     var argumentLists = _splitArgumentLists(arguments);
     var positional = argumentLists[0];
     var named = argumentLists[1];
@@ -365,11 +382,23 @@ final class ArgumentSublist {
     if (leadingBlocks == 0 && trailingBlocks == 0) blocks.clear();
 
     return ArgumentSublist._(
-        allArguments, positional, named, blocks, leadingBlocks, trailingBlocks);
+      allArguments,
+      positional,
+      named,
+      blocks,
+      leadingBlocks,
+      trailingBlocks,
+    );
   }
 
-  ArgumentSublist._(this._allArguments, this._positional, this._named,
-      this._blocks, this._leadingBlocks, this._trailingBlocks);
+  ArgumentSublist._(
+    this._allArguments,
+    this._positional,
+    this._named,
+    this._blocks,
+    this._leadingBlocks,
+    this._trailingBlocks,
+  );
 
   void visit(SourceVisitor visitor) {
     if (_blocks.isNotEmpty) {
@@ -388,10 +417,12 @@ final class ArgumentSublist {
     // Only count the blocks in the positional rule.
     var leadingBlocks = math.min(_leadingBlocks, _positional.length);
     var trailingBlocks = math.max(_trailingBlocks - _named.length, 0);
-    var rule = PositionalRule(_blockRule,
-        argumentCount: _positional.length,
-        leadingCollections: leadingBlocks,
-        trailingCollections: trailingBlocks);
+    var rule = PositionalRule(
+      _blockRule,
+      argumentCount: _positional.length,
+      leadingCollections: leadingBlocks,
+      trailingCollections: trailingBlocks,
+    );
     _visitArguments(visitor, _positional, rule);
 
     return rule;
@@ -415,12 +446,16 @@ final class ArgumentSublist {
   }
 
   void _visitArguments(
-      SourceVisitor visitor, List<Expression> arguments, ArgumentRule rule) {
+    SourceVisitor visitor,
+    List<Expression> arguments,
+    ArgumentRule rule,
+  ) {
     visitor.builder.startRule(rule);
 
     // Split before the first argument.
-    _previousSplit =
-        visitor.builder.split(space: arguments.first != _allArguments.first);
+    _previousSplit = visitor.builder.split(
+      space: arguments.first != _allArguments.first,
+    );
     rule.beforeArgument(_previousSplit);
 
     // Try to not split the positional arguments.
@@ -444,7 +479,10 @@ final class ArgumentSublist {
   }
 
   void _visitArgument(
-      SourceVisitor visitor, ArgumentRule rule, Expression argument) {
+    SourceVisitor visitor,
+    ArgumentRule rule,
+    Expression argument,
+  ) {
     // If we're about to write a block argument, handle it specially.
     var argumentBlock = _blocks[argument];
     if (argumentBlock != null) {
@@ -475,8 +513,12 @@ final class ArgumentSublist {
     }
 
     if (argument is NamedExpression) {
-      visitor.visitNamedNode(argument.name.label.token, argument.name.colon,
-          argument.expression, rule as NamedRule);
+      visitor.visitNamedNode(
+        argument.name.label.token,
+        argument.name.colon,
+        argument.expression,
+        rule as NamedRule,
+      );
     } else {
       visitor.visit(argument);
     }
@@ -505,7 +547,8 @@ final class ArgumentSublist {
   ///
   /// Returns a list of two lists: the positional arguments then the named ones.
   static List<List<Expression>> _splitArgumentLists(
-      List<Expression> arguments) {
+    List<Expression> arguments,
+  ) {
     var positional = <Expression>[];
     var named = <Expression>[];
     var inNamed = false;

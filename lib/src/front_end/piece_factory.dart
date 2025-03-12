@@ -71,7 +71,7 @@ enum NodeContext {
   multilineStringInterpolation,
 
   /// The child is the outermost pattern in a switch expression case.
-  switchExpressionCase
+  switchExpressionCase,
 }
 
 /// Utility methods for creating pieces that share formatting logic across
@@ -118,12 +118,16 @@ mixin PieceFactory {
 
   /// Writes a [ListPiece] for an argument list.
   void writeArgumentList(
-      Token leftBracket, List<AstNode> elements, Token rightBracket) {
+    Token leftBracket,
+    List<AstNode> elements,
+    Token rightBracket,
+  ) {
     writeList(
-        leftBracket: leftBracket,
-        elements,
-        rightBracket: rightBracket,
-        allowBlockArgument: true);
+      leftBracket: leftBracket,
+      elements,
+      rightBracket: rightBracket,
+      allowBlockArgument: true,
+    );
   }
 
   /// Writes a bracket-delimited block or declaration body.
@@ -134,8 +138,12 @@ mixin PieceFactory {
   ///
   ///     if (condition) {
   ///     } else {}
-  void writeBody(Token leftBracket, List<AstNode> contents, Token rightBracket,
-      {bool forceSplit = false}) {
+  void writeBody(
+    Token leftBracket,
+    List<AstNode> contents,
+    Token rightBracket, {
+    bool forceSplit = false,
+  }) {
     // If the body is completely empty, write the brackets directly inline so
     // that we create fewer pieces.
     if (!forceSplit && !contents.canSplit(rightBracket)) {
@@ -168,8 +176,12 @@ mixin PieceFactory {
   ///     if (condition) {
   ///     } else {}
   void writeBlock(Block block, {bool forceSplit = false}) {
-    writeBody(block.leftBracket, block.statements, block.rightBracket,
-        forceSplit: forceSplit);
+    writeBody(
+      block.leftBracket,
+      block.statements,
+      block.rightBracket,
+      forceSplit: forceSplit,
+    );
   }
 
   /// Writes a piece for a `break` or `continue` statement.
@@ -180,8 +192,12 @@ mixin PieceFactory {
   }
 
   void writeChain(Expression node) {
-    pieces.add(ChainBuilder(this, node)
-        .build(isCascadeTarget: parentContext == NodeContext.cascadeTarget));
+    pieces.add(
+      ChainBuilder(
+        this,
+        node,
+      ).build(isCascadeTarget: parentContext == NodeContext.cascadeTarget),
+    );
   }
 
   /// Writes a [ListPiece] for a collection literal or pattern.
@@ -278,16 +294,22 @@ mixin PieceFactory {
 
   /// Creates a comma-separated [ListPiece] for [nodes].
   Piece createCommaSeparated(Iterable<AstNode> nodes) {
-    var builder =
-        DelimitedListBuilder(this, const ListStyle(commas: Commas.nonTrailing));
+    var builder = DelimitedListBuilder(
+      this,
+      const ListStyle(commas: Commas.nonTrailing),
+    );
     nodes.forEach(builder.visit);
     return builder.build();
   }
 
   /// Writes the leading keyword and parenthesized expression at the beginning
   /// of an `if`, `while`, or `switch` expression or statement.
-  void writeControlFlowStart(Token keyword, Token leftParenthesis,
-      Expression value, Token rightParenthesis) {
+  void writeControlFlowStart(
+    Token keyword,
+    Token leftParenthesis,
+    Expression value,
+    Token rightParenthesis,
+  ) {
     pieces.token(keyword);
     pieces.space();
     pieces.token(leftParenthesis);
@@ -313,8 +335,11 @@ mixin PieceFactory {
   /// [semicolon] should be the `;` token before the members, and
   /// [isLastConstant] is `true` if [node] is the last constant before the
   /// members.
-  Piece createEnumConstant(EnumConstantDeclaration node,
-      {bool isLastConstant = false, Token? semicolon}) {
+  Piece createEnumConstant(
+    EnumConstantDeclaration node, {
+    bool isLastConstant = false,
+    Token? semicolon,
+  }) {
     return pieces.build(metadata: node.metadata, () {
       pieces.token(node.name);
       if (node.arguments case var arguments?) {
@@ -331,22 +356,24 @@ mixin PieceFactory {
           // semicolon to use as the separator, but preserve any comments before
           // the discarded comma.
           pieces.add(
-              pieces.tokenPiece(discardedToken: node.commaAfter, semicolon));
+            pieces.tokenPiece(discardedToken: node.commaAfter, semicolon),
+          );
         }
       }
     });
   }
 
   /// Writes a piece for a for statement or element.
-  void writeFor(
-      {required Token? awaitKeyword,
-      required Token forKeyword,
-      required Token leftParenthesis,
-      required ForLoopParts forLoopParts,
-      required Token rightParenthesis,
-      required AstNode body,
-      required bool hasBlockBody,
-      bool forceSplitBody = false}) {
+  void writeFor({
+    required Token? awaitKeyword,
+    required Token forKeyword,
+    required Token leftParenthesis,
+    required ForLoopParts forLoopParts,
+    required Token rightParenthesis,
+    required AstNode body,
+    required bool hasBlockBody,
+    bool forceSplitBody = false,
+  }) {
     var forKeywordPiece = pieces.build(() {
       pieces.modifier(awaitKeyword);
       pieces.token(forKeyword);
@@ -372,11 +399,11 @@ mixin PieceFactory {
         });
 
       case ForParts forParts &&
-            ForPartsWithDeclarations(variables: AstNode? initializer):
+          ForPartsWithDeclarations(variables: AstNode? initializer):
       case ForParts forParts &&
-            ForPartsWithExpression(initialization: AstNode? initializer):
+          ForPartsWithExpression(initialization: AstNode? initializer):
       case ForParts forParts &&
-            ForPartsWithPattern(variables: AstNode? initializer):
+          ForPartsWithPattern(variables: AstNode? initializer):
         // In a C-style for loop, treat the for loop parts like an argument list
         // where each clause is a separate argument. This means that when they
         // split, they split like:
@@ -388,17 +415,21 @@ mixin PieceFactory {
         //     ) {
         //       body;
         //     }
-        var partsList =
-            DelimitedListBuilder(this, const ListStyle(commas: Commas.none));
+        var partsList = DelimitedListBuilder(
+          this,
+          const ListStyle(commas: Commas.none),
+        );
         partsList.leftBracket(leftParenthesis);
 
         // The initializer clause.
         if (initializer != null) {
           partsList.addCommentsBefore(initializer.beginToken);
-          partsList.add(pieces.build(() {
-            pieces.visit(initializer, context: NodeContext.forLoopVariable);
-            pieces.token(forParts.leftSeparator);
-          }));
+          partsList.add(
+            pieces.build(() {
+              pieces.visit(initializer, context: NodeContext.forLoopVariable);
+              pieces.token(forParts.leftSeparator);
+            }),
+          );
         } else {
           // No initializer, so look at the comments before `;`.
           partsList.addCommentsBefore(forParts.leftSeparator);
@@ -408,10 +439,12 @@ mixin PieceFactory {
         // The condition clause.
         if (forParts.condition case var conditionExpression?) {
           partsList.addCommentsBefore(conditionExpression.beginToken);
-          partsList.add(pieces.build(() {
-            pieces.visit(conditionExpression);
-            pieces.token(forParts.rightSeparator);
-          }));
+          partsList.add(
+            pieces.build(() {
+              pieces.visit(conditionExpression);
+              pieces.token(forParts.rightSeparator);
+            }),
+          );
         } else {
           partsList.addCommentsBefore(forParts.rightSeparator);
           partsList.add(tokenPiece(forParts.rightSeparator));
@@ -424,7 +457,9 @@ mixin PieceFactory {
           // Create a nested list builder for the updaters so that they can
           // remain unsplit even while the clauses split.
           var updaterBuilder = DelimitedListBuilder(
-              this, const ListStyle(commas: Commas.nonTrailing));
+            this,
+            const ListStyle(commas: Commas.nonTrailing),
+          );
           forParts.updaters.forEach(updaterBuilder.visit);
 
           // Add the updater builder to the clause builder so that any comments
@@ -436,16 +471,19 @@ mixin PieceFactory {
         forPartsPiece = partsList.build();
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithDeclaration(:var loopVariable):
+          ForEachPartsWithDeclaration(:var loopVariable):
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
           _writeDeclaredForIn(
-              loopVariable, forEachParts.inKeyword, forEachParts.iterable);
+            loopVariable,
+            forEachParts.inKeyword,
+            forEachParts.iterable,
+          );
           pieces.token(rightParenthesis);
         });
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithIdentifier(:var identifier):
+          ForEachPartsWithIdentifier(:var identifier):
         // If a for-in loop, treat the for parts like an assignment, so they
         // split like:
         //
@@ -488,28 +526,36 @@ mixin PieceFactory {
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
           _writeForIn(
-              identifier, forEachParts.inKeyword, forEachParts.iterable);
+            identifier,
+            forEachParts.inKeyword,
+            forEachParts.iterable,
+          );
           pieces.token(rightParenthesis);
         });
 
       case ForEachParts forEachParts &&
-            ForEachPartsWithPattern(:var keyword, :var metadata, :var pattern):
+          ForEachPartsWithPattern(:var keyword, :var metadata, :var pattern):
         forPartsPiece = pieces.build(() {
           pieces.token(leftParenthesis);
 
           // Hoist any leading comments so they don't force the for-in clauses
           // to split.
           pieces.hoistLeadingComments(
-              metadata.firstOrNull?.beginToken ?? keyword, () {
-            // Use a nested piece so that the metadata precedes the keyword and
-            // not the `(`.
-            return pieces.build(metadata: metadata, inlineMetadata: true, () {
-              pieces.token(keyword);
-              pieces.space();
-              _writeForIn(
-                  pattern, forEachParts.inKeyword, forEachParts.iterable);
-            });
-          });
+            metadata.firstOrNull?.beginToken ?? keyword,
+            () {
+              // Use a nested piece so that the metadata precedes the keyword
+              // and not the `(`.
+              return pieces.build(metadata: metadata, inlineMetadata: true, () {
+                pieces.token(keyword);
+                pieces.space();
+                _writeForIn(
+                  pattern,
+                  forEachParts.inKeyword,
+                  forEachParts.iterable,
+                );
+              });
+            },
+          );
 
           pieces.token(rightParenthesis);
         });
@@ -528,16 +574,18 @@ mixin PieceFactory {
     };
 
     if (hasBlockBody) {
-      pieces
-          .add(ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader));
+      pieces.add(
+        ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader),
+      );
       pieces.space();
       pieces.add(bodyPiece);
     } else {
       var forPiece = ControlFlowPiece();
       forPiece.add(
-          ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader),
-          bodyPiece,
-          isBlock: false);
+        ForPiece(forKeywordPiece, forPartsPiece, indent: indentHeader),
+        bodyPiece,
+        isBlock: false,
+      );
 
       if (forceSplitBody) forPiece.pin(State.split);
       pieces.add(forPiece);
@@ -551,28 +599,32 @@ mixin PieceFactory {
   /// If [fieldKeyword] and [period] are given, the former should be the `this`
   /// or `super` keyword for an initializing formal or super parameter.
   void writeFormalParameter(
-      FormalParameter node, TypeAnnotation? type, Token? name,
-      {Token? mutableKeyword, Token? fieldKeyword, Token? period}) {
+    FormalParameter node,
+    TypeAnnotation? type,
+    Token? name, {
+    Token? mutableKeyword,
+    Token? fieldKeyword,
+    Token? period,
+  }) {
     // If the parameter has a default value, the parameter node will be wrapped
     // in a DefaultFormalParameter node containing the default.
     (Token separator, Expression value)? defaultValueRecord;
-    if (node.parent
-        case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
+    if (node.parent case DefaultFormalParameter(
+      :var separator?,
+      :var defaultValue?,
+    )) {
       defaultValueRecord = (separator, defaultValue);
     }
 
     writeParameter(
-        metadata: node.metadata,
-        modifiers: [
-          node.requiredKeyword,
-          node.covariantKeyword,
-          mutableKeyword,
-        ],
-        type,
-        fieldKeyword: fieldKeyword,
-        period: period,
-        name,
-        defaultValue: defaultValueRecord);
+      metadata: node.metadata,
+      modifiers: [node.requiredKeyword, node.covariantKeyword, mutableKeyword],
+      type,
+      fieldKeyword: fieldKeyword,
+      period: period,
+      name,
+      defaultValue: defaultValueRecord,
+    );
   }
 
   /// Writes a function, method, getter, or setter declaration.
@@ -582,16 +634,17 @@ mixin PieceFactory {
   /// should be the `operator` keyword on an operator declaration. If
   /// [propertyKeyword] is given, it should be the `get` or `set` keyword on a
   /// getter or setter declaration.
-  void writeFunction(
-      {List<Annotation> metadata = const [],
-      List<Token?> modifiers = const [],
-      TypeAnnotation? returnType,
-      Token? operatorKeyword,
-      Token? propertyKeyword,
-      Token? name,
-      TypeParameterList? typeParameters,
-      FormalParameterList? parameters,
-      required FunctionBody body}) {
+  void writeFunction({
+    List<Annotation> metadata = const [],
+    List<Token?> modifiers = const [],
+    TypeAnnotation? returnType,
+    Token? operatorKeyword,
+    Token? propertyKeyword,
+    Token? name,
+    TypeParameterList? typeParameters,
+    FormalParameterList? parameters,
+    required FunctionBody body,
+  }) {
     // Create a piece to attach metadata to the function.
     pieces.withMetadata(metadata, () {
       writeFunctionAndReturnType(modifiers, returnType, () {
@@ -622,8 +675,11 @@ mixin PieceFactory {
   /// If there is no return type, invokes [writeFunction] directly and returns.
   /// Otherwise, writes the return type and function and wraps them in a piece
   /// to allow splitting after the return type.
-  void writeFunctionAndReturnType(List<Token?> modifiers,
-      TypeAnnotation? returnType, void Function() writeFunction) {
+  void writeFunctionAndReturnType(
+    List<Token?> modifiers,
+    TypeAnnotation? returnType,
+    void Function() writeFunction,
+  ) {
     if (returnType == null) {
       writeFunction();
       return;
@@ -663,7 +719,9 @@ mixin PieceFactory {
   ///
   /// Otherwise, just writes [parameter].
   void writeDefaultValue(
-      Piece parameter, (Token separator, Expression value)? defaultValue) {
+    Piece parameter,
+    (Token separator, Expression value)? defaultValue,
+  ) {
     if (defaultValue == null) {
       pieces.add(parameter);
       return;
@@ -678,11 +736,14 @@ mixin PieceFactory {
 
     var valuePiece = nodePiece(value, context: NodeContext.assignment);
 
-    pieces.add(AssignPiece(
+    pieces.add(
+      AssignPiece(
         left: parameter,
         operatorPiece,
         valuePiece,
-        canBlockSplitRight: value.canBlockSplit));
+        canBlockSplitRight: value.canBlockSplit,
+      ),
+    );
   }
 
   /// Writes a function type or function-typed formal.
@@ -695,14 +756,15 @@ mixin PieceFactory {
   /// [fieldKeyword] is `this` and [period] is the `.`. Likewise, for a
   /// function-typed super parameter, [fieldKeyword] is `super`.
   void writeFunctionType(
-      TypeAnnotation? returnType,
-      Token functionKeywordOrName,
-      TypeParameterList? typeParameters,
-      FormalParameterList parameters,
-      Token? question,
-      {FormalParameter? parameter,
-      Token? fieldKeyword,
-      Token? period}) {
+    TypeAnnotation? returnType,
+    Token functionKeywordOrName,
+    TypeParameterList? typeParameters,
+    FormalParameterList parameters,
+    Token? question, {
+    FormalParameter? parameter,
+    Token? fieldKeyword,
+    Token? period,
+  }) {
     var metadata = parameter?.metadata ?? const <Annotation>[];
     pieces.withMetadata(metadata, inlineMetadata: true, () {
       void write() {
@@ -721,9 +783,10 @@ mixin PieceFactory {
         pieces.token(question);
       }
 
-      var returnTypeModifiers = parameter != null
-          ? [parameter.requiredKeyword, parameter.covariantKeyword]
-          : const <Token?>[];
+      var returnTypeModifiers =
+          parameter != null
+              ? [parameter.requiredKeyword, parameter.covariantKeyword]
+              : const <Token?>[];
 
       // TODO(rnystrom): It would be good if the AssignPiece created for the
       // default value could treat the parameter list on the left-hand side as
@@ -736,8 +799,10 @@ mixin PieceFactory {
       // If the type is a function-typed parameter with a default value, then
       // grab the default value from the parent node and attach it to the
       // function.
-      if (parameter?.parent
-          case DefaultFormalParameter(:var separator?, :var defaultValue?)) {
+      if (parameter?.parent case DefaultFormalParameter(
+        :var separator?,
+        :var defaultValue?,
+      )) {
         var function = pieces.build(() {
           writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
         });
@@ -752,8 +817,13 @@ mixin PieceFactory {
   /// Writes a piece for the header -- everything from the `if` keyword to the
   /// closing `)` -- of an if statement, if element, if-case statement, or
   /// if-case element.
-  void writeIfCondition(Token ifKeyword, Token leftParenthesis,
-      Expression expression, CaseClause? caseClause, Token rightParenthesis) {
+  void writeIfCondition(
+    Token ifKeyword,
+    Token leftParenthesis,
+    Expression expression,
+    CaseClause? caseClause,
+    Token rightParenthesis,
+  ) {
     pieces.token(ifKeyword);
     pieces.space();
     pieces.token(leftParenthesis);
@@ -769,9 +839,14 @@ mixin PieceFactory {
 
       var guardPiece = optionalNodePiece(caseClause.guardedPattern.whenClause);
 
-      pieces.add(IfCasePiece(expressionPiece, casePiece, guardPiece,
-          canBlockSplitPattern:
-              caseClause.guardedPattern.pattern.canBlockSplit));
+      pieces.add(
+        IfCasePiece(
+          expressionPiece,
+          casePiece,
+          guardPiece,
+          canBlockSplitPattern: caseClause.guardedPattern.pattern.canBlockSplit,
+        ),
+      );
     } else {
       pieces.visit(expression);
     }
@@ -803,7 +878,9 @@ mixin PieceFactory {
         pieces.space();
 
         var parameters = DelimitedListBuilder(
-            this, const ListStyle(commas: Commas.nonTrailing));
+          this,
+          const ListStyle(commas: Commas.nonTrailing),
+        );
         parameters.leftBracket(catchClause.leftParenthesis!);
         if (catchClause.exceptionParameter case var exceptionParameter?) {
           parameters.visit(exceptionParameter);
@@ -826,7 +903,8 @@ mixin PieceFactory {
       //     } finally Bar {
       //       body;
       //     }
-      var forceSplit = i < tryStatement.catchClauses.length - 1 ||
+      var forceSplit =
+          i < tryStatement.catchClauses.length - 1 ||
           tryStatement.finallyBlock != null;
       writeBlock(catchClause.body, forceSplit: forceSplit);
     }
@@ -840,8 +918,13 @@ mixin PieceFactory {
   }
 
   /// Writes an [ImportPiece] for an import or export directive.
-  void writeImport(NamespaceDirective directive, Token keyword,
-      {Token? deferredKeyword, Token? asKeyword, SimpleIdentifier? prefix}) {
+  void writeImport(
+    NamespaceDirective directive,
+    Token keyword, {
+    Token? deferredKeyword,
+    Token? asKeyword,
+    SimpleIdentifier? prefix,
+  }) {
     pieces.withMetadata(directive.metadata, () {
       // Build a piece for the directive itself.
       var directivePiece = pieces.build(() {
@@ -871,12 +954,14 @@ mixin PieceFactory {
 
       // Include the `as` clause.
       if (asKeyword != null) {
-        clauses.add(pieces.build(() {
-          pieces.token(deferredKeyword, spaceAfter: true);
-          pieces.token(asKeyword);
-          pieces.space();
-          pieces.visit(prefix!);
-        }));
+        clauses.add(
+          pieces.build(() {
+            pieces.token(deferredKeyword, spaceAfter: true);
+            pieces.token(asKeyword);
+            pieces.space();
+            pieces.visit(prefix!);
+          }),
+        );
       }
 
       // Include any `if` clauses.
@@ -891,10 +976,13 @@ mixin PieceFactory {
         switch (combinatorNode) {
           case HideCombinator(hiddenNames: var names):
           case ShowCombinator(shownNames: var names):
-            clauses.add(InfixPiece([
-              tokenPiece(combinatorNode.keyword),
-              for (var name in names) tokenPiece(name.token, commaAfter: true),
-            ]));
+            clauses.add(
+              InfixPiece([
+                tokenPiece(combinatorNode.keyword),
+                for (var name in names)
+                  tokenPiece(name.token, commaAfter: true),
+              ]),
+            );
         }
       }
 
@@ -934,8 +1022,13 @@ mixin PieceFactory {
   ///
   /// The [operator2] parameter may be passed if the "operator" is actually two
   /// separate tokens, as in `foo is! Bar`.
-  void writeInfix(AstNode left, Token operator, AstNode right,
-      {bool hanging = false, Token? operator2}) {
+  void writeInfix(
+    AstNode left,
+    Token operator,
+    AstNode right, {
+    bool hanging = false,
+    Token? operator2,
+  }) {
     var leftPiece = pieces.build(() {
       pieces.visit(left);
       if (hanging) {
@@ -974,8 +1067,11 @@ mixin PieceFactory {
   /// If [precedence] is given, then this only flattens binary nodes with that
   /// same precedence.
   void writeInfixChain<T extends AstNode>(
-      T node, BinaryOperation Function(T node) destructure,
-      {int? precedence, bool indent = true}) {
+    T node,
+    BinaryOperation Function(T node) destructure, {
+    int? precedence,
+    bool indent = true,
+  }) {
     var operands = <Piece>[];
 
     void traverse(AstNode e) {
@@ -984,11 +1080,13 @@ mixin PieceFactory {
       if (e is T) {
         var (left, operator, right) = destructure(e);
         if (precedence == null || operator.type.precedence == precedence) {
-          operands.add(pieces.build(() {
-            traverse(left);
-            pieces.space();
-            pieces.token(operator);
-          }));
+          operands.add(
+            pieces.build(() {
+              traverse(left);
+              pieces.space();
+              pieces.token(operator);
+            }),
+          );
 
           traverse(right);
           return;
@@ -999,9 +1097,11 @@ mixin PieceFactory {
       pieces.visit(e);
     }
 
-    operands.add(pieces.build(() {
-      traverse(node);
-    }));
+    operands.add(
+      pieces.build(() {
+        traverse(node);
+      }),
+    );
 
     pieces.add(InfixPiece(operands, indent: indent));
   }
@@ -1018,12 +1118,14 @@ mixin PieceFactory {
   ///       4, 5, 6,
   ///       7, 8, 9,
   ///     ];
-  void writeList(List<AstNode> elements,
-      {required Token leftBracket,
-      required Token rightBracket,
-      ListStyle style = const ListStyle(),
-      bool preserveNewlines = false,
-      bool allowBlockArgument = false}) {
+  void writeList(
+    List<AstNode> elements, {
+    required Token leftBracket,
+    required Token rightBracket,
+    ListStyle style = const ListStyle(),
+    bool preserveNewlines = false,
+    bool allowBlockArgument = false,
+  }) {
     // If the list is completely empty, write the brackets directly inline so
     // that we create fewer pieces.
     if (!elements.canSplit(rightBracket)) {
@@ -1068,7 +1170,9 @@ mixin PieceFactory {
   ///       5, 6, 7
   ///     ];
   void _preserveNewlinesInCollection(
-      List<AstNode> elements, DelimitedListBuilder builder) {
+    List<AstNode> elements,
+    DelimitedListBuilder builder,
+  ) {
     // Builder for all of the elements on a single line. We use a ListPiece for
     // this too because even though we prefer to keep all elements that are on
     // a single line in the input also on a single line in the output, we will
@@ -1082,7 +1186,9 @@ mixin PieceFactory {
 
       if (!atLineStart &&
           comments.hasNewlineBetween(
-              elements[i - 1].endToken, element.beginToken)) {
+            elements[i - 1].endToken,
+            element.beginToken,
+          )) {
         // This element begins a new line. Add the elements on the previous
         // line to the list builder and start a new line.
         builder.addInnerBuilder(lineBuilder);
@@ -1118,8 +1224,9 @@ mixin PieceFactory {
       pieces.visit(type);
     });
 
-    pieces
-        .add(VariablePiece(header, [tokenPiece(name)], hasType: type != null));
+    pieces.add(
+      VariablePiece(header, [tokenPiece(name)], hasType: type != null),
+    );
   }
 
   /// Writes a [Piece] for an AST node followed by an unsplittable token.
@@ -1179,7 +1286,7 @@ mixin PieceFactory {
 
       // Record types or patterns with multiple fields have regular trailing
       // commas when split.
-      _ => const ListStyle(commas: Commas.trailing)
+      _ => const ListStyle(commas: Commas.trailing),
     };
 
     writeCollection(
@@ -1209,19 +1316,22 @@ mixin PieceFactory {
   /// If the type is an extension type, then [representation] is the primary
   /// constructor for it.
   void writeType(
-      NodeList<Annotation> metadata, List<Token?> keywords, Token? name,
-      {TypeParameterList? typeParameters,
-      Token? equals,
-      NamedType? superclass,
-      RepresentationDeclaration? representation,
-      ExtendsClause? extendsClause,
-      MixinOnClause? onClause,
-      WithClause? withClause,
-      ImplementsClause? implementsClause,
-      NativeClause? nativeClause,
-      (Token, TypeAnnotation)? onType,
-      TypeBodyType bodyType = TypeBodyType.block,
-      required Piece Function() body}) {
+    NodeList<Annotation> metadata,
+    List<Token?> keywords,
+    Token? name, {
+    TypeParameterList? typeParameters,
+    Token? equals,
+    NamedType? superclass,
+    RepresentationDeclaration? representation,
+    ExtendsClause? extendsClause,
+    MixinOnClause? onClause,
+    WithClause? withClause,
+    ImplementsClause? implementsClause,
+    NativeClause? nativeClause,
+    (Token, TypeAnnotation)? onType,
+    TypeBodyType bodyType = TypeBodyType.block,
+    required Piece Function() body,
+  }) {
     // Begin a piece to attach the metadata to the type.
     pieces.withMetadata(metadata, () {
       var header = pieces.build(() {
@@ -1256,10 +1366,12 @@ mixin PieceFactory {
       var clauses = <Piece>[];
 
       void typeClause(Token keyword, List<AstNode> types) {
-        clauses.add(InfixPiece([
-          tokenPiece(keyword),
-          for (var type in types) nodePiece(type, commaAfter: true),
-        ]));
+        clauses.add(
+          InfixPiece([
+            tokenPiece(keyword),
+            for (var type in types) nodePiece(type, commaAfter: true),
+          ]),
+        );
       }
 
       if (extendsClause != null) {
@@ -1276,7 +1388,9 @@ mixin PieceFactory {
 
       if (implementsClause != null) {
         typeClause(
-            implementsClause.implementsKeyword, implementsClause.interfaces);
+          implementsClause.implementsKeyword,
+          implementsClause.interfaces,
+        );
       }
 
       if (onType case (var onKeyword, var onType)?) {
@@ -1284,13 +1398,17 @@ mixin PieceFactory {
       }
 
       if (nativeClause != null) {
-        typeClause(nativeClause.nativeKeyword,
-            [if (nativeClause.name case var name?) name]);
+        typeClause(nativeClause.nativeKeyword, [
+          if (nativeClause.name case var name?) name,
+        ]);
       }
 
       if (clauses.isNotEmpty) {
-        header = ClausePiece(header, clauses,
-            allowLeadingClause: extendsClause != null || onClause != null);
+        header = ClausePiece(
+          header,
+          clauses,
+          allowLeadingClause: extendsClause != null || onClause != null,
+        );
       }
 
       pieces.add(TypePiece(header, body(), bodyType: bodyType));
@@ -1299,12 +1417,16 @@ mixin PieceFactory {
 
   /// Writes a [ListPiece] for a type argument or type parameter list.
   void writeTypeList(
-      Token leftBracket, List<AstNode> elements, Token rightBracket) {
+    Token leftBracket,
+    List<AstNode> elements,
+    Token rightBracket,
+  ) {
     writeList(
-        leftBracket: leftBracket,
-        elements,
-        rightBracket: rightBracket,
-        style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3));
+      leftBracket: leftBracket,
+      elements,
+      rightBracket: rightBracket,
+      style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3),
+    );
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
@@ -1335,10 +1457,13 @@ mixin PieceFactory {
   ///       element,
   ///     ] = list;
   void writeAssignment(
-      AstNode leftHandSide, Token operator, AstNode rightHandSide,
-      {bool includeComma = false,
-      bool canBlockSplitLeft = false,
-      NodeContext leftHandSideContext = NodeContext.none}) {
+    AstNode leftHandSide,
+    Token operator,
+    AstNode rightHandSide, {
+    bool includeComma = false,
+    bool canBlockSplitLeft = false,
+    NodeContext leftHandSideContext = NodeContext.none,
+  }) {
     // If an operand can have block formatting, then a newline in it doesn't
     // force the operator to split, as in:
     //
@@ -1374,13 +1499,13 @@ mixin PieceFactory {
       // Otherwise, it must be an actual block construct.
       Expression() => leftHandSide.canBlockSplit,
       DartPattern() => leftHandSide.canBlockSplit,
-      _ => false
+      _ => false,
     };
 
     var canBlockSplitRight = switch (rightHandSide) {
       Expression() => rightHandSide.canBlockSplit,
       DartPattern() => rightHandSide.canBlockSplit,
-      _ => false
+      _ => false,
     };
 
     var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
@@ -1390,15 +1515,21 @@ mixin PieceFactory {
       pieces.token(operator);
     });
 
-    var rightPiece = nodePiece(rightHandSide,
-        commaAfter: includeComma, context: NodeContext.assignment);
+    var rightPiece = nodePiece(
+      rightHandSide,
+      commaAfter: includeComma,
+      context: NodeContext.assignment,
+    );
 
-    pieces.add(AssignPiece(
+    pieces.add(
+      AssignPiece(
         left: leftPiece,
         operatorPiece,
         rightPiece,
         canBlockSplitLeft: canBlockSplitLeft,
-        canBlockSplitRight: canBlockSplitRight));
+        canBlockSplitRight: canBlockSplitRight,
+      ),
+    );
   }
 
   /// Writes the `<variable> in <expression>` part of an identifier or pattern
@@ -1407,12 +1538,17 @@ mixin PieceFactory {
     // Hoist any leading comments so they don't force the for-in clauses to
     // split.
     pieces.hoistLeadingComments(leftHandSide.firstNonCommentToken, () {
-      var leftPiece =
-          nodePiece(leftHandSide, context: NodeContext.forLoopVariable);
+      var leftPiece = nodePiece(
+        leftHandSide,
+        context: NodeContext.forLoopVariable,
+      );
       var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-      return ForInPiece(leftPiece, sequencePiece,
-          canBlockSplitSequence: sequence.canBlockSplit);
+      return ForInPiece(
+        leftPiece,
+        sequencePiece,
+        canBlockSplitSequence: sequence.canBlockSplit,
+      );
     });
   }
 
@@ -1423,26 +1559,38 @@ mixin PieceFactory {
   /// which requires some special handling so that we don't push the metadata
   /// and any comments after it into the left child piece of [ForInPiece].
   void _writeDeclaredForIn(
-      DeclaredIdentifier identifier, Token inKeyword, Expression sequence) {
+    DeclaredIdentifier identifier,
+    Token inKeyword,
+    Expression sequence,
+  ) {
     // Hoist any leading comments so they don't force the for-in clauses
     // to split.
     pieces.hoistLeadingComments(identifier.beginToken, () {
       // Use a nested piece so that the metadata precedes the keyword and
       // not the `(`.
-      return pieces.build(metadata: identifier.metadata, inlineMetadata: true,
-          () {
-        var leftPiece = pieces.build(() {
-          writeParameter(
+      return pieces.build(
+        metadata: identifier.metadata,
+        inlineMetadata: true,
+        () {
+          var leftPiece = pieces.build(() {
+            writeParameter(
               modifiers: [identifier.keyword],
               identifier.type,
-              identifier.name);
-        });
+              identifier.name,
+            );
+          });
 
-        var sequencePiece = _createForInSequence(inKeyword, sequence);
+          var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-        pieces.add(ForInPiece(leftPiece, sequencePiece,
-            canBlockSplitSequence: sequence.canBlockSplit));
-      });
+          pieces.add(
+            ForInPiece(
+              leftPiece,
+              sequencePiece,
+              canBlockSplitSequence: sequence.canBlockSplit,
+            ),
+          );
+        },
+      );
     });
   }
 
@@ -1462,12 +1610,15 @@ mixin PieceFactory {
   ///
   /// If the parameter has a default value, then [defaultValue] contains the
   /// `:` or `=` separator and the constant value expression.
-  void writeParameter(TypeAnnotation? type, Token? name,
-      {List<Annotation> metadata = const [],
-      List<Token?> modifiers = const [],
-      Token? fieldKeyword,
-      Token? period,
-      (Token separator, Expression value)? defaultValue}) {
+  void writeParameter(
+    TypeAnnotation? type,
+    Token? name, {
+    List<Annotation> metadata = const [],
+    List<Token?> modifiers = const [],
+    Token? fieldKeyword,
+    Token? period,
+    (Token separator, Expression value)? defaultValue,
+  }) {
     // Begin a piece to attach metadata to the parameter.
     pieces.withMetadata(metadata, inlineMetadata: true, () {
       Piece? typePiece;
@@ -1519,8 +1670,11 @@ mixin PieceFactory {
   ///
   /// If [commaAfter] is `true`, looks for a comma token after [node] and
   /// writes it to the piece as well.
-  Piece nodePiece(AstNode node,
-      {bool commaAfter = false, NodeContext context = NodeContext.none}) {
+  Piece nodePiece(
+    AstNode node, {
+    bool commaAfter = false,
+    NodeContext context = NodeContext.none,
+  }) {
     var result = pieces.build(() {
       visitNode(node, context);
     });

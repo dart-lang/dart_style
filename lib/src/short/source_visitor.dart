@@ -94,7 +94,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
   SourceVisitor(DartFormatter formatter, this._lineInfo, this._source)
-      : builder = ChunkBuilder(formatter, _source);
+    : builder = ChunkBuilder(formatter, _source);
 
   /// Runs the visitor on [node], formatting its contents.
   ///
@@ -233,7 +233,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // and the ")" ends up on its own line.
     if (node.arguments.hasCommaAfter) {
       _visitCollectionLiteral(
-          node.leftParenthesis, node.arguments, node.rightParenthesis);
+        node.leftParenthesis,
+        node.arguments,
+        node.rightParenthesis,
+      );
       return;
     }
 
@@ -267,13 +270,20 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // and the ")" ends up on its own line.
     if (arguments.hasCommaAfter) {
       _visitCollectionLiteral(
-          node.leftParenthesis, arguments, node.rightParenthesis);
+        node.leftParenthesis,
+        arguments,
+        node.rightParenthesis,
+      );
       return;
     }
 
     builder.nestExpression();
     var visitor = ArgumentListVisitor.forArguments(
-        this, node.leftParenthesis, node.rightParenthesis, arguments);
+      this,
+      node.leftParenthesis,
+      node.rightParenthesis,
+      arguments,
+    );
     visitor.visit();
     builder.unnest();
   }
@@ -291,12 +301,19 @@ final class SourceVisitor extends ThrowingAstVisitor {
       // and the ")" ends up on its own line.
       if (arguments.hasCommaAfter) {
         _visitCollectionLiteral(
-            node.leftParenthesis, arguments, node.rightParenthesis);
+          node.leftParenthesis,
+          arguments,
+          node.rightParenthesis,
+        );
         return;
       }
 
       var visitor = ArgumentListVisitor.forArguments(
-          this, node.leftParenthesis, node.rightParenthesis, arguments);
+        this,
+        node.leftParenthesis,
+        node.rightParenthesis,
+        arguments,
+      );
       visitor.visit();
     });
   }
@@ -336,11 +353,15 @@ final class SourceVisitor extends ThrowingAstVisitor {
     var nest = node.parent is! ExpressionFunctionBody;
 
     _visitBinary<BinaryExpression>(
-        node,
-        precedence: node.operator.type.precedence,
-        nest: nest,
-        (expression) => BinaryNode(expression.leftOperand, expression.operator,
-            expression.rightOperand));
+      node,
+      precedence: node.operator.type.precedence,
+      nest: nest,
+      (expression) => BinaryNode(
+        expression.leftOperand,
+        expression.operator,
+        expression.rightOperand,
+      ),
+    );
   }
 
   @override
@@ -636,7 +657,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     var needsDouble = true;
     for (var declaration in node.declarations) {
-      var hasBody = declaration is ClassDeclaration ||
+      var hasBody =
+          declaration is ClassDeclaration ||
           declaration is EnumDeclaration ||
           declaration is ExtensionDeclaration;
 
@@ -1038,16 +1060,19 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     _visitBodyContents(node.members);
 
-    _endBody(node.rightBracket,
-        forceSplit: semicolon != null ||
-            trailingComma != null ||
-            node.members.isNotEmpty ||
-            // If there is a line comment after an enum constant, it won't
-            // automatically force the enum body to split since the rule for
-            // the constants is the hard rule used by the entire block and its
-            // hardening state doesn't actually change. Instead, look
-            // explicitly for a line comment here.
-            node.constants.containsLineComments());
+    _endBody(
+      node.rightBracket,
+      forceSplit:
+          semicolon != null ||
+          trailingComma != null ||
+          node.members.isNotEmpty ||
+          // If there is a line comment after an enum constant, it won't
+          // automatically force the enum body to split since the rule for
+          // the constants is the hard rule used by the entire block and its
+          // hardening state doesn't actually change. Instead, look
+          // explicitly for a line comment here.
+          node.constants.containsLineComments(),
+    );
   }
 
   @override
@@ -1203,8 +1228,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitFormalParameterList(FormalParameterList node,
-      {bool nestExpression = true}) {
+  void visitFormalParameterList(
+    FormalParameterList node, {
+    bool nestExpression = true,
+  }) {
     // Corner case: empty parameter lists.
     if (node.parameters.isEmpty) {
       token(node.leftParenthesis);
@@ -1224,9 +1251,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    var requiredParams = node.parameters
-        .where((param) => param is! DefaultFormalParameter)
-        .toList();
+    var requiredParams =
+        node.parameters
+            .where((param) => param is! DefaultFormalParameter)
+            .toList();
     var optionalParams =
         node.parameters.whereType<DefaultFormalParameter>().toList();
 
@@ -1614,10 +1642,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // Treat a chain of if-else elements as a single unit so that we don't
     // unnecessarily indent each subsequent section of the chain.
     var ifElements = [
-      for (CollectionElement? thisNode = node;
-          thisNode is IfElement;
-          thisNode = thisNode.elseElement)
-        thisNode
+      for (
+        CollectionElement? thisNode = node;
+        thisNode is IfElement;
+        thisNode = thisNode.elseElement
+      )
+        thisNode,
     ];
 
     // If the body of the then or else branch is a spread of a collection
@@ -1689,8 +1719,13 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     var hasInnerControlFlow = false;
     for (var element in ifElements) {
-      _visitIfCondition(element.ifKeyword, element.leftParenthesis,
-          element.expression, element.caseClause, element.rightParenthesis);
+      _visitIfCondition(
+        element.ifKeyword,
+        element.leftParenthesis,
+        element.expression,
+        element.caseClause,
+        element.rightParenthesis,
+      );
 
       visitChild(element, element.thenElement);
       if (element.thenElement.isControlFlowElement) {
@@ -1733,8 +1768,13 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitIfStatement(IfStatement node) {
-    _visitIfCondition(node.ifKeyword, node.leftParenthesis, node.expression,
-        node.caseClause, node.rightParenthesis);
+    _visitIfCondition(
+      node.ifKeyword,
+      node.leftParenthesis,
+      node.expression,
+      node.caseClause,
+      node.rightParenthesis,
+    );
 
     void visitClause(Statement clause) {
       if (clause is Block || clause is IfStatement) {
@@ -1950,33 +1990,49 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // Corner case: Splitting inside a list looks bad if there's only one
     // element, so make those more costly.
     var cost = node.elements.length <= 1 ? Cost.singleElementList : Cost.normal;
-    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
-        constKeyword: node.constKeyword,
-        typeArguments: node.typeArguments,
-        splitOuterCollection: true,
-        cost: cost);
+    _visitCollectionLiteral(
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+      constKeyword: node.constKeyword,
+      typeArguments: node.typeArguments,
+      splitOuterCollection: true,
+      cost: cost,
+    );
   }
 
   @override
   void visitListPattern(ListPattern node) {
-    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
-        typeArguments: node.typeArguments);
+    _visitCollectionLiteral(
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+      typeArguments: node.typeArguments,
+    );
   }
 
   @override
   void visitLogicalAndPattern(LogicalAndPattern node) {
     _visitBinary<LogicalAndPattern>(
-        node,
-        (pattern) => BinaryNode(
-            pattern.leftOperand, pattern.operator, pattern.rightOperand));
+      node,
+      (pattern) => BinaryNode(
+        pattern.leftOperand,
+        pattern.operator,
+        pattern.rightOperand,
+      ),
+    );
   }
 
   @override
   void visitLogicalOrPattern(LogicalOrPattern node) {
     _visitBinary<LogicalOrPattern>(
-        node,
-        (pattern) => BinaryNode(
-            pattern.leftOperand, pattern.operator, pattern.rightOperand));
+      node,
+      (pattern) => BinaryNode(
+        pattern.leftOperand,
+        pattern.operator,
+        pattern.rightOperand,
+      ),
+    );
   }
 
   @override
@@ -1991,8 +2047,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitMapPattern(MapPattern node) {
-    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
-        typeArguments: node.typeArguments);
+    _visitCollectionLiteral(
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+      typeArguments: node.typeArguments,
+    );
   }
 
   @override
@@ -2197,7 +2257,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // this comment should be removed.
     visit(node.type);
     _visitCollectionLiteral(
-        node.leftParenthesis, node.fields, node.rightParenthesis);
+      node.leftParenthesis,
+      node.fields,
+      node.rightParenthesis,
+    );
   }
 
   @override
@@ -2287,7 +2350,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitPatternVariableDeclarationStatement(
-      PatternVariableDeclarationStatement node) {
+    PatternVariableDeclarationStatement node,
+  ) {
     visit(node.declaration);
     token(node.semicolon);
   }
@@ -2331,7 +2395,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRedirectingConstructorInvocation(
-      RedirectingConstructorInvocation node) {
+    RedirectingConstructorInvocation node,
+  ) {
     builder.startSpan();
 
     token(node.thisKeyword);
@@ -2346,15 +2411,21 @@ final class SourceVisitor extends ThrowingAstVisitor {
   void visitRecordLiteral(RecordLiteral node) {
     modifier(node.constKeyword);
     _visitCollectionLiteral(
-        node.leftParenthesis, node.fields, node.rightParenthesis,
-        isRecord: true);
+      node.leftParenthesis,
+      node.fields,
+      node.rightParenthesis,
+      isRecord: true,
+    );
   }
 
   @override
   void visitRecordPattern(RecordPattern node) {
     _visitCollectionLiteral(
-        node.leftParenthesis, node.fields, node.rightParenthesis,
-        isRecord: true);
+      node.leftParenthesis,
+      node.fields,
+      node.rightParenthesis,
+      isRecord: true,
+    );
   }
 
   @override
@@ -2419,7 +2490,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // the trailing comma is actually mandatory.
     bool force;
     if (namedFields == null) {
-      force = node.positionalFields.length > 1 &&
+      force =
+          node.positionalFields.length > 1 &&
           node.positionalFields.last.hasCommaAfter;
     } else {
       force = namedFields.fields.last.hasCommaAfter;
@@ -2437,7 +2509,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRecordTypeAnnotationNamedField(
-      RecordTypeAnnotationNamedField node) {
+    RecordTypeAnnotationNamedField node,
+  ) {
     visitParameterMetadata(node.metadata, () {
       visit(node.type);
       token(node.name, before: space);
@@ -2446,7 +2519,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitRecordTypeAnnotationPositionalField(
-      RecordTypeAnnotationPositionalField node) {
+    RecordTypeAnnotationPositionalField node,
+  ) {
     visitParameterMetadata(node.metadata, () {
       visit(node.type);
       token(node.name, before: space);
@@ -2531,10 +2605,14 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSetOrMapLiteral(SetOrMapLiteral node) {
-    _visitCollectionLiteral(node.leftBracket, node.elements, node.rightBracket,
-        constKeyword: node.constKeyword,
-        typeArguments: node.typeArguments,
-        splitOuterCollection: true);
+    _visitCollectionLiteral(
+      node.leftBracket,
+      node.elements,
+      node.rightBracket,
+      constKeyword: node.constKeyword,
+      typeArguments: node.typeArguments,
+      splitOuterCollection: true,
+    );
   }
 
   @override
@@ -2617,8 +2695,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
   void visitSwitchExpression(SwitchExpression node) {
     if (!node.cases.canSplit(node.rightBracket)) {
       // Don't allow splitting an empty switch expression.
-      _visitSwitchValue(node.switchKeyword, node.leftParenthesis,
-          node.expression, node.rightParenthesis);
+      _visitSwitchValue(
+        node.switchKeyword,
+        node.leftParenthesis,
+        node.expression,
+        node.rightParenthesis,
+      );
       token(node.leftBracket);
       token(node.rightBracket);
       return;
@@ -2632,8 +2714,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
     //     ]) { inline => caseBody };
     builder.startRule();
 
-    _visitSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
-        node.rightParenthesis);
+    _visitSwitchValue(
+      node.switchKeyword,
+      node.leftParenthesis,
+      node.expression,
+      node.rightParenthesis,
+    );
 
     token(node.leftBracket);
     builder = builder.startBlock(space: node.cases.isNotEmpty);
@@ -2743,8 +2829,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitSwitchStatement(SwitchStatement node) {
-    _visitSwitchValue(node.switchKeyword, node.leftParenthesis, node.expression,
-        node.rightParenthesis);
+    _visitSwitchValue(
+      node.switchKeyword,
+      node.leftParenthesis,
+      node.expression,
+      node.rightParenthesis,
+    );
     _beginBody(node.leftBracket);
     for (var member in node.members) {
       _visitLabels(member.labels);
@@ -2799,8 +2889,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Visits the `switch (expr)` part of a switch statement or expression.
-  void _visitSwitchValue(Token switchKeyword, Token leftParenthesis,
-      Expression value, Token rightParenthesis) {
+  void _visitSwitchValue(
+    Token switchKeyword,
+    Token leftParenthesis,
+    Expression value,
+    Token rightParenthesis,
+  ) {
     builder.nestExpression();
     token(switchKeyword);
     space();
@@ -2898,8 +2992,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
     var hasMultipleVariables =
         (node.parent as VariableDeclarationList).variables.length > 1;
 
-    _visitAssignment(node.equals!, node.initializer!,
-        nest: hasMultipleVariables);
+    _visitAssignment(
+      node.equals!,
+      node.initializer!,
+      nest: hasMultipleVariables,
+    );
   }
 
   @override
@@ -3003,8 +3100,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
     var isFirst =
         directive == (directive.parent as CompilationUnit).directives.first;
 
-    visitNodes(directive.metadata,
-        between: newline, after: isFirst ? oneOrTwoNewlines : newline);
+    visitNodes(
+      directive.metadata,
+      between: newline,
+      after: isFirst ? oneOrTwoNewlines : newline,
+    );
   }
 
   /// Visits metadata annotations on parameters and type parameters.
@@ -3012,7 +3112,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// Unlike other annotations, these are allowed to stay on the same line as
   /// the parameter.
   void visitParameterMetadata(
-      NodeList<Annotation> metadata, void Function() visitParameter) {
+    NodeList<Annotation> metadata,
+    void Function() visitParameter,
+  ) {
     if (metadata.isEmpty) {
       visitParameter();
       return;
@@ -3037,13 +3139,21 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// too.
   void visitNamedArgument(NamedExpression node, [NamedRule? rule]) {
     visitNamedNode(
-        node.name.label.token, node.name.colon, node.expression, rule);
+      node.name.label.token,
+      node.name.colon,
+      node.expression,
+      rule,
+    );
   }
 
   /// Visits syntax of the form `identifier: <node>`: a named argument or a
   /// named record field.
-  void visitNamedNode(Token name, Token colon, AstNode node,
-      [NamedRule? rule]) {
+  void visitNamedNode(
+    Token name,
+    Token colon,
+    AstNode node, [
+    NamedRule? rule,
+  ]) {
     builder.nestExpression();
     builder.startSpan();
     token(name);
@@ -3074,8 +3184,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// If [nest] is true, an extra level of expression nesting is added after
   /// the "=".
-  void _visitAssignment(Token equalsOperator, Expression rightHandSide,
-      {bool nest = false}) {
+  void _visitAssignment(
+    Token equalsOperator,
+    Expression rightHandSide, {
+    bool nest = false,
+  }) {
     space();
     token(equalsOperator);
 
@@ -3106,8 +3219,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// precedence. If [nest] is `false`, then elides the nesting around the
   /// expression.
   void _visitBinary<T extends AstNode>(
-      T node, BinaryNode Function(T node) destructureNode,
-      {int? precedence, bool nest = true}) {
+    T node,
+    BinaryNode Function(T node) destructureNode, {
+    int? precedence,
+    bool nest = true,
+  }) {
     builder.startSpan();
 
     if (nest) builder.nestExpression();
@@ -3152,7 +3268,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the "with" and "implements" clauses in a type declaration.
   void _visitClauses(
-      WithClause? withClause, ImplementsClause? implementsClause) {
+    WithClause? withClause,
+    ImplementsClause? implementsClause,
+  ) {
     builder.startRule(CombinatorRule());
     visit(withClause);
     visit(implementsClause);
@@ -3168,7 +3286,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits a type parameter or type argument list.
   void _visitGenericList(
-      Token leftBracket, Token rightBracket, List<AstNode> nodes) {
+    Token leftBracket,
+    Token rightBracket,
+    List<AstNode> nodes,
+  ) {
     var rule = TypeArgumentRule();
     builder.startLazyRule(rule);
     builder.startSpan();
@@ -3277,9 +3398,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// space before it if it's not empty.
   ///
   /// If [beforeBody] is provided, it is invoked before the body is visited.
-  void _visitFunctionBody(TypeParameterList? typeParameters,
-      FormalParameterList? parameters, FunctionBody body,
-      [void Function()? beforeBody]) {
+  void _visitFunctionBody(
+    TypeParameterList? typeParameters,
+    FormalParameterList? parameters,
+    FunctionBody body, [
+    void Function()? beforeBody,
+  ]) {
     // If the body is "=>", add an extra level of indentation around the
     // parameters and a rule that spans the parameters and the "=>". This
     // ensures that if the parameters wrap, they wrap more deeply than the "=>"
@@ -3321,7 +3445,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// Visits the type parameters (if any) and formal parameters of a method
   /// declaration, function declaration, or generic function type.
   void _visitParameterSignature(
-      TypeParameterList? typeParameters, FormalParameterList? parameters) {
+    TypeParameterList? typeParameters,
+    FormalParameterList? parameters,
+  ) {
     // Start the nesting for the parameters here, so they indent past the
     // type parameters too, if any.
     builder.nestExpression();
@@ -3359,10 +3485,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visit a list of [nodes] if not null, optionally separated and/or preceded
   /// and followed by the given functions.
-  void visitNodes(Iterable<AstNode> nodes,
-      {void Function()? before,
-      void Function()? between,
-      void Function()? after}) {
+  void visitNodes(
+    Iterable<AstNode> nodes, {
+    void Function()? before,
+    void Function()? between,
+    void Function()? after,
+  }) {
     if (nodes.isEmpty) return;
 
     if (before != null) before();
@@ -3377,8 +3505,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   /// Visit a comma-separated list of [nodes] if not null.
-  void visitCommaSeparatedNodes(Iterable<AstNode> nodes,
-      {void Function()? between}) {
+  void visitCommaSeparatedNodes(
+    Iterable<AstNode> nodes, {
+    void Function()? between,
+  }) {
     if (nodes.isEmpty) return;
 
     between ??= space;
@@ -3405,12 +3535,15 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// surrounding collections to split even if this one doesn't. We do this for
   /// collection literals, but not other collection-like constructs.
   void _visitCollectionLiteral(
-      Token leftBracket, List<AstNode> elements, Token rightBracket,
-      {Token? constKeyword,
-      TypeArgumentList? typeArguments,
-      int? cost,
-      bool splitOuterCollection = false,
-      bool isRecord = false}) {
+    Token leftBracket,
+    List<AstNode> elements,
+    Token rightBracket, {
+    Token? constKeyword,
+    TypeArgumentList? typeArguments,
+    int? cost,
+    bool splitOuterCollection = false,
+    bool isRecord = false,
+  }) {
     modifier(constKeyword);
 
     // Don't use the normal type argument list formatting code because we don't
@@ -3604,8 +3737,13 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   /// Visits the `if (<expr> [case <pattern> [when <expr>]])` header of an if
   /// statement or element.
-  void _visitIfCondition(Token ifKeyword, Token leftParenthesis,
-      AstNode condition, CaseClause? caseClause, Token rightParenthesis) {
+  void _visitIfCondition(
+    Token ifKeyword,
+    Token leftParenthesis,
+    AstNode condition,
+    CaseClause? caseClause,
+    Token rightParenthesis,
+  ) {
     builder.nestExpression();
     token(ifKeyword);
     space();
@@ -3671,14 +3809,17 @@ final class SourceVisitor extends ThrowingAstVisitor {
   ///     ) variable;
   ///
   /// Otherwise, we can.
-  void _separatorBetweenTypeAndVariable(TypeAnnotation? type,
-      {bool isSolo = false}) {
+  void _separatorBetweenTypeAndVariable(
+    TypeAnnotation? type, {
+    bool isSolo = false,
+  }) {
     if (type == null) return;
 
     var isBlockType = false;
     if (type is GenericFunctionType) {
       // Function types get block-like formatting if they have a trailing comma.
-      isBlockType = type.parameters.parameters.isNotEmpty &&
+      isBlockType =
+          type.parameters.parameters.isNotEmpty &&
           type.parameters.parameters.last.hasCommaAfter;
     } else if (type is RecordTypeAnnotation) {
       // Record types always have block-like formatting.
@@ -3772,7 +3913,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     // Process the contents as a separate set of chunks.
     builder = builder.startBlock(
-        argumentChunk: _blockPreviousChunks[leftBracket], space: space);
+      argumentChunk: _blockPreviousChunks[leftBracket],
+      space: space,
+    );
   }
 
   /// Ends the body started by a call to [_beginBody()].
@@ -4133,8 +4276,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
         type = CommentType.inlineBlock;
       }
 
-      var sourceComment =
-          SourceComment(text, type, linesBefore, flushLeft: flushLeft);
+      var sourceComment = SourceComment(
+        text,
+        type,
+        linesBefore,
+        flushLeft: flushLeft,
+      );
 
       // If this comment contains either of the selection endpoints, mark them
       // in the comment.
@@ -4169,8 +4316,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// If [offset] is given, uses that for calculating selection location.
   /// Otherwise, uses the offset of [token].
-  void _writeText(String text, Token token,
-      {int? offset, bool mergeEmptySplits = true}) {
+  void _writeText(
+    String text,
+    Token token, {
+    int? offset,
+    bool mergeEmptySplits = true,
+  }) {
     offset ??= token.offset;
 
     builder.write(text, mergeEmptySplits: mergeEmptySplits);

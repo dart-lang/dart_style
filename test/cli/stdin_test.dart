@@ -46,8 +46,10 @@ void main() {
       process.stdin.writeln('herp');
       await process.stdin.close();
 
-      expect(await process.stderr.next,
-          'Could not format because the source could not be parsed:');
+      expect(
+        await process.stderr.next,
+        'Could not format because the source could not be parsed:',
+      );
       expect(await process.stderr.next, '');
       expect(await process.stderr.next, contains(path));
       await process.stderr.cancel();

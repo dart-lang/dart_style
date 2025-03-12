@@ -101,8 +101,11 @@ final class SequenceBuilder {
   /// any comments or blank lines that appear before it.
   void visit(AstNode node, {int? indent, bool allowBlankAfter = true}) {
     addCommentsBefore(node.firstNonCommentToken, indent: indent);
-    add(_visitor.nodePiece(node),
-        indent: indent, allowBlankAfter: allowBlankAfter);
+    add(
+      _visitor.nodePiece(node),
+      indent: indent,
+      allowBlankAfter: allowBlankAfter,
+    );
   }
 
   /// Appends a blank line before the next piece in the sequence.

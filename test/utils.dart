@@ -30,23 +30,27 @@ String? _formatterPath;
 /// subsequent tests and to clean up the executable.
 void compileFormatter() {
   setUpAll(() async {
-    var tempDir =
-        await Directory.systemTemp.createTemp(p.withoutExtension('format'));
+    var tempDir = await Directory.systemTemp.createTemp(
+      p.withoutExtension('format'),
+    );
     _formatterPath = p.join(tempDir.path, 'format.dart.snapshot');
-    var scriptPath =
-        p.normalize(p.join(await findTestDirectory(), '../bin/format.dart'));
+    var scriptPath = p.normalize(
+      p.join(await findTestDirectory(), '../bin/format.dart'),
+    );
 
     var compileResult = await Process.run(Platform.resolvedExecutable, [
       '--snapshot-kind=app-jit',
       '--snapshot=$_formatterPath',
       scriptPath,
-      '--help'
+      '--help',
     ]);
 
     if (compileResult.exitCode != 0) {
-      fail('Could not compile format.dart to a snapshot (exit code '
-          '${compileResult.exitCode}):\n${compileResult.stdout}\n\n'
-          '${compileResult.stderr}');
+      fail(
+        'Could not compile format.dart to a snapshot (exit code '
+        '${compileResult.exitCode}):\n${compileResult.stdout}\n\n'
+        '${compileResult.stderr}',
+      );
     }
   });
 
@@ -66,9 +70,10 @@ Future<TestProcess> runFormatter([List<String>? args]) {
     fail('Must call createCommandExecutable() before running commands.');
   }
 
-  return TestProcess.start(
-      Platform.resolvedExecutable, [_formatterPath!, ...?args],
-      workingDirectory: d.sandbox);
+  return TestProcess.start(Platform.resolvedExecutable, [
+    _formatterPath!,
+    ...?args,
+  ], workingDirectory: d.sandbox);
 }
 
 /// Runs the command-line formatter, passing it the test directory followed by
@@ -96,10 +101,12 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
     for (var benchmark in benchmarks) {
       test(benchmark.name, () {
         var formatter = DartFormatter(
-            languageVersion: useTallStyle
-                ? DartFormatter.latestLanguageVersion
-                : DartFormatter.latestShortStyleLanguageVersion,
-            pageWidth: benchmark.pageWidth);
+          languageVersion:
+              useTallStyle
+                  ? DartFormatter.latestLanguageVersion
+                  : DartFormatter.latestShortStyleLanguageVersion,
+          pageWidth: benchmark.pageWidth,
+        );
 
         var actual = formatter.formatSource(SourceCode(benchmark.input));
 
@@ -115,8 +122,10 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
         // Fail with an explicit message because it's easier to read than
         // the matcher output.
         if (actualText != expected) {
-          fail('Formatting did not match expectation. Expected:\n'
-              '$expected\nActual:\n$actualText');
+          fail(
+            'Formatting did not match expectation. Expected:\n'
+            '$expected\nActual:\n$actualText',
+          );
         }
       });
     }
@@ -128,22 +137,29 @@ void _testFile(TestFile testFile) {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
         var formatter = DartFormatter(
-            languageVersion: formatTest.languageVersion,
-            pageWidth: testFile.pageWidth,
-            indent: formatTest.leadingIndent,
-            experimentFlags: formatTest.experimentFlags);
+          languageVersion: formatTest.languageVersion,
+          pageWidth: testFile.pageWidth,
+          indent: formatTest.leadingIndent,
+          experimentFlags: formatTest.experimentFlags,
+        );
 
         var actual = _validateFormat(
-            formatter,
-            formatTest.input,
-            formatTest.output,
-            'did not match expectation',
-            testFile.isCompilationUnit);
+          formatter,
+          formatTest.input,
+          formatTest.output,
+          'did not match expectation',
+          testFile.isCompilationUnit,
+        );
 
         // Make sure that formatting is idempotent. Format the output and make
         // sure we get the same result.
-        _validateFormat(formatter, actual, actual, 'was not idempotent',
-            testFile.isCompilationUnit);
+        _validateFormat(
+          formatter,
+          actual,
+          actual,
+          'was not idempotent',
+          testFile.isCompilationUnit,
+        );
       });
     }
   });
@@ -154,20 +170,29 @@ void _testFile(TestFile testFile) {
 /// If not, fails with an error using [reason].
 ///
 /// Returns the formatted output.
-SourceCode _validateFormat(DartFormatter formatter, SourceCode input,
-    SourceCode expected, String reason, bool isCompilationUnit) {
+SourceCode _validateFormat(
+  DartFormatter formatter,
+  SourceCode input,
+  SourceCode expected,
+  String reason,
+  bool isCompilationUnit,
+) {
   var actual = formatter.formatSource(input);
 
   // Fail with an explicit message because it's easier to read than
   // the matcher output.
   if (actual.text != expected.text) {
-    fail('Formatting $reason. Expected:\n'
-        '${expected.text}\nActual:\n${actual.text}');
+    fail(
+      'Formatting $reason. Expected:\n'
+      '${expected.text}\nActual:\n${actual.text}',
+    );
   } else if (actual.selectionStart != expected.selectionStart ||
       actual.selectionLength != expected.selectionLength) {
-    fail('Selection $reason. Expected:\n'
-        '${expected.textWithSelectionMarkers}\n'
-        'Actual:\n${actual.textWithSelectionMarkers}');
+    fail(
+      'Selection $reason. Expected:\n'
+      '${expected.textWithSelectionMarkers}\n'
+      'Actual:\n${actual.textWithSelectionMarkers}',
+    );
   }
 
   return actual;
@@ -178,17 +203,20 @@ SourceCode _validateFormat(DartFormatter formatter, SourceCode input,
 ///
 /// If [packages] is given, it should be a map from package names to root URIs
 /// for each package.
-d.DirectoryDescriptor packageConfig(String rootPackageName,
-    {String? version, Map<String, String>? packages}) {
+d.DirectoryDescriptor packageConfig(
+  String rootPackageName, {
+  String? version,
+  Map<String, String>? packages,
+}) {
   var defaultVersion = DartFormatter.latestLanguageVersion;
   version ??= '${defaultVersion.major}.${defaultVersion.minor}';
 
   Map<String, dynamic> package(String name, String rootUri) => {
-        'name': name,
-        'rootUri': rootUri,
-        'packageUri': 'lib/',
-        'languageVersion': version
-      };
+    'name': name,
+    'rootUri': rootUri,
+    'packageUri': 'lib/',
+    'languageVersion': version,
+  };
 
   var config = {
     'configVersion': 2,
@@ -196,7 +224,7 @@ d.DirectoryDescriptor packageConfig(String rootPackageName,
       package(rootPackageName, '../'),
       if (packages != null)
         for (var name in packages.keys) package(name, packages[name]!),
-    ]
+    ],
   };
 
   return d.dir('.dart_tool', [
@@ -210,10 +238,11 @@ d.DirectoryDescriptor packageConfig(String rootPackageName,
 /// specify the page width. If [include] is given, then adds an "include" key
 /// to include another analysis options file. If [other] is given, then those
 /// are added as other top-level keys in the YAML.
-String analysisOptions(
-    {int? pageWidth,
-    Object? /* String | List<String> */ include,
-    Map<String, Object>? other}) {
+String analysisOptions({
+  int? pageWidth,
+  Object? /* String | List<String> */ include,
+  Map<String, Object>? other,
+}) {
   var yaml = StringBuffer();
 
   switch (include) {
@@ -243,8 +272,11 @@ String analysisOptions(
 
 /// Creates a file named "analysis_options.yaml" containing the given YAML
 /// options to configure the [pageWidth] and [include] file, if any.
-d.FileDescriptor analysisOptionsFile(
-    {String name = 'analysis_options.yaml', int? pageWidth, String? include}) {
+d.FileDescriptor analysisOptionsFile({
+  String name = 'analysis_options.yaml',
+  int? pageWidth,
+  String? include,
+}) {
   var yaml = analysisOptions(pageWidth: pageWidth, include: include);
   return d.FileDescriptor(name, yaml.toString());
 }

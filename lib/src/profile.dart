@@ -99,16 +99,21 @@ final class Profile {
     _showTable('Times (ms)', _accumulatedTimes, milliseconds: true);
   }
 
-  static void _showTable(String header, Map<String, int> data,
-      {bool milliseconds = false}) {
+  static void _showTable(
+    String header,
+    Map<String, int> data, {
+    bool milliseconds = false,
+  }) {
     if (data.isEmpty) return;
 
     print('');
     print(header);
 
     var labels = data.keys.toList();
-    var longestLabel =
-        labels.fold(0, (length, label) => max(length, label.length));
+    var longestLabel = labels.fold(
+      0,
+      (length, label) => max(length, label.length),
+    );
 
     for (var label in labels) {
       String value;

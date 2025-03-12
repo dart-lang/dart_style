@@ -51,20 +51,24 @@ final class CaseExpressionPiece extends Piece {
   /// Whether the body expression can be block formatted.
   final bool _canBlockSplitBody;
 
-  CaseExpressionPiece(this._pattern, this._guard, this._arrow, this._body,
-      {required bool canBlockSplitPattern,
-      required bool patternIsLogicalOr,
-      required bool canBlockSplitBody})
-      : _canBlockSplitPattern = canBlockSplitPattern,
-        _patternIsLogicalOr = patternIsLogicalOr,
-        _canBlockSplitBody = canBlockSplitBody;
+  CaseExpressionPiece(
+    this._pattern,
+    this._guard,
+    this._arrow,
+    this._body, {
+    required bool canBlockSplitPattern,
+    required bool patternIsLogicalOr,
+    required bool canBlockSplitBody,
+  }) : _canBlockSplitPattern = canBlockSplitPattern,
+       _patternIsLogicalOr = patternIsLogicalOr,
+       _canBlockSplitBody = canBlockSplitBody;
 
   @override
   List<State> get additionalStates => [
-        if (_canBlockSplitBody) _blockSplitBody,
-        _beforeBody,
-        if (_guard != null) ...[_beforeWhenAndBody],
-      ];
+    if (_canBlockSplitBody) _blockSplitBody,
+    _beforeBody,
+    if (_guard != null) ...[_beforeWhenAndBody],
+  ];
 
   @override
   bool allowNewlineInChild(State state, Piece child) {
@@ -87,7 +91,8 @@ final class CaseExpressionPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     // If there is a split guard, then indent the pattern past it.
-    var indentPatternForGuard = !_canBlockSplitPattern &&
+    var indentPatternForGuard =
+        !_canBlockSplitPattern &&
         !_patternIsLogicalOr &&
         state == _beforeWhenAndBody;
 

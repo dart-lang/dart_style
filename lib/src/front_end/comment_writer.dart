@@ -89,9 +89,11 @@ final class CommentWriter {
 
     // ignore: prefer_const_constructors
     var comments = CommentSequence._([], []);
-    for (Token? comment = token.precedingComments;
-        comment != null;
-        comment = comment.next) {
+    for (
+      Token? comment = token.precedingComments;
+      comment != null;
+      comment = comment.next
+    ) {
       var commentLine = _startLine(comment);
 
       var text = comment.lexeme.trim();
@@ -118,8 +120,12 @@ final class CommentWriter {
         type = CommentType.block;
       }
 
-      var sourceComment = SourceComment(text, type,
-          offset: comment.offset, flushLeft: flushLeft);
+      var sourceComment = SourceComment(
+        text,
+        type,
+        offset: comment.offset,
+        flushLeft: flushLeft,
+      );
 
       comments._add(linesBefore, sourceComment);
 
@@ -166,8 +172,12 @@ final class SourceComment {
   /// Used to track selection markers within the comment.
   final int offset;
 
-  SourceComment(this.text, this.type,
-      {required this.flushLeft, required this.offset});
+  SourceComment(
+    this.text,
+    this.type, {
+    required this.flushLeft,
+    required this.offset,
+  });
 
   /// Whether this comment ends with a mandatory newline, because it's a line
   /// comment or a block comment that should be on its own line.
@@ -313,7 +323,7 @@ final class CommentSequence extends ListBase<SourceComment> {
       _linesBetween[_linesBetween.length - 1] + other._linesBetween[0],
       // Include the remaining newlines of the right sequence.
       for (var i = 1; i < other._linesBetween.length; i++)
-        other._linesBetween[i]
+        other._linesBetween[i],
     ];
 
     var comments = [..._comments, ...other._comments];
@@ -367,13 +377,15 @@ final class CommentSequence extends ListBase<SourceComment> {
 
     return (
       CommentSequence._(
-          // +1 to include the newline after the last comment.
-          _linesBetween.sublist(0, index + 1),
-          _comments.sublist(0, index)),
+        // +1 to include the newline after the last comment.
+        _linesBetween.sublist(0, index + 1),
+        _comments.sublist(0, index),
+      ),
       CommentSequence._(
-          // 0 is the synthesized newline count before the first comment.
-          [0, ..._linesBetween.sublist(index + 1, _linesBetween.length)],
-          _comments.sublist(index, _comments.length))
+        // 0 is the synthesized newline count before the first comment.
+        [0, ..._linesBetween.sublist(index + 1, _linesBetween.length)],
+        _comments.sublist(index, _comments.length),
+      ),
     );
   }
 }

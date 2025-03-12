@@ -51,13 +51,16 @@ void main() {
       0x202f,
       0x205f,
       0x3000,
-      0xfeff
+      0xfeff,
     ];
     for (var rune in whitespaceRunes) {
       expect(
-          equalIgnoringWhitespace(
-              'foo${String.fromCharCode(rune)}bar', 'foo    bar'),
-          isTrue);
+        equalIgnoringWhitespace(
+          'foo${String.fromCharCode(rune)}bar',
+          'foo    bar',
+        ),
+        isTrue,
+      );
     }
   });
 

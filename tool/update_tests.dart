@@ -41,8 +41,10 @@ void main(List<String> arguments) async {
   }
 
   if (_skippedFiles > 0) {
-    print('Skipped $_skippedFiles files '
-        'which contain selections or Unicode escapes');
+    print(
+      'Skipped $_skippedFiles files '
+      'which contain selections or Unicode escapes',
+    );
   }
 }
 
@@ -90,10 +92,11 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   for (var formatTest in testFile.tests) {
     var formatter = DartFormatter(
-        languageVersion: formatTest.languageVersion,
-        pageWidth: testFile.pageWidth,
-        indent: formatTest.leadingIndent,
-        experimentFlags: formatTest.experimentFlags);
+      languageVersion: formatTest.languageVersion,
+      pageWidth: testFile.pageWidth,
+      indent: formatTest.leadingIndent,
+      experimentFlags: formatTest.experimentFlags,
+    );
 
     var actual = formatter.formatSource(formatTest.input);
 
@@ -106,9 +109,10 @@ Future<void> _updateTestFile(TestFile testFile) async {
     // Insert a newline between each test, but not after the last.
     if (formatTest != testFile.tests.first) buffer.writeln();
 
-    var defaultLanguageVersion = p.split(testFile.path).contains('tall')
-        ? DartFormatter.latestLanguageVersion
-        : DartFormatter.latestShortStyleLanguageVersion;
+    var defaultLanguageVersion =
+        p.split(testFile.path).contains('tall')
+            ? DartFormatter.latestLanguageVersion
+            : DartFormatter.latestShortStyleLanguageVersion;
 
     var descriptionParts = [
       for (var experiment in formatTest.experimentFlags)
@@ -117,7 +121,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
       if (formatTest.languageVersion != defaultLanguageVersion)
         '(version ${formatTest.languageVersion.major}.'
             '${formatTest.languageVersion.minor})',
-      formatTest.description
+      formatTest.description,
     ];
 
     buffer.writeln('>>> ${descriptionParts.join(' ')}'.trim());

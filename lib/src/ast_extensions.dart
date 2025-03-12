@@ -10,12 +10,11 @@ extension AstNodeExtensions on AstNode {
   /// When this node is in an argument list, what kind of block formatting
   /// category it belongs to.
   BlockFormat get blockFormatType => switch (this) {
-        AdjacentStrings(indentStrings: true) =>
-          BlockFormat.indentedAdjacentStrings,
-        AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
-        Expression(:var blockFormatType) => blockFormatType,
-        _ => BlockFormat.none,
-      };
+    AdjacentStrings(indentStrings: true) => BlockFormat.indentedAdjacentStrings,
+    AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
+    Expression(:var blockFormatType) => blockFormatType,
+    _ => BlockFormat.none,
+  };
 
   /// The first token at the beginning of this AST node, not including any
   /// tokens for leading doc comments.
@@ -43,7 +42,7 @@ extension AstNodeExtensions on AstNode {
         variables.firstNonCommentToken,
 
       // Otherwise, we don't have to worry about doc comments.
-      _ => beginToken
+      _ => beginToken,
     };
   }
 
@@ -131,9 +130,10 @@ extension AstNodeExtensions on AstNode {
 
     return switch (node.expression) {
       ListLiteral(:var elements, :var rightBracket) ||
-      SetOrMapLiteral(:var elements, :var rightBracket)
-          when elements.canSplit(rightBracket) =>
-        node,
+      SetOrMapLiteral(
+        :var elements,
+        :var rightBracket,
+      ) when elements.canSplit(rightBracket) => node,
       _ => null,
     };
   }
@@ -213,9 +213,10 @@ extension ExpressionExtensions on Expression {
 
       // Non-empty collection literals can block split.
       ListLiteral(:var elements, :var rightBracket) ||
-      SetOrMapLiteral(:var elements, :var rightBracket)
-          when elements.canSplit(rightBracket) =>
-        BlockFormat.collection,
+      SetOrMapLiteral(
+        :var elements,
+        :var rightBracket,
+      ) when elements.canSplit(rightBracket) => BlockFormat.collection,
       RecordLiteral(:var fields, :var rightParenthesis)
           when fields.canSplit(rightParenthesis) =>
         BlockFormat.collection,
@@ -350,24 +351,24 @@ extension CascadeExpressionExtensions on CascadeExpression {
   /// Whether a cascade should be allowed to be inline with the target as
   /// opposed to moving the sections to the next line.
   bool get allowInline => switch (target) {
-        // Cascades with multiple sections always split.
-        _ when cascadeSections.length > 1 => false,
+    // Cascades with multiple sections always split.
+    _ when cascadeSections.length > 1 => false,
 
-        // If the receiver is an expression that makes the cascade's very low
-        // precedence confusing, force it to split. For example:
-        //
-        //     a ? b : c..d();
-        //
-        // Here, the cascade is applied to the result of the conditional, not
-        // just "c".
-        ConditionalExpression() => false,
-        BinaryExpression() => false,
-        PrefixExpression() => false,
-        AwaitExpression() => false,
+    // If the receiver is an expression that makes the cascade's very low
+    // precedence confusing, force it to split. For example:
+    //
+    //     a ? b : c..d();
+    //
+    // Here, the cascade is applied to the result of the conditional, not
+    // just "c".
+    ConditionalExpression() => false,
+    BinaryExpression() => false,
+    PrefixExpression() => false,
+    AwaitExpression() => false,
 
-        // Otherwise, the target doesn't force a split.
-        _ => true,
-      };
+    // Otherwise, the target doesn't force a split.
+    _ => true,
+  };
 }
 
 extension AdjacentStringsExtensions on AdjacentStrings {
@@ -397,15 +398,18 @@ extension AdjacentStringsExtensions on AdjacentStrings {
   /// To balance these, we omit the indentation when an adjacent string
   /// expression is in a context where it's unlikely to be confusing.
   bool get indentStrings {
-    bool hasOtherStringArgument(List<Expression> arguments) => arguments
-        .any((argument) => argument != this && argument is StringLiteral);
+    bool hasOtherStringArgument(List<Expression> arguments) => arguments.any(
+      (argument) => argument != this && argument is StringLiteral,
+    );
 
     return switch (parent) {
       ArgumentList(:var arguments) => hasOtherStringArgument(arguments),
 
       // Treat asserts like argument lists.
-      Assertion(:var condition, :var message) =>
-        hasOtherStringArgument([condition, if (message != null) message]),
+      Assertion(:var condition, :var message) => hasOtherStringArgument([
+        condition,
+        if (message != null) message,
+      ]),
 
       // Don't add extra indentation in a variable initializer or assignment:
       //
@@ -433,24 +437,30 @@ extension PatternExtensions on DartPattern {
   ///
   /// See [ExpressionExtensions.canBlockSplit].
   bool get canBlockSplit => switch (this) {
-        ConstantPattern(:var expression) => expression.canBlockSplit,
-        ListPattern(:var elements, :var rightBracket) =>
-          elements.canSplit(rightBracket),
-        MapPattern(:var elements, :var rightBracket) =>
-          elements.canSplit(rightBracket),
-        ObjectPattern(:var fields, :var rightParenthesis) ||
-        RecordPattern(:var fields, :var rightParenthesis) =>
-          fields.canSplit(rightParenthesis),
-        _ => false,
-      };
+    ConstantPattern(:var expression) => expression.canBlockSplit,
+    ListPattern(:var elements, :var rightBracket) => elements.canSplit(
+      rightBracket,
+    ),
+    MapPattern(:var elements, :var rightBracket) => elements.canSplit(
+      rightBracket,
+    ),
+    ObjectPattern(:var fields, :var rightParenthesis) ||
+    RecordPattern(
+      :var fields,
+      :var rightParenthesis,
+    ) => fields.canSplit(rightParenthesis),
+    _ => false,
+  };
 }
 
 extension TokenExtensions on Token {
   /// Whether this token has a preceding comment that is a line comment.
   bool get hasLineCommentBefore {
-    for (Token? comment = precedingComments;
-        comment != null;
-        comment = comment.next) {
+    for (
+      Token? comment = precedingComments;
+      comment != null;
+      comment = comment.next
+    ) {
       if (comment.type == TokenType.SINGLE_LINE_COMMENT) return true;
     }
 

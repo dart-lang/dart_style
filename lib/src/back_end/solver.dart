@@ -60,11 +60,14 @@ final class Solver {
   /// The first line is indented by [leadingIndent] spaces and all lines after
   /// that are indented by [subsequentIndent]. If [subsequentIndent] is omitted,
   /// defaults to [leadingIndent].
-  Solver(this._cache,
-      {required int pageWidth, int leadingIndent = 0, int? subsequentIndent})
-      : _pageWidth = pageWidth,
-        _leadingIndent = leadingIndent,
-        _subsequentIndent = subsequentIndent ?? leadingIndent;
+  Solver(
+    this._cache, {
+    required int pageWidth,
+    int leadingIndent = 0,
+    int? subsequentIndent,
+  }) : _pageWidth = pageWidth,
+       _leadingIndent = leadingIndent,
+       _subsequentIndent = subsequentIndent ?? leadingIndent;
 
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.
@@ -92,11 +95,14 @@ final class Solver {
       debug.log(debug.pieceTree(root));
     }
 
-    var solution = Solution(_cache, root,
-        pageWidth: _pageWidth,
-        leadingIndent: _leadingIndent,
-        subsequentIndent: _subsequentIndent,
-        rootState: rootState);
+    var solution = Solution(
+      _cache,
+      root,
+      pageWidth: _pageWidth,
+      leadingIndent: _leadingIndent,
+      subsequentIndent: _subsequentIndent,
+      rootState: rootState,
+    );
 
     Profile.begin('Solver enqueue');
     Profile.count('Solver enqueue');
@@ -146,10 +152,13 @@ final class Solver {
 
       // Otherwise, try to expand the solution to explore different splitting
       // options.
-      for (var expanded in solution.expand(_cache, root,
-          pageWidth: _pageWidth,
-          leadingIndent: _leadingIndent,
-          subsequentIndent: _subsequentIndent)) {
+      for (var expanded in solution.expand(
+        _cache,
+        root,
+        pageWidth: _pageWidth,
+        leadingIndent: _leadingIndent,
+        subsequentIndent: _subsequentIndent,
+      )) {
         Profile.count('Solver enqueue');
         _queue.add(expanded);
 

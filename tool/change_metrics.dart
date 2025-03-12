@@ -37,13 +37,13 @@ void main(List<String> arguments) {
   }
 
   print('Getting diff stats...');
-  var result = Process.runSync('git', ['diff', '--shortstat'],
-      // Make sure the user's local Git config doesn't affect the output.
-      environment: {
-        'GIT_CONFIG_NOGLOBAL': 'true',
-        'GIT_CONFIG_NOSYSTEM': 'true',
-      },
-      workingDirectory: directory);
+  var result = Process.runSync(
+    'git',
+    ['diff', '--shortstat'],
+    // Make sure the user's local Git config doesn't affect the output.
+    environment: {'GIT_CONFIG_NOGLOBAL': 'true', 'GIT_CONFIG_NOSYSTEM': 'true'},
+    workingDirectory: directory,
+  );
   if (result.exitCode != 0) {
     print('Git failure:\n${result.stdout}\n${result.stderr}');
     exit(1);
@@ -57,12 +57,16 @@ void main(List<String> arguments) {
   print('$totalLines lines in $totalFiles files');
   print('$insertions insertions + $deletions deletions = $changes changes');
   var linesPerChange = totalLines / changes;
-  print('1 changed line for every ${linesPerChange.toStringAsFixed(2)} '
-      'lines of code');
+  print(
+    '1 changed line for every ${linesPerChange.toStringAsFixed(2)} '
+    'lines of code',
+  );
 
   var changesPerLine = 1000.0 * changes / totalLines;
-  print('${changesPerLine.toStringAsFixed(4)} '
-      'changed lines for every 1,000 lines of code');
+  print(
+    '${changesPerLine.toStringAsFixed(4)} '
+    'changed lines for every 1,000 lines of code',
+  );
 }
 
 int _parseGitStdout(String stdout, String pattern) {

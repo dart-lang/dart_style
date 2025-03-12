@@ -63,9 +63,11 @@ void main(List<String> arguments) async {
 void _runFormatter(String source) {
   try {
     var formatter = DartFormatter(
-        languageVersion: _isShort
-            ? DartFormatter.latestShortStyleLanguageVersion
-            : DartFormatter.latestLanguageVersion);
+      languageVersion:
+          _isShort
+              ? DartFormatter.latestShortStyleLanguageVersion
+              : DartFormatter.latestLanguageVersion,
+    );
 
     var result = formatter.format(source);
 
@@ -82,13 +84,17 @@ void _runFormatter(String source) {
 Future<String> _parseArguments(List<String> arguments) async {
   var argParser = ArgParser();
   argParser.addFlag('help', negatable: false, help: 'Show usage information.');
-  argParser.addFlag('short',
-      abbr: 's',
-      negatable: false,
-      help: 'Whether the formatter should use short or tall style.');
-  argParser.addFlag('aot',
-      negatable: false,
-      help: 'Whether the benchmark should run in AOT mode versus JIT.');
+  argParser.addFlag(
+    'short',
+    abbr: 's',
+    negatable: false,
+    help: 'Whether the formatter should use short or tall style.',
+  );
+  argParser.addFlag(
+    'aot',
+    negatable: false,
+    help: 'Whether the benchmark should run in AOT mode versus JIT.',
+  );
 
   var argResults = argParser.parse(arguments);
   if (argResults['help'] as bool) {

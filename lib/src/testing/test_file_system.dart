@@ -23,7 +23,9 @@ final class TestFileSystem implements FileSystem {
 
   @override
   Future<FileSystemPath> join(
-      covariant TestFileSystemPath from, String to) async {
+    covariant TestFileSystemPath from,
+    String to,
+  ) async {
     // If it's an absolute path, discard [from].
     if (to.startsWith('|')) return TestFileSystemPath(to);
     return TestFileSystemPath('${from._path}|$to');
@@ -31,7 +33,8 @@ final class TestFileSystem implements FileSystem {
 
   @override
   Future<FileSystemPath?> parentDirectory(
-      covariant TestFileSystemPath path) async {
+    covariant TestFileSystemPath path,
+  ) async {
     var parts = path._path.split('|');
     if (parts.length == 1) return null;
 

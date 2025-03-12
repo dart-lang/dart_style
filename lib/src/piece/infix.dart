@@ -24,8 +24,8 @@ final class InfixPiece extends Piece {
   final bool _isConditional;
 
   InfixPiece(this._operands, {bool indent = true, bool conditional = false})
-      : _indent = indent,
-        _isConditional = conditional;
+    : _indent = indent,
+      _isConditional = conditional;
 
   @override
   List<State> get additionalStates => const [State.split];

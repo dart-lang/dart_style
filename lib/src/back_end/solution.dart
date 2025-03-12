@@ -113,19 +113,27 @@ final class Solution implements Comparable<Solution> {
   /// Creates a new [Solution] with no pieces set to any state (which
   /// implicitly means they have state [State.unsplit] unless they're pinned to
   /// another state).
-  factory Solution(SolutionCache cache, Piece root,
-      {required int pageWidth,
-      required int leadingIndent,
-      required int subsequentIndent,
-      State? rootState}) {
+  factory Solution(
+    SolutionCache cache,
+    Piece root, {
+    required int pageWidth,
+    required int leadingIndent,
+    required int subsequentIndent,
+    State? rootState,
+  }) {
     var solution = Solution._(cache, root, 0, {}, {}, rootState);
     solution._format(cache, root, pageWidth, leadingIndent, subsequentIndent);
     return solution;
   }
 
-  Solution._(SolutionCache cache, Piece root, this._cost, this._pieceStates,
-      this._allowedStates,
-      [State? rootState]) {
+  Solution._(
+    SolutionCache cache,
+    Piece root,
+    this._cost,
+    this._pieceStates,
+    this._allowedStates, [
+    State? rootState,
+  ]) {
     Profile.count('create Solution');
 
     // If we're formatting a subtree of a larger Piece tree that binds [root]
@@ -197,10 +205,13 @@ final class Solution implements Comparable<Solution> {
   ///
   /// If there is no potential piece to expand, or all attempts to expand it
   /// fail, returns an empty list.
-  List<Solution> expand(SolutionCache cache, Piece root,
-      {required int pageWidth,
-      required int leadingIndent,
-      required int subsequentIndent}) {
+  List<Solution> expand(
+    SolutionCache cache,
+    Piece root, {
+    required int pageWidth,
+    required int leadingIndent,
+    required int subsequentIndent,
+  }) {
     // If there is no piece that we can expand on this solution, it's a dead
     // end (or a winner).
     if (_expandPieces.isEmpty) return const [];
@@ -215,7 +226,12 @@ final class Solution implements Comparable<Solution> {
       for (var state
           in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
         var expanded = Solution._(
-            cache, root, _cost, {..._pieceStates}, {..._allowedStates});
+          cache,
+          root,
+          _cost,
+          {..._pieceStates},
+          {..._allowedStates},
+        );
 
         // Bind all preceding expand pieces to their unsplit state. Their
         // other states have already been expanded by earlier iterations of
@@ -238,7 +254,12 @@ final class Solution implements Comparable<Solution> {
         // Discard the solution if we hit a constraint violation.
         if (!expanded._isDeadEnd) {
           expanded._format(
-              cache, root, pageWidth, leadingIndent, subsequentIndent);
+            cache,
+            root,
+            pageWidth,
+            leadingIndent,
+            subsequentIndent,
+          );
 
           // TODO(rnystrom): These come mostly (entirely?) from hard newlines
           // in sequences, comments, and multiline strings. It should be
@@ -282,7 +303,7 @@ final class Solution implements Comparable<Solution> {
     var states = [
       for (var MapEntry(key: piece, value: state) in _pieceStates.entries)
         if (piece.additionalStates.isNotEmpty && piece.pinnedState == null)
-          '$piece$state'
+          '$piece$state',
     ];
 
     return [
@@ -295,10 +316,20 @@ final class Solution implements Comparable<Solution> {
 
   /// Run a [CodeWriter] on this solution to produce the final formatted output
   /// and calculate the overflow and expand pieces.
-  void _format(SolutionCache cache, Piece root, int pageWidth,
-      int leadingIndent, int subsequentIndent) {
-    var writer =
-        CodeWriter(pageWidth, leadingIndent, subsequentIndent, cache, this);
+  void _format(
+    SolutionCache cache,
+    Piece root,
+    int pageWidth,
+    int leadingIndent,
+    int subsequentIndent,
+  ) {
+    var writer = CodeWriter(
+      pageWidth,
+      leadingIndent,
+      subsequentIndent,
+      cache,
+      this,
+    );
     writer.format(root);
 
     var (code, expandPieces) = writer.finish();

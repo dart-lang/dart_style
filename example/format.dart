@@ -38,14 +38,20 @@ void _formatUnit(String source, {bool tall = true, int pageWidth = 40}) {
   _runFormatter(source, pageWidth, tall: tall, isCompilationUnit: true);
 }
 
-void _runFormatter(String source, int pageWidth,
-    {required bool tall, required bool isCompilationUnit}) {
+void _runFormatter(
+  String source,
+  int pageWidth, {
+  required bool tall,
+  required bool isCompilationUnit,
+}) {
   try {
     var formatter = DartFormatter(
-        languageVersion: tall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion,
-        pageWidth: pageWidth);
+      languageVersion:
+          tall
+              ? DartFormatter.latestLanguageVersion
+              : DartFormatter.latestShortStyleLanguageVersion,
+      pageWidth: pageWidth,
+    );
 
     String result;
     if (isCompilationUnit) {
@@ -70,16 +76,21 @@ void _drawRuler(String label, int width) {
 
 /// Runs the formatter test starting on [line] at [path] inside the "test"
 /// directory.
-Future<void> _runTest(String path, int line,
-    {int pageWidth = 40, bool tall = true}) async {
+Future<void> _runTest(
+  String path,
+  int line, {
+  int pageWidth = 40,
+  bool tall = true,
+}) async {
   var testFile = await TestFile.read('${tall ? 'tall' : 'short'}/$path');
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
 
   var formatter = DartFormatter(
-      languageVersion: formatTest.languageVersion,
-      pageWidth: testFile.pageWidth,
-      indent: formatTest.leadingIndent,
-      experimentFlags: formatTest.experimentFlags);
+    languageVersion: formatTest.languageVersion,
+    pageWidth: testFile.pageWidth,
+    indent: formatTest.leadingIndent,
+    experimentFlags: formatTest.experimentFlags,
+  );
 
   var actual = formatter.formatSource(formatTest.input);
 

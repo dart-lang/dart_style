@@ -78,15 +78,15 @@ final class DartFormatter {
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  DartFormatter(
-      {required this.languageVersion,
-      this.lineEnding,
-      int? pageWidth,
-      int? indent,
-      List<String>? experimentFlags})
-      : pageWidth = pageWidth ?? defaultPageWidth,
-        indent = indent ?? 0,
-        experimentFlags = [...?experimentFlags];
+  DartFormatter({
+    required this.languageVersion,
+    this.lineEnding,
+    int? pageWidth,
+    int? indent,
+    List<String>? experimentFlags,
+  }) : pageWidth = pageWidth ?? defaultPageWidth,
+       indent = indent ?? 0,
+       experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
@@ -102,8 +102,8 @@ final class DartFormatter {
     };
 
     return formatSource(
-            SourceCode(source, uri: uriString, isCompilationUnit: true))
-        .text;
+      SourceCode(source, uri: uriString, isCompilationUnit: true),
+    ).text;
   }
 
   /// Formats the given [source] string containing a single Dart statement.
@@ -129,22 +129,26 @@ final class DartFormatter {
         text,
         uri: source.uri,
         isCompilationUnit: false,
-        selectionStart: source.selectionStart != null
-            ? source.selectionStart! + inputOffset
-            : null,
+        selectionStart:
+            source.selectionStart != null
+                ? source.selectionStart! + inputOffset
+                : null,
         selectionLength: source.selectionLength,
       );
     }
 
     var featureSet = FeatureSet.fromEnableFlags2(
-        sdkLanguageVersion: languageVersion, flags: experimentFlags);
+      sdkLanguageVersion: languageVersion,
+      flags: experimentFlags,
+    );
 
     // Parse it.
     var parseResult = parseString(
-        content: text,
-        featureSet: featureSet,
-        path: source.uri,
-        throwIfDiagnostics: false);
+      content: text,
+      featureSet: featureSet,
+      path: source.uri,
+      throwIfDiagnostics: false,
+    );
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
@@ -161,9 +165,10 @@ final class DartFormatter {
     }
 
     // Throw if there are syntactic errors.
-    var syntacticErrors = parseResult.errors.where((error) {
-      return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
-    }).toList();
+    var syntacticErrors =
+        parseResult.errors.where((error) {
+          return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
+        }).toList();
     if (syntacticErrors.isNotEmpty) {
       throw FormatterException(syntacticErrors);
     }
@@ -181,11 +186,12 @@ final class DartFormatter {
       if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
         var stringSource = StringSource(text, source.uri);
         var error = AnalysisError.tmp(
-            source: stringSource,
-            offset: token.offset - inputOffset,
-            length: math.max(token.length, 1),
-            errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
-            arguments: [token.lexeme]);
+          source: stringSource,
+          offset: token.offset - inputOffset,
+          length: math.max(token.length, 1),
+          errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
+          arguments: [token.lexeme],
+        );
         throw FormatterException([error]);
       }
     }
@@ -204,9 +210,11 @@ final class DartFormatter {
     if (sourceLanguageVersion > latestShortStyleLanguageVersion) {
       // Look for a page width comment before the code.
       int? pageWidthFromComment;
-      for (Token? comment = node.beginToken.precedingComments;
-          comment != null;
-          comment = comment.next) {
+      for (
+        Token? comment = node.beginToken.precedingComments;
+        comment != null;
+        comment = comment.next
+      ) {
         if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
           // If integer parsing fails for some reason, the returned `null`
           // means we correctly ignore the comment.

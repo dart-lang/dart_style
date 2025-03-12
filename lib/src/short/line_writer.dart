@@ -43,14 +43,19 @@ final class LineWriter {
   int get length => _buffer.length;
 
   LineWriter(DartFormatter formatter, this._chunks)
-      : _lineEnding = formatter.lineEnding!,
-        pageWidth = formatter.pageWidth,
-        _blockIndentation = 0,
-        _blockCache = {};
+    : _lineEnding = formatter.lineEnding!,
+      pageWidth = formatter.pageWidth,
+      _blockIndentation = 0,
+      _blockCache = {};
 
   /// Creates a line writer for a block.
-  LineWriter._(this._chunks, this._lineEnding, this.pageWidth,
-      this._blockIndentation, this._blockCache);
+  LineWriter._(
+    this._chunks,
+    this._lineEnding,
+    this.pageWidth,
+    this._blockIndentation,
+    this._blockCache,
+  );
 
   /// Gets the results of formatting the child block of [chunk] at starting
   /// [column].
@@ -75,7 +80,12 @@ final class LineWriter {
     if (cached != null) return cached;
 
     var writer = LineWriter._(
-        chunk.children, _lineEnding, pageWidth, column, _blockCache);
+      chunk.children,
+      _lineEnding,
+      pageWidth,
+      column,
+      _blockCache,
+    );
     return _blockCache[key] = writer.writeLines();
   }
 
@@ -106,7 +116,11 @@ final class LineWriter {
     if (isCompilationUnit) _buffer.write(_lineEnding);
 
     return FormatResult(
-        _buffer.toString(), totalCost, _selectionStart, _selectionEnd);
+      _buffer.toString(),
+      totalCost,
+      _selectionStart,
+      _selectionEnd,
+    );
   }
 
   /// Takes the chunks from [start] to [end], removes them, and runs the

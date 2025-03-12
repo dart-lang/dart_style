@@ -15,7 +15,10 @@ import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
 Future<void> formatStdin(
-    FormatterOptions options, List<int>? selection, String? path) async {
+  FormatterOptions options,
+  List<int>? selection,
+  String? path,
+) async {
   var selectionStart = 0;
   var selectionLength = 0;
 
@@ -51,21 +54,29 @@ Future<void> formatStdin(
 
   var completer = Completer<void>();
   var input = StringBuffer();
-  stdin.transform(const Utf8Decoder()).listen(input.write, onDone: () {
+
+  void onDone() {
     var formatter = DartFormatter(
-        languageVersion: languageVersion!,
-        indent: options.indent,
-        pageWidth: pageWidth,
-        experimentFlags: options.experimentFlags);
+      languageVersion: languageVersion!,
+      indent: options.indent,
+      pageWidth: pageWidth,
+      experimentFlags: options.experimentFlags,
+    );
     try {
       options.beforeFile(null, name);
-      var source = SourceCode(input.toString(),
-          uri: path,
-          selectionStart: selectionStart,
-          selectionLength: selectionLength);
+      var source = SourceCode(
+        input.toString(),
+        uri: path,
+        selectionStart: selectionStart,
+        selectionLength: selectionLength,
+      );
       var output = formatter.formatSource(source);
-      options.afterFile(null, name, output,
-          changed: source.text != output.text);
+      options.afterFile(
+        null,
+        name,
+        output,
+        changed: source.text != output.text,
+      );
     } on FormatterException catch (err) {
       stderr.writeln(err.message());
       exitCode = 65; // sysexits.h: EX_DATAERR
@@ -78,7 +89,9 @@ $stack''');
     }
 
     completer.complete();
-  });
+  }
+
+  stdin.transform(const Utf8Decoder()).listen(input.write, onDone: onDone);
 
   return completer.future;
 }
@@ -115,11 +128,16 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
 /// Returns `true` if successful or `false` if an error occurred in any of the
 /// files.
 Future<bool> _processDirectory(
-    ConfigCache cache, FormatterOptions options, Directory directory) async {
+  ConfigCache cache,
+  FormatterOptions options,
+  Directory directory,
+) async {
   var success = true;
 
-  var entries =
-      directory.listSync(recursive: true, followLinks: options.followLinks);
+  var entries = directory.listSync(
+    recursive: true,
+    followLinks: options.followLinks,
+  );
   entries.sort((a, b) => a.path.compareTo(b.path));
 
   for (var entry in entries) {
@@ -131,8 +149,12 @@ Future<bool> _processDirectory(
     var parts = p.split(p.relative(entry.path, from: directory.path));
     if (parts.any((part) => part.startsWith('.'))) continue;
 
-    if (!await _processFile(cache, options, entry,
-        displayPath: p.normalize(entry.path))) {
+    if (!await _processFile(
+      cache,
+      options,
+      entry,
+      displayPath: p.normalize(entry.path),
+    )) {
       success = false;
     }
   }
@@ -144,12 +166,16 @@ Future<bool> _processDirectory(
 ///
 /// Returns `true` if successful or `false` if an error occurred.
 Future<bool> _processFile(
-    ConfigCache cache, FormatterOptions options, File file,
-    {String? displayPath}) async {
+  ConfigCache cache,
+  FormatterOptions options,
+  File file, {
+  String? displayPath,
+}) async {
   displayPath ??= file.path;
 
   // Determine what language version to use.
-  var languageVersion = options.languageVersion ??
+  var languageVersion =
+      options.languageVersion ??
       await cache.findLanguageVersion(file, displayPath);
 
   // If they didn't specify a version and we couldn't find a surrounding
@@ -164,20 +190,26 @@ Future<bool> _processFile(
   pageWidth ??= DartFormatter.defaultPageWidth;
 
   var formatter = DartFormatter(
-      languageVersion: languageVersion,
-      indent: options.indent,
-      pageWidth: pageWidth,
-      experimentFlags: options.experimentFlags);
+    languageVersion: languageVersion,
+    indent: options.indent,
+    pageWidth: pageWidth,
+    experimentFlags: options.experimentFlags,
+  );
 
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);
     options.beforeFile(file, displayPath);
     var output = formatter.formatSource(source);
-    options.afterFile(file, displayPath, output,
-        changed: source.text != output.text);
+    options.afterFile(
+      file,
+      displayPath,
+      output,
+      changed: source.text != output.text,
+    );
     return true;
   } on FormatterException catch (err) {
-    var color = Platform.operatingSystem != 'windows' &&
+    var color =
+        Platform.operatingSystem != 'windows' &&
         stdioType(stderr) == StdioType.terminal;
 
     stderr.writeln(err.message(color: color));

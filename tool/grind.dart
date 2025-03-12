@@ -31,7 +31,8 @@ Future<void> validate() async {
 Future<void> patch() async {
   var version = _readVersion();
   _updateVersion(
-      Version(version.major, version.minor, version.patch + 1, pre: 'wip'));
+    Version(version.major, version.minor, version.patch + 1, pre: 'wip'),
+  );
 }
 
 /// Increments the minor version of the current version.
@@ -113,8 +114,9 @@ void _updateVersion(Version version) {
   var withoutPrerelease = Version(version.major, version.minor, version.patch);
   var versionFile = getFile('lib/src/cli/formatter_options.dart');
   var versionSource = versionFile.readAsStringSync().replaceAll(
-      RegExp(r"const dartStyleVersion = '[^']+';"),
-      "const dartStyleVersion = '$withoutPrerelease';");
+    RegExp(r"const dartStyleVersion = '[^']+';"),
+    "const dartStyleVersion = '$withoutPrerelease';",
+  );
   versionFile.writeAsStringSync(versionSource);
 
   log("Updated version to '$version'.");

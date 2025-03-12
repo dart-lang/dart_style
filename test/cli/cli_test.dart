@@ -18,16 +18,22 @@ void main() {
       await d.dir('code', [
         d.file('a.dart', unformattedSource),
         d.file('b.dart', formattedSource),
-        d.file('c.dart', unformattedSource)
+        d.file('c.dart', unformattedSource),
       ]).create();
 
       var process = await runFormatterOnDir();
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'a.dart')}');
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'a.dart')}',
+      );
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
-      expect(await process.stdout.next,
-          startsWith(r'Formatted 3 files (2 changed)'));
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'c.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        startsWith(r'Formatted 3 files (2 changed)'),
+      );
       await process.shouldExit(0);
 
       // Overwrites the files.
@@ -37,30 +43,34 @@ void main() {
 
     test('formats multiple paths', () async {
       await d.dir('code', [
-        d.dir('subdir', [
-          d.file('a.dart', unformattedSource),
-        ]),
+        d.dir('subdir', [d.file('a.dart', unformattedSource)]),
         d.file('b.dart', unformattedSource),
-        d.file('c.dart', unformattedSource)
+        d.file('c.dart', unformattedSource),
       ]).create();
 
-      var process = await runFormatter(
-          [p.join('code', 'subdir'), p.join('code', 'c.dart')]);
-      expect(await process.stdout.next,
-          'Formatted ${p.join('code', 'subdir', 'a.dart')}');
+      var process = await runFormatter([
+        p.join('code', 'subdir'),
+        p.join('code', 'c.dart'),
+      ]);
       expect(
-          await process.stdout.next, 'Formatted ${p.join('code', 'c.dart')}');
-      expect(await process.stdout.next,
-          startsWith(r'Formatted 2 files (2 changed)'));
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'subdir', 'a.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        'Formatted ${p.join('code', 'c.dart')}',
+      );
+      expect(
+        await process.stdout.next,
+        startsWith(r'Formatted 2 files (2 changed)'),
+      );
       await process.shouldExit(0);
 
       // Overwrites the selected files.
       await d.dir('code', [
-        d.dir('subdir', [
-          d.file('a.dart', formattedSource),
-        ]),
+        d.dir('subdir', [d.file('a.dart', formattedSource)]),
         d.file('b.dart', unformattedSource),
-        d.file('c.dart', formattedSource)
+        d.file('c.dart', formattedSource),
       ]).validate();
     });
   });
@@ -89,7 +99,9 @@ void main() {
     test('non-verbose shows description and common options', () async {
       var process = await runFormatter(['--help']);
       expect(
-          await process.stdout.next, 'Idiomatically format Dart source code.');
+        await process.stdout.next,
+        'Idiomatically format Dart source code.',
+      );
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, neverEmits(contains('--summary')));
       await process.shouldExit(0);
@@ -98,7 +110,9 @@ void main() {
     test('verbose shows description and all options', () async {
       var process = await runFormatter(['--help', '--verbose']);
       expect(
-          await process.stdout.next, 'Idiomatically format Dart source code.');
+        await process.stdout.next,
+        'Idiomatically format Dart source code.',
+      );
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, emitsThrough(contains('--show')));
       await expectLater(process.stdout, emitsThrough(contains('--summary')));
@@ -153,8 +167,10 @@ void main() {
     test('gives exit code 1 if there are changes when not writing', () async {
       await d.dir('code', [d.file('a.dart', unformattedSource)]).create();
 
-      var process =
-          await runFormatterOnDir(['--set-exit-if-changed', '--show=none']);
+      var process = await runFormatterOnDir([
+        '--set-exit-if-changed',
+        '--show=none',
+      ]);
       await process.shouldExit(1);
     });
   });
@@ -186,7 +202,7 @@ void main() {
       var json = jsonEncode({
         'path': 'stdin',
         'source': formattedSource,
-        'selection': {'offset': 5, 'length': 9}
+        'selection': {'offset': 5, 'length': 9},
       });
 
       expect(await process.stdout.next, json);
@@ -196,8 +212,9 @@ void main() {
 
   group('--enable-experiment', () {
     test('passes experiment flags to parser', () async {
-      var process =
-          await runFormatter(['--enable-experiment=test-experiment,variance']);
+      var process = await runFormatter([
+        '--enable-experiment=test-experiment,variance',
+      ]);
       process.stdin.writeln('class Writer<in T> {}');
       await process.stdin.close();
 
@@ -205,12 +222,18 @@ void main() {
       // but we want to test that the experiment flags are passed all the way
       // to the parser, so just test that it parses the variance annotation
       // without errors and then fails to format.
-      expect(await process.stderr.next,
-          'Hit a bug in the formatter when formatting stdin.');
-      expect(await process.stderr.next,
-          'Please report at: github.com/dart-lang/dart_style/issues');
-      expect(await process.stderr.next,
-          'The formatter produced unexpected output. Input was:');
+      expect(
+        await process.stderr.next,
+        'Hit a bug in the formatter when formatting stdin.',
+      );
+      expect(
+        await process.stderr.next,
+        'Please report at: github.com/dart-lang/dart_style/issues',
+      );
+      expect(
+        await process.stderr.next,
+        'The formatter produced unexpected output. Input was:',
+      );
       expect(await process.stderr.next, 'class Writer<in T> {}');
       expect(await process.stderr.next, '');
       expect(await process.stderr.next, 'Which formatted to:');

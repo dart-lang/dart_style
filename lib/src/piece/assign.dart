@@ -128,24 +128,26 @@ final class AssignPiece extends Piece {
   ///     );
   final bool _avoidBlockSplitRight;
 
-  AssignPiece(this._operator, this._right,
-      {Piece? left,
-      bool canBlockSplitLeft = false,
-      bool canBlockSplitRight = false,
-      bool avoidBlockSplitRight = false})
-      : _left = left,
-        _canBlockSplitLeft = canBlockSplitLeft,
-        _canBlockSplitRight = canBlockSplitRight,
-        _avoidBlockSplitRight = avoidBlockSplitRight;
+  AssignPiece(
+    this._operator,
+    this._right, {
+    Piece? left,
+    bool canBlockSplitLeft = false,
+    bool canBlockSplitRight = false,
+    bool avoidBlockSplitRight = false,
+  }) : _left = left,
+       _canBlockSplitLeft = canBlockSplitLeft,
+       _canBlockSplitRight = canBlockSplitRight,
+       _avoidBlockSplitRight = avoidBlockSplitRight;
 
   @override
   List<State> get additionalStates => [
-        // If at least one operand can block split, allow splitting in operands
-        // without splitting at the operator.
-        if (_canBlockSplitLeft) _blockSplitLeft,
-        if (_canBlockSplitRight) _blockSplitRight,
-        _atOperator,
-      ];
+    // If at least one operand can block split, allow splitting in operands
+    // without splitting at the operator.
+    if (_canBlockSplitLeft) _blockSplitLeft,
+    if (_canBlockSplitRight) _blockSplitRight,
+    _atOperator,
+  ];
 
   @override
   int stateCost(State state) {
