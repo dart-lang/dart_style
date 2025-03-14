@@ -50,7 +50,7 @@ void main() {
     });
   });
 
-  test('no options search if page width is specified on the CLI', () async {
+  test('ignore options file if page width specified on the CLI', () async {
     await d.dir('foo', [
       analysisOptionsFile(pageWidth: 20),
       d.file('main.dart', _unformatted),
@@ -157,7 +157,7 @@ void main() {
       await process.shouldExit(0);
     });
 
-    test('no options search if page width is specified', () async {
+    test('ignore options file if page width is specified', () async {
       await d.dir('foo', [
         analysisOptionsFile(pageWidth: 20),
         d.file('main.dart', _unformatted),

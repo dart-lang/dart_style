@@ -7,11 +7,13 @@ import 'dart:isolate';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
-import '../../dart_style.dart';
+import '../dart_formatter.dart';
+import '../source_code.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _versionPattern = RegExp(r'\(version (\d+)\.(\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
+final _preserveTrailingCommasPattern = RegExp(r'\(trailing_commas preserve\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -74,6 +76,15 @@ final class TestFile {
       i++;
     }
 
+    // Optional line to configure options for all tests in the file.
+    TestOptions fileOptions;
+    if (!lines[i].startsWith('###') && !lines[i].startsWith('>>>')) {
+      (fileOptions, _) = _parseOptions(lines[i]);
+      i++;
+    } else {
+      fileOptions = TestOptions(null, null, null, const []);
+    }
+
     var tests = <FormatTest>[];
 
     List<String> readComments() {
@@ -92,36 +103,8 @@ final class TestFile {
 
     while (i < lines.length) {
       var lineNumber = i + 1;
-      var description = readLine().replaceAll('>>>', '');
-
-      // Let the test specify a leading indentation. This is handy for
-      // regression tests which often come from a chunk of nested code.
-      var leadingIndent = 0;
-      description = description.replaceAllMapped(_indentPattern, (match) {
-        leadingIndent = int.parse(match[1]!);
-        return '';
-      });
-
-      // Let the test specify a language version to parse it at. If not, use
-      // a default version for the style being tested.
-      var languageVersion =
-          p.split(file.path).contains('tall')
-              ? DartFormatter.latestLanguageVersion
-              : DartFormatter.latestShortStyleLanguageVersion;
-      description = description.replaceAllMapped(_versionPattern, (match) {
-        var major = int.parse(match[1]!);
-        var minor = int.parse(match[2]!);
-        languageVersion = Version(major, minor, 0);
-        return '';
-      });
-
-      // Let the test enable experiments for features that are supported but not
-      // released yet.
-      var experiments = <String>[];
-      description = description.replaceAllMapped(_experimentPattern, (match) {
-        experiments.add(match[1]!);
-        return '';
-      });
+      var line = readLine().replaceAll('>>>', '');
+      var (options, description) = _parseOptions(line);
 
       var inputComments = readComments();
 
@@ -175,19 +158,71 @@ final class TestFile {
           description.trim(),
           outputDescription.trim(),
           lineNumber,
-          languageVersion,
-          leadingIndent,
-          experiments,
+          options,
           inputComments,
           outputComments,
         ),
       );
     }
 
-    return TestFile._(relativePath, pageWidth, fileComments, tests);
+    return TestFile._(
+      relativePath,
+      pageWidth,
+      fileOptions,
+      fileComments,
+      tests,
+    );
   }
 
-  TestFile._(this.path, this.pageWidth, this.comments, this.tests);
+  /// Parses all of the test option syntax like `(indent 3)` from [line].
+  ///
+  /// Returns the options and the text remaining on the line after the options
+  /// are removed.
+  static (TestOptions, String) _parseOptions(String line) {
+    // Let the test specify a language version to parse it at.
+    Version? languageVersion;
+    line = line.replaceAllMapped(_versionPattern, (match) {
+      var major = int.parse(match[1]!);
+      var minor = int.parse(match[2]!);
+      languageVersion = Version(major, minor, 0);
+      return '';
+    });
+
+    // Let the test specify a leading indentation. This is handy for
+    // regression tests which often come from a chunk of nested code.
+    int? leadingIndent;
+    line = line.replaceAllMapped(_indentPattern, (match) {
+      leadingIndent = int.parse(match[1]!);
+      return '';
+    });
+
+    // Let the test enable experiments for features that are supported but not
+    // released yet.
+    var experiments = <String>[];
+    line = line.replaceAllMapped(_experimentPattern, (match) {
+      experiments.add(match[1]!);
+      return '';
+    });
+
+    TrailingCommas? trailingCommas;
+    line = line.replaceAllMapped(_preserveTrailingCommasPattern, (match) {
+      trailingCommas = TrailingCommas.preserve;
+      return '';
+    });
+
+    return (
+      TestOptions(languageVersion, leadingIndent, trailingCommas, experiments),
+      line,
+    );
+  }
+
+  TestFile._(
+    this.path,
+    this.pageWidth,
+    this.options,
+    this.comments,
+    this.tests,
+  );
 
   /// The path to the test file, relative to the `test/` directory.
   final String path;
@@ -195,6 +230,9 @@ final class TestFile {
   /// The page width for tests in this file or `null` if the default should be
   /// used.
   final int? pageWidth;
+
+  /// The default options used by all tests in this file.
+  final TestOptions options;
 
   /// The `###` comment lines at the beginning of the test file before any
   /// tests.
@@ -204,6 +242,32 @@ final class TestFile {
   final List<FormatTest> tests;
 
   bool get isCompilationUnit => path.endsWith('.unit');
+
+  /// Creates a [DartFormatter] configured with all of the options that should
+  /// be applied for [test] in this test file.
+  DartFormatter formatterForTest(FormatTest test) {
+    var defaultLanguageVersion =
+        p.split(path).contains('tall')
+            ? DartFormatter.latestLanguageVersion
+            : DartFormatter.latestShortStyleLanguageVersion;
+
+    return DartFormatter(
+      languageVersion:
+          test.options.languageVersion ??
+          options.languageVersion ??
+          defaultLanguageVersion,
+      pageWidth: pageWidth,
+      indent: test.options.leadingIndent ?? options.leadingIndent ?? 0,
+      experimentFlags: [
+        ...options.experimentFlags,
+        ...test.options.experimentFlags,
+      ],
+      trailingCommas:
+          test.options.trailingCommas ??
+          options.trailingCommas ??
+          TrailingCommas.automate,
+    );
+  }
 }
 
 /// A single formatting test inside a [TestFile].
@@ -230,15 +294,8 @@ final class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
-  /// The language version the test code should be parsed at.
-  final Version languageVersion;
-
-  /// The number of spaces of leading indentation that should be added to each
-  /// line.
-  final int leadingIndent;
-
-  /// Experiments that should be enabled when running this test.
-  final List<String> experimentFlags;
+  /// The options specific to this test.
+  final TestOptions options;
 
   FormatTest(
     this.input,
@@ -246,9 +303,7 @@ final class FormatTest {
     this.description,
     this.outputDescription,
     this.line,
-    this.languageVersion,
-    this.leadingIndent,
-    this.experimentFlags,
+    this.options,
     this.inputComments,
     this.outputComments,
   );
@@ -258,6 +313,29 @@ final class FormatTest {
     if (description.isEmpty) return 'line $line';
     return 'line $line: $description';
   }
+}
+
+/// Options for configuring all tests in a file or an individual test.
+final class TestOptions {
+  /// The language version the test code should be parsed at.
+  final Version? languageVersion;
+
+  /// The number of spaces of leading indentation that should be added to each
+  /// line.
+  final int? leadingIndent;
+
+  /// The trailing comma handling configuration.
+  final TrailingCommas? trailingCommas;
+
+  /// Experiments that should be enabled when running this test.
+  final List<String> experimentFlags;
+
+  TestOptions(
+    this.languageVersion,
+    this.leadingIndent,
+    this.trailingCommas,
+    this.experimentFlags,
+  );
 }
 
 extension SourceCodeExtensions on SourceCode {

@@ -1,0 +1,21 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+map = {a:1,};
+<<<
+map = {
+  a: 1,
+};
+>>> Doesn't force split without trailing comma.
+map = {a:1,b:2,c:3};
+<<<
+map = {a: 1, b: 2, c: 3};
+>>> May still split without trailing comma if doesn't fit.
+map = {a: value1, b: value2, c: value3, d: value4};
+<<<
+map = {
+  a: value1,
+  b: value2,
+  c: value3,
+  d: value4,
+};

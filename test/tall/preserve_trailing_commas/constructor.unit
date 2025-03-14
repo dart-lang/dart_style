@@ -1,0 +1,80 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Parameter list splits with trailing comma.
+class A {
+  A(int x,);
+}
+<<<
+class A {
+  A(
+    int x,
+  );
+}
+>>> Doesn't force split parameter list without trailing comma.
+class A {
+  A(int x, int y);
+}
+<<<
+class A {
+  A(int x, int y);
+}
+>>> May still split without trailing comma if doesn't fit.
+class A {
+  A(int parameter1, int parameter2, int parameter3);
+}
+<<<
+class A {
+  A(
+    int parameter1,
+    int parameter2,
+    int parameter3,
+  );
+}
+>>> Parameter list splits with trailing comma after optional parameter.
+class A {
+  A(int x, [int y,]);
+}
+<<<
+class A {
+  A(
+    int x, [
+    int y,
+  ]);
+}
+>>> Parameter list splits with trailing comma after named parameter.
+class A {
+  A(int x, {int y,});
+}
+<<<
+class A {
+  A(
+    int x, {
+    int y,
+  });
+}
+>>> Redirecting constructor argument list splits with trailing comma.
+class A {
+  A(int x) : this.named(x,);
+  A.named(int x) : this(x,);
+}
+<<<
+class A {
+  A(int x)
+    : this.named(
+        x,
+      );
+  A.named(int x)
+    : this(
+        x,
+      );
+}
+>>> Doesn't force split redirecting constructor argument list without trailing comma.
+class A {
+  A(int x) : this.named(x);
+  A.named(int x) : this(x);
+}
+<<<
+class A {
+  A(int x) : this.named(x);
+  A.named(int x) : this(x);
+}

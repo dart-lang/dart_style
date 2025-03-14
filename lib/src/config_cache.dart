@@ -9,13 +9,14 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'analysis_options/analysis_options_file.dart';
 import 'analysis_options/io_file_system.dart';
+import 'dart_formatter.dart';
 import 'profile.dart';
 
 /// Caches the nearest surrounding package config file for files in directories.
 ///
 /// The formatter reads `.dart_tool/package_config.json` files in order to
 /// determine the default language version of files in that package and to
-/// resolve "package:" URIs in `analysis_options.yaml` files.
+/// resolve "package:" URIs in "analysis_options.yaml" files.
 ///
 /// Walking the file system to find the package config and then reading it off
 /// disk is very slow. We know that every formatted file in the same directory
@@ -40,13 +41,9 @@ final class ConfigCache {
   /// discovered that there is no surrounding package.
   final Map<String, Version?> _directoryVersions = {};
 
-  /// The previously cached page width for all files immediately within a given
-  /// directory.
-  ///
-  /// The width may be `null` if we formatted a file in that directory and
-  /// discovered that there is no surrounding analysis options that sets a
-  /// page width.
-  final Map<String, int?> _directoryPageWidths = {};
+  /// The previously cached configured options for all files immediately within
+  /// a given directory.
+  final Map<String, _FormatterOptions> _directoryOptions = {};
 
   final IOFileSystem _fileSystem = IOFileSystem();
 
@@ -89,23 +86,57 @@ final class ConfigCache {
   ///     formatter:
   ///       page_width: 123
   Future<int?> findPageWidth(File file) async {
-    // Use the cached version (which may be `null`) if present.
+    return (await _findFormatterOptions(file)).pageWidth;
+  }
+
+  /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
+  /// found and valid, returns the trailing comma handling specified by that
+  /// config file.
+  ///
+  /// Otherwise returns `null`.
+  ///
+  /// The schema looks like:
+  ///
+  ///     formatter:
+  ///       trailing_commas: preserve # Or "automate".
+  Future<TrailingCommas?> findTrailingCommas(File file) async {
+    return (await _findFormatterOptions(file)).trailingCommas;
+  }
+
+  /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
+  /// found and valid, returns the configured options.
+  ///
+  /// If no options file could be found or it doesn't contain a "formatter" key
+  /// whose value is a map, returns a default set of options where all settings
+  /// are `null`.
+  Future<_FormatterOptions> _findFormatterOptions(File file) async {
+    // Use the cached version if present.
     var directory = file.parent.path;
-    if (_directoryPageWidths.containsKey(directory)) {
-      return _directoryPageWidths[directory];
-    }
+    if (_directoryOptions[directory] case var options?) return options;
+
+    int? pageWidth;
+    TrailingCommas? trailingCommas;
 
     try {
-      // Look for a surrounding analysis_options.yaml file.
-      var options = await findAnalysisOptions(
+      // Look for a surrounding "analysis_options.yaml" file.
+      var optionsFile = await findAnalysisOptions(
         _fileSystem,
         await _fileSystem.makePath(file.path),
         resolvePackageUri: (uri) => _resolvePackageUri(file, uri),
       );
 
-      if (options['formatter'] case Map<Object?, Object?> formatter) {
-        if (formatter['page_width'] case int pageWidth) {
-          return _directoryPageWidths[directory] = pageWidth;
+      if (optionsFile['formatter'] case Map<Object?, Object?> formatter) {
+        if (formatter case {'page_width': int width}) {
+          pageWidth = width;
+        }
+
+        if (formatter case {'trailing_commas': String commas}) {
+          trailingCommas = switch (commas) {
+            'automate' => TrailingCommas.automate,
+            'preserve' => TrailingCommas.preserve,
+            // Silently ignore any unrecognized name.
+            _ => null,
+          };
         }
       }
     } on PackageResolutionException {
@@ -114,10 +145,11 @@ final class ConfigCache {
       // and keep going.
     }
 
-    // If we get here, the options file either doesn't specify the page width,
-    // or specifies it in some invalid way. When that happens, silently ignore
-    // the config file and use the default width.
-    return _directoryPageWidths[directory] = null;
+    // Cache whichever options we found (or `null` if we didn't find them).
+    return _directoryOptions[directory] = _FormatterOptions(
+      pageWidth,
+      trailingCommas,
+    );
   }
 
   /// Look for and cache the nearest package surrounding [file].
@@ -175,4 +207,18 @@ final class ConfigCache {
 
     return config.resolve(packageUri)?.toFilePath();
   }
+}
+
+/// The formatter options that can be configured in the "analysis_options.yaml"
+/// file.
+final class _FormatterOptions {
+  /// The configured page width, or `null` if there is no options file or the
+  /// options file doesn't specify it.
+  final int? pageWidth;
+
+  /// The configured comma handling, or `null` if there is no options file or
+  /// the options file doesn't specify it.
+  final TrailingCommas? trailingCommas;
+
+  _FormatterOptions(this.pageWidth, this.trailingCommas);
 }

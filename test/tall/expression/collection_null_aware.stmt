@@ -1,25 +1,26 @@
 40 columns                              |
->>> (experiment null-aware-elements) List element.
+(experiment null-aware-elements)
+>>> List element.
 var list = [  ?  x  ];
 <<<
 var list = [?x];
->>> (experiment null-aware-elements) Set element.
+>>> Set element.
 var set = {  ?  x  };
 <<<
 var set = {?x};
->>> (experiment null-aware-elements) Map key.
+>>> Map key.
 var map = {  ?  key  : value};
 <<<
 var map = {?key: value};
->>> (experiment null-aware-elements) Map value.
+>>> Map value.
 var map = { key:  ?  value  };
 <<<
 var map = {key: ?value};
->>> (experiment null-aware-elements) Both key and value.
+>>> Both key and value.
 var map = {  ?  key  :  ?  value  };
 <<<
 var map = {?key: ?value};
->>> (experiment null-aware-elements) Split inside element.
+>>> Split inside element.
 var list = [?(veryLongExpression +thatIsForcedToSplit)];
 <<<
 var list = [

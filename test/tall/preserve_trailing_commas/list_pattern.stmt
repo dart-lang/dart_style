@@ -1,0 +1,21 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+var [x,] = list;
+<<<
+var [
+  x,
+] = list;
+>>> Doesn't force split without trailing comma.
+var [x,y,z] = list;
+<<<
+var [x, y, z] = list;
+>>> May still split without trailing comma if doesn't fit.
+var [element1, element2, element3, element4] = list;
+<<<
+var [
+  element1,
+  element2,
+  element3,
+  element4,
+] = list;

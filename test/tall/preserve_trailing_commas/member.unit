@@ -1,0 +1,38 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces parameter list to split with trailing comma.
+class Foo {
+  method(int x,) {}
+  static staticMethod(int x,) {}
+  set setter(int x,) {}
+  operator +(int x,) {}
+}
+<<<
+class Foo {
+  method(
+    int x,
+  ) {}
+  static staticMethod(
+    int x,
+  ) {}
+  set setter(
+    int x,
+  ) {}
+  operator +(
+    int x,
+  ) {}
+}
+>>> Doesn't force split without trailing comma.
+class Foo {
+  method(int x) {}
+  static staticMethod(int x) {}
+  set setter(int x) {}
+  operator +(int x) {}
+}
+<<<
+class Foo {
+  method(int x) {}
+  static staticMethod(int x) {}
+  set setter(int x) {}
+  operator +(int x) {}
+}

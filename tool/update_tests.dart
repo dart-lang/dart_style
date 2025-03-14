@@ -85,18 +85,19 @@ Future<void> _updateTestFile(TestFile testFile) async {
     buffer.writeln('|');
   }
 
+  // Write the file level options.
+  if (_optionStrings(testFile.options) case var options
+      when options.isNotEmpty) {
+    buffer.writeln(options.join(' '));
+  }
+
   // Write the file-level comments.
   _writeComments(buffer, testFile.comments);
 
   _totalTests += testFile.tests.length;
 
   for (var formatTest in testFile.tests) {
-    var formatter = DartFormatter(
-      languageVersion: formatTest.languageVersion,
-      pageWidth: testFile.pageWidth,
-      indent: formatTest.leadingIndent,
-      experimentFlags: formatTest.experimentFlags,
-    );
+    var formatter = testFile.formatterForTest(formatTest);
 
     var actual = formatter.formatSource(formatTest.input);
 
@@ -109,22 +110,12 @@ Future<void> _updateTestFile(TestFile testFile) async {
     // Insert a newline between each test, but not after the last.
     if (formatTest != testFile.tests.first) buffer.writeln();
 
-    var defaultLanguageVersion =
-        p.split(testFile.path).contains('tall')
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion;
-
-    var descriptionParts = [
-      for (var experiment in formatTest.experimentFlags)
-        '(experiment $experiment)',
-      if (formatTest.leadingIndent != 0) '(indent ${formatTest.leadingIndent})',
-      if (formatTest.languageVersion != defaultLanguageVersion)
-        '(version ${formatTest.languageVersion.major}.'
-            '${formatTest.languageVersion.minor})',
+    var description = [
+      ..._optionStrings(formatTest.options),
       formatTest.description,
-    ];
+    ].join(' ');
 
-    buffer.writeln('>>> ${descriptionParts.join(' ')}'.trim());
+    buffer.writeln('>>> $description'.trim());
     _writeComments(buffer, formatTest.inputComments);
     buffer.write(formatTest.input.text);
 
@@ -151,6 +142,16 @@ Future<void> _updateTestFile(TestFile testFile) async {
   var path = p.join(await findTestDirectory(), testFile.path);
   File(path).writeAsStringSync(buffer.toString());
 }
+
+/// Returns a list of strings for all of the options specified by [options].
+List<String> _optionStrings(TestOptions options) => [
+  for (var experiment in options.experimentFlags) '(experiment $experiment)',
+  if (options.leadingIndent case var indent?) '(indent $indent)',
+  if (options.languageVersion case var version?)
+    '(version ${version.major}.${version.minor})',
+  if (options.trailingCommas == TrailingCommas.preserve)
+    '(trailing_commas preserve)',
+];
 
 void _writeComments(StringBuffer buffer, List<String> comments) {
   for (var comment in comments) {

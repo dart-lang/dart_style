@@ -1,0 +1,27 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+@meta(1,)
+class A {}
+<<<
+@meta(
+  1,
+)
+class A {}
+>>> Doesn't force split without trailing comma.
+@meta(1)
+class A {}
+<<<
+@meta(1)
+class A {}
+>>> May still split without trailing comma if doesn't fit.
+@meta(argument1, argument2, argument3, argument4)
+class A {}
+<<<
+@meta(
+  argument1,
+  argument2,
+  argument3,
+  argument4,
+)
+class A {}

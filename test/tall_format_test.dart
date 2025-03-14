@@ -16,6 +16,7 @@ void main() async {
   await testDirectory('tall/invocation');
   await testDirectory('tall/other');
   await testDirectory('tall/pattern');
+  await testDirectory('tall/preserve_trailing_commas');
   await testDirectory('tall/statement');
   await testDirectory('tall/top_level');
   await testDirectory('tall/type');

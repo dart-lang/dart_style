@@ -136,12 +136,7 @@ void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
       test(formatTest.label, () {
-        var formatter = DartFormatter(
-          languageVersion: formatTest.languageVersion,
-          pageWidth: testFile.pageWidth,
-          indent: formatTest.leadingIndent,
-          experimentFlags: formatTest.experimentFlags,
-        );
+        var formatter = testFile.formatterForTest(formatTest);
 
         var actual = _validateFormat(
           formatter,
@@ -235,11 +230,14 @@ d.DirectoryDescriptor packageConfig(
 /// Creates the YAML string contents of an analysis options file.
 ///
 /// If [pageWidth] is given, then the result has a "formatter" section to
-/// specify the page width. If [include] is given, then adds an "include" key
-/// to include another analysis options file. If [other] is given, then those
-/// are added as other top-level keys in the YAML.
+/// specify the page width. If [trailingCommas] is given, then the result has a
+/// "formatter" section specifying the trailing commas mode. If [include] is
+/// given, then adds an "include" key to include another analysis options file.
+/// If [other] is given, then those are added as other top-level keys in the
+/// YAML.
 String analysisOptions({
   int? pageWidth,
+  TrailingCommas? trailingCommas,
   Object? /* String | List<String> */ include,
   Map<String, Object>? other,
 }) {
@@ -255,9 +253,15 @@ String analysisOptions({
       }
   }
 
-  if (pageWidth != null) {
+  if (pageWidth != null || trailingCommas != null) {
     yaml.writeln('formatter:');
-    yaml.writeln('  page_width: $pageWidth');
+    if (pageWidth != null) {
+      yaml.writeln('  page_width: $pageWidth');
+    }
+
+    if (trailingCommas != null) {
+      yaml.writeln('  trailing_commas: ${trailingCommas.name}');
+    }
   }
 
   if (other != null) {
@@ -275,8 +279,13 @@ String analysisOptions({
 d.FileDescriptor analysisOptionsFile({
   String name = 'analysis_options.yaml',
   int? pageWidth,
+  TrailingCommas? trailingCommas,
   String? include,
 }) {
-  var yaml = analysisOptions(pageWidth: pageWidth, include: include);
+  var yaml = analysisOptions(
+    pageWidth: pageWidth,
+    trailingCommas: trailingCommas,
+    include: include,
+  );
   return d.FileDescriptor(name, yaml.toString());
 }

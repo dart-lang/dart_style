@@ -167,9 +167,9 @@ final class DelimitedListBuilder {
   /// then become an element in a surrounding [DelimitedListBuilder]. It ensures
   /// that any comments around a trailing comma after [inner] don't get lost and
   /// are instead hoisted up to be captured by this builder.
-  void addInnerBuilder(DelimitedListBuilder inner) {
+  void addInnerBuilder(DelimitedListBuilder inner, {bool forceSplit = false}) {
     // Add the elements of the line to this builder.
-    add(inner.build());
+    add(inner.build(forceSplit: forceSplit));
 
     // Make sure that any trailing comments on the line aren't lost.
     _commentsBeforeComma = inner._commentsBeforeComma;

@@ -6,15 +6,17 @@ import 'dart:io';
 
 import 'package:pub_semver/pub_semver.dart';
 
+import '../dart_formatter.dart';
 import '../source_code.dart';
 import 'output.dart';
 import 'show.dart';
 import 'summary.dart';
 
 // Note: The following line of code is modified by tool/grind.dart.
-const dartStyleVersion = '3.0.2-wip';
+const dartStyleVersion = '3.1.0-wip';
 
-/// Global options that affect how the formatter produces and uses its outputs.
+/// Global options parsed from the command line that affect how the formatter
+/// produces and uses its outputs.
 final class FormatterOptions {
   /// The language version formatted code should be parsed at or `null` if not
   /// specified.
@@ -29,6 +31,9 @@ final class FormatterOptions {
   /// If omitted, the formatter defaults to a page width of
   /// [DartFormatter.defaultPageWidth].
   final int? pageWidth;
+
+  /// How trailing commas in the input source code affect formatting.
+  final TrailingCommas? trailingCommas;
 
   /// Whether symlinks should be traversed when formatting a directory.
   final bool followLinks;
@@ -53,6 +58,7 @@ final class FormatterOptions {
     this.languageVersion,
     this.indent = 0,
     this.pageWidth,
+    this.trailingCommas,
     this.followLinks = false,
     this.show = Show.changed,
     this.output = Output.write,

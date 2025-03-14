@@ -1,0 +1,21 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+set = {1,};
+<<<
+set = {
+  1,
+};
+>>> Doesn't force split without trailing comma.
+set = {1,2,3};
+<<<
+set = {1, 2, 3};
+>>> May still split without trailing comma if doesn't fit.
+set = {element1, element2, element3, element4};
+<<<
+set = {
+  element1,
+  element2,
+  element3,
+  element4,
+};

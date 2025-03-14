@@ -107,6 +107,22 @@ final class FormatCommand extends Command<int> {
     );
 
     argParser.addOption(
+      'trailing-commas',
+      help: 'How trailing commas in input affect formatting.',
+      defaultsTo: 'automate',
+      allowedHelp: {
+        'automate':
+            'The formatter adds and removes trailing commas based on\n'
+            'its decision to split the surrounding construct.',
+        'preserve':
+            'A trailing comma forces the surrounding construct to split.\n'
+            'The formatter will add a trailing comma when it splits a\n'
+            'construct but will not remove one.',
+      },
+      hide: !verbose,
+    );
+
+    argParser.addOption(
       'indent',
       abbr: 'i',
       help: 'Add this many spaces of leading indentation.',
@@ -255,6 +271,19 @@ final class FormatCommand extends Command<int> {
       }
     }
 
+    TrailingCommas? trailingCommas;
+    if (argResults.wasParsed('trailing-commas')) {
+      // We check the values explicitly here instead of using `allowedValues`
+      // from [ArgParser] because this provides a better error message.
+      trailingCommas = switch (argResults['trailing-commas']) {
+        'automate' => TrailingCommas.automate,
+        'preserve' => TrailingCommas.preserve,
+        var mode => usageException(
+          '--trailing-commas must be "automate" or "preserve", was "$mode".',
+        ),
+      };
+    }
+
     var indent =
         int.tryParse(argResults['indent'] as String) ??
         usageException(
@@ -300,6 +329,7 @@ final class FormatCommand extends Command<int> {
       languageVersion: languageVersion,
       indent: indent,
       pageWidth: pageWidth,
+      trailingCommas: trailingCommas,
       followLinks: followLinks,
       show: show,
       output: output,
