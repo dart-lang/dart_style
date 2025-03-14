@@ -1,0 +1,26 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+function(1,);
+<<<
+function(
+  1,
+);
+>>> Doesn't force split without trailing comma.
+function(1,2,3);
+<<<
+function(1, 2, 3);
+>>> May still split without trailing comma if doesn't fit.
+function(argument1, argument2, argument3);
+<<<
+function(
+  argument1,
+  argument2,
+  argument3,
+);
+>>> With named argument.
+function(name: 1,);
+<<<
+function(
+  name: 1,
+);

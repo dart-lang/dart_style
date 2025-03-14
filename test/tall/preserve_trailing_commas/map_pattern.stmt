@@ -1,0 +1,20 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+var {a: x,} = map;
+<<<
+var {
+  a: x,
+} = map;
+>>> Doesn't force split without trailing comma.
+var {a:x,b:y,c:z} = map;
+<<<
+var {a: x, b: y, c: z} = map;
+>>> May still split without trailing comma if doesn't fit.
+var {a: element1, b: element2, c: element3} = map;
+<<<
+var {
+  a: element1,
+  b: element2,
+  c: element3,
+} = map;

@@ -46,6 +46,12 @@ Future<void> formatStdin(
     pageWidth = await cache.findPageWidth(File(path));
   }
 
+  var trailingCommas = options.trailingCommas;
+  if (trailingCommas == null && path != null) {
+    // We have a stdin-name, so look for a surrounding analyisis_options.yaml.
+    trailingCommas = await cache.findTrailingCommas(File(path));
+  }
+
   // Use a default page width if we don't have a specified one and couldn't
   // find a configured one.
   pageWidth ??= DartFormatter.defaultPageWidth;
@@ -60,6 +66,7 @@ Future<void> formatStdin(
       languageVersion: languageVersion!,
       indent: options.indent,
       pageWidth: pageWidth,
+      trailingCommas: trailingCommas,
       experimentFlags: options.experimentFlags,
     );
     try {
@@ -182,8 +189,10 @@ Future<bool> _processFile(
   // package, then default to the latest version.
   languageVersion ??= DartFormatter.latestLanguageVersion;
 
-  // Determine the page width.
+  // Determine the configuration options.
   var pageWidth = options.pageWidth ?? await cache.findPageWidth(file);
+  var trailingCommas =
+      options.trailingCommas ?? await cache.findTrailingCommas(file);
 
   // Use a default page width if we don't have a specified one and couldn't
   // find a configured one.
@@ -193,6 +202,7 @@ Future<bool> _processFile(
     languageVersion: languageVersion,
     indent: options.indent,
     pageWidth: pageWidth,
+    trailingCommas: trailingCommas,
     experimentFlags: options.experimentFlags,
   );
 

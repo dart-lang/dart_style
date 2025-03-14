@@ -38,6 +38,9 @@ import 'sequence_builder.dart';
 /// contains only shared state and the visitor methods for the AST.
 final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
+  final DartFormatter formatter;
+
+  @override
   final PieceWriter pieces;
 
   @override
@@ -56,11 +59,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     SourceCode source,
   ) {
     var comments = CommentWriter(lineInfo);
-    var pieces = PieceWriter(formatter, source, comments);
-    return AstNodeVisitor._(pieces, comments);
+    var pieces = PieceWriter(source, comments);
+    return AstNodeVisitor._(formatter, pieces, comments);
   }
 
-  AstNodeVisitor._(this.pieces, this.comments) {
+  AstNodeVisitor._(this.formatter, this.pieces, this.comments) {
     pieces.bindVisitor(this);
   }
 
@@ -132,7 +135,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     Profile.end('AstNodeVisitor build Piece tree');
 
     // Finish writing and return the complete result.
-    var result = pieces.finish(source, unitPiece, pageWidthFromComment);
+    var result = pieces.finish(
+      source,
+      unitPiece,
+      formatter.lineEnding,
+      pageWidth: pageWidthFromComment ?? formatter.pageWidth,
+      leadingIndent: formatter.indent,
+    );
 
     Profile.end('AstNodeVisitor.run()');
 
@@ -602,7 +611,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           builder.leftBracket(node.leftBracket);
           node.constants.forEach(builder.visit);
           builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
-          return builder.build();
+          return builder.build(
+            forceSplit: hasPreservedTrailingComma(
+              node.semicolon ?? node.rightBracket,
+            ),
+          );
         } else {
           // If there are members, format it like a block where each constant
           // and member is on its own line.
@@ -800,7 +813,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
-    pieces.add(builder.build());
+    pieces.add(
+      builder.build(
+        forceSplit: hasPreservedTrailingComma(
+          node.rightDelimiter ?? node.rightParenthesis,
+        ),
+      ),
+    );
   }
 
   @override
@@ -1499,7 +1518,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     node.fields.forEach(builder.visit);
     builder.rightBracket(node.rightParenthesis);
-    pieces.add(builder.build());
+    pieces.add(
+      builder.build(
+        forceSplit: hasPreservedTrailingComma(node.rightParenthesis),
+      ),
+    );
   }
 
   @override

@@ -17,14 +17,14 @@ typedef AnalysisOptions = Map<Object?, Object?>;
 /// passed to [FileSystem.join()].
 typedef ResolvePackageUri = Future<String?> Function(Uri packageUri);
 
-/// Reads an `analysis_options.yaml` file in [directory] or in the nearest
+/// Reads an "analysis_options.yaml" file in [directory] or in the nearest
 /// surrounding folder that contains that file using [fileSystem].
 ///
 /// Stops walking parent directories as soon as it finds one that contains an
-/// `analysis_options.yaml` file. If it reaches the root directory without
+/// "analysis_options.yaml" file. If it reaches the root directory without
 /// finding one, returns an empty [YamlMap].
 ///
-/// If an `analysis_options.yaml` file is found, reads it and parses it to a
+/// If an "analysis_options.yaml" file is found, reads it and parses it to a
 /// [YamlMap]. If the map contains an `include` key whose value is a list, then
 /// reads any of the other referenced YAML files and merges them into this one.
 /// Returns the resulting map with the `include` key removed.

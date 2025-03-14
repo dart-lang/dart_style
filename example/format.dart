@@ -30,12 +30,34 @@ void main(List<String> args) {
   _runTest('other/selection.stmt', 2);
 }
 
-void _formatStmt(String source, {bool tall = true, int pageWidth = 40}) {
-  _runFormatter(source, pageWidth, tall: tall, isCompilationUnit: false);
+void _formatStmt(
+  String source, {
+  bool tall = true,
+  int pageWidth = 40,
+  TrailingCommas trailingCommas = TrailingCommas.automate,
+}) {
+  _runFormatter(
+    source,
+    pageWidth,
+    tall: tall,
+    isCompilationUnit: false,
+    trailingCommas: trailingCommas,
+  );
 }
 
-void _formatUnit(String source, {bool tall = true, int pageWidth = 40}) {
-  _runFormatter(source, pageWidth, tall: tall, isCompilationUnit: true);
+void _formatUnit(
+  String source, {
+  bool tall = true,
+  int pageWidth = 40,
+  TrailingCommas trailingCommas = TrailingCommas.automate,
+}) {
+  _runFormatter(
+    source,
+    pageWidth,
+    tall: tall,
+    isCompilationUnit: true,
+    trailingCommas: trailingCommas,
+  );
 }
 
 void _runFormatter(
@@ -43,6 +65,7 @@ void _runFormatter(
   int pageWidth, {
   required bool tall,
   required bool isCompilationUnit,
+  TrailingCommas trailingCommas = TrailingCommas.automate,
 }) {
   try {
     var formatter = DartFormatter(
@@ -51,6 +74,7 @@ void _runFormatter(
               ? DartFormatter.latestLanguageVersion
               : DartFormatter.latestShortStyleLanguageVersion,
       pageWidth: pageWidth,
+      trailingCommas: trailingCommas,
     );
 
     String result;
@@ -84,13 +108,7 @@ Future<void> _runTest(
 }) async {
   var testFile = await TestFile.read('${tall ? 'tall' : 'short'}/$path');
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
-
-  var formatter = DartFormatter(
-    languageVersion: formatTest.languageVersion,
-    pageWidth: testFile.pageWidth,
-    indent: formatTest.leadingIndent,
-    experimentFlags: formatTest.experimentFlags,
-  );
+  var formatter = testFile.formatterForTest(formatTest);
 
   var actual = formatter.formatSource(formatTest.input);
 

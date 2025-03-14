@@ -1,0 +1,49 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Parameter list splits with trailing comma.
+function(int x,) {}
+<<<
+function(
+  int x,
+) {}
+>>> Doesn't force split parameter list without trailing comma.
+function(int x,int y) {}
+<<<
+function(int x, int y) {}
+>>> May still split without trailing comma if doesn't fit.
+function(int parameter1, int parameter2, int parameter3) {}
+<<<
+function(
+  int parameter1,
+  int parameter2,
+  int parameter3,
+) {}
+>>> Parameter list splits with trailing comma after optional parameter.
+function(int x, [int y,]) {}
+<<<
+function(
+  int x, [
+  int y,
+]) {}
+>>> Parameter list splits with trailing comma after named parameter.
+function(int x, {int y,}) {}
+<<<
+function(
+  int x, {
+  int y,
+}) {}
+>>> Trailing comma in function expression parameter list forces split.
+var f = (int i,) {};
+<<<
+var f =
+    (
+      int i,
+    ) {};
+>>> Trailing comma in old style function typed parameter list forces split.
+bool doStuff(void f(int i,)) {}
+<<<
+bool doStuff(
+  void f(
+    int i,
+  ),
+) {}

@@ -454,6 +454,9 @@ extension PatternExtensions on DartPattern {
 }
 
 extension TokenExtensions on Token {
+  /// Whether the token before this one is a comma.
+  bool get hasCommaBefore => previous?.type == TokenType.COMMA;
+
   /// Whether this token has a preceding comment that is a line comment.
   bool get hasLineCommentBefore {
     for (

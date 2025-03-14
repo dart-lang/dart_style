@@ -1,0 +1,21 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+[1,];
+<<<
+[
+  1,
+];
+>>> Doesn't force split without trailing comma.
+[1,2,3];
+<<<
+[1, 2, 3];
+>>> May still split without trailing comma if doesn't fit.
+[element1, element2, element3, element4];
+<<<
+[
+  element1,
+  element2,
+  element3,
+  element4,
+];

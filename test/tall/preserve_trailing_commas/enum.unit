@@ -1,0 +1,52 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+enum E {e,}
+<<<
+enum E {
+  e,
+}
+>>> Doesn't force split without trailing comma.
+enum E {e,f,g}
+<<<
+enum E { e, f, g }
+>>> May still split without trailing comma if doesn't fit.
+enum E { value1, value2, value3, value4 }
+<<<
+enum E {
+  value1,
+  value2,
+  value3,
+  value4,
+}
+>>> Preserve trailing comma but remove semicolon if no members.
+enum E {e,;}
+<<<
+enum E {
+  e,
+}
+>>> Remove trailing comma and split if there are members.
+enum E { a, b, c,; int x; }
+<<<
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+>>> Force split in enum value argument list with trailing comma.
+enum Args {
+value(a,b,),
+another(named:1,)
+}
+<<<
+enum Args {
+  value(
+    a,
+    b,
+  ),
+  another(
+    named: 1,
+  ),
+}
