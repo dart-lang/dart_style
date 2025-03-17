@@ -22,17 +22,16 @@ void main() {
       ]).create();
 
       var process = await runFormatterOnDir();
-      expect(
-        await process.stdout.next,
-        'Formatted ${p.join('code', 'a.dart')}',
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          'Formatted ${p.join('code', 'a.dart')}',
+          'Formatted ${p.join('code', 'c.dart')}',
+        ]),
       );
-      expect(
-        await process.stdout.next,
-        'Formatted ${p.join('code', 'c.dart')}',
-      );
-      expect(
-        await process.stdout.next,
-        startsWith(r'Formatted 3 files (2 changed)'),
+      await expectLater(
+        process.stdout,
+        emits(startsWith('Formatted 3 files (2 changed)')),
       );
       await process.shouldExit(0);
 
@@ -52,17 +51,16 @@ void main() {
         p.join('code', 'subdir'),
         p.join('code', 'c.dart'),
       ]);
-      expect(
-        await process.stdout.next,
-        'Formatted ${p.join('code', 'subdir', 'a.dart')}',
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          'Formatted ${p.join('code', 'subdir', 'a.dart')}',
+          'Formatted ${p.join('code', 'c.dart')}',
+        ]),
       );
-      expect(
-        await process.stdout.next,
-        'Formatted ${p.join('code', 'c.dart')}',
-      );
-      expect(
-        await process.stdout.next,
-        startsWith(r'Formatted 2 files (2 changed)'),
+      await expectLater(
+        process.stdout,
+        emits(startsWith('Formatted 2 files (2 changed)')),
       );
       await process.shouldExit(0);
 
@@ -91,16 +89,19 @@ void main() {
     var process = await runFormatter(['--version']);
 
     // Match something roughly semver-like.
-    expect(await process.stdout.next, matches(RegExp(r'\d+\.\d+\.\d+.*')));
+    await expectLater(
+      process.stdout,
+      emits(matches(RegExp(r'\d+\.\d+\.\d+.*'))),
+    );
     await process.shouldExit(0);
   });
 
   group('--help', () {
     test('non-verbose shows description and common options', () async {
       var process = await runFormatter(['--help']);
-      expect(
-        await process.stdout.next,
-        'Idiomatically format Dart source code.',
+      await expectLater(
+        process.stdout,
+        emits('Idiomatically format Dart source code.'),
       );
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, neverEmits(contains('--summary')));
@@ -109,9 +110,9 @@ void main() {
 
     test('verbose shows description and all options', () async {
       var process = await runFormatter(['--help', '--verbose']);
-      expect(
-        await process.stdout.next,
-        'Idiomatically format Dart source code.',
+      await expectLater(
+        process.stdout,
+        emits('Idiomatically format Dart source code.'),
       );
       await expectLater(process.stdout, emitsThrough(contains('-o, --output')));
       await expectLater(process.stdout, emitsThrough(contains('--show')));
@@ -133,10 +134,15 @@ void main() {
       process.stdin.writeln("a flush left multi-line string''';}");
       await process.stdin.close();
 
-      expect(await process.stdout.next, '   main() {');
-      expect(await process.stdout.next, "     '''");
-      expect(await process.stdout.next, "a flush left multi-line string''';");
-      expect(await process.stdout.next, '   }');
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          '   main() {',
+          "     '''",
+          "a flush left multi-line string''';",
+          '   }',
+        ]),
+      );
       await process.shouldExit(0);
     });
 
@@ -205,7 +211,7 @@ void main() {
         'selection': {'offset': 5, 'length': 9},
       });
 
-      expect(await process.stdout.next, json);
+      await expectLater(process.stdout, emits(json));
       await process.shouldExit();
     });
   });

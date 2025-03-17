@@ -16,9 +16,9 @@ import 'utils.dart';
 void main() {
   group('findLanguageVersion()', () {
     test('no surrounding package config', () async {
-      // Note: In theory this test could fail if machine it's run on happens to
-      // have a `.dart_tool` directory containing a package config in one of the
-      // parent directories of the system temporary directory.
+      // Note: In theory this test could fail if the machine it runs on happens
+      // to have a `.dart_tool` directory containing a package config in one of
+      // the parent directories of the system temporary directory.
 
       await d.dir('dir', [d.file('main.dart', 'f() {}')]).create();
 

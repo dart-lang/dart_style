@@ -98,9 +98,10 @@ void main() {
       await process.stdin.close();
 
       // Preserves trailing commas.
-      expect(await process.stdout.next, 'var x = function(');
-      expect(await process.stdout.next, '  argument,');
-      expect(await process.stdout.next, ');');
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['var x = function(', '  argument,', ');']),
+      );
       await process.shouldExit(0);
     });
 
@@ -119,9 +120,10 @@ void main() {
       await process.stdin.close();
 
       // Preserves trailing commas.
-      expect(await process.stdout.next, 'var x = function(');
-      expect(await process.stdout.next, '  argument,');
-      expect(await process.stdout.next, ');');
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['var x = function(', '  argument,', ');']),
+      );
       await process.shouldExit(0);
     });
   });

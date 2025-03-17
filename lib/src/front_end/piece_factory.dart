@@ -1627,11 +1627,9 @@ mixin PieceFactory {
 
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket].
-  bool hasPreservedTrailingComma(Token rightBracket) {
-    if (formatter.trailingCommas != TrailingCommas.preserve) return false;
-
-    return rightBracket.hasCommaBefore;
-  }
+  bool hasPreservedTrailingComma(Token rightBracket) =>
+      formatter.trailingCommas == TrailingCommas.preserve &&
+      rightBracket.hasCommaBefore;
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a

@@ -151,9 +151,10 @@ void main() {
       await process.stdin.close();
 
       // Formats at page width 30.
-      expect(await process.stdout.next, 'var x =');
-      expect(await process.stdout.next, '    operand +');
-      expect(await process.stdout.next, '    another * andAnother;');
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['var x =', '    operand +', '    another * andAnother;']),
+      );
       await process.shouldExit(0);
     });
 
@@ -172,9 +173,10 @@ void main() {
       await process.stdin.close();
 
       // Formats at page width 30, not 20.
-      expect(await process.stdout.next, 'var x =');
-      expect(await process.stdout.next, '    operand +');
-      expect(await process.stdout.next, '    another * andAnother;');
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['var x =', '    operand +', '    another * andAnother;']),
+      );
       await process.shouldExit(0);
     });
   });

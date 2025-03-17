@@ -176,12 +176,17 @@ main() {
       process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
       await process.stdin.close();
 
-      expect(await process.stdout.next, 'main() {');
-      expect(await process.stdout.next, '  switch (o) {');
-      expect(await process.stdout.next, '    case 1 + 2:');
-      expect(await process.stdout.next, '      break;');
-      expect(await process.stdout.next, '  }');
-      expect(await process.stdout.next, '}');
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          'main() {',
+          '  switch (o) {',
+          '    case 1 + 2:',
+          '      break;',
+          '  }',
+          '}',
+        ]),
+      );
       await process.shouldExit(0);
     });
 
@@ -205,12 +210,17 @@ main() {
       process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
       await process.stdin.close();
 
-      expect(await process.stdout.next, 'main() {');
-      expect(await process.stdout.next, '  switch (o) {');
-      expect(await process.stdout.next, '    case 1 + 2:');
-      expect(await process.stdout.next, '      break;');
-      expect(await process.stdout.next, '  }');
-      expect(await process.stdout.next, '}');
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          'main() {',
+          '  switch (o) {',
+          '    case 1 + 2:',
+          '      break;',
+          '  }',
+          '}',
+        ]),
+      );
       await process.shouldExit(0);
     });
 
@@ -222,9 +232,10 @@ main() {
       process.stdin.writeln('main() {var (a,b)=(1,2);}');
       await process.stdin.close();
 
-      expect(await process.stdout.next, 'main() {');
-      expect(await process.stdout.next, '  var (a, b) = (1, 2);');
-      expect(await process.stdout.next, '}');
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['main() {', '  var (a, b) = (1, 2);', '}']),
+      );
       await process.shouldExit(0);
     });
   });

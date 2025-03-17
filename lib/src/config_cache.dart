@@ -130,19 +130,26 @@ final class ConfigCache {
           pageWidth = width;
         }
 
-        if (formatter case {'trailing_commas': String commas}) {
-          trailingCommas = switch (commas) {
-            'automate' => TrailingCommas.automate,
-            'preserve' => TrailingCommas.preserve,
-            // Silently ignore any unrecognized name.
-            _ => null,
-          };
+        if (formatter case {'trailing_commas': var commas}) {
+          switch (commas) {
+            case 'automate':
+              trailingCommas = TrailingCommas.automate;
+            case 'preserve':
+              trailingCommas = TrailingCommas.preserve;
+            default:
+              stderr.writeln(
+                'Warning: "trailing_commas" option should be "automate" or '
+                '"preserve", but was "$commas".',
+              );
+          }
         }
       }
-    } on PackageResolutionException {
-      // Silently ignore any errors coming from the processing the analyis
-      // options. If there are any issues, we just use the default page width
-      // and keep going.
+    } on PackageResolutionException catch (exception) {
+      // Report the error, but use the default settings and keep going.
+      stderr.writeln(
+        'Warning: Package resolution error when reading '
+        '"analysis_options.yaml" file:\n$exception',
+      );
     }
 
     // Cache whichever options we found (or `null` if we didn't find them).
