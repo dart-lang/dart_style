@@ -65,6 +65,13 @@ final class DartFormatter {
   /// The number of characters of indentation to prefix the output lines with.
   final int indent;
 
+  /// How trailing commas in various constructs should affect formatting.
+  ///
+  /// The default is [TrailingCommas.automate] where the formatter is free to
+  /// add and remove them if it decides a constructor should be split or
+  /// collapsed.
+  final TrailingCommas trailingCommas;
+
   /// Flags to enable experimental language features.
   ///
   /// See dart.dev/go/experiments for details.
@@ -83,9 +90,11 @@ final class DartFormatter {
     this.lineEnding,
     int? pageWidth,
     int? indent,
+    TrailingCommas? trailingCommas,
     List<String>? experimentFlags,
   }) : pageWidth = pageWidth ?? defaultPageWidth,
        indent = indent ?? 0,
+       trailingCommas = trailingCommas ?? TrailingCommas.automate,
        experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation
@@ -238,4 +247,21 @@ final class DartFormatter {
 
     return output;
   }
+}
+
+/// Configuration for how trailing commas should be handled by the formatter.
+///
+/// Note that this only applies when using the new formatter to format code at
+/// language version 3.7 or later. On older versions, it always behaves as if
+/// it were [TrailingCommas.preserve].
+enum TrailingCommas {
+  /// The formatter will add a trailing comma if a construct is split and
+  /// remove the trailing comma and collapse the construct if it decides to do
+  /// so.
+  automate,
+
+  /// The formatter will add a trailing comma if a construct splits. If the
+  /// construct has a trailing comma, it will always be forced to split and the
+  /// trailing comma is preserved.
+  preserve,
 }

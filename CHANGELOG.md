@@ -1,4 +1,4 @@
-## 3.0.2-wip
+## 3.1.0-wip
 
 * Format null-aware elements.
 
@@ -63,9 +63,25 @@
   );
   ```
 
+* Allow preserving trailing commas and forcing the surrounding construct to
+  split even when it would otherwise fit on one line. This is off by default
+  (because it breaks [reversibility][] among other reasons) but can be enabled
+  by adding this to a surrounding `analysis_options.yaml` file:
+
+  ```yaml
+  formatter:
+    trailing_commas: preserve
+  ```
+
+  This is similar to how trailing commas worked in the old short style
+  formatter.
+
 * Don't add a trailing comma in lists that don't allow it, even when there is
   a trailing comment (#1639).
+
 * Add tests for digit separators.
+
+[reversibility]: https://github.com/dart-lang/dart_style/wiki/Reversibility-principle
 
 ## 3.0.1
 

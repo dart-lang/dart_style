@@ -29,7 +29,7 @@ void main() {
       await process.stdin.close();
 
       // No trailing newline at the end.
-      expect(await process.stdout.next, formattedOutput);
+      await expectLater(process.stdout, emits(formattedOutput));
       await process.shouldExit(0);
     });
   });

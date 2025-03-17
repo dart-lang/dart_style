@@ -7,7 +7,6 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../back_end/code_writer.dart';
 import '../back_end/solution_cache.dart';
 import '../back_end/solver.dart';
-import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/adjacent.dart';
 import '../piece/leading_comment.dart';
@@ -26,8 +25,6 @@ import 'sequence_builder.dart';
 /// Handles updating selection markers and attaching comments to the tokens
 /// before and after the comments.
 final class PieceWriter {
-  final DartFormatter _formatter;
-
   final SourceCode _source;
 
   final CommentWriter _comments;
@@ -77,7 +74,7 @@ final class PieceWriter {
   /// previous code or adding a [SpacePiece] yet.
   bool _pendingSpace = false;
 
-  PieceWriter(this._formatter, this._source, this._comments);
+  PieceWriter(this._source, this._comments);
 
   /// Wires the [PieceWriter] to the [AstNodeVisitor] (which implements
   /// [PieceFactory]) so that [PieceWriter] can visit nodes.
@@ -447,14 +444,13 @@ final class PieceWriter {
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
-  ///
-  /// If there is a `// dart format width=123` comment before the formatted
-  /// code, then [pageWidthFromComment] is that width.
   SourceCode finish(
     SourceCode source,
     Piece rootPiece,
-    int? pageWidthFromComment,
-  ) {
+    String? lineEnding, {
+    required int pageWidth,
+    required int leadingIndent,
+  }) {
     if (debug.tracePieceBuilder) {
       debug.log(debug.pieceTree(rootPiece));
     }
@@ -464,11 +460,11 @@ final class PieceWriter {
     var cache = SolutionCache();
     var solver = Solver(
       cache,
-      pageWidth: pageWidthFromComment ?? _formatter.pageWidth,
-      leadingIndent: _formatter.indent,
+      pageWidth: pageWidth,
+      leadingIndent: leadingIndent,
     );
     var solution = solver.format(rootPiece);
-    var output = solution.code.build(source, _formatter.lineEnding);
+    var output = solution.code.build(source, lineEnding);
 
     Profile.end('PieceWriter.finish() format piece tree');
 

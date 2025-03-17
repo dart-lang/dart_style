@@ -1,0 +1,27 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+super(1,);
+<<<
+super(
+  1,
+);
+>>> Doesn't force split without trailing comma.
+super(1,2,3);
+<<<
+super(1, 2, 3);
+>>> May still split without trailing comma if doesn't fit.
+super(argument1, argument2, argument3, argument4);
+<<<
+super(
+  argument1,
+  argument2,
+  argument3,
+  argument4,
+);
+>>> Named super call.
+super.named(1,);
+<<<
+super.named(
+  1,
+);

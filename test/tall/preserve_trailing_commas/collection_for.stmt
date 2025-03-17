@@ -1,0 +1,30 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Trailing comma in increments forces them to split.
+list = [
+  for (x = 1;true;x += 1, x += 2,) e
+];
+<<<
+list = [
+  for (
+    x = 1;
+    true;
+    x += 1,
+    x += 2,
+  )
+    e,
+];
+>>> Don't add trailing comma if updaters split.
+list = [
+for (x = 1;true;variable += longValue, another += value) e
+];
+<<<
+list = [
+  for (
+    x = 1;
+    true;
+    variable += longValue,
+    another += value
+  )
+    e,
+];

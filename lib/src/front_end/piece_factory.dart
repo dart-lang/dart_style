@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
@@ -107,6 +108,8 @@ mixin PieceFactory {
   /// we pop the last value, If it's `true`, we know we visited a nested
   /// collection so we force this one to split.
   final List<bool> _collectionSplits = [];
+
+  DartFormatter get formatter;
 
   PieceWriter get pieces;
 
@@ -454,17 +457,27 @@ mixin PieceFactory {
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
 
+          // Unlike most places in the language, if the updaters split, we
+          // don't want to add a trailing comma. But if the user has preserve
+          // trailing commas on, we should preserve the comma if there is one
+          // but not add one if there isn't and it splits.
+          var style = const ListStyle(commas: Commas.nonTrailing);
+          if (formatter.trailingCommas == TrailingCommas.preserve &&
+              rightParenthesis.hasCommaBefore) {
+            style = const ListStyle(commas: Commas.trailing);
+          }
+
           // Create a nested list builder for the updaters so that they can
           // remain unsplit even while the clauses split.
-          var updaterBuilder = DelimitedListBuilder(
-            this,
-            const ListStyle(commas: Commas.nonTrailing),
-          );
+          var updaterBuilder = DelimitedListBuilder(this, style);
           forParts.updaters.forEach(updaterBuilder.visit);
 
           // Add the updater builder to the clause builder so that any comments
           // around a trailing comma after the updaters don't get dropped.
-          partsList.addInnerBuilder(updaterBuilder);
+          partsList.addInnerBuilder(
+            updaterBuilder,
+            forceSplit: hasPreservedTrailingComma(rightParenthesis),
+          );
         }
 
         partsList.rightBracket(rightParenthesis);
@@ -1145,7 +1158,15 @@ mixin PieceFactory {
     }
 
     builder.rightBracket(rightBracket);
-    pieces.add(builder.build());
+    pieces.add(
+      builder.build(
+        // If we are always writing a trailing comma (because it's a
+        // single-element record), then the comma shouldn't force a split.
+        forceSplit:
+            style.commas != Commas.alwaysTrailing &&
+            hasPreservedTrailingComma(rightBracket),
+      ),
+    );
   }
 
   /// Writes [elements] into [builder], preserving the original newlines (or
@@ -1603,6 +1624,12 @@ mixin PieceFactory {
       pieces.visit(sequence);
     });
   }
+
+  /// Whether there is a trailing comma at the end of the list delimited by
+  /// [rightBracket].
+  bool hasPreservedTrailingComma(Token rightBracket) =>
+      formatter.trailingCommas == TrailingCommas.preserve &&
+      rightBracket.hasCommaBefore;
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a

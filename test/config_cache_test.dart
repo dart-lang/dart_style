@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_style/src/config_cache.dart';
+import 'package:dart_style/src/dart_formatter.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
@@ -15,9 +16,9 @@ import 'utils.dart';
 void main() {
   group('findLanguageVersion()', () {
     test('no surrounding package config', () async {
-      // Note: In theory this test could fail if machine it's run on happens to
-      // have a `.dart_tool` directory containing a package config in one of the
-      // parent directories of the system temporary directory.
+      // Note: In theory this test could fail if the machine it runs on happens
+      // to have a `.dart_tool` directory containing a package config in one of
+      // the parent directories of the system temporary directory.
 
       await d.dir('dir', [d.file('main.dart', 'f() {}')]).create();
 
@@ -168,7 +169,7 @@ void main() {
       await _expectWidth(width: null);
     });
 
-    test('null page width if no "page_width" not an int', () async {
+    test('null page width if "page_width" not an int', () async {
       await d.dir('dir', [
         d.FileDescriptor(
           'analysis_options.yaml',
@@ -244,7 +245,7 @@ void main() {
       //
       // The answer we want is 40. A file is being formatted in the context of
       // some package and we want that package's own transitive dependency solve
-      // to be used for analysis options, look up, not the dependency solves of
+      // to be used for analysis options look up, not the dependency solves of
       // those dependencies.
       await d.dir('dir', [
         d.dir('foo', [
@@ -307,6 +308,88 @@ void main() {
       );
     });
   });
+
+  group('findTrailingCommas()', () {
+    test('null if no surrounding options', () async {
+      await d.dir('dir', [d.file('main.dart', 'main() {}')]).create();
+
+      var cache = ConfigCache();
+      expect(
+        await cache.findTrailingCommas(_expectedFile('dir/main.dart')),
+        isNull,
+      );
+    });
+
+    test('automate trailing commas if option is "automate"', () async {
+      await d.dir('dir', [
+        analysisOptionsFile(trailingCommas: TrailingCommas.automate),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(TrailingCommas.automate);
+    });
+
+    test('preserve trailing commas if option is "preserve"', () async {
+      await d.dir('dir', [
+        analysisOptionsFile(trailingCommas: TrailingCommas.preserve),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(TrailingCommas.preserve);
+    });
+
+    test('null if no "formatter" key in options', () async {
+      await d.dir('dir', [
+        d.FileDescriptor(
+          'analysis_options.yaml',
+          jsonEncode({'unrelated': 'stuff'}),
+        ),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(null);
+    });
+
+    test('null if "formatter" is not a map', () async {
+      await d.dir('dir', [
+        d.FileDescriptor(
+          'analysis_options.yaml',
+          jsonEncode({'formatter': 'not a map'}),
+        ),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(null);
+    });
+
+    test('null if no "trailing_commas" key in formatter', () async {
+      await d.dir('dir', [
+        d.FileDescriptor(
+          'analysis_options.yaml',
+          jsonEncode({
+            'formatter': {'no': 'trailing_commas'},
+          }),
+        ),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(null);
+    });
+
+    test('null if "trailing_commas" not a string', () async {
+      await d.dir('dir', [
+        d.FileDescriptor(
+          'analysis_options.yaml',
+          jsonEncode({
+            'formatter': {'trailing_commas': 123},
+          }),
+        ),
+        d.file('main.dart', 'main() {}'),
+      ]).create();
+
+      await _expectTrailingCommas(null);
+    });
+  });
 }
 
 Future<void> _expectVersion(
@@ -333,6 +416,16 @@ Future<void> _expectWidth({
 }) async {
   var cache = ConfigCache();
   expect(await cache.findPageWidth(_expectedFile(file)), width);
+}
+
+/// Test that a [file] with some some surrounding "analysis_options.yaml" is
+/// interpreted as having the given [trailingCommas] setting.
+Future<void> _expectTrailingCommas(
+  TrailingCommas? trailingCommas, {
+  String file = 'dir/main.dart',
+}) async {
+  var cache = ConfigCache();
+  expect(await cache.findTrailingCommas(_expectedFile(file)), trailingCommas);
 }
 
 /// Normalize path separators to the host OS separator since that's what the

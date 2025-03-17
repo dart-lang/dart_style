@@ -1,0 +1,11 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with trailing comma.
+### Note that switch expressions always split even when preserve trailing commas
+### is off, so this test is redundant, but ensures that the option doesn't
+### change how switch expressions behave.
+e = switch(y){0=>a,};
+<<<
+e = switch (y) {
+  0 => a,
+};
