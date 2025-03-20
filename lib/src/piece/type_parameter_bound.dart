@@ -41,10 +41,10 @@ final class TypeParameterBoundPiece extends Piece {
   List<State> get additionalStates => const [_insideBound, _beforeExtends];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => switch (state) {
-    State.unsplit => false,
-    _insideBound => child == _bound,
-    _beforeExtends => true,
+  Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
+    State.unsplit => Shape.onlyInline,
+    _insideBound => Shape.anyIf(child == _bound),
+    _beforeExtends => Shape.all,
     _ => throw ArgumentError('Unexpected state.'),
   };
 

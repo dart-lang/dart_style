@@ -101,11 +101,11 @@ final class ForInPiece extends Piece {
   List<State> get additionalStates => const [State.split];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (state == State.split) return true;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (state == State.split) return Shape.all;
 
     // Always allow block-splitting the sequence if it supports it.
-    return child == _sequence && _canBlockSplitSequence;
+    return Shape.anyIf(child == _sequence && _canBlockSplitSequence);
   }
 
   @override

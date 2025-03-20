@@ -130,14 +130,16 @@ final class ListPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (state == State.split) return true;
-    if (child == _before) return true;
-    if (child == _after) return true;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (state == State.split) return Shape.all;
+    if (child == _before) return Shape.all;
+    if (child == _after) return Shape.all;
 
     // Only some elements (usually a single block element) allow newlines
     // when the list itself isn't split.
-    return child is ListElementPiece && child.allowNewlinesWhenUnsplit;
+    return Shape.anyIf(
+      child is ListElementPiece && child.allowNewlinesWhenUnsplit,
+    );
   }
 
   @override

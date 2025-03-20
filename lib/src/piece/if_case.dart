@@ -73,20 +73,22 @@ final class IfCasePiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     return switch (state) {
       // When not splitting before `case` or `when`, we only allow newlines
       // in block-formatted patterns.
-      State.unsplit when child == _pattern => _canBlockSplitPattern,
+      State.unsplit when child == _pattern => Shape.anyIf(
+        _canBlockSplitPattern,
+      ),
 
       // Allow newlines only in the guard if we split before `when`.
-      _beforeWhen when child == _guard => true,
+      _beforeWhen when child == _guard => Shape.all,
 
       // Only allow the guard on the same line as the pattern if it doesn't
       // split.
-      _beforeCase when child != _guard => true,
-      _beforeCaseAndWhen => true,
-      _ => false,
+      _beforeCase when child != _guard => Shape.all,
+      _beforeCaseAndWhen => Shape.all,
+      _ => Shape.onlyInline,
     };
   }
 

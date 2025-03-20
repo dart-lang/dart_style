@@ -173,7 +173,8 @@ final class AssignPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => state != State.unsplit;
+  Set<Shape> allowedChildShapes(State state, Piece child) =>
+      Shape.anyIf(state != State.unsplit);
 
   @override
   void format(CodeWriter writer, State state) {

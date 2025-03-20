@@ -71,20 +71,20 @@ final class CaseExpressionPiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     return switch (state) {
       // If the outermost pattern is `||`, then always let it split even while
       // allowing the body on the same line as `=>`.
-      _ when child == _pattern && _patternIsLogicalOr => true,
+      _ when child == _pattern && _patternIsLogicalOr => Shape.all,
 
       // There are almost never splits in the arrow piece. It requires a comment
       // in a funny location, but if it happens, allow it.
-      _ when child == _arrow => true,
-      _blockSplitBody when child == _body => true,
-      _beforeBody when child == _pattern => _guard == null,
-      _beforeBody when child == _body => true,
-      _beforeWhenAndBody => true,
-      _ => false,
+      _ when child == _arrow => Shape.all,
+      _blockSplitBody when child == _body => Shape.all,
+      _beforeBody when child == _pattern => Shape.anyIf(_guard == null),
+      _beforeBody when child == _body => Shape.all,
+      _beforeWhenAndBody => Shape.all,
+      _ => Shape.onlyInline,
     };
   }
 

@@ -94,17 +94,17 @@ final class ClausePiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     if (child == _header) {
       // If the header splits, force the clauses to split too.
-      return state == State.split;
+      return Shape.anyIf(state == State.split);
     } else if (_allowLeadingClause && child == _clauses.first) {
       // A split inside the first clause forces a split before the keyword.
-      return state == State.split;
+      return Shape.anyIf(state == State.split);
     } else {
       // For the other clauses (or if there is no leading one), any split
       // inside a clause forces all of them to split.
-      return state != State.unsplit;
+      return Shape.anyIf(state != State.unsplit);
     }
   }
 

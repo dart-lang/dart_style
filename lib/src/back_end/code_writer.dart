@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math';
 
+import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import '../profile.dart';
 import 'code.dart';
@@ -51,19 +52,19 @@ final class CodeWriter {
   /// The number of characters in the line currently being written.
   int _column = 0;
 
-  /// The stack indentation levels.
+  /// The stack of indentation levels.
   ///
   /// Each entry in the stack is the absolute number of spaces of leading
   /// indentation that should be written when beginning a new line to account
   /// for block nesting, expression wrapping, constructor initializers, etc.
   final List<_Indent> _indentStack = [];
 
-  /// Whether any newlines have been written during the [_currentPiece] being
-  /// formatted.
-  bool _hadNewline = false;
-
-  /// The current innermost piece being formatted by a call to [format()].
-  Piece? _currentPiece;
+  /// The stack of information for each [Piece] currently being formatted.
+  ///
+  /// This allows [CodeWriter] to pass itself data from parent to child through
+  /// [format()] calls and back up from child to parent without every override
+  /// of [format()] having to thread that data through.
+  final List<_FormatState> _pieceFormats = [];
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -227,7 +228,11 @@ final class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      _hadNewline = true;
+      // Determine how the newline affect's the piece's shape.
+      var format = _pieceFormats.last;
+      // TODO(rnystrom): Handle other shapes here when implemented.
+      format.shape = Shape.other;
+
       _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
     }
 
@@ -281,13 +286,6 @@ final class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    // Begin a new formatting context for this child.
-    var previousPiece = _currentPiece;
-    _currentPiece = piece;
-
-    var previousHadNewline = _hadNewline;
-    _hadNewline = false;
-
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
 
@@ -311,38 +309,38 @@ final class CodeWriter {
 
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
+    // Begin a new formatting context for this child.
+    _pieceFormats.add(_FormatState(piece));
+
     // Format the child piece.
     piece.format(this, _solution.pieceState(piece));
+
+    var child = _pieceFormats.removeLast();
 
     // Restore the surrounding piece's context.
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childHadNewline = _hadNewline;
-    _hadNewline = previousHadNewline;
+    // Now that we know the child's shape, see if the parent permits it.
+    if (_pieceFormats.lastOrNull case var parent?) {
+      var allowedShapes = parent.piece.allowedChildShapes(
+        _solution.pieceState(parent.piece),
+        piece,
+      );
 
-    _currentPiece = previousPiece;
-
-    // If the child contained a newline then invalidate the solution if any of
-    // the containing pieces don't allow one at this point in the tree.
-    if (childHadNewline) {
-      // TODO(rnystrom): We already do much of the newline constraint validation
-      // when the Solution is first created before we format. For performance,
-      // it would be good to do *all* of it before formatting. The missing part
-      // is that pieces containing hard newlines (comments, multiline strings,
-      // sequences, etc.) do not constrain their parents when the solution is
-      // first created. If we can get that working, then this check can be
-      // removed.
-      if (_currentPiece case var parent?
-          when !parent.allowNewlineInChild(
-            _solution.pieceState(parent),
-            piece,
-          )) {
-        _solution.invalidate(_currentPiece!);
+      if (!allowedShapes.contains(child.shape)) {
+        _solution.invalidate(parent.piece);
+        if (debug.traceSolver) {
+          debug.log(
+            'invalidate ${parent.piece} '
+            '(${_solution.pieceState(parent.piece)}) '
+            'because child $piece (${_solution.pieceState(piece)}) '
+            'has ${child.shape} and allowed are $allowedShapes',
+          );
+        }
       }
 
-      // Note that this piece contains a newline so that we can propagate that
-      // up to containing pieces too.
-      _hadNewline = true;
+      // Propagate the child's shape up to modify the parent's.
+      parent.shape = parent.shape.merge(child.shape);
     }
   }
 
@@ -440,6 +438,20 @@ enum Whitespace {
     newline || blankLine => true,
     _ => false,
   };
+}
+
+/// Information for each piece currently being formatted while [CodeWriter]
+/// traverses the piece tree.
+class _FormatState {
+  /// The piece being formatted.
+  final Piece piece;
+
+  /// The piece's shape.
+  ///
+  /// This changes based on the newlines the piece writes.
+  Shape shape = Shape.inline;
+
+  _FormatState(this.piece);
 }
 
 /// A level of indentation in the indentation stack.

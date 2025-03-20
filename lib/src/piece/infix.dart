@@ -31,7 +31,8 @@ final class InfixPiece extends Piece {
   List<State> get additionalStates => const [State.split];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => state == State.split;
+  Set<Shape> allowedChildShapes(State state, Piece child) =>
+      Shape.anyIf(state == State.split);
 
   @override
   void format(CodeWriter writer, State state) {

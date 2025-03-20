@@ -143,24 +143,24 @@ final class ChainPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     switch (state) {
       case _ when child == _target:
-        return _allowSplitInTarget || state == State.split;
+        return Shape.anyIf(_allowSplitInTarget || state == State.split);
 
       case State.unsplit:
-        return false;
+        return Shape.onlyInline;
 
       case _splitAfterProperties:
         for (var i = 0; i < _leadingProperties; i++) {
-          if (_calls[i]._call == child) return false;
+          if (_calls[i]._call == child) return Shape.onlyInline;
         }
 
       case _blockFormatTrailingCall:
-        return _calls[_blockCallIndex]._call == child;
+        return Shape.anyIf(_calls[_blockCallIndex]._call == child);
     }
 
-    return true;
+    return Shape.all;
   }
 
   @override

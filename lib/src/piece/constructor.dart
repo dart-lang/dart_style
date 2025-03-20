@@ -129,12 +129,12 @@ final class ConstructorPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (child == _body) return true;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (child == _body) return Shape.all;
 
     // If there's a newline in the header or parameters (like a line comment
     // after the `)`), then don't allow the initializers to remain unsplit.
-    return _initializers == null || state != State.unsplit;
+    return Shape.anyIf(_initializers == null || state != State.unsplit);
   }
 
   @override

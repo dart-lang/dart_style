@@ -369,11 +369,14 @@ final class Solution implements Comparable<Solution> {
             // Stop as soon as we fail.
             if (_isDeadEnd) return;
 
-            // If the child can have newlines, there is no constraint.
-            if (piece.allowNewlineInChild(state, child)) return;
-
-            // Otherwise, don't let any piece under [child] contain newlines.
-            _constrainOffspring(child);
+            // If the child can't have newlines in any shape, then constrain it.
+            // TODO(shape): We can probably constrain this more specifically
+            // by asking what shapes the child might have.
+            var allowedShapes = piece.allowedChildShapes(state, child);
+            if (allowedShapes.length == 1 &&
+                allowedShapes.contains(Shape.inline)) {
+              _constrainOffspring(child);
+            }
           });
         }
 

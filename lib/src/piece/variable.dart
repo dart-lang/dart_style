@@ -60,11 +60,11 @@ final class VariablePiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     if (child == _header) {
-      return state != State.unsplit;
+      return Shape.anyIf(state != State.unsplit);
     } else {
-      return _variables.length == 1 || state != State.unsplit;
+      return Shape.anyIf(_variables.length == 1 || state != State.unsplit);
     }
   }
 
