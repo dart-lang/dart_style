@@ -7,7 +7,7 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../ast_extensions.dart';
-import '../constants.dart';
+import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';

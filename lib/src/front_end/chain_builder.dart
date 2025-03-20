@@ -6,7 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../constants.dart';
+import '../back_end/code_writer.dart';
 import '../piece/chain.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';

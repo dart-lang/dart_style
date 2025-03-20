@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a series of statements or members inside a block or declaration
@@ -98,9 +97,9 @@ final class BlockPiece extends Piece {
 ///
 /// Tracks the underlying [Piece] along with surrounding whitespace.
 final class SequenceElementPiece extends Piece {
-  /// The number of spaces of indentation on the line before this element,
-  /// relative to the surrounding [Piece].
-  final int _indent;
+  /// The indentation on the line before this element, relative to the
+  /// surrounding [Piece].
+  final Indent _indent;
 
   /// The [Piece] for the element.
   final Piece piece;

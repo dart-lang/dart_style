@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for the `for (...)` part of a for statement or element.
@@ -35,7 +34,7 @@ final class ForPiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.format(_forKeyword);
     writer.space();
-    if (_indent) writer.pushIndent(Indent.expression, canCollapse: true);
+    if (_indent) writer.pushIndent(Indent.controlFlowClause);
     writer.format(_parts);
     if (_indent) writer.popIndent();
   }

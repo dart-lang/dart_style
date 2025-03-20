@@ -57,7 +57,7 @@ final class CodeWriter {
   /// Each entry in the stack is the absolute number of spaces of leading
   /// indentation that should be written when beginning a new line to account
   /// for block nesting, expression wrapping, constructor initializers, etc.
-  final List<_Indent> _indentStack = [];
+  final List<_IndentLevel> _indentStack = [];
 
   /// The stack of information for each [Piece] currently being formatted.
   ///
@@ -109,7 +109,7 @@ final class CodeWriter {
     this._cache,
     this._solution,
   ) : _code = GroupCode(leadingIndent) {
-    _indentStack.add(_Indent(leadingIndent, 0));
+    _indentStack.add(_IndentLevel(Indent.none, leadingIndent));
 
     // Track the leading indent before the first line.
     _pendingIndent = leadingIndent;
@@ -119,7 +119,7 @@ final class CodeWriter {
     // onto the stack. When the first newline is written, [_pendingIndent] will
     // pick this up and use it for subsequent lines.
     if (subsequentIndent > leadingIndent) {
-      _indentStack.add(_Indent(subsequentIndent, 0));
+      _indentStack.add(_IndentLevel(Indent.none, subsequentIndent));
     }
   }
 
@@ -151,33 +151,14 @@ final class CodeWriter {
     }
   }
 
-  /// Increases the number of spaces of indentation by [indent] relative to the
-  /// current amount of indentation.
-  ///
-  /// If [canCollapse] is `true`, then the new [indent] spaces of indentation
-  /// are "collapsible". This means that further calls to [pushIndent()] will
-  /// merge their indentation with [indent] and not increase the visible
-  /// indentation until more than [indent] spaces of indentation have been
-  /// increased.
-  void pushIndent(int indent, {bool canCollapse = false}) {
-    var parentIndent = _indentStack.last.indent;
-    var parentCollapse = _indentStack.last.collapsible;
+  /// Increases the indentation by [indent] relative to the current amount of
+  /// indentation.
+  void pushIndent(Indent indent) {
+    var parent = _indentStack.last;
 
-    if (parentCollapse == indent) {
-      // We're indenting by the same existing collapsible amount, so collapse
-      // this new indentation with that existing one.
-      _indentStack.add(_Indent(parentIndent, 0));
-    } else if (canCollapse) {
-      // We should never get multiple levels of nested collapsible indentation.
-      assert(parentCollapse == 0);
-
-      // Increase the indentation and note that it can be collapsed with
-      // further indentation.
-      _indentStack.add(_Indent(parentIndent + indent, indent));
-    } else {
-      // Regular indentation, so just increase the indent.
-      _indentStack.add(_Indent(parentIndent + indent, 0));
-    }
+    // Combine the new indentation with the surrounding one.
+    var spaces = parent.spaces + parent.type.apply(indent);
+    _indentStack.add(_IndentLevel(indent, spaces));
   }
 
   /// Discards the indentation change from the last call to [pushIndent()].
@@ -233,7 +214,7 @@ final class CodeWriter {
       // TODO(rnystrom): Handle other shapes here when implemented.
       format.shape = Shape.other;
 
-      _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
+      _pendingIndent = flushLeft ? 0 : _indentStack.last.spaces;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
@@ -274,7 +255,7 @@ final class CodeWriter {
       _solution.pieceStateIfBound(piece),
       pageWidth: _pageWidth,
       indent: _pendingIndent,
-      subsequentIndent: _indentStack.last.indent,
+      subsequentIndent: _indentStack.last.spaces,
     );
 
     _pendingIndent = 0;
@@ -302,7 +283,7 @@ final class CodeWriter {
       isUnsolved =
           !_solution.tryBindByPageWidth(
             piece,
-            _pageWidth - _indentStack.first.indent,
+            _pageWidth - _indentStack.first.spaces,
           );
       Profile.end('CodeWriter try to bind by page width');
     }
@@ -440,6 +421,64 @@ enum Whitespace {
   };
 }
 
+/// A kind of indentation that a [Piece] may output to control the leading
+/// whitespace at the beginning of a line.
+///
+/// Each indentation type defines the number of spaces it writes. Indentation
+/// is also semantic: a type describes *why* it writes that, or what kind of
+/// syntax its coming from. This allows us to merge or combine indentation in
+/// smarter ways in some contexts.
+enum Indent {
+  // No indentation.
+  none(0),
+
+  /// The contents of a block-like structure: block, collection literal,
+  /// argument list, etc.
+  block(2),
+
+  /// A split cascade chain.
+  cascade(2),
+
+  /// Indentation when splits occur inside for-in and if-case clause headers.
+  controlFlowClause(4),
+
+  /// Any general sort of split expression.
+  expression(4),
+
+  /// Constructor initializer when the parameter list doesn't have optional
+  /// or named parameters.
+  initializer(2),
+
+  /// Constructor initializer when the parameter list does have optional or
+  /// named parameters.
+  initializerWithOptionalParameter(3);
+
+  /// The number of spaces this type of indentation applies.
+  final int spaces;
+
+  const Indent(this.spaces);
+
+  /// Applies [next] indentation on top of this indentation.
+  ///
+  /// Returns the relative number of spaces that the current indentation should
+  /// be modified by.
+  ///
+  /// In most cases, this is just [next]'s [spaces] and indentation is
+  /// cumulative. But in some contexts, indentation will collapse with the
+  /// parent ([this]) and yield a smaller or even negative offset.
+  int apply(Indent next) {
+    return switch ((this, next)) {
+      // We have already indented the control flow header, so collapse the
+      // duplicate indentation.
+      (Indent.controlFlowClause, Indent.expression) => 0,
+
+      // If we get here, the parent context has no effect, so just apply the
+      // indentation directly.
+      (_, _) => next.spaces,
+    };
+  }
+}
+
 /// Information for each piece currently being formatted while [CodeWriter]
 /// traverses the piece tree.
 class _FormatState {
@@ -455,12 +494,15 @@ class _FormatState {
 }
 
 /// A level of indentation in the indentation stack.
-final class _Indent {
+final class _IndentLevel {
+  /// The reason this indentation was added.
+  final Indent type;
+
   /// The total number of spaces of indentation.
-  final int indent;
+  final int spaces;
 
-  /// How many spaces of [indent] can be collapsed with further indentation.
-  final int collapsible;
+  _IndentLevel(this.type, this.spaces);
 
-  _Indent(this.indent, this.collapsible);
+  @override
+  String toString() => '${type.name}:$spaces';
 }

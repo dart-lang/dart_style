@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// Piece for the contents inside the parentheses for an if-case statement or
@@ -102,7 +101,7 @@ final class IfCasePiece extends Piece {
     writer.splitIf(state == _beforeCase || state == _beforeCaseAndWhen);
 
     if (!_canBlockSplitPattern) {
-      writer.pushIndent(Indent.expression, canCollapse: true);
+      writer.pushIndent(Indent.controlFlowClause);
     }
 
     writer.format(_pattern);

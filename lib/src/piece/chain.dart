@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A dotted series of property access or method calls, like:
@@ -89,11 +88,11 @@ final class ChainPiece extends Piece {
   ///         .method();
   final bool _allowSplitInTarget;
 
-  /// How much to indent the chain when it splits.
+  /// How to indent the chain when it splits.
   ///
-  /// This is [Indent.expression] for regular chains and [Indent.cascade] for
-  /// cascades.
-  final int _indent;
+  /// This is [Indent.expression] for regular chains or [Indent.cascade]
+  /// for cascades.
+  final Indent _indent;
 
   final bool _isCascade;
 
@@ -106,7 +105,7 @@ final class ChainPiece extends Piece {
     required bool cascade,
     int leadingProperties = 0,
     int blockCallIndex = -1,
-    int indent = Indent.expression,
+    Indent indent = Indent.expression,
     required bool allowSplitInTarget,
   }) : _leadingProperties = leadingProperties,
        _blockCallIndex = blockCallIndex,
