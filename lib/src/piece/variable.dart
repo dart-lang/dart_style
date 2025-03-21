@@ -60,6 +60,12 @@ final class VariablePiece extends Piece {
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
+    // If the variable doesn't allow any other states (because it's just
+    // `var x` etc.) then allow any shape. That way, if there's a comment
+    // inside, the solver doesn't get confused trying to invalidate the
+    // VariablePiece.
+    if (_variables.length == 1 && !_hasType) return Shape.all;
+
     if (child == _header) {
       return Shape.anyIf(state != State.unsplit);
     } else {

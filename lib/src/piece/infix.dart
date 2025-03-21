@@ -16,15 +16,18 @@ final class InfixPiece extends Piece {
   /// A leading operator like `foo as int` becomes "Infix(`foo`, `as int`)".
   final List<Piece> _operands;
 
-  /// Whether operands after the first should be indented if split.
-  final bool _indent;
+  /// What kind of indentation should be applied to the subsequent operands.
+  final Indent _indentType;
 
   /// Whether this piece is for a conditional expression.
   final bool _isConditional;
 
-  InfixPiece(this._operands, {bool indent = true, bool conditional = false})
-    : _indent = indent,
-      _isConditional = conditional;
+  InfixPiece(
+    this._operands, {
+    bool conditional = false,
+    Indent indent = Indent.infix,
+  }) : _indentType = indent,
+       _isConditional = conditional;
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -35,7 +38,7 @@ final class InfixPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    if (_indent) writer.pushIndent(Indent.expression);
+    writer.pushIndent(_indentType);
 
     writer.format(_operands[0]);
 
@@ -54,7 +57,7 @@ final class InfixPiece extends Piece {
       if (_isConditional) writer.popIndent();
     }
 
-    if (_indent) writer.popIndent();
+    writer.popIndent();
   }
 
   @override

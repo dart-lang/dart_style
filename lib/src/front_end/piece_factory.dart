@@ -5,12 +5,14 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
 import '../piece/control_flow.dart';
 import '../piece/for.dart';
+import '../piece/grouping.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
@@ -52,12 +54,6 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 enum NodeContext {
   /// No specified context.
   none,
-
-  /// The child is the right-hand side of an assignment-like form.
-  ///
-  /// This includes assignments, variable declarations, named arguments, map
-  /// entries, and `=>` function bodies.
-  assignment,
 
   /// The child is the target of a cascade expression.
   cascadeTarget,
@@ -747,7 +743,7 @@ mixin PieceFactory {
       if (separator.type != TokenType.EQ) pieces.space();
     });
 
-    var valuePiece = nodePiece(value, context: NodeContext.assignment);
+    var valuePiece = nodePiece(value);
 
     pieces.add(
       AssignPiece(
@@ -825,6 +821,16 @@ mixin PieceFactory {
         writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
       }
     });
+  }
+
+  void writeGrouping(Token leftBracket, AstNode content, Token rightBracket) {
+    var contentPiece = pieces.build(() {
+      pieces.token(leftBracket);
+      pieces.visit(content);
+      pieces.token(rightBracket);
+    });
+
+    pieces.add(GroupingPiece(contentPiece));
   }
 
   /// Writes a piece for the header -- everything from the `if` keyword to the
@@ -1022,9 +1028,8 @@ mixin PieceFactory {
     // index expressions in a corpus of pub packages).
     pieces.token(index.question);
     pieces.token(index.period);
-    pieces.token(index.leftBracket);
-    pieces.visit(index.index);
-    pieces.token(index.rightBracket);
+    // TODO: Test.
+    writeGrouping(index.leftBracket, index.index, index.rightBracket);
   }
 
   /// Writes a single infix operation.
@@ -1041,6 +1046,7 @@ mixin PieceFactory {
     AstNode right, {
     bool hanging = false,
     Token? operator2,
+    Indent indent = Indent.infix,
   }) {
     var leftPiece = pieces.build(() {
       pieces.visit(left);
@@ -1061,7 +1067,7 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(InfixPiece([leftPiece, rightPiece]));
+    pieces.add(InfixPiece([leftPiece, rightPiece], indent: indent));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -1116,7 +1122,9 @@ mixin PieceFactory {
       }),
     );
 
-    pieces.add(InfixPiece(operands, indent: indent));
+    pieces.add(
+      InfixPiece(operands, indent: indent ? Indent.infix : Indent.none),
+    );
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
@@ -1260,9 +1268,27 @@ mixin PieceFactory {
   ///
   /// If [space] is `true` and there is an operator, writes a space between the
   /// operator and operand.
-  void writePrefix(Token? operator, AstNode? node, {bool space = false}) {
-    pieces.token(operator, spaceAfter: space);
-    pieces.visit(node);
+  void writePrefix(Token operator, AstNode? operand, {bool space = false}) {
+    // Wrap in grouping so that an infix split inside the prefix operator
+    // doesn't get collapsed in the surrounding context, like:
+    //
+    //     // Wrong:
+    //     var x =
+    //         throw 'Some long string '
+    //         'wrapped.';
+    //
+    //     // Right:
+    //     var x =
+    //         throw 'Some long string '
+    //             'wrapped.';
+    pieces.add(
+      GroupingPiece(
+        pieces.build(() {
+          pieces.token(operator, spaceAfter: space);
+          pieces.visit(operand);
+        }),
+      ),
+    );
   }
 
   /// Writes an [AdjacentPiece] for a given record type field.
@@ -1536,11 +1562,7 @@ mixin PieceFactory {
       pieces.token(operator);
     });
 
-    var rightPiece = nodePiece(
-      rightHandSide,
-      commaAfter: includeComma,
-      context: NodeContext.assignment,
-    );
+    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
 
     pieces.add(
       AssignPiece(

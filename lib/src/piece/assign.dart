@@ -188,18 +188,12 @@ final class AssignPiece extends Piece {
     writer.popIndent();
     writer.splitIf(state == _atOperator);
 
-    // If the left side block splits and the right doesn't, then indent the
-    // right side if it splits as in:
-    //
-    //     var [
-    //       a,
-    //       b,
-    //     ] = long +
-    //         expression;
-    var indentRight = state == _blockSplitLeft && !_canBlockSplitRight;
-    if (indentRight) writer.pushIndent(Indent.expression);
+    if (state == _atOperator) {
+      writer.popIndent();
+      writer.pushIndent(Indent.assignment);
+    }
+
     writer.format(_right);
-    if (indentRight) writer.popIndent();
 
     if (state == _atOperator) writer.popIndent();
   }

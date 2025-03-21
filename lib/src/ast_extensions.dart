@@ -375,28 +375,27 @@ extension AdjacentStringsExtensions on AdjacentStrings {
   /// Whether subsequent strings should be indented relative to the first
   /// string.
   ///
-  /// We generally want to indent adjacent strings because it can be confusing
-  /// otherwise when they appear in a list of expressions, like:
+  /// We generally prefer to align the strings because it makes them easier to
+  /// read as a single paragraph of text (which they often are):
   ///
-  ///     [
-  ///       "one",
-  ///       "two"
-  ///       "three",
-  ///       "four"
-  ///     ]
+  ///     function(
+  ///       'This is a long string message '
+  ///       'split across multiple lines.',
+  ///     )
   ///
-  /// Especially when these strings are longer, it can be hard to tell that
-  /// "three" is a continuation of the previous element.
+  /// But this is hard to read if there are other string arguments:
   ///
-  /// However, the indentation is distracting in places that don't suffer from
-  /// this ambiguity:
+  ///     function(
+  ///       'This is a long string message '
+  ///       'split across multiple lines.',
+  ///       'This is a separate argument.',
+  ///     )
   ///
-  ///     var description =
-  ///         "A very long description..."
-  ///             "this extra indentation is unnecessary.");
+  /// Here, unless you carefully notice the commas, it's hard to tell how many
+  /// arguments there are.
   ///
-  /// To balance these, we omit the indentation when an adjacent string
-  /// expression is in a context where it's unlikely to be confusing.
+  /// To balance these, we omit the indentation in argument lists only if there
+  /// are no other string arguments.
   bool get indentStrings {
     bool hasOtherStringArgument(List<Expression> arguments) => arguments.any(
       (argument) => argument != this && argument is StringLiteral,
@@ -411,21 +410,6 @@ extension AdjacentStringsExtensions on AdjacentStrings {
         if (message != null) message,
       ]),
 
-      // Don't add extra indentation in a variable initializer or assignment:
-      //
-      //     var variable =
-      //         "no extra"
-      //         "indent";
-      VariableDeclaration() => false,
-      AssignmentExpression(:var rightHandSide) when rightHandSide == this =>
-        false,
-
-      // Don't indent when following `:`.
-      MapLiteralEntry(:var value) when value == this => false,
-      NamedExpression() => false,
-
-      // Don't indent when the body of a `=>` function.
-      ExpressionFunctionBody() => false,
       _ => true,
     };
   }

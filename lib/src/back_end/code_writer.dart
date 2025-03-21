@@ -157,8 +157,29 @@ final class CodeWriter {
     var parent = _indentStack.last;
 
     // Combine the new indentation with the surrounding one.
-    var spaces = parent.spaces + parent.type.apply(indent);
-    _indentStack.add(_IndentLevel(indent, spaces));
+    var offset = switch ((parent.type, indent)) {
+      // On the right-hand side of `=`, `:`, or `=>`, don't indent subsequent
+      // infix operands so that they all align:
+      //
+      //     variable =
+      //         operand +
+      //         another;
+      (Indent.assignment, Indent.infix) => 0,
+
+      // We have already indented the control flow header, so collapse the
+      // duplicate indentation.
+      (Indent.controlFlowClause, Indent.expression) => 0,
+      (Indent.controlFlowClause, Indent.infix) => 0,
+
+      // If we get here, the parent context has no effect, so just apply the
+      // indentation directly.
+      (_, _) => indent.spaces,
+    };
+
+    _indentStack.add(_IndentLevel(indent, parent.spaces + offset));
+    if (debug.traceIndent) {
+      debug.log('pushIndent: ${_indentStack.join(' ')}');
+    }
   }
 
   /// Discards the indentation change from the last call to [pushIndent()].
@@ -432,6 +453,9 @@ enum Indent {
   // No indentation.
   none(0),
 
+  /// The right-hand side of an `=`, `:`, or `=>`.
+  assignment(4),
+
   /// The contents of a block-like structure: block, collection literal,
   /// argument list, etc.
   block(2),
@@ -445,6 +469,14 @@ enum Indent {
   /// Any general sort of split expression.
   expression(4),
 
+  /// "Indentation" for parenthesized expressions and other contexts where we
+  /// want to prevent some inner expression's indentation from merging with
+  /// the surrounding one.
+  grouping(0),
+
+  /// An infix operator expression: `+`, `*`, `is`, etc.
+  infix(4),
+
   /// Constructor initializer when the parameter list doesn't have optional
   /// or named parameters.
   initializer(2),
@@ -457,26 +489,6 @@ enum Indent {
   final int spaces;
 
   const Indent(this.spaces);
-
-  /// Applies [next] indentation on top of this indentation.
-  ///
-  /// Returns the relative number of spaces that the current indentation should
-  /// be modified by.
-  ///
-  /// In most cases, this is just [next]'s [spaces] and indentation is
-  /// cumulative. But in some contexts, indentation will collapse with the
-  /// parent ([this]) and yield a smaller or even negative offset.
-  int apply(Indent next) {
-    return switch ((this, next)) {
-      // We have already indented the control flow header, so collapse the
-      // duplicate indentation.
-      (Indent.controlFlowClause, Indent.expression) => 0,
-
-      // If we get here, the parent context has no effect, so just apply the
-      // indentation directly.
-      (_, _) => next.spaces,
-    };
-  }
 }
 
 /// Information for each piece currently being formatted while [CodeWriter]

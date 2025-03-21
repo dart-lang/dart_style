@@ -12,8 +12,9 @@ if (obj
 if (obj case var // c
 x) {;}
 <<<
-if (obj case var // c
-    x) {
+if (obj
+    case var // c
+        x) {
   ;
 }
 >>> Line comment after variable (looks weird, but user should move comment).
@@ -41,7 +42,8 @@ if (obj
   ;
 }
 <<<
-if (obj case final // c
-    thisIsReallyQuiteAVeryLongVariableName) {
+if (obj
+    case final // c
+        thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }
