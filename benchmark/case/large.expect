@@ -754,14 +754,13 @@ class Traverser {
           }
 
           // Replace any overridden dependencies.
-          deps =
-              deps.map((dep) {
-                var override = _solver._overrides[dep.name];
-                if (override != null) return override;
+          deps = deps.map((dep) {
+            var override = _solver._overrides[dep.name];
+            if (override != null) return override;
 
-                // Not overridden.
-                return dep;
-              }).toSet();
+            // Not overridden.
+            return dep;
+          }).toSet();
 
           // Make sure the package doesn't have any bad dependencies.
           for (var dep in deps) {
@@ -826,9 +825,10 @@ class Traverser {
 
       // See if it's possible for a package to match that constraint.
       if (constraint.isEmpty) {
-        var constraints = dependencies
-            .map((dep) => "  ${dep.dep.constraint} from ${dep.depender}")
-            .join('\n');
+        var constraints =
+            dependencies
+                .map((dep) => "  ${dep.dep.constraint} from ${dep.depender}")
+                .join('\n');
         _solver.logSolve('disjoint constraints on ${dep.name}:\n$constraints');
         throw new DisjointConstraintException(dep.name, dependencies);
       }
@@ -1013,9 +1013,10 @@ class Traverser {
   /// Gets the combined [VersionConstraint] currently being placed on package
   /// [name].
   VersionConstraint _getConstraint(String name) {
-    var constraint = _getDependencies(name)
-        .map((dep) => dep.dep.constraint)
-        .fold(VersionConstraint.any, (a, b) => a.intersect(b));
+    var constraint =
+        _getDependencies(name)
+            .map((dep) => dep.dep.constraint)
+            .fold(VersionConstraint.any, (a, b) => a.intersect(b));
 
     return constraint;
   }

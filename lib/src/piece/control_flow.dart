@@ -21,7 +21,7 @@ final class ControlFlowPiece extends Piece {
   }
 
   @override
-  List<State> get additionalStates => [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void applyConstraints(State state, Constrain constrain) {

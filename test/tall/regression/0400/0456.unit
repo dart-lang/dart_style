@@ -4365,44 +4365,49 @@ main() {
   new LibraryBuilder()
       .addImport((i) => i.setUri('coffee_app.dart'))
       .addClass(
-        (c) => c
-            .setName('Coffee\$Injector')
-            .setImplements(['Coffee'])
-            .addField(
-              (f) => f
-                  .setFinal()
-                  .setType((t) => t.setIdentifier('DripCoffeeModule'))
-                  .setName('_dripCoffeeModule'),
-            )
-            .addMethod(
-              (m) => m
-                  .setName('Coffee\$Injector')
-                  .addParameter((p) => p.setThis('_dripCoffeeModule')),
-            )
-            .addMethod(
-              (m) => m
-                  .addAnnotation((a) => a.override())
-                  .setReturnType((t) => t.setIdentifier('CoffeeMaker'))
-                  .setName('getCoffeeMaker')
-                  .setBodyExpression(
-                    // NOTE: Below this point, dartfmt will give up.
-                    (b) => b.setExpression(
-                      (e) => e
-                          .invoke()
-                          .setMethod('new CoffeeMaker')
-                          .addArgument(
-                            (x) => x.invoke().setMethod(
-                              '_dripCoffeeModule.provideHeater',
-                            ),
-                          )
-                          .addArgument(
-                            (x) => x.invoke().setMethod(
-                              '_dripCoffeeModule.providePump',
+        (c) =>
+            c
+                .setName('Coffee\$Injector')
+                .setImplements(['Coffee'])
+                .addField(
+                  (f) =>
+                      f
+                          .setFinal()
+                          .setType((t) => t.setIdentifier('DripCoffeeModule'))
+                          .setName('_dripCoffeeModule'),
+                )
+                .addMethod(
+                  (m) =>
+                      m
+                          .setName('Coffee\$Injector')
+                          .addParameter((p) => p.setThis('_dripCoffeeModule')),
+                )
+                .addMethod(
+                  (m) =>
+                      m
+                          .addAnnotation((a) => a.override())
+                          .setReturnType((t) => t.setIdentifier('CoffeeMaker'))
+                          .setName('getCoffeeMaker')
+                          .setBodyExpression(
+                            // NOTE: Below this point, dartfmt will give up.
+                            (b) => b.setExpression(
+                              (e) =>
+                                  e
+                                      .invoke()
+                                      .setMethod('new CoffeeMaker')
+                                      .addArgument(
+                                        (x) => x.invoke().setMethod(
+                                          '_dripCoffeeModule.provideHeater',
+                                        ),
+                                      )
+                                      .addArgument(
+                                        (x) => x.invoke().setMethod(
+                                          '_dripCoffeeModule.providePump',
+                                        ),
+                                      ),
                             ),
                           ),
-                    ),
-                  ),
-            ),
+                ),
       );
 }
 >>>

@@ -34,9 +34,10 @@ var keyLen = sortedEntries.map((e) => e.key).fold(
   (int len, String key) => max(len, key.length),
 );
 <<<
-var keyLen = sortedEntries
-    .map((e) => e.key)
-    .fold(0, (int len, String key) => max(len, key.length));
+var keyLen =
+    sortedEntries
+        .map((e) => e.key)
+        .fold(0, (int len, String key) => max(len, key.length));
 >>> Prefer to split at outer nested function.
 Instantiator visitEmptyStatement(EmptyStatement node) => (arguments) =>
       EmptyStatement();
@@ -96,9 +97,10 @@ final service = FakeInsightsService(features)..detailsList = [
     anomaly_test_util.earnings3,
   ];
 <<<
-final service = FakeInsightsService(features)
-  ..detailsList = [
-    anomaly_test_util.earnings,
-    anomaly_test_util.earnings2,
-    anomaly_test_util.earnings3,
-  ];
+final service =
+    FakeInsightsService(features)
+      ..detailsList = [
+        anomaly_test_util.earnings,
+        anomaly_test_util.earnings2,
+        anomaly_test_util.earnings3,
+      ];

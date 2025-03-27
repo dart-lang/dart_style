@@ -208,17 +208,23 @@ abstract base class Piece with FastHash {
 /// But some pieces have more specific constraints than just "one line or not".
 /// In particular assignment-like constructs allow "block" and "header" shaped
 /// children in certain states and not others.
-// TODO(rnystrom): Document other shapes when they are implemented.
 enum Shape {
   /// The piece fits entirely on one line.
   inline,
+
+  /// A delimited block-indented structure like a function body, collection
+  /// literal, or argument list.
+  block,
 
   /// The piece is split across multiple lines but not in any other well-defined
   /// shape.
   other;
 
   /// Allows all shapes.
-  static const Set<Shape> all = {inline, other};
+  static const Set<Shape> all = {inline, block, other};
+
+  /// Must be block shaped.
+  static const Set<Shape> onlyBlock = {block};
 
   /// Prohibits any newlines at all.
   static const Set<Shape> onlyInline = {inline};
@@ -237,8 +243,6 @@ enum Shape {
       // If one shape is inline, it doesn't affect the result.
       (Shape.inline, _) => other,
       (_, Shape.inline) => this,
-
-      // TODO(rnystrom): Handle other shapes here when implemented.
 
       // Otherwise, it's some other shape.
       (_, _) => Shape.other,

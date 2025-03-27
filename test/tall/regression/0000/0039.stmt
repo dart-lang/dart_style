@@ -2,5 +2,6 @@
   var serialization1 = new Serialization(format: format)
           ..addRules(rules.values);
 <<<
-  var serialization1 = new Serialization(format: format)
-    ..addRules(rules.values);
+  var serialization1 = new Serialization(
+    format: format,
+  )..addRules(rules.values);

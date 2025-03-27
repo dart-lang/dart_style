@@ -1,5 +1,5 @@
-final passInt32x8Doublex8Int64Int8Struct1ByteIntInt64IntLeaf = ffiTestFunctions
-    .lookupFunction<
+final passInt32x8Doublex8Int64Int8Struct1ByteIntInt64IntLeaf =
+    ffiTestFunctions.lookupFunction<
       Double Function(
         Int32,
         Int32,

@@ -71,10 +71,12 @@ final class BlockPiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.format(_leftBracket);
     writer.pushIndent(Indent.block);
+    writer.setShapeMode(ShapeMode.block);
     writer.newline();
     writer.format(_elements);
     writer.popIndent();
     writer.newline();
+    writer.setShapeMode(ShapeMode.merge);
     writer.format(_rightBracket);
   }
 

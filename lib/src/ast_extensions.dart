@@ -162,6 +162,26 @@ extension AstIterableExtensions on Iterable<AstNode> {
 }
 
 extension ExpressionExtensions on Expression {
+  /// Whether this expression is a list, set, or map literal whose elements
+  /// all have a homogeneous type.
+  ///
+  /// In that case, the elements are relatively loosely related to each other.
+  /// The collection has an unbounded number of them and the contents tend to
+  /// change frequently.
+  ///
+  /// This isn't true for record literal fields and function call arguments. In
+  /// those cases, each argument position is meaningful and it's easiest to
+  /// read them all together.
+  ///
+  /// Thus it makes sense for the formatter to be looser about splitting list,
+  /// map, and set literals, while trying to avoid splitting argument lists and
+  /// records.
+  bool get isHomogeneousCollectionBody =>
+      this is ListLiteral || this is SetOrMapLiteral;
+
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// Whether this expression is a non-empty delimited container for inner
   /// expressions that allows "block-like" formatting in some contexts. For
   /// example, in an assignment, a split in the assigned value is usually
@@ -187,6 +207,9 @@ extension ExpressionExtensions on Expression {
   /// splitting inside them, so are not considered block-like.
   bool get canBlockSplit => blockFormatType != BlockFormat.none;
 
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// When this expression is in an argument list, what kind of block formatting
   /// category it belongs to.
   BlockFormat get blockFormatType {
@@ -416,6 +439,9 @@ extension AdjacentStringsExtensions on AdjacentStrings {
 }
 
 extension PatternExtensions on DartPattern {
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// Whether this expression is a non-empty delimited container for inner
   /// expressions that allows "block-like" formatting in some contexts.
   ///

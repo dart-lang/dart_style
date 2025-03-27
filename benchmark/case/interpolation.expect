@@ -1,5 +1,6 @@
 main() {
-  var a = '''
+  var a =
+      '''
       {
         selected:
           hovered: $hoverColor, otherwise: ${colorScheme?.primary.withOpacity(0.04)},

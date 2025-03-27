@@ -38,9 +38,9 @@ final documentChanges =
               (json['documentChanges'].every(
                 (item) =>
                     (TextDocumentEdit.canParse(item, nullLspJsonReporter) ||
-                        CreateFile.canParse(item, nullLspJsonReporter) ||
-                        RenameFile.canParse(item, nullLspJsonReporter) ||
-                        DeleteFile.canParse(item, nullLspJsonReporter)),
+                    CreateFile.canParse(item, nullLspJsonReporter) ||
+                    RenameFile.canParse(item, nullLspJsonReporter) ||
+                    DeleteFile.canParse(item, nullLspJsonReporter)),
               )))
           ? Either2<
               List<TextDocumentEdit>,

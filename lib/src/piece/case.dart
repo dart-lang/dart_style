@@ -7,7 +7,7 @@ import 'piece.dart';
 
 /// Piece for a case pattern, guard, and body in a switch expression.
 final class CaseExpressionPiece extends Piece {
-  /// Split inside the body, which must be block formattable, like:
+  /// Split inside the body, which must be block shaped, like:
   ///
   ///     pattern => function(
   ///       argument,
@@ -47,9 +47,6 @@ final class CaseExpressionPiece extends Piece {
   ///     }
   final bool _patternIsLogicalOr;
 
-  /// Whether the body expression can be block formatted.
-  final bool _canBlockSplitBody;
-
   CaseExpressionPiece(
     this._pattern,
     this._guard,
@@ -57,14 +54,12 @@ final class CaseExpressionPiece extends Piece {
     this._body, {
     required bool canBlockSplitPattern,
     required bool patternIsLogicalOr,
-    required bool canBlockSplitBody,
   }) : _canBlockSplitPattern = canBlockSplitPattern,
-       _patternIsLogicalOr = patternIsLogicalOr,
-       _canBlockSplitBody = canBlockSplitBody;
+       _patternIsLogicalOr = patternIsLogicalOr;
 
   @override
   List<State> get additionalStates => [
-    if (_canBlockSplitBody) _blockSplitBody,
+    _blockSplitBody,
     _beforeBody,
     if (_guard != null) ...[_beforeWhenAndBody],
   ];
@@ -79,7 +74,7 @@ final class CaseExpressionPiece extends Piece {
       // There are almost never splits in the arrow piece. It requires a comment
       // in a funny location, but if it happens, allow it.
       _ when child == _arrow => Shape.all,
-      _blockSplitBody when child == _body => Shape.all,
+      _blockSplitBody when child == _body => Shape.onlyBlock,
       _beforeBody when child == _pattern => Shape.anyIf(_guard == null),
       _beforeBody when child == _body => Shape.all,
       _beforeWhenAndBody => Shape.all,

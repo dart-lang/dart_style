@@ -25,19 +25,16 @@ main() {
   }
 }
 <<<
-### TODO(1466): Ideally, the first case would also split at the `||` instead of
-### of before `.`, but the formatter can't distinguish that case without fixing
-### #1466.
 main() {
   {
     return TextFieldTapRegion(
       onLongPressMoveUpdate: (longPressMoveUpdateDetails) {
         (switch (Theme.of(this.context).platform) {
-          TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
-              .selectPositionAt(
-                from: longPressMoveUpdateDetails.globalPosition,
-                cause: SelectionChangedCause.longPress,
-              ),
+          TargetPlatform.iOS ||
+          TargetPlatform.macOS => _renderEditable.selectPositionAt(
+            from: longPressMoveUpdateDetails.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          ),
           TargetPlatform.android ||
           TargetPlatform.fuchsia ||
           TargetPlatform.linux ||
@@ -79,32 +76,28 @@ main() {
   }
 }
 <<<
-### TODO(1466): Ideally, the first case would also split at the `||` instead of
-### of before `.`, but the formatter can't distinguish that case without fixing
-### #1466.
 main() {
   {
     return TextFieldTapRegion(
       onLongPressMoveUpdate:
-          (longPressMoveUpdateDetails) => switch (Theme.of(
-            this.context,
-          ).platform) {
-            TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
-                .selectPositionAt(
+          (longPressMoveUpdateDetails) =>
+              switch (Theme.of(this.context).platform) {
+                TargetPlatform.iOS ||
+                TargetPlatform.macOS => _renderEditable.selectPositionAt(
                   from: longPressMoveUpdateDetails.globalPosition,
                   cause: SelectionChangedCause.longPress,
                 ),
-            TargetPlatform.android ||
-            TargetPlatform.fuchsia ||
-            TargetPlatform.linux ||
-            TargetPlatform.windows => _renderEditable.selectWordsInRange(
-              from:
-                  longPressMoveUpdateDetails.globalPosition -
-                  longPressMoveUpdateDetails.offsetFromOrigin,
-              to: longPressMoveUpdateDetails.globalPosition,
-              cause: SelectionChangedCause.longPress,
-            ),
-          },
+                TargetPlatform.android ||
+                TargetPlatform.fuchsia ||
+                TargetPlatform.linux ||
+                TargetPlatform.windows => _renderEditable.selectWordsInRange(
+                  from:
+                      longPressMoveUpdateDetails.globalPosition -
+                      longPressMoveUpdateDetails.offsetFromOrigin,
+                  to: longPressMoveUpdateDetails.globalPosition,
+                  cause: SelectionChangedCause.longPress,
+                ),
+              },
     );
   }
 }

@@ -19,9 +19,10 @@ test() {
   var futures =
       ids
           .map(
-            (id) => fooService
-                .getItem(objectName, id)
-                .then((item) => results.add(item.name.value)),
+            (id) =>
+                fooService
+                    .getItem(objectName, id)
+                    .then((item) => results.add(item.name.value)),
           )
           .toList();
 }

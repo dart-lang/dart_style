@@ -9,11 +9,10 @@ void main() async {
 <<<
 void main() async {
   (await {
-        'asdf': 'fdsa', // comment to force split
-      }.toString())
-      .foo(
-        bar('baz'), // comment to force split
-      );
+    'asdf': 'fdsa', // comment to force split
+  }.toString()).foo(
+    bar('baz'), // comment to force split
+  );
 }
 >>>
 Future<void> a() {

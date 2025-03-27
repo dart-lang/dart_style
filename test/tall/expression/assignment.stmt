@@ -66,3 +66,26 @@ longVariableName =
       argument,
       another,
     );
+>>> Prefer to split at `=` over property chain.
+target.property.another = reallyLongValue;
+<<<
+target.property.another =
+    reallyLongValue;
+>>> Split property chain on left.
+target.property.another.lastOneReallyLong = reallyLongValue;
+<<<
+target
+        .property
+        .another
+        .lastOneReallyLong =
+    reallyLongValue;
+>>> Don't block format through nested assignments.
+outer = inner = [element1, element2, element3, element4];
+<<<
+outer =
+    inner = [
+      element1,
+      element2,
+      element3,
+      element4,
+    ];

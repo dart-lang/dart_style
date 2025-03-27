@@ -230,15 +230,17 @@ final class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      // Determine how the newline affect's the piece's shape.
-      var format = _pieceFormats.last;
-      // TODO(rnystrom): Handle other shapes here when implemented.
-      format.shape = Shape.other;
-
+      _applyNewlineToShape();
       _pendingIndent = flushLeft ? 0 : _indentStack.last.spaces;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
+  }
+
+  /// When a newline is written by the current piece of one of its children,
+  /// determines how that affects the current piece's shape.
+  void setShapeMode(ShapeMode mode) {
+    _pieceFormats.last._mode = mode;
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -341,8 +343,8 @@ final class CodeWriter {
         }
       }
 
-      // Propagate the child's shape up to modify the parent's.
-      parent.shape = parent.shape.merge(child.shape);
+      // If the child had newlines, propagate that to the parent's shape.
+      if (child.shape != Shape.inline) _applyNewlineToShape(child.shape);
     }
   }
 
@@ -408,6 +410,16 @@ final class CodeWriter {
       // This line was OK, so we don't need to expand the pieces on it.
       _currentLinePieces.clear();
     }
+  }
+
+  /// Determine how a newline affects the current piece's shape.
+  void _applyNewlineToShape([Shape shape = Shape.other]) {
+    var format = _pieceFormats.last;
+    format.shape = switch (format._mode) {
+      ShapeMode.merge => format.shape.merge(shape),
+      ShapeMode.block => Shape.block,
+      ShapeMode.other => Shape.other,
+    };
   }
 }
 
@@ -502,7 +514,26 @@ class _FormatState {
   /// This changes based on the newlines the piece writes.
   Shape shape = Shape.inline;
 
+  /// How a newline affects the shape of this piece.
+  ShapeMode _mode = ShapeMode.merge;
+
   _FormatState(this.piece);
+}
+
+/// Determines how a newline inside a piece or a child piece affects the shape
+/// of the current piece.
+enum ShapeMode {
+  /// The piece's shape is merged with the incoming shape.
+  ///
+  /// If a newline is written directly by the piece itself, that has shape
+  /// [Shape.other].
+  merge,
+
+  /// A newline makes this piece block-shaped.
+  block,
+
+  /// A newline makes this piece have [Shape.other].
+  other,
 }
 
 /// A level of indentation in the indentation stack.

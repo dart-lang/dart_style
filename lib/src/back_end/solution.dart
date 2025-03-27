@@ -195,9 +195,14 @@ final class Solution implements Comparable<Solution> {
   void invalidate(Piece piece) {
     _isValid = false;
 
-    // If the piece whose newline constraint was violated is already bound to
-    // one state, then every solution derived from this one will also fail.
-    if (!_isDeadEnd && isBound(piece)) _isDeadEnd = true;
+    // TODO(rnystrom): It would be good to mark a solution as a dead end here
+    // if possible. It used to be safe to do that whenever [piece] was bound
+    // because any newline at all from any child would reliably always
+    // invalidate that piece, so if bound, it must be a dead end.
+    //
+    // Now that we invalidate based on allowed shapes, and the shape of a piece
+    // can depend on its children (transitively), it's not clear when we can
+    // safely consider a solution a dead end when gets invalidated.
   }
 
   /// Derives new potential solutions from this one by binding [_expandPieces]

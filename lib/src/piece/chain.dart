@@ -76,18 +76,6 @@ final class ChainPiece extends Piece {
   /// and the last call's argument list can be block formatted.
   final int _blockCallIndex;
 
-  /// Whether the target expression may contain newlines when the chain is not
-  /// fully split. (It may always contain newlines when the chain splits.)
-  ///
-  /// This is true for most expressions but false for delimited ones to avoid
-  /// this weird output:
-  ///
-  ///     function(
-  ///       argument,
-  ///     )
-  ///         .method();
-  final bool _allowSplitInTarget;
-
   /// How to indent the chain when it splits.
   ///
   /// This is [Indent.expression] for regular chains or [Indent.cascade]
@@ -106,11 +94,9 @@ final class ChainPiece extends Piece {
     int leadingProperties = 0,
     int blockCallIndex = -1,
     Indent indent = Indent.expression,
-    required bool allowSplitInTarget,
   }) : _leadingProperties = leadingProperties,
        _blockCallIndex = blockCallIndex,
        _indent = indent,
-       _allowSplitInTarget = allowSplitInTarget,
        _isCascade = cascade,
        // If there are no calls, we shouldn't have created a chain.
        assert(_calls.isNotEmpty);
@@ -143,23 +129,32 @@ final class ChainPiece extends Piece {
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
-    switch (state) {
-      case _ when child == _target:
-        return Shape.anyIf(_allowSplitInTarget || state == State.split);
+    if (child == _target) {
+      return switch (state) {
+        // If the chain itself isn't fully split, only allow block splitting
+        // in the target.
+        State.unsplit ||
+        _blockFormatTrailingCall ||
+        _splitAfterProperties => const {Shape.inline, Shape.block},
+        _ => Shape.all,
+      };
+    } else {
+      switch (state) {
+        case State.unsplit:
+          return Shape.onlyInline;
 
-      case State.unsplit:
-        return Shape.onlyInline;
+        case _splitAfterProperties:
+          // Don't allow splitting inside the properties.
+          for (var i = 0; i < _leadingProperties; i++) {
+            if (_calls[i]._call == child) return Shape.onlyInline;
+          }
 
-      case _splitAfterProperties:
-        for (var i = 0; i < _leadingProperties; i++) {
-          if (_calls[i]._call == child) return Shape.onlyInline;
-        }
+        case _blockFormatTrailingCall:
+          return Shape.anyIf(_calls[_blockCallIndex]._call == child);
+      }
 
-      case _blockFormatTrailingCall:
-        return Shape.anyIf(_calls[_blockCallIndex]._call == child);
+      return Shape.all;
     }
-
-    return Shape.all;
   }
 
   @override

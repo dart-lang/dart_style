@@ -471,11 +471,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           pieces.space();
         });
 
-        redirect = AssignPiece(
-          separator,
-          nodePiece(constructor),
-          canBlockSplitRight: false,
-        );
+        redirect = AssignPiece(separator, nodePiece(constructor));
       } else if (node.initializers.isNotEmpty) {
         initializerSeparator = tokenPiece(node.separator!);
         initializers = createCommaSeparated(node.initializers);
@@ -675,16 +671,29 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     });
 
     var expression = nodePiece(node.expression);
-
-    pieces.add(
-      AssignPiece(
-        operatorPiece,
-        expression,
-        canBlockSplitRight: node.expression.canBlockSplit,
-        avoidBlockSplitRight:
-            node.expression.blockFormatType == BlockFormat.invocation,
-      ),
+    var assignPiece = AssignPiece(
+      operatorPiece,
+      expression,
+      // Prefer splitting at `=>` and keeping the expression together unless
+      // it's a collection literal.
+      avoidSplit: node.expression.isHomogeneousCollectionBody,
     );
+
+    // If a `=>` is directly nested inside another, force the outer one to
+    // split. This is for performance reasons. A series of nested AssignPieces
+    // can have combinatorial performance otherwise.
+    // TODO(rnystrom): Figure out a better way to handle this. We could possibly
+    // collapse a series of curried function expressions into a single piece
+    // similar to how we handle nested conditional expressions. In practice,
+    // outside of a few libraries that lean heavily on currying, this is very
+    // rare.
+    if (node.expression case FunctionExpression(
+      body: ExpressionFunctionBody(),
+    )) {
+      assignPiece.pin(State.split);
+    }
+
+    pieces.add(assignPiece);
     pieces.token(node.semicolon);
   }
 
@@ -825,6 +834,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         forceSplit: hasPreservedTrailingComma(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
+        blockShaped: false,
       ),
     );
   }
@@ -971,13 +981,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      pieces.add(
-        AssignPiece(
-          tokenPiece(node.equals),
-          nodePiece(node.type),
-          canBlockSplitRight: node.type is RecordTypeAnnotation,
-        ),
-      );
+      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
       pieces.token(node.semicolon);
     });
   }
@@ -1358,24 +1362,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var leftPiece = pieces.build(() {
       pieces.token(node.keyQuestion);
       pieces.visit(node.key);
+      pieces.token(node.separator);
     });
-
-    var operatorPiece = tokenPiece(node.separator);
 
     var rightPiece = pieces.build(() {
       pieces.token(node.valueQuestion);
       pieces.visit(node.value);
     });
 
-    pieces.add(
-      AssignPiece(
-        left: leftPiece,
-        operatorPiece,
-        rightPiece,
-        canBlockSplitLeft: node.key.canBlockSplit,
-        canBlockSplitRight: node.value.canBlockSplit,
-      ),
-    );
+    pieces.add(AssignPiece(leftPiece, rightPiece));
   }
 
   @override
@@ -1530,12 +1525,20 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitParenthesizedExpression(ParenthesizedExpression node) {
-    writeGrouping(node.leftParenthesis, node.expression, node.rightParenthesis);
+    writeParenthesized(
+      node.leftParenthesis,
+      node.expression,
+      node.rightParenthesis,
+    );
   }
 
   @override
   void visitParenthesizedPattern(ParenthesizedPattern node) {
-    writeGrouping(node.leftParenthesis, node.pattern, node.rightParenthesis);
+    writeParenthesized(
+      node.leftParenthesis,
+      node.pattern,
+      node.rightParenthesis,
+    );
   }
 
   @override
@@ -1934,7 +1937,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         bodyPiece,
         canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
         patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
-        canBlockSplitBody: node.expression.canBlockSplit,
       ),
     );
   }
@@ -2094,23 +2096,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             var equals?,
             var initializer?,
           )) {
-            var variablePiece = tokenPiece(variable.name);
-
-            var equalsPiece = pieces.build(() {
+            var variablePiece = pieces.build(() {
+              pieces.token(variable.name);
               pieces.space();
               pieces.token(equals);
             });
 
             var initializerPiece = nodePiece(initializer, commaAfter: true);
 
-            variables.add(
-              AssignPiece(
-                left: variablePiece,
-                equalsPiece,
-                initializerPiece,
-                canBlockSplitRight: initializer.canBlockSplit,
-              ),
-            );
+            variables.add(AssignPiece(variablePiece, initializerPiece));
           } else {
             variables.add(tokenPiece(variable.name, commaAfter: true));
           }

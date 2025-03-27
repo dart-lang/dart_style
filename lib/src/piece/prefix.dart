@@ -4,29 +4,27 @@
 import '../back_end/code_writer.dart';
 import 'piece.dart';
 
-/// A piece for a nested expression that should prevent its inner shape and
-/// indentation from propagating outwards.
-///
-/// Used for index operands and string interpolation. Ensures we get:
+/// A piece for a prefix expression.
+/// Prevents the inner construct's indentation from being merged with the
+/// surrounding context. Ensures we get:
 ///
 ///     variable =
-///         '${a +
-///             b}';
+///         throw 'long adjacent string'
+///            'more string';
 ///
 /// And not:
 ///
 ///     variable =
-///         '${a +
-///         b}';
-final class GroupingPiece extends Piece {
+///         throw 'long adjacent string'
+///         'more string';
+final class PrefixPiece extends Piece {
   final Piece _content;
 
-  GroupingPiece(this._content);
+  PrefixPiece(this._content);
 
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(Indent.grouping);
-    writer.setShapeMode(ShapeMode.other);
     writer.format(_content);
     writer.popIndent();
   }

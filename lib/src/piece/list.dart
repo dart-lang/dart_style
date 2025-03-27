@@ -59,6 +59,13 @@ final class ListPiece extends Piece {
   /// a comment, or `-1` if all elements are comments.
   final int _lastNonCommentElement;
 
+  /// Whether this list should have [Shape.block] when it splits.
+  ///
+  /// This is true for most lists, but false for some lists where we don't want
+  /// them to be treated as block-formatted in the surrounding context, mainly
+  /// type argument lists.
+  final bool _isBlockShaped;
+
   /// Whether any element in this argument list can be block formatted.
   bool get hasBlockElement =>
       _elements.any((element) => element.allowNewlinesWhenUnsplit);
@@ -74,8 +81,10 @@ final class ListPiece extends Piece {
     this._after,
     this._style, {
     required int lastNonCommentElement,
+    required bool blockShaped,
   }) : assert(_elements.isNotEmpty),
-       _lastNonCommentElement = lastNonCommentElement {
+       _lastNonCommentElement = lastNonCommentElement,
+       _isBlockShaped = blockShaped {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -150,6 +159,8 @@ final class ListPiece extends Piece {
 
       if (state != State.unsplit) writer.pushIndent(Indent.block);
 
+      if (_isBlockShaped) writer.setShapeMode(ShapeMode.block);
+
       // Whitespace after the opening bracket.
       writer.splitIf(
         state == State.split,
@@ -200,6 +211,8 @@ final class ListPiece extends Piece {
         state == State.split,
         space: _style.spaceWhenUnsplit && _elements.isNotEmpty,
       );
+
+      if (_isBlockShaped) writer.setShapeMode(ShapeMode.merge);
 
       writer.format(after);
     }
