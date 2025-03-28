@@ -442,7 +442,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitConstantPattern(ConstantPattern node) {
     if (node.constKeyword case var constKeyword?) {
-      writePrefix(constKeyword, space: true, node.expression);
+      pieces.token(constKeyword, spaceAfter: true);
+      pieces.visit(node.expression);
     } else {
       pieces.visit(node.expression);
     }

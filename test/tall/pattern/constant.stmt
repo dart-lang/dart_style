@@ -102,12 +102,8 @@ if (obj case const Foo(
 >>> Split in parenthesized constant expression.
 if (obj case const(longArgument + anotherArgument)) {;}
 <<<
-### TODO(rnystrom): This double indentation isn't what we want, but the way the
-### indentation stack is managed doesn't play well with the somewhat odd
-### formatting of IfCasePiece. In practice, it's rare for code in the wild to
-### run into this.
 if (obj
     case const (longArgument +
-            anotherArgument)) {
+        anotherArgument)) {
   ;
 }
