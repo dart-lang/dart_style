@@ -40,3 +40,27 @@
       },
       cancelToken: cancelToken,
     );
+>>> (indent 2)
+  final content = json.decode(
+    await rootBundle.loadString('assets/configurations.json'),
+  ) as Map<String, Object?>;
+<<<
+  final content =
+      json.decode(await rootBundle.loadString('assets/configurations.json'))
+          as Map<String, Object?>;
+>>> (indent 4)
+    final results =
+        annotationsOf(element, throwOnUnresolved: throwOnUnresolved);
+<<<
+    final results = annotationsOf(
+      element,
+      throwOnUnresolved: throwOnUnresolved,
+    );
+>>> (indent 8)
+        final newListeners =
+            List<_Listener<T>?>.filled(_listeners.length * 2, null);
+<<<
+        final newListeners = List<_Listener<T>?>.filled(
+          _listeners.length * 2,
+          null,
+        );
