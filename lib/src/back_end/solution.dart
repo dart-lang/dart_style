@@ -375,7 +375,7 @@ final class Solution implements Comparable<Solution> {
             if (_isDeadEnd) return;
 
             // If the child can't have newlines in any shape, then constrain it.
-            // TODO(shape): We can probably constrain this more specifically
+            // TODO(rnystrom): We can probably constrain this more specifically
             // by asking what shapes the child might have.
             var allowedShapes = piece.allowedChildShapes(state, child);
             if (allowedShapes.length == 1 &&
