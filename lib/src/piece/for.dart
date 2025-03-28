@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for the `for (...)` part of a for statement or element.
@@ -35,7 +34,7 @@ final class ForPiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.format(_forKeyword);
     writer.space();
-    if (_indent) writer.pushIndent(Indent.expression, canCollapse: true);
+    if (_indent) writer.pushIndent(Indent.controlFlowClause);
     writer.format(_parts);
     if (_indent) writer.popIndent();
   }
@@ -55,8 +54,8 @@ final class ForPiece extends Piece {
 ///
 ///     for (var x in y) ...
 ///
-/// This state also allows splitting the sequence expression if it can be block
-/// formatted:
+/// This state also allows splitting the sequence expression if it's block
+/// shaped:
 ///
 ///     for (var i in [
 ///       element1,
@@ -80,33 +79,18 @@ final class ForInPiece extends Piece {
   /// The `in` keyword followed by the sequence expression.
   final Piece _sequence;
 
-  /// If `true` then the sequence expression supports being block-formatted,
-  /// like:
-  ///
-  ///     for (var e in [
-  ///       element1,
-  ///       element2,
-  ///     ]) {
-  ///       // ...
-  ///     }
-  final bool _canBlockSplitSequence;
-
-  ForInPiece(
-    this._variable,
-    this._sequence, {
-    bool canBlockSplitSequence = false,
-  }) : _canBlockSplitSequence = canBlockSplitSequence;
+  ForInPiece(this._variable, this._sequence);
 
   @override
   List<State> get additionalStates => const [State.split];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (state == State.split) return true;
-
+  Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
     // Always allow block-splitting the sequence if it supports it.
-    return child == _sequence && _canBlockSplitSequence;
-  }
+    State.unsplit when child == _sequence => const {Shape.inline, Shape.block},
+    State.unsplit => Shape.onlyInline,
+    _ => Shape.all,
+  };
 
   @override
   void format(CodeWriter writer, State state) {

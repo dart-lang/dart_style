@@ -754,14 +754,13 @@ class Traverser {
           }
 
           // Replace any overridden dependencies.
-          deps =
-              deps.map((dep) {
-                var override = _solver._overrides[dep.name];
-                if (override != null) return override;
+          deps = deps.map((dep) {
+            var override = _solver._overrides[dep.name];
+            if (override != null) return override;
 
-                // Not overridden.
-                return dep;
-              }).toSet();
+            // Not overridden.
+            return dep;
+          }).toSet();
 
           // Make sure the package doesn't have any bad dependencies.
           for (var dep in deps) {
@@ -974,8 +973,7 @@ class Traverser {
         // Use the same source and description as the dependency override if one
         // exists. This is mainly used by the pkgbuild tests, which use dependency
         // overrides for all repo packages.
-        var pubDep =
-            override == null
+        var pubDep = override == null
             ? new PackageDep(depName, "hosted", constraint, depName)
             : override.withConstraint(constraint);
         return _registerDependency(

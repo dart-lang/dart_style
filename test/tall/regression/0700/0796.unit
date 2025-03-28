@@ -16,5 +16,6 @@ class C {
  hard as soft lumber. You\'d be forgiven for thinking it\'s veneered Larch-wood.
  But inhale the aroma and you\'ll instantly know you have something wonderful.
  Its scent can fill a room for days. And all this before you\'ve even cooked it.
-'''.replaceAll('\n', '');
+'''
+          .replaceAll('\n', '');
 }

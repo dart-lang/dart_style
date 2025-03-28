@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for an if statement or element, while statement, or for statement
@@ -22,7 +21,7 @@ final class ControlFlowPiece extends Piece {
   }
 
   @override
-  List<State> get additionalStates => [State.split];
+  List<State> get additionalStates => const [State.split];
 
   @override
   void applyConstraints(State state, Constrain constrain) {
@@ -40,7 +39,8 @@ final class ControlFlowPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => state == State.split;
+  Set<Shape> allowedChildShapes(State state, Piece child) =>
+      Shape.anyIf(state == State.split);
 
   @override
   bool containsNewline(State state) {

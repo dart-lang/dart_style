@@ -9,11 +9,10 @@ void main() async {
 <<<
 void main() async {
   (await {
-        'asdf': 'fdsa', // comment to force split
-      }.toString())
-      .foo(
-        bar('baz'), // comment to force split
-      );
+    'asdf': 'fdsa', // comment to force split
+  }.toString()).foo(
+    bar('baz'), // comment to force split
+  );
 }
 >>>
 Future<void> a() {
@@ -139,12 +138,11 @@ main() {
         main() {
           return Stream.value(null)
               .flatMap(
-                (value) =>
-                    _client
-                        .apiUserLoginPost(
-                          body: LoginRequest(email: email, password: password),
-                        )
-                        .asStream(),
+                (value) => _client
+                    .apiUserLoginPost(
+                      body: LoginRequest(email: email, password: password),
+                    )
+                    .asStream(),
               )
               .doOnData((response) {
                 if (response.error != null) {

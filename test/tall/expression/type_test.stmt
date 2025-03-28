@@ -26,3 +26,21 @@ extremelyLongIdentifier is ! VeryLongTypeName;
 <<<
 extremelyLongIdentifier
     is! VeryLongTypeName;
+>>> Indent type after `is` when split inside an assignment.
+variable = veryLongExpression is VeryLongTypeName;
+<<<
+variable =
+    veryLongExpression
+        is VeryLongTypeName;
+>>> Indent type after `is!` when split inside an assignment.
+variable = veryLongExpression is! VeryLongTypeName;
+<<<
+variable =
+    veryLongExpression
+        is! VeryLongTypeName;
+>>> Indent type after `as` when split inside an assignment.
+variable = veryLongExpression as VeryLongTypeName;
+<<<
+variable =
+    veryLongExpression
+        as VeryLongTypeName;

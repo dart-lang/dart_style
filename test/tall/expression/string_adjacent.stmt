@@ -204,8 +204,7 @@ function(
 var string = condition ? "adjacent"
 "string" : "other";
 <<<
-var string =
-    condition
+var string = condition
     ? "adjacent"
           "string"
     : "other";
@@ -213,8 +212,7 @@ var string =
 var string = condition ? "other" : "adjacent"
 "string";
 <<<
-var string =
-    condition
+var string = condition
     ? "other"
     : "adjacent"
           "string";
@@ -257,3 +255,28 @@ function(
       "string"
       "more",
 );
+>>> Indent inside `throw` inside assignment.
+variable = throw 'Some very long message '
+'that continues.';
+<<<
+variable =
+    throw 'Some very long message '
+        'that continues.';
+>>> Indent inside `await` inside assignment.
+f() async {
+variable = await 'Some very long message '
+'that continues.';
+}
+<<<
+f() async {
+  variable =
+      await 'Some very long message '
+          'that continues.';
+}
+>>> Indent inside `!` inside assignment.
+variable = !'Some very long message '
+'that continues.';
+<<<
+variable =
+    !'Some very long message '
+        'that continues.';

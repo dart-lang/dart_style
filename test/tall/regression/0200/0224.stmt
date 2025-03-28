@@ -34,14 +34,18 @@
         .catchError(cannotGetConveyorBeltRunning)
         .then((_) => tellEveryoneDonutsAreJustAboutDone())
         .then(
-          (_) => Future.wait([
-                croissantFactory.start(),
-                _giantBakingOvens.start(),
-                butterbutterer.start(),
-              ])
-              .catchError(_handleBakingFailures)
-              .timeout(scriptLoadingTimeout, onTimeout: _handleBakingFailures)
-              .catchError(cannotGetConveyorBeltRunning),
+          (_) =>
+              Future.wait([
+                    croissantFactory.start(),
+                    _giantBakingOvens.start(),
+                    butterbutterer.start(),
+                  ])
+                  .catchError(_handleBakingFailures)
+                  .timeout(
+                    scriptLoadingTimeout,
+                    onTimeout: _handleBakingFailures,
+                  )
+                  .catchError(cannotGetConveyorBeltRunning),
         )
         .catchError(cannotGetConveyorBeltRunning)
         .then((_) {

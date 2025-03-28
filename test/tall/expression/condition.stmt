@@ -30,8 +30,7 @@ condition
 >>> Force split all conditionals when nested.
 var kind = a ? b ? c : d : e;
 <<<
-var kind =
-    a
+var kind = a
     ? b
           ? c
           : d
@@ -39,8 +38,7 @@ var kind =
 >>>
 var kind = a ? b : c ? d : e;
 <<<
-var kind =
-    a
+var kind = a
     ? b
     : c
     ? d
@@ -52,8 +50,7 @@ var kind = a ? b : (c ? d : e);
 >>> Flatten a chain of else-if conditionals.
 var kind = c1 ? e1 : c2 ? e2 : c3 ? e3 : c4 ? e4 : e5;
 <<<
-var kind =
-    c1
+var kind = c1
     ? e1
     : c2
     ? e2

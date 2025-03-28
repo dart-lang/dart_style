@@ -15,8 +15,7 @@ void main() {
 void main() {
   mapInPlace(
     resultSourceMap.urls,
-    (url) =>
-        url == ''
+    (url) => url == ''
         ? Uri.dataFromString(
             stylesheet.span.file.getText(0),
             encoding: utf8,

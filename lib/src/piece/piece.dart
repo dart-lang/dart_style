@@ -89,6 +89,10 @@ abstract base class Piece with FastHash {
   /// (directly or transitively) when this piece is in [state].
   bool allowNewlineInChild(State state, Piece child) => true;
 
+  /// What shapes the [child] of this piece may take when this piece is in
+  /// [state].
+  Set<Shape> allowedChildShapes(State state, Piece child) => Shape.all;
+
   /// Whether this piece contains a newline when this piece is in [state].
   ///
   /// This should only return `true` if the piece will *always* write at least
@@ -192,6 +196,70 @@ abstract base class Piece with FastHash {
 
   @override
   String toString() => '$debugName$id${_pinnedState ?? ''}';
+}
+
+/// The spatial "shape" of a formatted [Piece].
+///
+/// Much of the formatting style is defined by placing constraints on whether a
+/// newline inside a child forces the parent to enter certain states. For
+/// example, a newline inside a binary operator's operands forces the
+/// surrounding binary operator to split.
+///
+/// But some pieces have more specific constraints than just "one line or not".
+/// In particular assignment-like constructs allow "block" and "header" shaped
+/// children in certain states and not others.
+enum Shape {
+  /// The piece fits entirely on one line.
+  inline,
+
+  /// A delimited block-indented structure like a function body, collection
+  /// literal, or argument list.
+  block,
+
+  /// The piece has a single line of code for some kind of "header" or other
+  /// leading construct followed by multiple lines of other code. Examples:
+  ///
+  ///     conditionHeader
+  ///         ? thenBody
+  ///         : elseBody
+  ///
+  ///     target.header
+  ///         .method()
+  ///         .chain()
+  headline,
+
+  /// The piece is split across multiple lines but not in any other well-defined
+  /// shape.
+  other;
+
+  /// Allows all shapes.
+  static const Set<Shape> all = {inline, block, headline, other};
+
+  /// Must be block shaped.
+  static const Set<Shape> onlyBlock = {block};
+
+  /// Prohibits any newlines at all.
+  static const Set<Shape> onlyInline = {inline};
+
+  /// Allows all shapes if [condition] is `true` or only an inline piece
+  /// otherwise.
+  ///
+  /// This is a convenience for pieces that only care about disallowing newlines
+  /// entirely.
+  static Set<Shape> anyIf(bool condition) => condition ? all : onlyInline;
+
+  /// Determines the resulting shape of a parent when it has children with
+  /// this shape and [other] shape.
+  Shape merge(Shape other) {
+    return switch ((this, other)) {
+      // If one shape is inline, it doesn't affect the result.
+      (Shape.inline, _) => other,
+      (_, Shape.inline) => this,
+
+      // Otherwise, it's some other shape.
+      (_, _) => Shape.other,
+    };
+  }
 }
 
 /// A state that a piece can be in.

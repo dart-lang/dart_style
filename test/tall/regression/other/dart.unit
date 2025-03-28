@@ -31,14 +31,11 @@ main() {
   ).asBroadcastStream();
 }
 <<<
-### TODO(rnystrom): It would be nice if we could put the target of a split
-### method chain on the same line as the assignment.
 main() {
-  var stdErrLines =
-      proc.stderr
-          .transform(utf8.decoder)
-          .transform(const LineSplitter())
-          .asBroadcastStream();
+  var stdErrLines = proc.stderr
+      .transform(utf8.decoder)
+      .transform(const LineSplitter())
+      .asBroadcastStream();
 }
 >>> Don't split return type if comment after metadata annotation.
 class Benchmark {

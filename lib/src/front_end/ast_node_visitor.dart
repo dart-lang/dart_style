@@ -7,12 +7,13 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../ast_extensions.dart';
-import '../constants.dart';
+import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/assign.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
+import '../piece/grouping.dart';
 import '../piece/infix.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';
@@ -152,7 +153,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitAdjacentStrings(AdjacentStrings node) {
     var piece = InfixPiece(
       node.strings.map(nodePiece).toList(),
-      indent: node.indentStrings,
+      indent: node.indentStrings ? Indent.infix : Indent.none,
     );
 
     // Adjacent strings always split.
@@ -182,7 +183,17 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAsExpression(AsExpression node) {
-    writeInfix(node.expression, node.asOperator, node.type);
+    writeInfix(
+      node.expression,
+      node.asOperator,
+      node.type,
+      // Don't use Indent.infix, which will flatten the indentation if the
+      // expression occurs in an assignment.
+      // TODO(rnystrom): We probably do want to format `as` the same as other
+      // binary operators, but the tall style already treats them differently,
+      // so leaving that alone for now.
+      indent: Indent.expression,
+    );
   }
 
   @override
@@ -224,7 +235,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     writeInfixChain<BinaryExpression>(
       node,
       precedence: node.operator.type.precedence,
-      indent: _parentContext != NodeContext.assignment,
       (expression) => (
         expression.leftOperand,
         expression.operator,
@@ -389,11 +399,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     // Don't redundantly indent a split conditional in an assignment context.
-    var piece = InfixPiece(
-      operands,
-      indent: _parentContext != NodeContext.assignment,
-      conditional: true,
-    );
+    var piece = InfixPiece(operands, conditional: true);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
@@ -435,7 +441,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConstantPattern(ConstantPattern node) {
-    writePrefix(node.constKeyword, space: true, node.expression);
+    if (node.constKeyword case var constKeyword?) {
+      pieces.token(constKeyword, spaceAfter: true);
+      pieces.visit(node.expression);
+    } else {
+      pieces.visit(node.expression);
+    }
   }
 
   @override
@@ -461,11 +472,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           pieces.space();
         });
 
-        redirect = AssignPiece(
-          separator,
-          nodePiece(constructor, context: NodeContext.assignment),
-          canBlockSplitRight: false,
-        );
+        redirect = AssignPiece(separator, nodePiece(constructor));
       } else if (node.initializers.isNotEmpty) {
         initializerSeparator = tokenPiece(node.separator!);
         initializers = createCommaSeparated(node.initializers);
@@ -664,20 +671,30 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.functionDefinition);
     });
 
-    var expression = nodePiece(
-      node.expression,
-      context: NodeContext.assignment,
+    var expression = nodePiece(node.expression);
+    var assignPiece = AssignPiece(
+      operatorPiece,
+      expression,
+      // Prefer splitting at `=>` and keeping the expression together unless
+      // it's a collection literal.
+      avoidSplit: node.expression.isHomogeneousCollectionBody,
     );
 
-    pieces.add(
-      AssignPiece(
-        operatorPiece,
-        expression,
-        canBlockSplitRight: node.expression.canBlockSplit,
-        avoidBlockSplitRight:
-            node.expression.blockFormatType == BlockFormat.invocation,
-      ),
-    );
+    // If a `=>` is directly nested inside another, force the outer one to
+    // split. This is for performance reasons. A series of nested AssignPieces
+    // can have combinatorial performance otherwise.
+    // TODO(rnystrom): Figure out a better way to handle this. We could possibly
+    // collapse a series of curried function expressions into a single piece
+    // similar to how we handle nested conditional expressions. In practice,
+    // outside of a few libraries that lean heavily on currying, this is very
+    // rare.
+    if (node.expression case FunctionExpression(
+      body: ExpressionFunctionBody(),
+    )) {
+      assignPiece.pin(State.split);
+    }
+
+    pieces.add(assignPiece);
     pieces.token(node.semicolon);
   }
 
@@ -818,6 +835,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         forceSplit: hasPreservedTrailingComma(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
+        blockShaped: false,
       ),
     );
   }
@@ -964,13 +982,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      pieces.add(
-        AssignPiece(
-          tokenPiece(node.equals),
-          nodePiece(node.type),
-          canBlockSplitRight: node.type is RecordTypeAnnotation,
-        ),
-      );
+      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
       pieces.token(node.semicolon);
     });
   }
@@ -1216,7 +1228,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     traverse(piece);
 
-    pieces.add(piece);
+    // Wrap in grouping so that an infix split inside the interpolation doesn't
+    // get collapsed in the surrounding context, like:
+    //
+    //     // Wrong:
+    //     var x =
+    //         '${"a"
+    //         "b"}';
+    //
+    //     // Right:
+    //     var x =
+    //         '${"a"
+    //             "b"}';
+    pieces.add(GroupingPiece(piece));
   }
 
   @override
@@ -1235,6 +1259,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.isOperator,
       operator2: node.notOperator,
       node.type,
+      // Don't use Indent.infix, which will flatten the indentation if the
+      // expression occurs in an assignment.
+      // TODO(rnystrom): We probably do want to format `as` the same as other
+      // binary operators, but the tall style already treats them differently,
+      // so leaving that alone for now.
+      indent: Indent.expression,
     );
   }
 
@@ -1294,20 +1324,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLogicalAndPattern(LogicalAndPattern node) {
-    // If a logical and pattern occurs inside a map pattern entry, we want to
-    // format the operands in parallel, like:
-    //
-    //     var {
-    //       key:
-    //         operand1 &&
-    //         operand2,
-    //     } = value;
-    var indent = _parentContext != NodeContext.assignment;
-
     writeInfixChain<LogicalAndPattern>(
       node,
       precedence: node.operator.type.precedence,
-      indent: indent,
       (expression) => (
         expression.leftOperand,
         expression.operator,
@@ -1318,25 +1337,14 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLogicalOrPattern(LogicalOrPattern node) {
-    // If a logical and pattern occurs inside a map pattern entry, we want to
-    // format the operands in parallel, like:
-    //
-    //     var {
-    //       key:
-    //         operand1 &&
-    //         operand2,
-    //     } = value;
-    //
-    // Also, if it's the outermost pattern in a switch expression case, we
-    // flatten the operands like parallel cases:
+    // If a logical and pattern is the outermost pattern in a switch expression
+    // case, we flatten the operands like parallel cases:
     //
     //     e = switch (obj) {
     //       operand1 ||
     //       operand2 => value,
     //     };
-    var indent =
-        _parentContext != NodeContext.assignment &&
-        _parentContext != NodeContext.switchExpressionCase;
+    var indent = _parentContext != NodeContext.switchExpressionCase;
 
     writeInfixChain<LogicalOrPattern>(
       node,
@@ -1355,24 +1363,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var leftPiece = pieces.build(() {
       pieces.token(node.keyQuestion);
       pieces.visit(node.key);
+      pieces.token(node.separator);
     });
-
-    var operatorPiece = tokenPiece(node.separator);
 
     var rightPiece = pieces.build(() {
       pieces.token(node.valueQuestion);
-      pieces.visit(node.value, context: NodeContext.assignment);
+      pieces.visit(node.value);
     });
 
-    pieces.add(
-      AssignPiece(
-        left: leftPiece,
-        operatorPiece,
-        rightPiece,
-        canBlockSplitLeft: node.key.canBlockSplit,
-        canBlockSplitRight: node.value.canBlockSplit,
-      ),
-    );
+    pieces.add(AssignPiece(leftPiece, rightPiece));
   }
 
   @override
@@ -1527,16 +1526,20 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitParenthesizedExpression(ParenthesizedExpression node) {
-    pieces.token(node.leftParenthesis);
-    pieces.visit(node.expression);
-    pieces.token(node.rightParenthesis);
+    writeParenthesized(
+      node.leftParenthesis,
+      node.expression,
+      node.rightParenthesis,
+    );
   }
 
   @override
   void visitParenthesizedPattern(ParenthesizedPattern node) {
-    pieces.token(node.leftParenthesis);
-    pieces.visit(node.pattern);
-    pieces.token(node.rightParenthesis);
+    writeParenthesized(
+      node.leftParenthesis,
+      node.pattern,
+      node.rightParenthesis,
+    );
   }
 
   @override
@@ -1620,17 +1623,18 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitPrefixExpression(PrefixExpression node) {
-    pieces.token(node.operator);
+    // Edge case: If we have two adjacent `-` or `--` operators, insert a space
+    // between them so that we don't inadvertently collapse `- -` into `--`.
+    var space = switch ((node.operator, node.operand)) {
+      (
+        Token(lexeme: '-' || '--'),
+        PrefixExpression(operator: Token(lexeme: '-' || '--')),
+      ) =>
+        true,
+      _ => false,
+    };
 
-    // Edge case: put a space after "-" if the operand is "-" or "--" so that
-    // we don't merge the operator tokens.
-    if (node.operand case PrefixExpression(
-      operator: Token(lexeme: '-' || '--'),
-    )) {
-      pieces.space();
-    }
-
-    pieces.visit(node.operand);
+    writePrefix(node.operator, node.operand, space: space);
   }
 
   @override
@@ -1934,7 +1938,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         bodyPiece,
         canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
         patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
-        canBlockSplitBody: node.expression.canBlockSplit,
       ),
     );
   }
@@ -2094,27 +2097,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             var equals?,
             var initializer?,
           )) {
-            var variablePiece = tokenPiece(variable.name);
-
-            var equalsPiece = pieces.build(() {
+            var variablePiece = pieces.build(() {
+              pieces.token(variable.name);
               pieces.space();
               pieces.token(equals);
             });
 
-            var initializerPiece = nodePiece(
-              initializer,
-              commaAfter: true,
-              context: NodeContext.assignment,
-            );
+            var initializerPiece = nodePiece(initializer, commaAfter: true);
 
-            variables.add(
-              AssignPiece(
-                left: variablePiece,
-                equalsPiece,
-                initializerPiece,
-                canBlockSplitRight: initializer.canBlockSplit,
-              ),
-            );
+            variables.add(AssignPiece(variablePiece, initializerPiece));
           } else {
             variables.add(tokenPiece(variable.name, commaAfter: true));
           }

@@ -51,7 +51,7 @@ final class DelimitedListBuilder {
 
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
-  Piece build({bool forceSplit = false}) {
+  Piece build({bool forceSplit = false, bool blockShaped = true}) {
     // To simplify the piece tree, if there are no elements, just return the
     // brackets concatenated together. We don't have to worry about comments
     // here since they would be in the [_elements] list if there were any.
@@ -81,6 +81,7 @@ final class DelimitedListBuilder {
       _rightBracket,
       _style,
       lastNonCommentElement: lastNonCommentElement,
+      blockShaped: blockShaped,
     );
     if (_mustSplit || forceSplit) piece.pin(State.split);
     return piece;

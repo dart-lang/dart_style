@@ -83,8 +83,20 @@ sealed class TextPiece extends Piece {
   }
 
   void _formatLines(CodeWriter writer) {
-    for (var i = 0; i < _lines.length; i++) {
-      if (i > 0) writer.newline(flushLeft: i > 0);
+    /// Allow a multiline string or comment to be treated like a headline when
+    /// the right-hand side of an assignment or named argument, like:
+    ///
+    ///     variable = """
+    ///         some string
+    ///         """;
+    if (_lines.length > 1) writer.setShapeMode(ShapeMode.beforeHeadline);
+
+    writer.write(_lines[0]);
+
+    if (_lines.length > 1) writer.setShapeMode(ShapeMode.afterHeadline);
+
+    for (var i = 1; i < _lines.length; i++) {
+      writer.newline(flushLeft: true);
       writer.write(_lines[i]);
     }
   }

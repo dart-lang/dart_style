@@ -5,16 +5,19 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
 import '../piece/clause.dart';
 import '../piece/control_flow.dart';
 import '../piece/for.dart';
+import '../piece/grouping.dart';
 import '../piece/if_case.dart';
 import '../piece/infix.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
+import '../piece/prefix.dart';
 import '../piece/sequence.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
@@ -52,12 +55,6 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 enum NodeContext {
   /// No specified context.
   none,
-
-  /// The child is the right-hand side of an assignment-like form.
-  ///
-  /// This includes assignments, variable declarations, named arguments, map
-  /// entries, and `=>` function bodies.
-  assignment,
 
   /// The child is the target of a cascade expression.
   cascadeTarget,
@@ -741,22 +738,16 @@ mixin PieceFactory {
     }
 
     var (separator, value) = defaultValue;
-    var operatorPiece = pieces.build(() {
+    var leftPiece = pieces.build(() {
+      pieces.add(parameter);
       if (separator.type == TokenType.EQ) pieces.space();
       pieces.token(separator);
       if (separator.type != TokenType.EQ) pieces.space();
     });
 
-    var valuePiece = nodePiece(value, context: NodeContext.assignment);
+    var valuePiece = nodePiece(value);
 
-    pieces.add(
-      AssignPiece(
-        left: parameter,
-        operatorPiece,
-        valuePiece,
-        canBlockSplitRight: value.canBlockSplit,
-      ),
-    );
+    pieces.add(AssignPiece(leftPiece, valuePiece));
   }
 
   /// Writes a function type or function-typed formal.
@@ -801,14 +792,6 @@ mixin PieceFactory {
               ? [parameter.requiredKeyword, parameter.covariantKeyword]
               : const <Token?>[];
 
-      // TODO(rnystrom): It would be good if the AssignPiece created for the
-      // default value could treat the parameter list on the left-hand side as
-      // block-splittable. But since it's a FunctionPiece and not directly a
-      // ListPiece, AssignPiece doesn't support block-splitting it. If #1466 is
-      // fixed, that may enable us to handle block-splitting here too. In
-      // practice, it doesn't really matter since function-typed formals are
-      // deprecated, default values on function-typed parameters are rare, and
-      // when both occur, they rarely split.
       // If the type is a function-typed parameter with a default value, then
       // grab the default value from the parent node and attach it to the
       // function.
@@ -825,6 +808,17 @@ mixin PieceFactory {
         writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
       }
     });
+  }
+
+  /// Writes a parenthesized expression or pattern.
+  void writeParenthesized(
+    Token leftBracket,
+    AstNode content,
+    Token rightBracket,
+  ) {
+    pieces.token(leftBracket);
+    pieces.visit(content);
+    pieces.token(rightBracket);
   }
 
   /// Writes a piece for the header -- everything from the `if` keyword to the
@@ -1022,9 +1016,18 @@ mixin PieceFactory {
     // index expressions in a corpus of pub packages).
     pieces.token(index.question);
     pieces.token(index.period);
-    pieces.token(index.leftBracket);
-    pieces.visit(index.index);
-    pieces.token(index.rightBracket);
+
+    // Wrap the index expression in a [GroupingPiece] so that a split inside
+    // the index doesn't cause the surrounding piece to have a certain shape.
+    pieces.add(
+      GroupingPiece(
+        pieces.build(() {
+          pieces.token(index.leftBracket);
+          pieces.visit(index.index);
+          pieces.token(index.rightBracket);
+        }),
+      ),
+    );
   }
 
   /// Writes a single infix operation.
@@ -1041,6 +1044,7 @@ mixin PieceFactory {
     AstNode right, {
     bool hanging = false,
     Token? operator2,
+    Indent indent = Indent.infix,
   }) {
     var leftPiece = pieces.build(() {
       pieces.visit(left);
@@ -1061,7 +1065,7 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(InfixPiece([leftPiece, rightPiece]));
+    pieces.add(InfixPiece([leftPiece, rightPiece], indent: indent));
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -1116,7 +1120,9 @@ mixin PieceFactory {
       }),
     );
 
-    pieces.add(InfixPiece(operands, indent: indent));
+    pieces.add(
+      InfixPiece(operands, indent: indent ? Indent.infix : Indent.none),
+    );
   }
 
   /// Writes a [ListPiece] for the given bracket-delimited set of elements.
@@ -1138,6 +1144,7 @@ mixin PieceFactory {
     ListStyle style = const ListStyle(),
     bool preserveNewlines = false,
     bool allowBlockArgument = false,
+    bool blockShaped = true,
   }) {
     // If the list is completely empty, write the brackets directly inline so
     // that we create fewer pieces.
@@ -1165,6 +1172,7 @@ mixin PieceFactory {
         forceSplit:
             style.commas != Commas.alwaysTrailing &&
             hasPreservedTrailingComma(rightBracket),
+        blockShaped: blockShaped,
       ),
     );
   }
@@ -1260,9 +1268,27 @@ mixin PieceFactory {
   ///
   /// If [space] is `true` and there is an operator, writes a space between the
   /// operator and operand.
-  void writePrefix(Token? operator, AstNode? node, {bool space = false}) {
-    pieces.token(operator, spaceAfter: space);
-    pieces.visit(node);
+  void writePrefix(Token operator, AstNode? operand, {bool space = false}) {
+    // Wrap in grouping so that an infix split inside the prefix operator
+    // doesn't get collapsed in the surrounding context, like:
+    //
+    //     // Wrong:
+    //     var x =
+    //         throw 'Some long string '
+    //         'wrapped.';
+    //
+    //     // Right:
+    //     var x =
+    //         throw 'Some long string '
+    //             'wrapped.';
+    pieces.add(
+      PrefixPiece(
+        pieces.build(() {
+          pieces.token(operator, spaceAfter: space);
+          pieces.visit(operand);
+        }),
+      ),
+    );
   }
 
   /// Writes an [AdjacentPiece] for a given record type field.
@@ -1447,6 +1473,7 @@ mixin PieceFactory {
       elements,
       rightBracket: rightBracket,
       style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3),
+      blockShaped: false,
     );
   }
 
@@ -1470,87 +1497,22 @@ mixin PieceFactory {
   /// * Expression (`=>`) function body
   /// * Named argument or named record field (`:`)
   /// * Map entry (`:`)
-  ///
-  /// If [canBlockSplitLeft] is `true`, then the left-hand operand supports
-  /// being block-formatted without indenting it farther, like:
-  ///
-  ///     var [
-  ///       element,
-  ///     ] = list;
   void writeAssignment(
     AstNode leftHandSide,
     Token operator,
     AstNode rightHandSide, {
     bool includeComma = false,
-    bool canBlockSplitLeft = false,
     NodeContext leftHandSideContext = NodeContext.none,
   }) {
-    // If an operand can have block formatting, then a newline in it doesn't
-    // force the operator to split, as in:
-    //
-    //    var [
-    //      element,
-    //    ] = list;
-    //
-    // Or:
-    //
-    //    var list = [
-    //      element,
-    //    ];
-    canBlockSplitLeft |= switch (leftHandSide) {
-      // Treat method chains and cascades on the LHS as if they were blocks.
-      // They don't really fit the "block" term, but it looks much better to
-      // force a method chain to split on the left than to try to avoid
-      // splitting it and split at the assignment instead:
-      //
-      //    // Worse:
-      //    target.method(
-      //          argument,
-      //        ).setter =
-      //        value;
-      //
-      //    // Better:
-      //    target.method(argument)
-      //        .setter = value;
-      //
-      MethodInvocation() => true,
-      PropertyAccess() => true,
-      PrefixedIdentifier() => true,
-
-      // Otherwise, it must be an actual block construct.
-      Expression() => leftHandSide.canBlockSplit,
-      DartPattern() => leftHandSide.canBlockSplit,
-      _ => false,
-    };
-
-    var canBlockSplitRight = switch (rightHandSide) {
-      Expression() => rightHandSide.canBlockSplit,
-      DartPattern() => rightHandSide.canBlockSplit,
-      _ => false,
-    };
-
-    var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
-
-    var operatorPiece = pieces.build(() {
+    var leftPiece = pieces.build(() {
+      pieces.visit(leftHandSide, context: leftHandSideContext);
       if (operator.type != TokenType.COLON) pieces.space();
       pieces.token(operator);
     });
 
-    var rightPiece = nodePiece(
-      rightHandSide,
-      commaAfter: includeComma,
-      context: NodeContext.assignment,
-    );
+    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
 
-    pieces.add(
-      AssignPiece(
-        left: leftPiece,
-        operatorPiece,
-        rightPiece,
-        canBlockSplitLeft: canBlockSplitLeft,
-        canBlockSplitRight: canBlockSplitRight,
-      ),
-    );
+    pieces.add(AssignPiece(leftPiece, rightPiece));
   }
 
   /// Writes the `<variable> in <expression>` part of an identifier or pattern
@@ -1564,12 +1526,7 @@ mixin PieceFactory {
         context: NodeContext.forLoopVariable,
       );
       var sequencePiece = _createForInSequence(inKeyword, sequence);
-
-      return ForInPiece(
-        leftPiece,
-        sequencePiece,
-        canBlockSplitSequence: sequence.canBlockSplit,
-      );
+      return ForInPiece(leftPiece, sequencePiece);
     });
   }
 
@@ -1603,13 +1560,7 @@ mixin PieceFactory {
 
           var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-          pieces.add(
-            ForInPiece(
-              leftPiece,
-              sequencePiece,
-              canBlockSplitSequence: sequence.canBlockSplit,
-            ),
-          );
+          pieces.add(ForInPiece(leftPiece, sequencePiece));
         },
       );
     });

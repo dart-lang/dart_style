@@ -6,7 +6,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../constants.dart';
+import '../back_end/code_writer.dart';
 import '../piece/chain.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';
@@ -54,18 +54,6 @@ final class ChainBuilder {
 
   /// The left-most target of the chain.
   late Piece _target;
-
-  /// Whether the target expression may contain newlines when the chain is not
-  /// fully split. (It may always contain newlines when the chain splits.)
-  ///
-  /// This is true for most expressions but false for delimited ones to avoid
-  /// ugly formatting like:
-  ///
-  ///     function(
-  ///       argument,
-  ///     )
-  ///         .method();
-  late final bool _allowSplitInTarget;
 
   /// The dotted property accesses and method calls following the target.
   final List<ChainCall> _calls = [];
@@ -131,7 +119,6 @@ final class ChainBuilder {
       cascade: true,
       indent: Indent.cascade,
       blockCallIndex: blockCallIndex,
-      allowSplitInTarget: _allowSplitInTarget,
     );
 
     if (!(_root as CascadeExpression).allowInline) chain.pin(State.split);
@@ -232,7 +219,6 @@ final class ChainBuilder {
       indent: isCascadeTarget ? Indent.cascade : Indent.expression,
       leadingProperties: leadingProperties,
       blockCallIndex: blockCallIndex,
-      allowSplitInTarget: _allowSplitInTarget,
     );
   }
 
@@ -358,7 +344,6 @@ final class ChainBuilder {
   /// If [cascadeTarget] is `true`, then this is the target of a cascade
   /// expression. Otherwise, it's the target of a call chain.
   void _visitTarget(Expression target, {bool cascadeTarget = false}) {
-    _allowSplitInTarget = target.canBlockSplit;
     _target = _visitor.nodePiece(
       target,
       context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none,

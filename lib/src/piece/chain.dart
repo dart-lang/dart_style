@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A dotted series of property access or method calls, like:
@@ -77,23 +76,11 @@ final class ChainPiece extends Piece {
   /// and the last call's argument list can be block formatted.
   final int _blockCallIndex;
 
-  /// Whether the target expression may contain newlines when the chain is not
-  /// fully split. (It may always contain newlines when the chain splits.)
+  /// How to indent the chain when it splits.
   ///
-  /// This is true for most expressions but false for delimited ones to avoid
-  /// this weird output:
-  ///
-  ///     function(
-  ///       argument,
-  ///     )
-  ///         .method();
-  final bool _allowSplitInTarget;
-
-  /// How much to indent the chain when it splits.
-  ///
-  /// This is [Indent.expression] for regular chains and [Indent.cascade] for
-  /// cascades.
-  final int _indent;
+  /// This is [Indent.expression] for regular chains or [Indent.cascade]
+  /// for cascades.
+  final Indent _indent;
 
   final bool _isCascade;
 
@@ -106,12 +93,10 @@ final class ChainPiece extends Piece {
     required bool cascade,
     int leadingProperties = 0,
     int blockCallIndex = -1,
-    int indent = Indent.expression,
-    required bool allowSplitInTarget,
+    Indent indent = Indent.expression,
   }) : _leadingProperties = leadingProperties,
        _blockCallIndex = blockCallIndex,
        _indent = indent,
-       _allowSplitInTarget = allowSplitInTarget,
        _isCascade = cascade,
        // If there are no calls, we shouldn't have created a chain.
        assert(_calls.isNotEmpty);
@@ -143,24 +128,33 @@ final class ChainPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    switch (state) {
-      case _ when child == _target:
-        return _allowSplitInTarget || state == State.split;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (child == _target) {
+      return switch (state) {
+        // If the chain itself isn't fully split, only allow block splitting
+        // in the target.
+        State.unsplit ||
+        _blockFormatTrailingCall ||
+        _splitAfterProperties => const {Shape.inline, Shape.block},
+        _ => Shape.all,
+      };
+    } else {
+      switch (state) {
+        case State.unsplit:
+          return Shape.onlyInline;
 
-      case State.unsplit:
-        return false;
+        case _splitAfterProperties:
+          // Don't allow splitting inside the properties.
+          for (var i = 0; i < _leadingProperties; i++) {
+            if (_calls[i]._call == child) return Shape.onlyInline;
+          }
 
-      case _splitAfterProperties:
-        for (var i = 0; i < _leadingProperties; i++) {
-          if (_calls[i]._call == child) return false;
-        }
+        case _blockFormatTrailingCall:
+          return Shape.anyIf(_calls[_blockCallIndex]._call == child);
+      }
 
-      case _blockFormatTrailingCall:
-        return _calls[_blockCallIndex]._call == child;
+      return Shape.all;
     }
-
-    return true;
   }
 
   @override
@@ -175,16 +169,20 @@ final class ChainPiece extends Piece {
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
+        writer.setShapeMode(ShapeMode.beforeHeadline);
         writer.format(_target);
 
-        for (var i = 0; i < _calls.length; i++) {
-          writer.splitIf(i >= _leadingProperties, space: false);
+        for (var i = 0; i < _leadingProperties; i++) {
+          writer.format(_calls[i]._call);
+        }
+
+        writer.setShapeMode(ShapeMode.afterHeadline);
+
+        for (var i = _leadingProperties; i < _calls.length; i++) {
+          writer.newline();
 
           // Every non-property call except the last will be on its own line.
-          writer.format(
-            _calls[i]._call,
-            separate: i >= _leadingProperties && i < _calls.length - 1,
-          );
+          writer.format(_calls[i]._call, separate: i < _calls.length - 1);
         }
 
         writer.popIndent();
@@ -198,7 +196,9 @@ final class ChainPiece extends Piece {
 
       case State.split:
         writer.pushIndent(_indent);
+        writer.setShapeMode(ShapeMode.beforeHeadline);
         writer.format(_target);
+        writer.setShapeMode(ShapeMode.afterHeadline);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();

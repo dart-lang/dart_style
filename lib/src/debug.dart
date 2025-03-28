@@ -23,6 +23,9 @@ bool traceSplitter = false;
 /// Set this to `true` to turn on diagnostic output while building pieces.
 bool tracePieceBuilder = false;
 
+/// Set this to `true` to turn on diagnostic output while merging indentation.
+bool traceIndent = false;
+
 /// Set this to `true` to turn on diagnostic output while solving pieces.
 bool traceSolver = false;
 

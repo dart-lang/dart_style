@@ -53,3 +53,23 @@ function(
     argument3,
   ),
 );
+>>> Block-like formatting for a block-bodied function with unsplit parameters.
+function(name: (param, another) { body; });
+<<<
+function(
+  name: (param, another) {
+    body;
+  },
+);
+>>> No block-like formatting for a block-bodied function with split parameters.
+function(name: (longParameter, anotherLongParameter) { body; });
+<<<
+function(
+  name:
+      (
+        longParameter,
+        anotherLongParameter,
+      ) {
+        body;
+      },
+);

@@ -38,12 +38,9 @@ void main(List argv) {
 
 }
 <<<
-### TODO(rnystrom): Should allow condition expression on same line as `=` if it
-### fits and conditional expression splits.
 void main(List argv) {
   // This is ok (it moves the ? and : to the ends of the previous lines)
-  var cg =
-      outputDart
+  var cg = outputDart
       ? new A(
           outputDir,
           uri,
@@ -65,8 +62,7 @@ void main(List argv) {
   //  new ALongerClass(outputDir, uri, results.libraries, results.infoMap,
   //      results.rules, formatOutput) : new BLongerClass(
   //      outputDir, uri, results.libraries, results.infoMap, results.rules);
-  var cg =
-      outputDart
+  var cg = outputDart
       ? new ALongerClass(
           outputDir,
           uri,
@@ -84,8 +80,7 @@ void main(List argv) {
         );
 
   // OK, left unchanged
-  var cg =
-      outputDart
+  var cg = outputDart
       ? new A(
           outputDir,
           uri,
@@ -103,8 +98,7 @@ void main(List argv) {
         );
 
   // Bad, as above
-  var cg =
-      outputDart
+  var cg = outputDart
       ? new ALongerClass(
           outputDir,
           uri,

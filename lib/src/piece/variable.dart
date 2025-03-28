@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A variable declaration.
@@ -60,11 +59,17 @@ final class VariablePiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    // If the variable doesn't allow any other states (because it's just
+    // `var x` etc.) then allow any shape. That way, if there's a comment
+    // inside, the solver doesn't get confused trying to invalidate the
+    // VariablePiece.
+    if (_variables.length == 1 && !_hasType) return Shape.all;
+
     if (child == _header) {
-      return state != State.unsplit;
+      return Shape.anyIf(state != State.unsplit);
     } else {
-      return _variables.length == 1 || state != State.unsplit;
+      return Shape.anyIf(_variables.length == 1 || state != State.unsplit);
     }
   }
 

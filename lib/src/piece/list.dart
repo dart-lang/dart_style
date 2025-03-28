@@ -2,7 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
+import '../constants.dart' hide Indent;
 import 'piece.dart';
 
 /// A piece for a non-empty splittable series of items.
@@ -59,6 +59,13 @@ final class ListPiece extends Piece {
   /// a comment, or `-1` if all elements are comments.
   final int _lastNonCommentElement;
 
+  /// Whether this list should have [Shape.block] when it splits.
+  ///
+  /// This is true for most lists, but false for some lists where we don't want
+  /// them to be treated as block-formatted in the surrounding context, mainly
+  /// type argument lists.
+  final bool _isBlockShaped;
+
   /// Whether any element in this argument list can be block formatted.
   bool get hasBlockElement =>
       _elements.any((element) => element.allowNewlinesWhenUnsplit);
@@ -74,8 +81,10 @@ final class ListPiece extends Piece {
     this._after,
     this._style, {
     required int lastNonCommentElement,
+    required bool blockShaped,
   }) : assert(_elements.isNotEmpty),
-       _lastNonCommentElement = lastNonCommentElement {
+       _lastNonCommentElement = lastNonCommentElement,
+       _isBlockShaped = blockShaped {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -130,14 +139,16 @@ final class ListPiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (state == State.split) return true;
-    if (child == _before) return true;
-    if (child == _after) return true;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (state == State.split) return Shape.all;
+    if (child == _before) return Shape.all;
+    if (child == _after) return Shape.all;
 
     // Only some elements (usually a single block element) allow newlines
     // when the list itself isn't split.
-    return child is ListElementPiece && child.allowNewlinesWhenUnsplit;
+    return Shape.anyIf(
+      child is ListElementPiece && child.allowNewlinesWhenUnsplit,
+    );
   }
 
   @override
@@ -147,6 +158,8 @@ final class ListPiece extends Piece {
       writer.format(before);
 
       if (state != State.unsplit) writer.pushIndent(Indent.block);
+
+      if (_isBlockShaped) writer.setShapeMode(ShapeMode.block);
 
       // Whitespace after the opening bracket.
       writer.splitIf(
@@ -198,6 +211,8 @@ final class ListPiece extends Piece {
         state == State.split,
         space: _style.spaceWhenUnsplit && _elements.isNotEmpty,
       );
+
+      if (_isBlockShaped) writer.setShapeMode(ShapeMode.merge);
 
       writer.format(after);
     }

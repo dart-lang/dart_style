@@ -17,8 +17,7 @@ class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
 <<<
 class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
   @aaaaaaaa
-  AaaaaAaaaAaaaAaaaaaaa get aaaaAaaaAaaaaaaa =>
-      aaaaaaaaAaaaaaaaaAaaaaa
+  AaaaaAaaaAaaaAaaaaaaa get aaaaAaaaAaaaaaaa => aaaaaaaaAaaaaaaaaAaaaaa
       ? (AaaaaaaaaAaaAaaaaaaa()
           // AAA/Aaaaa aaaaaaaaa aaaaaaaa aaaa AAAAAAAA aaaaaaaaa aaaaaa aaaaaaaa.
           ..aaaaAaaaaaaaaAaaaaaAaagetaaa =

@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a type parameter and its bound.
@@ -41,10 +40,10 @@ final class TypeParameterBoundPiece extends Piece {
   List<State> get additionalStates => const [_insideBound, _beforeExtends];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => switch (state) {
-    State.unsplit => false,
-    _insideBound => child == _bound,
-    _beforeExtends => true,
+  Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
+    State.unsplit => Shape.onlyInline,
+    _insideBound => Shape.anyIf(child == _bound),
+    _beforeExtends => Shape.all,
     _ => throw ArgumentError('Unexpected state.'),
   };
 

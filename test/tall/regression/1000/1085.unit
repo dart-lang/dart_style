@@ -9,8 +9,7 @@ void main() {
 }
 <<<
 void main() {
-  var result =
-      condition
+  var result = condition
       ? doA(
           param1, // comment to force split
           param2,

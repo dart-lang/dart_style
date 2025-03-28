@@ -33,12 +33,12 @@ final class TypePiece extends Piece {
   }
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
-    if (child == _body) return true;
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (child == _body) return Shape.all;
 
     // If the body may or may not split, then a newline in the header or
     // clauses forces the body to split.
-    return _bodyType != TypeBodyType.list || state == State.split;
+    return Shape.anyIf(_bodyType != TypeBodyType.list || state == State.split);
   }
 
   @override

@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// Piece for the contents inside the parentheses for an if-case statement or
@@ -73,20 +72,22 @@ final class IfCasePiece extends Piece {
   ];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) {
+  Set<Shape> allowedChildShapes(State state, Piece child) {
     return switch (state) {
       // When not splitting before `case` or `when`, we only allow newlines
       // in block-formatted patterns.
-      State.unsplit when child == _pattern => _canBlockSplitPattern,
+      State.unsplit when child == _pattern => Shape.anyIf(
+        _canBlockSplitPattern,
+      ),
 
       // Allow newlines only in the guard if we split before `when`.
-      _beforeWhen when child == _guard => true,
+      _beforeWhen when child == _guard => Shape.all,
 
       // Only allow the guard on the same line as the pattern if it doesn't
       // split.
-      _beforeCase when child != _guard => true,
-      _beforeCaseAndWhen => true,
-      _ => false,
+      _beforeCase when child != _guard => Shape.all,
+      _beforeCaseAndWhen => Shape.all,
+      _ => Shape.onlyInline,
     };
   }
 
@@ -100,7 +101,7 @@ final class IfCasePiece extends Piece {
     writer.splitIf(state == _beforeCase || state == _beforeCaseAndWhen);
 
     if (!_canBlockSplitPattern) {
-      writer.pushIndent(Indent.expression, canCollapse: true);
+      writer.pushIndent(Indent.controlFlowClause);
     }
 
     writer.format(_pattern);

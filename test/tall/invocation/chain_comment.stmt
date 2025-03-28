@@ -96,4 +96,5 @@ target // c
 .prop = value;
 <<<
 target // c
-    .prop = value;
+        .prop =
+    value;

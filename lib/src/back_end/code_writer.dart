@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math';
 
+import '../debug.dart' as debug;
 import '../piece/piece.dart';
 import '../profile.dart';
 import 'code.dart';
@@ -51,19 +52,19 @@ final class CodeWriter {
   /// The number of characters in the line currently being written.
   int _column = 0;
 
-  /// The stack indentation levels.
+  /// The stack of indentation levels.
   ///
   /// Each entry in the stack is the absolute number of spaces of leading
   /// indentation that should be written when beginning a new line to account
   /// for block nesting, expression wrapping, constructor initializers, etc.
-  final List<_Indent> _indentStack = [];
+  final List<_IndentLevel> _indentStack = [];
 
-  /// Whether any newlines have been written during the [_currentPiece] being
-  /// formatted.
-  bool _hadNewline = false;
-
-  /// The current innermost piece being formatted by a call to [format()].
-  Piece? _currentPiece;
+  /// The stack of information for each [Piece] currently being formatted.
+  ///
+  /// This allows [CodeWriter] to pass itself data from parent to child through
+  /// [format()] calls and back up from child to parent without every override
+  /// of [format()] having to thread that data through.
+  final List<_FormatState> _pieceFormats = [];
 
   /// Whether we have already found the first line where whose piece should be
   /// used to expand further solutions.
@@ -108,7 +109,7 @@ final class CodeWriter {
     this._cache,
     this._solution,
   ) : _code = GroupCode(leadingIndent) {
-    _indentStack.add(_Indent(leadingIndent, 0));
+    _indentStack.add(_IndentLevel(Indent.none, leadingIndent));
 
     // Track the leading indent before the first line.
     _pendingIndent = leadingIndent;
@@ -118,7 +119,7 @@ final class CodeWriter {
     // onto the stack. When the first newline is written, [_pendingIndent] will
     // pick this up and use it for subsequent lines.
     if (subsequentIndent > leadingIndent) {
-      _indentStack.add(_Indent(subsequentIndent, 0));
+      _indentStack.add(_IndentLevel(Indent.none, subsequentIndent));
     }
   }
 
@@ -150,32 +151,34 @@ final class CodeWriter {
     }
   }
 
-  /// Increases the number of spaces of indentation by [indent] relative to the
-  /// current amount of indentation.
-  ///
-  /// If [canCollapse] is `true`, then the new [indent] spaces of indentation
-  /// are "collapsible". This means that further calls to [pushIndent()] will
-  /// merge their indentation with [indent] and not increase the visible
-  /// indentation until more than [indent] spaces of indentation have been
-  /// increased.
-  void pushIndent(int indent, {bool canCollapse = false}) {
-    var parentIndent = _indentStack.last.indent;
-    var parentCollapse = _indentStack.last.collapsible;
+  /// Increases the indentation by [indent] relative to the current amount of
+  /// indentation.
+  void pushIndent(Indent indent) {
+    var parent = _indentStack.last;
 
-    if (parentCollapse == indent) {
-      // We're indenting by the same existing collapsible amount, so collapse
-      // this new indentation with that existing one.
-      _indentStack.add(_Indent(parentIndent, 0));
-    } else if (canCollapse) {
-      // We should never get multiple levels of nested collapsible indentation.
-      assert(parentCollapse == 0);
+    // Combine the new indentation with the surrounding one.
+    var offset = switch ((parent.type, indent)) {
+      // On the right-hand side of `=`, `:`, or `=>`, don't indent subsequent
+      // infix operands so that they all align:
+      //
+      //     variable =
+      //         operand +
+      //         another;
+      (Indent.assignment, Indent.infix) => 0,
 
-      // Increase the indentation and note that it can be collapsed with
-      // further indentation.
-      _indentStack.add(_Indent(parentIndent + indent, indent));
-    } else {
-      // Regular indentation, so just increase the indent.
-      _indentStack.add(_Indent(parentIndent + indent, 0));
+      // We have already indented the control flow header, so collapse the
+      // duplicate indentation.
+      (Indent.controlFlowClause, Indent.expression) => 0,
+      (Indent.controlFlowClause, Indent.infix) => 0,
+
+      // If we get here, the parent context has no effect, so just apply the
+      // indentation directly.
+      (_, _) => indent.spaces,
+    };
+
+    _indentStack.add(_IndentLevel(indent, parent.spaces + offset));
+    if (debug.traceIndent) {
+      debug.log('pushIndent: ${_indentStack.join(' ')}');
     }
   }
 
@@ -227,11 +230,17 @@ final class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      _hadNewline = true;
-      _pendingIndent = flushLeft ? 0 : _indentStack.last.indent;
+      _applyNewlineToShape();
+      _pendingIndent = flushLeft ? 0 : _indentStack.last.spaces;
     }
 
     _pendingWhitespace = _pendingWhitespace.collapse(whitespace);
+  }
+
+  /// When a newline is written by the current piece of one of its children,
+  /// determines how that affects the current piece's shape.
+  void setShapeMode(ShapeMode mode) {
+    _pieceFormats.last.mode = mode;
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -269,7 +278,7 @@ final class CodeWriter {
       _solution.pieceStateIfBound(piece),
       pageWidth: _pageWidth,
       indent: _pendingIndent,
-      subsequentIndent: _indentStack.last.indent,
+      subsequentIndent: _indentStack.last.spaces,
     );
 
     _pendingIndent = 0;
@@ -281,13 +290,6 @@ final class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    // Begin a new formatting context for this child.
-    var previousPiece = _currentPiece;
-    _currentPiece = piece;
-
-    var previousHadNewline = _hadNewline;
-    _hadNewline = false;
-
     var isUnsolved =
         !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
 
@@ -304,45 +306,45 @@ final class CodeWriter {
       isUnsolved =
           !_solution.tryBindByPageWidth(
             piece,
-            _pageWidth - _indentStack.first.indent,
+            _pageWidth - _indentStack.first.spaces,
           );
       Profile.end('CodeWriter try to bind by page width');
     }
 
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
+    // Begin a new formatting context for this child.
+    _pieceFormats.add(_FormatState(piece));
+
     // Format the child piece.
     piece.format(this, _solution.pieceState(piece));
+
+    var child = _pieceFormats.removeLast();
 
     // Restore the surrounding piece's context.
     if (isUnsolved) _currentUnsolvedPieces.removeLast();
 
-    var childHadNewline = _hadNewline;
-    _hadNewline = previousHadNewline;
+    // Now that we know the child's shape, see if the parent permits it.
+    if (_pieceFormats.lastOrNull case var parent?) {
+      var allowedShapes = parent.piece.allowedChildShapes(
+        _solution.pieceState(parent.piece),
+        piece,
+      );
 
-    _currentPiece = previousPiece;
-
-    // If the child contained a newline then invalidate the solution if any of
-    // the containing pieces don't allow one at this point in the tree.
-    if (childHadNewline) {
-      // TODO(rnystrom): We already do much of the newline constraint validation
-      // when the Solution is first created before we format. For performance,
-      // it would be good to do *all* of it before formatting. The missing part
-      // is that pieces containing hard newlines (comments, multiline strings,
-      // sequences, etc.) do not constrain their parents when the solution is
-      // first created. If we can get that working, then this check can be
-      // removed.
-      if (_currentPiece case var parent?
-          when !parent.allowNewlineInChild(
-            _solution.pieceState(parent),
-            piece,
-          )) {
-        _solution.invalidate(_currentPiece!);
+      if (!allowedShapes.contains(child.shape)) {
+        _solution.invalidate(parent.piece);
+        if (debug.traceSolver) {
+          debug.log(
+            'invalidate ${parent.piece} '
+            '(${_solution.pieceState(parent.piece)}) '
+            'because child $piece (${_solution.pieceState(piece)}) '
+            'has ${child.shape} and allowed are $allowedShapes',
+          );
+        }
       }
 
-      // Note that this piece contains a newline so that we can propagate that
-      // up to containing pieces too.
-      _hadNewline = true;
+      // If the child had newlines, propagate that to the parent's shape.
+      if (child.shape != Shape.inline) _applyNewlineToShape(child.shape);
     }
   }
 
@@ -409,6 +411,23 @@ final class CodeWriter {
       _currentLinePieces.clear();
     }
   }
+
+  /// Determine how a newline affects the current piece's shape.
+  void _applyNewlineToShape([Shape shape = Shape.other]) {
+    var format = _pieceFormats.last;
+    format.shape = switch (format.mode) {
+      ShapeMode.merge => format.shape.merge(shape),
+      ShapeMode.block => Shape.block,
+      ShapeMode.beforeHeadline => Shape.other,
+      // If there were no newlines inside the headline, now that there is one,
+      // we have a headline shape.
+      ShapeMode.afterHeadline when format.shape == Shape.inline =>
+        Shape.headline,
+      // If there was already a newline in the headline, preserve that shape.
+      ShapeMode.afterHeadline => format.shape,
+      ShapeMode.other => Shape.other,
+    };
+  }
 }
 
 /// Different kinds of pending whitespace that have been requested.
@@ -442,13 +461,107 @@ enum Whitespace {
   };
 }
 
+/// A kind of indentation that a [Piece] may output to control the leading
+/// whitespace at the beginning of a line.
+///
+/// Each indentation type defines the number of spaces it writes. Indentation
+/// is also semantic: a type describes *why* it writes that, or what kind of
+/// syntax its coming from. This allows us to merge or combine indentation in
+/// smarter ways in some contexts.
+enum Indent {
+  // No indentation.
+  none(0),
+
+  /// The right-hand side of an `=`, `:`, or `=>`.
+  assignment(4),
+
+  /// The contents of a block-like structure: block, collection literal,
+  /// argument list, etc.
+  block(2),
+
+  /// A split cascade chain.
+  cascade(2),
+
+  /// Indentation when splits occur inside for-in and if-case clause headers.
+  controlFlowClause(4),
+
+  /// Any general sort of split expression.
+  expression(4),
+
+  /// "Indentation" for parenthesized expressions and other contexts where we
+  /// want to prevent some inner expression's indentation from merging with
+  /// the surrounding one.
+  grouping(0),
+
+  /// An infix operator expression: `+`, `*`, `is`, etc.
+  infix(4),
+
+  /// Constructor initializer when the parameter list doesn't have optional
+  /// or named parameters.
+  initializer(2),
+
+  /// Constructor initializer when the parameter list does have optional or
+  /// named parameters.
+  initializerWithOptionalParameter(3);
+
+  /// The number of spaces this type of indentation applies.
+  final int spaces;
+
+  const Indent(this.spaces);
+}
+
+/// Information for each piece currently being formatted while [CodeWriter]
+/// traverses the piece tree.
+class _FormatState {
+  /// The piece being formatted.
+  final Piece piece;
+
+  /// The piece's shape.
+  ///
+  /// This changes based on the newlines the piece writes.
+  Shape shape = Shape.inline;
+
+  /// How a newline affects the shape of this piece.
+  ShapeMode mode = ShapeMode.merge;
+
+  _FormatState(this.piece);
+}
+
+/// Determines how a newline inside a piece or a child piece affects the shape
+/// of the current piece.
+enum ShapeMode {
+  /// The piece's shape is merged with the incoming shape.
+  ///
+  /// If a newline is written directly by the piece itself, that has shape
+  /// [Shape.other].
+  merge,
+
+  /// A newline makes this piece block-shaped.
+  block,
+
+  /// We are in the first line of a potentially headline-shaped piece.
+  ///
+  /// A newline here means it's not headline shaped.
+  beforeHeadline,
+
+  /// We've already written the headline part of a piece so a newline after
+  /// this is fine and still leaves it headline shaped.
+  afterHeadline,
+
+  /// A newline makes this piece have [Shape.other].
+  other,
+}
+
 /// A level of indentation in the indentation stack.
-final class _Indent {
+final class _IndentLevel {
+  /// The reason this indentation was added.
+  final Indent type;
+
   /// The total number of spaces of indentation.
-  final int indent;
+  final int spaces;
 
-  /// How many spaces of [indent] can be collapsed with further indentation.
-  final int collapsible;
+  _IndentLevel(this.type, this.spaces);
 
-  _Indent(this.indent, this.collapsible);
+  @override
+  String toString() => '${type.name}:$spaces';
 }

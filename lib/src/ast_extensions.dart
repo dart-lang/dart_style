@@ -162,6 +162,26 @@ extension AstIterableExtensions on Iterable<AstNode> {
 }
 
 extension ExpressionExtensions on Expression {
+  /// Whether this expression is a list, set, or map literal whose elements
+  /// all have a homogeneous type.
+  ///
+  /// In that case, the elements are relatively loosely related to each other.
+  /// The collection has an unbounded number of them and the contents tend to
+  /// change frequently.
+  ///
+  /// This isn't true for record literal fields and function call arguments. In
+  /// those cases, each argument position is meaningful and it's easiest to
+  /// read them all together.
+  ///
+  /// Thus it makes sense for the formatter to be looser about splitting list,
+  /// map, and set literals, while trying to avoid splitting argument lists and
+  /// records.
+  bool get isHomogeneousCollectionBody =>
+      this is ListLiteral || this is SetOrMapLiteral;
+
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// Whether this expression is a non-empty delimited container for inner
   /// expressions that allows "block-like" formatting in some contexts. For
   /// example, in an assignment, a split in the assigned value is usually
@@ -187,6 +207,9 @@ extension ExpressionExtensions on Expression {
   /// splitting inside them, so are not considered block-like.
   bool get canBlockSplit => blockFormatType != BlockFormat.none;
 
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// When this expression is in an argument list, what kind of block formatting
   /// category it belongs to.
   BlockFormat get blockFormatType {
@@ -375,28 +398,27 @@ extension AdjacentStringsExtensions on AdjacentStrings {
   /// Whether subsequent strings should be indented relative to the first
   /// string.
   ///
-  /// We generally want to indent adjacent strings because it can be confusing
-  /// otherwise when they appear in a list of expressions, like:
+  /// We generally prefer to align the strings because it makes them easier to
+  /// read as a single paragraph of text (which they often are):
   ///
-  ///     [
-  ///       "one",
-  ///       "two"
-  ///       "three",
-  ///       "four"
-  ///     ]
+  ///     function(
+  ///       'This is a long string message '
+  ///       'split across multiple lines.',
+  ///     )
   ///
-  /// Especially when these strings are longer, it can be hard to tell that
-  /// "three" is a continuation of the previous element.
+  /// But this is hard to read if there are other string arguments:
   ///
-  /// However, the indentation is distracting in places that don't suffer from
-  /// this ambiguity:
+  ///     function(
+  ///       'This is a long string message '
+  ///       'split across multiple lines.',
+  ///       'This is a separate argument.',
+  ///     )
   ///
-  ///     var description =
-  ///         "A very long description..."
-  ///             "this extra indentation is unnecessary.");
+  /// Here, unless you carefully notice the commas, it's hard to tell how many
+  /// arguments there are.
   ///
-  /// To balance these, we omit the indentation when an adjacent string
-  /// expression is in a context where it's unlikely to be confusing.
+  /// To balance these, we omit the indentation in argument lists only if there
+  /// are no other string arguments.
   bool get indentStrings {
     bool hasOtherStringArgument(List<Expression> arguments) => arguments.any(
       (argument) => argument != this && argument is StringLiteral,
@@ -411,27 +433,15 @@ extension AdjacentStringsExtensions on AdjacentStrings {
         if (message != null) message,
       ]),
 
-      // Don't add extra indentation in a variable initializer or assignment:
-      //
-      //     var variable =
-      //         "no extra"
-      //         "indent";
-      VariableDeclaration() => false,
-      AssignmentExpression(:var rightHandSide) when rightHandSide == this =>
-        false,
-
-      // Don't indent when following `:`.
-      MapLiteralEntry(:var value) when value == this => false,
-      NamedExpression() => false,
-
-      // Don't indent when the body of a `=>` function.
-      ExpressionFunctionBody() => false,
       _ => true,
     };
   }
 }
 
 extension PatternExtensions on DartPattern {
+  // TODO(rnystrom): We're moving towards using child piece shape to determine
+  // how a parent is formatted and how it indents its children. Once all pieces
+  // are moved over to that, delete this.
   /// Whether this expression is a non-empty delimited container for inner
   /// expressions that allows "block-like" formatting in some contexts.
   ///

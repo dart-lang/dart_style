@@ -5,7 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../constants.dart';
+import '../back_end/code_writer.dart';
 import '../piece/piece.dart';
 import '../piece/sequence.dart';
 import '../piece/text.dart';
@@ -91,7 +91,7 @@ final class SequenceBuilder {
   ///
   /// The caller should have already called [addCommentsBefore()] with the
   /// first token in [piece].
-  void add(Piece piece, {int? indent, bool allowBlankAfter = true}) {
+  void add(Piece piece, {Indent? indent, bool allowBlankAfter = true}) {
     _elements.add(SequenceElementPiece(indent ?? Indent.none, piece));
 
     _allowBlank = allowBlankAfter;
@@ -99,7 +99,7 @@ final class SequenceBuilder {
 
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
-  void visit(AstNode node, {int? indent, bool allowBlankAfter = true}) {
+  void visit(AstNode node, {Indent? indent, bool allowBlankAfter = true}) {
     addCommentsBefore(node.firstNonCommentToken, indent: indent);
     add(
       _visitor.nodePiece(node),
@@ -122,7 +122,7 @@ final class SequenceBuilder {
   ///
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
-  void addCommentsBefore(Token token, {int? indent}) {
+  void addCommentsBefore(Token token, {Indent? indent}) {
     indent ??= Indent.none;
 
     var comments = _visitor.comments.takeCommentsBefore(token);

@@ -2,7 +2,6 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 import '../back_end/code_writer.dart';
-import '../constants.dart';
 import 'piece.dart';
 
 /// A piece for a series of binary expressions at the same precedence, like:
@@ -17,27 +16,48 @@ final class InfixPiece extends Piece {
   /// A leading operator like `foo as int` becomes "Infix(`foo`, `as int`)".
   final List<Piece> _operands;
 
-  /// Whether operands after the first should be indented if split.
-  final bool _indent;
+  /// What kind of indentation should be applied to the subsequent operands.
+  final Indent _indentType;
 
   /// Whether this piece is for a conditional expression.
   final bool _isConditional;
 
-  InfixPiece(this._operands, {bool indent = true, bool conditional = false})
-    : _indent = indent,
-      _isConditional = conditional;
+  InfixPiece(
+    this._operands, {
+    bool conditional = false,
+    Indent indent = Indent.infix,
+  }) : _indentType = indent,
+       _isConditional = conditional;
 
   @override
   List<State> get additionalStates => const [State.split];
 
   @override
-  bool allowNewlineInChild(State state, Piece child) => state == State.split;
+  Set<Shape> allowedChildShapes(State state, Piece child) =>
+      Shape.anyIf(state == State.split);
 
   @override
   void format(CodeWriter writer, State state) {
-    if (_indent) writer.pushIndent(Indent.expression);
+    writer.pushIndent(_indentType);
 
+    // If this is a conditional expression (or chain of them), then allow the
+    // leading condition to be headline formatted in an assignment, like:
+    //
+    //     variable = condition
+    //         ? thenBranch
+    //         : elseBranch;
+    //
+    // We only do this for conditional expressions and not other infix operators
+    // because with other operators, the operands are homogeneous and it makes
+    // more sense to split before the first one so that they are aligned in
+    // parallel:
+    //
+    //     variable =
+    //         operand +
+    //         another;
+    if (_isConditional) writer.setShapeMode(ShapeMode.beforeHeadline);
     writer.format(_operands[0]);
+    if (_isConditional) writer.setShapeMode(ShapeMode.afterHeadline);
 
     for (var i = 1; i < _operands.length; i++) {
       writer.splitIf(state == State.split);
@@ -54,7 +74,7 @@ final class InfixPiece extends Piece {
       if (_isConditional) writer.popIndent();
     }
 
-    if (_indent) writer.popIndent();
+    writer.popIndent();
   }
 
   @override

@@ -5,9 +5,7 @@
             something.field.where((i) => i is SomeClassGoesHere),
             key: (i) => i.someField.name);
 <<<
-### TODO(1465): Should allow the condition on the first line.
-    var initializers =
-        something == null
+    var initializers = something == null
         ? {}
         : new Map.fromIterable(
             something.field.where((i) => i is SomeClassGoesHere),
@@ -18,9 +16,7 @@
             outputDir, uri, results.libraries, results.rules, formatOutput) :
         new JSGenerator(outputDir, uri, results.libraries, results.rules);
 <<<
-### TODO(1465): Should allow the condition on the first line.
-    var cg =
-        outputDart
+    var cg = outputDart
         ? new DartGenerator(
             outputDir,
             uri,
