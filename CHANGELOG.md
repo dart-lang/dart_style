@@ -2,6 +2,23 @@
 
 * Format null-aware elements.
 
+* Avoid splitting chains containing only properties.
+
+  ```dart
+  // Before:
+  variable = target
+      .property
+      .another;
+
+  // After:
+  variable =
+      target.property.another;
+  ```
+
+  Note that this only applies to `.` chains that are only properties. If there
+  are method calls in the chain, then it prefers to split the chain instead of
+  splitting at `=`, `:`, or `=>`.
+
 * Allow the target or property chain part of a split method chain on the RHS of
   `=`, `:`, and `=>` (#1466).
 

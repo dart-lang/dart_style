@@ -51,3 +51,21 @@ avian
     .feline
     .piscine
     .method();
+>>> Prefer splitting an assignment over splitting a pure property chain.
+variable = avian.bovine.canine.equine.feline;
+<<<
+variable =
+    avian.bovine.canine.equine.feline;
+>>> Don't prefer splitting an assignment if there are methods in the chain.
+variable = avian.bovine.canine.equine.feline();
+<<<
+variable = avian.bovine.canine.equine
+    .feline();
+>>> Don't prefer splitting an assignment if there are methods in the chain.
+variable = avian.bovine().canine.equine().feline;
+<<<
+variable = avian
+    .bovine()
+    .canine
+    .equine()
+    .feline;
