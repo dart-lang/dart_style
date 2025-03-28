@@ -58,11 +58,8 @@ void main() {
       : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }
 <<<
-### TODO(rnystrom): Should allow condition on same line as `=` if it fits and
-### conditional expression splits.
 void main() {
-  var xxxxxxxYyyyyyyy =
-      aaaabbb
+  var xxxxxxxYyyyyyyy = aaaabbb
       ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
       : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }

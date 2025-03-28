@@ -3,9 +3,7 @@ String type = status == 'OK'
     ? 'notices'
     : status == 'NO' ? 'warnings' : status == 'BAD' ? 'errors' : '';
 <<<
-### TODO(1465): Should put condition after `=`.
-String type =
-    status == 'OK'
+String type = status == 'OK'
     ? 'notices'
     : status == 'NO'
     ? 'warnings'

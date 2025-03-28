@@ -14,10 +14,9 @@ class Foo {
       (Column.defaultBuilder(videoMsg())
             ..id = 'VIDEO'
             ..segment =
-                ((row) =>
-                    row.segmentedStats
-                        .map((s) => s.get(Stats.SEGMENTATION))
-                        .toList())
+                ((row) => row.segmentedStats
+                    .map((s) => s.get(Stats.SEGMENTATION))
+                    .toList())
             ..cell = new Cell(onSelection))
           .build();
 }
@@ -103,12 +102,10 @@ main() {
           .toList();
 }
 <<<
-### TODO(1465): Should allow `s.isAscending` after the `=`.
 main() {
   (new OrderBy()
         ..field = s.column
-        ..sortOrder =
-            s.isAscending
+        ..sortOrder = s.isAscending
             ? OrderBySortOrder.ASCENDING
             : OrderBySortOrder.DESCENDING)
       .toList();

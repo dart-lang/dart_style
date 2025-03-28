@@ -216,12 +216,24 @@ enum Shape {
   /// literal, or argument list.
   block,
 
+  /// The piece has a single line of code for some kind of "header" or other
+  /// leading construct followed by multiple lines of other code. Examples:
+  ///
+  ///     conditionHeader
+  ///         ? thenBody
+  ///         : elseBody
+  ///
+  ///     target.header
+  ///         .method()
+  ///         .chain()
+  headline,
+
   /// The piece is split across multiple lines but not in any other well-defined
   /// shape.
   other;
 
   /// Allows all shapes.
-  static const Set<Shape> all = {inline, block, other};
+  static const Set<Shape> all = {inline, block, headline, other};
 
   /// Must be block shaped.
   static const Set<Shape> onlyBlock = {block};

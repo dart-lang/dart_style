@@ -240,7 +240,7 @@ final class CodeWriter {
   /// When a newline is written by the current piece of one of its children,
   /// determines how that affects the current piece's shape.
   void setShapeMode(ShapeMode mode) {
-    _pieceFormats.last._mode = mode;
+    _pieceFormats.last.mode = mode;
   }
 
   /// Format [piece] and insert the result into the code being written and
@@ -415,9 +415,16 @@ final class CodeWriter {
   /// Determine how a newline affects the current piece's shape.
   void _applyNewlineToShape([Shape shape = Shape.other]) {
     var format = _pieceFormats.last;
-    format.shape = switch (format._mode) {
+    format.shape = switch (format.mode) {
       ShapeMode.merge => format.shape.merge(shape),
       ShapeMode.block => Shape.block,
+      ShapeMode.beforeHeadline => Shape.other,
+      // If there were no newlines inside the headline, now that there is one,
+      // we have a headline shape.
+      ShapeMode.afterHeadline when format.shape == Shape.inline =>
+        Shape.headline,
+      // If there was already a newline in the headline, preserve that shape.
+      ShapeMode.afterHeadline => format.shape,
       ShapeMode.other => Shape.other,
     };
   }
@@ -515,7 +522,7 @@ class _FormatState {
   Shape shape = Shape.inline;
 
   /// How a newline affects the shape of this piece.
-  ShapeMode _mode = ShapeMode.merge;
+  ShapeMode mode = ShapeMode.merge;
 
   _FormatState(this.piece);
 }
@@ -531,6 +538,15 @@ enum ShapeMode {
 
   /// A newline makes this piece block-shaped.
   block,
+
+  /// We are in the first line of a potentially headline-shaped piece.
+  ///
+  /// A newline here means it's not headline shaped.
+  beforeHeadline,
+
+  /// We've already written the headline part of a piece so a newline after
+  /// this is fine and still leaves it headline shaped.
+  afterHeadline,
 
   /// A newline makes this piece have [Shape.other].
   other,

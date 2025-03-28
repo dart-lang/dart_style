@@ -169,16 +169,20 @@ final class ChainPiece extends Piece {
 
       case _splitAfterProperties:
         writer.pushIndent(_indent);
+        writer.setShapeMode(ShapeMode.beforeHeadline);
         writer.format(_target);
 
-        for (var i = 0; i < _calls.length; i++) {
-          writer.splitIf(i >= _leadingProperties, space: false);
+        for (var i = 0; i < _leadingProperties; i++) {
+          writer.format(_calls[i]._call);
+        }
+
+        writer.setShapeMode(ShapeMode.afterHeadline);
+
+        for (var i = _leadingProperties; i < _calls.length; i++) {
+          writer.newline();
 
           // Every non-property call except the last will be on its own line.
-          writer.format(
-            _calls[i]._call,
-            separate: i >= _leadingProperties && i < _calls.length - 1,
-          );
+          writer.format(_calls[i]._call, separate: i < _calls.length - 1);
         }
 
         writer.popIndent();
@@ -192,7 +196,9 @@ final class ChainPiece extends Piece {
 
       case State.split:
         writer.pushIndent(_indent);
+        writer.setShapeMode(ShapeMode.beforeHeadline);
         writer.format(_target);
+        writer.setShapeMode(ShapeMode.afterHeadline);
 
         for (var i = 0; i < _calls.length; i++) {
           writer.newline();

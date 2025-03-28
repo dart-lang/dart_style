@@ -58,7 +58,6 @@ enum ErrorKind {
   Unspecified,
 }
 <<<
-### TODO(1469): Should we keep the blank lines between elements?
 enum ErrorKind {
   AbstractNotSync,
   AsciiControlCharacter,

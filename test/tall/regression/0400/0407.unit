@@ -7,14 +7,10 @@ void main() {
 <<<
 void main() {
   model
-    ..account =
-        (new Account()
-          ..accountId = new Int64(111)
-          ..tags =
-              (new Account_Tags()
-                ..accountHotlist.add(
-                  new Hotlist()..hotlistId = new Int64(10),
-                )));
+    ..account = (new Account()
+      ..accountId = new Int64(111)
+      ..tags = (new Account_Tags()
+        ..accountHotlist.add(new Hotlist()..hotlistId = new Int64(10))));
 }
 >>> (indent 4)
 main() {
@@ -26,11 +22,9 @@ receiver
           : _formatter.formatValue(item.value, item.valueType);
 }
 <<<
-### TODO(1465): Allow the conditional after the `=`.
     main() {
       receiver
-        ..formattedTotal =
-            _total == 0
+        ..formattedTotal = _total == 0
             ? ""
             : _chartType == "PieChart"
             ? _formatter.formatAsPercent(item.value / _total, fractionDigits: 1)
@@ -46,11 +40,9 @@ receiver
               : _formatter.formatValue(item.value, item.valueType);
 }
 <<<
-### TODO(1465): Allow the conditional after the `=`.
       main() {
         receiver
-          ..formattedTotal =
-              _total == 0
+          ..formattedTotal = _total == 0
               ? ""
               : _chartType == "PieChart"
               ? _formatter.formatAsPercent(

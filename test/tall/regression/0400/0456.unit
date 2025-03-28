@@ -4365,49 +4365,44 @@ main() {
   new LibraryBuilder()
       .addImport((i) => i.setUri('coffee_app.dart'))
       .addClass(
-        (c) =>
-            c
-                .setName('Coffee\$Injector')
-                .setImplements(['Coffee'])
-                .addField(
-                  (f) =>
-                      f
-                          .setFinal()
-                          .setType((t) => t.setIdentifier('DripCoffeeModule'))
-                          .setName('_dripCoffeeModule'),
-                )
-                .addMethod(
-                  (m) =>
-                      m
-                          .setName('Coffee\$Injector')
-                          .addParameter((p) => p.setThis('_dripCoffeeModule')),
-                )
-                .addMethod(
-                  (m) =>
-                      m
-                          .addAnnotation((a) => a.override())
-                          .setReturnType((t) => t.setIdentifier('CoffeeMaker'))
-                          .setName('getCoffeeMaker')
-                          .setBodyExpression(
-                            // NOTE: Below this point, dartfmt will give up.
-                            (b) => b.setExpression(
-                              (e) =>
-                                  e
-                                      .invoke()
-                                      .setMethod('new CoffeeMaker')
-                                      .addArgument(
-                                        (x) => x.invoke().setMethod(
-                                          '_dripCoffeeModule.provideHeater',
-                                        ),
-                                      )
-                                      .addArgument(
-                                        (x) => x.invoke().setMethod(
-                                          '_dripCoffeeModule.providePump',
-                                        ),
-                                      ),
+        (c) => c
+            .setName('Coffee\$Injector')
+            .setImplements(['Coffee'])
+            .addField(
+              (f) => f
+                  .setFinal()
+                  .setType((t) => t.setIdentifier('DripCoffeeModule'))
+                  .setName('_dripCoffeeModule'),
+            )
+            .addMethod(
+              (m) => m
+                  .setName('Coffee\$Injector')
+                  .addParameter((p) => p.setThis('_dripCoffeeModule')),
+            )
+            .addMethod(
+              (m) => m
+                  .addAnnotation((a) => a.override())
+                  .setReturnType((t) => t.setIdentifier('CoffeeMaker'))
+                  .setName('getCoffeeMaker')
+                  .setBodyExpression(
+                    // NOTE: Below this point, dartfmt will give up.
+                    (b) => b.setExpression(
+                      (e) => e
+                          .invoke()
+                          .setMethod('new CoffeeMaker')
+                          .addArgument(
+                            (x) => x.invoke().setMethod(
+                              '_dripCoffeeModule.provideHeater',
+                            ),
+                          )
+                          .addArgument(
+                            (x) => x.invoke().setMethod(
+                              '_dripCoffeeModule.providePump',
                             ),
                           ),
-                ),
+                    ),
+                  ),
+            ),
       );
 }
 >>>
@@ -4445,35 +4440,32 @@ class Aaa {
     AaaaaAaaaAaaaa aaaaa,
     AaaaaAaaaAaaaa aaaaa,
     aaaaaa aaaaaaaAaaaaa,
-  ) =>
-      new AaaaaAaaaAaaaa()
-        ..aaaaAaaaaa = new Aaa64(
-          (aaaaa.aaaaAaaaaa.aaAaaaaa() +
-                  ((aaaaa.aaaaAaaaaa - aaaaa.aaaaAaaaaa).aaAaaaaa() *
-                      aaaaaaaAaaaaa))
-              .aaAaa(),
-        )
-        ..aaaAaaAaaaaa = new Aaa64(
-          (aaaaa.aaaAaaAaaaaa.aaAaaaaa() +
-                  ((aaaaa.aaaAaaAaaaaa - aaaaa.aaaAaaAaaaaa).aaAaaaaa() *
-                      aaaaaaaAaaaaa))
-              .aaAaa(),
-        )
-        ..aaaaaa =
-            aaaaa.aaaaaa + ((aaaaa.aaaaaa - aaaaa.aaaaaa) * aaaaaaaAaaaaa)
-        ..aaaaaaaaaaa =
-            aaaaa.aaaaaaaaaaa +
-            ((aaaaa.aaaaaaaaaaa - aaaaa.aaaaaaaaaaa) * aaaaaaaAaaaaa)
-        ..aaaaAaaaa =
-            aaaaa.aaaaAaaaa +
-            ((aaaaa.aaaaAaaaa - aaaaa.aaaaAaaaa) * aaaaaaaAaaaaa)
-        ..aaaaaaaaAaaaaaaaaaa =
-            aaaaa.aaaaaaaaAaaaaaaaaaa +
-            ((aaaaa.aaaaaaaaAaaaaaaaaaa - aaaaa.aaaaaaaaAaaaaaaaaaa) *
-                aaaaaaaAaaaaa)
-        ..aaaaa = aaaaa.aaaaa + ((aaaaa.aaaaa - aaaaa.aaaaa) * aaaaaaaAaaaaa)
-        ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
-        ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
+  ) => new AaaaaAaaaAaaaa()
+    ..aaaaAaaaaa = new Aaa64(
+      (aaaaa.aaaaAaaaaa.aaAaaaaa() +
+              ((aaaaa.aaaaAaaaaa - aaaaa.aaaaAaaaaa).aaAaaaaa() *
+                  aaaaaaaAaaaaa))
+          .aaAaa(),
+    )
+    ..aaaAaaAaaaaa = new Aaa64(
+      (aaaaa.aaaAaaAaaaaa.aaAaaaaa() +
+              ((aaaaa.aaaAaaAaaaaa - aaaaa.aaaAaaAaaaaa).aaAaaaaa() *
+                  aaaaaaaAaaaaa))
+          .aaAaa(),
+    )
+    ..aaaaaa = aaaaa.aaaaaa + ((aaaaa.aaaaaa - aaaaa.aaaaaa) * aaaaaaaAaaaaa)
+    ..aaaaaaaaaaa =
+        aaaaa.aaaaaaaaaaa +
+        ((aaaaa.aaaaaaaaaaa - aaaaa.aaaaaaaaaaa) * aaaaaaaAaaaaa)
+    ..aaaaAaaaa =
+        aaaaa.aaaaAaaaa + ((aaaaa.aaaaAaaaa - aaaaa.aaaaAaaaa) * aaaaaaaAaaaaa)
+    ..aaaaaaaaAaaaaaaaaaa =
+        aaaaa.aaaaaaaaAaaaaaaaaaa +
+        ((aaaaa.aaaaaaaaAaaaaaaaaaa - aaaaa.aaaaaaaaAaaaaaaaaaa) *
+            aaaaaaaAaaaaa)
+    ..aaaaa = aaaaa.aaaaa + ((aaaaa.aaaaa - aaaaa.aaaaa) * aaaaaaaAaaaaa)
+    ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
+    ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
 }
 >>>
 main() {

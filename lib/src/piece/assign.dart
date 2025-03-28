@@ -42,8 +42,8 @@ import 'piece.dart';
 ///     ] = 'expression split' +
 ///         'the right hand side';
 ///
-/// [_blockSplitRight] Require the right-hand side to block shaped and allow
-/// the left-side to expression split as in:
+/// [_blockOrHeadlineSplitRight] Require the right-hand side to be block or
+/// headline shaped and allow the left-side to expression split as in:
 ///
 ///     var (variable &&
 ///         anotherVariable) = [
@@ -63,7 +63,7 @@ import 'piece.dart';
 ///             anotherOperand;
 final class AssignPiece extends Piece {
   /// Allow the right-hand side to block split.
-  static const State _blockSplitRight = State(1, cost: 0);
+  static const State _blockOrHeadlineSplitRight = State(1, cost: 0);
 
   /// Force the left-hand side to block split and allow the right-hand side to
   /// split.
@@ -99,7 +99,7 @@ final class AssignPiece extends Piece {
 
   @override
   List<State> get additionalStates => [
-    _blockSplitRight,
+    _blockOrHeadlineSplitRight,
     _blockSplitLeft,
     State.split,
   ];
@@ -116,7 +116,10 @@ final class AssignPiece extends Piece {
       State.unsplit => Shape.onlyInline,
       _blockSplitLeft when child == _left => Shape.onlyBlock,
       _blockSplitLeft when child == _right => const {Shape.inline, Shape.other},
-      _blockSplitRight when child == _right => Shape.onlyBlock,
+      _blockOrHeadlineSplitRight when child == _right => const {
+        Shape.block,
+        Shape.headline,
+      },
       _ => Shape.all,
     };
   }

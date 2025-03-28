@@ -2,6 +2,38 @@
 
 * Format null-aware elements.
 
+* Allow the target or property chain part of a split method chain on the RHS of
+  `=`, `:`, and `=>` (#1466).
+
+  ```dart
+  // Before:
+  variable =
+      target.property
+          .method()
+          .another();
+
+  // After:
+  variable = target.property
+      .method()
+      .another();
+  ```
+
+* Allow the condition part of a split conditional expression on the RHS of `=`,
+  `:`, and `=>` (#1465).
+
+  ```dart
+  // Before:
+  variable =
+      condition
+      ? longThenBranch
+      : longElseBranch;
+
+  // After:
+  variable = condition
+      ? longThenBranch
+      : longElseBranch;
+  ```
+
 * Don't indent conditional branches redundantly after `=`, `:`, and `=>`.
 
   ```dart

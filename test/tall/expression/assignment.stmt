@@ -89,3 +89,26 @@ outer =
       element3,
       element4,
     ];
+>>> Headline format unsplit target of call chain.
+variable = (tar + get).method().another().third();
+<<<
+variable = (tar + get)
+    .method()
+    .another()
+    .third();
+>>> Don't headline format target of call chain if target splits.
+variable = (veryLongTarget + expressionThatSplits).method().another().third();
+<<<
+variable =
+    (veryLongTarget +
+            expressionThatSplits)
+        .method()
+        .another()
+        .third();
+>>> Headline format unsplit properties of call chain.
+variable = (tar + get).prop.erty.method().another().third();
+<<<
+variable = (tar + get).prop.erty
+    .method()
+    .another()
+    .third();

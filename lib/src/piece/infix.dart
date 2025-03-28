@@ -40,7 +40,24 @@ final class InfixPiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.pushIndent(_indentType);
 
+    // If this is a conditional expression (or chain of them), then allow the
+    // leading condition to be headline formatted in an assignment, like:
+    //
+    //     variable = condition
+    //         ? thenBranch
+    //         : elseBranch;
+    //
+    // We only do this for conditional expressions and not other infix operators
+    // because with other operators, the operands are homogeneous and it makes
+    // more sense to split before the first one so that they are aligned in
+    // parallel:
+    //
+    //     variable =
+    //         operand +
+    //         another;
+    if (_isConditional) writer.setShapeMode(ShapeMode.beforeHeadline);
     writer.format(_operands[0]);
+    if (_isConditional) writer.setShapeMode(ShapeMode.afterHeadline);
 
     for (var i = 1; i < _operands.length; i++) {
       writer.splitIf(state == State.split);

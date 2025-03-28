@@ -792,14 +792,6 @@ mixin PieceFactory {
               ? [parameter.requiredKeyword, parameter.covariantKeyword]
               : const <Token?>[];
 
-      // TODO(rnystrom): It would be good if the AssignPiece created for the
-      // default value could treat the parameter list on the left-hand side as
-      // block-splittable. But since it's a FunctionPiece and not directly a
-      // ListPiece, AssignPiece doesn't support block-splitting it. If #1466 is
-      // fixed, that may enable us to handle block-splitting here too. In
-      // practice, it doesn't really matter since function-typed formals are
-      // deprecated, default values on function-typed parameters are rare, and
-      // when both occur, they rarely split.
       // If the type is a function-typed parameter with a default value, then
       // grab the default value from the parent node and attach it to the
       // function.

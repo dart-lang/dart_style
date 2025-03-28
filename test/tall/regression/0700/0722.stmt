@@ -16,10 +16,8 @@ child: project.locked
               ),
 );
 <<<
-### TODO(1465): Should put first condition after `child:`.
 Widget(
-  child:
-      project.locked
+  child: project.locked
       ? Icon(Icons.lock)
       : project.fav
       ? Icon(Icons.star)

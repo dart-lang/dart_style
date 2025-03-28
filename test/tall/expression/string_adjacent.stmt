@@ -204,8 +204,7 @@ function(
 var string = condition ? "adjacent"
 "string" : "other";
 <<<
-var string =
-    condition
+var string = condition
     ? "adjacent"
           "string"
     : "other";
@@ -213,8 +212,7 @@ var string =
 var string = condition ? "other" : "adjacent"
 "string";
 <<<
-var string =
-    condition
+var string = condition
     ? "other"
     : "adjacent"
           "string";

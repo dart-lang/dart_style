@@ -138,12 +138,11 @@ main() {
         main() {
           return Stream.value(null)
               .flatMap(
-                (value) =>
-                    _client
-                        .apiUserLoginPost(
-                          body: LoginRequest(email: email, password: password),
-                        )
-                        .asStream(),
+                (value) => _client
+                    .apiUserLoginPost(
+                      body: LoginRequest(email: email, password: password),
+                    )
+                    .asStream(),
               )
               .doOnData((response) {
                 if (response.error != null) {

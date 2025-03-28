@@ -9,8 +9,7 @@ var mymap = {
 <<<
 var mymap = {
   // foo
-  'key':
-      '''
+  'key': '''
       value value value value value value value value value value value value
       value value value value value value value value value
 ''',

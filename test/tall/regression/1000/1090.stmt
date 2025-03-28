@@ -4,11 +4,10 @@
           onError: (e) => setState(DataError(e)),
         );
 <<<
-    subscription =
-        _userRepository
-            .getUser()
-            .takeUntil(closesStream)
-            .listen(
-              (user) => setState(DataState.loaded(user)),
-              onError: (e) => setState(DataError(e)),
-            );
+    subscription = _userRepository
+        .getUser()
+        .takeUntil(closesStream)
+        .listen(
+          (user) => setState(DataState.loaded(user)),
+          onError: (e) => setState(DataError(e)),
+        );

@@ -53,8 +53,6 @@ f([callback() = constantFunction]) {}
 >>> Split in function typed parameter parameter list with default value.
 f([callback(SomeLongType longParameter, AnotherType anotherParameter) = constantFunction]) {}
 <<<
-### TODO(rnystrom): The output isn't ideal here, but code like this is very
-### rare. See the comment in PieceFactory.writeFunctionType().
 f([
   callback(
         SomeLongType longParameter,
