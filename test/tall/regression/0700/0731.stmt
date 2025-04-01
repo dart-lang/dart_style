@@ -73,9 +73,8 @@
 <<<
     return Observable(_databaseService.getChatEntries(event)).map((entryList) {
       entryList.forEach(
-        (entry) =>
-            entry.isFromCurrentUser =
-                (entry.userId == _userManager.currentUser.id),
+        (entry) => entry.isFromCurrentUser =
+            (entry.userId == _userManager.currentUser.id),
       );
       return entryList;
     });
@@ -95,9 +94,8 @@
     return Observable(_databaseService.getChatEntries(event))
         .map((entryList) {
           entryList.forEach(
-            (entry) =>
-                entry.isFromCurrentUser =
-                    (entry.userId == _userManager.currentUser.id),
+            (entry) => entry.isFromCurrentUser =
+                (entry.userId == _userManager.currentUser.id),
           );
           return entryList;
         })

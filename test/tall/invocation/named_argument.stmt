@@ -73,3 +73,20 @@ function(
         body;
       },
 );
+>>> Headline formatting for a split `=>` function.
+function(name: (param, another) => veryLongBody);
+<<<
+function(
+  name: (param, another) =>
+      veryLongBody,
+);
+>>> Block-like formatting of a `=>` body containing a function call.
+function(name: (param) => another(argument1, argument2, argument3));
+<<<
+function(
+  name: (param) => another(
+    argument1,
+    argument2,
+    argument3,
+  ),
+);

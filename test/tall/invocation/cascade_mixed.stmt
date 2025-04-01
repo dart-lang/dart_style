@@ -41,3 +41,17 @@ object
 object..[index].method();
 <<<
 object..[index].method();
+>>> Don't treat cascade as block-shaped in assignment.
+variable = target..method(argument1, argument2);
+<<<
+variable = target
+  ..method(argument1, argument2);
+>>> Don't treat cascade as block-shaped even if the argument list splits.
+variable = target..method(argument1, argument2, argument3);
+<<<
+variable = target
+  ..method(
+    argument1,
+    argument2,
+    argument3,
+  );

@@ -202,6 +202,22 @@ final class ChainPiece extends Piece {
         writer.popIndent();
 
       case _blockFormatTrailingCall:
+        // Don't treat a cascade as block-shaped in the surrounding context
+        // even if it block splits. Prefer:
+        //
+        //     variable = target
+        //       ..cascade(argument);
+        //
+        // Over:
+        //
+        //     variable = target..cascade(
+        //       argument,
+        //     );
+        //
+        // Note how the former makes it clearer that `variable` will be assigned
+        // the value `target` and that the cascade is a secondary side-effect.
+        if (_isCascade) writer.setShapeMode(ShapeMode.other);
+
         writer.format(_target);
 
         for (var i = 0; i < _calls.length; i++) {
