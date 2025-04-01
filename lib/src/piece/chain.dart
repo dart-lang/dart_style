@@ -110,19 +110,33 @@ final class ChainPiece extends Piece {
 
   @override
   int stateCost(State state) {
-    // If the chain is a cascade, lower the cost so that we prefer splitting
-    // the cascades instead of the target. Prefers:
-    //
-    //     [element1, element2]
-    //       ..cascade();
-    //
-    // Over:
-    //
-    //     [
-    //       element1,
-    //       element2,
-    //     ]..cascade();
-    if (state == State.split) return _isCascade ? 0 : 1;
+    if (state == State.split) {
+      // If the chain is a cascade, lower the cost so that we prefer splitting
+      // the cascades instead of the target. Prefers:
+      //
+      //     [element1, element2]
+      //       ..cascade();
+      //
+      // Over:
+      //
+      //     [
+      //       element1,
+      //       element2,
+      //     ]..cascade();
+      if (_isCascade) return 0;
+
+      // If the chain is only properties, try to keep them together. Prefers:
+      //
+      //     variable =
+      //         target.property.another;
+      //
+      // Over:
+      //
+      //     variable = target
+      //         .property
+      //         .another;
+      if (_leadingProperties == _calls.length) return 2;
+    }
 
     return super.stateCost(state);
   }
