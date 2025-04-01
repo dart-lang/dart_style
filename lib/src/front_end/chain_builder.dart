@@ -265,11 +265,7 @@ final class ChainBuilder {
           // Create the argument piece manually so that we can see if it has a
           // block argument or not.
           var arguments = _visitor.pieces.build(() {
-            _visitor.writeArgumentList(
-              expression.argumentList.leftParenthesis,
-              expression.argumentList.arguments,
-              expression.argumentList.rightParenthesis,
-            );
+            _visitor.writeArgumentList(expression.argumentList);
           });
 
           if (arguments is ListPiece && arguments.hasBlockElement) {

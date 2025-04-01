@@ -25,6 +25,7 @@ import 'ast_node_visitor.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
+import 'expression_contents.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
 
@@ -65,6 +66,9 @@ enum NodeContext {
   /// The child is a variable declaration in a for loop.
   forLoopVariable,
 
+  /// The child is an expression in a named argument or named record field.
+  namedExpression,
+
   /// The child is a string interpolation inside a multiline string.
   multilineStringInterpolation,
 
@@ -94,17 +98,7 @@ enum NodeContext {
 /// To avoid that, we pick one concrete construct formatted by the function,
 /// usually the most common, and name it after that, as in [createImport()].
 mixin PieceFactory {
-  /// A stack that handles forcing nested list, map, and set literals to split.
-  ///
-  /// Each entry corresponds to a collection currently being visited and the
-  /// value is whether or not it should be forced to split because an inner
-  /// collection was found inside it.
-  ///
-  /// When we begin a collection, we set all of the existing elements to `true`
-  /// then push `false` for the new collection. When done visiting the elements,
-  /// we pop the last value, If it's `true`, we know we visited a nested
-  /// collection so we force this one to split.
-  final List<bool> _collectionSplits = [];
+  final ExpressionContents _contents = ExpressionContents();
 
   DartFormatter get formatter;
 
@@ -117,17 +111,66 @@ mixin PieceFactory {
   void visitNode(AstNode node, NodeContext context);
 
   /// Writes a [ListPiece] for an argument list.
-  void writeArgumentList(
+  void writeArgumentList(ArgumentList argumentList) {
+    writeArguments(
+      argumentList.leftParenthesis,
+      argumentList.arguments,
+      argumentList.rightParenthesis,
+    );
+  }
+
+  /// Writes a [ListPiece] for an argument list.
+  void writeArguments(
     Token leftBracket,
-    List<AstNode> elements,
+    List<Expression> arguments,
     Token rightBracket,
   ) {
-    writeList(
-      leftBracket: leftBracket,
-      elements,
-      rightBracket: rightBracket,
-      allowBlockArgument: true,
+    // If the argument list is completely empty, write the brackets inline so
+    // we create fewer pieces.
+    if (!arguments.canSplit(rightBracket)) {
+      pieces.token(leftBracket);
+      pieces.token(rightBracket);
+      return;
+    }
+
+    _contents.beginCall(arguments);
+
+    var builder = DelimitedListBuilder(this);
+    builder.leftBracket(leftBracket);
+    builder.visitAll(arguments, allowBlockArgument: true);
+    builder.rightBracket(rightBracket);
+    var argumentsPiece = builder.build(
+      forceSplit: hasPreservedTrailingComma(rightBracket),
     );
+
+    // If the call is complex enough, force it to split even if it would fit.
+    if (_contents.endCall()) {
+      // Don't force an argument list to fully split if it could block split.
+      // TODO(rnystrom): Ideally, if the argument list has a block argument, we
+      // would force it to either block split or fully split, but disallow it
+      // from being all on one line. Unfortunately, the solver can't currently
+      // represent a constraint like that.
+      //
+      // (In fact, ListPiece doesn't even have a way to force itself to be block
+      // split. Instead, it simply allows newlines inside the block elements
+      // and whether they actually split or not is up to them.)
+      //
+      // We definitely don't want to eagerly force the argument list to fully
+      // split. Most of the time, that argument list will block format, and
+      // that will look much better than being fully split.
+      //
+      // Since we can't prevent a list piece with block arguments from being on
+      // one line, we don't try to eagerly split it at all. In practice, almost
+      // all argument lists that can block split contain either function
+      // expressions or large collections which will force the call to (block)
+      // split, so the goal of not packing too much on one line is still met
+      // even without this eager splitting heuristic.
+      if (argumentsPiece is! ListPiece || !argumentsPiece.hasBlockElement) {
+        argumentsPiece.pin(State.split);
+      }
+    }
+
+    pieces.add(argumentsPiece);
   }
 
   /// Writes a bracket-delimited block or declaration body.
@@ -202,12 +245,9 @@ mixin PieceFactory {
 
   /// Writes a [ListPiece] for a collection literal or pattern.
   ///
-  /// If [splitOnNestedCollection] is `true`, then this collection is forced to
-  /// split if it contains any non-empty collections where
-  /// [splitOnNestedCollection] is also `true`, even if the collection would
-  /// otherwise not need to split. This is `true` for list, map, and set
-  /// expressions because they are often used for composite data structures and
-  /// they're easier to read if they don't get packed too densely:
+  /// If [splitEagerly] is `true`, then this collection is forced to split if
+  /// its contents are sufficiently complex enough to be hard to read on one
+  /// line even if it would otherwise fit. For example:
   ///
   ///     // Prefer:
   ///     data = {
@@ -224,9 +264,8 @@ mixin PieceFactory {
   ///     data = {'a': [1, 2, 3], 'b': [4, [5], 6] 'c': [7, 8]};
   ///
   /// We don't do this for record expressions because those are not unbounded
-  /// in size and generally represent aggregations of data where the fields are
-  /// more "closely" bundled together. Record expressions are sort of like
-  /// constructor invocations for an anonymous constructor.
+  /// in size and generally represent small aggregations of data where the
+  /// fields are more "closely" bundled together.
   ///
   /// We don't do this for patterns because it's better to fit a pattern on a
   /// single line when possible for parallel cases in switches.
@@ -249,29 +288,25 @@ mixin PieceFactory {
     Token? constKeyword,
     TypeArgumentList? typeArguments,
     ListStyle style = const ListStyle(),
-    bool splitOnNestedCollection = false,
+    bool splitEagerly = false,
     bool preserveNewlines = false,
   }) {
     pieces.modifier(constKeyword);
     pieces.visit(typeArguments);
 
-    // If the list is completely empty, write the brackets inline so we create
-    // fewer pieces.
+    // If the collection is completely empty, write the brackets inline so we
+    // create fewer pieces. The early return here also means that an empty
+    // collection won't affect nesting and force outer collections to split.
     if (!elements.canSplit(rightBracket)) {
       pieces.token(leftBracket);
       pieces.token(rightBracket);
       return;
     }
 
-    if (splitOnNestedCollection) {
-      // If this collection isn't empty, force all of the surrounding
-      // collections to split if they care to.
-      if (elements.isNotEmpty) {
-        _collectionSplits.fillRange(0, _collectionSplits.length, true);
-      }
-
-      // Add this collection to the stack.
-      _collectionSplits.add(false);
+    if (splitEagerly) {
+      _contents.beginCollection(
+        isNamed: parentContext == NodeContext.namedExpression,
+      );
     }
 
     var collection = pieces.build(() {
@@ -284,9 +319,8 @@ mixin PieceFactory {
       );
     });
 
-    // If there is a collection inside this one, force this one to split.
-    if (splitOnNestedCollection) {
-      if (_collectionSplits.removeLast()) collection.pin(State.split);
+    if (splitEagerly && _contents.endCollection(elements)) {
+      collection.pin(State.split);
     }
 
     pieces.add(collection);
@@ -1503,6 +1537,7 @@ mixin PieceFactory {
     AstNode rightHandSide, {
     bool includeComma = false,
     NodeContext leftHandSideContext = NodeContext.none,
+    NodeContext rightHandSideContext = NodeContext.none,
   }) {
     var leftPiece = pieces.build(() {
       pieces.visit(leftHandSide, context: leftHandSideContext);
@@ -1510,7 +1545,11 @@ mixin PieceFactory {
       pieces.token(operator);
     });
 
-    var rightPiece = nodePiece(rightHandSide, commaAfter: includeComma);
+    var rightPiece = nodePiece(
+      rightHandSide,
+      commaAfter: includeComma,
+      context: rightHandSideContext,
+    );
 
     pieces.add(AssignPiece(leftPiece, rightPiece));
   }

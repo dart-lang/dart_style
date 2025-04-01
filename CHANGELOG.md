@@ -95,6 +95,33 @@
   );
   ```
 
+* Eagerly split argument lists whose contents are complex enough to be easier
+  to read spread across multiple lines even if they would otherwise fit on a
+  single line (#1660). The rules are basically:
+
+  * If an argument list contains any named arguments and contains any other
+    calls whose argument lists contain any named arguments (directly or
+    indirectly), then split the outer one. We make an exception where a named
+    argument whose expression is a simple number, Boolean, or null literal
+    doesn't count as a named argument.
+
+  * If a list, set, or map literal is the immediate expression in a named
+    argument and one of the above kinds of argument lists (directly or
+    indirectly), then force the collection to split.
+
+  ```dart
+  // Before:
+  Stack(children: [result, Semantics(label: indexLabel)]);
+
+  // After:
+  Stack(
+    children: [
+      result,
+      Semantics(label: indexLabel),
+    ],
+  );
+  ```
+
 * Allow preserving trailing commas and forcing the surrounding construct to
   split even when it would otherwise fit on one line. This is off by default
   (because it breaks [reversibility][] among other reasons) but can be enabled
