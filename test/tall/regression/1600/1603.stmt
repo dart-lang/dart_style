@@ -1,0 +1,26 @@
+>>> (indent 6)
+      final value = Value((b) => b
+        ..anInt = 3
+        ..aString = 'four');
+<<<
+      final value = Value(
+        (b) => b
+          ..anInt = 3
+          ..aString = 'four',
+      );
+>>>
+final value = Value((b) {
+  b
+    ..anInt = 3
+    ..aString = 'four';
+});
+<<<
+final value = Value((b) {
+  b
+    ..anInt = 3
+    ..aString = 'four';
+});
+>>> (indent 4)
+    print((b) => b..x = 3);
+<<<
+    print((b) => b..x = 3);

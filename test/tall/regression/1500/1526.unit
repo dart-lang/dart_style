@@ -1,0 +1,14 @@
+>>>
+@freezed
+class CharacterOffset with _$CharacterOffset {
+  factory CharacterOffset({
+    required int offset,
+    @Default('') String name,
+  }) = _CharacterOffset;
+}
+<<<
+@freezed
+class CharacterOffset with _$CharacterOffset {
+  factory CharacterOffset({required int offset, @Default('') String name}) =
+      _CharacterOffset;
+}
