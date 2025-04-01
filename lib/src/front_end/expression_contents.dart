@@ -51,19 +51,18 @@ class ExpressionContents {
   /// Begins tracking an argument list.
   void beginCall(List<AstNode> arguments) {
     var type = _Type.otherCall;
+    var hasNontrivialNamedArgument = false;
     for (var argument in arguments) {
       if (argument is NamedExpression) {
         type = _Type.callWithNamedArgument;
         if (!_isTrivial(argument.expression)) {
-          type = _Type.callWithNontrivialNamedArgument;
+          hasNontrivialNamedArgument = true;
           break;
         }
       }
     }
 
-    if (type == _Type.callWithNontrivialNamedArgument) {
-      _stack.last.nontrivialCalls++;
-    }
+    if (hasNontrivialNamedArgument) _stack.last.nontrivialCalls++;
 
     _stack.add(_Contents(type));
   }
@@ -84,8 +83,7 @@ class ExpressionContents {
     // will always be owned by the same call. There may be a named argument at
     // the very beginning of the line owned by the surrounding call which is
     // forced to split.
-    return (contents.type == _Type.callWithNamedArgument ||
-            contents.type == _Type.callWithNontrivialNamedArgument) &&
+    return (contents.type == _Type.callWithNamedArgument) &&
         contents.nontrivialCalls > 0;
   }
 
@@ -189,13 +187,6 @@ enum _Type {
   /// An argument list with at least one named argument and which may be subject
   /// to eager splitting.
   callWithNamedArgument,
-
-  /// An argument list with at least one named argument whose expression is
-  /// non-trivial.
-  ///
-  /// It may be subject to eager splitting and may also force surrounding calls
-  /// to split.
-  callWithNontrivialNamedArgument,
 
   /// An argument list with no named arguments that isn't subject to eager
   /// splitting.
