@@ -28,19 +28,18 @@
       env.initialize(
         names[i],
         getter: (TopLevelBinding binding, ExprCont ek, ExprCont k) {
-          binding.getter =
-              (TopLevelBinding _, ExprCont ek0, ExprCont k0) => ek0(
-                "Reading static variable '${binding.name}' during its initialization",
-              );
+          binding
+              .getter = (TopLevelBinding _, ExprCont ek0, ExprCont k0) => ek0(
+            "Reading static variable '${binding.name}' during its initialization",
+          );
           initializers[i](env, ek, (v) {
-            binding.getter =
-                (TopLevelBinding _, ExprCont ek1, ExprCont k1) => k1(v);
+            binding.getter = (TopLevelBinding _, ExprCont ek1, ExprCont k1) =>
+                k1(v);
             return k(v);
           });
         },
-        setter:
-            (value, ExprCont ek, ExprCont k) =>
-                ek("NoSuchMethodError: method not found: '${names[i]}='"),
+        setter: (value, ExprCont ek, ExprCont k) =>
+            ek("NoSuchMethodError: method not found: '${names[i]}='"),
       );
     }
   };

@@ -1,0 +1,22 @@
+>>>
+void main() {
+  DeprecationProcessingLogger deprecationLogger =
+      logger = DeprecationProcessingLogger(
+        logger ?? Logger.stderr(),
+        silenceDeprecations: {...?silenceDeprecations},
+        fatalDeprecations: {...?fatalDeprecations},
+        futureDeprecations: {...?futureDeprecations},
+        limitRepetition: !verbose,
+      );
+}
+<<<
+void main() {
+  DeprecationProcessingLogger deprecationLogger = logger =
+      DeprecationProcessingLogger(
+        logger ?? Logger.stderr(),
+        silenceDeprecations: {...?silenceDeprecations},
+        fatalDeprecations: {...?fatalDeprecations},
+        futureDeprecations: {...?futureDeprecations},
+        limitRepetition: !verbose,
+      );
+}

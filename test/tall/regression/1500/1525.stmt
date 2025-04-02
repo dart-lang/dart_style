@@ -31,8 +31,9 @@ map((innerMap) => innerMap..addAll({
 }));
 <<<
 map(
-  (innerMap) => innerMap..addAll({
-    'something': someMap['something'],
-    //...
-  }),
+  (innerMap) => innerMap
+    ..addAll({
+      'something': someMap['something'],
+      //...
+    }),
 );

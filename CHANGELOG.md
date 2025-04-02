@@ -2,6 +2,41 @@
 
 * Format null-aware elements.
 
+* Allow more code on the same line as a named argument or `=>` (#1536, #1545,
+  #1668, #1679).
+
+  ```dart
+  // Before:
+  function(
+    name:
+        (param, another) =>
+            veryLongBody,
+  );
+
+  function(
+    name:
+        (param) => another(
+          argument1,
+          argument2,
+          argument3,
+        ),
+  );
+
+  // After:
+  function(
+    name: (param, another) =>
+        veryLongBody,
+  );
+
+  function(
+    name: (param) => another(
+      argument1,
+      argument2,
+      argument3,
+    ),
+  );
+  ```
+
 * Avoid splitting chains containing only properties.
 
   ```dart

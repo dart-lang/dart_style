@@ -1,0 +1,176 @@
+>>>
+class SetupApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      builder:
+          (_, __) => GetMaterialApp(
+            builder: (BuildContext context, Widget? child) {
+              final MediaQueryData data = MediaQuery.of(context);
+              return MediaQuery(data: data.copyWith(textScaler: TextScaler.noScaling), child: child!);
+            },
+            title: ConstantStringShared.appName,
+            debugShowCheckedModeBanner: false,
+            theme: kAppTheme,
+            initialRoute: RouteNames.splash,
+            getPages: AppPages.pages,
+          ),
+      designSize: const Size(414, 894), // width and height of design file
+    );
+  }
+}
+<<<
+class SetupApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ScreenUtilInit(
+      builder: (_, __) => GetMaterialApp(
+        builder: (BuildContext context, Widget? child) {
+          final MediaQueryData data = MediaQuery.of(context);
+          return MediaQuery(
+            data: data.copyWith(textScaler: TextScaler.noScaling),
+            child: child!,
+          );
+        },
+        title: ConstantStringShared.appName,
+        debugShowCheckedModeBanner: false,
+        theme: kAppTheme,
+        initialRoute: RouteNames.splash,
+        getPages: AppPages.pages,
+      ),
+      designSize: const Size(414, 894), // width and height of design file
+    );
+  }
+}
+>>>
+class StatusIndicator extends StatelessWidget {
+  final MachineStatus status;
+  const StatusIndicator({required this.status, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final f = NumberFormat.decimalPercentPattern(decimalDigits: 2);
+    return AnimatedContainer(
+      key: const ValueKey('indi'),
+      duration: const Duration(seconds: 1),
+      alignment: Alignment.center,
+      width: 100,
+      margin: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: status.color,
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: switch (status) {
+        MachineStatus.generating => BlocBuilder<MachineBloc, MachineState>(
+          buildWhen:
+              (previous, current) =>
+                  current.genProgress != previous.genProgress,
+          builder:
+              (context, state) =>
+                  state.genProgress != 0.0
+                      ? Text(f.format(state.genProgress))
+                      : const Text(''),
+        ),
+        _ => Text(status.text),
+      },
+    );
+  }
+}
+<<<
+class StatusIndicator extends StatelessWidget {
+  final MachineStatus status;
+  const StatusIndicator({required this.status, super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final f = NumberFormat.decimalPercentPattern(decimalDigits: 2);
+    return AnimatedContainer(
+      key: const ValueKey('indi'),
+      duration: const Duration(seconds: 1),
+      alignment: Alignment.center,
+      width: 100,
+      margin: const EdgeInsets.all(4),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      decoration: BoxDecoration(
+        color: status.color,
+        border: Border.all(),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: switch (status) {
+        MachineStatus.generating => BlocBuilder<MachineBloc, MachineState>(
+          buildWhen: (previous, current) =>
+              current.genProgress != previous.genProgress,
+          builder: (context, state) => state.genProgress != 0.0
+              ? Text(f.format(state.genProgress))
+              : const Text(''),
+        ),
+        _ => Text(status.text),
+      },
+    );
+  }
+}
+>>>
+class StatePanel extends StatelessWidget {
+  const StatePanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MachineBloc, MachineState>(
+      buildWhen: (previous, current) => current.status != previous.status,
+      builder: (context, state) {
+        return Row(
+          children: [
+            state.status.isRefreshable
+                ? IconButton(
+                  color: Colors.amber,
+                  onPressed:
+                      () => context.read<MachineBloc>().add(
+                        WeatherRefreshRequested(),
+                      ),
+                  icon: const Icon(Icons.restart_alt),
+                )
+                : const IconButton(
+                  color: Colors.grey,
+                  onPressed: null,
+                  icon: Icon(Icons.restart_alt),
+                ),
+            StatusIndicator(status: state.status),
+          ],
+        );
+      },
+    );
+  }
+}
+<<<
+class StatePanel extends StatelessWidget {
+  const StatePanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<MachineBloc, MachineState>(
+      buildWhen: (previous, current) => current.status != previous.status,
+      builder: (context, state) {
+        return Row(
+          children: [
+            state.status.isRefreshable
+                ? IconButton(
+                    color: Colors.amber,
+                    onPressed: () => context.read<MachineBloc>().add(
+                      WeatherRefreshRequested(),
+                    ),
+                    icon: const Icon(Icons.restart_alt),
+                  )
+                : const IconButton(
+                    color: Colors.grey,
+                    onPressed: null,
+                    icon: Icon(Icons.restart_alt),
+                  ),
+            StatusIndicator(status: state.status),
+          ],
+        );
+      },
+    );
+  }
+}

@@ -79,16 +79,15 @@ target
         .another
         .lastOneReallyLong =
     reallyLongValue;
->>> Don't block format through nested assignments.
+>>> Allow block formatting through nested assignments.
 outer = inner = [element1, element2, element3, element4];
 <<<
-outer =
-    inner = [
-      element1,
-      element2,
-      element3,
-      element4,
-    ];
+outer = inner = [
+  element1,
+  element2,
+  element3,
+  element4,
+];
 >>> Headline format unsplit target of call chain.
 variable = (tar + get).method().another().third();
 <<<

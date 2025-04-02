@@ -124,23 +124,29 @@ final class AssignPiece extends Piece {
 
   @override
   void format(CodeWriter writer, State state) {
-    writer.setShapeMode(ShapeMode.other);
-
-    // When splitting at the operator, both operands may split or not and
-    // will be indented if they do.
-    if (state == State.split) writer.pushIndent(Indent.expression);
-
-    writer.format(_left);
-    writer.splitIf(state == State.split);
-
     if (state == State.split) {
+      // When splitting at the operator, indent the operands.
+      writer.pushIndent(Indent.expression);
+
+      // Treat a split `=` as potentially headline-shaped if the LHS doesn't
+      // split. Allows:
+      //
+      //     variable = another =
+      //         'split at second "="';
+      writer.setShapeMode(ShapeMode.beforeHeadline);
+      writer.format(_left);
+      writer.setShapeMode(ShapeMode.afterHeadline);
+
+      writer.newline();
       writer.popIndent();
       writer.pushIndent(Indent.assignment);
+      writer.format(_right);
+      writer.popIndent();
+    } else {
+      writer.format(_left);
+      writer.space();
+      writer.format(_right);
     }
-
-    writer.format(_right);
-
-    if (state == State.split) writer.popIndent();
   }
 
   @override

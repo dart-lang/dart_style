@@ -157,10 +157,8 @@
         )
         .aaaAaaaaaAaaaaAaaaaaaa(
           aaaaaAaaaaaa(
-            (aaaaaaAaaaa) =>
-                _aaaaaAaaaaaaaaaaAaaaaaa.aaaaaaAaaaa = Aaaa<Aaaa>.aaaa(
-                  aaaaaaAaaaa,
-                ),
+            (aaaaaaAaaaa) => _aaaaaAaaaaaaaaaaAaaaaaa.aaaaaaAaaaa =
+                Aaaa<Aaaa>.aaaa(aaaaaaAaaaa),
           ),
         )
         .aaaAaaaAaaaaAa(
