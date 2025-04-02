@@ -398,6 +398,7 @@ final class PieceWriter {
     if (comments.isEmpty) return const [];
 
     var leadingComments = <Piece>[];
+    var afterHanging = false;
     for (var i = 0; i < comments.length; i++) {
       var comment = comments[i];
 
@@ -411,12 +412,16 @@ final class PieceWriter {
 
       var piece = commentPiece(comment, trailingWhitespace);
 
-      if (comments.isHanging(i)) {
+      if (!afterHanging && comments.isHanging(i)) {
         // Attach it to the previous CodePiece.
         _previousCode!.addHangingComment(piece);
       } else {
         // Add it to the list of leading comments for the upcoming token.
         leadingComments.add(piece);
+
+        // Once we've found a single non-hanging comment, all subsequent ones
+        // must also be non-hanging since they follow it.
+        afterHanging = true;
       }
     }
 
