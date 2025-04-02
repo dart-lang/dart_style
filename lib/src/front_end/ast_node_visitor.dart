@@ -174,11 +174,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitArgumentList(ArgumentList node) {
-    writeArgumentList(
-      node.leftParenthesis,
-      node.arguments,
-      node.rightParenthesis,
-    );
+    writeArgumentList(node);
   }
 
   @override
@@ -199,7 +195,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitAssertInitializer(AssertInitializer node) {
     pieces.token(node.assertKeyword);
-    writeArgumentList(node.leftParenthesis, [
+    writeArguments(node.leftParenthesis, [
       node.condition,
       if (node.message case var message?) message,
     ], node.rightParenthesis);
@@ -208,7 +204,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitAssertStatement(AssertStatement node) {
     pieces.token(node.assertKeyword);
-    writeArgumentList(node.leftParenthesis, [
+    writeArguments(node.leftParenthesis, [
       node.condition,
       if (node.message case var message?) message,
     ], node.rightParenthesis);
@@ -1307,7 +1303,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.leftBracket,
       node.elements,
       node.rightBracket,
-      splitOnNestedCollection: true,
+      splitEagerly: true,
       preserveNewlines: true,
     );
   }
@@ -1449,7 +1445,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNamedExpression(NamedExpression node) {
-    writeAssignment(node.name.label, node.name.colon, node.expression);
+    writeAssignment(
+      node.name.label,
+      node.name.colon,
+      node.expression,
+      rightHandSideContext: NodeContext.namedExpression,
+    );
   }
 
   @override
@@ -1798,7 +1799,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.leftBracket,
       node.elements,
       node.rightBracket,
-      splitOnNestedCollection: true,
+      splitEagerly: true,
       preserveNewlines: true,
     );
   }
