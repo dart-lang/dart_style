@@ -83,10 +83,11 @@ final class FormatterOptions {
   void afterFile(
     File? file,
     String displayPath,
+    SourceCode input,
     SourceCode result, {
     required bool changed,
   }) {
-    summary.afterFile(this, file, displayPath, result, changed: changed);
+    summary.afterFile(this, file, displayPath, input, result, changed: changed);
 
     // Save the results to disc.
     var overwritten = false;

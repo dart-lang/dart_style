@@ -81,6 +81,7 @@ Future<void> formatStdin(
       options.afterFile(
         null,
         name,
+        source,
         output,
         changed: source.text != output.text,
       );
@@ -213,6 +214,7 @@ Future<bool> _processFile(
     options.afterFile(
       file,
       displayPath,
+      source,
       output,
       changed: source.text != output.text,
     );

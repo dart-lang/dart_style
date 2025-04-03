@@ -63,9 +63,10 @@ final class FormatCommand extends Command<int> {
     argParser.addOption(
       'summary',
       help: 'Show the specified summary after formatting.',
-      allowed: ['line', 'profile', 'none'],
+      allowed: ['line', 'diff', 'profile', 'none'],
       allowedHelp: {
         'line': 'Single-line summary.',
+        'diff': 'The number of changed lines.',
         'profile': 'How long it took for format each file.',
         'none': 'No summary.',
       },
@@ -197,6 +198,9 @@ final class FormatCommand extends Command<int> {
 
     var summary = Summary.none;
     switch (argResults['summary'] as String) {
+      case 'diff':
+        summary = Summary.diff();
+        break;
       case 'line':
         summary = Summary.line();
         break;

@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
+import '../calculate_difference.dart';
 import '../profile.dart';
 import '../source_code.dart';
 import 'formatter_options.dart';
@@ -10,6 +11,9 @@ import 'formatter_options.dart';
 /// The kind of summary shown after all formatting is complete.
 final class Summary {
   static const Summary none = Summary._();
+
+  /// Creates a Summary that shows the number of lines changed by the formatter.
+  static Summary diff() => _DiffSummary();
 
   /// Creates a Summary that tracks how many files were formatted and the total
   /// time.
@@ -37,11 +41,72 @@ final class Summary {
     FormatterOptions options,
     File? file,
     String displayPath,
+    SourceCode input,
     SourceCode output, {
     required bool changed,
   }) {}
 
   void show() {}
+}
+
+/// Tracks how many lines were formatted and how many changed.
+final class _DiffSummary extends Summary {
+  /// The number of processed files.
+  int _files = 0;
+
+  /// The number of changed files.
+  int _changed = 0;
+
+  /// The total number of lines of input code.
+  int _lines = 0;
+
+  /// The total number of changed lines of code.
+  int _changedLines = 0;
+
+  _DiffSummary() : super._();
+
+  /// Describe the processed file at [path] whose formatted result is [output].
+  ///
+  /// If the contents of the file are the same as the formatted output,
+  /// [changed] will be false.
+  @override
+  void afterFile(
+    FormatterOptions options,
+    File? file,
+    String displayPath,
+    SourceCode input,
+    SourceCode output, {
+    required bool changed,
+  }) {
+    _files++;
+    if (changed) _changed++;
+
+    var inputLines = input.text.split('\n');
+    var outputLines = output.text.split('\n');
+    _lines += inputLines.length;
+    _changedLines += countDifferences(inputLines, outputLines);
+  }
+
+  /// Show the times for the slowest files to format.
+  @override
+  void show() {
+    if (_files == 0) {
+      print('No files processed.');
+      return;
+    }
+
+    if (_lines == 0) {
+      print('No code processed.');
+      return;
+    }
+
+    var filePercent = (_changed / _files * 100).toStringAsFixed(2);
+    var linePercent = (_changedLines / _lines * 100).toStringAsFixed(2);
+    print(
+      '$_changed out of $_files files changed ($filePercent%). '
+      '$_changedLines out of $_lines lines changed ($linePercent%).',
+    );
+  }
 }
 
 /// Tracks how many files were formatted and the total time.
@@ -65,6 +130,7 @@ final class _LineSummary extends Summary {
     FormatterOptions options,
     File? file,
     String displayPath,
+    SourceCode input,
     SourceCode output, {
     required bool changed,
   }) {
@@ -138,6 +204,7 @@ final class _ProfileSummary implements Summary {
     FormatterOptions options,
     File? file,
     String displayPath,
+    SourceCode input,
     SourceCode output, {
     required bool changed,
   }) {
