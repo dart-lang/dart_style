@@ -144,7 +144,7 @@ mixin PieceFactory {
     );
 
     // If the call is complex enough, force it to split even if it would fit.
-    if (_contents.endCall()) {
+    if (_contents.endCall(arguments)) {
       // Don't force an argument list to fully split if it could block split.
       // TODO(rnystrom): Ideally, if the argument list has a block argument, we
       // would force it to either block split or fully split, but disallow it

@@ -74,9 +74,7 @@ main() {
 <<<
   main() {
     return Scaffold(
-      body: Center(
-        child: AnimatedDigit(value: value % 10),
-      ),
+      body: Center(child: AnimatedDigit(value: value % 10)),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           setState(() {
