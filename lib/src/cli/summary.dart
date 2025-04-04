@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
-import '../calculate_difference.dart';
 import '../profile.dart';
 import '../source_code.dart';
 import 'formatter_options.dart';
@@ -84,7 +83,7 @@ final class _DiffSummary extends Summary {
     var inputLines = input.text.split('\n');
     var outputLines = output.text.split('\n');
     _lines += inputLines.length;
-    _changedLines += countDifferences(inputLines, outputLines);
+    _changedLines += _countDifferences(inputLines, outputLines);
   }
 
   /// Show the times for the slowest files to format.
@@ -106,6 +105,60 @@ final class _DiffSummary extends Summary {
       '$_changed out of $_files files changed ($filePercent%). '
       '$_changedLines out of $_lines lines changed ($linePercent%).',
     );
+  }
+
+  /// Determines the Levenshtein edit distance to convert [before] into [after].
+  ///
+  /// That means the number of single-element insertions, deletions, or
+  /// substitutions required to turn [before] into [after], treating
+  /// substitution as a single edit.
+  ///
+  /// Uses the Wagner-Fischer two-row algorithm:
+  /// https://en.wikipedia.org/wiki/Levenshtein_distance#Iterative_with_two_matrix_rows
+  int _countDifferences(List<String> before, List<String> after) {
+    var previousRow = List.filled(before.length + 1, 0);
+    var currentRow = List.filled(before.length + 1, 0);
+
+    // Initialize the first row of distances. It's the number of edits to get
+    // from an empty expected list to the prefix of the actual list of a given
+    // length, which is just that many inserts.
+    for (var x = 0; x < before.length + 1; x++) {
+      previousRow[x] = x;
+    }
+
+    // For each prefix of the after list, calculate the edit distances to reach
+    // it from each prefix of the before list. Each row is calculated from the
+    // previous row.
+    for (var y = 1; y < after.length + 1; y++) {
+      // The first element of v1 is A[i+1][0].
+      // The edit distance is delete (i+1) elements from s to match empty t.
+      currentRow[0] = y;
+
+      // Use formula to fill in the rest of the row.
+      for (var x = 1; x < before.length + 1; x++) {
+        var cost = after[y - 1] == before[x - 1] ? 0 : 1;
+
+        var left = currentRow[x - 1] + 1;
+        var up = previousRow[x] + 1;
+        var diagonal = previousRow[x - 1] + cost;
+        currentRow[x] = _min3(left, up, diagonal);
+      }
+
+      // Swap the rows so the current one become the new previous one and the old
+      // previous row is reused as the new current row.
+      (previousRow, currentRow) = (currentRow, previousRow);
+    }
+
+    return previousRow.last;
+  }
+
+  /// Returns the minimum of [a], [b], and [c].
+  int _min3(int a, int b, int c) {
+    if (a < b) {
+      return a < c ? a : c;
+    } else {
+      return b < c ? b : c;
+    }
   }
 }
 
