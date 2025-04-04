@@ -1,138 +1,217 @@
 40 columns                              |
 ### Test how argument lists split eagerly when they contain other calls.
->>> Split outer call if both have named arguments.
-outer(name: inner(name: value));
+>>> Don't split if outer call has only positional arguments.
+a(b(c(d), e(f)), g(h), i(j));
+<<<
+a(b(c(d), e(f)), g(h), i(j));
+>>> Don't split even if outer call has many named arguments.
+outer(a: a(1), b: b(2), c: c(3), d: d);
+<<<
+outer(a: a(1), b: b(2), c: c(3), d: d);
+>>> Don't split if outer and inner each have only one named argument.
+outer(1, n: value, inner(n: value, 2));
+<<<
+outer(1, n: value, inner(n: value, 2));
+>>> Don't split if inner has many named arguments when outer has none.
+f(1, g(a: a, b: b, c: c, d: d));
+<<<
+f(1, g(a: a, b: b, c: c, d: d));
+>>> Split outer call if there are more than two outer and inner named arguments.
+outer(a: a, b: inner(c: c));
 <<<
 outer(
-  name: inner(name: value),
+  a: a,
+  b: inner(c: c),
+);
+>>> Split outer call if there are more than two outer and inner named arguments.
+outer(a: a, inner(b: b, c: c));
+<<<
+outer(
+  a: a,
+  inner(b: b, c: c),
+);
+>>> Split outer call if there are more than two outer and inner named arguments.
+outer(a: inner(b: b, c: c));
+<<<
+outer(
+  a: inner(b: b, c: c),
+);
+>>> Count deeper nested calls.
+outer(a: inner(b: b, nest(c: c)));
+<<<
+outer(
+  a: inner(b: b, nest(c: c)),
 );
 >>> Split outer call on indirect inner call.
-outer(name: !(inner(name: value)));
+outer(name: !(inner(x: x, y: y)));
 <<<
 outer(
-  name: !(inner(name: value)),
+  name: !(inner(x: x, y: y)),
 );
->>> Don't split if inner call has only positional arguments.
-a(b(c(d), e(f)), g(h), i(j));
-<<<
-a(b(c(d), e(f)), g(h), i(j));
 >>> Split outer `new` expression.
-new Outer(name: inner(name: value));
+new Outer(name: inner(x: x, y: y));
 <<<
 new Outer(
-  name: inner(name: value),
+  name: inner(x: x, y: y),
 );
 >>> Split outer `const` expression.
-const Outer(name: inner(name: value));
+const Outer(name: inner(x: x, y: y));
 <<<
 const Outer(
-  name: inner(name: value),
+  name: inner(x: x, y: y),
 );
 >>> Split on inner `new` expression.
-outer(name: new Inner(name: value));
+outer(name: new Inner(x: x, y: y));
 <<<
 outer(
-  name: new Inner(name: value),
+  name: new Inner(x: x, y: y),
 );
 >>> Split on inner `const` expression.
-outer(name: const Inner(name: value));
+outer(name: const Inner(x: x, y: y));
 <<<
 outer(
-  name: const Inner(name: value),
+  name: const Inner(x: x, y: y),
 );
->>> Don't split outer call if inner named argument is trivial expression.
+>>> Don't count named argument if it's a trivial expression.
 {
-  outer(name: inner(name: 123));
-  outer(name: inner(name: -123));
-  outer(name: inner(name: 12.3));
-  outer(name: inner(name: -12.3));
-  outer(name: inner(name: null));
-  outer(name: inner(name: true));
-  outer(name: inner(name: false));
+  outer(name: inner(x: x, y: 123));
+  outer(name: inner(x: x, y: -123));
+  outer(name: inner(x: x, y: 12.3));
+  outer(name: inner(x: x, y: -12.3));
+  outer(name: inner(x: x, y: null));
+  outer(name: inner(x: x, y: true));
+  outer(name: inner(x: x, y: false));
 }
 <<<
 {
-  outer(name: inner(name: 123));
-  outer(name: inner(name: -123));
-  outer(name: inner(name: 12.3));
-  outer(name: inner(name: -12.3));
-  outer(name: inner(name: null));
-  outer(name: inner(name: true));
-  outer(name: inner(name: false));
+  outer(name: inner(x: x, y: 123));
+  outer(name: inner(x: x, y: -123));
+  outer(name: inner(x: x, y: 12.3));
+  outer(name: inner(x: x, y: -12.3));
+  outer(name: inner(x: x, y: null));
+  outer(name: inner(x: x, y: true));
+  outer(name: inner(x: x, y: false));
 }
 >>> Split on non-trivial expressions.
 ### Edge cases of simple expressions that aren't considered trivial.
 {
-  outer(name: inner(name: 'string'));
-  outer(name: inner(name: (123)));
-  outer(name: inner(name: this));
-  outer(name: inner(name: -(1)));
-  outer(name: inner(name: 1+2));
+  outer(name: inner(x: x, y: 'string'));
+  outer(name: inner(x: x, y: (123)));
+  outer(name: inner(x: x, y: this));
+  outer(name: inner(x: x, y: -(1)));
+  outer(name: inner(x: x, y: 1+2));
 }
 <<<
 {
   outer(
-    name: inner(name: 'string'),
+    name: inner(x: x, y: 'string'),
   );
   outer(
-    name: inner(name: (123)),
+    name: inner(x: x, y: (123)),
   );
   outer(
-    name: inner(name: this),
+    name: inner(x: x, y: this),
   );
   outer(
-    name: inner(name: -(1)),
+    name: inner(x: x, y: -(1)),
   );
   outer(
-    name: inner(name: 1 + 2),
+    name: inner(x: x, y: 1 + 2),
   );
 }
->>> Split named argument collection if arguments split.
+>>> Split named list argument with multiple elements and any named arguments.
 {
-  f(name: [inner(name: value)]);
-  f(name: {inner(name: value)});
-  f(name: {k: inner(name: value)});
-  f(name: (r: inner(name: value)));
-  f(name: (inner(name: value),));
-  f(name: (inner(name: value), 2));
+  // Only one element.
+  f(name: [inner(x: x, y: y)]);
+  // No named arguments.
+  f(name: [a, inner(x, y)]);
+  // Multiple elements and a named argument.
+  f(name: [a, inner(x: x)]);
 }
 <<<
 {
+  // Only one element.
+  f(
+    name: [inner(x: x, y: y)],
+  );
+  // No named arguments.
+  f(name: [a, inner(x, y)]);
+  // Multiple elements and a named argument.
   f(
     name: [
-      inner(name: value),
+      a,
+      inner(x: x),
     ],
   );
+}
+>>> Split named map argument with multiple elements and any named arguments.
+{
+  // Only one element.
+  f(name: {a: inner(x: x, y: y)});
+  // No named arguments.
+  f(name: {a: a, b: inner(x, y)});
+  // Multiple elements and a named argument.
+  f(name: {a: a, b: inner(x: x)});
+}
+<<<
+{
+  // Only one element.
+  f(
+    name: {a: inner(x: x, y: y)},
+  );
+  // No named arguments.
+  f(name: {a: a, b: inner(x, y)});
+  // Multiple elements and a named argument.
   f(
     name: {
-      inner(name: value),
+      a: a,
+      b: inner(x: x),
     },
-  );
-  f(
-    name: {
-      k: inner(name: value),
-    },
-  );
-  f(
-    name: (r: inner(name: value)),
-  );
-  f(
-    name: (inner(name: value),),
-  );
-  f(
-    name: (inner(name: value), 2),
   );
 }
+>>> Split named set argument with multiple elements and any named arguments.
+{
+  // Only one element.
+  f(name: {inner(x: x, y: y)});
+  // No named arguments.
+  f(name: {a, inner(x, y)});
+  // Multiple elements and a named argument.
+  f(name: {a, inner(x: x)});
+}
+<<<
+{
+  // Only one element.
+  f(
+    name: {inner(x: x, y: y)},
+  );
+  // No named arguments.
+  f(name: {a, inner(x, y)});
+  // Multiple elements and a named argument.
+  f(
+    name: {
+      a,
+      inner(x: x),
+    },
+  );
+}
+>>> Don't eagerly split named record arg regardless of contents.
+f(name: (a, inner(x: x, y: y), b: b));
+<<<
+### The outer call splits, but not the record.
+f(
+  name: (a, inner(x: x, y: y), b: b),
+);
 >>> Split when inner call isn't itself named argument.
-outer(inner(name: x), name: y);
+outer(x: x, inner(y: y), z: z);
 <<<
 outer(
-  inner(name: x),
-  name: y,
+  x: x,
+  inner(y: y),
+  z: z,
 );
 >>> Don't force split if the outer call can be block formatted.
-outer(() {;}, name: inner(name: x));
+outer(() {;}, name: inner(x: x, y: y));
 <<<
 outer(() {
   ;
-}, name: inner(name: x));
+}, name: inner(x: x, y: y));

@@ -51,40 +51,49 @@ class ExpressionContents {
   /// Begins tracking an argument list.
   void beginCall(List<AstNode> arguments) {
     var type = _Type.otherCall;
-    var hasNontrivialNamedArgument = false;
+
+    // Count the non-trivial named arguments in this call.
+    var namedArguments = 0;
     for (var argument in arguments) {
       if (argument is NamedExpression) {
         type = _Type.callWithNamedArgument;
-        if (!_isTrivial(argument.expression)) {
-          hasNontrivialNamedArgument = true;
-          break;
-        }
+        if (!_isTrivial(argument.expression)) namedArguments++;
       }
     }
 
-    if (hasNontrivialNamedArgument) _stack.last.nontrivialCalls++;
-
-    _stack.add(_Contents(type));
+    _stack.add(_Contents(type, namedArguments: namedArguments));
   }
 
   /// Ends the most recently begun call and returns `true` if its argument list
   /// should eagerly split.
-  bool endCall() {
+  bool endCall(List<Expression> arguments) {
     var contents = _end();
 
-    // If this argument list has any named arguments and it contains another
-    // call with any non-trivial named arguments, then split it. The idea here
-    // is that when scanning a line of code, it's hard to tell which calls own
-    // which named arguments. If there are named arguments at different levels
-    // of nesting in an expression tree, it's better to split the outer one to
-    // make that clearer.
+    // If there are "too many" named arguments in this call and the calls it
+    // contains, then split it.
     //
-    // With this rule, any two named arguments in the middle of the same line
-    // will always be owned by the same call. There may be a named argument at
-    // the very beginning of the line owned by the surrounding call which is
-    // forced to split.
-    return (contents.type == _Type.callWithNamedArgument) &&
-        contents.nontrivialCalls > 0;
+    // The basic idea is that when scanning a line of code, it's hard to tell
+    // which calls own which named arguments if there are named arguments at
+    // multiple levels in the call tree. Splitting makes that clearer. At the
+    // same time, it's annoying it the formatter is too aggressive about
+    // splitting an expression that feels simple enough to the reader to fit on
+    // one line. (Especially because if the formatter does eagerly split it,
+    // there's nothing they can do to *prevent* that.)
+    //
+    // The heuristic here tries to strike a "Goldilocks" balance between not
+    // splitting too aggressively or too conservatively. The rule is that the
+    // entire call tree must contain at least three named arguments, at least
+    // one must be in the outermost call being split, and at least one must
+    // *not* be in the outermost call.
+    //
+    // It would be simpler to split any call that has named arguments at
+    // different nesting levels, but that's a little too aggressive and forces
+    // common code like this to split:
+    //
+    //       Text('Item 1', style: TextStyle(color: Colors.white));
+    return contents.totalNamedArguments > 2 &&
+        contents.namedArguments > 0 &&
+        contents.nestedNamedArguments > 0;
   }
 
   /// Begin tracking a collection literal and its contents.
@@ -102,9 +111,9 @@ class ExpressionContents {
     if (contents.collections > 0) return true;
 
     // If the collection is itself a named argument in a surrounding call that
-    // is going to be forced to eagerly split, then split the collection too.
-    // In this case, the collection is sort of like a vararg argument to the
-    // call. Prefers:
+    // may be be forced to eagerly split, then split the collection too. In
+    // that case, the collection is sort of like a vararg argument to the call.
+    // Prefers:
     //
     //     TabBar(
     //       tabs: <Widget>[
@@ -118,8 +127,14 @@ class ExpressionContents {
     //     TabBar(
     //       tabs: <Widget>[Tab(text: 'Tab 1'), Tab(text: 'Tab 2')],
     //     );
-    return contents.type == _Type.namedCollection &&
-        contents.nontrivialCalls > 0;
+    //
+    // Splitting a collection is also helpful, because it shows each element
+    // in parallel with each on its own line. But that's only true when there
+    // are multiple elements, so we don't eagerly split collections with just a
+    // single element.
+    return elements.length > 1 &&
+        contents.type == _Type.namedCollection &&
+        contents.totalNamedArguments > 0;
   }
 
   /// Ends the most recently begun operation and returns its contents.
@@ -129,7 +144,8 @@ class ExpressionContents {
     // Transitively include this operation's contents in the surrounding one.
     var parent = _stack.last;
     parent.collections += contents.collections;
-    parent.nontrivialCalls += contents.nontrivialCalls;
+    parent.nestedNamedArguments +=
+        contents.namedArguments + contents.nestedNamedArguments;
 
     return contents;
   }
@@ -169,11 +185,19 @@ class _Contents {
   /// this operation.
   int collections = 0;
 
-  /// The number of calls with non-trivial named arguments transitively inside
-  /// this operation.
-  int nontrivialCalls = 0;
+  /// The number of non-trivial named arguments in this call's own argument
+  /// list.
+  int namedArguments = 0;
 
-  _Contents(this.type);
+  /// The number of non-trivial named arguments transitively inside this
+  /// operation, but not including the call's own named arguments.
+  int nestedNamedArguments = 0;
+
+  _Contents(this.type, {this.namedArguments = 0});
+
+  /// The total number of non-trivial named arguments in this operation's own
+  /// argument list and all of transitive contents.
+  int get totalNamedArguments => namedArguments + nestedNamedArguments;
 }
 
 enum _Type {

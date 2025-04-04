@@ -36,9 +36,7 @@ return $.Div(
     ),
 
     $.Footer(
-      inner: [
-        $.P(id: "notes", inner: "${seeds} seeds"),
-      ],
+      inner: [$.P(id: "notes", inner: "${seeds} seeds")],
     ),
   ],
 );

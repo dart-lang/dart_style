@@ -151,26 +151,27 @@
   to read spread across multiple lines even if they would otherwise fit on a
   single line (#1660). The rules are basically:
 
-  * If an argument list contains any named arguments and contains any other
-    calls whose argument lists contain any named arguments (directly or
-    indirectly), then split the outer one. We make an exception where a named
-    argument whose expression is a simple number, Boolean, or null literal
-    doesn't count as a named argument.
+  * If an argument list contains at least three named arguments, at least one
+    of which must be directly in the argument list and at least one of which
+    must be nested in an inner argument list, then force the outer one to split.
+    We make an exception where a named argument whose expression is a simple
+    number, Boolean, or null literal doesn't count as a named argument.
 
   * If a list, set, or map literal is the immediate expression in a named
-    argument and one of the above kinds of argument lists (directly or
-    indirectly), then force the collection to split.
+    argument and contains any argument lists with a named argument, then force
+    the collection to split.
 
   ```dart
   // Before:
-  Stack(children: [result, Semantics(label: indexLabel)]);
+  TabBar(tabs: [Tab(text: 'A'), Tab(text: 'B')], labelColor: Colors.white70);
 
   // After:
-  Stack(
-    children: [
-      result,
-      Semantics(label: indexLabel),
+  TabBar(
+    tabs: [
+      Tab(text: 'A'),
+      Tab(text: 'B'),
     ],
+    labelColor: Colors.white70,
   );
   ```
 

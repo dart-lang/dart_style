@@ -50,3 +50,44 @@ class C {
     final double trackLeft = offset.dx + _trackLeft;
   }
 }
+>>> Eager argument list splitting shouldn't be too eager.
+main() {
+  Text('Item 1', style: TextStyle(color: Colors.white));
+}
+<<<
+main() {
+  Text('Item 1', style: TextStyle(color: Colors.white));
+}
+>>> Eager argument list splitting shouldn't be too eager.
+main() {
+  return Container(
+    height: 70,
+    child: Center(child: contents),
+  );
+}
+<<<
+main() {
+  return Container(height: 70, child: Center(child: contents));
+}
+>>> Eager argument list splitting shouldn't be too eager.
+main() {
+  Stack(
+    children: <Matcher>[
+      matchesSemantics(label: 'inner'),
+    ],
+  );
+}
+<<<
+main() {
+  Stack(children: <Matcher>[matchesSemantics(label: 'inner')]);
+}
+>>> Eager argument list splitting shouldn't be too eager.
+main() {
+  Padding(
+    padding: EdgeInsets.only(top: 20.zR),
+  );
+}
+<<<
+main() {
+  Padding(padding: EdgeInsets.only(top: 20.zR));
+}
