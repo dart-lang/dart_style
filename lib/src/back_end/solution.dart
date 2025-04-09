@@ -193,6 +193,16 @@ final class Solution implements Comparable<Solution> {
   ///
   /// This should only be called by [CodeWriter].
   void invalidate(Piece piece) {
+    // Don't invalidate if the piece is pinned and can't do anything. This only
+    // comes into play when a mandatory newline inside a string interpolation
+    // causes some surrounding interpolation expression to try to split but the
+    // expression is aready pinned to be unsplit to prevent newlines inside
+    // interpolation.
+    // TODO(rnystrom): If we come up with a cleaner way to model how newlines
+    // inside interpolation are handled, we can get rid of this. See the TODO
+    // comment in visitInterpolationString().
+    if (piece.pinnedState != null) return;
+
     _isValid = false;
 
     // TODO(rnystrom): It would be good to mark a solution as a dead end here

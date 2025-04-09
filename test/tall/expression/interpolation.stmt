@@ -69,3 +69,25 @@ b} after";
 <<<
 "before ${a + // comment
     b} after";
+>>> Multiline string inside splittable expression inside interpolation.
+var x = f('''
+${operand + """
+nested
+"""}
+''');
+<<<
+var x = f('''
+${operand + """
+nested
+"""}
+''');
+>>> Block function inside splittable expression inside interpolation.
+var x = f('''
+${operand + (){;}}
+''');
+<<<
+var x = f('''
+${operand + () {
+      ;
+    }}
+''');
