@@ -34,7 +34,7 @@ final class ForPiece extends Piece {
   void format(CodeWriter writer, State state) {
     writer.format(_forKeyword);
     writer.space();
-    if (_indent) writer.pushIndent(Indent.controlFlowClause);
+    if (_indent) writer.pushCollapsibleIndent();
     writer.format(_parts);
     if (_indent) writer.popIndent();
   }
@@ -72,25 +72,34 @@ final class ForPiece extends Piece {
 ///             anotherOperand) {
 ///       ...
 ///     }
-final class ForInPiece extends Piece {
+abstract base class ForInPiece extends Piece {
   /// The variable or pattern initialized with each loop iteration.
   final Piece _variable;
 
   /// The `in` keyword followed by the sequence expression.
   final Piece _sequence;
 
-  ForInPiece(this._variable, this._sequence);
+  factory ForInPiece(
+    Piece variable,
+    Piece sequence, {
+    bool canBlockSplitSequence = false,
+    required bool version37,
+  }) {
+    if (version37) {
+      return _ForInPieceV37(
+        variable,
+        sequence,
+        canBlockSplitSequence: canBlockSplitSequence,
+      );
+    } else {
+      return _ForInPiece(variable, sequence);
+    }
+  }
+
+  ForInPiece._(this._variable, this._sequence);
 
   @override
   List<State> get additionalStates => const [State.split];
-
-  @override
-  Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
-    // Always allow block-splitting the sequence if it supports it.
-    State.unsplit when child == _sequence => const {Shape.inline, Shape.block},
-    State.unsplit => Shape.onlyInline,
-    _ => Shape.all,
-  };
 
   @override
   void format(CodeWriter writer, State state) {
@@ -109,5 +118,47 @@ final class ForInPiece extends Piece {
   void forEachChild(void Function(Piece piece) callback) {
     callback(_variable);
     callback(_sequence);
+  }
+}
+
+/// A [ForInPiece] subclass for 3.8 and later style.
+final class _ForInPiece extends ForInPiece {
+  _ForInPiece(super._variable, super._sequence) : super._();
+
+  @override
+  Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
+    // Always allow block-splitting the sequence if it supports it.
+    State.unsplit when child == _sequence => const {Shape.inline, Shape.block},
+    State.unsplit => Shape.onlyInline,
+    _ => Shape.all,
+  };
+}
+
+/// A [ForInPiece] subclass for 3.7 style.
+final class _ForInPieceV37 extends ForInPiece {
+  /// If `true` then the sequence expression supports being block-formatted,
+  /// like:
+  ///
+  ///     for (var e in [
+  ///       element1,
+  ///       element2,
+  ///     ]) {
+  ///       // ...
+  ///     }
+  final bool _canBlockSplitSequence;
+
+  _ForInPieceV37(
+    super._variable,
+    super._sequence, {
+    bool canBlockSplitSequence = false,
+  }) : _canBlockSplitSequence = canBlockSplitSequence,
+       super._();
+
+  @override
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (state == State.split) return Shape.all;
+
+    // Always allow block-splitting the sequence if it supports it.
+    return Shape.anyIf(child == _sequence && _canBlockSplitSequence);
   }
 }

@@ -27,6 +27,12 @@ var stdErrLines = proc.stderr
     .transform(utf8.decoder)
     .transform(const LineSplitter())
     .asBroadcastStream();
+<<< 3.7
+var stdErrLines =
+    proc.stderr
+        .transform(utf8.decoder)
+        .transform(const LineSplitter())
+        .asBroadcastStream();
 >>> Don't block format a complex method chain.
 var keyLen = sortedEntries.map((e) => e.key).fold(
   0,

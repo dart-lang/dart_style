@@ -86,3 +86,48 @@ void main() {
     ),
   );
 }
+<<< 3.7
+void something() => functionCall(
+  'Hello world!',
+  'Good night city!',
+  'Goodbye, world!',
+  'Afterwards',
+);
+
+class Something {
+  void something() => functionCall(
+    'Hello world!',
+    'Good night city!',
+    'Goodbye, world!',
+    'Afterwards',
+  );
+}
+
+void main() {
+  final result = switch (value) {
+    Something() => functionCall(
+      'Hello world!',
+      'Good night city!',
+      'Goodbye, world!',
+    ),
+  };
+
+  calling(
+    () => functionCall(
+      'Hello world!',
+      'Good night city!',
+      'Goodbye, world!',
+      'Afterwards',
+    ),
+  );
+
+  calling(
+    function:
+        () => functionCall(
+          'Hello world!',
+          'Good night city!',
+          'Goodbye, world!',
+          'Afterwards',
+        ),
+  );
+}

@@ -17,6 +17,15 @@ void foo() {
     }
   }
 }
+<<< 3.7
+void foo() {
+  if (bar) {
+    if (baz) {
+      _sources[uri] =
+          src = new _MockSdkSource(uri, 'library dart.${uri.path};');
+    }
+  }
+}
 >>>
 class Foo {
   static LibrarySummary parse(Map json) => new LibrarySummary(json[

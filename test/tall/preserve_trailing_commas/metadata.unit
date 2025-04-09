@@ -3,7 +3,7 @@
 >>> Forces split with trailing comma.
 @meta(1,)
 class A {}
-<<<
+<<< 3.8
 @meta(
   1,
 )
@@ -11,13 +11,13 @@ class A {}
 >>> Doesn't force split without trailing comma.
 @meta(1)
 class A {}
-<<<
+<<< 3.8
 @meta(1)
 class A {}
 >>> May still split without trailing comma if doesn't fit.
 @meta(argument1, argument2, argument3, argument4)
 class A {}
-<<<
+<<< 3.8
 @meta(
   argument1,
   argument2,

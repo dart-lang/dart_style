@@ -34,7 +34,7 @@ final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
 final class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
-  static final latestLanguageVersion = Version(3, 7, 0);
+  static final latestLanguageVersion = Version(3, 8, 0);
 
   /// The latest Dart language version that will be formatted using the older
   /// "short" style.

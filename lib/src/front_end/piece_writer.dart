@@ -7,6 +7,7 @@ import 'package:analyzer/dart/ast/token.dart';
 import '../back_end/code_writer.dart';
 import '../back_end/solution_cache.dart';
 import '../back_end/solver.dart';
+import '../dart_formatter.dart';
 import '../debug.dart' as debug;
 import '../piece/adjacent.dart';
 import '../piece/leading_comment.dart';
@@ -25,6 +26,8 @@ import 'sequence_builder.dart';
 /// Handles updating selection markers and attaching comments to the tokens
 /// before and after the comments.
 final class PieceWriter {
+  final DartFormatter _formatter;
+
   final SourceCode _source;
 
   final CommentWriter _comments;
@@ -74,7 +77,7 @@ final class PieceWriter {
   /// previous code or adding a [SpacePiece] yet.
   bool _pendingSpace = false;
 
-  PieceWriter(this._source, this._comments);
+  PieceWriter(this._formatter, this._source, this._comments);
 
   /// Wires the [PieceWriter] to the [AstNodeVisitor] (which implements
   /// [PieceFactory]) so that [PieceWriter] can visit nodes.
@@ -455,6 +458,7 @@ final class PieceWriter {
     String? lineEnding, {
     required int pageWidth,
     required int leadingIndent,
+    required bool version37,
   }) {
     if (debug.tracePieceBuilder) {
       debug.log(debug.pieceTree(rootPiece));
@@ -462,12 +466,13 @@ final class PieceWriter {
 
     Profile.begin('PieceWriter.finish() format piece tree');
 
-    var cache = SolutionCache();
+    var cache = SolutionCache(version37: version37);
     var solver = Solver(
       cache,
       pageWidth: pageWidth,
-      leadingIndent: leadingIndent,
+      leadingIndent: _formatter.indent,
     );
+
     var solution = solver.format(rootPiece);
     var output = solution.code.build(source, lineEnding);
 

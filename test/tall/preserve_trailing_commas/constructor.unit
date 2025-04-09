@@ -4,7 +4,7 @@
 class A {
   A(int x,);
 }
-<<<
+<<< 3.8
 class A {
   A(
     int x,
@@ -14,7 +14,7 @@ class A {
 class A {
   A(int x, int y);
 }
-<<<
+<<< 3.8
 class A {
   A(int x, int y);
 }
@@ -22,7 +22,7 @@ class A {
 class A {
   A(int parameter1, int parameter2, int parameter3);
 }
-<<<
+<<< 3.8
 class A {
   A(
     int parameter1,
@@ -34,7 +34,7 @@ class A {
 class A {
   A(int x, [int y,]);
 }
-<<<
+<<< 3.8
 class A {
   A(
     int x, [
@@ -45,7 +45,7 @@ class A {
 class A {
   A(int x, {int y,});
 }
-<<<
+<<< 3.8
 class A {
   A(
     int x, {
@@ -57,7 +57,7 @@ class A {
   A(int x) : this.named(x,);
   A.named(int x) : this(x,);
 }
-<<<
+<<< 3.8
 class A {
   A(int x)
     : this.named(
@@ -73,7 +73,7 @@ class A {
   A(int x) : this.named(x);
   A.named(int x) : this(x);
 }
-<<<
+<<< 3.8
 class A {
   A(int x) : this.named(x);
   A.named(int x) : this(x);

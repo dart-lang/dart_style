@@ -17,6 +17,11 @@ if (obj
         x) {
   ;
 }
+<<< 3.7
+if (obj case var // c
+    x) {
+  ;
+}
 >>> Line comment after variable (looks weird, but user should move comment).
 if (obj case var x // c
 ) {;}
@@ -45,5 +50,10 @@ if (obj
 if (obj
     case final // c
         thisIsReallyQuiteAVeryLongVariableName) {
+  ;
+}
+<<< 3.7
+if (obj case final // c
+    thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }

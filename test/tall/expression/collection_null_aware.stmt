@@ -2,27 +2,27 @@
 (experiment null-aware-elements)
 >>> List element.
 var list = [  ?  x  ];
-<<<
+<<< 3.8
 var list = [?x];
 >>> Set element.
 var set = {  ?  x  };
-<<<
+<<< 3.8
 var set = {?x};
 >>> Map key.
 var map = {  ?  key  : value};
-<<<
+<<< 3.8
 var map = {?key: value};
 >>> Map value.
 var map = { key:  ?  value  };
-<<<
+<<< 3.8
 var map = {key: ?value};
 >>> Both key and value.
 var map = {  ?  key  :  ?  value  };
-<<<
+<<< 3.8
 var map = {?key: ?value};
 >>> Split inside element.
 var list = [?(veryLongExpression +thatIsForcedToSplit)];
-<<<
+<<< 3.8
 var list = [
   ?(veryLongExpression +
       thatIsForcedToSplit),

@@ -2,17 +2,17 @@
 (trailing_commas preserve)
 >>> Forces split with trailing comma.
 var C(a:x,) = obj;
-<<<
+<<< 3.8
 var C(
   a: x,
 ) = obj;
 >>> Doesn't force split without trailing comma.
 var C(a:x,b:y,c:z) = obj;
-<<<
+<<< 3.8
 var C(a: x, b: y, c: z) = obj;
 >>> May still split without trailing comma if doesn't fit.
 var C(a: element1, b: element2, c: element3) = obj;
-<<<
+<<< 3.8
 var C(
   a: element1,
   b: element2,

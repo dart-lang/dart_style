@@ -2,28 +2,28 @@
 (trailing_commas preserve)
 >>> Forces split with trailing comma and multiple positional fields.
 var (x,y,) = rec;
-<<<
+<<< 3.8
 var (
   x,
   y,
 ) = rec;
 >>> Forces split with trailing comma and named field.
 var (a:x,) = rec;
-<<<
+<<< 3.8
 var (
   a: x,
 ) = rec;
 >>> Doesn't force split with single positional field.
 var (x,) = rec;
-<<<
+<<< 3.8
 var (x,) = rec;
 >>> Doesn't force split without trailing comma.
 var (x,y,z) = rec;
-<<<
+<<< 3.8
 var (x, y, z) = rec;
 >>> May still split without trailing comma if doesn't fit.
 var (element1, element2, element3, element4) = rec;
-<<<
+<<< 3.8
 var (
   element1,
   element2,

@@ -19,6 +19,19 @@ class Foo {
             ..cell = new Cell(onSelection))
           .build();
 }
+<<< 3.7
+class Foo {
+  static Column column(Handler onSelection) =>
+      (Column.defaultBuilder(videoMsg())
+            ..id = 'VIDEO'
+            ..segment =
+                ((row) =>
+                    row.segmentedStats
+                        .map((s) => s.get(Stats.SEGMENTATION))
+                        .toList())
+            ..cell = new Cell(onSelection))
+          .build();
+}
 >>>
 void _updateChart() {
   if (_model.settings != null) {
@@ -107,5 +120,15 @@ main() {
         ..sortOrder = s.isAscending
             ? OrderBySortOrder.ASCENDING
             : OrderBySortOrder.DESCENDING)
+      .toList();
+}
+<<< 3.7
+main() {
+  (new OrderBy()
+        ..field = s.column
+        ..sortOrder =
+            s.isAscending
+                ? OrderBySortOrder.ASCENDING
+                : OrderBySortOrder.DESCENDING)
       .toList();
 }

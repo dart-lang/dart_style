@@ -23,3 +23,16 @@ test() {
       )
       .toList();
 }
+<<< 3.7
+test() {
+  var fooService, ids, objectName, results;
+
+  var futures =
+      ids
+          .map(
+            (id) => fooService
+                .getItem(objectName, id)
+                .then((item) => results.add(item.name.value)),
+          )
+          .toList();
+}

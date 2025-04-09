@@ -2,17 +2,17 @@
 (trailing_commas preserve)
 >>> Forces split with trailing comma.
 var [x,] = list;
-<<<
+<<< 3.8
 var [
   x,
 ] = list;
 >>> Doesn't force split without trailing comma.
 var [x,y,z] = list;
-<<<
+<<< 3.8
 var [x, y, z] = list;
 >>> May still split without trailing comma if doesn't fit.
 var [element1, element2, element3, element4] = list;
-<<<
+<<< 3.8
 var [
   element1,
   element2,

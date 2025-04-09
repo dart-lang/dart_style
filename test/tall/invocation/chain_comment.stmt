@@ -98,3 +98,6 @@ target // c
 target // c
         .prop =
     value;
+<<< 3.7
+target // c
+    .prop = value;

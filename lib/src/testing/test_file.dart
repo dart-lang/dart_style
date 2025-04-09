@@ -11,11 +11,19 @@ import '../dart_formatter.dart';
 import '../source_code.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
-final _versionPattern = RegExp(r'\(version (\d+)\.(\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
 final _preserveTrailingCommasPattern = RegExp(r'\(trailing_commas preserve\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
+
+/// Matches an output header line with an optional version and description.
+/// Examples:
+///
+///    >>>
+///    >>> Only description.
+///    >>> 1.2
+///    >>> 1.2 Version and description.
+final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
@@ -68,6 +76,8 @@ final class TestFile {
   factory TestFile._load(File file, String relativePath) {
     var lines = file.readAsLinesSync();
 
+    var isCompilationUnit = file.path.endsWith('.unit');
+
     // The first line may have a "|" to indicate the page width.
     var i = 0;
     int? pageWidth;
@@ -82,14 +92,14 @@ final class TestFile {
       (fileOptions, _) = _parseOptions(lines[i]);
       i++;
     } else {
-      fileOptions = TestOptions(null, null, null, const []);
+      fileOptions = TestOptions(null, null, const []);
     }
 
     var tests = <FormatTest>[];
 
     List<String> readComments() {
       var comments = <String>[];
-      while (lines[i].startsWith('###')) {
+      while (i < lines.length && lines[i].startsWith('###')) {
         comments.add(lines[i]);
         i++;
       }
@@ -107,62 +117,66 @@ final class TestFile {
       var (options, description) = _parseOptions(line);
 
       var inputComments = readComments();
-
       var inputBuffer = StringBuffer();
-      while (i < lines.length) {
-        var line = readLine();
-        if (line.startsWith('<<<')) break;
-        inputBuffer.writeln(line);
+      while (i < lines.length && !lines[i].startsWith('<<<')) {
+        inputBuffer.writeln(readLine());
       }
 
-      var outputDescription = lines[i - 1].replaceAll('<<<', '');
-
-      var outputComments = readComments();
-
-      var outputBuffer = StringBuffer();
-      while (i < lines.length) {
-        var line = readLine();
-        if (line.startsWith('>>>')) {
-          // Found another test, so roll back to the test description for the
-          // next iteration through the loop.
-          i--;
-          break;
-        }
-        outputBuffer.writeln(line);
-      }
-
-      var isCompilationUnit = file.path.endsWith('.unit');
-
-      // The output always has a trailing newline. When formatting a statement,
-      // the formatter (correctly) doesn't output trailing newlines when
-      // formatting a statement, so remove it from the expectation to match.
-      var outputText = outputBuffer.toString();
-      if (!isCompilationUnit) {
-        assert(outputText.endsWith('\n'));
-        outputText = outputText.substring(0, outputText.length - 1);
-      }
-
-      var input = _extractSelection(
+      var inputCode = _extractSelection(
         _unescapeUnicode(inputBuffer.toString()),
         isCompilationUnit: isCompilationUnit,
       );
-      var output = _extractSelection(
-        _unescapeUnicode(outputText),
-        isCompilationUnit: isCompilationUnit,
-      );
 
-      tests.add(
-        FormatTest(
-          input,
-          output,
-          description.trim(),
-          outputDescription.trim(),
-          lineNumber,
-          options,
-          inputComments,
-          outputComments,
-        ),
-      );
+      var input = TestEntry(description.trim(), null, inputComments, inputCode);
+
+      var outputs = <TestEntry>[];
+      while (i < lines.length && lines[i].startsWith('<<<')) {
+        var match = _outputPattern.firstMatch(readLine())!;
+        var outputDescription = match[4]!;
+        Version? outputVersion;
+        if (match[1] != null) {
+          outputVersion = Version(
+            int.parse(match[2]!),
+            int.parse(match[3]!),
+            0,
+          );
+        }
+
+        var outputComments = readComments();
+
+        var outputBuffer = StringBuffer();
+        while (i < lines.length &&
+            !lines[i].startsWith('>>>') &&
+            !lines[i].startsWith('<<<')) {
+          var line = readLine();
+          outputBuffer.writeln(line);
+        }
+
+        // The output always has a trailing newline. When formatting a
+        // statement, the formatter (correctly) doesn't output trailing
+        // newlines when formatting a statement, so remove it from the
+        // expectation to match.
+        var outputText = outputBuffer.toString();
+        if (!isCompilationUnit) {
+          assert(outputText.endsWith('\n'));
+          outputText = outputText.substring(0, outputText.length - 1);
+        }
+        var outputCode = _extractSelection(
+          _unescapeUnicode(outputText),
+          isCompilationUnit: isCompilationUnit,
+        );
+
+        outputs.add(
+          TestEntry(
+            outputDescription.trim(),
+            outputVersion,
+            outputComments,
+            outputCode,
+          ),
+        );
+      }
+
+      tests.add(FormatTest(lineNumber, options, input, outputs));
     }
 
     return TestFile._(
@@ -179,15 +193,6 @@ final class TestFile {
   /// Returns the options and the text remaining on the line after the options
   /// are removed.
   static (TestOptions, String) _parseOptions(String line) {
-    // Let the test specify a language version to parse it at.
-    Version? languageVersion;
-    line = line.replaceAllMapped(_versionPattern, (match) {
-      var major = int.parse(match[1]!);
-      var minor = int.parse(match[2]!);
-      languageVersion = Version(major, minor, 0);
-      return '';
-    });
-
     // Let the test specify a leading indentation. This is handy for
     // regression tests which often come from a chunk of nested code.
     int? leadingIndent;
@@ -210,10 +215,7 @@ final class TestFile {
       return '';
     });
 
-    return (
-      TestOptions(languageVersion, leadingIndent, trailingCommas, experiments),
-      line,
-    );
+    return (TestOptions(leadingIndent, trailingCommas, experiments), line);
   }
 
   TestFile._(
@@ -243,19 +245,22 @@ final class TestFile {
 
   bool get isCompilationUnit => path.endsWith('.unit');
 
+  /// Whether the test uses the tall or short style.
+  bool get isTall => p.split(path).contains('tall');
+
   /// Creates a [DartFormatter] configured with all of the options that should
   /// be applied for [test] in this test file.
-  DartFormatter formatterForTest(FormatTest test) {
+  ///
+  /// If [version] is given, then it specifies the language version to run the
+  /// test at. Otherwise, the test's default version is used.
+  DartFormatter formatterForTest(FormatTest test, [Version? version]) {
     var defaultLanguageVersion =
-        p.split(path).contains('tall')
+        isTall
             ? DartFormatter.latestLanguageVersion
             : DartFormatter.latestShortStyleLanguageVersion;
 
     return DartFormatter(
-      languageVersion:
-          test.options.languageVersion ??
-          options.languageVersion ??
-          defaultLanguageVersion,
+      languageVersion: version ?? defaultLanguageVersion,
       pageWidth: pageWidth,
       indent: test.options.leadingIndent ?? options.leadingIndent ?? 0,
       experimentFlags: [
@@ -272,54 +277,48 @@ final class TestFile {
 
 /// A single formatting test inside a [TestFile].
 final class FormatTest {
-  /// The unformatted input.
-  final SourceCode input;
-
-  /// The expected output.
-  final SourceCode output;
-
-  /// The optional description of the test.
-  final String description;
-
-  /// The `###` comment lines appearing after the test description before the
-  /// input code.
-  final List<String> inputComments;
-
-  /// If there is a remark on the "<<<" line, this is it.
-  final String outputDescription;
-
-  /// The `###` comment lines appearing after the "<<<" before the output code.
-  final List<String> outputComments;
-
   /// The 1-based index of the line where this test begins.
   final int line;
 
   /// The options specific to this test.
   final TestOptions options;
 
-  FormatTest(
-    this.input,
-    this.output,
-    this.description,
-    this.outputDescription,
-    this.line,
-    this.options,
-    this.inputComments,
-    this.outputComments,
-  );
+  /// The unformatted input.
+  final TestEntry input;
+
+  // TODO(rnystrom): Consider making this a map of version (or null) to output
+  // and then validating that there aren't duplicate outputs for a single
+  // version.
+  /// The expected output.
+  final List<TestEntry> outputs;
+
+  FormatTest(this.line, this.options, this.input, this.outputs);
 
   /// The line and description of the test.
   String get label {
-    if (description.isEmpty) return 'line $line';
-    return 'line $line: $description';
+    if (input.description.isEmpty) return 'line $line';
+    return 'line $line: ${input.description}';
   }
+}
+
+/// A single test input or output.
+final class TestEntry {
+  /// Any remark on the "<<<" or ">>>" line.
+  final String description;
+
+  /// If this is a test output for a specific version, the version.
+  final Version? version;
+
+  /// The `###` comment lines appearing after the header line before the code.
+  final List<String> comments;
+
+  final SourceCode code;
+
+  TestEntry(this.description, this.version, this.comments, this.code);
 }
 
 /// Options for configuring all tests in a file or an individual test.
 final class TestOptions {
-  /// The language version the test code should be parsed at.
-  final Version? languageVersion;
-
   /// The number of spaces of leading indentation that should be added to each
   /// line.
   final int? leadingIndent;
@@ -330,12 +329,7 @@ final class TestOptions {
   /// Experiments that should be enabled when running this test.
   final List<String> experimentFlags;
 
-  TestOptions(
-    this.languageVersion,
-    this.leadingIndent,
-    this.trailingCommas,
-    this.experimentFlags,
-  );
+  TestOptions(this.leadingIndent, this.trailingCommas, this.experimentFlags);
 }
 
 extension SourceCodeExtensions on SourceCode {

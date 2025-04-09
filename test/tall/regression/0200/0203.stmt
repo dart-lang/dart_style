@@ -5,6 +5,11 @@ var constructedRequest = new Request()
 <<<
 var constructedRequest = new Request()
   ..campaignId = (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
+<<< 3.7
+var constructedRequest =
+    new Request()
+      ..campaignId =
+          (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
 >>> (indent 2)
   var constructedRequest = new Request()
       ..campaignId =
@@ -14,3 +19,8 @@ var constructedRequest = new Request()
     ..campaignId = (rollup.campaignId == null
         ? new Int64(0)
         : rollup.campaignId);
+<<< 3.7
+  var constructedRequest =
+      new Request()
+        ..campaignId =
+            (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);

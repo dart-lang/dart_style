@@ -3,12 +3,14 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import '../ast_extensions.dart';
 import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
+import '../piece/assign_v37.dart';
 import '../piece/clause.dart';
 import '../piece/control_flow.dart';
 import '../piece/for.dart';
@@ -21,7 +23,6 @@ import '../piece/prefix.dart';
 import '../piece/sequence.dart';
 import '../piece/type.dart';
 import '../piece/variable.dart';
-import 'ast_node_visitor.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
@@ -56,6 +57,12 @@ typedef BinaryOperation = (AstNode left, Token operator, AstNode right);
 enum NodeContext {
   /// No specified context.
   none,
+
+  /// The child is the right-hand side of an assignment-like form.
+  ///
+  /// This includes assignments, variable declarations, named arguments, map
+  /// entries, and `=>` function bodies.
+  assignment,
 
   /// The child is the target of a cascade expression.
   cascadeTarget,
@@ -108,6 +115,9 @@ mixin PieceFactory {
 
   NodeContext get parentContext;
 
+  /// True if the code being formatted is at language version 3.7.
+  bool get isVersion37 => formatter.languageVersion == Version(3, 7, 0);
+
   void visitNode(AstNode node, NodeContext context);
 
   /// Writes a [ListPiece] for an argument list.
@@ -125,6 +135,17 @@ mixin PieceFactory {
     List<Expression> arguments,
     Token rightBracket,
   ) {
+    // In 3.7, we don't support preserving trailing commas or eager splitting.
+    if (isVersion37) {
+      writeList(
+        leftBracket: leftBracket,
+        arguments,
+        rightBracket: rightBracket,
+        allowBlockArgument: true,
+      );
+      return;
+    }
+
     // If the argument list is completely empty, write the brackets inline so
     // we create fewer pieces.
     if (!arguments.canSplit(rightBracket)) {
@@ -303,6 +324,7 @@ mixin PieceFactory {
       return;
     }
 
+    // Add this collection to the stack.
     if (splitEagerly) {
       _contents.beginCollection(
         isNamed: parentContext == NodeContext.namedExpression,
@@ -488,19 +510,30 @@ mixin PieceFactory {
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
 
-          // Unlike most places in the language, if the updaters split, we
-          // don't want to add a trailing comma. But if the user has preserve
-          // trailing commas on, we should preserve the comma if there is one
-          // but not add one if there isn't and it splits.
-          var style = const ListStyle(commas: Commas.nonTrailing);
-          if (formatter.trailingCommas == TrailingCommas.preserve &&
-              rightParenthesis.hasCommaBefore) {
-            style = const ListStyle(commas: Commas.trailing);
+          DelimitedListBuilder updaterBuilder;
+          if (isVersion37) {
+            // Create a nested list builder for the updaters so that they can
+            // remain unsplit even while the clauses split.
+            updaterBuilder = DelimitedListBuilder(
+              this,
+              const ListStyle(commas: Commas.nonTrailing),
+            );
+          } else {
+            // Unlike most places in the language, if the updaters split, we
+            // don't want to add a trailing comma. But if the user has preserve
+            // trailing commas on, we should preserve the comma if there is one
+            // but not add one if there isn't and it splits.
+            var style = const ListStyle(commas: Commas.nonTrailing);
+            if (formatter.trailingCommas == TrailingCommas.preserve &&
+                rightParenthesis.hasCommaBefore) {
+              style = const ListStyle(commas: Commas.trailing);
+            }
+
+            // Create a nested list builder for the updaters so that they can
+            // remain unsplit even while the clauses split.
+            updaterBuilder = DelimitedListBuilder(this, style);
           }
 
-          // Create a nested list builder for the updaters so that they can
-          // remain unsplit even while the clauses split.
-          var updaterBuilder = DelimitedListBuilder(this, style);
           forParts.updaters.forEach(updaterBuilder.visit);
 
           // Add the updater builder to the clause builder so that any comments
@@ -754,7 +787,12 @@ mixin PieceFactory {
         writeFunction();
       });
 
-      return VariablePiece(returnTypePiece, [signature], hasType: true);
+      return VariablePiece(
+        returnTypePiece,
+        [signature],
+        hasType: true,
+        version37: isVersion37,
+      );
     });
   }
 
@@ -772,16 +810,28 @@ mixin PieceFactory {
     }
 
     var (separator, value) = defaultValue;
-    var leftPiece = pieces.build(() {
-      pieces.add(parameter);
+
+    var operatorPiece = pieces.build(() {
+      if (!isVersion37) pieces.add(parameter);
       if (separator.type == TokenType.EQ) pieces.space();
       pieces.token(separator);
       if (separator.type != TokenType.EQ) pieces.space();
     });
 
-    var valuePiece = nodePiece(value);
+    var valuePiece = nodePiece(value, context: NodeContext.assignment);
 
-    pieces.add(AssignPiece(leftPiece, valuePiece));
+    if (isVersion37) {
+      pieces.add(
+        AssignPieceV37(
+          left: parameter,
+          operatorPiece,
+          valuePiece,
+          canBlockSplitRight: value.canBlockSplit,
+        ),
+      );
+    } else {
+      pieces.add(AssignPiece(operatorPiece, valuePiece));
+    }
   }
 
   /// Writes a function type or function-typed formal.
@@ -1022,7 +1072,7 @@ mixin PieceFactory {
                 tokenPiece(combinatorNode.keyword),
                 for (var name in names)
                   tokenPiece(name.token, commaAfter: true),
-              ]),
+              ], version37: isVersion37),
             );
         }
       }
@@ -1051,17 +1101,23 @@ mixin PieceFactory {
     pieces.token(index.question);
     pieces.token(index.period);
 
-    // Wrap the index expression in a [GroupingPiece] so that a split inside
-    // the index doesn't cause the surrounding piece to have a certain shape.
-    pieces.add(
-      GroupingPiece(
-        pieces.build(() {
-          pieces.token(index.leftBracket);
-          pieces.visit(index.index);
-          pieces.token(index.rightBracket);
-        }),
-      ),
-    );
+    if (isVersion37) {
+      pieces.token(index.leftBracket);
+      pieces.visit(index.index);
+      pieces.token(index.rightBracket);
+    } else {
+      // Wrap the index expression in a [GroupingPiece] so that a split inside
+      // the index doesn't cause the surrounding piece to have a certain shape.
+      pieces.add(
+        GroupingPiece(
+          pieces.build(() {
+            pieces.token(index.leftBracket);
+            pieces.visit(index.index);
+            pieces.token(index.rightBracket);
+          }),
+        ),
+      );
+    }
   }
 
   /// Writes a single infix operation.
@@ -1099,7 +1155,13 @@ mixin PieceFactory {
       pieces.visit(right);
     });
 
-    pieces.add(InfixPiece([leftPiece, rightPiece], indent: indent));
+    pieces.add(
+      InfixPiece(
+        [leftPiece, rightPiece],
+        indent: indent,
+        version37: isVersion37,
+      ),
+    );
   }
 
   /// Writes a chained infix operation: a binary operator expression, or
@@ -1155,7 +1217,11 @@ mixin PieceFactory {
     );
 
     pieces.add(
-      InfixPiece(operands, indent: indent ? Indent.infix : Indent.none),
+      InfixPiece(
+        operands,
+        indent: indent ? Indent.infix : Indent.none,
+        version37: isVersion37,
+      ),
     );
   }
 
@@ -1288,7 +1354,12 @@ mixin PieceFactory {
     });
 
     pieces.add(
-      VariablePiece(header, [tokenPiece(name)], hasType: type != null),
+      VariablePiece(
+        header,
+        [tokenPiece(name)],
+        hasType: type != null,
+        version37: isVersion37,
+      ),
     );
   }
 
@@ -1302,7 +1373,13 @@ mixin PieceFactory {
   ///
   /// If [space] is `true` and there is an operator, writes a space between the
   /// operator and operand.
-  void writePrefix(Token operator, AstNode? operand, {bool space = false}) {
+  void writePrefix(Token? operator, AstNode? operand, {bool space = false}) {
+    if (isVersion37) {
+      pieces.token(operator, spaceAfter: space);
+      pieces.visit(operand);
+      return;
+    }
+
     // Wrap in grouping so that an infix split inside the prefix operator
     // doesn't get collapsed in the surrounding context, like:
     //
@@ -1451,7 +1528,7 @@ mixin PieceFactory {
           InfixPiece([
             tokenPiece(keyword),
             for (var type in types) nodePiece(type, commaAfter: true),
-          ]),
+          ], version37: isVersion37),
         );
       }
 
@@ -1539,6 +1616,17 @@ mixin PieceFactory {
     NodeContext leftHandSideContext = NodeContext.none,
     NodeContext rightHandSideContext = NodeContext.none,
   }) {
+    if (isVersion37) {
+      _writeAssignmentV37(
+        leftHandSide,
+        operator,
+        rightHandSide,
+        includeComma: includeComma,
+        leftHandSideContext: leftHandSideContext,
+      );
+      return;
+    }
+
     var leftPiece = pieces.build(() {
       pieces.visit(leftHandSide, context: leftHandSideContext);
       if (operator.type != TokenType.COLON) pieces.space();
@@ -1565,7 +1653,12 @@ mixin PieceFactory {
         context: NodeContext.forLoopVariable,
       );
       var sequencePiece = _createForInSequence(inKeyword, sequence);
-      return ForInPiece(leftPiece, sequencePiece);
+      return ForInPiece(
+        leftPiece,
+        sequencePiece,
+        canBlockSplitSequence: sequence.canBlockSplit,
+        version37: isVersion37,
+      );
     });
   }
 
@@ -1599,7 +1692,14 @@ mixin PieceFactory {
 
           var sequencePiece = _createForInSequence(inKeyword, sequence);
 
-          pieces.add(ForInPiece(leftPiece, sequencePiece));
+          pieces.add(
+            ForInPiece(
+              leftPiece,
+              sequencePiece,
+              canBlockSplitSequence: sequence.canBlockSplit,
+              version37: isVersion37,
+            ),
+          );
         },
       );
     });
@@ -1615,9 +1715,85 @@ mixin PieceFactory {
     });
   }
 
+  void _writeAssignmentV37(
+    AstNode leftHandSide,
+    Token operator,
+    AstNode rightHandSide, {
+    bool includeComma = false,
+    NodeContext leftHandSideContext = NodeContext.none,
+  }) {
+    // If an operand can have block formatting, then a newline in it doesn't
+    // force the operator to split, as in:
+    //
+    //    var [
+    //      element,
+    //    ] = list;
+    //
+    // Or:
+    //
+    //    var list = [
+    //      element,
+    //    ];
+    var canBlockSplitLeft = switch (leftHandSide) {
+      // Treat method chains and cascades on the LHS as if they were blocks.
+      // They don't really fit the "block" term, but it looks much better to
+      // force a method chain to split on the left than to try to avoid
+      // splitting it and split at the assignment instead:
+      //
+      //    // Worse:
+      //    target.method(
+      //          argument,
+      //        ).setter =
+      //        value;
+      //
+      //    // Better:
+      //    target.method(argument)
+      //        .setter = value;
+      //
+      MethodInvocation() => true,
+      PropertyAccess() => true,
+      PrefixedIdentifier() => true,
+
+      // Otherwise, it must be an actual block construct.
+      Expression() => leftHandSide.canBlockSplit,
+      DartPattern() => leftHandSide.canBlockSplit,
+      _ => false,
+    };
+
+    var canBlockSplitRight = switch (rightHandSide) {
+      Expression() => rightHandSide.canBlockSplit,
+      DartPattern() => rightHandSide.canBlockSplit,
+      _ => false,
+    };
+
+    var leftPiece = nodePiece(leftHandSide, context: leftHandSideContext);
+
+    var operatorPiece = pieces.build(() {
+      if (operator.type != TokenType.COLON) pieces.space();
+      pieces.token(operator);
+    });
+
+    var rightPiece = nodePiece(
+      rightHandSide,
+      commaAfter: includeComma,
+      context: NodeContext.assignment,
+    );
+
+    pieces.add(
+      AssignPieceV37(
+        left: leftPiece,
+        operatorPiece,
+        rightPiece,
+        canBlockSplitLeft: canBlockSplitLeft,
+        canBlockSplitRight: canBlockSplitRight,
+      ),
+    );
+  }
+
   /// Whether there is a trailing comma at the end of the list delimited by
-  /// [rightBracket].
+  /// [rightBracket] which should be preserved.
   bool hasPreservedTrailingComma(Token rightBracket) =>
+      !isVersion37 &&
       formatter.trailingCommas == TrailingCommas.preserve &&
       rightBracket.hasCommaBefore;
 
@@ -1669,7 +1845,12 @@ mixin PieceFactory {
       Piece parameterPiece;
       if (typePiece != null && namePiece != null) {
         // We have both a type and name, allow splitting between them.
-        parameterPiece = VariablePiece(typePiece, [namePiece], hasType: true);
+        parameterPiece = VariablePiece(
+          typePiece,
+          [namePiece],
+          hasType: true,
+          version37: isVersion37,
+        );
       } else {
         // Will have at least a type or name.
         parameterPiece = typePiece ?? namePiece!;

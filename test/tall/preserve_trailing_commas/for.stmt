@@ -2,7 +2,7 @@
 (trailing_commas preserve)
 >>> Trailing comma in increments forces them to split.
 for (x = 1;true;x += 1, x += 2,) {stmt;}
-<<<
+<<< 3.8
 for (
   x = 1;
   true;
@@ -13,7 +13,7 @@ for (
 }
 >>> Don't add trailing comma if updaters split.
 for (x = 1;true;variable += longValue, another += value) {stmt;}
-<<<
+<<< 3.8
 for (
   x = 1;
   true;

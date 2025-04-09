@@ -9,6 +9,7 @@ import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -23,6 +24,16 @@ const formattedOutput = 'void main() => print("hello");';
 /// If `bin/format.dart` has been compiled to a snapshot, this is the path to
 /// it.
 String? _formatterPath;
+
+/// All of the supported tall style versions that we run the tests against.
+final List<Version> _testedTallVersions = [
+  for (
+    var version = DartFormatter.latestShortStyleLanguageVersion.nextMinor;
+    version <= DartFormatter.latestLanguageVersion;
+    version = version.nextMinor
+  )
+    version,
+];
 
 /// Compiles `bin/format.dart` to a native executable for tests to use.
 ///
@@ -135,28 +146,76 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
-      test(formatTest.label, () {
-        var formatter = testFile.formatterForTest(formatTest);
+      // Collect all of the outputs that are specific to a single version.
+      // We'll run those tests at only that version. If there is is an output
+      // with no version specified, then we'll run it on all of the remaining
+      // supported versions.
+      var specificTestedVersions = {
+        for (var output in formatTest.outputs)
+          if (output.version case var version?) version,
+      };
 
-        var actual = _validateFormat(
-          formatter,
-          formatTest.input,
-          formatTest.output,
-          'did not match expectation',
-          testFile.isCompilationUnit,
-        );
-
-        // Make sure that formatting is idempotent. Format the output and make
-        // sure we get the same result.
-        _validateFormat(
-          formatter,
-          actual,
-          actual,
-          'was not idempotent',
-          testFile.isCompilationUnit,
-        );
-      });
+      // Run it for each of the expected outputs.
+      for (var output in formatTest.outputs) {
+        // If the output is version-specific, then only test on that version.
+        if (output.version case var version?) {
+          _runTestAtVersion(testFile, formatTest, output, version);
+        } else if (testFile.isTall) {
+          // This output is unversioned, so test it on all of the versions
+          // that aren't otherwise covered.
+          for (var version in _testedTallVersions) {
+            if (specificTestedVersions.contains(version)) continue;
+            _runTestAtVersion(testFile, formatTest, output, version);
+          }
+        } else {
+          // Short style test so just test against one short version.
+          _runTestAtVersion(
+            testFile,
+            formatTest,
+            output,
+            DartFormatter.latestShortStyleLanguageVersion,
+          );
+        }
+      }
     }
+  });
+}
+
+void _runTestAtVersion(
+  TestFile testFile,
+  FormatTest formatTest,
+  TestEntry output,
+  Version version,
+) {
+  // If the output is version-specific, we can only run it at that version.
+  assert(output.version == null || output.version == version);
+
+  var description =
+      'line ${formatTest.line} at ${version.major}.${version.minor}';
+  if (formatTest.input.description.isNotEmpty) {
+    description += ': ${formatTest.input.description}';
+  }
+
+  test(description, () {
+    var formatter = testFile.formatterForTest(formatTest, version);
+
+    var actual = _validateFormat(
+      formatter,
+      formatTest.input.code,
+      output.code,
+      'did not match expectation',
+      testFile.isCompilationUnit,
+    );
+
+    // Make sure that formatting is idempotent. Format the output and make
+    // sure we get the same result.
+    _validateFormat(
+      formatter,
+      actual,
+      actual,
+      'was not idempotent',
+      testFile.isCompilationUnit,
+    );
   });
 }
 

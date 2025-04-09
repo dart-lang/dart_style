@@ -20,6 +20,13 @@ import 'package:path/path.dart' as p;
 /// "×XX" Unicode markers or selections.
 // TODO(rnystrom): Support updating individual tests within a file.
 void main(List<String> arguments) async {
+  // TODO(rnystrom): Tests now support being run against multiple versions with
+  // test expectations for different versions. This script hasn't been updated
+  // to support that yet.
+  print('The update script isn\'t working right now.');
+  return;
+
+  // ignore: dead_code
   if (arguments.isEmpty) {
     print('Usage: update_tests.dart <tests...>');
     exit(1);
@@ -99,7 +106,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
   for (var formatTest in testFile.tests) {
     var formatter = testFile.formatterForTest(formatTest);
 
-    var actual = formatter.formatSource(formatTest.input);
+    var actual = formatter.formatSource(formatTest.input.code);
 
     // The test files always put a newline at the end of the expectation.
     // Statements from the formatter (correctly) don't have that, so add
@@ -112,15 +119,15 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
     var description = [
       ..._optionStrings(formatTest.options),
-      formatTest.description,
+      formatTest.input.description,
     ].join(' ');
 
     buffer.writeln('>>> $description'.trim());
-    _writeComments(buffer, formatTest.inputComments);
-    buffer.write(formatTest.input.text);
+    _writeComments(buffer, formatTest.input.comments);
+    buffer.write(formatTest.input.code.text);
 
-    buffer.writeln('<<< ${formatTest.outputDescription}'.trim());
-    _writeComments(buffer, formatTest.outputComments);
+    buffer.writeln('<<< ${formatTest.outputs.first.description}'.trim());
+    _writeComments(buffer, formatTest.outputs.first.comments);
 
     var output = actual.text;
 
@@ -131,7 +138,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
     // Fail with an explicit message because it's easier to read than
     // the matcher output.
-    if (actualText != formatTest.output.text) {
+    if (actualText != formatTest.outputs.first.code.text) {
       print('Updated ${testFile.path} ${formatTest.label}');
       _changedTests++;
     }
@@ -147,8 +154,6 @@ Future<void> _updateTestFile(TestFile testFile) async {
 List<String> _optionStrings(TestOptions options) => [
   for (var experiment in options.experimentFlags) '(experiment $experiment)',
   if (options.leadingIndent case var indent?) '(indent $indent)',
-  if (options.languageVersion case var version?)
-    '(version ${version.major}.${version.minor})',
   if (options.trailingCommas == TrailingCommas.preserve)
     '(trailing_commas preserve)',
 ];

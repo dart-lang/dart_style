@@ -48,7 +48,7 @@ import 'piece.dart';
 ///           argument,
 ///           argument,
 ///         );
-final class ChainPiece extends Piece {
+abstract base class ChainPiece extends Piece {
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
   static const State _blockFormatTrailingCall = State(1, cost: 0);
 
@@ -87,7 +87,42 @@ final class ChainPiece extends Piece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  ChainPiece(
+  factory ChainPiece(
+    Piece target,
+    List<ChainCall> calls, {
+    required bool cascade,
+    int leadingProperties = 0,
+    int blockCallIndex = -1,
+    Indent indent = Indent.expression,
+    required bool allowSplitInTarget,
+    required bool version37,
+  }) {
+    if (version37) {
+      return _ChainPieceV37(
+        target,
+        calls,
+        cascade: cascade,
+        leadingProperties: leadingProperties,
+        blockCallIndex: blockCallIndex,
+        allowSplitInTarget: allowSplitInTarget,
+        indent: indent,
+      );
+    } else {
+      return _ChainPiece(
+        target,
+        calls,
+        cascade: cascade,
+        leadingProperties: leadingProperties,
+        blockCallIndex: blockCallIndex,
+        indent: indent,
+      );
+    }
+  }
+
+  /// Creates a new ChainPiece.
+  ///
+  /// Instead of calling this directly, prefer using [ChainBuilder].
+  ChainPiece._(
     this._target,
     this._calls, {
     required bool cascade,
@@ -110,65 +145,21 @@ final class ChainPiece extends Piece {
 
   @override
   int stateCost(State state) {
-    if (state == State.split) {
-      // If the chain is a cascade, lower the cost so that we prefer splitting
-      // the cascades instead of the target. Prefers:
-      //
-      //     [element1, element2]
-      //       ..cascade();
-      //
-      // Over:
-      //
-      //     [
-      //       element1,
-      //       element2,
-      //     ]..cascade();
-      if (_isCascade) return 0;
-
-      // If the chain is only properties, try to keep them together. Prefers:
-      //
-      //     variable =
-      //         target.property.another;
-      //
-      // Over:
-      //
-      //     variable = target
-      //         .property
-      //         .another;
-      if (_leadingProperties == _calls.length) return 2;
-    }
+    // If the chain is a cascade, lower the cost so that we prefer splitting
+    // the cascades instead of the target. Prefers:
+    //
+    //     [element1, element2]
+    //       ..cascade();
+    //
+    // Over:
+    //
+    //     [
+    //       element1,
+    //       element2,
+    //     ]..cascade();
+    if (state == State.split) return _isCascade ? 0 : 1;
 
     return super.stateCost(state);
-  }
-
-  @override
-  Set<Shape> allowedChildShapes(State state, Piece child) {
-    if (child == _target) {
-      return switch (state) {
-        // If the chain itself isn't fully split, only allow block splitting
-        // in the target.
-        State.unsplit ||
-        _blockFormatTrailingCall ||
-        _splitAfterProperties => const {Shape.inline, Shape.block},
-        _ => Shape.all,
-      };
-    } else {
-      switch (state) {
-        case State.unsplit:
-          return Shape.onlyInline;
-
-        case _splitAfterProperties:
-          // Don't allow splitting inside the properties.
-          for (var i = 0; i < _leadingProperties; i++) {
-            if (_calls[i]._call == child) return Shape.onlyInline;
-          }
-
-        case _blockFormatTrailingCall:
-          return Shape.anyIf(_calls[_blockCallIndex]._call == child);
-      }
-
-      return Shape.all;
-    }
   }
 
   @override
@@ -181,7 +172,7 @@ final class ChainPiece extends Piece {
           writer.format(_calls[i]._call);
         }
 
-      case _splitAfterProperties:
+      case ChainPiece._splitAfterProperties:
         writer.pushIndent(_indent);
         writer.setShapeMode(ShapeMode.beforeHeadline);
         writer.format(_target);
@@ -201,7 +192,7 @@ final class ChainPiece extends Piece {
 
         writer.popIndent();
 
-      case _blockFormatTrailingCall:
+      case ChainPiece._blockFormatTrailingCall:
         // Don't treat a cascade as block-shaped in the surrounding context
         // even if it block splits. Prefer:
         //
@@ -249,6 +240,122 @@ final class ChainPiece extends Piece {
     for (var call in _calls) {
       callback(call._call);
     }
+  }
+}
+
+/// A [ChainPiece] subclass for 3.8 and later style.
+final class _ChainPiece extends ChainPiece {
+  /// Creates a new ChainPiece.
+  ///
+  /// Instead of calling this directly, prefer using [ChainBuilder].
+  _ChainPiece(
+    super.target,
+    super.calls, {
+    required super.cascade,
+    super.leadingProperties,
+    super.blockCallIndex,
+    super.indent,
+  }) : super._();
+
+  @override
+  int stateCost(State state) {
+    // If the chain is only properties, try to keep them together. Prefers:
+    //
+    //     variable =
+    //         target.property.another;
+    //
+    // Over:
+    //
+    //     variable = target
+    //         .property
+    //         .another;
+    if (state == State.split &&
+        !_isCascade &&
+        _leadingProperties == _calls.length) {
+      return 2;
+    }
+
+    return super.stateCost(state);
+  }
+
+  @override
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    if (child == _target) {
+      return switch (state) {
+        // If the chain itself isn't fully split, only allow block splitting
+        // in the target.
+        State.unsplit ||
+        ChainPiece._blockFormatTrailingCall ||
+        ChainPiece._splitAfterProperties => const {Shape.inline, Shape.block},
+        _ => Shape.all,
+      };
+    } else {
+      switch (state) {
+        case State.unsplit:
+          return Shape.onlyInline;
+
+        case ChainPiece._splitAfterProperties:
+          // Don't allow splitting inside the properties.
+          for (var i = 0; i < _leadingProperties; i++) {
+            if (_calls[i]._call == child) return Shape.onlyInline;
+          }
+
+        case ChainPiece._blockFormatTrailingCall:
+          return Shape.anyIf(_calls[_blockCallIndex]._call == child);
+      }
+
+      return Shape.all;
+    }
+  }
+}
+
+/// A [ChainPiece] subclass for 3.7 style.
+final class _ChainPieceV37 extends ChainPiece {
+  /// Whether the target expression may contain newlines when the chain is not
+  /// fully split. (It may always contain newlines when the chain splits.)
+  ///
+  /// This is true for most expressions but false for delimited ones to avoid
+  /// this weird output:
+  ///
+  ///     function(
+  ///       argument,
+  ///     )
+  ///         .method();
+  final bool _allowSplitInTarget;
+
+  /// Creates a new ChainPiece.
+  ///
+  /// Instead of calling this directly, prefer using [ChainBuilder].
+  _ChainPieceV37(
+    super.target,
+    super.calls, {
+    required super.cascade,
+    super.leadingProperties,
+    super.blockCallIndex,
+    super.indent,
+    required bool allowSplitInTarget,
+  }) : _allowSplitInTarget = allowSplitInTarget,
+       super._();
+
+  @override
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    switch (state) {
+      case _ when child == _target:
+        return Shape.anyIf(_allowSplitInTarget || state == State.split);
+
+      case State.unsplit:
+        return Shape.onlyInline;
+
+      case ChainPiece._splitAfterProperties:
+        for (var i = 0; i < _leadingProperties; i++) {
+          if (_calls[i]._call == child) return Shape.onlyInline;
+        }
+
+      case ChainPiece._blockFormatTrailingCall:
+        return Shape.anyIf(_calls[_blockCallIndex]._call == child);
+    }
+
+    return Shape.all;
   }
 }
 

@@ -121,13 +121,12 @@ final class Solution implements Comparable<Solution> {
     required int subsequentIndent,
     State? rootState,
   }) {
-    var solution = Solution._(cache, root, 0, {}, {}, rootState);
+    var solution = Solution._(root, 0, {}, {}, rootState);
     solution._format(cache, root, pageWidth, leadingIndent, subsequentIndent);
     return solution;
   }
 
   Solution._(
-    SolutionCache cache,
     Piece root,
     this._cost,
     this._pieceStates,
@@ -241,7 +240,6 @@ final class Solution implements Comparable<Solution> {
       for (var state
           in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
         var expanded = Solution._(
-          cache,
           root,
           _cost,
           {..._pieceStates},
@@ -345,6 +343,7 @@ final class Solution implements Comparable<Solution> {
       cache,
       this,
     );
+
     writer.format(root);
 
     var (code, expandPieces) = writer.finish();
