@@ -5,6 +5,7 @@
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/testing/test_file.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 void main(List<String> args) {
   // Enable debugging so you can see some of the formatter's internal state.
@@ -32,14 +33,14 @@ void main(List<String> args) {
 
 void _formatStmt(
   String source, {
-  bool tall = true,
+  Version? version,
   int pageWidth = 40,
   TrailingCommas trailingCommas = TrailingCommas.automate,
 }) {
   _runFormatter(
     source,
     pageWidth,
-    tall: tall,
+    version: version ?? DartFormatter.latestLanguageVersion,
     isCompilationUnit: false,
     trailingCommas: trailingCommas,
   );
@@ -47,14 +48,14 @@ void _formatStmt(
 
 void _formatUnit(
   String source, {
-  bool tall = true,
+  Version? version,
   int pageWidth = 40,
   TrailingCommas trailingCommas = TrailingCommas.automate,
 }) {
   _runFormatter(
     source,
     pageWidth,
-    tall: tall,
+    version: version ?? DartFormatter.latestLanguageVersion,
     isCompilationUnit: true,
     trailingCommas: trailingCommas,
   );
@@ -63,16 +64,13 @@ void _formatUnit(
 void _runFormatter(
   String source,
   int pageWidth, {
-  required bool tall,
+  required Version version,
   required bool isCompilationUnit,
   TrailingCommas trailingCommas = TrailingCommas.automate,
 }) {
   try {
     var formatter = DartFormatter(
-      languageVersion:
-          tall
-              ? DartFormatter.latestLanguageVersion
-              : DartFormatter.latestShortStyleLanguageVersion,
+      languageVersion: version,
       pageWidth: pageWidth,
       trailingCommas: trailingCommas,
     );
@@ -110,7 +108,7 @@ Future<void> _runTest(
   var formatTest = testFile.tests.firstWhere((test) => test.line == line);
   var formatter = testFile.formatterForTest(formatTest);
 
-  var actual = formatter.formatSource(formatTest.input);
+  var actual = formatter.formatSource(formatTest.input.code);
 
   // The test files always put a newline at the end of the expectation.
   // Statements from the formatter (correctly) don't have that, so add
@@ -118,11 +116,12 @@ Future<void> _runTest(
   var actualText = actual.textWithSelectionMarkers;
   if (!testFile.isCompilationUnit) actualText += '\n';
 
-  var expectedText = formatTest.output.textWithSelectionMarkers;
+  // TODO(rnystrom): Handle multiple outputs.
+  var expectedText = formatTest.outputs.first.code.textWithSelectionMarkers;
 
-  print('$path ${formatTest.description}');
+  print('$path ${formatTest.input.description}');
   _drawRuler('before', pageWidth);
-  print(formatTest.input.textWithSelectionMarkers);
+  print(formatTest.input.code.textWithSelectionMarkers);
   if (actualText == expectedText) {
     _drawRuler('result', pageWidth);
     print(actualText);

@@ -1,6 +1,32 @@
 ## 3.1.0-wip
 
-* Format null-aware elements.
+### Features
+
+* Allow preserving trailing commas and forcing the surrounding construct to
+  split even when it would otherwise fit on one line. This is off by default
+  (because it breaks [reversibility][] among other reasons) but can be enabled
+  by adding this to a surrounding `analysis_options.yaml` file:
+
+  ```yaml
+  formatter:
+    trailing_commas: preserve
+  ```
+
+  This is similar to how trailing commas work in the old short style formatter
+  applied to code before language version 3.7.
+
+[reversibility]: https://github.com/dart-lang/dart_style/wiki/Reversibility-principle
+
+### Bug fixes
+
+* Don't add a trailing comma in lists that don't allow it, even when there is
+  a trailing comment (#1639).
+
+### Style changes
+
+The following style changes are language versioned and only affect code whose
+language version is 3.8 or later. Dart code at 3.7 or earlier is formatted the
+same as it was before.
 
 * Allow more code on the same line as a named argument or `=>` (#1536, #1545,
   #1668, #1679).
@@ -174,26 +200,6 @@
     labelColor: Colors.white70,
   );
   ```
-
-* Allow preserving trailing commas and forcing the surrounding construct to
-  split even when it would otherwise fit on one line. This is off by default
-  (because it breaks [reversibility][] among other reasons) but can be enabled
-  by adding this to a surrounding `analysis_options.yaml` file:
-
-  ```yaml
-  formatter:
-    trailing_commas: preserve
-  ```
-
-  This is similar to how trailing commas worked in the old short style
-  formatter.
-
-* Don't add a trailing comma in lists that don't allow it, even when there is
-  a trailing comment (#1639).
-
-* Add tests for digit separators.
-
-[reversibility]: https://github.com/dart-lang/dart_style/wiki/Reversibility-principle
 
 ## 3.0.1
 

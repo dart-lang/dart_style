@@ -259,20 +259,38 @@ main() {
       await d.dir('code', [d.file('a.dart', after)]).validate();
     });
 
-    test('uses the tall style on 3.7 or earlier', () async {
-      const before = 'main() { f(argument, // comment\nanother);}';
+    test('uses the 3.7 tall style on 3.7', () async {
+      const before = 'main() { x = cond ? a // comment\n: b;}';
       const after = '''
 main() {
-  f(
-    argument, // comment
-    another,
-  );
+  x =
+      cond
+          ? a // comment
+          : b;
 }
 ''';
 
       await d.dir('code', [d.file('a.dart', before)]).create();
 
       var process = await runFormatterOnDir(['--language-version=3.7']);
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', after)]).validate();
+    });
+
+    test('uses the 3.8 tall style on 3.8 or later', () async {
+      const before = 'main() { x = cond ? a // comment\n: b;}';
+      const after = '''
+main() {
+  x = cond
+      ? a // comment
+      : b;
+}
+''';
+
+      await d.dir('code', [d.file('a.dart', before)]).create();
+
+      var process = await runFormatterOnDir(['--language-version=3.8']);
       await process.shouldExit(0);
 
       await d.dir('code', [d.file('a.dart', after)]).validate();

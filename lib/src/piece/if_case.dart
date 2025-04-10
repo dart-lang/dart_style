@@ -101,7 +101,7 @@ final class IfCasePiece extends Piece {
     writer.splitIf(state == _beforeCase || state == _beforeCaseAndWhen);
 
     if (!_canBlockSplitPattern) {
-      writer.pushIndent(Indent.controlFlowClause);
+      writer.pushCollapsibleIndent();
     }
 
     writer.format(_pattern);

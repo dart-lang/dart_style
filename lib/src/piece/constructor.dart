@@ -52,7 +52,7 @@ final class ConstructorPiece extends Piece {
 
   static const _splitBetweenInitializers = State(2, cost: 2);
 
-  /// True if there are parameters or comments inside the parameter list.
+  /// Whether there are parameters or comments inside the parameter list.
   ///
   /// If so, then we allow splitting the parameter list while leaving the `:`
   /// on the same line as the `)`.

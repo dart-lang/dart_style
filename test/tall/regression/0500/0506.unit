@@ -12,6 +12,15 @@ class Foo {
   Optional<double> get finiteSignificantCost =>
       isSignificant && cost.value.isFinite ? cost : const Optional.absent();
 }
+<<< 3.7
+class Foo {
+  Optional<double> get finiteSignificantCost =>
+      isSignificant && cost.value.isFinite
+          ? cost
+          : const Optional<double>.absent();
+  Optional<double> get finiteSignificantCost =>
+      isSignificant && cost.value.isFinite ? cost : const Optional.absent();
+}
 >>> (indent 4)
     main() {
       this.changes.exec();
@@ -47,6 +56,19 @@ class Foo {
                 (closeParensMatch != null && closeParensMatch.length != null)
                 ? 1
                 : 0;
+      }
+<<< 3.7
+      main() {
+        var openParensMatch = new RegExp(r'\(').allMatches(matchStr),
+            closeParensMatch = new RegExp(r'\)').allMatches(matchStr),
+            numOpenParens =
+                (openParensMatch != null && openParensMatch.length != null)
+                    ? 1
+                    : 0,
+            numCloseParens =
+                (closeParensMatch != null && closeParensMatch.length != null)
+                    ? 1
+                    : 0;
       }
 >>> (indent 4)
     main() {

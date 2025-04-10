@@ -37,3 +37,11 @@ map(
       //...
     }),
 );
+<<< 3.7
+map(
+  (innerMap) =>
+      innerMap..addAll({
+        'something': someMap['something'],
+        //...
+      }),
+);

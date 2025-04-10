@@ -97,7 +97,7 @@ class ExpressionContents {
   }
 
   /// Begin tracking a collection literal and its contents.
-  void beginCollection({required bool isNamed}) {
+  void beginCollection({bool isNamed = false}) {
     _stack.last.collections++;
     _stack.add(_Contents(isNamed ? _Type.namedCollection : _Type.collection));
   }

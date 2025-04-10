@@ -10,3 +10,12 @@ String type = status == 'OK'
     : status == 'BAD'
     ? 'errors'
     : '';
+<<< 3.7
+String type =
+    status == 'OK'
+        ? 'notices'
+        : status == 'NO'
+        ? 'warnings'
+        : status == 'BAD'
+        ? 'errors'
+        : '';

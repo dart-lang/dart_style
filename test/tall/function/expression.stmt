@@ -38,3 +38,10 @@ function =
     ) {
       print('42');
     };
+<<< 3.7
+function = (
+  int firstArgument,
+  int secondArgument,
+) {
+  print('42');
+};

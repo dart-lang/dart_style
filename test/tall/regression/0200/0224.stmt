@@ -51,6 +51,33 @@
         .then((_) {
           _logger.info("Let's eat!");
         });
+<<< 3.7
+    return doughnutFryer
+        .start()
+        .then((_) => _frostingGlazer.start())
+        .then(
+          (_) => Future.wait([
+            _conveyorBelts.start(),
+            sprinkleSprinkler.start(),
+            sauceDripper.start(),
+          ]),
+        )
+        .catchError(cannotGetConveyorBeltRunning)
+        .then((_) => tellEveryoneDonutsAreJustAboutDone())
+        .then(
+          (_) => Future.wait([
+                croissantFactory.start(),
+                _giantBakingOvens.start(),
+                butterbutterer.start(),
+              ])
+              .catchError(_handleBakingFailures)
+              .timeout(scriptLoadingTimeout, onTimeout: _handleBakingFailures)
+              .catchError(cannotGetConveyorBeltRunning),
+        )
+        .catchError(cannotGetConveyorBeltRunning)
+        .then((_) {
+          _logger.info("Let's eat!");
+        });
 >>> (indent 22)
                       someVeryLongFutureWithManyChars().then((foo) {
                         doAThing();

@@ -10,6 +10,7 @@ import '../ast_extensions.dart';
 import '../back_end/code_writer.dart';
 import '../dart_formatter.dart';
 import '../piece/assign.dart';
+import '../piece/assign_v37.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
@@ -60,7 +61,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     SourceCode source,
   ) {
     var comments = CommentWriter(lineInfo);
-    var pieces = PieceWriter(source, comments);
+    var pieces = PieceWriter(formatter, source, comments);
     return AstNodeVisitor._(formatter, pieces, comments);
   }
 
@@ -142,6 +143,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       formatter.lineEnding,
       pageWidth: pageWidthFromComment ?? formatter.pageWidth,
       leadingIndent: formatter.indent,
+      version37: isVersion37,
     );
 
     Profile.end('AstNodeVisitor.run()');
@@ -151,9 +153,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
+    var indent = isVersion37 ? node.indentStringsV37 : node.indentStrings;
     var piece = InfixPiece(
       node.strings.map(nodePiece).toList(),
-      indent: node.indentStrings ? Indent.infix : Indent.none,
+      indent: indent ? Indent.infix : Indent.none,
+      version37: isVersion37,
     );
 
     // Adjacent strings always split.
@@ -183,12 +187,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.expression,
       node.asOperator,
       node.type,
-      // Don't use Indent.infix, which will flatten the indentation if the
-      // expression occurs in an assignment.
+      // Don't use Indent.infix after 3.7 because it will flatten the
+      // indentation if the expression occurs in an assignment.
       // TODO(rnystrom): We probably do want to format `as` the same as other
       // binary operators, but the tall style already treats them differently,
       // so leaving that alone for now.
-      indent: Indent.expression,
+      indent: isVersion37 ? Indent.infix : Indent.expression,
     );
   }
 
@@ -228,9 +232,14 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitBinaryExpression(BinaryExpression node) {
+    // In 3.7 style, flatten binary operands in assignment contexts. (In 3.8
+    // and later, indentation merging accomplishes the same thing.)
+    var indent = !isVersion37 || _parentContext != NodeContext.assignment;
+
     writeInfixChain<BinaryExpression>(
       node,
       precedence: node.operator.type.precedence,
+      indent: indent,
       (expression) => (
         expression.leftOperand,
         expression.operator,
@@ -367,9 +376,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var operands = [nodePiece(node.condition)];
 
     void addOperand(Token operator, Expression operand) {
-      // If there are comments before a branch, then hoist them so they aren't
-      // indented with the branch body.
-      operands.addAll(pieces.takeCommentsBefore(operator));
+      if (!isVersion37) {
+        // If there are comments before a branch, then hoist them so they aren't
+        // indented with the branch body.
+        operands.addAll(pieces.takeCommentsBefore(operator));
+      }
 
       operands.add(
         pieces.build(() {
@@ -394,8 +405,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       }
     }
 
-    // Don't redundantly indent a split conditional in an assignment context.
-    var piece = InfixPiece(operands, conditional: true);
+    var piece = InfixPiece.conditional(operands, version37: isVersion37);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
@@ -417,7 +427,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     if (node.equalToken case var equals?) {
       // Hoist comments so that they don't force the `==` to split.
       pieces.hoistLeadingComments(node.name.firstNonCommentToken, () {
-        return InfixPiece([
+        return InfixPiece(version37: isVersion37, [
           pieces.build(() {
             pieces.visit(node.name);
             pieces.space();
@@ -437,11 +447,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConstantPattern(ConstantPattern node) {
-    if (node.constKeyword case var constKeyword?) {
-      pieces.token(constKeyword, spaceAfter: true);
-      pieces.visit(node.expression);
+    if (isVersion37) {
+      writePrefix(node.constKeyword, space: true, node.expression);
     } else {
-      pieces.visit(node.expression);
+      if (node.constKeyword case var constKeyword?) {
+        pieces.token(constKeyword, spaceAfter: true);
+        pieces.visit(node.expression);
+      } else {
+        pieces.visit(node.expression);
+      }
     }
   }
 
@@ -468,7 +482,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           pieces.space();
         });
 
-        redirect = AssignPiece(separator, nodePiece(constructor));
+        if (isVersion37) {
+          redirect = AssignPieceV37(
+            separator,
+            nodePiece(constructor, context: NodeContext.assignment),
+            canBlockSplitRight: false,
+          );
+        } else {
+          redirect = AssignPiece(separator, nodePiece(constructor));
+        }
       } else if (node.initializers.isNotEmpty) {
         initializerSeparator = tokenPiece(node.separator!);
         initializers = createCommaSeparated(node.initializers);
@@ -667,30 +689,47 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.functionDefinition);
     });
 
-    var expression = nodePiece(node.expression);
-    var assignPiece = AssignPiece(
-      operatorPiece,
-      expression,
-      // Prefer splitting at `=>` and keeping the expression together unless
-      // it's a collection literal.
-      avoidSplit: node.expression.isHomogeneousCollectionBody,
+    var expression = nodePiece(
+      node.expression,
+      context: NodeContext.assignment,
     );
 
-    // If a `=>` is directly nested inside another, force the outer one to
-    // split. This is for performance reasons. A series of nested AssignPieces
-    // can have combinatorial performance otherwise.
-    // TODO(rnystrom): Figure out a better way to handle this. We could possibly
-    // collapse a series of curried function expressions into a single piece
-    // similar to how we handle nested conditional expressions. In practice,
-    // outside of a few libraries that lean heavily on currying, this is very
-    // rare.
-    if (node.expression case FunctionExpression(
-      body: ExpressionFunctionBody(),
-    )) {
-      assignPiece.pin(State.split);
+    if (isVersion37) {
+      pieces.add(
+        AssignPieceV37(
+          operatorPiece,
+          expression,
+          canBlockSplitRight: node.expression.canBlockSplit,
+          avoidBlockSplitRight:
+              node.expression.blockFormatType == BlockFormat.invocation,
+        ),
+      );
+    } else {
+      var assignPiece = AssignPiece(
+        operatorPiece,
+        expression,
+        // Prefer splitting at `=>` and keeping the expression together unless
+        // it's a collection literal.
+        avoidSplit: node.expression.isHomogeneousCollectionBody,
+      );
+
+      // If a `=>` is directly nested inside another, force the outer one to
+      // split. This is for performance reasons. A series of nested AssignPieces
+      // can have combinatorial performance otherwise.
+      // TODO(rnystrom): Figure out a better way to handle this. We could
+      // possibly collapse a series of curried function expressions into a
+      // single piece similar to how we handle nested conditional expressions.
+      // In practice, outside of a few libraries that lean heavily on currying,
+      // this is very rare.
+      if (node.expression case FunctionExpression(
+        body: ExpressionFunctionBody(),
+      )) {
+        assignPiece.pin(State.split);
+      }
+
+      pieces.add(assignPiece);
     }
 
-    pieces.add(assignPiece);
     pieces.token(node.semicolon);
   }
 
@@ -978,7 +1017,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
+      if (isVersion37) {
+        pieces.add(
+          AssignPieceV37(tokenPiece(node.equals), nodePiece(node.type)),
+        );
+      } else {
+        pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
+      }
       pieces.token(node.semicolon);
     });
   }
@@ -1224,19 +1269,23 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     traverse(piece);
 
-    // Wrap in grouping so that an infix split inside the interpolation doesn't
-    // get collapsed in the surrounding context, like:
-    //
-    //     // Wrong:
-    //     var x =
-    //         '${"a"
-    //         "b"}';
-    //
-    //     // Right:
-    //     var x =
-    //         '${"a"
-    //             "b"}';
-    pieces.add(GroupingPiece(piece));
+    if (isVersion37) {
+      pieces.add(piece);
+    } else {
+      // Wrap in grouping so that an infix split inside the interpolation
+      // doesn't get collapsed in the surrounding context, like:
+      //
+      //     // Wrong:
+      //     var x =
+      //         '${"a"
+      //         "b"}';
+      //
+      //     // Right:
+      //     var x =
+      //         '${"a"
+      //             "b"}';
+      pieces.add(GroupingPiece(piece));
+    }
   }
 
   @override
@@ -1255,12 +1304,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.isOperator,
       operator2: node.notOperator,
       node.type,
-      // Don't use Indent.infix, which will flatten the indentation if the
-      // expression occurs in an assignment.
+      // Don't use Indent.infix after 3.7 because it will flatten the
+      // indentation if the expression occurs in an assignment.
       // TODO(rnystrom): We probably do want to format `as` the same as other
       // binary operators, but the tall style already treats them differently,
       // so leaving that alone for now.
-      indent: Indent.expression,
+      indent: isVersion37 ? Indent.infix : Indent.expression,
     );
   }
 
@@ -1320,9 +1369,23 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLogicalAndPattern(LogicalAndPattern node) {
+    var indent = true;
+    if (isVersion37) {
+      // If a logical and pattern occurs inside a map pattern entry, we want to
+      // format the operands in parallel, like:
+      //
+      //     var {
+      //       key:
+      //         operand1 &&
+      //         operand2,
+      //     } = value;
+      indent = _parentContext != NodeContext.assignment;
+    }
+
     writeInfixChain<LogicalAndPattern>(
       node,
       precedence: node.operator.type.precedence,
+      indent: indent,
       (expression) => (
         expression.leftOperand,
         expression.operator,
@@ -1333,7 +1396,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLogicalOrPattern(LogicalOrPattern node) {
-    // If a logical and pattern is the outermost pattern in a switch expression
+    // If a logical or pattern is the outermost pattern in a switch expression
     // case, we flatten the operands like parallel cases:
     //
     //     e = switch (obj) {
@@ -1341,6 +1404,18 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     //       operand2 => value,
     //     };
     var indent = _parentContext != NodeContext.switchExpressionCase;
+
+    if (isVersion37) {
+      // If a logical or pattern occurs inside a map pattern entry, we want to
+      // format the operands in parallel, like:
+      //
+      //     var {
+      //       key:
+      //         operand1 ||
+      //         operand2,
+      //     } = value;
+      if (_parentContext == NodeContext.assignment) indent = false;
+    }
 
     writeInfixChain<LogicalOrPattern>(
       node,
@@ -1356,18 +1431,22 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    var leftPiece = pieces.build(() {
-      pieces.token(node.keyQuestion);
-      pieces.visit(node.key);
-      pieces.token(node.separator);
-    });
+    if (isVersion37) {
+      writeAssignment(node.key, node.separator, node.value);
+    } else {
+      var leftPiece = pieces.build(() {
+        pieces.token(node.keyQuestion);
+        pieces.visit(node.key);
+        pieces.token(node.separator);
+      });
 
-    var rightPiece = pieces.build(() {
-      pieces.token(node.valueQuestion);
-      pieces.visit(node.value);
-    });
+      var rightPiece = pieces.build(() {
+        pieces.token(node.valueQuestion);
+        pieces.visit(node.value);
+      });
 
-    pieces.add(AssignPiece(leftPiece, rightPiece));
+      pieces.add(AssignPiece(leftPiece, rightPiece));
+    }
   }
 
   @override
@@ -1939,6 +2018,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         bodyPiece,
         canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
         patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
+        canBlockSplitBody: !isVersion37 || node.expression.canBlockSplit,
       ),
     );
   }
@@ -1976,7 +2056,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             var patternPiece = nodePiece(member.guardedPattern.pattern);
 
             if (member.guardedPattern.whenClause case var whenClause?) {
-              pieces.add(InfixPiece([patternPiece, nodePiece(whenClause)]));
+              pieces.add(
+                InfixPiece([
+                  patternPiece,
+                  nodePiece(whenClause),
+                ], version37: isVersion37),
+              );
             } else {
               pieces.add(patternPiece);
             }
@@ -2093,27 +2178,57 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         });
 
         var variables = <Piece>[];
+
         for (var variable in node.variables) {
           if ((variable.equals, variable.initializer) case (
             var equals?,
             var initializer?,
           )) {
-            var variablePiece = pieces.build(() {
-              pieces.token(variable.name);
-              pieces.space();
-              pieces.token(equals);
-            });
+            if (isVersion37) {
+              var variablePiece = tokenPiece(variable.name);
 
-            var initializerPiece = nodePiece(initializer, commaAfter: true);
+              var equalsPiece = pieces.build(() {
+                pieces.space();
+                pieces.token(equals);
+              });
 
-            variables.add(AssignPiece(variablePiece, initializerPiece));
+              var initializerPiece = nodePiece(
+                initializer,
+                commaAfter: true,
+                context: NodeContext.assignment,
+              );
+
+              variables.add(
+                AssignPieceV37(
+                  left: variablePiece,
+                  equalsPiece,
+                  initializerPiece,
+                  canBlockSplitRight: initializer.canBlockSplit,
+                ),
+              );
+            } else {
+              var variablePiece = pieces.build(() {
+                pieces.token(variable.name);
+                pieces.space();
+                pieces.token(equals);
+              });
+
+              var initializerPiece = nodePiece(initializer, commaAfter: true);
+
+              variables.add(AssignPiece(variablePiece, initializerPiece));
+            }
           } else {
             variables.add(tokenPiece(variable.name, commaAfter: true));
           }
         }
 
         pieces.add(
-          VariablePiece(header, variables, hasType: node.type != null),
+          VariablePiece(
+            header,
+            variables,
+            hasType: node.type != null,
+            version37: isVersion37,
+          ),
         );
       },
     );

@@ -9,37 +9,117 @@ The formatting test expectations live in test data files ending in ".unit" or
 entire Dart compilation unit (roughly library or part file). The ".stmt" files
 parse each expectation as a statement.
 
-These test files have a custom diff-like format:
+Each test file has an optional header followed by a number of test cases. Lines
+that start with `###` are comments and are ignored.
 
-```
-40 columns                              |
->>> (indent 4) arithmetic operators
-var a=1+2/(3*-b~/4);
-<<<
-    var a = 1 + 2 / (3 * -b ~/ 4);
-```
+### Test file header
 
 If the first line contains a `|`, then it indicates the page width that all
 tests in this file should be formatted using. All other text on that line is
 ignored. This is used so that tests can test line wrapping behavior without
 having to create long code to force things to wrap.
 
-The `>>>` line begins a test. It may have comment text afterwards describing the
-test. If the line contains `(indent <n>)` for some `n`, then the formatter is
-told to run with that level of indentation. This is mainly for regression tests
-where the erroneous code appeared deeply nested inside some class or function
-and the test wants to reproduce that same surrounding indentation.
+After that, if there is a line containing parenthesized options like
+`(indent 4)` or `(experiment monads)` then those options are applied to all
+test cases in the file.
 
-Lines after the `>>>` line are the input code to be formatted.
+### Test cases
 
-The `<<<` ends the input and begins the expected formatted result. The end of
-the file or the next `>>>` marks the end of the expected output.
+Each test case begins with a header line like:
 
-For each pair of input and expected output, the test runner creates a separate
-test. It runs the input code through the formatter and validates that the
-resulting code matches the expectation.
+```
+>>> (indent 4) Some description.
+```
 
-Lines starting with `###` are treated as comments and are ignored.
+The `>>>` marks the beginning of a new test. After that are optional
+parenthesized options that will be applied to that test. then an optional
+description for the test. Lines after that define the input code to be
+formatted.
+
+After the input are one or more output sections. Each output section starts
+with a header like:
+
+```
+<<< 3.7 Optional description.
+```
+
+The `<<<` marks the beginning of a new output section. If it has a language
+version number, then this output is expected only on that language version. If
+it has no version number, then this is the expected output on all versions.
+
+### Test options
+
+A few parenthesized options are supported:
+
+* `(indent <n>)` Tells the formatter to apply that many spaces of leading
+  indentation. This is mainly for regression tests where the erroneous code
+  appeared deeply nested inside some class or function and the test wants to
+  reproduce that same surrounding indentation.
+
+* `(experiment <name>)` Enable that named experiment in the parser and
+  formatter. A test can have multiple of these.
+
+* `(trailing_commas preserve)` Enable the preserved trailing commas option.
+
+### Test versions
+
+All tests in the "short" directory are run at language version
+[DartFormatter.latestShortStyleLanguageVersion].
+
+Tests in the "tall" directory are run (potentially) on multiple versions. By
+default, tests are run against every language version from just after
+[DartFormatter.latestShortStyleLanguageVersion] up to
+[DartFormatter.latestLanguageVersion].
+
+If the test has an output expectation for a specific version, then when the
+test is run at that version, it is validated against that output. If the test
+has an output expectation with no version marker, than that is the default
+expectation for all other unspecified versions. If a test has no unversioned
+output expectation, then it is only run against the versions that it has
+expectations for.
+
+For example, let's say the supported tall versions are 3.7, 3.8, and 3.9. A
+test like:
+
+```
+<<<
+some  .  code;
+>>>
+some.code;
+```
+
+This will be run at versions 3.7, 3.8, and 3.9. For all of them, the expected
+output is `some.code;`.
+
+A test like:
+
+```
+<<<
+some  .  code;
+>>>
+some.code;
+>>> 3.7
+some . code ;
+```
+
+This will be run at versions 3.7, 3.8, and 3.9. For version 3.7, the expected
+output is `some . code ;`. For 3.7 and 3.9, the expected output is `some.code;`.
+
+A test like:
+
+```
+<<<
+some  .  code;
+>>> 3.8
+some.code;
+>>> 3.9
+some . code ;
+```
+
+Is *only* run at versions 3.8 and 3.9. At 3.8, the expected output is
+`some.code;` and at 3.8 it's `some . code ;`. Tests like this are usually for
+testing language features or formatter features that didn't exist prior to some
+version, like preserved trailing commas, or null-aware elements.
 
 ## Test directories
 

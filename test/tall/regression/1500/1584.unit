@@ -235,6 +235,147 @@ final aaaaaaaaaaaAaaaaaaaAaaaAaaAaaaaaa =
                 'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
         ]))
       ..aaaaaa();
+<<< 3.7
+final aaaaaaaaaaaAaaaaaaaAaaa =
+    (AaaaaaaaaaaAaaaaaaaAaaa()
+        ..aaaAaaaaaaa.aaaAaa([
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa =
+                'Aaaaaaa aaaa 1 is aaa 2 aaaaa aaa aaaa aa aaaaaaaaa if aa is aaaa '
+                'aaaa aaa aaaaa'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 1111.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.22)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 2 is a aaaaa aaaa'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 222.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.19)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 3'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 33.3
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.15)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 4'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 4
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.11)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+        ])
+        ..aaaAaaaaaaAaaaa.aaaAaa([
+          (AaaaaaaaaaaAaaaaaaaAaaaaaaAaaa()
+            ..aaaaaaaAaaaAaaa.aaaAaa(['Aaaaaaa', 'Aaaaa', 'Aaaaa'])
+            ..aaaaaaaAaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 1111000000.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.22)),
+          (AaaaaaaaaaaAaaaaaaaAaaaaaaAaaa()
+            ..aaaaaaaAaaaAaaa.aaaAaa([
+              'Aaaaaaa',
+              'Aaaa',
+              'Aaaaaa',
+              'Aaaaaa Aaaaaa',
+            ])
+            ..aaaaaaaAaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 112000000.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.234)),
+          (AaaaaaaaaaaAaaaaaaaAaaaaaaAaaa()
+            ..aaaaaaaAaaaAaaa.aaaAaa(['Aaaaaaa', 'Aaaa', 'Aaaaaaa'])
+            ..aaaaaaaAaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 82000000.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.54)),
+          (AaaaaaaaaaaAaaaaaaaAaaaaaaAaaa()
+            ..aaaaaaaAaaaAaaa.aaaAaa([
+              'Aaaaaaa',
+              'Aaaaaaaaaaa',
+              'Aaaa',
+              'Aaaaaaaa Aaaa',
+              'Aaaa Aaaaaaaa Aaaa',
+              'Aaaaaa Aaaa Aaaaaaaa Aaaa',
+              'Aaaaaa Aaaa Aaaaaaaa Aaaa Aaa Aaaaaaaa',
+            ])
+            ..aaaaaaaAaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 82000000.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.54)),
+        ]))
+      ..aaaAaaaaaaAaaaaa.aaaAaa([
+        aaaaAaaaaaaAaaaa(
+          aaaaaaaAaaaa1,
+          aaaaaa: 1111000000.0,
+          aaaaaaaAaaaaa: 0.22,
+        ),
+        aaaaAaaaaaaAaaaa(
+          aaaaaaaAaaaa2,
+          aaaaaa: 112000000.0,
+          aaaaaaaAaaaaa: 0.234,
+        ),
+        aaaaAaaaaaaAaaaa(
+          aaaaaaaAaaaa3,
+          aaaaaa: 82000000.0,
+          aaaaaaaAaaaaa: 0.54,
+        ),
+        aaaaAaaaaaaAaaaa(
+          aaaaaaaAaaaa4,
+          aaaaaa: 82000000.0,
+          aaaaaaaAaaaaa: 0.54,
+        ),
+      ])
+      ..aaaaaa();
+
+final aaaaaaaaaaaAaaaaaaaAaaaAaaAaaaaaa =
+    (AaaaaaaaaaaAaaaaaaaAaaa()
+        ..aaaAaaaaaaa.aaaAaa([
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa =
+                'Aaaaaaa aaaa 1 is aaa 2 aaaaa aaa aaaa aa aaaaaaaaa if aa is aaaa '
+                'aaaa aaa aaaaa'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 1111.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.22)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 2 is a aaaaa aaaa'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 222.0
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.19)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 3'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 33.3
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.15)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+          (AaaaaaaaaaaAaaaaaaaAaaaaaa()
+            ..aaaaaaaAaaa = 'Aaaaaaa aaaa 4'
+            ..aaaaaaaAaaaa =
+                (AaaaaaaaaaaAaaaaaaaAaaaaaAaaaa()
+                  ..aaaaaAaaaaaAaaaaa = 4
+                  ..aaaaaAaaaaaAaaaaaaAaaaaa = 0.11)
+            ..aaaaaaaAaaaaaaaaAaa =
+                'aaaaa://aaa.aaaaaaa.aaa/aaaaaaa/aaaaaaaaaaaa/aaaaaa/aaaaaaa_aaaaaaaaaaaa.aaa'), // AA AAAA
+        ]))
+      ..aaaaaa();
 >>>
   void aaaa() {
   aaaa('aaaaaaaa aaaaa aaaa', () {

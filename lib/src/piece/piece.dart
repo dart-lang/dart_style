@@ -85,10 +85,6 @@ abstract base class Piece with FastHash {
   /// child piece and the state that child should be constrained to.
   void applyConstraints(State state, Constrain constrain) {}
 
-  /// Whether the [child] of this piece should be allowed to contain newlines
-  /// (directly or transitively) when this piece is in [state].
-  bool allowNewlineInChild(State state, Piece child) => true;
-
   /// What shapes the [child] of this piece may take when this piece is in
   /// [state].
   Set<Shape> allowedChildShapes(State state, Piece child) => Shape.all;

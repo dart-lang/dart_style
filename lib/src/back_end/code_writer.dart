@@ -154,31 +154,100 @@ final class CodeWriter {
   /// Increases the indentation by [indent] relative to the current amount of
   /// indentation.
   void pushIndent(Indent indent) {
-    var parent = _indentStack.last;
+    if (_cache.isVersion37) {
+      _pushIndentV37(indent);
+    } else {
+      var parent = _indentStack.last;
 
-    // Combine the new indentation with the surrounding one.
-    var offset = switch ((parent.type, indent)) {
-      // On the right-hand side of `=`, `:`, or `=>`, don't indent subsequent
-      // infix operands so that they all align:
-      //
-      //     variable =
-      //         operand +
-      //         another;
-      (Indent.assignment, Indent.infix) => 0,
+      // Combine the new indentation with the surrounding one.
+      var offset = switch ((parent.type, indent)) {
+        // On the right-hand side of `=`, `:`, or `=>`, don't indent subsequent
+        // infix operands so that they all align:
+        //
+        //     variable =
+        //         operand +
+        //         another;
+        (Indent.assignment, Indent.infix) => 0,
 
-      // We have already indented the control flow header, so collapse the
-      // duplicate indentation.
-      (Indent.controlFlowClause, Indent.expression) => 0,
-      (Indent.controlFlowClause, Indent.infix) => 0,
+        // We have already indented the control flow header, so collapse the
+        // duplicate indentation.
+        (Indent.controlFlowClause, Indent.expression) => 0,
+        (Indent.controlFlowClause, Indent.infix) => 0,
 
-      // If we get here, the parent context has no effect, so just apply the
-      // indentation directly.
-      (_, _) => indent.spaces,
-    };
+        // If we get here, the parent context has no effect, so just apply the
+        // indentation directly.
+        (_, _) => indent.spaces,
+      };
 
-    _indentStack.add(_IndentLevel(indent, parent.spaces + offset));
-    if (debug.traceIndent) {
-      debug.log('pushIndent: ${_indentStack.join(' ')}');
+      _indentStack.add(_IndentLevel(indent, parent.spaces + offset));
+      if (debug.traceIndent) {
+        debug.log('pushIndent: ${_indentStack.join(' ')}');
+      }
+    }
+  }
+
+  /// Increases the indentation in a control flow clause in a "collapsible" way.
+  ///
+  /// This is only used in a couple of corners of if-case and for-in headers
+  /// where the indentation is unusual.
+  void pushCollapsibleIndent() {
+    if (_cache.isVersion37) {
+      _pushIndentV37(Indent.expression, canCollapse: true);
+    } else {
+      pushIndent(Indent.controlFlowClause);
+    }
+  }
+
+  /// The 3.7 style of indentation and collapsible indentation tracking.
+  ///
+  /// Splits in if-case and for-in loop headers are tricky to indent gracefully.
+  /// For example, if an infix expression inside the case splits, we don't want
+  /// it to be double indented:
+  ///
+  ///     if (object
+  ///         case veryLongConstant
+  ///                 as VeryLongType) {
+  ///       ;
+  ///     }
+  ///
+  /// That suggests that the [IfCasePiece] shouldn't add indentation for the
+  /// case pattern since the [InfixPiece] inside it will already indent the RHS.
+  ///
+  /// But if the case is a variable pattern that splits, the [VariablePiece]
+  /// does *not* add indentation because in most other places where it occurs,
+  /// that's what we want. If the [IfCasePiece] doesn't indent the pattern, you
+  /// get:
+  ///
+  ///     if (object
+  ///         case VeryLongType
+  ///         veryLongVariable
+  ///         ) {
+  ///       ;
+  ///     }
+  ///
+  /// To deal with this, 3.7 had a notion of "collapsible" indentation. In 3.8
+  /// and later, there is a different mechanism for merging indentation kinds.
+  /// This function implements the former.
+  void _pushIndentV37(Indent indent, {bool canCollapse = false}) {
+    var parentIndent = _indentStack.last.spaces;
+    var parentCollapse = _indentStack.last.collapsible;
+
+    if (parentCollapse == indent.spaces) {
+      // We're indenting by the same existing collapsible amount, so collapse
+      // this new indentation with that existing one.
+      _indentStack.add(_IndentLevel.v37(parentIndent, 0));
+    } else if (canCollapse) {
+      // We should never get multiple levels of nested collapsible indentation.
+      assert(parentCollapse == 0);
+
+      // Increase the indentation and note that it can be collapsed with
+      // further indentation.
+      _indentStack.add(
+        _IndentLevel.v37(parentIndent + indent.spaces, indent.spaces),
+      );
+    } else {
+      // Regular indentation, so just increase the indent.
+      _indentStack.add(_IndentLevel.v37(parentIndent + indent.spaces, 0));
     }
   }
 
@@ -230,7 +299,7 @@ final class CodeWriter {
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
     if (whitespace case Whitespace.newline || Whitespace.blankLine) {
-      _applyNewlineToShape();
+      _applyNewlineToShape(_pieceFormats.last);
       _pendingIndent = flushLeft ? 0 : _indentStack.last.spaces;
     }
 
@@ -261,11 +330,9 @@ final class CodeWriter {
   void format(Piece piece, {bool separate = false}) {
     if (separate) {
       Profile.count('CodeWriter.format() piece separate');
-
       _formatSeparate(piece);
     } else {
       Profile.count('CodeWriter.format() piece inline');
-
       _formatInline(piece);
     }
   }
@@ -328,23 +395,30 @@ final class CodeWriter {
     if (_pieceFormats.lastOrNull case var parent?) {
       var allowedShapes = parent.piece.allowedChildShapes(
         _solution.pieceState(parent.piece),
-        piece,
+        child.piece,
       );
 
-      if (!allowedShapes.contains(child.shape)) {
-        _solution.invalidate(parent.piece);
-        if (debug.traceSolver) {
-          debug.log(
-            'invalidate ${parent.piece} '
-            '(${_solution.pieceState(parent.piece)}) '
-            'because child $piece (${_solution.pieceState(piece)}) '
-            'has ${child.shape} and allowed are $allowedShapes',
-          );
-        }
+      bool invalid;
+      if (_cache.isVersion37) {
+        // If the child must be inline, then invalidate because we know it
+        // contains some kind of newline.
+        // TODO(rnystrom): It would be better if this logic wasn't different for
+        // 3.7. The only place where the distinction between this code and the
+        // logic in the else clause comes into play is with CaseExpressionPiece.
+        invalid =
+            child.shape != Shape.inline &&
+            allowedShapes.length == 1 &&
+            allowedShapes.contains(Shape.inline);
+      } else {
+        invalid = !allowedShapes.contains(child.shape);
       }
 
+      if (invalid) _solution.invalidate(parent.piece);
+
       // If the child had newlines, propagate that to the parent's shape.
-      if (child.shape != Shape.inline) _applyNewlineToShape(child.shape);
+      if (child.shape != Shape.inline) {
+        _applyNewlineToShape(parent, child.shape);
+      }
     }
   }
 
@@ -413,18 +487,17 @@ final class CodeWriter {
   }
 
   /// Determine how a newline affects the current piece's shape.
-  void _applyNewlineToShape([Shape shape = Shape.other]) {
-    var format = _pieceFormats.last;
-    format.shape = switch (format.mode) {
-      ShapeMode.merge => format.shape.merge(shape),
+  void _applyNewlineToShape(_FormatState state, [Shape shape = Shape.other]) {
+    state.shape = switch (state.mode) {
+      ShapeMode.merge => state.shape.merge(shape),
       ShapeMode.block => Shape.block,
       ShapeMode.beforeHeadline => Shape.other,
       // If there were no newlines inside the headline, now that there is one,
       // we have a headline shape.
-      ShapeMode.afterHeadline when format.shape == Shape.inline =>
+      ShapeMode.afterHeadline when state.shape == Shape.inline =>
         Shape.headline,
       // If there was already a newline in the headline, preserve that shape.
-      ShapeMode.afterHeadline => format.shape,
+      ShapeMode.afterHeadline => state.shape,
       ShapeMode.other => Shape.other,
     };
   }
@@ -555,12 +628,21 @@ enum ShapeMode {
 /// A level of indentation in the indentation stack.
 final class _IndentLevel {
   /// The reason this indentation was added.
+  ///
+  /// Not used for 3.7 style.
   final Indent type;
 
   /// The total number of spaces of indentation.
   final int spaces;
 
-  _IndentLevel(this.type, this.spaces);
+  /// How many spaces of [spaces] can be collapsed with further indentation.
+  ///
+  /// Only used for 3.7 style.
+  final int collapsible;
+
+  _IndentLevel.v37(this.spaces, this.collapsible) : type = Indent.none;
+
+  _IndentLevel(this.type, this.spaces) : collapsible = 0;
 
   @override
   String toString() => '${type.name}:$spaces';

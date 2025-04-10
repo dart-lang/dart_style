@@ -37,6 +37,14 @@ main() {
       .transform(const LineSplitter())
       .asBroadcastStream();
 }
+<<< 3.7
+main() {
+  var stdErrLines =
+      proc.stderr
+          .transform(utf8.decoder)
+          .transform(const LineSplitter())
+          .asBroadcastStream();
+}
 >>> Don't split return type if comment after metadata annotation.
 class Benchmark {
   @override

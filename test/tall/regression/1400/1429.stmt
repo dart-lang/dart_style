@@ -65,6 +65,10 @@ main() {
     PdfDocumentHelper.getHelper(
       _helper.crossTable!.document!,
     ).catalog.beginSaveList ??= <SavePdfPrimitiveCallback>[];
+<<< 3.7
+    PdfDocumentHelper.getHelper(_helper.crossTable!.document!)
+        .catalog
+        .beginSaveList ??= <SavePdfPrimitiveCallback>[];
 >>> (indent 12)
             PdfSecurityHelper.getHelper(
                   _helper._security!,
@@ -74,6 +78,10 @@ main() {
             PdfSecurityHelper.getHelper(
               _helper._security!,
             ).encryptor.encryptOnlyAttachment = false;
+<<< 3.7
+            PdfSecurityHelper.getHelper(_helper._security!)
+                .encryptor
+                .encryptOnlyAttachment = false;
 >>> (indent 6)
       PdfGridHelper.getHelper(
             PdfGridRowHelper.getHelper(_helper.row!).grid,
@@ -83,6 +91,9 @@ main() {
       PdfGridHelper.getHelper(
         PdfGridRowHelper.getHelper(_helper.row!).grid,
       ).hasColumnSpan = true;
+<<< 3.7
+      PdfGridHelper.getHelper(PdfGridRowHelper.getHelper(_helper.row!).grid)
+          .hasColumnSpan = true;
 >>> (indent 2)
   Widget build(BuildContext context) => CompositionRoot(
     configureOverrides: configureOverrides,
@@ -106,4 +117,17 @@ main() {
         //We need the BuildContext from the Builder here so the children
         //can access the container in the CompositionRoot
         Builder(elided),
+  );
+<<< 3.7
+  Widget build(BuildContext context) => CompositionRoot(
+    configureOverrides: configureOverrides,
+    compose:
+        (builder) =>
+            builder
+              //Adds a singleton CounterController to the container
+              ..addSingleton((container) => CounterController()),
+    child:
+    //We need the BuildContext from the Builder here so the children
+    //can access the container in the CompositionRoot
+    Builder(elided),
   );

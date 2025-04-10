@@ -65,11 +65,22 @@ variable = avian
     .equine
     .feline
     .galline;
+<<< 3.7
+variable =
+    avian
+        .bovine
+        .canine
+        .equine
+        .feline
+        .galline;
 >>> Don't prefer splitting an assignment if there are methods in the chain.
 variable = avian.bovine.canine.equine.feline();
 <<<
 variable = avian.bovine.canine.equine
     .feline();
+<<< 3.7
+variable =
+    avian.bovine.canine.equine.feline();
 >>> Don't prefer splitting an assignment if there are methods in the chain.
 variable = avian.bovine().canine.equine().feline;
 <<<
@@ -78,3 +89,10 @@ variable = avian
     .canine
     .equine()
     .feline;
+<<< 3.7
+variable =
+    avian
+        .bovine()
+        .canine
+        .equine()
+        .feline;

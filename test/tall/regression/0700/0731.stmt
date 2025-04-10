@@ -78,6 +78,15 @@
       );
       return entryList;
     });
+<<< 3.7
+    return Observable(_databaseService.getChatEntries(event)).map((entryList) {
+      entryList.forEach(
+        (entry) =>
+            entry.isFromCurrentUser =
+                (entry.userId == _userManager.currentUser.id),
+      );
+      return entryList;
+    });
 >>> (indent 4)
     return Observable(_databaseService.getChatEntries(
       event,
@@ -96,6 +105,22 @@
           entryList.forEach(
             (entry) => entry.isFromCurrentUser =
                 (entry.userId == _userManager.currentUser.id),
+          );
+          return entryList;
+        })
+        .where((entry) {
+          return entry != null;
+        })
+        .map((entry) {
+          return entry.toString();
+        });
+<<< 3.7
+    return Observable(_databaseService.getChatEntries(event))
+        .map((entryList) {
+          entryList.forEach(
+            (entry) =>
+                entry.isFromCurrentUser =
+                    (entry.userId == _userManager.currentUser.id),
           );
           return entryList;
         })
