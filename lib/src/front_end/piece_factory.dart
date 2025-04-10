@@ -510,29 +510,19 @@ mixin PieceFactory {
         if (forParts.updaters.isNotEmpty) {
           partsList.addCommentsBefore(forParts.updaters.first.beginToken);
 
-          DelimitedListBuilder updaterBuilder;
-          if (isVersion37) {
-            // Create a nested list builder for the updaters so that they can
-            // remain unsplit even while the clauses split.
-            updaterBuilder = DelimitedListBuilder(
-              this,
-              const ListStyle(commas: Commas.nonTrailing),
-            );
-          } else {
-            // Unlike most places in the language, if the updaters split, we
-            // don't want to add a trailing comma. But if the user has preserve
-            // trailing commas on, we should preserve the comma if there is one
-            // but not add one if there isn't and it splits.
-            var style = const ListStyle(commas: Commas.nonTrailing);
-            if (formatter.trailingCommas == TrailingCommas.preserve &&
-                rightParenthesis.hasCommaBefore) {
-              style = const ListStyle(commas: Commas.trailing);
-            }
-
-            // Create a nested list builder for the updaters so that they can
-            // remain unsplit even while the clauses split.
-            updaterBuilder = DelimitedListBuilder(this, style);
+          // Unlike most places in the language, if the updaters split, we
+          // don't want to add a trailing comma. But if the user has preserve
+          // trailing commas on, we should preserve the comma if there is one
+          // but not add one if there isn't and it splits.
+          var style = const ListStyle(commas: Commas.nonTrailing);
+          if (formatter.trailingCommas == TrailingCommas.preserve &&
+              rightParenthesis.hasCommaBefore) {
+            style = const ListStyle(commas: Commas.trailing);
           }
+
+          // Create a nested list builder for the updaters so that they can
+          // remain unsplit even while the clauses split.
+          var updaterBuilder = DelimitedListBuilder(this, style);
 
           forParts.updaters.forEach(updaterBuilder.visit);
 
@@ -1793,7 +1783,6 @@ mixin PieceFactory {
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved.
   bool hasPreservedTrailingComma(Token rightBracket) =>
-      !isVersion37 &&
       formatter.trailingCommas == TrailingCommas.preserve &&
       rightBracket.hasCommaBefore;
 

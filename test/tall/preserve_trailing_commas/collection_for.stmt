@@ -4,7 +4,7 @@
 list = [
   for (x = 1;true;x += 1, x += 2,) e
 ];
-<<< 3.8
+<<<
 list = [
   for (
     x = 1;
@@ -18,7 +18,7 @@ list = [
 list = [
 for (x = 1;true;variable += longValue, another += value) e
 ];
-<<< 3.8
+<<<
 list = [
   for (
     x = 1;

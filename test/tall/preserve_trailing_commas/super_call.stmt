@@ -2,17 +2,17 @@
 (trailing_commas preserve)
 >>> Forces split with trailing comma.
 super(1,);
-<<< 3.8
+<<<
 super(
   1,
 );
 >>> Doesn't force split without trailing comma.
 super(1,2,3);
-<<< 3.8
+<<<
 super(1, 2, 3);
 >>> May still split without trailing comma if doesn't fit.
 super(argument1, argument2, argument3, argument4);
-<<< 3.8
+<<<
 super(
   argument1,
   argument2,
@@ -21,7 +21,7 @@ super(
 );
 >>> Named super call.
 super.named(1,);
-<<< 3.8
+<<<
 super.named(
   1,
 );
