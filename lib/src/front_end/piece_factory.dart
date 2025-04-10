@@ -115,7 +115,7 @@ mixin PieceFactory {
 
   NodeContext get parentContext;
 
-  /// True if the code being formatted is at language version 3.7.
+  /// Whether the code being formatted is at language version 3.7.
   bool get isVersion37 => formatter.languageVersion == Version(3, 7, 0);
 
   void visitNode(AstNode node, NodeContext context);

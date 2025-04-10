@@ -48,6 +48,43 @@ import 'piece.dart';
 ///           argument,
 ///           argument,
 ///         );
+///
+/// A challenge with formatting call chains is how they look inside an
+/// assignment, named argument, or `=>`. We don't a newline in a call chain to
+/// force the surrounding assignment to split, because that's unnecessarily
+/// spread out:
+///
+///     variable =
+///         target
+///             .method()
+///             .another();
+///
+/// It's better as:
+///
+///     variable = target
+///         .method()
+///         .another();
+///
+/// But if the target itself splits, then we do want to force the assignment to
+/// split:
+///
+///     // Worse:
+///     variable = (veryLongTarget +
+///             anotherOperand)
+///         .method()
+///         .another();
+///
+///     // Better:
+///     variable =
+///         (veryLongTarget
+///             anotherOperand)
+///         .method()
+///         .another();
+///
+/// The 3.7 formatter had a limited ability to handle code like the above. In
+/// 3.8 and later, [Shape.headline] lets us express the constraint we want here
+/// directly. Since the logic is different, there are two different [ChainPiece]
+/// subclasses for each.
 abstract base class ChainPiece extends Piece {
   /// Allow newlines in the last (or next-to-last) call but nowhere else.
   static const State _blockFormatTrailingCall = State(1, cost: 0);

@@ -23,7 +23,7 @@ import 'solver.dart';
 /// indentation. When that happens, sharing this cache allows us to reuse that
 /// cached subtree Solution.
 final class SolutionCache {
-  /// True if this cache and all solutions in it use the 3.7 style solver.
+  /// Whether this cache and all solutions in it use the 3.7 style solver.
   final bool isVersion37;
 
   final _cache = <_Key, Solution>{};

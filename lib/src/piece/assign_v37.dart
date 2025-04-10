@@ -6,7 +6,9 @@ import 'piece.dart';
 
 /// A piece for the 3.7 style of an assignment-like construct where an operator
 /// is followed by an expression but where the left side of the operator isn't
-/// also an expression. Used for:
+/// also an expression.
+///
+/// Used for:
 ///
 /// - Assignment (`=`, `+=`, etc.)
 /// - Named arguments (`:`)

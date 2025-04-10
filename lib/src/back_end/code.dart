@@ -135,7 +135,7 @@ final class GroupCode extends Code {
 
 /// A [Code] object for a newline followed by any leading indentation.
 final class _NewlineCode extends Code {
-  /// True if a blank line (two newlines) should be written.
+  /// Whether a blank line (two newlines) should be written.
   final bool _blank;
 
   /// The number of spaces of indentation after this newline.

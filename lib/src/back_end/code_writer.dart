@@ -199,6 +199,35 @@ final class CodeWriter {
   }
 
   /// The 3.7 style of indentation and collapsible indentation tracking.
+  ///
+  /// Splits in if-case and for-in loop headers are tricky to indent gracefully.
+  /// For example, if an infix expression inside the case splits, we don't want
+  /// it to be double indented:
+  ///
+  ///     if (object
+  ///         case veryLongConstant
+  ///                 as VeryLongType) {
+  ///       ;
+  ///     }
+  ///
+  /// That suggests that the [IfCasePiece] shouldn't add indentation for the
+  /// case pattern since the [InfixPiece] inside it will already indent the RHS.
+  ///
+  /// But if the case is a variable pattern that splits, the [VariablePiece]
+  /// does *not* add indentation because in most other places where it occurs,
+  /// that's what we want. If the [IfCasePiece] doesn't indent the pattern, you
+  /// get:
+  ///
+  ///     if (object
+  ///         case VeryLongType
+  ///         veryLongVariable
+  ///         ) {
+  ///       ;
+  ///     }
+  ///
+  /// To deal with this, 3.7 had a notion of "collapsible" indentation. In 3.8
+  /// and later, there is a different mechanism for merging indentation kinds.
+  /// This function implements the former.
   void _pushIndentV37(Indent indent, {bool canCollapse = false}) {
     var parentIndent = _indentStack.last.spaces;
     var parentCollapse = _indentStack.last.collapsible;
