@@ -1,4 +1,8 @@
-The dart_style package defines an opinionated automated formatter for Dart code.
+The dart_style package defines an opinionated, [minimally configurable][config]
+automated formatter for Dart code.
+
+[config]: https://github.com/dart-lang/dart_style/wiki/Configuration
+
 It replaces the whitespace in your program with what it deems to be the
 best formatting for it. It also makes minor changes around non-semantic
 punctuation like trailing commas and brackets in parameter lists.
@@ -16,7 +20,6 @@ code.
 The formatter turns code like this:
 
 ```dart
-// BEFORE formatting
 process = await Process.start(path.join(p.pubCacheBinPath,Platform.isWindows
 ?'${command.first}.bat':command.first,),[...command.sublist(1),'web:0',
 // Allow for binding to a random available port.
@@ -28,7 +31,6 @@ Platform.environment['PATH']!,},);
 into:
 
 ```dart
-// AFTER formatting
 process = await Process.start(
   path.join(
     p.pubCacheBinPath,
@@ -105,7 +107,9 @@ Basic usage looks like this:
 import 'package:dart_style/dart_style.dart';
 
 main() {
-  final formatter = DartFormatter();
+  final formatter = DartFormatter(
+    languageVersion: DartFormatter.latestLanguageVersion,
+  );
 
   try {
     print(formatter.format("""
