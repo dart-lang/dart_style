@@ -1,0 +1,61 @@
+>>>
+class C {
+  @override
+  Widget build(BuildContext context) {
+    return PlatformProvider(
+      builder:
+          (context) => PlatformTheme(
+            builder:
+                (context) => PlatformApp(
+                  localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+                    DefaultMaterialLocalizations.delegate,
+                    DefaultWidgetsLocalizations.delegate,
+                    DefaultCupertinoLocalizations.delegate,
+                  ],
+                  title: 'Flutter Platform Widgets',
+                  home: MyHomePage(title: 'Flutter Platform Widgets Demo'),
+                ),
+          ),
+    );
+  }
+}
+<<<
+class C {
+  @override
+  Widget build(BuildContext context) {
+    return PlatformProvider(
+      builder: (context) => PlatformTheme(
+        builder: (context) => PlatformApp(
+          localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+            DefaultMaterialLocalizations.delegate,
+            DefaultWidgetsLocalizations.delegate,
+            DefaultCupertinoLocalizations.delegate,
+          ],
+          title: 'Flutter Platform Widgets',
+          home: MyHomePage(title: 'Flutter Platform Widgets Demo'),
+        ),
+      ),
+    );
+  }
+}
+<<< 3.7
+class C {
+  @override
+  Widget build(BuildContext context) {
+    return PlatformProvider(
+      builder:
+          (context) => PlatformTheme(
+            builder:
+                (context) => PlatformApp(
+                  localizationsDelegates: <LocalizationsDelegate<dynamic>>[
+                    DefaultMaterialLocalizations.delegate,
+                    DefaultWidgetsLocalizations.delegate,
+                    DefaultCupertinoLocalizations.delegate,
+                  ],
+                  title: 'Flutter Platform Widgets',
+                  home: MyHomePage(title: 'Flutter Platform Widgets Demo'),
+                ),
+          ),
+    );
+  }
+}
