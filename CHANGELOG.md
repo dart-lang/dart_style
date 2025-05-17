@@ -1,4 +1,7 @@
-## 3.1.0-wip
+## 3.1.0
+
+This release contains a fairly large number of style changes in response to
+feedback we got from shipping the new tall style formatter.
 
 ### Features
 
