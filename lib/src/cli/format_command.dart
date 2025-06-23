@@ -25,7 +25,10 @@ final class FormatCommand extends Command<int> {
   String get invocation =>
       '${runner!.executableName} $name [options...] <files or directories...>';
 
-  FormatCommand({bool verbose = false}) {
+  @override
+  final String category;
+
+  FormatCommand({bool verbose = false, this.category = ''}) {
     argParser.addFlag(
       'verbose',
       abbr: 'v',
