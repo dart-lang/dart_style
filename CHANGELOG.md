@@ -1,3 +1,7 @@
+## 3.1.1-wip
+
+* Update to latest analyzer and enable language version 3.9.
+
 ## 3.1.0
 
 This release contains a fairly large number of style changes in response to
