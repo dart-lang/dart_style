@@ -60,7 +60,7 @@ Future<void> major() async {
 /// 2.  Run this task:
 ///
 ///     ```
-///     dart run grinder bump
+///     dart run grinder ship
 ///     ```
 ///
 /// 3.  Commit the change to a branch, push it to GitHub, and review and merge
