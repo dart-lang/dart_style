@@ -14,26 +14,19 @@ import 'package:path/path.dart' as p;
 /// name can be a directory to update all of the tests in that directory or a
 /// file path to update the tests in that file.
 ///
-/// All paths are relative to the "test" directory.
+/// All paths are relative to the package root directory.
 ///
 /// Note: This script can't correctly update any tests that contain the special
 /// "×XX" Unicode markers or selections.
 // TODO(rnystrom): Support updating individual tests within a file.
 void main(List<String> arguments) async {
-  // TODO(rnystrom): Tests now support being run against multiple versions with
-  // test expectations for different versions. This script hasn't been updated
-  // to support that yet.
-  print('The update script isn\'t working right now.');
-  return;
-
-  // ignore: dead_code
   if (arguments.isEmpty) {
     print('Usage: update_tests.dart <tests...>');
     exit(1);
   }
 
   for (var argument in arguments) {
-    var path = p.join(await findTestDirectory(), argument);
+    var path = p.join(await findPackageDirectory(), argument);
     if (Directory(path).existsSync()) {
       await _updateDirectory(path);
     } else if (File(path).existsSync()) {
@@ -103,20 +96,14 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   _totalTests += testFile.tests.length;
 
+  // Write the tests.
   for (var formatTest in testFile.tests) {
-    var formatter = testFile.formatterForTest(formatTest);
+    var defaultVersion =
+        testFile.isTall
+            ? DartFormatter.latestLanguageVersion
+            : DartFormatter.latestShortStyleLanguageVersion;
 
-    var actual = formatter.formatSource(formatTest.input.code);
-
-    // The test files always put a newline at the end of the expectation.
-    // Statements from the formatter (correctly) don't have that, so add
-    // one to line up with the expected result.
-    var actualText = actual.text;
-    if (!testFile.isCompilationUnit) actualText += '\n';
-
-    // Insert a newline between each test, but not after the last.
-    if (formatTest != testFile.tests.first) buffer.writeln();
-
+    // Write the test input.
     var description = [
       ..._optionStrings(formatTest.options),
       formatTest.input.description,
@@ -126,19 +113,37 @@ Future<void> _updateTestFile(TestFile testFile) async {
     _writeComments(buffer, formatTest.input.comments);
     buffer.write(formatTest.input.code.text);
 
-    buffer.writeln('<<< ${formatTest.outputs.first.description}'.trim());
-    _writeComments(buffer, formatTest.outputs.first.comments);
+    // Write the test outputs.
+    var changed = false;
+    for (var output in formatTest.outputs) {
+      var outputDescription = [
+        // Include the version in the description if the output has one.
+        if (output.version case var version?)
+          '${version.major}.${version.minor}',
+        output.description,
+      ].join(' ');
 
-    var output = actual.text;
+      buffer.writeln('<<< $outputDescription'.trim());
+      _writeComments(buffer, output.comments);
 
-    // Remove the trailing newline so that we don't end up with an extra
-    // newline at the end of the test file.
-    output = output.trimRight();
-    buffer.write(output);
+      var formatter = testFile.formatterForTest(
+        formatTest,
+        output.version ?? defaultVersion,
+      );
 
-    // Fail with an explicit message because it's easier to read than
-    // the matcher output.
-    if (actualText != formatTest.outputs.first.code.text) {
+      var actual = formatter.formatSource(formatTest.input.code);
+
+      buffer.write(actual.text);
+
+      // When formatting a statement, the formatter correctly doesn't add a
+      // trailing newline, but we need one to separate this output from the
+      // next test.
+      if (!testFile.isCompilationUnit) buffer.writeln();
+
+      if (actual.text != output.code.text) changed = true;
+    }
+
+    if (changed) {
       print('Updated ${testFile.path} ${formatTest.label}');
       _changedTests++;
     }
