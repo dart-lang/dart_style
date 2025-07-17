@@ -4,12 +4,6 @@ var xsrfValue = _urlIsSameOrigin(url) ?
     xsrfCookieName :
     defaults.xsrfCookieName] :
     null;
-<<<
-var xsrfValue = _urlIsSameOrigin(url)
-    ? _cookies[xsrfCookieName != null
-          ? xsrfCookieName
-          : defaults.xsrfCookieName]
-    : null;
 <<< 3.7
 var xsrfValue =
     _urlIsSameOrigin(url)
@@ -17,19 +11,18 @@ var xsrfValue =
             ? xsrfCookieName
             : defaults.xsrfCookieName]
         : null;
+<<<
+var xsrfValue = _urlIsSameOrigin(url)
+    ? _cookies[xsrfCookieName != null
+          ? xsrfCookieName
+          : defaults.xsrfCookieName]
+    : null;
 >>>
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
       : _typeCounts = inheritStreams == null ?
       new HashMap<String, int>() :
       new HashMap.from(inheritStreams._typeCounts);
-}
-<<<
-class _Streams {
-  _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
-    : _typeCounts = inheritStreams == null
-          ? new HashMap<String, int>()
-          : new HashMap.from(inheritStreams._typeCounts);
 }
 <<< 3.7
 class _Streams {
@@ -38,4 +31,11 @@ class _Streams {
           inheritStreams == null
               ? new HashMap<String, int>()
               : new HashMap.from(inheritStreams._typeCounts);
+}
+<<<
+class _Streams {
+  _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
+    : _typeCounts = inheritStreams == null
+          ? new HashMap<String, int>()
+          : new HashMap.from(inheritStreams._typeCounts);
 }

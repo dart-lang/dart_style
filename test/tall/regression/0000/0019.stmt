@@ -19,19 +19,19 @@ return new _Concat(
 >>> (indent 4)
     format.maximumFractionDigits = decimalPos >= 0 ? totalDigits - decimalPos :
         0;
+<<< 3.7
+    format.maximumFractionDigits =
+        decimalPos >= 0 ? totalDigits - decimalPos : 0;
 <<<
     format.maximumFractionDigits = decimalPos >= 0
         ? totalDigits - decimalPos
         : 0;
-<<< 3.7
-    format.maximumFractionDigits =
-        decimalPos >= 0 ? totalDigits - decimalPos : 0;
 >>> (indent 6)
       var libname = _builtins.containsKey(package) ? _builtins[package] : package;
+<<< 3.7
+      var libname =
+          _builtins.containsKey(package) ? _builtins[package] : package;
 <<<
       var libname = _builtins.containsKey(package)
           ? _builtins[package]
           : package;
-<<< 3.7
-      var libname =
-          _builtins.containsKey(package) ? _builtins[package] : package;

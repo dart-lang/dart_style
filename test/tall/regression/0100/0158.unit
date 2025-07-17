@@ -6,6 +6,15 @@ void foo() {
     }
   }
 }
+<<< 3.7
+void foo() {
+  if (bar) {
+    if (baz) {
+      _sources[uri] =
+          src = new _MockSdkSource(uri, 'library dart.${uri.path};');
+    }
+  }
+}
 <<<
 void foo() {
   if (bar) {
@@ -14,15 +23,6 @@ void foo() {
         uri,
         'library dart.${uri.path};',
       );
-    }
-  }
-}
-<<< 3.7
-void foo() {
-  if (bar) {
-    if (baz) {
-      _sources[uri] =
-          src = new _MockSdkSource(uri, 'library dart.${uri.path};');
     }
   }
 }

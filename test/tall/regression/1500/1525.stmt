@@ -29,14 +29,6 @@ map((innerMap) => innerMap..addAll({
   'something': someMap['something'],
   //...
 }));
-<<<
-map(
-  (innerMap) => innerMap
-    ..addAll({
-      'something': someMap['something'],
-      //...
-    }),
-);
 <<< 3.7
 map(
   (innerMap) =>
@@ -44,4 +36,12 @@ map(
         'something': someMap['something'],
         //...
       }),
+);
+<<<
+map(
+  (innerMap) => innerMap
+    ..addAll({
+      'something': someMap['something'],
+      //...
+    }),
 );

@@ -18,23 +18,6 @@ void _showDialog(Widget child, BuildContext context) {
         ),
   );
 }
-<<<
-void _showDialog(Widget child, BuildContext context) {
-  showCupertinoModalPopup<void>(
-    context: context,
-    builder: (BuildContext context) => Container(
-      height: 216,
-      padding: const EdgeInsets.only(top: 6.0),
-      // The Bottom margin is provided to align the popup above the system
-      // navigation bar.
-      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      // Provide a background color for the popup.
-      color: CupertinoColors.systemBackground.resolveFrom(context),
-      // Use a SafeArea widget to avoid system overlaps.
-      child: SafeArea(top: false, child: child),
-    ),
-  );
-}
 <<< 3.7
 void _showDialog(Widget child, BuildContext context) {
   showCupertinoModalPopup<void>(
@@ -55,6 +38,23 @@ void _showDialog(Widget child, BuildContext context) {
         ),
   );
 }
+<<<
+void _showDialog(Widget child, BuildContext context) {
+  showCupertinoModalPopup<void>(
+    context: context,
+    builder: (BuildContext context) => Container(
+      height: 216,
+      padding: const EdgeInsets.only(top: 6.0),
+      // The Bottom margin is provided to align the popup above the system
+      // navigation bar.
+      margin: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      // Provide a background color for the popup.
+      color: CupertinoColors.systemBackground.resolveFrom(context),
+      // Use a SafeArea widget to avoid system overlaps.
+      child: SafeArea(top: false, child: child),
+    ),
+  );
+}
 >>>
 void _showDialog(Widget child, BuildContext context) {
   showCupertinoModalPopup<void>(
@@ -78,6 +78,31 @@ void _showDialog(Widget child, BuildContext context) {
   );
 }
 >>>
+Widget example1() {
+  return ValueListenableBuilder(
+    valueListenable: userInfoSource,
+    builder:
+        (context, userInfo, _) => ListBody(
+          children: [
+            Text('Hello ${userInfo.name}'),
+            Text('Your email is ${userInfo.email}'),
+          ],
+        ),
+  );
+}
+
+Widget example2() {
+  return LayoutBuilder(
+    builder:
+        (context, constraints) => SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: PotentiallyTallWidget(),
+          ),
+        ),
+  );
+}
+<<< 3.7
 Widget example1() {
   return ValueListenableBuilder(
     valueListenable: userInfoSource,
@@ -123,30 +148,5 @@ Widget example2() {
         child: PotentiallyTallWidget(),
       ),
     ),
-  );
-}
-<<< 3.7
-Widget example1() {
-  return ValueListenableBuilder(
-    valueListenable: userInfoSource,
-    builder:
-        (context, userInfo, _) => ListBody(
-          children: [
-            Text('Hello ${userInfo.name}'),
-            Text('Your email is ${userInfo.email}'),
-          ],
-        ),
-  );
-}
-
-Widget example2() {
-  return LayoutBuilder(
-    builder:
-        (context, constraints) => SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(minHeight: constraints.maxHeight),
-            child: PotentiallyTallWidget(),
-          ),
-        ),
   );
 }

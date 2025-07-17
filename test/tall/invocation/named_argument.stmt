@@ -63,6 +63,15 @@ function(
 );
 >>> No block-like formatting for a block-bodied function with split parameters.
 function(name: (longParameter, anotherLongParameter) { body; });
+<<< 3.7
+function(
+  name: (
+    longParameter,
+    anotherLongParameter,
+  ) {
+    body;
+  },
+);
 <<<
 function(
   name:
@@ -73,37 +82,20 @@ function(
         body;
       },
 );
-<<< 3.7
-function(
-  name: (
-    longParameter,
-    anotherLongParameter,
-  ) {
-    body;
-  },
-);
 >>> Headline formatting for a split `=>` function.
 function(name: (param, another) => veryLongBody);
-<<<
-function(
-  name: (param, another) =>
-      veryLongBody,
-);
 <<< 3.7
 function(
   name:
       (param, another) => veryLongBody,
 );
->>> Block-like formatting of a `=>` body containing a function call.
-function(name: (param) => another(argument1, argument2, argument3));
 <<<
 function(
-  name: (param) => another(
-    argument1,
-    argument2,
-    argument3,
-  ),
+  name: (param, another) =>
+      veryLongBody,
 );
+>>> Block-like formatting of a `=>` body containing a function call.
+function(name: (param) => another(argument1, argument2, argument3));
 <<< 3.7
 function(
   name:
@@ -112,4 +104,12 @@ function(
         argument2,
         argument3,
       ),
+);
+<<<
+function(
+  name: (param) => another(
+    argument1,
+    argument2,
+    argument3,
+  ),
 );

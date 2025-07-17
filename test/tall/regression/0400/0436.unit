@@ -6,15 +6,6 @@ class Foo {
         null ? interfaceTypeContext.element.typeParameters : null;
   }
 }
-<<<
-class Foo {
-  void main() {
-    List<TypeParameterElement> typeParameterElements =
-        interfaceTypeContext.element != null
-        ? interfaceTypeContext.element.typeParameters
-        : null;
-  }
-}
 <<< 3.7
 class Foo {
   void main() {
@@ -22,5 +13,14 @@ class Foo {
         interfaceTypeContext.element != null
             ? interfaceTypeContext.element.typeParameters
             : null;
+  }
+}
+<<<
+class Foo {
+  void main() {
+    List<TypeParameterElement> typeParameterElements =
+        interfaceTypeContext.element != null
+        ? interfaceTypeContext.element.typeParameters
+        : null;
   }
 }

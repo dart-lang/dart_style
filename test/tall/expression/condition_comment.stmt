@@ -29,17 +29,17 @@ cond // c
 >>> Line comment after `?`.
 cond ? // c
 1 : 2;
-<<<
-### Looks weird, but users generally won't put comments here.
-cond
-    ? // c
-      1
-    : 2;
 <<< 3.7
 ### Looks weird, but users generally won't put comments here.
 cond
     ? // c
     1
+    : 2;
+<<<
+### Looks weird, but users generally won't put comments here.
+cond
+    ? // c
+      1
     : 2;
 >>> Line comment before `:`.
 cond ? 1 // c
@@ -51,33 +51,33 @@ cond
 >>> Line comment after `:`.
 cond ? 1 : // c
 2;
-<<<
-### Looks weird, but users generally won't put comments here.
-cond
-    ? 1
-    : // c
-      2;
 <<< 3.7
 ### Looks weird, but users generally won't put comments here.
 cond
     ? 1
     : // c
     2;
->>> Line comment after else.
-cond ? 1 : 2 // c
-;
 <<<
 ### Looks weird, but users generally won't put comments here.
 cond
     ? 1
-    : 2 // c
-      ;
+    : // c
+      2;
+>>> Line comment after else.
+cond ? 1 : 2 // c
+;
 <<< 3.7
 ### Looks weird, but users generally won't put comments here.
 cond
     ? 1
     : 2 // c
     ;
+<<<
+### Looks weird, but users generally won't put comments here.
+cond
+    ? 1
+    : 2 // c
+      ;
 >>> Don't split with leading line comment before first operand.
 value =
     // comment

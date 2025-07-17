@@ -17,24 +17,6 @@ final x =
           eeeeeeeeeeeeeeeeeee: 3,
           ffffffffffffffffff: 4,
         );
-<<<
-final x = true
-    ? foo(
-        aaaaaaaaaaaaaa: 4,
-        bbbbbbbbbbbbbbb: 6,
-        ccccccccccccccc: 0,
-        dddddddddddddddddd: 3,
-        eeeeeeeeeeeeeeeeeee: 3,
-        ffffffffffffffffff: 1,
-      )
-    : foo(
-        aaaaaaaaaaaaaa: 1,
-        bbbbbbbbbbbbbbb: 2,
-        ccccccccccccccc: 0,
-        dddddddddddddddddd: 6,
-        eeeeeeeeeeeeeeeeeee: 3,
-        ffffffffffffffffff: 4,
-      );
 <<< 3.7
 final x =
     true
@@ -54,3 +36,21 @@ final x =
           eeeeeeeeeeeeeeeeeee: 3,
           ffffffffffffffffff: 4,
         );
+<<<
+final x = true
+    ? foo(
+        aaaaaaaaaaaaaa: 4,
+        bbbbbbbbbbbbbbb: 6,
+        ccccccccccccccc: 0,
+        dddddddddddddddddd: 3,
+        eeeeeeeeeeeeeeeeeee: 3,
+        ffffffffffffffffff: 1,
+      )
+    : foo(
+        aaaaaaaaaaaaaa: 1,
+        bbbbbbbbbbbbbbb: 2,
+        ccccccccccccccc: 0,
+        dddddddddddddddddd: 6,
+        eeeeeeeeeeeeeeeeeee: 3,
+        ffffffffffffffffff: 4,
+      );

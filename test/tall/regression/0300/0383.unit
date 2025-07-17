@@ -3,13 +3,6 @@ class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers]) : publishers = publishers !=
           null ? publishers : defaultPublishers.add(unittestPublisher);
 }
-<<<
-class MummyMatchers {
-  MummyMatchers([List<ResultPublisher> publishers])
-    : publishers = publishers != null
-          ? publishers
-          : defaultPublishers.add(unittestPublisher);
-}
 <<< 3.7
 class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers])
@@ -17,4 +10,11 @@ class MummyMatchers {
           publishers != null
               ? publishers
               : defaultPublishers.add(unittestPublisher);
+}
+<<<
+class MummyMatchers {
+  MummyMatchers([List<ResultPublisher> publishers])
+    : publishers = publishers != null
+          ? publishers
+          : defaultPublishers.add(unittestPublisher);
 }

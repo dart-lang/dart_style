@@ -4,13 +4,6 @@
         : new Map.fromIterable(
             something.field.where((i) => i is SomeClassGoesHere),
             key: (i) => i.someField.name);
-<<<
-    var initializers = something == null
-        ? {}
-        : new Map.fromIterable(
-            something.field.where((i) => i is SomeClassGoesHere),
-            key: (i) => i.someField.name,
-          );
 <<< 3.7
     var initializers =
         something == null
@@ -19,20 +12,17 @@
               something.field.where((i) => i is SomeClassGoesHere),
               key: (i) => i.someField.name,
             );
+<<<
+    var initializers = something == null
+        ? {}
+        : new Map.fromIterable(
+            something.field.where((i) => i is SomeClassGoesHere),
+            key: (i) => i.someField.name,
+          );
 >>> (indent 4)
     var cg = outputDart ? new DartGenerator(
             outputDir, uri, results.libraries, results.rules, formatOutput) :
         new JSGenerator(outputDir, uri, results.libraries, results.rules);
-<<<
-    var cg = outputDart
-        ? new DartGenerator(
-            outputDir,
-            uri,
-            results.libraries,
-            results.rules,
-            formatOutput,
-          )
-        : new JSGenerator(outputDir, uri, results.libraries, results.rules);
 <<< 3.7
     var cg =
         outputDart
@@ -44,3 +34,13 @@
               formatOutput,
             )
             : new JSGenerator(outputDir, uri, results.libraries, results.rules);
+<<<
+    var cg = outputDart
+        ? new DartGenerator(
+            outputDir,
+            uri,
+            results.libraries,
+            results.rules,
+            formatOutput,
+          )
+        : new JSGenerator(outputDir, uri, results.libraries, results.rules);

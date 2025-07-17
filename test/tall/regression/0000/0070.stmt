@@ -1,12 +1,6 @@
 >>> (indent 2)
   bool isSdkDir(String dirname) => new File(
       path.join(dirname, 'lib', '_internal', 'libraries.dart')).existsSync();
-<<<
-### TODO(rnystrom): Would look better if the constructor arguments didn't split
-### and we split at `.` instead.
-  bool isSdkDir(String dirname) => new File(
-    path.join(dirname, 'lib', '_internal', 'libraries.dart'),
-  ).existsSync();
 <<< 3.7
 ### TODO(rnystrom): Would look better if the constructor arguments didn't split
 ### and we split at `.` instead.
@@ -14,3 +8,9 @@
       new File(
         path.join(dirname, 'lib', '_internal', 'libraries.dart'),
       ).existsSync();
+<<<
+### TODO(rnystrom): Would look better if the constructor arguments didn't split
+### and we split at `.` instead.
+  bool isSdkDir(String dirname) => new File(
+    path.join(dirname, 'lib', '_internal', 'libraries.dart'),
+  ).existsSync();

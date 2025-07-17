@@ -160,22 +160,16 @@ typedef Generic<T, R> =
     );
 >>> Allow block-formatting a record typedef.
 typedef SomeType = (int first, int second);
-<<<
-typedef SomeType = (
-  int first,
-  int second,
-);
 <<< 3.7
 typedef SomeType =
     (int first, int second);
->>> Don't allow block-formatting a record typedef.
-typedef SomeType = (int first, int second, String third);
 <<<
 typedef SomeType = (
   int first,
   int second,
-  String third,
 );
+>>> Don't allow block-formatting a record typedef.
+typedef SomeType = (int first, int second, String third);
 <<< 3.7
 typedef SomeType =
     (
@@ -183,3 +177,9 @@ typedef SomeType =
       int second,
       String third,
     );
+<<<
+typedef SomeType = (
+  int first,
+  int second,
+  String third,
+);

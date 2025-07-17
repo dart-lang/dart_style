@@ -4433,40 +4433,6 @@ class Aaa {
             ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
             ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
 }
-<<<
-class Aaa {
-  @AaaaAaaaaaaaaa()
-  static AaaaaAaaaAaaaa aaaaaaaaaaa(
-    AaaaaAaaaAaaaa aaaaa,
-    AaaaaAaaaAaaaa aaaaa,
-    aaaaaa aaaaaaaAaaaaa,
-  ) => new AaaaaAaaaAaaaa()
-    ..aaaaAaaaaa = new Aaa64(
-      (aaaaa.aaaaAaaaaa.aaAaaaaa() +
-              ((aaaaa.aaaaAaaaaa - aaaaa.aaaaAaaaaa).aaAaaaaa() *
-                  aaaaaaaAaaaaa))
-          .aaAaa(),
-    )
-    ..aaaAaaAaaaaa = new Aaa64(
-      (aaaaa.aaaAaaAaaaaa.aaAaaaaa() +
-              ((aaaaa.aaaAaaAaaaaa - aaaaa.aaaAaaAaaaaa).aaAaaaaa() *
-                  aaaaaaaAaaaaa))
-          .aaAaa(),
-    )
-    ..aaaaaa = aaaaa.aaaaaa + ((aaaaa.aaaaaa - aaaaa.aaaaaa) * aaaaaaaAaaaaa)
-    ..aaaaaaaaaaa =
-        aaaaa.aaaaaaaaaaa +
-        ((aaaaa.aaaaaaaaaaa - aaaaa.aaaaaaaaaaa) * aaaaaaaAaaaaa)
-    ..aaaaAaaaa =
-        aaaaa.aaaaAaaaa + ((aaaaa.aaaaAaaaa - aaaaa.aaaaAaaaa) * aaaaaaaAaaaaa)
-    ..aaaaaaaaAaaaaaaaaaa =
-        aaaaa.aaaaaaaaAaaaaaaaaaa +
-        ((aaaaa.aaaaaaaaAaaaaaaaaaa - aaaaa.aaaaaaaaAaaaaaaaaaa) *
-            aaaaaaaAaaaaa)
-    ..aaaaa = aaaaa.aaaaa + ((aaaaa.aaaaa - aaaaa.aaaaa) * aaaaaaaAaaaaa)
-    ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
-    ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
-}
 <<< 3.7
 class Aaa {
   @AaaaAaaaaaaaaa()
@@ -4503,6 +4469,40 @@ class Aaa {
         ..aaaaa = aaaaa.aaaaa + ((aaaaa.aaaaa - aaaaa.aaaaa) * aaaaaaaAaaaaa)
         ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
         ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
+}
+<<<
+class Aaa {
+  @AaaaAaaaaaaaaa()
+  static AaaaaAaaaAaaaa aaaaaaaaaaa(
+    AaaaaAaaaAaaaa aaaaa,
+    AaaaaAaaaAaaaa aaaaa,
+    aaaaaa aaaaaaaAaaaaa,
+  ) => new AaaaaAaaaAaaaa()
+    ..aaaaAaaaaa = new Aaa64(
+      (aaaaa.aaaaAaaaaa.aaAaaaaa() +
+              ((aaaaa.aaaaAaaaaa - aaaaa.aaaaAaaaaa).aaAaaaaa() *
+                  aaaaaaaAaaaaa))
+          .aaAaa(),
+    )
+    ..aaaAaaAaaaaa = new Aaa64(
+      (aaaaa.aaaAaaAaaaaa.aaAaaaaa() +
+              ((aaaaa.aaaAaaAaaaaa - aaaaa.aaaAaaAaaaaa).aaAaaaaa() *
+                  aaaaaaaAaaaaa))
+          .aaAaa(),
+    )
+    ..aaaaaa = aaaaa.aaaaaa + ((aaaaa.aaaaaa - aaaaa.aaaaaa) * aaaaaaaAaaaaa)
+    ..aaaaaaaaaaa =
+        aaaaa.aaaaaaaaaaa +
+        ((aaaaa.aaaaaaaaaaa - aaaaa.aaaaaaaaaaa) * aaaaaaaAaaaaa)
+    ..aaaaAaaaa =
+        aaaaa.aaaaAaaaa + ((aaaaa.aaaaAaaaa - aaaaa.aaaaAaaaa) * aaaaaaaAaaaaa)
+    ..aaaaaaaaAaaaaaaaaaa =
+        aaaaa.aaaaaaaaAaaaaaaaaaa +
+        ((aaaaa.aaaaaaaaAaaaaaaaaaa - aaaaa.aaaaaaaaAaaaaaaaaaa) *
+            aaaaaaaAaaaaa)
+    ..aaaaa = aaaaa.aaaaa + ((aaaaa.aaaaa - aaaaa.aaaaa) * aaaaaaaAaaaaa)
+    ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
+    ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
 }
 >>>
 main() {

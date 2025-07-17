@@ -2,14 +2,6 @@
 var overlapping = _directories.keys.where((directory) =>
     path.isWithin(directory, rootDirectory) ||
     path.isWithin(rootDirectory, directory)).toList();
-<<<
-var overlapping = _directories.keys
-    .where(
-      (directory) =>
-          path.isWithin(directory, rootDirectory) ||
-          path.isWithin(rootDirectory, directory),
-    )
-    .toList();
 <<< 3.7
 var overlapping =
     _directories.keys
@@ -19,6 +11,14 @@ var overlapping =
               path.isWithin(rootDirectory, directory),
         )
         .toList();
+<<<
+var overlapping = _directories.keys
+    .where(
+      (directory) =>
+          path.isWithin(directory, rootDirectory) ||
+          path.isWithin(rootDirectory, directory),
+    )
+    .toList();
 >>>
 return isLoopback(server.address.host) == isLoopback(url.host) ||
     server.address.host == url.host;
