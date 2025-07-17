@@ -47,7 +47,7 @@
         .then((_) {
           _logger.info("Let's eat!");
         });
-<<<
+<<< 3.8
     return doughnutFryer
         .start()
         .then((_) => _frostingGlazer.start())

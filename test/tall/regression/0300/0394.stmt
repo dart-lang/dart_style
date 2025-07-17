@@ -38,7 +38,7 @@ return $.Div(
     $.Footer(inner: [$.P(id: "notes", inner: "${seeds} seeds")]),
   ],
 );
-<<<
+<<< 3.8
 return $.Div(
   inner: [
     $.Div(

@@ -47,7 +47,7 @@ variable = target..method(argument1, argument2);
 variable =
     target
       ..method(argument1, argument2);
-<<<
+<<< 3.8
 variable = target
   ..method(argument1, argument2);
 >>> Don't treat cascade as block-shaped even if the argument list splits.
@@ -59,7 +59,7 @@ variable =
       argument2,
       argument3,
     );
-<<<
+<<< 3.8
 variable = target
   ..method(
     argument1,

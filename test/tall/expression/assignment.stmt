@@ -89,7 +89,7 @@ outer =
       element3,
       element4,
     ];
-<<<
+<<< 3.8
 outer = inner = [
   element1,
   element2,
@@ -104,7 +104,7 @@ variable =
         .method()
         .another()
         .third();
-<<<
+<<< 3.8
 variable = (tar + get)
     .method()
     .another()
@@ -126,7 +126,7 @@ variable =
         .method()
         .another()
         .third();
-<<<
+<<< 3.8
 variable = (tar + get).prop.erty
     .method()
     .another()

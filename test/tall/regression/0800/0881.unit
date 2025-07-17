@@ -67,7 +67,7 @@ void main() async {
     });
   });
 }
-<<<
+<<< 3.8
 void main() async {
   group('my group', () {
     setUp(() async {
@@ -165,7 +165,7 @@ aaaa() {
     }
   }
 }
-<<<
+<<< 3.8
 aaaa() {
   {
     {

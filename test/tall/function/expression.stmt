@@ -37,7 +37,7 @@ function = (
 ) {
   print('42');
 };
-<<<
+<<< 3.8
 function =
     (
       int firstArgument,

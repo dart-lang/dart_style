@@ -38,7 +38,7 @@ main() {
           .transform(const LineSplitter())
           .asBroadcastStream();
 }
-<<<
+<<< 3.8
 main() {
   var stdErrLines = proc.stderr
       .transform(utf8.decoder)

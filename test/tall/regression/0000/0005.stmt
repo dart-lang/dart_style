@@ -11,7 +11,7 @@ var overlapping =
               path.isWithin(rootDirectory, directory),
         )
         .toList();
-<<<
+<<< 3.8
 var overlapping = _directories.keys
     .where(
       (directory) =>

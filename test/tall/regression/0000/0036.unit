@@ -12,7 +12,7 @@ String prologue(String locale) => """
  * This is a library that provides messages for a $locale locale. All the
 ...
 """;
-<<<
+<<< 3.8
 String prologue(String locale) =>
     """
 /**

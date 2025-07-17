@@ -119,7 +119,7 @@ void main(List argv) {
             results.rules,
           );
 }
-<<<
+<<< 3.8
 void main(List argv) {
   // This is ok (it moves the ? and : to the ends of the previous lines)
   var cg = outputDart

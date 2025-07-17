@@ -24,7 +24,7 @@ test() {
           )
           .toList();
 }
-<<<
+<<< 3.8
 test() {
   var fooService, ids, objectName, results;
 

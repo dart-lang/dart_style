@@ -131,7 +131,7 @@ class Compiler {
     ;
   }
 }
-<<<
+<<< 3.8
 class Compiler {
   Compiler()
     : this.options = options,

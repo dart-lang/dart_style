@@ -15,7 +15,7 @@ void foo() {
     }
   }
 }
-<<<
+<<< 3.8
 void foo() {
   if (bar) {
     if (baz) {

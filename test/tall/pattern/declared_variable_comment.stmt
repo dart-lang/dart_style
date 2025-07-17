@@ -16,7 +16,7 @@ if (obj case var // c
     x) {
   ;
 }
-<<<
+<<< 3.8
 if (obj
     case var // c
         x) {
@@ -51,7 +51,7 @@ if (obj case final // c
     thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }
-<<<
+<<< 3.8
 if (obj
     case final // c
         thisIsReallyQuiteAVeryLongVariableName) {

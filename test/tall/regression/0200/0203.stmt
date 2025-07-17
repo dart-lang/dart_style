@@ -7,7 +7,7 @@ var constructedRequest =
     new Request()
       ..campaignId =
           (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
-<<<
+<<< 3.8
 var constructedRequest = new Request()
   ..campaignId = (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
 >>> (indent 2)
@@ -19,7 +19,7 @@ var constructedRequest = new Request()
       new Request()
         ..campaignId =
             (rollup.campaignId == null ? new Int64(0) : rollup.campaignId);
-<<<
+<<< 3.8
   var constructedRequest = new Request()
     ..campaignId = (rollup.campaignId == null
         ? new Int64(0)

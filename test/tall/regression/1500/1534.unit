@@ -24,7 +24,7 @@ void main() {
             : importCache.sourceMapUrl(Uri.parse(url)).toString(),
   );
 }
-<<<
+<<< 3.8
 void main() {
   mapInPlace(
     resultSourceMap.urls,

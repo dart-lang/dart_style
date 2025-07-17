@@ -18,7 +18,7 @@ class C {
  Its scent can fill a room for days. And all this before you\'ve even cooked it.
 '''.replaceAll('\n', '');
 }
-<<<
+<<< 3.8
 class C {
   static final String paragraph1 =
       '''Have you ever held a quince? It\'s strange;

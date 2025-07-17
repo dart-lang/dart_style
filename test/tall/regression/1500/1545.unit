@@ -38,7 +38,7 @@ void _showDialog(Widget child, BuildContext context) {
         ),
   );
 }
-<<<
+<<< 3.8
 void _showDialog(Widget child, BuildContext context) {
   showCupertinoModalPopup<void>(
     context: context,
@@ -127,7 +127,7 @@ Widget example2() {
         ),
   );
 }
-<<<
+<<< 3.8
 Widget example1() {
   return ValueListenableBuilder(
     valueListenable: userInfoSource,

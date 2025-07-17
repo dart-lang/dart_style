@@ -8,7 +8,7 @@
       new File(
         path.join(dirname, 'lib', '_internal', 'libraries.dart'),
       ).existsSync();
-<<<
+<<< 3.8
 ### TODO(rnystrom): Would look better if the constructor arguments didn't split
 ### and we split at `.` instead.
   bool isSdkDir(String dirname) => new File(

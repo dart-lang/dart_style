@@ -209,7 +209,7 @@ var string =
         ? "adjacent"
             "string"
         : "other";
-<<<
+<<< 3.8
 var string = condition
     ? "adjacent"
           "string"
@@ -223,7 +223,7 @@ var string =
         ? "other"
         : "adjacent"
             "string";
-<<<
+<<< 3.8
 var string = condition
     ? "other"
     : "adjacent"

@@ -65,7 +65,7 @@ main() {
     PdfDocumentHelper.getHelper(_helper.crossTable!.document!)
         .catalog
         .beginSaveList ??= <SavePdfPrimitiveCallback>[];
-<<<
+<<< 3.8
     PdfDocumentHelper.getHelper(
       _helper.crossTable!.document!,
     ).catalog.beginSaveList ??= <SavePdfPrimitiveCallback>[];
@@ -78,7 +78,7 @@ main() {
             PdfSecurityHelper.getHelper(_helper._security!)
                 .encryptor
                 .encryptOnlyAttachment = false;
-<<<
+<<< 3.8
             PdfSecurityHelper.getHelper(
               _helper._security!,
             ).encryptor.encryptOnlyAttachment = false;
@@ -90,7 +90,7 @@ main() {
 <<< 3.7
       PdfGridHelper.getHelper(PdfGridRowHelper.getHelper(_helper.row!).grid)
           .hasColumnSpan = true;
-<<<
+<<< 3.8
       PdfGridHelper.getHelper(
         PdfGridRowHelper.getHelper(_helper.row!).grid,
       ).hasColumnSpan = true;
@@ -120,7 +120,7 @@ main() {
     //can access the container in the CompositionRoot
     Builder(elided),
   );
-<<<
+<<< 3.8
   Widget build(BuildContext context) => CompositionRoot(
     configureOverrides: configureOverrides,
     compose: (builder) => builder

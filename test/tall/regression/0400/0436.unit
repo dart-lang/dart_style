@@ -15,7 +15,7 @@ class Foo {
             : null;
   }
 }
-<<<
+<<< 3.8
 class Foo {
   void main() {
     List<TypeParameterElement> typeParameterElements =

@@ -30,7 +30,7 @@ Widget(
             style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.w600),
           ),
 );
-<<<
+<<< 3.8
 Widget(
   child: project.locked
       ? Icon(Icons.lock)

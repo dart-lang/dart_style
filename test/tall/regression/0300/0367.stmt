@@ -16,7 +16,7 @@
                 ),
               )
               .asBroadcastStream();
-<<<
+<<< 3.8
       identifier__ = identifier_____.identifier___
           .transform(
             new StreamTransformer<TypeArg____, Type_>.fromHandlers(

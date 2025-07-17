@@ -30,7 +30,7 @@ List<dynamic> _generateUsedComponentReferences(
         ]..addAll(_generateUsedComponentReferences(globals, c));
       }).toList();
 }
-<<<
+<<< 3.8
 List<dynamic> _generateUsedComponentReferences(
   Globals globals,
   FormComponent component,

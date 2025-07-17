@@ -14,7 +14,7 @@ typedef ExampleRecordTypedef =
       String thirdParameter,
       String fourthParameter,
     );
-<<<
+<<< 3.8
 typedef ExampleRecordTypedef = (
   String firstParameter,
   int secondParameter,

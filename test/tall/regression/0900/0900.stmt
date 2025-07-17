@@ -19,7 +19,7 @@ final commonParameters =
         });
       });
     }).toList();
-<<<
+<<< 3.8
 final commonParameters = constructrorsNeedsGeneration
     .first
     .parameters

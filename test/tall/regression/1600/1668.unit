@@ -43,7 +43,7 @@ class SetupApp extends StatelessWidget {
     );
   }
 }
-<<<
+<<< 3.8
 class SetupApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -138,7 +138,7 @@ class StatusIndicator extends StatelessWidget {
     );
   }
 }
-<<<
+<<< 3.8
 class StatusIndicator extends StatelessWidget {
   final MachineStatus status;
   const StatusIndicator({required this.status, super.key});
@@ -235,7 +235,7 @@ class StatePanel extends StatelessWidget {
     );
   }
 }
-<<<
+<<< 3.8
 class StatePanel extends StatelessWidget {
   const StatePanel({super.key});
 

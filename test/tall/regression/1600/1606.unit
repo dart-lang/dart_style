@@ -35,7 +35,7 @@ class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
                 ))
           : AaaaAaaaaaaAaaaaaaAaaaaaaa();
 }
-<<<
+<<< 3.8
 class AaaaAaaaAaaaAaaaaaaaAaaaaaaa {
   @aaaaaaaa
   AaaaaAaaaAaaaAaaaaaaa get aaaaAaaaAaaaaaaa => aaaaaaaaAaaaaaaaaAaaaaa

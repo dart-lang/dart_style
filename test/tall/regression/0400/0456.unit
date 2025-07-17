@@ -4470,7 +4470,7 @@ class Aaa {
         ..aaaAaaaaaaaaaa = aaaaa.aaaAaaaaaaaaaa
         ..aaaaAaaaaaaa = aaaaa.aaaaAaaaaaaa;
 }
-<<<
+<<< 3.8
 class Aaa {
   @AaaaAaaaaaaaaa()
   static AaaaaAaaaAaaaa aaaaaaaaaaa(

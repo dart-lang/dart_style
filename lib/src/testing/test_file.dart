@@ -77,6 +77,7 @@ final class TestFile {
     var lines = file.readAsLinesSync();
 
     var isCompilationUnit = file.path.endsWith('.unit');
+    var isTall = p.split(file.path).contains('tall');
 
     // The first line may have a "|" to indicate the page width.
     var i = 0;
@@ -115,6 +116,7 @@ final class TestFile {
       var lineNumber = i + 1;
       var line = readLine().replaceAll('>>>', '');
       var (options, description) = _parseOptions(line);
+      description = description.trim();
 
       var inputComments = readComments();
       var inputBuffer = StringBuffer();
@@ -127,9 +129,27 @@ final class TestFile {
         isCompilationUnit: isCompilationUnit,
       );
 
-      var input = TestEntry(description.trim(), null, inputComments, inputCode);
+      var input = TestEntry(description, inputComments, inputCode);
 
-      var outputs = <TestEntry>[];
+      // Read the outputs. A single test should have outputs in one of two
+      // forms:
+      //
+      // - One single unversioned output which is the expected output across
+      //   all supported versions.
+      // - One or more versioned outputs, each of which defines the expected
+      //   output at that language version or later until reaching the next
+      //   output's version.
+      //
+      // The parser here collects all of the outputs, versioned and unversioned
+      // and then reports an error if the result is not one of those two styles.
+      void fail(String error) {
+        throw FormatException(
+          'Test format error in $relativePath, line $lineNumber: $error',
+        );
+      }
+
+      var unversionedOutputs = <TestEntry>[];
+      var versionedOutputs = <Version, TestEntry>{};
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
         var outputDescription = match[4]!;
@@ -166,17 +186,44 @@ final class TestFile {
           isCompilationUnit: isCompilationUnit,
         );
 
-        outputs.add(
-          TestEntry(
-            outputDescription.trim(),
-            outputVersion,
-            outputComments,
-            outputCode,
-          ),
+        var entry = TestEntry(
+          outputDescription.trim(),
+          outputComments,
+          outputCode,
         );
+        if (outputVersion != null) {
+          if (versionedOutputs.containsKey(outputVersion)) {
+            fail('Multiple outputs with the same version $outputVersion.');
+          }
+
+          versionedOutputs[outputVersion] = entry;
+        } else {
+          unversionedOutputs.add(entry);
+        }
       }
 
-      tests.add(FormatTest(lineNumber, options, input, outputs));
+      switch ((unversionedOutputs.length, versionedOutputs.length)) {
+        case (0, 0):
+          fail('Test must have at least one output.');
+        case (0, > 0):
+          if (!isTall) fail('Short style tests can\'t use versioned outputs.');
+          tests.add(
+            VersionedFormatTest(lineNumber, options, input, versionedOutputs),
+          );
+        case (1, 0):
+          tests.add(
+            UnversionedFormatTest(
+              lineNumber,
+              options,
+              input,
+              unversionedOutputs.first,
+            ),
+          );
+        case (> 1, 0):
+          fail('Test can\'t have multiple unversioned outputs.');
+        default:
+          fail('Test can\'t have both versioned and unversioned outputs.');
+      }
     }
 
     return TestFile._(
@@ -276,7 +323,7 @@ final class TestFile {
 }
 
 /// A single formatting test inside a [TestFile].
-final class FormatTest {
+sealed class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
@@ -286,13 +333,7 @@ final class FormatTest {
   /// The unformatted input.
   final TestEntry input;
 
-  // TODO(rnystrom): Consider making this a map of version (or null) to output
-  // and then validating that there aren't duplicate outputs for a single
-  // version.
-  /// The expected output.
-  final List<TestEntry> outputs;
-
-  FormatTest(this.line, this.options, this.input, this.outputs);
+  FormatTest(this.line, this.options, this.input);
 
   /// The line and description of the test.
   String get label {
@@ -301,20 +342,45 @@ final class FormatTest {
   }
 }
 
+/// A test for formatting that should be the same across all language versions.
+///
+/// Most tests are of this form.
+final class UnversionedFormatTest extends FormatTest {
+  /// The expected output.
+  final TestEntry output;
+
+  UnversionedFormatTest(super.line, super.options, super.input, this.output);
+}
+
+/// A test whose expected formatting changes at specific versions.
+final class VersionedFormatTest extends FormatTest {
+  /// The expected output by version.
+  ///
+  /// Each key is the lowest version where that output is expected. If there are
+  /// supported versions lower than the lowest key here, then the test is not
+  /// run on those versions at all. These tests represent new syntax that isn't
+  /// supported in later versions. For example, if the map has only a single
+  /// entry whose key is 3.8, then the test is skipped on 3.8, run at 3.8, and
+  /// should be valid at any higher version.
+  ///
+  /// If there are multiple entries in the map, they represent versions where
+  /// the formatting style has changed.
+  final Map<Version, TestEntry> outputs;
+
+  VersionedFormatTest(super.line, super.options, super.input, this.outputs);
+}
+
 /// A single test input or output.
 final class TestEntry {
   /// Any remark on the "<<<" or ">>>" line.
   final String description;
-
-  /// If this is a test output for a specific version, the version.
-  final Version? version;
 
   /// The `###` comment lines appearing after the header line before the code.
   final List<String> comments;
 
   final SourceCode code;
 
-  TestEntry(this.description, this.version, this.comments, this.code);
+  TestEntry(this.description, this.comments, this.code);
 }
 
 /// Options for configuring all tests in a file or an individual test.

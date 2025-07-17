@@ -12,7 +12,7 @@ class Foo {
   Optional<double> get finiteSignificantCost =>
       isSignificant && cost.value.isFinite ? cost : const Optional.absent();
 }
-<<<
+<<< 3.8
 class Foo {
   Optional<double> get finiteSignificantCost =>
       isSignificant && cost.value.isFinite
@@ -57,7 +57,7 @@ class Foo {
                     ? 1
                     : 0;
       }
-<<<
+<<< 3.8
       main() {
         var openParensMatch = new RegExp(r'\(').allMatches(matchStr),
             closeParensMatch = new RegExp(r'\)').allMatches(matchStr),

@@ -231,7 +231,7 @@ var variableName = (
 ) {
   body;
 };
-<<<
+<<< 3.8
 var variableName =
     (
       parameter1,
@@ -315,7 +315,7 @@ var variableName = (
 ) {
   body;
 };
-<<<
+<<< 3.8
 var variableName =
     (parameter, parameter, parameter) {
       body;

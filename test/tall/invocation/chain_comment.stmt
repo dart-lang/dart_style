@@ -97,7 +97,7 @@ target // c
 <<< 3.7
 target // c
     .prop = value;
-<<<
+<<< 3.8
 target // c
         .prop =
     value;

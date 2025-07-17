@@ -87,7 +87,7 @@ void main() {
         ),
   );
 }
-<<<
+<<< 3.8
 void something() => functionCall(
   'Hello world!',
   'Good night city!',

@@ -17,7 +17,7 @@ void main() {
           )
           : doB();
 }
-<<<
+<<< 3.8
 void main() {
   var result = condition
       ? doA(

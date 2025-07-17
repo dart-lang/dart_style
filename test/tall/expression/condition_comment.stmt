@@ -35,7 +35,7 @@ cond
     ? // c
     1
     : 2;
-<<<
+<<< 3.8
 ### Looks weird, but users generally won't put comments here.
 cond
     ? // c
@@ -57,7 +57,7 @@ cond
     ? 1
     : // c
     2;
-<<<
+<<< 3.8
 ### Looks weird, but users generally won't put comments here.
 cond
     ? 1
@@ -72,7 +72,7 @@ cond
     ? 1
     : 2 // c
     ;
-<<<
+<<< 3.8
 ### Looks weird, but users generally won't put comments here.
 cond
     ? 1

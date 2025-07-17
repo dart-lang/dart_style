@@ -36,7 +36,7 @@ final x =
           eeeeeeeeeeeeeeeeeee: 3,
           ffffffffffffffffff: 4,
         );
-<<<
+<<< 3.8
 final x = true
     ? foo(
         aaaaaaaaaaaaaa: 4,

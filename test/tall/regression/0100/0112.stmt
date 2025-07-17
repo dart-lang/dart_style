@@ -12,7 +12,7 @@
               something.field.where((i) => i is SomeClassGoesHere),
               key: (i) => i.someField.name,
             );
-<<<
+<<< 3.8
     var initializers = something == null
         ? {}
         : new Map.fromIterable(
@@ -34,7 +34,7 @@
               formatOutput,
             )
             : new JSGenerator(outputDir, uri, results.libraries, results.rules);
-<<<
+<<< 3.8
     var cg = outputDart
         ? new DartGenerator(
             outputDir,

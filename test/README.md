@@ -37,15 +37,57 @@ description for the test. Lines after that define the input code to be
 formatted.
 
 After the input are one or more output sections. Each output section starts
-with a header like:
+with a header that starts with `<<<`. There are two styles of output:
+
+#### Unversioned output
+
+Most code is supported across all language versions and formats the same way in
+all of them. For those, the output is a single section like:
 
 ```
-<<< 3.7 Optional description.
+>>> Optional input description.
+some.code();
+<<< Optional description.
+some.code();
 ```
 
-The `<<<` marks the beginning of a new output section. If it has a language
-version number, then this output is expected only on that language version. If
-it has no version number, then this is the expected output on all versions.
+The formatter will run this tests against the oldest and newest supported
+version and verify that both produce that output. (We assume that if it formats
+the same at two versions, it will do so in any version between those for
+performance reasons. Otherwise, every time a new Dart SDK release comes out,
+the number of tests being run increases by thousands.)
+
+#### Versioned outputs
+
+The formatter's behavior may depend on language version for two reasons:
+
+* New syntax was added to the language in a later version, so we can't format
+  it on an older version at all.
+
+* The formatting style changed and we versioned the style change so that code
+  at older versions keeps the older style.
+
+To accommodate those, a test can have multiple output sections which each start
+with a version number like this:
+
+```
+>>> Optional input description.
+some.code();
+<<< 3.8 Optional description.
+some.code();
+<<< 3.10 Optional description.
+some . code();
+```
+
+Each output section specifies the minimum version where that output becomes
+expected. The version number of the first section specifies the lowest version
+number that the test will be run at. Every section after that specifies a
+version where the formatting style was changed.
+
+The test is run at multiple language versions and the result compared to the
+appropriate output section for that version. In the example here, we won't test
+it at all at 3.7, will test at 3.8 and 3.9 with the first output, and at
+3.10 and higher with the last output.
 
 ### Test options
 

@@ -16,7 +16,7 @@ SomeLongFunctionName(
         listElement,
       ],
 );
-<<<
+<<< 3.8
 SomeLongFunctionName(
   argument: () => [
     listElement,
@@ -43,7 +43,7 @@ SomeLongFunctionName(
             listElement,
           ],
 );
-<<<
+<<< 3.8
 SomeLongFunctionName(
   argument: (longParameterName______) =>
       <LongTypeArgument>[
@@ -71,7 +71,7 @@ SomeLongFunctionName(
             3 => listElement,
           },
 );
-<<<
+<<< 3.8
 SomeLongFunctionName(
   argument: (longParameterName______) =>
       switch (e) {

@@ -11,7 +11,7 @@ class MummyMatchers {
               ? publishers
               : defaultPublishers.add(unittestPublisher);
 }
-<<<
+<<< 3.8
 class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers])
     : publishers = publishers != null

@@ -44,7 +44,7 @@
       );
     }
   };
-<<<
+<<< 3.8
   Decl immutableVariableDeclaration(
     List<String> names,
     List<Expr> initializers,

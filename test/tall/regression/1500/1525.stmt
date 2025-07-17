@@ -37,7 +37,7 @@ map(
         //...
       }),
 );
-<<<
+<<< 3.8
 map(
   (innerMap) => innerMap
     ..addAll({

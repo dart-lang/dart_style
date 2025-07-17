@@ -79,7 +79,7 @@
       );
       return entryList;
     });
-<<<
+<<< 3.8
     return Observable(_databaseService.getChatEntries(event)).map((entryList) {
       entryList.forEach(
         (entry) => entry.isFromCurrentUser =
@@ -115,7 +115,7 @@
         .map((entry) {
           return entry.toString();
         });
-<<<
+<<< 3.8
     return Observable(_databaseService.getChatEntries(event))
         .map((entryList) {
           entryList.forEach(

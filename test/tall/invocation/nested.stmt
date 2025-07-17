@@ -20,7 +20,7 @@ f(1, g(a: a, b: b, c: c, d: d));
 outer(a: a, b: inner(c: c));
 <<< 3.7
 outer(a: a, b: inner(c: c));
-<<<
+<<< 3.8
 outer(
   a: a,
   b: inner(c: c),
@@ -29,7 +29,7 @@ outer(
 outer(a: a, inner(b: b, c: c));
 <<< 3.7
 outer(a: a, inner(b: b, c: c));
-<<<
+<<< 3.8
 outer(
   a: a,
   inner(b: b, c: c),
@@ -38,7 +38,7 @@ outer(
 outer(a: inner(b: b, c: c));
 <<< 3.7
 outer(a: inner(b: b, c: c));
-<<<
+<<< 3.8
 outer(
   a: inner(b: b, c: c),
 );
@@ -46,7 +46,7 @@ outer(
 outer(a: inner(b: b, nest(c: c)));
 <<< 3.7
 outer(a: inner(b: b, nest(c: c)));
-<<<
+<<< 3.8
 outer(
   a: inner(b: b, nest(c: c)),
 );
@@ -54,7 +54,7 @@ outer(
 outer(name: !(inner(x: x, y: y)));
 <<< 3.7
 outer(name: !(inner(x: x, y: y)));
-<<<
+<<< 3.8
 outer(
   name: !(inner(x: x, y: y)),
 );
@@ -62,7 +62,7 @@ outer(
 new Outer(name: inner(x: x, y: y));
 <<< 3.7
 new Outer(name: inner(x: x, y: y));
-<<<
+<<< 3.8
 new Outer(
   name: inner(x: x, y: y),
 );
@@ -70,7 +70,7 @@ new Outer(
 const Outer(name: inner(x: x, y: y));
 <<< 3.7
 const Outer(name: inner(x: x, y: y));
-<<<
+<<< 3.8
 const Outer(
   name: inner(x: x, y: y),
 );
@@ -78,7 +78,7 @@ const Outer(
 outer(name: new Inner(x: x, y: y));
 <<< 3.7
 outer(name: new Inner(x: x, y: y));
-<<<
+<<< 3.8
 outer(
   name: new Inner(x: x, y: y),
 );
@@ -86,7 +86,7 @@ outer(
 outer(name: const Inner(x: x, y: y));
 <<< 3.7
 outer(name: const Inner(x: x, y: y));
-<<<
+<<< 3.8
 outer(
   name: const Inner(x: x, y: y),
 );
@@ -127,7 +127,7 @@ outer(
   outer(name: inner(x: x, y: -(1)));
   outer(name: inner(x: x, y: 1 + 2));
 }
-<<<
+<<< 3.8
 {
   outer(
     name: inner(x: x, y: 'string'),
@@ -163,7 +163,7 @@ outer(
   // Multiple elements and a named argument.
   f(name: [a, inner(x: x)]);
 }
-<<<
+<<< 3.8
 {
   // Only one element.
   f(
@@ -197,7 +197,7 @@ outer(
   // Multiple elements and a named argument.
   f(name: {a: a, b: inner(x: x)});
 }
-<<<
+<<< 3.8
 {
   // Only one element.
   f(
@@ -231,7 +231,7 @@ outer(
   // Multiple elements and a named argument.
   f(name: {a, inner(x: x)});
 }
-<<<
+<<< 3.8
 {
   // Only one element.
   f(
@@ -252,7 +252,7 @@ f(name: (a, inner(x: x, y: y), b: b));
 <<< 3.7
 ### The outer call splits, but not the record.
 f(name: (a, inner(x: x, y: y), b: b));
-<<<
+<<< 3.8
 ### The outer call splits, but not the record.
 f(
   name: (a, inner(x: x, y: y), b: b),
@@ -261,7 +261,7 @@ f(
 outer(x: x, inner(y: y), z: z);
 <<< 3.7
 outer(x: x, inner(y: y), z: z);
-<<<
+<<< 3.8
 outer(
   x: x,
   inner(y: y),

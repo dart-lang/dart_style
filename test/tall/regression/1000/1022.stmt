@@ -118,7 +118,7 @@ final documentChanges =
             : (json['documentChanges'] == null
                 ? null
                 : (throw '''${json['documentChanges']} was not one of (List<TextDocumentEdit>, List<Either4<TextDocumentEdit, CreateFile, RenameFile, DeleteFile>>)''')));
-<<<
+<<< 3.8
 final documentChanges =
     (json['documentChanges'] is List &&
         (json['documentChanges'].every(

@@ -71,7 +71,7 @@ _Rule OR([
   false,
   (compiledRules, valueCount, reducer) => new _ChoiceRule(compiledRules),
 );
-<<<
+<<< 3.8
 _Rule OR([
   a,
   b,

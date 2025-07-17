@@ -16,7 +16,7 @@ void main() {
                   new Hotlist()..hotlistId = new Int64(10),
                 )));
 }
-<<<
+<<< 3.8
 void main() {
   model
     ..account = (new Account()
@@ -46,7 +46,7 @@ receiver
                 )
                 : _formatter.formatValue(item.value, item.valueType);
     }
-<<<
+<<< 3.8
     main() {
       receiver
         ..formattedTotal = _total == 0
@@ -77,7 +77,7 @@ receiver
                   )
                   : _formatter.formatValue(item.value, item.valueType);
       }
-<<<
+<<< 3.8
       main() {
         receiver
           ..formattedTotal = _total == 0

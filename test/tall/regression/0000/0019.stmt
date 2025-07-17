@@ -22,7 +22,7 @@ return new _Concat(
 <<< 3.7
     format.maximumFractionDigits =
         decimalPos >= 0 ? totalDigits - decimalPos : 0;
-<<<
+<<< 3.8
     format.maximumFractionDigits = decimalPos >= 0
         ? totalDigits - decimalPos
         : 0;
@@ -31,7 +31,7 @@ return new _Concat(
 <<< 3.7
       var libname =
           _builtins.containsKey(package) ? _builtins[package] : package;
-<<<
+<<< 3.8
       var libname = _builtins.containsKey(package)
           ? _builtins[package]
           : package;
