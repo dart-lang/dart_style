@@ -206,7 +206,6 @@ final class TestFile {
         case (0, 0):
           fail('Test must have at least one output.');
         case (0, > 0):
-          if (!isTall) fail('Short style tests can\'t use versioned outputs.');
           tests.add(
             VersionedFormatTest(lineNumber, options, input, versionedOutputs),
           );

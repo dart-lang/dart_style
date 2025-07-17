@@ -100,11 +100,6 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   // Write the tests.
   for (var formatTest in testFile.tests) {
-    var defaultVersion =
-        testFile.isTall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion;
-
     // Write the test input.
     var description = [
       ..._optionStrings(formatTest.options),

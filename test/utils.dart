@@ -165,14 +165,22 @@ void _testFile(TestFile testFile) {
           _runTestAtVersion(testFile, formatTest, output, version);
         });
       } else {
-        // Short style test so just test against one short version.
-        _runTestAtVersion(
-          testFile,
-          formatTest,
-          // Short tests should always be unversioned.
-          (testFile as UnversionedFormatTest).output,
-          DartFormatter.latestShortStyleLanguageVersion,
-        );
+        switch (formatTest) {
+          case UnversionedFormatTest(:var output):
+            _runTestAtVersion(
+              testFile,
+              formatTest,
+              output,
+              DartFormatter.latestShortStyleLanguageVersion,
+            );
+          case VersionedFormatTest(:var outputs):
+            // There is only one versioned short style test, for the legacy
+            // switch syntax. If the test is versioned, only run it on those
+            // versions and not anything later.
+            outputs.forEach((version, output) {
+              _runTestAtVersion(testFile, formatTest, output, version);
+            });
+        }
       }
     }
   });
