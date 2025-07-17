@@ -77,7 +77,6 @@ final class TestFile {
     var lines = file.readAsLinesSync();
 
     var isCompilationUnit = file.path.endsWith('.unit');
-    var isTall = p.split(file.path).contains('tall');
 
     // The first line may have a "|" to indicate the page width.
     var i = 0;
