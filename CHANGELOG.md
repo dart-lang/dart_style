@@ -1,4 +1,4 @@
-## 3.1.1-wip
+## 3.1.1
 
 * Update to latest analyzer and enable language version 3.9.
 
