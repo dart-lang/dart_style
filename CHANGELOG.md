@@ -1,6 +1,8 @@
 ## 3.1.1-wip
 
-* Update to latest analyzer and enable language version 3.9.
+* Support dot shorthand syntax.
+* Enable language version 3.10.
+* Update to latest analyzer.
 
 ## 3.1.0
 

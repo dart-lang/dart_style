@@ -590,6 +590,29 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
+  void visitDotShorthandInvocation(DotShorthandInvocation node) {
+    // TODO(rnystrom): Get this directly from the AST once the formatter can
+    // use analyzer 8.0.0.
+    // See: https://github.com/dart-lang/sdk/issues/60840
+    if (node.period.previous case var token?
+        when token.keyword == Keyword.CONST) {
+      pieces.token(token);
+      pieces.space();
+    }
+
+    pieces.token(node.period);
+    pieces.visit(node.memberName);
+    pieces.visit(node.typeArguments);
+    pieces.visit(node.argumentList);
+  }
+
+  @override
+  void visitDotShorthandPropertyAccess(DotShorthandPropertyAccess node) {
+    pieces.token(node.period);
+    pieces.visit(node.propertyName);
+  }
+
+  @override
   void visitDottedName(DottedName node) {
     writeDotted(node.components);
   }
@@ -2316,6 +2339,17 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     // Instead, we hoist the comment out of all of those and then have comment
     // precede them all so that they don't split.
     var firstToken = node.firstNonCommentToken;
+
+    // TODO(rnystrom): The AST node for DotShorthandInvocation in analyzer
+    // before 8.0.0 doesn't include a leading `const` as part of the node. If
+    // we ignore that, then a comment before the `.` gets incorrectly hoisted
+    // before the `const`. Remove this when we can upgrade to 8.0.0.
+    // See: https://github.com/dart-lang/sdk/issues/60840
+    if (node is DotShorthandInvocation &&
+        firstToken.previous?.keyword == Keyword.CONST) {
+      firstToken = firstToken.previous!;
+    }
+
     if (firstToken.precedingComments != null) {
       var comments = pieces.takeCommentsBefore(firstToken);
       var piece = pieces.build(() {
