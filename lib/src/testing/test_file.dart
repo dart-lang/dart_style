@@ -358,7 +358,7 @@ final class VersionedFormatTest extends FormatTest {
   /// supported versions lower than the lowest key here, then the test is not
   /// run on those versions at all. These tests represent new syntax that isn't
   /// supported in later versions. For example, if the map has only a single
-  /// entry whose key is 3.8, then the test is skipped on 3.8, run at 3.8, and
+  /// entry whose key is 3.8, then the test is skipped on 3.7, run at 3.8, and
   /// should be valid at any higher version.
   ///
   /// If there are multiple entries in the map, they represent versions where

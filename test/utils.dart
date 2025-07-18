@@ -146,42 +146,33 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
+      Map<Version, TestEntry> testedVersions;
       if (testFile.isTall) {
-        Map<Version, TestEntry> testedVersions;
-        switch (formatTest) {
-          case UnversionedFormatTest(:var output):
-            // This output is unversioned, so test at the lowest and highest
-            // supported versions. If it formats the same on those, we assume
-            // it does for all of the intermediate versions too.
-            testedVersions = {
-              _testedTallVersions.first: output,
-              _testedTallVersions.last: output,
-            };
-          case VersionedFormatTest(:var outputs):
-            testedVersions = _versionedTestEntries(outputs);
-        }
-
-        testedVersions.forEach((version, output) {
-          _runTestAtVersion(testFile, formatTest, output, version);
-        });
+        testedVersions = switch (formatTest) {
+          // This output is unversioned, so test at the lowest and highest
+          // supported versions. If it formats the same on those, we assume
+          // it does for all of the intermediate versions too.
+          UnversionedFormatTest(:var output) => {
+            _testedTallVersions.first: output,
+            _testedTallVersions.last: output,
+          },
+          VersionedFormatTest(:var outputs) => _versionedTestEntries(outputs),
+        };
       } else {
-        switch (formatTest) {
-          case UnversionedFormatTest(:var output):
-            _runTestAtVersion(
-              testFile,
-              formatTest,
-              output,
-              DartFormatter.latestShortStyleLanguageVersion,
-            );
-          case VersionedFormatTest(:var outputs):
-            // There is only one versioned short style test, for the legacy
-            // switch syntax. If the test is versioned, only run it on those
-            // versions and not anything later.
-            outputs.forEach((version, output) {
-              _runTestAtVersion(testFile, formatTest, output, version);
-            });
-        }
+        testedVersions = switch (formatTest) {
+          UnversionedFormatTest(:var output) => {
+            DartFormatter.latestShortStyleLanguageVersion: output,
+          },
+          // There is only one versioned short style test, for the legacy
+          // switch syntax. If the test is versioned, only run it on those
+          // versions and not anything later.
+          VersionedFormatTest(:var outputs) => outputs,
+        };
       }
+
+      testedVersions.forEach((version, output) {
+        _runTestAtVersion(testFile, formatTest, output, version);
+      });
     }
   });
 }
