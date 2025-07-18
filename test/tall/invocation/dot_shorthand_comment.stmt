@@ -1,0 +1,26 @@
+40 columns                              |
+(experiment dot-shorthands)
+>>> Line comment after dot.
+variable = . // Comment.
+whoDoesThis();
+<<< 3.9
+variable =
+    . // Comment.
+    whoDoesThis();
+>>> Block comment after dot.
+variable = ./* Comment. */whoDoesThis();
+<<< 3.9
+variable =
+    . /* Comment. */ whoDoesThis();
+>>> Line comment after `const`.
+variable = const // Comment.
+. whoDoesThis();
+<<< 3.9
+variable =
+    const // Comment.
+    .whoDoesThis();
+>>> Block comment after `const`.
+variable = const/* Comment. */.whoDoesThis();
+<<< 3.9
+variable =
+    const /* Comment. */ .whoDoesThis();

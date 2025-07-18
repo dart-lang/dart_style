@@ -1,0 +1,77 @@
+40 columns                              |
+(experiment dot-shorthands)
+>>> Getter.
+variable =  .  getter;
+<<< 3.9
+variable = .getter;
+>>> Method call with unsplit arguments.
+variable = .method(1,x:2,3,y:4);
+<<< 3.9
+variable = .method(1, x: 2, 3, y: 4);
+>>> Method call with split arguments.
+variable = .method(one, x: two, three, y: four);
+<<< 3.9
+variable = .method(
+  one,
+  x: two,
+  three,
+  y: four,
+);
+>>> Generic method call.
+variable =  .  method  <  int  ,  String  >  (  )  ;
+<<< 3.9
+variable = .method<int, String>();
+>>> Constructor.
+variable = .new(1);
+<<< 3.9
+variable = .new(1);
+>>> Const constructor.
+variable = const  .  new  (  );
+<<< 3.9
+variable = const .new();
+>>> Const named constructor.
+variable = const  .  named  (  );
+<<< 3.9
+variable = const .named();
+>>> Unsplit selector chain.
+v =  .  property  .  method()  .  x  .  another();
+<<< 3.9
+v = .property.method().x.another();
+>>> Split selector chain on shorthand getter.
+variable = .shorthand.method().another().third();
+<<< 3.9
+variable = .shorthand
+    .method()
+    .another()
+    .third();
+>>> Split selector chain on shorthand method.
+variable = .shorthand().method().getter.another().third();
+<<< 3.9
+variable = .shorthand()
+    .method()
+    .getter
+    .another()
+    .third();
+>>> Split in shorthand method call argument list.
+context(.shorthand(argument, anotherArgument, thirdArgument)
+.chain().another().third().fourthOne());
+<<< 3.9
+context(
+  .shorthand(
+        argument,
+        anotherArgument,
+        thirdArgument,
+      )
+      .chain()
+      .another()
+      .third()
+      .fourthOne(),
+);
+>>> Nested call.
+.method(.getter,.method(.new(.new())),const.ctor());
+<<<
+.method(
+  .getter,
+  .method(.new(.new())),
+  const .ctor(),
+);
