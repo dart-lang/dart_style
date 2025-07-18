@@ -1,6 +1,6 @@
 name: dart_style
 # Note: See tool/grind.dart for how to bump the version.
-version: 3.1.1-wip
+version: 3.1.2-wip
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
