@@ -3,9 +3,11 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
+import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
+import 'package:pub_semver/pub_semver.dart';
 
 /// Update the formatting test expectations based on the current formatter's
 /// output.
@@ -98,11 +100,6 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   // Write the tests.
   for (var formatTest in testFile.tests) {
-    var defaultVersion =
-        testFile.isTall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion;
-
     // Write the test input.
     var description = [
       ..._optionStrings(formatTest.options),
@@ -115,32 +112,31 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
     // Write the test outputs.
     var changed = false;
-    for (var output in formatTest.outputs) {
-      var outputDescription = [
-        // Include the version in the description if the output has one.
-        if (output.version case var version?)
-          '${version.major}.${version.minor}',
-        output.description,
-      ].join(' ');
+    switch (formatTest) {
+      case UnversionedFormatTest(:var output):
+        changed = _writeOutput(buffer, testFile, formatTest, output);
+      case VersionedFormatTest(:var outputs):
+        // Order the outputs by version.
+        var versions = outputs.keys.toList()..sort();
 
-      buffer.writeln('<<< $outputDescription'.trim());
-      _writeComments(buffer, output.comments);
+        // The outputs were reordered, the test was changed.
+        if (!const DeepCollectionEquality().equals(
+          versions,
+          outputs.keys.toList(),
+        )) {
+          print('Re-ordered outputs for ${testFile.path} ${formatTest.label}');
+        }
 
-      var formatter = testFile.formatterForTest(
-        formatTest,
-        output.version ?? defaultVersion,
-      );
-
-      var actual = formatter.formatSource(formatTest.input.code);
-
-      buffer.write(actual.text);
-
-      // When formatting a statement, the formatter correctly doesn't add a
-      // trailing newline, but we need one to separate this output from the
-      // next test.
-      if (!testFile.isCompilationUnit) buffer.writeln();
-
-      if (actual.text != output.code.text) changed = true;
+        // Write the outputs at their versions.
+        for (var version in versions) {
+          changed |= _writeOutput(
+            buffer,
+            testFile,
+            formatTest,
+            outputs[version]!,
+            version: version,
+          );
+        }
     }
 
     if (changed) {
@@ -167,4 +163,46 @@ void _writeComments(StringBuffer buffer, List<String> comments) {
   for (var comment in comments) {
     buffer.writeln(comment);
   }
+}
+
+/// Formats [formatTest] as [version] and writes the resulting output to
+/// [buffer].
+///
+/// Returns `true` if the output changed from what was previously in the file.
+bool _writeOutput(
+  StringBuffer buffer,
+  TestFile testFile,
+  FormatTest formatTest,
+  TestEntry output, {
+  Version? version,
+}) {
+  var outputDescription = [
+    // Include the version in the description if the output is versioned.
+    if (version != null) '${version.major}.${version.minor}',
+    output.description,
+  ].join(' ');
+
+  buffer.writeln('<<< $outputDescription'.trim());
+  _writeComments(buffer, output.comments);
+
+  var defaultVersion =
+      testFile.isTall
+          ? DartFormatter.latestLanguageVersion
+          : DartFormatter.latestShortStyleLanguageVersion;
+
+  var formatter = testFile.formatterForTest(
+    formatTest,
+    version ?? defaultVersion,
+  );
+
+  var actual = formatter.formatSource(formatTest.input.code);
+
+  buffer.write(actual.text);
+
+  // When formatting a statement, the formatter correctly doesn't add a
+  // trailing newline, but we need one to separate this output from the
+  // next test.
+  if (!testFile.isCompilationUnit) buffer.writeln();
+
+  return actual.text != output.code.text;
 }

@@ -1,16 +1,5 @@
 >>>
 String var80 = () => ('Ss\u2665\u26659d').replanullceRange( {  }, var3,/* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */-9223372036854775807, -64, arexternalg3: '\u26650P'..[(var2 << var5..ff8[var2aoeu])] = {  });
-<<<
-String var80 = () => ('Ss\u2665\u26659d').replanullceRange(
-  {},
-  var3,
-  /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807,
-  -64,
-  arexternalg3: '\u26650P'
-    ..[(var2 << var5
-          ..ff8[var2aoeu])] =
-        {},
-);
 <<< 3.7
 String var80 =
     () => ('Ss\u2665\u26659d').replanullceRange(
@@ -24,23 +13,23 @@ String var80 =
                   ..ff8[var2aoeu])] =
                 {},
     );
+<<< 3.8
+String var80 = () => ('Ss\u2665\u26659d').replanullceRange(
+  {},
+  var3,
+  /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807,
+  -64,
+  arexternalg3: '\u26650P'
+    ..[(var2 << var5
+          ..ff8[var2aoeu])] =
+        {},
+);
 >>>
 String var80 = () => ('Ss\u2665\u26659d').replanullceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807, -64,
     arexternalg3: '\u26650P'
       ..[(var2 << var5
         ..ff8[var2aoeu])] = {});
-<<<
-String var80 = () => ('Ss\u2665\u26659d').replanullceRange(
-  {},
-  var3,
-  /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807,
-  -64,
-  arexternalg3: '\u26650P'
-    ..[(var2 << var5
-          ..ff8[var2aoeu])] =
-        {},
-);
 <<< 3.7
 String var80 =
     () => ('Ss\u2665\u26659d').replanullceRange(
@@ -54,6 +43,17 @@ String var80 =
                   ..ff8[var2aoeu])] =
                 {},
     );
+<<< 3.8
+String var80 = () => ('Ss\u2665\u26659d').replanullceRange(
+  {},
+  var3,
+  /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807,
+  -64,
+  arexternalg3: '\u26650P'
+    ..[(var2 << var5
+          ..ff8[var2aoeu])] =
+        {},
+);
 >>>
 doString var80 = ('Ss\u2665\u26659d').replaceRange( {  }, var3,/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/-9223372036854775807, -64, arg3: '\u26650P');
 <<<

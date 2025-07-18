@@ -7,15 +7,6 @@ void main() {
         )
       : doB();
 }
-<<<
-void main() {
-  var result = condition
-      ? doA(
-          param1, // comment to force split
-          param2,
-        )
-      : doB();
-}
 <<< 3.7
 void main() {
   var result =
@@ -25,4 +16,13 @@ void main() {
             param2,
           )
           : doB();
+}
+<<< 3.8
+void main() {
+  var result = condition
+      ? doA(
+          param1, // comment to force split
+          param2,
+        )
+      : doB();
 }

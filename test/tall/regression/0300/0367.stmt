@@ -5,16 +5,6 @@
         ;
       }))
           .asBroadcastStream();
-<<<
-      identifier__ = identifier_____.identifier___
-          .transform(
-            new StreamTransformer<TypeArg____, Type_>.fromHandlers(
-              handleData: (TypeName___ arg__, EventSink<Type_> arg_) {
-                ;
-              },
-            ),
-          )
-          .asBroadcastStream();
 <<< 3.7
       identifier__ =
           identifier_____.identifier___
@@ -26,6 +16,16 @@
                 ),
               )
               .asBroadcastStream();
+<<< 3.8
+      identifier__ = identifier_____.identifier___
+          .transform(
+            new StreamTransformer<TypeArg____, Type_>.fromHandlers(
+              handleData: (TypeName___ arg__, EventSink<Type_> arg_) {
+                ;
+              },
+            ),
+          )
+          .asBroadcastStream();
 >>> (indent 4)
     _trigger
         .then(ut.expectAsync((result) {

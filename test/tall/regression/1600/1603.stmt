@@ -2,18 +2,18 @@
       final value = Value((b) => b
         ..anInt = 3
         ..aString = 'four');
-<<<
-      final value = Value(
-        (b) => b
-          ..anInt = 3
-          ..aString = 'four',
-      );
 <<< 3.7
       final value = Value(
         (b) =>
             b
               ..anInt = 3
               ..aString = 'four',
+      );
+<<< 3.8
+      final value = Value(
+        (b) => b
+          ..anInt = 3
+          ..aString = 'four',
       );
 >>>
 final value = Value((b) {

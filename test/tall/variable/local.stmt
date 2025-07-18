@@ -223,15 +223,6 @@ var variableName = (parameter) {
 };
 >>> Don't use block-like splitting for block-bodied functions with split parameters.
 var variableName = (parameter1, parameter2, parameter3) { body; };
-<<<
-var variableName =
-    (
-      parameter1,
-      parameter2,
-      parameter3,
-    ) {
-      body;
-    };
 <<< 3.7
 var variableName = (
   parameter1,
@@ -240,6 +231,15 @@ var variableName = (
 ) {
   body;
 };
+<<< 3.8
+var variableName =
+    (
+      parameter1,
+      parameter2,
+      parameter3,
+    ) {
+      body;
+    };
 >>> Don't use block-like splitting for expression-bodied function expressions.
 var variableName = (parameter, parameter, parameter) => body;
 <<<
@@ -307,11 +307,6 @@ SomeType a = () {
     b;
 >>> Block-like splitting for block-bodied function expressions.
 var variableName = (parameter, parameter, parameter) { body; };
-<<<
-var variableName =
-    (parameter, parameter, parameter) {
-      body;
-    };
 <<< 3.7
 var variableName = (
   parameter,
@@ -320,3 +315,8 @@ var variableName = (
 ) {
   body;
 };
+<<< 3.8
+var variableName =
+    (parameter, parameter, parameter) {
+      body;
+    };

@@ -30,14 +30,6 @@ f = (  )  async  *  =>  1;
 f = () async* => 1;
 >>> Split parameter list.
 function = (int firstArgument, int secondArgument) { print('42'); };
-<<<
-function =
-    (
-      int firstArgument,
-      int secondArgument,
-    ) {
-      print('42');
-    };
 <<< 3.7
 function = (
   int firstArgument,
@@ -45,3 +37,11 @@ function = (
 ) {
   print('42');
 };
+<<< 3.8
+function =
+    (
+      int firstArgument,
+      int secondArgument,
+    ) {
+      print('42');
+    };

@@ -146,39 +146,106 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
-      // Collect all of the outputs that are specific to a single version.
-      // We'll run those tests at only that version. If there is is an output
-      // with no version specified, then we'll run it on all of the remaining
-      // supported versions.
-      var specificTestedVersions = {
-        for (var output in formatTest.outputs)
-          if (output.version case var version?) version,
-      };
-
-      // Run it for each of the expected outputs.
-      for (var output in formatTest.outputs) {
-        // If the output is version-specific, then only test on that version.
-        if (output.version case var version?) {
-          _runTestAtVersion(testFile, formatTest, output, version);
-        } else if (testFile.isTall) {
-          // This output is unversioned, so test it on all of the versions
-          // that aren't otherwise covered.
-          for (var version in _testedTallVersions) {
-            if (specificTestedVersions.contains(version)) continue;
-            _runTestAtVersion(testFile, formatTest, output, version);
-          }
-        } else {
-          // Short style test so just test against one short version.
-          _runTestAtVersion(
-            testFile,
-            formatTest,
-            output,
-            DartFormatter.latestShortStyleLanguageVersion,
-          );
-        }
+      Map<Version, TestEntry> testedVersions;
+      if (testFile.isTall) {
+        testedVersions = switch (formatTest) {
+          // This output is unversioned, so test at the lowest and highest
+          // supported versions. If it formats the same on those, we assume
+          // it does for all of the intermediate versions too.
+          UnversionedFormatTest(:var output) => {
+            _testedTallVersions.first: output,
+            _testedTallVersions.last: output,
+          },
+          VersionedFormatTest(:var outputs) => _versionedTestEntries(outputs),
+        };
+      } else {
+        testedVersions = switch (formatTest) {
+          UnversionedFormatTest(:var output) => {
+            DartFormatter.latestShortStyleLanguageVersion: output,
+          },
+          // There is only one versioned short style test, for the legacy
+          // switch syntax. If the test is versioned, only run it on those
+          // versions and not anything later.
+          VersionedFormatTest(:var outputs) => outputs,
+        };
       }
+
+      testedVersions.forEach((version, output) {
+        _runTestAtVersion(testFile, formatTest, output, version);
+      });
     }
   });
+}
+
+/// Given a set of versions that have specific test expectations, determine
+/// what set of versions should be tested against which outputs.
+///
+/// Ideally, we'd test every supported language version against an appropriate
+/// output. But that means that every time a new Dart SDK comes out and the
+/// supported version range grows, the set of tests being run increases
+/// significantly.
+///
+/// To avoid that, we conservatively assume that if a test formats the same way
+/// at two versions that have the same expected output, then it would format
+/// the same way at any version between them. Thus, whenever there is a range
+/// of versions that should all produce the same output, we only test the
+/// endpoints of the range.
+///
+/// For example, say the supported versions are:
+///
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
+///
+/// And say that a test has specified outputs like:
+///
+///     <<<
+///     ...
+///     >>> 3.8 first supported version
+///     A
+///     >>> 3.11 style tweak
+///     B
+///     >>> 3.13 another style tweak
+///     C
+///
+/// The test is stating that formatting at each version should produce these
+/// outputs:
+///
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
+///          A    A    A     B     C     C     C     C
+///
+/// We run the tests at these versions:
+///
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
+///          A         A     B     C                 C
+///
+/// We skip 3.7 because it's below the lowest supported version. (Presumably
+/// this test is for some syntax added in 3.8.) We skip 3.9, 3.13, and 3.14
+/// because they are in the middle of a range of supported versions that all
+/// expect the same output.
+Map<Version, TestEntry> _versionedTestEntries(Map<Version, TestEntry> outputs) {
+  var outputVersions = outputs.keys.toList()..sort();
+  var testedVersions = <Version, TestEntry>{};
+
+  // For each output, test the language version at each end of the range it
+  // covers.
+  for (var i = 0; i < outputVersions.length; i++) {
+    // The output specifies the low end of its range.
+    var version = outputVersions[i];
+    testedVersions[version] = outputs[version]!;
+
+    // Find the high end of the range.
+    if (i < outputVersions.length - 1) {
+      // The end of this version's range is one version lower than the next
+      // output's version.
+      var nextVersionIndex = _testedTallVersions.indexOf(outputVersions[i + 1]);
+      var rangeEnd = _testedTallVersions[nextVersionIndex - 1];
+      testedVersions[rangeEnd] = outputs[version]!;
+    } else {
+      // The end of this version's range is the highest supported version.
+      testedVersions[_testedTallVersions.last] = outputs[version]!;
+    }
+  }
+
+  return testedVersions;
 }
 
 void _runTestAtVersion(
@@ -187,9 +254,6 @@ void _runTestAtVersion(
   TestEntry output,
   Version version,
 ) {
-  // If the output is version-specific, we can only run it at that version.
-  assert(output.version == null || output.version == version);
-
   var description =
       'line ${formatTest.line} at ${version.major}.${version.minor}';
   if (formatTest.input.description.isNotEmpty) {

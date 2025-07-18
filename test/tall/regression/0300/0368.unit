@@ -60,7 +60,7 @@ class Compiler {
     ;
   }
 }
-<<<
+<<< 3.7
 class Compiler {
   Compiler()
     : this.options = options,
@@ -73,10 +73,8 @@ class Compiler {
         trustPrimitives: hasOption(options, '--trust-primitives'),
         enableMinification: hasOption(options, '--minify'),
         preserveUris: hasOption(options, '--preserve-uris'),
-        enableNativeLiveTypeAnalysis: !hasOption(
-          options,
-          '--disable-native-live-type-analysis',
-        ),
+        enableNativeLiveTypeAnalysis:
+            !hasOption(options, '--disable-native-live-type-analysis'),
         emitJavaScript:
             !(hasOption(options, '--output-type=dart') ||
                 hasOption(options, '--output-type=dart-multi')),
@@ -133,7 +131,7 @@ class Compiler {
     ;
   }
 }
-<<< 3.7
+<<< 3.8
 class Compiler {
   Compiler()
     : this.options = options,
@@ -146,8 +144,10 @@ class Compiler {
         trustPrimitives: hasOption(options, '--trust-primitives'),
         enableMinification: hasOption(options, '--minify'),
         preserveUris: hasOption(options, '--preserve-uris'),
-        enableNativeLiveTypeAnalysis:
-            !hasOption(options, '--disable-native-live-type-analysis'),
+        enableNativeLiveTypeAnalysis: !hasOption(
+          options,
+          '--disable-native-live-type-analysis',
+        ),
         emitJavaScript:
             !(hasOption(options, '--output-type=dart') ||
                 hasOption(options, '--output-type=dart-multi')),

@@ -4,9 +4,6 @@
           "d",
           "e"
         ]);
-<<<
-    var s = new Serialization()
-      ..addRuleFor(Various, constructor: "Foo", constructorFields: ["d", "e"]);
 <<< 3.7
     var s =
         new Serialization()..addRuleFor(
@@ -14,19 +11,15 @@
           constructor: "Foo",
           constructorFields: ["d", "e"],
         );
+<<< 3.8
+    var s = new Serialization()
+      ..addRuleFor(Various, constructor: "Foo", constructorFields: ["d", "e"]);
 >>> (indent 6)
     var s = new Serialization()
             ..addRuleFor(Various, constructor: "Foo", constructorFields: [
           "d",
           "e"
         ]);
-<<<
-      var s = new Serialization()
-        ..addRuleFor(
-          Various,
-          constructor: "Foo",
-          constructorFields: ["d", "e"],
-        );
 <<< 3.7
       var s =
           new Serialization()..addRuleFor(
@@ -34,3 +27,10 @@
             constructor: "Foo",
             constructorFields: ["d", "e"],
           );
+<<< 3.8
+      var s = new Serialization()
+        ..addRuleFor(
+          Various,
+          constructor: "Foo",
+          constructorFields: ["d", "e"],
+        );

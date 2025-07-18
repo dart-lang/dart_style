@@ -8,7 +8,18 @@ final commonParameters = constructrorsNeedsGeneration
     });
   });
 }).toList();
-<<<
+<<< 3.7
+final commonParameters =
+    constructrorsNeedsGeneration.first.parameters.allParameters.where((
+      parameter,
+    ) {
+      return constructrorsNeedsGeneration.every((constructor) {
+        return constructor.parameters.allParameters.any((p) {
+          return p.name == parameter.name && p.type == parameter.type;
+        });
+      });
+    }).toList();
+<<< 3.8
 final commonParameters = constructrorsNeedsGeneration
     .first
     .parameters
@@ -21,17 +32,6 @@ final commonParameters = constructrorsNeedsGeneration
       });
     })
     .toList();
-<<< 3.7
-final commonParameters =
-    constructrorsNeedsGeneration.first.parameters.allParameters.where((
-      parameter,
-    ) {
-      return constructrorsNeedsGeneration.every((constructor) {
-        return constructor.parameters.allParameters.any((p) {
-          return p.name == parameter.name && p.type == parameter.type;
-        });
-      });
-    }).toList();
 >>>
 void main() {
   final f = stdin.readLineSync,

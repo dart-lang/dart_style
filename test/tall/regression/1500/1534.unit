@@ -11,18 +11,6 @@ void main() {
             : importCache.sourceMapUrl(Uri.parse(url)).toString(),
   );
 }
-<<<
-void main() {
-  mapInPlace(
-    resultSourceMap.urls,
-    (url) => url == ''
-        ? Uri.dataFromString(
-            stylesheet.span.file.getText(0),
-            encoding: utf8,
-          ).toString()
-        : importCache.sourceMapUrl(Uri.parse(url)).toString(),
-  );
-}
 <<< 3.7
 void main() {
   mapInPlace(
@@ -34,5 +22,17 @@ void main() {
               encoding: utf8,
             ).toString()
             : importCache.sourceMapUrl(Uri.parse(url)).toString(),
+  );
+}
+<<< 3.8
+void main() {
+  mapInPlace(
+    resultSourceMap.urls,
+    (url) => url == ''
+        ? Uri.dataFromString(
+            stylesheet.span.file.getText(0),
+            encoding: utf8,
+          ).toString()
+        : importCache.sourceMapUrl(Uri.parse(url)).toString(),
   );
 }

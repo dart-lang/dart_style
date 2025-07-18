@@ -58,13 +58,6 @@ variable =
     avian.bovine.canine.equine.feline;
 >>> Split the property chain if moving it to the next line still doesn't fit.
 variable = avian.bovine.canine.equine.feline.galline;
-<<<
-variable = avian
-    .bovine
-    .canine
-    .equine
-    .feline
-    .galline;
 <<< 3.7
 variable =
     avian
@@ -73,22 +66,23 @@ variable =
         .equine
         .feline
         .galline;
+<<< 3.8
+variable = avian
+    .bovine
+    .canine
+    .equine
+    .feline
+    .galline;
 >>> Don't prefer splitting an assignment if there are methods in the chain.
 variable = avian.bovine.canine.equine.feline();
-<<<
-variable = avian.bovine.canine.equine
-    .feline();
 <<< 3.7
 variable =
     avian.bovine.canine.equine.feline();
+<<< 3.8
+variable = avian.bovine.canine.equine
+    .feline();
 >>> Don't prefer splitting an assignment if there are methods in the chain.
 variable = avian.bovine().canine.equine().feline;
-<<<
-variable = avian
-    .bovine()
-    .canine
-    .equine()
-    .feline;
 <<< 3.7
 variable =
     avian
@@ -96,3 +90,9 @@ variable =
         .canine
         .equine()
         .feline;
+<<< 3.8
+variable = avian
+    .bovine()
+    .canine
+    .equine()
+    .feline;

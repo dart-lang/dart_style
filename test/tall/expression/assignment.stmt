@@ -81,13 +81,6 @@ target
     reallyLongValue;
 >>> Allow block formatting through nested assignments.
 outer = inner = [element1, element2, element3, element4];
-<<<
-outer = inner = [
-  element1,
-  element2,
-  element3,
-  element4,
-];
 <<< 3.7
 outer =
     inner = [
@@ -96,19 +89,26 @@ outer =
       element3,
       element4,
     ];
+<<< 3.8
+outer = inner = [
+  element1,
+  element2,
+  element3,
+  element4,
+];
 >>> Headline format unsplit target of call chain.
 variable = (tar + get).method().another().third();
-<<<
-variable = (tar + get)
-    .method()
-    .another()
-    .third();
 <<< 3.7
 variable =
     (tar + get)
         .method()
         .another()
         .third();
+<<< 3.8
+variable = (tar + get)
+    .method()
+    .another()
+    .third();
 >>> Don't headline format target of call chain if target splits.
 variable = (veryLongTarget + expressionThatSplits).method().another().third();
 <<<
@@ -120,14 +120,14 @@ variable =
         .third();
 >>> Headline format unsplit properties of call chain.
 variable = (tar + get).prop.erty.method().another().third();
-<<<
-variable = (tar + get).prop.erty
-    .method()
-    .another()
-    .third();
 <<< 3.7
 variable =
     (tar + get).prop.erty
         .method()
         .another()
         .third();
+<<< 3.8
+variable = (tar + get).prop.erty
+    .method()
+    .another()
+    .third();

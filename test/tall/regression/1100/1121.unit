@@ -6,14 +6,6 @@ void main() async {
       .foo(bar('baz'), // comment to force split
       );
 }
-<<<
-void main() async {
-  (await {
-    'asdf': 'fdsa', // comment to force split
-  }.toString()).foo(
-    bar('baz'), // comment to force split
-  );
-}
 <<< 3.7
 void main() async {
   (await {
@@ -22,6 +14,14 @@ void main() async {
       .foo(
         bar('baz'), // comment to force split
       );
+}
+<<< 3.8
+void main() async {
+  (await {
+    'asdf': 'fdsa', // comment to force split
+  }.toString()).foo(
+    bar('baz'), // comment to force split
+  );
 }
 >>>
 Future<void> a() {
@@ -143,25 +143,6 @@ main() {
             return tokenResponse.body!.token!;
           });
         }
-<<<
-        main() {
-          return Stream.value(null)
-              .flatMap(
-                (value) => _client
-                    .apiUserLoginPost(
-                      body: LoginRequest(email: email, password: password),
-                    )
-                    .asStream(),
-              )
-              .doOnData((response) {
-                if (response.error != null) {
-                  throw Exception(response.error);
-                }
-              })
-              .map((tokenResponse) {
-                return tokenResponse.body!.token!;
-              });
-        }
 <<< 3.7
         main() {
           return Stream.value(null)
@@ -172,6 +153,25 @@ main() {
                           body: LoginRequest(email: email, password: password),
                         )
                         .asStream(),
+              )
+              .doOnData((response) {
+                if (response.error != null) {
+                  throw Exception(response.error);
+                }
+              })
+              .map((tokenResponse) {
+                return tokenResponse.body!.token!;
+              });
+        }
+<<< 3.8
+        main() {
+          return Stream.value(null)
+              .flatMap(
+                (value) => _client
+                    .apiUserLoginPost(
+                      body: LoginRequest(email: email, password: password),
+                    )
+                    .asStream(),
               )
               .doOnData((response) {
                 if (response.error != null) {

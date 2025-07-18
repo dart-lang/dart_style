@@ -24,17 +24,17 @@ main() {
     );
   }
 }
-<<<
+<<< 3.7
 main() {
   {
     return TextFieldTapRegion(
       onLongPressMoveUpdate: (longPressMoveUpdateDetails) {
         (switch (Theme.of(this.context).platform) {
-          TargetPlatform.iOS ||
-          TargetPlatform.macOS => _renderEditable.selectPositionAt(
-            from: longPressMoveUpdateDetails.globalPosition,
-            cause: SelectionChangedCause.longPress,
-          ),
+          TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
+              .selectPositionAt(
+                from: longPressMoveUpdateDetails.globalPosition,
+                cause: SelectionChangedCause.longPress,
+              ),
           TargetPlatform.android ||
           TargetPlatform.fuchsia ||
           TargetPlatform.linux ||
@@ -50,17 +50,17 @@ main() {
     );
   }
 }
-<<< 3.7
+<<< 3.8
 main() {
   {
     return TextFieldTapRegion(
       onLongPressMoveUpdate: (longPressMoveUpdateDetails) {
         (switch (Theme.of(this.context).platform) {
-          TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
-              .selectPositionAt(
-                from: longPressMoveUpdateDetails.globalPosition,
-                cause: SelectionChangedCause.longPress,
-              ),
+          TargetPlatform.iOS ||
+          TargetPlatform.macOS => _renderEditable.selectPositionAt(
+            from: longPressMoveUpdateDetails.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          ),
           TargetPlatform.android ||
           TargetPlatform.fuchsia ||
           TargetPlatform.linux ||
@@ -101,17 +101,19 @@ main() {
     );
   }
 }
-<<<
+<<< 3.7
 main() {
   {
     return TextFieldTapRegion(
-      onLongPressMoveUpdate: (longPressMoveUpdateDetails) =>
-          switch (Theme.of(this.context).platform) {
-            TargetPlatform.iOS ||
-            TargetPlatform.macOS => _renderEditable.selectPositionAt(
-              from: longPressMoveUpdateDetails.globalPosition,
-              cause: SelectionChangedCause.longPress,
-            ),
+      onLongPressMoveUpdate:
+          (longPressMoveUpdateDetails) => switch (Theme.of(
+            this.context,
+          ).platform) {
+            TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
+                .selectPositionAt(
+                  from: longPressMoveUpdateDetails.globalPosition,
+                  cause: SelectionChangedCause.longPress,
+                ),
             TargetPlatform.android ||
             TargetPlatform.fuchsia ||
             TargetPlatform.linux ||
@@ -126,19 +128,17 @@ main() {
     );
   }
 }
-<<< 3.7
+<<< 3.8
 main() {
   {
     return TextFieldTapRegion(
-      onLongPressMoveUpdate:
-          (longPressMoveUpdateDetails) => switch (Theme.of(
-            this.context,
-          ).platform) {
-            TargetPlatform.iOS || TargetPlatform.macOS => _renderEditable
-                .selectPositionAt(
-                  from: longPressMoveUpdateDetails.globalPosition,
-                  cause: SelectionChangedCause.longPress,
-                ),
+      onLongPressMoveUpdate: (longPressMoveUpdateDetails) =>
+          switch (Theme.of(this.context).platform) {
+            TargetPlatform.iOS ||
+            TargetPlatform.macOS => _renderEditable.selectPositionAt(
+              from: longPressMoveUpdateDetails.globalPosition,
+              cause: SelectionChangedCause.longPress,
+            ),
             TargetPlatform.android ||
             TargetPlatform.fuchsia ||
             TargetPlatform.linux ||

@@ -116,8 +116,12 @@ Future<void> _runTest(
   var actualText = actual.textWithSelectionMarkers;
   if (!testFile.isCompilationUnit) actualText += '\n';
 
-  // TODO(rnystrom): Handle multiple outputs.
-  var expectedText = formatTest.outputs.first.code.textWithSelectionMarkers;
+  var output = switch (formatTest) {
+    UnversionedFormatTest(:var output) => output,
+    // Used the newest style for the expectation.
+    VersionedFormatTest(:var outputs) => outputs.values.last,
+  };
+  var expectedText = output.code.textWithSelectionMarkers;
 
   print('$path ${formatTest.input.description}');
   _drawRuler('before', pageWidth);
