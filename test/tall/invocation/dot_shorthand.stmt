@@ -67,3 +67,11 @@ context(
       .third()
       .fourthOne(),
 );
+>>> Nested call.
+.method(.getter,.method(.new(.new())),const.ctor());
+<<<
+.method(
+  .getter,
+  .method(.new(.new())),
+  const .ctor(),
+);
