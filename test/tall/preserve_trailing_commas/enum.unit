@@ -25,13 +25,14 @@ enum E {e,;}
 enum E {
   e,
 }
->>> Remove trailing comma and split if there are members.
+>>> Preserve trailing comma and split if there are members.
 enum E { a, b, c,; int x; }
 <<<
 enum E {
   a,
   b,
-  c;
+  c,
+  ;
 
   int x;
 }
