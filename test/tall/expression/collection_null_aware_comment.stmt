@@ -33,3 +33,20 @@ var map = {
       ? // c
       value,
 };
+>>> (experiment dot-shorthands) Comment between `?` and `.` of dot shorthand.
+var list = [
+  ?  /* c */  .  property  ,
+  ?  // c
+  .  invocation  (  )  ,
+  ?  /// c
+  .  new  (  )  ,
+];
+<<< 3.10
+var list = [
+  ? /* c */ .property,
+  ? // c
+  .invocation(),
+  ?
+  /// c
+  .new(),
+];

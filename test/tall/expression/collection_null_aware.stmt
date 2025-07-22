@@ -27,3 +27,17 @@ var list = [
   ?(veryLongExpression +
       thatIsForcedToSplit),
 ];
+>>> (experiment dot-shorthands) Preserves space for dot shorthand.
+### If the space between `?` and `.` is removed, it would become a single `?.`
+### token and thus a parse error.
+var list = [
+  ?  .  property  ,
+  ?  .  invocation  (  )  ,
+  ?  .  new  (  )  ,
+];
+<<< 3.10
+var list = [
+  ? .property,
+  ? .invocation(),
+  ? .new(),
+];
