@@ -7,6 +7,7 @@ import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
+import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/error.dart';
 // ignore: implementation_imports
 import 'package:analyzer/src/dart/scanner/scanner.dart';
@@ -176,7 +177,7 @@ final class DartFormatter {
     // Throw if there are syntactic errors.
     var syntacticErrors =
         parseResult.errors.where((error) {
-          return error.errorCode.type == ErrorType.SYNTACTIC_ERROR;
+          return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
         }).toList();
     if (syntacticErrors.isNotEmpty) {
       throw FormatterException(syntacticErrors);
@@ -194,11 +195,11 @@ final class DartFormatter {
       var token = node.endToken.next!;
       if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
         var stringSource = StringSource(text, source.uri);
-        var error = AnalysisError.tmp(
+        var error = Diagnostic.tmp(
           source: stringSource,
           offset: token.offset - inputOffset,
           length: math.max(token.length, 1),
-          errorCode: ParserErrorCode.UNEXPECTED_TOKEN,
+          diagnosticCode: ParserErrorCode.UNEXPECTED_TOKEN,
           arguments: [token.lexeme],
         );
         throw FormatterException([error]);

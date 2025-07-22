@@ -531,7 +531,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // The name of the type being constructed.
     var type = node.type;
-    pieces.token(type.name2);
+    pieces.token(type.name);
     pieces.visit(type.typeArguments);
     pieces.token(type.question);
 
@@ -590,16 +590,18 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
-  void visitDotShorthandInvocation(DotShorthandInvocation node) {
-    // TODO(rnystrom): Get this directly from the AST once the formatter can
-    // use analyzer 8.0.0.
-    // See: https://github.com/dart-lang/sdk/issues/60840
-    if (node.period.previous case var token?
-        when token.keyword == Keyword.CONST) {
-      pieces.token(token);
-      pieces.space();
-    }
+  void visitDotShorthandConstructorInvocation(
+    DotShorthandConstructorInvocation node,
+  ) {
+    pieces.modifier(node.constKeyword);
+    pieces.token(node.period);
+    pieces.visit(node.constructorName);
+    pieces.visit(node.typeArguments);
+    pieces.visit(node.argumentList);
+  }
 
+  @override
+  void visitDotShorthandInvocation(DotShorthandInvocation node) {
     pieces.token(node.period);
     pieces.visit(node.memberName);
     pieces.visit(node.typeArguments);
@@ -1252,7 +1254,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // The type being constructed.
     var type = constructor.type;
-    pieces.token(type.name2);
+    pieces.token(type.name);
     pieces.visit(type.typeArguments);
 
     // If this is a named constructor call, the name.
@@ -1357,7 +1359,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitLibraryDirective(LibraryDirective node) {
     pieces.withMetadata(node.metadata, () {
       pieces.token(node.libraryKeyword);
-      pieces.visit(node.name2, spaceBefore: true);
+      pieces.visit(node.name, spaceBefore: true);
       pieces.token(node.semicolon);
     });
   }
@@ -1559,7 +1561,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitNamedType(NamedType node) {
     pieces.token(node.importPrefix?.name);
     pieces.token(node.importPrefix?.period);
-    pieces.token(node.name2);
+    pieces.token(node.name);
     pieces.visit(node.typeArguments);
     pieces.token(node.question);
   }
@@ -2339,17 +2341,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     // Instead, we hoist the comment out of all of those and then have comment
     // precede them all so that they don't split.
     var firstToken = node.firstNonCommentToken;
-
-    // TODO(rnystrom): The AST node for DotShorthandInvocation in analyzer
-    // before 8.0.0 doesn't include a leading `const` as part of the node. If
-    // we ignore that, then a comment before the `.` gets incorrectly hoisted
-    // before the `const`. Remove this when we can upgrade to 8.0.0.
-    // See: https://github.com/dart-lang/sdk/issues/60840
-    if (node is DotShorthandInvocation &&
-        firstToken.previous?.keyword == Keyword.CONST) {
-      firstToken = firstToken.previous!;
-    }
-
     if (firstToken.precedingComments != null) {
       var comments = pieces.takeCommentsBefore(firstToken);
       var piece = pieces.build(() {
