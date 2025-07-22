@@ -2,14 +2,14 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
-import 'package:analyzer/error/error.dart';
+import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:source_span/source_span.dart';
 
 /// Thrown when one or more errors occurs while parsing the code to be
 /// formatted.
 final class FormatterException implements Exception {
-  /// The [AnalysisError]s that occurred.
-  final List<AnalysisError> errors;
+  /// The [Diagnostic]s that occurred.
+  final List<Diagnostic> errors;
 
   /// Creates a new FormatterException with an optional error [message].
   const FormatterException(this.errors);

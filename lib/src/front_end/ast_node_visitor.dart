@@ -531,7 +531,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // The name of the type being constructed.
     var type = node.type;
-    pieces.token(type.name2);
+    pieces.token(type.name);
     pieces.visit(type.typeArguments);
     pieces.token(type.question);
 
@@ -587,6 +587,31 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     pieces.visit(node.condition);
     pieces.token(node.rightParenthesis);
     pieces.token(node.semicolon);
+  }
+
+  @override
+  void visitDotShorthandConstructorInvocation(
+    DotShorthandConstructorInvocation node,
+  ) {
+    pieces.modifier(node.constKeyword);
+    pieces.token(node.period);
+    pieces.visit(node.constructorName);
+    pieces.visit(node.typeArguments);
+    pieces.visit(node.argumentList);
+  }
+
+  @override
+  void visitDotShorthandInvocation(DotShorthandInvocation node) {
+    pieces.token(node.period);
+    pieces.visit(node.memberName);
+    pieces.visit(node.typeArguments);
+    pieces.visit(node.argumentList);
+  }
+
+  @override
+  void visitDotShorthandPropertyAccess(DotShorthandPropertyAccess node) {
+    pieces.token(node.period);
+    pieces.visit(node.propertyName);
   }
 
   @override
@@ -1229,7 +1254,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // The type being constructed.
     var type = constructor.type;
-    pieces.token(type.name2);
+    pieces.token(type.name);
     pieces.visit(type.typeArguments);
 
     // If this is a named constructor call, the name.
@@ -1334,7 +1359,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitLibraryDirective(LibraryDirective node) {
     pieces.withMetadata(node.metadata, () {
       pieces.token(node.libraryKeyword);
-      pieces.visit(node.name2, spaceBefore: true);
+      pieces.visit(node.name, spaceBefore: true);
       pieces.token(node.semicolon);
     });
   }
@@ -1536,7 +1561,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitNamedType(NamedType node) {
     pieces.token(node.importPrefix?.name);
     pieces.token(node.importPrefix?.period);
-    pieces.token(node.name2);
+    pieces.token(node.name);
     pieces.visit(node.typeArguments);
     pieces.token(node.question);
   }

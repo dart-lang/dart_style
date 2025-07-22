@@ -1970,9 +1970,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     _visitDirectiveMetadata(node);
     _simpleStatement(node, () {
       token(node.libraryKeyword);
-      if (node.name2 != null) {
-        visit(node.name2, before: space);
-      }
+      if (node.name case var name?) visit(name, before: space);
     });
   }
 
@@ -2184,10 +2182,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
       token(importPrefix.name);
       soloZeroSplit();
       token(importPrefix.period);
-      token(node.name2);
+      token(node.name);
       builder.endSpan();
     } else {
-      token(node.name2);
+      token(node.name);
     }
 
     visit(node.typeArguments);
