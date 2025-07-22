@@ -1587,7 +1587,18 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNullAwareElement(NullAwareElement node) {
-    writePrefix(node.question, node.value);
+    // A null-aware element containing a dot shorthand means there is a `?` and
+    // `.` next to each other. In that case, make sure we put a space between
+    // them so that they don't incorrectly get collapsed into a `?.` null-aware
+    // access token.
+    var space = switch (node.value) {
+      DotShorthandConstructorInvocation() => true,
+      DotShorthandInvocation() => true,
+      DotShorthandPropertyAccess() => true,
+      _ => false,
+    };
+
+    writePrefix(node.question, space: space, node.value);
   }
 
   @override
