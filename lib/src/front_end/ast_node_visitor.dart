@@ -673,14 +673,26 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           builder.leftBracket(node.leftBracket);
 
           for (var constant in node.constants) {
+            var isLast = constant == node.constants.last;
+            var treatAsLast = isLast;
+            if (isLast && formatter.trailingCommas == TrailingCommas.preserve) {
+              treatAsLast = constant.commaAfter == null;
+            }
             builder.addCommentsBefore(constant.firstNonCommentToken);
             builder.add(
               createEnumConstant(
                 constant,
-                isLastConstant: constant == node.constants.last,
+                isLastConstant: treatAsLast,
                 semicolon: node.semicolon,
               ),
             );
+            // If this the last constant and wasn't treated as last, we need
+            // to append the ending semicolon.
+            if (isLast && !treatAsLast) {
+              if (node.semicolon case var token?) {
+                builder.add(tokenPiece(token));
+              }
+            }
           }
 
           // Insert a blank line between the constants and members.
