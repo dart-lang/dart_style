@@ -387,13 +387,14 @@ mixin PieceFactory {
 
   /// Creates a [Piece] for an enum constant.
   ///
-  /// If the constant is in an enum declaration that also declares members, then
-  /// [semicolon] should be the `;` token before the members, and
-  /// [isLastConstant] is `true` if [node] is the last constant before the
-  /// members.
+  /// If [commaAfter] is `true`, then a comma after the constant is written, if
+  /// present. If the constant is the last constant in an enum declaration that
+  /// also declares members (and preserve trailing commas is off), then
+  /// [semicolon] is the `;` token before the members and will be written
+  /// after the constant.
   Piece createEnumConstant(
     EnumConstantDeclaration node, {
-    bool isLastConstant = false,
+    bool commaAfter = false,
     Token? semicolon,
   }) {
     return pieces.build(metadata: node.metadata, () {
@@ -404,17 +405,15 @@ mixin PieceFactory {
         pieces.visit(arguments.argumentList);
       }
 
-      if (semicolon != null) {
-        if (!isLastConstant) {
-          pieces.token(node.commaAfter);
-        } else {
-          // Discard the trailing comma if there is one since there is a
-          // semicolon to use as the separator, but preserve any comments before
-          // the discarded comma.
-          pieces.add(
-            pieces.tokenPiece(discardedToken: node.commaAfter, semicolon),
-          );
-        }
+      if (commaAfter) {
+        pieces.token(node.commaAfter);
+      } else if (semicolon != null) {
+        // Discard the trailing comma if there is one since there is a
+        // semicolon to use as the separator, but preserve any comments before
+        // the discarded comma.
+        pieces.add(
+          pieces.tokenPiece(discardedToken: node.commaAfter, semicolon),
+        );
       }
     });
   }

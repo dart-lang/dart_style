@@ -25,9 +25,17 @@ enum E {e,;}
 enum E {
   e,
 }
->>> Preserve trailing comma and split if there are members.
+>>> Trailing comma with members.
 enum E { a, b, c,; int x; }
-<<<
+<<< 3.9 Remove the trailing comma so the semicolon isn't on its own line.
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+<<< 3.10 Preserve the trailing comma because that's the user intent.
 enum E {
   a,
   b,
