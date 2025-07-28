@@ -5,6 +5,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
+import 'package:pub_semver/pub_semver.dart';
 
 import '../ast_extensions.dart';
 import '../back_end/code_writer.dart';
@@ -672,15 +673,32 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           var builder = SequenceBuilder(this);
           builder.leftBracket(node.leftBracket);
 
+          // In 3.10 and later, preserved trailing commas will also preserve a
+          // trailing comma in an enum with members. That in turn forces the
+          // `;` onto its own line after the last costant. Prior to 3.10, the
+          // behavior is the same as when preserved trailing commas is off
+          // where the last constant's comma is removed and the `;` is placed
+          // there instead.
+          var preserveTrailingComma =
+              formatter.trailingCommas == TrailingCommas.preserve &&
+              formatter.languageVersion >= Version(3, 10, 0);
+
           for (var constant in node.constants) {
+            var isLast = constant == node.constants.last;
             builder.addCommentsBefore(constant.firstNonCommentToken);
             builder.add(
               createEnumConstant(
                 constant,
-                isLastConstant: constant == node.constants.last,
-                semicolon: node.semicolon,
+                commaAfter: !isLast || preserveTrailingComma,
+                semicolon: isLast ? node.semicolon : null,
               ),
             );
+          }
+
+          // If we are preserving the trailing comma, then put the `;` on its
+          // own line after the last constant.
+          if (preserveTrailingComma) {
+            builder.add(tokenPiece(node.semicolon!));
           }
 
           // Insert a blank line between the constants and members.

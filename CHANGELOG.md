@@ -3,6 +3,35 @@
 * Support dot shorthand syntax.
 * Enable language version 3.10.
 
+### Style changes
+
+This change only applies to code whose language version is 3.10 or higher:
+
+* When `trailing_commas` is `preserve`, preserve a trailing comma after the last
+  enum constant when members are present (#1678, #1729).
+
+  ```dart
+  // Before formatting:
+  enum { constant, ; member() {} }
+
+  // After formatting at language version 3.9 or lower:
+  enum {
+    constant;
+
+    member() {}
+  }
+
+  // After formatting at language version 3.10 or higher:
+  enum {
+    constant,
+    ;
+
+    member() {}
+  }
+  ```
+
+  (Thanks to jellynoone@ for this change.)
+
 ## 3.1.1
 
 * Update to latest analyzer and enable language version 3.9.

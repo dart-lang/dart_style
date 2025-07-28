@@ -51,6 +51,15 @@ enum E { a, b }
 enum E {a,b,c,;}
 <<<
 enum E { a, b, c }
+>>> Split values and add trailing comma but remove semicolon if no members.
+enum Primate{bonobo,chimp,gorilla,organutan;}
+<<<
+enum Primate {
+  bonobo,
+  chimp,
+  gorilla,
+  organutan,
+}
 >>> Argument lists in values.
 enum Args {
 first(),second(a,b,c),
