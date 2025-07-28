@@ -1,0 +1,17 @@
+>>>
+bool foo() {
+  if (
+  // Explicitly stated to not be a bot.
+  Platform.environment['BOT'] == 'false'
+  ) {
+    return false;
+  }
+}
+<<<
+bool foo() {
+  if (
+  // Explicitly stated to not be a bot.
+  Platform.environment['BOT'] == 'false') {
+    return false;
+  }
+}
