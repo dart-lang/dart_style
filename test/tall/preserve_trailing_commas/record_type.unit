@@ -1,0 +1,49 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Forces split with multiple positional fields and trailing comma.
+typedef R = (int,int,);
+<<< 3.7
+typedef R =
+    (
+      int,
+      int,
+    );
+<<< 3.8
+typedef R = (
+  int,
+  int,
+);
+>>> Doesn't force split with one positional field.
+typedef R = (int,);
+<<<
+typedef R = (int,);
+>>> Doesn't force split without trailing comma.
+typedef R = (int,int,int);
+<<<
+typedef R = (int, int, int);
+>>> Forces split with named fields and trailing comma.
+typedef R = ({int name,});
+<<< 3.7
+typedef R =
+    ({
+      int name,
+    });
+<<< 3.8
+typedef R = ({
+  int name,
+});
+>>> May still split without trailing comma if doesn't fit.
+typedef R = (int element1, int element2, int element3);
+<<< 3.7
+typedef R =
+    (
+      int element1,
+      int element2,
+      int element3,
+    );
+<<< 3.8
+typedef R = (
+  int element1,
+  int element2,
+  int element3,
+);
