@@ -1814,9 +1814,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var namedFields = node.namedFields;
     var positionalFields = node.positionalFields;
 
-    // Single positional record types always have a trailing comma.
+    // Single positional record types always have a trailing comma and are not
+    // forced to split.
+    var isSinglePositional =
+        positionalFields.length == 1 && namedFields == null;
+
     var listStyle =
-        positionalFields.length == 1 && namedFields == null
+        isSinglePositional
             ? const ListStyle(commas: Commas.alwaysTrailing)
             : const ListStyle(commas: Commas.trailing);
     var builder = DelimitedListBuilder(this, listStyle);
@@ -1849,7 +1853,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     builder.rightBracket(node.rightParenthesis, delimiter: rightDelimiter);
-    pieces.add(builder.build());
+    pieces.add(
+      builder.build(
+        forceSplit:
+            !isSinglePositional &&
+            hasPreservedTrailingComma(rightDelimiter ?? node.rightParenthesis),
+      ),
+    );
     pieces.token(node.question);
   }
 

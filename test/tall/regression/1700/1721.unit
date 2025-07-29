@@ -1,0 +1,9 @@
+(trailing_commas preserve)
+>>>
+typedef RawPhoto = ({DateTime addedAt, String name, String url,});
+<<< 3.8
+typedef RawPhoto = ({
+  DateTime addedAt,
+  String name,
+  String url,
+});

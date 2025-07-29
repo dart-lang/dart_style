@@ -3,6 +3,11 @@
 * Support dot shorthand syntax.
 * Enable language version 3.10.
 
+### Bug fixes
+
+* Preserved trailing commas (`trailing_commas: preserve`) applies to record
+  type annotations too (#1721).
+
 ### Style changes
 
 This change only applies to code whose language version is 3.10 or higher:
