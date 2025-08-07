@@ -1,6 +1,7 @@
-## 3.1.2-wip
+## 3.1.2
 
 * Support dot shorthand syntax.
+* Update to the latest `package:analyzer`.
 * Enable language version 3.10.
 
 ### Bug fixes
