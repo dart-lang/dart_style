@@ -1,3 +1,8 @@
+## 3.1.3-wip
+
+* Don't force a space between `?` and `.` if a null-aware element contains a
+  dot shorthand.
+
 ## 3.1.2
 
 * Support dot shorthand syntax.

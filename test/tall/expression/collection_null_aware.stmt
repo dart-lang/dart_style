@@ -31,13 +31,23 @@ var list = [
 ### If the space between `?` and `.` is removed, it would become a single `?.`
 ### token and thus a parse error.
 var list = [
-  ?  .  property  ,
+  ?.  property  ,
   ?  .  invocation  (  )  ,
   ?  .  new  (  )  ,
 ];
 <<< 3.10
 var list = [
-  ? .property,
-  ? .invocation(),
-  ? .new(),
+  ?.property,
+  ?.invocation(),
+  ?.new(),
 ];
+>>> (experiment dot-shorthands) Ambiguous dot shorthand versus null-aware.
+### Because there is no space in "?.", it must be a null-aware access in a map.
+c = {  e1  ?.  e2  :  e3  };
+<<< 3.10
+c = {e1?.e2: e3};
+>>> (experiment dot-shorthands) Ambiguous dot shorthand versus null-aware.
+### Because there is a space in "? .", it must be a dot shorthand in a set.
+c = {  e1  ?  .  e2  :  e3  };
+<<< 3.10
+c = {e1 ? .e2 : e3};
