@@ -1,6 +1,6 @@
 >>>
-import 'package:archive/archive.dart' as archive
-  if (dart.library.io) 'package:archive/archive_io.dart';
+import 'package:archive/archive.dart'
+  if (dart.library.io) 'package:archive/archive_io.dart' as archive;
 import 'package:flutter/services.dart';
 import 'package:fuzzy/web/e621/e621.dart';
 import 'package:fuzzy/web/e621/models/tag_d_b.dart';
@@ -47,8 +47,8 @@ final LazyInitializer<TagDB> tagDbLazy = LazyInitializer(() async {
   }
 });
 <<<
-import 'package:archive/archive.dart' as archive
-    if (dart.library.io) 'package:archive/archive_io.dart';
+import 'package:archive/archive.dart'
+    if (dart.library.io) 'package:archive/archive_io.dart' as archive;
 import 'package:flutter/services.dart';
 import 'package:fuzzy/web/e621/e621.dart';
 import 'package:fuzzy/web/e621/models/tag_d_b.dart';

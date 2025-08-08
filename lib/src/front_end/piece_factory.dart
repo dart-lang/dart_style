@@ -1016,20 +1016,9 @@ mixin PieceFactory {
       // Add all of the clauses and combinators.
       var clauses = <Piece>[];
 
-      // The language specifies that configurations must appear after any `as`
-      // clause but the parser incorrectly accepts them before it and code in
-      // the wild relies on that. Instead of failing with an "unexpected output"
-      // error, just preserve the order of the clauses if they are out of order.
-      // See: https://github.com/dart-lang/sdk/issues/56641
-      var wroteConfigurations = false;
-      if (directive.configurations.isNotEmpty &&
-          asKeyword != null &&
-          directive.configurations.first.ifKeyword.offset < asKeyword.offset) {
-        for (var configuration in directive.configurations) {
-          clauses.add(nodePiece(configuration));
-        }
-
-        wroteConfigurations = true;
+      // Include any `if` clauses.
+      for (var configuration in directive.configurations) {
+        clauses.add(nodePiece(configuration));
       }
 
       // Include the `as` clause.
@@ -1042,13 +1031,6 @@ mixin PieceFactory {
             pieces.visit(prefix!);
           }),
         );
-      }
-
-      // Include any `if` clauses.
-      if (!wroteConfigurations) {
-        for (var configuration in directive.configurations) {
-          clauses.add(nodePiece(configuration));
-        }
       }
 
       // Include the `show` and `hide` clauses.
