@@ -1832,18 +1832,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(node.uri);
 
-      // The language specifies that configurations must appear after any `as`
-      // clause but the parser incorrectly accepts them before it and code in
-      // the wild relies on that. Instead of failing with an "unexpected output"
-      // error, just preserve the order of the clauses if they are out of order.
-      // See: https://github.com/dart-lang/sdk/issues/56641
-      var wroteConfigurations = false;
-      if (node.asKeyword case var asKeyword?
-          when node.configurations.isNotEmpty &&
-              node.configurations.first.ifKeyword.offset < asKeyword.offset) {
-        _visitConfigurations(node.configurations);
-        wroteConfigurations = true;
-      }
+      _visitConfigurations(node.configurations);
 
       if (node.asKeyword != null) {
         soloSplit();
@@ -1851,10 +1840,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
         token(node.asKeyword);
         space();
         visit(node.prefix);
-      }
-
-      if (!wroteConfigurations) {
-        _visitConfigurations(node.configurations);
       }
 
       _visitCombinators(node.combinators);

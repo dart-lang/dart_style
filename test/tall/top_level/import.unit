@@ -69,15 +69,6 @@ import 'some/uri.dart'
     if (config.name.debug ==
         'string') 'c';
 >>> Both configuration and prefix.
-import 'foo.dart' as foo if (config == 'value') 'other.dart';
-<<<
-import 'foo.dart'
-    as foo
-    if (config == 'value') 'other.dart';
->>> Configuration before prefix.
-### This violates the language spec, but the parser currently allows it without
-### reporting an error and code in the wild relies on that. So the formatter
-### handles it gracefully. See: https://github.com/dart-lang/sdk/issues/56641
 import 'foo.dart' if (config == 'value') 'other.dart' as foo;
 <<<
 import 'foo.dart'
