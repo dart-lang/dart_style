@@ -1,3 +1,14 @@
+## 3.1.3-wip
+
+* No longer format imports with configurations and a prefix in the wrong order.
+  The parser used to accept this without error even though it violated the
+  language spec. The parser is being fixed, so the formatter will no longer
+  accept or format code like:
+
+  ```dart
+  import 'foo.dart' as prefix if (cond) 'bar.dart';
+  ```
+
 ## 3.1.2
 
 * Support dot shorthand syntax.
