@@ -154,8 +154,8 @@ final class CodeWriter {
   /// Increases the indentation by [indent] relative to the current amount of
   /// indentation.
   void pushIndent(Indent indent) {
-    if (_cache.isVersion37) {
-      _pushIndentV37(indent);
+    if (_cache.is3Dot7) {
+      _pushIndent3Dot7(indent);
     } else {
       var parent = _indentStack.last;
 
@@ -191,8 +191,8 @@ final class CodeWriter {
   /// This is only used in a couple of corners of if-case and for-in headers
   /// where the indentation is unusual.
   void pushCollapsibleIndent() {
-    if (_cache.isVersion37) {
-      _pushIndentV37(Indent.expression, canCollapse: true);
+    if (_cache.is3Dot7) {
+      _pushIndent3Dot7(Indent.expression, canCollapse: true);
     } else {
       pushIndent(Indent.controlFlowClause);
     }
@@ -228,14 +228,14 @@ final class CodeWriter {
   /// To deal with this, 3.7 had a notion of "collapsible" indentation. In 3.8
   /// and later, there is a different mechanism for merging indentation kinds.
   /// This function implements the former.
-  void _pushIndentV37(Indent indent, {bool canCollapse = false}) {
+  void _pushIndent3Dot7(Indent indent, {bool canCollapse = false}) {
     var parentIndent = _indentStack.last.spaces;
     var parentCollapse = _indentStack.last.collapsible;
 
     if (parentCollapse == indent.spaces) {
       // We're indenting by the same existing collapsible amount, so collapse
       // this new indentation with that existing one.
-      _indentStack.add(_IndentLevel.v37(parentIndent, 0));
+      _indentStack.add(_IndentLevel.v3Dot7(parentIndent, 0));
     } else if (canCollapse) {
       // We should never get multiple levels of nested collapsible indentation.
       assert(parentCollapse == 0);
@@ -243,11 +243,11 @@ final class CodeWriter {
       // Increase the indentation and note that it can be collapsed with
       // further indentation.
       _indentStack.add(
-        _IndentLevel.v37(parentIndent + indent.spaces, indent.spaces),
+        _IndentLevel.v3Dot7(parentIndent + indent.spaces, indent.spaces),
       );
     } else {
       // Regular indentation, so just increase the indent.
-      _indentStack.add(_IndentLevel.v37(parentIndent + indent.spaces, 0));
+      _indentStack.add(_IndentLevel.v3Dot7(parentIndent + indent.spaces, 0));
     }
   }
 
@@ -399,7 +399,7 @@ final class CodeWriter {
       );
 
       bool invalid;
-      if (_cache.isVersion37) {
+      if (_cache.is3Dot7) {
         // If the child must be inline, then invalidate because we know it
         // contains some kind of newline.
         // TODO(rnystrom): It would be better if this logic wasn't different for
@@ -640,7 +640,7 @@ final class _IndentLevel {
   /// Only used for 3.7 style.
   final int collapsible;
 
-  _IndentLevel.v37(this.spaces, this.collapsible) : type = Indent.none;
+  _IndentLevel.v3Dot7(this.spaces, this.collapsible) : type = Indent.none;
 
   _IndentLevel(this.type, this.spaces) : collapsible = 0;
 

@@ -132,7 +132,7 @@ final class ChainBuilder {
       indent: Indent.cascade,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
-      version37: _visitor.isVersion37,
+      is3Dot7: _visitor.style.is3Dot7,
     );
 
     if (!(_root as CascadeExpression).allowInline) chain.pin(State.split);
@@ -234,7 +234,7 @@ final class ChainBuilder {
       leadingProperties: leadingProperties,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
-      version37: _visitor.isVersion37,
+      is3Dot7: _visitor.style.is3Dot7,
     );
   }
 

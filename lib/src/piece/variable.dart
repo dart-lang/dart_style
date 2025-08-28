@@ -46,7 +46,7 @@ final class VariablePiece extends Piece {
   final bool _hasType;
 
   /// Whether we are using the 3.7 style.
-  final bool _isVersion37;
+  final bool _is3Dot7;
 
   /// Creates a [VariablePiece].
   ///
@@ -56,9 +56,9 @@ final class VariablePiece extends Piece {
     this._header,
     this._variables, {
     required bool hasType,
-    required bool version37,
+    required bool is3Dot7,
   }) : _hasType = hasType,
-       _isVersion37 = version37;
+       _is3Dot7 = is3Dot7;
 
   @override
   List<State> get additionalStates => [
@@ -72,7 +72,7 @@ final class VariablePiece extends Piece {
     // `var x` etc.) then allow any shape. That way, if there's a comment
     // inside, the solver doesn't get confused trying to invalidate the
     // VariablePiece.
-    if (!_isVersion37 && _variables.length == 1 && !_hasType) return Shape.all;
+    if (!_is3Dot7 && _variables.length == 1 && !_hasType) return Shape.all;
 
     if (child == _header) {
       return Shape.anyIf(state != State.unsplit);

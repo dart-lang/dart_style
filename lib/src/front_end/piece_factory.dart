@@ -3,14 +3,12 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
-import 'package:pub_semver/pub_semver.dart';
 
 import '../ast_extensions.dart';
 import '../back_end/code_writer.dart';
-import '../dart_formatter.dart';
 import '../piece/adjacent.dart';
 import '../piece/assign.dart';
-import '../piece/assign_v37.dart';
+import '../piece/assign_3_dot_7.dart';
 import '../piece/clause.dart';
 import '../piece/control_flow.dart';
 import '../piece/for.dart';
@@ -27,6 +25,7 @@ import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
 import 'expression_contents.dart';
+import 'formatting_style.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
 
@@ -107,16 +106,13 @@ enum NodeContext {
 mixin PieceFactory {
   final ExpressionContents _contents = ExpressionContents();
 
-  DartFormatter get formatter;
+  FormattingStyle get style;
 
   PieceWriter get pieces;
 
   CommentWriter get comments;
 
   NodeContext get parentContext;
-
-  /// Whether the code being formatted is at language version 3.7.
-  bool get isVersion37 => formatter.languageVersion == Version(3, 7, 0);
 
   void visitNode(AstNode node, NodeContext context);
 
@@ -136,7 +132,7 @@ mixin PieceFactory {
     Token rightBracket,
   ) {
     // In 3.7, we don't support preserving trailing commas or eager splitting.
-    if (isVersion37) {
+    if (style.is3Dot7) {
       writeList(
         leftBracket: leftBracket,
         arguments,
@@ -161,7 +157,7 @@ mixin PieceFactory {
     builder.visitAll(arguments, allowBlockArgument: true);
     builder.rightBracket(rightBracket);
     var argumentsPiece = builder.build(
-      forceSplit: hasPreservedTrailingComma(rightBracket),
+      forceSplit: style.preserveTrailingCommaBefore(rightBracket),
     );
 
     // If the call is complex enough, force it to split even if it would fit.
@@ -513,15 +509,15 @@ mixin PieceFactory {
           // don't want to add a trailing comma. But if the user has preserve
           // trailing commas on, we should preserve the comma if there is one
           // but not add one if there isn't and it splits.
-          var style = const ListStyle(commas: Commas.nonTrailing);
-          if (formatter.trailingCommas == TrailingCommas.preserve &&
+          var listStyle = const ListStyle(commas: Commas.nonTrailing);
+          if (style.preserveTrailingCommaAfterForUpdaters &&
               rightParenthesis.hasCommaBefore) {
-            style = const ListStyle(commas: Commas.trailing);
+            listStyle = const ListStyle(commas: Commas.trailing);
           }
 
           // Create a nested list builder for the updaters so that they can
           // remain unsplit even while the clauses split.
-          var updaterBuilder = DelimitedListBuilder(this, style);
+          var updaterBuilder = DelimitedListBuilder(this, listStyle);
 
           forParts.updaters.forEach(updaterBuilder.visit);
 
@@ -529,7 +525,7 @@ mixin PieceFactory {
           // around a trailing comma after the updaters don't get dropped.
           partsList.addInnerBuilder(
             updaterBuilder,
-            forceSplit: hasPreservedTrailingComma(rightParenthesis),
+            forceSplit: style.preserveTrailingCommaBefore(rightParenthesis),
           );
         }
 
@@ -780,7 +776,7 @@ mixin PieceFactory {
         returnTypePiece,
         [signature],
         hasType: true,
-        version37: isVersion37,
+        is3Dot7: style.is3Dot7,
       );
     });
   }
@@ -801,7 +797,7 @@ mixin PieceFactory {
     var (separator, value) = defaultValue;
 
     var operatorPiece = pieces.build(() {
-      if (!isVersion37) pieces.add(parameter);
+      if (!style.is3Dot7) pieces.add(parameter);
       if (separator.type == TokenType.EQ) pieces.space();
       pieces.token(separator);
       if (separator.type != TokenType.EQ) pieces.space();
@@ -809,9 +805,9 @@ mixin PieceFactory {
 
     var valuePiece = nodePiece(value, context: NodeContext.assignment);
 
-    if (isVersion37) {
+    if (style.is3Dot7) {
       pieces.add(
-        AssignPieceV37(
+        AssignPiece3Dot7(
           left: parameter,
           operatorPiece,
           valuePiece,
@@ -1043,7 +1039,7 @@ mixin PieceFactory {
                 tokenPiece(combinatorNode.keyword),
                 for (var name in names)
                   tokenPiece(name.token, commaAfter: true),
-              ], version37: isVersion37),
+              ], is3Dot7: style.is3Dot7),
             );
         }
       }
@@ -1072,7 +1068,7 @@ mixin PieceFactory {
     pieces.token(index.question);
     pieces.token(index.period);
 
-    if (isVersion37) {
+    if (style.is3Dot7) {
       pieces.token(index.leftBracket);
       pieces.visit(index.index);
       pieces.token(index.rightBracket);
@@ -1130,7 +1126,7 @@ mixin PieceFactory {
       InfixPiece(
         [leftPiece, rightPiece],
         indent: indent,
-        version37: isVersion37,
+        is3Dot7: style.is3Dot7,
       ),
     );
   }
@@ -1191,7 +1187,7 @@ mixin PieceFactory {
       InfixPiece(
         operands,
         indent: indent ? Indent.infix : Indent.none,
-        version37: isVersion37,
+        is3Dot7: style.is3Dot7,
       ),
     );
   }
@@ -1242,7 +1238,7 @@ mixin PieceFactory {
         // single-element record), then the comma shouldn't force a split.
         forceSplit:
             style.commas != Commas.alwaysTrailing &&
-            hasPreservedTrailingComma(rightBracket),
+            this.style.preserveTrailingCommaBefore(rightBracket),
         blockShaped: blockShaped,
       ),
     );
@@ -1329,7 +1325,7 @@ mixin PieceFactory {
         header,
         [tokenPiece(name)],
         hasType: type != null,
-        version37: isVersion37,
+        is3Dot7: style.is3Dot7,
       ),
     );
   }
@@ -1345,7 +1341,7 @@ mixin PieceFactory {
   /// If [space] is `true` and there is an operator, writes a space between the
   /// operator and operand.
   void writePrefix(Token? operator, AstNode? operand, {bool space = false}) {
-    if (isVersion37) {
+    if (style.is3Dot7) {
       pieces.token(operator, spaceAfter: space);
       pieces.visit(operand);
       return;
@@ -1499,7 +1495,7 @@ mixin PieceFactory {
           InfixPiece([
             tokenPiece(keyword),
             for (var type in types) nodePiece(type, commaAfter: true),
-          ], version37: isVersion37),
+          ], is3Dot7: style.is3Dot7),
         );
       }
 
@@ -1587,8 +1583,8 @@ mixin PieceFactory {
     NodeContext leftHandSideContext = NodeContext.none,
     NodeContext rightHandSideContext = NodeContext.none,
   }) {
-    if (isVersion37) {
-      _writeAssignmentV37(
+    if (style.is3Dot7) {
+      _writeAssignment3Dot7(
         leftHandSide,
         operator,
         rightHandSide,
@@ -1628,7 +1624,7 @@ mixin PieceFactory {
         leftPiece,
         sequencePiece,
         canBlockSplitSequence: sequence.canBlockSplit,
-        version37: isVersion37,
+        is3Dot7: style.is3Dot7,
       );
     });
   }
@@ -1668,7 +1664,7 @@ mixin PieceFactory {
               leftPiece,
               sequencePiece,
               canBlockSplitSequence: sequence.canBlockSplit,
-              version37: isVersion37,
+              is3Dot7: style.is3Dot7,
             ),
           );
         },
@@ -1686,7 +1682,7 @@ mixin PieceFactory {
     });
   }
 
-  void _writeAssignmentV37(
+  void _writeAssignment3Dot7(
     AstNode leftHandSide,
     Token operator,
     AstNode rightHandSide, {
@@ -1751,7 +1747,7 @@ mixin PieceFactory {
     );
 
     pieces.add(
-      AssignPieceV37(
+      AssignPiece3Dot7(
         left: leftPiece,
         operatorPiece,
         rightPiece,
@@ -1760,12 +1756,6 @@ mixin PieceFactory {
       ),
     );
   }
-
-  /// Whether there is a trailing comma at the end of the list delimited by
-  /// [rightBracket] which should be preserved.
-  bool hasPreservedTrailingComma(Token rightBracket) =>
-      formatter.trailingCommas == TrailingCommas.preserve &&
-      rightBracket.hasCommaBefore;
 
   /// Writes a piece for a parameter-like constructor: Either a simple formal
   /// parameter or a record type field, which is syntactically similar to a
@@ -1819,7 +1809,7 @@ mixin PieceFactory {
           typePiece,
           [namePiece],
           hasType: true,
-          version37: isVersion37,
+          is3Dot7: style.is3Dot7,
         );
       } else {
         // Will have at least a type or name.
