@@ -24,11 +24,11 @@ import 'solver.dart';
 /// cached subtree Solution.
 final class SolutionCache {
   /// Whether this cache and all solutions in it use the 3.7 style solver.
-  final bool isVersion37;
+  final bool is3Dot7;
 
   final _cache = <_Key, Solution>{};
 
-  SolutionCache({required bool version37}) : isVersion37 = version37;
+  SolutionCache({required this.is3Dot7});
 
   /// Returns a previously cached solution for formatting [root] with leading
   /// [indent] (and [subsequentIndent] for lines after the first) or produces a

@@ -458,7 +458,7 @@ extension AdjacentStringsExtensions on AdjacentStrings {
   ///
   /// To balance these, we omit the indentation when an adjacent string
   /// expression is in a context where it's unlikely to be confusing.
-  bool get indentStringsV37 {
+  bool get indentStrings3Dot7 {
     return switch (parent) {
       ArgumentList(:var arguments) => _hasOtherStringArgument(arguments),
 

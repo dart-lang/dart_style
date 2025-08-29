@@ -1,0 +1,12 @@
+>>>
+// @dart=3.7
+var variable =
+    condition
+        ? thenBranch // Comment to force split.
+        : elseBranch;
+<<<
+// @dart=3.7
+var variable =
+    condition
+        ? thenBranch // Comment to force split.
+        : elseBranch;

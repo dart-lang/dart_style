@@ -22,12 +22,12 @@ abstract base class InfixPiece extends Piece {
   /// Creates an [InfixPiece] for the given series of [operands].
   factory InfixPiece(
     List<Piece> operands, {
-    required bool version37,
+    required bool is3Dot7,
     bool conditional = false,
     Indent indent = Indent.expression,
   }) {
-    if (version37) {
-      return _InfixPieceV37(operands, indent);
+    if (is3Dot7) {
+      return _InfixPiece3Dot7(operands, indent);
     } else {
       return _InfixPiece(operands, indent, conditional);
     }
@@ -36,10 +36,10 @@ abstract base class InfixPiece extends Piece {
   /// Creates an [InfixPiece] for a conditional (`?:`) expression.
   factory InfixPiece.conditional(
     List<Piece> operands, {
-    required bool version37,
+    required bool is3Dot7,
   }) {
-    if (version37) {
-      return _InfixPieceV37(operands, Indent.expression);
+    if (is3Dot7) {
+      return _InfixPiece3Dot7(operands, Indent.expression);
     } else {
       return _InfixPiece(operands, Indent.infix, true);
     }
@@ -128,8 +128,8 @@ final class _InfixPiece extends InfixPiece {
 }
 
 /// [InfixPiece] subclass for 3.7 style.
-final class _InfixPieceV37 extends InfixPiece {
-  _InfixPieceV37(super.operands, super.indent) : super._();
+final class _InfixPiece3Dot7 extends InfixPiece {
+  _InfixPiece3Dot7(super.operands, super.indent) : super._();
 
   @override
   void format(CodeWriter writer, State state) {

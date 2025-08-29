@@ -147,6 +147,31 @@ main() {
     expect(formatter.format(before), after);
   });
 
+  test('language version comment override changes language versioned style '
+      'change', () async {
+    // Use a language version at a later style.
+    var formatter = makeFormatter(languageVersion: Version(3, 8, 0));
+
+    // But the code has a comment to opt into an older but still tall style.
+    // In 3.8, we allow the condition part of a `?:` on the same line as an
+    // assignment. In 3.7, we don't.
+    const before = '''
+// @dart=3.7
+var variable = condition
+    ? thenBranch // Comment to force split.
+    : elseBranch;
+''';
+    const after = '''
+// @dart=3.7
+var variable =
+    condition
+        ? thenBranch // Comment to force split.
+        : elseBranch;
+''';
+
+    expect(formatter.format(before), after);
+  });
+
   test('throws a FormatterException on failed parse', () {
     var formatter = makeFormatter();
     expect(() => formatter.format('wat?!'), throwsA(isA<FormatterException>()));

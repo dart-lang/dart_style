@@ -132,10 +132,10 @@ abstract base class ChainPiece extends Piece {
     int blockCallIndex = -1,
     Indent indent = Indent.expression,
     required bool allowSplitInTarget,
-    required bool version37,
+    required bool is3Dot7,
   }) {
-    if (version37) {
-      return _ChainPieceV37(
+    if (is3Dot7) {
+      return _ChainPiece3Dot7(
         target,
         calls,
         cascade: cascade,
@@ -347,7 +347,7 @@ final class _ChainPiece extends ChainPiece {
 }
 
 /// A [ChainPiece] subclass for 3.7 style.
-final class _ChainPieceV37 extends ChainPiece {
+final class _ChainPiece3Dot7 extends ChainPiece {
   /// Whether the target expression may contain newlines when the chain is not
   /// fully split. (It may always contain newlines when the chain splits.)
   ///
@@ -363,7 +363,7 @@ final class _ChainPieceV37 extends ChainPiece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  _ChainPieceV37(
+  _ChainPiece3Dot7(
     super.target,
     super.calls, {
     required super.cascade,

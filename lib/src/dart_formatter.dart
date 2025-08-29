@@ -17,6 +17,7 @@ import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
+import 'front_end/formatting_style.dart';
 import 'short/source_visitor.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
@@ -233,8 +234,16 @@ final class DartFormatter {
         }
       }
 
-      var visitor = AstNodeVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(unitSourceCode, node, pageWidthFromComment);
+      var visitor = AstNodeVisitor(
+        FormattingStyle(
+          this,
+          languageVersion: sourceLanguageVersion,
+          pageWidth: pageWidthFromComment,
+        ),
+        lineInfo,
+        unitSourceCode,
+      );
+      output = visitor.run(unitSourceCode, node);
     } else {
       // Use the old style.
       var visitor = SourceVisitor(this, lineInfo, unitSourceCode);

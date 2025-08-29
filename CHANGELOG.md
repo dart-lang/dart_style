@@ -12,6 +12,14 @@
 * Don't force a space between `?` and `.` if a null-aware element contains a
   dot shorthand.
 
+### Bug fixes
+
+* Respect `@dart=` version comments when determining which >3.7 style to apply.
+  The formatter correctly used those comments to switch between the old short
+  and new tall style, but ignored them for language versioned style rule changes
+  after 3.7. Now the language version of the file is consistently respected for
+  all style rules (#1762).
+
 ## 3.1.2
 
 * Support dot shorthand syntax.

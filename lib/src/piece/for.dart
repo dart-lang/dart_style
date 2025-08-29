@@ -83,10 +83,10 @@ abstract base class ForInPiece extends Piece {
     Piece variable,
     Piece sequence, {
     bool canBlockSplitSequence = false,
-    required bool version37,
+    required bool is3Dot7,
   }) {
-    if (version37) {
-      return _ForInPieceV37(
+    if (is3Dot7) {
+      return _ForInPiece3Dot7(
         variable,
         sequence,
         canBlockSplitSequence: canBlockSplitSequence,
@@ -135,7 +135,7 @@ final class _ForInPiece extends ForInPiece {
 }
 
 /// A [ForInPiece] subclass for 3.7 style.
-final class _ForInPieceV37 extends ForInPiece {
+final class _ForInPiece3Dot7 extends ForInPiece {
   /// If `true` then the sequence expression supports being block-formatted,
   /// like:
   ///
@@ -147,7 +147,7 @@ final class _ForInPieceV37 extends ForInPiece {
   ///     }
   final bool _canBlockSplitSequence;
 
-  _ForInPieceV37(
+  _ForInPiece3Dot7(
     super._variable,
     super._sequence, {
     bool canBlockSplitSequence = false,

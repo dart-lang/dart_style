@@ -5,13 +5,11 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
-import 'package:pub_semver/pub_semver.dart';
 
 import '../ast_extensions.dart';
 import '../back_end/code_writer.dart';
-import '../dart_formatter.dart';
 import '../piece/assign.dart';
-import '../piece/assign_v37.dart';
+import '../piece/assign_3_dot_7.dart';
 import '../piece/case.dart';
 import '../piece/constructor.dart';
 import '../piece/control_flow.dart';
@@ -28,6 +26,7 @@ import '../source_code.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
 import 'delimited_list_builder.dart';
+import 'formatting_style.dart';
 import 'piece_factory.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
@@ -41,7 +40,7 @@ import 'sequence_builder.dart';
 /// contains only shared state and the visitor methods for the AST.
 final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
-  final DartFormatter formatter;
+  final FormattingStyle style;
 
   @override
   final PieceWriter pieces;
@@ -57,16 +56,16 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   /// Create a new visitor that will be called to visit the code in [source].
   factory AstNodeVisitor(
-    DartFormatter formatter,
+    FormattingStyle style,
     LineInfo lineInfo,
     SourceCode source,
   ) {
     var comments = CommentWriter(lineInfo);
-    var pieces = PieceWriter(formatter, source, comments);
-    return AstNodeVisitor._(formatter, pieces, comments);
+    var pieces = PieceWriter(source, comments);
+    return AstNodeVisitor._(style, pieces, comments);
   }
 
-  AstNodeVisitor._(this.formatter, this.pieces, this.comments) {
+  AstNodeVisitor._(this.style, this.pieces, this.comments) {
     pieces.bindVisitor(this);
   }
 
@@ -77,10 +76,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  ///
-  /// If there is a `// dart format width=123` comment before the formatted
-  /// code, then [pageWidthFromComment] is that width.
-  SourceCode run(SourceCode source, AstNode node, [int? pageWidthFromComment]) {
+  SourceCode run(SourceCode source, AstNode node) {
     Profile.begin('AstNodeVisitor.run()');
 
     Profile.begin('AstNodeVisitor build Piece tree');
@@ -138,14 +134,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     Profile.end('AstNodeVisitor build Piece tree');
 
     // Finish writing and return the complete result.
-    var result = pieces.finish(
-      source,
-      unitPiece,
-      formatter.lineEnding,
-      pageWidth: pageWidthFromComment ?? formatter.pageWidth,
-      leadingIndent: formatter.indent,
-      version37: isVersion37,
-    );
+    var result = pieces.finish(style, source, unitPiece);
 
     Profile.end('AstNodeVisitor.run()');
 
@@ -154,11 +143,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
-    var indent = isVersion37 ? node.indentStringsV37 : node.indentStrings;
+    var indent = style.is3Dot7 ? node.indentStrings3Dot7 : node.indentStrings;
     var piece = InfixPiece(
       node.strings.map(nodePiece).toList(),
       indent: indent ? Indent.infix : Indent.none,
-      version37: isVersion37,
+      is3Dot7: style.is3Dot7,
     );
 
     // Adjacent strings always split.
@@ -193,7 +182,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       // TODO(rnystrom): We probably do want to format `as` the same as other
       // binary operators, but the tall style already treats them differently,
       // so leaving that alone for now.
-      indent: isVersion37 ? Indent.infix : Indent.expression,
+      indent: style.is3Dot7 ? Indent.infix : Indent.expression,
     );
   }
 
@@ -235,7 +224,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitBinaryExpression(BinaryExpression node) {
     // In 3.7 style, flatten binary operands in assignment contexts. (In 3.8
     // and later, indentation merging accomplishes the same thing.)
-    var indent = !isVersion37 || _parentContext != NodeContext.assignment;
+    var indent = !style.is3Dot7 || _parentContext != NodeContext.assignment;
 
     writeInfixChain<BinaryExpression>(
       node,
@@ -377,7 +366,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var operands = [nodePiece(node.condition)];
 
     void addOperand(Token operator, Expression operand) {
-      if (!isVersion37) {
+      if (!style.is3Dot7) {
         // If there are comments before a branch, then hoist them so they aren't
         // indented with the branch body.
         operands.addAll(pieces.takeCommentsBefore(operator));
@@ -406,7 +395,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       }
     }
 
-    var piece = InfixPiece.conditional(operands, version37: isVersion37);
+    var piece = InfixPiece.conditional(operands, is3Dot7: style.is3Dot7);
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
@@ -428,7 +417,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     if (node.equalToken case var equals?) {
       // Hoist comments so that they don't force the `==` to split.
       pieces.hoistLeadingComments(node.name.firstNonCommentToken, () {
-        return InfixPiece(version37: isVersion37, [
+        return InfixPiece(is3Dot7: style.is3Dot7, [
           pieces.build(() {
             pieces.visit(node.name);
             pieces.space();
@@ -448,7 +437,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitConstantPattern(ConstantPattern node) {
-    if (isVersion37) {
+    if (style.is3Dot7) {
       writePrefix(node.constKeyword, space: true, node.expression);
     } else {
       if (node.constKeyword case var constKeyword?) {
@@ -483,8 +472,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           pieces.space();
         });
 
-        if (isVersion37) {
-          redirect = AssignPieceV37(
+        if (style.is3Dot7) {
+          redirect = AssignPiece3Dot7(
             separator,
             nodePiece(constructor, context: NodeContext.assignment),
             canBlockSplitRight: false,
@@ -663,7 +652,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           node.constants.forEach(builder.visit);
           builder.rightBracket(semicolon: node.semicolon, node.rightBracket);
           return builder.build(
-            forceSplit: hasPreservedTrailingComma(
+            forceSplit: style.preserveTrailingCommaBefore(
               node.semicolon ?? node.rightBracket,
             ),
           );
@@ -679,17 +668,14 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           // behavior is the same as when preserved trailing commas is off
           // where the last constant's comma is removed and the `;` is placed
           // there instead.
-          var preserveTrailingComma =
-              formatter.trailingCommas == TrailingCommas.preserve &&
-              formatter.languageVersion >= Version(3, 10, 0);
-
           for (var constant in node.constants) {
             var isLast = constant == node.constants.last;
             builder.addCommentsBefore(constant.firstNonCommentToken);
             builder.add(
               createEnumConstant(
                 constant,
-                commaAfter: !isLast || preserveTrailingComma,
+                commaAfter:
+                    !isLast || style.preserveTrailingCommaAfterEnumValues,
                 semicolon: isLast ? node.semicolon : null,
               ),
             );
@@ -697,7 +683,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
           // If we are preserving the trailing comma, then put the `;` on its
           // own line after the last constant.
-          if (preserveTrailingComma) {
+          if (style.preserveTrailingCommaAfterEnumValues) {
             builder.add(tokenPiece(node.semicolon!));
           }
 
@@ -737,9 +723,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       context: NodeContext.assignment,
     );
 
-    if (isVersion37) {
+    if (style.is3Dot7) {
       pieces.add(
-        AssignPieceV37(
+        AssignPiece3Dot7(
           operatorPiece,
           expression,
           canBlockSplitRight: node.expression.canBlockSplit,
@@ -910,7 +896,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     builder.rightBracket(node.rightParenthesis, delimiter: node.rightDelimiter);
     pieces.add(
       builder.build(
-        forceSplit: hasPreservedTrailingComma(
+        forceSplit: style.preserveTrailingCommaBefore(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
         blockShaped: false,
@@ -1060,9 +1046,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.token(node.name);
       pieces.visit(node.typeParameters);
       pieces.space();
-      if (isVersion37) {
+      if (style.is3Dot7) {
         pieces.add(
-          AssignPieceV37(tokenPiece(node.equals), nodePiece(node.type)),
+          AssignPiece3Dot7(tokenPiece(node.equals), nodePiece(node.type)),
         );
       } else {
         pieces.add(AssignPiece(tokenPiece(node.equals), nodePiece(node.type)));
@@ -1312,7 +1298,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     traverse(piece);
 
-    if (isVersion37) {
+    if (style.is3Dot7) {
       pieces.add(piece);
     } else {
       // Wrap in grouping so that an infix split inside the interpolation
@@ -1352,7 +1338,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       // TODO(rnystrom): We probably do want to format `as` the same as other
       // binary operators, but the tall style already treats them differently,
       // so leaving that alone for now.
-      indent: isVersion37 ? Indent.infix : Indent.expression,
+      indent: style.is3Dot7 ? Indent.infix : Indent.expression,
     );
   }
 
@@ -1413,7 +1399,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitLogicalAndPattern(LogicalAndPattern node) {
     var indent = true;
-    if (isVersion37) {
+    if (style.is3Dot7) {
       // If a logical and pattern occurs inside a map pattern entry, we want to
       // format the operands in parallel, like:
       //
@@ -1448,7 +1434,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     //     };
     var indent = _parentContext != NodeContext.switchExpressionCase;
 
-    if (isVersion37) {
+    if (style.is3Dot7) {
       // If a logical or pattern occurs inside a map pattern entry, we want to
       // format the operands in parallel, like:
       //
@@ -1474,7 +1460,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMapLiteralEntry(MapLiteralEntry node) {
-    if (isVersion37) {
+    if (style.is3Dot7) {
       writeAssignment(node.key, node.separator, node.value);
     } else {
       var leftPiece = pieces.build(() {
@@ -1642,7 +1628,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     builder.rightBracket(node.rightParenthesis);
     pieces.add(
       builder.build(
-        forceSplit: hasPreservedTrailingComma(node.rightParenthesis),
+        forceSplit: style.preserveTrailingCommaBefore(node.rightParenthesis),
       ),
     );
   }
@@ -1846,7 +1832,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       builder.build(
         forceSplit:
             !isSinglePositional &&
-            hasPreservedTrailingComma(rightDelimiter ?? node.rightParenthesis),
+            style.preserveTrailingCommaBefore(
+              rightDelimiter ?? node.rightParenthesis,
+            ),
       ),
     );
     pieces.token(node.question);
@@ -2071,7 +2059,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         bodyPiece,
         canBlockSplitPattern: node.guardedPattern.pattern.canBlockSplit,
         patternIsLogicalOr: node.guardedPattern.pattern is LogicalOrPattern,
-        canBlockSplitBody: !isVersion37 || node.expression.canBlockSplit,
+        canBlockSplitBody: !style.is3Dot7 || node.expression.canBlockSplit,
       ),
     );
   }
@@ -2113,7 +2101,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
                 InfixPiece([
                   patternPiece,
                   nodePiece(whenClause),
-                ], version37: isVersion37),
+                ], is3Dot7: style.is3Dot7),
               );
             } else {
               pieces.add(patternPiece);
@@ -2237,7 +2225,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             var equals?,
             var initializer?,
           )) {
-            if (isVersion37) {
+            if (style.is3Dot7) {
               var variablePiece = tokenPiece(variable.name);
 
               var equalsPiece = pieces.build(() {
@@ -2252,7 +2240,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
               );
 
               variables.add(
-                AssignPieceV37(
+                AssignPiece3Dot7(
                   left: variablePiece,
                   equalsPiece,
                   initializerPiece,
@@ -2280,7 +2268,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
             header,
             variables,
             hasType: node.type != null,
-            version37: isVersion37,
+            is3Dot7: style.is3Dot7,
           ),
         );
       },
