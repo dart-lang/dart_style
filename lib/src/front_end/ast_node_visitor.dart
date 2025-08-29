@@ -143,7 +143,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAdjacentStrings(AdjacentStrings node) {
-    var indent = style.is3Dot7 ? node.indentStrings3_7 : node.indentStrings;
+    var indent = style.is3Dot7 ? node.indentStrings3Dot7 : node.indentStrings;
     var piece = InfixPiece(
       node.strings.map(nodePiece).toList(),
       indent: indent ? Indent.infix : Indent.none,
