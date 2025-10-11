@@ -129,6 +129,28 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   }
 }
 
+/// Checks if the given [path] matches any of the [excludePatterns].
+bool _isExcluded(String path, List<String> excludePatterns) {
+  var relativePath = p.relative(path);
+  for (var pattern in excludePatterns) {
+    if (relativePath.contains(pattern) || _matchesGlob(relativePath, pattern)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+/// Simple glob matching for patterns like *.dart or **/generated/**.
+bool _matchesGlob(String path, String pattern) {
+  // For simplicity, support basic wildcards: * and **
+  var regexPattern = pattern
+      .replaceAll('.', '\\.')
+      .replaceAll('*', '.*')
+      .replaceAll('**', '.*');
+  var regex = RegExp('^$regexPattern\$');
+  return regex.hasMatch(path);
+}
+
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
 ///
@@ -155,6 +177,9 @@ Future<bool> _processDirectory(
     // If the path is in a subdirectory starting with ".", ignore it.
     var parts = p.split(p.relative(entry.path, from: directory.path));
     if (parts.any((part) => part.startsWith('.'))) continue;
+
+    // Check if the file should be excluded.
+    if (_isExcluded(entry.path, options.excludePatterns)) continue;
 
     if (!await _processFile(
       cache,

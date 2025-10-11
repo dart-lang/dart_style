@@ -154,6 +154,13 @@ final class FormatCommand extends Command<int> {
           'See dart.dev/go/experiments.',
       hide: !verbose,
     );
+    argParser.addMultiOption(
+      'exclude',
+      help:
+          'Exclude files and directories matching the given patterns.\n'
+          'Patterns can be file paths, directory names, or glob patterns.',
+      hide: !verbose,
+    );
 
     if (verbose) argParser.addSeparator('Options when formatting from stdin:');
 
@@ -312,6 +319,7 @@ final class FormatCommand extends Command<int> {
     var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
 
     var experimentFlags = argResults['enable-experiment'] as List<String>;
+    var excludePatterns = argResults['exclude'] as List<String>;
 
     // If stdin isn't connected to a pipe, then the user is not passing
     // anything to stdin, so let them know they made a mistake.
@@ -339,6 +347,7 @@ final class FormatCommand extends Command<int> {
       summary: summary,
       setExitIfChanged: setExitIfChanged,
       experimentFlags: experimentFlags,
+      excludePatterns: excludePatterns,
     );
 
     if (argResults.rest.isEmpty) {
