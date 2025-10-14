@@ -200,7 +200,7 @@ final class DartFormatter {
           source: stringSource,
           offset: token.offset - inputOffset,
           length: math.max(token.length, 1),
-          diagnosticCode: ParserErrorCode.UNEXPECTED_TOKEN,
+          diagnosticCode: ParserErrorCode.unexpectedToken,
           arguments: [token.lexeme],
         );
         throw FormatterException([error]);
