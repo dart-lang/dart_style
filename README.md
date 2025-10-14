@@ -98,7 +98,7 @@ $ dart format --output=none --set-exit-if-changed .
 
 ## Using the formatter as a library
 
-The `dart_style package exposes a simple [library API][] for formatting code.
+The dart_style package exposes a simple [library API][] for formatting code.
 Basic usage looks like this:
 
 [library api]: https://pub.dev/documentation/dart_style/latest/
