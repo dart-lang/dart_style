@@ -200,6 +200,9 @@ final class DartFormatter {
           source: stringSource,
           offset: token.offset - inputOffset,
           length: math.max(token.length, 1),
+          // TODO(rnystrom): Once Dart 3.10 is published, we can land
+          // https://github.com/dart-lang/dart_style/pull/1771 which fixes this.
+          // ignore: deprecated_member_use
           diagnosticCode: ParserErrorCode.UNEXPECTED_TOKEN,
           arguments: [token.lexeme],
         );
