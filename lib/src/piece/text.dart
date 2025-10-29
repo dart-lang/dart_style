@@ -121,14 +121,12 @@ sealed class TextPiece extends Piece {
 
 /// [TextPiece] for non-comment source code that may have comments attached to
 /// it.
-final class CodePiece extends TextPiece {
+final class CodePiece([
   /// Pieces for any comments that appear immediately before this code.
-  final List<Piece> _leadingComments;
-
+  final List<Piece> _leadingComments = const [],
+]) extends TextPiece {
   /// Pieces for any comments that hang off the same line as this code.
   final List<Piece> _hangingComments = [];
-
-  CodePiece([this._leadingComments = const []]);
 
   void addHangingComment(Piece comment) {
     _hangingComments.add(comment);
@@ -163,12 +161,10 @@ final class CodePiece extends TextPiece {
 }
 
 /// A [TextPiece] for a source code comment and the whitespace after it, if any.
-final class CommentPiece extends TextPiece {
+final class CommentPiece(
   /// Whitespace at the end of the comment.
-  final Whitespace _trailingWhitespace;
-
-  CommentPiece(this._trailingWhitespace);
-
+  final Whitespace _trailingWhitespace,
+) extends TextPiece {
   @override
   void format(CodeWriter writer, State state) {
     _formatSelection(writer);
@@ -186,25 +182,19 @@ final class CommentPiece extends TextPiece {
 
 /// A piece for the special `// dart format off` and `// dart format on`
 /// comments that are used to opt a region of code out of being formatted.
-final class EnableFormattingCommentPiece extends CommentPiece {
-  /// Whether this comment disables formatting (`format off`) or re-enables it
-  /// (`format on`).
-  final bool _enabled;
-
+final class EnableFormattingCommentPiece(
   /// The number of code points from the beginning of the unformatted source
   /// where the unformatted code should begin or end.
   ///
   /// If this piece is for `// dart format off`, then the offset is just past
   /// the `off`. If this piece is for `// dart format on`, it points to just
   /// before `//`.
-  final int _sourceOffset;
-
-  EnableFormattingCommentPiece(
-    this._sourceOffset,
-    super._trailingWhitespace, {
-    required bool enable,
-  }) : _enabled = enable;
-
+  final int _sourceOffset,
+  super._trailingWhitespace, {
+  /// Whether this comment disables formatting (`format off`) or re-enables it
+  /// (`format on`).
+  required final bool _enabled,
+}) extends CommentPiece {
   @override
   void format(CodeWriter writer, State state) {
     super.format(writer, state);

@@ -9,7 +9,13 @@ import 'piece.dart';
 /// Handles not splitting before `extends` if we can split inside the bound's
 /// own type arguments, or splitting before `extends` if that isn't enough to
 /// get it to fit.
-final class TypeParameterBoundPiece extends Piece {
+final class TypeParameterBoundPiece(
+  /// The type parameter name.
+  final Piece _typeParameter,
+
+  /// The bound with the preceding `extends` keyword.
+  final Piece _bound,
+) extends Piece {
   /// Split inside the type arguments of the bound, but not at `extends`, as in:
   ///
   ///     class C<
@@ -27,14 +33,6 @@ final class TypeParameterBoundPiece extends Piece {
   ///           extends LongBoundType
   ///     >{}
   static const State _beforeExtends = State(2);
-
-  /// The type parameter name.
-  final Piece _typeParameter;
-
-  /// The bound with the preceding `extends` keyword.
-  final Piece _bound;
-
-  TypeParameterBoundPiece(this._typeParameter, this._bound);
 
   @override
   List<State> get additionalStates => const [_insideBound, _beforeExtends];

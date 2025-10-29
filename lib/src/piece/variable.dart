@@ -35,30 +35,24 @@ final class VariablePiece extends Piece {
   /// Split after the type annotation and between each variable.
   static const State _afterType = State(2, cost: 2);
 
-  /// The leading keywords (`var`, `final`, `late`) and optional type
-  /// annotation.
-  final Piece _header;
-
-  /// Each individual variable being declared.
-  final List<Piece> _variables;
-
-  /// Whether the variable declaration has a type annotation.
-  final bool _hasType;
-
-  /// Whether we are using the 3.7 style.
-  final bool _is3Dot7;
-
   /// Creates a [VariablePiece].
   ///
   /// The [hasType] parameter should be `true` if the variable declaration has
   /// a type annotation.
-  VariablePiece(
-    this._header,
-    this._variables, {
-    required bool hasType,
-    required bool is3Dot7,
-  }) : _hasType = hasType,
-       _is3Dot7 = is3Dot7;
+  this(
+    /// The leading keywords (`var`, `final`, `late`) and optional type
+    /// annotation.
+    final Piece _header;
+
+    /// Each individual variable being declared.
+    final List<Piece> _variables, {
+
+    /// Whether the variable declaration has a type annotation.
+    required final bool _hasType,
+
+    /// Whether we are using the 3.7 style.
+    required final bool _is3Dot7,
+  });
 
   @override
   List<State> get additionalStates => [

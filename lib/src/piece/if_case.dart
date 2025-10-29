@@ -45,24 +45,19 @@ final class IfCasePiece extends Piece {
   /// Split before the `case` pattern clause and the `when` guard clause.
   static const State _beforeCaseAndWhen = State(3);
 
-  /// The value expression being matched.
-  final Piece _value;
+  this(
+    /// The value expression being matched.
+    final Piece _value,
 
-  /// The pattern the value is matched against along with the leading `case`.
-  final Piece _pattern;
+    /// The pattern the value is matched against along with the leading `case`.
+    final Piece _pattern,
 
-  /// If there is a `when` clause, that clause.
-  final Piece? _guard;
+    /// If there is a `when` clause, that clause.
+    final Piece? _guard, {
 
-  /// Whether the pattern can be block formatted.
-  final bool _canBlockSplitPattern;
-
-  IfCasePiece(
-    this._value,
-    this._pattern,
-    this._guard, {
-    required bool canBlockSplitPattern,
-  }) : _canBlockSplitPattern = canBlockSplitPattern;
+    /// Whether the pattern can be block formatted.
+    required final bool _canBlockSplitPattern,
+  });
 
   @override
   List<State> get additionalStates => [

@@ -19,8 +19,6 @@ import 'piece_factory.dart';
 /// delimiters. The [rightBracket()] with the closing delimiter and finally
 /// [build()] to get the resulting [ListPiece].
 final class DelimitedListBuilder {
-  final PieceFactory _visitor;
-
   /// The opening bracket before the elements, if any.
   Piece? _leftBracket;
 
@@ -36,8 +34,6 @@ final class DelimitedListBuilder {
 
   bool _mustSplit = false;
 
-  final ListStyle _style;
-
   /// The comments that should appear before the next element.
   final List<Piece> _leadingComments = [];
 
@@ -47,7 +43,10 @@ final class DelimitedListBuilder {
 
   /// Creates a new [DelimitedListBuilder] for an argument list, collection
   /// literal, etc.
-  DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
+  this(
+    final PieceFactory _visitor, [
+    final ListStyle _style = const ListStyle(),
+  ]);
 
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.

@@ -178,22 +178,19 @@ class ExpressionContents {
 
 /// The number of function calls and collection literals occurring transitively
 /// inside some other operation.
-class _Contents {
-  final _Type type;
-
+class _Contents(
+  final _Type type, {
+  /// The number of non-trivial named arguments in this call's own argument
+  /// list.
+  int namedArguments = 0,
+}) {
   /// The number of non-empty list, set, and map literals transitively inside
   /// this operation.
   int collections = 0;
 
-  /// The number of non-trivial named arguments in this call's own argument
-  /// list.
-  int namedArguments = 0;
-
   /// The number of non-trivial named arguments transitively inside this
   /// operation, but not including the call's own named arguments.
   int nestedNamedArguments = 0;
-
-  _Contents(this.type, {this.namedArguments = 0});
 
   /// The total number of non-trivial named arguments in this operation's own
   /// argument list and all of transitive contents.

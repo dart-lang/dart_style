@@ -73,7 +73,7 @@ abstract base class Piece with FastHash {
     return total;
   }
 
-  Piece() {
+  new() {
     Profile.count('create Piece');
   }
 
@@ -262,7 +262,11 @@ enum Shape {
 ///
 /// Each state identifies one way that a piece can be split into multiple lines.
 /// Each piece determines how its states are interpreted.
-final class State implements Comparable<State> {
+final class const State(
+  final int _value, {
+  /// How much a solution is penalized when this state is chosen.
+  final int cost = 1,
+}) implements Comparable<State> {
   static const unsplit = State(0, cost: 0);
 
   /// The maximally split state a piece can be in.
@@ -270,13 +274,6 @@ final class State implements Comparable<State> {
   /// The value here is somewhat arbitrary. It just needs to be larger than
   /// any other value used by any [Piece] that uses this [State].
   static const split = State(255);
-
-  final int _value;
-
-  /// How much a solution is penalized when this state is chosen.
-  final int cost;
-
-  const State(this._value, {this.cost = 1});
 
   @override
   int compareTo(State other) => _value.compareTo(other._value);

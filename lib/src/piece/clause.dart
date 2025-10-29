@@ -64,12 +64,6 @@ final class ClausePiece extends Piece {
   /// State where we split between the clauses but not before the first one.
   static const State _betweenClauses = State(1);
 
-  /// The leading construct the clauses are applied to: a class declaration,
-  /// import directive, etc.
-  final Piece _header;
-
-  final List<Piece> _clauses;
-
   /// If `true`, then we're allowed to split between the clauses without
   /// splitting before the first one too.
   ///
@@ -83,7 +77,13 @@ final class ClausePiece extends Piece {
   ///     }
   final bool _allowLeadingClause;
 
-  ClausePiece(this._header, this._clauses, {bool allowLeadingClause = false})
+  this(
+    /// The leading construct the clauses are applied to: a class declaration,
+    /// import directive, etc.
+    final Piece _header,
+    final List<Piece> _clauses, {
+    bool allowLeadingClause = false,
+  })
     : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
 
   @override

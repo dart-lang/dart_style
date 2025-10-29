@@ -8,19 +8,8 @@ import 'piece.dart';
 ///
 ///     a + b + c
 abstract base class InfixPiece extends Piece {
-  /// The series of operands.
-  ///
-  /// Since we don't split on both sides of the operator, the operators will be
-  /// embedded in the operand pieces. If the operator is a hanging one, it will
-  /// be in the preceding operand, so `1 + 2` becomes "Infix(`1 +`, `2`)".
-  /// A leading operator like `foo as int` becomes "Infix(`foo`, `as int`)".
-  final List<Piece> _operands;
-
-  /// What kind of indentation should be applied to the subsequent operands.
-  final Indent _indent;
-
   /// Creates an [InfixPiece] for the given series of [operands].
-  factory InfixPiece(
+  factory(
     List<Piece> operands, {
     required bool is3Dot7,
     bool conditional = false,
@@ -34,10 +23,7 @@ abstract base class InfixPiece extends Piece {
   }
 
   /// Creates an [InfixPiece] for a conditional (`?:`) expression.
-  factory InfixPiece.conditional(
-    List<Piece> operands, {
-    required bool is3Dot7,
-  }) {
+  factory conditional(List<Piece> operands, {required bool is3Dot7}) {
     if (is3Dot7) {
       return _InfixPiece3Dot7(operands, Indent.expression);
     } else {
@@ -45,7 +31,18 @@ abstract base class InfixPiece extends Piece {
     }
   }
 
-  InfixPiece._(this._operands, this._indent);
+  this _(
+    /// The series of operands.
+    ///
+    /// Since we don't split on both sides of the operator, the operators will be
+    /// embedded in the operand pieces. If the operator is a hanging one, it will
+    /// be in the preceding operand, so `1 + 2` becomes "Infix(`1 +`, `2`)".
+    /// A leading operator like `foo as int` becomes "Infix(`foo`, `as int`)".
+    final List<Piece> _operands,
+
+    /// What kind of indentation should be applied to the subsequent operands.
+    final Indent _indent,
+  );
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -79,12 +76,12 @@ abstract base class InfixPiece extends Piece {
 }
 
 /// InfixPiece subclass for 3.8 and newer style.
-final class _InfixPiece extends InfixPiece {
+final class _InfixPiece(
+  super.operands,
+  super.indent,
   /// Whether this piece is for a conditional expression.
-  final bool _isConditional;
-
-  _InfixPiece(super.operands, super.indent, this._isConditional) : super._();
-
+  final bool _isConditional,
+) extends InfixPiece._() {
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(_indent);
@@ -128,9 +125,10 @@ final class _InfixPiece extends InfixPiece {
 }
 
 /// [InfixPiece] subclass for 3.7 style.
-final class _InfixPiece3Dot7 extends InfixPiece {
-  _InfixPiece3Dot7(super.operands, super.indent) : super._();
-
+final class _InfixPiece3Dot7(
+  super.operands,
+  super.indent,
+) extends InfixPiece._() {
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(_indent);

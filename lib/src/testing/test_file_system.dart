@@ -10,12 +10,8 @@ import '../analysis_options/file_system.dart';
 /// calling into this doesn't assume a directory separator character.
 ///
 /// A path starting with `|` is considered absolute for purposes of joining.
-final class TestFileSystem implements FileSystem {
-  final Map<String, String> _files = {};
-
-  TestFileSystem([Map<String, String>? files]) {
-    if (files != null) _files.addAll(files);
-  }
+final class TestFileSystem([Map<String, String>? files]) implements FileSystem {
+  final Map<String, String> _files = {...?files};
 
   @override
   Future<bool> fileExists(covariant TestFileSystemPath path) async =>
@@ -48,11 +44,7 @@ final class TestFileSystem implements FileSystem {
   }
 }
 
-final class TestFileSystemPath implements FileSystemPath {
-  final String _path;
-
-  TestFileSystemPath(this._path);
-
+final class TestFileSystemPath(final String _path) implements FileSystemPath {
   @override
   String toString() => _path;
 }

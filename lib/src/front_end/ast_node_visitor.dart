@@ -39,15 +39,6 @@ import 'sequence_builder.dart';
 /// couple of mixins, one for each area of functionality. This class then
 /// contains only shared state and the visitor methods for the AST.
 final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
-  @override
-  final FormattingStyle style;
-
-  @override
-  final PieceWriter pieces;
-
-  @override
-  final CommentWriter comments;
-
   /// The context set by the surrounding AstNode when visiting a child, or
   /// [NodeContext.none] if the parent node doesn't set a context.
   @override
@@ -55,17 +46,22 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   NodeContext _parentContext = NodeContext.none;
 
   /// Create a new visitor that will be called to visit the code in [source].
-  factory AstNodeVisitor(
-    FormattingStyle style,
-    LineInfo lineInfo,
-    SourceCode source,
-  ) {
+  factory(FormattingStyle style, LineInfo lineInfo, SourceCode source) {
     var comments = CommentWriter(lineInfo);
     var pieces = PieceWriter(source, comments);
     return AstNodeVisitor._(style, pieces, comments);
   }
 
-  AstNodeVisitor._(this.style, this.pieces, this.comments) {
+  this _(
+    @override
+    final FormattingStyle style,
+
+    @override
+    final PieceWriter pieces,
+
+    @override
+    final CommentWriter comments,
+  ) {
     pieces.bindVisitor(this);
   }
 

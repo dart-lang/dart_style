@@ -39,33 +39,6 @@ import 'piece.dart';
 /// ListPieces are usually constructed using [createList()] or
 /// [DelimitedListBuilder].
 final class ListPiece extends Piece {
-  /// The opening bracket before the elements, if any.
-  final Piece? _before;
-
-  /// The list of elements.
-  final List<ListElementPiece> _elements;
-
-  /// The elements that should have a blank line preserved between them and the
-  /// next piece.
-  final Set<ListElementPiece> _blanksAfter;
-
-  /// The closing bracket after the elements, if any.
-  final Piece? _after;
-
-  /// The details of how this particular list should be formatted.
-  final ListStyle _style;
-
-  /// The index of the last element in [_elements] that has content and isn't
-  /// a comment, or `-1` if all elements are comments.
-  final int _lastNonCommentElement;
-
-  /// Whether this list should have [Shape.block] when it splits.
-  ///
-  /// This is true for most lists, but false for some lists where we don't want
-  /// them to be treated as block-formatted in the surrounding context, mainly
-  /// type argument lists.
-  final bool _isBlockShaped;
-
   /// Whether any element in this argument list can be block formatted.
   bool get hasBlockElement =>
       _elements.any((element) => element.allowNewlinesWhenUnsplit);
@@ -74,17 +47,34 @@ final class ListPiece extends Piece {
   ///
   /// [_elements] must not be empty. (If there are no elements, just concatenate
   /// the brackets directly.)
-  ListPiece(
-    this._before,
-    this._elements,
-    this._blanksAfter,
-    this._after,
-    this._style, {
-    required int lastNonCommentElement,
-    required bool blockShaped,
-  }) : assert(_elements.isNotEmpty),
-       _lastNonCommentElement = lastNonCommentElement,
-       _isBlockShaped = blockShaped {
+  this(
+    /// The opening bracket before the elements, if any.
+    final Piece? _before,
+
+    /// The list of elements.
+    final List<ListElementPiece> _elements,
+
+    /// The elements that should have a blank line preserved between them and the
+    /// next piece.
+    final Set<ListElementPiece> _blanksAfter,
+
+    /// The closing bracket after the elements, if any.
+    final Piece? _after,
+
+    /// The details of how this particular list should be formatted.
+    final ListStyle _style, {
+
+    /// The index of the last element in [_elements] that has content and isn't
+    /// a comment, or `-1` if all elements are comments.
+    required final int _lastNonCommentElement,
+
+    /// Whether this list should have [Shape.block] when it splits.
+    ///
+    /// This is true for most lists, but false for some lists where we don't want
+    /// them to be treated as block-formatted in the surrounding context, mainly
+    /// type argument lists.
+    required final bool _isBlockShaped,
+  }) : assert(_elements.isNotEmpty) {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {
@@ -280,13 +270,14 @@ final class ListPiece extends Piece {
 /// handle that, this piece has two states: [State.unsplit] omits the comma and
 /// [_appendComma] writes it. The parent [ListPiece] will pin or constrain its
 /// child elements appropriately to control whether or not the comma is written.
-final class ListElementPiece extends Piece {
+final class ListElementPiece(
+  List<Piece> leadingComments,
+  final Piece? _content,
+) extends Piece {
   static const State _appendComma = State(1, cost: 0);
 
   /// The leading inline block comments before the content.
-  final List<Piece> _leadingComments;
-
-  final Piece? _content;
+  final List<Piece> _leadingComments = [...leadingComments];
 
   /// Whether newlines are allowed in this element when this list is unsplit.
   ///
@@ -345,11 +336,7 @@ final class ListElementPiece extends Piece {
   /// delimiter (here `,` and 2).
   int _commentsBeforeDelimiter = 0;
 
-  ListElementPiece(List<Piece> leadingComments, Piece element)
-    : _leadingComments = [...leadingComments],
-      _content = element;
-
-  ListElementPiece.comment(Piece comment)
+  new comment(Piece comment)
     : _leadingComments = const [],
       _content = null {
     _hangingComments.add(comment);
@@ -480,16 +467,16 @@ enum BlockFormat {
 /// they vary in whether or not a trailing comma is allowed, whether there
 /// should be spaces inside the delimiters when the elements aren't split, etc.
 /// This class captures those options.
-final class ListStyle {
+final class const ListStyle({
   /// How commas should be handled by the list.
   ///
   /// Most lists use [Commas.trailing]. Type parameters and type arguments use
   /// [Commas.nonTrailing]. For loop parts and switch values use [Commas.none].
-  final Commas commas;
+  final Commas commas = Commas.trailing,
 
   /// The cost of splitting this list. Normally 1, but higher for some lists
   /// that look worse when split.
-  final int splitCost;
+  final int splitCost = Cost.normal,
 
   /// Whether this list should have spaces inside the bracket when it doesn't
   /// split. This is false for most lists, but true for switch expression
@@ -497,11 +484,5 @@ final class ListStyle {
   ///
   ///     v = switch (e) { 1 => 'one', 2 => 'two' };
   ///     //              ^                      ^
-  final bool spaceWhenUnsplit;
-
-  const ListStyle({
-    this.commas = Commas.trailing,
-    this.splitCost = Cost.normal,
-    this.spaceWhenUnsplit = false,
-  });
-}
+  final bool spaceWhenUnsplit = false,
+});

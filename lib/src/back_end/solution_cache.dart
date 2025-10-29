@@ -22,13 +22,11 @@ import 'solver.dart';
 /// the same child Piece and wanting to format it separately with the same
 /// indentation. When that happens, sharing this cache allows us to reuse that
 /// cached subtree Solution.
-final class SolutionCache {
+final class SolutionCache({
   /// Whether this cache and all solutions in it use the 3.7 style solver.
-  final bool is3Dot7;
-
+  required final bool is3Dot7,
+}) {
   final _cache = <_Key, Solution>{};
-
-  SolutionCache({required this.is3Dot7});
 
   /// Returns a previously cached solution for formatting [root] with leading
   /// [indent] (and [subsequentIndent] for lines after the first) or produces a

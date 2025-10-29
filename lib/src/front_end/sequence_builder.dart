@@ -22,9 +22,7 @@ import 'piece_factory.dart';
 /// separate statements inside the sequence. This lets us gracefully handle
 /// indenting them and supporting blank lines around them the same way we handle
 /// other statements or members in a sequence.
-final class SequenceBuilder {
-  final PieceFactory _visitor;
-
+final class SequenceBuilder(final PieceFactory _visitor) {
   /// The opening bracket before the elements, if any.
   Piece? _leftBracket;
 
@@ -36,8 +34,6 @@ final class SequenceBuilder {
 
   /// Whether a blank line should be allowed after the current element.
   bool _allowBlank = false;
-
-  SequenceBuilder(this._visitor);
 
   Piece build({bool forceSplit = false}) {
     // If the sequence only contains a single piece, just return it directly

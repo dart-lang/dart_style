@@ -73,7 +73,7 @@ final class TestFile {
   }
 
   /// Reads the test file from [file].
-  factory TestFile._load(File file, String relativePath) {
+  factory _load(File file, String relativePath) {
     var lines = file.readAsLinesSync();
 
     var isCompilationUnit = file.path.endsWith('.unit');
@@ -263,30 +263,24 @@ final class TestFile {
     return (TestOptions(leadingIndent, trailingCommas, experiments), line);
   }
 
-  TestFile._(
-    this.path,
-    this.pageWidth,
-    this.options,
-    this.comments,
-    this.tests,
+  this _(
+    /// The path to the test file, relative to the `test/` directory.
+    final String path,
+
+    /// The page width for tests in this file or `null` if the default should be
+    /// used.
+    final int? pageWidth,
+
+    /// The default options used by all tests in this file.
+    final TestOptions options,
+
+    /// The `###` comment lines at the beginning of the test file before any
+    /// tests.
+    final List<String> comments,
+
+    /// The tests in this file.
+    final List<FormatTest> tests,
   );
-
-  /// The path to the test file, relative to the `test/` directory.
-  final String path;
-
-  /// The page width for tests in this file or `null` if the default should be
-  /// used.
-  final int? pageWidth;
-
-  /// The default options used by all tests in this file.
-  final TestOptions options;
-
-  /// The `###` comment lines at the beginning of the test file before any
-  /// tests.
-  final List<String> comments;
-
-  /// The tests in this file.
-  final List<FormatTest> tests;
 
   bool get isCompilationUnit => path.endsWith('.unit');
 
@@ -321,18 +315,16 @@ final class TestFile {
 }
 
 /// A single formatting test inside a [TestFile].
-sealed class FormatTest {
+sealed class FormatTest(
   /// The 1-based index of the line where this test begins.
-  final int line;
+  final int line,
 
   /// The options specific to this test.
-  final TestOptions options;
+  final TestOptions options,
 
   /// The unformatted input.
-  final TestEntry input;
-
-  FormatTest(this.line, this.options, this.input);
-
+  final TestEntry input,
+) {
   /// The line and description of the test.
   String get label {
     if (input.description.isEmpty) return 'line $line';
@@ -343,15 +335,19 @@ sealed class FormatTest {
 /// A test for formatting that should be the same across all language versions.
 ///
 /// Most tests are of this form.
-final class UnversionedFormatTest extends FormatTest {
+final class UnversionedFormatTest(
+  super.line,
+  super.options,
+  super.input,
   /// The expected output.
-  final TestEntry output;
-
-  UnversionedFormatTest(super.line, super.options, super.input, this.output);
-}
+  final TestEntry output,
+) extends FormatTest;
 
 /// A test whose expected formatting changes at specific versions.
-final class VersionedFormatTest extends FormatTest {
+final class VersionedFormatTest(
+  super.line,
+  super.options,
+  super.input,
   /// The expected output by version.
   ///
   /// Each key is the lowest version where that output is expected. If there are
@@ -363,38 +359,32 @@ final class VersionedFormatTest extends FormatTest {
   ///
   /// If there are multiple entries in the map, they represent versions where
   /// the formatting style has changed.
-  final Map<Version, TestEntry> outputs;
-
-  VersionedFormatTest(super.line, super.options, super.input, this.outputs);
-}
+  final Map<Version, TestEntry> outputs,
+) extends FormatTest;
 
 /// A single test input or output.
-final class TestEntry {
+final class TestEntry(
   /// Any remark on the "<<<" or ">>>" line.
-  final String description;
+  final String description,
 
   /// The `###` comment lines appearing after the header line before the code.
-  final List<String> comments;
+  final List<String> comments,
 
-  final SourceCode code;
-
-  TestEntry(this.description, this.comments, this.code);
-}
+  final SourceCode code,
+);
 
 /// Options for configuring all tests in a file or an individual test.
-final class TestOptions {
+final class TestOptions(
   /// The number of spaces of leading indentation that should be added to each
   /// line.
-  final int? leadingIndent;
+  final int? leadingIndent,
 
   /// The trailing comma handling configuration.
-  final TrailingCommas? trailingCommas;
+  final TrailingCommas? trailingCommas,
 
   /// Experiments that should be enabled when running this test.
-  final List<String> experimentFlags;
-
-  TestOptions(this.leadingIndent, this.trailingCommas, this.experimentFlags);
-}
+  final List<String> experimentFlags,
+);
 
 extension SourceCodeExtensions on SourceCode {
   /// If the source code has a selection, returns its text with `‹` and `›`

@@ -43,15 +43,6 @@ import 'piece_factory.dart';
 /// This lets us create a single [ChainPiece] for the entire series of dotted
 /// operations, so that we can control splitting them or not as a unit.
 final class ChainBuilder {
-  final PieceFactory _visitor;
-
-  /// The outermost expression being converted to a chain.
-  ///
-  /// If it's a [CascadeExpression], then the chain is the cascade sections.
-  /// Otherwise, it's some kind of method call or property access and the chain
-  /// is the nested series of selector subexpressions.
-  final Expression _root;
-
   /// The left-most target of the chain.
   late Piece _target;
 
@@ -70,7 +61,16 @@ final class ChainBuilder {
   /// The dotted property accesses and method calls following the target.
   final List<ChainCall> _calls = [];
 
-  ChainBuilder(this._visitor, this._root) {
+  this(
+    final PieceFactory _visitor,
+
+    /// The outermost expression being converted to a chain.
+    ///
+    /// If it's a [CascadeExpression], then the chain is the cascade sections.
+    /// Otherwise, it's some kind of method call or property access and the chain
+    /// is the nested series of selector subexpressions.
+    final Expression _root,
+  ) {
     if (_root case CascadeExpression cascade) {
       _visitTarget(cascade.target, cascadeTarget: true);
 

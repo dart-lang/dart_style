@@ -70,14 +70,12 @@ sealed class Code {
 
 /// A [Code] object which can be written to and contain other child [Code]
 /// objects.
-final class GroupCode extends Code {
+final class GroupCode(
   /// How many spaces the first text inside this group should be indented.
-  final int _indent;
-
+  final int _indent,
+) extends Code {
   /// The child [Code] objects contained in this group.
   final List<Code> _children = [];
-
-  GroupCode(this._indent);
 
   /// Appends [text] to this code.
   void write(String text) {
@@ -135,52 +133,48 @@ final class GroupCode extends Code {
 
 /// A [Code] object for a newline followed by any leading indentation.
 final class _NewlineCode extends Code {
-  /// Whether a blank line (two newlines) should be written.
-  final bool _blank;
+  this({
+    /// Whether a blank line (two newlines) should be written.
+    required final bool _blank,
 
-  /// The number of spaces of indentation after this newline.
-  final int _indent;
-
-  _NewlineCode({required bool blank, required int indent})
-    : _indent = indent,
-      _blank = blank;
+    /// The number of spaces of indentation after this newline.
+    required final int _indent,
+  });
 }
 
 /// A [Code] object for literal source text.
 final class _TextCode extends Code {
-  final String _text;
-
-  _TextCode(this._text);
+  this(final String _text);
 }
 
 /// Marks the location of the beginning or end of a selection as occurring
 /// [_offset] characters past the point where this marker object appears in the
 /// list of [Code] objects.
 final class _MarkerCode extends Code {
-  /// What kind of selection endpoint is being marked.
-  final _Marker _marker;
+  this(
+    /// What kind of selection endpoint is being marked.
+    final _Marker _marker,
 
-  /// The number of characters into the next [Code] object where the marker
-  /// should appear in the resulting output.
-  final int _offset;
-
-  _MarkerCode(this._marker, this._offset);
+    /// The number of characters into the next [Code] object where the marker
+    /// should appear in the resulting output.
+    final int _offset,
+  );
 }
 
 final class _EnableFormattingCode extends Code {
-  /// Whether this comment disables formatting (`format off`) or re-enables it
-  /// (`format on`).
-  final bool _enabled;
+  this(
+    /// Whether this comment disables formatting (`format off`) or re-enables it
+    /// (`format on`).
+    final bool _enabled,
 
-  /// The number of code points from the beginning of the unformatted source
-  /// where the unformatted code should begin or end.
-  ///
-  /// If this piece is for `// dart format off`, then the offset is just past
-  /// the `off`. If this piece is for `// dart format on`, it points to just
-  /// before `//`.
-  final int _sourceOffset;
-
-  _EnableFormattingCode(this._enabled, this._sourceOffset);
+    /// The number of code points from the beginning of the unformatted source
+    /// where the unformatted code should begin or end.
+    ///
+    /// If this piece is for `// dart format off`, then the offset is just past
+    /// the `off`. If this piece is for `// dart format on`, it points to just
+    /// before `//`.
+    final int _sourceOffset,
+  );
 }
 
 /// Which selection marker is pointed to by a [_MarkerCode].
@@ -188,7 +182,10 @@ enum _Marker { start, end }
 
 /// Traverses a [Code] tree and produces the final string of output code and
 /// the selection markers, if any.
-final class _StringBuilder {
+final class _StringBuilder(
+  final SourceCode _source,
+  final String _lineEnding,
+) {
   /// Pre-calculated whitespace strings for various common levels of
   /// indentation.
   ///
@@ -227,8 +224,6 @@ final class _StringBuilder {
     60: '                                                            ',
   };
 
-  final SourceCode _source;
-  final String _lineEnding;
   final StringBuffer _buffer = StringBuffer();
 
   /// The offset from the beginning of the source to where the selection start
@@ -247,8 +242,6 @@ final class _StringBuilder {
   ///
   /// Otherwise, -1 to indicate that formatting is enabled.
   int _disableFormattingStart = -1;
-
-  _StringBuilder(this._source, this._lineEnding);
 
   void traverse(Code code) {
     switch (code) {

@@ -21,17 +21,18 @@ import 'solution_cache.dart';
 /// an instance of this class. It has methods that the piece can call to add
 /// output text to the resulting code, recursively format child pieces, insert
 /// whitespace, etc.
-final class CodeWriter {
-  final int _pageWidth;
-
+final class CodeWriter(
+  final int _pageWidth,
+  int leadingIndent,
+  int subsequentIndent,
   /// Previously cached formatted subtrees.
-  final SolutionCache _cache;
+  final SolutionCache _cache,
 
   /// The solution this [CodeWriter] is generating code for.
-  final Solution _solution;
-
+  final Solution _solution,
+) {
   /// The code being written.
-  final GroupCode _code;
+  final GroupCode _code = GroupCode(leadingIndent);
 
   /// What whitespace should be written before the next non-whitespace text.
   ///
@@ -47,17 +48,25 @@ final class CodeWriter {
   /// The number of spaces of indentation that should be begin the next line
   /// when [_pendingWhitespace] is [Whitespace.newline] or
   /// [Whitespace.blankLine].
-  int _pendingIndent = 0;
+  int _pendingIndent = leadingIndent;
 
   /// The number of characters in the line currently being written.
-  int _column = 0;
+  int _column = leadingIndent;
 
   /// The stack of indentation levels.
   ///
   /// Each entry in the stack is the absolute number of spaces of leading
   /// indentation that should be written when beginning a new line to account
   /// for block nesting, expression wrapping, constructor initializers, etc.
-  final List<_IndentLevel> _indentStack = [];
+  final List<_IndentLevel> _indentStack = [
+    _IndentLevel(Indent.none, leadingIndent),
+
+    // If there is additional indentation on subsequent lines, then push that
+    // onto the stack. When the first newline is written, [_pendingIndent] will
+    // pick this up and use it for subsequent lines.
+    if (subsequentIndent > leadingIndent)
+      _IndentLevel(Indent.none, subsequentIndent)
+  ];
 
   /// The stack of information for each [Piece] currently being formatted.
   ///
@@ -102,26 +111,7 @@ final class CodeWriter {
   /// beginning of the first line and [subsequentIndent] is the indentation of
   /// each line after that, independent of indentation created by pieces being
   /// written.
-  CodeWriter(
-    this._pageWidth,
-    int leadingIndent,
-    int subsequentIndent,
-    this._cache,
-    this._solution,
-  ) : _code = GroupCode(leadingIndent) {
-    _indentStack.add(_IndentLevel(Indent.none, leadingIndent));
-
-    // Track the leading indent before the first line.
-    _pendingIndent = leadingIndent;
-    _column = _pendingIndent;
-
-    // If there is additional indentation on subsequent lines, then push that
-    // onto the stack. When the first newline is written, [_pendingIndent] will
-    // pick this up and use it for subsequent lines.
-    if (subsequentIndent > leadingIndent) {
-      _indentStack.add(_IndentLevel(Indent.none, subsequentIndent));
-    }
-  }
+  this;
 
   /// Returns the final formatted code and the next pieces that can be expanded
   /// from the solution this [CodeWriter] is writing, if any.
@@ -541,7 +531,10 @@ enum Whitespace {
 /// is also semantic: a type describes *why* it writes that, or what kind of
 /// syntax its coming from. This allows us to merge or combine indentation in
 /// smarter ways in some contexts.
-enum Indent {
+enum const Indent(
+  /// The number of spaces this type of indentation applies.
+  final int spaces,
+) {
   // No indentation.
   none(0),
 
@@ -575,20 +568,15 @@ enum Indent {
 
   /// Constructor initializer when the parameter list does have optional or
   /// named parameters.
-  initializerWithOptionalParameter(3);
-
-  /// The number of spaces this type of indentation applies.
-  final int spaces;
-
-  const Indent(this.spaces);
+  initializerWithOptionalParameter(3),
 }
 
 /// Information for each piece currently being formatted while [CodeWriter]
 /// traverses the piece tree.
-class _FormatState {
+class _FormatState(
   /// The piece being formatted.
-  final Piece piece;
-
+  final Piece piece,
+) {
   /// The piece's shape.
   ///
   /// This changes based on the newlines the piece writes.
@@ -596,8 +584,6 @@ class _FormatState {
 
   /// How a newline affects the shape of this piece.
   ShapeMode mode = ShapeMode.merge;
-
-  _FormatState(this.piece);
 }
 
 /// Determines how a newline inside a piece or a child piece affects the shape
@@ -626,15 +612,15 @@ enum ShapeMode {
 }
 
 /// A level of indentation in the indentation stack.
-final class _IndentLevel {
+final class _IndentLevel(
   /// The reason this indentation was added.
   ///
   /// Not used for 3.7 style.
-  final Indent type;
+  final Indent type,
 
   /// The total number of spaces of indentation.
-  final int spaces;
-
+  final int spaces,
+) {
   /// How many spaces of [spaces] can be collapsed with further indentation.
   ///
   /// Only used for 3.7 style.
@@ -642,7 +628,7 @@ final class _IndentLevel {
 
   _IndentLevel.v3Dot7(this.spaces, this.collapsible) : type = Indent.none;
 
-  _IndentLevel(this.type, this.spaces) : collapsible = 0;
+  this : collapsible = 0;
 
   @override
   String toString() => '${type.name}:$spaces';

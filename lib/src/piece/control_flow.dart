@@ -6,15 +6,13 @@ import 'piece.dart';
 
 /// A piece for an if statement or element, while statement, or for statement
 /// without a block body.
-final class ControlFlowPiece extends Piece {
+final class ControlFlowPiece({
   /// Whether this is an if statement versus if collection element.
   ///
   /// It's not meaningful for while and for statements/elements.
-  final bool _isStatement;
-
+  final bool _isStatement,
+}) extends Piece {
   final List<_Section> _sections = [];
-
-  ControlFlowPiece({bool isStatement = true}) : _isStatement = isStatement;
 
   void add(Piece header, Piece statement, {required bool isBlock}) {
     _sections.add(_Section(header, statement, isBlock));
@@ -97,13 +95,10 @@ final class ControlFlowPiece extends Piece {
 /// is the `else if (condition)` and the statement is the subsequent then
 /// branch. For the final `else` branch, if there is one, the [header] is just
 /// `else` and the statement is the else branch.
-final class _Section {
-  final Piece header;
-  final Piece statement;
-
+final class _Section(
+  final Piece header,
+  final Piece statement,
   /// Whether the [statement] piece is from a block or a spread collection
   /// literal.
-  final bool isBlock;
-
-  _Section(this.header, this.statement, this.isBlock);
-}
+  final bool isBlock,
+);

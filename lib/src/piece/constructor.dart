@@ -52,48 +52,35 @@ final class ConstructorPiece extends Piece {
 
   static const _splitBetweenInitializers = State(2, cost: 2);
 
-  /// Whether there are parameters or comments inside the parameter list.
-  ///
-  /// If so, then we allow splitting the parameter list while leaving the `:`
-  /// on the same line as the `)`.
-  final bool _canSplitParameters;
+  this(
+    /// The leading keywords, class name, and constructor name.
+    final Piece _header,
 
-  /// Whether the parameter list contains a `]` or `}` closing delimiter before
-  /// the `)`.
-  final bool _hasOptionalParameter;
+    /// The constructor parameter list.
+    final Piece _parameters,
 
-  /// The leading keywords, class name, and constructor name.
-  final Piece _header;
+    /// The constructor body.
+    final Piece _body, {
 
-  /// The constructor parameter list.
-  final Piece _parameters;
+    /// Whether there are parameters or comments inside the parameter list.
+    ///
+    /// If so, then we allow splitting the parameter list while leaving the `:`
+    /// on the same line as the `)`.
+    required final bool _canSplitParameters;
 
-  /// If this is a redirecting constructor, the redirection clause.
-  final Piece? _redirect;
+    /// Whether the parameter list contains a `]` or `}` closing delimiter before
+    /// the `)`.
+    required final bool _hasOptionalParameter,
 
-  /// If there are initializers, the `:` before them.
-  final Piece? _initializerSeparator;
+    /// If this is a redirecting constructor, the redirection clause.
+    final Piece? _redirect,
 
-  /// The constructor initializers, if there are any.
-  final Piece? _initializers;
+    /// If there are initializers, the `:` before them.
+    final Piece? _initializerSeparator,
 
-  /// The constructor body.
-  final Piece _body;
-
-  ConstructorPiece(
-    this._header,
-    this._parameters,
-    this._body, {
-    required bool canSplitParameters,
-    required bool hasOptionalParameter,
-    Piece? redirect,
-    Piece? initializerSeparator,
-    Piece? initializers,
-  }) : _canSplitParameters = canSplitParameters,
-       _hasOptionalParameter = hasOptionalParameter,
-       _redirect = redirect,
-       _initializerSeparator = initializerSeparator,
-       _initializers = initializers;
+    /// The constructor initializers, if there are any.
+    final Piece? _initializers,
+  });
 
   @override
   List<State> get additionalStates => [

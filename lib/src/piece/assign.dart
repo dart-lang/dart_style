@@ -69,31 +69,30 @@ final class AssignPiece extends Piece {
   /// split.
   static const State _blockSplitLeft = State(2);
 
-  /// The left-hand side of the operation and the operator itself.
-  final Piece _left;
+  this(
+    /// The left-hand side of the operation and the operator itself.
+    final Piece _left,
 
-  /// The right-hand side of the operation.
-  final Piece _right;
+    /// The right-hand side of the operation.
+    final Piece _right, {
 
-  /// Whether the piece should have a cost for splitting at the operator.
-  ///
-  /// Usually true because it's generally better to block split inside the
-  /// operands when possible. But false for `=>` when the expression has a form
-  /// where we'd rather keep the expression itself unsplit as in:
-  ///
-  ///     // Don't avoid split:
-  ///     makeStuff() => [
-  ///       element,
-  ///       element,
-  ///     ];
-  ///
-  ///     // Avoid split:
-  ///     doThing() =>
-  ///       thingToDo(argument, argument);
-  final bool _avoidSplit;
-
-  AssignPiece(this._left, this._right, {bool avoidSplit = true})
-    : _avoidSplit = avoidSplit;
+    /// Whether the piece should have a cost for splitting at the operator.
+    ///
+    /// Usually true because it's generally better to block split inside the
+    /// operands when possible. But false for `=>` when the expression has a form
+    /// where we'd rather keep the expression itself unsplit as in:
+    ///
+    ///     // Don't avoid split:
+    ///     makeStuff() => [
+    ///       element,
+    ///       element,
+    ///     ];
+    ///
+    ///     // Avoid split:
+    ///     doThing() =>
+    ///       thingToDo(argument, argument);
+    final bool _avoidSplit = true
+  });
 
   @override
   List<State> get additionalStates => [

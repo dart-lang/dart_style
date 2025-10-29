@@ -43,13 +43,6 @@ const _maxAttempts = 10000;
 ///     conquer the Piece tree and solve portions separately, while also
 ///     reusing work across different solutions.
 final class Solver {
-  final SolutionCache _cache;
-
-  final int _pageWidth;
-
-  /// The number of spaces of indentation on the first line.
-  final int _leadingIndent;
-
   /// The number of spaces of indentation on all lines after the first.
   final int _subsequentIndent;
 
@@ -60,14 +53,14 @@ final class Solver {
   /// The first line is indented by [leadingIndent] spaces and all lines after
   /// that are indented by [subsequentIndent]. If [subsequentIndent] is omitted,
   /// defaults to [leadingIndent].
-  Solver(
-    this._cache, {
-    required int pageWidth,
-    int leadingIndent = 0,
+  this(
+    final SolutionCache _cache, {
+    required final int _pageWidth,
+
+    /// The number of spaces of indentation on the first line.
+    int final int _leadingIndent = 0,
     int? subsequentIndent,
-  }) : _pageWidth = pageWidth,
-       _leadingIndent = leadingIndent,
-       _subsequentIndent = subsequentIndent ?? leadingIndent;
+  }) : _subsequentIndent = subsequentIndent ?? leadingIndent;
 
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.

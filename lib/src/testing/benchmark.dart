@@ -6,7 +6,25 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
-final class Benchmark {
+final class Benchmark(
+  /// The short display name of the benchmark.
+  required final String name,
+
+  /// The unformatted input.
+  required final String input,
+
+  /// The page width that the input should be formatted at.
+  required final int pageWidth,
+
+  /// Whether the benchmark's code is an entire compilation unit or a statement.
+  required final bool isCompilationUnit,
+
+  /// The expected formatted output using short style.
+  required final String shortOutput,
+
+  /// The expected formatted output using tall style.
+  required final String tallOutput,
+) {
   /// Finds all of the benchmarks in the `benchmark/cases` directory, relative
   /// to [packageDirectory].
   static List<Benchmark> findAll(String packageDirectory) {
@@ -52,33 +70,6 @@ final class Benchmark {
       tallOutput: tallOutput,
     );
   }
-
-  /// The short display name of the benchmark.
-  final String name;
-
-  /// The unformatted input.
-  final String input;
-
-  /// The page width that the input should be formatted at.
-  final int pageWidth;
-
-  /// Whether the benchmark's code is an entire compilation unit or a statement.
-  final bool isCompilationUnit;
-
-  /// The expected formatted output using short style.
-  final String shortOutput;
-
-  /// The expected formatted output using tall style.
-  final String tallOutput;
-
-  Benchmark({
-    required this.name,
-    required this.input,
-    required this.pageWidth,
-    required this.isCompilationUnit,
-    required this.shortOutput,
-    required this.tallOutput,
-  });
 }
 
 /// Compiles the currently running script to an AOT snapshot and then executes
