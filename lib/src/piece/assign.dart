@@ -61,38 +61,36 @@ import 'piece.dart';
 ///     var [unsplitBlock] =
 ///         longOperand +
 ///             anotherOperand;
-final class AssignPiece extends Piece {
+final class AssignPiece(
+  /// The left-hand side of the operation and the operator itself.
+  final Piece _left,
+
+  /// The right-hand side of the operation.
+  final Piece _right, {
+
+  /// Whether the piece should have a cost for splitting at the operator.
+  ///
+  /// Usually true because it's generally better to block split inside the
+  /// operands when possible. But false for `=>` when the expression has a form
+  /// where we'd rather keep the expression itself unsplit as in:
+  ///
+  ///     // Don't avoid split:
+  ///     makeStuff() => [
+  ///       element,
+  ///       element,
+  ///     ];
+  ///
+  ///     // Avoid split:
+  ///     doThing() =>
+  ///       thingToDo(argument, argument);
+  final bool _avoidSplit = true,
+}) extends Piece {
   /// Allow the right-hand side to block split.
   static const State _blockOrHeadlineSplitRight = State(1, cost: 0);
 
   /// Force the left-hand side to block split and allow the right-hand side to
   /// split.
   static const State _blockSplitLeft = State(2);
-
-  this(
-    /// The left-hand side of the operation and the operator itself.
-    final Piece _left,
-
-    /// The right-hand side of the operation.
-    final Piece _right, {
-
-    /// Whether the piece should have a cost for splitting at the operator.
-    ///
-    /// Usually true because it's generally better to block split inside the
-    /// operands when possible. But false for `=>` when the expression has a form
-    /// where we'd rather keep the expression itself unsplit as in:
-    ///
-    ///     // Don't avoid split:
-    ///     makeStuff() => [
-    ///       element,
-    ///       element,
-    ///     ];
-    ///
-    ///     // Avoid split:
-    ///     doThing() =>
-    ///       thingToDo(argument, argument);
-    final bool _avoidSplit = true
-  });
 
   @override
   List<State> get additionalStates => [

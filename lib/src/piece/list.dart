@@ -38,7 +38,34 @@ import 'piece.dart';
 ///
 /// ListPieces are usually constructed using [createList()] or
 /// [DelimitedListBuilder].
-final class ListPiece extends Piece {
+final class ListPiece(
+  /// The opening bracket before the elements, if any.
+  final Piece? _before,
+
+  /// The list of elements.
+  final List<ListElementPiece> _elements,
+
+  /// The elements that should have a blank line preserved between them and the
+  /// next piece.
+  final Set<ListElementPiece> _blanksAfter,
+
+  /// The closing bracket after the elements, if any.
+  final Piece? _after,
+
+  /// The details of how this particular list should be formatted.
+  final ListStyle _style, {
+
+  /// The index of the last element in [_elements] that has content and isn't
+  /// a comment, or `-1` if all elements are comments.
+  required final int _lastNonCommentElement,
+
+  /// Whether this list should have [Shape.block] when it splits.
+  ///
+  /// This is true for most lists, but false for some lists where we don't want
+  /// them to be treated as block-formatted in the surrounding context, mainly
+  /// type argument lists.
+  required final bool _isBlockShaped,
+}) extends Piece {
   /// Whether any element in this argument list can be block formatted.
   bool get hasBlockElement =>
       _elements.any((element) => element.allowNewlinesWhenUnsplit);
@@ -47,34 +74,7 @@ final class ListPiece extends Piece {
   ///
   /// [_elements] must not be empty. (If there are no elements, just concatenate
   /// the brackets directly.)
-  this(
-    /// The opening bracket before the elements, if any.
-    final Piece? _before,
-
-    /// The list of elements.
-    final List<ListElementPiece> _elements,
-
-    /// The elements that should have a blank line preserved between them and the
-    /// next piece.
-    final Set<ListElementPiece> _blanksAfter,
-
-    /// The closing bracket after the elements, if any.
-    final Piece? _after,
-
-    /// The details of how this particular list should be formatted.
-    final ListStyle _style, {
-
-    /// The index of the last element in [_elements] that has content and isn't
-    /// a comment, or `-1` if all elements are comments.
-    required final int _lastNonCommentElement,
-
-    /// Whether this list should have [Shape.block] when it splits.
-    ///
-    /// This is true for most lists, but false for some lists where we don't want
-    /// them to be treated as block-formatted in the surrounding context, mainly
-    /// type argument lists.
-    required final bool _isBlockShaped,
-  }) : assert(_elements.isNotEmpty) {
+  this : assert(_elements.isNotEmpty) {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
     for (var i = 0; i < _elements.length; i++) {

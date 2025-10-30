@@ -6,7 +6,37 @@ import '../back_end/code_writer.dart';
 import 'piece.dart';
 
 /// Piece for a case pattern, guard, and body in a switch expression.
-final class CaseExpressionPiece extends Piece {
+final class CaseExpressionPiece(
+  /// The pattern the value is matched against.
+  final Piece _pattern,
+
+  /// If there is a `when` clause, that clause.
+  final Piece? _guard,
+
+  /// The `=>` token separating the pattern and body.
+  final Piece _arrow,
+
+  /// The case body expression.
+  final Piece _body, {
+
+  /// Whether the pattern can be block formatted.
+  required final bool _canBlockSplitPattern,
+
+  /// Whether the outermost pattern is a logical-or pattern.
+  ///
+  /// We format these specially to make them look like parallel cases:
+  ///
+  ///     switch (obj) {
+  ///       firstPattern ||
+  ///       secondPattern ||
+  ///       thirdPattern =>
+  ///         body;
+  ///     }
+  required final bool _patternIsLogicalOr,
+
+  /// Whether the body expression can be block formatted.
+  final bool _canBlockSplitBody = true,
+}) extends Piece {
   /// Split inside the body, which must be block shaped, like:
   ///
   ///     pattern => function(
@@ -19,38 +49,6 @@ final class CaseExpressionPiece extends Piece {
 
   /// Split before the `when` guard clause and after the `=>`.
   static const State _beforeWhenAndBody = State(3);
-
-  this(
-    /// The pattern the value is matched against.
-    final Piece _pattern,
-
-    /// If there is a `when` clause, that clause.
-    final Piece? _guard,
-
-    /// The `=>` token separating the pattern and body.
-    final Piece _arrow,
-
-    /// The case body expression.
-    final Piece _body, {
-
-    /// Whether the pattern can be block formatted.
-    required final bool _canBlockSplitPattern,
-
-    /// Whether the outermost pattern is a logical-or pattern.
-    ///
-    /// We format these specially to make them look like parallel cases:
-    ///
-    ///     switch (obj) {
-    ///       firstPattern ||
-    ///       secondPattern ||
-    ///       thirdPattern =>
-    ///         body;
-    ///     }
-    required final bool _patternIsLogicalOr,
-
-    /// Whether the body expression can be block formatted.
-    final bool _canBlockSplitBody = true,
-  });
 
   @override
   List<State> get additionalStates => [

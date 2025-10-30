@@ -19,17 +19,16 @@ final class FormatCommand extends Command<int> {
   String get name => 'format';
 
   @override
+  final String category;
+
+  @override
   String get description => 'Idiomatically format Dart source code.';
 
   @override
   String get invocation =>
       '${runner!.executableName} $name [options...] <files or directories...>';
 
-  this({
-    bool verbose = false,
-    @override
-    final String category = '',
-  }) {
+  new({bool verbose = false, this.category = ''}) {
     argParser.addFlag(
       'verbose',
       abbr: 'v',

@@ -132,50 +132,42 @@ final class GroupCode(
 }
 
 /// A [Code] object for a newline followed by any leading indentation.
-final class _NewlineCode extends Code {
-  this({
-    /// Whether a blank line (two newlines) should be written.
-    required final bool _blank,
+final class _NewlineCode({
+  /// Whether a blank line (two newlines) should be written.
+  required final bool _blank,
 
-    /// The number of spaces of indentation after this newline.
-    required final int _indent,
-  });
-}
+  /// The number of spaces of indentation after this newline.
+  required final int _indent,
+}) extends Code;
 
 /// A [Code] object for literal source text.
-final class _TextCode extends Code {
-  this(final String _text);
-}
+final class _TextCode(final String _text) extends Code;
 
 /// Marks the location of the beginning or end of a selection as occurring
 /// [_offset] characters past the point where this marker object appears in the
 /// list of [Code] objects.
-final class _MarkerCode extends Code {
-  this(
-    /// What kind of selection endpoint is being marked.
-    final _Marker _marker,
+final class _MarkerCode(
+  /// What kind of selection endpoint is being marked.
+  final _Marker _marker,
 
-    /// The number of characters into the next [Code] object where the marker
-    /// should appear in the resulting output.
-    final int _offset,
-  );
-}
+  /// The number of characters into the next [Code] object where the marker
+  /// should appear in the resulting output.
+  final int _offset,
+) extends Code;
 
-final class _EnableFormattingCode extends Code {
-  this(
-    /// Whether this comment disables formatting (`format off`) or re-enables it
-    /// (`format on`).
-    final bool _enabled,
+final class _EnableFormattingCode(
+  /// Whether this comment disables formatting (`format off`) or re-enables it
+  /// (`format on`).
+  final bool _enabled,
 
-    /// The number of code points from the beginning of the unformatted source
-    /// where the unformatted code should begin or end.
-    ///
-    /// If this piece is for `// dart format off`, then the offset is just past
-    /// the `off`. If this piece is for `// dart format on`, it points to just
-    /// before `//`.
-    final int _sourceOffset,
-  );
-}
+  /// The number of code points from the beginning of the unformatted source
+  /// where the unformatted code should begin or end.
+  ///
+  /// If this piece is for `// dart format off`, then the offset is just past
+  /// the `off`. If this piece is for `// dart format on`, it points to just
+  /// before `//`.
+  final int _sourceOffset,
+) extends Code;
 
 /// Which selection marker is pointed to by a [_MarkerCode].
 enum _Marker { start, end }

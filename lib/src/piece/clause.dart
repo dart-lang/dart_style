@@ -60,7 +60,13 @@ import 'piece.dart';
 ///
 /// This ensures that when any wrapping occurs, the keywords are always at the
 /// beginning of the line.
-final class ClausePiece extends Piece {
+final class ClausePiece(
+  /// The leading construct the clauses are applied to: a class declaration,
+  /// import directive, etc.
+  final Piece _header,
+  final List<Piece> _clauses, {
+  bool allowLeadingClause = false,
+}) extends Piece {
   /// State where we split between the clauses but not before the first one.
   static const State _betweenClauses = State(1);
 
@@ -75,16 +81,7 @@ final class ClausePiece extends Piece {
   ///         implements OtherThing {
   ///       ...
   ///     }
-  final bool _allowLeadingClause;
-
-  this(
-    /// The leading construct the clauses are applied to: a class declaration,
-    /// import directive, etc.
-    final Piece _header,
-    final List<Piece> _clauses, {
-    bool allowLeadingClause = false,
-  })
-    : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
+  final bool _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
 
   @override
   List<State> get additionalStates => [

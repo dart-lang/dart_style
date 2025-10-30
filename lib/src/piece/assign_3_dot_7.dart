@@ -68,7 +68,57 @@ import 'piece.dart';
 ///     var [unsplitBlock] =
 ///         longOperand +
 ///             anotherOperand;
-final class AssignPiece3Dot7 extends Piece {
+final class AssignPiece3Dot7(
+  /// The `=` or other operator.
+  final Piece _operator,
+
+  // TODO(rnystrom): If it wasn't for the need to constrain [_left] to split
+  // in [applyConstraints()], we could write the operator into the same piece
+  // as [_left]. In the common case where the AssignPiece is for a named
+  // argument, the name and `:` would then end up in a single atomic
+  // [CodePiece].
+
+  /// The right-hand side of the operation.
+  final Piece _right, {
+
+  /// The left-hand side of the operation.
+  final Piece? _left,
+
+  /// If `true`, then the left side supports being block-formatted, like:
+  ///
+  ///     var [
+  ///       element1,
+  ///       element2,
+  ///     ] = value;
+  final bool _canBlockSplitLeft = false,
+
+  /// If `true` then the right side supports being block-formatted, like:
+  ///
+  ///     var list = [
+  ///       element1,
+  ///       element2,
+  ///     ];
+  final bool _canBlockSplitRight = false,
+
+  /// If `true` then prefer to split at the operator instead of block splitting
+  /// the right side.
+  ///
+  /// This is `true` for `=>` functions whose body is a function call. This
+  /// keeps the called function next to its arguments instead having the
+  /// function name stick to the `=>` while the arguments split. In other words,
+  /// prefer:
+  ///
+  ///     someMethod() =>
+  ///         someFunction(argument, another);
+  ///
+  /// Over:
+  ///
+  ///     someMethod() => someFunction(
+  ///       argument,
+  ///       another,
+  ///     );
+  final bool _avoidBlockSplitRight = false,
+}) extends Piece {
   /// Force the block left-hand side to split and allow the right-hand side to
   /// split.
   static const State _blockSplitLeft = State(1);
@@ -78,58 +128,6 @@ final class AssignPiece3Dot7 extends Piece {
 
   /// Split at the operator.
   static const State _atOperator = State(3);
-
-  this(
-    /// The `=` or other operator.
-    final Piece _operator,
-
-    // TODO(rnystrom): If it wasn't for the need to constrain [_left] to split
-    // in [applyConstraints()], we could write the operator into the same piece
-    // as [_left]. In the common case where the AssignPiece is for a named
-    // argument, the name and `:` would then end up in a single atomic
-    // [CodePiece].
-
-    /// The right-hand side of the operation.
-    final Piece _right, {
-
-    /// The left-hand side of the operation.
-    final Piece? _left,
-
-    /// If `true`, then the left side supports being block-formatted, like:
-    ///
-    ///     var [
-    ///       element1,
-    ///       element2,
-    ///     ] = value;
-    final bool _canBlockSplitLeft = false,
-
-    /// If `true` then the right side supports being block-formatted, like:
-    ///
-    ///     var list = [
-    ///       element1,
-    ///       element2,
-    ///     ];
-    final bool _canBlockSplitRight = false,
-
-    /// If `true` then prefer to split at the operator instead of block splitting
-    /// the right side.
-    ///
-    /// This is `true` for `=>` functions whose body is a function call. This
-    /// keeps the called function next to its arguments instead having the
-    /// function name stick to the `=>` while the arguments split. In other words,
-    /// prefer:
-    ///
-    ///     someMethod() =>
-    ///         someFunction(argument, another);
-    ///
-    /// Over:
-    ///
-    ///     someMethod() => someFunction(
-    ///       argument,
-    ///       another,
-    ///     );
-    final bool _avoidBlockSplitRight = false,
-  });
 
   @override
   List<State> get additionalStates => [

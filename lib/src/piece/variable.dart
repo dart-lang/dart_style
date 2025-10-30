@@ -28,7 +28,20 @@ import 'piece.dart';
 ///     VeryLongTypeName
 ///     longVariableName = initializer,
 ///     anotherVariable = anotherInitializer;
-final class VariablePiece extends Piece {
+final class VariablePiece(
+  /// The leading keywords (`var`, `final`, `late`) and optional type
+  /// annotation.
+  final Piece _header;
+
+  /// Each individual variable being declared.
+  final List<Piece> _variables, {
+
+  /// Whether the variable declaration has a type annotation.
+  required final bool _hasType,
+
+  /// Whether we are using the 3.7 style.
+  required final bool _is3Dot7,
+}) extends Piece {
   /// Split between each variable in a multiple variable declaration.
   static const State _betweenVariables = State(1);
 
@@ -39,20 +52,7 @@ final class VariablePiece extends Piece {
   ///
   /// The [hasType] parameter should be `true` if the variable declaration has
   /// a type annotation.
-  this(
-    /// The leading keywords (`var`, `final`, `late`) and optional type
-    /// annotation.
-    final Piece _header;
-
-    /// Each individual variable being declared.
-    final List<Piece> _variables, {
-
-    /// Whether the variable declaration has a type annotation.
-    required final bool _hasType,
-
-    /// Whether we are using the 3.7 style.
-    required final bool _is3Dot7,
-  });
+  this;
 
   @override
   List<State> get additionalStates => [

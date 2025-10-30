@@ -42,9 +42,16 @@ const _maxAttempts = 10000;
 ///     use it across different Solutions. This enables us to both divide and
 ///     conquer the Piece tree and solve portions separately, while also
 ///     reusing work across different solutions.
-final class Solver {
+final class Solver(
+  final SolutionCache _cache, {
+  required final int _pageWidth,
+
+  /// The number of spaces of indentation on the first line.
+  int final int _leadingIndent = 0,
+  int? subsequentIndent,
+}) {
   /// The number of spaces of indentation on all lines after the first.
-  final int _subsequentIndent;
+  final int _subsequentIndent = subsequentIndent ?? _leadingIndent;
 
   final PriorityQueue<Solution> _queue = PriorityQueue();
 
@@ -53,14 +60,7 @@ final class Solver {
   /// The first line is indented by [leadingIndent] spaces and all lines after
   /// that are indented by [subsequentIndent]. If [subsequentIndent] is omitted,
   /// defaults to [leadingIndent].
-  this(
-    final SolutionCache _cache, {
-    required final int _pageWidth,
-
-    /// The number of spaces of indentation on the first line.
-    int final int _leadingIndent = 0,
-    int? subsequentIndent,
-  }) : _subsequentIndent = subsequentIndent ?? leadingIndent;
+  this;
 
   /// Finds the best set of line splits for [root] piece and returns the
   /// resulting formatted code.

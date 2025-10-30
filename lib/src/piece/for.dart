@@ -5,30 +5,28 @@ import '../back_end/code_writer.dart';
 import 'piece.dart';
 
 /// A piece for the `for (...)` part of a for statement or element.
-final class ForPiece extends Piece {
-  this(
-    /// The `for` keyword.
-    final Piece _forKeyword,
+final class ForPiece(
+  /// The `for` keyword.
+  final Piece _forKeyword,
 
-    /// The part inside `( ... )`, including the parentheses themselves, at the
-    /// header of a for statement.
-    final Piece _parts, {
+  /// The part inside `( ... )`, including the parentheses themselves, at the
+  /// header of a for statement.
+  final Piece _parts, {
 
-    /// Whether the contents of the parentheses in the `for (...)` should be
-    /// expression indented or not.
-    ///
-    /// This is usually not necessary because the contents will either be a
-    /// [ListPiece] which adds its own block indentation, or an [AssignPiece]
-    /// which indents as necessary. But in the rare case the for-parts is a
-    /// variable or pattern variable declaration with metadata that splits, we
-    /// need to ensure that the metadata is indented, as in:
-    ///
-    ///     for (@LongAnnotation
-    ///         @AnotherAnnotation
-    ///         var element in list) { ... }
-    required final bool _indent,
-  });
-
+  /// Whether the contents of the parentheses in the `for (...)` should be
+  /// expression indented or not.
+  ///
+  /// This is usually not necessary because the contents will either be a
+  /// [ListPiece] which adds its own block indentation, or an [AssignPiece]
+  /// which indents as necessary. But in the rare case the for-parts is a
+  /// variable or pattern variable declaration with metadata that splits, we
+  /// need to ensure that the metadata is indented, as in:
+  ///
+  ///     for (@LongAnnotation
+  ///         @AnotherAnnotation
+  ///         var element in list) { ... }
+  required final bool _indent,
+}) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_forKeyword);

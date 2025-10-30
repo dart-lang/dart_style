@@ -47,40 +47,38 @@ import 'piece.dart';
 ///     ]) : firstInitializer = 1,
 ///          second = 2;
 ///     //  ^ Five spaces of indentation.
-final class ConstructorPiece extends Piece {
+final class ConstructorPiece(
+  /// The leading keywords, class name, and constructor name.
+  final Piece _header,
+
+  /// The constructor parameter list.
+  final Piece _parameters,
+
+  /// The constructor body.
+  final Piece _body, {
+
+  /// Whether there are parameters or comments inside the parameter list.
+  ///
+  /// If so, then we allow splitting the parameter list while leaving the `:`
+  /// on the same line as the `)`.
+  required final bool _canSplitParameters;
+
+  /// Whether the parameter list contains a `]` or `}` closing delimiter before
+  /// the `)`.
+  required final bool _hasOptionalParameter,
+
+  /// If this is a redirecting constructor, the redirection clause.
+  final Piece? _redirect,
+
+  /// If there are initializers, the `:` before them.
+  final Piece? _initializerSeparator,
+
+  /// The constructor initializers, if there are any.
+  final Piece? _initializers,
+}) extends Piece {
   static const _splitBeforeInitializers = State(1, cost: 1);
 
   static const _splitBetweenInitializers = State(2, cost: 2);
-
-  this(
-    /// The leading keywords, class name, and constructor name.
-    final Piece _header,
-
-    /// The constructor parameter list.
-    final Piece _parameters,
-
-    /// The constructor body.
-    final Piece _body, {
-
-    /// Whether there are parameters or comments inside the parameter list.
-    ///
-    /// If so, then we allow splitting the parameter list while leaving the `:`
-    /// on the same line as the `)`.
-    required final bool _canSplitParameters;
-
-    /// Whether the parameter list contains a `]` or `}` closing delimiter before
-    /// the `)`.
-    required final bool _hasOptionalParameter,
-
-    /// If this is a redirecting constructor, the redirection clause.
-    final Piece? _redirect,
-
-    /// If there are initializers, the `:` before them.
-    final Piece? _initializerSeparator,
-
-    /// The constructor initializers, if there are any.
-    final Piece? _initializers,
-  });
 
   @override
   List<State> get additionalStates => [
