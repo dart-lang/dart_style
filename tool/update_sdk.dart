@@ -20,34 +20,16 @@ import 'package:yaml/yaml.dart' as y;
 // - `-n` for dry-run.
 void main(List<String> args) {
   try {
-    var flagErrors = false;
-    // General use of verbosity levels:
-    // 0: No extra output.
-    // 1+: Say what is done
-    // 2+: Also say when no change is made.
-    var verbose = 0;
-    var dryRun = false;
-    var nonFlagArgs = <String>[];
-    for (var arg in args) {
-      if (arg.startsWith('-')) {
-        for (var i = 1; i < arg.length; i++) {
-          switch (arg[i]) {
-            case 'n':
-              dryRun = true;
-            case 'v':
-              verbose++;
-            case var char:
-              stderr.writeln('Invalid flag: "$char"');
-              flagErrors = true;
-          }
-        }
-      } else {
-        nonFlagArgs.add(arg);
-      }
-    }
-    if (flagErrors) {
-      stderr.writeln(usage);
-      exit(1);
+    var (
+      int verbose,
+      bool dryRun,
+      File? experimentsFile,
+      Version? targetVersion,
+    ) = _parseArguments(args);
+
+    var stylePackageDir = _findStylePackageDir();
+    if (verbose > 0) {
+      stdout.writeln('dart_style root: ${stylePackageDir.path}');
     }
     if (verbose > 1) {
       stdout.writeln('Verbosity: $verbose');
@@ -56,44 +38,42 @@ void main(List<String> args) {
       if (dryRun || verbose > 1) stdout.writeln('Dry-run: $dryRun');
     }
 
-    var stylePackageDir = _findStylePackageDir();
-    if (verbose > 0) {
-      stdout.writeln('dart_style root: ${stylePackageDir.path}');
+    if (experimentsFile == null) {
+      experimentsFile = _findExperimentsFile();
+      if (experimentsFile == null) {
+        stderr
+          ..writeln('Cannot find experiments file or SDK directory,')
+          ..writeln('provide path to either on command line.')
+          ..writeln(usage);
+        exit(1);
+        return; // Unreachable, but `exit` has return type `void`.
+      }
+      if (verbose > 0) {
+        stdout.writeln('Experiments file found: ${experimentsFile.path}');
+      }
+    } else if (verbose > 0) {
+      stdout.writeln(
+        'Experiments file from command line: ${experimentsFile.path}',
+      );
     }
-    if (findExperimentsFile(nonFlagArgs) case var experimentsFile?) {
-      // A version number on the command line will be "current version",
-      // otherwise use the maximal version of released experiments in the
-      // experiments file.
-      Version? version;
-      var experiments = _parseExperiments(experimentsFile);
-      for (var arg in nonFlagArgs) {
-        if (Version.tryParse(arg) case var explicitVersion?) {
-          version = explicitVersion;
-          if (verbose > 0) {
-            stdout.writeln('SDK version from command line: $version');
-          }
-          break;
-        }
-      }
-      if (version == null) {
-        version = experiments.values.nonNulls.reduce(Version.max);
-        if (verbose > 0) {
-          stdout.writeln('SDK version from experiments: $version');
-        }
-      }
-
-      Updater(
-        stylePackageDir,
-        version,
-        experiments,
-        verbose: verbose,
-        dryRun: dryRun,
-      ).run();
-    } else {
-      stderr.writeln('Cannot find experiments file.');
-      stderr.writeln(usage);
+    var experiments = _parseExperiments(experimentsFile);
+    var latestReleasedExperiment = experiments.values.fold<Version?>(
+      null,
+      Version.maxOrNull,
+    );
+    if (latestReleasedExperiment == null) {
+      stderr.writeln('No released experiments in experiments file.');
       exit(1);
+      return;
     }
+
+    Updater(
+      stylePackageDir,
+      targetVersion ?? latestReleasedExperiment,
+      experiments,
+      verbose: verbose,
+      dryRun: dryRun,
+    ).run();
   } catch (e) {
     if (e case (:int exitCode)) {
       stdout.flush().then((_) {
@@ -103,6 +83,64 @@ void main(List<String> args) {
       });
     }
   }
+}
+
+(int verbose, bool dryRun, File? experimentsFile, Version? version)
+_parseArguments(List<String> args) {
+  // Parse argument list.
+  var flagErrors = false;
+  // General use of verbosity levels:
+  // 0: No extra output.
+  // 1+: Say what is done.
+  // 2+: Also say when no change is made (what is *not* done).
+  var verbose = 0;
+  var dryRun = false;
+  var printHelp = false;
+  File? experimentsFile;
+  Version? targetVersion;
+  for (var arg in args) {
+    if (arg.startsWith('-')) {
+      for (var i = 1; i < arg.length; i++) {
+        switch (arg[i]) {
+          case 'n':
+            dryRun = true;
+          case 'v':
+            verbose++;
+          case 'h':
+            printHelp = true;
+          case var char:
+            stderr.writeln('Invalid flag: "$char"');
+            flagErrors = true;
+        }
+      }
+    } else if (Version.tryParse(arg) case var version?) {
+      if (targetVersion != null) {
+        stderr.writeln(
+          'More than one version argument: $targetVersion, $version',
+        );
+        flagErrors = true;
+      }
+      targetVersion = version;
+    } else if (_checkExperimentsFileOrSdk(arg) case var file?) {
+      if (experimentsFile != null) {
+        stderr.writeln('More than one experiments or SDK argument: $arg');
+        flagErrors = true;
+      }
+      experimentsFile = file;
+    } else {
+      stderr.writeln('Unrecognized argument: $arg');
+      flagErrors = true;
+    }
+  }
+  if (flagErrors) {
+    stderr.writeln(usage);
+    exit(1);
+  }
+  if (printHelp) {
+    stdout.writeln(usage);
+    exit(0);
+  }
+  return (verbose, dryRun, experimentsFile, targetVersion);
 }
 
 class Updater {
@@ -118,6 +156,7 @@ class Updater {
     this.verbose = 0,
     bool dryRun = false,
   }) : files = FileCache(verbose: verbose, dryRun: dryRun);
+
   void run() {
     _updatePubspec();
     _updateTests();
@@ -174,7 +213,7 @@ class Updater {
   // Captures:
   // - name: The exp-name
   static final _experimentRE = RegExp(r' ?\(experiment (?<name>[\w\-]+)\)');
-  
+
   /// Matches a language version on a format test output line.
   static final _languageVersionRE = RegExp(r'(?<=^<<< )\d+\.\d+\b');
 
@@ -380,6 +419,7 @@ Directory _findStylePackageDir() {
 
 bool _isStylePackageDir(Directory directory) {
   var pubspec = File(p.join(directory.path, 'pubspec.yaml'));
+  // Could read less, but is unlikely to matter.
   return pubspec.existsSync() &&
       LineSplitter.split(pubspec.readAsStringSync()).first ==
           'name: dart_style';
@@ -388,16 +428,19 @@ bool _isStylePackageDir(Directory directory) {
 // --------------------------------------------------------------------
 // Find version and experiments file in SDK.
 
-File? findExperimentsFile(List<String> args) {
-  // Check if argument is SDK directory.
-  if (args.isNotEmpty) {
-    for (var arg in args) {
-      var directory = Directory(p.absolute(arg));
-      if (directory.existsSync()) {
-        if (_experimentsInSdkDirectory(directory) case var file?) {
-          return file;
-        }
-      }
+/// Used on command line arguments to see if they point to SDK or experiments.
+File? _checkExperimentsFileOrSdk(String path) =>
+    _tryExperimentsFile(path) ?? _tryExperimentsFileInSdkPath(path);
+
+/// Used to find the experiments file if no command line path is given.
+///
+///
+/// Tries to locate an SDK that has a `tools/experimental_features.yaml` file.
+File? _findExperimentsFile() {
+  var envSdk = Platform.environment['DART_SDK'];
+  if (envSdk != null) {
+    if (_tryExperimentsFileInSdkPath(envSdk) case var file?) {
+      return file;
     }
   }
   // Try relative to `dart` executable.
@@ -408,7 +451,7 @@ File? findExperimentsFile(List<String> args) {
       if (parent == cursor) break;
       cursor = parent;
       var directory = Directory(cursor);
-      if (_experimentsInSdkDirectory(directory) case var file?) {
+      if (_tryExperimentsFileInSdkDirectory(directory) case var file?) {
         return file;
       }
     }
@@ -416,7 +459,23 @@ File? findExperimentsFile(List<String> args) {
   return null;
 }
 
-File? _experimentsInSdkDirectory(Directory directory) {
+File? _tryExperimentsFile(String path) {
+  if (p.basename(path) == 'experimental_features.yaml') {
+    var file = File(path);
+    if (file.existsSync()) return file;
+  }
+  return null;
+}
+
+File? _tryExperimentsFileInSdkPath(String path) {
+  var directory = Directory(p.normalize(path));
+  if (directory.existsSync()) {
+    return _tryExperimentsFileInSdkDirectory(directory);
+  }
+  return null;
+}
+
+File? _tryExperimentsFileInSdkDirectory(Directory directory) {
   var experimentsFile = File(
     p.join(directory.path, 'tools', 'experimental_features.yaml'),
   );
@@ -428,9 +487,13 @@ class Version implements Comparable<Version> {
   final int major, minor;
   Version(this.major, this.minor);
 
-  static Version max(Version v1, Version v2) => v1.compareTo(v2) >= 0 ? v1 : v2;
+  static Version? maxOrNull(Version? v1, Version? v2) {
+    if (v1 == null) return v2;
+    if (v2 == null) return v1;
+    return max(v1, v2);
+  }
 
-  static Version min(Version v1, Version v2) => v1.compareTo(v2) <= 0 ? v1 : v2;
+  static Version max(Version v1, Version v2) => v1 >= v2 ? v1 : v2;
 
   static Version parse(String version) =>
       tryParse(version) ??
@@ -457,17 +520,24 @@ class Version implements Comparable<Version> {
 
   @override
   int get hashCode => Object.hash(major, minor);
+
   @override
   bool operator ==(Object other) =>
       other is Version && major == other.major && minor == other.minor;
+
   @override
   String toString() => '$major.$minor';
 
+  // TODO: (https://dartbug.com/61891) - Remove ignores when issue is fixed.
+  // ignore: unreachable_from_main
   bool operator <(Version other) =>
       major < other.major || major == other.major && minor < other.minor;
+  // ignore: unreachable_from_main
   bool operator <=(Version other) =>
       major < other.major || major == other.major && minor <= other.minor;
+  // ignore: unreachable_from_main
   bool operator >(Version other) => other < this;
+  // ignore: unreachable_from_main
   bool operator >=(Version other) => other <= this;
 }
 
@@ -475,18 +545,21 @@ class Version implements Comparable<Version> {
 String _plural(int number) => number == 1 ? '' : 's';
 
 final String usage = '''
-dart tool/update_sdk.dart [-v] [-n] [VERSION] [SDKDIR]
+dart tool/update_sdk.dart [-h] [-v] [-n] [VERSION] [PATH]
 
 Run from inside dart_style directory to be sure to be able to find it.
 Uses path to `dart` executable to look for SDK directory.
 
-VERSION  SemVer or `major.minor` version.
+VERSION  SemVer or 'major.minor' version.
          If provided, use that as SDK version in pubspec.yaml.
-SDKDIR   Path to SDK repository containing experimental_features.yaml file.
+         If not provided, uses most recent feature release version.
+PATH     Path to "experimental_features.yaml" or to an SDK repository containing
+         that file in "tools".
          Will be searched for if not provided.
 
 -v       Verbosity. Can be used multiple times.
--n       Dryrun. If set, does not write changed files back. 
+-n       Dryrun. If set, does not write changed files back.
+-h       Show usage.
 ''';
 
 void exit(int value) {
