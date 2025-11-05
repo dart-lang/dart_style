@@ -18,6 +18,7 @@ import 'package:yaml/yaml.dart' as y;
 // - Explicit version: `3.10`, which is used as version in pubspec.yaml.
 // - Directory of SDK, may be relative to CWD.
 // - `-n` for dry-run.
+// - '-v' for more logging verbosity.
 void main(List<String> args) {
   try {
     var (
@@ -46,7 +47,6 @@ void main(List<String> args) {
           ..writeln('provide path to either on command line.')
           ..writeln(usage);
         exit(1);
-        return; // Unreachable, but `exit` has return type `void`.
       }
       if (verbose > 0) {
         stdout.writeln('Experiments file found: ${experimentsFile.path}');
@@ -64,7 +64,6 @@ void main(List<String> args) {
     if (latestReleasedExperiment == null) {
       stderr.writeln('No released experiments in experiments file.');
       exit(1);
-      return;
     }
 
     Updater(
@@ -75,6 +74,7 @@ void main(List<String> args) {
       dryRun: dryRun,
     ).run();
   } catch (e) {
+    // Flush output before actually exiting.
     if (e case (:int exitCode)) {
       stdout.flush().then((_) {
         stderr.flush().then((_) {
@@ -165,28 +165,29 @@ class Updater {
 
   bool _updatePubspec() {
     var file = File(p.join(root.path, 'pubspec.yaml'));
-    var pubspecText = files.load(file);
     var versionRE = RegExp(
       r'(?<=^environment:\n  sdk: \^)([\w\-.+]+)(?=[ \t]*$)',
       multiLine: true,
     );
     var change = false;
     Version? unchangedVersion;
-    pubspecText = pubspecText.replaceFirstMapped(versionRE, (m) {
-      var versionText = m[0]!;
-      var existingVersion = Version.parse(versionText);
-      if (existingVersion < currentVersion) {
-        change = true;
-        return '$currentVersion.0';
-      }
-      unchangedVersion = existingVersion;
-      return versionText; // No change.
-    });
+    files.edit(
+      file,
+      (pubspecText) => pubspecText.replaceFirstMapped(versionRE, (m) {
+        var versionText = m[0]!;
+        var existingVersion = Version.parse(versionText);
+        if (existingVersion < currentVersion) {
+          change = true;
+          return '$currentVersion.0';
+        }
+        unchangedVersion = existingVersion;
+        return versionText; // No change.
+      }),
+    );
     if (change) {
       if (verbose > 0) {
         stdout.writeln('Updated pubspec.yaml SDK to $currentVersion');
       }
-      files.save(file, pubspecText);
       return true;
     }
     if (unchangedVersion == null) {
@@ -217,9 +218,8 @@ class Updater {
   /// Matches a language version on a format test output line.
   static final _languageVersionRE = RegExp(r'(?<=^<<< )\d+\.\d+\b');
 
-  bool _updateTest(File testFile) {
-    var source = files.load(testFile);
-    if (!source.contains('(experiment ')) return false;
+  bool _updateTest(File testFile) => files.edit(testFile, (source) {
+    if (!source.contains('(experiment ')) return null;
     // Experiments can be written in two places:
     // - at top, after first line, as a lone of `(experiment exp-name)`
     //   in which case it applies to every test.
@@ -301,11 +301,10 @@ class Updater {
       if (output.isNotEmpty && output.last.isNotEmpty) {
         output.add(''); // Make sure to have final newline.
       }
-      files.save(testFile, output.join('\n'));
-      return true;
+      return output.join('\n');
     }
-    return false;
-  }
+    return null;
+  });
 }
 
 // --------------------------------------------------------------------
@@ -338,51 +337,85 @@ Map<String, Version?> _parseExperiments(File experimentsFile) {
 class FileCache {
   final int verbose;
   final bool dryRun;
-  final Map<File, ({String content, bool changed})> _cache = {};
+  // Contains string if it has been changed.
+  // Contains `null` if currently being edited.
+  final Map<File, String?> _cache = {};
 
   FileCache({this.verbose = 0, this.dryRun = false});
 
-  String load(File path) {
-    if (verbose > 0) {
-      var fromString =
-          verbose > 1
-              ? ' from ${_cache.containsKey(path) ? 'cache' : 'disk'}'
-              : '';
-      stdout.writeln('Reading ${path.path}$fromString.');
+  /// Edit file with the given [path].
+  ///
+  /// Cannot edit a file while it's already being edited.
+  ///
+  /// The [editor] function is called with the content of the file,
+  /// either read from the file system or cached already modified file content.
+  /// The [editor] function should return the new content of the file.
+  /// If it returns `null` or the same string, the file has not changed.
+  ///
+  /// Returns whether the file content changed.
+  bool edit(File path, String? Function(String content) editor) {
+    if (verbose > 1) {
+      var fromString = ' from ${_cache.containsKey(path) ? 'cache' : 'disk'}';
+      stdout.writeln('Loading ${path.path}$fromString.');
     }
 
-    return (_cache[path] ??= (content: path.readAsStringSync(), changed: false))
-        .content;
-  }
-
-  void save(File path, String content) {
-    var existing = _cache[path];
-    if (verbose == 1) stdout.writeln('Saving ${path.path}.');
-    if (existing != null) {
-      if (existing.content == content) {
-        if (verbose > 2) stdout.writeln('Saving ${path.path} with no changes');
-        return;
+    var existingContent = _cache[path];
+    String content;
+    if (existingContent != null) {
+      content = existingContent;
+    } else if (_cache.containsKey(path)) {
+      throw ConcurrentModificationError(path);
+    } else {
+      content = path.readAsStringSync();
+      _cache[path] = null;
+    }
+    var change = false;
+    String? newContent;
+    try {
+      newContent = editor(content);
+      change = newContent != null && newContent != content;
+    } finally {
+      // No change if function threw, or if it returned `null` or `content`.
+      if (verbose > 1) {
+        if (change) {
+          var first = (existingContent == null) ? '' : ', first change to file';
+          stdout.writeln('Saving changes to ${path.path}$first.');
+        } else if (verbose > 2) {
+          stdout.writeln('No changes to ${path.path}');
+        }
       }
-      if (verbose > 2) stdout.writeln('Save updates ${path.path}');
-    } else if (verbose > 2) {
-      stdout.writeln('Save ${path.path}, not in cache');
+      if (change) {
+        // Put text back after editing.
+        _cache[path] = newContent;
+      } else if (existingContent != null) {
+        _cache[path] = existingContent;
+      } else {
+        _cache.remove(path); // No longer being edited.
+      }
     }
-    _cache[path] = (content: content, changed: true);
+    return change;
   }
 
+  /// Saves all cached file changes to disk.
+  ///
+  /// Does nothing if dry-running.
   void flushSaves() {
     var count = 0;
     var prefix = dryRun ? 'Dry-run: ' : '';
-    _cache.updateAll((file, value) {
-      if (!value.changed) return value;
-      var content = value.content;
-      if (!dryRun) file.writeAsStringSync(content);
+    for (var file in [..._cache.keys]) {
+      var content = _cache[file];
+      if (content == null) {
+        throw ConcurrentModificationError('Flushing cache while editing');
+      }
+      if (!dryRun) {
+        file.writeAsStringSync(content);
+        _cache.remove(file);
+      }
       if (verbose > 1) {
         stdout.writeln('${prefix}Flushing updated ${file.path}');
       }
       count++;
-      return (content: content, changed: false);
-    });
+    }
     if (verbose > 0) {
       if (count > 0) {
         stdout.writeln(
@@ -399,11 +432,16 @@ class FileCache {
 // Find the root directory of the `dart_style` package.
 
 Directory _findStylePackageDir() {
+  // Check current directory. Script is run in the package root dir.
   var cwd = Directory.current;
   if (_isStylePackageDir(cwd)) return cwd;
+  // Check parent directory of script file,
+  // if run as `dart <pkgRoot>/tool/update_sdk.dart`.
   var scriptDir = p.dirname(p.absolute(p.fromUri(Platform.script)));
   var scriptParentDir = Directory(p.dirname(scriptDir));
   if (_isStylePackageDir(scriptParentDir)) return scriptParentDir;
+  // Check ancestor directories of current directory,
+  // if run from, fx, inside `<pkgRoot>/tool/`.
   var cursor = p.absolute(cwd.path);
   while (true) {
     var parentPath = p.dirname(cursor);
@@ -412,9 +450,9 @@ Directory _findStylePackageDir() {
     var directory = Directory(cursor);
     if (_isStylePackageDir(directory)) return directory;
   }
-  throw UnsupportedError(
-    "Couldn't find package root. Run from inside package.",
-  );
+  // Nothing worked.
+  stderr.writeln("Couldn't find package root. Run from inside package.");
+  exit(1);
 }
 
 bool _isStylePackageDir(Directory directory) {
@@ -500,10 +538,11 @@ class Version implements Comparable<Version> {
       (throw FormatException('Not a version string', version));
 
   static Version? tryParse(String version) {
+    // Parse `###.###` optionally followed by `.<anything>`.
     var majorEnd = version.indexOf('.');
     if (majorEnd < 0) return null;
     var minorEnd = version.indexOf('.', majorEnd + 1);
-    if (minorEnd < 0) minorEnd = version.length; // Accept `3.5`.
+    if (minorEnd < 0) minorEnd = version.length; // Accept semver prefix, `3.5`.
     var major = int.tryParse(version.substring(0, majorEnd));
     if (major == null) return null;
     var minor = int.tryParse(version.substring(majorEnd + 1, minorEnd));
@@ -562,7 +601,8 @@ PATH     Path to "experimental_features.yaml" or to an SDK repository containing
 -h       Show usage.
 ''';
 
-void exit(int value) {
+/// Caught by [main] to flush output before actually exiting.
+Never exit(int value) {
   // ignore: only_throw_errors
   throw (exitCode: value);
 }
