@@ -1,5 +1,6 @@
-## 3.1.3-wip
+## 3.1.3
 
+* Support `analyzer: '>=8.2.0 <10.0.0'`.
 * No longer format imports with configurations and a prefix in the wrong order.
   The parser used to accept this without error even though it violated the
   language spec. The parser is being fixed, so the formatter will no longer
