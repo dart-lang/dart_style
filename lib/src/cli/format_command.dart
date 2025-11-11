@@ -178,33 +178,20 @@ final class FormatCommand extends Command<int> {
   Future<int> run() async {
     var argResults = this.argResults!;
 
-    if (argResults['version'] as bool) {
+    if (argResults.flag('version')) {
       print(dartStyleVersion);
       return 0;
     }
 
-    var show = const {
-      'all': Show.all,
-      'changed': Show.changed,
-      'none': Show.none,
-    }[argResults['show']]!;
+    var show = Show.values.byName(argResults.option('show')!);
 
-    var output = const {
-      'write': Output.write,
-      'show': Output.show,
-      'none': Output.none,
-      'json': Output.json,
-    }[argResults['output']]!;
+    var output = Output.values.byName(argResults.option('output')!);
 
-    var summary = Summary.none;
-    switch (argResults['summary'] as String) {
-      case 'line':
-        summary = Summary.line();
-        break;
-      case 'profile':
-        summary = Summary.profile();
-        break;
-    }
+    var summary = switch (argResults.option('summary')) {
+      'line' => Summary.line(),
+      'profile' => Summary.profile(),
+      _ => Summary.none,
+    };
 
     // If the user is sending code through stdin, default the output to stdout.
     if (!argResults.wasParsed('output') && argResults.rest.isEmpty) {
@@ -224,7 +211,7 @@ final class FormatCommand extends Command<int> {
     }
 
     // Can't use --verbose with anything but --help.
-    if (argResults['verbose'] as bool && !(argResults['help'] as bool)) {
+    if (argResults.flag('verbose') && !argResults.flag('help')) {
       usageException('Can only use --verbose with --help.');
     }
 
@@ -234,7 +221,7 @@ final class FormatCommand extends Command<int> {
     }
 
     Version? languageVersion;
-    if (argResults['language-version'] case String version) {
+    if (argResults.option('language-version') case String version) {
       var versionPattern = RegExp(r'^([0-9]+)\.([0-9]+)$');
       if (version == 'latest') {
         languageVersion = DartFormatter.latestLanguageVersion;
@@ -255,9 +242,9 @@ final class FormatCommand extends Command<int> {
     // Allow the old option name if the new one wasn't passed.
     String? pageWidthString;
     if (argResults.wasParsed('page-width')) {
-      pageWidthString = argResults['page-width'] as String;
+      pageWidthString = argResults.option('page-width')!;
     } else if (argResults.wasParsed('line-length')) {
-      pageWidthString = argResults['line-length'] as String;
+      pageWidthString = argResults.option('line-length')!;
     }
 
     int? pageWidth;
@@ -276,7 +263,7 @@ final class FormatCommand extends Command<int> {
     if (argResults.wasParsed('trailing-commas')) {
       // We check the values explicitly here instead of using `allowedValues`
       // from [ArgParser] because this provides a better error message.
-      trailingCommas = switch (argResults['trailing-commas']) {
+      trailingCommas = switch (argResults.option('trailing-commas')) {
         'automate' => TrailingCommas.automate,
         'preserve' => TrailingCommas.preserve,
         var mode => usageException(
@@ -286,10 +273,10 @@ final class FormatCommand extends Command<int> {
     }
 
     var indent =
-        int.tryParse(argResults['indent'] as String) ??
+        int.tryParse(argResults.option('indent')!) ??
         usageException(
           '--indent must be an integer, was '
-          '"${argResults['indent']}".',
+          '"${argResults.option('indent')}".',
         );
 
     if (indent < 0) {
@@ -306,10 +293,10 @@ final class FormatCommand extends Command<int> {
       usageException(exception.message);
     }
 
-    var followLinks = argResults['follow-links'] as bool;
-    var setExitIfChanged = argResults['set-exit-if-changed'] as bool;
+    var followLinks = argResults.flag('follow-links');
+    var setExitIfChanged = argResults.flag('set-exit-if-changed');
 
-    var experimentFlags = argResults['enable-experiment'] as List<String>;
+    var experimentFlags = argResults.multiOption('enable-experiment');
 
     // If stdin isn't connected to a pipe, then the user is not passing
     // anything to stdin, so let them know they made a mistake.
@@ -324,7 +311,7 @@ final class FormatCommand extends Command<int> {
     if (argResults.wasParsed('stdin-name') && argResults.rest.isNotEmpty) {
       usageException('Cannot pass --stdin-name when not reading from stdin.');
     }
-    var stdinName = argResults['stdin-name'] as String?;
+    var stdinName = argResults.option('stdin-name');
 
     var options = FormatterOptions(
       languageVersion: languageVersion,
@@ -352,7 +339,7 @@ final class FormatCommand extends Command<int> {
   }
 
   List<int>? _parseSelection(ArgResults argResults, String optionName) {
-    var option = argResults[optionName] as String?;
+    var option = argResults.option(optionName);
     if (option == null) return null;
 
     // Can only preserve a selection when parsing from stdin.
@@ -375,7 +362,7 @@ final class FormatCommand extends Command<int> {
     } on FormatException catch (_) {
       throw FormatException(
         '--$optionName must be a colon-separated pair of integers, was '
-        '"${argResults[optionName]}".',
+        '"$option".',
       );
     }
   }
