@@ -370,11 +370,10 @@ final class CodeWriter {
       // indication into account which may vary based on the surrounding pieces
       // when we get here.
       Profile.begin('CodeWriter try to bind by page width');
-      isUnsolved =
-          !_solution.tryBindByPageWidth(
-            piece,
-            _pageWidth - _indentStack.first.spaces,
-          );
+      isUnsolved = !_solution.tryBindByPageWidth(
+        piece,
+        _pageWidth - _indentStack.first.spaces,
+      );
       Profile.end('CodeWriter try to bind by page width');
     }
 

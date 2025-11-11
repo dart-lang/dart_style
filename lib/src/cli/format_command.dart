@@ -183,20 +183,18 @@ final class FormatCommand extends Command<int> {
       return 0;
     }
 
-    var show =
-        const {
-          'all': Show.all,
-          'changed': Show.changed,
-          'none': Show.none,
-        }[argResults['show']]!;
+    var show = const {
+      'all': Show.all,
+      'changed': Show.changed,
+      'none': Show.none,
+    }[argResults['show']]!;
 
-    var output =
-        const {
-          'write': Output.write,
-          'show': Output.show,
-          'none': Output.none,
-          'json': Output.json,
-        }[argResults['output']]!;
+    var output = const {
+      'write': Output.write,
+      'show': Output.show,
+      'none': Output.none,
+      'json': Output.json,
+    }[argResults['output']]!;
 
     var summary = Summary.none;
     switch (argResults['summary'] as String) {

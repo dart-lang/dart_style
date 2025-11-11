@@ -39,8 +39,9 @@ final class Benchmark {
 
     var input = inputLines.join('\n');
 
-    var shortOutput =
-        File(p.setExtension(path, '.expect_short')).readAsStringSync();
+    var shortOutput = File(
+      p.setExtension(path, '.expect_short'),
+    ).readAsStringSync();
     var tallOutput = File(p.setExtension(path, '.expect')).readAsStringSync();
 
     return Benchmark(

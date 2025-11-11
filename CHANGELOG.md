@@ -1,4 +1,4 @@
-## 3.1.3-wip
+## 3.1.3
 
 * No longer format imports with configurations and a prefix in the wrong order.
   The parser used to accept this without error even though it violated the
@@ -11,6 +11,9 @@
 
 * Don't force a space between `?` and `.` if a null-aware element contains a
   dot shorthand.
+
+* Require `analyzer: '>=8.2.0 <10.0.0'`.
+* Require `sdk: ^3.9.0`
 
 ### Bug fixes
 

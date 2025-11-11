@@ -1251,12 +1251,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
       return;
     }
 
-    var requiredParams =
-        node.parameters
-            .where((param) => param is! DefaultFormalParameter)
-            .toList();
-    var optionalParams =
-        node.parameters.whereType<DefaultFormalParameter>().toList();
+    var requiredParams = node.parameters
+        .where((param) => param is! DefaultFormalParameter)
+        .toList();
+    var optionalParams = node.parameters
+        .whereType<DefaultFormalParameter>()
+        .toList();
 
     if (nestExpression) builder.nestExpression();
     token(node.leftParenthesis);

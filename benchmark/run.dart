@@ -137,10 +137,9 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   );
 
   var formatter = DartFormatter(
-    languageVersion:
-        _isShort
-            ? DartFormatter.latestShortStyleLanguageVersion
-            : DartFormatter.latestLanguageVersion,
+    languageVersion: _isShort
+        ? DartFormatter.latestShortStyleLanguageVersion
+        : DartFormatter.latestLanguageVersion,
     pageWidth: benchmark.pageWidth,
     lineEnding: '\n',
   );

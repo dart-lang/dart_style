@@ -112,10 +112,9 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
     for (var benchmark in benchmarks) {
       test(benchmark.name, () {
         var formatter = DartFormatter(
-          languageVersion:
-              useTallStyle
-                  ? DartFormatter.latestLanguageVersion
-                  : DartFormatter.latestShortStyleLanguageVersion,
+          languageVersion: useTallStyle
+              ? DartFormatter.latestLanguageVersion
+              : DartFormatter.latestShortStyleLanguageVersion,
           pageWidth: benchmark.pageWidth,
         );
 
@@ -127,8 +126,9 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
         var actualText = actual.text;
         if (!benchmark.isCompilationUnit) actualText += '\n';
 
-        var expected =
-            useTallStyle ? benchmark.tallOutput : benchmark.shortOutput;
+        var expected = useTallStyle
+            ? benchmark.tallOutput
+            : benchmark.shortOutput;
 
         // Fail with an explicit message because it's easier to read than
         // the matcher output.

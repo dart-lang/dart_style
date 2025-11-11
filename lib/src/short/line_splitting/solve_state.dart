@@ -407,8 +407,9 @@ final class SolveState {
       if (chunk is BlockChunk) {
         if (_splits.shouldSplitAt(i)) {
           // Include the cost of the nested block.
-          cost +=
-              _splitter.writer.formatBlock(chunk, _splits.getColumn(i)).cost;
+          cost += _splitter.writer
+              .formatBlock(chunk, _splits.getColumn(i))
+              .cost;
         } else {
           // Include the nested block inline, if any.
           length += chunk.unsplitBlockLength;
