@@ -1794,10 +1794,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var isSinglePositional =
         positionalFields.length == 1 && namedFields == null;
 
-    var listStyle =
-        isSinglePositional
-            ? const ListStyle(commas: Commas.alwaysTrailing)
-            : const ListStyle(commas: Commas.trailing);
+    var listStyle = isSinglePositional
+        ? const ListStyle(commas: Commas.alwaysTrailing)
+        : const ListStyle(commas: Commas.trailing);
     var builder = DelimitedListBuilder(this, listStyle);
 
     // If all parameters are optional, put the `{` right after `(`.
@@ -1963,10 +1962,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     for (var element in node.elements) {
       pieces.visit(
         element,
-        context:
-            node.isMultiline
-                ? NodeContext.multilineStringInterpolation
-                : NodeContext.none,
+        context: node.isMultiline
+            ? NodeContext.multilineStringInterpolation
+            : NodeContext.none,
       );
     }
   }

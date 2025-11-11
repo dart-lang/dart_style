@@ -185,10 +185,9 @@ bool _writeOutput(
   buffer.writeln('<<< $outputDescription'.trim());
   _writeComments(buffer, output.comments);
 
-  var defaultVersion =
-      testFile.isTall
-          ? DartFormatter.latestLanguageVersion
-          : DartFormatter.latestShortStyleLanguageVersion;
+  var defaultVersion = testFile.isTall
+      ? DartFormatter.latestLanguageVersion
+      : DartFormatter.latestShortStyleLanguageVersion;
 
   var formatter = testFile.formatterForTest(
     formatTest,

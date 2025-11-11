@@ -208,10 +208,9 @@ final class PieceWriter {
     var builtPieces = _pieces.removeLast();
     assert(builtPieces.isNotEmpty);
 
-    var builtPiece =
-        builtPieces.length == 1
-            ? builtPieces.first
-            : AdjacentPiece(builtPieces);
+    var builtPiece = builtPieces.length == 1
+        ? builtPieces.first
+        : AdjacentPiece(builtPieces);
 
     if (leadingPieces.isEmpty) {
       // No metadata, so return the content piece directly.

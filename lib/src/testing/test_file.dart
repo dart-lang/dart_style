@@ -27,10 +27,9 @@ final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
-  var libraryPath =
-      (await Isolate.resolvePackageUri(
-        Uri.parse('package:dart_style/src/testing/test_file.dart'),
-      ))?.toFilePath();
+  var libraryPath = (await Isolate.resolvePackageUri(
+    Uri.parse('package:dart_style/src/testing/test_file.dart'),
+  ))?.toFilePath();
 
   // Fallback, if we can't resolve the package URI because we're running in an
   // AOT snapshot, just assume we're running from the root directory of the
@@ -299,10 +298,9 @@ final class TestFile {
   /// If [version] is given, then it specifies the language version to run the
   /// test at. Otherwise, the test's default version is used.
   DartFormatter formatterForTest(FormatTest test, [Version? version]) {
-    var defaultLanguageVersion =
-        isTall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion;
+    var defaultLanguageVersion = isTall
+        ? DartFormatter.latestLanguageVersion
+        : DartFormatter.latestShortStyleLanguageVersion;
 
     return DartFormatter(
       languageVersion: version ?? defaultLanguageVersion,

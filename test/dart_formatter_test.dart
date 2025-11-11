@@ -23,10 +23,9 @@ void _runTests({required bool isTall}) {
     int? indent,
     String? lineEnding,
   }) {
-    languageVersion ??=
-        isTall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion;
+    languageVersion ??= isTall
+        ? DartFormatter.latestLanguageVersion
+        : DartFormatter.latestShortStyleLanguageVersion;
 
     return DartFormatter(
       languageVersion: languageVersion,

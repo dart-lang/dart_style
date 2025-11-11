@@ -269,7 +269,10 @@ final class DelimitedListBuilder {
       hanging: hangingComments,
       separate: separateComments,
       leading: leadingComments,
-    ) = _splitCommaComments(comments, hasElementAfter: hasElementAfter);
+    ) = _splitCommaComments(
+      comments,
+      hasElementAfter: hasElementAfter,
+    );
 
     // Add any hanging inline block comments to the previous element before the
     // subsequent ",".
@@ -401,10 +404,8 @@ final class DelimitedListBuilder {
       }
     }
 
-    var (
-      hangingComments,
-      separateCommentsBeforeComma,
-    ) = remainingCommentsBeforeComma.splitAt(hangingCommentCount);
+    var (hangingComments, separateCommentsBeforeComma) =
+        remainingCommentsBeforeComma.splitAt(hangingCommentCount);
 
     // Inline block comments on the same line as the next element lead at the
     // beginning of that line, as in:

@@ -140,10 +140,9 @@ final class DartFormatter {
         text,
         uri: source.uri,
         isCompilationUnit: false,
-        selectionStart:
-            source.selectionStart != null
-                ? source.selectionStart! + inputOffset
-                : null,
+        selectionStart: source.selectionStart != null
+            ? source.selectionStart! + inputOffset
+            : null,
         selectionLength: source.selectionLength,
       );
     }
@@ -176,10 +175,9 @@ final class DartFormatter {
     }
 
     // Throw if there are syntactic errors.
-    var syntacticErrors =
-        parseResult.errors.where((error) {
-          return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
-        }).toList();
+    var syntacticErrors = parseResult.errors.where((error) {
+      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
+    }).toList();
     if (syntacticErrors.isNotEmpty) {
       throw FormatterException(syntacticErrors);
     }
