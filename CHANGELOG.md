@@ -13,7 +13,8 @@
   dot shorthand.
 
 * Require `analyzer: '>=8.2.0 <10.0.0'`.
-* Require `sdk: ^3.9.0`
+* Require `args: ^2.5.0`.
+* Require `sdk: ^3.9.0`.
 
 ### Bug fixes
 
