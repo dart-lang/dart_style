@@ -23,12 +23,10 @@ import 'piece.dart';
 ///         // comment
 ///         a +
 ///             b;
-final class LeadingCommentPiece extends Piece {
-  final List<Piece> _comments;
-  final Piece _piece;
-
-  LeadingCommentPiece(this._comments, this._piece);
-
+final class LeadingCommentPiece(
+  final List<Piece> _comments,
+  final Piece _piece,
+) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     // If a piece has a leading comment, that comment should not also be a

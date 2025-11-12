@@ -25,11 +25,10 @@ import 'sequence_builder.dart';
 ///
 /// Handles updating selection markers and attaching comments to the tokens
 /// before and after the comments.
-final class PieceWriter {
-  final SourceCode _source;
-
-  final CommentWriter _comments;
-
+final class PieceWriter(
+  final SourceCode _source,
+  final CommentWriter _comments,
+) {
   /// The most recent previously-created [CodePiece].
   ///
   /// We hold a reference to this so we can attach hanging comments to it,
@@ -74,8 +73,6 @@ final class PieceWriter {
   /// If [space()] has been called and we haven't appended a space to the
   /// previous code or adding a [SpacePiece] yet.
   bool _pendingSpace = false;
-
-  PieceWriter(this._source, this._comments);
 
   /// Wires the [PieceWriter] to the [AstNodeVisitor] (which implements
   /// [PieceFactory]) so that [PieceWriter] can visit nodes.

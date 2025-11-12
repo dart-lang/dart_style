@@ -5,11 +5,7 @@ import '../back_end/code_writer.dart';
 import 'piece.dart';
 
 /// A simple piece that just writes its child pieces one after the other.
-final class AdjacentPiece extends Piece {
-  final List<Piece> pieces;
-
-  AdjacentPiece(this.pieces);
-
+final class AdjacentPiece(final List<Piece> pieces) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     for (var piece in pieces) {

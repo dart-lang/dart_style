@@ -68,19 +68,9 @@ import 'piece.dart';
 ///     var [unsplitBlock] =
 ///         longOperand +
 ///             anotherOperand;
-final class AssignPiece3Dot7 extends Piece {
-  /// Force the block left-hand side to split and allow the right-hand side to
-  /// split.
-  static const State _blockSplitLeft = State(1);
-
-  /// Allow the right-hand side to block split.
-  static const State _blockSplitRight = State(2, cost: 0);
-
-  /// Split at the operator.
-  static const State _atOperator = State(3);
-
-  /// The left-hand side of the operation.
-  final Piece? _left;
+final class AssignPiece3Dot7(
+  /// The `=` or other operator.
+  final Piece _operator,
 
   // TODO(rnystrom): If it wasn't for the need to constrain [_left] to split
   // in [applyConstraints()], we could write the operator into the same piece
@@ -88,11 +78,11 @@ final class AssignPiece3Dot7 extends Piece {
   // argument, the name and `:` would then end up in a single atomic
   // [CodePiece].
 
-  /// The `=` or other operator.
-  final Piece _operator;
-
   /// The right-hand side of the operation.
-  final Piece _right;
+  final Piece _right, {
+
+  /// The left-hand side of the operation.
+  final Piece? _left,
 
   /// If `true`, then the left side supports being block-formatted, like:
   ///
@@ -100,7 +90,7 @@ final class AssignPiece3Dot7 extends Piece {
   ///       element1,
   ///       element2,
   ///     ] = value;
-  final bool _canBlockSplitLeft;
+  final bool _canBlockSplitLeft = false,
 
   /// If `true` then the right side supports being block-formatted, like:
   ///
@@ -108,7 +98,7 @@ final class AssignPiece3Dot7 extends Piece {
   ///       element1,
   ///       element2,
   ///     ];
-  final bool _canBlockSplitRight;
+  final bool _canBlockSplitRight = false,
 
   /// If `true` then prefer to split at the operator instead of block splitting
   /// the right side.
@@ -127,19 +117,17 @@ final class AssignPiece3Dot7 extends Piece {
   ///       argument,
   ///       another,
   ///     );
-  final bool _avoidBlockSplitRight;
+  final bool _avoidBlockSplitRight = false,
+}) extends Piece {
+  /// Force the block left-hand side to split and allow the right-hand side to
+  /// split.
+  static const State _blockSplitLeft = State(1);
 
-  AssignPiece3Dot7(
-    this._operator,
-    this._right, {
-    Piece? left,
-    bool canBlockSplitLeft = false,
-    bool canBlockSplitRight = false,
-    bool avoidBlockSplitRight = false,
-  }) : _left = left,
-       _canBlockSplitLeft = canBlockSplitLeft,
-       _canBlockSplitRight = canBlockSplitRight,
-       _avoidBlockSplitRight = avoidBlockSplitRight;
+  /// Allow the right-hand side to block split.
+  static const State _blockSplitRight = State(2, cost: 0);
+
+  /// Split at the operator.
+  static const State _atOperator = State(3);
 
   @override
   List<State> get additionalStates => [

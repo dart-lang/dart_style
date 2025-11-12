@@ -41,14 +41,10 @@ import '../comment_type.dart';
 /// construct. These get directly embedded in the [TextPiece] of the code being
 /// written. When that [TextPiece] is output later, it will include the comments
 /// as well.
-final class CommentWriter {
-  final LineInfo _lineInfo;
-
+final class CommentWriter(final LineInfo _lineInfo) {
   /// The tokens whose preceding comments have already been taken by calls to
   /// [takeCommentsBefore()].
   final Set<Token> _takenTokens = {};
-
-  CommentWriter(this._lineInfo);
 
   /// Returns the comments that appear before [token].
   ///
@@ -153,32 +149,25 @@ final class CommentWriter {
 
 /// A comment in the source, with a bit of information about the surrounding
 /// whitespace.
-final class SourceComment {
+final class SourceComment(
   /// The text of the comment, including `//`, `/*`, and `*/`.
-  final String text;
+  final String text,
 
-  final CommentType type;
+  final CommentType type, {
 
   /// Whether this comment starts at column one in the source.
   ///
   /// Comments that start at the start of the line will not be indented in the
   /// output. This way, commented out chunks of code do not get erroneously
   /// re-indented.
-  final bool flushLeft;
+  required final bool flushLeft,
 
   /// The number of code points in the original source code preceding the start
   /// of this comment.
   ///
   /// Used to track selection markers within the comment.
-  final int offset;
-
-  SourceComment(
-    this.text,
-    this.type, {
-    required this.flushLeft,
-    required this.offset,
-  });
-
+  required final int offset,
+}) {
   /// Whether this comment ends with a mandatory newline, because it's a line
   /// comment or a block comment that should be on its own line.
   bool get requiresNewline => type != CommentType.inlineBlock;
@@ -223,15 +212,15 @@ final class SourceComment {
 final class CommentSequence extends ListBase<SourceComment> {
   static const CommentSequence empty = CommentSequence._([0], []);
 
-  /// The number of newlines between a pair of comments or the preceding or
-  /// following tokens.
-  ///
-  /// This list is always one element longer than [_comments].
-  final List<int> _linesBetween;
+  const new _(
+    /// The number of newlines between a pair of comments or the preceding or
+    /// following tokens.
+    ///
+    /// This list is always one element longer than [_comments].
+    final List<int> _linesBetween,
 
-  final List<SourceComment> _comments;
-
-  const CommentSequence._(this._linesBetween, this._comments);
+    final List<SourceComment> _comments,
+  );
 
   /// Whether this sequence contains any comments that require a newline.
   bool get requiresNewline =>

@@ -7,13 +7,10 @@ import 'package:source_span/source_span.dart';
 
 /// Thrown when one or more errors occurs while parsing the code to be
 /// formatted.
-final class FormatterException implements Exception {
+final class const FormatterException(
   /// The [Diagnostic]s that occurred.
-  final List<Diagnostic> errors;
-
-  /// Creates a new FormatterException with an optional error [message].
-  const FormatterException(this.errors);
-
+  final List<Diagnostic> errors,
+) implements Exception {
   /// Creates a human-friendly representation of the analysis errors.
   String message({bool? color}) {
     var buffer = StringBuffer();
@@ -53,15 +50,13 @@ final class FormatterException implements Exception {
 
 /// Exception thrown when the internal sanity check that only whitespace
 /// changes are made fails.
-final class UnexpectedOutputException implements Exception {
+final class UnexpectedOutputException(
   /// The source being formatted.
-  final String _input;
+  final String _input,
 
   /// The resulting output.
-  final String _output;
-
-  UnexpectedOutputException(this._input, this._output);
-
+  final String _output,
+) implements Exception {
   @override
   String toString() {
     return '''The formatter produced unexpected output. Input was:

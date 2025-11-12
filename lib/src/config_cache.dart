@@ -218,14 +218,12 @@ final class ConfigCache {
 
 /// The formatter options that can be configured in the "analysis_options.yaml"
 /// file.
-final class _FormatterOptions {
+final class _FormatterOptions(
   /// The configured page width, or `null` if there is no options file or the
   /// options file doesn't specify it.
-  final int? pageWidth;
+  final int? pageWidth,
 
   /// The configured comma handling, or `null` if there is no options file or
   /// the options file doesn't specify it.
-  final TrailingCommas? trailingCommas;
-
-  _FormatterOptions(this.pageWidth, this.trailingCommas);
-}
+  final TrailingCommas? trailingCommas,
+);

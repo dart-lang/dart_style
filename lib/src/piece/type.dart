@@ -7,20 +7,16 @@ import 'piece.dart';
 /// Piece for a type declaration with a body containing members.
 ///
 /// Used for class, enum, and extension declarations.
-final class TypePiece extends Piece {
+final class TypePiece(
   /// The leading keywords and modifiers, type name, type parameters, and any
   /// other `extends`, `with`, etc. clauses.
-  final Piece _header;
+  final Piece _header,
 
   /// The `native` clause, if any, and the type body.
-  final Piece _body;
-
-  /// What kind of body the type has.
-  final TypeBodyType _bodyType;
-
-  TypePiece(this._header, this._body, {required TypeBodyType bodyType})
-    : _bodyType = bodyType;
-
+  final Piece _body, {
+    /// What kind of body the type has.
+  required final TypeBodyType _bodyType,
+}) extends Piece {
   @override
   List<State> get additionalStates => [
     if (_bodyType == TypeBodyType.list) State.split,

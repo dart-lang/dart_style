@@ -18,11 +18,7 @@ import 'piece.dart';
 ///     variable =
 ///         '${a +
 ///         b}';
-final class GroupingPiece extends Piece {
-  final Piece _content;
-
-  GroupingPiece(this._content);
-
+final class GroupingPiece(final Piece _content) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(Indent.grouping);

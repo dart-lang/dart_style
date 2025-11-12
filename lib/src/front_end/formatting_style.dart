@@ -14,25 +14,24 @@ import '../dart_formatter.dart';
 /// and forward, most changes to the formatting style are language versioned:
 /// code whose language version is older than a style change will retain the
 /// older style.
-final class FormattingStyle {
+final class FormattingStyle(
   /// The [DartFormatter] the style was created from.
-  final DartFormatter _formatter;
-
+  final DartFormatter _formatter, {
+  Version? languageVersion,
+  int? pageWidth,
+}) {
   /// The language version of the style.
   ///
   /// Usually the same version as [formatter], but may be different if the file
   /// being formatted has an `@dart=` comment.
-  final Version _languageVersion;
+  final Version _languageVersion =
+      languageVersion ?? _formatter.languageVersion;
 
   /// The number of characters allowed in a single line.
   ///
   /// Usually the same as [formatter]'s but may be different if the file being
   /// formatted has a `// dart format width = ` comment.
-  final int pageWidth;
-
-  FormattingStyle(this._formatter, {Version? languageVersion, int? pageWidth})
-    : _languageVersion = languageVersion ?? _formatter.languageVersion,
-      pageWidth = pageWidth ?? _formatter.pageWidth;
+  final int pageWidth = pageWidth ?? _formatter.pageWidth;
 
   String? get lineEnding => _formatter.lineEnding;
 

@@ -93,38 +93,12 @@ abstract base class ChainPiece extends Piece {
   /// on the same line as the target.
   static const State _splitAfterProperties = State(2);
 
-  /// The target expression at the beginning of the call chain.
-  final Piece _target;
-
-  /// The series of calls.
-  ///
-  /// The first piece in this is the target, and the rest are operations.
-  final List<ChainCall> _calls;
-
-  /// The number of contiguous calls at the beginning of the chain that are
-  /// properties.
-  final int _leadingProperties;
-
-  /// The index of the call in the chain that may be block formatted or `-1` if
-  /// none can.
-  ///
-  /// This will either be the index of the last call, or the index of the
-  /// second to last call if the last call is a property or unsplittable call
-  /// and the last call's argument list can be block formatted.
-  final int _blockCallIndex;
-
-  /// How to indent the chain when it splits.
-  ///
-  /// This is [Indent.expression] for regular chains or [Indent.cascade]
-  /// for cascades.
-  final Indent _indent;
-
   final bool _isCascade;
 
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  factory ChainPiece(
+  factory(
     Piece target,
     List<ChainCall> calls, {
     required bool cascade,
@@ -159,17 +133,34 @@ abstract base class ChainPiece extends Piece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  ChainPiece._(
-    this._target,
-    this._calls, {
+  this _(
+    /// The target expression at the beginning of the call chain.
+    final Piece _target,
+    /// The series of calls.
+    ///
+    /// The first piece in this is the target, and the rest are operations.
+    final List<ChainCall> _calls, {
+
     required bool cascade,
-    int leadingProperties = 0,
-    int blockCallIndex = -1,
-    Indent indent = Indent.expression,
-  }) : _leadingProperties = leadingProperties,
-       _blockCallIndex = blockCallIndex,
-       _indent = indent,
-       _isCascade = cascade,
+
+    /// The number of contiguous calls at the beginning of the chain that are
+    /// properties.
+    final int _leadingProperties = 0,
+
+    /// The index of the call in the chain that may be block formatted or `-1` if
+    /// none can.
+    ///
+    /// This will either be the index of the last call, or the index of the
+    /// second to last call if the last call is a property or unsplittable call
+    /// and the last call's argument list can be block formatted.
+    final int _blockCallIndex = -1,
+
+    /// How to indent the chain when it splits.
+    ///
+    /// This is [Indent.expression] for regular chains or [Indent.cascade]
+    /// for cascades.
+    final Indent _indent = Indent.expression,
+  }) : _isCascade = cascade,
        // If there are no calls, we shouldn't have created a chain.
        assert(_calls.isNotEmpty);
 
@@ -348,18 +339,6 @@ final class _ChainPiece extends ChainPiece {
 
 /// A [ChainPiece] subclass for 3.7 style.
 final class _ChainPiece3Dot7 extends ChainPiece {
-  /// Whether the target expression may contain newlines when the chain is not
-  /// fully split. (It may always contain newlines when the chain splits.)
-  ///
-  /// This is true for most expressions but false for delimited ones to avoid
-  /// this weird output:
-  ///
-  ///     function(
-  ///       argument,
-  ///     )
-  ///         .method();
-  final bool _allowSplitInTarget;
-
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
@@ -370,9 +349,19 @@ final class _ChainPiece3Dot7 extends ChainPiece {
     super.leadingProperties,
     super.blockCallIndex,
     super.indent,
-    required bool allowSplitInTarget,
-  }) : _allowSplitInTarget = allowSplitInTarget,
-       super._();
+
+    /// Whether the target expression may contain newlines when the chain is not
+    /// fully split. (It may always contain newlines when the chain splits.)
+    ///
+    /// This is true for most expressions but false for delimited ones to avoid
+    /// this weird output:
+    ///
+    ///     function(
+    ///       argument,
+    ///     )
+    ///         .method();
+    required final bool _allowSplitInTarget,
+  }) : super._();
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
@@ -398,14 +387,7 @@ final class _ChainPiece3Dot7 extends ChainPiece {
 
 /// A method or getter call in a call chain, along with any postfix operations
 /// applies to it.
-final class ChainCall {
-  /// Piece for the call.
-  Piece _call;
-
-  final CallType type;
-
-  ChainCall(this._call, this.type);
-
+final class ChainCall(Piece _call, final CallType type) {
   bool get canSplit =>
       type == CallType.splittableCall || type == CallType.blockFormatCall;
 

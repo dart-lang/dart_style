@@ -4,25 +4,25 @@
 
 /// Describes a chunk of source code that is to be formatted or has been
 /// formatted.
-final class SourceCode {
+final class SourceCode(
+  /// The Dart source code text.
+  final String text, {
+
   /// The [uri] where the source code is from.
   ///
   /// Used in error messages if the code cannot be parsed.
-  final String? uri;
-
-  /// The Dart source code text.
-  final String text;
+  final String? uri,
 
   /// Whether the source is a compilation unit or a bare statement.
-  final bool isCompilationUnit;
+  final bool isCompilationUnit = true,
 
   /// The offset in [text] where the selection begins, or `null` if there is
   /// no selection.
-  final int? selectionStart;
+  final int? selectionStart,
 
   /// The number of selected characters or `null` if there is no selection.
-  final int? selectionLength;
-
+  final int? selectionLength,
+}) {
   /// Gets the source code before the beginning of the selection.
   ///
   /// If there is no selection, returns [text].
@@ -47,13 +47,7 @@ final class SourceCode {
     return text.substring(selectionStart! + selectionLength!);
   }
 
-  SourceCode(
-    this.text, {
-    this.uri,
-    this.isCompilationUnit = true,
-    this.selectionStart,
-    this.selectionLength,
-  }) {
+  this {
     // Must either provide both selection bounds or neither.
     if ((selectionStart == null) != (selectionLength == null)) {
       throw ArgumentError(

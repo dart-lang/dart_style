@@ -43,9 +43,8 @@ final class IOFileSystem implements FileSystem {
 /// An abstraction over a file path string, used by [IOFileSystem].
 ///
 /// To create an instance of this, use [IOFileSystem.makePath()].
-final class IOFileSystemPath implements FileSystemPath {
+final class IOFileSystemPath._(
   /// The underlying physical file system path.
-  final String path;
+  final String path,
+) implements FileSystemPath;
 
-  IOFileSystemPath._(this.path);
-}

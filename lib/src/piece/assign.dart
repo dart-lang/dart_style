@@ -61,19 +61,12 @@ import 'piece.dart';
 ///     var [unsplitBlock] =
 ///         longOperand +
 ///             anotherOperand;
-final class AssignPiece extends Piece {
-  /// Allow the right-hand side to block split.
-  static const State _blockOrHeadlineSplitRight = State(1, cost: 0);
-
-  /// Force the left-hand side to block split and allow the right-hand side to
-  /// split.
-  static const State _blockSplitLeft = State(2);
-
+final class AssignPiece(
   /// The left-hand side of the operation and the operator itself.
-  final Piece _left;
+  final Piece _left,
 
   /// The right-hand side of the operation.
-  final Piece _right;
+  final Piece _right, {
 
   /// Whether the piece should have a cost for splitting at the operator.
   ///
@@ -90,10 +83,14 @@ final class AssignPiece extends Piece {
   ///     // Avoid split:
   ///     doThing() =>
   ///       thingToDo(argument, argument);
-  final bool _avoidSplit;
+  final bool _avoidSplit = true,
+}) extends Piece {
+  /// Allow the right-hand side to block split.
+  static const State _blockOrHeadlineSplitRight = State(1, cost: 0);
 
-  AssignPiece(this._left, this._right, {bool avoidSplit = true})
-    : _avoidSplit = avoidSplit;
+  /// Force the left-hand side to block split and allow the right-hand side to
+  /// split.
+  static const State _blockSplitLeft = State(2);
 
   @override
   List<State> get additionalStates => [

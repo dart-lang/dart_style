@@ -47,53 +47,38 @@ import 'piece.dart';
 ///     ]) : firstInitializer = 1,
 ///          second = 2;
 ///     //  ^ Five spaces of indentation.
-final class ConstructorPiece extends Piece {
-  static const _splitBeforeInitializers = State(1, cost: 1);
+final class ConstructorPiece(
+  /// The leading keywords, class name, and constructor name.
+  final Piece _header,
 
-  static const _splitBetweenInitializers = State(2, cost: 2);
+  /// The constructor parameter list.
+  final Piece _parameters,
+
+  /// The constructor body.
+  final Piece _body, {
 
   /// Whether there are parameters or comments inside the parameter list.
   ///
   /// If so, then we allow splitting the parameter list while leaving the `:`
   /// on the same line as the `)`.
-  final bool _canSplitParameters;
+  required final bool _canSplitParameters;
 
   /// Whether the parameter list contains a `]` or `}` closing delimiter before
   /// the `)`.
-  final bool _hasOptionalParameter;
-
-  /// The leading keywords, class name, and constructor name.
-  final Piece _header;
-
-  /// The constructor parameter list.
-  final Piece _parameters;
+  required final bool _hasOptionalParameter,
 
   /// If this is a redirecting constructor, the redirection clause.
-  final Piece? _redirect;
+  final Piece? _redirect,
 
   /// If there are initializers, the `:` before them.
-  final Piece? _initializerSeparator;
+  final Piece? _initializerSeparator,
 
   /// The constructor initializers, if there are any.
-  final Piece? _initializers;
+  final Piece? _initializers,
+}) extends Piece {
+  static const _splitBeforeInitializers = State(1, cost: 1);
 
-  /// The constructor body.
-  final Piece _body;
-
-  ConstructorPiece(
-    this._header,
-    this._parameters,
-    this._body, {
-    required bool canSplitParameters,
-    required bool hasOptionalParameter,
-    Piece? redirect,
-    Piece? initializerSeparator,
-    Piece? initializers,
-  }) : _canSplitParameters = canSplitParameters,
-       _hasOptionalParameter = hasOptionalParameter,
-       _redirect = redirect,
-       _initializerSeparator = initializerSeparator,
-       _initializers = initializers;
+  static const _splitBetweenInitializers = State(2, cost: 2);
 
   @override
   List<State> get additionalStates => [

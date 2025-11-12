@@ -5,13 +5,13 @@ import '../back_end/code_writer.dart';
 import 'piece.dart';
 
 /// A piece for the `for (...)` part of a for statement or element.
-final class ForPiece extends Piece {
+final class ForPiece(
   /// The `for` keyword.
-  final Piece _forKeyword;
+  final Piece _forKeyword,
 
   /// The part inside `( ... )`, including the parentheses themselves, at the
   /// header of a for statement.
-  final Piece _parts;
+  final Piece _parts, {
 
   /// Whether the contents of the parentheses in the `for (...)` should be
   /// expression indented or not.
@@ -25,11 +25,8 @@ final class ForPiece extends Piece {
   ///     for (@LongAnnotation
   ///         @AnotherAnnotation
   ///         var element in list) { ... }
-  final bool _indent;
-
-  ForPiece(this._forKeyword, this._parts, {required bool indent})
-    : _indent = indent;
-
+  required final bool _indent,
+}) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_forKeyword);
@@ -73,13 +70,7 @@ final class ForPiece extends Piece {
 ///       ...
 ///     }
 abstract base class ForInPiece extends Piece {
-  /// The variable or pattern initialized with each loop iteration.
-  final Piece _variable;
-
-  /// The `in` keyword followed by the sequence expression.
-  final Piece _sequence;
-
-  factory ForInPiece(
+  factory(
     Piece variable,
     Piece sequence, {
     bool canBlockSplitSequence = false,
@@ -96,7 +87,12 @@ abstract base class ForInPiece extends Piece {
     }
   }
 
-  ForInPiece._(this._variable, this._sequence);
+  this _(
+    /// The variable or pattern initialized with each loop iteration.
+    final Piece _variable,
+    /// The `in` keyword followed by the sequence expression.
+    final Piece _sequence,
+  );
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -122,9 +118,7 @@ abstract base class ForInPiece extends Piece {
 }
 
 /// A [ForInPiece] subclass for 3.8 and later style.
-final class _ForInPiece extends ForInPiece {
-  _ForInPiece(super._variable, super._sequence) : super._();
-
+final class _ForInPiece(super._variable, super._sequence) extends ForInPiece._() {
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
     // Always allow block-splitting the sequence if it supports it.
@@ -135,7 +129,9 @@ final class _ForInPiece extends ForInPiece {
 }
 
 /// A [ForInPiece] subclass for 3.7 style.
-final class _ForInPiece3Dot7 extends ForInPiece {
+final class _ForInPiece3Dot7(
+  super._variable,
+  super._sequence, {
   /// If `true` then the sequence expression supports being block-formatted,
   /// like:
   ///
@@ -145,15 +141,8 @@ final class _ForInPiece3Dot7 extends ForInPiece {
   ///     ]) {
   ///       // ...
   ///     }
-  final bool _canBlockSplitSequence;
-
-  _ForInPiece3Dot7(
-    super._variable,
-    super._sequence, {
-    bool canBlockSplitSequence = false,
-  }) : _canBlockSplitSequence = canBlockSplitSequence,
-       super._();
-
+  final bool _canBlockSplitSequence = false,
+}) extends ForInPiece._() {
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
     if (state == State.split) return Shape.all;

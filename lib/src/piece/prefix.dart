@@ -17,11 +17,7 @@ import 'piece.dart';
 ///     variable =
 ///         throw 'long adjacent string'
 ///         'more string';
-final class PrefixPiece extends Piece {
-  final Piece _content;
-
-  PrefixPiece(this._content);
-
+final class PrefixPiece(final Piece _content) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(Indent.grouping);

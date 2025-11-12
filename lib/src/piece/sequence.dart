@@ -9,12 +9,10 @@ import 'piece.dart';
 /// body or at the top level of a program.
 ///
 /// Constructed using a [SequenceBuilder].
-final class SequencePiece extends Piece {
+final class SequencePiece(
   /// The series of members or statements.
-  final List<SequenceElementPiece> _elements;
-
-  SequencePiece(this._elements);
-
+  final List<SequenceElementPiece> _elements,
+) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.pushIndent(Indent.none);
@@ -55,18 +53,16 @@ final class SequencePiece extends Piece {
 /// Unlike [ListPiece], always splits between the elements.
 ///
 /// Constructed using a [SequenceBuilder].
-final class BlockPiece extends Piece {
+final class BlockPiece(
   /// The opening delimiter.
-  final Piece _leftBracket;
+  final Piece _leftBracket,
 
   /// The series of members or statements.
-  final SequencePiece _elements;
+  final SequencePiece _elements,
 
   /// The closing delimiter.
-  final Piece _rightBracket;
-
-  BlockPiece(this._leftBracket, this._elements, this._rightBracket);
-
+  final Piece _rightBracket,
+) extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_leftBracket);
@@ -98,21 +94,19 @@ final class BlockPiece extends Piece {
 /// An element inside a [SequencePiece].
 ///
 /// Tracks the underlying [Piece] along with surrounding whitespace.
-final class SequenceElementPiece extends Piece {
+final class SequenceElementPiece(
   /// The indentation on the line before this element, relative to the
   /// surrounding [Piece].
-  final Indent _indent;
+  final Indent _indent,
 
   /// The [Piece] for the element.
-  final Piece piece;
-
+  final Piece piece,
+) extends Piece {
   /// The comments that should appear at the end of this element's line.
   final List<Piece> hangingComments = [];
 
   /// Whether there should be a blank line after this element.
   bool blankAfter = false;
-
-  SequenceElementPiece(this._indent, this.piece);
 
   @override
   void format(CodeWriter writer, State state) {

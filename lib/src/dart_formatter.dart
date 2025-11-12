@@ -33,7 +33,24 @@ final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
 /// you don't have to pass a long argument list to [format()] and
 /// [formatStatement()]. You can efficiently create a new instance of this for
 /// every format invocation.
-final class DartFormatter {
+final class DartFormatter({
+  /// The Dart language version that formatted code should be parsed as.
+  ///
+  /// Note that a `// @dart=` comment inside the code overrides this.
+  required final Version languageVersion,
+
+  /// The string that newlines should use.
+  ///
+  /// If not explicitly provided, this is inferred from the source text. If the
+  /// first newline is `\r\n` (Windows), it will use that. Otherwise, it uses
+  /// Unix-style line endings (`\n`).
+  var String? lineEnding,
+
+  int? pageWidth,
+  int? indent,
+  TrailingCommas? trailingCommas,
+  List<String>? experimentFlags,
+}) {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
   static final latestLanguageVersion = Version(3, 10, 0);
@@ -49,35 +66,24 @@ final class DartFormatter {
   /// width is specified.
   static const defaultPageWidth = 80;
 
-  /// The Dart language version that formatted code should be parsed as.
-  ///
-  /// Note that a `// @dart=` comment inside the code overrides this.
-  final Version languageVersion;
-
-  /// The string that newlines should use.
-  ///
-  /// If not explicitly provided, this is inferred from the source text. If the
-  /// first newline is `\r\n` (Windows), it will use that. Otherwise, it uses
-  /// Unix-style line endings (`\n`).
-  String? lineEnding;
-
   /// The number of characters allowed in a single line.
-  final int pageWidth;
+  final int pageWidth = pageWidth ?? defaultPageWidth;
 
   /// The number of characters of indentation to prefix the output lines with.
-  final int indent;
+  final int indent = indent ?? 0;
 
   /// How trailing commas in various constructs should affect formatting.
   ///
   /// The default is [TrailingCommas.automate] where the formatter is free to
   /// add and remove them if it decides a constructor should be split or
   /// collapsed.
-  final TrailingCommas trailingCommas;
+  final TrailingCommas trailingCommas =
+      trailingCommas ?? TrailingCommas.automate;
 
   /// Flags to enable experimental language features.
   ///
   /// See dart.dev/go/experiments for details.
-  final List<String> experimentFlags;
+  final List<String> experimentFlags = [...?experimentFlags];
 
   /// Creates a new formatter for Dart code at [languageVersion].
   ///
@@ -87,17 +93,7 @@ final class DartFormatter {
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  DartFormatter({
-    required this.languageVersion,
-    this.lineEnding,
-    int? pageWidth,
-    int? indent,
-    TrailingCommas? trailingCommas,
-    List<String>? experimentFlags,
-  }) : pageWidth = pageWidth ?? defaultPageWidth,
-       indent = indent ?? 0,
-       trailingCommas = trailingCommas ?? TrailingCommas.automate,
-       experimentFlags = [...?experimentFlags];
+  this;
 
   /// Formats the given [source] string containing an entire Dart compilation
   /// unit.
