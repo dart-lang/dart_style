@@ -9,10 +9,9 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/error.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/dart/scanner/scanner.dart';
-// ignore: implementation_imports
-import 'package:analyzer/src/string_source.dart';
+import 'package:analyzer/source/source.dart';
+import 'package:analyzer/source/timestamped_data.dart';
+import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
 import 'exceptions.dart';
@@ -193,13 +192,16 @@ final class DartFormatter {
       // Make sure we consumed all of the source.
       var token = node.endToken.next!;
       if (token.type != TokenType.CLOSE_CURLY_BRACKET) {
-        var stringSource = StringSource(text, source.uri);
-        var error = Diagnostic.tmp(
-          source: stringSource,
+        var error = Diagnostic.forValues(
+          source: _StringSource(text, source.uri ?? ''),
           offset: token.offset - inputOffset,
           length: math.max(token.length, 1),
-          diagnosticCode: ParserErrorCode.unexpectedToken,
-          arguments: [token.lexeme],
+          diagnosticCode: _FormatterDiagnosticCode(
+            name: 'UnexpectedToken',
+            problemMessage: "Unexpected token '${token.lexeme}'.",
+            uniqueName: 'ParserErrorCode.UNEXPECTED_TOKEN',
+          ),
+          message: "Unexpected token '${token.lexeme}'.",
         );
         throw FormatterException([error]);
       }
@@ -272,4 +274,58 @@ enum TrailingCommas {
   /// construct has a trailing comma, it will always be forced to split and the
   /// trailing comma is preserved.
   preserve,
+}
+
+/// A custom [DiagnosticCode] implementation to avoid depending on internal
+/// analyzer implementation.
+class _FormatterDiagnosticCode extends DiagnosticCode {
+  _FormatterDiagnosticCode({
+    required super.name,
+    required super.problemMessage,
+    required super.uniqueName,
+  });
+
+  @override
+  DiagnosticSeverity get severity => DiagnosticSeverity.ERROR;
+
+  @override
+  DiagnosticType get type => DiagnosticType.SYNTACTIC_ERROR;
+}
+
+/// An implementation of [Source] for an in-memory Dart string.
+///
+/// Mostly copied from `package:analyzer/lib/src/string_source.dart`. Copied
+/// here to avoid depending on internal implementation.
+class _StringSource extends Source {
+  /// The content of the source.
+  final String _contents;
+
+  @override
+  final String fullName;
+
+  @override
+  Uri get uri => p.toUri(fullName);
+
+  _StringSource(this._contents, this.fullName);
+
+  @override
+  TimestampedData<String> get contents => TimestampedData(0, _contents);
+
+  @override
+  int get hashCode => _contents.hashCode ^ fullName.hashCode;
+
+  @override
+  String get shortName => fullName;
+
+  /// Return `true` if the given [object] is a string source that is equal to
+  /// this source.
+  @override
+  bool operator ==(Object object) {
+    return object is _StringSource &&
+        object._contents == _contents &&
+        object.fullName == fullName;
+  }
+
+  @override
+  bool exists() => true;
 }
