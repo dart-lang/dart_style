@@ -1,3 +1,7 @@
+## 3.1.4-wip
+
+* Remove dependencies on analyzer internal implementation.
+
 ## 3.1.3
 
 * No longer format imports with configurations and a prefix in the wrong order.
