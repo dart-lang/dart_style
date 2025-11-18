@@ -91,3 +91,23 @@ class A {
 class A {
   A(covariant this.foo);
 }
+>>> Private named initializing formal.
+class A {
+  A({this._x, required this._y, int? this._z});
+
+  int? _x;
+  int? _y;
+  int? _z;
+}
+<<<
+class A {
+  A({
+    this._x,
+    required this._y,
+    int? this._z,
+  });
+
+  int? _x;
+  int? _y;
+  int? _z;
+}
