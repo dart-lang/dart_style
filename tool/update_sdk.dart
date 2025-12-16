@@ -35,8 +35,8 @@ void main(List<String> args) {
     if (verbose > 1) {
       stdout.writeln('Verbosity: $verbose');
     }
-    if (verbose > 0) {
-      if (dryRun || verbose > 1) stdout.writeln('Dry-run: $dryRun');
+    if (verbose > 1 || (dryRun && verbose > 0)) {
+      stdout.writeln('Dry-run: $dryRun');
     }
 
     if (experimentsFile == null) {
@@ -148,19 +148,19 @@ class Updater {
   final Version currentVersion;
   final int verbose;
   final Map<String, Version?> experiments;
-  final FileCache files;
+  final FileEditor files;
   Updater(
     this.root,
     this.currentVersion,
     this.experiments, {
     this.verbose = 0,
     bool dryRun = false,
-  }) : files = FileCache(verbose: verbose, dryRun: dryRun);
+  }) : files = FileEditor(verbose: verbose - 1, dryRun: dryRun);
 
   void run() {
     _updatePubspec();
     _updateTests();
-    files.flushSaves();
+    files.flushChanges();
   }
 
   bool _updatePubspec() {
@@ -331,17 +331,29 @@ Map<String, Version?> _parseExperiments(File experimentsFile) {
 }
 
 // --------------------------------------------------------------------
-// File system abstraction which caches changes, so they can be written
-// atomically at the end.
+// File system abstraction which caches changes to text files,
+// so they can be written atomically at the end.
 
-class FileCache {
+/// Cached edits of text files.
+///
+/// Use [edit] to edit a text file and return the new content.
+/// Changes are cached and given to later edits of the same file.
+///
+/// Changed files can be flushed to disk using [flushChanges].
+///
+/// If [verbose] is positive, operations may print information
+/// about what they do.
+///
+/// If [dryRun] is `true`, [flushChanges] does nothing, other than print
+/// what it would have done.
+class FileEditor {
   final int verbose;
   final bool dryRun;
   // Contains string if it has been changed.
   // Contains `null` if currently being edited.
   final Map<File, String?> _cache = {};
 
-  FileCache({this.verbose = 0, this.dryRun = false});
+  FileEditor({this.verbose = 0, this.dryRun = false});
 
   /// Edit file with the given [path].
   ///
@@ -354,7 +366,7 @@ class FileCache {
   ///
   /// Returns whether the file content changed.
   bool edit(File path, String? Function(String content) editor) {
-    if (verbose > 1) {
+    if (verbose > 0) {
       var fromString = ' from ${_cache.containsKey(path) ? 'cache' : 'disk'}';
       stdout.writeln('Loading ${path.path}$fromString.');
     }
@@ -376,11 +388,11 @@ class FileCache {
       change = newContent != null && newContent != content;
     } finally {
       // No change if function threw, or if it returned `null` or `content`.
-      if (verbose > 1) {
+      if (verbose > 0) {
         if (change) {
           var first = (existingContent == null) ? '' : ', first change to file';
           stdout.writeln('Saving changes to ${path.path}$first.');
-        } else if (verbose > 2) {
+        } else if (verbose > 1) {
           stdout.writeln('No changes to ${path.path}');
         }
       }
@@ -399,7 +411,7 @@ class FileCache {
   /// Saves all cached file changes to disk.
   ///
   /// Does nothing if dry-running.
-  void flushSaves() {
+  void flushChanges() {
     var count = 0;
     var prefix = dryRun ? 'Dry-run: ' : '';
     for (var file in [..._cache.keys]) {
