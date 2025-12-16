@@ -26,7 +26,9 @@ void main(List<String> args) {
       bool dryRun,
       File? experimentsFile,
       Version? targetVersion,
-    ) = _parseArguments(args);
+    ) = _parseArguments(
+      args,
+    );
 
     var stylePackageDir = _findStylePackageDir();
     if (verbose > 0) {
@@ -147,6 +149,7 @@ class Updater {
   final Directory root;
   final Version currentVersion;
   final int verbose;
+  final bool dryRun;
   final Map<String, Version?> experiments;
   final FileEditor files;
   Updater(
@@ -154,13 +157,18 @@ class Updater {
     this.currentVersion,
     this.experiments, {
     this.verbose = 0,
-    bool dryRun = false,
+    this.dryRun = false,
   }) : files = FileEditor(verbose: verbose - 1, dryRun: dryRun);
 
   void run() {
-    _updatePubspec();
+    var updatedPubspecVersion = _updatePubspec();
     _updateTests();
     files.flushChanges();
+    if (updatedPubspecVersion && !dryRun) {
+      stdout.writeln(
+        'Updated PubSpec version. Run `dart pub get` and `dart format`.',
+      );
+    }
   }
 
   bool _updatePubspec() {
