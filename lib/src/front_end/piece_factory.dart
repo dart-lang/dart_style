@@ -1441,12 +1441,12 @@ mixin PieceFactory {
   /// constructor for it.
   void writeType(
     NodeList<Annotation> metadata,
-    List<Token?> keywords,
-    Token? name, {
+    List<Token?> keywords, {
+    Token? name,
     TypeParameterList? typeParameters,
     Token? equals,
     NamedType? superclass,
-    RepresentationDeclaration? representation,
+    PrimaryConstructorDeclaration? extensionTypePrimaryConstructor,
     ExtendsClause? extendsClause,
     MixinOnClause? onClause,
     WithClause? withClause,
@@ -1481,9 +1481,9 @@ mixin PieceFactory {
           pieces.visit(superclass!);
         }
 
-        // Extension types have a representation type.
-        if (representation != null) {
-          pieces.visit(representation);
+        // Extension types have a primary constructor.
+        if (extensionTypePrimaryConstructor != null) {
+          pieces.visit(extensionTypePrimaryConstructor, spaceBefore: true);
         }
       });
 

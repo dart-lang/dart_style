@@ -9,7 +9,7 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
-  analyzer: '>=8.2.0 <10.0.0'
+  analyzer: ^10.0.0
   args: ^2.5.0
   collection: ^1.19.0
   package_config: ^2.1.0
