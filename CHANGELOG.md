@@ -1,4 +1,4 @@
-## 3.1.4-wip
+## 3.1.4
 
 * Remove dependencies on analyzer internal implementation.
 * Require `analyzer: '^10.0.0'`.
