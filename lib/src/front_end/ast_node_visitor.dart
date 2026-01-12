@@ -813,7 +813,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     writeType(
       node.metadata,
       [node.extensionKeyword, node.typeKeyword],
-      extensionTypePrimaryConstructor: node.primaryConstructor,
+      primaryConstructor: node.primaryConstructor,
       implementsClause: node.implementsClause,
       body: () {
         return pieces.build(() {

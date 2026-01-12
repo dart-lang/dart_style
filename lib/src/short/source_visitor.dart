@@ -2386,6 +2386,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visitMetadata(node.metadata);
     token(node.thisKeyword);
 
+    // TODO(scheglov): unify with `visitConstructorDeclaration`.
     if (node.initializers.isNotEmpty) {
       builder.startRule();
       builder.indent(Indent.constructorInitializer);
