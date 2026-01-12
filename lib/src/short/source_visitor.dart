@@ -599,15 +599,17 @@ final class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.mixinKeyword);
     token(node.classKeyword);
     space();
-    token(node.name);
-    visit(node.typeParameters);
+    token(node.namePart.typeName);
+    visit(node.namePart.typeParameters);
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
     space();
 
     builder.unnest();
-    _visitBody(node.leftBracket, node.members, node.rightBracket);
+    // TODO(scheglov): support for EmptyBody
+    var body = node.body as BlockClassBody;
+    _visitBody(body.leftBracket, body.members, body.rightBracket);
   }
 
   @override
@@ -774,8 +776,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     modifier(node.externalKeyword);
     modifier(node.constKeyword);
+    modifier(node.newKeyword);
     modifier(node.factoryKeyword);
-    visit(node.returnType);
+    visit(node.typeName);
     token(node.period);
     token(node.name);
 
@@ -1017,28 +1020,28 @@ final class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
     token(node.enumKeyword);
     space();
-    token(node.name);
-    visit(node.typeParameters);
+    token(node.namePart.typeName);
+    visit(node.namePart.typeParameters);
     _visitClauses(node.withClause, node.implementsClause);
     space();
 
     builder.unnest();
 
-    _beginBody(node.leftBracket, space: true);
+    _beginBody(node.body.leftBracket, space: true);
 
-    visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
+    visitCommaSeparatedNodes(node.body.constants, between: splitOrTwoNewlines);
 
     // If there is a trailing comma, always force the constants to split.
-    var trailingComma = node.constants.last.commaAfter;
+    var trailingComma = node.body.constants.last.commaAfter;
     if (trailingComma != null) {
       builder.forceRules();
     }
 
     // The ";" after the constants, which may occur after a trailing comma.
-    var afterConstants = node.constants.last.endToken.next!;
+    var afterConstants = node.body.constants.last.endToken.next!;
     Token? semicolon;
     if (afterConstants.type == TokenType.SEMICOLON) {
-      semicolon = node.constants.last.endToken.next!;
+      semicolon = node.body.constants.last.endToken.next!;
     } else if (trailingComma != null &&
         trailingComma.next!.type == TokenType.SEMICOLON) {
       semicolon = afterConstants.next!;
@@ -1055,23 +1058,23 @@ final class SourceVisitor extends ThrowingAstVisitor {
       token(semicolon);
 
       // Put a blank line between the constants and members.
-      if (node.members.isNotEmpty) twoNewlines();
+      if (node.body.members.isNotEmpty) twoNewlines();
     }
 
-    _visitBodyContents(node.members);
+    _visitBodyContents(node.body.members);
 
     _endBody(
-      node.rightBracket,
+      node.body.rightBracket,
       forceSplit:
           semicolon != null ||
           trailingComma != null ||
-          node.members.isNotEmpty ||
+          node.body.members.isNotEmpty ||
           // If there is a line comment after an enum constant, it won't
           // automatically force the enum body to split since the rule for
           // the constants is the hard rule used by the entire block and its
           // hardening state doesn't actually change. Instead, look
           // explicitly for a line comment here.
-          node.constants.containsLineComments(),
+          node.body.constants.containsLineComments(),
     );
   }
 
@@ -1168,7 +1171,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
     }
     space();
     builder.unnest();
-    _visitBody(node.leftBracket, node.members, node.rightBracket);
+    _visitBody(
+      node.body.leftBracket,
+      node.body.members,
+      node.body.rightBracket,
+    );
   }
 
   @override
@@ -1179,14 +1186,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
     token(node.extensionKeyword);
     space();
     token(node.typeKeyword);
-    token(node.constKeyword, before: space);
-    space();
-    token(node.name);
 
-    builder.nestExpression();
-    visit(node.typeParameters);
-    visit(node.representation);
-    builder.unnest();
+    visit(node.primaryConstructor, before: space);
 
     builder.startRule(CombinatorRule());
     visit(node.implementsClause);
@@ -1194,7 +1195,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     space();
     builder.unnest();
-    _visitBody(node.leftBracket, node.members, node.rightBracket);
+    // TODO(scheglov): support for EmptyBody
+    var body = node.body as BlockClassBody;
+    _visitBody(body.leftBracket, body.members, body.rightBracket);
   }
 
   @override
@@ -2152,7 +2155,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _visitBody(node.leftBracket, node.members, node.rightBracket);
+    _visitBody(
+      node.body.leftBracket,
+      node.body.members,
+      node.body.rightBracket,
+    );
   }
 
   @override
@@ -2366,6 +2373,41 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitPrimaryConstructorDeclaration(PrimaryConstructorDeclaration node) {
+    modifier(node.constKeyword);
+    token(node.typeName);
+    visit(node.typeParameters);
+    visit(node.constructorName);
+    visit(node.formalParameters);
+  }
+
+  @override
+  void visitPrimaryConstructorBody(PrimaryConstructorBody node) {
+    visitMetadata(node.metadata);
+    token(node.thisKeyword);
+
+    // TODO(scheglov): unify with `visitConstructorDeclaration`.
+    if (node.initializers.isNotEmpty) {
+      builder.startRule();
+      builder.indent(Indent.constructorInitializer);
+      split();
+      token(node.colon);
+      space();
+      visitCommaSeparatedNodes(node.initializers);
+      builder.unindent();
+      builder.endRule();
+    }
+
+    visit(node.body);
+  }
+
+  @override
+  void visitPrimaryConstructorName(PrimaryConstructorName node) {
+    token(node.period);
+    token(node.name);
+  }
+
+  @override
   void visitPropertyAccess(PropertyAccess node) {
     if (node.isCascaded) {
       token(node.operator);
@@ -2515,46 +2557,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
     token(node.operator);
     space();
     visit(node.operand);
-  }
-
-  @override
-  void visitRepresentationConstructorName(RepresentationConstructorName node) {
-    token(node.period);
-    token(node.name);
-  }
-
-  @override
-  void visitRepresentationDeclaration(RepresentationDeclaration node) {
-    visit(node.constructorName);
-
-    token(node.leftParenthesis);
-
-    var rule = PositionalRule(null, argumentCount: 1);
-
-    builder.startRule(rule);
-    rule.beforeArgument(zeroSplit());
-
-    // Make sure record and function type parameter lists are indented.
-    builder.startBlockArgumentNesting();
-    builder.startSpan();
-
-    visitParameterMetadata(node.fieldMetadata, () {
-      builder.startLazyRule(Rule(Cost.parameterType));
-      builder.nestExpression();
-
-      visit(node.fieldType);
-      _separatorBetweenTypeAndVariable(node.fieldType);
-      token(node.fieldName);
-
-      builder.unnest();
-      builder.endRule();
-    });
-
-    builder.endBlockArgumentNesting();
-    builder.endSpan();
-    builder.endRule();
-
-    token(node.rightParenthesis);
   }
 
   @override

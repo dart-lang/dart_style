@@ -1437,16 +1437,16 @@ mixin PieceFactory {
   /// If the type is an extension, then [onType] is a record containing the
   /// `on` keyword and the on type.
   ///
-  /// If the type is an extension type, then [representation] is the primary
-  /// constructor for it.
+  /// If the type has a primary constructor, e.g. an extension type, then
+  /// [primaryConstructor] is not `null`.
   void writeType(
     NodeList<Annotation> metadata,
-    List<Token?> keywords,
-    Token? name, {
+    List<Token?> keywords, {
+    Token? name,
     TypeParameterList? typeParameters,
     Token? equals,
     NamedType? superclass,
-    RepresentationDeclaration? representation,
+    PrimaryConstructorDeclaration? primaryConstructor,
     ExtendsClause? extendsClause,
     MixinOnClause? onClause,
     WithClause? withClause,
@@ -1481,9 +1481,8 @@ mixin PieceFactory {
           pieces.visit(superclass!);
         }
 
-        // Extension types have a representation type.
-        if (representation != null) {
-          pieces.visit(representation);
+        if (primaryConstructor != null) {
+          pieces.visit(primaryConstructor, spaceBefore: true);
         }
       });
 
