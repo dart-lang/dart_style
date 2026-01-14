@@ -247,4 +247,91 @@ void main() {
       await process.shouldExit(70);
     });
   });
+
+  group('--exclude', () {
+    test('excludes specific files', () async {
+      await d.dir('code', [
+        d.file('a.dart', unformattedSource),
+        d.file('b.dart', unformattedSource),
+        d.file('c.dart', unformattedSource),
+      ]).create();
+
+      var process = await runFormatter(['--exclude', 'b.dart', 'code']);
+      await expectLater(
+        process.stdout,
+        emitsInOrder([
+          'Formatted ${p.join('code', 'a.dart')}',
+          'Formatted ${p.join('code', 'c.dart')}',
+        ]),
+      );
+      await expectLater(
+        process.stdout,
+        emits(startsWith('Formatted 2 files (2 changed)')),
+      );
+      await process.shouldExit(0);
+
+      // b.dart should remain unformatted.
+      await d.dir('code', [
+        d.file('a.dart', formattedSource),
+        d.file('b.dart', unformattedSource),
+        d.file('c.dart', formattedSource),
+      ]).validate();
+    });
+
+    test('excludes directories', () async {
+      await d.dir('code', [
+        d.dir('subdir', [d.file('a.dart', unformattedSource)]),
+        d.file('b.dart', unformattedSource),
+      ]).create();
+
+      var process = await runFormatter(['--exclude', 'subdir', 'code']);
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['Formatted ${p.join('code', 'b.dart')}']),
+      );
+      await expectLater(
+        process.stdout,
+        emits(startsWith('Formatted 1 file (1 changed)')),
+      );
+      await process.shouldExit(0);
+
+      // subdir/a.dart should remain unformatted.
+      await d.dir('code', [
+        d.dir('subdir', [d.file('a.dart', unformattedSource)]),
+        d.file('b.dart', formattedSource),
+      ]).validate();
+    });
+
+    test('supports multiple exclude patterns', () async {
+      await d.dir('code', [
+        d.file('a.dart', unformattedSource),
+        d.file('b.dart', unformattedSource),
+        d.file('c.dart', unformattedSource),
+      ]).create();
+
+      var process = await runFormatter([
+        '--exclude',
+        'a.dart',
+        '--exclude',
+        'c.dart',
+        'code',
+      ]);
+      await expectLater(
+        process.stdout,
+        emitsInOrder(['Formatted ${p.join('code', 'b.dart')}']),
+      );
+      await expectLater(
+        process.stdout,
+        emits(startsWith('Formatted 1 file (1 changed)')),
+      );
+      await process.shouldExit(0);
+
+      // a.dart and c.dart should remain unformatted.
+      await d.dir('code', [
+        d.file('a.dart', unformattedSource),
+        d.file('b.dart', formattedSource),
+        d.file('c.dart', unformattedSource),
+      ]).validate();
+    });
+  });
 }
