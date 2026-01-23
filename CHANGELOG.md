@@ -1,3 +1,7 @@
+## 3.1.5
+
+* Support upcoming Dart language version 3.11.
+
 ## 3.1.4
 
 * Remove dependencies on analyzer internal implementation.
