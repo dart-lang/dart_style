@@ -1,3 +1,8 @@
+## 3.1.6
+
+* Require `sdk: ^3.10.0`.
+* Stop using experiment flags for features released in 3.10.
+
 ## 3.1.5
 
 * Support upcoming Dart language version 3.11.
