@@ -1,4 +1,4 @@
-## 3.1.6
+## 3.1.6-wip
 
 * Require `sdk: ^3.10.0`.
 * Stop using experiment flags for features released in 3.10.
