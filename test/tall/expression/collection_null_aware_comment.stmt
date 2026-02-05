@@ -1,5 +1,4 @@
 40 columns                              |
-(experiment null-aware-elements)
 >>> Inline comment after `?`.
 var list = [  ?  /* c */  x  ];
 <<< 3.8
@@ -33,7 +32,7 @@ var map = {
       ? // c
       value,
 };
->>> (experiment dot-shorthands) Comment between `?` and `.` of dot shorthand.
+>>> Comment between `?` and `.` of dot shorthand.
 var list = [
   ?  /* c */  .  property  ,
   ?  // c
