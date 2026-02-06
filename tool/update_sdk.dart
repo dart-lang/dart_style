@@ -38,7 +38,6 @@ void main(List<String> args) {
     ) = _parseArguments(
       args,
     );
-    verbose = 9;
     var stylePackageDir = _findStylePackageDir();
     if (verbose > 0) {
       stdout.writeln('dart_style root: ${stylePackageDir.path}');
@@ -227,7 +226,7 @@ class Updater {
     files.flushChanges();
     if (updatedPubspecVersion && !dryRun) {
       stdout.writeln(
-        'Updated PubSpec version. Run `dart pub get` and `dart format`.',
+        'Updated pubspec version. Run `dart pub get` and `dart format`.',
       );
     }
   }
