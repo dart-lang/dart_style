@@ -3,7 +3,8 @@
 // BSD-style license that can be found in the LICENSE file.
 
 /// Script to update the SDK dependency to the newest version,
-/// and to remove references to experiments that have been released.
+/// so the package can be used by the newest SDK.
+/// Removes references to experiments that have been released.
 library;
 
 import 'dart:convert' show LineSplitter;
@@ -11,8 +12,9 @@ import 'dart:io';
 import 'dart:io' as io show exit;
 
 import 'package:args/args.dart' as args;
+import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
-import 'package:pub_semver/pub_semver.dart' as ver;
+import 'package:pub_semver/pub_semver.dart';
 import 'package:yaml/yaml.dart' as y;
 
 // Command line can contain:
@@ -32,7 +34,7 @@ void main(List<String> args) {
       int verbose,
       bool dryRun,
       File? experimentsFile,
-      ver.Version? targetVersion,
+      Version? targetVersion,
     ) = _parseArguments(
       args,
     );
@@ -74,7 +76,7 @@ void main(List<String> args) {
       experimentsFile,
       targetVersion,
     );
-    var latestReleasedExperiment = experiments.values.fold<ver.Version?>(
+    var latestReleasedExperiment = experiments.values.fold<Version?>(
       null,
       maxVersionOrNull,
     );
@@ -85,6 +87,14 @@ void main(List<String> args) {
       // after they have been released or dropped.)
       stderr.writeln('No released experiments in experiments file.');
       exit(1);
+    }
+    if (verbose > 2) {
+      stdout.writeln('Enabled experiments:');
+      for (var MapEntry(key: name, value: version) in experiments.entries) {
+        if (version != null) {
+          stderr.writeln('  $name: $version');
+        }
+      }
     }
 
     // Collect the configuration into an object to give all the methods
@@ -108,7 +118,7 @@ void main(List<String> args) {
   }
 }
 
-(int verbose, bool dryRun, File? experimentsFile, ver.Version? version)
+(int verbose, bool dryRun, File? experimentsFile, Version? version)
 _parseArguments(List<String> arguments) {
   var argsParser = args.ArgParser()
     ..addFlag(
@@ -138,7 +148,7 @@ _parseArguments(List<String> arguments) {
 
   // Parse argument list.
   File? experimentsFile;
-  ver.Version? targetVersion;
+  Version? targetVersion;
   var flagErrors = false;
   for (var arg in parsedArgs.rest) {
     if (arg.startsWith('-')) {
@@ -187,7 +197,7 @@ class Updater {
   ///
   /// Any experiment launched or discontinued before or in this version
   /// should not be used as experiment flags.
-  final ver.Version currentVersion;
+  final Version targetVersion;
 
   // Verbosity level.
   final int verbose;
@@ -197,14 +207,14 @@ class Updater {
 
   // Mapping from experiment name to the SDK version where they are launched
   // or discontinued.
-  final Map<String, ver.Version?> experiments;
+  final Map<String, Version?> experiments;
 
   // Modified file state.
   final FileEditor files;
 
   Updater(
     this.root,
-    this.currentVersion,
+    this.targetVersion,
     this.experiments, {
     this.verbose = 0,
     this.dryRun = false,
@@ -222,7 +232,7 @@ class Updater {
     }
   }
 
-  /// Updates the minium SDK constraint in `pubspec.yaml` to [currentVersion].
+  /// Updates the minium SDK constraint in `pubspec.yaml` to [targetVersion].
   ///
   /// If the existing version is greater than the requested version, no change
   /// is needed.
@@ -230,33 +240,40 @@ class Updater {
   /// Assumes a well-formatted `pubspec.yaml`, since it uses string manipulation
   /// to replace the version constraint.
   ///
-  /// If the existing constraint is not before [currentVersion],
+  /// If the existing constraint is not before [targetVersion],
   /// it's left unchanged.
   bool _updatePubspec() {
     var file = File(p.join(root.path, 'pubspec.yaml'));
     var versionRE = RegExp(
-      r'(?<=^environment:\n  sdk: \^)([\w\-.+]+)(?=[ \t]*$)',
+      r'(?<=^environment:\n  sdk: *)([^ ].+)(?=[ \t]*$)',
       multiLine: true,
     );
     var change = false;
-    ver.Version? unchangedVersion;
+    VersionConstraint? unchangedVersion;
     String? unexpectedVersion;
     files.edit(
       file,
       (pubspecText) => pubspecText.replaceFirstMapped(versionRE, (m) {
         var versionText = m[0]!;
-        ver.Version? existingVersion;
+        VersionConstraint? existingVersion;
         try {
-          existingVersion = ver.Version.parse(versionText);
+          existingVersion = VersionConstraint.parse(versionText);
         } on Object {
           // Not what we expected.
           unexpectedVersion = versionText;
         }
-        if (existingVersion != null && existingVersion < currentVersion) {
-          change = true;
-          return ver.VersionConstraint.compatibleWith(
-            currentVersion,
-          ).toString();
+        if (existingVersion != null) {
+          var compatibleWithTarget = VersionConstraint.compatibleWith(
+            targetVersion,
+          );
+          var newConstraint = existingVersion.intersect(compatibleWithTarget);
+          if (newConstraint.isEmpty) {
+            newConstraint = compatibleWithTarget;
+          }
+          if (newConstraint != existingVersion) {
+            change = true;
+            return newConstraint.toString();
+          }
         }
         unchangedVersion = existingVersion;
         return versionText; // No change.
@@ -264,7 +281,7 @@ class Updater {
     );
     if (change) {
       if (verbose > 0) {
-        stdout.writeln('Updated pubspec.yaml SDK to $currentVersion');
+        stdout.writeln('Updated pubspec.yaml SDK to $targetVersion');
       }
       return true;
     }
@@ -282,111 +299,107 @@ class Updater {
     return false;
   }
 
+  /// Finds and updates all tests in the `test/` directory.
+  ///
+  /// Tests are all files that end in `.stmt` or `.unit`.
+  ///
+  /// Does not use [TestFile.listDirectory] since it uses `dart:io` directly
+  /// and therefore does not work with the [FileEditor] abstraction.
   void _updateTests() {
-    var testDirectory = Directory(p.join(root.path, 'test'));
-    for (var file in testDirectory.listSync(recursive: true)) {
-      if (file is File && file.path.endsWith('.stmt')) {
-        if (_updateTest(file) && verbose > 0) {
-          stdout.writeln('Updated test: ${file.path}');
+    var testDirectoryPath = p.join(root.path, 'test');
+    for (var file in Directory(testDirectoryPath).listSync(recursive: true)) {
+      if (file is File) {
+        var path = file.path;
+        if (path.endsWith('.stmt') || path.endsWith('.unit')) {
+          assert(path.startsWith(testDirectoryPath));
+          var relativePath = path.substring(testDirectoryPath.length);
+          if (_updateTest(file, relativePath) && verbose > 0) {
+            stdout.writeln('Updated test: ${file.path}');
+          }
         }
       }
     }
   }
 
-  // Matches an `(experiment exp-name)` entry, plus a single prior space.
-  // Captures:
-  // - name: The exp-name
-  static final _experimentRE = RegExp(r' ?\(experiment (?<name>[\w\-]+)\)');
-
-  /// Matches a language version on a format test output line.
-  static final _languageVersionRE = RegExp(r'(?<=^<<< )\d+\.\d+\b');
-
-  bool _updateTest(File testFile) => files.edit(testFile, (source) {
-    if (!source.contains('(experiment ')) return null;
-    // Experiments can be written in two places:
-    // - at top, after first line, as a lone of `(experiment exp-name)`
-    //   in which case it applies to every test.
-    // - on individual test as `>>> (experiment exp-name) Test name`
-    //   where it only applies to that test.
-    //
-    // Language version can occur after first part of source
-    // - `<<< 3.8 optional description`
-
-    var output = <String>[];
-    // Set when an enabled experiment is removed from the header,
-    // and the feature requires this version.
-    // Is the *minimum language version* allowed for tests in the file.
-    ver.Version? globalVersion;
-    // Set when an enabled experiment is removed from a single test.
-    // Cleared when the next test starts.
-    ver.Version? localVersion;
-    var inHeader = true;
-    var change = false;
-    for (var line in LineSplitter.split(source)) {
-      if (line.startsWith('>>>')) {
-        inHeader = false;
-        localVersion = null;
-      }
-      if (line.startsWith('<<<')) {
-        if (_languageVersionRE.firstMatch(line) case var m?) {
-          var minVersion = localVersion ?? globalVersion;
-          if (minVersion != null) {
-            var lineVersion = ver.Version.parse(m[0]!);
-            if (lineVersion < minVersion) {
-              change = true;
-              line = line.replaceRange(m.start, m.end, minVersion.toString());
-            }
-          }
-        } else {
-          // If we have a minimum version imposed by a removed experiment,
-          // put it on any output that doesn't have a version.
-          var minVersion = localVersion ?? globalVersion;
-          if (minVersion != null) {
-            line = line.replaceRange(3, 3, ' $minVersion');
-            change = true;
-          }
+  /// Removes released experiments from [TestOptions].
+  ///
+  /// Returns the minimum SDK version where all removed experiments were
+  /// released, or `null` if no experiments were removed.
+  ///
+  /// Requires `options.experimentsFlags` to be mutable, which it is if
+  /// it it contains any values.
+  Version? _removeReleasedExperiments(TestOptions options) {
+    Version? minVersion;
+    if (options.experimentFlags case var flags when flags.isNotEmpty) {
+      var removedFlags = <String>{};
+      for (var flag in flags) {
+        if (experiments[flag] case var version? when version <= targetVersion) {
+          minVersion = maxVersionOrNull(minVersion, version);
+          removedFlags.add(flag);
         }
-      } else if (line.isNotEmpty) {
-        line = line.replaceAllMapped(_experimentRE, (m) {
-          m as RegExpMatch;
-          var experimentName = m.namedGroup('name')!;
-          var release = experiments[experimentName];
-          if (release == null || release > currentVersion) {
-            // Not released yet.
-            if (!experiments.containsKey(experimentName)) {
-              stderr.writeln(
-                'Unrecognized experiment name "$experimentName"'
-                ' in ${testFile.path}',
-              );
-            }
-            return m[0]!; // Keep experiment.
-          }
-          // Remove the experiment entry, the experiment is released.
-          // Ensure language level, if specified, is high enough to enable
-          // the feature without a flag.
-          var currentMinVersion = localVersion ?? globalVersion;
-          if (currentMinVersion == null || release > currentMinVersion) {
-            if (inHeader) {
-              globalVersion = release;
-            } else {
-              localVersion = release;
-            }
-          }
-          change = true;
-          return '';
-        });
-        // Top-level experiment lines only,
-        if (line.isEmpty) continue;
       }
-      output.add(line);
-    }
-    if (change) {
-      if (output.isNotEmpty && output.last.isNotEmpty) {
-        output.add(''); // Make sure to have final newline.
+      if (minVersion != null) {
+        options.experimentFlags.removeWhere(removedFlags.contains);
       }
-      return output.join('\n');
     }
-    return null;
+    return minVersion;
+  }
+
+  /// Removes launched experiments from as single test file.
+  bool _updateTest(File file, String relativePath) => files.edit(file, (
+    source,
+  ) {
+    if (!source.contains('(experiment ')) return null;
+
+    var testFile = TestFile.fromSource(source, file, relativePath);
+    var globalMinVersion = _removeReleasedExperiments(testFile.options);
+
+    var change = globalMinVersion != null;
+
+    var tests = testFile.tests;
+    for (var i = 0; i < tests.length; i++) {
+      var test = tests[i];
+      var localMinVersion = _removeReleasedExperiments(test.options);
+      var minVersion = maxVersionOrNull(globalMinVersion, localMinVersion);
+      if (minVersion != null) {
+        // An experiment was removed. Code assumed to use experimental syntax,
+        // so upgrade its version it to the experiment's release version.
+        switch (test) {
+          case VersionedFormatTest():
+            var outputs = test.outputs;
+            if (outputs.isEmpty) continue; // Probably cannot happen.
+            // Retain all versions above the min-version.
+            // Retain the last version below or at the min-version, and upgrade
+            // it to the min-version.
+            var maxBelow = outputs.keys.fold<Version?>(
+              null,
+              // v2 if v1 < v2 <= minVersion
+              // v1 otherwise.
+              (v1, v2) => v2 > minVersion ? v1 : maxVersionOrNull(v1, v2),
+            );
+            if (maxBelow != null) {
+              // There are entries with values at or below the introduction.
+              change = true;
+              var lastValue = outputs[maxBelow]!;
+              outputs.removeWhere((version, _) => version < minVersion);
+              if (maxBelow != minVersion) outputs[minVersion] = lastValue;
+            }
+          case UnversionedFormatTest():
+            change = true;
+            tests[i] = VersionedFormatTest(
+              test.line,
+              test.options,
+              test.input,
+              {minVersion: test.output},
+            );
+        }
+      }
+    }
+    if (!change) return null;
+
+    var buffer = StringBuffer();
+    testFile.writeTo(buffer);
+    return buffer.toString();
   });
 }
 
@@ -396,46 +409,46 @@ class Updater {
 /// Parses the `experimental_features.yaml` file.
 ///
 /// Finds the current version, all experiments their 'enabled' version.
-(ver.Version? currentVersion, Map<String, ver.Version?>) _parseExperiments(
+(Version? currentVersion, Map<String, Version?>) _parseExperiments(
   File experimentsFile,
-  ver.Version? targetVersion,
+  Version? targetVersion,
 ) {
-  var result = <String, ver.Version?>{};
+  var result = <String, Version?>{};
   var yaml =
       y.loadYaml(
             experimentsFile.readAsStringSync(),
             sourceUrl: experimentsFile.uri,
           )
           as y.YamlMap;
-  ver.Version? currentVersion;
+  Version? currentVersion;
   if (yaml['current-version'] case String versionText) {
     try {
-      currentVersion = ver.Version.parse(versionText);
+      currentVersion = Version.parse(versionText);
     } on Object {
       stderr.writeln('Unexpected current-version in experiments: $versionText');
     }
   }
   if (currentVersion != null &&
       targetVersion != null &&
-      currentVersion < targetVersion) {
+      targetVersion < targetVersion) {
     throw UnsupportedError(
       'Target version higher than actual version:'
-      ' $targetVersion > $currentVersion',
+      ' $targetVersion > $targetVersion',
     );
   }
   var features = yaml['features'] as y.YamlMap;
   for (var MapEntry(key: name as String, value: info as y.YamlMap)
       in features.entries) {
-    ver.Version? version;
+    Version? version;
     if (info['enabledIn'] case String enabledString) {
-      version = ver.Version.parse(enabledString);
+      version = Version.parse(enabledString);
     }
     // If an experiment is expired without being enabled, which `macros`
     // will eventually be, it shouldn't be anywhere in tests.
     // It will not be removed.
     result[name] = version;
   }
-  return (currentVersion, result);
+  return (targetVersion, result);
 }
 
 // --------------------------------------------------------------------
@@ -572,7 +585,7 @@ Directory _findStylePackageDir() {
     if (_isStylePackageDir(directory)) return directory;
   }
   // Nothing worked.
-  stderr.writeln("Couldn't find package root. Run from inside package.");
+  stderr.writeln("Couldn't find package root. Please run from inside package.");
   exit(1);
 }
 
@@ -656,11 +669,11 @@ File? _tryExperimentsFileInSdkDirectory(Directory directory) {
   return null;
 }
 
-/// Tries to parse as "short" (major-minor only) version as a [ver.Version].
+/// Tries to parse as "short" (major-minor only) version as a [Version].
 ///
-/// Accepts for example `"3.8"` where the [ver.Version.parse] function
+/// Accepts for example `"3.8"` where the [Version.parse] function
 /// requires a patch version to be valid, like `"3.8.0"`.
-ver.Version? tryParseShortVersion(String source) {
+Version? tryParseShortVersion(String source) {
   // Must have format: \d+\.\d+
   var dot = source.indexOf('.');
   if (dot < 0) return null;
@@ -668,14 +681,14 @@ ver.Version? tryParseShortVersion(String source) {
   if (major == null) return null;
   var minor = int.tryParse(source.substring(dot + 1));
   if (minor == null) return null;
-  return ver.Version(major, minor, 0);
+  return Version(major, minor, 0);
 }
 
-String shortVersionText(ver.Version version) =>
-    '${version.major}.${version.minor}';
+/// The major and minor versions of `version`.
+String shortVersionText(Version version) => '${version.major}.${version.minor}';
 
 /// Max of two nullable versions, where a `null` value is less than non-`null`.
-ver.Version? maxVersionOrNull(ver.Version? v1, ver.Version? v2) {
+Version? maxVersionOrNull(Version? v1, Version? v2) {
   if (v1 == null) return v2;
   if (v2 == null) return v1;
   return v1 < v2 ? v2 : v1;
