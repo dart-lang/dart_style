@@ -1,6 +1,7 @@
 // Copyright (c) 2024, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'dart:convert' show LineSplitter;
 import 'dart:io';
 import 'dart:isolate';
 
@@ -12,7 +13,7 @@ import '../source_code.dart';
 
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
-final _preserveTrailingCommasPattern = RegExp(r'\(trailing_commas preserve\)');
+final _preserveTrailingCommasPattern = r'(trailing_commas preserve)';
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
@@ -71,10 +72,19 @@ final class TestFile {
     return TestFile._load(file, p.relative(file.path, from: testDir));
   }
 
+  /// Parses source already loaded from [file].
+  factory TestFile.fromSource(String source, File file, String relativePath) {
+    var lines = LineSplitter.split(source).toList();
+    return _parse(lines, file, relativePath);
+  }
+
   /// Reads the test file from [file].
   factory TestFile._load(File file, String relativePath) {
     var lines = file.readAsLinesSync();
+    return _parse(lines, file, relativePath);
+  }
 
+  static TestFile _parse(List<String> lines, File file, String relativePath) {
     var isCompilationUnit = file.path.endsWith('.unit');
 
     // The first line may have a "|" to indicate the page width.
@@ -316,6 +326,22 @@ final class TestFile {
           TrailingCommas.automate,
     );
   }
+
+  void writeTo(StringSink output) {
+    if (pageWidth case var pageWidth?) {
+      assert(pageWidth >= '10 columns'.length);
+      output
+        ..write('$pageWidth columns'.padRight(pageWidth))
+        ..writeln('|');
+    }
+    if (options.writeTo(output)) output.writeln();
+    for (var comment in comments) {
+      output.writeln(comment); // Check if needing to write `###` first.
+    }
+    for (var test in tests) {
+      test.writeTo(output);
+    }
+  }
 }
 
 /// A single formatting test inside a [TestFile].
@@ -336,6 +362,13 @@ sealed class FormatTest {
     if (input.description.isEmpty) return 'line $line';
     return 'line $line: ${input.description}';
   }
+
+  void writeTo(StringSink output) {
+    output.write('>>>');
+    options.writeTo(output, prefix: ' ');
+    input.writeTo(output);
+    // Outputs are written by subclasses.
+  }
 }
 
 /// A test for formatting that should be the same across all language versions.
@@ -346,6 +379,13 @@ final class UnversionedFormatTest extends FormatTest {
   final TestEntry output;
 
   UnversionedFormatTest(super.line, super.options, super.input, this.output);
+
+  @override
+  void writeTo(StringSink output) {
+    super.writeTo(output);
+    output.write('<<<');
+    this.output.writeTo(output);
+  }
 }
 
 /// A test whose expected formatting changes at specific versions.
@@ -364,6 +404,19 @@ final class VersionedFormatTest extends FormatTest {
   final Map<Version, TestEntry> outputs;
 
   VersionedFormatTest(super.line, super.options, super.input, this.outputs);
+
+  @override
+  void writeTo(StringSink output) {
+    super.writeTo(output);
+    outputs.forEach((version, entry) {
+      output
+        ..write('<<< ')
+        ..write(version.major)
+        ..write('.')
+        ..write(version.minor);
+      entry.writeTo(output);
+    });
+  }
 }
 
 /// A single test input or output.
@@ -377,6 +430,24 @@ final class TestEntry {
   final SourceCode code;
 
   TestEntry(this.description, this.comments, this.code);
+
+  /// Writes description, comments and code.
+  ///
+  /// Must have `<<<` or `>>>` in the output already.
+  void writeTo(StringSink output) {
+    if (description.isNotEmpty) {
+      output
+        ..write(' ')
+        ..writeln(description);
+    } else {
+      output.writeln();
+    }
+    for (var comment in comments) {
+      output.writeln(comment);
+    }
+    output.write(code.textWithSelectionMarkers);
+    if (!code.text.endsWith('\n')) output.writeln(); // Can that happen?
+  }
 }
 
 /// Options for configuring all tests in a file or an individual test.
@@ -392,6 +463,38 @@ final class TestOptions {
   final List<String> experimentFlags;
 
   TestOptions(this.leadingIndent, this.trailingCommas, this.experimentFlags);
+
+  /// Writes parenthesized option entries to [output].
+  ///
+  /// Returns whether anything was written.
+  bool writeTo(StringSink output, {String prefix = ''}) {
+    var change = false;
+    if (leadingIndent != null && leadingIndent != 0) {
+      output
+        ..write(prefix)
+        ..write('(indent ')
+        ..write(leadingIndent)
+        ..write(')');
+      prefix = '';
+      change = true;
+    }
+    for (var experiment in experimentFlags) {
+      output
+        ..write(prefix)
+        ..write('(experiment ')
+        ..write(experiment)
+        ..write(')');
+      prefix = '';
+      change = true;
+    }
+    if (trailingCommas == TrailingCommas.preserve) {
+      output
+        ..write(prefix)
+        ..write('(trailing_commas preserve)');
+      change = true;
+    }
+    return change;
+  }
 }
 
 extension SourceCodeExtensions on SourceCode {
