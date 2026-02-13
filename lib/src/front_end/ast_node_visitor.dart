@@ -191,7 +191,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     pieces.token(node.assertKeyword);
     writeArguments(node.leftParenthesis, [
       node.condition,
-      if (node.message case var message?) message,
+      ?node.message,
     ], node.rightParenthesis);
   }
 
@@ -200,7 +200,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     pieces.token(node.assertKeyword);
     writeArguments(node.leftParenthesis, [
       node.condition,
-      if (node.message case var message?) message,
+      ?node.message,
     ], node.rightParenthesis);
     pieces.token(node.semicolon);
   }

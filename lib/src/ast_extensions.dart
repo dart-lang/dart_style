@@ -426,7 +426,7 @@ extension AdjacentStringsExtensions on AdjacentStrings {
       // Treat asserts like argument lists.
       Assertion(:var condition, :var message) => _hasOtherStringArgument([
         condition,
-        if (message != null) message,
+        ?message,
       ]),
 
       _ => true,
@@ -465,7 +465,7 @@ extension AdjacentStringsExtensions on AdjacentStrings {
       // Treat asserts like argument lists.
       Assertion(:var condition, :var message) => _hasOtherStringArgument([
         condition,
-        if (message != null) message,
+        ?message,
       ]),
 
       // Don't add extra indentation in a variable initializer or assignment:
