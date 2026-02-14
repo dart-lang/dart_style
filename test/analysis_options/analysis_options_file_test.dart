@@ -223,7 +223,16 @@ void main() {
           TestFileSystemPath('options.yaml'),
           resolvePackageUri: failingResolver,
         ),
-        throwsA(isA<PackageResolutionException>()),
+        throwsA(
+          isA<PackageResolutionException>().having(
+            (error) => error.toString(),
+            'message',
+            allOf(
+              contains('package:foo/options.yaml'),
+              contains('include at "options.yaml"'),
+            ),
+          ),
+        ),
       );
     });
   });
