@@ -670,20 +670,22 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           var builder = SequenceBuilder(this);
           builder.leftBracket(node.body.leftBracket);
 
-          // In 3.10 and later, preserved trailing commas will also preserve a
-          // trailing comma in an enum with members. That in turn forces the
-          // `;` onto its own line after the last costant. Prior to 3.10, the
-          // behavior is the same as when preserved trailing commas is off
-          // where the last constant's comma is removed and the `;` is placed
-          // there instead.
+          // In 3.10 and later, if the source has a trailing comma before the
+          // `;`, it is preserved and the `;` is put on its own line. If there
+          // is no trailing comma in the source, the `;` stays on the same line
+          // as the last constant. Prior to 3.10, the behavior is the same as
+          // when preserved trailing commas is off: the last constant's comma
+          // is removed and the `;` is placed there instead.
+          var preserveTrailingComma =
+              style.preserveTrailingCommaAfterEnumValues &&
+              node.body.semicolon!.hasCommaBefore;
           for (var constant in node.body.constants) {
             var isLast = constant == node.body.constants.last;
             builder.addCommentsBefore(constant.firstNonCommentToken);
             builder.add(
               createEnumConstant(
                 constant,
-                commaAfter:
-                    !isLast || style.preserveTrailingCommaAfterEnumValues,
+                commaAfter: !isLast || preserveTrailingComma,
                 semicolon: isLast ? node.body.semicolon : null,
               ),
             );
@@ -691,7 +693,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
           // If we are preserving the trailing comma, then put the `;` on its
           // own line after the last constant.
-          if (style.preserveTrailingCommaAfterEnumValues) {
+          if (preserveTrailingComma) {
             builder.add(tokenPiece(node.body.semicolon!));
           }
 
