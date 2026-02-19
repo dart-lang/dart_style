@@ -4,6 +4,10 @@ extension type A(int a) {
   }
 <<<
 extension type A(int a) {}
+>>> (experiment primary-constructors) Empty semicolon body.
+extension type   A(int a)   ;
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+extension type A(int a);
 >>> Const and named constructor.
 extension  type  const  A  .  name  (  int  a  ) {}
 <<<

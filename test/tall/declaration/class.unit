@@ -1,11 +1,15 @@
 40 columns                              |
->>> Empty body.
+>>> Empty block body.
 class   A   {
 
 
 }
 <<<
 class A {}
+>>> (experiment primary-constructors) Empty semicolon body.
+class   A   ;
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class A;
 >>> Don't split empty body.
 class LongClassNameWithExactLength____ {}
 <<<
