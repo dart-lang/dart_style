@@ -27,7 +27,7 @@ final class TypeBuilder {
 
   /// Whether the first clause can be on the same line as the header even if
   /// the other clauses split.
-  bool _allowLeadingClause = false;
+  final bool _allowLeadingClause;
 
   TypeBuilder(
     this._visitor,
@@ -42,6 +42,7 @@ final class TypeBuilder {
     ExtensionOnClause? extensionOnClause,
     NativeClause? nativeClause,
   }) : _name = name,
+       _typeParameters = typeParameters,
        _clauses = [
          if (extendsClause case var clause?)
            _Clause(clause.extendsKeyword, [clause.superclass]),
@@ -56,9 +57,7 @@ final class TypeBuilder {
          if (nativeClause case var clause?)
            _Clause(clause.nativeKeyword, [?clause.name]),
        ],
-       _typeParameters = typeParameters {
-    _allowLeadingClause = extendsClause != null || mixinOnClause != null;
-  }
+       _allowLeadingClause = extendsClause != null || mixinOnClause != null;
 
   void buildBlockBody(
     Token leftBrace,

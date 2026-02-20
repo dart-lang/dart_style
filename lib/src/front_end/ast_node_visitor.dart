@@ -460,9 +460,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       var header = pieces.build(() {
         pieces.modifier(node.externalKeyword);
         pieces.modifier(node.constKeyword);
-        pieces.modifier(node.newKeyword);
-        pieces.modifier(node.factoryKeyword);
-        pieces.visit(node.typeName);
+
+        // If there is no type name, then this is an unnamed constructor using
+        // `new` or `factory` to declare the constructor. In that case, don't
+        // put a space after the keyword.
+        if (node.typeName != null || node.name != null) {
+          pieces.modifier(node.newKeyword);
+          pieces.modifier(node.factoryKeyword);
+          pieces.visit(node.typeName);
+        } else {
+          pieces.token(node.newKeyword);
+          pieces.token(node.factoryKeyword);
+        }
+
         pieces.token(node.period);
         pieces.token(node.name);
       });
