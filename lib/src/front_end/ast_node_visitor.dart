@@ -294,20 +294,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         node.mixinKeyword,
         node.classKeyword,
       ],
-      name: node.namePart.typeName,
-      typeParameters: node.namePart.typeParameters,
+      namePart: node.namePart,
       extendsClause: node.extendsClause,
       withClause: node.withClause,
       implementsClause: node.implementsClause,
       nativeClause: node.nativeClause,
     );
-    builder.buildClassBody(
-      primaryConstructor: switch (node.namePart) {
-        PrimaryConstructorDeclaration primary => primary,
-        NameWithTypeParameters _ => null,
-      },
-      body: node.body,
-    );
+    builder.buildClassBody(node.body);
   }
 
   @override
@@ -651,8 +644,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       this,
       node.metadata,
       [node.enumKeyword],
-      name: node.namePart.typeName,
-      typeParameters: node.namePart.typeParameters,
+      namePart: node.namePart,
       withClause: node.withClause,
       implementsClause: node.implementsClause,
     );
@@ -748,14 +740,14 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
-    var builder = TypeBuilder(this, node.metadata, [
-      node.extensionKeyword,
-      node.typeKeyword,
-    ], implementsClause: node.implementsClause);
-    builder.buildClassBody(
-      primaryConstructor: node.primaryConstructor,
-      body: node.body,
+    var builder = TypeBuilder(
+      this,
+      node.metadata,
+      [node.extensionKeyword, node.typeKeyword],
+      namePart: node.primaryConstructor,
+      implementsClause: node.implementsClause,
     );
+    builder.buildClassBody(node.body);
   }
 
   @override
@@ -814,7 +806,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     // If all parameters are optional, put the `[` or `{` right after `(`.
-    var builder = DelimitedListBuilder(this);
+    var listStyle = const ListStyle();
+    if (node.parent?.parent is ExtensionTypeDeclaration) {
+      listStyle = const ListStyle(commas: Commas.nonTrailing);
+    }
+
+    var builder = DelimitedListBuilder(this, listStyle);
 
     builder.addLeftBracket(
       pieces.build(() {
@@ -840,7 +837,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         forceSplit: style.preserveTrailingCommaBefore(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
-        blockShaped: false,
+        blockShaped: node.parent is PrimaryConstructorDeclaration,
       ),
     );
   }
@@ -1702,40 +1699,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
       pieces.visit(node.body);
     });
-  }
-
-  @override
-  void visitPrimaryConstructorDeclaration(PrimaryConstructorDeclaration node) {
-    pieces.modifier(node.constKeyword);
-    pieces.token(node.typeName);
-    pieces.visit(node.typeParameters);
-    pieces.visit(node.constructorName);
-
-    if (node.parent is ExtensionTypeDeclaration) {
-      var formalParameters = node.formalParameters;
-      var builder = DelimitedListBuilder(
-        this,
-        const ListStyle(commas: Commas.nonTrailing),
-      );
-      builder.leftBracket(formalParameters.leftParenthesis);
-      for (var formalParameter in formalParameters.parameters) {
-        // TODO(scheglov): support for optional formal parameters
-        formalParameter as SimpleFormalParameter;
-        builder.add(
-          pieces.build(() {
-            writeParameter(
-              metadata: formalParameter.metadata,
-              formalParameter.type,
-              formalParameter.name,
-            );
-          }),
-        );
-      }
-      builder.rightBracket(formalParameters.rightParenthesis);
-      pieces.add(builder.build());
-    } else {
-      pieces.visit(node.formalParameters);
-    }
   }
 
   @override

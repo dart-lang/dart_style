@@ -3,11 +3,22 @@
 /*a*/ extension /*b*/ type /*c*/ A
 /*d*/ ( /*e*/ @ /*f*/ override /*g*/ int /*h*/ a /*i*/ ) /*j*/
 implements /*k*/ I1 /*l*/ , /*m*/ I2 /*n*/ { /*o*/ } /*p*/
-<<<
+<<< 3.7
 /*a*/
 extension /*b*/ type /*c*/ A
-/*d*/ ( /*e*/
-  @ /*f*/ override /*g*/
+/*d*/ (
+  /*e*/ @ /*f*/ override /*g*/
+  int /*h*/ a /*i*/
+) /*j*/ implements /*k*/
+    I1 /*l*/, /*m*/
+    I2 /*n*/ {
+  /*o*/
+} /*p*/
+<<< 3.8
+/*a*/
+extension /*b*/ type /*c*/ A
+/*d*/ (
+  /*e*/ @ /*f*/ override /*g*/
   int /*h*/ a /*i*/
 ) /*j*/
     implements /*k*/
@@ -37,7 +48,7 @@ implements // q
 I // r
 { // s
 } // t
-<<<
+<<< 3.7
 // 0
 @patch // a
 extension // b
@@ -50,7 +61,33 @@ A // e
 > // h
 . // i
 name // j
-( // k
+(
+  // k
+  @ // l
+  required // m
+  int // n
+  a // o
+) // p
+implements // q
+    I // r
+    {
+  // s
+} // t
+<<< 3.8
+// 0
+@patch // a
+extension // b
+type // c
+const // d
+A // e
+<
+  // f
+  T // g
+> // h
+. // i
+name // j
+(
+  // k
   @ // l
   required // m
   int // n

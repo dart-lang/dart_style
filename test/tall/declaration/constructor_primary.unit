@@ -1,0 +1,362 @@
+40 columns                              |
+(experiment primary-constructors)
+### Tests for primary constructors in the class header.
+>>> Unsplit.
+class  const  C  <  T  >  .  named  (  int  x  ,  int  y  )  {  }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class const C<T>.named(int x, int y) {}
+>>> Unsplit with clauses.
+class A(int x) extends S;
+
+class B(int x) with M1, M2;
+
+class C(int x) implements I1, I2;
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class A(int x) extends S;
+
+class B(int x) with M1, M2;
+
+class C(int x) implements I1, I2;
+>>> With everything split.
+class const C<T1 extends TypeBound, T2 extends TypeBound>.named
+(final int parameter1, {required var String parameter2})
+extends Superclass<TypeArgument1, TypeArgument2>
+with Mixin1, Mixin2
+implements Interface1, Interface2, Interface3 { void body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class const C<
+  T1 extends TypeBound,
+  T2 extends TypeBound
+>.named(
+  final int parameter1, {
+  required var String parameter2,
+}) extends
+        Superclass<
+          TypeArgument1,
+          TypeArgument2
+        >
+    with Mixin1, Mixin2
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {
+  void body() {}
+}
+>>> On enum type with everything.
+enum const C<T1 extends TypeBound, T2 extends TypeBound>.named
+(final int parameter1, {required var String parameter2})
+with Mixin1, Mixin2
+implements Interface1, Interface2, Interface3 {
+a.named(1, parameter2: 'a'),
+b.named(2, parameter2: 'd'),
+c.named(3, parameter2: 'c');
+void body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+enum const C<
+  T1 extends TypeBound,
+  T2 extends TypeBound
+>.named(
+  final int parameter1, {
+  required var String parameter2,
+}) with Mixin1, Mixin2
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {
+  a.named(1, parameter2: 'a'),
+  b.named(2, parameter2: 'd'),
+  c.named(3, parameter2: 'c');
+
+  void body() {}
+}
+>>> Enums always split if there is a primary constructor.
+enum const C(int x) { a, b, c }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+enum const C(int x) {
+  a,
+  b,
+  c
+}
+>>> Prefer splitting parameters instead of type parameters.
+class C<Type1, Type2>(int param1, int param2) {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<Type1, Type2>(
+  int param1,
+  int param2,
+) {}
+>>> Prefer splitting before `extends` instead of parameters.
+class C(int param1, int param2) extends S {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(int param1, int param2)
+    extends S {}
+>>> Prefer splitting parameters instead of inside `extends` clause.
+class C(int param1, int param2)
+extends Superclass<TypeArg1,TypeArg2> {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  int param1,
+  int param2,
+) extends
+    Superclass<TypeArg1, TypeArg2> {}
+>>> Prefer splitting before `with` instead of parameters.
+class C(int param1, int param2) with M {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(int param1, int param2)
+    with M {}
+>>> Prefer splitting inside `with` clause instead of parameters.
+class C(int param1, int param2) with Mixin1, Mixin2, Mixin3, Mixin4 {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(int param1, int param2)
+    with
+        Mixin1,
+        Mixin2,
+        Mixin3,
+        Mixin4 {}
+>>> Prefer splitting before `implements` instead of parameters.
+class C(int param1, int param2) implements I {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(int param1, int param2)
+    implements I {}
+>>> Prefer splitting inside `implements` clause instead of parameters.
+class C(int param1, int param2) implements Interface1, Interface2, Interface3 {}
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(int param1, int param2)
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {}
+>>> Split parameter list with split type parameters.
+class Class<TypeParameter1, TypeParameter2>
+(var int parameter1, final String parameter2);
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class Class<
+  TypeParameter1,
+  TypeParameter2
+>(
+  var int parameter1,
+  final String parameter2,
+);
+>>> Split parameter list with unsplit `extends` clause.
+class C(var int parameter1, final String parameter2) extends S<int>
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) extends S<int> {
+  body() {}
+}
+>>> Split parameter list with split `extends` clause.
+class C(var int parameter1,final String parameter2)
+extends Superclass<TypeArgument1, TypeArgument2>
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) extends
+    Superclass<
+      TypeArgument1,
+      TypeArgument2
+    > {
+  body() {}
+}
+>>> Split parameter list with unsplit `with` clause.
+class C(var int parameter1, final String parameter2) with M<int>, Mixin2
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) with M<int>, Mixin2 {
+  body() {}
+}
+>>> Split parameter list with split `with` clause.
+class C(var int parameter1,final String parameter2)
+with Mixin1, Mixin2, Mixin3, Mixin4, Mixin5
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) with
+    Mixin1,
+    Mixin2,
+    Mixin3,
+    Mixin4,
+    Mixin5 {
+  body() {}
+}
+>>> Split parameter list with unsplit `implements` clause.
+class C(var int parameter1, final String parameter2) implements I<int>, I2
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) implements I<int>, I2 {
+  body() {}
+}
+>>> Split parameter list with split `implements` clause.
+class C(var int parameter1,final String parameter2)
+implements Interface1, Interface2, Interface3
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) implements
+    Interface1,
+    Interface2,
+    Interface3 {
+  body() {}
+}
+>>> Split parameter list with multiple unsplit `implements` clauses.
+class C(var int parameter1, final String parameter2) extends S with M implements I
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) extends S with M implements I {
+  body() {}
+}
+>>> Split parameter list with multiple split clauses.
+class C(var int parameter1,final String parameter2)
+extends Superclass
+with Mixin1, Mixin2, Mixin3
+implements Interface1, Interface2, Interface3
+{ body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int parameter1,
+  final String parameter2,
+) extends Superclass
+    with Mixin1, Mixin2, Mixin3
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {
+  body() {}
+}
+>>> Split type parameters, empty parameter list, extends clause.
+class C<TypeParam1, TypeParam2, TypeParam3>() extends Superclass { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>() extends Superclass {
+  body() {}
+}
+>>> Split type parameters, unsplit parameter list, extends clause.
+class C<TypeParam1, TypeParam2, TypeParam3>(int x, int y)
+extends Superclass { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>(int x, int y) extends Superclass {
+  body() {}
+}
+>>> Split type parameters, empty parameter list, with clause.
+class C<TypeParam1, TypeParam2, TypeParam3>() with Mixin1, Mixin2 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>() with Mixin1, Mixin2 {
+  body() {}
+}
+>>> Split type parameters, unsplit parameter list, with clause.
+class C<TypeParam1, TypeParam2, TypeParam3>(int x, int y)
+with Mixin1, Mixin2 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>(int x, int y) with Mixin1, Mixin2 {
+  body() {}
+}
+>>> Split type parameters, empty parameter list, implements clause.
+class C<TypeParam1, TypeParam2, TypeParam3>() implements Interface1, Interface2 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>() implements Interface1, Interface2 {
+  body() {}
+}
+>>> Split type parameters, unsplit parameter list, implements clause.
+class C<TypeParam1, TypeParam2, TypeParam3>(int x, int y)
+implements I1, I2 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>(int x, int y) implements I1, I2 {
+  body() {}
+}
+>>> Split type parameters, empty parameter list, multiple unsplit clauses.
+class C<TypeParam1, TypeParam2, TypeParam3>()
+extends S with M1 implements I1 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>() extends S with M1 implements I1 {
+  body() {}
+}
+>>> Split type parameters, unsplit parameter list, multiple unsplit clauses.
+class C<TypeParam1, TypeParam2, TypeParam3>(s)
+extends S with M implements I { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>(s) extends S with M implements I {
+  body() {}
+}
+>>> Split type parameters, empty parameter list, multiple split clauses.
+class C<TypeParam1, TypeParam2, TypeParam3>()
+extends Superclass with Mixin1, Mixin2, Mixin3
+implements Interface1, Interface2, Interface3 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>()
+    extends Superclass
+    with Mixin1, Mixin2, Mixin3
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {
+  body() {}
+}
+>>> Split type parameters, unsplit parameter list, multiple split clauses.
+class C<TypeParam1, TypeParam2, TypeParam3>(int x, int y)
+extends Superclass with Mixin1, Mixin2, Mixin3
+implements Interface1, Interface2, Interface3 { body() {} }
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C<
+  TypeParam1,
+  TypeParam2,
+  TypeParam3
+>(int x, int y)
+    extends Superclass
+    with Mixin1, Mixin2, Mixin3
+    implements
+        Interface1,
+        Interface2,
+        Interface3 {
+  body() {}
+}
