@@ -101,6 +101,6 @@ name // j
 >>> (experiment primary-constructors) Comment before empty body.
 extension type I(int i) // Comment.
 ;
-<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+<<< 3.13
 extension type I(int i) // Comment.
 ;

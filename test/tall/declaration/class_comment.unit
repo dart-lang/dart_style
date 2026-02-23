@@ -90,6 +90,6 @@ class Bar {}
 >>> (experiment primary-constructors) Comment before empty body.
 class C // Comment.
 ;
-<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+<<< 3.13
 class C // Comment.
 ;

@@ -6,7 +6,7 @@ class C {
   factory  (  int  x  )  {  }
   factory  named  (  )  {  }
 }
-<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+<<< 3.13
 class C {
   factory(int x) {}
   factory named() {}
@@ -16,7 +16,7 @@ class C {
   const  factory  (  int  x  )  {  }
   const  factory  named  (  )  {  }
 }
-<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+<<< 3.13
 class C {
   const factory(int x) {}
   const factory named() {}
@@ -26,7 +26,7 @@ class C {
   const  factory  (  int  x  )  =  C  .  named  ;
   const  factory  named  (  )  =  C  ;
 }
-<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+<<< 3.13
 class C {
   const factory(int x) = C.named;
   const factory named() = C;
