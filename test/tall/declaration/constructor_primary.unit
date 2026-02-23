@@ -17,6 +17,14 @@ class A(int x) extends S;
 class B(int x) with M1, M2;
 
 class C(int x) implements I1, I2;
+>>> Don't split after const.
+class const ExtremelyLongClassNameHere();
+<<<
+class const ExtremelyLongClassNameHere();
+>>> Don't split on class name.
+class LongClassName.longConstructorName();
+<<<
+class LongClassName.longConstructorName();
 >>> With everything split.
 class const C<T1 extends TypeBound, T2 extends TypeBound>.named
 (final int parameter1, {required var String parameter2})
