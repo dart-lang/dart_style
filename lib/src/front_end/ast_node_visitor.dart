@@ -108,18 +108,27 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       sequence.addBlank();
 
       for (var declaration in node.declarations) {
-        var hasBody =
-            declaration is ClassDeclaration ||
-            declaration is EnumDeclaration ||
-            declaration is ExtensionDeclaration;
+        // "Type" declarations that have braced bodies are surrounded by blank
+        // lines.
+        var addBlankLines = switch (declaration) {
+          ClassDeclaration(body: BlockClassBody()) => true,
+          EnumDeclaration() => true,
+          ExtensionDeclaration() => true,
+          ExtensionTypeDeclaration(body: BlockClassBody())
+              when style.blankLineAroundMixinAndExtensionTypes =>
+            true,
+          MixinDeclaration() when style.blankLineAroundMixinAndExtensionTypes =>
+            true,
+          _ => false,
+        };
 
         // Add a blank line before types with bodies.
-        if (hasBody) sequence.addBlank();
+        if (addBlankLines) sequence.addBlank();
 
         sequence.visit(declaration);
 
         // Add a blank line after type or function declarations with bodies.
-        if (hasBody || declaration.hasNonEmptyBody) sequence.addBlank();
+        if (addBlankLines || declaration.hasNonEmptyBody) sequence.addBlank();
       }
     } else {
       // Just formatting a single statement.

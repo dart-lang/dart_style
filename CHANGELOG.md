@@ -1,5 +1,7 @@
 ## 3.1.6-wip
 
+### Style changes
+
 * Format extension type representation clauses the same way primary constructor
   formal parameter lists are formatted. This rarely makes a difference but
   produces better formatting when the representation type is long and there are
@@ -20,6 +22,36 @@
 
   This change is *not* language versioned. (The old style is always worse, and
   continuing to support it would add complexity to the formatter.)
+
+* Force blank lines around a mixin or extension type declaration if it doesn't
+  have a `;` body:
+
+  ```dart
+  // Before:
+  int above;
+  extension type Inches(int x) {}
+  mixin M {}
+  int below;
+
+  // After:
+  int above;
+
+  extension type Inches(int x) {}
+
+  mixin M {}
+
+  int below;
+  ```
+
+  The formatter already forces blank lines around class, enum, and extension
+  declarations. Mixins and extension types were overlooked. This makes them
+  consistent. This style change is language versioned and only affects
+  libraries at 3.13 or higher.
+
+  Note that the formatter allows classes and extension types whose body is `;`
+  to not have a blank line above or below them.
+
+### Internal changes
 
 * Require `sdk: ^3.10.0`.
 * Stop using experiment flags for features released in 3.10.

@@ -163,7 +163,6 @@ class C1([
   var int x = 1,
   final String y = 's',
 ]);
-
 class C2({
   var int x = 1,
   final String y = 's',

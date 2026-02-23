@@ -78,3 +78,17 @@ class SomeClass native "Zapp" {
 }
 <<<
 class SomeClass native "Zapp" {}
+>>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
+class   A   ;
+class   B(int x)   ;
+class   C   ;
+class   D   {}
+class   E   ;
+<<< 3.13
+class A;
+class B(int x);
+class C;
+
+class D {}
+
+class E;

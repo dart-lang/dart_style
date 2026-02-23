@@ -131,3 +131,44 @@ extension type const A<T>.name(int a) {
   int me(int x) => x;
   int operator +(int x) => x;
 }
+>>> Force a blank line before and after an extension type declaration.
+var x = 1; extension type A(int x) {} var y = 2;
+
+
+extension type B(int x) {}
+
+
+
+var z = 3;
+<<< 3.7
+var x = 1;
+extension type A(int x) {}
+var y = 2;
+
+extension type B(int x) {}
+
+var z = 3;
+<<< 3.13
+var x = 1;
+
+extension type A(int x) {}
+
+var y = 2;
+
+extension type B(int x) {}
+
+var z = 3;
+>>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
+extension type   A(int x)   ;
+extension type   B(int x)   ;
+extension type   C(int x)   ;
+extension type   D(int x)   {}
+extension type   E(int x)   ;
+<<< 3.13
+extension type A(int x);
+extension type B(int x);
+extension type C(int x);
+
+extension type D(int x) {}
+
+extension type E(int x);
