@@ -85,6 +85,24 @@ enum const C(int x) {
   b,
   c
 }
+>>> With optional parameters.
+class Foo(int a, int b, [int? c, int? d]);
+<<< 3.13
+class Foo(
+  int a,
+  int b, [
+  int? c,
+  int? d,
+]);
+>>> With named parameters.
+class Foo(int a, int b, {int? c, required int d});
+<<< 3.13
+class Foo(
+  int a,
+  int b, {
+  int? c,
+  required int d,
+});
 >>> Prefer splitting parameters instead of type parameters.
 class C<Type1, Type2>(int param1, int param2) {}
 <<< 3.13
