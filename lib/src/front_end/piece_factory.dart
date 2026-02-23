@@ -839,12 +839,19 @@ mixin PieceFactory {
   }) {
     var metadata = parameter?.metadata ?? const <Annotation>[];
     pieces.withMetadata(metadata, inlineMetadata: true, () {
+      var modifiers = [
+        parameter?.requiredKeyword,
+        parameter?.covariantKeyword,
+        if (parameter case FunctionTypedFormalParameter(:var keyword)) keyword,
+      ];
+
       void write() {
         // If there's no return type, attach the parameter modifiers to the
         // signature.
-        if (parameter != null && returnType == null) {
-          pieces.modifier(parameter.requiredKeyword);
-          pieces.modifier(parameter.covariantKeyword);
+        if (returnType == null) {
+          for (var modifier in modifiers) {
+            pieces.modifier(modifier);
+          }
         }
 
         pieces.token(fieldKeyword);
@@ -855,10 +862,6 @@ mixin PieceFactory {
         pieces.token(question);
       }
 
-      var returnTypeModifiers = parameter != null
-          ? [parameter.requiredKeyword, parameter.covariantKeyword]
-          : const <Token?>[];
-
       // If the type is a function-typed parameter with a default value, then
       // grab the default value from the parent node and attach it to the
       // function.
@@ -867,12 +870,12 @@ mixin PieceFactory {
         :var defaultValue?,
       )) {
         var function = pieces.build(() {
-          writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+          writeFunctionAndReturnType(modifiers, returnType, write);
         });
 
         writeDefaultValue(function, (separator, defaultValue));
       } else {
-        writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+        writeFunctionAndReturnType(modifiers, returnType, write);
       }
     });
   }

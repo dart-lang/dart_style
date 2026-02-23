@@ -111,3 +111,67 @@ class A {
   int? _y;
   int? _z;
 }
+>>> (experiment primary-constructors) Declaring normal parameters.
+class C(var int x, final String y, var untyped, final another);
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int x,
+  final String y,
+  var untyped,
+  final another,
+);
+>>> (experiment primary-constructors) Declaring optional positional parameters.
+class C([var int? x, final String? y, var untyped, final another]);
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C([
+  var int? x,
+  final String? y,
+  var untyped,
+  final another,
+]);
+>>> (experiment primary-constructors) Declaring optional named parameters.
+class C({var int? x, final String? y, var untyped, final another});
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C({
+  var int? x,
+  final String? y,
+  var untyped,
+  final another,
+});
+>>> (experiment primary-constructors) Declaring required named parameters.
+class C({required var int? x, required final String? y, required var untyped, required final another});
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C({
+  required var int? x,
+  required final String? y,
+  required var untyped,
+  required final another,
+});
+>>> (experiment primary-constructors) Declaring coviariant parameters.
+class C(covariant var int? x, {required covariant var int z, covariant var String? a});
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  covariant var int? x, {
+  required covariant var int z,
+  covariant var String? a,
+});
+>>> (experiment primary-constructors) Declaring parameter with default values.
+class C1([var int x = 1, final String y = 's']);
+class C2({var int x = 1, final String y = 's'});
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C1([
+  var int x = 1,
+  final String y = 's',
+]);
+
+class C2({
+  var int x = 1,
+  final String y = 's',
+});
+>>> (experiment primary-constructors) Declaring function-typed parameters.
+class C(var int fn(), final callback(String s));
+<<< 3.11 ### TODO: Set to release version of primary constructors when known.
+class C(
+  var int fn(),
+  final callback(String s),
+);
