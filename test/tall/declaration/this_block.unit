@@ -1,0 +1,119 @@
+40 columns                              |
+(experiment primary-constructors)
+### Tests for a primary constructor `this` block in the class body.
+>>> Unsplit.
+class C(int x) {
+  int y;
+  this : y = x, assert(x != 0);
+}
+<<< 3.13
+class C(int x) {
+  int y;
+  this : y = x, assert(x != 0);
+}
+>>> Unnamed super constructor.
+class Foo(a, b) {
+  this  :  super  (  a  ,  other  :  b  )  ;
+}
+<<< 3.13
+class Foo(a, b) {
+  this : super(a, other: b);
+}
+>>> Named super constructor.
+class Foo(a, b) {
+  this  :  super  .  name  (  a  ,  other  :  b  )  ;
+}
+<<< 3.13
+class Foo(a, b) {
+  this : super.name(a, other: b);
+}
+>>> Split a single initializer.
+class MyClass() {
+  this : super(firstArgument, secondArg);
+}
+<<< 3.13
+class MyClass() {
+  this
+    : super(firstArgument, secondArg);
+}
+>>> Unsplit field initializers.
+class X() {
+  var x, y;
+  this : x = 1, y = 2;
+}
+<<< 3.13
+class X() {
+  var x, y;
+  this : x = 1, y = 2;
+}
+>>> Split all field initializers.
+class MyClass() {
+  this : first = "some value", second = "another",
+        third = "last";
+}
+<<< 3.13
+class MyClass() {
+  this
+    : first = "some value",
+      second = "another",
+      third = "last";
+}
+>>> Wrap split initializers past the `:`.
+class Foo() {
+  this
+      : initializer = function(argument, argument),
+        initializer2 = function(argument, argument);
+}
+<<< 3.13
+class Foo() {
+  this
+    : initializer = function(
+        argument,
+        argument,
+      ),
+      initializer2 = function(
+        argument,
+        argument,
+      );
+}
+>>> Empty block body.
+class Foo() {
+  this  {  }
+}
+<<< 3.13
+class Foo() {
+  this {}
+}
+>>> Non-empty block body.
+class Foo() {
+  this  {  body();  }
+}
+<<< 3.13
+class Foo() {
+  this {
+    body();
+  }
+}
+>>> Block body with unsplit initializers.
+class Foo() {
+  this  :  a = 1,  b = 2,  c = 3   {  body();  }
+}
+<<< 3.13
+class Foo() {
+  this : a = 1, b = 2, c = 3 {
+    body();
+  }
+}
+>>> Block body with split initializers.
+class Foo() {
+  this  :  fieldA = 1,  fieldB = 2,  fieldC = 3   {  body();  }
+}
+<<< 3.13
+class Foo() {
+  this
+    : fieldA = 1,
+      fieldB = 2,
+      fieldC = 3 {
+    body();
+  }
+}

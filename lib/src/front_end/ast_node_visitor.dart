@@ -1697,16 +1697,27 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitPrimaryConstructorBody(PrimaryConstructorBody node) {
     pieces.withMetadata(node.metadata, () {
-      pieces.token(node.thisKeyword);
+      var header = pieces.build(() {
+        pieces.token(node.thisKeyword);
+      });
 
+      Piece? colon;
+      Piece? initializers;
       if (node.initializers.isNotEmpty) {
-        pieces.space();
-        pieces.token(node.colon);
-        pieces.space();
-        pieces.add(createCommaSeparated(node.initializers));
+        colon = tokenPiece(node.colon!);
+        initializers = createCommaSeparated(node.initializers);
       }
 
-      pieces.visit(node.body);
+      var body = nodePiece(node.body);
+
+      pieces.add(
+        ConstructorPiece.thisBlock(
+          header,
+          body,
+          initializerSeparator: colon,
+          initializers: initializers,
+        ),
+      );
     });
   }
 
