@@ -1,7 +1,8 @@
 ## 3.1.6-wip
 
-* Require `sdk: ^3.10.0`.
+* Support upcoming Dart language version 3.12.
 * Stop using experiment flags for features released in 3.10.
+* Require `sdk: ^3.10.0`.
 
 ## 3.1.5
 
