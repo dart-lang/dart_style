@@ -14,17 +14,19 @@ import '../source_code.dart';
 final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
 final _preserveTrailingCommasPattern = r'(trailing_commas preserve)';
-final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
+// Only supports two-digit hex numbers.
+final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
 /// Matches an output header line with an optional version and description.
 /// Examples:
-///
-///    >>>
-///    >>> Only description.
-///    >>> 1.2
-///    >>> 1.2 Version and description.
-final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
+/// ```plaintext
+/// >>>
+/// >>> Only description.
+/// >>> 1.2
+/// >>> 1.2 Version and description.
+/// ```
+final _outputPattern = RegExp(r'<<<(?: (\d+)\.(\d+))?(.*)');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
@@ -90,8 +92,8 @@ final class TestFile {
     // The first line may have a "|" to indicate the page width.
     var i = 0;
     int? pageWidth;
-    if (lines[i].endsWith('|')) {
-      pageWidth = lines[i].indexOf('|');
+    if (lines[i] case var firstLine when firstLine.endsWith('|')) {
+      pageWidth = firstLine.length - 1;
       i++;
     }
 
@@ -160,12 +162,12 @@ final class TestFile {
       var versionedOutputs = <Version, TestEntry>{};
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
-        var outputDescription = match[4]!;
+        var outputDescription = match[3]!.trim();
         Version? outputVersion;
-        if (match[1] != null) {
+        if (match[1] case var majorVersion?) {
           outputVersion = Version(
+            int.parse(majorVersion),
             int.parse(match[2]!),
-            int.parse(match[3]!),
             0,
           );
         }
@@ -445,7 +447,7 @@ final class TestEntry {
     for (var comment in comments) {
       output.writeln(comment);
     }
-    output.write(code.textWithSelectionMarkers);
+    output.write(escapeUnicode(code.textWithSelectionMarkers));
     if (!code.text.endsWith('\n')) output.writeln(); // Can that happen?
   }
 }
@@ -541,6 +543,9 @@ String _unescapeUnicode(String input) {
 /// Turn the few Unicode characters used in tests back to their escape syntax.
 String escapeUnicode(String input) {
   return input.replaceAllMapped(_unicodeEscapePattern, (match) {
-    return '×${match[0]!.codeUnitAt(0).toRadixString(16)}';
+    assert(match.end == match.start + 1);
+    var codePoint = input.codeUnitAt(match.start);
+    assert(codePoint < 0x100); // Two digits is enough.
+    return '×${codePoint.toRadixString(16).padLeft(2, '0')}';
   });
 }
