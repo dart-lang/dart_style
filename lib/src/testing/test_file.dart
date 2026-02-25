@@ -15,8 +15,8 @@ final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
 final _preserveTrailingCommasPattern = r'(trailing_commas preserve)';
 // Only supports two-digit hex numbers.
-final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2})');
-final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
+final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
+final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d\x80-\uFFFF]');
 
 /// Matches an output header line with an optional version and description.
 /// Examples:
@@ -162,7 +162,7 @@ final class TestFile {
       var versionedOutputs = <Version, TestEntry>{};
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
-        var outputDescription = match[3]!.trim();
+        var outputDescription = match[3]!;
         Version? outputVersion;
         if (match[1] case var majorVersion?) {
           outputVersion = Version(
@@ -546,6 +546,9 @@ String escapeUnicode(String input) {
     assert(match.end == match.start + 1);
     var codePoint = input.codeUnitAt(match.start);
     assert(codePoint < 0x100); // Two digits is enough.
-    return '×${codePoint.toRadixString(16).padLeft(2, '0')}';
+    var hexDigits = codePoint
+        .toRadixString(16)
+        .padLeft(codePoint < 0x100 ? 2 : 4, '0');
+    return '×$hexDigits';
   });
 }
