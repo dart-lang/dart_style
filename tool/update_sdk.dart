@@ -233,6 +233,10 @@ class Updater {
 
   /// Updates the minium SDK constraint in `pubspec.yaml` to [targetVersion].
   ///
+  /// Assumes a standard `sdk: ^...` format for the SDK constraint,
+  /// and normal two-space indentation of the YAML file,
+  /// with nothing else on the line, including comments.
+  ///
   /// If the existing version is greater than the requested version, no change
   /// is needed.
   ///
