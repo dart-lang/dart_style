@@ -97,8 +97,8 @@ final class TypeBuilder {
   void buildEnum(EnumDeclaration node) {
     Piece buildBody() {
       // If the enum has any members we definitely need to force the body to
-      // split because there are `;` in there. If it has a primary constructor,
-      // we could allow it on one line. But users generally wish were more
+      // split because there's a `;` in there. If it has a primary constructor,
+      // we could allow it on one line. But users generally wish enums were more
       // eager to split and having the constructor and values all on one line
       // is pretty hard to read:
       //
