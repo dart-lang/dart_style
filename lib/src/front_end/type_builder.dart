@@ -233,23 +233,27 @@ final class TypeBuilder {
   ///
   /// Formats it like a block where each constant or member is on its own line.
   Piece _buildEnhancedEnumBody(EnumBody body) {
-    // If there are members,
+    // If there are members, format it like a block where each constant
+    // and member is on its own line.
     var builder = SequenceBuilder(_visitor);
     builder.leftBracket(body.leftBracket);
 
-    // In 3.10 and later, preserved trailing commas will also preserve a
-    // trailing comma in an enum with members. That in turn forces the `;` onto
-    // its own line after the last costant. Prior to 3.10, the behavior is the
-    // same as when preserved trailing commas is off where the last constant's
-    // comma is removed and the `;` is placed there instead.
+    // In 3.10 and later, if the source has a trailing comma before the
+    // `;`, it is preserved and the `;` is put on its own line. If there
+    // is no trailing comma in the source, the `;` stays on the same line
+    // as the last constant. Prior to 3.10, the behavior is the same as
+    // when preserved trailing commas is off: the last constant's comma
+    // is removed and the `;` is placed there instead.
+    var preserveTrailingComma =
+        _visitor.style.preserveTrailingCommaAfterEnumValues &&
+        body.semicolon!.hasCommaBefore;
     for (var constant in body.constants) {
       var isLast = constant == body.constants.last;
       builder.addCommentsBefore(constant.firstNonCommentToken);
       builder.add(
         _visitor.createEnumConstant(
           constant,
-          commaAfter:
-              !isLast || _visitor.style.preserveTrailingCommaAfterEnumValues,
+          commaAfter: !isLast || preserveTrailingComma,
           semicolon: isLast ? body.semicolon : null,
         ),
       );
@@ -257,7 +261,7 @@ final class TypeBuilder {
 
     // If we are preserving the trailing comma, then put the `;` on its own line
     // after the last constant.
-    if (_visitor.style.preserveTrailingCommaAfterEnumValues) {
+    if (preserveTrailingComma) {
       builder.add(_visitor.tokenPiece(body.semicolon!));
     }
 

@@ -1,4 +1,4 @@
-## 3.1.6-wip
+## 3.1.7-wip
 
 ### Style changes
 
@@ -53,8 +53,25 @@
 
 ### Internal changes
 
+* Support upcoming Dart language version 3.13.
+* Support formatting primary constructors.
+
+## 3.1.6
+
+### Style changes
+
+### Internal changes
+
 * Require `sdk: ^3.10.0`.
+* When trailing commas are preserved, don't insert a newline before the `;` in
+  an enum with members unless there actually is a trailing comma.
+  (Fix by @Barbirosha.)
+
+### Internal changes
+
+* Support upcoming Dart language version 3.12.
 * Stop using experiment flags for features released in 3.10.
+* Require `sdk: ^3.10.0`.
 
 ## 3.1.5
 
