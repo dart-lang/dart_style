@@ -1,7 +1,68 @@
+## 3.1.7-wip
+
+### Style changes
+
+* Format extension type representation clauses the same way primary constructor
+  formal parameter lists are formatted. This rarely makes a difference but
+  produces better formatting when the representation type is long and there are
+  other clauses on the extension type, as in:
+
+  ```dart
+  // Before:
+  extension type JSExportedDartFunction._(
+    JSExportedDartFunctionRepType _jsExportedDartFunction
+  )
+      implements JSFunction {}
+
+  // After:
+  extension type JSExportedDartFunction._(
+    JSExportedDartFunctionRepType _jsExportedDartFunction
+  ) implements JSFunction {}
+  ```
+
+  This change is *not* language versioned. (The old style is always worse, and
+  continuing to support it would add complexity to the formatter.)
+
+* Force blank lines around a mixin or extension type declaration if it doesn't
+  have a `;` body:
+
+  ```dart
+  // Before:
+  int above;
+  extension type Inches(int x) {}
+  mixin M {}
+  int below;
+
+  // After:
+  int above;
+
+  extension type Inches(int x) {}
+
+  mixin M {}
+
+  int below;
+  ```
+
+  The formatter already forces blank lines around class, enum, and extension
+  declarations. Mixins and extension types were overlooked. This makes them
+  consistent. This style change is language versioned and only affects
+  libraries at 3.13 or higher.
+
+  Note that the formatter allows classes and extension types whose body is `;`
+  to not have a blank line above or below them.
+
+### Internal changes
+
+* Support upcoming Dart language version 3.13.
+* Support formatting primary constructors.
+
 ## 3.1.6
 
 ### Style changes
 
+### Internal changes
+
+* Require `sdk: ^3.10.0`.
 * When trailing commas are preserved, don't insert a newline before the `;` in
   an enum with members unless there actually is a trailing comma.
   (Fix by @Barbirosha.)

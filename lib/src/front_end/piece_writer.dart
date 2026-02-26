@@ -167,7 +167,7 @@ final class PieceWriter {
     _currentCode = null;
   }
 
-  /// Creates a returns a new piece.
+  /// Creates and returns a new piece.
   ///
   /// Invokes [buildCallback]. All tokens and AST nodes written during that
   /// callback are collected into the returned piece.

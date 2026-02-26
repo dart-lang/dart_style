@@ -1,0 +1,77 @@
+40 columns                              |
+(experiment primary-constructors)
+### Tests for using `new` to define a constructor.
+>>> Generative.
+class C {
+  new  (  int  x  )  ;
+  new  named  (  )  {  }
+}
+<<< 3.13
+class C {
+  new(int x);
+  new named() {}
+}
+>>> External.
+class C {
+  external  new  (  int  x  )  ;
+  external  new  named  (  )  ;
+}
+<<< 3.13
+class C {
+  external new(int x);
+  external new named();
+}
+>>> Const generative.
+class C {
+  const  new  (  int  x  )  ;
+  const  new  named  (  )  {  }
+}
+<<< 3.13
+class C {
+  const new(int x);
+  const new named() {}
+}
+>>> Redirecting.
+class C {
+  new  (  int  x  )  :  this  .  named  (  )  ;
+  new  named  (  )  :  this  ( 1 )  ;
+}
+<<< 3.13
+class C {
+  new(int x) : this.named();
+  new named() : this(1);
+}
+>>> Const redirecting.
+class C {
+  const  new  (  int  x  )  :  this  .  named  (  )  ;
+  const  new  named  (  )  :  this  ( 1 )  ;
+}
+<<< 3.13
+class C {
+  const new(int x) : this.named();
+  const new named() : this(1);
+}
+>>> In enum.
+enum C {
+  a.named(), b(1);
+  const new  (  int  x  )  ;
+  const new  named  (  )  {  }
+}
+<<< 3.13
+enum C {
+  a.named(),
+  b(1);
+
+  const new(int x);
+  const new named() {}
+}
+>>> In extension type.
+extension type C._(int x) {
+  new  (  int  x  )  :  this._(x)  ;
+  const new  named  (  )  {  }
+}
+<<< 3.13
+extension type C._(int x) {
+  new(int x) : this._(x);
+  const new named() {}
+}
