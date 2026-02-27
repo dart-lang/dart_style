@@ -54,6 +54,9 @@ final class FormatterOptions {
   /// See dart.dev/go/experiments for details.
   final List<String> experimentFlags;
 
+  /// Patterns for files and directories to exclude from formatting.
+  final List<String> excludePatterns;
+
   FormatterOptions({
     this.languageVersion,
     this.indent = 0,
@@ -65,7 +68,9 @@ final class FormatterOptions {
     this.summary = Summary.none,
     this.setExitIfChanged = false,
     List<String>? experimentFlags,
-  }) : experimentFlags = [...?experimentFlags];
+    List<String>? excludePatterns,
+  }) : experimentFlags = [...?experimentFlags],
+       excludePatterns = [...?excludePatterns];
 
   /// Called when [file] is about to be formatted.
   ///
