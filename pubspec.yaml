@@ -24,7 +24,3 @@ dev_dependencies:
   test: ^1.26.3
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
-
-# For CI - will remove after the first green run
-dependency_overrides:
-  analyzer: 11.0.0
