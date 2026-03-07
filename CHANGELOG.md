@@ -1,3 +1,7 @@
+## 3.1.7
+
+* Require `analyzer: '>=10.0.0 <12.0.0'`.
+
 ## 3.1.6
 
 ### Style changes
