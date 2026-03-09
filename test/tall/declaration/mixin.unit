@@ -52,3 +52,30 @@ abstract mixin class M3 {}
 abstract base mixin class M4 {}
 
 base mixin M5 {}
+>>> Force a blank line before and after a mixin declaration.
+var x = 1; mixin M1 {} var y = 2;
+
+
+mixin M2 {}
+
+
+
+var z = 3;
+<<< 3.7
+var x = 1;
+mixin M1 {}
+var y = 2;
+
+mixin M2 {}
+
+var z = 3;
+<<< 3.13
+var x = 1;
+
+mixin M1 {}
+
+var y = 2;
+
+mixin M2 {}
+
+var z = 3;

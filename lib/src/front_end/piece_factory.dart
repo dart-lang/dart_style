@@ -19,7 +19,6 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/prefix.dart';
 import '../piece/sequence.dart';
-import '../piece/type.dart';
 import '../piece/variable.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
@@ -840,12 +839,19 @@ mixin PieceFactory {
   }) {
     var metadata = parameter?.metadata ?? const <Annotation>[];
     pieces.withMetadata(metadata, inlineMetadata: true, () {
+      var modifiers = [
+        parameter?.requiredKeyword,
+        parameter?.covariantKeyword,
+        if (parameter case FunctionTypedFormalParameter(:var keyword)) keyword,
+      ];
+
       void write() {
         // If there's no return type, attach the parameter modifiers to the
         // signature.
-        if (parameter != null && returnType == null) {
-          pieces.modifier(parameter.requiredKeyword);
-          pieces.modifier(parameter.covariantKeyword);
+        if (returnType == null) {
+          for (var modifier in modifiers) {
+            pieces.modifier(modifier);
+          }
         }
 
         pieces.token(fieldKeyword);
@@ -856,10 +862,6 @@ mixin PieceFactory {
         pieces.token(question);
       }
 
-      var returnTypeModifiers = parameter != null
-          ? [parameter.requiredKeyword, parameter.covariantKeyword]
-          : const <Token?>[];
-
       // If the type is a function-typed parameter with a default value, then
       // grab the default value from the parent node and attach it to the
       // function.
@@ -868,12 +870,12 @@ mixin PieceFactory {
         :var defaultValue?,
       )) {
         var function = pieces.build(() {
-          writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+          writeFunctionAndReturnType(modifiers, returnType, write);
         });
 
         writeDefaultValue(function, (separator, defaultValue));
       } else {
-        writeFunctionAndReturnType(returnTypeModifiers, returnType, write);
+        writeFunctionAndReturnType(modifiers, returnType, write);
       }
     });
   }
@@ -1421,119 +1423,6 @@ mixin PieceFactory {
       style: style,
       preserveNewlines: preserveNewlines,
     );
-  }
-
-  /// Writes a class, enum, extension, extension type, mixin, or mixin
-  /// application class declaration.
-  ///
-  /// The [keywords] list is the ordered list of modifiers and keywords at the
-  /// beginning of the declaration.
-  ///
-  /// For all but a mixin application class, [body] should a record containing
-  /// the bracket delimiters and the list of member declarations for the type's
-  /// body. For mixin application classes, [body] is `null` and instead
-  /// [equals], [superclass], and [semicolon] are provided.
-  ///
-  /// If the type is an extension, then [onType] is a record containing the
-  /// `on` keyword and the on type.
-  ///
-  /// If the type has a primary constructor, e.g. an extension type, then
-  /// [primaryConstructor] is not `null`.
-  void writeType(
-    NodeList<Annotation> metadata,
-    List<Token?> keywords, {
-    Token? name,
-    TypeParameterList? typeParameters,
-    Token? equals,
-    NamedType? superclass,
-    PrimaryConstructorDeclaration? primaryConstructor,
-    ExtendsClause? extendsClause,
-    MixinOnClause? onClause,
-    WithClause? withClause,
-    ImplementsClause? implementsClause,
-    NativeClause? nativeClause,
-    (Token, TypeAnnotation)? onType,
-    TypeBodyType bodyType = TypeBodyType.block,
-    required Piece Function() body,
-  }) {
-    // Begin a piece to attach the metadata to the type.
-    pieces.withMetadata(metadata, () {
-      var header = pieces.build(() {
-        var space = false;
-        for (var keyword in keywords) {
-          if (space) pieces.space();
-          pieces.token(keyword);
-          if (keyword != null) space = true;
-        }
-
-        pieces.token(name, spaceBefore: true);
-
-        if (typeParameters != null) {
-          pieces.visit(typeParameters);
-        }
-
-        // Mixin application classes have ` = Superclass` after the declaration
-        // name.
-        if (equals != null) {
-          pieces.space();
-          pieces.token(equals);
-          pieces.space();
-          pieces.visit(superclass!);
-        }
-
-        if (primaryConstructor != null) {
-          pieces.visit(primaryConstructor, spaceBefore: true);
-        }
-      });
-
-      var clauses = <Piece>[];
-
-      void typeClause(Token keyword, List<AstNode> types) {
-        clauses.add(
-          InfixPiece([
-            tokenPiece(keyword),
-            for (var type in types) nodePiece(type, commaAfter: true),
-          ], is3Dot7: style.is3Dot7),
-        );
-      }
-
-      if (extendsClause != null) {
-        typeClause(extendsClause.extendsKeyword, [extendsClause.superclass]);
-      }
-
-      if (onClause != null) {
-        typeClause(onClause.onKeyword, onClause.superclassConstraints);
-      }
-
-      if (withClause != null) {
-        typeClause(withClause.withKeyword, withClause.mixinTypes);
-      }
-
-      if (implementsClause != null) {
-        typeClause(
-          implementsClause.implementsKeyword,
-          implementsClause.interfaces,
-        );
-      }
-
-      if (onType case (var onKeyword, var onType)?) {
-        typeClause(onKeyword, [onType]);
-      }
-
-      if (nativeClause != null) {
-        typeClause(nativeClause.nativeKeyword, [?nativeClause.name]);
-      }
-
-      if (clauses.isNotEmpty) {
-        header = ClausePiece(
-          header,
-          clauses,
-          allowLeadingClause: extendsClause != null || onClause != null,
-        );
-      }
-
-      pieces.add(TypePiece(header, body(), bodyType: bodyType));
-    });
   }
 
   /// Writes a [ListPiece] for a type argument or type parameter list.

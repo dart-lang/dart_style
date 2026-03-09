@@ -52,6 +52,14 @@ final class FormattingStyle {
       _formatter.trailingCommas == TrailingCommas.preserve &&
       _languageVersion >= Version(3, 10, 0);
 
+  /// Whether mixin declarations and extension types with brace bodies should
+  /// always get a blank line above and below them.
+  ///
+  /// They always should have, but they were overlooked. We already do this for
+  /// classes, enums, and extensions.
+  bool get blankLineAroundMixinAndExtensionTypes =>
+      _languageVersion >= Version(3, 13, 0);
+
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>

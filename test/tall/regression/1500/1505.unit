@@ -5,5 +5,4 @@ extension type JSExportedDartFunction._(
 <<<
 extension type JSExportedDartFunction._(
   JSExportedDartFunctionRepType _jsExportedDartFunction
-)
-    implements JSFunction {}
+) implements JSFunction {}

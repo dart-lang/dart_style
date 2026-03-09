@@ -18,7 +18,6 @@ import '../piece/infix.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
-import '../piece/type.dart';
 import '../piece/type_parameter_bound.dart';
 import '../piece/variable.dart';
 import '../profile.dart';
@@ -30,6 +29,7 @@ import 'formatting_style.dart';
 import 'piece_factory.dart';
 import 'piece_writer.dart';
 import 'sequence_builder.dart';
+import 'type_builder.dart';
 
 /// Visits every token of the AST and produces a tree of [Piece]s that
 /// corresponds to it and contains every token and comment in the original
@@ -108,18 +108,27 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       sequence.addBlank();
 
       for (var declaration in node.declarations) {
-        var hasBody =
-            declaration is ClassDeclaration ||
-            declaration is EnumDeclaration ||
-            declaration is ExtensionDeclaration;
+        // "Type" declarations that have braced bodies are surrounded by blank
+        // lines.
+        var addBlankLines = switch (declaration) {
+          ClassDeclaration(body: BlockClassBody()) => true,
+          EnumDeclaration() => true,
+          ExtensionDeclaration() => true,
+          ExtensionTypeDeclaration(body: BlockClassBody())
+              when style.blankLineAroundMixinAndExtensionTypes =>
+            true,
+          MixinDeclaration() when style.blankLineAroundMixinAndExtensionTypes =>
+            true,
+          _ => false,
+        };
 
         // Add a blank line before types with bodies.
-        if (hasBody) sequence.addBlank();
+        if (addBlankLines) sequence.addBlank();
 
         sequence.visit(declaration);
 
         // Add a blank line after type or function declarations with bodies.
-        if (hasBody || declaration.hasNonEmptyBody) sequence.addBlank();
+        if (addBlankLines || declaration.hasNonEmptyBody) sequence.addBlank();
       }
     } else {
       // Just formatting a single statement.
@@ -282,7 +291,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [
         node.abstractKeyword,
@@ -293,25 +303,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         node.mixinKeyword,
         node.classKeyword,
       ],
-      name: node.namePart.typeName,
-      typeParameters: node.namePart.typeParameters,
+      namePart: node.namePart,
       extendsClause: node.extendsClause,
       withClause: node.withClause,
       implementsClause: node.implementsClause,
       nativeClause: node.nativeClause,
-      body: () {
-        // TODO(scheglov): support for EmptyBody
-        var body = node.body as BlockClassBody;
-        return pieces.build(() {
-          writeBody(body.leftBracket, body.members, body.rightBracket);
-        });
-      },
     );
+    builder.buildClassBody(node.body);
   }
 
   @override
   void visitClassTypeAlias(ClassTypeAlias node) {
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [
         node.abstractKeyword,
@@ -324,12 +328,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       ],
       name: node.name,
       typeParameters: node.typeParameters,
-      equals: node.equals,
-      superclass: node.superclass,
       withClause: node.withClause,
       implementsClause: node.implementsClause,
-      bodyType: TypeBodyType.semicolon,
-      body: () => tokenPiece(node.semicolon),
+    );
+    builder.buildMixinApplicationClass(
+      node.equals,
+      node.superclass,
+      node.semicolon,
     );
   }
 
@@ -457,9 +462,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       var header = pieces.build(() {
         pieces.modifier(node.externalKeyword);
         pieces.modifier(node.constKeyword);
-        pieces.modifier(node.newKeyword);
-        pieces.modifier(node.factoryKeyword);
-        pieces.visit(node.typeName);
+
+        // If there is no type name, then this is an unnamed constructor using
+        // `new` or `factory` to declare the constructor. In that case, don't
+        // put a space after the keyword.
+        if (node.typeName != null || node.name != null) {
+          pieces.modifier(node.newKeyword);
+          pieces.modifier(node.factoryKeyword);
+          pieces.visit(node.typeName);
+        } else {
+          pieces.token(node.newKeyword);
+          pieces.token(node.factoryKeyword);
+        }
+
         pieces.token(node.period);
         pieces.token(node.name);
       });
@@ -634,85 +649,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitEnumDeclaration(EnumDeclaration node) {
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [node.enumKeyword],
-      name: node.namePart.typeName,
-      typeParameters: node.namePart.typeParameters,
+      namePart: node.namePart,
       withClause: node.withClause,
       implementsClause: node.implementsClause,
-      bodyType: node.body.members.isEmpty
-          ? TypeBodyType.list
-          : TypeBodyType.block,
-      body: () {
-        if (node.body.members.isEmpty) {
-          // If there are no members, format the constants like a list. This
-          // keeps the enum declaration on one line if it fits.
-          var builder = DelimitedListBuilder(
-            this,
-            const ListStyle(spaceWhenUnsplit: true),
-          );
-
-          builder.leftBracket(node.body.leftBracket);
-          node.body.constants.forEach(builder.visit);
-          builder.rightBracket(
-            semicolon: node.body.semicolon,
-            node.body.rightBracket,
-          );
-          return builder.build(
-            forceSplit: style.preserveTrailingCommaBefore(
-              node.body.semicolon ?? node.body.rightBracket,
-            ),
-          );
-        } else {
-          // If there are members, format it like a block where each constant
-          // and member is on its own line.
-          var builder = SequenceBuilder(this);
-          builder.leftBracket(node.body.leftBracket);
-
-          // In 3.10 and later, if the source has a trailing comma before the
-          // `;`, it is preserved and the `;` is put on its own line. If there
-          // is no trailing comma in the source, the `;` stays on the same line
-          // as the last constant. Prior to 3.10, the behavior is the same as
-          // when preserved trailing commas is off: the last constant's comma
-          // is removed and the `;` is placed there instead.
-          var preserveTrailingComma =
-              style.preserveTrailingCommaAfterEnumValues &&
-              node.body.semicolon!.hasCommaBefore;
-          for (var constant in node.body.constants) {
-            var isLast = constant == node.body.constants.last;
-            builder.addCommentsBefore(constant.firstNonCommentToken);
-            builder.add(
-              createEnumConstant(
-                constant,
-                commaAfter: !isLast || preserveTrailingComma,
-                semicolon: isLast ? node.body.semicolon : null,
-              ),
-            );
-          }
-
-          // If we are preserving the trailing comma, then put the `;` on its
-          // own line after the last constant.
-          if (preserveTrailingComma) {
-            builder.add(tokenPiece(node.body.semicolon!));
-          }
-
-          // Insert a blank line between the constants and members.
-          builder.addBlank();
-
-          for (var node in node.body.members) {
-            builder.visit(node);
-
-            // If the node has a non-empty braced body, then require a blank
-            // line between it and the next node.
-            if (node.hasNonEmptyBody) builder.addBlank();
-          }
-
-          builder.rightBracket(node.body.rightBracket);
-          return builder.build();
-        }
-      },
     );
+    builder.buildEnum(node);
   }
 
   @override
@@ -787,44 +732,31 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitExtensionDeclaration(ExtensionDeclaration node) {
-    (Token, TypeAnnotation)? onType;
-    if (node.onClause case var onClause?) {
-      onType = (onClause.onKeyword, onClause.extendedType);
-    }
-
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [node.extensionKeyword],
       name: node.name,
       typeParameters: node.typeParameters,
-      onType: onType,
-      body: () {
-        return pieces.build(() {
-          writeBody(
-            node.body.leftBracket,
-            node.body.members,
-            node.body.rightBracket,
-          );
-        });
-      },
+      extensionOnClause: node.onClause,
+    );
+    builder.buildBlockBody(
+      node.body.leftBracket,
+      node.body.members,
+      node.body.rightBracket,
     );
   }
 
   @override
   void visitExtensionTypeDeclaration(ExtensionTypeDeclaration node) {
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [node.extensionKeyword, node.typeKeyword],
-      primaryConstructor: node.primaryConstructor,
+      namePart: node.primaryConstructor,
       implementsClause: node.implementsClause,
-      body: () {
-        return pieces.build(() {
-          // TODO(scheglov): support for EmptyBody
-          var body = node.body as BlockClassBody;
-          writeBody(body.leftBracket, body.members, body.rightBracket);
-        });
-      },
     );
+    builder.buildClassBody(node.body);
   }
 
   @override
@@ -883,7 +815,12 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     // If all parameters are optional, put the `[` or `{` right after `(`.
-    var builder = DelimitedListBuilder(this);
+    var listStyle = const ListStyle();
+    if (node.parent?.parent is ExtensionTypeDeclaration) {
+      listStyle = const ListStyle(commas: Commas.nonTrailing);
+    }
+
+    var builder = DelimitedListBuilder(this, listStyle);
 
     builder.addLeftBracket(
       pieces.build(() {
@@ -909,7 +846,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         forceSplit: style.preserveTrailingCommaBefore(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
-        blockShaped: false,
+        blockShaped: node.parent is PrimaryConstructorDeclaration,
       ),
     );
   }
@@ -1539,22 +1476,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitMixinDeclaration(MixinDeclaration node) {
-    writeType(
+    var builder = TypeBuilder(
+      this,
       node.metadata,
       [node.baseKeyword, node.mixinKeyword],
       name: node.name,
       typeParameters: node.typeParameters,
-      onClause: node.onClause,
+      mixinOnClause: node.onClause,
       implementsClause: node.implementsClause,
-      body: () {
-        return pieces.build(() {
-          writeBody(
-            node.body.leftBracket,
-            node.body.members,
-            node.body.rightBracket,
-          );
-        });
-      },
+    );
+    builder.buildBlockBody(
+      node.body.leftBracket,
+      node.body.members,
+      node.body.rightBracket,
     );
   }
 
@@ -1763,51 +1697,28 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitPrimaryConstructorBody(PrimaryConstructorBody node) {
     pieces.withMetadata(node.metadata, () {
-      pieces.token(node.thisKeyword);
+      var header = pieces.build(() {
+        pieces.token(node.thisKeyword);
+      });
 
+      Piece? colon;
+      Piece? initializers;
       if (node.initializers.isNotEmpty) {
-        pieces.space();
-        pieces.token(node.colon);
-        pieces.space();
-        pieces.add(createCommaSeparated(node.initializers));
+        colon = tokenPiece(node.colon!);
+        initializers = createCommaSeparated(node.initializers);
       }
 
-      pieces.visit(node.body);
-    });
-  }
+      var body = nodePiece(node.body);
 
-  @override
-  void visitPrimaryConstructorDeclaration(PrimaryConstructorDeclaration node) {
-    pieces.modifier(node.constKeyword);
-    pieces.token(node.typeName);
-    pieces.visit(node.typeParameters);
-    pieces.visit(node.constructorName);
-
-    if (node.parent is ExtensionTypeDeclaration) {
-      var formalParameters = node.formalParameters;
-      var builder = DelimitedListBuilder(
-        this,
-        const ListStyle(commas: Commas.nonTrailing),
+      pieces.add(
+        ConstructorPiece.thisBlock(
+          header,
+          body,
+          initializerSeparator: colon,
+          initializers: initializers,
+        ),
       );
-      builder.leftBracket(formalParameters.leftParenthesis);
-      for (var formalParameter in formalParameters.parameters) {
-        // TODO(scheglov): support for optional formal parameters
-        formalParameter as SimpleFormalParameter;
-        builder.add(
-          pieces.build(() {
-            writeParameter(
-              metadata: formalParameter.metadata,
-              formalParameter.type,
-              formalParameter.name,
-            );
-          }),
-        );
-      }
-      builder.rightBracket(formalParameters.rightParenthesis);
-      pieces.add(builder.build());
-    } else {
-      pieces.visit(node.formalParameters);
-    }
+    });
   }
 
   @override

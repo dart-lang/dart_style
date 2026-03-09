@@ -87,3 +87,9 @@ class Foo {}
 /**
 */
 class Bar {}
+>>> (experiment primary-constructors) Comment before empty body.
+class C // Comment.
+;
+<<< 3.13
+class C // Comment.
+;

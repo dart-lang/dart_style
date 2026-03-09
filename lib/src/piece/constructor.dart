@@ -66,7 +66,10 @@ final class ConstructorPiece extends Piece {
   final Piece _header;
 
   /// The constructor parameter list.
-  final Piece _parameters;
+  ///
+  /// Will be `null` if the constructor is a primary constructor initializer
+  /// body.
+  final Piece? _parameters;
 
   /// If this is a redirecting constructor, the redirection clause.
   final Piece? _redirect;
@@ -95,6 +98,19 @@ final class ConstructorPiece extends Piece {
        _initializerSeparator = initializerSeparator,
        _initializers = initializers;
 
+  /// Creates a constructor piece for a primary constructor initializer body.
+  ConstructorPiece.thisBlock(
+    this._header,
+    this._body, {
+    Piece? initializerSeparator,
+    Piece? initializers,
+  }) : _parameters = null,
+       _canSplitParameters = false,
+       _hasOptionalParameter = false,
+       _redirect = null,
+       _initializerSeparator = initializerSeparator,
+       _initializers = initializers;
+
   @override
   List<State> get additionalStates => [
     if (_initializers != null) _splitBeforeInitializers,
@@ -105,23 +121,27 @@ final class ConstructorPiece extends Piece {
   /// initializers may split.
   @override
   void applyConstraints(State state, Constrain constrain) {
-    // If there are no initializers, the parameters can do whatever.
-    if (_initializers case var initializers?) {
+    // If there are both parameters and initializers, constrain how they
+    // interact.
+    if ((_parameters, _initializers) case (
+      var parameters?,
+      var initializers?,
+    )) {
       switch (state) {
         case State.unsplit:
           // All parameters and initializers on one line.
-          constrain(_parameters, State.unsplit);
+          constrain(parameters, State.unsplit);
           constrain(initializers, State.unsplit);
 
         case _splitBeforeInitializers:
           // Only split before the `:` when the parameters fit on one line.
-          constrain(_parameters, State.unsplit);
+          constrain(parameters, State.unsplit);
           constrain(initializers, State.split);
 
         case _splitBetweenInitializers:
           // Split both the parameters and initializers and put the `) :` on
           // its own line.
-          constrain(_parameters, State.split);
+          constrain(parameters, State.split);
           constrain(initializers, State.split);
       }
     }
@@ -143,7 +163,7 @@ final class ConstructorPiece extends Piece {
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_header);
-    writer.format(_parameters);
+    if (_parameters case var parameters?) writer.format(parameters);
 
     if (_redirect case var redirect?) {
       writer.space();
@@ -175,7 +195,7 @@ final class ConstructorPiece extends Piece {
   @override
   void forEachChild(void Function(Piece piece) callback) {
     callback(_header);
-    callback(_parameters);
+    if (_redirect case var parameters?) callback(parameters);
     if (_redirect case var redirect?) callback(redirect);
     if (_initializerSeparator case var separator?) callback(separator);
     if (_initializers case var initializers?) callback(initializers);

@@ -1,0 +1,33 @@
+40 columns                              |
+(experiment primary-constructors)
+### Tests for using `factory` to define a constructor.
+>>> Factory.
+class C {
+  factory  (  int  x  )  {  }
+  factory  named  (  )  {  }
+}
+<<< 3.13
+class C {
+  factory(int x) {}
+  factory named() {}
+}
+>>> Const factory.
+class C {
+  const  factory  (  int  x  )  {  }
+  const  factory  named  (  )  {  }
+}
+<<< 3.13
+class C {
+  const factory(int x) {}
+  const factory named() {}
+}
+>>> Const redirecting factory.
+class C {
+  const  factory  (  int  x  )  =  C  .  named  ;
+  const  factory  named  (  )  =  C  ;
+}
+<<< 3.13
+class C {
+  const factory(int x) = C.named;
+  const factory named() = C;
+}

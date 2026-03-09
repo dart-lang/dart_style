@@ -78,3 +78,21 @@ class A {
   A(int x) : this.named(x);
   A.named(int x) : this(x);
 }
+>>> (experiment primary-constructors) Primary constructor parameter list splits with trailing comma.
+class A(int x,);
+<<<
+class A(
+  int x,
+);
+>>> (experiment primary-constructors) Doesn't force split primary constructor parameter list without trailing comma.
+class A(int x, int y);
+<<< 3.11
+class A(int x, int y);
+>>> (experiment primary-constructors) May still split primary constructor without trailing comma if doesn't fit.
+class A(int parameter1, int parameter2, int parameter3);
+<<< 3.11
+class A(
+  int parameter1,
+  int parameter2,
+  int parameter3,
+);
