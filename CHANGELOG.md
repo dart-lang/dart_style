@@ -1,4 +1,4 @@
-## 3.1.7-wip
+## 3.1.8-wip
 
 ### Style changes
 
@@ -55,6 +55,10 @@
 
 * Support upcoming Dart language version 3.13.
 * Support formatting primary constructors.
+
+## 3.1.7
+
+* Require `analyzer: '>=10.0.0 <12.0.0'`.
 
 ## 3.1.6
 
