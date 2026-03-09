@@ -64,9 +64,6 @@
 
 ### Style changes
 
-### Internal changes
-
-* Require `sdk: ^3.10.0`.
 * When trailing commas are preserved, don't insert a newline before the `;` in
   an enum with members unless there actually is a trailing comma.
   (Fix by @Barbirosha.)
