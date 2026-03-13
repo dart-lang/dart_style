@@ -624,7 +624,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitDottedName(DottedName node) {
-    writeDotted(node.components);
+    for (var token in node.tokens) {
+      pieces.token(token);
+    }
   }
 
   @override
@@ -740,11 +742,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       typeParameters: node.typeParameters,
       extensionOnClause: node.onClause,
     );
-    builder.buildBlockBody(
-      node.body.leftBracket,
-      node.body.members,
-      node.body.rightBracket,
-    );
+    builder.buildClassBody(node.body);
   }
 
   @override
@@ -1316,11 +1314,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
-  void visitLibraryIdentifier(LibraryIdentifier node) {
-    writeDotted(node.components);
-  }
-
-  @override
   void visitListLiteral(ListLiteral node) {
     writeCollection(
       constKeyword: node.constKeyword,
@@ -1485,11 +1478,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       mixinOnClause: node.onClause,
       implementsClause: node.implementsClause,
     );
-    builder.buildBlockBody(
-      node.body.leftBracket,
-      node.body.members,
-      node.body.rightBracket,
-    );
+    builder.buildClassBody(node.body);
   }
 
   @override
