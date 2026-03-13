@@ -967,13 +967,8 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitDottedName(DottedName node) {
-    for (var component in node.components) {
-      // Write the preceding ".".
-      if (component != node.components.first) {
-        token(component.beginToken.previous);
-      }
-
-      visit(component);
+    for (var tokenNode in node.tokens) {
+      token(tokenNode);
     }
   }
 
@@ -1027,21 +1022,23 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
     builder.unnest();
 
-    _beginBody(node.body.leftBracket, space: true);
+    // TODO(scheglov): support for EmptyEnumBody
+    var body = node.body as BlockEnumBody;
+    _beginBody(body.leftBracket, space: true);
 
-    visitCommaSeparatedNodes(node.body.constants, between: splitOrTwoNewlines);
+    visitCommaSeparatedNodes(body.constants, between: splitOrTwoNewlines);
 
     // If there is a trailing comma, always force the constants to split.
-    var trailingComma = node.body.constants.last.commaAfter;
+    var trailingComma = body.constants.last.commaAfter;
     if (trailingComma != null) {
       builder.forceRules();
     }
 
     // The ";" after the constants, which may occur after a trailing comma.
-    var afterConstants = node.body.constants.last.endToken.next!;
+    var afterConstants = body.constants.last.endToken.next!;
     Token? semicolon;
     if (afterConstants.type == TokenType.SEMICOLON) {
-      semicolon = node.body.constants.last.endToken.next!;
+      semicolon = body.constants.last.endToken.next!;
     } else if (trailingComma != null &&
         trailingComma.next!.type == TokenType.SEMICOLON) {
       semicolon = afterConstants.next!;
@@ -1058,23 +1055,23 @@ final class SourceVisitor extends ThrowingAstVisitor {
       token(semicolon);
 
       // Put a blank line between the constants and members.
-      if (node.body.members.isNotEmpty) twoNewlines();
+      if (body.members.isNotEmpty) twoNewlines();
     }
 
-    _visitBodyContents(node.body.members);
+    _visitBodyContents(body.members);
 
     _endBody(
-      node.body.rightBracket,
+      body.rightBracket,
       forceSplit:
           semicolon != null ||
           trailingComma != null ||
-          node.body.members.isNotEmpty ||
+          body.members.isNotEmpty ||
           // If there is a line comment after an enum constant, it won't
           // automatically force the enum body to split since the rule for
           // the constants is the hard rule used by the entire block and its
           // hardening state doesn't actually change. Instead, look
           // explicitly for a line comment here.
-          node.body.constants.containsLineComments(),
+          body.constants.containsLineComments(),
     );
   }
 
@@ -1171,11 +1168,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     }
     space();
     builder.unnest();
-    _visitBody(
-      node.body.leftBracket,
-      node.body.members,
-      node.body.rightBracket,
-    );
+
+    // TODO(scheglov): support for EmptyBody
+    var body = node.body as BlockClassBody;
+    _visitBody(body.leftBracket, body.members, body.rightBracket);
   }
 
   @override
@@ -1963,15 +1959,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitLibraryIdentifier(LibraryIdentifier node) {
-    visit(node.components.first);
-    for (var component in node.components.skip(1)) {
-      token(component.beginToken.previous); // "."
-      visit(component);
-    }
-  }
-
-  @override
   void visitListLiteral(ListLiteral node) {
     // Corner case: Splitting inside a list looks bad if there's only one
     // element, so make those more costly.
@@ -2155,11 +2142,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     space();
 
     builder.unnest();
-    _visitBody(
-      node.body.leftBracket,
-      node.body.members,
-      node.body.rightBracket,
-    );
+
+    // TODO(scheglov): support for EmptyBody
+    var body = node.body as BlockClassBody;
+    _visitBody(body.leftBracket, body.members, body.rightBracket);
   }
 
   @override
