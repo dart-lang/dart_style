@@ -368,18 +368,6 @@ mixin PieceFactory {
     pieces.token(rightParenthesis);
   }
 
-  /// Writes a dotted or qualified identifier.
-  void writeDotted(NodeList<SimpleIdentifier> components) {
-    for (var component in components) {
-      // Write the preceding ".".
-      if (component != components.first) {
-        pieces.token(component.beginToken.previous!);
-      }
-
-      pieces.visit(component);
-    }
-  }
-
   /// Creates a [Piece] for an enum constant.
   ///
   /// If [commaAfter] is `true`, then a comma after the constant is written, if
