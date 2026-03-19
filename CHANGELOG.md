@@ -1,4 +1,4 @@
-## 3.1.8-wip
+## 3.1.8
 
 ### Style changes
 
