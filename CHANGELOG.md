@@ -55,6 +55,7 @@
 
 * Support upcoming Dart language version 3.13.
 * Support formatting primary constructors.
+* Require `analyzer: '^12.0.0'`.
 
 ## 3.1.7
 

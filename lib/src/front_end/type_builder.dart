@@ -65,19 +65,6 @@ final class TypeBuilder {
     assert(_name == null && _typeParameters == null || _namePart == null);
   }
 
-  /// Builds a type whose body is an explicit brace-delimited list of [members].
-  void buildBlockBody(
-    Token leftBrace,
-    List<AstNode> members,
-    Token rightBrace,
-  ) {
-    Piece buildBody() => _visitor.pieces.build(() {
-      _visitor.writeBody(leftBrace, members, rightBrace);
-    });
-
-    _buildType(buildBody, TypeBodyType.block);
-  }
-
   /// Builds a type whose [body] is a [ClassBody].
   void buildClassBody(ClassBody body) {
     Piece buildBody() => switch (body) {
@@ -105,18 +92,30 @@ final class TypeBuilder {
       //     enum E(final int x) { a(1), b(2) }
       //
       // So always force the body to split if there is a primary constructor.
-      if (node.body.members.isEmpty &&
-          node.namePart is! PrimaryConstructorDeclaration) {
-        return _buildNormalEnumBody(node.body);
-      } else {
-        return _buildEnhancedEnumBody(node.body);
+      switch (node.body) {
+        case BlockEnumBody body:
+          if (body.members.isEmpty &&
+              node.namePart is! PrimaryConstructorDeclaration) {
+            return _buildNormalBlockEnumBody(body);
+          } else {
+            return _buildEnhancedBlockEnumBody(body);
+          }
+        case EmptyEnumBody body:
+          return _visitor.pieces.tokenPiece(body.semicolon);
       }
     }
 
-    _buildType(
-      buildBody,
-      node.body.members.isEmpty ? TypeBodyType.list : TypeBodyType.block,
-    );
+    TypeBodyType bodyType;
+    switch (node.body) {
+      case BlockEnumBody body:
+        bodyType = body.members.isEmpty
+            ? TypeBodyType.list
+            : TypeBodyType.block;
+      case EmptyEnumBody():
+        bodyType = TypeBodyType.semicolon;
+    }
+
+    _buildType(buildBody, bodyType);
   }
 
   /// Builds a mixin application class.
@@ -213,7 +212,7 @@ final class TypeBuilder {
   ///
   /// Formats the constants like a list. This keeps the enum declaration on one
   /// line if it fits.
-  Piece _buildNormalEnumBody(EnumBody body) {
+  Piece _buildNormalBlockEnumBody(BlockEnumBody body) {
     var builder = DelimitedListBuilder(
       _visitor,
       const ListStyle(spaceWhenUnsplit: true),
@@ -232,7 +231,7 @@ final class TypeBuilder {
   /// Builds a [Piece] for the body of an enum declaration with members.
   ///
   /// Formats it like a block where each constant or member is on its own line.
-  Piece _buildEnhancedEnumBody(EnumBody body) {
+  Piece _buildEnhancedBlockEnumBody(BlockEnumBody body) {
     // If there are members, format it like a block where each constant
     // and member is on its own line.
     var builder = SequenceBuilder(_visitor);
