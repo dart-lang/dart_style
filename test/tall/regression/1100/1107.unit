@@ -11,9 +11,31 @@ class SomeClassC extends SomeClassA {
           ),
         );
 }
-<<<
+<<< 3.12
 class SomeClassC extends SomeClassA {
   SomeClassC({required final String property1})
+    : super(
+        property1: property1,
+        property2: "abc",
+        complexProperty: SomeClassB("sdf", "dfg", "fgh"),
+      );
+}
+>>> Without final
+class SomeClassC extends SomeClassA {
+  SomeClassC({required String property1})
+      : super(
+          property1: property1,
+          property2: "abc",
+          complexProperty: SomeClassB(
+            "sdf",
+            "dfg",
+            "fgh",
+          ),
+        );
+}
+<<<
+class SomeClassC extends SomeClassA {
+  SomeClassC({required String property1})
     : super(
         property1: property1,
         property2: "abc",
