@@ -112,12 +112,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         // lines.
         var addBlankLines = switch (declaration) {
           ClassDeclaration(body: BlockClassBody()) => true,
-          EnumDeclaration() => true,
-          ExtensionDeclaration() => true,
+          EnumDeclaration(body: BlockEnumBody()) => true,
+          ExtensionDeclaration(body: BlockClassBody()) => true,
           ExtensionTypeDeclaration(body: BlockClassBody())
               when style.blankLineAroundMixinAndExtensionTypes =>
             true,
-          MixinDeclaration() when style.blankLineAroundMixinAndExtensionTypes =>
+          MixinDeclaration(body: BlockClassBody())
+              when style.blankLineAroundMixinAndExtensionTypes =>
             true,
           _ => false,
         };

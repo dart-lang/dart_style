@@ -122,3 +122,126 @@ mixin C on A
           LongTypeArgument,
           AnotherLongType
         > {}
+>>> (experiment primary-constructors) Unsplit on clause with empty body.
+mixin A on B ;
+<<<
+mixin A on B;
+>>> (experiment primary-constructors) Multiple unsplit types in on clause with empty body.
+mixin  M2  on  A  ,  B  ,  C  ;
+<<<
+mixin M2 on A, B, C;
+>>> (experiment primary-constructors) Split at `on` with empty body.
+mixin SomeLongMixin on VeryLongBaseMixin ;
+<<<
+mixin SomeLongMixin
+    on VeryLongBaseMixin;
+>>> (experiment primary-constructors) Split multiple at `on` with empty body.
+mixin  LongMixin  on  SupertypeA  ,  SupertypeB  ;
+<<<
+mixin LongMixin
+    on SupertypeA, SupertypeB;
+>>> (experiment primary-constructors) Split multiple on clause with empty body.
+mixin  M2  on  SupertypeA  ,  SupertypeB  ,  SupertypeC  ;
+<<<
+mixin M2
+    on
+        SupertypeA,
+        SupertypeB,
+        SupertypeC;
+>>> (experiment primary-constructors) Unsplit implements clause with empty body.
+mixin A implements B ;
+<<<
+mixin A implements B;
+>>> (experiment primary-constructors) Unsplit multiple clauses with empty body.
+mixin A on B implements D ;
+<<<
+mixin A on B implements D;
+>>> (experiment primary-constructors) Split at `implements` with empty body.
+mixin SomeMixin implements VeryLongBaseMixin ;
+<<<
+mixin SomeMixin
+    implements VeryLongBaseMixin;
+>>> (experiment primary-constructors) Split at `implements` but not between interfaces with empty body.
+mixin SomeMixin implements Interface, AnotherOne ;
+<<<
+mixin SomeMixin
+    implements Interface, AnotherOne;
+>>> (experiment primary-constructors) Split at `implements` and interfaces with empty body.
+mixin SomeMixin implements Interface, Another, Third ;
+<<<
+mixin SomeMixin
+    implements
+        Interface,
+        Another,
+        Third;
+>>> (experiment primary-constructors) Split at `on` splits `implements` too with empty body.
+mixin AVeryLongSomeMixin on LongBaseMixin implements I ;
+<<<
+mixin AVeryLongSomeMixin
+    on LongBaseMixin
+    implements I;
+>>> (experiment primary-constructors)
+mixin AVeryLongSomeMixin on LongBaseMixin implements Interface ;
+<<<
+mixin AVeryLongSomeMixin
+    on LongBaseMixin
+    implements Interface;
+>>> (experiment primary-constructors) Can split `implements` clause without splitting `on` with empty body.
+mixin SomeMixin on A implements Type, Another ;
+<<<
+mixin SomeMixin on A
+    implements Type, Another;
+>>> (experiment primary-constructors)
+mixin SomeMixin on A implements Type, Another, Third, Fourth ;
+<<<
+mixin SomeMixin on A
+    implements
+        Type,
+        Another,
+        Third,
+        Fourth;
+>>> (experiment primary-constructors) Unsplit generic supermixin with empty body.
+mixin SomeMixin on C<int> ;
+<<<
+mixin SomeMixin on C<int>;
+>>> (experiment primary-constructors) Split before `on` on generic supermixin with empty body.
+mixin SomeMixin on Superclass<SomeLongmixin> ;
+<<<
+mixin SomeMixin
+    on Superclass<SomeLongmixin>;
+>>> (experiment primary-constructors) Split in generic supermixin with empty body.
+mixin SomeMixin on C<ExtremelyLongType, AnotherLongType> ;
+<<<
+mixin SomeMixin
+    on
+        C<
+          ExtremelyLongType,
+          AnotherLongType
+        >;
+>>> (experiment primary-constructors) Unsplit generic superinterface with empty body.
+mixin SomeMixin implements C<int> ;
+<<<
+mixin SomeMixin implements C<int>;
+>>> (experiment primary-constructors) Split before `implements` on generic superinterface with empty body.
+mixin SomeMixin implements C<SomeLongmixin> ;
+<<<
+mixin SomeMixin
+    implements C<SomeLongmixin>;
+>>> (experiment primary-constructors) Split in generic superinterface with empty body.
+mixin SomeMixin implements C<ExtremelyLongType, AnotherLongType> ;
+<<<
+mixin SomeMixin
+    implements
+        C<
+          ExtremelyLongType,
+          AnotherLongType
+        >;
+>>> (experiment primary-constructors) Split in generic `implements` clause does not force `on` clause to split with empty body.
+mixin C on A implements B<LongTypeArgument, AnotherLongType> ;
+<<<
+mixin C on A
+    implements
+        B<
+          LongTypeArgument,
+          AnotherLongType
+        >;

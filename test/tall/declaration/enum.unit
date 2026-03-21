@@ -182,3 +182,26 @@ enum E {
 }
 <<<
 enum E { a, b, c }
+>>> (experiment primary-constructors) Empty body with semicolon.
+enum E;
+<<<
+enum E;
+>>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
+var x = 1;
+enum A ;
+var y = 2;
+<<<
+var x = 1;
+enum A;
+var y = 2;
+>>> (experiment primary-constructors) Generic enum type with empty body.
+enum MagicNumbers< T    extends num   ,   S> ;
+<<<
+enum MagicNumbers<T extends num, S>;
+>>> (experiment primary-constructors) Split in type parameters with empty body.
+enum SomeEnumType<LongTypeParameterName, Another> ;
+<<<
+enum SomeEnumType<
+  LongTypeParameterName,
+  Another
+>;

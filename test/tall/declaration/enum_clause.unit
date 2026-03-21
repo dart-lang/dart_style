@@ -41,3 +41,35 @@ enum SomeEnum
         AnotherInterface {
   a,
 }
+>>> (experiment primary-constructors) Unsplit with clause with empty body.
+enum E with M ;
+<<<
+enum E with M;
+>>> (experiment primary-constructors) Unsplit implements clause with empty body.
+enum E implements I ;
+<<<
+enum E implements I;
+>>> (experiment primary-constructors) Unsplit both clauses with empty body.
+enum E with M implements I ;
+<<<
+enum E with M implements I;
+>>> (experiment primary-constructors) Split with clause with empty body.
+enum VeryLongEnumTypeName with LongMixin ;
+<<<
+enum VeryLongEnumTypeName
+    with LongMixin;
+>>> (experiment primary-constructors) Split implements clause with empty body.
+enum VeryLongEnumTypeName implements LongInterface ;
+<<<
+enum VeryLongEnumTypeName
+    implements LongInterface;
+>>> (experiment primary-constructors) Both clauses split with empty body.
+enum SomeEnum with SomeLongMixin, AnotherMixin<int> implements SomeInterface<String, bool>, AnotherInterface ;
+<<<
+enum SomeEnum
+    with
+        SomeLongMixin,
+        AnotherMixin<int>
+    implements
+        SomeInterface<String, bool>,
+        AnotherInterface;
