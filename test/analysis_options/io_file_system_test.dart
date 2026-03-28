@@ -93,6 +93,13 @@ void main() {
       expect(await parent(p.join('dir', 'sub')), p.absolute(p.join('dir')));
     });
 
+    test('normalizes path before getting parent', () async {
+      expect(
+        await parent(p.join('.', 'dir', 'sub')),
+        p.normalize(p.absolute('dir')),
+      );
+    });
+
     test('returns null at the root directory (POSIX)', () async {
       var rootPath = p.style == p.Style.posix ? '/' : 'C:\\';
       expect(await parent(rootPath), null);
