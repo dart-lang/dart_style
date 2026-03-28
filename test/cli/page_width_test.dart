@@ -142,10 +142,12 @@ void main() {
       'Warning: Package resolution error when reading '
       '"analysis_options.yaml" file for "$expectedPath":',
     );
+
+    var path = p.join(d.sandbox, 'dir', 'foo', 'analysis_options.yaml');
     expect(
       await process.stderr.next,
       'Failed to resolve package URI "package:not_bar/analysis_options.yaml" '
-      'in include at "${p.join(d.sandbox, 'dir', 'foo', 'analysis_options.yaml')}".',
+      'in include at "$path".',
     );
 
     await process.shouldExit(0);
