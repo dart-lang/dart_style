@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'package:dart_style/src/analysis_options/analysis_options_file.dart';
 import 'package:dart_style/src/analysis_options/file_system.dart';
 import 'package:dart_style/src/analysis_options/io_file_system.dart';
 import 'package:path/path.dart' as p;
@@ -138,6 +139,33 @@ void main() {
           await fs.makePath(p.join(d.sandbox, 'dir', 'sub', 'another.txt')),
         ),
         'more',
+      );
+    });
+  });
+
+  group('readAnalysisOptions()', () {
+    test('reports path correctly in exception', () async {
+      await d.dir('dir', [
+        d.file('options.yaml', 'include: package:foo/options.yaml'),
+      ]).create();
+
+      var fs = IOFileSystem();
+      var path = await fs.makePath(p.join(d.sandbox, 'dir', 'options.yaml'));
+
+      Future<String?> failingResolver(Uri uri) async => null;
+
+      expect(
+        readAnalysisOptions(fs, path, resolvePackageUri: failingResolver),
+        throwsA(
+          isA<PackageResolutionException>().having(
+            (error) => error.toString(),
+            'message',
+            allOf(
+              contains('package:foo/options.yaml'),
+              contains('include at "${path.path}"'),
+            ),
+          ),
+        ),
       );
     });
   });

@@ -48,4 +48,7 @@ final class IOFileSystemPath implements FileSystemPath {
   final String path;
 
   IOFileSystemPath._(this.path);
+
+  @override
+  String toString() => path;
 }
