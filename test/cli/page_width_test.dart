@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -134,6 +135,21 @@ void main() {
     ]).create();
 
     var process = await runFormatterOnDir();
+
+    var expectedPath = p.join('.', 'dir', 'foo', 'main.dart');
+    expect(
+      await process.stderr.next,
+      'Warning: Package resolution error when reading '
+      '"analysis_options.yaml" file for "$expectedPath":',
+    );
+
+    var path = p.join(d.sandbox, 'dir', 'foo', 'analysis_options.yaml');
+    expect(
+      await process.stderr.next,
+      'Failed to resolve package URI "package:not_bar/analysis_options.yaml" '
+      'in include at "$path".',
+    );
+
     await process.shouldExit(0);
 
     // Should format the file at 80.
