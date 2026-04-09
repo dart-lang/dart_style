@@ -1,3 +1,7 @@
+## 3.1.9
+
+* Require `analyzer: ^13.0.0`.
+
 ## 3.1.8
 
 ### Style changes

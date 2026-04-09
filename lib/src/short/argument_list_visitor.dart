@@ -27,7 +27,7 @@ final class ArgumentListVisitor {
 
   /// All of the arguments, positional, named, and functions, in the argument
   /// list.
-  final List<Expression> _allArguments;
+  final List<Argument> _allArguments;
 
   /// The normal arguments preceding any block function arguments.
   final ArgumentSublist _arguments;
@@ -35,7 +35,7 @@ final class ArgumentListVisitor {
   /// The contiguous list of block function arguments, if any.
   ///
   /// Otherwise, this is `null`.
-  final List<Expression>? _functions;
+  final List<Argument>? _functions;
 
   /// If there are block function arguments, this is the arguments after them.
   ///
@@ -44,7 +44,7 @@ final class ArgumentListVisitor {
 
   /// Returns `true` if there is only a single positional argument.
   bool get _isSingle =>
-      _allArguments.length == 1 && _allArguments.single is! NamedExpression;
+      _allArguments.length == 1 && _allArguments.single is! NamedArgument;
 
   /// Whether this argument list has any arguments that should be formatted as
   /// blocks.
@@ -68,7 +68,7 @@ final class ArgumentListVisitor {
     SourceVisitor visitor,
     Token leftParenthesis,
     Token rightParenthesis,
-    List<Expression> arguments,
+    List<Argument> arguments,
   ) {
     var functionRange = _contiguousFunctions(arguments);
 
@@ -166,7 +166,7 @@ final class ArgumentListVisitor {
   /// should receive special formatting.
   ///
   /// Returns a list of (start, end] indexes if found, otherwise returns `null`.
-  static List<int>? _contiguousFunctions(List<Expression> arguments) {
+  static List<int>? _contiguousFunctions(List<Argument> arguments) {
     int? functionsStart;
     var functionsEnd = -1;
 
@@ -215,9 +215,9 @@ final class ArgumentListVisitor {
     // styles, it looks cleaner to treat them all like normal expressions so
     // that the named arguments line up.
     if (_isAllNamed(arguments.sublist(functionsStart, functionsEnd))) {
-      bool isNamedArrow(Expression expression) {
-        if (expression is! NamedExpression) return false;
-        expression = expression.expression;
+      bool isNamedArrow(Argument argument) {
+        if (argument is! NamedArgument) return false;
+        var expression = argument.argumentExpression;
 
         return expression is FunctionExpression &&
             expression.body is ExpressionFunctionBody;
@@ -236,13 +236,13 @@ final class ArgumentListVisitor {
   }
 
   /// Returns `true` if every expression in [arguments] is named.
-  static bool _isAllNamed(List<Expression> arguments) =>
-      arguments.every((argument) => argument is NamedExpression);
+  static bool _isAllNamed(List<Argument> arguments) =>
+      arguments.every((argument) => argument is NamedArgument);
 
-  /// Returns `true` if [expression] is a [FunctionExpression] with a non-empty
+  /// Returns `true` if [argument] is a [FunctionExpression] with a non-empty
   /// block body.
-  static bool _isBlockFunction(Expression expression) {
-    if (expression is NamedExpression) expression = expression.expression;
+  static bool _isBlockFunction(Argument argument) {
+    var expression = argument.argumentExpression;
 
     // Allow functions wrapped in dotted method calls like "a.b.c(() { ... })".
     if (expression is MethodInvocation) {
@@ -308,22 +308,22 @@ final class ArgumentListVisitor {
 /// In that case, there will be two of these.
 final class ArgumentSublist {
   /// The full argument list from the AST.
-  final List<Expression> _allArguments;
+  final List<Argument> _allArguments;
 
   /// If all positional arguments occur before all named arguments, then this
   /// contains the positional arguments, in order. Otherwise (there are no
   /// positional arguments or they are interleaved with named ones), this is
   /// empty.
-  final List<Expression> _positional;
+  final List<Argument> _positional;
 
   /// The named arguments, in order. If there are any named arguments that occur
   /// before positional arguments, then all arguments are treated as named and
   /// end up in this list.
-  final List<Expression> _named;
+  final List<Argument> _named;
 
   /// Maps each block argument, excluding functions, to the first token for that
   /// argument.
-  final Map<Expression, Token> _blocks;
+  final Map<Argument, Token> _blocks;
 
   /// The number of leading block arguments, excluding functions.
   ///
@@ -344,14 +344,14 @@ final class ArgumentSublist {
   Chunk? _previousSplit;
 
   factory ArgumentSublist(
-    List<Expression> allArguments,
-    List<Expression> arguments,
+    List<Argument> allArguments,
+    List<Argument> arguments,
   ) {
     var argumentLists = _splitArgumentLists(arguments);
     var positional = argumentLists[0];
     var named = argumentLists[1];
 
-    var blocks = <Expression, Token>{};
+    var blocks = <Argument, Token>{};
     for (var argument in arguments) {
       var bracket = _blockToken(argument);
       if (bracket != null) blocks[argument] = bracket;
@@ -447,7 +447,7 @@ final class ArgumentSublist {
 
   void _visitArguments(
     SourceVisitor visitor,
-    List<Expression> arguments,
+    List<Argument> arguments,
     ArgumentRule rule,
   ) {
     visitor.builder.startRule(rule);
@@ -481,7 +481,7 @@ final class ArgumentSublist {
   void _visitArgument(
     SourceVisitor visitor,
     ArgumentRule rule,
-    Expression argument,
+    Argument argument,
   ) {
     // If we're about to write a block argument, handle it specially.
     var argumentBlock = _blocks[argument];
@@ -503,7 +503,7 @@ final class ArgumentSublist {
       // are formatted like regular values when they appear in argument lists
       // even though they internally get block-like formatting.
       visitor.builder.startBlockArgumentNesting();
-    } else if (argument is! NamedExpression) {
+    } else if (argument is! NamedArgument) {
       // Edge case: Likewise, don't force the argument to split if there is
       // only a single positional one, like:
       //
@@ -512,11 +512,11 @@ final class ArgumentSublist {
       rule.disableSplitOnInnerRules();
     }
 
-    if (argument is NamedExpression) {
+    if (argument is NamedArgument) {
       visitor.visitNamedNode(
-        argument.name.label.token,
-        argument.name.colon,
-        argument.expression,
+        argument.name,
+        argument.colon,
+        argument.argumentExpression,
         rule as NamedRule,
       );
     } else {
@@ -528,7 +528,7 @@ final class ArgumentSublist {
     } else if (_allArguments.length > 1 ||
         _allArguments.first is RecordLiteral) {
       visitor.builder.endBlockArgumentNesting();
-    } else if (argument is! NamedExpression) {
+    } else if (argument is! NamedArgument) {
       rule.enableSplitOnInnerRules();
     }
 
@@ -546,18 +546,16 @@ final class ArgumentSublist {
   /// output.
   ///
   /// Returns a list of two lists: the positional arguments then the named ones.
-  static List<List<Expression>> _splitArgumentLists(
-    List<Expression> arguments,
-  ) {
-    var positional = <Expression>[];
-    var named = <Expression>[];
+  static List<List<Argument>> _splitArgumentLists(List<Argument> arguments) {
+    var positional = <Argument>[];
+    var named = <Argument>[];
     var inNamed = false;
     for (var argument in arguments) {
-      if (argument is NamedExpression) {
+      if (argument is NamedArgument) {
         inNamed = true;
       } else if (inNamed) {
         // Got a positional argument after a named one.
-        return [[], arguments];
+        return [<Argument>[], arguments];
       }
 
       if (inNamed) {
@@ -570,15 +568,13 @@ final class ArgumentSublist {
     return [positional, named];
   }
 
-  /// If [expression] can be formatted as a block, returns the token that opens
+  /// If [argument] can be formatted as a block, returns the token that opens
   /// the block, such as a collection's bracket.
   ///
   /// Block-formatted arguments can get special indentation to make them look
   /// more statement-like.
-  static Token? _blockToken(Expression expression) {
-    if (expression is NamedExpression) {
-      expression = expression.expression;
-    }
+  static Token? _blockToken(Argument argument) {
+    var expression = argument.argumentExpression;
 
     // TODO(rnystrom): Should we step into parenthesized expressions?
 

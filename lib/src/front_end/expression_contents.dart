@@ -49,15 +49,15 @@ class ExpressionContents {
   final List<_Contents> _stack = [_Contents(_Type.otherCall)];
 
   /// Begins tracking an argument list.
-  void beginCall(List<AstNode> arguments) {
+  void beginCall(List<Argument> arguments) {
     var type = _Type.otherCall;
 
     // Count the non-trivial named arguments in this call.
     var namedArguments = 0;
     for (var argument in arguments) {
-      if (argument is NamedExpression) {
+      if (argument is NamedArgument) {
         type = _Type.callWithNamedArgument;
-        if (!_isTrivial(argument.expression)) namedArguments++;
+        if (!_isTrivial(argument.argumentExpression)) namedArguments++;
       }
     }
 
@@ -66,7 +66,7 @@ class ExpressionContents {
 
   /// Ends the most recently begun call and returns `true` if its argument list
   /// should eagerly split.
-  bool endCall(List<Expression> arguments) {
+  bool endCall(List<Argument> arguments) {
     var contents = _end();
 
     // If there are "too many" named arguments in this call and the calls it

@@ -12,6 +12,8 @@ extension AstNodeExtensions on AstNode {
   BlockFormat get blockFormatType => switch (this) {
     AdjacentStrings(indentStrings: true) => BlockFormat.indentedAdjacentStrings,
     AdjacentStrings() => BlockFormat.unindentedAdjacentStrings,
+    NamedArgument(:var argumentExpression) =>
+      argumentExpression.blockFormatType,
     Expression(:var blockFormatType) => blockFormatType,
     _ => BlockFormat.none,
   };
@@ -29,9 +31,6 @@ extension AstNodeExtensions on AstNode {
       // metadata.
       AnnotatedNode(metadata: [var annotation, ...]) => annotation.beginToken,
       AnnotatedNode(firstTokenAfterCommentAndMetadata: var token) => token,
-
-      // The inner [NormalFormalParameter] is an [AnnotatedNode].
-      DefaultFormalParameter(:var parameter) => parameter.firstNonCommentToken,
 
       // The inner [PatternVariableDeclaration] is an [AnnotatedNode].
       PatternVariableDeclarationStatement(:var declaration) =>
@@ -214,9 +213,6 @@ extension ExpressionExtensions on Expression {
   /// category it belongs to.
   BlockFormat get blockFormatType {
     return switch (this) {
-      // Unwrap named expressions to get the real expression inside.
-      NamedExpression(:var expression) => expression.blockFormatType,
-
       // Allow the target of a single-section cascade to be block formatted.
       CascadeExpression(:var target, :var cascadeSections)
           when cascadeSections.length == 1 && target.canBlockSplit =>
@@ -276,7 +272,7 @@ extension ExpressionExtensions on Expression {
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
     var parent = this.parent;
-    if (parent is NamedExpression) parent = parent.parent;
+    if (parent is NamedArgument) parent = parent.parent;
 
     return parent is ArgumentList && parent.arguments.hasCommaAfter;
   }
@@ -479,7 +475,8 @@ extension AdjacentStringsExtensions on AdjacentStrings {
 
       // Don't indent when following `:`.
       MapLiteralEntry(:var value) when value == this => false,
-      NamedExpression() => false,
+      NamedArgument() => false,
+      RecordLiteralNamedField() => false,
 
       // Don't indent when the body of a `=>` function.
       ExpressionFunctionBody() => false,
@@ -487,7 +484,7 @@ extension AdjacentStringsExtensions on AdjacentStrings {
     };
   }
 
-  bool _hasOtherStringArgument(List<Expression> arguments) => arguments.any(
+  bool _hasOtherStringArgument(Iterable<Argument> arguments) => arguments.any(
     (argument) => argument != this && argument is StringLiteral,
   );
 }
