@@ -244,3 +244,23 @@ abstract mixin class C12 = Object
     with Mixin;
 abstract base mixin class C13 = Object
     with Mixin;
+>>> (experiment primary-constructors) Primary constructor with empty body
+class C(int x);
+<<<
+class C(int x);
+>>> (experiment primary-constructors) Primary constructor with block body
+class C(int x) {}
+<<<
+class C(int x) {}
+>>> (experiment primary-constructors) Abstract class with primary constructor and empty body
+abstract class C(int x);
+<<<
+abstract class C(int x);
+>>> (experiment primary-constructors) Primary constructor with multiple parameters and modifiers
+class C(var int x, final String y);
+<<<
+class C(var int x, final String y);
+>>> (experiment primary-constructors) Primary constructor with comment before semicolon
+class C(int x) /* comment */ ;
+<<<
+class C(int x) /* comment */;

@@ -131,3 +131,11 @@ extension A on B {
 extension A on B {
   bar() {}
 }
+>>> (experiment primary-constructors) Extension with empty body
+extension A on B;
+<<<
+extension A on B;
+>>> (experiment primary-constructors) Extension with comment before semicolon
+extension A on B /* comment */ ;
+<<<
+extension A on B /* comment */;

@@ -601,15 +601,24 @@ final class SourceVisitor extends ThrowingAstVisitor {
     space();
     token(node.namePart.typeName);
     visit(node.namePart.typeParameters);
+
+    var namePart = node.namePart;
+    if (namePart is PrimaryConstructorDeclaration) {
+      visit(namePart.formalParameters);
+    }
+
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
-    space();
+    if (node.body is! EmptyClassBody) space();
 
     builder.unnest();
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    switch (node.body) {
+      case BlockClassBody body:
+        _visitBody(body.leftBracket, body.members, body.rightBracket);
+      case EmptyClassBody body:
+        token(body.semicolon);
+    }
   }
 
   @override
@@ -1166,12 +1175,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(onClause.extendedType);
     }
-    space();
+    if (node.body is! EmptyClassBody) space();
+
     builder.unnest();
 
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    switch (node.body) {
+      case BlockClassBody body:
+        _visitBody(body.leftBracket, body.members, body.rightBracket);
+      case EmptyClassBody body:
+        token(body.semicolon);
+    }
   }
 
   @override
@@ -1189,11 +1202,14 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    space();
+    if (node.body is! EmptyClassBody) space();
     builder.unnest();
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    switch (node.body) {
+      case BlockClassBody body:
+        _visitBody(body.leftBracket, body.members, body.rightBracket);
+      case EmptyClassBody body:
+        token(body.semicolon);
+    }
   }
 
   @override
@@ -2139,13 +2155,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    space();
+    if (node.body is! EmptyClassBody) space();
 
     builder.unnest();
 
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    switch (node.body) {
+      case BlockClassBody body:
+        _visitBody(body.leftBracket, body.members, body.rightBracket);
+      case EmptyClassBody body:
+        token(body.semicolon);
+    }
   }
 
   @override

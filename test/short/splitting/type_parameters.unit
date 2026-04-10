@@ -52,3 +52,9 @@ class Foo extends GenericBaseClass<TypeParameter> {}
 <<<
 class Foo extends GenericBaseClass<
     TypeParameter> {}
+>>> (experiment primary-constructors) Split type parameters with primary constructor and empty body
+class LongClassName<FirstTypeParameterIsLong, Second>(int x);
+<<<
+class LongClassName<
+    FirstTypeParameterIsLong,
+    Second>(int x);
