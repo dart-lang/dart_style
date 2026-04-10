@@ -380,6 +380,59 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitBlockClassBody(BlockClassBody node) {
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
+  }
+
+  @override
+  void visitBlockEnumBody(BlockEnumBody node) {
+    _beginBody(node.leftBracket, space: true);
+
+    visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
+
+    // If there is a trailing comma, always force the constants to split.
+    var trailingComma = node.constants.last.commaAfter;
+    if (trailingComma != null) {
+      builder.forceRules();
+    }
+
+    // The ";" after the constants, which may occur after a trailing comma.
+    var afterConstants = node.constants.last.endToken.next!;
+    Token? semicolon;
+    if (afterConstants.type == TokenType.SEMICOLON) {
+      semicolon = node.constants.last.endToken.next!;
+    } else if (trailingComma != null &&
+        trailingComma.next!.type == TokenType.SEMICOLON) {
+      semicolon = afterConstants.next!;
+    }
+
+    if (semicolon != null) {
+      // If there is both a trailing comma and a semicolon, move the semicolon
+      // to the next line. This doesn't look great but it's less bad than being
+      // next to the comma.
+      // TODO(rnystrom): If the formatter starts making non-whitespace changes
+      // like adding/removing trailing commas, then it should fix this too.
+      if (trailingComma != null) newline();
+
+      token(semicolon);
+
+      // Put a blank line between the constants and members.
+      if (node.members.isNotEmpty) twoNewlines();
+    }
+
+    _visitBodyContents(node.members);
+
+    _endBody(
+      node.rightBracket,
+      forceSplit:
+          semicolon != null ||
+          trailingComma != null ||
+          node.members.isNotEmpty ||
+          node.constants.containsLineComments(),
+    );
+  }
+
+  @override
   void visitBlockFunctionBody(BlockFunctionBody node) {
     // Space after the parameter list.
     space();
@@ -603,6 +656,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
+    if (node.body is! EmptyClassBody) space();
+    builder.unnest();
+
     visit(node.body);
   }
 
@@ -972,6 +1028,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitEmptyClassBody(EmptyClassBody node) {
+    token(node.semicolon);
+  }
+
+  @override
+  void visitEmptyEnumBody(EmptyEnumBody node) {
+    token(node.semicolon);
+  }
+
+  @override
   void visitEmptyFunctionBody(EmptyFunctionBody node) {
     token(node.semicolon);
   }
@@ -1012,59 +1078,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.namePart);
     _visitClauses(node.withClause, node.implementsClause);
 
-    switch (node.body) {
-      case BlockEnumBody body:
-        space();
-        builder.unnest();
+    if (node.body is! EmptyEnumBody) space();
+    builder.unnest();
 
-        _beginBody(body.leftBracket, space: true);
-
-        visitCommaSeparatedNodes(body.constants, between: splitOrTwoNewlines);
-
-        // If there is a trailing comma, always force the constants to split.
-        var trailingComma = body.constants.last.commaAfter;
-        if (trailingComma != null) {
-          builder.forceRules();
-        }
-
-        // The ";" after the constants, which may occur after a trailing comma.
-        var afterConstants = body.constants.last.endToken.next!;
-        Token? semicolon;
-        if (afterConstants.type == TokenType.SEMICOLON) {
-          semicolon = body.constants.last.endToken.next!;
-        } else if (trailingComma != null &&
-            trailingComma.next!.type == TokenType.SEMICOLON) {
-          semicolon = afterConstants.next!;
-        }
-
-        if (semicolon != null) {
-          // If there is both a trailing comma and a semicolon, move the semicolon
-          // to the next line. This doesn't look great but it's less bad than being
-          // next to the comma.
-          // TODO(rnystrom): If the formatter starts making non-whitespace changes
-          // like adding/removing trailing commas, then it should fix this too.
-          if (trailingComma != null) newline();
-
-          token(semicolon);
-
-          // Put a blank line between the constants and members.
-          if (body.members.isNotEmpty) twoNewlines();
-        }
-
-        _visitBodyContents(body.members);
-
-        _endBody(
-          body.rightBracket,
-          forceSplit:
-              semicolon != null ||
-              trailingComma != null ||
-              body.members.isNotEmpty ||
-              body.constants.containsLineComments(),
-        );
-      case EmptyEnumBody body:
-        builder.unnest();
-        token(body.semicolon);
-    }
+    visit(node.body);
   }
 
   @override
@@ -1158,6 +1175,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(onClause.extendedType);
     }
+    if (node.body is! EmptyClassBody) space();
+    builder.unnest();
+
     visit(node.body);
   }
 
@@ -1175,6 +1195,9 @@ final class SourceVisitor extends ThrowingAstVisitor {
     builder.startRule(CombinatorRule());
     visit(node.implementsClause);
     builder.endRule();
+
+    if (node.body is! EmptyClassBody) space();
+    builder.unnest();
 
     visit(node.body);
   }
@@ -2122,7 +2145,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
+    if (node.body is! EmptyClassBody) space();
+    builder.unnest();
+
     visit(node.body);
+  }
+
+  @override
+  void visitNameWithTypeParameters(NameWithTypeParameters node) {
+    token(node.typeName);
+    visit(node.typeParameters);
   }
 
   @override
@@ -2342,12 +2374,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.typeParameters);
     visit(node.constructorName);
     visit(node.formalParameters);
-  }
-
-  @override
-  void visitNameWithTypeParameters(NameWithTypeParameters node) {
-    token(node.typeName);
-    visit(node.typeParameters);
   }
 
   @override
@@ -3962,19 +3988,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
     _beginBody(leftBracket);
     _visitBodyContents(nodes);
     _endBody(rightBracket, forceSplit: nodes.isNotEmpty);
-  }
-
-  @override
-  void visitBlockClassBody(BlockClassBody node) {
-    space();
-    builder.unnest();
-    _visitBody(node.leftBracket, node.members, node.rightBracket);
-  }
-
-  @override
-  void visitEmptyClassBody(EmptyClassBody node) {
-    builder.unnest();
-    token(node.semicolon);
   }
 
   static final _lineTerminatorRE = RegExp(r'\r\n?|\n');
