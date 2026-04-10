@@ -312,3 +312,24 @@ enum E {
 
   bar() {}
 }
+>>> (experiment primary-constructors) Enum with primary constructor and single constant
+enum E(final int x) { a(1) }
+<<<
+enum E(final int x) { a(1) }
+>>> (experiment primary-constructors) Enum with primary constructor and multiple constants
+enum E(final int x) { a(1), b(2) }
+<<<
+enum E(final int x) { a(1), b(2) }
+>>> (experiment primary-constructors) Enum with primary constructor and members
+enum E(final int x) { a(1), b(2); void foo() {} }
+<<<
+enum E(final int x) {
+  a(1),
+  b(2);
+
+  void foo() {}
+}
+>>> (experiment primary-constructors) Const enum with primary constructor
+enum const E(final int x) { a(1) }
+<<<
+enum const E(final int x) { a(1) }
