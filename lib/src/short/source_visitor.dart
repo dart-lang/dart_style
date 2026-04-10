@@ -603,15 +603,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
-    if (node.body is! EmptyClassBody) space();
-
-    builder.unnest();
-    switch (node.body) {
-      case BlockClassBody body:
-        _visitBody(body.leftBracket, body.members, body.rightBracket);
-      case EmptyClassBody body:
-        token(body.semicolon);
-    }
+    visit(node.body);
   }
 
   @override
@@ -1019,61 +1011,60 @@ final class SourceVisitor extends ThrowingAstVisitor {
     space();
     visit(node.namePart);
     _visitClauses(node.withClause, node.implementsClause);
-    space();
 
-    builder.unnest();
+    switch (node.body) {
+      case BlockEnumBody body:
+        space();
+        builder.unnest();
 
-    // TODO(scheglov): support for EmptyEnumBody
-    var body = node.body as BlockEnumBody;
-    _beginBody(body.leftBracket, space: true);
+        _beginBody(body.leftBracket, space: true);
 
-    visitCommaSeparatedNodes(body.constants, between: splitOrTwoNewlines);
+        visitCommaSeparatedNodes(body.constants, between: splitOrTwoNewlines);
 
-    // If there is a trailing comma, always force the constants to split.
-    var trailingComma = body.constants.last.commaAfter;
-    if (trailingComma != null) {
-      builder.forceRules();
+        // If there is a trailing comma, always force the constants to split.
+        var trailingComma = body.constants.last.commaAfter;
+        if (trailingComma != null) {
+          builder.forceRules();
+        }
+
+        // The ";" after the constants, which may occur after a trailing comma.
+        var afterConstants = body.constants.last.endToken.next!;
+        Token? semicolon;
+        if (afterConstants.type == TokenType.SEMICOLON) {
+          semicolon = body.constants.last.endToken.next!;
+        } else if (trailingComma != null &&
+            trailingComma.next!.type == TokenType.SEMICOLON) {
+          semicolon = afterConstants.next!;
+        }
+
+        if (semicolon != null) {
+          // If there is both a trailing comma and a semicolon, move the semicolon
+          // to the next line. This doesn't look great but it's less bad than being
+          // next to the comma.
+          // TODO(rnystrom): If the formatter starts making non-whitespace changes
+          // like adding/removing trailing commas, then it should fix this too.
+          if (trailingComma != null) newline();
+
+          token(semicolon);
+
+          // Put a blank line between the constants and members.
+          if (body.members.isNotEmpty) twoNewlines();
+        }
+
+        _visitBodyContents(body.members);
+
+        _endBody(
+          body.rightBracket,
+          forceSplit:
+              semicolon != null ||
+              trailingComma != null ||
+              body.members.isNotEmpty ||
+              body.constants.containsLineComments(),
+        );
+      case EmptyEnumBody body:
+        builder.unnest();
+        token(body.semicolon);
     }
-
-    // The ";" after the constants, which may occur after a trailing comma.
-    var afterConstants = body.constants.last.endToken.next!;
-    Token? semicolon;
-    if (afterConstants.type == TokenType.SEMICOLON) {
-      semicolon = body.constants.last.endToken.next!;
-    } else if (trailingComma != null &&
-        trailingComma.next!.type == TokenType.SEMICOLON) {
-      semicolon = afterConstants.next!;
-    }
-
-    if (semicolon != null) {
-      // If there is both a trailing comma and a semicolon, move the semicolon
-      // to the next line. This doesn't look great but it's less bad than being
-      // next to the comma.
-      // TODO(rnystrom): If the formatter starts making non-whitespace changes
-      // like adding/removing trailing commas, then it should fix this too.
-      if (trailingComma != null) newline();
-
-      token(semicolon);
-
-      // Put a blank line between the constants and members.
-      if (body.members.isNotEmpty) twoNewlines();
-    }
-
-    _visitBodyContents(body.members);
-
-    _endBody(
-      body.rightBracket,
-      forceSplit:
-          semicolon != null ||
-          trailingComma != null ||
-          body.members.isNotEmpty ||
-          // If there is a line comment after an enum constant, it won't
-          // automatically force the enum body to split since the rule for
-          // the constants is the hard rule used by the entire block and its
-          // hardening state doesn't actually change. Instead, look
-          // explicitly for a line comment here.
-          body.constants.containsLineComments(),
-    );
   }
 
   @override
@@ -1167,15 +1158,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(onClause.extendedType);
     }
-    if (node.body is! EmptyClassBody) space();
-    builder.unnest();
-
-    switch (node.body) {
-      case BlockClassBody body:
-        _visitBody(body.leftBracket, body.members, body.rightBracket);
-      case EmptyClassBody body:
-        token(body.semicolon);
-    }
+    visit(node.body);
   }
 
   @override
@@ -1193,14 +1176,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    if (node.body is! EmptyClassBody) space();
-    builder.unnest();
-    switch (node.body) {
-      case BlockClassBody body:
-        _visitBody(body.leftBracket, body.members, body.rightBracket);
-      case EmptyClassBody body:
-        token(body.semicolon);
-    }
+    visit(node.body);
   }
 
   @override
@@ -2146,16 +2122,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    if (node.body is! EmptyClassBody) space();
-
-    builder.unnest();
-
-    switch (node.body) {
-      case BlockClassBody body:
-        _visitBody(body.leftBracket, body.members, body.rightBracket);
-      case EmptyClassBody body:
-        token(body.semicolon);
-    }
+    visit(node.body);
   }
 
   @override
@@ -3995,6 +3962,19 @@ final class SourceVisitor extends ThrowingAstVisitor {
     _beginBody(leftBracket);
     _visitBodyContents(nodes);
     _endBody(rightBracket, forceSplit: nodes.isNotEmpty);
+  }
+
+  @override
+  void visitBlockClassBody(BlockClassBody node) {
+    space();
+    builder.unnest();
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
+  }
+
+  @override
+  void visitEmptyClassBody(EmptyClassBody node) {
+    builder.unnest();
+    token(node.semicolon);
   }
 
   static final _lineTerminatorRE = RegExp(r'\r\n?|\n');

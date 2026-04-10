@@ -333,3 +333,11 @@ enum E(final int x) {
 enum const E(final int x) { a(1) }
 <<<
 enum const E(final int x) { a(1) }
+>>> (experiment primary-constructors) Enum with semicolon body
+enum E;
+<<<
+enum E;
+>>> (experiment primary-constructors) Enum with primary constructor and semicolon body
+enum E(int x);
+<<<
+enum E(int x);
