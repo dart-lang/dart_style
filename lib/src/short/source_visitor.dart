@@ -599,13 +599,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.mixinKeyword);
     token(node.classKeyword);
     space();
-    token(node.namePart.typeName);
-    visit(node.namePart.typeParameters);
-
-    var namePart = node.namePart;
-    if (namePart is PrimaryConstructorDeclaration) {
-      visit(namePart.formalParameters);
-    }
+    visit(node.namePart);
 
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
@@ -1024,8 +1018,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
     token(node.enumKeyword);
     space();
-    token(node.namePart.typeName);
-    visit(node.namePart.typeParameters);
+    visit(node.namePart);
     _visitClauses(node.withClause, node.implementsClause);
     space();
 
@@ -2384,6 +2377,12 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.typeParameters);
     visit(node.constructorName);
     visit(node.formalParameters);
+  }
+
+  @override
+  void visitNameWithTypeParameters(NameWithTypeParameters node) {
+    token(node.typeName);
+    visit(node.typeParameters);
   }
 
   @override

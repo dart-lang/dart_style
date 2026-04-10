@@ -264,3 +264,7 @@ class C(var int x, final String y);
 class C(int x) /* comment */ ;
 <<<
 class C(int x) /* comment */;
+>>> (experiment primary-constructors) Const primary constructor
+class const C(final int x);
+<<<
+class const C(final int x);
