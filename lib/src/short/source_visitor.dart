@@ -600,7 +600,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
     token(node.classKeyword);
     space();
     visit(node.namePart);
-
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
@@ -1169,7 +1168,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
       visit(onClause.extendedType);
     }
     if (node.body is! EmptyClassBody) space();
-
     builder.unnest();
 
     switch (node.body) {
