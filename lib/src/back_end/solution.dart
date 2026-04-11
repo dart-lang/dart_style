@@ -20,11 +20,11 @@ import 'solution_cache.dart';
 final class Solution implements Comparable<Solution> {
   /// The states that pieces have been bound to.
   ///
-  /// Note that order that keys are inserted into this map is significant. When
-  /// ordering solutions, we use the order that pieces are bound in here to
-  /// break ties between solutions that otherwise have the same cost and
-  /// overflow.
-  final Map<Piece, State> _pieceStates;
+  /// This is a linked list of nodes, where each node adds a single piece
+  /// binding. This allows "copying" the state map in O(1) time by just
+  /// sharing the list tail. Lookups are O(N) where N is the number of bound
+  /// pieces, but N is typically very small.
+  _StateNode? _pieceStates;
 
   /// The set of states that pieces are allowed to be in without violating
   /// constraints of already bound pieces.
@@ -33,7 +33,7 @@ final class Solution implements Comparable<Solution> {
   /// that the piece may take which aren't known to violate existing
   /// constraints. If a piece is not in this map, then there are no constraints
   /// on it.
-  final Map<Piece, List<State>> _allowedStates;
+  Map<Piece, List<State>>? _allowedStates;
 
   /// The amount of penalties applied based on the chosen line splits.
   int get cost => _cost + _subtreeCost;
@@ -121,7 +121,7 @@ final class Solution implements Comparable<Solution> {
     required int subsequentIndent,
     State? rootState,
   }) {
-    var solution = Solution._(root, 0, {}, {}, rootState);
+    var solution = Solution._(root, 0, null, null, rootState);
     solution._format(cache, root, pageWidth, leadingIndent, subsequentIndent);
     return solution;
   }
@@ -163,12 +163,30 @@ final class Solution implements Comparable<Solution> {
   /// The state that [piece] is pinned to or that this solution selects.
   ///
   /// If no state has been selected, returns `null`.
-  State? pieceStateIfBound(Piece piece) =>
-      piece.pinnedState ?? _pieceStates[piece];
+  State? pieceStateIfBound(Piece piece) {
+    if (piece.pinnedState case var pinned?) return pinned;
+
+    var node = _pieceStates;
+    while (node != null) {
+      if (node.piece == piece) return node.state;
+      node = node.parent;
+    }
+
+    return null;
+  }
 
   /// Whether [piece] has been bound to a state in this set (or is pinned).
-  bool isBound(Piece piece) =>
-      piece.pinnedState != null || _pieceStates.containsKey(piece);
+  bool isBound(Piece piece) {
+    if (piece.pinnedState != null) return true;
+
+    var node = _pieceStates;
+    while (node != null) {
+      if (node.piece == piece) return true;
+      node = node.parent;
+    }
+
+    return false;
+  }
 
   /// Increases the total overflow for this solution by [overflow].
   ///
@@ -238,12 +256,12 @@ final class Solution implements Comparable<Solution> {
       // constrained by that one).
       var expandPiece = _expandPieces[i];
       for (var state
-          in _allowedStates[expandPiece] ?? expandPiece.additionalStates) {
+          in _allowedStates?[expandPiece] ?? expandPiece.additionalStates) {
         var expanded = Solution._(
           root,
           _cost,
-          {..._pieceStates},
-          {..._allowedStates},
+          _pieceStates,
+          _allowedStates == null ? null : {..._allowedStates!},
         );
 
         // Bind all preceding expand pieces to their unsplit state. Their
@@ -302,7 +320,16 @@ final class Solution implements Comparable<Solution> {
     if (overflow != other.overflow) return overflow.compareTo(other.overflow);
 
     // If all else is equal, prefer lower states in earlier bound pieces.
-    for (var piece in _pieceStates.keys) {
+    // Since our linked list is in reverse order (newest first), we need to
+    // traverse it to get the pieces in insertion order.
+    var pieces = <Piece>[];
+    var node = _pieceStates;
+    while (node != null) {
+      pieces.add(node.piece);
+      node = node.parent;
+    }
+
+    for (var piece in pieces.reversed) {
       var thisState = pieceState(piece);
       var otherState = other.pieceState(piece);
       if (thisState != otherState) return thisState.compareTo(otherState);
@@ -313,10 +340,17 @@ final class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
+    var pieces = <Piece>[];
+    var node = _pieceStates;
+    while (node != null) {
+      pieces.add(node.piece);
+      node = node.parent;
+    }
+
     var states = [
-      for (var MapEntry(key: piece, value: state) in _pieceStates.entries)
+      for (var piece in pieces.reversed)
         if (piece.additionalStates.isNotEmpty && piece.pinnedState == null)
-          '$piece$state',
+          '$piece${pieceState(piece)}',
     ];
 
     return [
@@ -371,7 +405,7 @@ final class Solution implements Comparable<Solution> {
       case null:
         // Binding a unbound piece to a state.
         _cost += piece.stateCost(state);
-        _pieceStates[piece] = state;
+        _pieceStates = _StateNode(piece, state, _pieceStates);
 
         // This piece may in turn place further constraints on others.
         piece.applyConstraints(state, _bind);
@@ -418,7 +452,8 @@ final class Solution implements Comparable<Solution> {
           _isDeadEnd = true;
           _isValid = false;
         }
-      } else if (!_allowedStates.containsKey(offspring)) {
+      } else if (_allowedStates == null ||
+          !_allowedStates!.containsKey(offspring)) {
         // If we get here, the offspring isn't bound to a state and we haven't
         // already constrained it. Eliminate any of its states that will emit
         // newlines.
@@ -445,9 +480,18 @@ final class Solution implements Comparable<Solution> {
           _bind(offspring, remainingStates.first);
         } else if (remainingStates.length < states.length) {
           // There are some constrained states, so keep the remaining ones.
-          _allowedStates[offspring] = remainingStates;
+          (_allowedStates ??= {})[offspring] = remainingStates;
         }
       }
     }
   }
+}
+
+/// A node in a linked list of piece-to-state bindings.
+final class _StateNode {
+  final Piece piece;
+  final State state;
+  final _StateNode? parent;
+
+  _StateNode(this.piece, this.state, this.parent);
 }
