@@ -17,7 +17,7 @@ void main() {
     // active.
     var testFile = 'test/worker_pool_test.dart';
 
-    for (var i = 0; i < 20; i++) {
+    for (var i = 0; i < pool.maxBacklog; i++) {
       unawaited(
         pool.add(
           uri: testFile,

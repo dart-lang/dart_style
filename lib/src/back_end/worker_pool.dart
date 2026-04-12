@@ -41,7 +41,7 @@ final class WorkerPool {
   int _inMemoryCount = 0;
 
   /// The maximum number of requests allowed in memory before throttling.
-  final int _maxBacklog;
+  final int maxBacklog;
 
   /// Completer to pause the producer when the backlog is full.
   Completer<void>? _throttleCompleter;
@@ -53,7 +53,7 @@ final class WorkerPool {
   /// with a minimum of 1.
   WorkerPool({int? size})
     : _pool = Pool(size ?? _getPoolSize()),
-      _maxBacklog = _batchSize * ((size ?? _getPoolSize()) + 1) {
+      maxBacklog = _batchSize * ((size ?? _getPoolSize()) + 1) {
     if (_batchSize < 1) {
       throw ArgumentError('FORMAT_BATCH_SIZE must be >= 1, got $_batchSize');
     }
@@ -79,7 +79,7 @@ final class WorkerPool {
   }) async {
     if (_isClosed) throw StateError('WorkerPool is closed');
 
-    if (_inMemoryCount >= _maxBacklog) {
+    if (_inMemoryCount >= maxBacklog) {
       _throttleCompleter ??= Completer<void>();
       await _throttleCompleter!.future;
     }
@@ -97,7 +97,7 @@ final class WorkerPool {
 
     void wrappedCallback(WorkerResponse response) {
       _inMemoryCount--;
-      if (_inMemoryCount < _maxBacklog && _throttleCompleter != null) {
+      if (_inMemoryCount < maxBacklog && _throttleCompleter != null) {
         var c = _throttleCompleter!;
         _throttleCompleter = null;
         c.complete();
