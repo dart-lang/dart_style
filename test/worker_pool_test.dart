@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:async';
 import 'package:dart_style/src/back_end/worker_pool.dart';
 import 'package:pub_semver/pub_semver.dart';
 import 'package:test/test.dart';
@@ -17,14 +18,16 @@ void main() {
     var testFile = 'test/worker_pool_test.dart';
 
     for (var i = 0; i < 20; i++) {
-      await pool.add(
-        uri: testFile,
-        languageVersion: Version(3, 0, 0),
-        indent: 0,
-        pageWidth: 80,
-        trailingCommas: null,
-        experimentFlags: [],
-        onResult: (_) {},
+      unawaited(
+        pool.add(
+          uri: testFile,
+          languageVersion: Version(3, 0, 0),
+          indent: 0,
+          pageWidth: 80,
+          trailingCommas: null,
+          experimentFlags: [],
+          onResult: (_) {},
+        ),
       );
     }
 
@@ -34,19 +37,21 @@ void main() {
     var success = true;
 
     // Add one more task that will be queued since the pool is busy.
-    await pool.add(
-      uri: 'non_existent_file.dart',
-      languageVersion: Version(3, 0, 0),
-      indent: 0,
-      pageWidth: 80,
-      trailingCommas: null,
-      experimentFlags: [],
-      onResult: (response) {
-        callbackCalled = true;
-        if (response.error != null) {
-          success = false;
-        }
-      },
+    unawaited(
+      pool.add(
+        uri: 'non_existent_file.dart',
+        languageVersion: Version(3, 0, 0),
+        indent: 0,
+        pageWidth: 80,
+        trailingCommas: null,
+        experimentFlags: [],
+        onResult: (response) {
+          callbackCalled = true;
+          if (response.error != null) {
+            success = false;
+          }
+        },
+      ),
     );
 
     // Immediately close the pool. This flushes the pending request,
