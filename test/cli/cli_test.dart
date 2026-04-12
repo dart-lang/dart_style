@@ -23,17 +23,17 @@ void main() {
       ]).create();
 
       var process = await runFormatterOnDir();
-      await expectLater(
-        process.stdout,
-        emitsInOrder([
+
+      var lines = await process.stdout.rest.toList();
+      expect(
+        lines,
+        containsAll([
           'Formatted ${p.join('code', 'a.dart')}',
           'Formatted ${p.join('code', 'c.dart')}',
         ]),
       );
-      await expectLater(
-        process.stdout,
-        emits(startsWith('Formatted 3 files (2 changed)')),
-      );
+      expect(lines, anyElement(startsWith('Formatted 3 files (2 changed)')));
+
       await process.shouldExit(0);
 
       // Overwrites the files.
@@ -52,17 +52,17 @@ void main() {
         p.join('code', 'subdir'),
         p.join('code', 'c.dart'),
       ]);
-      await expectLater(
-        process.stdout,
-        emitsInOrder([
+
+      var lines = await process.stdout.rest.toList();
+      expect(
+        lines,
+        containsAll([
           'Formatted ${p.join('code', 'subdir', 'a.dart')}',
           'Formatted ${p.join('code', 'c.dart')}',
         ]),
       );
-      await expectLater(
-        process.stdout,
-        emits(startsWith('Formatted 2 files (2 changed)')),
-      );
+      expect(lines, anyElement(startsWith('Formatted 2 files (2 changed)')));
+
       await process.shouldExit(0);
 
       // Overwrites the selected files.
