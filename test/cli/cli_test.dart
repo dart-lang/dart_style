@@ -3,6 +3,7 @@
 // BSD-style license that can be found in the LICENSE file.
 
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
@@ -82,6 +83,21 @@ void main() {
     await d.dir('code', [d.file('a.dart', 'herp derp i are a dart')]).create();
 
     var process = await runFormatterOnDir();
+    await process.shouldExit(65);
+  });
+
+  test('exits with 65 and prints stack trace on unexpected error', () async {
+    // Create a file with invalid UTF-8 bytes that will fail to decode.
+    await d.dir('code').create();
+    var file = File(p.join(d.sandbox, 'code', 'a.dart'));
+    file.writeAsBytesSync([0xFF, 0xFE, 0xFD]);
+
+    var process = await runFormatterOnDir();
+    
+    await expectLater(
+      process.stderr,
+      emitsThrough(contains('Hit a bug in the formatter')),
+    );
     await process.shouldExit(65);
   });
 
