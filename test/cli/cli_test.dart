@@ -93,7 +93,7 @@ void main() {
     file.writeAsBytesSync([0xFF, 0xFE, 0xFD]);
 
     var process = await runFormatterOnDir();
-    
+
     await expectLater(
       process.stderr,
       emitsThrough(contains('Hit a bug in the formatter')),
