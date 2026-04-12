@@ -176,17 +176,7 @@ final class Solution implements Comparable<Solution> {
   }
 
   /// Whether [piece] has been bound to a state in this set (or is pinned).
-  bool isBound(Piece piece) {
-    if (piece.pinnedState != null) return true;
-
-    var node = _pieceStates;
-    while (node != null) {
-      if (node.piece == piece) return true;
-      node = node.parent;
-    }
-
-    return false;
-  }
+  bool isBound(Piece piece) => pieceStateIfBound(piece) != null;
 
   /// Increases the total overflow for this solution by [overflow].
   ///
@@ -305,6 +295,16 @@ final class Solution implements Comparable<Solution> {
     return solutions;
   }
 
+  List<Piece> _pieces() {
+    var pieces = <Piece>[];
+    var node = _pieceStates;
+    while (node != null) {
+      pieces.add(node.piece);
+      node = node.parent;
+    }
+    return pieces;
+  }
+
   /// Compares two solutions where a more desirable solution comes first.
   ///
   /// For performance, we want to stop checking solutions as soon as we find
@@ -322,12 +322,7 @@ final class Solution implements Comparable<Solution> {
     // If all else is equal, prefer lower states in earlier bound pieces.
     // Since our linked list is in reverse order (newest first), we need to
     // traverse it to get the pieces in insertion order.
-    var pieces = <Piece>[];
-    var node = _pieceStates;
-    while (node != null) {
-      pieces.add(node.piece);
-      node = node.parent;
-    }
+    var pieces = _pieces();
 
     for (var piece in pieces.reversed) {
       var thisState = pieceState(piece);
@@ -340,12 +335,7 @@ final class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
-    var pieces = <Piece>[];
-    var node = _pieceStates;
-    while (node != null) {
-      pieces.add(node.piece);
-      node = node.parent;
-    }
+    var pieces = _pieces();
 
     var states = [
       for (var piece in pieces.reversed)
