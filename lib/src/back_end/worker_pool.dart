@@ -32,6 +32,9 @@ final class WorkerPool {
   /// Queue to buffer requests until we have a full batch.
   final List<_PendingRequest> _pending = [];
 
+  /// List of futures for active batches to ensure we wait for them on close.
+  final List<Future<void>> _activeBatches = [];
+
   static final _batchSize = _getBatchSize();
 
   /// The number of requests currently in memory (pending or in flight).
@@ -118,17 +121,8 @@ final class WorkerPool {
 
     var requests = currentBatch.map((_PendingRequest e) => e.request).toList();
 
-    _formatBatch(requests)
-        .then((responses) {
-          for (var i = 0; i < currentBatch.length; i++) {
-            currentBatch[i].callback(responses[i]);
-          }
-        })
-        .catchError((Object e) {
-          for (var i = 0; i < currentBatch.length; i++) {
-            currentBatch[i].callback(WorkerResponse(error: e.toString()));
-          }
-        });
+    // Run the batch in the background. The pool will limit concurrency.
+    _formatBatch(requests, currentBatch);
   }
 
   /// Spawns a new worker isolate.
@@ -148,19 +142,27 @@ final class WorkerPool {
   }
 
   /// Formats a batch of files in a worker isolate.
-  Future<List<WorkerResponse>> _formatBatch(
-    List<_WorkerRequest> request,
+  Future<void> _formatBatch(
+    List<_WorkerRequest> requests,
+    List<_PendingRequest> batch,
   ) async {
-    return _pool.withResource(() async {
+    var future = _pool.withResource(() async {
       var worker = _freeWorkers.isNotEmpty
           ? _freeWorkers.removeLast()
           : await _spawnWorker();
       var responsePort = ReceivePort();
 
       try {
-        worker.send((request, responsePort.sendPort));
+        worker.send((requests, responsePort.sendPort));
         var response = await responsePort.first;
-        return response as List<WorkerResponse>;
+        var responses = response as List<WorkerResponse>;
+        for (var i = 0; i < batch.length; i++) {
+          batch[i].callback(responses[i]);
+        }
+      } catch (e) {
+        for (var i = 0; i < batch.length; i++) {
+          batch[i].callback(WorkerResponse(error: e.toString()));
+        }
       } finally {
         responsePort.close();
         if (_isClosed) {
@@ -170,12 +172,20 @@ final class WorkerPool {
         }
       }
     });
+
+    _activeBatches.add(future);
+    try {
+      await future;
+    } finally {
+      _activeBatches.remove(future);
+    }
   }
 
   /// Closes the pool and shuts down all worker isolates.
   Future<void> close() async {
     _isClosed = true;
     _flush();
+    await Future.wait(_activeBatches);
     await _pool.close();
     for (var worker in _freeWorkers) {
       worker.send(null);
