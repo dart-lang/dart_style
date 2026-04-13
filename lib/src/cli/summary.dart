@@ -42,6 +42,11 @@ final class Summary {
   }) {}
 
   void show() {}
+
+  /// Adds worker telemetry data to the summary.
+  void addTelemetry(
+    ({Duration readTime, Duration formatTime, Duration idleTime}) telemetry,
+  ) {}
 }
 
 /// Tracks how many files were formatted and the total time.
@@ -102,6 +107,19 @@ final class _ProfileSummary implements Summary {
   /// tracking.
   int _elided = 0;
 
+  Duration _readTime = Duration.zero;
+  Duration _formatTime = Duration.zero;
+  Duration _idleTime = Duration.zero;
+
+  @override
+  void addTelemetry(
+    ({Duration readTime, Duration formatTime, Duration idleTime}) telemetry,
+  ) {
+    _readTime += telemetry.readTime;
+    _formatTime += telemetry.formatTime;
+    _idleTime += telemetry.idleTime;
+  }
+
   /// Show the times for the slowest files to format.
   @override
   void show() {
@@ -121,6 +139,25 @@ final class _ProfileSummary implements Summary {
     }
 
     Profile.report();
+
+    print('');
+    print('Worker Telemetry:');
+
+    String format(int n) {
+      var str = n.toString();
+      var reg = RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))');
+      return str.replaceAllMapped(reg, (Match m) => '${m[1]},');
+    }
+
+    var readStr = format(_readTime.inMilliseconds).padLeft(10);
+    var formatStr = format(_formatTime.inMilliseconds).padLeft(10);
+    var idleStr = format(_idleTime.inMilliseconds).padLeft(10);
+    var rssStr = format(ProcessInfo.currentRss ~/ 1024).padLeft(10);
+
+    print('  Waiting for reads: ${readStr}ms');
+    print('  Running formatter: ${formatStr}ms');
+    print('  Waiting for work:  ${idleStr}ms');
+    print('  Memory usage (RSS): ${rssStr}KB');
   }
 
   /// Called when [file] is about to be formatted.

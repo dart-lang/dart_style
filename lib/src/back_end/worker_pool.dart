@@ -18,6 +18,12 @@ typedef _PendingRequest = ({
   void Function(WorkerResponse) callback,
 });
 
+typedef BatchTelemetry = ({
+  Duration readTime,
+  Duration formatTime,
+  Duration idleTime,
+});
+
 /// A pool of long-lived isolates that can format Dart source code in parallel.
 final class WorkerPool {
   /// The list of free worker ports.
@@ -28,6 +34,11 @@ final class WorkerPool {
 
   /// Whether the pool is being shut down.
   bool _isClosed = false;
+
+  /// Telemetry data.
+  Duration _totalReadTime = Duration.zero;
+  Duration _totalFormatTime = Duration.zero;
+  Duration _totalIdleTime = Duration.zero;
 
   /// Queue to buffer requests until we have a full batch.
   final List<_PendingRequest> _pending = [];
@@ -155,7 +166,13 @@ final class WorkerPool {
       try {
         worker.send((requests, responsePort.sendPort));
         var response = await responsePort.first;
-        var responses = response as List<WorkerResponse>;
+        var (responses, telemetry) =
+            response as (List<WorkerResponse>, BatchTelemetry);
+
+        _totalReadTime += telemetry.readTime;
+        _totalFormatTime += telemetry.formatTime;
+        _totalIdleTime += telemetry.idleTime;
+
         for (var i = 0; i < batch.length; i++) {
           batch[i].callback(responses[i]);
         }
@@ -182,22 +199,41 @@ final class WorkerPool {
   }
 
   /// Closes the pool and shuts down all worker isolates.
-  Future<void> close() async {
+  ///
+  /// Returns the aggregated telemetry data.
+  Future<BatchTelemetry> close() async {
     _isClosed = true;
     _flush();
+
+    if (_throttleCompleter != null) {
+      var c = _throttleCompleter!;
+      _throttleCompleter = null;
+      c.complete();
+    }
+
     await Future.wait(_activeBatches);
     await _pool.close();
     for (var worker in _freeWorkers) {
       worker.send(null);
     }
     _freeWorkers.clear();
+    return (
+      readTime: _totalReadTime,
+      formatTime: _totalFormatTime,
+      idleTime: _totalIdleTime,
+    );
   }
 
   static void _workerEntry(SendPort mainSendPort) {
     var receivePort = ReceivePort();
     mainSendPort.send(receivePort.sendPort);
 
+    var idleSw = Stopwatch()..start();
+
     receivePort.listen((message) {
+      var idleTime = idleSw.elapsed;
+      idleSw.reset();
+
       if (message == null) {
         receivePort.close();
         return;
@@ -206,6 +242,9 @@ final class WorkerPool {
       var (requests, responseSendPort) =
           message as (List<_WorkerRequest>, SendPort);
       var responses = <WorkerResponse>[];
+
+      var readTime = Duration.zero;
+      var formatTime = Duration.zero;
 
       for (var request in requests) {
         var formatter = DartFormatter(
@@ -218,9 +257,16 @@ final class WorkerPool {
 
         try {
           var file = File(request.uri);
+
+          var readSw = Stopwatch()..start();
           var sourceText = file.readAsStringSync();
+          readTime += readSw.elapsed;
+
           var source = SourceCode(sourceText, uri: request.uri);
+
+          var formatSw = Stopwatch()..start();
           var output = formatter.formatSource(source);
+          formatTime += formatSw.elapsed;
 
           responses.add(
             WorkerResponse(
@@ -241,7 +287,12 @@ final class WorkerPool {
         }
       }
 
-      responseSendPort.send(responses);
+      responseSendPort.send((
+        responses,
+        (readTime: readTime, formatTime: formatTime, idleTime: idleTime),
+      ));
+
+      idleSw.start();
     });
   }
 }

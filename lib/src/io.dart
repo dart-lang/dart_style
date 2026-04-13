@@ -212,7 +212,8 @@ Future<bool> _processDirectory(
       },
     );
   }
-  await pool.close();
+  var telemetry = await pool.close();
+  options.summary.addTelemetry(telemetry);
   return success;
 }
 
