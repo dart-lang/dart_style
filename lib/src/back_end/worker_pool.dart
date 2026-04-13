@@ -90,11 +90,6 @@ final class WorkerPool {
   }) async {
     if (_isClosed) throw StateError('WorkerPool is closed');
 
-    if (_inMemoryCount >= maxBacklog) {
-      _throttleCompleter ??= Completer<void>();
-      await _throttleCompleter!.future;
-    }
-
     _inMemoryCount++;
 
     var request = _WorkerRequest(
@@ -108,11 +103,13 @@ final class WorkerPool {
 
     void wrappedCallback(WorkerResponse response) {
       _inMemoryCount--;
+
       if (_inMemoryCount < maxBacklog && _throttleCompleter != null) {
         var c = _throttleCompleter!;
         _throttleCompleter = null;
         c.complete();
       }
+
       onResult(response);
     }
 
@@ -120,6 +117,11 @@ final class WorkerPool {
 
     if (_pending.length >= _batchSize) {
       _flush();
+    }
+
+    if (_inMemoryCount >= maxBacklog) {
+      _throttleCompleter ??= Completer<void>();
+      return _throttleCompleter!.future;
     }
   }
 
