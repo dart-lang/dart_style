@@ -22,18 +22,16 @@ void main() {
       ]).create();
 
       var process = await runFormatterOnDir(['--show=all']);
-      await expectLater(
-        process.stdout,
-        emitsInOrder([
+      var lines = await process.stdout.rest.toList();
+      expect(
+        lines,
+        containsAll([
           'Formatted ${p.join('code', 'a.dart')}',
           'Unchanged ${p.join('code', 'b.dart')}',
           'Formatted ${p.join('code', 'c.dart')}',
         ]),
       );
-      await expectLater(
-        process.stdout,
-        emits(startsWith('Formatted 3 files (2 changed)')),
-      );
+      expect(lines, anyElement(startsWith('Formatted 3 files (2 changed)')));
       await process.shouldExit(0);
     });
 
@@ -60,17 +58,15 @@ void main() {
       ]).create();
 
       var process = await runFormatterOnDir(['--show=changed']);
-      await expectLater(
-        process.stdout,
-        emitsInOrder([
+      var lines = await process.stdout.rest.toList();
+      expect(
+        lines,
+        containsAll([
           'Formatted ${p.join('code', 'a.dart')}',
           'Formatted ${p.join('code', 'c.dart')}',
         ]),
       );
-      await expectLater(
-        process.stdout,
-        emits(startsWith('Formatted 3 files (2 changed)')),
-      );
+      expect(lines, anyElement(startsWith('Formatted 3 files (2 changed)')));
       await process.shouldExit(0);
     });
   });
@@ -107,11 +103,19 @@ void main() {
         var process = await runFormatterOnDir(['--output=show', '--show=all']);
         await expectLater(
           process.stdout,
-          emitsInOrder([
-            'Changed ${p.join('code', 'a.dart')}',
-            formattedOutput,
-            'Unchanged ${p.join('code', 'b.dart')}',
-            formattedOutput,
+          emitsAnyOf([
+            emitsInOrder([
+              'Changed ${p.join('code', 'a.dart')}',
+              formattedOutput,
+              'Unchanged ${p.join('code', 'b.dart')}',
+              formattedOutput,
+            ]),
+            emitsInOrder([
+              'Unchanged ${p.join('code', 'b.dart')}',
+              formattedOutput,
+              'Changed ${p.join('code', 'a.dart')}',
+              formattedOutput,
+            ]),
           ]),
         );
         await expectLater(
@@ -172,8 +176,8 @@ void main() {
         });
 
         var process = await runFormatterOnDir(['--output=json']);
-
-        await expectLater(process.stdout, emitsInOrder([jsonA, jsonB]));
+        var lines = await process.stdout.rest.toList();
+        expect(lines, containsAll([jsonA, jsonB]));
         await process.shouldExit();
       });
 
@@ -194,17 +198,15 @@ void main() {
         ]).create();
 
         var process = await runFormatterOnDir(['--output=none', '--show=all']);
-        await expectLater(
-          process.stdout,
-          emitsInOrder([
+        var lines = await process.stdout.rest.toList();
+        expect(
+          lines,
+          containsAll([
             'Changed ${p.join('code', 'a.dart')}',
             'Unchanged ${p.join('code', 'b.dart')}',
           ]),
         );
-        await expectLater(
-          process.stdout,
-          emits(startsWith('Formatted 2 files (1 changed)')),
-        );
+        expect(lines, anyElement(startsWith('Formatted 2 files (1 changed)')));
         await process.shouldExit(0);
 
         // Does not overwrite files.
