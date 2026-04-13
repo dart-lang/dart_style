@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'back_end/worker_pool.dart';
 import 'cli/formatter_options.dart';
 import 'config_cache.dart';
 import 'dart_formatter.dart';
@@ -147,6 +148,8 @@ Future<bool> _processDirectory(
   );
   entries.sort((a, b) => a.path.compareTo(b.path));
 
+  var pool = WorkerPool();
+
   for (var entry in entries) {
     if (entry is Link) continue;
 
@@ -156,16 +159,60 @@ Future<bool> _processDirectory(
     var parts = p.split(p.relative(entry.path, from: directory.path));
     if (parts.any((part) => part.startsWith('.'))) continue;
 
-    if (!await _processFile(
-      cache,
-      options,
-      entry,
-      displayPath: p.normalize(entry.path),
-    )) {
-      success = false;
-    }
-  }
+    var displayPath = p.normalize(entry.path);
 
+    // Determine configuration in main isolate (leveraging cache).
+    var languageVersion =
+        options.languageVersion ??
+        await cache.findLanguageVersion(entry, displayPath);
+    languageVersion ??= DartFormatter.latestLanguageVersion;
+
+    var pageWidth = options.pageWidth ?? await cache.findPageWidth(entry);
+    var trailingCommas =
+        options.trailingCommas ?? await cache.findTrailingCommas(entry);
+    pageWidth ??= DartFormatter.defaultPageWidth;
+
+    options.beforeFile(entry, displayPath);
+
+    await pool.add(
+      uri: entry.path,
+      languageVersion: languageVersion,
+      indent: options.indent,
+      pageWidth: pageWidth,
+      trailingCommas: trailingCommas,
+      experimentFlags: options.experimentFlags,
+      onResult: (response) {
+        if (response.error != null) {
+          if (response.isFormatterException) {
+            stderr.writeln(response.error);
+          } else {
+            stderr.writeln(
+              'Hit a bug in the formatter when formatting $displayPath.\n'
+              '${response.error}\n'
+              '${response.stackTrace}',
+            );
+          }
+          success = false;
+          return;
+        }
+
+        var output = SourceCode(
+          response.text!,
+          uri: entry.path,
+          selectionStart: response.selectionStart,
+          selectionLength: response.selectionLength,
+        );
+
+        options.afterFile(
+          entry,
+          displayPath,
+          output,
+          changed: response.changed,
+        );
+      },
+    );
+  }
+  await pool.close();
   return success;
 }
 

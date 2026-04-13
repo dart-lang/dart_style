@@ -1,3 +1,8 @@
+## 3.1.9-wip
+
+* Move directory formatting to a multi-threaded worker pool. File I/O and
+  UTF-8 decoding are now performed in parallel on worker isolates.
+
 ## 3.1.8
 
 ### Style changes
