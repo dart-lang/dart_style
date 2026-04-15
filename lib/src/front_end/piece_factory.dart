@@ -1475,6 +1475,10 @@ mixin PieceFactory {
   }
 
   /// Writes an assignment-like construct with a token on the left-hand side.
+  ///
+  /// This is used instead of [writeAssignment] when the left-hand side is a
+  /// [Token] (like the name of a named argument or record field) rather than
+  /// a full [AstNode].
   void writeTokenAssignment(
     Token leftHandSide,
     Token operator,
