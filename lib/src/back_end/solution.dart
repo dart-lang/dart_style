@@ -295,7 +295,9 @@ final class Solution implements Comparable<Solution> {
     return solutions;
   }
 
-  List<Piece> _pieces() {
+  /// All of the pieces that are bound to states in this solution or any of its
+  /// ancestors.
+  List<Piece> get _boundPieces {
     var pieces = <Piece>[];
     var node = _pieceStates;
     while (node != null) {
@@ -321,8 +323,8 @@ final class Solution implements Comparable<Solution> {
 
     // If all else is equal, prefer lower states in earlier bound pieces.
     // Since our linked list is in reverse order (newest first), we need to
-    // traverse it to get the pieces in insertion order.
-    var pieces = _pieces();
+    // reverse it to get the pieces in insertion order.
+    var pieces = _boundPieces;
 
     for (var piece in pieces.reversed) {
       var thisState = pieceState(piece);
@@ -335,7 +337,7 @@ final class Solution implements Comparable<Solution> {
 
   @override
   String toString() {
-    var pieces = _pieces();
+    var pieces = _boundPieces;
 
     var states = [
       for (var piece in pieces.reversed)
