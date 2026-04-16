@@ -325,16 +325,12 @@ final class CallChainVisitor {
     // If the argument list has a trailing comma, treat it like a collection.
     if (argument.hasCommaAfter) return false;
 
-    if (argument is NamedExpression) {
-      argument = argument.expression;
-    }
-
     // TODO(rnystrom): This logic is similar (but not identical) to
     // ArgumentListVisitor.hasBlockArguments. They overlap conceptually and
     // both have their own peculiar heuristics. It would be good to unify and
     // rationalize them.
 
-    return _forcesSplit(argument);
+    return _forcesSplit(argument.argumentExpression);
   }
 
   /// Called when a [_MethodSelector] has written its name and is about to
