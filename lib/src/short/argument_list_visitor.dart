@@ -555,7 +555,7 @@ final class ArgumentSublist {
         inNamed = true;
       } else if (inNamed) {
         // Got a positional argument after a named one.
-        return [<Argument>[], arguments];
+        return [[], arguments];
       }
 
       if (inNamed) {
