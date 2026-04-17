@@ -18,12 +18,12 @@ final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 
 /// Matches an output header line with an optional version and description.
 /// Examples:
-/// ```plaintext
-/// >>>
-/// >>> Only description.
-/// >>> 1.2
-/// >>> 1.2 Version and description.
-/// ```
+///
+///     <<<
+///     <<< Only description.
+///     <<< 1.2
+///     <<< 1.2 Version and description.
+///
 final _outputPattern = RegExp(r'<<<(?: (\d+)\.(\d+))?(.*)');
 
 /// Get the absolute local file path to the dart_style package's root directory.
@@ -32,12 +32,14 @@ Future<String> findPackageDirectory() async {
     Uri.parse('package:dart_style/src/testing/test_file.dart'),
   ))?.toFilePath();
 
+  if (libraryPath != null) {
+    // Assume path is `PACKAGE_DIR/lib/src/testing/test_file.dart`.
+    return p.normalize(p.dirname(p.dirname(p.dirname(p.dirname(libraryPath)))));
+  }
   // Fallback, if we can't resolve the package URI because we're running in an
   // AOT snapshot, just assume we're running from the root directory of the
   // package.
-  libraryPath ??= 'lib/src/testing/test_file.dart';
-
-  return p.normalize(p.join(p.dirname(libraryPath), '../../..'));
+  return p.current;
 }
 
 /// Get the absolute local file path to the package's "test" directory.
@@ -364,10 +366,10 @@ sealed class FormatTest {
     return 'line $line: ${input.description}';
   }
 
-  void writeTo(StringSink output) {
-    output.write('>>>');
-    options.writeTo(output, prefix: ' ');
-    input.writeTo(output);
+  void writeTo(StringSink target) {
+    target.write('>>>');
+    options.writeTo(target, prefix: ' ');
+    input.writeTo(target);
     // Outputs are written by subclasses.
   }
 }
@@ -382,10 +384,10 @@ final class UnversionedFormatTest extends FormatTest {
   UnversionedFormatTest(super.line, super.options, super.input, this.output);
 
   @override
-  void writeTo(StringSink output) {
-    super.writeTo(output);
-    output.write('<<<');
-    this.output.writeTo(output);
+  void writeTo(StringSink target) {
+    super.writeTo(target);
+    target.write('<<<');
+    output.writeTo(target);
   }
 }
 
@@ -407,15 +409,15 @@ final class VersionedFormatTest extends FormatTest {
   VersionedFormatTest(super.line, super.options, super.input, this.outputs);
 
   @override
-  void writeTo(StringSink output) {
-    super.writeTo(output);
+  void writeTo(StringSink target) {
+    super.writeTo(target);
     outputs.forEach((version, entry) {
-      output
+      target
         ..write('<<< ')
         ..write(version.major)
         ..write('.')
         ..write(version.minor);
-      entry.writeTo(output);
+      entry.writeTo(target);
     });
   }
 }
@@ -452,7 +454,8 @@ final class TestEntry {
       output.writeln(comment);
     }
     output.write(source);
-    if (!code.text.endsWith('\n')) output.writeln(); // Can that happen?
+    // TODO(rnystrom): Can that happen?
+    if (!code.text.endsWith('\n')) output.writeln();
   }
 }
 
@@ -474,7 +477,7 @@ final class TestOptions {
   ///
   /// Returns whether anything was written.
   bool writeTo(StringSink output, {String prefix = ''}) {
-    var change = false;
+    var wroteOutput = false;
     if (leadingIndent != null && leadingIndent != 0) {
       output
         ..write(prefix)
@@ -482,7 +485,7 @@ final class TestOptions {
         ..write(leadingIndent)
         ..write(')');
       prefix = '';
-      change = true;
+      wroteOutput = true;
     }
     for (var experiment in experimentFlags) {
       output
@@ -491,15 +494,15 @@ final class TestOptions {
         ..write(experiment)
         ..write(')');
       prefix = '';
-      change = true;
+      wroteOutput = true;
     }
     if (trailingCommas == TrailingCommas.preserve) {
       output
         ..write(prefix)
         ..write('(trailing_commas preserve)');
-      change = true;
+      wroteOutput = true;
     }
-    return change;
+    return wroteOutput;
   }
 }
 
@@ -526,9 +529,12 @@ SourceCode _parseTestSource(
   return _extractSelection(sourceText, isCompilationUnit: isCompilationUnit);
 }
 
+/// Extracts marked selection from source string.
+///
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
+///
 /// Only recognizes the first `‹...›` range.
 SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
   int? selectionStart;
@@ -553,11 +559,18 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
   );
 }
 
-/// Turn the special Unicode escape marker syntax used in the tests into real
-/// Unicode characters.
+/// Converts special Unicode escape markers to their corresponding code unit.
 ///
-/// This does not use Dart's own string escape sequences so that we don't
-/// accidentally modify the Dart code being formatted.
+/// The test source can contain special code-unit markers, to visually
+/// represent unprintable characters. This uses the non-ASCII `×` (U+0097)
+/// character followed by 2-4 hexadecimal digits.
+///
+/// The syntax is separate from Dart syntax to allow these code-point
+/// escapes to occur in a Dart program that contains Dart escapes like
+/// `\x97` in a string literal.
+///
+/// Unescaping these escapes replaces the `×` and following hex digits
+/// with the Unicode code point denoted by the hex numeral.
 String _unescapeUnicode(String input) =>
     input.replaceAllMapped(_unicodeUnescapePattern, (match) {
       var codePoint = int.parse(match[1]!, radix: 16);

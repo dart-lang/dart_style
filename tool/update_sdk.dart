@@ -30,12 +30,7 @@ import 'package:yaml/yaml.dart' as y;
 
 void main(List<String> args) {
   try {
-    var (
-      int verbose,
-      bool dryRun,
-      File? experimentsFile,
-      Version? targetVersion,
-    ) = _parseArguments(
+    var (verbose, dryRun, experimentsFile, targetVersion) = _parseArguments(
       args,
     );
     var stylePackageDir = _findStylePackageDir();
@@ -105,15 +100,13 @@ void main(List<String> args) {
       verbose: verbose,
       dryRun: dryRun,
     ).run();
-  } catch (e) {
+  } on ExitException catch (e) {
     // Flush output before actually exiting.
-    if (e case (:int exitCode)) {
-      stdout.flush().then((_) {
-        stderr.flush().then((_) {
-          io.exit(exitCode);
-        });
+    stdout.flush().then((_) {
+      stderr.flush().then((_) {
+        io.exit(e.exitCode);
       });
-    }
+    });
   }
 }
 
@@ -438,7 +431,6 @@ class Updater {
   File experimentsFile,
   Version? targetVersion,
 ) {
-  var result = <String, Version?>{};
   var yaml =
       y.loadYaml(
             experimentsFile.readAsStringSync(),
@@ -462,6 +454,7 @@ class Updater {
     );
   }
   var features = yaml['features'] as y.YamlMap;
+  var result = <String, Version?>{};
   for (var MapEntry(key: name as String, value: info as y.YamlMap)
       in features.entries) {
     Version? version;
@@ -600,7 +593,7 @@ Directory _findStylePackageDir() {
   var scriptParentDir = Directory(p.dirname(scriptDir));
   if (_isStylePackageDir(scriptParentDir)) return scriptParentDir;
   // Check ancestor directories of current directory,
-  // if run from, fx, inside `<pkgRoot>/tool/`.
+  // if run from, for example, inside `<pkgRoot>/tool/`.
   var cursor = p.absolute(cwd.path);
   while (true) {
     var parentPath = p.dirname(cursor);
@@ -738,6 +731,11 @@ PATH     Path to "experimental_features.yaml" or to an SDK repository containing
 
 /// Caught by [main] to flush output before actually exiting.
 Never exit(int value) {
-  // ignore: only_throw_errors
-  throw (exitCode: value);
+  throw ExitException(exitCode);
+}
+
+/// Thrown by [exit] and caught my [main] to ensure clean-up.
+class ExitException implements Exception {
+  final int exitCode;
+  ExitException(this.exitCode);
 }
