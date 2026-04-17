@@ -1,7 +1,16 @@
 ## 3.1.6-wip
 
-* Require `sdk: ^3.10.0`.
+### Style changes
+
+* When trailing commas are preserved, don't insert a newline before the `;` in
+  an enum with members unless there actually is a trailing comma.
+  (Fix by @Barbirosha.)
+
+### Internal changes
+
+* Support upcoming Dart language version 3.12.
 * Stop using experiment flags for features released in 3.10.
+* Require `sdk: ^3.10.0`.
 
 ## 3.1.5
 

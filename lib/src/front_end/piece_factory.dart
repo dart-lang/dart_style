@@ -1521,9 +1521,7 @@ mixin PieceFactory {
       }
 
       if (nativeClause != null) {
-        typeClause(nativeClause.nativeKeyword, [
-          if (nativeClause.name case var name?) name,
-        ]);
+        typeClause(nativeClause.nativeKeyword, [?nativeClause.name]);
       }
 
       if (clauses.isNotEmpty) {

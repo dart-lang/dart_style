@@ -233,6 +233,10 @@ class Updater {
 
   /// Updates the minium SDK constraint in `pubspec.yaml` to [targetVersion].
   ///
+  /// Assumes a standard `sdk: ^...` format for the SDK constraint,
+  /// and normal two-space indentation of the YAML file,
+  /// with nothing else on the line, including comments.
+  ///
   /// If the existing version is greater than the requested version, no change
   /// is needed.
   ///
@@ -271,7 +275,7 @@ class Updater {
           }
           if (newConstraint != existingVersion) {
             change = true;
-            return newConstraint.toString();
+            return _toCompatibleVersionString(newConstraint);
           }
         }
         unchangedVersion = existingVersion;
@@ -296,6 +300,28 @@ class Updater {
       stdout.writeln('Pubspec SDK version unchanged: $unchangedVersion');
     }
     return false;
+  }
+
+  /// Attempts to convert [version] to a `^M.m.p` constraint string.
+  ///
+  /// Recognizes if the [version] is a [VersionRange] that can be represented
+  /// as a compatible-constraint, and converts it to one first if needed.
+  /// Otherwise just uses the `.toString()`.
+  static String _toCompatibleVersionString(VersionConstraint version) {
+    var result = version.toString();
+    if (version case VersionRange(:var min, :var max)) {
+      // Can't check if it's a `CompatibleWithVersionRange` already,
+      // that type is private. Can check the `toString` output.
+      if (result.startsWith('^')) return result;
+      if (min != null &&
+          max != null &&
+          version.includeMin &&
+          !version.includeMax &&
+          max == min.nextBreaking.firstPreRelease) {
+        return VersionConstraint.compatibleWith(min).toString();
+      }
+    }
+    return result;
   }
 
   /// Finds and updates all tests in the `test/` directory.

@@ -25,6 +25,24 @@ enum E {e,;}
 enum E {
   e,
 }
+>>> No trailing comma with members keeps semicolon on same line.
+enum E { a, b, c; int x; }
+<<< 3.9
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
+<<< 3.10
+enum E {
+  a,
+  b,
+  c;
+
+  int x;
+}
 >>> Trailing comma with members.
 enum E { a, b, c,; int x; }
 <<< 3.9 Remove the trailing comma so the semicolon isn't on its own line.

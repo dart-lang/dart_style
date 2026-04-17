@@ -15,16 +15,16 @@ final _indentPattern = RegExp(r'\(indent (\d+)\)');
 final _experimentPattern = RegExp(r'\(experiment ([a-z-]+)\)');
 final _preserveTrailingCommasPattern = r'(trailing_commas preserve)';
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
-final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
 /// Matches an output header line with an optional version and description.
 /// Examples:
-///
-///    >>>
-///    >>> Only description.
-///    >>> 1.2
-///    >>> 1.2 Version and description.
-final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
+/// ```plaintext
+/// >>>
+/// >>> Only description.
+/// >>> 1.2
+/// >>> 1.2 Version and description.
+/// ```
+final _outputPattern = RegExp(r'<<<(?: (\d+)\.(\d+))?(.*)');
 
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
@@ -90,8 +90,8 @@ final class TestFile {
     // The first line may have a "|" to indicate the page width.
     var i = 0;
     int? pageWidth;
-    if (lines[i].endsWith('|')) {
-      pageWidth = lines[i].indexOf('|');
+    if (lines[i] case var firstLine when firstLine.endsWith('|')) {
+      pageWidth = firstLine.length - 1;
       i++;
     }
 
@@ -131,13 +131,13 @@ final class TestFile {
       while (i < lines.length && !lines[i].startsWith('<<<')) {
         inputBuffer.writeln(readLine());
       }
-
-      var inputCode = _extractSelection(
-        _unescapeUnicode(inputBuffer.toString()),
+      var inputSource = inputBuffer.toString();
+      var inputCode = _parseTestSource(
+        inputSource,
         isCompilationUnit: isCompilationUnit,
       );
 
-      var input = TestEntry(description, inputComments, inputCode);
+      var input = TestEntry(description, inputComments, inputCode, inputSource);
 
       // Read the outputs. A single test should have outputs in one of two
       // forms:
@@ -160,12 +160,12 @@ final class TestFile {
       var versionedOutputs = <Version, TestEntry>{};
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
-        var outputDescription = match[4]!;
+        var outputDescription = match[3]!;
         Version? outputVersion;
-        if (match[1] != null) {
+        if (match[1] case var majorVersion?) {
           outputVersion = Version(
+            int.parse(majorVersion),
             int.parse(match[2]!),
-            int.parse(match[3]!),
             0,
           );
         }
@@ -189,8 +189,8 @@ final class TestFile {
           assert(outputText.endsWith('\n'));
           outputText = outputText.substring(0, outputText.length - 1);
         }
-        var outputCode = _extractSelection(
-          _unescapeUnicode(outputText),
+        var outputCode = _parseTestSource(
+          outputText,
           isCompilationUnit: isCompilationUnit,
         );
 
@@ -198,6 +198,7 @@ final class TestFile {
           outputDescription.trim(),
           outputComments,
           outputCode,
+          outputText,
         );
         if (outputVersion != null) {
           if (versionedOutputs.containsKey(outputVersion)) {
@@ -429,7 +430,12 @@ final class TestEntry {
 
   final SourceCode code;
 
-  TestEntry(this.description, this.comments, this.code);
+  /// Test file source text, including Unicode escapes and selection markers.
+  ///
+  /// Used when writing the test using [writeTo].
+  final String source;
+
+  TestEntry(this.description, this.comments, this.code, this.source);
 
   /// Writes description, comments and code.
   ///
@@ -445,7 +451,7 @@ final class TestEntry {
     for (var comment in comments) {
       output.writeln(comment);
     }
-    output.write(code.textWithSelectionMarkers);
+    output.write(source);
     if (!code.text.endsWith('\n')) output.writeln(); // Can that happen?
   }
 }
@@ -508,21 +514,42 @@ extension SourceCodeExtensions on SourceCode {
   }
 }
 
+/// Converts test source code to a [SourceCode].
+///
+/// Unescapes Unicode escapes (`×HH`, `×HHHH`) and extracts a selection from a
+/// `‹...›` range.
+SourceCode _parseTestSource(
+  String sourceText, {
+  bool isCompilationUnit = false,
+}) {
+  sourceText = _unescapeUnicode(sourceText);
+  return _extractSelection(sourceText, isCompilationUnit: isCompilationUnit);
+}
+
 /// Given a source string that contains ‹ and › to indicate a selection, returns
 /// a [SourceCode] with the text (with the selection markers removed) and the
 /// correct selection range.
+/// Only recognizes the first `‹...›` range.
 SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
+  int? selectionStart;
+  int? selectionLength;
   var start = source.indexOf('‹');
-  source = source.replaceAll('‹', '');
-
-  var end = source.indexOf('›');
-  source = source.replaceAll('›', '');
-
+  if (start >= 0) {
+    var end = source.indexOf('›', start + 1);
+    if (end >= 0) {
+      source =
+          '${source.substring(0, start)}'
+          '${source.substring(start + 1, end)}'
+          '${source.substring(end + 1)}';
+      selectionStart = start;
+      selectionLength = end - start - 1;
+    }
+  }
   return SourceCode(
     source,
     isCompilationUnit: isCompilationUnit,
-    selectionStart: start == -1 ? null : start,
-    selectionLength: end == -1 ? null : end - start,
+    selectionStart: selectionStart,
+    selectionLength: selectionLength,
   );
 }
 
@@ -531,16 +558,8 @@ SourceCode _extractSelection(String source, {bool isCompilationUnit = false}) {
 ///
 /// This does not use Dart's own string escape sequences so that we don't
 /// accidentally modify the Dart code being formatted.
-String _unescapeUnicode(String input) {
-  return input.replaceAllMapped(_unicodeUnescapePattern, (match) {
-    var codePoint = int.parse(match[1]!, radix: 16);
-    return String.fromCharCode(codePoint);
-  });
-}
-
-/// Turn the few Unicode characters used in tests back to their escape syntax.
-String escapeUnicode(String input) {
-  return input.replaceAllMapped(_unicodeEscapePattern, (match) {
-    return '×${match[0]!.codeUnitAt(0).toRadixString(16)}';
-  });
-}
+String _unescapeUnicode(String input) =>
+    input.replaceAllMapped(_unicodeUnescapePattern, (match) {
+      var codePoint = int.parse(match[1]!, radix: 16);
+      return String.fromCharCode(codePoint);
+    });

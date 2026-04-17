@@ -85,13 +85,14 @@ Future<AnalysisOptions> readAnalysisOptions(
           include = filePath;
         } else {
           throw PackageResolutionException(
-            'Failed to resolve package URI "$include" in include.',
+            'Failed to resolve package URI "$include" in include at '
+            '"$optionsPath".',
           );
         }
       } else {
         throw PackageResolutionException(
-          'Couldn\'t resolve package URI "$include" in include because '
-          'no package resolver was provided.',
+          'Couldn\'t resolve package URI "$include" in include at '
+          '"$optionsPath" because no package resolver was provided.',
         );
       }
     }
