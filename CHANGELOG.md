@@ -1,3 +1,7 @@
+## 3.1.9-wip
+
+* Fix bug where some collections or arguments might split unnecessarily (#1809).
+
 ## 3.1.8
 
 ### Style changes
