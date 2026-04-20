@@ -1,0 +1,24 @@
+>>>
+void main() {
+  test('------------------ my long test name ------------------', () async {
+    // My test code
+  }, testOn: 'vm');
+}
+<<<
+void main() {
+  test('------------------ my long test name ------------------', () async {
+    // My test code
+  }, testOn: 'vm');
+}
+>>>
+void main() {
+  test('------------------ my long test name ------------------', () async {
+    // My test code
+  }, testOn: 'vm && linux');
+}
+<<<
+void main() {
+  test('------------------ my long test name ------------------', () async {
+    // My test code
+  }, testOn: 'vm && linux');
+}
