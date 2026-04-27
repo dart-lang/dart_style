@@ -134,3 +134,20 @@ class TooLongClassName extends Another {}
 <<<
 class TooLongClassName
     extends Another {}
+>>> (experiment primary-constructors) Long primary constructor parameter list splits
+class LongClassName(final int veryLongParameterName, String anotherLongParameter) {}
+<<<
+class LongClassName(
+    final int veryLongParameterName,
+    String anotherLongParameter) {}
+>>> (experiment primary-constructors) Long const primary constructor splits
+class const LongClassName(final int veryLongParameterName, String anotherLongParameter);
+<<<
+class const LongClassName(
+    final int veryLongParameterName,
+    String anotherLongParameter);
+>>> (experiment primary-constructors) Primary constructor clauses split
+class C(int x, int y) extends LongBaseClass with Mixin {}
+<<<
+class C(int x, int y)
+    extends LongBaseClass with Mixin {}

@@ -29,3 +29,11 @@ mixin M<A, B> on C implements D {}
 base  mixin M {}
 <<<
 base mixin M {}
+>>> (experiment primary-constructors) Mixin with empty body
+mixin M;
+<<<
+mixin M;
+>>> (experiment primary-constructors) Mixin with comment before semicolon
+mixin M /* comment */ ;
+<<<
+mixin M /* comment */;

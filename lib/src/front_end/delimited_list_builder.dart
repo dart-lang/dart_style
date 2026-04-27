@@ -492,7 +492,7 @@ final class DelimitedListBuilder {
     if (candidateIndex == -1) return;
 
     // The block argument must be positional.
-    if (arguments[candidateIndex] is NamedExpression) return;
+    if (arguments[candidateIndex] is NamedArgument) return;
 
     // Only allow up to one trailing argument after the block argument. This
     // handles the common `tags` and `timeout` named arguments in `test()` and
@@ -514,7 +514,7 @@ final class DelimitedListBuilder {
     //     });
     if (candidateIndex == 1 &&
         arguments[1].blockFormatType == BlockFormat.function &&
-        arguments[0] is! NamedExpression) {
+        arguments[0] is! NamedArgument) {
       var firstArgumentFormatType = arguments[0].blockFormatType;
       if (firstArgumentFormatType
           case BlockFormat.unindentedAdjacentStrings ||

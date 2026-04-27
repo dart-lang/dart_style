@@ -578,13 +578,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
-  void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    // Visit the inner parameter. It will then access its parent to extract the
-    // default value.
-    pieces.visit(node.parameter);
-  }
-
-  @override
   void visitDoStatement(DoStatement node) {
     pieces.token(node.doKeyword);
     pieces.space();
@@ -772,7 +765,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitFieldFormalParameter(FieldFormalParameter node) {
-    if (node.parameters case var parameters?) {
+    if (node.functionTypedSuffix case var functionTypedSuffix?) {
       // A function-typed field formal like:
       //
       //     C(this.fn(parameter));
@@ -781,15 +774,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         fieldKeyword: node.thisKeyword,
         period: node.period,
         node.name,
-        node.typeParameters,
-        parameters,
-        node.question,
+        functionTypedSuffix.typeParameters,
+        functionTypedSuffix.formalParameters,
+        functionTypedSuffix.question,
         parameter: node,
       );
     } else {
       writeFormalParameter(
         node,
-        mutableKeyword: node.keyword,
+        mutableKeyword: node.constFinalOrVarKeyword,
         fieldKeyword: node.thisKeyword,
         period: node.period,
         node.type,
@@ -802,7 +795,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitFormalParameterList(FormalParameterList node) {
     // Find the first non-mandatory parameter (if there are any).
     var firstOptional = node.parameters.indexWhere(
-      (p) => p is DefaultFormalParameter,
+      (p) => p.isNamed || p.isOptionalPositional,
     );
 
     // If the parameter list is completely empty, write the brackets inline so
@@ -959,18 +952,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       pieces.visit(node.parameters);
       pieces.token(node.semicolon);
     });
-  }
-
-  @override
-  void visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    writeFunctionType(
-      parameter: node,
-      node.returnType,
-      node.name,
-      node.typeParameters,
-      node.parameters,
-      node.question,
-    );
   }
 
   @override
@@ -1290,8 +1271,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitLabel(Label node) {
-    pieces.visit(node.label);
+    pieces.token(node.name);
     pieces.token(node.colon);
+  }
+
+  @override
+  void visitLabelReference(LabelReference node) {
+    pieces.token(node.name);
   }
 
   @override
@@ -1490,11 +1476,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
-  void visitNamedExpression(NamedExpression node) {
-    writeAssignment(
-      node.name.label,
-      node.name.colon,
-      node.expression,
+  void visitNamedArgument(NamedArgument node) {
+    writeTokenAssignment(
+      node.name,
+      node.colon,
+      node.argumentExpression,
       rightHandSideContext: NodeContext.namedExpression,
     );
   }
@@ -1751,6 +1737,16 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
+  void visitRecordLiteralNamedField(RecordLiteralNamedField node) {
+    writeTokenAssignment(
+      node.name,
+      node.colon,
+      node.fieldExpression,
+      rightHandSideContext: NodeContext.namedExpression,
+    );
+  }
+
+  @override
   void visitRecordPattern(RecordPattern node) {
     writeRecord(node.leftParenthesis, node.fields, node.rightParenthesis);
   }
@@ -1872,13 +1868,24 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   }
 
   @override
-  void visitSimpleFormalParameter(SimpleFormalParameter node) {
-    writeFormalParameter(
-      node,
-      node.type,
-      node.name,
-      mutableKeyword: node.keyword,
-    );
+  void visitRegularFormalParameter(RegularFormalParameter node) {
+    if (node.functionTypedSuffix case var functionTypedSuffix?) {
+      writeFunctionType(
+        node.type,
+        node.name!,
+        functionTypedSuffix.typeParameters,
+        functionTypedSuffix.formalParameters,
+        functionTypedSuffix.question,
+        parameter: node,
+      );
+    } else {
+      writeFormalParameter(
+        node,
+        node.type,
+        node.name,
+        mutableKeyword: node.constFinalOrVarKeyword,
+      );
+    }
   }
 
   @override
@@ -1927,7 +1934,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitSuperFormalParameter(SuperFormalParameter node) {
-    if (node.parameters case var parameters?) {
+    if (node.functionTypedSuffix case var functionTypedSuffix?) {
       // A function-typed super parameter like:
       //
       //     C(super.fn(parameter));
@@ -1936,15 +1943,15 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         fieldKeyword: node.superKeyword,
         period: node.period,
         node.name,
-        node.typeParameters,
-        parameters,
-        node.question,
+        functionTypedSuffix.typeParameters,
+        functionTypedSuffix.formalParameters,
+        functionTypedSuffix.question,
         parameter: node,
       );
     } else {
       writeFormalParameter(
         node,
-        mutableKeyword: node.keyword,
+        mutableKeyword: node.constFinalOrVarKeyword,
         fieldKeyword: node.superKeyword,
         period: node.period,
         node.type,

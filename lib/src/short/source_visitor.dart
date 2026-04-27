@@ -174,7 +174,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
       //         "no extra"
       //         "indent";
       shouldNest = false;
-    } else if (parent is NamedExpression || parent is ExpressionFunctionBody) {
+    } else if (parent is NamedArgument || parent is ExpressionFunctionBody) {
       shouldNest = false;
     }
 
@@ -377,6 +377,59 @@ final class SourceVisitor extends ThrowingAstVisitor {
     }
 
     _visitBody(node.leftBracket, node.statements, node.rightBracket);
+  }
+
+  @override
+  void visitBlockClassBody(BlockClassBody node) {
+    _visitBody(node.leftBracket, node.members, node.rightBracket);
+  }
+
+  @override
+  void visitBlockEnumBody(BlockEnumBody node) {
+    _beginBody(node.leftBracket, space: true);
+
+    visitCommaSeparatedNodes(node.constants, between: splitOrTwoNewlines);
+
+    // If there is a trailing comma, always force the constants to split.
+    var trailingComma = node.constants.last.commaAfter;
+    if (trailingComma != null) {
+      builder.forceRules();
+    }
+
+    // The ";" after the constants, which may occur after a trailing comma.
+    var afterConstants = node.constants.last.endToken.next!;
+    Token? semicolon;
+    if (afterConstants.type == TokenType.SEMICOLON) {
+      semicolon = node.constants.last.endToken.next!;
+    } else if (trailingComma != null &&
+        trailingComma.next!.type == TokenType.SEMICOLON) {
+      semicolon = afterConstants.next!;
+    }
+
+    if (semicolon != null) {
+      // If there is both a trailing comma and a semicolon, move the semicolon
+      // to the next line. This doesn't look great but it's less bad than being
+      // next to the comma.
+      // TODO(rnystrom): If the formatter starts making non-whitespace changes
+      // like adding/removing trailing commas, then it should fix this too.
+      if (trailingComma != null) newline();
+
+      token(semicolon);
+
+      // Put a blank line between the constants and members.
+      if (node.members.isNotEmpty) twoNewlines();
+    }
+
+    _visitBodyContents(node.members);
+
+    _endBody(
+      node.rightBracket,
+      forceSplit:
+          semicolon != null ||
+          trailingComma != null ||
+          node.members.isNotEmpty ||
+          node.constants.containsLineComments(),
+    );
   }
 
   @override
@@ -599,17 +652,14 @@ final class SourceVisitor extends ThrowingAstVisitor {
     modifier(node.mixinKeyword);
     token(node.classKeyword);
     space();
-    token(node.namePart.typeName);
-    visit(node.namePart.typeParameters);
+    visit(node.namePart);
     visit(node.extendsClause);
     _visitClauses(node.withClause, node.implementsClause);
     visit(node.nativeClause, before: space);
-    space();
-
+    if (node.body is! EmptyClassBody) space();
     builder.unnest();
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+
+    visit(node.body);
   }
 
   @override
@@ -927,25 +977,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitDefaultFormalParameter(DefaultFormalParameter node) {
-    visit(node.parameter);
-    if (node.separator != null) {
-      builder.startSpan();
-      builder.nestExpression();
-
-      // The '=' separator is preceded by a space, ":" is not.
-      if (node.separator!.type == TokenType.EQ) space();
-      token(node.separator);
-
-      soloSplit(_assignmentCost(node.defaultValue!));
-      visit(node.defaultValue);
-
-      builder.unnest();
-      builder.endSpan();
-    }
-  }
-
-  @override
   void visitDoStatement(DoStatement node) {
     builder.nestExpression();
     token(node.doKeyword);
@@ -975,6 +1006,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
   @override
   void visitDoubleLiteral(DoubleLiteral node) {
     token(node.literal);
+  }
+
+  @override
+  void visitEmptyClassBody(EmptyClassBody node) {
+    token(node.semicolon);
+  }
+
+  @override
+  void visitEmptyEnumBody(EmptyEnumBody node) {
+    token(node.semicolon);
   }
 
   @override
@@ -1015,64 +1056,13 @@ final class SourceVisitor extends ThrowingAstVisitor {
     builder.nestExpression();
     token(node.enumKeyword);
     space();
-    token(node.namePart.typeName);
-    visit(node.namePart.typeParameters);
+    visit(node.namePart);
     _visitClauses(node.withClause, node.implementsClause);
-    space();
 
+    if (node.body is! EmptyEnumBody) space();
     builder.unnest();
 
-    // TODO(scheglov): support for EmptyEnumBody
-    var body = node.body as BlockEnumBody;
-    _beginBody(body.leftBracket, space: true);
-
-    visitCommaSeparatedNodes(body.constants, between: splitOrTwoNewlines);
-
-    // If there is a trailing comma, always force the constants to split.
-    var trailingComma = body.constants.last.commaAfter;
-    if (trailingComma != null) {
-      builder.forceRules();
-    }
-
-    // The ";" after the constants, which may occur after a trailing comma.
-    var afterConstants = body.constants.last.endToken.next!;
-    Token? semicolon;
-    if (afterConstants.type == TokenType.SEMICOLON) {
-      semicolon = body.constants.last.endToken.next!;
-    } else if (trailingComma != null &&
-        trailingComma.next!.type == TokenType.SEMICOLON) {
-      semicolon = afterConstants.next!;
-    }
-
-    if (semicolon != null) {
-      // If there is both a trailing comma and a semicolon, move the semicolon
-      // to the next line. This doesn't look great but it's less bad than being
-      // next to the comma.
-      // TODO(rnystrom): If the formatter starts making non-whitespace changes
-      // like adding/removing trailing commas, then it should fix this too.
-      if (trailingComma != null) newline();
-
-      token(semicolon);
-
-      // Put a blank line between the constants and members.
-      if (body.members.isNotEmpty) twoNewlines();
-    }
-
-    _visitBodyContents(body.members);
-
-    _endBody(
-      body.rightBracket,
-      forceSplit:
-          semicolon != null ||
-          trailingComma != null ||
-          body.members.isNotEmpty ||
-          // If there is a line comment after an enum constant, it won't
-          // automatically force the enum body to split since the rule for
-          // the constants is the hard rule used by the entire block and its
-          // hardening state doesn't actually change. Instead, look
-          // explicitly for a line comment here.
-          body.constants.containsLineComments(),
-    );
+    visit(node.body);
   }
 
   @override
@@ -1166,12 +1156,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
       space();
       visit(onClause.extendedType);
     }
-    space();
+    if (node.body is! EmptyClassBody) space();
     builder.unnest();
 
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    visit(node.body);
   }
 
   @override
@@ -1189,11 +1177,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    space();
+    if (node.body is! EmptyClassBody) space();
     builder.unnest();
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+
+    visit(node.body);
   }
 
   @override
@@ -1213,17 +1200,36 @@ final class SourceVisitor extends ThrowingAstVisitor {
   void visitFieldFormalParameter(FieldFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
-      token(node.keyword, after: space);
+      token(node.constFinalOrVarKeyword, after: space);
       visit(node.type);
       _separatorBetweenTypeAndVariable(node.type);
       token(node.thisKeyword);
       token(node.period);
       token(node.name);
-      visit(node.typeParameters);
-      visit(node.parameters);
-      token(node.question);
+      if (node.functionTypedSuffix case var functionTypedSuffix?) {
+        visit(functionTypedSuffix.typeParameters);
+        visit(functionTypedSuffix.formalParameters);
+        token(functionTypedSuffix.question);
+      }
       _endFormalParameter(node);
+      visit(node.defaultClause);
     });
+  }
+
+  @override
+  void visitFormalParameterDefaultClause(FormalParameterDefaultClause node) {
+    builder.startSpan();
+    builder.nestExpression();
+
+    // The '=' separator is preceded by a space, ":" is not.
+    if (node.separator.type == TokenType.EQ) space();
+    token(node.separator);
+
+    soloSplit(_assignmentCost(node.value));
+    visit(node.value);
+
+    builder.unnest();
+    builder.endSpan();
   }
 
   @override
@@ -1251,10 +1257,10 @@ final class SourceVisitor extends ThrowingAstVisitor {
     }
 
     var requiredParams = node.parameters
-        .where((param) => param is! DefaultFormalParameter)
+        .where((param) => !param.isNamed && !param.isOptionalPositional)
         .toList();
     var optionalParams = node.parameters
-        .whereType<DefaultFormalParameter>()
+        .where((param) => param.isNamed || param.isOptionalPositional)
         .toList();
 
     if (nestExpression) builder.nestExpression();
@@ -1578,18 +1584,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitFunctionTypedFormalParameter(FunctionTypedFormalParameter node) {
-    visitParameterMetadata(node.metadata, () {
-      modifier(node.requiredKeyword);
-      modifier(node.covariantKeyword);
-      visit(node.returnType, after: space);
-      // Try to keep the function's parameters with its name.
-      builder.startSpan();
-      token(node.name);
-      _visitParameterSignature(node.typeParameters, node.parameters);
-      token(node.question);
-      builder.endSpan();
-    });
+  void visitFunctionTypedFormalParameterSuffix(
+    FunctionTypedFormalParameterSuffix node,
+  ) {
+    _visitParameterSignature(node.typeParameters, node.formalParameters);
+    token(node.question);
   }
 
   @override
@@ -1939,8 +1938,13 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   @override
   void visitLabel(Label node) {
-    visit(node.label);
+    token(node.name);
     token(node.colon);
+  }
+
+  @override
+  void visitLabelReference(LabelReference node) {
+    token(node.name);
   }
 
   @override
@@ -2139,18 +2143,27 @@ final class SourceVisitor extends ThrowingAstVisitor {
     visit(node.implementsClause);
     builder.endRule();
 
-    space();
-
+    if (node.body is! EmptyClassBody) space();
     builder.unnest();
 
-    // TODO(scheglov): support for EmptyBody
-    var body = node.body as BlockClassBody;
-    _visitBody(body.leftBracket, body.members, body.rightBracket);
+    visit(node.body);
   }
 
   @override
-  void visitNamedExpression(NamedExpression node) {
-    visitNamedNode(node.name.label.token, node.name.colon, node.expression);
+  void visitNameWithTypeParameters(NameWithTypeParameters node) {
+    token(node.typeName);
+    visit(node.typeParameters);
+  }
+
+  @override
+  @override
+  void visitNamedArgument(NamedArgument node, [NamedRule? rule]) {
+    visitNamedNode(
+      node.name,
+      node.colon,
+      node.argumentExpression,
+      rule,
+    );
   }
 
   @override
@@ -2430,6 +2443,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
+  void visitRecordLiteralNamedField(RecordLiteralNamedField node) {
+    visitNamedNode(node.name, node.colon, node.fieldExpression);
+  }
+
+  @override
   void visitRecordPattern(RecordPattern node) {
     _visitCollectionLiteral(
       node.leftParenthesis,
@@ -2592,17 +2610,34 @@ final class SourceVisitor extends ThrowingAstVisitor {
   }
 
   @override
-  void visitSimpleFormalParameter(SimpleFormalParameter node) {
+  void visitRegularFormalParameter(RegularFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
-      _beginFormalParameter(node);
+      if (node.functionTypedSuffix case var functionTypedSuffix?) {
+        modifier(node.requiredKeyword);
+        modifier(node.covariantKeyword);
+        visit(node.type, after: space);
+        // Try to keep the function's parameters with its name.
+        builder.startSpan();
+        token(node.name);
+        _visitParameterSignature(
+          functionTypedSuffix.typeParameters,
+          functionTypedSuffix.formalParameters,
+        );
+        token(functionTypedSuffix.question);
+        builder.endSpan();
+        visit(node.defaultClause);
+      } else {
+        _beginFormalParameter(node);
 
-      modifier(node.keyword);
+        modifier(node.constFinalOrVarKeyword);
 
-      visit(node.type);
-      if (node.name != null) _separatorBetweenTypeAndVariable(node.type);
-      token(node.name);
+        visit(node.type);
+        if (node.name != null) _separatorBetweenTypeAndVariable(node.type);
+        token(node.name);
 
-      _endFormalParameter(node);
+        _endFormalParameter(node);
+        visit(node.defaultClause);
+      }
     });
   }
 
@@ -2650,15 +2685,18 @@ final class SourceVisitor extends ThrowingAstVisitor {
   void visitSuperFormalParameter(SuperFormalParameter node) {
     visitParameterMetadata(node.metadata, () {
       _beginFormalParameter(node);
-      token(node.keyword, after: space);
+      token(node.constFinalOrVarKeyword, after: space);
       visit(node.type, after: split);
       token(node.superKeyword);
       token(node.period);
       token(node.name);
-      visit(node.typeParameters);
-      visit(node.parameters);
-      token(node.question);
+      if (node.functionTypedSuffix case var functionTypedSuffix?) {
+        visit(functionTypedSuffix.typeParameters);
+        visit(functionTypedSuffix.formalParameters);
+        token(functionTypedSuffix.question);
+      }
       _endFormalParameter(node);
+      visit(node.defaultClause);
     });
   }
 
@@ -3108,15 +3146,6 @@ final class SourceVisitor extends ThrowingAstVisitor {
   /// the surrounding named argument rule. That way, this can ensure that a
   /// split between the name and argument forces the argument list to split
   /// too.
-  void visitNamedArgument(NamedExpression node, [NamedRule? rule]) {
-    visitNamedNode(
-      node.name.label.token,
-      node.name.colon,
-      node.expression,
-      rule,
-    );
-  }
-
   /// Visits syntax of the form `identifier: <node>`: a named argument or a
   /// named record field.
   void visitNamedNode(
@@ -3646,14 +3675,16 @@ final class SourceVisitor extends ThrowingAstVisitor {
     // there are any).
     FormalParameter? lastRequired;
     for (var i = 0; i < parameters.parameters.length; i++) {
-      if (parameters.parameters[i] is DefaultFormalParameter) {
+      if (parameters.parameters[i].isNamed ||
+          parameters.parameters[i].isOptionalPositional) {
         if (i > 0) lastRequired = parameters.parameters[i - 1];
         break;
       }
     }
 
     // If all parameters are optional, put the "[" or "{" right after "(".
-    if (parameters.parameters.first is DefaultFormalParameter) {
+    if (parameters.parameters.first.isNamed ||
+        parameters.parameters.first.isOptionalPositional) {
       token(parameters.leftDelimiter);
     }
 

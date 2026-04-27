@@ -4,7 +4,6 @@
 
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/debug.dart' as debug;
-import 'package:dart_style/src/testing/test_file.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 void main(List<String> args) {
@@ -27,8 +26,6 @@ void main(List<String> args) {
   _formatUnit('''
   class C {}
   ''');
-
-  _runTest('other/selection.stmt', 2);
 }
 
 void _formatStmt(
@@ -94,46 +91,4 @@ void _runFormatter(
 void _drawRuler(String label, int width) {
   var padding = ' ' * (width - label.length - 1);
   print('$label:$padding|');
-}
-
-/// Runs the formatter test starting on [line] at [path] inside the "test"
-/// directory.
-Future<void> _runTest(
-  String path,
-  int line, {
-  int pageWidth = 40,
-  bool tall = true,
-}) async {
-  var testFile = await TestFile.read('${tall ? 'tall' : 'short'}/$path');
-  var formatTest = testFile.tests.firstWhere((test) => test.line == line);
-  var formatter = testFile.formatterForTest(formatTest);
-
-  var actual = formatter.formatSource(formatTest.input.code);
-
-  // The test files always put a newline at the end of the expectation.
-  // Statements from the formatter (correctly) don't have that, so add
-  // one to line up with the expected result.
-  var actualText = actual.textWithSelectionMarkers;
-  if (!testFile.isCompilationUnit) actualText += '\n';
-
-  var output = switch (formatTest) {
-    UnversionedFormatTest(:var output) => output,
-    // Used the newest style for the expectation.
-    VersionedFormatTest(:var outputs) => outputs.values.last,
-  };
-  var expectedText = output.code.textWithSelectionMarkers;
-
-  print('$path ${formatTest.input.description}');
-  _drawRuler('before', pageWidth);
-  print(formatTest.input.code.textWithSelectionMarkers);
-  if (actualText == expectedText) {
-    _drawRuler('result', pageWidth);
-    print(actualText);
-  } else {
-    print('FAIL');
-    _drawRuler('expected', pageWidth);
-    print(expectedText);
-    _drawRuler('actual', pageWidth);
-    print(actualText);
-  }
 }

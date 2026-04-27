@@ -127,7 +127,7 @@ mixin PieceFactory {
   /// Writes a [ListPiece] for an argument list.
   void writeArguments(
     Token leftBracket,
-    List<Expression> arguments,
+    List<Argument> arguments,
     Token rightBracket,
   ) {
     // In 3.7, we don't support preserving trailing commas or eager splitting.
@@ -244,7 +244,7 @@ mixin PieceFactory {
   }
 
   /// Writes a piece for a `break` or `continue` statement.
-  void writeBreak(Token keyword, SimpleIdentifier? label, Token semicolon) {
+  void writeBreak(Token keyword, LabelReference? label, Token semicolon) {
     pieces.token(keyword);
     pieces.visit(label, spaceBefore: true);
     pieces.token(semicolon);
@@ -655,14 +655,9 @@ mixin PieceFactory {
     Token? fieldKeyword,
     Token? period,
   }) {
-    // If the parameter has a default value, the parameter node will be wrapped
-    // in a DefaultFormalParameter node containing the default.
     (Token separator, Expression value)? defaultValueRecord;
-    if (node.parent case DefaultFormalParameter(
-      :var separator?,
-      :var defaultValue?,
-    )) {
-      defaultValueRecord = (separator, defaultValue);
+    if (node.defaultClause case var defaultClause?) {
+      defaultValueRecord = (defaultClause.separator, defaultClause.value);
     }
 
     writeParameter(
@@ -830,7 +825,7 @@ mixin PieceFactory {
       var modifiers = [
         parameter?.requiredKeyword,
         parameter?.covariantKeyword,
-        if (parameter case FunctionTypedFormalParameter(:var keyword)) keyword,
+        parameter?.constFinalOrVarKeyword,
       ];
 
       void write() {
@@ -850,18 +845,15 @@ mixin PieceFactory {
         pieces.token(question);
       }
 
-      // If the type is a function-typed parameter with a default value, then
-      // grab the default value from the parent node and attach it to the
-      // function.
-      if (parameter?.parent case DefaultFormalParameter(
-        :var separator?,
-        :var defaultValue?,
-      )) {
+      if (parameter?.defaultClause case var defaultClause?) {
         var function = pieces.build(() {
           writeFunctionAndReturnType(modifiers, returnType, write);
         });
 
-        writeDefaultValue(function, (separator, defaultValue));
+        writeDefaultValue(function, (
+          defaultClause.separator,
+          defaultClause.value,
+        ));
       } else {
         writeFunctionAndReturnType(modifiers, returnType, write);
       }
@@ -1383,7 +1375,7 @@ mixin PieceFactory {
       //       ;
       //     }
       [PatternField(name: _?)] => const ListStyle(commas: Commas.trailing),
-      [NamedExpression()] => const ListStyle(commas: Commas.trailing),
+      [RecordLiteralNamedField()] => const ListStyle(commas: Commas.trailing),
 
       // Record types or patterns with a single positional field always have a
       // trailing comma to disambiguate from parenthesized expressions or
@@ -1469,6 +1461,62 @@ mixin PieceFactory {
 
     var leftPiece = pieces.build(() {
       pieces.visit(leftHandSide, context: leftHandSideContext);
+      if (operator.type != TokenType.COLON) pieces.space();
+      pieces.token(operator);
+    });
+
+    var rightPiece = nodePiece(
+      rightHandSide,
+      commaAfter: includeComma,
+      context: rightHandSideContext,
+    );
+
+    pieces.add(AssignPiece(leftPiece, rightPiece));
+  }
+
+  /// Writes an assignment-like construct with a token on the left-hand side.
+  ///
+  /// This is used instead of [writeAssignment] when the left-hand side is a
+  /// [Token] (like the name of a named argument or record field) rather than
+  /// a full [AstNode].
+  void writeTokenAssignment(
+    Token leftHandSide,
+    Token operator,
+    AstNode rightHandSide, {
+    bool includeComma = false,
+    NodeContext rightHandSideContext = NodeContext.none,
+  }) {
+    if (style.is3Dot7) {
+      var canBlockSplitRight = switch (rightHandSide) {
+        Expression() => rightHandSide.canBlockSplit,
+        DartPattern() => rightHandSide.canBlockSplit,
+        _ => false,
+      };
+
+      var operatorPiece = pieces.build(() {
+        if (operator.type != TokenType.COLON) pieces.space();
+        pieces.token(operator);
+      });
+
+      var rightPiece = nodePiece(
+        rightHandSide,
+        commaAfter: includeComma,
+        context: NodeContext.assignment,
+      );
+
+      pieces.add(
+        AssignPiece3Dot7(
+          operatorPiece,
+          rightPiece,
+          left: tokenPiece(leftHandSide),
+          canBlockSplitRight: canBlockSplitRight,
+        ),
+      );
+      return;
+    }
+
+    var leftPiece = pieces.build(() {
+      pieces.token(leftHandSide);
       if (operator.type != TokenType.COLON) pieces.space();
       pieces.token(operator);
     });

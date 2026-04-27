@@ -179,3 +179,11 @@ extension type const A<T>.name(int a) {
   int me(int x) => x;
   int operator +(int x) => x;
 }
+>>> (experiment primary-constructors) Extension type with empty body
+extension type E(int x);
+<<<
+extension type E(int x);
+>>> (experiment primary-constructors) Extension type with comment before semicolon
+extension type E(int x) /* comment */ ;
+<<<
+extension type E(int x) /* comment */;
