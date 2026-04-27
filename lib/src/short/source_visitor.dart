@@ -2158,12 +2158,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
   @override
   @override
   void visitNamedArgument(NamedArgument node, [NamedRule? rule]) {
-    visitNamedNode(
-      node.name,
-      node.colon,
-      node.argumentExpression,
-      rule,
-    );
+    visitNamedNode(node.name, node.colon, node.argumentExpression, rule);
   }
 
   @override
