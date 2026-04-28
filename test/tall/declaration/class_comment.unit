@@ -93,3 +93,15 @@ class C // Comment.
 <<< 3.13
 class C // Comment.
 ;
+>>> Don't force a blank line after a member and comment at the end.
+class C {
+  a() {;}
+  // comment
+}
+<<<
+class C {
+  a() {
+    ;
+  }
+  // comment
+}
