@@ -126,23 +126,6 @@ final class SequenceBuilder {
     indent ??= Indent.none;
 
     var comments = _visitor.comments.takeCommentsBefore(token);
-
-    // Edge case: if we require a blank line, but there exists one between
-    // some of the comments, or after the last one, then we don't need to
-    // enforce one before the first comment. Example:
-    //
-    //     library foo;
-    //     // comment
-    //
-    //     class Bar {}
-    //
-    // Normally, a blank line is required after `library`, but since there is
-    // one after the comment, we don't need one before it. This is mainly so
-    // that commented out directives stick with their preceding group.
-    if (comments.containsBlank && _elements.isNotEmpty) {
-      _elements.last.blankAfter = false;
-    }
-
     for (var i = 0; i < comments.length; i++) {
       var comment = _visitor.pieces.commentPiece(comments[i]);
 

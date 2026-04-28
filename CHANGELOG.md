@@ -1,6 +1,58 @@
-## 3.1.9-wip
+## 3.1.10-wip
+
+### Bug fixes
 
 * Fix bug where some collections or arguments might split unnecessarily (#1809).
+
+### Style changes
+
+* Don't add a blank line before a comment at the end of a compilation unit or
+  braced body (#1644).
+
+  In rare cases where you have a declaration with a braced body at the end of a
+  block or file and there is a comment immediately after it, the formatter would
+  place a blank line before the comment. It wouldn't do that if there was any
+  other code after the comment.
+
+  For example, prior to this change, if you ran the formatter on:
+
+  ```dart
+  main() {
+    a() {
+      ;
+    }
+    // Comment 1.
+
+    b() {
+      ;
+    }
+    // Comment 2.
+  }
+  ```
+
+  It would produce:
+
+  ```dart
+  main() {
+    a() {
+      ;
+    }
+    // Comment 1.
+
+    b() {
+      ;
+    }
+
+    // Comment 2.
+  }
+  ```
+
+  Note how a blank line was added above `// Comment 2.` but not `// Comment 1.`.
+  Now, it won't add a blank line before the last comment.
+
+## 3.1.9
+
+* Require `analyzer: ^13.0.0`.
 
 ## 3.1.8
 

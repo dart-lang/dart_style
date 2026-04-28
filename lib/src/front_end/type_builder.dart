@@ -267,12 +267,15 @@ final class TypeBuilder {
     // Insert a blank line between the constants and members.
     builder.addBlank();
 
+    var needsBlank = false;
     for (var member in body.members) {
+      if (needsBlank) builder.addBlank();
+
       builder.visit(member);
 
       // If the node has a non-empty braced body, then require a blank
       // line between it and the next node.
-      if (member.hasNonEmptyBody) builder.addBlank();
+      needsBlank = member.hasNonEmptyBody;
     }
 
     builder.rightBracket(body.rightBracket);
