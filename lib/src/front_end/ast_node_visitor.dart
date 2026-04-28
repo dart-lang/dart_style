@@ -109,8 +109,6 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
       var needsBlank = false;
       for (var declaration in node.declarations) {
-        if (needsBlank) sequence.addBlank();
-
         // "Type" declarations that have braced bodies are surrounded by blank
         // lines.
         var addBlankLines = switch (declaration) {
@@ -126,8 +124,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           _ => false,
         };
 
-        // Add a blank line before types with bodies.
-        if (addBlankLines) sequence.addBlank();
+        // Add a blank line before and after types with bodies.
+        if (needsBlank || addBlankLines) sequence.addBlank();
 
         sequence.visit(declaration);
 
