@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/dart_version_history.dart';
 import 'package:dart_style/src/testing/benchmark.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
@@ -24,16 +25,6 @@ const formattedOutput = 'void main() => print("hello");';
 /// If `bin/format.dart` has been compiled to a snapshot, this is the path to
 /// it.
 String? _formatterPath;
-
-/// All of the supported tall style versions that we run the tests against.
-final List<Version> _testedTallVersions = [
-  for (
-    var version = DartFormatter.latestShortStyleLanguageVersion.nextMinor;
-    version <= DartFormatter.latestLanguageVersion;
-    version = version.nextMinor
-  )
-    version,
-];
 
 /// Compiles `bin/format.dart` to a native executable for tests to use.
 ///
@@ -146,31 +137,55 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
-      Map<Version, TestEntry> testedVersions;
-      if (testFile.isTall) {
-        testedVersions = switch (formatTest) {
-          // This output is unversioned, so test at the lowest and highest
-          // supported versions. If it formats the same on those, we assume
-          // it does for all of the intermediate versions too.
-          UnversionedFormatTest(:var output) => {
-            _testedTallVersions.first: output,
-            _testedTallVersions.last: output,
-          },
-          VersionedFormatTest(:var outputs) => _versionedTestEntries(outputs),
-        };
-      } else {
-        testedVersions = switch (formatTest) {
-          UnversionedFormatTest(:var output) => {
-            DartFormatter.latestShortStyleLanguageVersion: output,
-          },
-          // There is only one versioned short style test, for the legacy
-          // switch syntax. If the test is versioned, only run it on those
-          // versions and not anything later.
-          VersionedFormatTest(:var outputs) => outputs,
-        };
+      // Figure out what versions have specified output. We use different logic
+      // for tall and short tests. For tall tests, if the output doesn't specify
+      // versions, we treat the one output as starting at the earliest tall
+      // style. That way we cover the whole range of tall versions.
+      //
+      // The short tests are older than the formatter supporting language
+      // versioning so don't specify output versions. But they also cover a wide
+      // range of language versions where new syntax was added (control flow
+      // collections, super parameters, etc.). To avoid going back and adding
+      // version markers to all of the tests that test new-ish syntax, we just
+      // run the short tests on the *latest* language version that has short
+      // style. Since the short formatting is basically legacy code that isn't
+      // changed much, this isn't particularly risky.
+      //
+      // The exception is the one short test for 2.19 switch cases that has an
+      // unsupported version. That version is earlier than the latest short
+      // style, so for tests like that, we use the preceding version as the
+      // tested version.
+      var outputs = switch (formatTest) {
+        // An unversioned tall test starts at the earliest tall style.
+        UnversionedFormatTest(:var output) when testFile.isTall => {
+          DartVersionHistory.earliestTallStyle: output,
+        },
+
+        // An unversioned short test with an unsupported version tests the one
+        // version right before that.
+        UnversionedFormatTest(:var output, :var unsupportedVersion?) => {
+          DartVersionHistory.before(unsupportedVersion): output,
+        },
+
+        // Otherwise a short test uses the latest short version.
+        UnversionedFormatTest(:var output) => {
+          DartVersionHistory.latestShortStyle: output,
+        },
+
+        // Versioned tests use the specified versions.
+        VersionedFormatTest(:var outputs) => outputs,
+      };
+
+      // Find the upper end of the range of versions to test.
+      var upperBound = testFile.isTall
+          ? DartVersionHistory.latest
+          : DartVersionHistory.latestShortStyle;
+
+      if (formatTest.unsupportedVersion case var unsupported?) {
+        upperBound = DartVersionHistory.before(unsupported);
       }
 
-      testedVersions.forEach((version, output) {
+      _versionedTestEntries(outputs, upperBound).forEach((version, output) {
         _runTestAtVersion(testFile, formatTest, output, version);
       });
     }
@@ -193,7 +208,7 @@ void _testFile(TestFile testFile) {
 ///
 /// For example, say the supported versions are:
 ///
-///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15  3.16
 ///
 /// And say that a test has specified outputs like:
 ///
@@ -205,24 +220,29 @@ void _testFile(TestFile testFile) {
 ///     B
 ///     >>> 3.13 another style tweak
 ///     C
+///     >>> 3.15 (unsupported)
 ///
 /// The test is stating that formatting at each version should produce these
 /// outputs:
 ///
-///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
-///          A    A    A     B     C     C     C     C
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14
+///          A    A    A     B     C     C     C
 ///
 /// We run the tests at these versions:
 ///
-///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14  3.15
-///          A         A     B     C                 C
+///     3.7  3.8  3.9  3.10  3.11  3.12  3.13  3.14
+///          A         A     B     C           C
 ///
 /// We skip 3.7 because it's below the lowest supported version. (Presumably
-/// this test is for some syntax added in 3.8.) We skip 3.9, 3.13, and 3.14
-/// because they are in the middle of a range of supported versions that all
-/// expect the same output.
-Map<Version, TestEntry> _versionedTestEntries(Map<Version, TestEntry> outputs) {
-  var outputVersions = outputs.keys.toList()..sort();
+/// this test is for some syntax added in 3.8.) We skip 3.9 and 3.13 because
+/// they are in the middle of a range of supported versions that all expect the
+/// same output. We skip 3.15 and 3.16 because those are at or above the
+/// unsupported version.
+Map<Version, TestEntry> _versionedTestEntries(
+  Map<Version, TestEntry> expectedOutputs,
+  Version upperBound,
+) {
+  var outputVersions = expectedOutputs.keys.toList()..sort();
   var testedVersions = <Version, TestEntry>{};
 
   // For each output, test the language version at each end of the range it
@@ -230,19 +250,21 @@ Map<Version, TestEntry> _versionedTestEntries(Map<Version, TestEntry> outputs) {
   for (var i = 0; i < outputVersions.length; i++) {
     // The output specifies the low end of its range.
     var version = outputVersions[i];
-    testedVersions[version] = outputs[version]!;
+    testedVersions[version] = expectedOutputs[version]!;
 
-    // Find the high end of the range.
+    // Find the version at the high end of the range.
+    Version rangeEnd;
     if (i < outputVersions.length - 1) {
       // The end of this version's range is one version lower than the next
       // output's version.
-      var nextVersionIndex = _testedTallVersions.indexOf(outputVersions[i + 1]);
-      var rangeEnd = _testedTallVersions[nextVersionIndex - 1];
-      testedVersions[rangeEnd] = outputs[version]!;
+      rangeEnd = DartVersionHistory.before(outputVersions[i + 1]);
     } else {
-      // The end of this version's range is the highest supported version.
-      testedVersions[_testedTallVersions.last] = outputs[version]!;
+      // This is the last specified version, so it's range goes up to the
+      // upper bound.
+      rangeEnd = upperBound;
     }
+
+    testedVersions[rangeEnd] = expectedOutputs[version]!;
   }
 
   return testedVersions;
@@ -254,8 +276,7 @@ void _runTestAtVersion(
   TestEntry output,
   Version version,
 ) {
-  var description =
-      'line ${formatTest.line} at ${version.major}.${version.minor}';
+  var description = 'line ${formatTest.line} at ${version.majorMinor}';
   if (formatTest.input.description.isNotEmpty) {
     description += ': ${formatTest.input.description}';
   }
@@ -327,7 +348,7 @@ d.DirectoryDescriptor packageConfig(
   Map<String, String>? packages,
 }) {
   var defaultVersion = DartFormatter.latestLanguageVersion;
-  version ??= '${defaultVersion.major}.${defaultVersion.minor}';
+  version ??= defaultVersion.majorMinor;
 
   Map<String, dynamic> package(String name, String rootUri) => {
     'name': name,

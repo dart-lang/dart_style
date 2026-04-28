@@ -8,6 +8,7 @@ import 'package:args/command_runner.dart';
 import 'package:pub_semver/pub_semver.dart';
 
 import '../dart_formatter.dart';
+import '../dart_version_history.dart';
 import '../io.dart';
 import 'formatter_options.dart';
 import 'output.dart';
@@ -179,7 +180,15 @@ final class FormatCommand extends Command<int> {
     var argResults = this.argResults!;
 
     if (argResults.flag('version')) {
-      print(dartStyleVersion);
+      if (argResults.flag('verbose')) {
+        print(
+          'dart_style $dartStyleVersion supporting Dart language versions '
+          '${DartVersionHistory.earliest.majorMinor} through '
+          '${DartVersionHistory.latest.majorMinor}',
+        );
+      } else {
+        print(dartStyleVersion);
+      }
       return 0;
     }
 

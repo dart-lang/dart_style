@@ -1,5 +1,7 @@
 ## 3.1.10-wip
 
+* Show the supported language versions in `dart format --version --verbose`.
+
 ### Bug fixes
 
 * Fix bug where some collections or arguments might split unnecessarily (#1809).
