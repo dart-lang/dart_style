@@ -246,10 +246,7 @@ final class TestFile {
         case (> 1, 0):
           fail('Test can\'t have multiple unversioned outputs.');
         default:
-          fail(
-            'Test can\'t have both versioned and unversioned outputs. '
-            '$unversionedOutputs $versionedOutputs',
-          );
+          fail('Test can\'t have both versioned and unversioned outputs.');
       }
     }
 
