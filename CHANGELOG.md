@@ -1,5 +1,9 @@
 ## 3.1.10-wip
 
+### Bug fixes
+
+* Fix bug where some collections or arguments might split unnecessarily (#1809).
+
 ### Style changes
 
 * Don't add a blank line before a comment at the end of a compilation unit or
