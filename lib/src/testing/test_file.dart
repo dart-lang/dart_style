@@ -247,7 +247,8 @@ final class TestFile {
           fail('Test can\'t have multiple unversioned outputs.');
         default:
           fail(
-            'Test can\'t have both versioned and unversioned outputs. $unversionedOutputs $versionedOutputs',
+            'Test can\'t have both versioned and unversioned outputs. '
+            '$unversionedOutputs $versionedOutputs',
           );
       }
     }
