@@ -147,3 +147,23 @@ var b = 2;
 // comment
 
 var c = 3;
+>>> A newline inside comments counts for the required blank.
+import 'dart:io';
+// import 'dart:math';
+
+// comment
+part 'x.dart';
+<<<
+import 'dart:io';
+// import 'dart:math';
+
+// comment
+part 'x.dart';
+>>> Don't add a blank line before a trailing comment after a block declaration.
+main(){;}
+// comment
+<<<
+main() {
+  ;
+}
+// comment

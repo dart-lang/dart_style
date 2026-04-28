@@ -214,12 +214,15 @@ mixin PieceFactory {
     var sequence = SequenceBuilder(this);
     sequence.leftBracket(leftBracket);
 
+    var needsBlank = false;
     for (var node in contents) {
+      if (needsBlank) sequence.addBlank();
+
       sequence.visit(node);
 
       // If the node has a non-empty braced body, then require a blank line
       // between it and the next node.
-      if (node.hasNonEmptyBody) sequence.addBlank();
+      needsBlank = node.hasNonEmptyBody;
     }
 
     sequence.rightBracket(rightBracket);
