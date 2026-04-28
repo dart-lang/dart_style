@@ -52,3 +52,15 @@ main() {
   a() => null;
   b() => null;
 }
+>>> Don't force a blank line after a function and comment at the end of a block.
+{
+  a() {;}
+  // comment
+}
+<<<
+{
+  a() {
+    ;
+  }
+  // comment
+}

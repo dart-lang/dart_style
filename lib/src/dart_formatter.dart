@@ -14,6 +14,7 @@ import 'package:analyzer/source/timestamped_data.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
 
+import 'dart_version_history.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'front_end/formatting_style.dart';
@@ -35,14 +36,15 @@ final RegExp _widthCommentPattern = RegExp(r'^// dart format width=(\d+)$');
 final class DartFormatter {
   /// The latest Dart language version that can be parsed and formatted by this
   /// version of the formatter.
-  static final latestLanguageVersion = Version(3, 13, 0);
+  static final latestLanguageVersion = DartVersionHistory.latest;
 
   /// The latest Dart language version that will be formatted using the older
   /// "short" style.
   ///
   /// Any Dart code at a language version later than this will be formatted
   /// using the new "tall" style.
-  static final latestShortStyleLanguageVersion = Version(3, 6, 0);
+  static final latestShortStyleLanguageVersion =
+      DartVersionHistory.latestShortStyle;
 
   /// The page width that the formatter tries to fit code inside if no other
   /// width is specified.

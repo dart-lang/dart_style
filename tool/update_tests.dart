@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/dart_version_history.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
 import 'package:pub_semver/pub_semver.dart';
@@ -114,7 +115,13 @@ Future<void> _updateTestFile(TestFile testFile) async {
     var changed = false;
     switch (formatTest) {
       case UnversionedFormatTest(:var output):
-        changed = _writeOutput(buffer, testFile, formatTest, output);
+        changed = _writeOutput(
+          buffer,
+          testFile,
+          formatTest,
+          output,
+          unsupportedVersion: formatTest.unsupportedVersion,
+        );
       case VersionedFormatTest(:var outputs):
         // Order the outputs by version.
         var versions = outputs.keys.toList()..sort();
@@ -125,6 +132,7 @@ Future<void> _updateTestFile(TestFile testFile) async {
           outputs.keys.toList(),
         )) {
           print('Re-ordered outputs for ${testFile.path} ${formatTest.label}');
+          changed = true;
         }
 
         // Write the outputs at their versions.
@@ -137,6 +145,10 @@ Future<void> _updateTestFile(TestFile testFile) async {
             version: version,
           );
         }
+    }
+
+    if (formatTest.unsupportedVersion case var version?) {
+      buffer.writeln('<<< ${version.majorMinor} (unsupported)');
     }
 
     if (changed) {
@@ -175,25 +187,27 @@ bool _writeOutput(
   FormatTest formatTest,
   TestEntry output, {
   Version? version,
+  Version? unsupportedVersion,
 }) {
   var outputDescription = [
     // Include the version in the description if the output is versioned.
-    if (version != null) '${version.major}.${version.minor}',
+    if (version != null) version.majorMinor,
     output.description,
   ].join(' ');
 
   buffer.writeln('<<< $outputDescription'.trim());
   _writeComments(buffer, output.comments);
 
-  var defaultVersion = testFile.isTall
-      ? DartFormatter.latestLanguageVersion
-      : DartFormatter.latestShortStyleLanguageVersion;
+  var parseVersion = DartFormatter.latestLanguageVersion;
+  if (version != null) {
+    parseVersion = version;
+  } else if (unsupportedVersion != null) {
+    parseVersion = DartVersionHistory.before(unsupportedVersion);
+  } else if (!testFile.isTall) {
+    parseVersion = DartFormatter.latestShortStyleLanguageVersion;
+  }
 
-  var formatter = testFile.formatterForTest(
-    formatTest,
-    version ?? defaultVersion,
-  );
-
+  var formatter = testFile.formatterForTest(formatTest, parseVersion);
   var actual = formatter.formatSource(formatTest.input.code);
 
   buffer.write(actual.text);

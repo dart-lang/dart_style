@@ -107,6 +107,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       // Add a blank line between directives and declarations.
       sequence.addBlank();
 
+      var needsBlank = false;
       for (var declaration in node.declarations) {
         // "Type" declarations that have braced bodies are surrounded by blank
         // lines.
@@ -123,13 +124,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           _ => false,
         };
 
-        // Add a blank line before types with bodies.
-        if (addBlankLines) sequence.addBlank();
+        // Add a blank line before and after types with bodies.
+        if (needsBlank || addBlankLines) sequence.addBlank();
 
         sequence.visit(declaration);
 
         // Add a blank line after type or function declarations with bodies.
-        if (addBlankLines || declaration.hasNonEmptyBody) sequence.addBlank();
+        needsBlank = addBlankLines || declaration.hasNonEmptyBody;
       }
     } else {
       // Just formatting a single statement.

@@ -258,7 +258,7 @@ switch (obj) {
   case 1 is! int:
     body;
 }
-<<< 2.19
+<<<
 switch (obj) {
   case {1, 2}:
   case -pi:
@@ -289,6 +289,7 @@ switch (obj) {
   case 1 is! int:
     body;
 }
+<<< 3.0 (unsupported)
 >>> empty switch expression
 var x = switch(y) {};
 <<<
