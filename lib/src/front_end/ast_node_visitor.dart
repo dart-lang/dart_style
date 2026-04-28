@@ -838,7 +838,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         forceSplit: style.preserveTrailingCommaBefore(
           node.rightDelimiter ?? node.rightParenthesis,
         ),
-        blockShaped: node.parent is PrimaryConstructorDeclaration,
+        blockShaped: style.blockFormatParameterLists,
       ),
     );
   }

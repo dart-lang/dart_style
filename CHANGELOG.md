@@ -1,3 +1,53 @@
+## 3.1.10
+
+### Style changes
+
+* Support block-formatting parameter lists (#1693). The formatter supports
+  "block-formatting" for most bracket-delimited constructs in the language. This
+  is what enables a multi-line list literal in an assignment to look like this:
+
+  ```dart
+  variable = [
+    some,
+    list,
+    elements,
+  ];
+  ```
+
+  Instead of:
+
+  ```dart
+  variable =
+      [
+        some,
+        list,
+        elements,
+      ];
+  ```
+
+  This style applies to most language constructs, but function parameter lists
+  were omitted. Now they are not. This rarely shows up in real code, except for
+  typedefs for large function types:
+
+  ```dart
+  // Before:
+  typedef DataViewBuilder<T> =
+      Widget Function(
+        BuildContext context,
+        PagingState<int, T> state,
+        NextPageCallback fetchNextPage,
+      );
+
+  // After:
+  typedef DataViewBuilder<T> = Widget Function(
+    BuildContext context,
+    PagingState<int, T> state,
+    NextPageCallback fetchNextPage,
+  );
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
+
 ## 3.1.9
 
 * Require `analyzer: ^13.0.0`.

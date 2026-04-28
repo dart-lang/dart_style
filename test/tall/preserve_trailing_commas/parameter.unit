@@ -34,11 +34,15 @@ function(
 }) {}
 >>> Trailing comma in function expression parameter list forces split.
 var f = (int i,) {};
-<<<
+<<< 3.7
 var f =
     (
       int i,
     ) {};
+<<< 3.13
+var f = (
+  int i,
+) {};
 >>> Trailing comma in old style function typed parameter list forces split.
 bool doStuff(void f(int i,)) {}
 <<<
