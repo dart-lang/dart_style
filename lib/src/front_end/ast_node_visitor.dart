@@ -19,7 +19,6 @@ import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/type_parameter_bound.dart';
-import '../piece/type_test.dart';
 import '../piece/variable.dart';
 import '../profile.dart';
 import '../source_code.dart';
