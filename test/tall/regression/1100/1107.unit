@@ -11,7 +11,7 @@ class SomeClassC extends SomeClassA {
           ),
         );
 }
-<<< 3.12
+<<<
 class SomeClassC extends SomeClassA {
   SomeClassC({required final String property1})
     : super(
@@ -20,6 +20,7 @@ class SomeClassC extends SomeClassA {
         complexProperty: SomeClassB("sdf", "dfg", "fgh"),
       );
 }
+<<< 3.13 (unsupported)
 >>> Without final
 class SomeClassC extends SomeClassA {
   SomeClassC({required String property1})

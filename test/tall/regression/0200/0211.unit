@@ -24,7 +24,7 @@ void defineProperty(var obj, String property, var value) {
       '{value: #, enumerable: false, writable: true, configurable: true})',
       obj, property, value);
 }
-<<< 3.12
+<<<
 void defineProperty(var obj, String property, var value) {
   JS(
     'void',
@@ -35,6 +35,7 @@ void defineProperty(var obj, String property, var value) {
     value,
   );
 }
+<<< 3.13 (unsupported)
 >>> Without var
 void defineProperty(obj, String property, value) {
   JS('void', 'Object.defineProperty(#, #, '
