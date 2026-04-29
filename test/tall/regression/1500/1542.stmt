@@ -1,0 +1,57 @@
+>>> (indent 4)
+    final buildConfig =
+        BuildConfig.build(
+              outputDirectory: outputDirectory,
+              packageName: await _packageName(),
+              packageRoot: Directory.current.uri,
+              buildMode: buildMode ?? BuildMode.release,
+              targetArchitecture: targetArchitecture ?? Architecture.current,
+              targetOS: targetOS ?? OS.current,
+              linkModePreference:
+                  linkModePreference ?? LinkModePreference.dynamic,
+              linkingEnabled: linkingEnabled ?? true,
+              cCompiler: cCompiler,
+              supportedAssetTypes: supportedAssetTypes,
+              targetAndroidNdkApi: targetAndroidNdkApi,
+              targetIOSSdk: targetIOSSdk,
+              targetIOSVersion: targetIOSVersion,
+              targetMacOSVersion: targetMacOSVersion,
+            )
+            as BuildConfigImpl;
+<<< 3.7
+    final buildConfig =
+        BuildConfig.build(
+              outputDirectory: outputDirectory,
+              packageName: await _packageName(),
+              packageRoot: Directory.current.uri,
+              buildMode: buildMode ?? BuildMode.release,
+              targetArchitecture: targetArchitecture ?? Architecture.current,
+              targetOS: targetOS ?? OS.current,
+              linkModePreference:
+                  linkModePreference ?? LinkModePreference.dynamic,
+              linkingEnabled: linkingEnabled ?? true,
+              cCompiler: cCompiler,
+              supportedAssetTypes: supportedAssetTypes,
+              targetAndroidNdkApi: targetAndroidNdkApi,
+              targetIOSSdk: targetIOSSdk,
+              targetIOSVersion: targetIOSVersion,
+              targetMacOSVersion: targetMacOSVersion,
+            )
+            as BuildConfigImpl;
+<<< 3.13
+    final buildConfig = BuildConfig.build(
+      outputDirectory: outputDirectory,
+      packageName: await _packageName(),
+      packageRoot: Directory.current.uri,
+      buildMode: buildMode ?? BuildMode.release,
+      targetArchitecture: targetArchitecture ?? Architecture.current,
+      targetOS: targetOS ?? OS.current,
+      linkModePreference: linkModePreference ?? LinkModePreference.dynamic,
+      linkingEnabled: linkingEnabled ?? true,
+      cCompiler: cCompiler,
+      supportedAssetTypes: supportedAssetTypes,
+      targetAndroidNdkApi: targetAndroidNdkApi,
+      targetIOSSdk: targetIOSSdk,
+      targetIOSVersion: targetIOSVersion,
+      targetMacOSVersion: targetMacOSVersion,
+    ) as BuildConfigImpl;

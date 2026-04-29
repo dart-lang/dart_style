@@ -19,6 +19,7 @@ import '../piece/list.dart';
 import '../piece/piece.dart';
 import '../piece/prefix.dart';
 import '../piece/sequence.dart';
+import '../piece/type_test.dart';
 import '../piece/variable.dart';
 import 'chain_builder.dart';
 import 'comment_writer.dart';
@@ -1421,6 +1422,42 @@ mixin PieceFactory {
       style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3),
       blockShaped: false,
     );
+  }
+
+  /// Writes an `as`, `is`, or `is!` expression.
+  void writeTypeTest(
+    Expression expression,
+    Token keyword,
+    TypeAnnotation type, {
+    Token? bang,
+  }) {
+    if (style.blockFormatTypeTest) {
+      var expressionPiece = nodePiece(expression);
+
+      var operatorPiece = pieces.build(() {
+        pieces.token(keyword);
+        pieces.token(bang);
+      });
+
+      pieces.add(
+        TypeTestPiece(
+          expressionPiece,
+          operatorPiece,
+          nodePiece(type),
+          canBlockSplit: expression.canBlockSplit,
+        ),
+      );
+    } else {
+      writeInfix(
+        expression,
+        keyword,
+        operator2: bang,
+        type,
+        // Don't use Indent.infix after 3.7 because it will flatten the
+        // indentation if the expression occurs in an assignment.
+        indent: style.is3Dot7 ? Indent.infix : Indent.expression,
+      );
+    }
   }
 
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.

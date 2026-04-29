@@ -54,6 +54,28 @@
 
   This change is language versioned and only affects code at 3.13 or higher.
 
+* Allow `as`, `is`, and `is!` expressions to be block formatted (#1542).
+
+  ```dart
+  // Before:
+  variable =
+      function(
+            argument,
+            argument,
+            argument,
+          )
+          as Type;
+
+  // After:
+  variable = function(
+    argument,
+    argument,
+    argument,
+  ) as Type;
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
+
 * Don't add a blank line before a comment at the end of a compilation unit or
   braced body (#1644).
 
