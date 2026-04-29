@@ -25,6 +25,8 @@ final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 ///    >>> 1.2 Version and description.
 final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
 
+const _unsupportedMarker = '(unsupported)';
+
 /// Get the absolute local file path to the dart_style package's root directory.
 Future<String> findPackageDirectory() async {
   var libraryPath = (await Isolate.resolvePackageUri(
@@ -148,9 +150,10 @@ final class TestFile {
 
       var unversionedOutputs = <TestEntry>[];
       var versionedOutputs = <Version, TestEntry>{};
+      Version? unsupportedVersion;
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
-        var outputDescription = match[4]!;
+        var outputDescription = match[4]!.trim();
         Version? outputVersion;
         if (match[1] != null) {
           outputVersion = Version(
@@ -158,6 +161,23 @@ final class TestFile {
             int.parse(match[3]!),
             0,
           );
+        }
+
+        if (outputDescription.endsWith(_unsupportedMarker)) {
+          if (outputVersion == null) {
+            fail('The "(unsupported)" marker must have a version before it.');
+          }
+
+          unsupportedVersion = outputVersion;
+
+          // There should not be any lines after an (unsupported) marker.
+          if (i < lines.length &&
+              !lines[i].startsWith('>>>') &&
+              !lines[i].startsWith('<<<')) {
+            fail('Shouldn\'t have any output lines after "(unsupported)".');
+          }
+
+          continue;
         }
 
         var outputComments = readComments();
@@ -205,7 +225,13 @@ final class TestFile {
           fail('Test must have at least one output.');
         case (0, > 0):
           tests.add(
-            VersionedFormatTest(lineNumber, options, input, versionedOutputs),
+            VersionedFormatTest(
+              lineNumber,
+              options,
+              input,
+              versionedOutputs,
+              unsupportedVersion,
+            ),
           );
         case (1, 0):
           tests.add(
@@ -214,6 +240,7 @@ final class TestFile {
               options,
               input,
               unversionedOutputs.first,
+              unsupportedVersion,
             ),
           );
         case (> 1, 0):
@@ -329,7 +356,11 @@ sealed class FormatTest {
   /// The unformatted input.
   final TestEntry input;
 
-  FormatTest(this.line, this.options, this.input);
+  /// The language version at which point this test is no longer supported, or
+  /// `null` if the test has no upper bound for language support.
+  final Version? unsupportedVersion;
+
+  FormatTest(this.line, this.options, this.input, this.unsupportedVersion);
 
   /// The line and description of the test.
   String get label {
@@ -345,7 +376,13 @@ final class UnversionedFormatTest extends FormatTest {
   /// The expected output.
   final TestEntry output;
 
-  UnversionedFormatTest(super.line, super.options, super.input, this.output);
+  UnversionedFormatTest(
+    super.line,
+    super.options,
+    super.input,
+    this.output,
+    super.unsupportedVersion,
+  );
 }
 
 /// A test whose expected formatting changes at specific versions.
@@ -363,7 +400,13 @@ final class VersionedFormatTest extends FormatTest {
   /// the formatting style has changed.
   final Map<Version, TestEntry> outputs;
 
-  VersionedFormatTest(super.line, super.options, super.input, this.outputs);
+  VersionedFormatTest(
+    super.line,
+    super.options,
+    super.input,
+    this.outputs,
+    super.unsupportedVersion,
+  );
 }
 
 /// A single test input or output.

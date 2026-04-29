@@ -231,34 +231,46 @@ final class ListPiece extends Piece {
 
   @override
   State? fixedStateForPageWidth(int pageWidth) {
-    var totalLength = 0;
+    var surroundingLength = 0;
     if (_before case var before?) {
       // A newline in the opening bracket (like a line comment after the
       // bracket) forces the list to split.
       if (before.containsHardNewline) return State.split;
-      totalLength += before.totalCharacters;
-    }
 
-    for (var element in _elements) {
-      // Elements that can be block arguments won't necessarily force the list
-      // to split.
-      if (element.allowNewlinesWhenUnsplit) continue;
-
-      if (element.containsHardNewline) return State.split;
-      totalLength += element.totalCharacters;
-      if (totalLength > pageWidth) break;
+      surroundingLength += before.totalCharacters;
     }
 
     if (_after case var after?) {
-      totalLength += after.totalCharacters;
+      surroundingLength += after.totalCharacters;
 
       // Note that a newline in `_after` does *not* force the list to split, so
       // we ignore it here. This is typically a line comment after the closing
       // bracket.
     }
 
-    // If the entire list doesn't fit on one line, it will split.
-    if (totalLength >= pageWidth) return State.split;
+    var currentLineLength = surroundingLength;
+    var first = true;
+    for (var element in _elements) {
+      // If the element can be block formatted, then it might contain a newline
+      // that doesn't force the list to split. In that case, elements after
+      // this one won't be on the same line as the one whose length we have
+      // accumulated. Reset the length to start a new line for the remaining
+      // elements.
+      if (element.allowNewlinesWhenUnsplit) {
+        currentLineLength = surroundingLength;
+        continue;
+      }
+
+      if (element.containsHardNewline) return State.split;
+
+      currentLineLength += element.totalCharacters;
+
+      // The comma and space between elements.
+      if (!first) currentLineLength += 2;
+      first = false;
+
+      if (currentLineLength > pageWidth) return State.split;
+    }
 
     return null;
   }

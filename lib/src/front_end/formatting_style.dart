@@ -15,6 +15,10 @@ import '../dart_formatter.dart';
 /// code whose language version is older than a style change will retain the
 /// older style.
 final class FormattingStyle {
+  static final _version3Dot7 = Version(3, 7, 0);
+  static final _version3Dot10 = Version(3, 10, 0);
+  static final _version3Dot13 = Version(3, 13, 0);
+
   /// The [DartFormatter] the style was created from.
   final DartFormatter _formatter;
 
@@ -41,7 +45,7 @@ final class FormattingStyle {
 
   /// Whether the code being formatted is at language version 3.7 and doesn't
   /// include the sweeping style changes in 3.8.
-  bool get is3Dot7 => _languageVersion == Version(3, 7, 0);
+  bool get is3Dot7 => _languageVersion == _version3Dot7;
 
   /// Whether a trailing comma should be preserved after for-loop updaters.
   bool get preserveTrailingCommaAfterForUpdaters =>
@@ -50,7 +54,7 @@ final class FormattingStyle {
   /// Whether a trailing comma should be preserved after enum values.
   bool get preserveTrailingCommaAfterEnumValues =>
       _formatter.trailingCommas == TrailingCommas.preserve &&
-      _languageVersion >= Version(3, 10, 0);
+      _languageVersion >= _version3Dot10;
 
   /// Whether mixin declarations and extension types with brace bodies should
   /// always get a blank line above and below them.
@@ -58,7 +62,10 @@ final class FormattingStyle {
   /// They always should have, but they were overlooked. We already do this for
   /// classes, enums, and extensions.
   bool get blankLineAroundMixinAndExtensionTypes =>
-      _languageVersion >= Version(3, 13, 0);
+      _languageVersion >= _version3Dot13;
+
+  /// Whether parameter lists should be block formatted in things like typedefs.
+  bool get blockFormatParameterLists => _languageVersion >= _version3Dot13;
 
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.

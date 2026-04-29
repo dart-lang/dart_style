@@ -32,7 +32,7 @@ Each test case begins with a header line like:
 ```
 
 The `>>>` marks the beginning of a new test. After that are optional
-parenthesized options that will be applied to that test. then an optional
+parenthesized options that will be applied to that test. Then an optional
 description for the test. Lines after that define the input code to be
 formatted.
 
@@ -51,7 +51,7 @@ some.code();
 some.code();
 ```
 
-The formatter will run this tests against the oldest and newest supported
+The formatter will run this test against the oldest and newest supported
 version and verify that both produce that output. (We assume that if it formats
 the same at two versions, it will do so in any version between those for
 performance reasons. Otherwise, every time a new Dart SDK release comes out,
@@ -59,10 +59,13 @@ the number of tests being run increases by thousands.)
 
 #### Versioned outputs
 
-The formatter's behavior may depend on language version for two reasons:
+The formatter's behavior may depend on language version for three reasons:
 
 * New syntax was added to the language in a later version, so we can't format
   it on an older version at all.
+
+* Old syntax was removed from the language in a later version, so we can't
+  format it on a newer version at all.
 
 * The formatting style changed and we versioned the style change so that code
   at older versions keeps the older style.
@@ -77,6 +80,7 @@ some.code();
 some.code();
 <<< 3.10 Optional description.
 some . code();
+<<< 3.12 (unsupported)
 ```
 
 Each output section specifies the minimum version where that output becomes
@@ -84,10 +88,15 @@ expected. The version number of the first section specifies the lowest version
 number that the test will be run at. Every section after that specifies a
 version where the formatting style was changed.
 
+Optionally, there can be a final `<<< <version> (unsupported)` line with no
+output lines after it. That means the test should not be run at the stated
+language version or any version higher than that. (In other words, you list the
+version where a given syntax stops working.)
+
 The test is run at multiple language versions and the result compared to the
 appropriate output section for that version. In the example here, we won't test
-it at all at 3.7, will test at 3.8 and 3.9 with the first output, and at
-3.10 and higher with the last output.
+it at all at 3.7, will test at 3.8 and 3.9 with the first output, at 3.10 and
+3.11 with the last output, and won't test it at 3.12 or higher.
 
 ### Test options
 

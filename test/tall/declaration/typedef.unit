@@ -9,15 +9,20 @@ typedef  F  =  A  Function  <  A  ,  B  >  (  A  a  ,  B  b  )  ;
 typedef F = A Function<A, B>(A a, B b);
 >>> Split in function type parameter list.
 typedef   SomeFunc=ReturnType  Function(int param,   double other);
-<<<
+<<< 3.7
 typedef SomeFunc =
     ReturnType Function(
       int param,
       double other,
     );
+<<< 3.13
+typedef SomeFunc = ReturnType Function(
+  int param,
+  double other,
+);
 >>> Nested function type.
 typedef SomeFunc = Function(int first, Function(int first, bool second, String third) second, String third);
-<<<
+<<< 3.7
 typedef SomeFunc =
     Function(
       int first,
@@ -28,6 +33,28 @@ typedef SomeFunc =
       )
       second,
       String third,
+    );
+<<< 3.13
+typedef SomeFunc = Function(
+  int first,
+  Function(
+    int first,
+    bool second,
+    String third,
+  )
+  second,
+  String third,
+);
+>>> Split after `=` if return type doesn't fit.
+typedef SomeFunc = LongReturnType Function(
+  int param,
+  double other,
+);
+<<<
+typedef SomeFunc =
+    LongReturnType Function(
+      int param,
+      double other,
     );
 >>> Generic typedef.
 typedef  Foo  <  A  ,  B  >  =  Function  (  A  a  ,  B  b  )  ;
@@ -65,7 +92,7 @@ typedef G =
     );
 >>> Split typedef type parameters and function parameters.
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Function<Seventh>(First first, Second second, Third third, Fourth fourth);
-<<<
+<<< 3.7
 typedef LongfunctionType<
   First,
   Second,
@@ -80,6 +107,20 @@ typedef LongfunctionType<
       Third third,
       Fourth fourth,
     );
+<<< 3.13
+typedef LongfunctionType<
+  First,
+  Second,
+  Third,
+  Fourth,
+  Fifth,
+  Sixth
+> = Function<Seventh>(
+  First first,
+  Second second,
+  Third third,
+  Fourth fourth,
+);
 >>> Split typedef type parameters.
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Type;
 <<<
