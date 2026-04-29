@@ -1,4 +1,4 @@
-## 3.1.10-wip
+## 3.1.10
 
 * Show the supported language versions in `dart format --version --verbose`.
 
