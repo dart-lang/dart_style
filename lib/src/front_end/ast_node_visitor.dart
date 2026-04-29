@@ -184,17 +184,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitAsExpression(AsExpression node) {
-    writeInfix(
-      node.expression,
-      node.asOperator,
-      node.type,
-      // Don't use Indent.infix after 3.7 because it will flatten the
-      // indentation if the expression occurs in an assignment.
-      // TODO(rnystrom): We probably do want to format `as` the same as other
-      // binary operators, but the tall style already treats them differently,
-      // so leaving that alone for now.
-      indent: style.is3Dot7 ? Indent.infix : Indent.expression,
-    );
+    writeTypeTest(node.expression, node.asOperator, node.type);
   }
 
   @override
@@ -1256,17 +1246,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitIsExpression(IsExpression node) {
-    writeInfix(
+    writeTypeTest(
       node.expression,
       node.isOperator,
-      operator2: node.notOperator,
+      bang: node.notOperator,
       node.type,
-      // Don't use Indent.infix after 3.7 because it will flatten the
-      // indentation if the expression occurs in an assignment.
-      // TODO(rnystrom): We probably do want to format `as` the same as other
-      // binary operators, but the tall style already treats them differently,
-      // so leaving that alone for now.
-      indent: style.is3Dot7 ? Indent.infix : Indent.expression,
     );
   }
 

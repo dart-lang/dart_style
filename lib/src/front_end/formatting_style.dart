@@ -67,6 +67,10 @@ final class FormattingStyle {
   /// Whether parameter lists should be block formatted in things like typedefs.
   bool get blockFormatParameterLists => _languageVersion >= _version3Dot13;
 
+  /// Whether the LHS of an `as`, `is`, or `is!` expression can be block
+  /// formatted.
+  bool get blockFormatTypeTest => _languageVersion >= _version3Dot13;
+
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>

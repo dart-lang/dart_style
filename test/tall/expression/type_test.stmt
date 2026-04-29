@@ -44,3 +44,96 @@ variable = veryLongExpression as VeryLongTypeName;
 variable =
     veryLongExpression
         as VeryLongTypeName;
+>>> Allow block splitting `as` expressions.
+variable = function(argument, argument, argument) as Type;
+<<< 3.7
+variable =
+    function(
+          argument,
+          argument,
+          argument,
+        )
+        as Type;
+<<< 3.13
+variable = function(
+  argument,
+  argument,
+  argument,
+) as Type;
+>>> Allow block splitting `is` expressions.
+variable = function(argument, argument, argument) is Type;
+<<< 3.7
+variable =
+    function(
+          argument,
+          argument,
+          argument,
+        )
+        is Type;
+<<< 3.13
+variable = function(
+  argument,
+  argument,
+  argument,
+) is Type;
+>>> Allow block splitting `is!` expressions.
+variable = function(argument, argument, argument) is! Type;
+<<< 3.7
+variable =
+    function(
+          argument,
+          argument,
+          argument,
+        )
+        is! Type;
+<<< 3.13
+variable = function(
+  argument,
+  argument,
+  argument,
+) is! Type;
+>>> Prefer to split at `=` if the expression fits on one line.
+variable = f(argument, argument) as Type;
+<<< 3.7
+variable =
+    f(argument, argument) as Type;
+<<< 3.13
+variable =
+    f(argument, argument) as Type;
+>>> Prefer to block split versus splitting at the operator.
+variable = f(argument, argument) as VeryLongType;
+<<< 3.7
+variable =
+    f(argument, argument)
+        as VeryLongType;
+<<< 3.13
+variable = f(
+  argument,
+  argument,
+) as VeryLongType;
+>>> Don't block split if the type splits.
+variable = function(argument, argument, argument)
+as VeryLongGenericType<TypeArgument, TypeArgument, TypeArgument>;
+<<< 3.7
+variable =
+    function(
+          argument,
+          argument,
+          argument,
+        )
+        as VeryLongGenericType<
+          TypeArgument,
+          TypeArgument,
+          TypeArgument
+        >;
+<<< 3.13
+variable =
+    function(
+      argument,
+      argument,
+      argument,
+    ) as VeryLongGenericType<
+      TypeArgument,
+      TypeArgument,
+      TypeArgument
+    >;

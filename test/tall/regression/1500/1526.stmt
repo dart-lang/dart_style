@@ -44,10 +44,14 @@
   final content = json.decode(
     await rootBundle.loadString('assets/configurations.json'),
   ) as Map<String, Object?>;
-<<<
+<<< 3.7
   final content =
       json.decode(await rootBundle.loadString('assets/configurations.json'))
           as Map<String, Object?>;
+<<< 3.13
+  final content = json.decode(
+    await rootBundle.loadString('assets/configurations.json'),
+  ) as Map<String, Object?>;
 >>> (indent 4)
     final results =
         annotationsOf(element, throwOnUnresolved: throwOnUnresolved);
