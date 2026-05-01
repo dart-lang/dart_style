@@ -57,7 +57,31 @@ final class IfCasePiece extends Piece {
   /// Whether the pattern can be block formatted.
   final bool _canBlockSplitPattern;
 
-  IfCasePiece(
+  factory IfCasePiece(
+    Piece value,
+    Piece pattern,
+    Piece? guard, {
+    required bool canBlockSplitPattern,
+    required bool canBlockFormatPatternWithGuard,
+  }) {
+    if (canBlockFormatPatternWithGuard) {
+      return _IfCasePieceBlockFormatWithGuard(
+        value,
+        pattern,
+        guard,
+        canBlockSplitPattern: canBlockSplitPattern,
+      );
+    } else {
+      return IfCasePiece._(
+        value,
+        pattern,
+        guard,
+        canBlockSplitPattern: canBlockSplitPattern,
+      );
+    }
+  }
+
+  IfCasePiece._(
     this._value,
     this._pattern,
     this._guard, {
@@ -174,13 +198,13 @@ final class IfCasePiece extends Piece {
 ///
 /// The change is language-versioned and this class implements the previous
 /// behavior.
-final class IfCasePiece3Dot12 extends IfCasePiece {
-  IfCasePiece3Dot12(
+final class _IfCasePieceBlockFormatWithGuard extends IfCasePiece {
+  _IfCasePieceBlockFormatWithGuard(
     super.value,
     super.pattern,
     super.guard, {
     required super.canBlockSplitPattern,
-  });
+  }) : super._();
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {

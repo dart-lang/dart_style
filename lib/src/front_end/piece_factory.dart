@@ -900,27 +900,15 @@ mixin PieceFactory {
 
       var guardPiece = optionalNodePiece(caseClause.guardedPattern.whenClause);
 
-      if (style.blockFormatIfCaseWithGuard) {
-        pieces.add(
-          IfCasePiece3Dot12(
-            expressionPiece,
-            casePiece,
-            guardPiece,
-            canBlockSplitPattern:
-                caseClause.guardedPattern.pattern.canBlockSplit,
-          ),
-        );
-      } else {
-        pieces.add(
-          IfCasePiece(
-            expressionPiece,
-            casePiece,
-            guardPiece,
-            canBlockSplitPattern:
-                caseClause.guardedPattern.pattern.canBlockSplit,
-          ),
-        );
-      }
+      pieces.add(
+        IfCasePiece(
+          expressionPiece,
+          casePiece,
+          guardPiece,
+          canBlockSplitPattern: caseClause.guardedPattern.pattern.canBlockSplit,
+          canBlockFormatPatternWithGuard: style.blockFormatIfCaseWithGuard,
+        ),
+      );
     } else {
       pieces.visit(expression);
     }
