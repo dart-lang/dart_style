@@ -1,0 +1,70 @@
+>>>
+if (node.parent case MethodInvocation(:var target) when target is SimpleIdentifier?) {;}
+<<< 3.7
+if (node.parent case MethodInvocation(
+  :var target,
+) when target is SimpleIdentifier?) {
+  ;
+}
+<<< 3.13
+if (node.parent case MethodInvocation(:var target)
+    when target is SimpleIdentifier?) {
+  ;
+}
+>>>
+if (err
+    case DioException(
+          type: DioExceptionType.badCertificate || DioExceptionType.cancel
+        ) ||
+        DioException(
+          type: DioExceptionType.badResponse,
+          response: Response(statusCode: != null && >= 200 && <= 500)
+        ) when Random().nextInt(100) > 10) {
+  return super.onError(err, handler);
+}
+<<< 3.7
+if (err
+    case DioException(
+          type: DioExceptionType.badCertificate || DioExceptionType.cancel,
+        ) ||
+        DioException(
+          type: DioExceptionType.badResponse,
+          response: Response(statusCode: != null && >= 200 && <= 500),
+        ) when Random().nextInt(100) > 10) {
+  return super.onError(err, handler);
+}
+<<< 3.13
+if (err
+    case DioException(
+          type: DioExceptionType.badCertificate || DioExceptionType.cancel,
+        ) ||
+        DioException(
+          type: DioExceptionType.badResponse,
+          response: Response(statusCode: != null && >= 200 && <= 500),
+        )
+    when Random().nextInt(100) > 10) {
+  return super.onError(err, handler);
+}
+>>>
+if (nodeElement.kind
+  case ElementKind.LOCAL_VARIABLE || ElementKind.TOP_LEVEL_VARIABLE
+  when target.kind == ElementKind.FIELD) {
+  // Something
+}
+<<<
+if (nodeElement.kind
+    case ElementKind.LOCAL_VARIABLE || ElementKind.TOP_LEVEL_VARIABLE
+    when target.kind == ElementKind.FIELD) {
+  // Something
+}
+>>>
+if (nodeElement.kind
+    case ElementKind.LOCAL_VARIABLE ||
+        ElementKind.TOP_LEVEL_VARIABLE) {
+  // Something
+}
+<<<
+if (nodeElement.kind
+    case ElementKind.LOCAL_VARIABLE || ElementKind.TOP_LEVEL_VARIABLE) {
+  // Something
+}
