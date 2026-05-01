@@ -80,8 +80,11 @@ final class CaseExpressionPiece extends Piece {
       // in a funny location, but if it happens, allow it.
       _ when child == _arrow => Shape.all,
       _blockSplitBody when child == _body => Shape.onlyBlock,
+
+      // Only allow the pattern to split if there is no guard.
       _beforeBody when child == _pattern => Shape.anyIf(_guard == null),
       _beforeBody when child == _body => Shape.all,
+
       _beforeWhenAndBody => Shape.all,
       _ => Shape.onlyInline,
     };

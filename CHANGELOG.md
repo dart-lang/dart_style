@@ -76,6 +76,28 @@
 
   This change is language versioned and only affects code at 3.13 or higher.
 
+*  In if-case pieces, split the guard if the pattern block-splits (#1596).
+
+  This tends to lead to code where the pattern is kept on one line and the
+  guard splits:
+
+  ```dart
+  // Before:
+  if (expression case SomeClass(
+    property: var x,
+  ) when guardClause(x)) {
+    ...
+  }
+
+  // After:
+  if (expression case SomeClass(property: var x)
+      when guardClause(x)) {
+    ...
+  }
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
+
 * Don't add a blank line before a comment at the end of a compilation unit or
   braced body (#1644).
 

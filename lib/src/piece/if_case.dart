@@ -74,19 +74,27 @@ final class IfCasePiece extends Piece {
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
     return switch (state) {
-      // When not splitting before `case` or `when`, we only allow newlines
-      // in block-formatted patterns.
-      State.unsplit when child == _pattern => Shape.anyIf(
-        _canBlockSplitPattern,
-      ),
+      // When not splitting before `case` or `when`, we only allow splitting a
+      // block-formatted pattern if there is no guard.
+      State.unsplit
+          when child == _pattern && _canBlockSplitPattern && _guard == null =>
+        Shape.inlineOrBlock,
 
       // Allow newlines only in the guard if we split before `when`.
       _beforeWhen when child == _guard => Shape.all,
 
-      // Only allow the guard on the same line as the pattern if it doesn't
-      // split.
-      _beforeCase when child != _guard => Shape.all,
+      // If there's no guard, then we can split anywhere in the pattern when
+      // splitting after `case`.
+      _beforeCase when child == _pattern && _guard == null => Shape.all,
+
+      // If there is a guard, then the entire pattern and guard must fit on
+      // one line, but the value expression can split.
+      _beforeCase when child == _value => Shape.all,
+
+      // Once we split at both `case` and `when`, then splits are allowed
+      // everywhere.
       _beforeCaseAndWhen => Shape.all,
+
       _ => Shape.onlyInline,
     };
   }
@@ -122,5 +130,75 @@ final class IfCasePiece extends Piece {
     callback(_value);
     callback(_pattern);
     if (_guard case var guard?) callback(guard);
+  }
+}
+
+/// An [IfCasePiece] for language versions older than 3.13.
+///
+/// In 3.13, we made if-case formatting stricter about block-formatting patterns
+/// in the presence of a guard. Before 3.13, the formatter would allow output
+/// like:
+///
+///     if (expression case [
+///       constant,
+///       another
+///     ] when guardExpression) {
+///      ...
+///     }
+///
+/// Allowing the `when` clause hanging off the block-formatted pattern can make
+/// it hard to see. In 3.13, we force a split before the `when` if the pattern
+/// splits:
+///
+///     if (expression
+///         case [
+///           constant,
+///           another
+///         ]
+///         when guardExpression) {
+///      ...
+///     }
+///
+/// A deliberate consequence of this change is that the formatter will prefer
+/// splitting the guard and keeping the pattern on one line instead of block
+/// splitting the pattern:
+///
+///     // Before:
+///     if (expression case SomeClass(
+///       property: var x,
+///     ) when guardClause(x)) {
+///
+///     // After:
+///     if (expression case SomeClass(property: var x)
+///         when guardClause(x)) {
+///
+/// The change is language-versioned and this class implements the previous
+/// behavior.
+final class IfCasePiece3Dot12 extends IfCasePiece {
+  IfCasePiece3Dot12(
+    super.value,
+    super.pattern,
+    super.guard, {
+    required super.canBlockSplitPattern,
+  });
+
+  @override
+  Set<Shape> allowedChildShapes(State state, Piece child) {
+    return switch (state) {
+      // When not splitting before `case` or `when`, we only allow newlines
+      // in block-formatted patterns.
+      State.unsplit when child == _pattern => Shape.anyIf(
+        _canBlockSplitPattern,
+      ),
+
+      // Allow newlines only in the guard if we split before `when`.
+      IfCasePiece._beforeWhen when child == _guard => Shape.all,
+
+      // Only allow the guard on the same line as the pattern if it doesn't
+      // split.
+      IfCasePiece._beforeCase when child != _guard => Shape.all,
+      IfCasePiece._beforeCaseAndWhen => Shape.all,
+      _ => Shape.onlyInline,
+    };
   }
 }

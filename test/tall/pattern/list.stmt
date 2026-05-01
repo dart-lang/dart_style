@@ -66,7 +66,7 @@ if (obj case [
 }
 >>> Split in type argument, but not in the body.
 if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[e]) {;}
-<<<
+<<< 3.7
 if (obj case <
   Map<
     VeryLongTypeArgument,
@@ -75,9 +75,19 @@ if (obj case <
 >[e]) {
   ;
 }
+<<< 3.13
+if (obj
+    case <
+      Map<
+        VeryLongTypeArgument,
+        VeryLongTypeArgument
+      >
+    >[e]) {
+  ;
+}
 >>> Split in type argument and body.
 if (obj case <Map<VeryLongTypeArgument, VeryLongTypeArgument>>[element,VeryLongElementElementElement]) {;}
-<<<
+<<< 3.7
 if (obj case <
   Map<
     VeryLongTypeArgument,
@@ -87,6 +97,19 @@ if (obj case <
   element,
   VeryLongElementElementElement,
 ]) {
+  ;
+}
+<<< 3.13
+if (obj
+    case <
+      Map<
+        VeryLongTypeArgument,
+        VeryLongTypeArgument
+      >
+    >[
+      element,
+      VeryLongElementElementElement,
+    ]) {
   ;
 }
 >>> Split inside element forces list to split.

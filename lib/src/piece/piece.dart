@@ -237,6 +237,9 @@ enum Shape {
   /// Prohibits any newlines at all.
   static const Set<Shape> onlyInline = {inline};
 
+  /// The only way it can split is block-style.
+  static const Set<Shape> inlineOrBlock = {inline, block};
+
   /// Allows all shapes if [condition] is `true` or only an inline piece
   /// otherwise.
   ///

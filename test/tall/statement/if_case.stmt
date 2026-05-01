@@ -151,3 +151,30 @@ if (obj case constant
         anotherOne) {
   ;
 }
+>>> If pattern block-formats, then guard splits.
+if (obj
+    case const [
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
+    ] when true) {
+  ;
+}
+<<< 3.7
+if (obj case const [
+  veryLongElement,
+  veryLongElement,
+  veryLongElement,
+] when true) {
+  ;
+}
+<<< 3.13
+if (obj
+    case const [
+      veryLongElement,
+      veryLongElement,
+      veryLongElement,
+    ]
+    when true) {
+  ;
+}
