@@ -94,10 +94,7 @@ variable = function(
 ) is! Type;
 >>> Prefer to split at `=` if the expression fits on one line.
 variable = f(argument, argument) as Type;
-<<< 3.7
-variable =
-    f(argument, argument) as Type;
-<<< 3.13
+<<<
 variable =
     f(argument, argument) as Type;
 >>> Prefer to block split versus splitting at the operator.

@@ -24,7 +24,7 @@ class Foo {
   Foo.optional([  this . a, int  this  . b   =  123  ]);
   Foo.named({ required   this . a, int  this  . b  = 123  });
 }
-<<< 3.7
+<<<
 class Foo {
   Foo(this.a, int this.b, this.c);
   Foo.optional([

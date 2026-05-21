@@ -49,7 +49,24 @@ extension type LongExtensionType(
 extension type LongExtensionType(LongTypeName a) implements Something {
   method() {;}
 }
-<<<
+<<< 3.7
+extension type LongExtensionType(
+  LongTypeName a
+) implements Something {
+  method() {
+    ;
+  }
+}
+<<< 3.8
+extension type LongExtensionType(
+  LongTypeName a
+)
+    implements Something {
+  method() {
+    ;
+  }
+}
+<<< 3.13
 extension type LongExtensionType(
   LongTypeName a
 ) implements Something {

@@ -2,7 +2,16 @@
 extension type JSExportedDartFunction._(
   JSExportedDartFunctionRepType _jsExportedDartFunction
 ) implements JSFunction {}
-<<<
+<<< 3.7
+extension type JSExportedDartFunction._(
+  JSExportedDartFunctionRepType _jsExportedDartFunction
+) implements JSFunction {}
+<<< 3.8
+extension type JSExportedDartFunction._(
+  JSExportedDartFunctionRepType _jsExportedDartFunction
+)
+    implements JSFunction {}
+<<< 3.13
 extension type JSExportedDartFunction._(
   JSExportedDartFunctionRepType _jsExportedDartFunction
 ) implements JSFunction {}

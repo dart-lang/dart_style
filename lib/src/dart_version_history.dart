@@ -7,10 +7,10 @@ import 'package:pub_semver/pub_semver.dart';
 /// Maintains the list of known supported Dart language versions.
 class DartVersionHistory {
   /// The lowest language version supported by the formatter.
-  static final Version earliest = _versions.first;
+  static final Version earliest = all.first;
 
   /// The highest language version supported by the formatter.
-  static final Version latest = _versions.last;
+  static final Version latest = all.last;
 
   /// The highest language version that uses the short formatting style.
   static final Version latestShortStyle = before(earliestTallStyle);
@@ -26,26 +26,27 @@ class DartVersionHistory {
   /// This should be incremented when a new stable Dart SDK is released.
   static const int _highest3xMinorVersion = 13;
 
-  static final List<Version> _versions = _initialize();
+  /// All supported language versions.
+  static List<Version> get all => _initialize();
 
   /// Returns the Dart language version that precedes [version].
   static Version before(Version version) {
-    return switch (_versions.indexOf(version)) {
+    return switch (all.indexOf(version)) {
       -1 => throw ArgumentError('$version isn\'t a Dart language version.'),
       0 => throw ArgumentError('$version is the first supported version.'),
-      var index => _versions[index - 1],
+      var index => all[index - 1],
     };
   }
 
   /// Returns the Dart language version that follows [version] or `null` if
   /// [version] is the last supported version.
   static Version after(Version version) {
-    return switch (_versions.indexOf(version)) {
+    return switch (all.indexOf(version)) {
       -1 => throw ArgumentError("$version isn't a Dart language version."),
-      var index when index >= _versions.length - 1 => throw ArgumentError(
+      var index when index >= all.length - 1 => throw ArgumentError(
         '$version is the latest supported version.',
       ),
-      var index => _versions[index - 1],
+      var index => all[index + 1],
     };
   }
 

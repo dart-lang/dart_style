@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
-import 'package:collection/collection.dart';
 import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/dart_version_history.dart';
 import 'package:dart_style/src/testing/test_file.dart';
@@ -101,66 +100,109 @@ Future<void> _updateTestFile(TestFile testFile) async {
 
   // Write the tests.
   for (var formatTest in testFile.tests) {
-    // Write the test input.
-    var description = [
-      ..._optionStrings(formatTest.options),
-      formatTest.input.description,
-    ].join(' ');
-
-    buffer.writeln('>>> $description'.trim());
-    _writeComments(buffer, formatTest.input.comments);
-    buffer.write(formatTest.input.code.text);
-
-    // Write the test outputs.
-    var changed = false;
-    switch (formatTest) {
-      case UnversionedFormatTest(:var output):
-        changed = _writeOutput(
-          buffer,
-          testFile,
-          formatTest,
-          output,
-          unsupportedVersion: formatTest.unsupportedVersion,
-        );
-      case VersionedFormatTest(:var outputs):
-        // Order the outputs by version.
-        var versions = outputs.keys.toList()..sort();
-
-        // The outputs were reordered, the test was changed.
-        if (!const DeepCollectionEquality().equals(
-          versions,
-          outputs.keys.toList(),
-        )) {
-          print('Re-ordered outputs for ${testFile.path} ${formatTest.label}');
-          changed = true;
-        }
-
-        // Write the outputs at their versions.
-        for (var version in versions) {
-          changed |= _writeOutput(
-            buffer,
-            testFile,
-            formatTest,
-            outputs[version]!,
-            version: version,
-          );
-        }
-    }
-
-    if (formatTest.unsupportedVersion case var version?) {
-      buffer.writeln('<<< ${version.majorMinor} (unsupported)');
-    }
-
-    if (changed) {
-      print('Updated ${testFile.path} ${formatTest.label}');
-      _changedTests++;
-    }
+    _updateTest(buffer, testFile, formatTest);
   }
 
   // Rewrite the file. Do this even if nothing changed so that we normalize the
   // test markers.
   var path = p.join(await findTestDirectory(), testFile.path);
   File(path).writeAsStringSync(buffer.toString());
+}
+
+void _updateTest(
+  StringBuffer buffer,
+  TestFile testFile,
+  FormatTest formatTest,
+) {
+  // Write the test input.
+  var description = [
+    ..._optionStrings(formatTest.options),
+    formatTest.input.description,
+  ].join(' ');
+
+  buffer.writeln('>>> $description'.trim());
+  _writeComments(buffer, formatTest.input.comments);
+  buffer.write(formatTest.input.code.text);
+
+  // Run the formatter for every version and group versions that produce the
+  // same output together.
+  var versionsToTest = _versionsToTest(testFile, formatTest);
+  var distinctOutputs = <(Version, String)>[];
+  String? previousVersionOutput;
+  for (var version in versionsToTest) {
+    var formatter = testFile.formatterForTest(formatTest, version);
+    var output = formatter.formatSource(formatTest.input.code).text;
+    if (output != previousVersionOutput) {
+      distinctOutputs.add((version, output));
+      previousVersionOutput = output;
+    }
+  }
+
+  // Write the test outputs.
+  var changed = false;
+  for (var (version, output) in distinctOutputs) {
+    // The tests used to not be versioned or have any version markers. To
+    // minimize the diffs when support for versioned sections was added, we
+    // didn't write them for short tests (which generally aren't versioned) or
+    // for tall tests that didn't need them.
+    // TODO(rnystrom): It would be simpler and more explicit in the test to
+    // always write a version.
+    Version? shownVersion;
+    if (testFile.isTall &&
+        (distinctOutputs.length != 1 ||
+            version != DartVersionHistory.earliestTallStyle)) {
+      shownVersion = version;
+    }
+
+    changed |= _writeOutputSection(
+      buffer,
+      testFile,
+      formatTest,
+      shownVersion,
+      output,
+    );
+  }
+
+  if (formatTest.unsupportedVersion case var version?) {
+    buffer.writeln('<<< ${version.majorMinor} (unsupported)');
+  }
+
+  if (changed) {
+    print('Updated ${testFile.path} ${formatTest.label}');
+    _changedTests++;
+  }
+}
+
+/// Determine which range of language versions should be used for [formatTest].
+List<Version> _versionsToTest(TestFile testFile, FormatTest formatTest) {
+  // If the test already has an unsupported marker, then we assume the test
+  // author knows the tested syntax isn't supported on later language versions
+  // so stop there.
+  var endVersion = switch (formatTest.unsupportedVersion) {
+    var unsupported? => DartVersionHistory.before(unsupported),
+    _ when testFile.isTall => DartVersionHistory.latest,
+    _ => DartVersionHistory.latestShortStyle,
+  };
+
+  // If the test already has a section that starts with a given version, then
+  // we assume the test author knows the tested syntax isn't supported on older
+  // versions, so start there.
+  var startVersion = switch (formatTest) {
+    // Outputs are required to be in version order already.
+    VersionedFormatTest(:var outputs) => outputs.keys.first,
+
+    // Cover the whole range of tall versions.
+    _ when testFile.isTall => DartVersionHistory.earliestTallStyle,
+
+    // Short tests aren't versioned, so just pick the one version. This is
+    // usually [DartVersionHistory.latestShortStyle], but will be 2.19 for the
+    // old switch syntax test.
+    _ => endVersion,
+  };
+
+  return DartVersionHistory.all
+      .where((v) => v >= startVersion && v <= endVersion)
+      .toList();
 }
 
 /// Returns a list of strings for all of the options specified by [options].
@@ -181,41 +223,42 @@ void _writeComments(StringBuffer buffer, List<String> comments) {
 /// [buffer].
 ///
 /// Returns `true` if the output changed from what was previously in the file.
-bool _writeOutput(
+bool _writeOutputSection(
   StringBuffer buffer,
   TestFile testFile,
   FormatTest formatTest,
-  TestEntry output, {
   Version? version,
-  Version? unsupportedVersion,
-}) {
+  String actualText,
+) {
+  // Preserve the description and comments from the existing output section if
+  // there is one.
+  var originalEntry = switch (formatTest) {
+    UnversionedFormatTest() when version == null => formatTest.output,
+    UnversionedFormatTest()
+        when version == DartVersionHistory.earliestTallStyle =>
+      formatTest.output,
+
+    // If we're splitting an unversioned tall test, the first section (at 3.7)
+    // should use the original unversioned entry's description/comments.
+    VersionedFormatTest(:var outputs) => outputs[version],
+    _ => null,
+  };
+
+  var description = originalEntry?.description ?? '';
   var outputDescription = [
-    // Include the version in the description if the output is versioned.
     if (version != null) version.majorMinor,
-    output.description,
-  ].join(' ');
+    description,
+  ].join(' ').trim();
 
   buffer.writeln('<<< $outputDescription'.trim());
-  _writeComments(buffer, output.comments);
+  if (originalEntry != null) _writeComments(buffer, originalEntry.comments);
 
-  var parseVersion = DartFormatter.latestLanguageVersion;
-  if (version != null) {
-    parseVersion = version;
-  } else if (unsupportedVersion != null) {
-    parseVersion = DartVersionHistory.before(unsupportedVersion);
-  } else if (!testFile.isTall) {
-    parseVersion = DartFormatter.latestShortStyleLanguageVersion;
-  }
-
-  var formatter = testFile.formatterForTest(formatTest, parseVersion);
-  var actual = formatter.formatSource(formatTest.input.code);
-
-  buffer.write(actual.text);
+  buffer.write(actualText);
 
   // When formatting a statement, the formatter correctly doesn't add a
   // trailing newline, but we need one to separate this output from the
   // next test.
   if (!testFile.isCompilationUnit) buffer.writeln();
 
-  return actual.text != output.code.text;
+  return originalEntry == null || actualText != originalEntry.code.text;
 }
