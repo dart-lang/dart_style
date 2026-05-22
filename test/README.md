@@ -36,30 +36,18 @@ parenthesized options that will be applied to that test. Then an optional
 description for the test. Lines after that define the input code to be
 formatted.
 
-After the input are one or more output sections. Each output section starts
-with a header that starts with `<<<`. There are two styles of output:
+### Output sections
 
-#### Unversioned output
-
-Most code is supported across all language versions and formats the same way in
-all of them. For those, the output is a single section like:
+After the input are one or more output sections that specify what the formatter
+should produce for the preceding input section. Each output section begins with
+a header that starts with `<<<` followed by a language version number and an
+optional description, like:
 
 ```
->>> Optional input description.
-some.code();
-<<< Optional description.
-some.code();
+<<< 3.9 Unsplit cascades look funny.
 ```
 
-The formatter will run this test against the oldest and newest supported
-version and verify that both produce that output. (We assume that if it formats
-the same at two versions, it will do so in any version between those for
-performance reasons. Otherwise, every time a new Dart SDK release comes out,
-the number of tests being run increases by thousands.)
-
-#### Versioned outputs
-
-The formatter's behavior may depend on language version for three reasons:
+Output expectations are versioned for a few reasons:
 
 * New syntax was added to the language in a later version, so we can't format
   it on an older version at all.
@@ -67,11 +55,25 @@ The formatter's behavior may depend on language version for three reasons:
 * Old syntax was removed from the language in a later version, so we can't
   format it on a newer version at all.
 
-* The formatting style changed and we versioned the style change so that code
-  at older versions keeps the older style.
+* The formatting style changed and we language-versioned the style change so
+  that code at older versions keeps the older style.
 
-To accommodate those, a test can have multiple output sections which each start
-with a version number like this:
+To accommodate those, each output section specifies a range of language
+versions that it applies to. The `>>>` line for an output sections specifies
+the minimum version where that output becomes expected. The version number of
+the first section specifies the lowest version number that the test will be run
+at. Every section after that specifies a version where the formatting style
+changes.
+
+Optionally, there can be a final `<<< <version> (unsupported)` line with no
+output lines after it. That means the test should not be run at the stated
+language version or any version higher than that. (In other words, you list the
+version where a given syntax stops working.) In the absence of that, the last
+output section will be tested against whatever latest language version the
+formatter supports.
+
+Each test case is run at multiple language versions and the result compared to
+the appropriate output section for that version. For example:
 
 ```
 >>> Optional input description.
@@ -83,20 +85,14 @@ some . code();
 <<< 3.12 (unsupported)
 ```
 
-Each output section specifies the minimum version where that output becomes
-expected. The version number of the first section specifies the lowest version
-number that the test will be run at. Every section after that specifies a
-version where the formatting style was changed.
+In the example here, we won't test it at all at 3.7, will test at 3.8 and 3.9
+using the first output, at 3.10 and 3.11 with the last output, and won't test
+it at 3.12 or higher.
 
-Optionally, there can be a final `<<< <version> (unsupported)` line with no
-output lines after it. That means the test should not be run at the stated
-language version or any version higher than that. (In other words, you list the
-version where a given syntax stops working.)
-
-The test is run at multiple language versions and the result compared to the
-appropriate output section for that version. In the example here, we won't test
-it at all at 3.7, will test at 3.8 and 3.9 with the first output, at 3.10 and
-3.11 with the last output, and won't test it at 3.12 or higher.
+Short-style tests are only generally only tested at a single language version,
+3.6, and almost always only have a single output section for that version. Tall
+style started at 3.7, so most tall style tests have a single section that starts
+at 3.7.
 
 ### Test options
 
