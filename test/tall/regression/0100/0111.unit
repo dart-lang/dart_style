@@ -11,7 +11,7 @@ class MyClassVeryVeryLongName {
       : super.con1(arg1, arg2, arg3,
           namedArgument: (r) => new FooClassLongName(r));
 }
-<<<
+<<< 3.7
 class MyClassLongName {
   MyClassLongName(Argument arg1, Argument arg2, Argument arg3)
     : super.con1(

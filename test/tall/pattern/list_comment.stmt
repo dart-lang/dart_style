@@ -3,7 +3,7 @@
 if (obj case [
  // c
 ]) {;}
-<<<
+<<< 3.7
 if (obj case [
   // c
 ]) {
@@ -12,7 +12,7 @@ if (obj case [
 >>> Line comment on opening line of list.
 if (obj case [// c
 ]) {;}
-<<<
+<<< 3.7
 if (obj case [
   // c
 ]) {
@@ -22,7 +22,7 @@ if (obj case [
 if (obj case [
   /* comment */
 ]){;}
-<<<
+<<< 3.7
 if (obj case [
   /* comment */
 ]) {
@@ -30,14 +30,14 @@ if (obj case [
 }
 >>> Inline block comment in list.
 if (obj case [  /* comment */  e  ]){;}
-<<<
+<<< 3.7
 if (obj case [/* comment */ e]) {
   ;
 }
 >>> Line comment between list items.
 if (obj case ['a', // comment
   'b']){;}
-<<<
+<<< 3.7
 if (obj case [
   'a', // comment
   'b',

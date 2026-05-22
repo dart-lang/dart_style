@@ -1,7 +1,7 @@
 >>>
 class Foo {}
 class Bar  {}
-<<<
+<<< 3.7
 class Foo {}
 
 class Bar {}

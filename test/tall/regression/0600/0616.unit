@@ -6,7 +6,7 @@ List<int Function()> l = <int Function()>[()=>42, x];
 main() {
   Expect.equals(42, y(l[1]));
 }
-<<<
+<<< 3.7
 import "package:expect/expect.dart";
 
 int Function() x = () => 42;

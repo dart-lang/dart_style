@@ -4,7 +4,7 @@ class Foo {
  covariant    var bar;
   covariant    int baz;
 }
-<<<
+<<< 3.7
 class Foo {
   covariant var bar;
   covariant int baz;
@@ -20,7 +20,7 @@ covariant    late   int i;
     late   int i;
     late   var i;
 }
-<<<
+<<< 3.7
 class Foo {
   static late final int i;
   static late int i;
@@ -37,7 +37,7 @@ abstract  covariant     var  a  , b   ;
     abstract    final   int   c;
   abstract   int i;
 }
-<<<
+<<< 3.7
 class Foo {
   abstract covariant var a, b;
   abstract final int c;
@@ -48,7 +48,7 @@ class Foo {
   covariant var soMuchSoVeryLongFieldNameHere;
   covariant VeryLongTypeAnnotation field;
 }
-<<<
+<<< 3.7
 class Foo {
   covariant var soMuchSoVeryLongFieldNameHere;
   covariant VeryLongTypeAnnotation
@@ -59,7 +59,7 @@ class Foo {
   abstract var soMuchSoVeryLongFieldNameHere;
   abstract SuperLongTypeAnnotation field;
 }
-<<<
+<<< 3.7
 class Foo {
   abstract var soMuchSoVeryLongFieldNameHere;
   abstract SuperLongTypeAnnotation
@@ -73,7 +73,7 @@ class Foo {
   const  uptypedInstance  =  123  ;
   const  StringInstance  typed  =  'string'  ;
 }
-<<<
+<<< 3.7
 class Foo {
   static const uptyped = 123;
   static const String typed = 'string';

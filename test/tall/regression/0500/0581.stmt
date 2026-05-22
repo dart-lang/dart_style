@@ -3,7 +3,7 @@
               events[0],
               invokesMethod('file').on(fs).withPositionalArguments(
                   <String>['/foo']).withResult(isFile));
-<<<
+<<< 3.7
           expect(
             events[0],
             invokesMethod('file')

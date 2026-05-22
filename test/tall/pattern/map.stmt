@@ -10,7 +10,7 @@ case  {  ...  }  :
 case  {  k  :  _  ,  ...  }  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case {}:
   case <int, String>{}:
@@ -23,13 +23,13 @@ switch (obj) {
 }
 >>> Unsplit map.
 if (obj case {k: 1, m: 3, ...}) {;}
-<<<
+<<< 3.7
 if (obj case {k: 1, m: 3, ...}) {
   ;
 }
 >>> If it splits anywhere, it splits at every element.
 if (obj case {first: 1,second: 2,third: 3}) {;}
-<<<
+<<< 3.7
 if (obj case {
   first: 1,
   second: 2,
@@ -39,7 +39,7 @@ if (obj case {
 }
 >>> Nested map patterns don't force outer to split.
 if (obj case {a: {k: 1}, m: [{k: 3}]}) {;}
-<<<
+<<< 3.7
 if (obj case {a: {k: 1}, m: [{k: 3}]}) {
   ;
 }
@@ -49,7 +49,7 @@ if (obj case {
   a:1,b:2,c:3,
   d:4,e:5,f:6,
 }) {;}
-<<<
+<<< 3.7
 if (obj case {
   // yeah
   a: 1,
@@ -63,24 +63,24 @@ if (obj case {
 }
 >>> Remove trailing comma if unsplit.
 if (obj case {k:1,}) {;}
-<<<
+<<< 3.7
 if (obj case {k: 1}) {
   ;
 }
 >>> Remove trailing comma if unsplit, multiple.
 if (e case {a: 1, b: 2,}) {}
-<<<
+<<< 3.7
 if (e case {a: 1, b: 2}) {}
 >>> Add comma to map pattern if split.
 if (e case {a: longPattern1, b: veryLongPattern2}) {}
-<<<
+<<< 3.7
 if (e case {
   a: longPattern1,
   b: veryLongPattern2,
 }) {}
 >>> Split inside value forces map to split.
 if (obj case {firstKey: first, secondKey: secondLongPattern ||thirdLongPattern}) {;}
-<<<
+<<< 3.7
 if (obj case {
   firstKey: first,
   secondKey:
@@ -91,15 +91,15 @@ if (obj case {
 }
 >>> A nested non-empty list pattern doesn't force the map pattern to split.
 var {k: [v]} = value;
-<<<
+<<< 3.7
 var {k: [v]} = value;
 >>> A nested non-empty map pattern doesn't force the map pattern to split.
 var {k: {k: v}} = value;
-<<<
+<<< 3.7
 var {k: {k: v}} = value;
 >>> A nested non-empty record pattern doesn't force the map pattern to split.
 var {k: (v,)} = value;
-<<<
+<<< 3.7
 var {k: (v,)} = value;
 >>> Remove blank lines before first and last entries. Preserve one between.
 if (obj case {
@@ -117,7 +117,7 @@ if (obj case {
 
 
 }) {;}
-<<<
+<<< 3.7
 if (obj case {
   firstField: 1,
 
@@ -143,7 +143,7 @@ if (obj case {
 
 
 }) {;}
-<<<
+<<< 3.7
 if (obj case {a: 1, b: 2, c: 3}) {
   ;
 }

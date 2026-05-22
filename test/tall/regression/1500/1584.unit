@@ -427,7 +427,7 @@ final aaaaaaaaaaaAaaaaaaaAaaaAaaAaaaaaa =
     aaaaaa(aaaaaaaAaaaAaaaAaa('/a/000')).aaAaaa();
   });
 }
-<<<
+<<< 3.7
 void aaaa() {
   aaaa('aaaaaaaa aaaaa aaaa', () {
     final aaaaaAaaa = {
@@ -507,7 +507,7 @@ void aaaa() {
     });
   });
 }
-<<<
+<<< 3.7
 void aaaa() {
   aaaaa(() {
     aaaa(() {
@@ -546,7 +546,7 @@ Aaa<AaaaaaaaaaAaaa, Aaaaaa> _aaaaAaaaaa({
     ,
   ],
 }) => {};
-<<<
+<<< 3.7
 Aaa<AaaaaaaaaaAaaa, Aaaaaa> _aaaaAaaaaa({
   Aaaa<aaa> aaaaaaaAaaaaaaaa = const [
     361872399767151, // Aaaaaa
@@ -565,7 +565,7 @@ final aaaa = {
   24 /* % of aaaaaa aaaaaaa */ : 70 /* aaaaaaaaaaa */,
   29 /* % of aaaaaa aaaaaaa */ : 80 /* aaaaaaaaaaa */,
 };
-<<<
+<<< 3.7
 final aaaa = {
   // Aaaaa aaaa aaaaaa.
   1 /* % of aaaaaa aaaaaaa */ : 10 /* aaaaaaaaaaa */,

@@ -137,55 +137,17 @@ Future<void> testBenchmarks({required bool useTallStyle}) async {
 void _testFile(TestFile testFile) {
   group(testFile.path, () {
     for (var formatTest in testFile.tests) {
-      // Figure out what versions have specified output. We use different logic
-      // for tall and short tests. For tall tests, if the output doesn't specify
-      // versions, we treat the one output as starting at the earliest tall
-      // style. That way we cover the whole range of tall versions.
-      //
-      // The short tests are older than the formatter supporting language
-      // versioning so don't specify output versions. But they also cover a wide
-      // range of language versions where new syntax was added (control flow
-      // collections, super parameters, etc.). To avoid going back and adding
-      // version markers to all of the tests that test new-ish syntax, we just
-      // run the short tests on the *latest* language version that has short
-      // style. Since the short formatting is basically legacy code that isn't
-      // changed much, this isn't particularly risky.
-      //
-      // The exception is the one short test for 2.19 switch cases that has an
-      // unsupported version. That version is earlier than the latest short
-      // style, so for tests like that, we use the preceding version as the
-      // tested version.
-      var outputs = switch (formatTest) {
-        // An unversioned tall test starts at the earliest tall style.
-        UnversionedFormatTest(:var output) when testFile.isTall => {
-          DartVersionHistory.earliestTallStyle: output,
-        },
-
-        // An unversioned short test with an unsupported version tests the one
-        // version right before that.
-        UnversionedFormatTest(:var output, :var unsupportedVersion?) => {
-          DartVersionHistory.before(unsupportedVersion): output,
-        },
-
-        // Otherwise a short test uses the latest short version.
-        UnversionedFormatTest(:var output) => {
-          DartVersionHistory.latestShortStyle: output,
-        },
-
-        // Versioned tests use the specified versions.
-        VersionedFormatTest(:var outputs) => outputs,
+      // Find the upper end of the range of versions to test.
+      var upperBound = switch (formatTest.unsupportedVersion) {
+        var unsupported? => DartVersionHistory.before(unsupported),
+        _ when testFile.isTall => DartVersionHistory.latest,
+        _ => DartVersionHistory.latestShortStyle,
       };
 
-      // Find the upper end of the range of versions to test.
-      var upperBound = testFile.isTall
-          ? DartVersionHistory.latest
-          : DartVersionHistory.latestShortStyle;
-
-      if (formatTest.unsupportedVersion case var unsupported?) {
-        upperBound = DartVersionHistory.before(unsupported);
-      }
-
-      _versionedTestEntries(outputs, upperBound).forEach((version, output) {
+      _versionedTestEntries(formatTest.outputs, upperBound).forEach((
+        version,
+        output,
+      ) {
         _runTestAtVersion(testFile, formatTest, output, version);
       });
     }

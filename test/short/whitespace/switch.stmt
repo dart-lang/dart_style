@@ -1,7 +1,7 @@
 40 columns                              |
 >>> require at least one newline between statements in a case
 switch (foo) {case 0:a();b();c();}
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
     a();
@@ -15,7 +15,7 @@ switch (foo) {case 0:
   b();
   c();
 }
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
     a();
@@ -39,7 +39,7 @@ switch (foo) {case 0:
 
 
 }
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
     a();
@@ -67,7 +67,7 @@ switch (foo) {
 
     body;
 }
-<<<
+<<< 3.6
 switch (foo) {
   case 1:
   case 2:
@@ -80,7 +80,7 @@ switch (foo) {
 }
 >>> require at least one newline between statements in a default
 switch (foo) {default:a();b();c();}
-<<<
+<<< 3.6
 switch (foo) {
   default:
     a();
@@ -94,7 +94,7 @@ switch (foo) {default:
   b();
   c();
 }
-<<<
+<<< 3.6
 switch (foo) {
   default:
     a();
@@ -118,7 +118,7 @@ switch (foo) {default:
 
 
 }
-<<<
+<<< 3.6
 switch (foo) {
   default:
     a();
@@ -129,7 +129,7 @@ switch (foo) {
 }
 >>> require at least one newline between cases
 switch (foo) {case 0:case 1:case 2:body();}
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
   case 1:
@@ -142,7 +142,7 @@ switch (foo) {case 0: body();
   case 1:
   case 2:body();
 }
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
     body();
@@ -169,7 +169,7 @@ switch (foo) {
 
 
 }
-<<<
+<<< 3.6
 switch (foo) {
   case 0:
   case 1:
@@ -185,7 +185,7 @@ case "fig":
 print("bleh");
 break;
 }
-<<<
+<<< 3.6
 switch (fruit) {
   case "apple":
     print("delish");
@@ -205,7 +205,7 @@ switch (fruit) {
   other:default:
     break;
 }
-<<<
+<<< 3.6
 switch (fruit) {
   case "apple":
     print("delish");
@@ -222,7 +222,7 @@ switch (fruit) {
 var x = switch  (  obj  )  {
 1  =>  'one'  ,  var  two  =>  'two'
 };
-<<<
+<<< 3.6
 var x = switch (obj) {
   1 => 'one',
   var two => 'two'
@@ -258,7 +258,7 @@ switch (obj) {
   case 1 is! int:
     body;
 }
-<<<
+<<< 2.19
 switch (obj) {
   case {1, 2}:
   case -pi:
@@ -292,5 +292,5 @@ switch (obj) {
 <<< 3.0 (unsupported)
 >>> empty switch expression
 var x = switch(y) {};
-<<<
+<<< 3.6
 var x = switch (y) {};

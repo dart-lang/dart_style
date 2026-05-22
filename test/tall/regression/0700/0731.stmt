@@ -11,7 +11,7 @@
         filterIsActive = filterState;
       });
     });
-<<<
+<<< 3.7
     filterUpdateSubscription = sl
         .get<EventManager>()
         .updateFilterCommand
@@ -43,7 +43,7 @@
     });
   });
 }
-<<<
+<<< 3.7
 {
   var placeManagerUpdateResults___________________________ = [
     sl.get<PlaceManager>().updateFilterCommand.results,

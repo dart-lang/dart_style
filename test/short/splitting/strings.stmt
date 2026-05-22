@@ -1,18 +1,18 @@
 40 columns                              |
 >>> long single-line
 "this string is longer than forty characters";
-<<<
+<<< 3.6
 "this string is longer than forty characters";
 >>> short one line multi-line
 """not too long""";
-<<<
+<<< 3.6
 """not too long""";
 >>> multi-line with short lines
 """
 not too long
 or this one
 """;
-<<<
+<<< 3.6
 """
 not too long
 or this one
@@ -22,7 +22,7 @@ or this one
 this string is longer than forty characters
 this one is also is longer than forty characters
 """;
-<<<
+<<< 3.6
 """
 this string is longer than forty characters
 this one is also is longer than forty characters
@@ -33,7 +33,7 @@ this one is also is longer than forty characters
 multiline
 """;
 }
-<<<
+<<< 3.6
 {
   """
 multiline
@@ -43,14 +43,14 @@ multiline
 someMethod("""first line fits in here
 more stuff down here too that is long
 """);
-<<<
+<<< 3.6
 someMethod("""first line fits in here
 more stuff down here too that is long
 """);
 >>> wrap first line if needed
 someMethod("""first line does not fits here
 """);
-<<<
+<<< 3.6
 someMethod(
     """first line does not fits here
 """);
@@ -59,7 +59,7 @@ someMethod("foo", """
   some
   text
 """);
-<<<
+<<< 3.6
 someMethod("foo", """
   some
   text
@@ -69,7 +69,7 @@ someMethod("""
   some
   text
 """, "foo");
-<<<
+<<< 3.6
 someMethod("""
   some
   text
@@ -82,7 +82,7 @@ someMethod(
   text
   """,
   "foo");
-<<<
+<<< 3.6
 someMethod(
     "foo",
     """
@@ -100,7 +100,7 @@ someMethod("""
 """, """
   even more
 """);
-<<<
+<<< 3.6
 someMethod("""
   some
   text
@@ -124,7 +124,7 @@ someMethod("""
   "many",
   "elements"
 ]);
-<<<
+<<< 3.6
 someMethod("""
   some
   text
@@ -141,7 +141,7 @@ someMethod("""
 >>> interpolation is not split even when line is too long
 someMethod("some text that is pretty long ${    interpolate +
 a + thing   } more text");
-<<<
+<<< 3.6
 someMethod(
     "some text that is pretty long ${interpolate + a + thing} more text");
 >>> multi-line string interpolation does not split
@@ -149,7 +149,7 @@ someMethod("foo", """
   some text that is pretty long
   some more text that is pretty long ${    interpolate + a + thing   } more text
 """);
-<<<
+<<< 3.6
 someMethod("foo", """
   some text that is pretty long
   some more text that is pretty long ${interpolate + a + thing} more text
@@ -157,13 +157,13 @@ someMethod("foo", """
 >>> nested interpolation is not split
 someMethod("some text that is ${pretty +  'long ${    interpolate +
 a + thing   } more'} text", "another arg");
-<<<
+<<< 3.6
 someMethod(
     "some text that is ${pretty + 'long ${interpolate + a + thing} more'} text",
     "another arg");
 >>> hard splits are split in interpolation
 someMethod("before ${(){statement();statement();statement();}} after");
-<<<
+<<< 3.6
 someMethod("before ${() {
   statement();
   statement();
@@ -173,7 +173,7 @@ someMethod("before ${() {
 method(
 "b ${[1, 2, 3, 4, 5, 6]} a",
 "before ${[first, second, third, fourth, {fifth: sixth}]} after");
-<<<
+<<< 3.6
 method(
     "b ${[1, 2, 3, 4, 5, 6]} a",
     "before ${[
@@ -188,7 +188,7 @@ method(
 b"""} ${aft
 +
 er}";
-<<<
+<<< 3.6
 "before ${"""a
 b"""} ${aft + er}";
 >>> multiply-nested interpolation
@@ -205,7 +205,7 @@ h"""
 j ${k
 +
 l}''';
-<<<
+<<< 3.6
 '''a
 ${b + """c
 ${d + '''e
@@ -215,7 +215,7 @@ j ${k + l}''';
 >>> nested interpolation inside function
 "before ${ () { a(); """b
 c"""; d(); }} after";
-<<<
+<<< 3.6
 "before ${() {
   a();
   """b
@@ -229,7 +229,7 @@ a
 b
 +  // another
 c} after";
-<<<
+<<< 3.6
 "before ${ // comment
     a + b + // another
         c} after";
@@ -237,7 +237,7 @@ c} after";
 function(
   "long string long string ${interpolated + interpolated} long string",
   longLongLongLongObject.longLongLongLongMethod());
-<<<
+<<< 3.6
 function(
     "long string long string ${interpolated + interpolated} long string",
     longLongLongLongObject

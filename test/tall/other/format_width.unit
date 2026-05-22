@@ -5,7 +5,7 @@
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart format width=30
 main() {
   fitsUnsplitAt40 +
@@ -16,7 +16,7 @@ main() {
   // dart format width=30
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 main() {
   // dart format width=30
   fitsUnsplitAt40 + butNotAt30;
@@ -27,7 +27,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart format width=30
 // dart format width=60
 main() {
@@ -39,7 +39,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart format width=wat
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -49,7 +49,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart format width=30 some more text
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -59,7 +59,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 //dart format width=30
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -69,7 +69,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart   format width=30
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -79,7 +79,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 // dart format width = 30
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -89,7 +89,7 @@ main() {
 main() {
   fitsUnsplitAt40 + butNotAt30;
 }
-<<<
+<<< 3.7
 /// dart format width=30
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -99,7 +99,7 @@ main() {
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 /* // dart format width=30 */
 main() {
   fitsUnsplitAt40 + butNotAt30;
@@ -109,7 +109,7 @@ var c = '// dart format width=30';
 main() {
   fitsUnsplitAt40   +   butNotAt30;
 }
-<<<
+<<< 3.7
 var c = '// dart format width=30';
 main() {
   fitsUnsplitAt40 + butNotAt30;

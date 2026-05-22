@@ -3,7 +3,7 @@
 
 
 library x;
-<<<
+<<< 3.7
 #!script
 
 library x;
@@ -11,7 +11,7 @@ library x;
 #!script
 
 library x;
-<<<
+<<< 3.7
 #!script
 
 library x;

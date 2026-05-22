@@ -1,4 +1,4 @@
 >>> work around bug in record type annotation end token
 var x = foo<(int, int)?, int>();
-<<<
+<<< 3.6
 var x = foo<(int, int)?, int>();

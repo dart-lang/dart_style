@@ -1,13 +1,13 @@
 40 columns                              |
 >>> Empty block body.
 do {} while (true);
-<<<
+<<< 3.7
 do {} while (true);
 >>> Don't split before long condition.
 do {
   ;
 } while (aLongConditionExpressionThatWraps);
-<<<
+<<< 3.7
 do {
   ;
 } while (aLongConditionExpressionThatWraps);
@@ -15,12 +15,12 @@ do {
 do {
   ;
 } while (aLongCondition + expressionThatWraps);
-<<<
+<<< 3.7
 do {
   ;
 } while (aLongCondition +
     expressionThatWraps);
 >>> Unbraced body.
 do something(i); while (condition);
-<<<
+<<< 3.7
 do something(i); while (condition);

@@ -13,7 +13,7 @@ case  's$tr${  ing  }'  :
 case  #symbol  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case true:
   case false:
@@ -35,7 +35,7 @@ case  qualified  .  name  :
 case  prefixed  .  qualified  .  name  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case _:
   case name:
@@ -45,7 +45,7 @@ switch (obj) {
 }
 >>> Split in qualified name.
 if (object case veryLongPrefix.longIdentifierName) {;}
-<<<
+<<< 3.7
 if (object
     case veryLongPrefix
         .longIdentifierName) {
@@ -53,7 +53,7 @@ if (object
 }
 >>> Split in property chain.
 if (object case longPrefix.longType.longIdentifierName) {;}
-<<<
+<<< 3.7
 if (object
     case longPrefix
         .longType
@@ -72,7 +72,7 @@ case  const  <  int  ,  String  >  {  }  :
 case  const  {  1  :  's'  ,  2  :  't'  }  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case const []:
   case const <int>[]:
@@ -93,7 +93,7 @@ case  const  Foo  (  field  :  value  ,  )  :
 case  const  Foo  <  int  ,  String  >  (  field  )  :
 ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case const Foo():
   case const Foo(field, another):
@@ -108,7 +108,7 @@ case  const  (  1  )  :
 case  const  (  -  foo  *  bar  )  :
 ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case const (1):
   case const (-foo * bar):
@@ -116,9 +116,9 @@ switch (obj) {
 }
 >>> Null-check pattern.
 if (o case pattern  ?  ) {}
-<<<
+<<< 3.7
 if (o case pattern?) {}
 >>> Null-assert pattern.
 if (o case pattern  !  ) {}
-<<<
+<<< 3.7
 if (o case pattern!) {}

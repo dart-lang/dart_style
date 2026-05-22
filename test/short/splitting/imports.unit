@@ -1,30 +1,30 @@
 40 columns                              |
 >>> does not wrap long import string (#16366)
 import 'package:some/very/long/import/path.dart';
-<<<
+<<< 3.6
 import 'package:some/very/long/import/path.dart';
 >>> wrap import at as
 import 'package:some/very/long/import/path.dart' as path;
-<<<
+<<< 3.6
 import 'package:some/very/long/import/path.dart'
     as path;
 >>> split before deferred
 import 'package:some/very/long/import/path.dart' deferred as path;
-<<<
+<<< 3.6
 import 'package:some/very/long/import/path.dart'
     deferred as path;
 >>> import keeps shows on one line
 import 'foo.dart'show Ape,Bear,Cat;
-<<<
+<<< 3.6
 import 'foo.dart' show Ape, Bear, Cat;
 >>> import moves all shows to next line
 import 'foo.dart'show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 import 'foo.dart'
     show Ape, Bear, Cat, Dog;
 >>> import moves all shows each to their own line
 import 'foo.dart'show Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
-<<<
+<<< 3.6
 import 'foo.dart'
     show
         Ape,
@@ -36,16 +36,16 @@ import 'foo.dart'
         Gorilla;
 >>> import keeps hides on one line
 import 'foo.dart'hide Ape,Bear,Cat;
-<<<
+<<< 3.6
 import 'foo.dart' hide Ape, Bear, Cat;
 >>> import moves hides to next line
 import 'foo.dart'hide Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide Ape, Bear, Cat, Dog;
 >>> import moves hides each to their own line
 import 'foo.dart'hide Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide
         Ape,
@@ -57,11 +57,11 @@ import 'foo.dart'
         Gorilla;
 >>> single line both
 import 'foo.dart'hide Ape show Bear;
-<<<
+<<< 3.6
 import 'foo.dart' hide Ape show Bear;
 >>> multiline first
 import 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide
         Ape,
@@ -73,7 +73,7 @@ import 'foo.dart'
     show Ape, Bear, Cat, Dog;
 >>> multiline second
 import 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide Ape, Bear, Cat, Dog
     show
@@ -85,7 +85,7 @@ import 'foo.dart'
         FlyingFox;
 >>> multiline both
 import 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide
         Ape,
@@ -103,42 +103,42 @@ import 'foo.dart'
         FlyingFox;
 >>> double line both
 import 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide Ape, Bear, Cat, Dog
     show Ape, Bear, Cat, Dog;
 >>> force both keywords to split even if first would fit on first line
 import 'foo.dart' hide Ape, Bear show Ape, Bear, Cat, Dog;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide Ape, Bear
     show Ape, Bear, Cat, Dog;
 >>> force split in list
 import 'foo.dart' hide First, //
 Second;
-<<<
+<<< 3.6
 import 'foo.dart'
     hide
         First, //
         Second;
 >>> multiple configurations on one line
 import 'a' if (b) 'b' if (c) 'c';
-<<<
+<<< 3.6
 import 'a' if (b) 'b' if (c) 'c';
 >>> if configurations don't fit, they all split
 import 'long/import/url.dart' if (b) 'b' if (c) 'c';
-<<<
+<<< 3.6
 import 'long/import/url.dart'
     if (b) 'b'
     if (c) 'c';
 >>> do not split before uri
 import 'long/import/url.dart' if (config) 'very/long/configured/import/url.dart';
-<<<
+<<< 3.6
 import 'long/import/url.dart'
     if (config) 'very/long/configured/import/url.dart';
 >>> split before ==
 import 'some/uri.dart' if (config.name.debug == 'string') 'c';
-<<<
+<<< 3.6
 import 'some/uri.dart'
     if (config.name.debug ==
         'string') 'c';

@@ -4,7 +4,7 @@ class Foo {
   Foo()   native   ;
   int bar()   native ;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo() native;
   int bar() native;
@@ -14,12 +14,12 @@ class Foo {
   Foo()   native  "Foo" ;
   int bar()   native  "bar"   ;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo() native "Foo";
   int bar() native "bar";
 }
 >>> class
 class Foo    native   "Foo"  {  }
-<<<
+<<< 3.7
 class Foo native "Foo" {}

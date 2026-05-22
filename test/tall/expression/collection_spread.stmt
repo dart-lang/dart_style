@@ -2,28 +2,28 @@
 >>> Unsplit.
 var list = [  ...  a,...b,  ...
 c];
-<<<
+<<< 3.7
 var list = [...a, ...b, ...c];
 >>> Don't split after `...`.
 var list = [...comicallyLongIdentifierThatOverflows];
-<<<
+<<< 3.7
 var list = [
   ...comicallyLongIdentifierThatOverflows,
 ];
 >>> Null-aware.
 var list = [  ...?  a,...?b,  ...?
 c];
-<<<
+<<< 3.7
 var list = [...?a, ...?b, ...?c];
 >>> Don't split after `...?`.
 var list = [...?comicallyLongIdentifierThatOverflows];
-<<<
+<<< 3.7
 var list = [
   ...?comicallyLongIdentifierThatOverflows,
 ];
 >>> Split inside spread expression.
 var list = [1, ...some + very + long + spread + expression, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   ...some +
@@ -35,7 +35,7 @@ var list = [
 ];
 >>> Spread function expression.
 var list = [1, ...() { body; }, 4];
-<<<
+<<< 3.7
 var list = [
   1,
   ...() {
@@ -45,7 +45,7 @@ var list = [
 ];
 >>> Spread immediately invoked function expression.
 var list = [1, ...() sync* { yield thing; }(), 4];
-<<<
+<<< 3.7
 var list = [
   1,
   ...() sync* {
@@ -55,7 +55,7 @@ var list = [
 ];
 >>> Spread cascade.
 var list = [1, ...thing..cascade()..another(), 4];
-<<<
+<<< 3.7
 var list = [
   1,
   ...thing

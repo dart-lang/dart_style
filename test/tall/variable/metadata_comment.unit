@@ -23,7 +23,7 @@ late int e;
 @meta
 // c
 late final int f;
-<<<
+<<< 3.7
 @meta
 // c
 var a;
@@ -51,7 +51,7 @@ late final int f;
 @meta
 // c
 int a() {}
-<<<
+<<< 3.7
 @meta
 // c
 int a() {}

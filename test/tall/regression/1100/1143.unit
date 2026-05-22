@@ -9,7 +9,7 @@ var s2 = <String>[
   'a' 'b' + 'c',
   'd' + 'e' 'f',
 ];
-<<<
+<<< 3.7
 var s1 = <String>[
   'a'
           'b' +

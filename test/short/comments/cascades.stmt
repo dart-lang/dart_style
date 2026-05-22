@@ -1,13 +1,13 @@
 >>> comments on single cascade lines
 receiver..cascade(); // comment
-<<<
+<<< 3.6
 receiver..cascade(); // comment
 >>> comments on split cascade lines
 receiver
   ..cascade() // a
   ..cascade() // b
   ..more(); // c
-<<<
+<<< 3.6
 receiver
   ..cascade() // a
   ..cascade() // b
@@ -16,7 +16,7 @@ receiver
 receiver // comment
   ..cascade()
   ..more();
-<<<
+<<< 3.6
 receiver // comment
   ..cascade()
   ..more();
@@ -29,7 +29,7 @@ receiver
   // comment
   ..cascade()
   ..cascade();
-<<<
+<<< 3.6
 receiver
 
   // comment
@@ -52,7 +52,7 @@ receiver
 
   // comment
   ..cascade();
-<<<
+<<< 3.6
 receiver
 
   // comment

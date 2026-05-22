@@ -13,7 +13,7 @@ return $.Div(inner: [
         $.P(id: "notes", inner: "${seeds} seeds")
     ]),
 ]);
-<<<
+<<< 3.6
 return $.Div(inner: [
   $.Div(id: "container", inner: [
     $.Canvas(width: maxD, height: maxD, clazz: "center", ref: canvas),

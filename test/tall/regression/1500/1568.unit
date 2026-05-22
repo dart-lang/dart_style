@@ -8,7 +8,7 @@ abstract interface class TypeAnalyzerOperations<
     implements FlowAnalysisOperations<Variable, SharedTypeView<TypeStructure>> {
   // ...
 }
-<<<
+<<< 3.7
 abstract interface class TypeAnalyzerOperations<
   TypeStructure extends SharedTypeStructure<TypeStructure>,
   Variable extends Object,
@@ -29,7 +29,7 @@ abstract interface class TypeAnalyzerOperations<
     implements FlowAnalysisOperations<Variable, SharedTypeView<TypeStructure>> {
   // ...
 }
-<<<
+<<< 3.7
 abstract interface class TypeAnalyzerOperations<
   TypeStructure extends SharedTypeStructure<TypeStructure>,
   Variable extends Object,
@@ -51,7 +51,7 @@ abstract interface class TypeAnalyzerOperations<
     implements FlowAnalysisOperations<Variable, SharedTypeView<TypeStructure>> {
   // ...
 }
-<<<
+<<< 3.7
 abstract interface class TypeAnalyzerOperations<
   TypeStructure extends SharedTypeStructure<TypeStructure>,
   Variable extends Object,

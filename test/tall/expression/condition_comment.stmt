@@ -1,28 +1,28 @@
 40 columns                              |
 >>> Inline block comment before `?`.
 cond /* c */ ? 1 : 2;
-<<<
+<<< 3.7
 cond /* c */ ? 1 : 2;
 >>> Inline block comment after `?`.
 cond ? /* c */ 1 : 2;
-<<<
+<<< 3.7
 cond ? /* c */ 1 : 2;
 >>> Inline block comment before `:`.
 cond ? 1 /* c */ : 2;
-<<<
+<<< 3.7
 cond ? 1 /* c */ : 2;
 >>> Inline block comment after `:`.
 cond ? 1 : /* c */ 2;
-<<<
+<<< 3.7
 cond ? 1 : /* c */ 2;
 >>> Inline block comment after else.
 cond ? 1 : 2 /* c */;
-<<<
+<<< 3.7
 cond ? 1 : 2 /* c */;
 >>> Line comment before `?`.
 cond // c
 ? 1 : 2;
-<<<
+<<< 3.7
 cond // c
     ? 1
     : 2;
@@ -44,7 +44,7 @@ cond
 >>> Line comment before `:`.
 cond ? 1 // c
 : 2;
-<<<
+<<< 3.7
 cond
     ? 1 // c
     : 2;
@@ -82,7 +82,7 @@ cond
 value =
     // comment
     a ? b : c;
-<<<
+<<< 3.7
 value =
     // comment
     a ? b : c;

@@ -3,49 +3,49 @@
 foo(
   argument‹  ›,
 );
-<<<
+<<< 3.7
 foo(argument‹›);
 >>> After removed comma.
 foo(
   argument,‹  ›
 );
-<<<
+<<< 3.7
 foo(argument‹›);
 >>> Around removed comma.
 foo(
   argum‹ent,
 ›);
-<<<
+<<< 3.7
 foo(argum‹ent›);
 >>> At inserted comma.
 extremelyLongFunction(reallyLongArgument‹  ›);
-<<<
+<<< 3.7
 extremelyLongFunction(
   reallyLongArgument,
 ‹›);
 >>> Around inserted comma.
 extremelyLongFunction(reallyLongArgu‹ment  )›;
-<<<
+<<< 3.7
 extremelyLongFunction(
   reallyLongArgu‹ment,
 )›;
 >>> Start before kept comma.
 foo(argument‹  ,   anot›her);
-<<<
+<<< 3.7
 foo(argument, ‹anot›her);
 >>> Start after kept comma.
 foo(argument  ,   ‹ anot›her);
-<<<
+<<< 3.7
 foo(argument, ‹anot›her);
 >>> End before kept comma.
 foo(argu‹ment › ,   another);
-<<<
+<<< 3.7
 foo(argu‹ment›, another);
 >>> End after kept comma.
 foo(argu‹ment  ,  ›  another);
-<<<
+<<< 3.7
 foo(argu‹ment, ›another);
 >>> Selection just kept comma.
 foo(argument  ‹  ,  ›  another);
-<<<
+<<< 3.7
 foo(argument, ‹›another);

@@ -23,7 +23,7 @@ void main() async {
     });
   });
 }
-<<<
+<<< 3.6
 void main() async {
   group('my group', () {
     setUp(() async {
@@ -72,7 +72,7 @@ aaaa() {
     }
   }
 }
-<<<
+<<< 3.6
 aaaa() {
   {
     {
@@ -124,7 +124,7 @@ void main() {
     ..methodWithLongName(ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName())
     ..methodWithLongName(ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName());
 }
-<<<
+<<< 3.6
 void main() {
   Example()
     ..methodWithLongName(ClassWithLongName(), ClassWithLongName(),

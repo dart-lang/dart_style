@@ -2,7 +2,7 @@
 ### Test how named arguments interact with block formatting.
 >>> A function block argument can't be named.
 function(name: () {;});
-<<<
+<<< 3.7
 function(
   name: () {
     ;
@@ -10,7 +10,7 @@ function(
 );
 >>> A collection block argument can't be named.
 function(name: [element, element, element, element]);
-<<<
+<<< 3.7
 function(
   name: [
     element,
@@ -21,7 +21,7 @@ function(
 );
 >>> If there are multiple functions, don't block format, even if only one is positional.
 function(a: () {;}, () {;});
-<<<
+<<< 3.7
 function(
   a: () {
     ;
@@ -32,7 +32,7 @@ function(
 );
 >>> If there are multiple collections, don't block format, even if only one is positional.
 function(a: [element], [element, element, element, element, element]);
-<<<
+<<< 3.7
 function(
   a: [element],
   [
@@ -45,7 +45,7 @@ function(
 );
 >>> Other non-block arguments can be named or not.
 function(1, a: 2, 3, b: 4, [element, element], c: 5);
-<<<
+<<< 3.7
 function(1, a: 2, 3, b: 4, [
   element,
   element,

@@ -2,7 +2,7 @@
 main() {
     print(- -2);
 }
-<<<
+<<< 3.7
 main() {
   print(- -2);
 }
@@ -10,7 +10,7 @@ main() {
 main() {
   var x = - --y;
 }
-<<<
+<<< 3.7
 main() {
   var x = - --y;
 }

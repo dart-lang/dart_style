@@ -10,7 +10,7 @@ return [
      else
        ItemConstructorC()
 ];
-<<<
+<<< 3.6
 return [
   for (final x in exampleList)
     if (conditionA)

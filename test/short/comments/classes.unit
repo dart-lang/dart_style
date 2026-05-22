@@ -3,14 +3,14 @@
 class A {
   // comment
 }
-<<<
+<<< 3.6
 class A {
   // comment
 }
 >>> line comment on opening line
 class A { // comment
 }
-<<<
+<<< 3.6
 class A {
   // comment
 }
@@ -18,43 +18,43 @@ class A {
 class A {
   /* comment */
 }
-<<<
+<<< 3.6
 class A {
   /* comment */
 }
 >>> block comment with trailing newline
 class A {/* comment */
 }
-<<<
+<<< 3.6
 class A {
   /* comment */
 }
 >>> block comment with leading newline
 class A {
   /* comment */}
-<<<
+<<< 3.6
 class A {
   /* comment */
 }
 >>> inline block comment
 class A {  /* comment */  }
-<<<
+<<< 3.6
 class A {/* comment */}
 >>> multiple comments on opening line
 class A { /* first */ // second
 }
-<<<
+<<< 3.6
 class A {
   /* first */ // second
 }
 >>> multiple inline block comments
 class A {  /* 1 */   /* 2 */   /* 3 */  }
-<<<
+<<< 3.6
 class A {/* 1 */ /* 2 */ /* 3 */}
 >>> multiline trailing block comment
 class A {  /* comment
 */  }
-<<<
+<<< 3.6
 class A {
   /* comment
 */
@@ -65,7 +65,7 @@ class A {
 //  int b;
   int c;
 }
-<<<
+<<< 3.6
 class A {
 //  int a;
 //  int b;
@@ -75,7 +75,7 @@ class A {
 class C/* is cool */{
   /* int */ foo(/* comment */) => 42;
 }
-<<<
+<<< 3.6
 class C /* is cool */ {
   /* int */ foo(/* comment */) => 42;
 }
@@ -87,7 +87,7 @@ library foo;
 class C /* is cool */ {
   /* int */ foo() => 42;
 }
-<<<
+<<< 3.6
 library foo;
 
 /* A long
@@ -100,7 +100,7 @@ class C /* is cool */ {
 class Foo {var a = 1;
 /// doc
 var b = 2;}
-<<<
+<<< 3.6
 class Foo {
   var a = 1;
 
@@ -114,7 +114,7 @@ class A {
 
   // comment
 }
-<<<
+<<< 3.6
 class A {
   // comment
 }
@@ -125,7 +125,7 @@ class A {
 
 
 }
-<<<
+<<< 3.6
 class A {
   // comment
 }
@@ -135,7 +135,7 @@ class Foo {
 // flush
   }
 }
-<<<
+<<< 3.6
 class Foo {
   method() {
 // flush
@@ -148,7 +148,7 @@ class Foo {
 // flush
   }
 }
-<<<
+<<< 3.6
 class Foo {
   method() {
     // ...
@@ -161,7 +161,7 @@ class Foo {
 // comment
   var y = 2;
 }
-<<<
+<<< 3.6
 class Foo {
   var x = 1;
 // comment
@@ -171,7 +171,7 @@ class Foo {
 class Foo {} /**
 */
 class Bar {}
-<<<
+<<< 3.6
 class Foo {}
 
 /**
@@ -181,7 +181,7 @@ class Bar {}
 class Foo {}
 /**
 */ class Bar {}
-<<<
+<<< 3.6
 class Foo {}
 
 /**
@@ -189,10 +189,10 @@ class Foo {}
 class Bar {}
 >>> inline before type parameter
 class Foo</* comment */T> {}
-<<<
+<<< 3.6
 class Foo< /* comment */ T> {}
 >>> TODO(rnystrom): Ideally, would split before the comment, not after.
 class Foo< /* comment */TypeParameter> {}
-<<<
+<<< 3.6
 class Foo< /* comment */
     TypeParameter> {}

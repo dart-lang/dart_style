@@ -1,23 +1,23 @@
 40 columns                              |
 >>> Single-line without else.
 var list = [1,  if  (  c  )  2, 3];
-<<<
+<<< 3.7
 var list = [1, if (c) 2, 3];
 >>> Single-line with else.
 var list = [1,  if  (  c  )  2  else  2  , 3];
-<<<
+<<< 3.7
 var list = [1, if (c) 2 else 2, 3];
 >>> Inside map literal.
 var map = {1: a,  if  (  c  )  2: b, 3: c};
-<<<
+<<< 3.7
 var map = {1: a, if (c) 2: b, 3: c};
 >>> Inside set literal.
 var set = {1,  if  (  c  )  2, 3};
-<<<
+<<< 3.7
 var set = {1, if (c) 2, 3};
 >>> Split inside condition.
 var list = [1, if (veryLongConditionExpression || anotherPart) 2];
-<<<
+<<< 3.7
 var list = [
   1,
   if (veryLongConditionExpression ||
@@ -26,13 +26,13 @@ var list = [
 ];
 >>> Split collection but not element.
 var list = [if (c) somewhatLongThingHere];
-<<<
+<<< 3.7
 var list = [
   if (c) somewhatLongThingHere,
 ];
 >>>
 var list = [veryLongThingThatForcesASplit, if (c) 2, 3];
-<<<
+<<< 3.7
 var list = [
   veryLongThingThatForcesASplit,
   if (c) 2,
@@ -40,7 +40,7 @@ var list = [
 ];
 >>>
 var list = [veryLongThingThatForcesASplit, if (c) 2 else 2, 3];
-<<<
+<<< 3.7
 var list = [
   veryLongThingThatForcesASplit,
   if (c) 2 else 2,
@@ -48,7 +48,7 @@ var list = [
 ];
 >>> Long then branch forces split.
 var list = [1, if (condition) veryLongThingThatForcesASplit, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   if (condition)
@@ -57,7 +57,7 @@ var list = [
 ];
 >>> Long then branch forces both to split.
 var list = [1, if (condition) veryLongThingThatForcesASplit else 2, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   if (condition)
@@ -68,7 +68,7 @@ var list = [
 ];
 >>> Long else branch forces both to split.
 var list = [1, if (condition) 2 else veryLongThingThatForcesASplit, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   if (condition)
@@ -79,7 +79,7 @@ var list = [
 ];
 >>> Split inside then branch.
 var list = [1, if (condition) veryLongThingThatForcesASplit + anotherLongThing, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   if (condition)
@@ -89,7 +89,7 @@ var list = [
 ];
 >>> Split inside else branch.
 var list = [1, if (condition) ok else veryLongThingThatForcesASplit + anotherLongThing, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   if (condition)
@@ -101,7 +101,7 @@ var list = [
 ];
 >>> Function expression inside then.
 var list = [if (c) () { body; }];
-<<<
+<<< 3.7
 var list = [
   if (c)
     () {
@@ -110,7 +110,7 @@ var list = [
 ];
 >>> Function expression inside else.
 var list = [if (c) thing else () { body; }];
-<<<
+<<< 3.7
 var list = [
   if (c)
     thing
@@ -121,14 +121,14 @@ var list = [
 ];
 >>> Split outer if when subelement is if.
 var list = [if (c) if (d) thing];
-<<<
+<<< 3.7
 var list = [
   if (c)
     if (d) thing,
 ];
 >>> Only split outer if.
 var list = [if (condition) if (another) longThingHereThatsLong];
-<<<
+<<< 3.7
 var list = [
   if (condition)
     if (another) longThingHereThatsLong,
@@ -137,7 +137,7 @@ var list = [
 var list = [
   if (a) for (var b in c) thing
 ];
-<<<
+<<< 3.7
 var list = [
   if (a)
     for (var b in c) thing,
@@ -146,19 +146,19 @@ var list = [
 var list = [
   if (a) [for (var b in c) d]
 ];
-<<<
+<<< 3.7
 var list = [
   if (a) [for (var b in c) d],
 ];
 >>> Nested if inside list doesn't force outer if to split.
 var list = [if (a) [if (b) c]];
-<<<
+<<< 3.7
 var list = [
   if (a) [if (b) c],
 ];
 >>> Chained if-else.
 var list = [if (condition1) thing1 else if (condition2) thing2];
-<<<
+<<< 3.7
 var list = [
   if (condition1)
     thing1
@@ -167,7 +167,7 @@ var list = [
 ];
 >>> Chained if-else with else at end.
 var list = [if (condition1) thing1 else if (condition2) thing2 else thing3];
-<<<
+<<< 3.7
 var list = [
   if (condition1)
     thing1
@@ -178,7 +178,7 @@ var list = [
 ];
 >>> Long chained if-else.
 var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3];
-<<<
+<<< 3.7
 var list = [
   if (condition1)
     thing1
@@ -189,7 +189,7 @@ var list = [
 ];
 >>> Long chained if-else with else at end.
 var list = [if (condition1) thing1 else if (condition2) thing2 else if (condition3) thing3 else thing4];
-<<<
+<<< 3.7
 var list = [
   if (condition1)
     thing1
@@ -212,7 +212,7 @@ var list = [
     spreadSet
   }
 ];
-<<<
+<<< 3.7
 var list = [
   if (condition1) ...[
     spreadList,
@@ -235,7 +235,7 @@ var list = [
     if (condition8) ...[f]
     else if (condition9) [g] else ...{h}
 ];
-<<<
+<<< 3.7
 var list = [
   if (condition1)
     if (condition2) a else b

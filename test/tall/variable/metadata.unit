@@ -3,7 +3,7 @@
 @DomName('DatabaseCallback')
 @Experimental()
 var variable;
-<<<
+<<< 3.7
 @DomName('DatabaseCallback')
 @Experimental()
 var variable;
@@ -13,7 +13,7 @@ main() {
 @Experimental()
 var variable;
 }
-<<<
+<<< 3.7
 main() {
   @DomName('DatabaseCallback')
   @Experimental()
@@ -21,12 +21,12 @@ main() {
 }
 >>> Unsplit.
 @a.B<C,D>(e,f,g) int i = 0;
-<<<
+<<< 3.7
 @a.B<C, D>(e, f, g)
 int i = 0;
 >>> Split type arguments.
 @BigLongClassName<First, Second, Third>() int i = 0;
-<<<
+<<< 3.7
 @BigLongClassName<
   First,
   Second,
@@ -38,7 +38,7 @@ int i = 0;
   TypeArgument
 >(valueArgument)
 int i = 0;
-<<<
+<<< 3.7
 @SomeBigClass<TypeArgument>(
   valueArgument,
 )
@@ -46,7 +46,7 @@ int i = 0;
 >>> Split both type and value arguments.
 @SomeBigClass<First, Second, Third, Fourth, Fifth>(
   first, second, third, fourth, fifth, sixth) int i = 0;
-<<<
+<<< 3.7
 @SomeBigClass<
   First,
   Second,
@@ -64,7 +64,7 @@ int i = 0;
 int i = 0;
 >>> Prefer to split at arguments rather than prefix.
 @veryLongPrefix.VeryLongClassName<VeryLongTypeArgument,OtherVeryLongTypeArgument>(veryLongArgument,otherVeryLongArgument,thirdVeryLongArgument) int i = 0;
-<<<
+<<< 3.7
 @veryLongPrefix.VeryLongClassName<
   VeryLongTypeArgument,
   OtherVeryLongTypeArgument
@@ -76,12 +76,12 @@ int i = 0;
 int i = 0;
 >>> Nested type arguments without splitting.
 @A<B<C,D>,E<F,G>>() int i = 0;
-<<<
+<<< 3.7
 @A<B<C, D>, E<F, G>>()
 int i = 0;
 >>> Nested type arguments, split at outer level.
 @Aaaa<Bbbb<Cccc,Dddd>,Eeee<Ffff,Gggg>>() int i = 0;
-<<<
+<<< 3.7
 @Aaaa<
   Bbbb<Cccc, Dddd>,
   Eeee<Ffff, Gggg>
@@ -89,7 +89,7 @@ int i = 0;
 int i = 0;
 >>> Nested type arguments, split at inner level.
 @Aaaaaaaaa<Bbbbbbbbbbb<Ccccccccccc,Dddddddddddd>,Eeeeeeeee<Fffffffff,Ggggggggg>>() int i = 0;
-<<<
+<<< 3.7
 @Aaaaaaaaa<
   Bbbbbbbbbbb<
     Ccccccccccc,
@@ -100,24 +100,24 @@ int i = 0;
 int i = 0;
 >>> Prefixed type.
 @prefix.A<int,String>()int x;
-<<<
+<<< 3.7
 @prefix.A<int, String>()
 int x;
 >>> Named constructor.
 @A<int,String>.constructor()int x;
-<<<
+<<< 3.7
 @A<int, String>.constructor()
 int x;
 >>> Prefixed named constructor.
 @prefix.A<int,String>.constructor()int x;
-<<<
+<<< 3.7
 @prefix.A<int, String>.constructor()
 int x;
 >>> On pattern variable, moves to own line.
 main() {
   @meta var (x, y) = o;
 }
-<<<
+<<< 3.7
 main() {
   @meta
   var (x, y) = o;
@@ -134,7 +134,7 @@ main() {
 
   var c;
 }
-<<<
+<<< 3.7
 main() {
   @meta
   var a;
@@ -148,11 +148,11 @@ main() {
 }
 >>> On external variable.
 @meta  external var x;
-<<<
+<<< 3.7
 @meta
 external var x;
 >>> On late variable.
 @meta late int a;
-<<<
+<<< 3.7
 @meta
 late int a;

@@ -1,8 +1,8 @@
 >>>
 var x = (f as dynamic)<int>(40, 2);
-<<<
+<<< 3.6
 var x = (f as dynamic)<int>(40, 2);
 >>>
 var y = (f as dynamic)<String>('hi', '!');
-<<<
+<<< 3.6
 var y = (f as dynamic)<String>('hi', '!');

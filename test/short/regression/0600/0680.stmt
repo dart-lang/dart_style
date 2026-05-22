@@ -9,7 +9,7 @@
         interfaceMember.isGenericContravariant) {
       return MethodContravarianceCheckKind.checkMethodReturn;
     }
-<<<
+<<< 3.6
     if (receiver != null &&
         receiver is! ThisExpression &&
         interfaceMember is Procedure &&

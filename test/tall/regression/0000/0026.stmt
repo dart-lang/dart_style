@@ -3,7 +3,7 @@ experimentalBootstrap = document
     .querySelectorAll('link')
     .any((link) => link.attributes['rel'] ==
     'import' && link.attributes['href'] == POLYMER_EXPERIMENTAL_HTML);
-<<<
+<<< 3.7
 experimentalBootstrap = document
     .querySelectorAll('link')
     .any(

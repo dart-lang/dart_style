@@ -2,7 +2,7 @@
 >>> Line comment after `try`.
 try // comment
 { body; } catch (e) { print(e); }
-<<<
+<<< 3.7
 try // comment
 {
   body;
@@ -12,7 +12,7 @@ try // comment
 >>> Line comment after `catch`.
 try { body; } catch // comment
 (e) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } catch // comment
@@ -22,7 +22,7 @@ try {
 >>> Line comment before `catch` condition.
 try { body; } catch (// comment
 e) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } catch (
@@ -34,7 +34,7 @@ try {
 >>> Line comment after `catch` condition.
 try { body; } catch (e// comment
 ) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } catch (
@@ -45,7 +45,7 @@ try {
 >>> Line comment after entire simple `catch` clause.
 try { body; } catch (e) // comment
 { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } catch (e) // comment
@@ -55,7 +55,7 @@ try {
 >>> Line comment before `on`.
 try { body; } // comment
 on Exception catch (e) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } // comment
@@ -65,7 +65,7 @@ on Exception catch (e) {
 >>> Line comment after `on`.
 try { body; } on // comment
 Exception catch (e) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } on // comment
@@ -75,7 +75,7 @@ Exception catch (e) {
 >>> Line comment after exception in `on` clause.
 try { body; } on Exception // comment
 catch (e) { print(e); }
-<<<
+<<< 3.7
 try {
   body;
 } on Exception // comment
@@ -84,7 +84,7 @@ catch (e) {
 }
 >>> Line comment after `catch` body.
 try { body; } catch (e) { print(e); } // comment
-<<<
+<<< 3.7
 try {
   body;
 } catch (e) {
@@ -93,7 +93,7 @@ try {
 >>> Line comment before `finally`.
 try { body; } catch (e) { print(e); } // comment
 finally { ; }
-<<<
+<<< 3.7
 try {
   body;
 } catch (e) {
@@ -105,7 +105,7 @@ finally {
 >>> Line comment after `finally`.
 try { body; } catch (e) { print(e); } finally // comment
 { ; }
-<<<
+<<< 3.7
 try {
   body;
 } catch (e) {
@@ -116,7 +116,7 @@ try {
 }
 >>> Line comment after `finally` body.
 try { body; } catch (e) { print(e); } finally { ; } // comment
-<<<
+<<< 3.7
 try {
   body;
 } catch (e) {

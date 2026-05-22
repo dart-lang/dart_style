@@ -1,4 +1,4 @@
 >>>
 void takeIdentityFunction(T id<T>(T x)) {}
-<<<
+<<< 3.7
 void takeIdentityFunction(T id<T>(T x)) {}

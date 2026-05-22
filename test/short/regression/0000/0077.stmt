@@ -2,7 +2,7 @@
 var results = blablablabla(uri, sdkDir: shouldMockSdk ? null :
 dartSdkPath, mockSdkSources: shouldBlaBlab ? someBlaBlablab :
 null, someargn: args['blalbala'], fooBazzzz: fooBazzzz);
-<<<
+<<< 3.6
 var results = blablablabla(uri,
     sdkDir: shouldMockSdk ? null : dartSdkPath,
     mockSdkSources: shouldBlaBlab ? someBlaBlablab : null,

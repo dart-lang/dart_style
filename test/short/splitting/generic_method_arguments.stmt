@@ -1,26 +1,26 @@
 40 columns                              |
 >>> all fit on one line
 method<A,B,C,D>();
-<<<
+<<< 3.6
 method<A, B, C, D>();
 >>> prefer to split between args even when they all fit on next line
 lengthyMethodName<First, Second, Third>();
-<<<
+<<< 3.6
 lengthyMethodName<First, Second,
     Third>();
 >>> split before first if needed
 lengthyMethodName<FirstTypeArgumentIsLong, Second>();
-<<<
+<<< 3.6
 lengthyMethodName<
     FirstTypeArgumentIsLong, Second>();
 >>> split in middle if fit in two lines
 lengthyMethodName<First, Second, Third, Fourth, Fifth, Sixth, Seventh>();
-<<<
+<<< 3.6
 lengthyMethodName<First, Second, Third,
     Fourth, Fifth, Sixth, Seventh>();
 >>> split one per line if they don't fit in two lines
 lengthyMethodName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>();
-<<<
+<<< 3.6
 lengthyMethodName<
     First,
     Second,
@@ -33,12 +33,12 @@ lengthyMethodName<
 >>> prefers to not split at type arguments
 lengthyMethodName<
     TypeArgument>(valueArgument);
-<<<
+<<< 3.6
 lengthyMethodName<TypeArgument>(
     valueArgument);
 >>> split both type and value arguments
 lengthyMethodName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
-<<<
+<<< 3.6
 lengthyMethodName<
         First,
         Second,
@@ -61,7 +61,7 @@ receiver.method<First, Second, Third, Fourth, Fifth>
     (first, second, third, fourth, fifth)
 .method<First, Second, Third, Fourth, Fifth>
     (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 receiver
     .method<First, Second, Third,
             Fourth, Fifth>(first,

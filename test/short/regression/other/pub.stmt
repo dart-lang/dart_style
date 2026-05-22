@@ -8,7 +8,7 @@
           d.file("foo.dart", "final message = 'Hello!';")
         ])
       ]);
-<<<
+<<< 3.6
       builder.serve("foo", "1.2.3", deps: {
         'barback': 'any'
       }, pubspec: {
@@ -51,7 +51,7 @@
         ])
       ])
     ]).validate();
-<<<
+<<< 3.6
     d.dir(appPath, [
       d.dir('build', [
         d.dir('example', [

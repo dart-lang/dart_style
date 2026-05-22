@@ -2,7 +2,7 @@
   final aaaaaaaaaaaaaaaaaaaa = new Bbbbbbbbbbbbbbbbbbbbbbbb<
       Cccccccc>((Cccccccc cc) =>
       'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
-<<<
+<<< 3.6
   final aaaaaaaaaaaaaaaaaaaa = new Bbbbbbbbbbbbbbbbbbbbbbbb<Cccccccc>((Cccccccc
           cc) =>
       'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
@@ -10,7 +10,7 @@
   final aaaaaaaaaaaaaaaaaaaa = new Bbbbbbbbbbbbbbbbbbbbbbbb<
       Cccccccc>((Cccccccc cc) =>
       'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');
-<<<
+<<< 3.6
   final aaaaaaaaaaaaaaaaaaaa = new Bbbbbbbbbbbbbbbbbbbbbbbb<Cccccccc>(
       (Cccccccc cc) =>
           'ddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd');

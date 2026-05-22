@@ -1,46 +1,46 @@
 40 columns                              |
 >>>
 foo   as   Bar;
-<<<
+<<< 3.7
 foo as Bar;
 >>>
 foo   is   Bar;
-<<<
+<<< 3.7
 foo is Bar;
 >>>
 foo   is   !   Bar;
-<<<
+<<< 3.7
 foo is! Bar;
 >>> Split `as` before operator.
 extremelyLongIdentifier as VeryLongTypeName;
-<<<
+<<< 3.7
 extremelyLongIdentifier
     as VeryLongTypeName;
 >>> Split `is` before operator.
 extremelyLongIdentifier is VeryLongTypeName;
-<<<
+<<< 3.7
 extremelyLongIdentifier
     is VeryLongTypeName;
 >>> Split `is!` before operator.
 extremelyLongIdentifier is ! VeryLongTypeName;
-<<<
+<<< 3.7
 extremelyLongIdentifier
     is! VeryLongTypeName;
 >>> Indent type after `is` when split inside an assignment.
 variable = veryLongExpression is VeryLongTypeName;
-<<<
+<<< 3.7
 variable =
     veryLongExpression
         is VeryLongTypeName;
 >>> Indent type after `is!` when split inside an assignment.
 variable = veryLongExpression is! VeryLongTypeName;
-<<<
+<<< 3.7
 variable =
     veryLongExpression
         is! VeryLongTypeName;
 >>> Indent type after `as` when split inside an assignment.
 variable = veryLongExpression as VeryLongTypeName;
-<<<
+<<< 3.7
 variable =
     veryLongExpression
         as VeryLongTypeName;
@@ -94,7 +94,7 @@ variable = function(
 ) is! Type;
 >>> Prefer to split at `=` if the expression fits on one line.
 variable = f(argument, argument) as Type;
-<<<
+<<< 3.7
 variable =
     f(argument, argument) as Type;
 >>> Prefer to block split versus splitting at the operator.

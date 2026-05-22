@@ -1,93 +1,93 @@
 40 columns                              |
 >>> arithmetic operators
 var a=1+2/(3*-b~/4);
-<<<
+<<< 3.6
 var a = 1 + 2 / (3 * -b ~/ 4);
 >>> triple-shift
 a>>>=1>>>-2>>>3;
-<<<
+<<< 3.6
 a >>>= 1 >>> -2 >>> 3;
 >>> conditional operator
 var c=!condition==a>b;
-<<<
+<<< 3.6
 var c = !condition == a > b;
 >>>
 var d=condition?b:obj.foo(a, b);
-<<<
+<<< 3.6
 var d = condition ? b : obj.foo(a, b);
 >>> as
 identifier     as    TypeName;
-<<<
+<<< 3.6
 identifier as TypeName;
 >>> is
 identifier     is    TypeName;
-<<<
+<<< 3.6
 identifier is TypeName;
 >>> nullable is
 identifier     is    TypeName   ?;
-<<<
+<<< 3.6
 identifier is TypeName?;
 >>> is!
 var d=obj is!SomeType;
-<<<
+<<< 3.6
 var d = obj is! SomeType;
 >>> generic list literal
 < int  >[1,2,(3+4)];
-<<<
+<<< 3.6
 <int>[1, 2, (3 + 4)];
 >>>
 x &&
     y;
-<<<
+<<< 3.6
 x && y;
 >>> unqualified symbol
 var x = #foo;
-<<<
+<<< 3.6
 var x = #foo;
 >>> qualified symbol
 var y=#foo.bar.baz;
-<<<
+<<< 3.6
 var y = #foo.bar.baz;
 >>> long string literal
 throw new FormatException("This is a long exception message.");
-<<<
+<<< 3.6
 throw new FormatException(
     "This is a long exception message.");
 >>>
 assert(false);
-<<<
+<<< 3.6
 assert(false);
 >>> DON'T indent lines that are continued with a function expression.
 new Future(new Duration(1), () {
       print('I am a callback');
     });
-<<<
+<<< 3.6
 new Future(new Duration(1), () {
   print('I am a callback');
 });
 >>> DO use a space after : in named arguments.
 new ListBox(showScrollbars :true);
-<<<
+<<< 3.6
 new ListBox(showScrollbars: true);
 >>> multiple prefix operators
 -  ~  !  foo;
-<<<
+<<< 3.6
 -~!foo;
 >>> sequential "-" operators are not joined
 -  -  -  -foo;
-<<<
+<<< 3.6
 - - - -foo;
 >>> a "-" operator before a negative integer is not joined
 -  -1;
-<<<
+<<< 3.6
 - -1;
 >>> a "-" operator before a negative floating point number is not joined
 -  -1.2;
-<<<
+<<< 3.6
 - -1.2;
 >>> "-" before a "--" is not joined
 -  --  foo;
-<<<
+<<< 3.6
 - --foo;
 >>> multiline string inside nested blocks
 main() {
@@ -96,7 +96,7 @@ main() {
 string""");
   }
 }
-<<<
+<<< 3.6
 main() {
   inner() {
     function("""
@@ -105,107 +105,107 @@ string""");
 }
 >>> null coalescing operator
 argument??    argument;
-<<<
+<<< 3.6
 argument ?? argument;
 >>> ?. operator
 receiver ?.  method() ?. getter;
-<<<
+<<< 3.6
 receiver?.method()?.getter;
 >>> null coalescing self assignment
 variableName??=argument;
-<<<
+<<< 3.6
 variableName ??= argument;
 >>> trailing comma in single argument list
 function(argument   ,   );
-<<<
+<<< 3.6
 function(
   argument,
 );
 >>> trailing comma in argument list
 function(argument,argument  ,  );
-<<<
+<<< 3.6
 function(
   argument,
   argument,
 );
 >>> trailing comma in named argument list
 function(named: arg,another:arg,  );
-<<<
+<<< 3.6
 function(
   named: arg,
   another: arg,
 );
 >>> generic method call
 method   <int,String   ,    bool>  ();
-<<<
+<<< 3.6
 method<int, String, bool>();
 >>> inside interpolation
 " ${   interp+olate } and ${fn  (  1 ) } end";
-<<<
+<<< 3.6
 " ${interp + olate} and ${fn(1)} end";
 >>> simple null assertion
 obj ! ;
-<<<
+<<< 3.6
 obj!;
 >>> trailing method
 obj . method() ! ;
-<<<
+<<< 3.6
 obj.method()!;
 >>> trailing property
 obj . prop ! ;
-<<<
+<<< 3.6
 obj.prop!;
 >>> null assertion in method chain
 obj ! . getter ! . method ( arg ) ! + 3;
-<<<
+<<< 3.6
 obj!.getter!.method(arg)! + 3;
 >>> null assertion before index and call operators
 obj ! [ index ] ! ( call ) ! + 3;
-<<<
+<<< 3.6
 obj![index]!(call)! + 3;
 >>> null-aware index expressions
 obj   ?[  foo];
-<<<
+<<< 3.6
 obj?[foo];
 >>> generic function expression
 var generic = < T,S >(){};
-<<<
+<<< 3.6
 var generic = <T, S>() {};
 >>> generic method instantiation
 void main() => id  < int   > ;
-<<<
+<<< 3.6
 void main() => id<int>;
 >>> generic method instantiation
 void main() => id  < int , String  , bool   > ;
-<<<
+<<< 3.6
 void main() => id<int, String, bool>;
 >>> generic constructor tear-off
 var x = Class  < int  >;
-<<<
+<<< 3.6
 var x = Class<int>;
 >>> generic name constructor tear-off
 var x = Class  < int  > . named;
-<<<
+<<< 3.6
 var x = Class<int>.named;
 >>> empty record
 var record = (   );
-<<<
+<<< 3.6
 var record = ();
 >>> single-element records don't split after ","
 var record = (   value  ,  );
-<<<
+<<< 3.6
 var record = (value,);
 >>> multi-element record
 var record = (   first  ,  second  ,  third  );
-<<<
+<<< 3.6
 var record = (first, second, third);
 >>> named record fields
 var record = (   first  :  1  ,  2 ,  third : 3 );
-<<<
+<<< 3.6
 var record = (first: 1, 2, third: 3);
 >>> const record
 var record = const   (  1 ,   2 );
-<<<
+<<< 3.6
 var record = const (1, 2);
 >>> pattern assignment
 {
@@ -216,7 +216,7 @@ var record = const (1, 2);
   {  'k'  :  _  ,  ...  } = o;
   Foo  (  prop  :  value  ,  :  inferred  )  = o;
 }
-<<<
+<<< 3.6
 {
   (a && b) = o;
   (a as int, b) = o;
@@ -243,7 +243,7 @@ var record = const (1, 2);
   1_2e3,
   1_2.3_4e1,
 ];
-<<<
+<<< 3.6
 [
   100__000_000__000_000__000_000,
   0x4000_0000_0000_0000,

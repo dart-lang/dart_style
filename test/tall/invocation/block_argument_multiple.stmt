@@ -2,7 +2,7 @@
 ### Test how multiple block argument candidates are handled.
 >>> Multiple function expressions prevent block formatting.
 function(() { one; }, () { two; });
-<<<
+<<< 3.7
 function(
   () {
     one;
@@ -13,40 +13,40 @@ function(
 );
 >>> Empty and non-empty function expressions.
 function(() {}, () { body; }, () {});
-<<<
+<<< 3.7
 function(() {}, () {
   body;
 }, () {});
 >>> Function expression takes precedence over other kinds of block arguments.
 ### The function is block formatted but the other arguments aren't.
 function([1, 2], () { body; }, {3, 4});
-<<<
+<<< 3.7
 function([1, 2], () {
   body;
 }, {3, 4});
 >>> Immediately invoked function takes precedence over other kinds of block arguments.
 function([1, 2], () { body; }(), {3, 4});
-<<<
+<<< 3.7
 function([1, 2], () {
   body;
 }(), {3, 4});
 >>> Multiple collections prevent block formatting.
 function([element, element], {key: value});
-<<<
+<<< 3.7
 function(
   [element, element],
   {key: value},
 );
 >>> Empty and non-empty collections.
 function([], [element, element], <String>{});
-<<<
+<<< 3.7
 function([], [
   element,
   element,
 ], <String>{});
 >>> Can't block format a function call with any preceding arguments.
 function(arg, innerFunction(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   arg,
   innerFunction(
@@ -55,7 +55,7 @@ function(
 );
 >>> Can't block format a function call with any subsequent arguments.
 function(innerFunction(veryLongArgumentExpression), arg);
-<<<
+<<< 3.7
 function(
   innerFunction(
     veryLongArgumentExpression,
@@ -64,7 +64,7 @@ function(
 );
 >>> Can't block format a method call with any preceding arguments.
 function(arg, target.inner(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   arg,
   target.inner(
@@ -73,7 +73,7 @@ function(
 );
 >>> Can't block format a method call with any subsequent arguments.
 function(target.inner(veryLongArgumentExpression), arg);
-<<<
+<<< 3.7
 function(
   target.inner(
     veryLongArgumentExpression,
@@ -82,7 +82,7 @@ function(
 );
 >>> Can't block format an instance creation with any preceding arguments.
 function(arg, new SomeClass(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   arg,
   new SomeClass(
@@ -91,7 +91,7 @@ function(
 );
 >>> Can't block format an instance creation with any subsequent arguments.
 function(new SomeClass(veryLongArgumentExpression), arg);
-<<<
+<<< 3.7
 function(
   new SomeClass(
     veryLongArgumentExpression,
@@ -100,42 +100,42 @@ function(
 );
 >>> List literal with other non-block arguments.
 function(before, [veryLongElement, anotherLongElement], after);
-<<<
+<<< 3.7
 function(before, [
   veryLongElement,
   anotherLongElement,
 ], after);
 >>> Map literal with other non-block arguments.
 function(before, {1: veryLongElement, 2: anotherLongElement}, after);
-<<<
+<<< 3.7
 function(before, {
   1: veryLongElement,
   2: anotherLongElement,
 }, after);
 >>> Set literal with other non-block arguments.
 function(before, {veryLongElement, anotherLongElement}, after);
-<<<
+<<< 3.7
 function(before, {
   veryLongElement,
   anotherLongElement,
 }, after);
 >>> Record literal with other non-block arguments.
 function(before, (veryLongElement, anotherLongElement), after);
-<<<
+<<< 3.7
 function(before, (
   veryLongElement,
   anotherLongElement,
 ), after);
 >>> Switch expression with other non-block arguments.
 function(before, switch (n) {1 => veryLongElement, 2 => anotherLongElement}, after);
-<<<
+<<< 3.7
 function(before, switch (n) {
   1 => veryLongElement,
   2 => anotherLongElement,
 }, after);
 >>> Multiple switches prevent block formatting.
 function(switch (a) { 1 => 2 }, switch (b) { 1 => 2 });
-<<<
+<<< 3.7
 function(
   switch (a) {
     1 => 2,
@@ -146,14 +146,14 @@ function(
 );
 >>> Empty and non-empty switches.
 function(switch (a) {}, switch (b) { 1 => 2 }, switch (c) {});
-<<<
+<<< 3.7
 function(switch (a) {}, switch (b) {
   1 => 2,
 }, switch (c) {});
 >>> Collection and multiline string prevents block formatting.
 function([element, element], '''multiple
 lines''');
-<<<
+<<< 3.7
 function(
   [element, element],
   '''multiple

@@ -15,11 +15,11 @@ typedef R = (
 );
 >>> Doesn't force split with one positional field.
 typedef R = (int,);
-<<<
+<<< 3.7
 typedef R = (int,);
 >>> Doesn't force split without trailing comma.
 typedef R = (int,int,int);
-<<<
+<<< 3.7
 typedef R = (int, int, int);
 >>> Forces split with named fields and trailing comma.
 typedef R = ({int name,});

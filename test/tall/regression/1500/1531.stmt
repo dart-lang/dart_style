@@ -4,7 +4,7 @@ variable =
       argument, // Force split in argument list.
       another,
     );
-<<<
+<<< 3.7
 variable = await function(
   argument, // Force split in argument list.
   another,
@@ -14,7 +14,7 @@ variable = await function(
         await post(Uri.parse(webhookUrl), headers: {
           HttpHeaders.contentTypeHeader: ContentType.json.value,
         }, body: json.encode(discordPayload));
-<<<
+<<< 3.7
     final response = await post(
       Uri.parse(webhookUrl),
       headers: {HttpHeaders.contentTypeHeader: ContentType.json.value},
@@ -25,7 +25,7 @@ variable = await function(
       await jwt.verify('<TOKEN>', issuer: '<ISSUER>', audience: {
         '<AUDIENCE>',
       }, publicKeysUrl: '<PUBLIC_KEYS_URL>');
-<<<
+<<< 3.7
   final token = await jwt.verify(
     '<TOKEN>',
     issuer: '<ISSUER>',
@@ -39,7 +39,7 @@ variable = await function(
             port: uri.port,
             timeout: _socketOptions.timeout,
           );
-<<<
+<<< 3.7
       final connection = await connectSocket(
         uri.host,
         port: uri.port,

@@ -2,7 +2,7 @@
 >>> Empty body.
 extension type A(int a) {
   }
-<<<
+<<< 3.7
 extension type A(int a) {}
 >>> (experiment primary-constructors) Empty semicolon body.
 extension type   A(int a)   ;
@@ -10,11 +10,11 @@ extension type   A(int a)   ;
 extension type A(int a);
 >>> Const and named constructor.
 extension  type  const  A  .  name  (  int  a  ) {}
-<<<
+<<< 3.7
 extension type const A.name(int a) {}
 >>> Type parameters.
 extension type A<T extends int, R>(int a) {}
-<<<
+<<< 3.7
 extension type A<T extends int, R>(
   int a
 ) {}
@@ -25,7 +25,7 @@ foo(int x) {
 if (x == 0) {
 return true;
 }}}
-<<<
+<<< 3.7
 extension type A(int a) {
   inc(int x) => ++x;
   foo(int x) {
@@ -37,11 +37,11 @@ extension type A(int a) {
 >>> Don't split clauses if they fit.
 extension type E(T i)
     implements I, J {}
-<<<
+<<< 3.7
 extension type E(T i) implements I, J {}
 >>> Split in representation parameter list.
 extension type LongExtensionType(LongTypeName a) {}
-<<<
+<<< 3.7
 extension type LongExtensionType(
   LongTypeName a
 ) {}
@@ -76,7 +76,7 @@ extension type LongExtensionType(
 }
 >>> Simple body.
 extension type A(int a)  { int meaningOfLife() => 42; }
-<<<
+<<< 3.7
 extension type A(int a) {
   int meaningOfLife() => 42;
 }
@@ -110,7 +110,7 @@ a
 {
 
 }
-<<<
+<<< 3.7
 extension type const A<T>.name(int a) {}
 >>> All kinds of members (except instance fields).
 extension type const A<T>.name(int a) {
@@ -130,7 +130,7 @@ extension type const A<T>.name(int a) {
   int  me(int x) => x;
   int  operator+(int x) => x;
 }
-<<<
+<<< 3.7
 extension type const A<T>.name(int a) {
   static const int c = 1;
   static final int f = 1;

@@ -4,7 +4,7 @@
       mockSdkSources: shouldMockSdk ? mockSdkSources : null,
       checkSdk: args['sdk-check'],
       useColors: useColors);
-<<<
+<<< 3.6
   var results = checkProgram(uri,
       sdkDir: shouldMockSdk ? null : dartSdkPath,
       mockSdkSources: shouldMockSdk ? mockSdkSources : null,
@@ -56,7 +56,7 @@ var map = {
       WEEKENDRANGE: const [5, 6],
       FIRSTWEEKCUTOFFDAY: 3),
 };
-<<<
+<<< 3.6
 var map = {
   /**
    * Date/time formatting symbols for locale en_ISO.

@@ -1,7 +1,7 @@
 >>> (indent 4)
     var partOf = unit.directives.firstWhere((d) => d is PartOfDirective,
         orElse: () => null);
-<<<
+<<< 3.7
     var partOf = unit.directives.firstWhere(
       (d) => d is PartOfDirective,
       orElse: () => null,

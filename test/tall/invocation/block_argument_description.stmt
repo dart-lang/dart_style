@@ -6,7 +6,7 @@ test('First adjacent string' 'second adjacent string'
 'third adjacent string', () async {
   ;
 });
-<<<
+<<< 3.7
 test('First adjacent string'
     'second adjacent string'
     'third adjacent string', () async {
@@ -16,7 +16,7 @@ test('First adjacent string'
 test('First adjacent string' 'second long adjacent string', () async {
   ;
 });
-<<<
+<<< 3.7
 test(
   'First adjacent string'
   'second long adjacent string',
@@ -33,7 +33,7 @@ test('First adjacent string'
   element3,
   element4,
 ]);
-<<<
+<<< 3.7
 test(
   'First adjacent string'
   'second adjacent string'
@@ -49,7 +49,7 @@ test(
 test('First string line 1' 'first string line 2', () {
   ;
 }, 'Another simple string');
-<<<
+<<< 3.7
 test('First string line 1'
     'first string line 2', () {
   ;
@@ -58,7 +58,7 @@ test('First string line 1'
 test('First string line 1' 'first string line 2', () {
   ;
 }, trailing, another);
-<<<
+<<< 3.7
 test(
   'First string line 1'
   'first string line 2',
@@ -72,7 +72,7 @@ test(
 test(named: 'First string line 1' 'first string line 2', () {
   ;
 });
-<<<
+<<< 3.7
 test(
   named:
       'First string line 1'
@@ -85,7 +85,7 @@ test(
 test('First string line 1' 'first string line 2', named: () {
   ;
 });
-<<<
+<<< 3.7
 test(
   'First string line 1'
   'first string line 2',
@@ -97,7 +97,7 @@ test(
 test('First string line 1' 'first string line 2', () {
   ;
 }, named: arg);
-<<<
+<<< 3.7
 test('First string line 1'
     'first string line 2', () {
   ;

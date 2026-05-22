@@ -3,7 +3,7 @@ foo() async {
   await for(var x in y) {
   }
 }
-<<<
+<<< 3.7
 foo() async {
   await for (var x in y) {}
 }

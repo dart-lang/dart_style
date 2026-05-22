@@ -51,7 +51,7 @@ if (nodeElement.kind
   when target.kind == ElementKind.FIELD) {
   // Something
 }
-<<<
+<<< 3.7
 if (nodeElement.kind
     case ElementKind.LOCAL_VARIABLE || ElementKind.TOP_LEVEL_VARIABLE
     when target.kind == ElementKind.FIELD) {
@@ -63,7 +63,7 @@ if (nodeElement.kind
         ElementKind.TOP_LEVEL_VARIABLE) {
   // Something
 }
-<<<
+<<< 3.7
 if (nodeElement.kind
     case ElementKind.LOCAL_VARIABLE || ElementKind.TOP_LEVEL_VARIABLE) {
   // Something

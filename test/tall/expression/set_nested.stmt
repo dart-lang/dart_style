@@ -2,34 +2,34 @@
 ### Tests that nested collections force outer ones to split.
 >>> Nested non-empty list forces outer set to split.
 set = {[inner]};
-<<<
+<<< 3.7
 set = {
   [inner],
 };
 >>> Nested non-empty map forces outer set to split.
 set = {{key: inner}};
-<<<
+<<< 3.7
 set = {
   {key: inner},
 };
 >>> Nested non-empty set forces outer set to split.
 set = {{inner}};
-<<<
+<<< 3.7
 set = {
   {inner},
 };
 >>> Nested non-empty record does not force outer set to split.
 set = {(inner,)};
-<<<
+<<< 3.7
 set = {(inner,)};
 >>> Nested empty collection does not force outer set to split.
 set = {[], {}, ()};
-<<<
+<<< 3.7
 set = {[], {}, ()};
 >>> Split outer sets even if they fit.
 var s = {a, {b, c}, d, {},
     e, {f, {g, h} }  };
-<<<
+<<< 3.7
 var s = {
   a,
   {b, c},
@@ -43,19 +43,19 @@ var s = {
 };
 >>> Split indirect outer set.
 var s = {a, function({b, inner})};
-<<<
+<<< 3.7
 var s = {
   a,
   function({b, inner}),
 };
 >>> Empty literal does not force outer split.
 var s = {a, <int>{}, b, [], c, () {}};
-<<<
+<<< 3.7
 var s = {a, <int>{}, b, [], c, () {}};
 >>> Nested split set.
 var s = {first, 1, second, {third, fourth}, fifth, 5, nested, {sixth, seventh, eighth, nine,
     tenth, eleventh}};
-<<<
+<<< 3.7
 var s = {
   first,
   1,

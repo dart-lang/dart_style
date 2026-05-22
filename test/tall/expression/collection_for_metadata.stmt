@@ -3,7 +3,7 @@
 var list = [
   for (   @a  @b    var i in list) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (@a @b var i in list) i,
 ];
@@ -11,7 +11,7 @@ var list = [
 var list = [
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -23,13 +23,13 @@ var list = [
 var list = [
   for (   @a  @b    var i = x;;) i
 ];
-<<<
+<<< 3.7
 var list = [for (@a @b var i = x; ;) i];
 >>> Split on for loop.
 var list = [
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i = veryLong.iterator + expression;;) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (
     @Annotation
@@ -44,7 +44,7 @@ var list = [
 var list = [
   for (   @a  @b    var [i] in list) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (@a @b var [i] in list) i,
 ];
@@ -52,7 +52,7 @@ var list = [
 var list = [
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] in veryLong.iterator + longExpression) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -65,7 +65,7 @@ var list = [
 var list = [
   for (   @a  @b    var [i] = x;;) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (@a @b var [i] = x; ;) i,
 ];
@@ -73,7 +73,7 @@ var list = [
 var list = [
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] = veryLong.iterator + expression;;) i
 ];
-<<<
+<<< 3.7
 var list = [
   for (
     @Annotation

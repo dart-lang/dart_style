@@ -5,7 +5,7 @@
             GeoPoint2.from([4, 4]),
             GeoPoint2.from([5, 5]),
           ]);
-<<<
+<<< 3.6
       expect(
           wktGeographic.parseAll<GeoPoint2>(wktTest, range: Range(start: 2)),
           <Geometry>[

@@ -86,7 +86,7 @@ enum EnumAll<S extends num, T extends num>
 
   String toString() => "this";
 }
-<<<
+<<< 3.6
 // Full syntax, with every possible option.
 @EnumAll.v1
 @EnumAll.sConst

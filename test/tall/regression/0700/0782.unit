@@ -3,7 +3,7 @@
 
 import 'dart:io';
 // More code...
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 import 'dart:io';
@@ -13,7 +13,7 @@ import 'dart:io';
 #!/usr/bin/env dart
 
 void main() {}
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 void main() {}
@@ -21,7 +21,7 @@ void main() {}
 #!/usr/bin/env dart
 
 /// dartdoc comment.
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 /// dartdoc comment.
@@ -29,21 +29,21 @@ void main() {}
 #!/usr/bin/env dart
 
 var someGlobal = 0;
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 var someGlobal = 0;
 >>>
 #!/usr/bin/env dart
 import 'dart:io';
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 import 'dart:io';
 >>>
 #!/usr/bin/env dart
 // Normal comment.
-<<<
+<<< 3.7
 #!/usr/bin/env dart
 
 // Normal comment.

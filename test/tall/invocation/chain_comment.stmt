@@ -2,14 +2,14 @@
 >>> Line comment before `.` on property.
 target // c
 .property.other;
-<<<
+<<< 3.7
 target // c
     .property
     .other;
 >>> Line comment after `.` on property.
 target. // c
 property.other;
-<<<
+<<< 3.7
 ### Ugly, but not where users place comments.
 target
     . // c
@@ -18,14 +18,14 @@ target
 >>> Line comment before `.` on method.
 target // c
 .method().other();
-<<<
+<<< 3.7
 target // c
     .method()
     .other();
 >>> Line comment after `.` on property.
 target. // c
 method().other();
-<<<
+<<< 3.7
 ### Ugly, but not where users place comments.
 target
     . // c
@@ -37,7 +37,7 @@ target // c1
 .b // c3
 .c() // c4
 .d(2);
-<<<
+<<< 3.7
 target // c1
     .a(1) // c2
     .b // c3
@@ -46,24 +46,24 @@ target // c1
 >>> Line comment after method chain.
 target.prop.method() // c
 ;
-<<<
+<<< 3.7
 ### A little weird to force the split, but users don't put comments here.
 target.prop
     .method() // c
     ;
 >>> Line comment after method chain.
 target.prop.method(); // c
-<<<
+<<< 3.7
 target.prop.method(); // c
 >>> Line comment after method chain.
 target.prop.method(); // very long comment
-<<<
+<<< 3.7
 target.prop
     .method(); // very long comment
 >>> Line comment in target argument list.
 someFunction(// c
 someExtremelyLongArgumentName).clamp();
-<<<
+<<< 3.7
 someFunction(
   // c
   someExtremelyLongArgumentName,
@@ -71,7 +71,7 @@ someFunction(
 >>> Line comment in method chain argument list.
 target.method(// c
 );
-<<<
+<<< 3.7
 target.method(
   // c
 );
@@ -80,7 +80,7 @@ target.first(// c1
 ).second(// c2
 ).third(// c3
 );
-<<<
+<<< 3.7
 target
     .first(
       // c1

@@ -11,7 +11,7 @@ class SomeClassC extends SomeClassA {
           ),
         );
 }
-<<<
+<<< 3.7
 class SomeClassC extends SomeClassA {
   SomeClassC({required final String property1})
     : super(
@@ -34,7 +34,7 @@ class SomeClassC extends SomeClassA {
           ),
         );
 }
-<<<
+<<< 3.7
 class SomeClassC extends SomeClassA {
   SomeClassC({required String property1})
     : super(

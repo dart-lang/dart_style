@@ -1,14 +1,14 @@
 40 columns                              |
 >>> Without value.
 return  ;
-<<<
+<<< 3.7
 return;
 >>> With value.
 return  value  ;
-<<<
+<<< 3.7
 return value;
 >>> With split value.
 return  veryLongExpression + anotherLongOne;
-<<<
+<<< 3.7
 return veryLongExpression +
     anotherLongOne;

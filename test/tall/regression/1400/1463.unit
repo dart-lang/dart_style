@@ -39,7 +39,7 @@ class C {
     }
   });
 }
-<<<
+<<< 3.7
 class C {
   late final Command<MessageUpdateRequest, void> addNewMessageCommand =
       Command.createAsyncNoResult<MessageUpdateRequest>(
@@ -114,7 +114,7 @@ class C {
     }
   });
 }
-<<<
+<<< 3.7
 class C {
   late final Command<MessageUpdateRequest, void> addNewMessageCommand =
       Command.createAsyncNoResult<MessageUpdateRequest>(

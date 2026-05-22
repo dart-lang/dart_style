@@ -5,7 +5,7 @@
                                    bool hasDefault) {
     ;
   }
-<<<
+<<< 3.7
   void buildComplexSwitchStatement(
     ast.SwitchStatement node,
     Map<ast.CaseMatch, ConstantValue> constants,

@@ -4,7 +4,7 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 """);
-<<<
+<<< 3.7
 var x = foo("""
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -18,7 +18,7 @@ var map = {
     -----------------
   ''',
 };
-<<<
+<<< 3.7
 var map = {
   'key------': '''
     -----------------

@@ -6,7 +6,7 @@ return switch (level) {
       when flag =>
     b,
 };
-<<<
+<<< 3.6
 return switch (level) {
   0 => a,
   // Comment.

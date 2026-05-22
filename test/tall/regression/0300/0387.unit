@@ -6,7 +6,7 @@ greet(@Rest(valueHelp: 'who', help: 'Name(s) to greet.') List<String> who,
     @Flag(abbr: 'l', help: 'Put names on separate lines.') bool lineMode: false,
     @Option(name: 'greeting', help: 'Alternate word to greet with e.g. "Hi".')
     String salutation: 'Hello'}) {}
-<<<
+<<< 3.7
 greet(
   @Rest(valueHelp: 'who', help: 'Name(s) to greet.') List<String> who, {
   @Group.start(title: 'Output')

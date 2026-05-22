@@ -8,7 +8,7 @@ case  [  2  ,  ]  :
 case  [  2  ,  3  ]  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case []:
   case <int>[]:
@@ -19,13 +19,13 @@ switch (obj) {
 }
 >>> Unsplit list.
 if (obj case [1, ...var x, 3]) {;}
-<<<
+<<< 3.7
 if (obj case [1, ...var x, 3]) {
   ;
 }
 >>> If it splits anywhere in the list, it splits at every element.
 if (obj case [first,second,third,fourth]) {;}
-<<<
+<<< 3.7
 if (obj case [
   first,
   second,
@@ -36,13 +36,13 @@ if (obj case [
 }
 >>> Unsplit short list even with a comma.
 if (obj case [1,]) {;}
-<<<
+<<< 3.7
 if (obj case [1]) {
   ;
 }
 >>> Nested list patterns don't force outer to split
 if (obj case [[1, 2], [[3]]]) {;}
-<<<
+<<< 3.7
 if (obj case [[1, 2], [[3]]]) {
   ;
 }
@@ -52,7 +52,7 @@ if (obj case [
   a,b,c,
   d,e,f,
 ]) {;}
-<<<
+<<< 3.7
 if (obj case [
   // yeah
   a,
@@ -114,7 +114,7 @@ if (obj
 }
 >>> Split inside element forces list to split.
 if (obj case [first,secondLongPattern ||thirdVeryLongPattern]) {;}
-<<<
+<<< 3.7
 if (obj case [
   first,
   secondLongPattern ||
@@ -124,7 +124,7 @@ if (obj case [
 }
 >>> Split in rest element does not split after "...".
 if (obj case [...firstPattern || secondVeryLongPattern]) {;}
-<<<
+<<< 3.7
 if (obj case [
   ...firstPattern ||
       secondVeryLongPattern,
@@ -133,15 +133,15 @@ if (obj case [
 }
 >>> A nested non-empty list pattern doesn't force the list pattern to split.
 var [[v]] = value;
-<<<
+<<< 3.7
 var [[v]] = value;
 >>> A nested non-empty map pattern doesn't force the list pattern to split.
 var [{k: v}] = value;
-<<<
+<<< 3.7
 var [{k: v}] = value;
 >>> A nested non-empty record pattern doesn't force the list pattern to split.
 var [(v,)] = value;
-<<<
+<<< 3.7
 var [(v,)] = value;
 >>> Remove blank lines before first and last entries. Preserve one between.
 if (obj case [
@@ -159,7 +159,7 @@ if (obj case [
 
 
 ]) {;}
-<<<
+<<< 3.7
 if (obj case [
   firstElement,
 
@@ -185,7 +185,7 @@ if (obj case [
 
 
 ]) {;}
-<<<
+<<< 3.7
 if (obj case [1, 2, 3]) {
   ;
 }

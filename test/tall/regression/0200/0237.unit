@@ -7,7 +7,7 @@ class Bar {
       });
   }
 }
-<<<
+<<< 3.7
 class Bar {
   void foo() {
     blah.method(someLongArgument, andAnotherOne, andAThirdOne, andOneMore).then(
@@ -27,7 +27,7 @@ class Bar {
       });
   }
 }
-<<<
+<<< 3.7
 class Bar {
   void foo() {
     blah.method(someLongArgument, andAnotherOne, andAThirdOne, andOneMore).then(

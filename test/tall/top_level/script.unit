@@ -3,12 +3,12 @@
 
 
 library a;
-<<<
+<<< 3.7
 library a;
 >>> Insert blank between script and library.
 #!script
 library foo;
-<<<
+<<< 3.7
 #!script
 
 library foo;
@@ -18,14 +18,14 @@ library foo;
 
 
 library foo;
-<<<
+<<< 3.7
 #!script
 
 library foo;
 >>> Insert blank between script and import.
 #!script
 import 'foo';
-<<<
+<<< 3.7
 #!script
 
 import 'foo';
@@ -35,7 +35,7 @@ import 'foo';
 
 
 import 'foo';
-<<<
+<<< 3.7
 #!script
 
 import 'foo';

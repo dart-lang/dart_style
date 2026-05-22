@@ -6,7 +6,7 @@ Iterable<Task> generate() sync* {
     yield new Task(i, rnd.nextInt(100), calc);
   }
 }
-<<<
+<<< 3.6
 Iterable<Task> generate() sync* {
   int i = 0;
 

@@ -1,25 +1,25 @@
 40 columns                              |
 >>> Part string on one line.
 part   'uri.dart'  ;
-<<<
+<<< 3.7
 part 'uri.dart';
 >>> Part string doesn't wrap.
 part   'very_very_very_very_long_uri.dart'  ;
-<<<
+<<< 3.7
 part 'very_very_very_very_long_uri.dart';
 >>> Part of string on one line.
 part of "uri.dart";
-<<<
+<<< 3.7
 part of "uri.dart";
 >>> Part of identifier on one line.
 part of foo;
-<<<
+<<< 3.7
 part of foo;
 >>> Long part of string doesn't split.
 part of "very_very_very_very_long_uri.dart";
-<<<
+<<< 3.7
 part of "very_very_very_very_long_uri.dart";
 >>> Long part of identifier doesn't split.
 part of some_very_long_library_name_that_wraps;
-<<<
+<<< 3.7
 part of some_very_long_library_name_that_wraps;

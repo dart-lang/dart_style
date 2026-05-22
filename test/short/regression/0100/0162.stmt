@@ -26,7 +26,7 @@ void main() {
     ]);
   i0.main();
 }
-<<<
+<<< 3.6
 void main() {
   useGeneratedCode(new StaticConfiguration(checkedMode: false, parents: {
     smoke_0.A: smoke_1.PolymerElement,
@@ -58,7 +58,7 @@ void main() {
         environment: <String, String>{
             'JAVA': '/usr/lib/jvm/java-7-openjdk-amd64/bin/java'},
         minUpTimeBeforeShutdown: new Duration(seconds: 0));
-<<<
+<<< 3.6
     final server = new DatastoreLocalDevServer('connect',
         workingDirectory:
             path.join(packageRoot().absolute.path, 'test/tmp_data'),

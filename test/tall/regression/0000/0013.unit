@@ -5,7 +5,7 @@ class A {
       // comment
       : field = value;
 }
-<<<
+<<< 3.7
 class A {
   A()
     // comment
@@ -17,7 +17,7 @@ class A {
       // comment
       : field = value;
 }
-<<<
+<<< 3.7
 class A {
   A(
     some,

@@ -12,7 +12,7 @@ line
 string
 """;
 }}
-<<<
+<<< 3.7
 {
   {
     before +
@@ -35,7 +35,7 @@ string
 // comment 3
 + after;
 }}
-<<<
+<<< 3.7
 {
   {
     """multi
@@ -58,7 +58,7 @@ string
 // comment 3
 after;
 }}
-<<<
+<<< 3.7
 {
   {
     """multi

@@ -2,7 +2,7 @@
 foo() {
   assert(argument != argument && (argument.isDynamic || argument.isSubTypeOf(argument, argument)));
 }
-<<<
+<<< 3.7
 foo() {
   assert(
     argument != argument &&
@@ -24,7 +24,7 @@ foo() {
     }
   }
 }
-<<<
+<<< 3.7
 foo() {
   if (xxx) {
     if (zzzzzzzzzzzzz != aaaaaaaa.bbbbbbbb &&
@@ -47,7 +47,7 @@ foo() {
 >>>
 assert(say('Bob', 'Howdy', 'smoke signal') ==
 'Bob says Howdy with a smoke signal');
-<<<
+<<< 3.7
 assert(
   say('Bob', 'Howdy', 'smoke signal') == 'Bob says Howdy with a smoke signal',
 );

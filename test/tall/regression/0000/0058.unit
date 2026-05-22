@@ -1,7 +1,7 @@
 >>>
 bool doStuff(String firstArgX, {String secondArg, String arg3foo, Map<String,
     String> anotherArg, bool yetAnotherArg: false, bool tooManyArgs: true}) {}
-<<<
+<<< 3.7
 bool doStuff(
   String firstArgX, {
   String secondArg,

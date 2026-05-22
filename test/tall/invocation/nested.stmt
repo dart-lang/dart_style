@@ -2,19 +2,19 @@
 ### Test how argument lists split eagerly when they contain other calls.
 >>> Don't split if outer call has only positional arguments.
 a(b(c(d), e(f)), g(h), i(j));
-<<<
+<<< 3.7
 a(b(c(d), e(f)), g(h), i(j));
 >>> Don't split even if outer call has many named arguments.
 outer(a: a(1), b: b(2), c: c(3), d: d);
-<<<
+<<< 3.7
 outer(a: a(1), b: b(2), c: c(3), d: d);
 >>> Don't split if outer and inner each have only one named argument.
 outer(1, n: value, inner(n: value, 2));
-<<<
+<<< 3.7
 outer(1, n: value, inner(n: value, 2));
 >>> Don't split if inner has many named arguments when outer has none.
 f(1, g(a: a, b: b, c: c, d: d));
-<<<
+<<< 3.7
 f(1, g(a: a, b: b, c: c, d: d));
 >>> Split outer call if there are more than two outer and inner named arguments.
 outer(a: a, b: inner(c: c));
@@ -100,7 +100,7 @@ outer(
   outer(name: inner(x: x, y: true));
   outer(name: inner(x: x, y: false));
 }
-<<<
+<<< 3.7
 {
   outer(name: inner(x: x, y: 123));
   outer(name: inner(x: x, y: -123));
@@ -269,7 +269,7 @@ outer(
 );
 >>> Don't force split if the outer call can be block formatted.
 outer(() {;}, name: inner(x: x, y: y));
-<<<
+<<< 3.7
 outer(() {
   ;
 }, name: inner(x: x, y: y));

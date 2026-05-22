@@ -3,14 +3,14 @@
 main() {
   // comment
 }
-<<<
+<<< 3.6
 main() {
   // comment
 }
 >>> line comment on opening line
 main() { // comment
 }
-<<<
+<<< 3.6
 main() {
   // comment
 }
@@ -18,43 +18,43 @@ main() {
 main() {
   /* comment */
 }
-<<<
+<<< 3.6
 main() {
   /* comment */
 }
 >>> block comment with trailing newline
 main() {/* comment */
 }
-<<<
+<<< 3.6
 main() {
   /* comment */
 }
 >>> block comment with leading newline
 main() {
   /* comment */}
-<<<
+<<< 3.6
 main() {
   /* comment */
 }
 >>> inline block comment
 main() {  /* comment */  }
-<<<
+<<< 3.6
 main() {/* comment */}
 >>> multiple comments on opening line
 main() { /* first */ // second
 }
-<<<
+<<< 3.6
 main() {
   /* first */ // second
 }
 >>> multiple inline block comments
 main() {  /* 1 */   /* 2 */   /* 3 */  }
-<<<
+<<< 3.6
 main() {/* 1 */ /* 2 */ /* 3 */}
 >>> multiline trailing block comment
 main() {  /* comment
 */  }
-<<<
+<<< 3.6
 main() {
   /* comment
 */
@@ -65,7 +65,7 @@ main() {
 //  print(2);
   print(3);
 }
-<<<
+<<< 3.6
 main() {
 //  print(1);
 //  print(2);
@@ -73,47 +73,47 @@ main() {
 }
 >>> before "," in param list
 main(a/* c */,b) {}
-<<<
+<<< 3.6
 main(a /* c */, b) {}
 >>> after "," in param list
 main(a,/* c */b) {}
-<<<
+<<< 3.6
 main(a, /* c */ b) {}
 >>> before "[" in param list
 main(/* c */[arg]) {}
-<<<
+<<< 3.6
 main(/* c */ [arg]) {}
 >>> after "[" in param list
 main([/* c */arg]) {}
-<<<
+<<< 3.6
 main([/* c */ arg]) {}
 >>> before "]" in param list
 main([arg/* c */]) {}
-<<<
+<<< 3.6
 main([arg /* c */]) {}
 >>> after "]" in param list
 main([arg]/* c */) {}
-<<<
+<<< 3.6
 main([arg] /* c */) {}
 >>> before "{" in param list
 main(/* c */{arg}) {}
-<<<
+<<< 3.6
 main(/* c */ {arg}) {}
 >>> after "{" in param list
 main({/* c */arg}) {}
-<<<
+<<< 3.6
 main({/* c */ arg}) {}
 >>> before "}" in param list
 main({arg/* c */}) {}
-<<<
+<<< 3.6
 main({arg /* c */}) {}
 >>> after "{" in param list
 main({arg}/* c */) {}
-<<<
+<<< 3.6
 main({arg} /* c */) {}
 >>>
 longFunction(/* a very long block comment */) {}
-<<<
+<<< 3.6
 longFunction(
     /* a very long block comment */) {}
 >>> remove blank lines before beginning of body
@@ -123,7 +123,7 @@ main() {
 
   // comment
 }
-<<<
+<<< 3.6
 main() {
   // comment
 }
@@ -134,13 +134,13 @@ main() {
 
 
 }
-<<<
+<<< 3.6
 main() {
   // comment
 }
 >>> comment before "]" with trailing comma
 function([parameter,/* c */]) {;}
-<<<
+<<< 3.6
 function([
   parameter,
   /* c */
@@ -149,7 +149,7 @@ function([
 }
 >>> comment before ")" with trailing comma
 function([parameter,]/* c */) {;}
-<<<
+<<< 3.6
 function([
   parameter,
 ] /* c */) {
@@ -161,7 +161,7 @@ function(
     [direction]) {
   ;
 }
-<<<
+<<< 3.6
 function(
     /* comment */ int a, int b, int c,
     [direction]) {
@@ -172,7 +172,7 @@ function(
     /* comment */ int a, int b, int c) {
   ;
 }
-<<<
+<<< 3.6
 function(
     /* comment */ int a, int b, int c) {
   ;
@@ -182,7 +182,7 @@ function(
     /* comment */ int a, int b, int c, int d) {
   ;
 }
-<<<
+<<< 3.6
 function(/* comment */ int a, int b,
     int c, int d) {
   ;
@@ -192,7 +192,7 @@ function([
 
   // comment
   a]) {;}
-<<<
+<<< 3.6
 function(
     [
     // comment
@@ -204,7 +204,7 @@ function({
 
   // comment
   a}) {;}
-<<<
+<<< 3.6
 function(
     {
     // comment
@@ -216,7 +216,7 @@ function([
 
   // comment
   a,]) {;}
-<<<
+<<< 3.6
 function([
   // comment
   a,
@@ -228,7 +228,7 @@ function({
 
   // comment
   a,}) {;}
-<<<
+<<< 3.6
 function({
   // comment
   a,
@@ -239,7 +239,7 @@ function({
 function(@Annotation longParameter,
   // Comment.
 @Annotation @Other @Third longParameter2,) {}
-<<<
+<<< 3.6
 function(
   @Annotation longParameter,
   // Comment.

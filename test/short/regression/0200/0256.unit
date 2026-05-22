@@ -3,7 +3,7 @@ class Foo {
   static final UNKNOWN_ERROR = new MapsEngineStatus._('UNKNOWN_ERROR', context[
       'google']['maps']['visualization']['MapsEngineStatus']['UNKNOWN_ERROR']);
 }
-<<<
+<<< 3.6
 class Foo {
   static final UNKNOWN_ERROR = new MapsEngineStatus._(
       'UNKNOWN_ERROR',

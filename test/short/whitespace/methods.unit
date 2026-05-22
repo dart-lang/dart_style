@@ -1,13 +1,13 @@
 40 columns                              |
 >>>
 class A {void x(){}}
-<<<
+<<< 3.6
 class A {
   void x() {}
 }
 >>>
 class A{static bool x(){return true;}}
-<<<
+<<< 3.6
 class A {
   static bool x() {
     return true;
@@ -15,7 +15,7 @@ class A {
 }
 >>>
 class A{int x()=>42+3;}
-<<<
+<<< 3.6
 class A {
   int x() => 42 + 3;
 }
@@ -27,7 +27,7 @@ class A {
     return file;
   }
 }
-<<<
+<<< 3.6
 class A {
   foo(path) {
     var buffer = new StringBuffer();
@@ -42,7 +42,7 @@ class A {
   named({ covariant int a,covariant    b  });
   fn(     covariant  int f(bool b));
 }
-<<<
+<<< 3.6
 class A {
   pos(covariant int a, covariant b);
   opt([covariant int a, covariant b]);
@@ -53,7 +53,7 @@ class A {
 class A {
   A(   covariant   this.foo);
 }
-<<<
+<<< 3.6
 class A {
   A(covariant this.foo);
 }
@@ -67,7 +67,7 @@ class Foo {
 
   }
 }
-<<<
+<<< 3.6
 class Foo {
   bar() {
     baz();

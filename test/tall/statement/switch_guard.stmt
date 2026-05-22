@@ -3,7 +3,7 @@
 switch (obj) {
   case constant when condition: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case constant when condition:
     body;
@@ -12,7 +12,7 @@ switch (obj) {
 switch (obj) {
   case constant when condition: longBody;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case constant when condition:
     longBody;
@@ -21,7 +21,7 @@ switch (obj) {
 switch (obj) {
   case veryLongConstant when longCondition: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case veryLongConstant
       when longCondition:
@@ -31,7 +31,7 @@ switch (obj) {
 switch (obj) {
   case longConstant when condition || anotherCondition: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case longConstant
       when condition ||
@@ -42,7 +42,7 @@ switch (obj) {
 switch (obj) {
   case constant when [veryLongElement,veryLongElement,]: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case constant
       when [
@@ -55,7 +55,7 @@ switch (obj) {
 switch (obj) {
   case veryLongPattern || reallyMustSplit: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case veryLongPattern ||
       reallyMustSplit:
@@ -65,7 +65,7 @@ switch (obj) {
 switch (obj) {
   case veryLongPattern || reallyMustSplit when true: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case veryLongPattern ||
           reallyMustSplit
@@ -77,7 +77,7 @@ switch (obj) {
   case veryLongPattern || reallyMustSplit when veryLongCondition
   || anotherLongCondition: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case veryLongPattern ||
           reallyMustSplit
@@ -89,7 +89,7 @@ switch (obj) {
 switch (obj) {
   case veryLongPattern || reallyMustSplit when [veryLongElement,veryLongElement,]: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case veryLongPattern ||
           reallyMustSplit
@@ -103,7 +103,7 @@ switch (obj) {
 switch (obj) {
   case [veryLongElement,veryLongElement,veryLongElement,] when true: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case [
         veryLongElement,
@@ -117,7 +117,7 @@ switch (obj) {
 switch (obj) {
   case [veryLongElement,veryLongElement,veryLongElement,] when longCondition || anotherLongCondition: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case [
         veryLongElement,
@@ -133,7 +133,7 @@ switch (obj) {
   case [veryLongElement,veryLongElement,veryLongElement,] when
   [veryLongElement,veryLongElement,veryLongElement,]: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case [
         veryLongElement,

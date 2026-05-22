@@ -1,4 +1,4 @@
 >>>
 typedef F<T> = void Function(T);
-<<<
+<<< 3.7
 typedef F<T> = void Function(T);

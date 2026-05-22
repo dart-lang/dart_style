@@ -6,7 +6,7 @@
 main() {
   int localFunction(String parameter) { body; }
 }
-<<<
+<<< 3.7
 main() {
   int localFunction(String parameter) {
     body;
@@ -22,7 +22,7 @@ main() {
 
 
 }
-<<<
+<<< 3.7
 {
   a() {
     ;
@@ -40,14 +40,14 @@ main() {
 }
 >>> Do not force blank line after empty local function.
 { a() {} b() {} }
-<<<
+<<< 3.7
 {
   a() {}
   b() {}
 }
 >>> Do not force blank line after expression body local function.
 { a() => null; b() => null; }
-<<<
+<<< 3.7
 {
   a() => null;
   b() => null;
@@ -57,7 +57,7 @@ main() {
   a() {;}
   // comment
 }
-<<<
+<<< 3.7
 {
   a() {
     ;

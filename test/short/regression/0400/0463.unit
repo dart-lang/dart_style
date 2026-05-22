@@ -10,7 +10,7 @@ class FilterBarTest {
         valueEditorProvider: valueEditorProvider);
   }
 }
-<<<
+<<< 3.6
 class FilterBarTest {
   FilterBarTest() {
     model = new FilterModel([

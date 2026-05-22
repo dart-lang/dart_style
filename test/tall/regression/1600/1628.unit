@@ -3,7 +3,7 @@ bool f(bool b, int i) {
   return // Check b.
   b == true || i.isEven;
 }
-<<<
+<<< 3.7
 bool f(bool b, int i) {
   return // Check b.
   b == true || i.isEven;
@@ -16,7 +16,7 @@ bool f(bool b, int i) {
           i
           .isEven;
 }
-<<<
+<<< 3.7
 bool f(bool b, int i) {
   return // Check b.
   b == true ||

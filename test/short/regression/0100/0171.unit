@@ -12,7 +12,7 @@ enum RefType {
   /// Indicates not a reference
   value
 }
-<<<
+<<< 3.6
 /// Reference type
 enum RefType {
   /// Indicates a reference to type: *T &*

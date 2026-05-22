@@ -6,7 +6,7 @@
           wrapStatementGraph(catchGraph),
           wrapStatementGraph(finallyGraph)),
         exitBlock);
-<<<
+<<< 3.6
     enterBlock.setBlockFlow(
         new HTryBlockInformation(wrapStatementGraph(bodyGraph), exception,
             wrapStatementGraph(catchGraph), wrapStatementGraph(finallyGraph)),
@@ -19,7 +19,7 @@
               wrapStatementGraph(catchGraph),
               wrapStatementGraph(finallyGraph)),
             exitBlock);
-<<<
+<<< 3.6
         enterBlock.setBlockFlow(
             new HTryBlockInformation(
                 wrapStatementGraph(bodyGraph),
@@ -33,7 +33,7 @@
           kind == MessageKind.GENERIC ||
             !message.contains(new RegExp(r'#\{.+\}')),
           message: 'Missing arguments in error message: "$message"'));
-<<<
+<<< 3.6
       assert(invariant(
           CURRENT_ELEMENT_SPANNABLE,
           kind == MessageKind.GENERIC ||

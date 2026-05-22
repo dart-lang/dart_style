@@ -1,51 +1,51 @@
 40 columns                              |
 >>> Simple bool pattern.
 if (obj case true) {;}
-<<<
+<<< 3.7
 if (obj case true) {
   ;
 }
 >>> Unsplit pattern.
 if (   obj   case   123   ||   constant   ) {}
-<<<
+<<< 3.7
 if (obj case 123 || constant) {}
 >>> Split long expression before case.
 if (thisIsReallyQuiteAVeryLongVariableName case 1) {;}
-<<<
+<<< 3.7
 if (thisIsReallyQuiteAVeryLongVariableName
     case 1) {
   ;
 }
 >>> Split long case clause before case.
 if (obj case 123456789012345678901234567890) {;}
-<<<
+<<< 3.7
 if (obj
     case 123456789012345678901234567890) {
   ;
 }
 >>> Case and guard on same line.
 if (obj case constant when condition) {;}
-<<<
+<<< 3.7
 if (obj case constant when condition) {
   ;
 }
 >>> Prefer to split guard before case.
 if (expression case longConstant when condition) {;}
-<<<
+<<< 3.7
 if (expression case longConstant
     when condition) {
   ;
 }
 >>> Split case and keep guard on same line.
 if (veryLongExpression case veryLongConstant when cond) {;}
-<<<
+<<< 3.7
 if (veryLongExpression
     case veryLongConstant when cond) {
   ;
 }
 >>> Split case and guard.
 if (veryLongExpression case veryLongConstant when veryLongCondition) {;}
-<<<
+<<< 3.7
 if (veryLongExpression
     case veryLongConstant
     when veryLongCondition) {
@@ -53,7 +53,7 @@ if (veryLongExpression
 }
 >>> If value splits then case splits.
 if (veryLongExpression + anotherVeryLongOne case someCase) {;}
-<<<
+<<< 3.7
 if (veryLongExpression +
         anotherVeryLongOne
     case someCase) {
@@ -61,7 +61,7 @@ if (veryLongExpression +
 }
 >>> If value splits then case splits but guard doesn't have to.
 if (veryLongExpression + anotherVeryLongOne case someCase when true) {;}
-<<<
+<<< 3.7
 if (veryLongExpression +
         anotherVeryLongOne
     case someCase when true) {
@@ -69,7 +69,7 @@ if (veryLongExpression +
 }
 >>> Split in block-format pattern does not force case to split.
 if (obj case const [veryLongElement,veryLongElement,veryLongElement,]) {;}
-<<<
+<<< 3.7
 if (obj case const [
   veryLongElement,
   veryLongElement,
@@ -79,7 +79,7 @@ if (obj case const [
 }
 >>> Split in block-format guard condition forces split at `when`.
 if (obj case constant when [veryLongElement,veryLongElement,veryLongElement,]) {;}
-<<<
+<<< 3.7
 if (obj case constant
     when [
       veryLongElement,
@@ -92,7 +92,7 @@ if (obj case constant
 if (obj
 case const [veryLongElement,veryLongElement,veryLongElement,]
 when veryLongConstant || longConstant) {;}
-<<<
+<<< 3.7
 if (obj
     case const [
       veryLongElement,
@@ -107,7 +107,7 @@ if (obj
 if (obj
 case veryLongConstant || longConstant when
 [veryLongElement,veryLongElement,veryLongElement,]) {;}
-<<<
+<<< 3.7
 if (obj
     case veryLongConstant ||
         longConstant
@@ -121,7 +121,7 @@ if (obj
 >>> Block-format splits in both pattern and guard.
 if (obj case const [veryLongElement,veryLongElement,veryLongElement,] when
 [veryLongElement,veryLongElement,veryLongElement,]) {;}
-<<<
+<<< 3.7
 if (obj
     case const [
       veryLongElement,
@@ -137,7 +137,7 @@ if (obj
 }
 >>> If pattern splits then case splits.
 if (obj case veryLongConstant || longConstant) {;}
-<<<
+<<< 3.7
 if (obj
     case veryLongConstant ||
         longConstant) {
@@ -145,7 +145,7 @@ if (obj
 }
 >>> If guard condition block splits then guard splits.
 if (obj case constant when veryLongExpression + anotherOne) {;}
-<<<
+<<< 3.7
 if (obj case constant
     when veryLongExpression +
         anotherOne) {

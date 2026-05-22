@@ -1,29 +1,29 @@
 40 columns                              |
 >>> keep constraints on one line if they fit
 mixin M on A, B, C, D {}
-<<<
+<<< 3.6
 mixin M on A, B, C, D {}
 >>> keep implements on same line
 mixin M implements B {}
-<<<
+<<< 3.6
 mixin M implements B {}
 >>> keep all on same line
 mixin M on B, C implements D, E {}
-<<<
+<<< 3.6
 mixin M on B, C implements D, E {}
 >>> split before name
 mixin MixinWithVeryLongName__________ on A, B, C, D {}
-<<<
+<<< 3.6
 mixin MixinWithVeryLongName__________
     on A, B, C, D {}
 >>> long constraint name
 mixin MixinWithLongName on LongConstraint {}
-<<<
+<<< 3.6
 mixin MixinWithLongName
     on LongConstraint {}
 >>> split constraints
 mixin M on Constraint1, Constraint2, Constraint3 {}
-<<<
+<<< 3.6
 mixin M
     on
         Constraint1,
@@ -31,22 +31,22 @@ mixin M
         Constraint3 {}
 >>>
 mixin AVeryLongSomeMixin on BaseClass implements I {}
-<<<
+<<< 3.6
 mixin AVeryLongSomeMixin on BaseClass
     implements I {}
 >>>
 mixin AVeryLongSomeMixin on BaseClass implements Interface {}
-<<<
+<<< 3.6
 mixin AVeryLongSomeMixin on BaseClass
     implements Interface {}
 >>> move all implements to next line
 mixin SomeMixin implements Interface, AnotherOne {}
-<<<
+<<< 3.6
 mixin SomeMixin
     implements Interface, AnotherOne {}
 >>> one interface per line
 mixin SomeMixin implements Interface, Another, Third {}
-<<<
+<<< 3.6
 mixin SomeMixin
     implements
         Interface,
@@ -54,7 +54,7 @@ mixin SomeMixin
         Third {}
 >>> multiline constraint with single-line interface
 mixin SomeMixin on Base, Another, Third, Fourth, Fifth implements Interface {}
-<<<
+<<< 3.6
 mixin SomeMixin
     on
         Base,
@@ -65,7 +65,7 @@ mixin SomeMixin
     implements Interface {}
 >>> single-line constraint with multiline interface
 mixin SomeMixin on Base implements Interface, Another, Third {}
-<<<
+<<< 3.6
 mixin SomeMixin on Base
     implements
         Interface,
@@ -73,7 +73,7 @@ mixin SomeMixin on Base
         Third {}
 >>> multiline constraint with multiline interface
 mixin SomeMixin on Base, Another, Third, Fourth, Fifth implements Interface, Another, Third {}
-<<<
+<<< 3.6
 mixin SomeMixin
     on
         Base,
@@ -87,7 +87,7 @@ mixin SomeMixin
         Third {}
 >>> double line mixin with double line interface
 mixin SomeMixin on Base, Another implements Interface, Another {}
-<<<
+<<< 3.6
 mixin SomeMixin
     on Base, Another
     implements Interface, Another {}

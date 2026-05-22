@@ -6,7 +6,7 @@ class SomeLongNameForAComponent {
         this._element,
         this._scope);
 }
-<<<
+<<< 3.6
 class SomeLongNameForAComponent {
   SomeLongNameForAComponent(
       DirectiveInjector injector,

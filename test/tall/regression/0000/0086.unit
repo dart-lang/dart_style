@@ -1,5 +1,5 @@
 >>>
 import 'package:analyzer/src/generated/element.dart' show LibraryElement, CompilationUnitElement;
-<<<
+<<< 3.7
 import 'package:analyzer/src/generated/element.dart'
     show LibraryElement, CompilationUnitElement;

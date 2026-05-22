@@ -1,19 +1,19 @@
 40 columns                              |
 >>> Empty.
 [];
-<<<
+<<< 3.7
 [];
 >>> Const.
 const  [  1  ,  2  ,  3  ]  ;
-<<<
+<<< 3.7
 const [1, 2, 3];
 >>> Exactly page width.
 [  first  ,  second  ,  third  ,  fourth  ,  seventh  ]  ;
-<<<
+<<< 3.7
 [first, second, third, fourth, seventh];
 >>> Split.
 [first, second, third, fourth, fifth, sixth,];
-<<<
+<<< 3.7
 [
   first,
   second,
@@ -24,7 +24,7 @@ const [1, 2, 3];
 ];
 >>> Add trailing comma if split.
 [first, second, third, fourth, fifth, sixth];
-<<<
+<<< 3.7
 [
   first,
   second,
@@ -35,11 +35,11 @@ const [1, 2, 3];
 ];
 >>> Remove trailing comma if unsplit.
 [first, second, third, fourth, fifth,];
-<<<
+<<< 3.7
 [first, second, third, fourth, fifth];
 >>> Split in element forces list to split.
 [first + second + third + fourth + fifth];
-<<<
+<<< 3.7
 [
   first +
       second +
@@ -63,7 +63,7 @@ const [1, 2, 3];
 
 
 ];
-<<<
+<<< 3.7
 [
   firstElement,
 
@@ -87,16 +87,16 @@ const [1, 2, 3];
 
 
 ];
-<<<
+<<< 3.7
 [1, 2, 3];
 >>> With type argument.
 <  int  >  [  1  ,  2  ,  3  ];
-<<<
+<<< 3.7
 <int>[1, 2, 3];
 >>> Split list but not type arguments.
 <Map<int, String>>
 [firstElement, secondElement, thirdElement];
-<<<
+<<< 3.7
 <Map<int, String>>[
   firstElement,
   secondElement,
@@ -104,7 +104,7 @@ const [1, 2, 3];
 ];
 >>> Split type arguments but not list.
 <Map<VeryLongTypeName, AnotherLongTypeName>>[1, 2, 3];
-<<<
+<<< 3.7
 <
   Map<
     VeryLongTypeName,
@@ -114,7 +114,7 @@ const [1, 2, 3];
 >>> Split type arguments and list.
 <Map<VeryLongTypeName, AnotherLongTypeName>>[firstElement, secondElement,
 thirdElement];
-<<<
+<<< 3.7
 <
   Map<
     VeryLongTypeName,
@@ -127,7 +127,7 @@ thirdElement];
 ];
 >>> Split in nested type argument.
 <Map<List<NotSplit>, Map<VeryLongTypeName, AnotherLongTypeName>>>[1, 2, 3];
-<<<
+<<< 3.7
 <
   Map<
     List<NotSplit>,
@@ -139,7 +139,7 @@ thirdElement];
 >[1, 2, 3];
 >>> Force split because of contained block.
 [first, () {"fn";},third,fourth];
-<<<
+<<< 3.7
 [
   first,
   () {

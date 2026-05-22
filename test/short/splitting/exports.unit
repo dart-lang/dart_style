@@ -1,20 +1,20 @@
 40 columns                              |
 >>> does not wrap long export string
 export 'package:some/very/long/export/path.dart';
-<<<
+<<< 3.6
 export 'package:some/very/long/export/path.dart';
 >>> export keeps shows on one line
 export 'foo.dart'show Ape,Bear,Cat;
-<<<
+<<< 3.6
 export 'foo.dart' show Ape, Bear, Cat;
 >>> export moves all shows to next line
 export 'foo.dart'show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 export 'foo.dart'
     show Ape, Bear, Cat, Dog;
 >>> export moves all shows each to their own line
 export 'foo.dart'show Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
-<<<
+<<< 3.6
 export 'foo.dart'
     show
         Ape,
@@ -26,16 +26,16 @@ export 'foo.dart'
         Gorilla;
 >>> export keeps hides on one line
 export 'foo.dart'hide Ape,Bear,Cat;
-<<<
+<<< 3.6
 export 'foo.dart' hide Ape, Bear, Cat;
 >>> export moves hides to next line
 export 'foo.dart'hide Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide Ape, Bear, Cat, Dog;
 >>> export moves hides each to their own line
 export 'foo.dart'hide Ape,Bear,Cat,Dog,Echidna,FlyingFox,Gorilla;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide
         Ape,
@@ -47,11 +47,11 @@ export 'foo.dart'
         Gorilla;
 >>> single line both
 export 'foo.dart'hide Ape show Bear;
-<<<
+<<< 3.6
 export 'foo.dart' hide Ape show Bear;
 >>> multiline first
 export 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide
         Ape,
@@ -63,7 +63,7 @@ export 'foo.dart'
     show Ape, Bear, Cat, Dog;
 >>> multiline second
 export 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide Ape, Bear, Cat, Dog
     show
@@ -75,7 +75,7 @@ export 'foo.dart'
         FlyingFox;
 >>> multiline both
 export 'foo.dart'hide Ape,Bear,Cat,Dog, Echidna, FlyingFox show Ape,Bear,Cat,Dog, Echidna, FlyingFox;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide
         Ape,
@@ -93,20 +93,20 @@ export 'foo.dart'
         FlyingFox;
 >>> double line both
 export 'foo.dart'hide Ape,Bear,Cat,Dog show Ape,Bear,Cat,Dog;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide Ape, Bear, Cat, Dog
     show Ape, Bear, Cat, Dog;
 >>> force both keywords to split even if first would fit on first line
 export 'foo.dart' hide Ape, Bear show Ape, Bear, Cat, Dog;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide Ape, Bear
     show Ape, Bear, Cat, Dog;
 >>> force split in list
 export 'foo.dart' hide First, //
 Second;
-<<<
+<<< 3.6
 export 'foo.dart'
     hide
         First, //

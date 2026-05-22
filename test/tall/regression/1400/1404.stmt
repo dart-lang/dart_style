@@ -5,7 +5,7 @@ int weird(Object o) {
     _ => 42
   };
 }
-<<<
+<<< 3.7
 int weird(Object o) {
   return switch (o) {
     int i => i, // evil comment
@@ -20,7 +20,7 @@ int weird(Object o) {
     _ => 42
   };
 }
-<<<
+<<< 3.7
 int weird(Object o) {
   return switch (o) {
     1 => f(
@@ -37,7 +37,7 @@ int weird(Object o) {
     3 => 4
   };
 }
-<<<
+<<< 3.7
 int weird(Object o) {
   return switch (o) {
     [

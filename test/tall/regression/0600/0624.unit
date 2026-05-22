@@ -10,7 +10,7 @@ get y => [
       "long value that won't fit everywhere",
       "long value that won't fit everywhere"
     ];
-<<<
+<<< 3.7
 var x = [
   "long value that won't fit everywhere",
   "long value that won't fit everywhere",
@@ -36,7 +36,7 @@ class C {
     'flutter_assets.d', // Force split.
   ];
 }
-<<<
+<<< 3.7
 class C {
   @override
   List<Source> get outputs => const <Source>[

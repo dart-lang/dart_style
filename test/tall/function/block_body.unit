@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Empty block body.
 f  (  )  {  }
-<<<
+<<< 3.7
 f() {}
 >>> Collapse empty body.
 void main() {    }
-<<<
+<<< 3.7
 void main() {}
 >>>
 void main() {
@@ -13,23 +13,23 @@ void main() {
 
 
 }
-<<<
+<<< 3.7
 void main() {}
 >>> Non-empty block body.
 f  (  )  {  body  ;  }
-<<<
+<<< 3.7
 f() {
   body;
 }
 >>> Async.
 f  (  )  async  {  }
-<<<
+<<< 3.7
 f() async {}
 >>> Sync*.
 f  (  )  sync  *  {  }
-<<<
+<<< 3.7
 f() sync* {}
 >>> Async*.
 f  (  )  async  *  {  }
-<<<
+<<< 3.7
 f() async* {}

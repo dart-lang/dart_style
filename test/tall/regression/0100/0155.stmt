@@ -1,4 +1,4 @@
 >>>
 var from = node.baseType, to = node.convertedType;
-<<<
+<<< 3.7
 var from = node.baseType, to = node.convertedType;

@@ -1,13 +1,13 @@
 40 columns                              |
 >>> List constant in list pattern doesn't force pattern to split.
 if (obj case [const [1, 2]]) {;}
-<<<
+<<< 3.7
 if (obj case [const [1, 2]]) {
   ;
 }
 >>> Don't split between name and constant list.
 if (obj case (longFieldName: const [first, second, third])) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: const [
     first,
@@ -19,7 +19,7 @@ if (obj case (
 }
 >>> Split list constant in pattern.
 if (obj case const [element, element, element, element]) {;}
-<<<
+<<< 3.7
 if (obj case const [
   element,
   element,
@@ -30,13 +30,13 @@ if (obj case const [
 }
 >>> Map constant in map pattern doesn't force pattern to split.
 if (obj case {k: const {1: 2}}) {;}
-<<<
+<<< 3.7
 if (obj case {k: const {1: 2}}) {
   ;
 }
 >>> Don't split between name and constant map.
 if (obj case (longFieldName: const {first: 1, second: 2})) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: const {
     first: 1,
@@ -47,7 +47,7 @@ if (obj case (
 }
 >>> Split map constant in pattern.
 if (obj case const {a: element, b: element, c: element}) {;}
-<<<
+<<< 3.7
 if (obj case const {
   a: element,
   b: element,
@@ -57,7 +57,7 @@ if (obj case const {
 }
 >>> Don't split between name and const record.
 if (obj case (longFieldName: const (first: 1, second: 2))) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: const (
     first: 1,
@@ -68,7 +68,7 @@ if (obj case (
 }
 >>> Split record constant in pattern.
 if (obj case const (element, element, element, element)) {;}
-<<<
+<<< 3.7
 if (obj case const (
   element,
   element,
@@ -79,7 +79,7 @@ if (obj case const (
 }
 >>> Split set constant in pattern.
 if (obj case const {element, element, element, element}) {;}
-<<<
+<<< 3.7
 if (obj case const {
   element,
   element,
@@ -90,7 +90,7 @@ if (obj case const {
 }
 >>> Split constant constructor in pattern.
 if (obj case const Foo(element, element, element, element)) {;}
-<<<
+<<< 3.7
 if (obj case const Foo(
   element,
   element,
@@ -101,7 +101,7 @@ if (obj case const Foo(
 }
 >>> Split in parenthesized constant expression.
 if (obj case const(longArgument + anotherArgument)) {;}
-<<<
+<<< 3.7
 if (obj
     case const (longArgument +
         anotherArgument)) {

@@ -8,7 +8,7 @@ class SpongePublishers extends ResultPublishers {
           new ResultPropertyPublisher(_filenameConvention)
         ]);
 }
-<<<
+<<< 3.6
 class SpongePublishers extends ResultPublishers {
   SpongePublishers(
       [FilenameConvention _filenameConvention =

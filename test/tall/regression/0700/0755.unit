@@ -11,7 +11,7 @@ void testFormatting(List<String> list) {
       .expand((it) => it.runes)
       .firstWhere((it) => it < "T".runes.first);
 }
-<<<
+<<< 3.7
 void testFormatting(List<String> list) {
   list.reversed
       .map((it) {
@@ -39,7 +39,7 @@ void testFormatting(List<String> list) {
             .map((it) => it.toString())
         	  .map((it) => it.toString());
 }
-<<<
+<<< 3.7
 void testFormatting(List<String> list) {
   list.reversed
       .map((it) {

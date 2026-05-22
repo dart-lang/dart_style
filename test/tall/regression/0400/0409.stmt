@@ -3,7 +3,7 @@ it('should complete with an error if the name or website is null or both '
     'are unchanged', async(() {
   ICouldDoAnything();
 }));
-<<<
+<<< 3.7
 it(
   'should complete with an error if the name or website is null or both '
   'are unchanged',

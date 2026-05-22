@@ -1,14 +1,14 @@
 40 columns                              |
 >>> Empty record pattern block comment.
 if (obj case (  /* comment */  )) {;}
-<<<
+<<< 3.7
 if (obj case (/* comment */)) {
   ;
 }
 >>> Empty record pattern line comment.
 if (obj case (  // comment
 )) {;}
-<<<
+<<< 3.7
 if (obj case (
   // comment
 )) {
@@ -17,7 +17,7 @@ if (obj case (
 >>> Record line comment between fields.
 if (obj case ( first , // comment
 second)){;}
-<<<
+<<< 3.7
 if (obj case (
   first, // comment
   second,

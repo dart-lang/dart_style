@@ -1,13 +1,13 @@
 40 columns                              |
 >>> No spaces between identifiers.
 library    a .  b   . c;
-<<<
+<<< 3.7
 library a.b.c;
 >>> Don't wrap identifier.
 library veryLong.alsoLong.evenMoreLong.thisToo;
-<<<
+<<< 3.7
 library veryLong.alsoLong.evenMoreLong.thisToo;
 >>> No spaces after unnamed library.
 library    ;
-<<<
+<<< 3.7
 library;

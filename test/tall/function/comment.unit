@@ -12,7 +12,7 @@ main() {
 }
 }
 }
-<<<
+<<< 3.7
 main() {
   // comment
   {
@@ -25,7 +25,7 @@ main() {
 >>> Don't split return type if comment before.
 // Comment.
 int f() {;}
-<<<
+<<< 3.7
 // Comment.
 int f() {
   ;

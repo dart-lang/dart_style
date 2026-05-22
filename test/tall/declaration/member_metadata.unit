@@ -6,7 +6,7 @@ class X {
   @meta   factory X(x) => null;
   @meta  int x() => null;
 }
-<<<
+<<< 3.7
 class X {
   @meta
   var _x;
@@ -24,7 +24,7 @@ class X {
   @meta @another  factory X(x) => null;
   @meta @another  int x() => null;
 }
-<<<
+<<< 3.7
 class X {
   @meta
   @another
@@ -43,7 +43,7 @@ class X {
 class Foo {
 @wat  covariant    int zoop;
 }
-<<<
+<<< 3.7
 class Foo {
   @wat
   covariant int zoop;
@@ -55,7 +55,7 @@ class B {
     @meta late int d;
   }
 }
-<<<
+<<< 3.7
 class B {
   @meta
   late int c;
@@ -69,7 +69,7 @@ class C {
   @meta  external static   var  x;
   @meta  external var x;
 }
-<<<
+<<< 3.7
 class C {
   @meta
   external static var x;
@@ -80,7 +80,7 @@ class C {
 class C {
   @meta  abstract var x;
 }
-<<<
+<<< 3.7
 class C {
   @meta
   abstract var x;

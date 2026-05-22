@@ -1,4 +1,4 @@
 >>>
 library x.y.z;
-<<<
+<<< 3.6
 library x.y.z;

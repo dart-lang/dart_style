@@ -1,38 +1,38 @@
 40 columns                              |
 >>> Unsplit extends clause.
 class A extends B {}
-<<<
+<<< 3.7
 class A extends B {}
 >>> Unsplit implements clause.
 class A implements B {}
-<<<
+<<< 3.7
 class A implements B {}
 >>> Unsplit with clause.
 class A extends B with C {}
-<<<
+<<< 3.7
 class A extends B with C {}
 >>> Unsplit multiple clauses.
 class A extends B with C implements D {}
-<<<
+<<< 3.7
 class A extends B with C implements D {}
 >>> Split at `extends`.
 class SomeClass extends VeryLongBaseClass {}
-<<<
+<<< 3.7
 class SomeClass
     extends VeryLongBaseClass {}
 >>> Split at `implements`.
 class SomeClass implements VeryLongBaseClass {}
-<<<
+<<< 3.7
 class SomeClass
     implements VeryLongBaseClass {}
 >>> Split at `implements` but not between interfaces.
 class SomeClass implements Interface, AnotherOne {}
-<<<
+<<< 3.7
 class SomeClass
     implements Interface, AnotherOne {}
 >>> Split at `implements` and interfaces.
 class SomeClass implements Interface, Another, Third {}
-<<<
+<<< 3.7
 class SomeClass
     implements
         Interface,
@@ -40,17 +40,17 @@ class SomeClass
         Third {}
 >>> Split at `with`.
 class SomeLongClass with VeryLongMixin {}
-<<<
+<<< 3.7
 class SomeLongClass
     with VeryLongMixin {}
 >>> Split at `with` but not between mixins.
 class SomeClass with Mixin, AnotherOne {}
-<<<
+<<< 3.7
 class SomeClass
     with Mixin, AnotherOne {}
 >>> Split at `with` and mixins.
 class SomeClass with Mixin, Another, Third, Fourth {}
-<<<
+<<< 3.7
 class SomeClass
     with
         Mixin,
@@ -59,7 +59,7 @@ class SomeClass
         Fourth {}
 >>> Split within `with` but not `implements`.
 class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with
         Mixin,
@@ -70,7 +70,7 @@ class SomeClass extends A
     implements Interface {}
 >>> Split within `implements` but not `with`.
 class SomeClass extends A with Mixin implements Interface, Another, Third {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with Mixin
     implements
@@ -79,7 +79,7 @@ class SomeClass extends A
         Third {}
 >>> Split within both `with` and `implements`.
 class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface, Another, Third {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with
         Mixin,
@@ -93,30 +93,30 @@ class SomeClass extends A
         Third {}
 >>> Split at `extends` splits `implements` too.
 class AVeryLongSomeClass extends BaseClass implements I {}
-<<<
+<<< 3.7
 class AVeryLongSomeClass
     extends BaseClass
     implements I {}
 >>>
 class AVeryLongSomeClass extends BaseClass implements Interface {}
-<<<
+<<< 3.7
 class AVeryLongSomeClass
     extends BaseClass
     implements Interface {}
 >>> Split at `extends` splits `with` too.
 class AVeryLongSomeClass extends BaseClass with Mixin {}
-<<<
+<<< 3.7
 class AVeryLongSomeClass
     extends BaseClass
     with Mixin {}
 >>> Can split `with` clause without splitting `extends`.
 class SomeClass extends A with Mixin, Another {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with Mixin, Another {}
 >>>
 class SomeClass extends A with Mixin, Another, Third, Fourth {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with
         Mixin,
@@ -125,12 +125,12 @@ class SomeClass extends A
         Fourth {}
 >>> Can split `implements` clause without splitting `extends`.
 class SomeClass extends A implements Type, Another {}
-<<<
+<<< 3.7
 class SomeClass extends A
     implements Type, Another {}
 >>>
 class SomeClass extends A implements Type, Another, Third, Fourth {}
-<<<
+<<< 3.7
 class SomeClass extends A
     implements
         Type,
@@ -139,28 +139,28 @@ class SomeClass extends A
         Fourth {}
 >>> Can split `with` and `implements` without splitting `extends`.
 class SomeVeryLongClass extends A with Mixin implements Interface {}
-<<<
+<<< 3.7
 class SomeVeryLongClass extends A
     with Mixin
     implements Interface {}
 >>>
 class SomeClass extends A with Mixin, Another implements Interface, Another {}
-<<<
+<<< 3.7
 class SomeClass extends A
     with Mixin, Another
     implements Interface, Another {}
 >>> Unsplit generic superclass.
 class SomeClass extends C<int> {}
-<<<
+<<< 3.7
 class SomeClass extends C<int> {}
 >>> Split before `extends` on generic superclass.
 class SomeClass extends C<SomeLongClass> {}
-<<<
+<<< 3.7
 class SomeClass
     extends C<SomeLongClass> {}
 >>> Split in generic superclass.
 class SomeClass extends C<VeryLongType, AnotherLongType> {}
-<<<
+<<< 3.7
 class SomeClass
     extends
         C<
@@ -169,16 +169,16 @@ class SomeClass
         > {}
 >>> Unsplit generic mixin.
 class SomeClass with C<int> {}
-<<<
+<<< 3.7
 class SomeClass with C<int> {}
 >>> Split before `with` on generic mixin.
 class SomeClass with Mixin<SomeLongClass> {}
-<<<
+<<< 3.7
 class SomeClass
     with Mixin<SomeLongClass> {}
 >>> Split in generic mixin.
 class SomeClass with Mixin<VeryLongType, AnotherLongType> {}
-<<<
+<<< 3.7
 class SomeClass
     with
         Mixin<
@@ -187,16 +187,16 @@ class SomeClass
         > {}
 >>> Unsplit generic superinterface.
 class SomeClass implements C<int> {}
-<<<
+<<< 3.7
 class SomeClass implements C<int> {}
 >>> Split before `implements` on generic superinterface.
 class SomeClass implements C<SomeLongClass> {}
-<<<
+<<< 3.7
 class SomeClass
     implements C<SomeLongClass> {}
 >>> Split in generic superinterface.
 class SomeClass implements C<VeryLongType, AnotherLongType> {}
-<<<
+<<< 3.7
 class SomeClass
     implements
         C<
@@ -205,7 +205,7 @@ class SomeClass
         > {}
 >>> Split in generic clause forces entire clause list to split.
 class SomeClass with A, B<LongTypeArgument, AnotherLongType>, C {}
-<<<
+<<< 3.7
 class SomeClass
     with
         A,
@@ -216,7 +216,7 @@ class SomeClass
         C {}
 >>> Split in generic `with` clause forces `implements` clause to split.
 class SomeClass with B<LongTypeArgument, AnotherLongType> implements C {}
-<<<
+<<< 3.7
 class SomeClass
     with
         B<
@@ -226,7 +226,7 @@ class SomeClass
     implements C {}
 >>> Split in generic `implements` clause forces `with` clause to split.
 class SomeClass with B implements C<LongTypeArgument, AnotherLongType> {}
-<<<
+<<< 3.7
 class SomeClass
     with B
     implements
@@ -236,7 +236,7 @@ class SomeClass
         > {}
 >>> Split in generic `with` clause does not force `extends` clause to split.
 class C extends A with B<LongTypeArgument, AnotherLongType> {}
-<<<
+<<< 3.7
 class C extends A
     with
         B<
@@ -245,7 +245,7 @@ class C extends A
         > {}
 >>> Split in generic `implements` clause does not force `extends` clause to split.
 class C extends A implements B<LongTypeArgument, AnotherLongType> {}
-<<<
+<<< 3.7
 class C extends A
     implements
         B<
@@ -254,7 +254,7 @@ class C extends A
         > {}
 >>> Split in class type parameters forces clause to split.
 class C<LongTypeParameter, AnotherLongType> extends Other {}
-<<<
+<<< 3.7
 class C<
   LongTypeParameter,
   AnotherLongType
@@ -262,7 +262,7 @@ class C<
     extends Other {}
 >>> Split in class type parameters forces clauses to split.
 class C<LongTypeParameter, AnotherLongType> extends Other with Mixin {}
-<<<
+<<< 3.7
 class C<
   LongTypeParameter,
   AnotherLongType

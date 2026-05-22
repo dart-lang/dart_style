@@ -8,7 +8,7 @@ main() {
   // dart format on
   but   +   here   +    does   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + formatted;
   // dart format off
@@ -32,7 +32,7 @@ main() {
     // dart format on
   }
 }
-<<<
+<<< 3.7
 main() {
   here + gets + formatted;
   // dart format off
@@ -60,7 +60,7 @@ main() {
   }
   outside  +  block  ;
 }
-<<<
+<<< 3.7
 main() {
   before;
   // dart format off
@@ -84,7 +84,7 @@ main() {
   // dart format on
   outside  +  block  ;
 }
-<<<
+<<< 3.7
 main() {
   before;
   {
@@ -104,7 +104,7 @@ main() {
       // dart format on
       again  +  too  +  much  ;
 }
-<<<
+<<< 3.7
 main() {
   too + much;
   // dart format off
@@ -118,7 +118,7 @@ main() {
   // dart format on
   after  +  marker  ;
 }
-<<<
+<<< 3.7
 main() {
   before + marker;
   // dart format on
@@ -130,7 +130,7 @@ main() {
   // dart format off
   after  +  marker  ;
 }
-<<<
+<<< 3.7
 main() {
   before + marker;
   // dart format off
@@ -148,7 +148,7 @@ main() {
   // dart format on
   five  ;
 }
-<<<
+<<< 3.7
 main() {
   one;
   // dart format off
@@ -167,7 +167,7 @@ main() {
   // dart format on
   after  +  region;
 }
-<<<
+<<< 3.7
 main() {
   long +
       code +
@@ -185,7 +185,7 @@ main() {
   unformatted  +  code  +  // dart format on
   after  +  region;
 }
-<<<
+<<< 3.7
 main() {
   before +
       region +
@@ -212,7 +212,7 @@ main() {
   unformatted  +  code;
   // dart format on
 }
-<<<
+<<< 3.7
 main() {
   //dart format off
   unformatted + code;
@@ -268,7 +268,7 @@ main() {
   // dart format on
   unformatted  +  code;
 }
-<<<
+<<< 3.7
 main() {
   // dart format off
   // Doesn't actually turn back on:
@@ -314,7 +314,7 @@ main() {
   /// dart format on
   and   +   here   +    does   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + formatted;
 

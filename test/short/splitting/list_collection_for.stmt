@@ -1,13 +1,13 @@
 40 columns                              |
 >>> split collection before for
 var list = [for (a in b) somewhatLongThingHere];
-<<<
+<<< 3.6
 var list = [
   for (a in b) somewhatLongThingHere
 ];
 >>> one line in multi-line
 var list = [veryLongThingThatForcesASplit, for (a in b) 2, 3];
-<<<
+<<< 3.6
 var list = [
   veryLongThingThatForcesASplit,
   for (a in b) 2,
@@ -15,7 +15,7 @@ var list = [
 ];
 >>> long body forces split
 var list = [1, for (a in b) veryLongThingThatForcesASplit, 3];
-<<<
+<<< 3.6
 var list = [
   1,
   for (a in b)
@@ -24,7 +24,7 @@ var list = [
 ];
 >>> split inside body
 var list = [1, for (a in b) veryLongThingThatForcesASplit + anotherLongThing, 3];
-<<<
+<<< 3.6
 var list = [
   1,
   for (a in b)
@@ -34,19 +34,19 @@ var list = [
 ];
 >>> trailing comma
 var list = [for (a in b) 2,];
-<<<
+<<< 3.6
 var list = [
   for (a in b) 2,
 ];
 >>> spread list inside for stays on one line if it fits
 var list = [for (a in b) ...[1, 2]];
-<<<
+<<< 3.6
 var list = [
   for (a in b) ...[1, 2]
 ];
 >>> spread list inside for formats like block if it splits
 var list = [for (a in b) ...[1, 2,]];
-<<<
+<<< 3.6
 var list = [
   for (a in b) ...[
     1,
@@ -55,7 +55,7 @@ var list = [
 ];
 >>> a split collection that isn't spread wraps and indents
 var list = [for (a in b) [1,2,]];
-<<<
+<<< 3.6
 var list = [
   for (a in b)
     [
@@ -65,7 +65,7 @@ var list = [
 ];
 >>> lambda inside body
 var list = [for (a in b) () { body; }];
-<<<
+<<< 3.6
 var list = [
   for (a in b)
     () {
@@ -74,7 +74,7 @@ var list = [
 ];
 >>> split if child is for
 var l = [for (a in b) for (c in d) t];
-<<<
+<<< 3.6
 var l = [
   for (a in b)
     for (c in d) t
@@ -83,51 +83,51 @@ var l = [
 var list = [
   for (var a in b) if (c) d
 ];
-<<<
+<<< 3.6
 var list = [
   for (var a in b)
     if (c) d
 ];
 >>> split collection before body
 var list = [for (a in b) longThingThatIsLong];
-<<<
+<<< 3.6
 var list = [
   for (a in b) longThingThatIsLong
 ];
 >>> just split outer for
 var list = [for (a in b) for (c in d) longThingThatIsLong];
-<<<
+<<< 3.6
 var list = [
   for (a in b)
     for (c in d) longThingThatIsLong
 ];
 >>> nested list inside for element
 var list = [for (var a in b) [c]];
-<<<
+<<< 3.6
 var list = [
   for (var a in b) [c]
 ];
 >>> nested spread list inside for element
 var list = [for (var a in b) ...[c]];
-<<<
+<<< 3.6
 var list = [
   for (var a in b) ...[c]
 ];
 >>> nested if inside list
 var l = [for (var a in b) [if (c) d]];
-<<<
+<<< 3.6
 var l = [
   for (var a in b) [if (c) d]
 ];
 >>> nested for inside list
 var l = [for (a in b) [for (c in d) e]];
-<<<
+<<< 3.6
 var l = [
   for (a in b) [for (c in d) e]
 ];
 >>> split in for-in type
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a in b) body];
-<<<
+<<< 3.6
 var list = [
   for (LongGenericTypeName<TypeArg,
       AnotherTypeArgument> a in b)
@@ -135,7 +135,7 @@ var list = [
 ];
 >>> split in for-in expression
 var list = [for (a in sequenceExpression + thatDoesNotFit) body];
-<<<
+<<< 3.6
 var list = [
   for (a in sequenceExpression +
       thatDoesNotFit)
@@ -143,7 +143,7 @@ var list = [
 ];
 >>> split in for var type
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body];
-<<<
+<<< 3.6
 var list = [
   for (LongGenericTypeName<TypeArg,
           AnotherTypeArgument> a = 0;
@@ -153,7 +153,7 @@ var list = [
 ];
 >>> split in for initializer
 var list = [for (a = initializerExpression + thatDoesNotFit; a < 1; a++) body];
-<<<
+<<< 3.6
 var list = [
   for (a = initializerExpression +
           thatDoesNotFit;
@@ -163,7 +163,7 @@ var list = [
 ];
 >>> split in for condition
 var list = [for (a = b; conditionExpression + thatDoesNotFit; a++) body];
-<<<
+<<< 3.6
 var list = [
   for (a = b;
       conditionExpression +
@@ -173,7 +173,7 @@ var list = [
 ];
 >>> split in for increment
 var list = [for (a = b; a < 1; incrementExpression + thatDoesNotFit) body];
-<<<
+<<< 3.6
 var list = [
   for (a = b;
       a < 1;
@@ -185,7 +185,7 @@ var list = [
 var list = [
 for (var (longIdentifier && anotherLongOne) in obj) element
 ];
-<<<
+<<< 3.6
 var list = [
   for (var (longIdentifier &&
       anotherLongOne) in obj)
@@ -195,7 +195,7 @@ var list = [
 var list = [
 for (var (longIdentifier && anotherLongOne) = obj; cond; inc) element
 ];
-<<<
+<<< 3.6
 var list = [
   for (var (longIdentifier &&
           anotherLongOne) = obj;

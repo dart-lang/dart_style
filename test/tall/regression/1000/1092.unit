@@ -14,7 +14,7 @@ void assertThatImageLoadingSucceeds(NetworkImageWithRetry subject) {
     ),
   );
 }
-<<<
+<<< 3.7
 void assertThatImageLoadingSucceeds(NetworkImageWithRetry subject) {
   subject
       .load(
@@ -47,7 +47,7 @@ _httpCacheManager
   completer.completeError(error, stackTrace);
 }).whenComplete(() => _tasks.remove(url));
 }
-<<<
+<<< 3.7
 main() {
   _httpCacheManager
       ._(

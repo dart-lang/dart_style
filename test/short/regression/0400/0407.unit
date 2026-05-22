@@ -4,7 +4,7 @@ void main() {
     ..accountId = new Int64(111)
     ..tags = (new Account_Tags()..accountHotlist.add(new Hotlist()..hotlistId = new Int64(10))));
 }
-<<<
+<<< 3.6
 void main() {
   model
     ..account = (new Account()
@@ -21,7 +21,7 @@ receiver
           ? _formatter.formatAsPercent(item.value / _total, fractionDigits: 1)
           : _formatter.formatValue(item.value, item.valueType);
 }
-<<<
+<<< 3.6
     main() {
       receiver
         ..formattedTotal = _total == 0
@@ -40,7 +40,7 @@ receiver
               ? _formatter.formatAsPercent(item.value / _total, fractionDigits: 1)
               : _formatter.formatValue(item.value, item.valueType);
 }
-<<<
+<<< 3.6
       main() {
         receiver
           ..formattedTotal = _total == 0

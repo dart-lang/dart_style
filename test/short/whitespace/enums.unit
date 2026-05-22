@@ -1,15 +1,15 @@
 40 columns                              |
 >>> single
 enum Unity {one}
-<<<
+<<< 3.6
 enum Unity { one }
 >>> single line
 enum Primate{bonobo,chimp,gorilla}
-<<<
+<<< 3.6
 enum Primate { bonobo, chimp, gorilla }
 >>> trailing comma always splits
 enum Primate{bonobo,chimp,}
-<<<
+<<< 3.6
 enum Primate {
   bonobo,
   chimp,
@@ -17,7 +17,7 @@ enum Primate {
 >>> metadata
 @Awesome @Fierce("really")
 enum Primate{bonobo,chimp,gorilla}
-<<<
+<<< 3.6
 @Awesome
 @Fierce("really")
 enum Primate { bonobo, chimp, gorilla }
@@ -35,7 +35,7 @@ enum Primate {
   gorilla
 
 }
-<<<
+<<< 3.6
 enum Primate {
   bonobo,
 
@@ -49,7 +49,7 @@ enum Primate {
   chimp,
   gorilla
 }
-<<<
+<<< 3.6
 enum Primate { bonobo, chimp, gorilla }
 >>> one blank line between values and members
 enum E { a, b, c;
@@ -57,7 +57,7 @@ enum E { a, b, c;
 
 
 int x; }
-<<<
+<<< 3.6
 enum E {
   a,
   b,
@@ -67,7 +67,7 @@ enum E {
 }
 >>> always go multiline if there are members
 enum E { a, b, c; int x; }
-<<<
+<<< 3.6
 enum E {
   a,
   b,
@@ -83,7 +83,7 @@ foo(int x) {
 if (x == 0) {
 return true;
 }}}
-<<<
+<<< 3.6
 enum A {
   a;
 
@@ -98,16 +98,16 @@ enum A {
 >>> trailing space inside body
 enum A { a, b
   }
-<<<
+<<< 3.6
 enum A { a, b }
 >>> leading space before "enum"
   enum A { a
 }
-<<<
+<<< 3.6
 enum A { a }
 >>>
 enum A  { a;int meaningOfLife() => 42; }
-<<<
+<<< 3.6
 enum A {
   a;
 
@@ -115,7 +115,7 @@ enum A {
 }
 >>>
 enum A{a;var z;inc(int x) => ++x;}
-<<<
+<<< 3.6
 enum A {
   a;
 
@@ -127,7 +127,7 @@ enum Foo {
   x;
 var a = 1; b() {;} c() => null; get d {;} get e => null; set f(value) {;
 } set g(value) => null; var h = 1;}
-<<<
+<<< 3.6
 enum Foo {
   x;
 
@@ -153,7 +153,7 @@ enum Foo {
 enum Foo {x;
 var a = 1; b() {} c() => null; get d {} get e => null; set f(value) {
 } set g(value) => null; var h = 1;}
-<<<
+<<< 3.6
 enum Foo {
   x;
 
@@ -170,7 +170,7 @@ enum Foo {
 var x = 1;
 enum A { a }
 var y = 2;
-<<<
+<<< 3.6
 var x = 1;
 
 enum A { a }
@@ -178,7 +178,7 @@ enum A { a }
 var y = 2;
 >>> semicolon after values but no members
 enum   E { a, b; }
-<<<
+<<< 3.6
 enum E {
   a,
   b;
@@ -195,7 +195,7 @@ int operator +(other) => 3;
 const E([String parameter]) : field = parameter;
 const E.named({String parameter});
 }
-<<<
+<<< 3.6
 enum E
     with M<R, S>, F
     implements C<T>, D {
@@ -220,7 +220,7 @@ enum Args {
 first(),second(a,b,c),
 third(named:1,2,another:3)
 }
-<<<
+<<< 3.6
 enum Args {
   first(),
   second(a, b, c),
@@ -230,7 +230,7 @@ enum Args {
 enum MagicNumbers< T    extends num   ,   S> {
   one(1), two(2),pi<double,String>(3.14159)
 }
-<<<
+<<< 3.6
 enum MagicNumbers<T extends num, S> {
   one(1),
   two(2),
@@ -241,7 +241,7 @@ enum Numbers {
   one(1,),
   two(1,2,),
 }
-<<<
+<<< 3.6
 enum Numbers {
   one(
     1,
@@ -253,7 +253,7 @@ enum Numbers {
 }
 >>> trailing comma and semicolon after constants
 enum E {a,b,c,;}
-<<<
+<<< 3.6
 enum E {
   a,
   b,
@@ -262,7 +262,7 @@ enum E {
 }
 >>> trailing comma and semicolon after constants with member
 enum E {a,b,c,;var x;}
-<<<
+<<< 3.6
 enum E {
   a,
   b,
@@ -273,7 +273,7 @@ enum E {
 }
 >>> trailing comma and semicolon after constant with argument list
 enum E {a,b,c(123),;}
-<<<
+<<< 3.6
 enum E {
   a,
   b,
@@ -289,7 +289,7 @@ enum E {
 
 
 }
-<<<
+<<< 3.6
 enum E {
   a,
 }
@@ -306,7 +306,7 @@ enum E {
 
 
 }
-<<<
+<<< 3.6
 enum E {
   a;
 
@@ -314,15 +314,15 @@ enum E {
 }
 >>> (experiment primary-constructors) Enum with primary constructor and single constant
 enum E(final int x) { a(1) }
-<<<
+<<< 3.6
 enum E(final int x) { a(1) }
 >>> (experiment primary-constructors) Enum with primary constructor and multiple constants
 enum E(final int x) { a(1), b(2) }
-<<<
+<<< 3.6
 enum E(final int x) { a(1), b(2) }
 >>> (experiment primary-constructors) Enum with primary constructor and members
 enum E(final int x) { a(1), b(2); void foo() {} }
-<<<
+<<< 3.6
 enum E(final int x) {
   a(1),
   b(2);
@@ -331,13 +331,13 @@ enum E(final int x) {
 }
 >>> (experiment primary-constructors) Const enum with primary constructor
 enum const E(final int x) { a(1) }
-<<<
+<<< 3.6
 enum const E(final int x) { a(1) }
 >>> (experiment primary-constructors) Enum with semicolon body
 enum E;
-<<<
+<<< 3.6
 enum E;
 >>> (experiment primary-constructors) Enum with primary constructor and semicolon body
 enum E(int x);
-<<<
+<<< 3.6
 enum E(int x);

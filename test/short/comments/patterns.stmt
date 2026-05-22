@@ -2,7 +2,7 @@
 >>> before first operand of logic
 if (obj case // c
 pattern || otherPattern) {;}
-<<<
+<<< 3.6
 if (obj
     case // c
         pattern || otherPattern) {
@@ -11,7 +11,7 @@ if (obj
 >>> before first operand of nested logic
 if (obj case pattern || // c
 otherPattern && thirdLongPattern) {;}
-<<<
+<<< 3.6
 if (obj
     case pattern || // c
         otherPattern &&
@@ -21,7 +21,7 @@ if (obj
 >>> after left logic operand (looks weird, but user should move comment)
 if (obj case pattern // c
 || otherPattern) {;}
-<<<
+<<< 3.6
 if (obj
     case pattern // c
         ||
@@ -31,7 +31,7 @@ if (obj
 >>> after logic operator
 if (obj case pattern || // c
 otherPattern) {;}
-<<<
+<<< 3.6
 if (obj
     case pattern || // c
         otherPattern) {
@@ -40,7 +40,7 @@ if (obj
 >>> after right logic operand
 if (obj case somePattern || otherPattern // c
 ) {;}
-<<<
+<<< 3.6
 if (obj
     case somePattern ||
         otherPattern // c
@@ -50,7 +50,7 @@ if (obj
 >>> after relational operator
 if (obj case <= // c
 someConstant + anotherLongConstant) {;}
-<<<
+<<< 3.6
 if (obj
     case <= // c
         someConstant +
@@ -60,7 +60,7 @@ if (obj
 >>> after relational operand
 if (obj case <= someConstant + anotherLongConstant // c
 ) {;}
-<<<
+<<< 3.6
 if (obj
     case <= someConstant +
         anotherLongConstant // c
@@ -70,7 +70,7 @@ if (obj
 >>> before "as"
 if (obj case constant // c
 as Type) {;}
-<<<
+<<< 3.6
 if (obj
     case constant // c
         as Type) {
@@ -79,7 +79,7 @@ if (obj
 >>> after "as"
 if (obj case constant as // c
 Type) {;}
-<<<
+<<< 3.6
 if (obj
     case constant as // c
         Type) {
@@ -88,7 +88,7 @@ if (obj
 >>> before null-check (looks weird, but user should move comment)
 if (obj case pattern // c
 ?) {;}
-<<<
+<<< 3.6
 if (obj
     case pattern // c
         ?) {
@@ -97,7 +97,7 @@ if (obj
 >>> after null-check (looks weird, but user should move comment)
 if (obj case pattern? // c
 ) {;}
-<<<
+<<< 3.6
 if (obj case pattern? // c
     ) {
   ;
@@ -105,7 +105,7 @@ if (obj case pattern? // c
 >>> before null-assert (looks weird, but user should move comment)
 if (obj case pattern // c
 !) {;}
-<<<
+<<< 3.6
 if (obj
     case pattern // c
         !) {
@@ -114,7 +114,7 @@ if (obj
 >>> after null-assert (looks weird, but user should move comment)
 if (obj case pattern! // c
 ) {;}
-<<<
+<<< 3.6
 if (obj case pattern! // c
     ) {
   ;
@@ -122,7 +122,7 @@ if (obj case pattern! // c
 >>> inside parenthesized
 if (obj case ( // c
 pattern)) {;}
-<<<
+<<< 3.6
 if (obj
     case ( // c
         pattern)) {
@@ -131,7 +131,7 @@ if (obj
 >>> in qualified name
 if (obj case qualified // c
 .name) {;}
-<<<
+<<< 3.6
 if (obj
     case qualified // c
         .name) {
@@ -141,7 +141,7 @@ if (obj
 if (obj case qualified // c
 .prefixed // c
 .name) {;}
-<<<
+<<< 3.6
 if (obj
     case qualified // c
         .prefixed // c
@@ -151,7 +151,7 @@ if (obj
 >>> before "var"
 if (obj case // c
 var x) {;}
-<<<
+<<< 3.6
 if (obj
     case // c
         var x) {
@@ -160,7 +160,7 @@ if (obj
 >>> after "var"
 if (obj case var // c
 x) {;}
-<<<
+<<< 3.6
 if (obj
     case var // c
         x) {
@@ -169,7 +169,7 @@ if (obj
 >>> after variable (looks weird, but user should move comment)
 if (obj case var x // c
 ) {;}
-<<<
+<<< 3.6
 if (obj case var x // c
     ) {
   ;
@@ -177,7 +177,7 @@ if (obj case var x // c
 >>> after type
 if (obj case List<int> // c
 x) {;}
-<<<
+<<< 3.6
 if (obj
     case List<int> // c
         x) {
@@ -187,7 +187,7 @@ if (obj
 if (obj case [
  // c
 ]) {;}
-<<<
+<<< 3.6
 if (obj
     case [
       // c
@@ -197,7 +197,7 @@ if (obj
 >>> line comment on opening line of list
 if (obj case [// c
 ]) {;}
-<<<
+<<< 3.6
 if (obj
     case [
       // c
@@ -208,7 +208,7 @@ if (obj
 if (obj case [
   /* comment */
 ]){;}
-<<<
+<<< 3.6
 if (obj
     case [
       /* comment */
@@ -217,14 +217,14 @@ if (obj
 }
 >>> inline block comment in list
 if (obj case [  /* comment */  e  ]){;}
-<<<
+<<< 3.6
 if (obj case [/* comment */ e]) {
   ;
 }
 >>> line comment between list items
 if (obj case ['a', // comment
   'b']){;}
-<<<
+<<< 3.6
 if (obj
     case [
       'a', // comment
@@ -236,7 +236,7 @@ if (obj
 if (obj case {
  // c
 }) {;}
-<<<
+<<< 3.6
 if (obj
     case {
       // c
@@ -246,7 +246,7 @@ if (obj
 >>> line comment on opening line of map
 if (obj case {// c
 }) {;}
-<<<
+<<< 3.6
 if (obj
     case {
       // c
@@ -257,7 +257,7 @@ if (obj
 if (obj case {
   /* comment */
 }){;}
-<<<
+<<< 3.6
 if (obj
     case {
       /* comment */
@@ -266,14 +266,14 @@ if (obj
 }
 >>> inline block comment in map
 if (obj case {  /* comment */  k: v  }){;}
-<<<
+<<< 3.6
 if (obj case {/* comment */ k: v}) {
   ;
 }
 >>> line comment between map items
 if (obj case {k: 'a', // comment
   m: 'b'}){;}
-<<<
+<<< 3.6
 if (obj
     case {
       k: 'a', // comment
@@ -283,14 +283,14 @@ if (obj
 }
 >>> empty record pattern block comment
 if (obj case (  /* comment */  )) {;}
-<<<
+<<< 3.6
 if (obj case (/* comment */)) {
   ;
 }
 >>> empty record pattern line comment
 if (obj case (  // comment
 )) {;}
-<<<
+<<< 3.6
 if (obj
     case (
       // comment
@@ -300,7 +300,7 @@ if (obj
 >>> record line comment between fields
 if (obj case ( first , // comment
 second)){;}
-<<<
+<<< 3.6
 if (obj
     case (
       first, // comment
@@ -310,14 +310,14 @@ if (obj
 }
 >>> empty object pattern block comment
 if (obj case Foo(  /* comment */  )) {;}
-<<<
+<<< 3.6
 if (obj case Foo(/* comment */)) {
   ;
 }
 >>> empty object pattern line comment (looks weird, but user should move comment)
 if (obj case Foo(  // comment
 )) {;}
-<<<
+<<< 3.6
 if (obj
     case Foo(
       // comment
@@ -327,7 +327,7 @@ if (obj
 >>> object line comment between arguments
 if (obj case Foo( first , // comment
 second)){;}
-<<<
+<<< 3.6
 if (obj
     case Foo(
       first, // comment
@@ -338,7 +338,7 @@ if (obj
 >>> empty const constructor line comment (looks weird, but user should move comment)
 if (obj case const Foo(  // comment
 )) {;}
-<<<
+<<< 3.6
 if (obj
     case const Foo(// comment
         )) {
@@ -347,7 +347,7 @@ if (obj
 >>> const constructor line comment between arguments
 if (obj case const Foo( first , // comment
 second)){;}
-<<<
+<<< 3.6
 if (obj
     case const Foo(
         first, // comment
@@ -357,7 +357,7 @@ if (obj
 >>> after "(" in parenthesized constant
 if (obj case const ( // comment
 expression)){;}
-<<<
+<<< 3.6
 if (obj
     case const ( // comment
         expression)) {
@@ -366,7 +366,7 @@ if (obj
 >>> after expression in parenthesized constant (looks weird, but user should move comment)
 if (obj case const ( expression // comment
 )){;}
-<<<
+<<< 3.6
 if (obj
     case const (expression // comment
         )) {

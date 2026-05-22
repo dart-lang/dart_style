@@ -6,7 +6,7 @@ var map = {
   a:1,b:2,c:3,d:4,
   e:5,f:6,g:7,h:8
 };
-<<<
+<<< 3.7
 var map = {
   // yeah
   a: 1, b: 2, c: 3, d: 4,
@@ -18,7 +18,7 @@ var map = {
   d: // c
   4,
 };
-<<<
+<<< 3.7
 var map = {
   a: 1,
   b: 2,
@@ -35,7 +35,7 @@ var map = {
   // comment
   element8: 8, element9: 9, element10: 10, element11: 11,
 };
-<<<
+<<< 3.7
 var map = {
   element1: 1,
   element2: 2,

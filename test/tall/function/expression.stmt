@@ -2,31 +2,31 @@
 ### Tests for anonymous function expressions: "lambdas".
 >>> Generic.
 f = <  T  ,  S  extends  T  >  (  T  param  )  {  }  ;
-<<<
+<<< 3.7
 f = <T, S extends T>(T param) {};
 >>> Async with block body.
 f = (  )  async  {  }  ;
-<<<
+<<< 3.7
 f = () async {};
 >>> Async with expression body.
 f = (  )  async  =>  1;
-<<<
+<<< 3.7
 f = () async => 1;
 >>> Sync* with block body.
 f = (  )  sync  *  {  }  ;
-<<<
+<<< 3.7
 f = () sync* {};
 >>> Sync* with expression body.
 f = (  )  sync  *  =>  1;
-<<<
+<<< 3.7
 f = () sync* => 1;
 >>> Aync* with block body.
 f = (  )  async  *  {  }  ;
-<<<
+<<< 3.7
 f = () async* {};
 >>> Aync* with expression body.
 f = (  )  async  *  =>  1;
-<<<
+<<< 3.7
 f = () async* => 1;
 >>> Split parameter list.
 function = (int firstArgument, int secondArgument) { print('42'); };

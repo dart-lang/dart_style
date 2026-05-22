@@ -2,21 +2,21 @@
 >>> Insert blank between library and import.
 library foo;
 import 'a.dart';
-<<<
+<<< 3.7
 library foo;
 
 import 'a.dart';
 >>> Insert blank between library and export.
 library foo;
 export 'a.dart';
-<<<
+<<< 3.7
 library foo;
 
 export 'a.dart';
 >>> Insert blank between library and part.
 library foo;
 part 'a.dart';
-<<<
+<<< 3.7
 library foo;
 
 part 'a.dart';
@@ -38,7 +38,7 @@ var c = 1;
 d() {}
 
 
-<<<
+<<< 3.7
 class A {}
 
 class B = Base with Mixin;

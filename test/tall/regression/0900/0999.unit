@@ -5,7 +5,7 @@ void main() {
     ..innerProperty2 = 2)
     ..outerProperty = 3;
 }
-<<<
+<<< 3.7
 void main() {
   final object = outer(
     inner()

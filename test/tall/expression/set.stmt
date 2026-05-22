@@ -3,11 +3,11 @@
 ### all of the edge cases here, just the basics.
 >>> Const.
 const  {  first  ,  second  }  ;
-<<<
+<<< 3.7
 const {first, second};
 >>> Split.
 ({first, second, third, fourth, fifth, sixth});
-<<<
+<<< 3.7
 ({
   first,
   second,
@@ -18,11 +18,11 @@ const {first, second};
 });
 >>> With type argument.
 <  int  >  {  1  ,  2  };
-<<<
+<<< 3.7
 <int>{1, 2};
 >>> Split in type argument.
 var set = <Inner<First, Second, Third, Fourth, Fifth, Sixth>>{};
-<<<
+<<< 3.7
 var set =
     <
       Inner<
@@ -36,7 +36,7 @@ var set =
     >{};
 >>> Force split because of contained block.
 var s = {first, 1, fn, () {"fn";},third,fourth};
-<<<
+<<< 3.7
 var s = {
   first,
   1,

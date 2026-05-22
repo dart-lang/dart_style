@@ -3,23 +3,23 @@
 for (var i = 0;i<100;i++) {
   print(i);
 }
-<<<
+<<< 3.6
 for (var i = 0; i < 100; i++) {
   print(i);
 }
 >>> empty clauses
 for(;;);
-<<<
+<<< 3.6
 for (;;);
 >>> empty initializer clause
 for (  ;   foo; bar) {}
-<<<
+<<< 3.6
 for (; foo; bar) {}
 >>> whitespace
 for (var    file  in  files   ) {
   print(file);
 }
-<<<
+<<< 3.6
 for (var file in files) {
   print(file);
 }
@@ -27,7 +27,7 @@ for (var file in files) {
 for (Foo foo in bar.foos) {
   print(foo);
 }
-<<<
+<<< 3.6
 for (Foo foo in bar.foos) {
   print(foo);
 }
@@ -35,7 +35,7 @@ for (Foo foo in bar.foos) {
 for (final Foo foo in bar.foos) {
   print(foo);
 }
-<<<
+<<< 3.6
 for (final Foo foo in bar.foos) {
   print(foo);
 }
@@ -43,13 +43,13 @@ for (final Foo foo in bar.foos) {
 for (final foo in bar.foos) {
   print(foo);
 }
-<<<
+<<< 3.6
 for (final foo in bar.foos) {
   print(foo);
 }
 >>>
 for (var a=0; a<100; ++a) { print(a); }
-<<<
+<<< 3.6
 for (var a = 0; a < 100; ++a) {
   print(a);
 }
@@ -61,7 +61,7 @@ a<100;
 {
 print(a);
 }
-<<<
+<<< 3.6
 for (var a = 0; a < 100; ++a) {
   print(a);
 }
@@ -69,7 +69,7 @@ for (var a = 0; a < 100; ++a) {
 for (x in xs) {
   print(x);
 }
-<<<
+<<< 3.6
 for (x in xs) {
   print(x);
 }
@@ -78,7 +78,7 @@ foo() async {
   await    for(x in y) {
   }
 }
-<<<
+<<< 3.6
 foo() async {
   await for (x in y) {}
 }

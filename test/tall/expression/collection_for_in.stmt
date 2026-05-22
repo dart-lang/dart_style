@@ -1,31 +1,31 @@
 40 columns                              |
 >>>
 var l = [for (var    i  in  i   )   i];
-<<<
+<<< 3.7
 var l = [for (var i in i) i];
 >>> With type annotation.
 var l = [for (Foo f in foos) f];
-<<<
+<<< 3.7
 var l = [for (Foo f in foos) f];
 >>> With `final` and type annotation.
 var l = [for (final Foo f in foos) f];
-<<<
+<<< 3.7
 var l = [for (final Foo f in foos) f];
 >>> With just `final`.
 var l = [for (final f in foos) f];
-<<<
+<<< 3.7
 var l = [for (final f in foos) f];
 >>> Await for.
 f() async {
   var l = [await    for(x in y)    x];
 }
-<<<
+<<< 3.7
 f() async {
   var l = [await for (x in y) x];
 }
 >>> Split inside initializer.
 var list = [for (a in sequenceExpression + thatDoesNotFit) body];
-<<<
+<<< 3.7
 var list = [
   for (a
       in sequenceExpression +

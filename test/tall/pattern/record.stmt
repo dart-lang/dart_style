@@ -10,7 +10,7 @@ switch (obj) {
   case  (  :  var  x  ,  :  var  y  )  :
     ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case ():
   case (value,):
@@ -23,19 +23,19 @@ switch (obj) {
 }
 >>> Unsplit single-element record, with trailing comma.
 if (obj case (pattern,)) {;}
-<<<
+<<< 3.7
 if (obj case (pattern,)) {
   ;
 }
 >>> Remove trailing comma from single named field.
 if (obj case (name: value,)) {;}
-<<<
+<<< 3.7
 if (obj case (name: value)) {
   ;
 }
 >>> Split single-element record after ",".
 if (obj case (veryLongRecordField____________,)) {;}
-<<<
+<<< 3.7
 if (obj case (
   veryLongRecordField____________,
 )) {
@@ -43,7 +43,7 @@ if (obj case (
 }
 >>> Split single-element named record.
 if (obj case (longFieldName: longRecordFieldValue)) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: longRecordFieldValue,
 )) {
@@ -51,7 +51,7 @@ if (obj case (
 }
 >>> Split single-element named record at name.
 if (obj case (longFieldName: veryLongRecordFieldValue)) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: veryLongRecordFieldValue,
 )) {
@@ -59,7 +59,7 @@ if (obj case (
 }
 >>> Split single-element record with inferred name.
 if (obj case (:var veryLongInferredFieldName_____)) {;}
-<<<
+<<< 3.7
 if (obj case (
   :var veryLongInferredFieldName_____,
 )) {
@@ -67,7 +67,7 @@ if (obj case (
 }
 >>> Split multiple-element record with inferred names.
 if (obj case (:var firstLongInferredFieldName, :var secondLongInferredName)) {;}
-<<<
+<<< 3.7
 if (obj case (
   :var firstLongInferredFieldName,
   :var secondLongInferredName,
@@ -76,7 +76,7 @@ if (obj case (
 }
 >>> Don't split between name and list subpattern.
 if (obj case (longFieldName: [first, second, third])) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: [first, second, third],
 )) {
@@ -84,7 +84,7 @@ if (obj case (
 }
 >>> Don't split between name and map subpattern.
 if (obj case (longFieldName: {first: 1, second: 2})) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: {first: 1, second: 2},
 )) {
@@ -92,7 +92,7 @@ if (obj case (
 }
 >>> Don't split between name and record subpattern.
 if (obj case (longFieldName: (first: 1, second: 2))) {;}
-<<<
+<<< 3.7
 if (obj case (
   longFieldName: (first: 1, second: 2),
 )) {
@@ -100,7 +100,7 @@ if (obj case (
 }
 >>> If any field splits, all fields split.
 if (obj case (first, second, third, fourth, fifth)) {;}
-<<<
+<<< 3.7
 if (obj case (
   first,
   second,
@@ -112,14 +112,14 @@ if (obj case (
 }
 >>> Don't force outer record to split.
 if (obj case ((a,), (b, c))) {;}
-<<<
+<<< 3.7
 if (obj case ((a,), (b, c))) {
   ;
 }
 >>> Split nested record.
 if (obj case (first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
     eleventh))) {;}
-<<<
+<<< 3.7
 if (obj case (
   first,
   (second, third, fourth),
@@ -141,7 +141,7 @@ if (obj case (
   a,b,c,
   d,e,f,
 )) {;}
-<<<
+<<< 3.7
 if (obj case (
   // yeah
   a,
@@ -155,26 +155,26 @@ if (obj case (
 }
 >>> Remove comma from multiple-field record pattern if unsplit
 if (e case (a, b,)) {}
-<<<
+<<< 3.7
 if (e case (a, b)) {}
 >>> Add comma to record pattern if split.
 if (e case (longPattern1, veryLongPattern2)) {}
-<<<
+<<< 3.7
 if (e case (
   longPattern1,
   veryLongPattern2,
 )) {}
 >>> A nested non-empty list pattern doesn't force the record pattern to split.
 var ([v],) = value;
-<<<
+<<< 3.7
 var ([v],) = value;
 >>> A nested non-empty map pattern doesn't force the record pattern to split.
 var ({k: v},) = value;
-<<<
+<<< 3.7
 var ({k: v},) = value;
 >>> A nested non-empty record pattern doesn't force the record pattern to split.
 var ((v,),) = value;
-<<<
+<<< 3.7
 var ((v,),) = value;
 >>> Remove blank lines before first and last entries. Preserve one between.
 if (obj case (
@@ -192,7 +192,7 @@ if (obj case (
 
 
 )) {;}
-<<<
+<<< 3.7
 if (obj case (
   firstField: 1,
 
@@ -218,7 +218,7 @@ if (obj case (
 
 
 )) {;}
-<<<
+<<< 3.7
 if (obj case (a: 1, b: 2, c: 3)) {
   ;
 }

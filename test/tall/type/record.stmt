@@ -1,39 +1,39 @@
 40 columns                              |
 >>> Empty record.
 (   )  x;
-<<<
+<<< 3.7
 () x;
 >>> Empty nullable record type.
 (  )  ?   x;
-<<<
+<<< 3.7
 ()? x;
 >>> Nullable record type.
 (  int  ,   bool  )   ?  x;
-<<<
+<<< 3.7
 (int, bool)? x;
 >>> Single positional field.
 (  int  , ) x;
-<<<
+<<< 3.7
 (int,) x;
 >>> Single named field.
 ( { int  n  }  )  x;
-<<<
+<<< 3.7
 ({int n}) x;
 >>> Named positional fields.
 ( int  value  ,  String  label) x;
-<<<
+<<< 3.7
 (int value, String label) x;
 >>> Unnamed positional fields.
 ( int    ,  String   ) x;
-<<<
+<<< 3.7
 (int, String) x;
 >>> Named fields.
 (  {  int  value  ,  String  label  } ) x;
-<<<
+<<< 3.7
 ({int value, String label}) x;
 >>> Split between the type and the name.
 ( VeryVeryLongType_____  veryLongName___________________  , ) x;
-<<<
+<<< 3.7
 (
   VeryVeryLongType_____
   veryLongName___________________,
@@ -41,7 +41,7 @@
 x;
 >>> Split named positional fields.
 ( int  longValue  ,  String  veryVeryLongLabel  , ) x;
-<<<
+<<< 3.7
 (
   int longValue,
   String veryVeryLongLabel,
@@ -49,11 +49,11 @@ x;
 x;
 >>> Unsplit unnamed positional fields have no trailing comma.
 ( int    ,  String   ,  ) x;
-<<<
+<<< 3.7
 (int, String) x;
 >>> Split only named fields.
 (  {  int  longValue  ,  String  anotherLongLabel  ,  } ) x;
-<<<
+<<< 3.7
 ({
   int longValue,
   String anotherLongLabel,
@@ -61,7 +61,7 @@ x;
 x;
 >>> Empty record types don't split.
 someLongFunctionName__________________(() x) {}
-<<<
+<<< 3.7
 someLongFunctionName__________________(
   () x,
 ) {}
@@ -69,15 +69,15 @@ someLongFunctionName__________________(
 (TypeName,
 )
 x;
-<<<
+<<< 3.7
 (TypeName,) x;
 >>> Unsplit single positional field.
 (VeryLongTypeName________________,) x;
-<<<
+<<< 3.7
 (VeryLongTypeName________________,) x;
 >>> Split positional types.
 (TypeName1,TypeName2,TypeName3,TypeName4) x;
-<<<
+<<< 3.7
 (
   TypeName1,
   TypeName2,
@@ -87,7 +87,7 @@ x;
 x;
 >>> Split named types.
 ({TypeName a,TypeName b,TypeName c,TypeName d}) x;
-<<<
+<<< 3.7
 ({
   TypeName a,
   TypeName b,
@@ -97,7 +97,7 @@ x;
 x;
 >>> Split named if positional splits.
 (TypeName,TypeName,TypeName,TypeName,{TypeName a,TypeName b}) x;
-<<<
+<<< 3.7
 (
   TypeName,
   TypeName,
@@ -109,7 +109,7 @@ x;
 x;
 >>> Split positional if named splits.
 (TypeName,TypeName,{TypeName a,TypeName b,TypeName c,TypeName d}) x;
-<<<
+<<< 3.7
 (
   TypeName,
   TypeName, {
@@ -121,15 +121,15 @@ x;
 x;
 >>> Single named field has no trailing comma.
 ({int n,}) x;
-<<<
+<<< 3.7
 ({int n}) x;
 >>> Multiple positional fields have no trailing comma.
 (int m, int n,) x;
-<<<
+<<< 3.7
 (int m, int n) x;
 >>> Split outer record if inner record splits.
 ((TypeName,TypeName,TypeName,TypeName),TypeName) x;
-<<<
+<<< 3.7
 (
   (
     TypeName,
@@ -142,7 +142,7 @@ x;
 x;
 >>> Split outer type argument list if inner record splits.
 Map<String, (TypeName,TypeName,TypeName,TypeName)> map;
-<<<
+<<< 3.7
 Map<
   String,
   (

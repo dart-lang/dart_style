@@ -3,7 +3,7 @@ for (; i < words.length; i++) {
   buffer.write(' ');
   buffer.write(words[i]);
 }
-<<<
+<<< 3.6
 for (; i < words.length; i++) {
   buffer.write(' ');
   buffer.write(words[i]);

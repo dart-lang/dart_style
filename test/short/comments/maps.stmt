@@ -3,14 +3,14 @@
 var map = {
   // comment
 };
-<<<
+<<< 3.6
 var map = {
   // comment
 };
 >>> line comment on opening line
 var map = { // comment
 };
-<<<
+<<< 3.6
 var map = {
   // comment
 };
@@ -18,43 +18,43 @@ var map = {
 var map = {
   /* comment */
 };
-<<<
+<<< 3.6
 var map = {
   /* comment */
 };
 >>> block comment with trailing newline
 var map = {/* comment */
 };
-<<<
+<<< 3.6
 var map = {
   /* comment */
 };
 >>> block comment with leading newline
 var map = {
   /* comment */};
-<<<
+<<< 3.6
 var map = {
   /* comment */
 };
 >>> inline block comment
 var map = {  /* comment */  };
-<<<
+<<< 3.6
 var map = {/* comment */};
 >>> multiple comments on opening line
 var map = { /* first */ // second
 };
-<<<
+<<< 3.6
 var map = {
   /* first */ // second
 };
 >>> multiple inline block comments
 var map = {  /* 1 */   /* 2 */   /* 3 */  };
-<<<
+<<< 3.6
 var map = {/* 1 */ /* 2 */ /* 3 */};
 >>> multiline trailing block comment
 var map = {  /* comment
 */  };
-<<<
+<<< 3.6
 var map = {
   /* comment
 */
@@ -62,7 +62,7 @@ var map = {
 >>> line comment between items
 var map = {'a': 'b', // comment
   'c': 'd'};
-<<<
+<<< 3.6
 var map = {
   'a': 'b', // comment
   'c': 'd'
@@ -71,7 +71,7 @@ var map = {
 var map = {'a': 'b' // 1
   // 2
 };
-<<<
+<<< 3.6
 var map = {
   'a': 'b' // 1
   // 2
@@ -80,7 +80,7 @@ var map = {
 var map = {'a': 'b', // 1
   // 2
 };
-<<<
+<<< 3.6
 var map = {
   'a': 'b', // 1
   // 2
@@ -89,7 +89,7 @@ var map = {
 var map = {
   // comment
   'foo': 1};
-<<<
+<<< 3.6
 var map = {
   // comment
   'foo': 1
@@ -101,7 +101,7 @@ var map = {
 
   // comment
 };
-<<<
+<<< 3.6
 var map = {
   // comment
 };
@@ -112,7 +112,7 @@ var map = {
 
 
 };
-<<<
+<<< 3.6
 var map = {
   // comment
 };

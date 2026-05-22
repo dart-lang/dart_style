@@ -5,7 +5,7 @@ main() {
     ..c = d)
     ..method().chain((_) => lambda);
 }
-<<<
+<<< 3.7
 main() {
   foo.bar.create(
     Thing()

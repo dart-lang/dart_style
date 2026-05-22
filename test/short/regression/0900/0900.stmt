@@ -9,7 +9,7 @@ void main() {
   }),
       dp = List<int>(n);
 }
-<<<
+<<< 3.6
 void main() {
   final f = stdin.readLineSync,
       p = int.parse,

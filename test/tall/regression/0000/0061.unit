@@ -9,7 +9,7 @@ class Foo extends Bar {
     }
   }
 }
-<<<
+<<< 3.7
 class Foo extends Bar {
   qux(n) {
     // Do some stuff

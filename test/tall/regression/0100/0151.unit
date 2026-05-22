@@ -5,7 +5,7 @@ class Foo {
 
   Foo._(int a);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     int longArg1,

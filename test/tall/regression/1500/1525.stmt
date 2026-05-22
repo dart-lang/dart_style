@@ -6,7 +6,7 @@ SomeWidget(
     literal, // Force split.
   ],
 );
-<<<
+<<< 3.7
 SomeWidget(
   children: [
     long,
@@ -18,7 +18,7 @@ SomeWidget(
 SomeWidget(children: [
   for (final o in objects) o, // Force split.
 ]);
-<<<
+<<< 3.7
 SomeWidget(
   children: [
     for (final o in objects) o, // Force split.

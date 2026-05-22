@@ -7,7 +7,7 @@ class B extends A {
   B.sub2(int super.bar2<T2>(int a2),);
 }
 main() {}
-<<<
+<<< 3.7
 class A {
   A(int foo<T>(int a));
 }
@@ -23,7 +23,7 @@ class A {
   A.sub1(int this.bar1<T1>(int a1),);
   A.sub2(int this.bar2<T2>(int a2),);
 }
-<<<
+<<< 3.7
 class A {
   A.sub1(int this.bar1<T1>(int a1));
   A.sub2(int this.bar2<T2>(int a2));

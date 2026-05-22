@@ -2,7 +2,7 @@
 >>> Line comment after `while`.
 while // comment
 (true) {body;}
-<<<
+<<< 3.7
 while // comment
 (true) {
   body;
@@ -10,7 +10,7 @@ while // comment
 >>> Line comment after `(`.
 while (// comment
 true) {body;}
-<<<
+<<< 3.7
 while ( // comment
 true) {
   body;
@@ -18,7 +18,7 @@ true) {
 >>> Line comment after condition.
 while (true// comment
 ) {body;}
-<<<
+<<< 3.7
 while (true // comment
 ) {
   body;
@@ -26,18 +26,18 @@ while (true // comment
 >>> Line comment after `)`.
 while (true) // comment
 {body;}
-<<<
+<<< 3.7
 while (true) // comment
 {
   body;
 }
 >>> Line comment after non-block body.
 while (true) body; // comment
-<<<
+<<< 3.7
 while (true) body; // comment
 >>> Line comment after block body.
 while (true) {body;} // comment
-<<<
+<<< 3.7
 while (true) {
   body;
 } // comment

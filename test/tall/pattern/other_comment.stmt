@@ -2,7 +2,7 @@
 >>> Inside parenthesized.
 if (obj case ( // c
 pattern)) {;}
-<<<
+<<< 3.7
 if (obj
     case ( // c
         pattern)) {
@@ -11,7 +11,7 @@ if (obj
 >>> In qualified name.
 if (obj case qualified // c
 .name) {;}
-<<<
+<<< 3.7
 if (obj
     case qualified // c
         .name) {
@@ -21,7 +21,7 @@ if (obj
 if (obj case qualified // c
 .prefixed // c
 .name) {;}
-<<<
+<<< 3.7
 if (obj
     case qualified // c
         .prefixed // c
@@ -31,7 +31,7 @@ if (obj
 >>> Empty const constructor line comment.
 if (obj case const Foo(  // comment
 )) {;}
-<<<
+<<< 3.7
 if (obj case const Foo(
   // comment
 )) {
@@ -40,7 +40,7 @@ if (obj case const Foo(
 >>> Const constructor line comment between arguments.
 if (obj case const Foo( first , // comment
 second)){;}
-<<<
+<<< 3.7
 if (obj case const Foo(
   first, // comment
   second,
@@ -50,7 +50,7 @@ if (obj case const Foo(
 >>> After "(" in parenthesized constant.
 if (obj case const ( // comment
 expression)){;}
-<<<
+<<< 3.7
 if (obj
     case const ( // comment
         expression)) {
@@ -60,7 +60,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case const ( expression // comment
 )){;}
-<<<
+<<< 3.7
 if (obj
     case const (expression // comment
         )) {
@@ -70,7 +70,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case pattern // c
 ?) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern // c
         ?) {
@@ -80,7 +80,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case pattern? // c
 ) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern? // c
         ) {
@@ -90,7 +90,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case pattern // c
 !) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern // c
         !) {
@@ -100,7 +100,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case pattern! // c
 ) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern! // c
         ) {

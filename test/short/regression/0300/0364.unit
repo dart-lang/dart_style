@@ -4,7 +4,7 @@ class Foo {
 
   static bool short(JsObject a, JsObject b) native "JsObject_identityEquality";
 }
-<<<
+<<< 3.6
 class Foo {
   static bool _identityEquality(JsObject a, JsObject b)
       native "JsObject_identityEquality";

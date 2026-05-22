@@ -1,15 +1,15 @@
 40 columns                              |
 >>> Unsplit.
 if (o case 1   ||  2   &&  3  ) {}
-<<<
+<<< 3.7
 if (o case 1 || 2 && 3) {}
 >>> Nested as subpattern.
 if (o case 1   &&  (  2   ||  3   )  ) {}
-<<<
+<<< 3.7
 if (o case 1 && (2 || 3)) {}
 >>> Chain of same logic operator all split together.
 if (object case first || second || third || fourth) {;}
-<<<
+<<< 3.7
 if (object
     case first ||
         second ||
@@ -19,7 +19,7 @@ if (object
 }
 >>> Chains of different logic operators split separately.
 if (object case first && second || third && fourth && fifth && sixth) {;}
-<<<
+<<< 3.7
 if (object
     case first && second ||
         third &&
@@ -30,7 +30,7 @@ if (object
 }
 >>> Chains of different logic operators split separately.
 if (object case first && second && third && fourth || fifth && sixth) {;}
-<<<
+<<< 3.7
 if (object
     case first &&
             second &&
@@ -41,7 +41,7 @@ if (object
 }
 >>> Multiple split variables as logic operands.
 if (object case SomeVeryLongTypeName anAlsoLongVariableName || AnotherLongTypeName anotherLongVariableName) {;}
-<<<
+<<< 3.7
 if (object
     case SomeVeryLongTypeName
         anAlsoLongVariableName ||
@@ -51,7 +51,7 @@ if (object
 }
 >>> Don't indent subsequent `||` operands when split inside a map key.
 var {key: longOperand2 || longOperand2 || longOperand3} = value;
-<<<
+<<< 3.7
 var {
   key:
       longOperand2 ||
@@ -60,7 +60,7 @@ var {
 } = value;
 >>> Don't indent subsequent `&&` operands when split inside a map key.
 var {key: longOperand2 && longOperand2 && longOperand3} = value;
-<<<
+<<< 3.7
 var {
   key:
       longOperand2 &&

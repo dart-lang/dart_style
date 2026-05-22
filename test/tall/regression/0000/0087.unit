@@ -19,7 +19,7 @@ void main() {
     [3, 3, isFalse]
   ];
 }
-<<<
+<<< 3.7
 void main() {
   List<List> containsPointMatches = [
     [0, 0, isFalse],

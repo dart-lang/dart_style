@@ -5,7 +5,7 @@ class Foo {
   Foo.optional([  this . a, int  this  . b   =  123  ]);
   Foo.named({ required   this . a, int  this  . b  = 123  });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(this.a, int this.b, final this.c);
   Foo.optional([
@@ -24,7 +24,7 @@ class Foo {
   Foo.optional([  this . a, int  this  . b   =  123  ]);
   Foo.named({ required   this . a, int  this  . b  = 123  });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(this.a, int this.b, this.c);
   Foo.optional([
@@ -42,7 +42,7 @@ class Foo {
   Foo.optional([ int  this . c() ,  this  .  d ( ) = x  ]);
   Foo.named({  required int  this . e()  ,  this  .  f ( ) = x });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo.function(
     this.a(int x),
@@ -63,7 +63,7 @@ class Foo {
   Foo.optional([  super . a, int  super  . b   =  123  ]);
   Foo.named({ required   super . a, int  super  . b  = 123  });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     super.a,
@@ -86,7 +86,7 @@ class Foo {
   Foo.optional([  super . a, int  super  . b   =  123  ]);
   Foo.named({ required   super . a, int  super  . b  = 123  });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(super.a, int super.b, super.c);
   Foo.optional([
@@ -104,7 +104,7 @@ class Foo {
   Foo.optional([ int  super . c() ,  super  .  d ( ) = x  ]);
   Foo.named({  required int  super . e()  ,  super  .  f ( ) = x });
 }
-<<<
+<<< 3.7
 class Foo {
   Foo.function(
     super.a(int x),
@@ -125,7 +125,7 @@ class Foo {
 class A {
   A(   covariant   this.foo);
 }
-<<<
+<<< 3.7
 class A {
   A(covariant this.foo);
 }
@@ -137,7 +137,7 @@ class A {
   int? _y;
   int? _z;
 }
-<<<
+<<< 3.7
 class A {
   A({
     this._x,

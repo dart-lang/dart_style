@@ -1,44 +1,44 @@
 40 columns                              |
 >>> Short initializer.
 var   a   =   1  ;
-<<<
+<<< 3.7
 var a = 1;
 >>> Split initializer.
 var variableName = veryLongInitializerName;
-<<<
+<<< 3.7
 var variableName =
     veryLongInitializerName;
 >>> Split overflowing initializer.
 var variableName = thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.7
 var variableName =
     thisIsReallyQuiteAVeryLongVariableName;
 >>> No split after keyword.
 var thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.7
 var thisIsReallyQuiteAVeryLongVariableName;
 >>> Multiple unsplit variables with no initializers.
 var a , b , c , d;
-<<<
+<<< 3.7
 var a, b, c, d;
 >>> Multiple split variables with no initializers.
 var variableA, variableB, variableC, variableD;
-<<<
+<<< 3.7
 var variableA,
     variableB,
     variableC,
     variableD;
 >>> Multiple unsplit variables with initializers.
 var x = 3, y = 4;
-<<<
+<<< 3.7
 var x = 3, y = 4;
 >>>
 var x = 2, y;
-<<<
+<<< 3.7
 var x = 2, y;
 >>> Multiple split variables with initializers.
 var x = initializer, y = initializer, z = initializer;
-<<<
+<<< 3.7
 var x = initializer,
     y = initializer,
     z = initializer;
@@ -46,7 +46,7 @@ var x = initializer,
 var veryLongVariable1 = longishInitializer,
     short = value,
     veryLongVariable2 = longishInitializer;
-<<<
+<<< 3.7
 var veryLongVariable1 =
         longishInitializer,
     short = value,
@@ -54,15 +54,15 @@ var veryLongVariable1 =
         longishInitializer;
 >>> Final variable.
 final  x  =  1  ;
-<<<
+<<< 3.7
 final x = 1;
 >>> Typed variable.
 int  x  =  1  ;
-<<<
+<<< 3.7
 int x = 1;
 >>> Typed final variable.
 final  int  x  =  1;
-<<<
+<<< 3.7
 final int x = 1;
 >>> Late variables.
 {
@@ -70,7 +70,7 @@ final int x = 1;
   late  final  int  i  ;
   late  int  i  ;
 }
-<<<
+<<< 3.7
 {
   late var i;
   late final int i;
@@ -78,25 +78,25 @@ final int x = 1;
 }
 >>> Split after type name.
 SomeVeryLongTypeName someLongVariableName;
-<<<
+<<< 3.7
 SomeVeryLongTypeName
 someLongVariableName;
 >>> Split after type name with multiple variables.
 SomeVeryLongTypeName someLongVariableName, another, third;
-<<<
+<<< 3.7
 SomeVeryLongTypeName
 someLongVariableName,
 another,
 third;
 >>> Split in initializer without splitting after type.
 int someLongVariableName = veryLong + initializer;
-<<<
+<<< 3.7
 int someLongVariableName =
     veryLong + initializer;
 >>> Split in initializers without splitting after type.
 int someLongVariableName = longInitializerValue,
 another = short, thirdLongVariable = anotherLongInitializer;
-<<<
+<<< 3.7
 int someLongVariableName =
         longInitializerValue,
     another = short,
@@ -104,14 +104,14 @@ int someLongVariableName =
         anotherLongInitializer;
 >>> Split after type name and in initializer.
 SomeVeryLongTypeName someLongVariableName = longInitializerValue;
-<<<
+<<< 3.7
 SomeVeryLongTypeName
 someLongVariableName =
     longInitializerValue;
 >>> Split after type name and in initializers.
 SomeVeryLongTypeName someLongVariableName = longInitializerValue,
 another = short, thirdLongVariable = anotherLongInitializer;
-<<<
+<<< 3.7
 SomeVeryLongTypeName
 someLongVariableName =
     longInitializerValue,
@@ -120,7 +120,7 @@ thirdLongVariable =
     anotherLongInitializer;
 >>> Split in type name does not split before variable.
 Generic<LongTypeArgument, AnotherLongTypeName> variable;
-<<<
+<<< 3.7
 Generic<
   LongTypeArgument,
   AnotherLongTypeName
@@ -128,12 +128,12 @@ Generic<
 variable;
 >>> Prefer to split at "=" over infix operator.
 int variableName = argument * argument + argument;
-<<<
+<<< 3.7
 int variableName =
     argument * argument + argument;
 >>> Prefer block-like splitting for lists.
 var variableName = [element, element, element];
-<<<
+<<< 3.7
 var variableName = [
   element,
   element,
@@ -141,12 +141,12 @@ var variableName = [
 ];
 >>> No block-like splitting for empty lists.
 var variableNameWithExactLength____ = [];
-<<<
+<<< 3.7
 var variableNameWithExactLength____ =
     [];
 >>> Prefer block-like splitting for maps.
 var variableName = {1: element, 2: element, 3: element};
-<<<
+<<< 3.7
 var variableName = {
   1: element,
   2: element,
@@ -154,43 +154,43 @@ var variableName = {
 };
 >>> No block-like splitting for empty maps.
 var variableNameWithExactLength____ = {};
-<<<
+<<< 3.7
 var variableNameWithExactLength____ =
     {};
 >>> Prefer block-like splitting for function calls.
 var variableName = function(argument, argument);
-<<<
+<<< 3.7
 var variableName = function(
   argument,
   argument,
 );
 >>> No block-like splitting for empty argument lists.
 var variableNameExactLength = function();
-<<<
+<<< 3.7
 var variableNameExactLength =
     function();
 >>> No block-like splitting if function name doesn't fit.
 var longVariableName = veryLongFunctionName(argument);
-<<<
+<<< 3.7
 var longVariableName =
     veryLongFunctionName(argument);
 >>> Prefer block-like splitting for constructor calls.
 var variableName = new Thing(argument, argument);
-<<<
+<<< 3.7
 var variableName = new Thing(
   argument,
   argument,
 );
 >>> Prefer block-like splitting for const constructor calls.
 var variableName = const Thing(argument, argument);
-<<<
+<<< 3.7
 var variableName = const Thing(
   argument,
   argument,
 );
 >>> Indent block if function name doesn't fit and arguments split.
 var longVariableName = veryLongFunctionName(argument, another);
-<<<
+<<< 3.7
 var longVariableName =
     veryLongFunctionName(
       argument,
@@ -198,7 +198,7 @@ var longVariableName =
     );
 >>> Use block-like splitting for switch expressions.
 var variableName = switch (value) { 1 => 'one', 2 => 'two' };
-<<<
+<<< 3.7
 var variableName = switch (value) {
   1 => 'one',
   2 => 'two',
@@ -206,7 +206,7 @@ var variableName = switch (value) {
 >>> Use block-like splitting for switch expressions with split values.
 var variableName = switch ([longElement, longElement, longElement])
 { 1 => 'one', 2 => 'two' };
-<<<
+<<< 3.7
 var variableName = switch ([
   longElement,
   longElement,
@@ -217,7 +217,7 @@ var variableName = switch ([
 };
 >>> Use block-like splitting for block-bodied functions with unsplit parameters.
 var variableName = (parameter) { body; };
-<<<
+<<< 3.7
 var variableName = (parameter) {
   body;
 };
@@ -254,7 +254,7 @@ var variableName = (
 ) => body;
 >>> Use block-like splitting for parenthesized expressions whose inner does.
 var variableName = ([element, element, element]);
-<<<
+<<< 3.7
 var variableName = ([
   element,
   element,
@@ -262,14 +262,14 @@ var variableName = ([
 ]);
 >>>
 var variableName = (notDelimited + expression);
-<<<
+<<< 3.7
 var variableName =
     (notDelimited + expression);
 >>> Use block-like splitting for await whose inner expression is block-like.
 main() async {
   var variableName = await function(argument, argument);
 }
-<<<
+<<< 3.7
 main() async {
   var variableName = await function(
     argument,
@@ -278,7 +278,7 @@ main() async {
 }
 >>> Split all variables if an initializer has a split internally.
 var a = 1, b = [element, element, element, element];
-<<<
+<<< 3.7
 var a = 1,
     b = [
       element,
@@ -291,22 +291,22 @@ var a = 1,
   late var x = 1;
   late int y = 2;
 }
-<<<
+<<< 3.7
 {
   late var x = 1;
   late int y = 2;
 }
 >>> Constant.
 const  uptyped  =  123  ;
-<<<
+<<< 3.7
 const uptyped = 123;
 >>>
 const  String  typed  =  'string'  ;
-<<<
+<<< 3.7
 const String typed = 'string';
 >>> With multiple variables, indent initializer block body.
 SomeType a = () {body;}, b;
-<<<
+<<< 3.7
 SomeType a = () {
       body;
     },

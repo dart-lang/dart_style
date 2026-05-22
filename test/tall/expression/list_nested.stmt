@@ -2,33 +2,33 @@
 ### Tests that nested collections force outer ones to split.
 >>> Nested non-empty list forces outer list to split.
 list = [[inner]];
-<<<
+<<< 3.7
 list = [
   [inner],
 ];
 >>> Nested non-empty map forces outer list to split.
 list = [{key: inner}];
-<<<
+<<< 3.7
 list = [
   {key: inner},
 ];
 >>> Nested non-empty set forces outer list to split.
 list = [{inner}];
-<<<
+<<< 3.7
 list = [
   {inner},
 ];
 >>> Nested non-empty record does not force outer list to split.
 list = [(inner,)];
-<<<
+<<< 3.7
 list = [(inner,)];
 >>> Nested empty collection does not force outer list to split.
 list = [[], {}, ()];
-<<<
+<<< 3.7
 list = [[], {}, ()];
 >>> A spread list literal splits an outer list even if it fits.
 list = [1, ...[2, 3], 4];
-<<<
+<<< 3.7
 list = [
   1,
   ...[2, 3],
@@ -36,18 +36,18 @@ list = [
 ];
 >>> A spread empty list does not force outer split
 list = [1, ...[], 4];
-<<<
+<<< 3.7
 list = [1, ...[], 4];
 >>> Indirect nesting still forces a split.
 [function([inner])];
-<<<
+<<< 3.7
 [
   function([inner]),
 ];
 >>> Multiple nested collections.
 list = [first, [second, third, fourth], fifth, {sixth, seventh, eighth, nine, tenth,
     eleventh}];
-<<<
+<<< 3.7
 list = [
   first,
   [second, third, fourth],
@@ -63,7 +63,7 @@ list = [
 ];
 >>> Deeply nested collections.
 list = [[{[[argument, argument, argument, argument]]}]];
-<<<
+<<< 3.7
 list = [
   [
     {

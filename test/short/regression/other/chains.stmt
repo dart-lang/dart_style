@@ -3,7 +3,7 @@
         observedDeltas.add(delta);
         if (++observedDeltaCount == 3) applyToNewDocument();
       }, count: 3));
-<<<
+<<< 3.6
   document.onChange.listen(expectAsync((Delta delta) {
     observedDeltas.add(delta);
     if (++observedDeltaCount == 3) applyToNewDocument();
@@ -17,7 +17,7 @@
     }).then((List<Row> rows) {
       ;
     });
-<<<
+<<< 3.6
     return queryWith(fds, otype, whereClause, whereValues)
         .toList()
         .catchError((ex, st) {
@@ -30,6 +30,6 @@
 >>> (indent 4)
     return _coll.update({"_id": doc["_id"]}, doc, upsert: true)
         .then((_) => doc);
-<<< TODO(rnystrom): Should split before .then() but map literal splits chain.
+<<< 3.6
     return _coll
         .update({"_id": doc["_id"]}, doc, upsert: true).then((_) => doc);

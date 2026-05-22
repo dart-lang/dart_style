@@ -2,7 +2,7 @@
 >>> Empty class containing line comment.
 class C { // comment
 }
-<<<
+<<< 3.7
 class C {
   // comment
 }
@@ -13,13 +13,13 @@ class C {
 class C {
 // comment
 }
-<<<
+<<< 3.7
 class C {
   // comment
 }
 >>> Empty class containing inline block comment.
 class C {   /* comment */  }
-<<<
+<<< 3.7
 class C {
   /* comment */
 }
@@ -30,14 +30,14 @@ class C {
 
 
 }
-<<<
+<<< 3.7
 class C {
   /* comment */
 }
 >>> Empty class containing multi-line block comment.
 class C {   /* comment
 line */  }
-<<<
+<<< 3.7
 class C {
   /* comment
 line */
@@ -50,7 +50,7 @@ line */
 
 
 }
-<<<
+<<< 3.7
 class C {
   /* comment
 line */
@@ -65,14 +65,14 @@ class C {
 
 
 }
-<<<
+<<< 3.7
 class C {
   // comment
 }
 >>> Force blank line before doc comment between classes.
 class Foo {} /// Doc comment.
 class Bar {}
-<<<
+<<< 3.7
 class Foo {}
 
 /// Doc comment.
@@ -81,7 +81,7 @@ class Bar {}
 class Foo {}
 /**
 */ class Bar {}
-<<<
+<<< 3.7
 class Foo {}
 
 /**
@@ -98,7 +98,7 @@ class C {
   a() {;}
   // comment
 }
-<<<
+<<< 3.7
 class C {
   a() {
     ;

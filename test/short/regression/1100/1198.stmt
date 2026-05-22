@@ -1,31 +1,31 @@
 40 columns                              |
 >>>
 switch (e) {}
-<<<
+<<< 3.6
 switch (e) {}
 >>>
 switch ("a long string that must wrap") {}
-<<<
+<<< 3.6
 switch (
     "a long string that must wrap") {}
 >>>
 switch ([1,]) {}
-<<<
+<<< 3.6
 switch ([
   1,
 ]) {}
 >>>
 e = switch (e) {};
-<<<
+<<< 3.6
 e = switch (e) {};
 >>>
 e = switch ("a long string that must wrap") {};
-<<<
+<<< 3.6
 e = switch (
     "a long string that must wrap") {};
 >>>
 e = switch ([1,]) {};
-<<<
+<<< 3.6
 e = switch ([
   1,
 ]) {};

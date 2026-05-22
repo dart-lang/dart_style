@@ -7,7 +7,7 @@ class Bar {
       });
   }
 }
-<<<
+<<< 3.6
 class Bar {
   void foo() {
     blah

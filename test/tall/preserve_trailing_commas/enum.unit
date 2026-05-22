@@ -2,17 +2,17 @@
 (trailing_commas preserve)
 >>> Forces split with trailing comma.
 enum E {e,}
-<<<
+<<< 3.7
 enum E {
   e,
 }
 >>> Doesn't force split without trailing comma.
 enum E {e,f,g}
-<<<
+<<< 3.7
 enum E { e, f, g }
 >>> May still split without trailing comma if doesn't fit.
 enum E { value1, value2, value3, value4 }
-<<<
+<<< 3.7
 enum E {
   value1,
   value2,
@@ -21,7 +21,7 @@ enum E {
 }
 >>> Preserve trailing comma but remove semicolon if no members.
 enum E {e,;}
-<<<
+<<< 3.7
 enum E {
   e,
 }
@@ -59,7 +59,7 @@ enum Args {
 value(a,b,),
 another(named:1,)
 }
-<<<
+<<< 3.7
 enum Args {
   value(
     a,

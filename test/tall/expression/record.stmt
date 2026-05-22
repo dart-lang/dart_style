@@ -1,70 +1,70 @@
 40 columns                              |
 >>> Empty record.
 var record = (   );
-<<<
+<<< 3.7
 var record = ();
 >>> Single-element records don't split after ",".
 var record = (   value  ,  );
-<<<
+<<< 3.7
 var record = (value,);
 >>> Multi-element record.
 var record = (   first  ,  second  ,  third  );
-<<<
+<<< 3.7
 var record = (first, second, third);
 >>> Remove trailing comma from record if unsplit
 var record = (
   1,
   2,
 );
-<<<
+<<< 3.7
 var record = (1, 2);
 >>> Named record fields.
 var record = (   first  :  1  ,  2 ,  third : 3 );
-<<<
+<<< 3.7
 var record = (first: 1, 2, third: 3);
 >>> Const record.
 var record = const   (  1 ,   2 );
-<<<
+<<< 3.7
 var record = const (1, 2);
 >>> Empty records don't split.
 var longVariableName_______________ = ();
-<<<
+<<< 3.7
 var longVariableName_______________ =
     ();
 >>> Single-element record.
 var record = (veryLongRecordField________________,);
-<<<
+<<< 3.7
 var record = (
   veryLongRecordField________________,
 );
 >>> Single-element named record doesn't have comma added.
 var record = (a: b);
-<<<
+<<< 3.7
 var record = (a: b);
 >>> Single-element named record with comma removed.
 var record = (a: b,);
-<<<
+<<< 3.7
 var record = (a: b);
 >>> Long single-element named record that splits.
 var record = (longFieldName: longRecordFieldValue);
-<<<
+<<< 3.7
 var record = (
   longFieldName: longRecordFieldValue,
 );
 >>> Long single-element named record splits at name.
 var record = (longFieldName: veryLongRecordFieldValue);
-<<<
+<<< 3.7
 var record = (
   longFieldName:
       veryLongRecordFieldValue,
 );
 >>> Exactly 40 characters.
 (first, second, third, fourth, seventh);
-<<<
+<<< 3.7
 (first, second, third, fourth, seventh);
 >>> Split with multiple elements.
 (first, second, third, fourth, fifth, sixth);
-<<<
+<<< 3.7
 (
   first,
   second,
@@ -75,20 +75,20 @@ var record = (
 );
 >>> Don't force outer record to split.
 ((first,), (second, third));
-<<<
+<<< 3.7
 ((first,), (second, third));
 >>> Don't force outer list to split.
 [(first,), (second, third)];
-<<<
+<<< 3.7
 [(first,), (second, third)];
 >>> inner list doesn't force split
 ([first], [second, third]);
-<<<
+<<< 3.7
 ([first], [second, third]);
 >>> Nested split record.
 (first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
     eleventh));
-<<<
+<<< 3.7
 (
   first,
   (second, third, fourth),
@@ -104,11 +104,11 @@ var record = (
 );
 >>> Trailing comma in single-element does not split.
 (1,);
-<<<
+<<< 3.7
 (1,);
 >>> Don't allow splitting between field name and record.
 var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
-<<<
+<<< 3.7
 var record = (
   argument,
   argument,
@@ -119,7 +119,7 @@ var record = (
 );
 >>> Force split because of contained block.
 (first, () {"fn";},third,fourth);
-<<<
+<<< 3.7
 (
   first,
   () {
@@ -144,7 +144,7 @@ var record = (
 
 
 );
-<<<
+<<< 3.7
 var record = (
   firstField: 1,
 
@@ -168,5 +168,5 @@ var record = (
 
 
 );
-<<<
+<<< 3.7
 var record = (a: 1, b: 2, c: 3);

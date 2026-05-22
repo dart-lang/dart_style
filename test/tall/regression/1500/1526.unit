@@ -6,7 +6,7 @@ class CharacterOffset with _$CharacterOffset {
     @Default('') String name,
   }) = _CharacterOffset;
 }
-<<<
+<<< 3.7
 @freezed
 class CharacterOffset with _$CharacterOffset {
   factory CharacterOffset({required int offset, @Default('') String name}) =

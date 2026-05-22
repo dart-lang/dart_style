@@ -227,7 +227,7 @@ void main() {
     ..methodWithLongName(ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName())
     ..methodWithLongName(ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName(), ClassWithLongName());
 }
-<<<
+<<< 3.7
 void main() {
   Example()
     ..methodWithLongName(

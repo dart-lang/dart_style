@@ -9,7 +9,7 @@ switch (obj) {
   case   >=   other:
     body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case == other:
   case != other:
@@ -21,11 +21,11 @@ switch (obj) {
 }
 >>> Relational pattern as subpattern.
 if (o case  >  1  &&  <   2 && (  ==   3 )) {}
-<<<
+<<< 3.7
 if (o case > 1 && < 2 && (== 3)) {}
 >>> Split inside constant.
 if (object case != veryLongConstant + expressionThatSplits) {;}
-<<<
+<<< 3.7
 if (object
     case != veryLongConstant +
         expressionThatSplits) {

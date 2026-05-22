@@ -1,39 +1,39 @@
 40 columns                              |
 >>> Empty.
 Function  (  )  f;
-<<<
+<<< 3.7
 Function() f;
 >>> Parameter and return types.
 void  Function  (  int  i  ,  String  s)  f;
-<<<
+<<< 3.7
 void Function(int i, String s) f;
 >>> All optional parameters.
 Function  (  [  int  i  ,  String  s  ,  bool  b  ]  )  f;
-<<<
+<<< 3.7
 Function([int i, String s, bool b]) f;
 >>> All named parameters.
 Function  (  {  int  i  ,  String  s  ,  bool  b  }  )  f;
-<<<
+<<< 3.7
 Function({int i, String s, bool b}) f;
 >>> Mandatory and optional parameters.
 Function  (  int  i  ,  [  String  s  ,  bool  b  ]  )  f;
-<<<
+<<< 3.7
 Function(int i, [String s, bool b]) f;
 >>> Mandatory and named parameters.
 Function  (  int  i  ,  {  String  s  ,  bool  b  }  )  f;
-<<<
+<<< 3.7
 Function(int i, {String s, bool b}) f;
 >>> Required named parameter.
 Function  (  {  required  int  i  }  )  f;
-<<<
+<<< 3.7
 Function({required int i}) f;
 >>> Type parameters.
 Function  <  A  ,  T  extends  S  >  (  x  ,  y  )  f;
-<<<
+<<< 3.7
 Function<A, T extends S>(x, y) f;
 >>> Split value parameters.
 Function<T, R>(longParameterName, anotherLongParameter) f;
-<<<
+<<< 3.7
 Function<T, R>(
   longParameterName,
   anotherLongParameter,
@@ -41,7 +41,7 @@ Function<T, R>(
 f;
 >>> Split type parameters.
 Function<LongTypeName, AnotherLongTypeName>(parameter) f;
-<<<
+<<< 3.7
 Function<
   LongTypeName,
   AnotherLongTypeName
@@ -49,7 +49,7 @@ Function<
 f;
 >>> Split type parameters and value parameters.
 Function<LongTypeName, AnotherLongTypeName>(longParameterName, anotherLongParameter) f;
-<<<
+<<< 3.7
 Function<
   LongTypeName,
   AnotherLongTypeName
@@ -60,11 +60,11 @@ Function<
 f;
 >>> Nullable types.
 int  ?  Function  (  int  ?  i  , {  String  ?  s  }  )  ?  f;
-<<<
+<<< 3.7
 int? Function(int? i, {String? s})? f;
 >>> Split parameters.
 void Function(first, second, third, fourth) f;
-<<<
+<<< 3.7
 void Function(
   first,
   second,
@@ -74,7 +74,7 @@ void Function(
 f;
 >>> Split parameters all optional.
 void Function([first, second, third, fourth]) f;
-<<<
+<<< 3.7
 void Function([
   first,
   second,
@@ -84,7 +84,7 @@ void Function([
 f;
 >>> Split parameters all named.
 void Function({bool first, double second, int third}) f;
-<<<
+<<< 3.7
 void Function({
   bool first,
   double second,
@@ -93,7 +93,7 @@ void Function({
 f;
 >>> Split parameters with optional.
 void Function(first, second, [third, fourth]) f;
-<<<
+<<< 3.7
 void Function(
   first,
   second, [
@@ -103,7 +103,7 @@ void Function(
 f;
 >>> Split parameters with named.
 void Function(first, second, {bool third, double fourth}) f;
-<<<
+<<< 3.7
 void Function(
   first,
   second, {
@@ -117,7 +117,7 @@ Function(
   second,
   third,
 ) f;
-<<<
+<<< 3.7
 Function(first, second, third) f;
 >>> Remove trailing comma from optional if unsplit.
 Function([
@@ -125,18 +125,18 @@ Function([
   second,
   third,
 ]) f;
-<<<
+<<< 3.7
 Function([first, second, third]) f;
 >>> Remove trailing comma from named if unsplit.
 Function({
   bool first,
   int second,
 }) f;
-<<<
+<<< 3.7
 Function({bool first, int second}) f;
 >>> Unsplit function typed parameter.
 Function(parameter1, void printFn(param1, param2)) f;
-<<<
+<<< 3.7
 Function(
   parameter1,
   void printFn(param1, param2),
@@ -144,7 +144,7 @@ Function(
 f;
 >>> Split function typed parameter.
 Function(int callback(parameter1, parameter2, parameter3, parameter4)) f;
-<<<
+<<< 3.7
 Function(
   int callback(
     parameter1,
@@ -156,11 +156,11 @@ Function(
 f;
 >>> Required function typed formal.
 Function  (  {  required  void  callback  (  )  }  )  f  ;
-<<<
+<<< 3.7
 Function({required void callback()}) f;
 >>> Split between parameter type and name.
 Function(VerylongParameterType longParameterName) f;
-<<<
+<<< 3.7
 Function(
   VerylongParameterType
   longParameterName,
@@ -168,7 +168,7 @@ Function(
 f;
 >>> Split in parameter type does not split before parameter.
 Function(Generic<LongTypeArgument, AnotherLongTypeName> parameter) f;
-<<<
+<<< 3.7
 Function(
   Generic<
     LongTypeArgument,
@@ -179,7 +179,7 @@ Function(
 f;
 >>> Split in nested function type forces outer split.
 Function(int, String, Function(parameter1, parameter2, parameter3)) f;
-<<<
+<<< 3.7
 Function(
   int,
   String,
@@ -192,7 +192,7 @@ Function(
 f;
 >>> Split in type arguments.
 Function<Parameter1, Parameter2, Parameter3>() f;
-<<<
+<<< 3.7
 Function<
   Parameter1,
   Parameter2,
@@ -201,13 +201,13 @@ Function<
 f;
 >>> Split after return type.
 GenericClass<Parameter1, Parameter2> Function() f;
-<<<
+<<< 3.7
 GenericClass<Parameter1, Parameter2>
 Function()
 f;
 >>> Chained return types.
 Function<Argument>(String) Function<Argument>(num) Function<Argument>(int) Function<Argument>(bool) longVariable;
-<<<
+<<< 3.7
 Function<Argument>(String)
 Function<Argument>(num)
 Function<Argument>(int)
@@ -215,13 +215,13 @@ Function<Argument>(bool)
 longVariable;
 >>> Split before `required`.
 longMethod({required parameterNameHere}) {}
-<<<
+<<< 3.7
 longMethod({
   required parameterNameHere,
 }) {}
 >>> Split before `required` with multiple parameters.
 longMethod({required first, second, required int third(parameter), fourth}) {}
-<<<
+<<< 3.7
 longMethod({
   required first,
   second,
@@ -230,14 +230,14 @@ longMethod({
 }) {}
 >>> Never split after `required`.
 longMethod({required int reallyLongParameterNameWow}) {}
-<<<
+<<< 3.7
 longMethod({
   required int
   reallyLongParameterNameWow,
 }) {}
 >>> Record type with multiple fields in parameter has no trailing comma.
 function((TypeName, TypeName) parameter) { ; }
-<<<
+<<< 3.7
 function(
   (TypeName, TypeName) parameter,
 ) {
@@ -245,7 +245,7 @@ function(
 }
 >>> Split single long positional record type field.
 function((VeryLongTypeName________________,) /* comment */ param) {;}
-<<<
+<<< 3.7
 function(
   (
     VeryLongTypeName________________,
@@ -256,7 +256,7 @@ function(
 }
 >>> Split inside parameter list with record type.
 function((TypeName, TypeName, TypeName, TypeName, TypeName) record) {;}
-<<<
+<<< 3.7
 function(
   (
     TypeName,
@@ -271,19 +271,19 @@ function(
 }
 >>> Single positional has a trailing comma inside parameter list with record type.
 function((TypeName,) record) {;}
-<<<
+<<< 3.7
 function((TypeName,) record) {
   ;
 }
 >>> Named parameter has no trailing comma inside parameter list with record type.
 function(({TypeName param,}) record) {;}
-<<<
+<<< 3.7
 function(({TypeName param}) record) {
   ;
 }
 >>> Multiple positional fields have no trailing comma in parameter list with record type.
 function((TypeName,TypeName,) record,) {;}
-<<<
+<<< 3.7
 function((TypeName, TypeName) record) {
   ;
 }

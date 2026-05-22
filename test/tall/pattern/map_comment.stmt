@@ -3,7 +3,7 @@
 if (obj case {
  // c
 }) {;}
-<<<
+<<< 3.7
 if (obj case {
   // c
 }) {
@@ -12,7 +12,7 @@ if (obj case {
 >>> Line comment on opening line of map.
 if (obj case {// c
 }) {;}
-<<<
+<<< 3.7
 if (obj case {
   // c
 }) {
@@ -22,7 +22,7 @@ if (obj case {
 if (obj case {
   /* comment */
 }){;}
-<<<
+<<< 3.7
 if (obj case {
   /* comment */
 }) {
@@ -30,14 +30,14 @@ if (obj case {
 }
 >>> Inline block comment in map.
 if (obj case {  /* comment */  k: v  }){;}
-<<<
+<<< 3.7
 if (obj case {/* comment */ k: v}) {
   ;
 }
 >>> Line comment between map items.
 if (obj case {k: 'a', // comment
   m: 'b'}){;}
-<<<
+<<< 3.7
 if (obj case {
   k: 'a', // comment
   m: 'b',

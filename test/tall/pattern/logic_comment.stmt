@@ -2,7 +2,7 @@
 >>> Before first operand.
 if (obj case // c
 pattern || otherPattern) {;}
-<<<
+<<< 3.7
 if (obj
     case // c
         pattern || otherPattern) {
@@ -11,7 +11,7 @@ if (obj
 >>> Before first operand of nested.
 if (obj case pattern || // c
 otherPattern && thirdLongPattern) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern || // c
         otherPattern &&
@@ -22,7 +22,7 @@ if (obj
 ### Looks weird, but user should move comment.
 if (obj case pattern // c
 || otherPattern) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern // c
         ||
@@ -32,7 +32,7 @@ if (obj
 >>> After logic operator.
 if (obj case pattern || // c
 otherPattern) {;}
-<<<
+<<< 3.7
 if (obj
     case pattern || // c
         otherPattern) {
@@ -41,7 +41,7 @@ if (obj
 >>> After right logic operand.
 if (obj case somePattern || otherPattern // c
 ) {;}
-<<<
+<<< 3.7
 if (obj
     case somePattern ||
         otherPattern // c

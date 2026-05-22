@@ -1,49 +1,49 @@
 40 columns                              |
 >>> Block comment before comma before block argument.
 function(first /* comment */, [second, third]);
-<<<
+<<< 3.7
 function(first /* comment */, [
   second,
   third,
 ]);
 >>> Block comment after comma before block argument.
 function(first, /* comment */ [second, third]);
-<<<
+<<< 3.7
 function(first, /* comment */ [
   second,
   third,
 ]);
 >>> Block comment inside block argument.
 function(first, [/* comment */ second, third]);
-<<<
+<<< 3.7
 function(first, [
   /* comment */ second,
   third,
 ]);
 >>>
 function(first, [second, third /* comment */]);
-<<<
+<<< 3.7
 function(first, [
   second,
   third /* comment */,
 ]);
 >>> Block comment after block argument.
 function([first, second] /* comment */, third);
-<<<
+<<< 3.7
 function([
   first,
   second,
 ] /* comment */, third);
 >>> Block comment after comma after block argument.
 function([first, second], /* comment */ third);
-<<<
+<<< 3.7
 function([
   first,
   second,
 ], /* comment */ third);
 >>> Block comment after argument after block argument.
 function([first, second], third /* comment */);
-<<<
+<<< 3.7
 function([
   first,
   second,
@@ -51,7 +51,7 @@ function([
 >>> Line comment before comma before block argument.
 function(first // comment
 , [second, third]);
-<<<
+<<< 3.7
 function(
   first, // comment
   [second, third],
@@ -59,7 +59,7 @@ function(
 >>> Line comment after comma before block argument.
 function(first, // comment
 [second, third]);
-<<<
+<<< 3.7
 function(
   first, // comment
   [second, third],
@@ -68,7 +68,7 @@ function(
 function(first, [// comment
 second,
 third]);
-<<<
+<<< 3.7
 function(first, [
   // comment
   second,
@@ -78,7 +78,7 @@ function(first, [
 function(first, [second,
 third // comment
 ]);
-<<<
+<<< 3.7
 function(first, [
   second,
   third, // comment
@@ -86,7 +86,7 @@ function(first, [
 >>> Line comment after block argument.
 function([first, second] // comment
 , third);
-<<<
+<<< 3.7
 function(
   [first, second], // comment
   third,
@@ -94,7 +94,7 @@ function(
 >>> Line comment after comma after block argument.
 function([first, second], // comment
 third);
-<<<
+<<< 3.7
 function(
   [first, second], // comment
   third,
@@ -102,7 +102,7 @@ function(
 >>> Line comment after argument after block argument.
 function([first, second], third // comment
 );
-<<<
+<<< 3.7
 function(
   [first, second],
   third, // comment

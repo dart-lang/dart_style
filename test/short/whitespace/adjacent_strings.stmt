@@ -4,7 +4,7 @@ function(
     notString,
     "adjacent"
     "string");
-<<<
+<<< 3.6
 function(
     notString,
     "adjacent"
@@ -14,7 +14,7 @@ function(
     notString,
     "adjacent"
     "string",);
-<<<
+<<< 3.6
 function(
   notString,
   "adjacent"
@@ -26,7 +26,7 @@ function(
     notString,
     "adjacent"
     "string");
-<<<
+<<< 3.6
 function(
     "string",
     notString,
@@ -38,7 +38,7 @@ function(
     notString,
     "adjacent"
     "string",);
-<<<
+<<< 3.6
 function(
   "string",
   notString,
@@ -51,7 +51,7 @@ function(
     notString,
     "adjacent"
     "string");
-<<<
+<<< 3.6
 function(
     "${str}${ing}",
     notString,
@@ -64,7 +64,7 @@ function(
     notString,
     "adjacent"
     "string");
-<<<
+<<< 3.6
 function(
     "adjacent"
         "string",
@@ -79,7 +79,7 @@ var list = [
   "adjacent"
   "string"
 ];
-<<<
+<<< 3.6
 var list = [
   "adjacent"
       "string",
@@ -95,7 +95,7 @@ var map = {
   "adjacent"
   "string": value
 };
-<<<
+<<< 3.6
 var map = {
   "adjacent"
       "string": value,
@@ -111,7 +111,7 @@ var map = {
   "adjacent"
   "string"
 };
-<<<
+<<< 3.6
 var map = {
   key: "adjacent"
       "string",
@@ -127,7 +127,7 @@ var set = {
   "adjacent"
   "string"
 };
-<<<
+<<< 3.6
 var set = {
   "adjacent"
       "string",
@@ -139,7 +139,7 @@ var set = {
 main() => "adjacent"
 "string"
 "another";
-<<<
+<<< 3.6
 main() => "adjacent"
     "string"
     "another";
@@ -147,7 +147,7 @@ main() => "adjacent"
 main() => "very very very very long adjacent"
 "string"
 "another";
-<<<
+<<< 3.6
 main() =>
     "very very very very long adjacent"
     "string"
@@ -159,7 +159,7 @@ function(
   (parameter) => "long long long long string"
   "adjacent",
   another);
-<<<
+<<< 3.6
 function(
     (parameter) => "string"
         "adjacent",
@@ -170,7 +170,7 @@ function(
 >>> indent in then branch of ?:
 var string = c ? "adjacent"
 "string" : "other";
-<<<
+<<< 3.6
 var string = c
     ? "adjacent"
         "string"
@@ -178,7 +178,7 @@ var string = c
 >>> indent in else branch of ?:
 var string = c ? "other" : "adjacent"
 "string";
-<<<
+<<< 3.6
 var string = c
     ? "other"
     : "adjacent"
@@ -186,14 +186,14 @@ var string = c
 >>> don't indent in initializer
 var longVariableName = "very long adjacent"
 "string";
-<<<
+<<< 3.6
 var longVariableName =
     "very long adjacent"
     "string";
 >>> don't indent assignment in statement position
 long.receiver.expression = "very long adjacent"
 "string";
-<<<
+<<< 3.6
 long.receiver.expression =
     "very long adjacent"
     "string";
@@ -202,7 +202,7 @@ function(
     "adjacent"
     "string",
     "${str}${ing}");
-<<<
+<<< 3.6
 function(
     "adjacent"
         "string",
@@ -213,7 +213,7 @@ function(
     "string",
     "another"
     "adjacent");
-<<<
+<<< 3.6
 function(
     "adjacent"
         "string",
@@ -224,7 +224,7 @@ assert(
     condition,
     "adjacent"
     "string");
-<<<
+<<< 3.6
 assert(
     condition,
     "adjacent"
@@ -235,7 +235,7 @@ function(named: "adjacent"
 another: "adjacent"
 "string"
 "more");
-<<<
+<<< 3.6
 function(
     named: "adjacent"
         "string",
@@ -248,7 +248,7 @@ function(named: "adjacent"
 another: "adjacent"
 "string"
 "more",);
-<<<
+<<< 3.6
 function(
   named: "adjacent"
       "string",
@@ -258,5 +258,5 @@ function(
 );
 >>> inside interpolation
 var x = '${"a" "b"}';
-<<<
+<<< 3.6
 var x = '${"a" "b"}';

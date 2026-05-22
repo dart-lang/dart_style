@@ -4,7 +4,7 @@
   late   int i;
   late   var i;
 }
-<<<
+<<< 3.6
 {
   late final int i;
   late int i;
@@ -19,7 +19,7 @@
   final  {  'k'  :  _  ,  ...  } = o;
   var  Foo  (  prop  :  value  ,  :  inferred  )  = o;
 }
-<<<
+<<< 3.6
 {
   var (a && b) = o;
   var (a as int, String? b) = o;

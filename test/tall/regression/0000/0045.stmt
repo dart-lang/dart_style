@@ -3,7 +3,7 @@ foo() {
   if (xxxxxxxxxxxxxxxx || xxxxxxxxxxxxxxxxxxxxx)
     return xxxxxxxxxxxxxx ? xxxxxxxxxxxxxxxxxxxx : xxxxxxxxxxxxxxxxxxxxxxxxxx;
 }
-<<<
+<<< 3.7
 foo() {
   if (xxxxxxxxxxxxxxxx || xxxxxxxxxxxxxxxxxxxxx)
     return xxxxxxxxxxxxxx ? xxxxxxxxxxxxxxxxxxxx : xxxxxxxxxxxxxxxxxxxxxxxxxx;

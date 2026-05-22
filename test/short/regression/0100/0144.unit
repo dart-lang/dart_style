@@ -6,7 +6,7 @@ class Selector {
                         [List<String> namedArguments])
       => new Selector(SelectorKind.CALL, name, library, arity, namedArguments);
 }
-<<<
+<<< 3.6
 class Selector {
   factory Selector.call(String name, LibraryElement library, int arity,
           [List<String> namedArguments]) =>
@@ -18,7 +18,7 @@ class Foo {
 
     // Comment.
 }
-<<<
+<<< 3.6
 class Foo {
   get getter => "result";
 

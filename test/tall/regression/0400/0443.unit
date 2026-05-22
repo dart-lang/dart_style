@@ -1,6 +1,6 @@
 >>>
 @sg.GeneratedPart('package:injection/generator.dart')
 part 'app.injection.dart';
-<<<
+<<< 3.7
 @sg.GeneratedPart('package:injection/generator.dart')
 part 'app.injection.dart';

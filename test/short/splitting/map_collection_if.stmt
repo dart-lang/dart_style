@@ -1,7 +1,7 @@
 40 columns                              |
 >>> split in condition
 var map = {1: 1, if (veryLongConditionExpression || anotherPart) 2: 2};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   if (veryLongConditionExpression ||
@@ -10,21 +10,21 @@ var map = {
 };
 >>> without else on one line
 var map = {1: 1, if (c) 2: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {1: 1, if (c) 2: 2, 3: 3};
 >>> with else on one line
 var map = {1: 1, if (c) 2: 2 else 2: 2};
-<<<
+<<< 3.6
 var map = {1: 1, if (c) 2: 2 else 2: 2};
 >>> split collection before if
 var map = {if (c) somewhatLongThingHere: 1};
-<<<
+<<< 3.6
 var map = {
   if (c) somewhatLongThingHere: 1
 };
 >>> one line in multi-line
 var map = {veryLongThingThatForcesASplit, if (c) 2: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {
   veryLongThingThatForcesASplit,
   if (c) 2: 2,
@@ -32,7 +32,7 @@ var map = {
 };
 >>> one line in multi-line with else
 var map = {veryLongThingThatForcesASplit: 1, if (c) 2: 2 else 2: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {
   veryLongThingThatForcesASplit: 1,
   if (c) 2: 2 else 2: 2,
@@ -40,7 +40,7 @@ var map = {
 };
 >>> long then branch forces split
 var map = {1: 1, if (condition) veryLongThingThatForcesASplit: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   if (condition)
@@ -49,7 +49,7 @@ var map = {
 };
 >>> long then branch forces both to split
 var map = {1: 1, if (condition) veryLongThingThatForcesASplit: 2 else 2: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   if (condition)
@@ -60,7 +60,7 @@ var map = {
 };
 >>> long else branch forces both to split
 var map = {1: 1, if (condition) 2: 2 else veryLongThingThatForcesASplit: 2, 3: 3};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   if (condition)
@@ -71,19 +71,19 @@ var map = {
 };
 >>> trailing comma
 var map = {if (c) 2: 2,};
-<<<
+<<< 3.6
 var map = {
   if (c) 2: 2,
 };
 >>> spread list inside if stays on one line if it fits
 var map = {if (c) ...{1: 1, 2: 2}};
-<<<
+<<< 3.6
 var map = {
   if (c) ...{1: 1, 2: 2}
 };
 >>> spread list inside if formats like block if it splits
 var map = {if (c) ...{1: 1, 2: 2,}};
-<<<
+<<< 3.6
 var map = {
   if (c) ...{
     1: 1,
@@ -92,7 +92,7 @@ var map = {
 };
 >>> both spreads split if then must
 var map = {if (c) ...{1: 1, 2: 2,} else ...{1: 1, 2: 2}};
-<<<
+<<< 3.6
 var map = {
   if (c) ...{
     1: 1,
@@ -104,7 +104,7 @@ var map = {
 };
 >>> both spreads split if else must
 var map = {if (c) ...{1: 1, 2: 2} else ...{1: 1, 2: 2,}};
-<<<
+<<< 3.6
 var map = {
   if (c) ...{
     1: 1,
@@ -116,7 +116,7 @@ var map = {
 };
 >>> a split collection that isn't spread wraps and indents
 var map = {if (c) {1: 1,2: 2,}};
-<<<
+<<< 3.6
 var map = {
   if (c)
     {
@@ -126,7 +126,7 @@ var map = {
 };
 >>> a split collection that isn't spread wraps and indents
 var map = {if (c) {1: 1,2: 2,} else thing: 3};
-<<<
+<<< 3.6
 var map = {
   if (c)
     {
@@ -138,7 +138,7 @@ var map = {
 };
 >>> a split collection that isn't spread wraps and indents
 var map = {if (c) thing: 0 else {1: 1,2: 2,}};
-<<<
+<<< 3.6
 var map = {
   if (c)
     thing: 0
@@ -150,7 +150,7 @@ var map = {
 };
 >>> lambda inside then
 var map = {if (c) k: () { body; }};
-<<<
+<<< 3.6
 var map = {
   if (c)
     k: () {
@@ -159,7 +159,7 @@ var map = {
 };
 >>> lambda inside else
 var map = {if (c) thing: 1 else k: () { body; }};
-<<<
+<<< 3.6
 var map = {
   if (c)
     thing: 1
@@ -170,27 +170,27 @@ var map = {
 };
 >>> nested if splits outer
 var map = {if (c) if (d) thing: 1};
-<<<
+<<< 3.6
 var map = {
   if (c)
     if (d) thing: 1
 };
 >>> split collection before body
 var map = {if (c) fairlyLongThingHere: 1};
-<<<
+<<< 3.6
 var map = {
   if (c) fairlyLongThingHere: 1
 };
 >>> just split outer if
 var map = {if (condition) if (another) longThingThatIsLong: 1};
-<<<
+<<< 3.6
 var map = {
   if (condition)
     if (another) longThingThatIsLong: 1
 };
 >>> split inside condition
 var map = {if (veryLongCondition + thatNeedsToSplit) thing: 1};
-<<<
+<<< 3.6
 var map = {
   if (veryLongCondition +
       thatNeedsToSplit)
@@ -198,7 +198,7 @@ var map = {
 };
 >>> split entry inside if
 var map = { if (condition) veryLongKeyExpression: andAVeryLongValueExpression};
-<<<
+<<< 3.6
 var map = {
   if (condition)
     veryLongKeyExpression:

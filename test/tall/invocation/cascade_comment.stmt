@@ -1,14 +1,14 @@
 40 columns                              |
 >>> Line comment on unsplit cascade line.
 receiver..cascade(); // comment
-<<<
+<<< 3.7
 receiver..cascade(); // comment
 >>> Line comment on split cascade.
 receiver
   ..cascade() // a
   ..cascade() // b
   ..more(); // c
-<<<
+<<< 3.7
 receiver
   ..cascade() // a
   ..cascade() // b
@@ -17,7 +17,7 @@ receiver
 receiver // comment
   ..cascade()
   ..more();
-<<<
+<<< 3.7
 receiver // comment
   ..cascade()
   ..more();
@@ -40,7 +40,7 @@ receiver
 
 
   ..cascade3();
-<<<
+<<< 3.7
 receiver
   // comment 1
   ..cascade1()
@@ -52,7 +52,7 @@ receiver
 target
   // comment
   ..setter = value;
-<<<
+<<< 3.7
 target
   // comment
   ..setter = value;
@@ -60,7 +60,7 @@ target
 target
 // comment
   ..method(argument);
-<<<
+<<< 3.7
 target
   // comment
   ..method(argument);

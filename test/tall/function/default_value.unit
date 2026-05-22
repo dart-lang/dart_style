@@ -1,22 +1,22 @@
 40 columns                              |
 >>> Named parameter.
 f(  {  optional  =  null  }  ) {}
-<<<
+<<< 3.7
 f({optional = null}) {}
 >>> Named parameter with old separator.
 ### This syntax is no longer supported by new versions of Dart, but we want to
 ### support formatting older versions if possible.
 f(  {  optional  :  1  +  2  }  ) {}
-<<<
+<<< 3.7
 f({optional: 1 + 2}) {}
 >>> Optional positional parameter.
 f(  [  optional  =  1  +  2  ]  ) {}
-<<<
+<<< 3.7
 f([optional = 1 + 2]) {}
 >>> Split on positional default.
 doStuff([parameter = veryLongDefaultValueThatSplits, another =
 veryLongDefaultValue, third = alsoQuiteLongDefaultValue]) {}
-<<<
+<<< 3.7
 doStuff([
   parameter =
       veryLongDefaultValueThatSplits,
@@ -26,7 +26,7 @@ doStuff([
 >>> Split on named default.
 doStuff({parameter = veryLongDefaultValueThatSplits, another =
 veryLongDefaultValue, third = alsoAQuiteLongDefaultValue}) {}
-<<<
+<<< 3.7
 doStuff({
   parameter =
       veryLongDefaultValueThatSplits,
@@ -35,7 +35,7 @@ doStuff({
 }) {}
 >>> Prefer block-like splitting for collection default values.
 function([param = [element, element, element, element]]) { body; }
-<<<
+<<< 3.7
 function([
   param = [
     element,
@@ -48,7 +48,7 @@ function([
 }
 >>> Function typed parameter with default value.
 f([callback() = constantFunction]) {}
-<<<
+<<< 3.7
 f([callback() = constantFunction]) {}
 >>> Split in function typed parameter parameter list with default value.
 f([callback(SomeLongType longParameter, AnotherType anotherParameter) = constantFunction]) {}
@@ -69,7 +69,7 @@ f([
 ]) {}
 >>> Split in function typed parameter default value.
 f([callback(SomeType parameter) = const CallableClass(someLongConstantArgument, anotherConstantArgument)]) {}
-<<<
+<<< 3.7
 f([
   callback(
     SomeType parameter,

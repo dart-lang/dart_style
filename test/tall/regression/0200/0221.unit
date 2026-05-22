@@ -44,7 +44,7 @@ void _updateChart() {
       ..context = ChartContext.empty).build());
   }
 }
-<<<
+<<< 3.7
 void _updateChart() {
   if (_model.settings != null) {
     _chart.update(
@@ -72,7 +72,7 @@ void _updateChart() {
         ..context = ChartContext.empty).build());
     }
   }
-<<<
+<<< 3.7
   void _updateChart() {
     if (_model.settings != null) {
       _chart.update(
@@ -96,7 +96,7 @@ trackEvent(String category, String action,
   ..action = action
   ..label = label
   ..value = value);
-<<<
+<<< 3.7
 trackEvent(String category, String action, {String label: '', int value: 0}) =>
     eventsTracked.add(
       new AnalyticsEvent()

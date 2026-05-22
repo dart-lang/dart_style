@@ -11,7 +11,7 @@ class PublicType {
   ) =>
       new PublicTypeImpl._(a, b);
 }
-<<<
+<<< 3.7
 class PublicType {
   const factory PublicType.constructor(String a, Type b) = PublicTypeImpl._;
 
@@ -36,7 +36,7 @@ class PublicType {
   factory PublicType.constructor(a, b) =>
       new PublicTypeImpl._1234567890121416182022242628303234363840(a, b);
 }
-<<<
+<<< 3.7
 class PublicType {
   const factory PublicType.constructor1234567890121416182022242628303234363840(
     a,

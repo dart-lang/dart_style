@@ -8,7 +8,7 @@ class A {
     }
   }
 }
-<<<
+<<< 3.7
 class A {
   foo() {
     // comment #1

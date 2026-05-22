@@ -26,7 +26,7 @@
             dontLeaveOnParamChanges: true)
       })
     });
-<<<
+<<< 3.7
     views.configure({
       'overview': routeCfg(
         path: '/overview',

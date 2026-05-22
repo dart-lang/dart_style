@@ -7,7 +7,7 @@ main() {
         value
     ..another();
 }
-<<<
+<<< 3.7
 main() {
   target
     ..first()
@@ -23,7 +23,7 @@ main() {
         // itself disposed.
         ..disposeOnWidgetDisposal =
         false;
-<<<
+<<< 3.7
   model
     ..setOnUpdate(onUpdate: updateCallback, updateOnChange: updateOnChange)
     // Models for components within a page will be disposed by the page's model,
@@ -44,7 +44,7 @@ main() {
               // so we'll leave this in place for now.
               ..displayName =
               displayName;
-<<<
+<<< 3.7
     final reactComponentClass =
         createReactDartComponentClass(
             dartInteropStatics,

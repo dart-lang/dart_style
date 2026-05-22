@@ -6,7 +6,7 @@
       'workSituation': workSituation,
       'zipCode': zipCode,
     });
-<<<
+<<< 3.7
     _firestore //
         .doc('$_usersCollection/$uid/streams/$streamId')
         .update(<String, dynamic>{
@@ -22,7 +22,7 @@
       'workSituation': workSituation,
       'zipCode': zipCode,
     }).then((value) => null);
-<<<
+<<< 3.7
     _firestore //
         .doc('$_usersCollection/$uid/streams/$streamId')
         .update(<String, dynamic>{
@@ -41,7 +41,7 @@
         })
         .then((value) => null)
         .then((value) => null);
-<<<
+<<< 3.7
     _firestore //
         .doc('$_usersCollection/$uid/streams/$streamId')
         .update(<String, dynamic>{

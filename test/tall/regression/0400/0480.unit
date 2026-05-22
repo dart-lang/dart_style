@@ -11,7 +11,7 @@ class XXXElement extends PolymerElement {
     }
   }
 }
-<<<
+<<< 3.7
 class XXXElement extends PolymerElement {
   void attached() {
     if (condition.containsKey('userUpdatingTest')) {

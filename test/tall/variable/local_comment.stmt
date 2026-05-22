@@ -1,33 +1,33 @@
 40 columns                              |
 >>> Inline after keyword.
 var /* comment */ x;
-<<<
+<<< 3.7
 var /* comment */ x;
 >>> Trailing line comment.
 var x; // comment
-<<<
+<<< 3.7
 var x; // comment
 >>> Inside multiple variable declaration list.
 var x /* comment */, y;
-<<<
+<<< 3.7
 var x /* comment */, y;
 >>> Always place newline after multi-line block comment.
 /*
 */ var i = value;
-<<<
+<<< 3.7
 /*
 */
 var i = value;
 >>> Prefer block-like splitting for empty lists with comments.
 var variableName = [ /* some long comment */ ];
-<<<
+<<< 3.7
 var variableName = [
   /* some long comment */
 ];
 >>> Line comment before `=`.
 var variable // comment
 = value;
-<<<
+<<< 3.7
 ### This looks weird, but users don't usually put comments here.
 var variable // comment
     =
@@ -35,18 +35,18 @@ var variable // comment
 >>> Line comment after `=`.
 var variable = // comment
 value;
-<<<
+<<< 3.7
 var variable = // comment
     value;
 >>> Line comment after value.
 var variable = value // comment
 ;
-<<<
+<<< 3.7
 ### Weird, but users rarely write this.
 var variable =
     value // comment
     ;
 >>> Line comment after semicolon.
 var variable = value; // comment
-<<<
+<<< 3.7
 var variable = value; // comment

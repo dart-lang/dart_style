@@ -7,7 +7,7 @@ class Foo {
     @required this.bar,
   });
 }
-<<<
+<<< 3.6
 import 'package:meta/meta.dart';
 
 class Foo {

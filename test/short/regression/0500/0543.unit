@@ -8,7 +8,7 @@
             toStringType)..sourceInformation = node.sourceInformation;
         return result;
       }
-<<<
+<<< 3.6
       main() {
         HInstruction result = new HInvokeDynamicMethod(
             selector,

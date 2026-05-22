@@ -3,7 +3,7 @@
     List<Future<List<LocationImpl>>> nodeFutures =
         <Future<List<LocationImpl>>>[];
   }
-<<<
+<<< 3.6
   main() {
     List<Future<List<LocationImpl>>> nodeFutures =
         <Future<List<LocationImpl>>>[];
@@ -16,7 +16,7 @@ class CachingPubPackageMapProvider {
     ;
   }
 }
-<<<
+<<< 3.6
 class CachingPubPackageMapProvider {
   CachingPubPackageMapProvider(
       ResourceProvider resourceProvider, DirectoryBasedDartSdk sdk,
@@ -31,7 +31,7 @@ class Foo {
       AstNode node) => _selectionIncludesNonWhitespaceOutsideRange(
            selection, SourceRangeFactory.rangeNode(node));
 }
-<<<
+<<< 3.6
 class Foo {
   bool selectionIncludesNonWhitespaceOutsideNode(
           SourceRange selection, AstNode node) =>
@@ -55,7 +55,7 @@ class Foo {
         in the last notification. If there is only one notification,
         then there will be only one number in this column.''');
   }
-<<<
+<<< 3.6
   void _writeCompletionPerformanceList(StringBuffer buffer) {
     buffer.write('''
       <p><strong>First (ms)</strong> - the number of milliseconds
@@ -76,7 +76,7 @@ class Foo {
 final ListResultDescriptor<AnalysisError> HINTS =
     new ListResultDescriptor<AnalysisError>(
         'HINT_ERRORS', AnalysisError.NO_ERRORS);
-<<<
+<<< 3.6
 final ListResultDescriptor<AnalysisError> HINTS =
     new ListResultDescriptor<AnalysisError>(
         'HINT_ERRORS', AnalysisError.NO_ERRORS);
@@ -88,7 +88,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
       });
     }));
   }
-<<<
+<<< 3.6
   makeMatcher() {
     docComment(toHtmlVisitor.collectHtml(() {
       toHtmlVisitor.p(() {
@@ -114,7 +114,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
                   new RemoveContentOverlay.fromJson(jsonDecoder, jsonPath, json)
             }));
       }
-<<<
+<<< 3.6
       main() {
         files = jsonDecoder._decodeMap(jsonPath + ".files", json["files"],
             valueDecoder: (String jsonPath, Object json) =>
@@ -138,7 +138,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
           writeln('$streamName = _$streamName.stream.asBroadcastStream();');
         }));
   }
-<<<
+<<< 3.6
   main() {
     fieldInitializationCode.add(collectCode(() {
       writeln('_$streamName = new StreamController<$className>(sync: true);');
@@ -150,7 +150,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
     return context.getContents(source).data.substring(
         replacementOffset, offset);
   }
-<<<
+<<< 3.6
   main() {
     return context
         .getContents(source)
@@ -164,7 +164,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
         changed: event.changed.length > 0 ? [mockContext] : [],
         removed: event.removed.length > 0 ? [mockContext] : []));
   }
-<<<
+<<< 3.6
   main() {
     contextsChangedRaw(new ContextsChangedEvent(
         added: event.added.length > 0 ? [mockContext] : [],
@@ -179,7 +179,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
           });
         }));
   }
-<<<
+<<< 3.6
   void emitEmptyObjectClass(String className, ImpliedType impliedType) {
     docComment(toHtmlVisitor.collectHtml(() {
       toHtmlVisitor.p(() {
@@ -193,7 +193,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
       projPath
     ], <String>[], <String, String>{});
   }
-<<<
+<<< 3.6
   main() {
     manager.setRoots(<String>[projPath], <String>[], <String, String>{});
   }
@@ -207,7 +207,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
       expect(server.statusAnalyzing, isFalse);
     });
   }
-<<<
+<<< 3.6
   main() {
     server.setAnalysisRoots('0', ['/foo', '/bar'], [], {});
     return pumpEventQueue(40).then((_) {
@@ -230,7 +230,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
       return irBuilder.makeConstructorDefinition(const [], const []);
     });
   }
-<<<
+<<< 3.6
   main() {
     return withBuilder(
         new DartIrBuilder(
@@ -253,7 +253,7 @@ final ListResultDescriptor<AnalysisError> HINTS =
             .variables[0]
         .name
         .staticElement;
-<<<
+<<< 3.6
     Element expectedElement = (declarations[0] as TopLevelVariableDeclaration)
         .variables
         .variables[0]
@@ -269,7 +269,7 @@ main() {
     main(aaa, bbb) {}
     ''');
 }
-<<<
+<<< 3.6
 main() {
   addTestFile('''
     library libA;

@@ -4,7 +4,7 @@ void main() {
     component,
   ], complex.span, lineBreak: false);
 }
-<<<
+<<< 3.7
 void main() {
   ComplexSelector(
     complex.leadingCombinators,

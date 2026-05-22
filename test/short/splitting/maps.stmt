@@ -1,15 +1,15 @@
 40 columns                              |
 >>> empty map
 var m = { };
-<<<
+<<< 3.6
 var m = {};
 >>> exactly 40 characters
 var m = {first: second, third: forth__};
-<<<
+<<< 3.6
 var m = {first: second, third: forth__};
 >>>
 var m = {first: second, third: fourth, fifth: sixth};
-<<<
+<<< 3.6
 var m = {
   first: second,
   third: fourth,
@@ -18,7 +18,7 @@ var m = {
 >>> splits outer maps even if they fit
 var m = {a: {b: c}, d: {},
     e: {f: {g: h} }  };
-<<<
+<<< 3.6
 var m = {
   a: {b: c},
   d: {},
@@ -28,18 +28,18 @@ var m = {
 };
 >>> split indirect outer
 var m = {a: function({b: inner})};
-<<<
+<<< 3.6
 var m = {
   a: function({b: inner})
 };
 >>> empty literal does not force outer split
 var m = {a:{}, b: [], c: () {}};
-<<<
+<<< 3.6
 var m = {a: {}, b: [], c: () {}};
 >>> nested split map
 var m = {first: 1, second: {third: fourth}, fifth: 5, nested: {sixth: seventh, eighth: nine,
     tenth: eleventh}};
-<<<
+<<< 3.6
 var m = {
   first: 1,
   second: {third: fourth},
@@ -52,7 +52,7 @@ var m = {
 };
 >>> force multi-line because of contained block
 var m = {first: 1, fn: () {"fn";},third:fourth};
-<<<
+<<< 3.6
 var m = {
   first: 1,
   fn: () {
@@ -62,27 +62,27 @@ var m = {
 };
 >>> containing comments
 var m = {first: one /* bang */, second: two};
-<<<
+<<< 3.6
 var m = {
   first: one /* bang */,
   second: two
 };
 >>> const
 var map = const {"foo": "bar", "fuz": null};
-<<<
+<<< 3.6
 var map = const {
   "foo": "bar",
   "fuz": null
 };
 >>> trailing comma forces split
 var map = {"foo": "bar" , };
-<<<
+<<< 3.6
 var map = {
   "foo": "bar",
 };
 >>> trailing comma multiline
 var map = {"foo": "bar", "fuzzy": null , };
-<<<
+<<< 3.6
 var map = {
   "foo": "bar",
   "fuzzy": null,
@@ -93,7 +93,7 @@ var map = {
   a:b,c:d,
   e:f,g:h
 };
-<<<
+<<< 3.6
 var map = {
   // yeah
   a: b, c: d,
@@ -106,7 +106,7 @@ var map = {
 
   fourth: "value", fifth: "value", sixth: "value", seventh: "value"
 };
-<<<
+<<< 3.6
 var map = {
   // yes
   first: "value", second: "value",
@@ -121,7 +121,7 @@ var map = {
   d
 } // comment
 ;
-<<<
+<<< 3.6
 var map = {a: b, c: d} // comment
     ;
 >>> preserves one blank line between elements
@@ -141,7 +141,7 @@ var map = {
 
 
 };
-<<<
+<<< 3.6
 var map = {
   element: value,
 
@@ -155,14 +155,14 @@ var map = {// comment
 a:
 value
 };
-<<<
+<<< 3.6
 var map = {
   // comment
   a: value
 };
 >>> spread cascade
 var map = {1: 1, ...thing..cascade()..another(), 4: 4};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   ...thing
@@ -172,7 +172,7 @@ var map = {
 };
 >>> spread lambda
 var map = {1: 1, ...() { body; }, 4: 4};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   ...() {
@@ -182,7 +182,7 @@ var map = {
 };
 >>> spread immediately invoked lambda
 var map = {1: 1, ...() sync* { yield thing; }(), 4: 4};
-<<<
+<<< 3.6
 var map = {
   1: 1,
   ...() sync* {

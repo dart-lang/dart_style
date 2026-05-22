@@ -5,7 +5,7 @@ const NO_DART_SCRIPT_AND_EXPERIMENTAL = const MessageTemplate(
     'the main document (for now).',
     'Script tags with experimental bootstrap',
     'This experimental feature is no longer supported.');
-<<<
+<<< 3.7
 const NO_DART_SCRIPT_AND_EXPERIMENTAL = const MessageTemplate(
   const MessageId('polymer', 6),
   'The experimental bootstrap feature doesn\'t support script tags on '

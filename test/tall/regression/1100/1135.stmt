@@ -21,7 +21,7 @@
       notifyListeners();
     },
   );
-<<<
+<<< 3.7
   file
       .readAsBytes()
       .then(

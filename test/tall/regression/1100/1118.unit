@@ -6,7 +6,7 @@ void f(
 ) {
   'loooooooooooooooooooooooong text string' 'loooooooooooooooooooooooong text string';
 }
-<<<
+<<< 3.7
 @Deprecated(
   'loooooooooooooooooooooooong text string'
   'loooooooooooooooooooooooong text string',

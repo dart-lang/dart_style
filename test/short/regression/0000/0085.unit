@@ -1,6 +1,6 @@
 >>>
 @MyGlobal()
 final SomeType type;
-<<<
+<<< 3.6
 @MyGlobal()
 final SomeType type;

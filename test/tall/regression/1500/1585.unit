@@ -7,7 +7,7 @@ class AaaaAaaaa {
   external /*AaaaaaAaaa*/ aaa get aa;
   external Aaaaaa get aaa;
 }
-<<<
+<<< 3.7
 class AaaaAaaaa {
   external Aaaaaa get aa;
   external Aaaaaa get aaAaa;

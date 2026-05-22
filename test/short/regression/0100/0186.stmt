@@ -13,7 +13,7 @@ return JSON.encode((span == null)
       }
     }
   ]);
-<<<
+<<< 3.6
 return JSON.encode((span == null)
     ? [
         {

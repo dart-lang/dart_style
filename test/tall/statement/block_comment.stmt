@@ -2,13 +2,13 @@
 >>> Empty block containing line comment.
 { // comment
 }
-<<<
+<<< 3.7
 {
   // comment
 }
 >>> Empty block containing inline block comment.
 {   /* comment */  }
-<<<
+<<< 3.7
 {
   /* comment */
 }
@@ -19,14 +19,14 @@
 
 
 }
-<<<
+<<< 3.7
 {
   /* comment */
 }
 >>> Empty block containing multi-line block comment.
 {   /* comment
 line */  }
-<<<
+<<< 3.7
 {
   /* comment
 line */
@@ -39,7 +39,7 @@ line */
 
 
 }
-<<<
+<<< 3.7
 {
   /* comment
 line */
@@ -54,7 +54,7 @@ line */
 
 
 }
-<<<
+<<< 3.7
 {
   // comment
 }
@@ -75,7 +75,7 @@ line */
 
   c;
 }
-<<<
+<<< 3.7
 {
   // comment
   a;
@@ -92,7 +92,7 @@ line */
 {
   /* c */ a: b: c;
 }
-<<<
+<<< 3.7
 {
   /* c */
   a:
@@ -110,7 +110,7 @@ line */
 
 a;
 }
-<<<
+<<< 3.7
 {
   // comment
 

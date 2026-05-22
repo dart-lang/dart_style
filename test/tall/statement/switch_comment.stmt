@@ -20,7 +20,7 @@ switch (n) {
 
 
 }
-<<<
+<<< 3.7
 switch (n) {
   // comment
   case 0:
@@ -38,7 +38,7 @@ switch (n) {
   // comment
   case 1: one;
 }
-<<<
+<<< 3.7
 switch (n) {
   case 0:
     zero;
@@ -54,7 +54,7 @@ switch (n) {
   case 1: one;
   // after last
 }
-<<<
+<<< 3.7
 switch (n) {
   // before first
   case 0:
@@ -78,7 +78,7 @@ two;
 three;
 // after
 }
-<<<
+<<< 3.7
 switch (n) {
   case 0:
     // before
@@ -100,7 +100,7 @@ switch (n) {
   case 2:
     // comment 2
 }
-<<<
+<<< 3.7
 switch (n) {
   case 0: // comment 0
   case 1:
@@ -112,14 +112,14 @@ switch (n) {
 switch (e) {
   // comment
 }
-<<<
+<<< 3.7
 switch (e) {
   // comment
 }
 >>> Line comment on opening line of empty switch.
 switch (e) { // comment
 }
-<<<
+<<< 3.7
 switch (e) {
   // comment
 }
@@ -127,27 +127,27 @@ switch (e) {
 switch (e) {
   /* comment */
 }
-<<<
+<<< 3.7
 switch (e) {
   /* comment */
 }
 >>> Block comment with trailing newline.
 switch (e) {/* comment */
 }
-<<<
+<<< 3.7
 switch (e) {
   /* comment */
 }
 >>> Block comment with leading newline.
 switch (e) {
   /* comment */}
-<<<
+<<< 3.7
 switch (e) {
   /* comment */
 }
 >>> Inline block comment.
 switch (e) {  /* comment */  }
-<<<
+<<< 3.7
 switch (e) {
   /* comment */
 }

@@ -1,64 +1,64 @@
 40 columns                              |
 >>> Single-line assert.
 assert("some short string");
-<<<
+<<< 3.7
 assert("some short string");
 >>> Split single-line assert.
 assert("some very long string that wraps");
-<<<
+<<< 3.7
 assert(
   "some very long string that wraps",
 );
 >>> Single-line assert with message.
 assert(true, "blah");
-<<<
+<<< 3.7
 assert(true, "blah");
 >>> Split assert with long message.
 assert(true, "looong string that wraps");
-<<<
+<<< 3.7
 assert(
   true,
   "looong string that wraps",
 );
 >>> Split assert with message and long condition.
 assert(veryLongCondition, "long string that wraps");
-<<<
+<<< 3.7
 assert(
   veryLongCondition,
   "long string that wraps",
 );
 >>> Split assert with a long message and a long condition.
 assert(veryVeryVeryVeryVeryLongCondition, "long string that wraps");
-<<<
+<<< 3.7
 assert(
   veryVeryVeryVeryVeryLongCondition,
   "long string that wraps",
 );
 >>> Remove trailing comma if not split, with no message.
 assert(condition,);
-<<<
+<<< 3.7
 assert(condition);
 >>> Remove trailing comma if not split, with a message.
 assert(condition, "some message",);
-<<<
+<<< 3.7
 assert(condition, "some message");
 >>> Unsplit the argument list and remove trailing comma.
 assert(
   1,
   2,
 );
-<<<
+<<< 3.7
 assert(1, 2);
 >>> Add trailing comma if argument list splits.
 assert(longArgument1, veryLongArgument2);
-<<<
+<<< 3.7
 assert(
   longArgument1,
   veryLongArgument2,
 );
 >>> Allow block formatting of condition.
 assert([element1, element2, element3, element4]);
-<<<
+<<< 3.7
 assert([
   element1,
   element2,
@@ -69,19 +69,19 @@ assert([
 assert(true, () {
   return someSlowMessageComputation();
 }());
-<<<
+<<< 3.7
 assert(true, () {
   return someSlowMessageComputation();
 }());
 >>> Block format immediately invoked function as condition.
 assert(() { return someSlow() + computation(); }());
-<<<
+<<< 3.7
 assert(() {
   return someSlow() + computation();
 }());
 >>> Block format immediately invoked function as condition with message.
 assert(() { return someSlow() + computation(); }(), 'Message.');
-<<<
+<<< 3.7
 assert(() {
   return someSlow() + computation();
 }(), 'Message.');

@@ -9,7 +9,7 @@ class Foo {
     return spec;
   }
 }
-<<<
+<<< 3.7
 class Foo {
   static ExportElementImpl exportFor(
     LibraryElement exportedLibrary, [

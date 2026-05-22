@@ -1,7 +1,7 @@
 40 columns                              |
 >>> nested functions
 x(){y(){z(){}}}
-<<<
+<<< 3.6
 x() {
   y() {
     z() {}
@@ -9,11 +9,11 @@ x() {
 }
 >>> named parameters
 int a(var x, {optional: null}) => null;
-<<<
+<<< 3.6
 int a(var x, {optional: null}) => null;
 >>> optional parameters
 int a(var x, [optional = null]) => null;
-<<<
+<<< 3.6
 int a(var x, [optional = null]) => null;
 >>> async
 main()
@@ -24,7 +24,7 @@ main()
  async
      {};
 }
-<<<
+<<< 3.6
 main() async {
   var x = () async => 1;
   y() async {}
@@ -34,63 +34,63 @@ main() async {
 fish() => []
   ..add(1)
   ..add(2);
-<<<
+<<< 3.6
 fish() => []
   ..add(1)
   ..add(2);
 >>>
 fish() => []..add(1);
-<<<
+<<< 3.6
 fish() => []..add(1);
 >>> empty function bodies are a single line
 void main() { }
-<<<
+<<< 3.6
 void main() {}
 >>>
 void main() {
 
 }
-<<<
+<<< 3.6
 void main() {}
 >>> DO use a space after : in named parameters
 foo({showScrollbars :false}) {}
-<<<
+<<< 3.6
 foo({showScrollbars: false}) {}
 >>> DO use a spaces around = in optional positional parameters.
 listen([int port=80]) {}
-<<<
+<<< 3.6
 listen([int port = 80]) {}
 >>> async*
 main()async  *{var lambda = ()async *{};}
-<<<
+<<< 3.6
 main() async* {
   var lambda = () async* {};
 }
 >>> sync* functions
 main()sync  *{var lambda = ()sync *{};}
-<<<
+<<< 3.6
 main() sync* {
   var lambda = () sync* {};
 }
 >>> sync* function with arrow body
 main()sync  *  =>  [];
-<<<
+<<< 3.6
 main() sync* => [];
 >>> sync* getter with arrow body
 Iterable get main  sync  *  =>  [];
-<<<
+<<< 3.6
 Iterable get main sync* => [];
 >>> async* function with arrow body
 main()async  *  =>  [];
-<<<
+<<< 3.6
 main() async* => [];
 >>> async* getter with arrow body
 Stream get main  async  *  =>  [];
-<<<
+<<< 3.6
 Stream get main async* => [];
 >>> trailing comma in single parameter list
 function(parameter   ,   ) {;}
-<<<
+<<< 3.6
 function(
   parameter,
 ) {
@@ -98,7 +98,7 @@ function(
 }
 >>> trailing comma in parameter list
 function(parameter,parameter  ,  ) {;}
-<<<
+<<< 3.6
 function(
   parameter,
   parameter,
@@ -107,7 +107,7 @@ function(
 }
 >>> trailing comma in all optional parameter list
 function([parameter,parameter  ,  ]) {;}
-<<<
+<<< 3.6
 function([
   parameter,
   parameter,
@@ -116,7 +116,7 @@ function([
 }
 >>> trailing comma in all named parameter list
 function({parameter,parameter  ,  }) {;}
-<<<
+<<< 3.6
 function({
   parameter,
   parameter,
@@ -125,7 +125,7 @@ function({
 }
 >>> trailing comma in mixed optional parameter list
 function(parameter,[parameter,parameter  ,  ]) {;}
-<<<
+<<< 3.6
 function(
   parameter, [
   parameter,
@@ -135,7 +135,7 @@ function(
 }
 >>> trailing comma in mixed named parameter list
 function(parameter,{parameter,parameter  ,  }) {;}
-<<<
+<<< 3.6
 function(
   parameter, {
   parameter,
@@ -145,7 +145,7 @@ function(
 }
 >>> trailing comma with => function containing split
 function(parameter,parameter,) => veryLongBodyThatWraps(argument, argument, argument, argument);
-<<<
+<<< 3.6
 function(
   parameter,
   parameter,
@@ -154,7 +154,7 @@ function(
         argument, argument, argument);
 >>> trailing comma with wrap at =>
 function(parameter,parameter,) /* comment */ => "a very very long string";
-<<<
+<<< 3.6
 function(
   parameter,
   parameter,
@@ -164,7 +164,7 @@ function(
 main() {
   someVeryLongFunction(argument, argument, (parameter, parameter,) {;});
 }
-<<< (this looks weird, but it should rare and at least we test it)
+<<< 3.6
 main() {
   someVeryLongFunction(
       argument, argument, (
@@ -176,35 +176,35 @@ main() {
 }
 >>> generic function typed parameter
 function(int   foo  <  T  ,S >(T t, S s)) {}
-<<<
+<<< 3.6
 function(int foo<T, S>(T t, S s)) {}
 >>> nullable old style function typed parameter
 function(int? callback()    ?  ) {}
-<<<
+<<< 3.6
 function(int? callback()?) {}
 >>> nullable old style function typed parameter with trailing comma
 function(int? f()?  ,p) {}
-<<<
+<<< 3.6
 function(int? f()?, p) {}
 >>> nullable old style function typed parameter with trailing comma
 function(int? callback()   ?   ,    ) {}
-<<<
+<<< 3.6
 function(
   int? callback()?,
 ) {}
 >>> nullable old style named function typed parameter
 function({int? callback()    ?  }) {}
-<<<
+<<< 3.6
 function({int? callback()?}) {}
 >>> nullable old style initializing formal function typed parameter
 function(int? this.callback()    ?  ) {}
-<<<
+<<< 3.6
 function(int? this.callback()?) {}
 >>> required parameters
 class A {
 f({   required    int a,required   b}) {}
 }
-<<<
+<<< 3.6
 class A {
   f({required int a, required b}) {}
 }
@@ -212,7 +212,7 @@ class A {
 class A {
 f({   required    covariant   int a}) {}
 }
-<<<
+<<< 3.6
 class A {
   f({required covariant int a}) {}
 }
@@ -220,7 +220,7 @@ class A {
 class A {
 f({   required    callback()}) {}
 }
-<<<
+<<< 3.6
 class A {
   f({required callback()}) {}
 }
@@ -228,7 +228,7 @@ class A {
 class A {
 A({   required    this.b}) {}
 }
-<<<
+<<< 3.6
 class A {
   A({required this.b}) {}
 }

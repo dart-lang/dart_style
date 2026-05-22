@@ -2,7 +2,7 @@
     final monitorTimeout = (utcTime.millisecondsSinceEpoch +
             3 * Duration.MILLISECONDS_PER_MINUTE) /
         1000;
-<<<
+<<< 3.7
     final monitorTimeout =
         (utcTime.millisecondsSinceEpoch +
             3 * Duration.MILLISECONDS_PER_MINUTE) /

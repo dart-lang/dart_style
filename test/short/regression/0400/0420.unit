@@ -13,7 +13,7 @@ main() {
     }
   }
 }
-<<<
+<<< 3.6
 createSomeObject(String s, Int64 id,
         {Map<String, Int64> mapFromStringToInt64}) =>
     null;

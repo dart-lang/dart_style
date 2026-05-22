@@ -6,7 +6,7 @@ record = (
   a,b,c,d,
   e,f,g,h
 );
-<<<
+<<< 3.7
 record = (
   // yeah
   a, b, c, d,
@@ -19,7 +19,7 @@ record = (
     arg // c
   ),
 );
-<<<
+<<< 3.7
 record = (
   1,
   2,
@@ -37,7 +37,7 @@ record = (
   // comment
   element8, element9, element10, element11,
 );
-<<<
+<<< 3.7
 record = (
   element1,
   element2,

@@ -1,7 +1,7 @@
 >>>
 _log(new LogEntry(error.transform, error.transform.primaryId, LogLevel.ERROR,
     message, null), arg);
-<<<
+<<< 3.7
 _log(
   new LogEntry(
     error.transform,
@@ -17,7 +17,7 @@ _log(
         .parsePattern("hh:mm:ss")
         .map((x) => x.pattern)
         .toList(), orderedEquals(["hh", ":", "mm", ":", "ss"]));
-<<<
+<<< 3.7
     expect(
       date_format.parsePattern("hh:mm:ss").map((x) => x.pattern).toList(),
       orderedEquals(["hh", ":", "mm", ":", "ss"]),
@@ -36,7 +36,7 @@ _log(
         constructorArguments.add(potentiallyCheckOrTrustType(value, type));
       }
     }, includeSuperAndInjectedMembers: true);
-<<<
+<<< 3.7
     classElement.forEachInstanceField((
       ClassElement enclosingClass,
       VariableElement member,
@@ -62,7 +62,7 @@ _log(
           conditionBlock.loopInformation.labels,
           sourceFileLocationForBeginToken(loop),
           sourceFileLocationForEndToken(loop));
-<<<
+<<< 3.7
       HLoopBlockInformation info = new HLoopBlockInformation(
         HLoopBlockInformation.loopType(loop),
         wrapExpressionGraph(initializerGraph),
@@ -78,7 +78,7 @@ _log(
       handleSwitch(node, new NullJumpHandler(compiler), buildExpression,
           node.cases, getConstants, (_) => false, // No case is default.
           buildSwitchCase);
-<<<
+<<< 3.7
       handleSwitch(
         node,
         new NullJumpHandler(compiler),

@@ -9,7 +9,7 @@
             .toEqual(1);
       });
     }
-<<<
+<<< 3.6
     main() {
       it('should expose traverse locals', () {
         expect(parser('a.b').bind({
@@ -31,7 +31,7 @@
       'on-optional': '&onOptional'
     })
 class IoControllerComponent implements ScopeAware {}
-<<<
+<<< 3.6
 @Component(
     selector: 'io-controller',
     template: r'<content></content>',
@@ -51,7 +51,7 @@ class IoControllerComponent implements ScopeAware {}
               selectableCollector))
           .toEqual(false);
     }
-<<<
+<<< 3.6
     main() {
       expect(matcher.match(
               CssSelector.parse(

@@ -22,6 +22,6 @@ var overlapping = _directories.keys
 >>>
 return isLoopback(server.address.host) == isLoopback(url.host) ||
     server.address.host == url.host;
-<<<
+<<< 3.7
 return isLoopback(server.address.host) == isLoopback(url.host) ||
     server.address.host == url.host;

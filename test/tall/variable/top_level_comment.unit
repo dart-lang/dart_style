@@ -1,13 +1,13 @@
 40 columns                              |
 >>>
 var  x  ;   // comment
-<<<
+<<< 3.7
 var x; // comment
 >>> Force blank line before doc comments.
 var a = 1;
 /// doc
 var b = 2;
-<<<
+<<< 3.7
 var a = 1;
 
 /// doc

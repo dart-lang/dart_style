@@ -1,7 +1,7 @@
 40 columns                              |
 >>> Separate statements in cases.
 switch (foo) {case 0:a();b();c();}
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
     a();
@@ -15,7 +15,7 @@ switch (foo) {case 0:
   b();
   c();
 }
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
     a();
@@ -39,7 +39,7 @@ switch (foo) {case 0:
 
 
 }
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
     a();
@@ -67,7 +67,7 @@ switch (foo) {
 
     body;
 }
-<<<
+<<< 3.7
 switch (foo) {
   case 1:
   case 2:
@@ -80,7 +80,7 @@ switch (foo) {
 }
 >>> Separate statements in the default clause.
 switch (foo) {default:a();b();c();}
-<<<
+<<< 3.7
 switch (foo) {
   default:
     a();
@@ -94,7 +94,7 @@ switch (foo) {default:
   b();
   c();
 }
-<<<
+<<< 3.7
 switch (foo) {
   default:
     a();
@@ -118,7 +118,7 @@ switch (foo) {default:
 
 
 }
-<<<
+<<< 3.7
 switch (foo) {
   default:
     a();
@@ -129,7 +129,7 @@ switch (foo) {
 }
 >>> Put cases on their own lines.
 switch (foo) {case 0:case 1:case 2:body();}
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
   case 1:
@@ -142,7 +142,7 @@ switch (foo) {case 0: body();
   case 1:
   case 2:body();
 }
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
     body();
@@ -169,7 +169,7 @@ switch (foo) {
 
 
 }
-<<<
+<<< 3.7
 switch (foo) {
   case 0:
   case 1:
@@ -182,7 +182,7 @@ switch (obj) {
   case 2: b();
   default: c();
 }
-<<<
+<<< 3.7
 switch (obj) {
   case 1:
     a();
@@ -197,7 +197,7 @@ switch (obj) {
   case 2: c(); d();
   default: d(); e();
 }
-<<<
+<<< 3.7
 switch (obj) {
   case 1:
     a();
@@ -218,7 +218,7 @@ case "fig":
 print("bleh");
 break;
 }
-<<<
+<<< 3.7
 switch (fruit) {
   case "apple":
     print("delish");
@@ -238,7 +238,7 @@ switch (fruit) {
   other:default:
     break;
 }
-<<<
+<<< 3.7
 switch (fruit) {
   case "apple":
     print("delish");
@@ -256,7 +256,7 @@ switch ("a long string that must wrap") {
   case 0:
     return "ok";
 }
-<<<
+<<< 3.7
 switch ("a long string that must wrap") {
   case 0:
     return "ok";
@@ -266,7 +266,7 @@ switch ([veryLongElement,veryLongElement]) {
   case 0:
     return "ok";
 }
-<<<
+<<< 3.7
 switch ([
   veryLongElement,
   veryLongElement,
@@ -278,7 +278,7 @@ switch ([
 switch (obj) {
   case [veryLongElement,veryLongElement,veryLongElement,]: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case [
     veryLongElement,
@@ -293,7 +293,7 @@ switch (obj) {
 switch (obj) {
   case oneConstant || twoConstant || threeConstant: body;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case oneConstant ||
       twoConstant ||

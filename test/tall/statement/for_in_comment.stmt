@@ -3,7 +3,7 @@
 >>> Hanging line comment before declared variable.
 for  (  // comment
 int  x  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for ( // comment
 int x in list) {
   body;
@@ -12,7 +12,7 @@ int x in list) {
 for  (
 // comment
 int  x  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (
 // comment
 int x in list) {
@@ -21,7 +21,7 @@ int x in list) {
 >>> Hanging line comment after declared variable.
 for  (  int  x  // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (int x // comment
     in list) {
   body;
@@ -30,7 +30,7 @@ for (int x // comment
 for  (  int  x
 // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (int x
     // comment
     in list) {
@@ -39,7 +39,7 @@ for (int x
 >>> Hanging line comment before existing variable.
 for  (  // comment
 x  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for ( // comment
 x in list) {
   body;
@@ -48,7 +48,7 @@ x in list) {
 for  (
 // comment
 x  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (
 // comment
 x in list) {
@@ -57,7 +57,7 @@ x in list) {
 >>> Hanging line comment after existing variable.
 for  (  x  // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (x // comment
     in list) {
   body;
@@ -66,7 +66,7 @@ for (x // comment
 for  (  x
 // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (x
     // comment
     in list) {
@@ -75,7 +75,7 @@ for (x
 >>> Hanging line comment before pattern variable.
 for  (  // comment
 var  [x]  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for ( // comment
 var [x] in list) {
   body;
@@ -84,7 +84,7 @@ var [x] in list) {
 for  (
 // comment
 var  [x]  in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (
 // comment
 var [x] in list) {
@@ -93,7 +93,7 @@ var [x] in list) {
 >>> Hanging line comment after pattern variable.
 for  (  var  [x]  // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (var [x] // comment
     in list) {
   body;
@@ -102,7 +102,7 @@ for (var [x] // comment
 for  (  var  [x]
 // comment
 in  list  )  {  body;  }
-<<<
+<<< 3.7
 for (var [x]
     // comment
     in list) {
@@ -111,7 +111,7 @@ for (var [x]
 >>> Hanging line comment after `in`.
 for  (  int  x  in  // comment
 list  )  {  body;  }
-<<<
+<<< 3.7
 for (int x
     in // comment
     list) {
@@ -121,7 +121,7 @@ for (int x
 for  (  int  x  in
 // comment
 list  )  {  body;  }
-<<<
+<<< 3.7
 for (int x
     in
     // comment
@@ -131,7 +131,7 @@ for (int x
 >>> Hanging line comment after sequence.
 for  (  int  x  in  list  // comment
 )  {  body;  }
-<<<
+<<< 3.7
 for (int x
     in list // comment
     ) {
@@ -141,7 +141,7 @@ for (int x
 for  (  int  x  in  list
 // comment
 )  {  body;  }
-<<<
+<<< 3.7
 for (int x in list
 // comment
 ) {

@@ -1,11 +1,11 @@
 40 columns                              |
 >>>
 mixin    M1    on   UnaryNum     {  }
-<<<
+<<< 3.6
 mixin M1 on UnaryNum {}
 >>>
 mixin   M2  on   UnaryNum   ,UnaryInt{   }
-<<<
+<<< 3.6
 mixin M2 on UnaryNum, UnaryInt {}
 >>>
 mixin    M1    on   UnaryNum     {
@@ -17,23 +17,23 @@ mixin    M1    on   UnaryNum     {
 
 
   }
-<<<
+<<< 3.6
 mixin M1 on UnaryNum {
   member() {}
 }
 >>> generic
 mixin M<   A  ,B  >on   C  implements    D{ }
-<<<
+<<< 3.6
 mixin M<A, B> on C implements D {}
 >>> base modifier
 base  mixin M {}
-<<<
+<<< 3.6
 base mixin M {}
 >>> (experiment primary-constructors) Mixin with empty body
 mixin M;
-<<<
+<<< 3.6
 mixin M;
 >>> (experiment primary-constructors) Mixin with comment before semicolon
 mixin M /* comment */ ;
-<<<
+<<< 3.6
 mixin M /* comment */;

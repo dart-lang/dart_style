@@ -1,6 +1,6 @@
 40 columns                              |
 >>>
 myFunction() => argument + anotherArgument;
-<<<
+<<< 3.6
 myFunction() =>
     argument + anotherArgument;

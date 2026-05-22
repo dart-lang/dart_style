@@ -4,7 +4,7 @@ while (true) {
   break // comment
   ;
 }
-<<<
+<<< 3.7
 while (true) {
   break // comment
   ;
@@ -13,7 +13,7 @@ while (true) {
 while (true) {
   break; // comment
 }
-<<<
+<<< 3.7
 while (true) {
   break; // comment
 }
@@ -22,7 +22,7 @@ while (true) {
   break // comment
   ;
 }
-<<<
+<<< 3.7
 while (true) {
   break // comment
   ;
@@ -31,7 +31,7 @@ while (true) {
 while (true) {
   break; // comment
 }
-<<<
+<<< 3.7
 while (true) {
   break; // comment
 }
@@ -39,7 +39,7 @@ while (true) {
 Stream<String> i(String n) async* {
   yield   i   ;     // comment
 }
-<<<
+<<< 3.7
 Stream<String> i(String n) async* {
   yield i; // comment
 }
@@ -47,7 +47,7 @@ Stream<String> i(String n) async* {
 Stream<int> i(int n) async* {
   yield  *   i( x )    ;    // comment
 }
-<<<
+<<< 3.7
 Stream<int> i(int n) async* {
   yield* i(x); // comment
 }
@@ -55,7 +55,7 @@ Stream<int> i(int n) async* {
 foo() async {
   await i (  1 + 2   )   ;     // comment
 }
-<<<
+<<< 3.7
 foo() async {
   await i(1 + 2); // comment
 }

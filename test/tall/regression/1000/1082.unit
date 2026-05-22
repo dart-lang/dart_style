@@ -8,7 +8,7 @@ class B{
   B(this.name);
   final String name;
 }
-<<<
+<<< 3.7
 class A {
   A(this.name) : super();
   final String name;

@@ -32,7 +32,7 @@ class Foo {
       'library_name'], json['messages'].map(MessageSummary.parse).toList(),
       json['lines']);
 }
-<<<
+<<< 3.7
 class Foo {
   static LibrarySummary parse(Map json) => new LibrarySummary(
     json['library_name'],
@@ -46,7 +46,7 @@ class ResultSet {
       'release'],
       json['results'].map((result) => new Result.fromJson(result)).toList());
 }
-<<<
+<<< 3.7
 class ResultSet {
   factory ResultSet.fromJson(Map json) => new ResultSet(
     json['platform'],

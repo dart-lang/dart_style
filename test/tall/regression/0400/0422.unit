@@ -8,7 +8,7 @@ void allTests() {
     });
   });
 }
-<<<
+<<< 3.7
 void allTests() {
   describe('inliner', () {
     it('should inline `templateUrl` values', () async {

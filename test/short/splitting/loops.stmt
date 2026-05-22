@@ -1,40 +1,40 @@
 40 columns                              |
 >>> do not split before first clause
 for (extremelyReallyQuiteVeryLongFirstClause; second; third) {}
-<<<
+<<< 3.6
 for (extremelyReallyQuiteVeryLongFirstClause;
     second;
     third) {}
 >>> split after first clause
 for (veryLongFirstClause; veryLongSecondClause; third) {}
-<<<
+<<< 3.6
 for (veryLongFirstClause;
     veryLongSecondClause;
     third) {}
 >>> split after second clause
 for (longFirstClause; longSecondClause; third) {}
-<<<
+<<< 3.6
 for (longFirstClause;
     longSecondClause;
     third) {}
 >>> unsplit multiple variable declarations
 for (var a = 1, b = 2; 3; 4) {}
-<<<
+<<< 3.6
 for (var a = 1, b = 2; 3; 4) {}
 >>> split multiple variable declarations
 for (var first = initializer, second = initializer; 1; 2) {}
-<<<
+<<< 3.6
 for (var first = initializer,
         second = initializer;
     1;
     2) {}
 >>> unsplit updaters
 for (foo; bar; a++, b++) {}
-<<<
+<<< 3.6
 for (foo; bar; a++, b++) {}
 >>> split between updaters splits everything
 for (foo; bar; first = 1, second = 2, third = 3, fourth = 4) {}
-<<<
+<<< 3.6
 for (foo;
     bar;
     first = 1,
@@ -43,7 +43,7 @@ for (foo;
     fourth = 4) {}
 >>> nest wrapped initializer
 for (very + long + initialization + expression; a; b) {}
-<<<
+<<< 3.6
 for (very +
         long +
         initialization +
@@ -52,14 +52,14 @@ for (very +
     b) {}
 >>> split in for-in loop
 for (var identifier in iteratableExpression) {}
-<<<
+<<< 3.6
 for (var identifier
     in iteratableExpression) {}
 >>> split in while condition
 while (aLongConditionExpressionThatWraps) {
   ;
 }
-<<<
+<<< 3.6
 while (
     aLongConditionExpressionThatWraps) {
   ;
@@ -68,7 +68,7 @@ while (
 for (var a = 1, b = 2; longCondition(expression); a += b) {
   ;
 }
-<<<
+<<< 3.6
 for (var a = 1, b = 2;
     longCondition(expression);
     a += b) {
@@ -78,7 +78,7 @@ for (var a = 1, b = 2;
 for (var a = 0; longCondition(expression); a += 1, b += 1) {
   ;
 }
-<<<
+<<< 3.6
 for (var a = 0;
     longCondition(expression);
     a += 1, b += 1) {
@@ -86,41 +86,41 @@ for (var a = 0;
 }
 >>> single line for without curlies
 for (i = 0; i < 10; i++) something(i);
-<<<
+<<< 3.6
 for (i = 0; i < 10; i++) something(i);
 >>> multi-line for without curlies
 for (i = 0; i < 10; i++) somethingLonger(i);
-<<<
+<<< 3.6
 for (i = 0; i < 10; i++)
   somethingLonger(i);
 >>> single line for-in without curlies
 for (i in sequence) something(i);
-<<<
+<<< 3.6
 for (i in sequence) something(i);
 >>> multi-line for-in without curlies
 for (i in sequence) somethingMuchLonger(i);
-<<<
+<<< 3.6
 for (i in sequence)
   somethingMuchLonger(i);
 >>> single line while without curlies
 while (condition) something(i);
-<<<
+<<< 3.6
 while (condition) something(i);
 >>> multi-line while without curlies
 while (condition) somethingMuchLonger(i);
-<<<
+<<< 3.6
 while (condition)
   somethingMuchLonger(i);
 >>> pattern for-in expression split in pattern
 for (var (longIdentifier && anotherLongOne) in obj) {;}
-<<<
+<<< 3.6
 for (var (longIdentifier &&
     anotherLongOne) in obj) {
   ;
 }
 >>> pattern for-in block split in pattern
 for (var [longIdentifier, anotherLongOne] in obj) {;}
-<<<
+<<< 3.6
 for (var [
       longIdentifier,
       anotherLongOne
@@ -130,7 +130,7 @@ for (var [
 >>> pattern for-in split in value
 for (var (first, second, third) in longValueExpression + anotherOperand +
 aThirdOperand) {;}
-<<<
+<<< 3.6
 for (var (first, second, third)
     in longValueExpression +
         anotherOperand +
@@ -140,7 +140,7 @@ for (var (first, second, third)
 >>> pattern for-in split in both
 for (var (longIdentifier && anotherAlsoLongOne) in longValueExpression +
 anotherOperand + aThirdOperand) {;}
-<<<
+<<< 3.6
 for (var (longIdentifier &&
         anotherAlsoLongOne)
     in longValueExpression +
@@ -150,7 +150,7 @@ for (var (longIdentifier &&
 }
 >>> pattern for expression split in pattern
 for (var (longIdentifier && anotherLongOne) = obj; cond; inc) {;}
-<<<
+<<< 3.6
 for (var (longIdentifier &&
         anotherLongOne) = obj;
     cond;
@@ -159,7 +159,7 @@ for (var (longIdentifier &&
 }
 >>> pattern for-in block split in pattern
 for (var [longIdentifier, anotherLongOne] = obj; cond; inc) {;}
-<<<
+<<< 3.6
 for (var [
       longIdentifier,
       anotherLongOne
@@ -171,7 +171,7 @@ for (var [
 >>> pattern for-in split in value
 for (var (first, second, third) = longValueExpression + anotherOperand +
 aThirdOperand; cond; inc) {;}
-<<<
+<<< 3.6
 for (var (first, second, third) =
         longValueExpression +
             anotherOperand +
@@ -183,7 +183,7 @@ for (var (first, second, third) =
 >>> pattern for-in split in both
 for (var (longIdentifier && anotherAlsoLongOne) = longValueExpression +
 anotherOperand + aThirdOperand; cond; inc) {;}
-<<<
+<<< 3.6
 for (var (longIdentifier &&
             anotherAlsoLongOne) =
         longValueExpression +

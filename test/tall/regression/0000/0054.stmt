@@ -7,7 +7,7 @@ httpClient.getUrl(url)
   .then((HttpClientResponse response) {
     body;
   });
-<<<
+<<< 3.7
 httpClient
     .getUrl(url)
     .then((HttpClientRequest request) {

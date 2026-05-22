@@ -4,7 +4,7 @@
           "d",
           "e"
         ]);
-<<<
+<<< 3.6
     var s = new Serialization()
       ..addRuleFor(Various, constructor: "Foo", constructorFields: ["d", "e"]);
 >>> (indent 6)
@@ -13,7 +13,7 @@
           "d",
           "e"
         ]);
-<<<
+<<< 3.6
       var s = new Serialization()
         ..addRuleFor(Various,
             constructor: "Foo", constructorFields: ["d", "e"]);

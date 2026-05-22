@@ -6,7 +6,7 @@ var mymap = {
       value value value value value value value value value
 ''',
 };
-<<<
+<<< 3.7
 var mymap = {
   // foo
   'key': '''

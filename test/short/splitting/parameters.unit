@@ -3,14 +3,14 @@
 class Foo {
   Foo(this.first, this.second, this.third, this.fourth);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(this.first, this.second,
       this.third, this.fourth);
 }
 >>> indent parameters more if body is a wrapped =>
 method(int firstArgument, int argumentTwo) => "very long body that must wrap";
-<<<
+<<< 3.6
 method(int firstArgument,
         int argumentTwo) =>
     "very long body that must wrap";
@@ -18,7 +18,7 @@ method(int firstArgument,
 class A {
   longMethod(covariant parameterNameHere) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       covariant parameterNameHere) {}
@@ -27,7 +27,7 @@ class A {
 class A {
   longMethod(covariant first, second, covariant int third(parameter), fourth) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       covariant first,
@@ -39,7 +39,7 @@ class A {
 class A {
   longMethod(covariant int veryLongParameterNameWow) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       covariant int
@@ -49,7 +49,7 @@ class A {
 class A {
   longMethod({required parameterNameHere}) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       {required parameterNameHere}) {}
@@ -58,7 +58,7 @@ class A {
 class A {
   longMethod({required first, second, required int third(parameter), fourth}) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       {required first,
@@ -70,7 +70,7 @@ class A {
 class A {
   longMethod({required int veryLongParameterNameWow}) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       {required int
@@ -80,7 +80,7 @@ class A {
 class A {
   longMethod({required covariant int veryLongParameterNameWow}) {}
 }
-<<<
+<<< 3.6
 class A {
   longMethod(
       {required covariant int
@@ -90,7 +90,7 @@ class A {
 class Foo {
   Foo(VerylongParameterType this.parameterName) {}
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(
       VerylongParameterType

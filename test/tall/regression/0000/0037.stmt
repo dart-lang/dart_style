@@ -7,7 +7,7 @@ var map = {
     'LLL': 'LLL', // ABBR_STANDALONE_MONTH
   }
 };
-<<<
+<<< 3.7
 var map = {
   'af': const {
     'd': 'd', // DAY
@@ -25,7 +25,7 @@ var map = {
               print('remote isolate handler received msg: $msg');
             });
       });
-<<<
+<<< 3.7
 remote
     .then((_) => response.first)
     .whenComplete(response.close) // Close when complete.

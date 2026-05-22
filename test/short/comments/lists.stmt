@@ -3,14 +3,14 @@
 var list = [
   // comment
 ];
-<<<
+<<< 3.6
 var list = [
   // comment
 ];
 >>> line comment on opening line
 var list = [ // comment
 ];
-<<<
+<<< 3.6
 var list = [
   // comment
 ];
@@ -18,43 +18,43 @@ var list = [
 var list = [
   /* comment */
 ];
-<<<
+<<< 3.6
 var list = [
   /* comment */
 ];
 >>> block comment with trailing newline
 var list = [/* comment */
 ];
-<<<
+<<< 3.6
 var list = [
   /* comment */
 ];
 >>> block comment with leading newline
 var list = [
   /* comment */];
-<<<
+<<< 3.6
 var list = [
   /* comment */
 ];
 >>> inline block comment
 var list = [  /* comment */  ];
-<<<
+<<< 3.6
 var list = [/* comment */];
 >>> multiple comments on opening line
 var list = [ /* first */ // second
 ];
-<<<
+<<< 3.6
 var list = [
   /* first */ // second
 ];
 >>> multiple inline block comments
 var list = [  /* 1 */   /* 2 */   /* 3 */  ];
-<<<
+<<< 3.6
 var list = [/* 1 */ /* 2 */ /* 3 */];
 >>> multiline trailing block comment
 var list = [  /* comment
 */  ];
-<<<
+<<< 3.6
 var list = [
   /* comment
 */
@@ -62,7 +62,7 @@ var list = [
 >>> line comment between items
 var list = ['a', // comment
   'b'];
-<<<
+<<< 3.6
 var list = [
   'a', // comment
   'b'
@@ -71,7 +71,7 @@ var list = [
 var list = ['a' // 1
   // 2
 ];
-<<<
+<<< 3.6
 var list = [
   'a' // 1
   // 2
@@ -80,14 +80,14 @@ var list = [
 var list = ['a', // 1
   // 2
 ];
-<<<
+<<< 3.6
 var list = [
   'a', // 1
   // 2
 ];
 >>> space on left between block comment and ","
 var list = [1,/* a */ 2 /* b */  , 3];
-<<<
+<<< 3.6
 var list = [1, /* a */ 2 /* b */, 3];
 >>> remove blank lines before beginning of body
 var list = [
@@ -96,7 +96,7 @@ var list = [
 
   // comment
 ];
-<<<
+<<< 3.6
 var list = [
   // comment
 ];
@@ -107,7 +107,7 @@ var list = [
 
 
 ];
-<<<
+<<< 3.6
 var list = [
   // comment
 ];

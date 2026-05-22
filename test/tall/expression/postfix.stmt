@@ -1,62 +1,62 @@
 40 columns                              |
 >>> Postfix increment.
 value  ++  ;
-<<<
+<<< 3.7
 value++;
 >>> Postfix decrement.
 value  --  ;
-<<<
+<<< 3.7
 value--;
 >>> Increment and decrement as subexpressions.
 value  ++  -  other --;
-<<<
+<<< 3.7
 value++ - other--;
 >>> Null-assert.
 obj ! ;
-<<<
+<<< 3.7
 obj!;
 >>> Null-assert after method call.
 obj . method() ! ;
-<<<
+<<< 3.7
 obj.method()!;
 >>> Null-assert after property.
 obj . prop ! ;
-<<<
+<<< 3.7
 obj.prop!;
 >>> Null-assert inside method chain.
 obj ! . getter ! . method ( arg ) ! + 3;
-<<<
+<<< 3.7
 obj!.getter!.method(arg)! + 3;
 >>> Null-assert before index and call operators.
 obj ! [ index ] ! ( call ) ! + 3;
-<<<
+<<< 3.7
 obj![index]!(call)! + 3;
 >>> Simple index expression.
 list  [  123  ];
-<<<
+<<< 3.7
 list[123];
 >>> Index expressions don't split.
 verylongIdentifier[someParticularlyLongArgument];
-<<<
+<<< 3.7
 verylongIdentifier[someParticularlyLongArgument];
 >>> Split inside index.
 verylongIdentifier[someParticularly + longArgument];
-<<<
+<<< 3.7
 verylongIdentifier[someParticularly +
     longArgument];
 >>> Nested index expressions.
 verylongIdentifier[longIdentifier[someParticularlyLongArgument]];
-<<<
+<<< 3.7
 verylongIdentifier[longIdentifier[someParticularlyLongArgument]];
 >>> Chained index expressions do not split.
 identifier[longArgument][longArgument][longArgument];
-<<<
+<<< 3.7
 identifier[longArgument][longArgument][longArgument];
 >>> Null-aware index expression.
 list  ?  [  123  ];
-<<<
+<<< 3.7
 list?[123];
 >>> Chained null-aware index expressions do not split.
 identifier?[longArgument][longArgument]?[longArgument];
-<<<
+<<< 3.7
 identifier?[longArgument][longArgument]?[longArgument];

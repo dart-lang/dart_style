@@ -1,29 +1,29 @@
 40 columns                              |
 >>> no spaces around braces
 new Foo<  T >();
-<<<
+<<< 3.6
 new Foo<T>();
 >>> space between names
 new Foo<  A,B,   C,D>();
-<<<
+<<< 3.6
 new Foo<A, B, C, D>();
 >>> void as a class type argument
 new Foo<   void,void    Function()>();
-<<<
+<<< 3.6
 new Foo<void, void Function()>();
 >>> void as a generic method type argument
 list.map<   void,void    Function()>();
-<<<
+<<< 3.6
 list.map<void, void Function()>();
 >>> named constructor with implicit "new"
 C <  int  ,float>  .named(42);
-<<<
+<<< 3.6
 C<int, float>.named(42);
 >>> nullable type argument
 Map<  int  ?  , List<String  ?  > ? >();
-<<<
+<<< 3.6
 Map<int?, List<String?>?>();
 >>> record type type argument
 Set < ( int  x  ,  String  ,  {  bool   b,  int  i  } )>();
-<<<
+<<< 3.6
 Set<(int x, String, {bool b, int i})>();

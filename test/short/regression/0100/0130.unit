@@ -3,7 +3,7 @@
           window.innerHeight -
           _borderWidth +
       clientY;
-<<<
+<<< 3.6
   int get screenY =>
       window.screenTop +
       window.outerHeight -

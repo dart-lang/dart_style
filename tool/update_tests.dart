@@ -124,43 +124,27 @@ void _updateTest(
   _writeComments(buffer, formatTest.input.comments);
   buffer.write(formatTest.input.code.text);
 
-  // Run the formatter for every version and group versions that produce the
-  // same output together.
+  // Run the formatter for every supported version. Produce an output for every
+  // range of versions whose output is the same and label it with the beginning
+  // of that range.
   var versionsToTest = _versionsToTest(testFile, formatTest);
-  var distinctOutputs = <(Version, String)>[];
   String? previousVersionOutput;
+  var changed = false;
+
   for (var version in versionsToTest) {
     var formatter = testFile.formatterForTest(formatTest, version);
     var output = formatter.formatSource(formatTest.input.code).text;
     if (output != previousVersionOutput) {
-      distinctOutputs.add((version, output));
+      changed |= _writeOutputSection(
+        buffer,
+        testFile,
+        formatTest,
+        version,
+        output,
+      );
+
       previousVersionOutput = output;
     }
-  }
-
-  // Write the test outputs.
-  var changed = false;
-  for (var (version, output) in distinctOutputs) {
-    // The tests used to not be versioned or have any version markers. To
-    // minimize the diffs when support for versioned sections was added, we
-    // didn't write them for short tests (which generally aren't versioned) or
-    // for tall tests that didn't need them.
-    // TODO(rnystrom): It would be simpler and more explicit in the test to
-    // always write a version.
-    Version? shownVersion;
-    if (testFile.isTall &&
-        (distinctOutputs.length != 1 ||
-            version != DartVersionHistory.earliestTallStyle)) {
-      shownVersion = version;
-    }
-
-    changed |= _writeOutputSection(
-      buffer,
-      testFile,
-      formatTest,
-      shownVersion,
-      output,
-    );
   }
 
   if (formatTest.unsupportedVersion case var version?) {
@@ -175,6 +159,11 @@ void _updateTest(
 
 /// Determine which range of language versions should be used for [formatTest].
 List<Version> _versionsToTest(TestFile testFile, FormatTest formatTest) {
+  // The test must already have at least one output. We use the lowest output
+  // version as the beginning of the range because we assume the test author
+  // knows the tested syntax isn't supported on older versions.
+  var startVersion = formatTest.outputs.keys.first;
+
   // If the test already has an unsupported marker, then we assume the test
   // author knows the tested syntax isn't supported on later language versions
   // so stop there.
@@ -182,22 +171,6 @@ List<Version> _versionsToTest(TestFile testFile, FormatTest formatTest) {
     var unsupported? => DartVersionHistory.before(unsupported),
     _ when testFile.isTall => DartVersionHistory.latest,
     _ => DartVersionHistory.latestShortStyle,
-  };
-
-  // If the test already has a section that starts with a given version, then
-  // we assume the test author knows the tested syntax isn't supported on older
-  // versions, so start there.
-  var startVersion = switch (formatTest) {
-    // Outputs are required to be in version order already.
-    VersionedFormatTest(:var outputs) => outputs.keys.first,
-
-    // Cover the whole range of tall versions.
-    _ when testFile.isTall => DartVersionHistory.earliestTallStyle,
-
-    // Short tests aren't versioned, so just pick the one version. This is
-    // usually [DartVersionHistory.latestShortStyle], but will be 2.19 for the
-    // old switch syntax test.
-    _ => endVersion,
   };
 
   return DartVersionHistory.all
@@ -227,30 +200,14 @@ bool _writeOutputSection(
   StringBuffer buffer,
   TestFile testFile,
   FormatTest formatTest,
-  Version? version,
+  Version version,
   String actualText,
 ) {
   // Preserve the description and comments from the existing output section if
   // there is one.
-  var originalEntry = switch (formatTest) {
-    UnversionedFormatTest() when version == null => formatTest.output,
-    UnversionedFormatTest()
-        when version == DartVersionHistory.earliestTallStyle =>
-      formatTest.output,
-
-    // If we're splitting an unversioned tall test, the first section (at 3.7)
-    // should use the original unversioned entry's description/comments.
-    VersionedFormatTest(:var outputs) => outputs[version],
-    _ => null,
-  };
-
+  var originalEntry = formatTest.outputs[version];
   var description = originalEntry?.description ?? '';
-  var outputDescription = [
-    if (version != null) version.majorMinor,
-    description,
-  ].join(' ').trim();
-
-  buffer.writeln('<<< $outputDescription'.trim());
+  buffer.writeln('<<< ${version.majorMinor} $description'.trim());
   if (originalEntry != null) _writeComments(buffer, originalEntry.comments);
 
   buffer.write(actualText);

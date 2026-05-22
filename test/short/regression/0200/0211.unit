@@ -5,7 +5,7 @@
             linkedList(entries), symbolToken(CLOSE_CURLY_BRACKET_INFO), ','),
         isConst ? keywordToken('const') : null);
   }
-<<<
+<<< 3.6
   LiteralMap mapLiteral(List<LiteralMapEntry> entries, {bool isConst: false}) {
     return new LiteralMap(
         null, // Type arguments.
@@ -19,7 +19,7 @@ void defineProperty(var obj, String property, var value) {
       '{value: #, enumerable: false, writable: true, configurable: true})',
       obj, property, value);
 }
-<<<
+<<< 3.6
 void defineProperty(var obj, String property, var value) {
   JS(
       'void',
@@ -37,7 +37,7 @@ void defineProperty(var obj, String property, var value) {
         return true;
       });
     }
-<<<
+<<< 3.6
     main() {
       return searchEngine
           .searchTopLevelDeclarations('')
@@ -53,7 +53,7 @@ void defineProperty(var obj, String property, var value) {
       expect(locations, isEmpty);
     });
   }
-<<<
+<<< 3.6
   test_getRelationships_empty() {
     return store
         .getRelationships(elementA, relationship)
@@ -67,7 +67,7 @@ void defineProperty(var obj, String property, var value) {
       _class._jsConstructor
     ].addAll(typeArguments.map((t) => t._asRuntimeType()));
   }
-<<<
+<<< 3.6
   _asRuntimeType() {
     return [_class._jsConstructor]
         .addAll(typeArguments.map((t) => t._asRuntimeType()));

@@ -1,35 +1,35 @@
 40 columns                              |
 >>> empty records don't split
 var longVariableName_______________ = ();
-<<<
+<<< 3.6
 var longVariableName_______________ =
     ();
 >>> single-element record
 var record = (veryLongRecordField________________,);
-<<<
+<<< 3.6
 var record = (
   veryLongRecordField________________,
 );
 >>> single-element named record
 var record = (longFieldName: longRecordFieldValue);
-<<<
+<<< 3.6
 var record = (
   longFieldName: longRecordFieldValue
 );
 >>> single-element named record splits at name
 var record = (longFieldName: veryLongRecordFieldValue);
-<<<
+<<< 3.6
 var record = (
   longFieldName:
       veryLongRecordFieldValue
 );
 >>> exactly 40 characters
 (first, second, third, fourth, seventh);
-<<<
+<<< 3.6
 (first, second, third, fourth, seventh);
 >>>
 (first, second, third, fourth, fifth, sixth);
-<<<
+<<< 3.6
 (
   first,
   second,
@@ -40,20 +40,20 @@ var record = (
 );
 >>> don't force outer record to split
 ((first,), (second, third));
-<<<
+<<< 3.6
 ((first,), (second, third));
 >>> don't force outer list to split
 [(first,), (second, third)];
-<<<
+<<< 3.6
 [(first,), (second, third)];
 >>> inner list doesn't force split
 ([first], [second, third]);
-<<<
+<<< 3.6
 ([first], [second, third]);
 >>> nested split record
 (first, (second, third, fourth), fifth, (sixth, seventh, eighth, nine, tenth,
     eleventh));
-<<<
+<<< 3.6
 (
   first,
   (second, third, fourth),
@@ -69,7 +69,7 @@ var record = (
 );
 >>> force multi-line because of contained block
 (first, () {"fn";},third,fourth);
-<<<
+<<< 3.6
 (
   first,
   () {
@@ -80,11 +80,11 @@ var record = (
 );
 >>> trailing comma in single-element does not split
 (1,);
-<<<
+<<< 3.6
 (1,);
 >>> trailing comma in multi-element does force split
 (1,2,);
-<<<
+<<< 3.6
 (
   1,
   2,
@@ -95,7 +95,7 @@ var record = (
   a,b,c,
   d,e,f,
 );
-<<<
+<<< 3.6
 (
   // yeah
   a, b, c,
@@ -107,7 +107,7 @@ var record = (
   longElement,longElement,longElement,longElement,
   longElement,longElement,longElement,longElement,longElement,longElement,
 );
-<<<
+<<< 3.6
 (
   // yes
   longElement, longElement, longElement,
@@ -121,7 +121,7 @@ var record = (
   d
 ) // comment
 ;
-<<<
+<<< 3.6
 (a, b, c, d) // comment
     ;
 >>> preserves one blank line between elements
@@ -141,7 +141,7 @@ var record = (
 
 
 );
-<<<
+<<< 3.6
 (
   element,
 
@@ -152,7 +152,7 @@ var record = (
 );
 >>> format like a block in an argument list
 longFunctionName((element, element), (element, element, element, element));
-<<<
+<<< 3.6
 longFunctionName((
   element,
   element
@@ -164,7 +164,7 @@ longFunctionName((
 ));
 >>> format like a block in an argument list
 longFunctionName((element, element, element, element));
-<<<
+<<< 3.6
 longFunctionName((
   element,
   element,
@@ -173,7 +173,7 @@ longFunctionName((
 ));
 >>> don't allow splitting between field name and record
 var record = (argument, argument, argument, recordFieldName: (veryLongElement__________,));
-<<<
+<<< 3.6
 var record = (
   argument,
   argument,
@@ -185,7 +185,7 @@ var record = (
 >>> don't allow splitting between argument name and record
 longFunctionName(argument, argument, argument, argument, argument, argument,
 argumentName: (veryLongElement__________,));
-<<<
+<<< 3.6
 longFunctionName(
     argument,
     argument,

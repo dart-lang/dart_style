@@ -2,7 +2,7 @@
 >>> Insert blank between script and line comment.
 #!script
 // comment
-<<<
+<<< 3.7
 #!script
 
 // comment
@@ -12,14 +12,14 @@
 
 
 // comment
-<<<
+<<< 3.7
 #!script
 
 // comment
 >>> Insert blank between script and block comment.
 #!script
 /* comment */
-<<<
+<<< 3.7
 #!script
 
 /* comment */
@@ -29,7 +29,7 @@
 
 
 /* comment */
-<<<
+<<< 3.7
 #!script
 
 /* comment */

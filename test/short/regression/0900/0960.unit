@@ -7,7 +7,7 @@ class C {
 }
 
 void main() {}
-<<<
+<<< 3.6
 const m = 0;
 
 class C {

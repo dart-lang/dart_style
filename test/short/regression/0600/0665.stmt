@@ -7,7 +7,7 @@ when(
  ),
 )
    .thenReturn(new Future<MockProcessResult>.value(new MockProcessResult()));
-<<<
+<<< 3.6
 when(
   runner.call(
     typed(captureAny),

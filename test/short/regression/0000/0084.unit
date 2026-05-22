@@ -10,7 +10,7 @@ Future<TextureAtlas> load(String url, BitmapDataLoadOptions bitmapDataLoadOption
     });
   });
 }
-<<<
+<<< 3.6
 Future<TextureAtlas> load(
     String url, BitmapDataLoadOptions bitmapDataLoadOptions) {
   HttpRequest.getString(url).then((textureAtlasJson) {
@@ -39,7 +39,7 @@ class SoundSprite {
     });
   }
 }
-<<<
+<<< 3.6
 class SoundSprite {
   static Future<SoundSprite> load(String url,
       [SoundLoadOptions soundLoadOptions = null]) {
@@ -63,7 +63,7 @@ main() {
     ;
   });
 }
-<<<
+<<< 3.6
 main() {
   ;
   receiver.a(() {
@@ -81,7 +81,7 @@ main() {
     ;
   });
 }
-<<<
+<<< 3.6
 main() {
   //
   receiver.a(() {

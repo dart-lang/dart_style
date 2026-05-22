@@ -2,14 +2,14 @@
 >>> Line comment before adjacent string.
 string = // comment
 'adjacent' 'string';
-<<<
+<<< 3.7
 string = // comment
     'adjacent'
     'string';
 >>> Line comment inside adjacent string.
 string = 'adjacent' // comment
 'string';
-<<<
+<<< 3.7
 string =
     'adjacent' // comment
     'string';
@@ -17,7 +17,7 @@ string =
 string = 'adjacent'
 // comment
 'string';
-<<<
+<<< 3.7
 string =
     'adjacent'
     // comment
@@ -26,20 +26,20 @@ string =
 ### Looks weird but users don't put comment here.
 string = 'adjacent' 'string' // comment
 ;
-<<<
+<<< 3.7
 string =
     'adjacent'
     'string' // comment
     ;
 >>> Inline block comment before adjacent string.
 string = /* comment */ 'adjacent' 'string';
-<<<
+<<< 3.7
 string = /* comment */
     'adjacent'
     'string';
 >>> Inline block comment inside adjacent string.
 string = 'adjacent' /* comment */ 'string';
-<<<
+<<< 3.7
 string =
     'adjacent' /* comment */
     'string';
@@ -47,14 +47,14 @@ string =
 string = 'adjacent'
 /* comment */
 'string';
-<<<
+<<< 3.7
 string =
     'adjacent'
     /* comment */
     'string';
 >>> Inline block comment after adjacent string.
 string = 'adjacent' 'string' /* comment */;
-<<<
+<<< 3.7
 string =
     'adjacent'
     'string' /* comment */;

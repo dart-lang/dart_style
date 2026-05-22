@@ -5,7 +5,7 @@ enum _ElementLifecycle {
   inactive,
   defunct,
 }
-<<<
+<<< 3.6
 enum _ElementLifecycle {
   initial,
   active,

@@ -2,12 +2,12 @@
 >>> Line comment after value.
 a = 1 // comment
 ;
-<<<
+<<< 3.7
 ### Weird, but users rarely write this.
 a =
     1 // comment
     ;
 >>> Line comment after assignment and semicolon.
 a = 1; // comment
-<<<
+<<< 3.7
 a = 1; // comment

@@ -21,7 +21,7 @@
       }
     }
   }
-<<<
+<<< 3.7
   void onLink(DynamicLinkEvent event) {
     var link = event.data?.link?.toString();
     if (link != null && _firebaseAuth.isSignInWithEmailLink(link)) {

@@ -5,7 +5,7 @@ abstract class StreamNotifierProviderBase<
     with FutureModifier<T> {
 // ...
 }
-<<<
+<<< 3.7
 abstract class StreamNotifierProviderBase<
   NotifierT extends AsyncNotifierBase<T>,
   T

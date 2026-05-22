@@ -2,5 +2,5 @@
 ### the test now just verifies that the formatter preserves the original code.
 >>> (indent 4)
     sink.write('FILE ACCESSED ${new DateTime.now()}\n');
-<<<
+<<< 3.6
     sink.write('FILE ACCESSED ${new DateTime.now()}\n');

@@ -1,54 +1,54 @@
 40 columns                              |
 >>> initializer doesn't fit one line, wrap inside, keep name
 var result = myFunction(argument * argument, argument * argument);
-<<<
+<<< 3.6
 var result = myFunction(
     argument * argument,
     argument * argument);
 >>> initializer doesn't fit one line, wrap inside, keep name
 result = myFunction(argument, argument, argument, argument);
-<<<
+<<< 3.6
 result = myFunction(argument, argument,
     argument, argument);
 >>> wrapped initializer fits one line
 variable = longFunctionIsLoooooong(argument);
-<<<
+<<< 3.6
 variable =
     longFunctionIsLoooooong(argument);
 >>> initializer doesn't fit one line, name too long
 variable = longFunctionIsLooooooooooooooong(argument, argument);
-<<<
+<<< 3.6
 variable =
     longFunctionIsLooooooooooooooong(
         argument, argument);
 >>> initializer doesn't fit one line, cannot be split
 variableName = thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.6
 variableName =
     thisIsReallyQuiteAVeryLongVariableName;
 >>> long function call initializer
 variableName = functionName(first, second);
-<<<
+<<< 3.6
 variableName =
     functionName(first, second);
 >>> long binary expression initializer
 variableName = argument * argument + argument;
-<<<
+<<< 3.6
 variableName =
     argument * argument + argument;
 >>> prefer to split at "=" instead of pattern
 (longIdentifier && anotherOne) = longValue;
-<<<
+<<< 3.6
 (longIdentifier && anotherOne) =
     longValue;
 >>> split in infix pattern
 (veryLongIdentifier && anotherAlsoLongOne) = value;
-<<<
+<<< 3.6
 (veryLongIdentifier &&
     anotherAlsoLongOne) = value;
 >>> split in list pattern
 [first, second, third, fourth, fifth, sixth] = value;
-<<<
+<<< 3.6
 [
   first,
   second,
@@ -59,7 +59,7 @@ variableName =
 ] = value;
 >>> split in map pattern
 {first: second, third: fourth, fifth: sixth} = value;
-<<<
+<<< 3.6
 {
   first: second,
   third: fourth,
@@ -67,7 +67,7 @@ variableName =
 } = value;
 >>> split in record pattern
 (first, second, third, fourth, fifth, sixth) = value;
-<<<
+<<< 3.6
 (
   first,
   second,
@@ -78,7 +78,7 @@ variableName =
 ) = value;
 >>> split in object pattern
 Foo(:first, :second, :third, :fourth, :fifth) = value;
-<<<
+<<< 3.6
 Foo(
   :first,
   :second,
@@ -88,14 +88,14 @@ Foo(
 ) = value;
 >>> split in value
 (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.6
 (first, second, third) =
     longValueExpression +
         anotherOperand +
         aThirdOperand;
 >>> expression split in both
 (veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.6
 (veryLongIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
@@ -103,7 +103,7 @@ Foo(
         aThirdOperand;
 >>> collection-like split in both
 (first, second, third, fourth, fifth, sixth) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 (
   first,
   second,
@@ -120,7 +120,7 @@ Foo(
 );
 >>> expression split in pattern, collection-like in value
 (veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 (veryLongIdentifier &&
     anotherAlsoLongOne) = (
   first,
@@ -131,7 +131,7 @@ Foo(
 );
 >>> expression split in pattern, collection-like in value
 (veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 (veryLongIdentifier &&
     anotherAlsoLongOne) = (
   first,

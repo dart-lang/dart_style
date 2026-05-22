@@ -4,7 +4,7 @@ void main() {
     break;
   }
 }
-<<<
+<<< 3.7
 void main() {
   for (int i; i < 10; print("foo"), ++i, print("bar")) {
     break;

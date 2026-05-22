@@ -1,7 +1,7 @@
 40 columns                              |
 >>> External function.
 external  void  printToConsole  (  line  )  ;
-<<<
+<<< 3.7
 external void printToConsole(line);
 >>> Force blank line after non-empty top-level function.
 a() {;}
@@ -9,7 +9,7 @@ var x = 1;
 
 
 c() {;}d(){;}
-<<<
+<<< 3.7
 a() {
   ;
 }
@@ -25,11 +25,11 @@ d() {
 }
 >>> Do not force blank line after empty top-level function.
 a() {} b() {}
-<<<
+<<< 3.7
 a() {}
 b() {}
 >>> Do not force blank line after expression body top-level function.
 a() => null; b() => null;
-<<<
+<<< 3.7
 a() => null;
 b() => null;

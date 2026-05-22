@@ -8,7 +8,7 @@
   {  'k'  :  _  ,  ...  } = o;
   Foo  (  prop  :  value  ,  :  inferred  )  = o;
 }
-<<<
+<<< 3.7
 {
   (a && b) = o;
   (a as int, b) = o;
@@ -19,25 +19,25 @@
 }
 >>> Prefer to split at "=" instead of pattern.
 (longIdentifier && anotherOne) = longValue;
-<<<
+<<< 3.7
 (longIdentifier && anotherOne) =
     longValue;
 >>> Prefer to split in value over pattern.
 (first, second, third, fourth, fifth) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 (first, second, third, fourth, fifth) =
     longValueExpression +
     anotherOperand +
     aThirdOperand;
 >>> Split in infix pattern.
 (veryLongIdentifier && anotherAlsoLongOne) = value;
-<<<
+<<< 3.7
 (veryLongIdentifier &&
         anotherAlsoLongOne) =
     value;
 >>> Split in list pattern.
 [first, second, third, fourth, fifth, sixth] = value;
-<<<
+<<< 3.7
 [
   first,
   second,
@@ -48,7 +48,7 @@
 ] = value;
 >>> Split in map pattern.
 {first: second, third: fourth, fifth: sixth} = value;
-<<<
+<<< 3.7
 {
   first: second,
   third: fourth,
@@ -56,7 +56,7 @@
 } = value;
 >>> Split in record pattern.
 (first, second, third, fourth, fifth, sixth) = value;
-<<<
+<<< 3.7
 (
   first,
   second,
@@ -67,7 +67,7 @@
 ) = value;
 >>> Split in object pattern.
 Foo(:first, :second, :third, :fourth, :fifth) = value;
-<<<
+<<< 3.7
 Foo(
   :first,
   :second,
@@ -77,14 +77,14 @@ Foo(
 ) = value;
 >>> Expression split in value.
 (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 (first, second, third) =
     longValueExpression +
     anotherOperand +
     aThirdOperand;
 >>> Expression split in both.
 (veryLongIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 (veryLongIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
@@ -92,7 +92,7 @@ Foo(
     aThirdOperand;
 >>> Block split in both.
 (first, second, third, fourth, fifth, sixth) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.7
 (
   first,
   second,
@@ -109,7 +109,7 @@ Foo(
 );
 >>> Expression split in pattern, block split in value.
 (veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.7
 (veryLongIdentifier &&
     anotherAlsoLongOne) = (
   first,
@@ -120,7 +120,7 @@ Foo(
 );
 >>> Expression split in pattern, block split in value.
 (veryLongIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.7
 (veryLongIdentifier &&
     anotherAlsoLongOne) = (
   first,
@@ -131,7 +131,7 @@ Foo(
 );
 >>> Block split in pattern, expression split in value.
 (first, second, third, fourth, fifth, sixth) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 (
   first,
   second,

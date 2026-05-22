@@ -2,6 +2,6 @@
 @Timeout(const Duration(minutes: 1))
 
 import "package:test/test.dart";
-<<<
+<<< 3.7
 @Timeout(const Duration(minutes: 1))
 import "package:test/test.dart";

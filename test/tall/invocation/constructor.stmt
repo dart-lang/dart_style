@@ -3,15 +3,15 @@
 ### test the basics and make sure that we handle the keywords correctly.
 >>> Empty argument list.
 new  Foo  (  )  ;
-<<<
+<<< 3.7
 new Foo();
 >>> Inline arguments.
 new  SomeType  ( argument , another ) ;
-<<<
+<<< 3.7
 new SomeType(argument, another);
 >>> Split argument list.
 const  SomeType  ( argument , another , third ) ;
-<<<
+<<< 3.7
 const SomeType(
   argument,
   another,
@@ -19,37 +19,37 @@ const SomeType(
 );
 >>> With type arguments.
 new  Map  <  int  ,  String  >  (  1  ,  2  ,  3  );
-<<<
+<<< 3.7
 new Map<int, String>(1, 2, 3);
 >>> Named constructor.
 new  Thing  .  name  (  argument  )  ;
-<<<
+<<< 3.7
 new Thing.name(argument);
 >>> Named constructor on class with type arguments.
 const  List  <  int  >  .  filled  (  1  ,  2  );
-<<<
+<<< 3.7
 const List<int>.filled(1, 2);
 >>> Prefixed.
 new  prefix  .  TypeName  (  argument  )  ;
-<<<
+<<< 3.7
 new prefix.TypeName(argument);
 >>> Prefix named constructor.
 const  prefix  .  Thing  .  name  (  argument  )  ;
-<<<
+<<< 3.7
 const prefix.Thing.name(argument);
 >>> Don't split at name.
 new VeryLongClassName.veryLongNamedConstructor();
-<<<
+<<< 3.7
 new VeryLongClassName.veryLongNamedConstructor();
 >>> Don't split at name on prefixed named constructor.
 new prefix.VeryLongClassName.veryLongNamedConstructor();
-<<<
+<<< 3.7
 new prefix.VeryLongClassName.veryLongNamedConstructor();
 >>> Allow block-formatted argument.
 new Future(new Duration(1), () {
       print('I am a callback');
     });
-<<<
+<<< 3.7
 new Future(new Duration(1), () {
   print('I am a callback');
 });

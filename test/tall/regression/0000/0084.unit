@@ -10,7 +10,7 @@ Future<TextureAtlas> load(String url, BitmapDataLoadOptions bitmapDataLoadOption
     });
   });
 }
-<<<
+<<< 3.7
 Future<TextureAtlas> load(
   String url,
   BitmapDataLoadOptions bitmapDataLoadOptions,
@@ -43,7 +43,7 @@ class SoundSprite {
     });
   }
 }
-<<<
+<<< 3.7
 class SoundSprite {
   static Future<SoundSprite> load(
     String url, [
@@ -71,7 +71,7 @@ main() {
     ;
   });
 }
-<<<
+<<< 3.7
 main() {
   ;
   receiver
@@ -91,7 +91,7 @@ main() {
     ;
   });
 }
-<<<
+<<< 3.7
 main() {
   //
   receiver

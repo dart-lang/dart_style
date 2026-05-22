@@ -7,7 +7,7 @@ class _$_ProjectOptions extends _ProjectOptions  {
   return projectOptions(routeId,action);
 }
 }
-<<<
+<<< 3.7
 class _$_ProjectOptions extends _ProjectOptions {
   const _$_ProjectOptions({required this.routeId, required this.action})
     : super._();

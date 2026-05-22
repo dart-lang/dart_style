@@ -4,11 +4,11 @@ extension  A  on  B  {
 
 
   }
-<<<
+<<< 3.7
 extension A on B {}
 >>> Members.
 extension A on B{z() => 0;f() { body; }}
-<<<
+<<< 3.7
 extension A on B {
   z() => 0;
   f() {
@@ -19,7 +19,7 @@ extension A on B {
 var x = 1;
 extension A on B {}
 var y = 2;
-<<<
+<<< 3.7
 var x = 1;
 
 extension A on B {}
@@ -27,11 +27,11 @@ extension A on B {}
 var y = 2;
 >>> Unsplit type parameters.
 extension  A  <  T  ,  S  >  on  B  {}
-<<<
+<<< 3.7
 extension A<T, S> on B {}
 >>> Split type parameters.
 extension Extension<LongTypeParameter, Another> on BaseClass {}
-<<<
+<<< 3.7
 extension Extension<
   LongTypeParameter,
   Another
@@ -39,29 +39,29 @@ extension Extension<
     on BaseClass {}
 >>> Unnamed.
 extension on String {}
-<<<
+<<< 3.7
 extension on String {}
 >>> Unnamed with type parameters.
 extension  <  T  ,  S  >  on  B {}
-<<<
+<<< 3.7
 extension<T, S> on B {}
 >>> Split at `on`.
 extension SomeExtension on VeryLongClass {}
-<<<
+<<< 3.7
 extension SomeExtension
     on VeryLongClass {}
 >>> Unsplit generic on type.
 extension SomeExtension on C<int> {}
-<<<
+<<< 3.7
 extension SomeExtension on C<int> {}
 >>> Split before `on` on generic on type.
 extension SomeExtension on C<SomeLongClass> {}
-<<<
+<<< 3.7
 extension SomeExtension
     on C<SomeLongClass> {}
 >>> Split in generic on type.
 extension SomeExtension on C<VeryLongType, AnotherLongType> {}
-<<<
+<<< 3.7
 extension SomeExtension
     on
         C<
@@ -70,23 +70,23 @@ extension SomeExtension
         > {}
 >>> (experiment primary-constructors) Empty body with semicolon.
 extension A on B;
-<<<
+<<< 3.7
 extension A on B;
 >>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
 var x = 1;
 extension A on B;
 var y = 2;
-<<<
+<<< 3.7
 var x = 1;
 extension A on B;
 var y = 2;
 >>> (experiment primary-constructors) Unsplit type parameters with empty body.
 extension  A  <  T  ,  S  >  on  B  ;
-<<<
+<<< 3.7
 extension A<T, S> on B;
 >>> (experiment primary-constructors) Split type parameters with empty body.
 extension Extension<LongTypeParameter, Another> on BaseClass ;
-<<<
+<<< 3.7
 extension Extension<
   LongTypeParameter,
   Another
@@ -94,29 +94,29 @@ extension Extension<
     on BaseClass;
 >>> (experiment primary-constructors) Unnamed with empty body.
 extension on String ;
-<<<
+<<< 3.7
 extension on String;
 >>> (experiment primary-constructors) Unnamed with type parameters with empty body.
 extension  <  T  ,  S  >  on  B ;
-<<<
+<<< 3.7
 extension<T, S> on B;
 >>> (experiment primary-constructors) Split at `on` with empty body.
 extension SomeExtension on VeryLongClass ;
-<<<
+<<< 3.7
 extension SomeExtension
     on VeryLongClass;
 >>> (experiment primary-constructors) Unsplit generic on type with empty body.
 extension SomeExtension on C<int> ;
-<<<
+<<< 3.7
 extension SomeExtension on C<int>;
 >>> (experiment primary-constructors) Split before `on` on generic on type with empty body.
 extension SomeExtension on C<SomeLongClass> ;
-<<<
+<<< 3.7
 extension SomeExtension
     on C<SomeLongClass>;
 >>> (experiment primary-constructors) Split in generic on type with empty body.
 extension SomeExtension on C<ExtremelyLongType, AnotherLongType> ;
-<<<
+<<< 3.7
 extension SomeExtension
     on
         C<

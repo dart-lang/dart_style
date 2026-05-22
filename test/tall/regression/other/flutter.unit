@@ -5,7 +5,7 @@ main() {
     ..style.height = '100%'
     ..classList.add(_kClassName);
 }
-<<<
+<<< 3.7
 main() {
   htmlElement
     ..style.width = '100%'
@@ -34,7 +34,7 @@ class C {
     final double trackLeft = offset.dx + _trackLeft;
   }
 }
-<<<
+<<< 3.7
 class C {
   void paint(PaintingContext context, Offset offset) {
     final (
@@ -54,7 +54,7 @@ class C {
 main() {
   Text('Item 1', style: TextStyle(color: Colors.white));
 }
-<<<
+<<< 3.7
 main() {
   Text('Item 1', style: TextStyle(color: Colors.white));
 }
@@ -65,7 +65,7 @@ main() {
     child: Center(child: contents),
   );
 }
-<<<
+<<< 3.7
 main() {
   return Container(height: 70, child: Center(child: contents));
 }
@@ -77,7 +77,7 @@ main() {
     ],
   );
 }
-<<<
+<<< 3.7
 main() {
   Stack(children: <Matcher>[matchesSemantics(label: 'inner')]);
 }
@@ -87,7 +87,7 @@ main() {
     padding: EdgeInsets.only(top: 20.zR),
   );
 }
-<<<
+<<< 3.7
 main() {
   Padding(padding: EdgeInsets.only(top: 20.zR));
 }

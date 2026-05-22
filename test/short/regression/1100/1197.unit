@@ -24,7 +24,7 @@ main() {
     );
   }
 }
-<<<
+<<< 3.6
 main() {
   {
     return TextFieldTapRegion(
@@ -76,7 +76,7 @@ main() {
     );
   }
 }
-<<<
+<<< 3.6
 main() {
   {
     return TextFieldTapRegion(

@@ -3,7 +3,7 @@
 class Foo {
   Foo(a, b)  :  super  (  a  ,  other  :  b  )  ;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(a, b) : super(a, other: b);
 }
@@ -11,7 +11,7 @@ class Foo {
 class Foo {
   Foo(a, b)  :  super  .  name  (  a  ,  other  :  b  )  ;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(a, b) : super.name(a, other: b);
 }
@@ -19,7 +19,7 @@ class Foo {
 class MyClass {
   MyClass(first, second) : super(first, second);
 }
-<<<
+<<< 3.7
 class MyClass {
   MyClass(first, second)
     : super(first, second);
@@ -29,7 +29,7 @@ class X {
   var x, y;
   X() : x = 1, y = 2;
 }
-<<<
+<<< 3.7
 class X {
   var x, y;
   X() : x = 1, y = 2;
@@ -39,7 +39,7 @@ class MyClass {
   MyClass() : first = "some value", second = "another",
         third = "last";
 }
-<<<
+<<< 3.7
 class MyClass {
   MyClass()
     : first = "some value",
@@ -52,7 +52,7 @@ class C {
 
   C.b(a, b) : super(a), _b = b, _c = 1 { body; }
 }
-<<<
+<<< 3.7
 class C {
   C(a, b) : super(a), _b = b, _c = 1;
 
@@ -64,7 +64,7 @@ class C {
 class C {
   C(String first, String second, String third) : super(a), _b = b, _c = 1;
 }
-<<<
+<<< 3.7
 class C {
   C(
     String first,
@@ -79,7 +79,7 @@ class C {
   C(String first, String second, String third) : super(a), _b = b, _c = 1
   { body; }
 }
-<<<
+<<< 3.7
 class C {
   C(
     String first,
@@ -95,7 +95,7 @@ class C {
 class Foo {
   Foo(int longArg1, int longArg2, int longArg3) : this._(longArg1);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     int longArg1,
@@ -107,7 +107,7 @@ class Foo {
 class Foo {
   Foo(int a, int b): super(aLongIdentifier);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(int a, int b)
     : super(aLongIdentifier);
@@ -116,7 +116,7 @@ class Foo {
 class Foo {
   Foo(int a, int b) : super(a), this.b = longExpression;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(int a, int b)
     : super(a),
@@ -126,7 +126,7 @@ class Foo {
 class Foo {
   Foo(parameter1, parameter2, parameter3) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1,
@@ -139,7 +139,7 @@ class Foo {
 class Foo {
   Foo(parameter1, [parameter2, parameter3]) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1, [
@@ -152,7 +152,7 @@ class Foo {
 class Foo {
   Foo(parameter1, {parameter2, parameter3}) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1, {
@@ -165,7 +165,7 @@ class Foo {
 class Foo {
   Foo(parameter1) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(parameter1)
     : initializer1 = 1,
@@ -175,7 +175,7 @@ class Foo {
 class Foo {
   Foo([parameter1]) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo([parameter1])
     : initializer1 = 1,
@@ -185,7 +185,7 @@ class Foo {
 class Foo {
   Foo({parameter1}) : initializer1 = 1, initializer2 = 2;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo({parameter1})
     : initializer1 = 1,
@@ -197,7 +197,7 @@ class Foo {
       : initializer = function(argument, argument),
         initializer2 = function(argument, argument);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(parameter)
     : initializer = function(
@@ -215,7 +215,7 @@ class Foo {
   : initializer = function(argument, argument),
     initializer2 = function(argument, argument);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1, [
@@ -234,7 +234,7 @@ class Foo {
 class Foo {
   Foo() : initializer =function(argument, arg);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo()
     : initializer = function(

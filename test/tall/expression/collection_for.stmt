@@ -1,19 +1,19 @@
 40 columns                              |
 >>> C-style for.
 var l = [for   (  var  i  =  0  ;  i  <  1  ;  i++  )  i];
-<<<
+<<< 3.7
 var l = [for (var i = 0; i < 1; i++) i];
 >>> Empty clauses.
 var l = [for(  ;  ;  ) 1];
-<<<
+<<< 3.7
 var l = [for (;;) 1];
 >>> Empty initializer clause.
 var l = [for (  ;   f; bar) 1];
-<<<
+<<< 3.7
 var l = [for (; f; bar) 1];
 >>> Split in initializer.
 var list = [for (a = initializerExpression + thatDoesNotFit; a < 1; a++) body];
-<<<
+<<< 3.7
 var list = [
   for (
     a =
@@ -26,7 +26,7 @@ var list = [
 ];
 >>> Split in condition.
 var list = [for (a = b; conditionExpression + thatDoesNotFit; a++) body];
-<<<
+<<< 3.7
 var list = [
   for (
     a = b;
@@ -38,7 +38,7 @@ var list = [
 ];
 >>> Split in increment.
 var list = [for (a = b; a < 1; anIncrementExpression + thatDoesNotFit) body];
-<<<
+<<< 3.7
 var list = [
   for (
     a = b;
@@ -50,7 +50,7 @@ var list = [
 ];
 >>> Split inside for variable type.
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a = 0; a < 1; a++) body];
-<<<
+<<< 3.7
 var list = [
   for (
     LongGenericTypeName<
@@ -65,7 +65,7 @@ var list = [
 ];
 >>> Split inside variable type with empty clauses.
 var list = [for (LongGenericTypeName<TypeArg, AnotherTypeArgument> a;;) body];
-<<<
+<<< 3.7
 var list = [
   for (
     LongGenericTypeName<
@@ -79,20 +79,20 @@ var list = [
 ];
 >>> Prefer splitting collection instead of body.
 var list = [for (;;) longThingThatIsLong];
-<<<
+<<< 3.7
 var list = [
   for (;;) longThingThatIsLong,
 ];
 >>> Split outer for but not inner.
 var list = [for (;;) for (c in d) longThingThatIsLong];
-<<<
+<<< 3.7
 var list = [
   for (;;)
     for (c in d) longThingThatIsLong,
 ];
 >>> Unsplit in split collection.
 var list = [veryLongThingThatForcesASplit, for (;;) 2, 3];
-<<<
+<<< 3.7
 var list = [
   veryLongThingThatForcesASplit,
   for (;;) 2,
@@ -100,7 +100,7 @@ var list = [
 ];
 >>> Long loop body forces split.
 var list = [1, for (;;) veryLongThingThatForcesASplit, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   for (;;)
@@ -109,7 +109,7 @@ var list = [
 ];
 >>> Split inside loop body.
 var list = [1, for (;;) veryLongThingThatForcesASplit + anotherLongThing, 3];
-<<<
+<<< 3.7
 var list = [
   1,
   for (;;)
@@ -119,7 +119,7 @@ var list = [
 ];
 >>> Force split if loop body is for element.
 var l = [for (;;) for (c in d) t];
-<<<
+<<< 3.7
 var l = [
   for (;;)
     for (c in d) t,
@@ -128,20 +128,20 @@ var l = [
 var map = {
   for (;;) if (c) d
 };
-<<<
+<<< 3.7
 var map = {
   for (;;)
     if (c) d,
 };
 >>> A control flow element in an inner list doesn't force the outer to split.
 var l = [for (;;) [if (c) d]];
-<<<
+<<< 3.7
 var l = [
   for (;;) [if (c) d],
 ];
 >>>
 var l = [for (;;) [for (c in d) e]];
-<<<
+<<< 3.7
 var l = [
   for (;;) [for (c in d) e],
 ];
@@ -149,7 +149,7 @@ var l = [
 var list = [
 for (var (longIdentifier && anotherLongOne) in obj) element
 ];
-<<<
+<<< 3.7
 var list = [
   for (var (longIdentifier &&
           anotherLongOne)
@@ -160,7 +160,7 @@ var list = [
 var list = [
 for (var (longIdentifier && anotherLongOne) = obj; cond; inc) element
 ];
-<<<
+<<< 3.7
 var list = [
   for (
     var (longIdentifier &&
@@ -180,7 +180,7 @@ var list = [
   )
     element,
 ];
-<<<
+<<< 3.7
 var list = [
   for (x = 1; true; x += 1, x += 2)
     element,

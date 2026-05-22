@@ -19,7 +19,7 @@
           identical(name, '>=') ||
           identical(name, '[]'), message: 'Unexpected operator $name'));
     }
-<<<
+<<< 3.6
     main() {
       assert(invariant(
           node,

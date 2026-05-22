@@ -4,7 +4,7 @@
 // control middle: ×0b end: ×0b ×0b
 // space middle: ×20 end: ×20 ×20
 // control middle: ×85 end: ×85 ×85
-<<<
+<<< 3.6
 // control middle: ×09 end:
 // control middle: ×0b end:
 // space middle: ×20 end:
@@ -16,7 +16,7 @@
 // em quad middle: ×2001 end: ×2001 ×2001
 // en space middle: ×2002 end: ×2002 ×2002
 // em space middle: ×2003 end: ×2003 ×2003
-<<<
+<<< 3.6
 // no-break space middle: ×a0 end:
 // ogham space mark middle: ×1680 end:
 // en quad middle: ×2000 end:
@@ -31,7 +31,7 @@
 // punctuation space middle: ×2008 end: ×2008 ×2008
 // thin space middle: ×2009 end: ×2009 ×2009
 // hair space middle: ×200a end: ×200a ×200a
-<<<
+<<< 3.6
 // three-per-em space middle: ×2004 end:
 // four-per-em space middle: ×2005 end:
 // six-per-em space middle: ×2006 end:
@@ -46,7 +46,7 @@
 // medium mathematical space middle: ×205f end: ×205f ×205f
 // ideographic space middle: ×3000 end: ×3000 ×3000
 // zero width no-break space middle: ×feff end: ×feff ×feff
-<<<
+<<< 3.6
 // line separator middle: ×2028 end:
 // paragraph separator middle: ×2029 end:
 // narrow no-break space middle: ×202f end:
@@ -57,7 +57,7 @@
 // line feed middle: ×0a // end: ×0a ×0a
 // form feed middle: ×0c // end: ×0c ×0c
 // carriage return middle: ×0d // end: ×0d ×0d
-<<<
+<<< 3.6
 // line feed middle:
 // end:
 

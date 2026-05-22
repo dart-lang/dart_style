@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Old generic typedef syntax.
 typedef Foo  <  T  ,S  >(T t,S s);
-<<<
+<<< 3.7
 typedef Foo<T, S>(T t, S s);
 >>> Unsplit generic function type.
 typedef  F  =  A  Function  <  A  ,  B  >  (  A  a  ,  B  b  )  ;
-<<<
+<<< 3.7
 typedef F = A Function<A, B>(A a, B b);
 >>> Split in function type parameter list.
 typedef   SomeFunc=ReturnType  Function(int param,   double other);
@@ -50,7 +50,7 @@ typedef SomeFunc = LongReturnType Function(
   int param,
   double other,
 );
-<<<
+<<< 3.7
 typedef SomeFunc =
     LongReturnType Function(
       int param,
@@ -58,19 +58,19 @@ typedef SomeFunc =
     );
 >>> Generic typedef.
 typedef  Foo  <  A  ,  B  >  =  Function  (  A  a  ,  B  b  )  ;
-<<<
+<<< 3.7
 typedef Foo<A, B> = Function(A a, B b);
 >>> Non-function typedef.
 typedef    Foo   =   Bar;
-<<<
+<<< 3.7
 typedef Foo = Bar;
 >>> Non-function typedef of generic type.
 typedef   Json  =  Map <   String ,  Object  ? >   ;
-<<<
+<<< 3.7
 typedef Json = Map<String, Object?>;
 >>> Split function type parameters.
 typedef G = T Function<TypeOne, TypeTwo, TypeThree>();
-<<<
+<<< 3.7
 typedef G =
     T Function<
       TypeOne,
@@ -79,7 +79,7 @@ typedef G =
     >();
 >>> Split function type and value parameters.
 typedef G = T Function<TypeOne, TypeTwo, TypeThree>(TypeOne one, TypeTwo two, TypeThree three);
-<<<
+<<< 3.7
 typedef G =
     T Function<
       TypeOne,
@@ -123,7 +123,7 @@ typedef LongfunctionType<
 );
 >>> Split typedef type parameters.
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Type;
-<<<
+<<< 3.7
 typedef LongfunctionType<
   First,
   Second,
@@ -134,7 +134,7 @@ typedef LongfunctionType<
 > = Type;
 >>> All three parameter lists split.
 typedef LongfunctionType<First, Second, Third, Fourth, Fifth, Sixth> = Function<Seventh, Eighth, Ninth, Tenth, Eleventh, Twelfth, Thirteenth>(First first, Second second, Third third, Fourth fourth);
-<<<
+<<< 3.7
 typedef LongfunctionType<
   First,
   Second,
@@ -159,7 +159,7 @@ typedef LongfunctionType<
     );
 >>> Split in non-function type argument list.
 typedef G = SomeType<TypeOne, TypeTwo, TypeThree>;
-<<<
+<<< 3.7
 typedef G =
     SomeType<
       TypeOne,
@@ -168,7 +168,7 @@ typedef G =
     >;
 >>> Split typedef type parameters and non-function type arguments.
 typedef LongGenericType<First, Second, Third, Fourth, Fifth, Sixth> = AnotherType<First, Second, Third, Fourth>;
-<<<
+<<< 3.7
 typedef LongGenericType<
   First,
   Second,
@@ -185,7 +185,7 @@ typedef LongGenericType<
     >;
 >>> Prefer splitting parameter list over type parameter list.
 typedef Generic = R Function<T, R, S, U>(T param, R another);
-<<<
+<<< 3.7
 typedef Generic =
     R Function<T, R, S, U>(
       T param,
@@ -193,7 +193,7 @@ typedef Generic =
     );
 >>>
 typedef Generic<T, R> = R Function<T, R, S, U>(T param, R another);
-<<<
+<<< 3.7
 typedef Generic<T, R> =
     R Function<T, R, S, U>(
       T param,

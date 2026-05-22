@@ -1,19 +1,19 @@
 40 columns                              |
 >>> Unsplit with clause.
 enum E with M {a,b,c}
-<<<
+<<< 3.7
 enum E with M { a, b, c }
 >>> Unsplit implements clause.
 enum E implements I {a,b,c}
-<<<
+<<< 3.7
 enum E implements I { a, b, c }
 >>> Unsplit both clauses.
 enum E with M implements I {a,b,c}
-<<<
+<<< 3.7
 enum E with M implements I { a, b, c }
 >>> Split with clause.
 enum VeryLongEnumTypeName with LongMixin {a,b,c}
-<<<
+<<< 3.7
 enum VeryLongEnumTypeName
     with LongMixin {
   a,
@@ -22,7 +22,7 @@ enum VeryLongEnumTypeName
 }
 >>> Split implements clause.
 enum VeryLongEnumTypeName implements LongInterface {a,b,c}
-<<<
+<<< 3.7
 enum VeryLongEnumTypeName
     implements LongInterface {
   a,
@@ -31,7 +31,7 @@ enum VeryLongEnumTypeName
 }
 >>> Both clauses split.
 enum SomeEnum with SomeLongMixin, AnotherMixin<int> implements SomeInterface<String, bool>, AnotherInterface {a}
-<<<
+<<< 3.7
 enum SomeEnum
     with
         SomeLongMixin,
@@ -43,29 +43,29 @@ enum SomeEnum
 }
 >>> (experiment primary-constructors) Unsplit with clause with empty body.
 enum E with M ;
-<<<
+<<< 3.7
 enum E with M;
 >>> (experiment primary-constructors) Unsplit implements clause with empty body.
 enum E implements I ;
-<<<
+<<< 3.7
 enum E implements I;
 >>> (experiment primary-constructors) Unsplit both clauses with empty body.
 enum E with M implements I ;
-<<<
+<<< 3.7
 enum E with M implements I;
 >>> (experiment primary-constructors) Split with clause with empty body.
 enum VeryLongEnumTypeName with LongMixin ;
-<<<
+<<< 3.7
 enum VeryLongEnumTypeName
     with LongMixin;
 >>> (experiment primary-constructors) Split implements clause with empty body.
 enum VeryLongEnumTypeName implements LongInterface ;
-<<<
+<<< 3.7
 enum VeryLongEnumTypeName
     implements LongInterface;
 >>> (experiment primary-constructors) Both clauses split with empty body.
 enum SomeEnum with SomeLongMixin, AnotherMixin<int> implements SomeInterface<String, bool>, AnotherInterface ;
-<<<
+<<< 3.7
 enum SomeEnum
     with
         SomeLongMixin,

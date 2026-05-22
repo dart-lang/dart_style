@@ -1,7 +1,7 @@
 40 columns                              |
 >>> args before and after list forces nesting
 method(first,[element, element, element, element],third);
-<<<
+<<< 3.6
 method(
     first,
     [
@@ -13,7 +13,7 @@ method(
     third);
 >>> nothing but list args does not nest
 longFunctionName([element, element, element, element], [element, element, element, element], [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -32,7 +32,7 @@ longFunctionName([
 ]);
 >>> trailing lists do not nest
 longFunctionName(argument, argument, argument, argument, [element, element, element, element], [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(argument, argument,
     argument, argument, [
   element,
@@ -47,7 +47,7 @@ longFunctionName(argument, argument,
 ]);
 >>> leading lists do not nest
 longFunctionName([element, element, element, element], [element, element, element, element], argument, argument, argument, argument);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -62,7 +62,7 @@ longFunctionName([
     argument);
 >>> arg between lists forces nesting
 longFunctionName([element, element, element, element], argument, [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(
     [
       element,
@@ -79,7 +79,7 @@ longFunctionName(
     ]);
 >>> unsplit leading args
 longFunctionName(arg, arg, [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(arg, arg, [
   element,
   element,
@@ -88,7 +88,7 @@ longFunctionName(arg, arg, [
 ]);
 >>> split before leading args
 longFunctionName(argument, argument, argument, [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(
     argument, argument, argument, [
   element,
@@ -98,7 +98,7 @@ longFunctionName(
 ]);
 >>> split in middle of leading args
 longFunctionName(argument, argument, argument, argument, [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(argument, argument,
     argument, argument, [
   element,
@@ -109,7 +109,7 @@ longFunctionName(argument, argument,
 >>> split before all leading args
 longFunctionName(argument, argument, argument, argument, argument, argument,
 [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(
     argument,
     argument,
@@ -124,7 +124,7 @@ longFunctionName(
 ]);
 >>> unsplit trailing args
 longFunctionName([element, element, element, element], argument, argument);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -134,7 +134,7 @@ longFunctionName([
 >>> split before trailing args
 longFunctionName([element, element, element, element] /* very very long comment */,
 argument, argument);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -144,7 +144,7 @@ longFunctionName([
     argument, argument);
 >>> split in middle of trailing args
 longFunctionName([element, element, element, element], argument, argument, argument, argument);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -155,7 +155,7 @@ longFunctionName([
 >>> split before all trailing args
 longFunctionName([element, element, element, element], argument, argument, argument, argument,
 argument, argument, argument);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -171,22 +171,22 @@ longFunctionName([
     argument);
 >>> don't split leading lists
 longFunctionName([e, e], [e, e, e], a);
-<<<
+<<< 3.6
 longFunctionName([e, e], [e, e, e], a);
 >>> split before all args including leading
 longFunctionName([e, e], [e, e, e], argument);
-<<<
+<<< 3.6
 longFunctionName(
     [e, e], [e, e, e], argument);
 >>> split before one leading arg
 longFunctionName([elem, elem], [elem, elem], argument);
-<<<
+<<< 3.6
 longFunctionName([elem, elem],
     [elem, elem], argument);
 >>> split before all args including leading
 longFunctionName([elem], [elem, elem], [elem, elem, elem], argument, argument,
 argument, argument, argument, argument, argument);
-<<<
+<<< 3.6
 longFunctionName(
     [elem],
     [elem, elem],
@@ -200,21 +200,21 @@ longFunctionName(
     argument);
 >>> don't split trailing lists
 longFunctionName(a, [e, e], [e, e, e]);
-<<<
+<<< 3.6
 longFunctionName(a, [e, e], [e, e, e]);
 >>> split before all args including trailing
 longFunctionName(argument, [e, e], [e, e, e]);
-<<<
+<<< 3.6
 longFunctionName(
     argument, [e, e], [e, e, e]);
 >>> split before one trailing arg
 longFunctionName(argument, [elem, elem], [elem, elem]);
-<<<
+<<< 3.6
 longFunctionName(argument, [elem, elem],
     [elem, elem]);
 >>> split before all args including trailing
 longFunctionName(argument, argument, [elem], [elem, elem], [elem, elem, elem]);
-<<<
+<<< 3.6
 longFunctionName(
     argument,
     argument,
@@ -223,7 +223,7 @@ longFunctionName(
     [elem, elem, elem]);
 >>> named args before and after list forces nesting
 method(a:first,b:[element, element, element, element],c:third);
-<<<
+<<< 3.6
 method(
     a: first,
     b: [
@@ -235,7 +235,7 @@ method(
     c: third);
 >>> mixed named and positional forces nesting
 method(a:first,[element, element, element, element],c:third);
-<<<
+<<< 3.6
 method(
     a: first,
     [
@@ -247,7 +247,7 @@ method(
     c: third);
 >>> mixed named and positional forces nesting
 method(a:first,b:[element, element, element, element],third);
-<<<
+<<< 3.6
 method(
     a: first,
     b: [
@@ -260,7 +260,7 @@ method(
 >>> nothing but named list args does not nest
 longFunctionName(a: [element, element, element, element],
 b: [element, element, element, element], c: [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(a: [
   element,
   element,
@@ -280,7 +280,7 @@ longFunctionName(a: [
 >>> some named list args does not nest
 longFunctionName([element, element, element, element],
 a: [element, element, element, element], b: [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName([
   element,
   element,
@@ -300,7 +300,7 @@ longFunctionName([
 >>> allow leading non-collection to not split
 longFunctionName(a: arg, b: arg,
 c: [element, element, element, element], d: [element, element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(a: arg, b: arg, c: [
   element,
   element,
@@ -325,7 +325,7 @@ longFunctionName(
   element,
   element
 ]);
-<<<
+<<< 3.6
 longFunctionName(
     a: argument,
     b: argument,
@@ -344,7 +344,7 @@ longFunctionName(
 >>> trailing named arguments that do not split
 longFunctionName(a: [element, element, element, element],
 b: [element, element, element, element], c: argument, d: argument);
-<<<
+<<< 3.6
 longFunctionName(a: [
   element,
   element,
@@ -359,7 +359,7 @@ longFunctionName(a: [
 >>> trailing named arguments that do split
 longFunctionName(a: [element, element, element, element],
 b: [element, element, element, element], c: argument, d: argument, e: argument);
-<<<
+<<< 3.6
 longFunctionName(
     a: [
       element,
@@ -378,7 +378,7 @@ longFunctionName(
     e: argument);
 >>> leading named arguments
 longFunctionName(name1: [element, element], name2: [element, element], name3: argument, name4: argument);
-<<<
+<<< 3.6
 longFunctionName(
     name1: [element, element],
     name2: [element, element],
@@ -386,7 +386,7 @@ longFunctionName(
     name4: argument);
 >>> don't nest because of nested 1-arg fn
 outer(inner([element, element, element, element]));
-<<<
+<<< 3.6
 outer(inner([
   element,
   element,
@@ -395,7 +395,7 @@ outer(inner([
 ]));
 >>> do nest because of nested many-arg fn
 outer(argument, inner([element, element, element, element]));
-<<<
+<<< 3.6
 outer(
     argument,
     inner([
@@ -406,7 +406,7 @@ outer(
     ]));
 >>> don't nest because of nested 1-arg method call
 obj.outer(obj.inner([element, element, element, element]));
-<<<
+<<< 3.6
 obj.outer(obj.inner([
   element,
   element,
@@ -415,7 +415,7 @@ obj.outer(obj.inner([
 ]));
 >>> do nest because of nested many-arg method call
 obj.outer(argument, obj.inner([element, element, element, element]));
-<<<
+<<< 3.6
 obj.outer(
     argument,
     obj.inner([
@@ -428,7 +428,7 @@ obj.outer(
 function([[element]],
 [[element]], argument, // comment
 argument);
-<<<
+<<< 3.6
 function(
     [
       [element]
@@ -441,7 +441,7 @@ function(
 >>> trailing positional collections indent if their args split
 function(argument, // comment
 argument, [[element]], [[element]]);
-<<<
+<<< 3.6
 function(
     argument, // comment
     argument,
@@ -454,7 +454,7 @@ function(
 >>> comment before collection
 function(argument, // comment
 [[element]]);
-<<<
+<<< 3.6
 function(
     argument, // comment
     [
@@ -462,13 +462,13 @@ function(
     ]);
 >>> don't force trailing method chain to split
 function([argument,]).method().method();
-<<<
+<<< 3.6
 function([
   argument,
 ]).method().method();
 >>> if method chain splits, split before first too
 function([argument,]).method().method().method().method().method();
-<<<
+<<< 3.6
 function([
   argument,
 ])
@@ -479,7 +479,7 @@ function([
     .method();
 >>> don't allow splitting between name and list
 longFunctionName(argument, argument, argument, argument, argument, argument, argumentName: [element, element, element]);
-<<<
+<<< 3.6
 longFunctionName(
     argument,
     argument,

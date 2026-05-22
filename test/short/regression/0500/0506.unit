@@ -3,7 +3,7 @@ class Foo {
   Optional<double> get finiteSignificantCost => isSignificant && cost.value.isFinite ? cost : const Optional<double>.absent();
   Optional<double> get finiteSignificantCost => isSignificant && cost.value.isFinite ? cost : const Optional.absent();
 }
-<<<
+<<< 3.6
 class Foo {
   Optional<double> get finiteSignificantCost =>
       isSignificant && cost.value.isFinite
@@ -19,7 +19,7 @@ class Foo {
           ? doneSearch(err)
           : null;
     }
-<<<
+<<< 3.6
     main() {
       this.changes.exec();
       Valids.exist(doneSearch) ? doneSearch(err) : null;
@@ -35,7 +35,7 @@ class Foo {
                 ? 1
                 : 0;
       }
-<<<
+<<< 3.6
       main() {
         var openParensMatch = new RegExp(r'\(').allMatches(matchStr),
             closeParensMatch = new RegExp(r'\)').allMatches(matchStr),
@@ -62,7 +62,7 @@ class Foo {
           null, // get/set
           null); // async modifier
     }
-<<<
+<<< 3.6
     main() {
       tree.Node definition = new tree.FunctionExpression(
           makeIdentifier(param.name),
@@ -83,7 +83,7 @@ class Foo {
         ? coreTypes.typeType
         : type);
   }
-<<<
+<<< 3.6
   main() {
     ConstantExpression constant = new TypeConstantExpression(
         // TODO(johnniwinther): Use [type] when evaluation of constants is done

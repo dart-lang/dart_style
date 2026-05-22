@@ -1,15 +1,15 @@
 40 columns                              |
 >>> empty set
 var s = <int>  { };
-<<<
+<<< 3.6
 var s = <int>{};
 >>> exactly 40 characters
 var s = {first, second, third, forth__};
-<<<
+<<< 3.6
 var s = {first, second, third, forth__};
 >>>
 var s = {first, second, third, fourth, fifth, sixth};
-<<<
+<<< 3.6
 var s = {
   first,
   second,
@@ -21,7 +21,7 @@ var s = {
 >>> splits outer sets even if they fit
 var s = {a, {b, c}, d, {},
     e, {f, {g, h} }  };
-<<<
+<<< 3.6
 var s = {
   a,
   {b, c},
@@ -35,19 +35,19 @@ var s = {
 };
 >>> split indirect outer
 var s = {a, function({b, inner})};
-<<<
+<<< 3.6
 var s = {
   a,
   function({b, inner})
 };
 >>> empty literal does not force outer split
 var s = {a, <int>{}, b, [], c, () {}};
-<<<
+<<< 3.6
 var s = {a, <int>{}, b, [], c, () {}};
 >>> nested split set
 var s = {first, 1, second, {third, fourth}, fifth, 5, nested, {sixth, seventh, eighth, nine,
     tenth, eleventh}};
-<<<
+<<< 3.6
 var s = {
   first,
   1,
@@ -67,7 +67,7 @@ var s = {
 };
 >>> force multi-line because of contained block
 var s = {first, 1, fn, () {"fn";},third,fourth};
-<<<
+<<< 3.6
 var s = {
   first,
   1,
@@ -80,7 +80,7 @@ var s = {
 };
 >>> containing comments
 var s = {first, one /* bang */, second, two};
-<<<
+<<< 3.6
 var s = {
   first,
   one /* bang */,
@@ -89,7 +89,7 @@ var s = {
 };
 >>> const
 var set = const {"foo", "bar", "fuz", null};
-<<<
+<<< 3.6
 var set = const {
   "foo",
   "bar",
@@ -98,14 +98,14 @@ var set = const {
 };
 >>> trailing comma forces split
 var set = {"foo", "bar" , };
-<<<
+<<< 3.6
 var set = {
   "foo",
   "bar",
 };
 >>> trailing comma multiline
 var set = {"foo", "bar", "fuzzy", null , };
-<<<
+<<< 3.6
 var set = {
   "foo",
   "bar",
@@ -118,7 +118,7 @@ var set = {
   a,b,c,d,
   e,f,g,h
 };
-<<<
+<<< 3.6
 var set = {
   // yeah
   a, b, c, d,
@@ -131,7 +131,7 @@ var set = {
 
   fourth, "value", fifth, "value", sixth, "value", seventh, "value"
 };
-<<<
+<<< 3.6
 var set = {
   // yes
   first, "value", second, "value",
@@ -146,7 +146,7 @@ var set = {
   d
 } // comment
 ;
-<<<
+<<< 3.6
 var set = {a, b, c, d} // comment
     ;
 >>> preserves one blank line between elements
@@ -166,7 +166,7 @@ var set = {
 
 
 };
-<<<
+<<< 3.6
 var set = {
   element,
 
@@ -177,7 +177,7 @@ var set = {
 };
 >>> spread cascade
 var set = {1, ...thing..cascade()..another(), 4};
-<<<
+<<< 3.6
 var set = {
   1,
   ...thing
@@ -187,7 +187,7 @@ var set = {
 };
 >>> spread lambda
 var set = {1, ...() { body; }, 4};
-<<<
+<<< 3.6
 var set = {
   1,
   ...() {
@@ -197,7 +197,7 @@ var set = {
 };
 >>> spread immediately invoked lambda
 var set = {1, ...() sync* { yield thing; }(), 4};
-<<<
+<<< 3.6
 var set = {
   1,
   ...() sync* {
@@ -207,7 +207,7 @@ var set = {
 };
 >>> don't allow splitting between argument name and set
 longFunctionName(argument, argument, argument, argument, argument, argument, argumentName: {element, element, element});
-<<<
+<<< 3.6
 longFunctionName(
     argument,
     argument,

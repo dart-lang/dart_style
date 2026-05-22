@@ -4,7 +4,7 @@ switch (e) {
     break;
   case E.e2:
 }
-<<<
+<<< 3.7
 switch (e) {
   case E.e1:
     break;

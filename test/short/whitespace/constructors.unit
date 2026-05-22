@@ -3,7 +3,7 @@
 class A {
   A();
 }
-<<<
+<<< 3.6
 class A {
   A();
 }
@@ -11,7 +11,7 @@ class A {
 class A {
   const factory A() = B;
 }
-<<<
+<<< 3.6
 class A {
   const factory A() = B;
 }
@@ -20,7 +20,7 @@ class A {
   int _a;
   A(this._a);
 }
-<<<
+<<< 3.6
 class A {
   int _a;
   A(this._a);
@@ -30,7 +30,7 @@ class X {
   var x, y;
   X() : x = 1, y = 2;
 }
-<<<
+<<< 3.6
 class X {
   var x, y;
   X()
@@ -42,7 +42,7 @@ class MyClass {
   MyClass() : first = "some value", second = "another",
         third = "last";
 }
-<<<
+<<< 3.6
 class MyClass {
   MyClass()
       : first = "some value",
@@ -54,7 +54,7 @@ class MyClass {
   MyClass(first, second) : super(first, second);
   MyClass(first, second) : this(first, second);
 }
-<<<
+<<< 3.6
 class MyClass {
   MyClass(first, second)
       : super(first, second);
@@ -65,7 +65,7 @@ class MyClass {
 class Foo {
   Foo(this.bar(), baz);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(this.bar(), baz);
 }
@@ -76,7 +76,7 @@ class Foo {
   Foo.named({ required   super . a, int  super  . b  : 123 ,  required int  super . bar()  });
   Foo.other(  final   int  super.x,   super.bar()  ?  );
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(super.a, int super.b,
       int super.bar());

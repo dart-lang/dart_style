@@ -1,11 +1,11 @@
 40 columns                              |
 >>> No space before ";".
 expression    ;
-<<<
+<<< 3.7
 expression;
 >>> Empty statements.
 {;;;;}
-<<<
+<<< 3.7
 {
   ;
   ;
