@@ -2,7 +2,7 @@
 bool _hasLibraryDirective(String code) =>
     parseDirectives(code, suppressErrors: true)
         .directives.any((d) => d is LibraryDirective);
-<<<
+<<< 3.7
 ### TODO(rnystrom): I think the before was better here.
 bool _hasLibraryDirective(String code) => parseDirectives(
   code,

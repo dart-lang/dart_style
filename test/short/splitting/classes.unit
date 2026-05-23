@@ -1,64 +1,64 @@
 40 columns                              |
 >>>
 class SomeClass extends BaseClass implements Interface {}
-<<<
+<<< 3.6
 class SomeClass extends BaseClass
     implements Interface {}
 >>>
 class AVeryLongSomeClass extends BaseClass implements I {}
-<<<
+<<< 3.6
 class AVeryLongSomeClass
     extends BaseClass implements I {}
 >>>
 class AVeryLongSomeClass extends BaseClass implements Interface {}
-<<<
+<<< 3.6
 class AVeryLongSomeClass
     extends BaseClass
     implements Interface {}
 >>>
 class SomeClass extends BaseClass with Mixin {}
-<<<
+<<< 3.6
 class SomeClass extends BaseClass
     with Mixin {}
 >>> class alias
 class SomeClass = BaseClass with LongMixinName;
-<<<
+<<< 3.6
 class SomeClass = BaseClass
     with LongMixinName;
 >>> keep extends on same line
 class A extends B {}
-<<<
+<<< 3.6
 class A extends B {}
 >>> keep implements on same line
 class A implements B {}
-<<<
+<<< 3.6
 class A implements B {}
 >>> keep with on same line
 class A extends B with C {}
-<<<
+<<< 3.6
 class A extends B with C {}
 >>> keep all on same line
 class A extends B with C implements D {}
-<<<
+<<< 3.6
 class A extends B with C implements D {}
 >>> move extends to next line
 class SomeClass extends VeryLongBaseClass {}
-<<<
+<<< 3.6
 class SomeClass
     extends VeryLongBaseClass {}
 >>> move implements to next line
 class SomeClass implements VeryLongBaseClass {}
-<<<
+<<< 3.6
 class SomeClass
     implements VeryLongBaseClass {}
 >>> move all implements to next line
 class SomeClass implements Interface, AnotherOne {}
-<<<
+<<< 3.6
 class SomeClass
     implements Interface, AnotherOne {}
 >>> one interface per line
 class SomeClass implements Interface, Another, Third {}
-<<<
+<<< 3.6
 class SomeClass
     implements
         Interface,
@@ -66,17 +66,17 @@ class SomeClass
         Third {}
 >>> move with to next line
 class SomeClass extends A with VeryLongMixin {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with VeryLongMixin {}
 >>> move all mixins to next line
 class SomeClass extends A with Mixin, AnotherOne {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with Mixin, AnotherOne {}
 >>> one mixin per line
 class SomeClass extends A with Mixin, Another, Third, Fourth {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with
         Mixin,
@@ -85,7 +85,7 @@ class SomeClass extends A
         Fourth {}
 >>> multiline mixin with single-line interface
 class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with
         Mixin,
@@ -96,7 +96,7 @@ class SomeClass extends A
     implements Interface {}
 >>> single-line mixin with multiline interface
 class SomeClass extends A with Mixin implements Interface, Another, Third {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with Mixin
     implements
@@ -105,7 +105,7 @@ class SomeClass extends A
         Third {}
 >>> multiline mixin with multiline interface
 class SomeClass extends A with Mixin, Another, Third, Fourth, Fifth implements Interface, Another, Third {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with
         Mixin,
@@ -119,35 +119,35 @@ class SomeClass extends A
         Third {}
 >>> double line mixin with double line interface
 class SomeClass extends A with Mixin, Another implements Interface, Another {}
-<<<
+<<< 3.6
 class SomeClass extends A
     with Mixin, Another
     implements Interface, Another {}
 >>> force implements to split even if it would fit after with
 class SomeVeryLongClass extends A with Mixin implements Interface {}
-<<<
+<<< 3.6
 class SomeVeryLongClass extends A
     with Mixin
     implements Interface {}
 >>> don't split empty body
 class TooLongClassName extends Another {}
-<<<
+<<< 3.6
 class TooLongClassName
     extends Another {}
 >>> (experiment primary-constructors) Long primary constructor parameter list splits
 class LongClassName(final int veryLongParameterName, String anotherLongParameter) {}
-<<<
+<<< 3.6
 class LongClassName(
     final int veryLongParameterName,
     String anotherLongParameter) {}
 >>> (experiment primary-constructors) Long const primary constructor splits
 class const LongClassName(final int veryLongParameterName, String anotherLongParameter);
-<<<
+<<< 3.6
 class const LongClassName(
     final int veryLongParameterName,
     String anotherLongParameter);
 >>> (experiment primary-constructors) Primary constructor clauses split
 class C(int x, int y) extends LongBaseClass with Mixin {}
-<<<
+<<< 3.6
 class C(int x, int y)
     extends LongBaseClass with Mixin {}

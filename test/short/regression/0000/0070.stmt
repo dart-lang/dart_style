@@ -1,7 +1,7 @@
 >>> (indent 2)
   bool isSdkDir(String dirname) => new File(
       path.join(dirname, 'lib', '_internal', 'libraries.dart')).existsSync();
-<<<
+<<< 3.6
   bool isSdkDir(String dirname) =>
       new File(path.join(dirname, 'lib', '_internal', 'libraries.dart'))
           .existsSync();

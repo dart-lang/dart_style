@@ -1,6 +1,6 @@
 >>> (indent 2)
   var serialization1 = new Serialization(format: format)
           ..addRules(rules.values);
-<<<
+<<< 3.7
   var serialization1 = new Serialization(format: format)
     ..addRules(rules.values);

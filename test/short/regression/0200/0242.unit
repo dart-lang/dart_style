@@ -7,7 +7,7 @@ class PartyOrganizerInterviewer {
         partyModel.isPropertyTrue(Properties.IS_FOOD_AVAILABLE);
   }
 }
-<<<
+<<< 3.6
 class PartyOrganizerInterviewer {
   PartyOrganizerInterviewer(@MinimumAgeRequirement int minAge)
       : isChampaignIncluded =

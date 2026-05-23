@@ -6,7 +6,7 @@
             'attr', ["transform", 'translate(${margin[3]},${margin[0]})'])
         .callMethod('append', ["text"]).callMethod('attr', ["class", "label"])
         .callMethod('text', [(_, i, __) => groups[i]]);
-<<<
+<<< 3.7
     selection
         .callMethod('enter')
         .callMethod('append', ["svg"])

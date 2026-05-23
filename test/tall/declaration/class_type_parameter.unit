@@ -1,19 +1,19 @@
 40 columns                              |
 >>> Single type parameter.
 class Foo  <  T  > {}
-<<<
+<<< 3.7
 class Foo<T> {}
 >>> Multiple type parameters on one line.
 class Foo  <  A  ,  B  ,  C  ,  D  > {}
-<<<
+<<< 3.7
 class Foo<A, B, C, D> {}
 >>> Bounds.
 class A  <  T  extends  int  ,  R  extends  T  ?  > {}
-<<<
+<<< 3.7
 class A<T extends int, R extends T?> {}
 >>> Split type parameters.
 class LongClassName<First, Second, Third> {}
-<<<
+<<< 3.7
 class LongClassName<
   First,
   Second,
@@ -21,7 +21,7 @@ class LongClassName<
 > {}
 >>> Split inside bound.
 class LongClassName<VeryLongTypeParameter extends VeryLongBoundName> {}
-<<<
+<<< 3.7
 class LongClassName<
   VeryLongTypeParameter
       extends VeryLongBoundName
@@ -29,7 +29,7 @@ class LongClassName<
 >>> Split at `extends` and inside bound type arguments.
 class LongClassName<VeryLongTypeParameter extends
 VeryLongBoundName<LongTypeArgument>> {}
-<<<
+<<< 3.7
 class LongClassName<
   VeryLongTypeParameter
       extends VeryLongBoundName<
@@ -38,7 +38,7 @@ class LongClassName<
 > {}
 >>> Split inside type parameter bound splits type parameters.
 class LongClassName<T extends Map<LongTypeArgument, Another>> {}
-<<<
+<<< 3.7
 class LongClassName<
   T extends Map<
     LongTypeArgument,

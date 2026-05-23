@@ -3,7 +3,7 @@
   fn(x) { ; }
   items.forEach(fn);
 }
-<<<
+<<< 3.6
 {
   fn(x) {
     ;

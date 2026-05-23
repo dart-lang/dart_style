@@ -7,7 +7,7 @@ class TestName {
   // more information of failures from any of the tests cases
   static const String getFlutterErrors = 'getFlutterErrors';
 }
-<<<
+<<< 3.6
 class TestName {
   static const String realtimePresenceSubscribe = 'realtimePresenceSubscribe';
 // TODO(tiholic) handle realtimeHistoryWithAuthCallback
@@ -36,7 +36,7 @@ class BusStationResult {
     searchSuggestionKeywords = result.suggestion.keywords;
   }
 }
-<<<
+<<< 3.6
 class BusStationResult {
   BusStationResult.ios(BusStationResult_iOS result) {
     pageCount = result.count;
@@ -68,7 +68,7 @@ class Semester {
     this.text,
   });
 }
-<<<
+<<< 3.6
 class Semester {
   String get code => '$year$value';
 
@@ -124,7 +124,7 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-<<<
+<<< 3.6
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
@@ -196,7 +196,7 @@ class Sizing {
     }
   }
 }
-<<<
+<<< 3.6
 class Sizing {
   double heightOf({weight: sizingWeight}) {
     switch (weight) {
@@ -241,7 +241,7 @@ class CloudWatchLogStack {
     }
   }
 }
-<<<
+<<< 3.6
 class CloudWatchLogStack {
   void fixMessage(List<int> bytes, int time, String msg) {
     switch (largeMessageBehavior) {
@@ -261,13 +261,13 @@ class CloudWatchLogStack {
 }
 >>> don't split empty class body
 class _BeagleImageDownloaderMock extends Mock implements BeagleImageDownloader {}
-<<<
+<<< 3.6
 class _BeagleImageDownloaderMock extends Mock
     implements BeagleImageDownloader {}
 >>> don't split empty class body
 abstract class ParentRepoExternal extends CRUDRepositoryExternal<ParentEntity> {
 }
-<<<
+<<< 3.6
 abstract class ParentRepoExternal
     extends CRUDRepositoryExternal<ParentEntity> {}
 >>> adjacent strings inside string interpolation
@@ -317,7 +317,7 @@ class _ImageNetworkState extends State<ImageNetwork> {
     """;
   }
 }
-<<<
+<<< 3.6
 class _ImageNetworkState extends State<ImageNetwork> {
   String _imagePage() {
     return """<!DOCTYPE html>
@@ -366,14 +366,14 @@ class _ImageNetworkState extends State<ImageNetwork> {
 }
 >>>
 class _Action< /*JsonSerializable*/ T> {}
-<<<
+<<< 3.6
 class _Action< /*JsonSerializable*/ T> {}
 >>>
 enum RenovationBackend {
   frappe,
   firebase // To be implemented
 }
-<<<
+<<< 3.6
 enum RenovationBackend {
   frappe,
   firebase // To be implemented

@@ -3,7 +3,7 @@
           (user) => setState(DataState.loaded(user)),
           onError: (e) => setState(DataError(e)),
         );
-<<<
+<<< 3.7
     subscription = _userRepository
         .getUser()
         .takeUntil(closesStream)

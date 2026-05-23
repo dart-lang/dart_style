@@ -2,7 +2,7 @@
     for (int inputIndex = 1, statementIndex = 0;
          inputIndex < inputs.length;
          statementIndex++) {}
-<<<
+<<< 3.6
     for (int inputIndex = 1, statementIndex = 0;
         inputIndex < inputs.length;
         statementIndex++) {}

@@ -1,11 +1,11 @@
 40 columns                              |
 >>> logic
 if (o case 1   ||  2   &&  3  ) {}
-<<<
+<<< 3.6
 if (o case 1 || 2 && 3) {}
 >>> logic as subpattern
 if (o case 1   &&  (  2   ||  3   )  ) {}
-<<<
+<<< 3.6
 if (o case 1 && (2 || 3)) {}
 >>> relational
 switch (obj) {
@@ -17,7 +17,7 @@ switch (obj) {
   case   >=   other:
     body;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case == other:
   case != other:
@@ -29,19 +29,19 @@ switch (obj) {
 }
 >>> relational as subpattern
 if (o case  >  1  &&  <   2 && (  ==   3 )) {}
-<<<
+<<< 3.6
 if (o case > 1 && < 2 && (== 3)) {}
 >>> cast
 if (o case   1   as   List < int > ?  ) {}
-<<<
+<<< 3.6
 if (o case 1 as List<int>?) {}
 >>> null-check
 if (o case pattern  ?  ) {}
-<<<
+<<< 3.6
 if (o case pattern?) {}
 >>> null-assert
 if (o case pattern  !  ) {}
-<<<
+<<< 3.6
 if (o case pattern!) {}
 >>> simple constants
 switch (obj) {
@@ -57,7 +57,7 @@ case  's$tr${  ing  }'  :
 case  #symbol  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case true:
   case false:
@@ -79,7 +79,7 @@ case  qualified  .  name  :
 case  prefixed  .  qualified  .  name  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case _:
   case name:
@@ -96,7 +96,7 @@ case  final  name  :
 case  final  (  int  ,  String  )  name  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case int? _:
   case List<String> name:
@@ -119,7 +119,7 @@ case  [  ...  ,  _  ]  :
 case  [  ...  ,  ]  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case []:
   case <int>[]:
@@ -148,7 +148,7 @@ case  {  ...  }  :
 case  {  k  :  _  ,  ...  }  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case {}:
   case <int, String>{}:
@@ -170,7 +170,7 @@ switch (obj) {
   case  (  :  var  x  ,  :  var  y  )  :
     ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case ():
   case (value,):
@@ -189,7 +189,7 @@ case  Foo  (  :  var  x  ,  :  var  y  )  :
 case  Foo  <  int  ,  String  >  (  :  var  x  ,  :  var  y  )  :
 ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case Foo():
   case Foo(getter: pattern):
@@ -211,7 +211,7 @@ case  Foo  (  :  var  x  ,  :  var  y  )  :
 case  Foo  <  int  ,  String  >  (  :  var  x  ,  :  var  y  )  :
 ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case Foo():
   case Foo(getter: pattern):
@@ -235,7 +235,7 @@ case  const  <  int  ,  String  >  {  }  :
 case  const  {  1  :  's'  ,  2  :  't'  }  :
   ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case const []:
   case const <int>[]:
@@ -256,7 +256,7 @@ case  const  Foo  (  field  :  value  ,  )  :
 case  const  Foo  <  int  ,  String  >  (  field  )  :
 ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case const Foo():
   case const Foo(field, another):
@@ -273,7 +273,7 @@ case  const  (  1  )  :
 case  const  (  -  foo  *  bar  )  :
 ok;
 }
-<<<
+<<< 3.6
 switch (obj) {
   case const (1):
   case const (-foo * bar):

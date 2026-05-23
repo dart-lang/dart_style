@@ -1,6 +1,6 @@
 >>>
 String say(String from, String msg,
   [String device='carrier pigeon', String mood]) {}
-<<<
+<<< 3.6
 String say(String from, String msg,
     [String device = 'carrier pigeon', String mood]) {}

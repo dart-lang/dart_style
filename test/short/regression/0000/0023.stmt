@@ -10,7 +10,7 @@ return options.releaseMode &&
 
   // keep any entry points
   !options.isHtmlEntryPoint(id);
-<<<
+<<< 3.6
 return options.releaseMode &&
 
     // TODO(sigmund): remove this exclusion once we have dev_transformers

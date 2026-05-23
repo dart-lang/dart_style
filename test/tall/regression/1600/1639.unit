@@ -4,7 +4,7 @@ class C<T
 // 2
 // 3
 > {}
-<<<
+<<< 3.7
 class C<
   T
   // 1
@@ -21,7 +21,7 @@ class C<
   >()
   x264;
   void Function<Y extends A<CFcov<Object>>>() x265;
-<<<
+<<< 3.7
   void Function<
     Y extends A<FcovCyclicCoBound<Function(Function(FutureOr<Object>))>>
     //          ^

@@ -4,7 +4,7 @@ import 'dart:async'; /* soup */ import 'dart:io';
 void main() {
   print('hi');
 }
-<<<
+<<< 3.7
 import 'dart:async'; /* soup */
 import 'dart:io';
 

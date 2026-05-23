@@ -4,7 +4,7 @@ class VeryInterestingThing {
         mylibrarythathasalongname.JsonData jsonData) => new VeryInterestingThing(
         otherlibrary.InterestingState.fromJson(jsonData.encodedState));
 }
-<<<
+<<< 3.6
 class VeryInterestingThing {
   factory VeryInterestingThing.fromJson(
           mylibrarythathasalongname.JsonData jsonData) =>

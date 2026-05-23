@@ -2,7 +2,7 @@
 >>> many arguments
 method(first, second, third, fourth, fifth, sixth, seventh, eighth, ninth,
     tenth, eleventh, twelfth);
-<<<
+<<< 3.6
 method(
     first,
     second,
@@ -18,22 +18,22 @@ method(
     twelfth);
 >>> wrap before first argument
 longFunctionIsLoooooooooooooong(argument, argument);
-<<<
+<<< 3.6
 longFunctionIsLoooooooooooooong(
     argument, argument);
 >>> wrap with just one argument
 print('a very very long string literal');
-<<<
+<<< 3.6
 print(
     'a very very long string literal');
 >>>
 printNumbers(000000000000000000000, 111);
-<<<
+<<< 3.6
 printNumbers(
     000000000000000000000, 111);
 >>>
 function(firstArg * second, third * fourthAndLongest);
-<<<
+<<< 3.6
 function(firstArg * second,
     third * fourthAndLongest);
 >>> arguments, nested
@@ -41,7 +41,7 @@ someFunctionOne(someArgument,
 someFunctionTwo(argument, argument, argument),
 someFunctionTwo(argument, argument, argument),
 someArgument, someArgument);
-<<<
+<<< 3.6
 someFunctionOne(
     someArgument,
     someFunctionTwo(
@@ -52,7 +52,7 @@ someFunctionOne(
     someArgument);
 >>> force all arguments to split if an argument splits
 foo(a, b, inner(veryLongArgument, veryLongArgument), c);
-<<<
+<<< 3.6
 foo(
     a,
     b,
@@ -61,49 +61,49 @@ foo(
     c);
 >>> do not force single-argument list to split if argument splits
 foo(inner(veryLongArgument, veryLongArgument));
-<<<
+<<< 3.6
 foo(inner(veryLongArgument,
     veryLongArgument));
 >>> do force named single-argument list to split if argument splits
 foo(named:inner(veryLongArgument, veryLongArgument));
-<<<
+<<< 3.6
 foo(
     named: inner(veryLongArgument,
         veryLongArgument));
 >>> do not split empty argument list
 foo___________________________________();
-<<<
+<<< 3.6
 foo___________________________________();
 >>> do split empty argument list if it contains a comment
 foo___________________________________(/* */);
-<<<
+<<< 3.6
 foo___________________________________(
     /* */);
 >>> keep positional and named on first line
 foo(arg, arg, foo: 1, bar: 2);
-<<<
+<<< 3.6
 foo(arg, arg, foo: 1, bar: 2);
 >>> move just named to second line even though all fit on second
 reallyLongMethod(
     argument, foo: first, bar: second);
-<<<
+<<< 3.6
 reallyLongMethod(argument,
     foo: first, bar: second);
 >>> split named and keep positional on first
 reallyLongMethod(argument, argument, foo: first, bar: second, baz: third);
-<<<
+<<< 3.6
 reallyLongMethod(argument, argument,
     foo: first,
     bar: second,
     baz: third);
 >>> only named arguments and move to second line
 reallyLongMethod(foo: first, bar: second, ba: third);
-<<<
+<<< 3.6
 reallyLongMethod(
     foo: first, bar: second, ba: third);
 >>> only named arguments and split
 reallyLongMethod(foo: first, bar: second, baz: third);
-<<<
+<<< 3.6
 reallyLongMethod(
     foo: first,
     bar: second,
@@ -111,20 +111,20 @@ reallyLongMethod(
 >>> if split before first positional, split before first named too
 reallyLongMethodName(
     first, second, third, a: 1, b: 1);
-<<<
+<<< 3.6
 reallyLongMethodName(
     first, second, third,
     a: 1, b: 1);
 >>> if split before other positional, split before first named too
 reallyLongMethodName(first, second,
     third, fourth, fif, s, a: 1, b: 1);
-<<<
+<<< 3.6
 reallyLongMethodName(first, second,
     third, fourth, fif, s,
     a: 1, b: 1);
 >>> if positional args go one per line, named do too
 reallyLongMethod(first, second, third, fourth, fifth, sixth, seventh, eighth, a: 1, b: 2);
-<<<
+<<< 3.6
 reallyLongMethod(
     first,
     second,
@@ -138,12 +138,12 @@ reallyLongMethod(
     b: 2);
 >>> avoid splitting before single positional argument
 someLongReceiver.veryLongMethod(argument);
-<<<
+<<< 3.6
 someLongReceiver
     .veryLongMethod(argument);
 >>> multiple nested collections
 method(function([veryLongElement, veryLongElement], [veryLongElement, veryLongElement]), argument);
-<<<
+<<< 3.6
 method(
     function([
       veryLongElement,
@@ -157,7 +157,7 @@ method(
 function(argument, argument, argument, argument,
 [element, element, element, element],
 {'key': value, 'other key': value, 'third key': value});
-<<<
+<<< 3.6
 function(argument, argument, argument,
     argument, [
   element,
@@ -171,7 +171,7 @@ function(argument, argument, argument,
 });
 >>> all trailing collections
 function([element, element, element, element], {'key': value, 'other key': value, 'third key': value});
-<<<
+<<< 3.6
 function([
   element,
   element,
@@ -185,7 +185,7 @@ function([
 >>> non-collection non-preceding argument forces all collections to indent
 function([element, element, element, element], argument,
 {'key': value, 'other key': value, 'third key': value}, () {;});
-<<<
+<<< 3.6
 function(
     [
       element,
@@ -203,7 +203,7 @@ function(
 });
 >>> trailing comma
 fn(argument,argument  ,argument  ,  );
-<<<
+<<< 3.6
 fn(
   argument,
   argument,
@@ -211,7 +211,7 @@ fn(
 );
 >>> trailing comma in named argument list
 fn(named: argument,another:argument,  );
-<<<
+<<< 3.6
 fn(
   named: argument,
   another: argument,
@@ -219,7 +219,7 @@ fn(
 >>> many arguments mixed named
 method(first, name1: second, third, name2: fourth, name3: fifth, sixth,
 seventh, name4: eighth, ninth, tenth);
-<<<
+<<< 3.6
 method(
     first,
     name1: second,
@@ -233,12 +233,12 @@ method(
     tenth);
 >>> wrap before first argument, named first
 longFunctionIsLoooooooooooooong(name: argument, argument);
-<<<
+<<< 3.6
 longFunctionIsLoooooooooooooong(
     name: argument, argument);
 >>> named first
 function(name: firstArg * second, third * fourthAndLongest);
-<<<
+<<< 3.6
 function(
     name: firstArg * second,
     third * fourthAndLongest);
@@ -247,7 +247,7 @@ someFunctionOne(someArgument,
 someFunctionTwo(name1: argument, argument, name2: argument),
 someFunctionTwo(argument, name: argument, argument),
 someArgument, someArgument);
-<<<
+<<< 3.6
 someFunctionOne(
     someArgument,
     someFunctionTwo(
@@ -262,16 +262,16 @@ someFunctionOne(
     someArgument);
 >>> keep mixed positional and named on first line
 foo(arg, foo: arg, 1, bar: 2);
-<<<
+<<< 3.6
 foo(arg, foo: arg, 1, bar: 2);
 >>> treat mixed named and positional as all named
 reallyLongMethod(argument, foo: first, second);
-<<<
+<<< 3.6
 reallyLongMethod(
     argument, foo: first, second);
 >>>
 reallyLongMethod(argument, argument, foo: first, bar: second, third);
-<<<
+<<< 3.6
 reallyLongMethod(
     argument,
     argument,
@@ -280,7 +280,7 @@ reallyLongMethod(
     third);
 >>>
 reallyLongMethod(leadingNamed: first, second, baz: third);
-<<<
+<<< 3.6
 reallyLongMethod(
     leadingNamed: first,
     second,
@@ -289,7 +289,7 @@ reallyLongMethod(
 function(argument, a: argument, argument, b: argument,
 [element, element, element, element],
 c: {'key': value, 'other key': value, 'third key': value});
-<<<
+<<< 3.6
 function(
     argument,
     a: argument,
@@ -308,7 +308,7 @@ function(
     });
 >>> all trailing collections
 function([element, element], name: [element, element], {'key': value, 'other key': value, 'third key': value});
-<<<
+<<< 3.6
 function([
   element,
   element
@@ -323,7 +323,7 @@ function([
 >>> non-collection non-preceding argument forces all collections to indent
 function([element, element, element, element], name: argument,
 {'key': value, 'other key': value, 'third key': value}, () {;});
-<<<
+<<< 3.6
 function(
     [
       element,
@@ -341,7 +341,7 @@ function(
 });
 >>> trailing comma with mixed named
 fn(argument,name: argument  ,argument  ,  );
-<<<
+<<< 3.6
 fn(
   argument,
   name: argument,
@@ -352,7 +352,7 @@ function(// yeah
 first, second, third,
 fourth, fifth,
 sixth,);
-<<<
+<<< 3.6
 function(
   // yeah
   first, second, third,

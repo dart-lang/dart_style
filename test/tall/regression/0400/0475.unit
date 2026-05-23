@@ -4,7 +4,7 @@ class ListResultDescriptor {
       {ResultCachingPolicy<
           List<E>> cachingPolicy}) = ListResultDescriptorImpl<E>;
 }
-<<<
+<<< 3.7
 class ListResultDescriptor {
   factory ListResultDescriptor(
     String name,

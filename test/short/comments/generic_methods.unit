@@ -1,43 +1,43 @@
 40 columns                              |
 >>> function declaration
 int f/*<S, T>*/(int x) => 3;
-<<<
+<<< 3.6
 int f/*<S, T>*/(int x) => 3;
 >>> type bounds
 int f/*<S extends Set<S>>*/(int x) => 3;
-<<<
+<<< 3.6
 int f/*<S extends Set<S>>*/(int x) => 3;
 >>> method
 class C {
   static int f/*<S, T>*/(int x) => 3;
   int m/*<S, T>*/(int x) => 3;
 }
-<<<
+<<< 3.6
 class C {
   static int f/*<S, T>*/(int x) => 3;
   int m/*<S, T>*/(int x) => 3;
 }
 >>> function type parameter
 void foo(int f/*<S>*/(int x)) {}
-<<<
+<<< 3.6
 void foo(int f/*<S>*/(int x)) {}
 >>> variable
 var x = /*<S>*/(int x) => x;
-<<<
+<<< 3.6
 var x = /*<S>*/(int x) => x;
 >>> parameter type
 foo/*<S>*/(dynamic/*=S*/ x) => x;
-<<<
+<<< 3.6
 foo/*<S>*/(dynamic/*=S*/ x) => x;
 >>> return type
 dynamic/*=S*/ foo/*<S>*/() => x;
-<<<
+<<< 3.6
 dynamic/*=S*/ foo/*<S>*/() => x;
 >>> without dynamic
 main() {
   /*=S*/ foo/*<S>*/(/*=S*/ x) {return x;}
 }
-<<<
+<<< 3.6
 main() {
   /*=S*/ foo/*<S>*/(/*=S*/ x) {
     return x;
@@ -47,7 +47,7 @@ main() {
 void foo/*<S>*/(var /*=S*/ x) {
   var /*=S*/ y = x;
 }
-<<<
+<<< 3.6
 void foo/*<S>*/(var/*=S*/ x) {
   var/*=S*/ y = x;
 }

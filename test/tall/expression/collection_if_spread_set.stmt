@@ -2,25 +2,25 @@
 ### Tests for spread (and unspread) sets inside if elements.
 >>> Spread then element stays unsplit if it fits.
 var set = {if (c) ...{1, 2}};
-<<<
+<<< 3.7
 var set = {
   if (c) ...{1, 2},
 };
 >>> Spread else stays unsplit if it fits.
 var set = {if (c) 1 else ...{2, 3}};
-<<<
+<<< 3.7
 var set = {
   if (c) 1 else ...{2, 3},
 };
 >>> Spread then and else stay unsplit if they fit.
 var set = {if (c) ...{1, 2} else ...{3, 4}};
-<<<
+<<< 3.7
 var set = {
   if (c) ...{1, 2} else ...{3, 4},
 };
 >>> Spread then formats like block if it splits.
 var set = {if (c) ...{element1, element2, element3}};
-<<<
+<<< 3.7
 var set = {
   if (c) ...{
     element1,
@@ -30,7 +30,7 @@ var set = {
 };
 >>> Both spreads split if then spread splits.
 var set = {if (c) ...{element1, element2, element3} else ...{1, 2}};
-<<<
+<<< 3.7
 var set = {
   if (c) ...{
     element1,
@@ -43,7 +43,7 @@ var set = {
 };
 >>> Both spreads split if else spread splits.
 var set = {if (c) ...{1, 2} else ...{element1, element2, element3}};
-<<<
+<<< 3.7
 var set = {
   if (c) ...{
     1,
@@ -58,7 +58,7 @@ var set = {
 var set = {
   if (condition) ...{} else ...{veryLongElement,veryLongElement,veryLongElement,}
 };
-<<<
+<<< 3.7
 var set = {
   if (condition)
     ...{}
@@ -72,7 +72,7 @@ var set = {
 var set = {
   if (condition) ...{veryLongElement,veryLongElement,veryLongElement,} else ...{}
 };
-<<<
+<<< 3.7
 var set = {
   if (condition) ...{
     veryLongElement,
@@ -85,7 +85,7 @@ var set = {
 var set = {
   if (condition) ...{} else veryLongIdentifier
 };
-<<<
+<<< 3.7
 var set = {
   if (condition)
     ...{}
@@ -96,7 +96,7 @@ var set = {
 var set = {
   if (condition) veryLongIdentifier else ...{}
 };
-<<<
+<<< 3.7
 var set = {
   if (condition)
     veryLongIdentifier
@@ -108,7 +108,7 @@ var set = {
   if (condition) ...{// c
   } else ...{veryLongElement,veryLongElement,veryLongElement,}
 };
-<<<
+<<< 3.7
 var set = {
   if (condition) ...{
     // c
@@ -123,7 +123,7 @@ var set = {
   if (condition) ...{veryLongElement,veryLongElement,veryLongElement,} else ...{// c
   }
 };
-<<<
+<<< 3.7
 var set = {
   if (condition) ...{
     veryLongElement,
@@ -135,20 +135,20 @@ var set = {
 };
 >>> A single-line list that isn't spread.
 var set = {if (a) {b}};
-<<<
+<<< 3.7
 var set = {
   if (a) {b},
 };
 >>> A collection that isn't spread wraps and indents.
 var set = {if (condition) {element1, element2, element3}};
-<<<
+<<< 3.7
 var set = {
   if (condition)
     {element1, element2, element3},
 };
 >>>
 var set = {if (c) {element1, element2, element3, element4}};
-<<<
+<<< 3.7
 var set = {
   if (c)
     {
@@ -160,7 +160,7 @@ var set = {
 };
 >>>
 var set = {if (c) {element1, element2, element3} else thing};
-<<<
+<<< 3.7
 var set = {
   if (c)
     {element1, element2, element3}
@@ -169,7 +169,7 @@ var set = {
 };
 >>>
 var set = {if (c) {element1, element2, element3, element4} else thing};
-<<<
+<<< 3.7
 var set = {
   if (c)
     {
@@ -183,7 +183,7 @@ var set = {
 };
 >>>
 var set = {if (c) thing else {element1, element2, element3}};
-<<<
+<<< 3.7
 var set = {
   if (c)
     thing
@@ -192,7 +192,7 @@ var set = {
 };
 >>>
 var set = {if (c) thing else {element1, element2, element3, element4}};
-<<<
+<<< 3.7
 var set = {
   if (c)
     thing

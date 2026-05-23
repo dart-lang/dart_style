@@ -1,12 +1,12 @@
 >>> (indent 4)
     if (maximumIntegerDigits >
         1 && maximumIntegerDigits > minimumIntegerDigits) {}
-<<<
+<<< 3.7
     if (maximumIntegerDigits > 1 &&
         maximumIntegerDigits > minimumIntegerDigits) {}
 >>> (indent 4)
     while (fractionCodes[fractionLength -
         1] == _zero && fractionLength > minimumFractionDigits + 1) {}
-<<<
+<<< 3.7
     while (fractionCodes[fractionLength - 1] == _zero &&
         fractionLength > minimumFractionDigits + 1) {}

@@ -12,7 +12,7 @@ switchItUp() {
       break;
   }
 }
-<<<
+<<< 3.6
 switchItUp() {
   var command = 'CLOSED';
   switch (command) {

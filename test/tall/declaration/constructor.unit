@@ -3,7 +3,7 @@
 class A {
   A();
 }
-<<<
+<<< 3.7
 class A {
   A();
 }
@@ -11,7 +11,7 @@ class A {
 class A {
   A() {}
 }
-<<<
+<<< 3.7
 class A {
   A() {}
 }
@@ -19,7 +19,7 @@ class A {
 class A {
   A() {body;}
 }
-<<<
+<<< 3.7
 class A {
   A() {
     body;
@@ -30,7 +30,7 @@ class Foo {
   const  Foo  .  constant  ();
   factory  Foo  .  fact  () => foo;
 }
-<<<
+<<< 3.7
 class Foo {
   const Foo.constant();
   factory Foo.fact() => foo;
@@ -41,7 +41,7 @@ class Foo {
   const  Foo  .  baz()  ;
   factory  Foo  .  bang(  int  param  ) => foo;
 }
-<<<
+<<< 3.7
 class Foo {
   Foo.bar() {}
   const Foo.baz();
@@ -51,7 +51,7 @@ class Foo {
 class SomeLongClassName {
   SomeLongClassName.someLongConstructorName();
 }
-<<<
+<<< 3.7
 class SomeLongClassName {
   SomeLongClassName.someLongConstructorName();
 }
@@ -60,7 +60,7 @@ class A {
   A  (  )  : this  .  named  (  1  );
   A  .  named  (  int  x  )  :  this  (  );
 }
-<<<
+<<< 3.7
 class A {
   A() : this.named(1);
   A.named(int x) : this();
@@ -69,7 +69,7 @@ class A {
 class LongClassName {
   LongClassName() : this(argument, another);
 }
-<<<
+<<< 3.7
 class LongClassName {
   LongClassName()
     : this(argument, another);
@@ -78,7 +78,7 @@ class LongClassName {
 class LongClassName {
   LongClassName() : this(argument, anotherArgument, thirdOne);
 }
-<<<
+<<< 3.7
 class LongClassName {
   LongClassName()
     : this(
@@ -92,7 +92,7 @@ class A {
   factory  A  .  nonConst  (  )  = B  <  int  >;
   const  factory  A  (  int  x  )  =  prefix  .  B;
 }
-<<<
+<<< 3.7
 class A {
   factory A.nonConst() = B<int>;
   const factory A(int x) = prefix.B;
@@ -101,7 +101,7 @@ class A {
 class VeryLongClassName {
   factory VeryLongClassName() = OtherLongClass;
 }
-<<<
+<<< 3.7
 class VeryLongClassName {
   factory VeryLongClassName() =
       OtherLongClass;
@@ -110,7 +110,7 @@ class VeryLongClassName {
 class LongClass {
   factory LongClass() = Other<LongType, Another>;
 }
-<<<
+<<< 3.7
 class LongClass {
   factory LongClass() =
       Other<LongType, Another>;
@@ -119,7 +119,7 @@ class LongClass {
 class LongClass {
   factory LongClass() = Other<SomeLongType, AnotherLongType>;
 }
-<<<
+<<< 3.7
 class LongClass {
   factory LongClass() =
       Other<

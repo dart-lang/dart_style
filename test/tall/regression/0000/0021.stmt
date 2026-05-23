@@ -4,7 +4,7 @@
       "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
       "des citations \" "
       "avec quelques paramètres ainsi 1, 2, et 3");
-<<<
+<<< 3.7
   verify(
     "Caractères qui doivent être échapper, par exemple barres \\ "
     "dollars \${ (les accolades sont ok), et xml/html réservés <& et "
@@ -29,7 +29,7 @@ var map = {
     "}"
   "}",
 };
-<<<
+<<< 3.7
 var map = {
   "nestedMessage":
       "{combinedGender,select, "

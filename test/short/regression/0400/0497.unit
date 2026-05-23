@@ -5,7 +5,7 @@ class Foo {
           .CreateRecipientSourceFromGroupResponse> createRecipientSourceFromGroup(
       String groupName, int campaignId, String languagePreference);
 }
-<<<
+<<< 3.6
 class Foo {
   Stream<api.CreateRecipientSourceFromGroupResponse>
       createRecipientSourceFromGroup(

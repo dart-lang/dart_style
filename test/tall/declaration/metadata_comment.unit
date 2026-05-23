@@ -3,7 +3,7 @@
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
 class C {}
-<<<
+<<< 3.7
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
 class C {}
@@ -11,7 +11,7 @@ class C {}
 @DomName('DatabaseCallback') // deprecated
 @Experimental()
 class C {}
-<<<
+<<< 3.7
 @DomName(
   'DatabaseCallback',
 ) // deprecated
@@ -55,7 +55,7 @@ class C {
   // c
   static final int y;
 }
-<<<
+<<< 3.7
 class C {
   @meta
   // c
@@ -103,7 +103,7 @@ class C {
   // c
   static int b() {}
 }
-<<<
+<<< 3.7
 class C {
   @meta
   // c

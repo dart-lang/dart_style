@@ -2,29 +2,29 @@
 >>> Line comment after `typedef`.
 typedef // c
 Alias = Type;
-<<<
+<<< 3.7
 typedef // c
 Alias = Type;
 >>> Line comment after name.
 typedef Alias // c
 = Type;
-<<<
+<<< 3.7
 typedef Alias // c
 = Type;
 >>> Line comment after `=`.
 typedef Alias = // c
 Type;
-<<<
+<<< 3.7
 typedef Alias = // c
     Type;
 >>> Line comment after type.
 typedef Alias = Type // c
 ;
-<<<
+<<< 3.7
 typedef Alias =
     Type // c
     ;
 >>> Line comment after `;`.
 typedef Alias = Type; // c
-<<<
+<<< 3.7
 typedef Alias = Type; // c

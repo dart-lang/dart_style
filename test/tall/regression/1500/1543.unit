@@ -4,7 +4,7 @@ void main() async {
     ['value'],
   ]);
 }
-<<<
+<<< 3.7
 void main() async {
   fn(
     param1: true,

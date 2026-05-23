@@ -3,7 +3,7 @@
               mirrorMode: mirrorMode, writeStaticInit: writeStaticInit).rewrite(
               parseCompilationUnit(code,
                   name: reflectionEntryPointPath, parseFunctionBodies: false));
-<<<
+<<< 3.7
           return new Rewriter(
             code,
             codegen,

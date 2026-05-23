@@ -3,11 +3,11 @@
 {
 
 }
-<<<
+<<< 3.7
 {}
 >>> At least one newline between statements.
 {a;b;c;}
-<<<
+<<< 3.7
 {
   a;
   b;
@@ -15,7 +15,7 @@
 }
 >>> Nested blocks increase indentation.
 {a;{b;{c;}d;}e;}
-<<<
+<<< 3.7
 {
   a;
   {
@@ -38,7 +38,7 @@
 
   d;
 }
-<<<
+<<< 3.7
 {
   a;
   b;
@@ -55,13 +55,13 @@
 
 
 }
-<<<
+<<< 3.7
 {
   a;
 }
 >>> Labelled statement.
 {label:statement;}
-<<<
+<<< 3.7
 {
   label:
   statement;
@@ -74,7 +74,7 @@ a: b:c:d:
 e:
 
 statement;
-<<<
+<<< 3.7
 a:
 b:
 c:

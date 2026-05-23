@@ -5,7 +5,7 @@
 @deprecated import 'dart:io';
 
 @deprecated export 'dart:io';
-<<<
+<<< 3.7
 @deprecated
 library foo;
 
@@ -16,12 +16,12 @@ import 'dart:io';
 export 'dart:io';
 >>> On part.
 @foo part "part.dart";
-<<<
+<<< 3.7
 @foo
 part "part.dart";
 >>> On part of.
 @foo part of bar;
-<<<
+<<< 3.7
 @foo
 part of bar;
 >>> Remove blank lines between metadata and directive.
@@ -34,7 +34,7 @@ import 'foo.dart';
 @bar
 
 import 'bar.dart';
-<<<
+<<< 3.7
 @foo
 import 'foo.dart';
 

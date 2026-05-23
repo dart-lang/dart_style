@@ -237,7 +237,7 @@ Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   'validateModifiersForTypedef_1': new MethodTrampoline(
       1, (Parser target, arg0) => target._validateModifiersForTypedef(arg0)),
 };
-<<<
+<<< 3.6
 Map<String, MethodTrampoline> methodTable_Parser = <String, MethodTrampoline>{
   'parseCompilationUnit_1': new MethodTrampoline(
       1, (Parser target, arg0) => target.parseCompilationUnit(arg0)),

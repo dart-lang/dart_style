@@ -2,7 +2,7 @@
 >>> Line comment in combinator list.
 import 'foo.dart' hide First, //
 Second;
-<<<
+<<< 3.7
 import 'foo.dart'
     hide
         First, //
@@ -11,7 +11,7 @@ import 'foo.dart'
 import 'uri.dart' if (
   // comment
 config == 'value') 'c';
-<<<
+<<< 3.7
 ### The indentation is odd here because it's an odd place for a comment.
 import 'uri.dart'
     if (

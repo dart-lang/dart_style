@@ -46,7 +46,7 @@ final LazyInitializer<TagDB> tagDbLazy = LazyInitializer(() async {
         // .then((value) => compute(_androidCallback, value));
   }
 });
-<<<
+<<< 3.7
 import 'package:archive/archive.dart'
     if (dart.library.io) 'package:archive/archive_io.dart'
     as archive;

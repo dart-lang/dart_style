@@ -1,17 +1,17 @@
 40 columns                              |
 >>> Empty block body.
 while (true) {}
-<<<
+<<< 3.7
 while (true) {}
 >>> Semicolon body.
 while (true);
-<<<
+<<< 3.7
 while (true) ;
 >>> Don't split at parentheses.
 while (aLongConditionExpressionThatWraps) {
   ;
 }
-<<<
+<<< 3.7
 while (aLongConditionExpressionThatWraps) {
   ;
 }
@@ -19,7 +19,7 @@ while (aLongConditionExpressionThatWraps) {
 while (aLongCondition + expressionThatWraps) {
   ;
 }
-<<<
+<<< 3.7
 while (aLongCondition +
     expressionThatWraps) {
   ;
@@ -28,7 +28,7 @@ while (aLongCondition +
 while (function(argument, argument, argument)) {
   ;
 }
-<<<
+<<< 3.7
 while (function(
   argument,
   argument,
@@ -38,23 +38,23 @@ while (function(
 }
 >>> Unbraced body.
 while (condition) something(i);
-<<<
+<<< 3.7
 while (condition) something(i);
 >>> Split unbraced body.
 ### This goes against the style guide, but the formatter still has to handle it.
 while (condition) someLong(argument, another);
-<<<
+<<< 3.7
 while (condition)
   someLong(argument, another);
 >>> Split in condition forces split before body.
 while (veryLongCondition || veryLongExpression) body;
-<<<
+<<< 3.7
 while (veryLongCondition ||
     veryLongExpression)
   body;
 >>> Split in body forces split before body.
 while (condition) veryLongExpression + anotherLongExpression;
-<<<
+<<< 3.7
 while (condition)
   veryLongExpression +
       anotherLongExpression;

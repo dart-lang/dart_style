@@ -1,20 +1,20 @@
 40 columns                              |
 >>> Don't split before or after condition.
 if (veryLongConditionExpressionWithNoSplit) { body;}
-<<<
+<<< 3.7
 if (veryLongConditionExpressionWithNoSplit) {
   body;
 }
 >>> Split inside condition expression.
 if (veryLongCondition || anotherLongCondition) { body; }
-<<<
+<<< 3.7
 if (veryLongCondition ||
     anotherLongCondition) {
   body;
 }
 >>> Condition expressions can use block formatting.
 if ([element, element, element, element]) { body; }
-<<<
+<<< 3.7
 if ([
   element,
   element,
@@ -25,7 +25,7 @@ if ([
 }
 >>>
 if (someFunction(argument, argument, argument)) { body; }
-<<<
+<<< 3.7
 if (someFunction(
   argument,
   argument,
@@ -35,7 +35,7 @@ if (someFunction(
 }
 >>> Indentation.
 if  (  true  )  {  return 42;  }  else  {  return 13;  }
-<<<
+<<< 3.7
 if (true) {
   return 42;
 } else {
@@ -53,7 +53,7 @@ return false;
 }else{
 return false;
 }
-<<<
+<<< 3.7
 if (true) {
   if (true) {
     if (true) {
@@ -73,7 +73,7 @@ if (0 == 0) {
 } else if (0 == 2) {
   two;
 }
-<<<
+<<< 3.7
 if (0 == 0) {
   zero;
 } else if (0 == 1) {
@@ -83,7 +83,7 @@ if (0 == 0) {
 }
 >>> Then without else.
 if(true){print("true!");}
-<<<
+<<< 3.7
 if (true) {
   print("true!");
 }
@@ -92,47 +92,47 @@ if (condition) {
 
 
 }
-<<<
+<<< 3.7
 if (condition) {}
 >>> Split empty block in if when there is an else.
 if (condition) {} else {
 
 }
-<<<
+<<< 3.7
 if (condition) {
 } else {}
 >>> Unbraced then.
 if(true)print("true!");
-<<<
+<<< 3.7
 if (true) print("true!");
 >>> Split unbraced then branch.
 ### This goes against the style guide, but the formatter still has to handle it.
 if (condition) someLong(argument, another);
-<<<
+<<< 3.7
 if (condition)
   someLong(argument, another);
 >>> Split in condition forces unbraced if to split.
 if (veryLongCondition || veryLongExpression) body;
-<<<
+<<< 3.7
 if (veryLongCondition ||
     veryLongExpression)
   body;
 >>> Split in then statement forces unbraced if to split.
 if (condition) veryLongExpression + anotherLongExpression;
-<<<
+<<< 3.7
 if (condition)
   veryLongExpression +
       anotherLongExpression;
 >>> Unbraced else.
 if(true){print(1);}else print(0);
-<<<
+<<< 3.7
 if (true) {
   print(1);
 } else
   print(0);
 >>> Unbraced both.
 if(true)print(1);else print(0);
-<<<
+<<< 3.7
 if (true)
   print(1);
 else
@@ -142,14 +142,14 @@ if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another);
-<<<
+<<< 3.7
 if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another);
 >>> Unbraced chained if-else without else.
 if(a)print(0);else if(b) print(1); else if(c) print(2);
-<<<
+<<< 3.7
 if (a)
   print(0);
 else if (b)
@@ -158,7 +158,7 @@ else if (c)
   print(2);
 >>> Unbraced chained if-else with else.
 if(a)print(0);else if(b) print(1); else if(c) print(2); else print(3);
-<<<
+<<< 3.7
 if (a)
   print(0);
 else if (b)

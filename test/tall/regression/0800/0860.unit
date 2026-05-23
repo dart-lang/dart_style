@@ -19,7 +19,7 @@ class AnotherClass {
       : aNotCrazyLongField = aLongArgumentNameThatHasSomeWordsInIt ||
             anotherVeryLongArgumentNameToMatchAbove;
 }
-<<<
+<<< 3.7
 class SomeClassName {
   bool aNotCrazyLongField;
   SomeClassName(

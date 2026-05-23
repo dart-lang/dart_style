@@ -1,26 +1,26 @@
 40 columns                              |
 >>> all fit on one line
 foo<A,B,C,D>() {}
-<<<
+<<< 3.6
 foo<A, B, C, D>() {}
 >>> prefer to split between params even when they all fit on next line
 longFunctionName<First, Second, Third>() {}
-<<<
+<<< 3.6
 longFunctionName<First, Second,
     Third>() {}
 >>> split before first if needed
 longFunctionName<FirstTypeParameterIsLong, S>() {}
-<<<
+<<< 3.6
 longFunctionName<
     FirstTypeParameterIsLong, S>() {}
 >>> split in middle if fit in two lines
 longFunctionName<First, Second, Third, Fourth, Fifth, Sixth>() {}
-<<<
+<<< 3.6
 longFunctionName<First, Second, Third,
     Fourth, Fifth, Sixth>() {}
 >>> split one per line if they don't fit in two lines
 veryLongFunctionName<First, Second, Third, Fourth, Fifth, Sixth, Seventh>() {}
-<<<
+<<< 3.6
 veryLongFunctionName<
     First,
     Second,
@@ -31,7 +31,7 @@ veryLongFunctionName<
     Seventh>() {}
 >>> split both type and value arguments
 lengthyMethodName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth) {}
-<<<
+<<< 3.6
 lengthyMethodName<
         First,
         Second,
@@ -51,13 +51,13 @@ lengthyMethodName<
     eighth) {}
 >>> type parameters and => body
 longFunctionName<LongTypeParameterT, LongTypeParameterS>() => body;
-<<<
+<<< 3.6
 longFunctionName<LongTypeParameterT,
         LongTypeParameterS>() =>
     body;
 >>> type parameters, value parameters, and => body
 longFunctionName<LongTypeParameterT, LongTypeParameterS>(longParameter1, longParameter2) => body;
-<<<
+<<< 3.6
 longFunctionName<LongTypeParameterT,
             LongTypeParameterS>(
         longParameter1,
@@ -66,7 +66,7 @@ longFunctionName<LongTypeParameterT,
 >>> generic function typed parameter
 longFunctionName(String longParameterName<LongTypeParameter,
 AnotherTypeParam>(LongTypeParameter parameter, AnotherTypeParam another)) {;}
-<<<
+<<< 3.6
 longFunctionName(
     String longParameterName<
             LongTypeParameter,

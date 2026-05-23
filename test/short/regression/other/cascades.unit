@@ -8,7 +8,7 @@ class C {
           mcHammer; // This mcHammer access SHOULD lint
   }
 }
-<<<
+<<< 3.6
 class C {
   get defaultProps {
     return newProps() // This newProps() call should not lint
@@ -32,7 +32,7 @@ class C {
       ..addFlag('async', hide: true);
   };
 }
-<<<
+<<< 3.6
 class C {
   static final ArgParser _parser = () {
     var parser = ArgParser(allowTrailingOptions: true)

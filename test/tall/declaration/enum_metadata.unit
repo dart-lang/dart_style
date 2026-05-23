@@ -2,13 +2,13 @@
 >>> On enum.
 @Awesome @Fierce("really")
 enum Primate{bonobo,chimp,gorilla}
-<<<
+<<< 3.7
 @Awesome
 @Fierce("really")
 enum Primate { bonobo, chimp, gorilla }
 >>> On enum cases.
 enum Foo { a, @meta b, @meta1 @meta2 c}
-<<<
+<<< 3.7
 enum Foo {
   a,
   @meta
@@ -23,7 +23,7 @@ enum Foo { a,
 
 
 @meta b}
-<<<
+<<< 3.7
 enum Foo {
   a,
 
@@ -32,7 +32,7 @@ enum Foo {
 }
 >>> Metadata on enum case forces enum to split.
 enum Foo { @m a }
-<<<
+<<< 3.7
 enum Foo {
   @m
   a,

@@ -23,7 +23,7 @@
       taskList.backwardPaginationDisabled: isTrue
     });
   });
-<<<
+<<< 3.7
   testThat(
     'backward navigation is disabled when at end of stream',
     when: (TaskList taskList, TaskService taskService) {

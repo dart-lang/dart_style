@@ -5,7 +5,7 @@ class A {
   int  operator  +  (  int  other  )  {  return  value  +  other  ;  }
   int  operator  -  (    )  {  return  -  value  ;  }
 }
-<<<
+<<< 3.7
 class A {
   bool operator ==(Object other) =>
       true;

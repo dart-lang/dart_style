@@ -2,7 +2,7 @@
           result = ProviderScope(overrides: [
             selectedCharacterId.overrideWithValue(split.last),
           ], child: const CharacterView());
-<<<
+<<< 3.7
           result = ProviderScope(
             overrides: [selectedCharacterId.overrideWithValue(split.last)],
             child: const CharacterView(),

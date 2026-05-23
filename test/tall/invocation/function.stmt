@@ -1,19 +1,19 @@
 40 columns                              |
 >>> Empty argument list.
 function ( ) ;
-<<<
+<<< 3.7
 function();
 >>> Never split empty argument list.
 function_______________________________();
-<<<
+<<< 3.7
 function_______________________________();
 >>> Inline arguments.
 function ( argument , another , third ) ;
-<<<
+<<< 3.7
 function(argument, another, third);
 >>> Split arguments and add trailing comma.
 function ( argument , another , third , fourth ) ;
-<<<
+<<< 3.7
 function(
   argument,
   another,
@@ -25,15 +25,15 @@ function(
   argument,
   another,
 );
-<<<
+<<< 3.7
 function(argument, another);
 >>> With type arguments.
 function  <  int  ,  String  >  (  1  ,  2  ,  3  );
-<<<
+<<< 3.7
 function<int, String>(1, 2, 3);
 >>> Split type arguments but not arguments.
 function<VeryLongTypeName, AnotherLongTypeName>(1, 2, 3);
-<<<
+<<< 3.7
 function<
   VeryLongTypeName,
   AnotherLongTypeName
@@ -41,7 +41,7 @@ function<
 >>> Split type arguments and arguments.
 function<VeryLongTypeName, AnotherLongTypeName>(firstArgument, secondArgument,
 thirdArgument);
-<<<
+<<< 3.7
 function<
   VeryLongTypeName,
   AnotherLongTypeName
@@ -52,7 +52,7 @@ function<
 );
 >>> Split in nested type argument.
 function<List<NotSplit>, Map<VeryLongTypeName, AnotherLongTypeName>>(1, 2, 3);
-<<<
+<<< 3.7
 function<
   List<NotSplit>,
   Map<
@@ -65,7 +65,7 @@ someFunctionOne(someArgument,
 someFunctionTwo(argument, argument, argument),
 someFunctionTwo(argument, argument, argument),
 someArgument, someArgument);
-<<<
+<<< 3.7
 someFunctionOne(
   someArgument,
   someFunctionTwo(
@@ -97,7 +97,7 @@ function(
 
 
 );
-<<<
+<<< 3.7
 function(
   firstElement,
 
@@ -121,5 +121,5 @@ f(
 
 
 );
-<<<
+<<< 3.7
 f(1, 2, 3);

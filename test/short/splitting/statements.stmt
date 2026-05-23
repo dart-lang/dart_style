@@ -1,49 +1,49 @@
 40 columns                              |
 >>> single-line assert
 assert("some short string");
-<<<
+<<< 3.6
 assert("some short string");
 >>> wrapped assert
 assert("some very long string that wraps");
-<<<
+<<< 3.6
 assert(
     "some very long string that wraps");
 >>> single-line assert with message
 assert(true, "blah");
-<<<
+<<< 3.6
 assert(true, "blah");
 >>> split assert with message before both
 assert(true, "looong string that wraps");
-<<<
+<<< 3.6
 assert(
     true, "looong string that wraps");
 >>> split assert with message after first
 assert(veryLongCondition, "long string that wraps");
-<<<
+<<< 3.6
 assert(veryLongCondition,
     "long string that wraps");
 >>> split assert with message at both
 assert(veryVeryVeryVeryVeryLongCondition, "long string that wraps");
-<<<
+<<< 3.6
 assert(
     veryVeryVeryVeryVeryLongCondition,
     "long string that wraps");
 >>> split assert with trailing comma
 assert(condition,);
-<<<
+<<< 3.6
 assert(
   condition,
 );
 >>> split assert with trailing comma and message
 assert(condition, "some message",);
-<<<
+<<< 3.6
 assert(
   condition,
   "some message",
 );
 >>> split in do-while condition
 do {} while ("some long string that wraps");
-<<<
+<<< 3.6
 do {} while (
     "some long string that wraps");
 >>> don't split empty block in if without else
@@ -51,18 +51,18 @@ if (condition) {
 
 
 }
-<<<
+<<< 3.6
 if (condition) {}
 >>> split empty block in if if there is an else
 if (condition) {} else {
 
 }
-<<<
+<<< 3.6
 if (condition) {
 } else {}
 >>> split empty catch if there is a finally
 try {;} catch (err) {} finally {;}
-<<<
+<<< 3.6
 try {
   ;
 } catch (err) {
@@ -71,7 +71,7 @@ try {
 }
 >>> split empty on if there is a finally
 try {;} on Exception {} finally {;}
-<<<
+<<< 3.6
 try {
   ;
 } on Exception {
@@ -80,7 +80,7 @@ try {
 }
 >>> split all empty catches if there is a finally
 try {;} catch (err1) {} catch (err2) {} catch (err3) {} finally {;}
-<<<
+<<< 3.6
 try {
   ;
 } catch (err1) {
@@ -91,7 +91,7 @@ try {
 }
 >>> split leading empty catches if there are multiple
 try {;} catch (err1) {} catch (err2) {} catch (err3) {}
-<<<
+<<< 3.6
 try {
   ;
 } catch (err1) {

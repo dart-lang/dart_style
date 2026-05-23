@@ -3,7 +3,7 @@ main() {
   /// Doc comment.
   final (a, b) = c;
 }
-<<<
+<<< 3.7
 main() {
   /// Doc comment.
   final (a, b) = c;

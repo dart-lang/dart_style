@@ -1,23 +1,23 @@
 40 columns                              |
 >>> empty record types don't split
 someLongFunctionName__________________(() x) {}
-<<<
+<<< 3.6
 someLongFunctionName__________________(
     () x) {}
 >>> unsplit short single positional field
 (TypeName,) x;
-<<<
+<<< 3.6
 (TypeName,) x;
 >>> unsplit single positional field
 function((VeryLongTypeName____________,) x) {;}
-<<<
+<<< 3.6
 function(
     (VeryLongTypeName____________,) x) {
   ;
 }
 >>> split single positional field
 function((VeryLongTypeName___________________,) param) {;}
-<<<
+<<< 3.6
 function(
     (
       VeryLongTypeName___________________,
@@ -26,14 +26,14 @@ function(
 }
 >>> prefer to split between type and variable
 (LongTypeName, LongTypeName) longVariableName;
-<<<
+<<< 3.6
 (
   LongTypeName,
   LongTypeName
 ) longVariableName;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName) x;
-<<<
+<<< 3.6
 (
   TypeName,
   TypeName,
@@ -42,7 +42,7 @@ function(
 ) x;
 >>> split positional
 (TypeName,TypeName,TypeName,TypeName,TypeName) x;
-<<<
+<<< 3.6
 (
   TypeName,
   TypeName,
@@ -52,7 +52,7 @@ function(
 ) x;
 >>> split named
 ({TypeName a,TypeName b,TypeName c,TypeName d}) x;
-<<<
+<<< 3.6
 ({
   TypeName a,
   TypeName b,
@@ -61,7 +61,7 @@ function(
 }) x;
 >>> split named if positional splits
 (TypeName,TypeName,TypeName,TypeName,{TypeName a,TypeName b}) x;
-<<<
+<<< 3.6
 (
   TypeName,
   TypeName,
@@ -72,7 +72,7 @@ function(
 }) x;
 >>> split positional if named splits
 (TypeName,TypeName,{TypeName a,TypeName b,TypeName c,TypeName d}) x;
-<<<
+<<< 3.6
 (
   TypeName,
   TypeName, {
@@ -83,20 +83,20 @@ function(
 }) x;
 >>> always split named with trailing comma
 ({int n,}) x;
-<<<
+<<< 3.6
 ({
   int n,
 }) x;
 >>> split positional with trailing comma if more than one
 (int m, int n,) x;
-<<<
+<<< 3.6
 (
   int m,
   int n,
 ) x;
 >>> split outer record if inner record splits
 ((TypeName,TypeName,TypeName,TypeName),TypeName) x;
-<<<
+<<< 3.6
 (
   (
     TypeName,
@@ -108,7 +108,7 @@ function(
 ) x;
 >>> split outer type argument list if inner record splits
 Map<String, (TypeName,TypeName,TypeName,TypeName)> map;
-<<<
+<<< 3.6
 Map<
     String,
     (
@@ -119,7 +119,7 @@ Map<
     )> map;
 >>> inside parameter list
 function((TypeName, TypeName, TypeName, TypeName, TypeName) record) {;}
-<<<
+<<< 3.6
 function(
     (
       TypeName,
@@ -132,13 +132,13 @@ function(
 }
 >>> single positional trailing comma inside parameter list
 function((TypeName,) record) {;}
-<<<
+<<< 3.6
 function((TypeName,) record) {
   ;
 }
 >>> named parameter trailing comma inside parameter list
 function(({TypeName param,}) record) {;}
-<<<
+<<< 3.6
 function(
     ({
       TypeName param,
@@ -147,7 +147,7 @@ function(
 }
 >>> field formal parameter trailing comma inside parameter list
 class C { C((TypeName,TypeName,) this.record) {;} }
-<<<
+<<< 3.6
 class C {
   C(
       (
@@ -159,7 +159,7 @@ class C {
 }
 >>> inside trailing comma parameter list
 function((TypeName,TypeName,) record,) {;}
-<<<
+<<< 3.6
 function(
   (
     TypeName,
@@ -170,7 +170,7 @@ function(
 }
 >>> trailing comma inside trailing comma parameter list
 function((TypeName,TypeName,) record,) {;}
-<<<
+<<< 3.6
 function(
   (
     TypeName,

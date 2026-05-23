@@ -16,14 +16,12 @@ final _preserveTrailingCommasPattern = RegExp(r'\(trailing_commas preserve\)');
 final _unicodeUnescapePattern = RegExp(r'×([0-9a-fA-F]{2,4})');
 final _unicodeEscapePattern = RegExp('[\x0a\x0c\x0d]');
 
-/// Matches an output header line with an optional version and description.
+/// Matches an output header line with a language version and description.
 /// Examples:
 ///
-///    >>>
-///    >>> Only description.
 ///    >>> 1.2
 ///    >>> 1.2 Version and description.
-final _outputPattern = RegExp(r'<<<( (\d+)\.(\d+))?(.*)');
+final _outputPattern = RegExp(r'<<<\s*(\d+)\.(\d+)(.*)');
 
 const _unsupportedMarker = '(unsupported)';
 
@@ -148,26 +146,18 @@ final class TestFile {
         );
       }
 
-      var unversionedOutputs = <TestEntry>[];
-      var versionedOutputs = <Version, TestEntry>{};
+      var outputs = <Version, TestEntry>{};
       Version? unsupportedVersion;
       while (i < lines.length && lines[i].startsWith('<<<')) {
         var match = _outputPattern.firstMatch(readLine())!;
-        var outputDescription = match[4]!.trim();
-        Version? outputVersion;
-        if (match[1] != null) {
-          outputVersion = Version(
-            int.parse(match[2]!),
-            int.parse(match[3]!),
-            0,
-          );
-        }
+        var outputVersion = Version(
+          int.parse(match[1]!),
+          int.parse(match[2]!),
+          0,
+        );
+        var outputDescription = match[3]!.trim();
 
         if (outputDescription.endsWith(_unsupportedMarker)) {
-          if (outputVersion == null) {
-            fail('The "(unsupported)" marker must have a version before it.');
-          }
-
           unsupportedVersion = outputVersion;
 
           // There should not be any lines after an (unsupported) marker.
@@ -204,50 +194,22 @@ final class TestFile {
           isCompilationUnit: isCompilationUnit,
         );
 
-        var entry = TestEntry(
+        if (outputs.containsKey(outputVersion)) {
+          fail('Multiple outputs with the same version $outputVersion.');
+        }
+
+        outputs[outputVersion] = TestEntry(
           outputDescription.trim(),
           outputComments,
           outputCode,
         );
-        if (outputVersion != null) {
-          if (versionedOutputs.containsKey(outputVersion)) {
-            fail('Multiple outputs with the same version $outputVersion.');
-          }
-
-          versionedOutputs[outputVersion] = entry;
-        } else {
-          unversionedOutputs.add(entry);
-        }
       }
 
-      switch ((unversionedOutputs.length, versionedOutputs.length)) {
-        case (0, 0):
-          fail('Test must have at least one output.');
-        case (0, > 0):
-          tests.add(
-            VersionedFormatTest(
-              lineNumber,
-              options,
-              input,
-              versionedOutputs,
-              unsupportedVersion,
-            ),
-          );
-        case (1, 0):
-          tests.add(
-            UnversionedFormatTest(
-              lineNumber,
-              options,
-              input,
-              unversionedOutputs.first,
-              unsupportedVersion,
-            ),
-          );
-        case (> 1, 0):
-          fail('Test can\'t have multiple unversioned outputs.');
-        default:
-          fail('Test can\'t have both versioned and unversioned outputs.');
-      }
+      if (outputs.isEmpty) fail('Test must have at least one output.');
+
+      tests.add(
+        FormatTest(lineNumber, options, input, outputs, unsupportedVersion),
+      );
     }
 
     return TestFile._(
@@ -346,7 +308,7 @@ final class TestFile {
 }
 
 /// A single formatting test inside a [TestFile].
-sealed class FormatTest {
+final class FormatTest {
   /// The 1-based index of the line where this test begins.
   final int line;
 
@@ -356,37 +318,6 @@ sealed class FormatTest {
   /// The unformatted input.
   final TestEntry input;
 
-  /// The language version at which point this test is no longer supported, or
-  /// `null` if the test has no upper bound for language support.
-  final Version? unsupportedVersion;
-
-  FormatTest(this.line, this.options, this.input, this.unsupportedVersion);
-
-  /// The line and description of the test.
-  String get label {
-    if (input.description.isEmpty) return 'line $line';
-    return 'line $line: ${input.description}';
-  }
-}
-
-/// A test for formatting that should be the same across all language versions.
-///
-/// Most tests are of this form.
-final class UnversionedFormatTest extends FormatTest {
-  /// The expected output.
-  final TestEntry output;
-
-  UnversionedFormatTest(
-    super.line,
-    super.options,
-    super.input,
-    this.output,
-    super.unsupportedVersion,
-  );
-}
-
-/// A test whose expected formatting changes at specific versions.
-final class VersionedFormatTest extends FormatTest {
   /// The expected output by version.
   ///
   /// Each key is the lowest version where that output is expected. If there are
@@ -400,13 +331,23 @@ final class VersionedFormatTest extends FormatTest {
   /// the formatting style has changed.
   final Map<Version, TestEntry> outputs;
 
-  VersionedFormatTest(
-    super.line,
-    super.options,
-    super.input,
+  /// The language version at which point this test is no longer supported, or
+  /// `null` if the test has no upper bound for language support.
+  final Version? unsupportedVersion;
+
+  FormatTest(
+    this.line,
+    this.options,
+    this.input,
     this.outputs,
-    super.unsupportedVersion,
+    this.unsupportedVersion,
   );
+
+  /// The line and description of the test.
+  String get label {
+    if (input.description.isEmpty) return 'line $line';
+    return 'line $line: ${input.description}';
+  }
 }
 
 /// A single test input or output.

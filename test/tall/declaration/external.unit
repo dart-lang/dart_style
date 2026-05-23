@@ -4,7 +4,7 @@
   external   final    Set < int  >  a ,  b  ;
   external   var   a  ;
   external   List < int >   a  ;
-<<<
+<<< 3.7
 external final a, b;
 external final Set<int> a, b;
 external var a;
@@ -16,7 +16,7 @@ external    static  final    Set < int  >  a ,  b  ;
    external   static   var   a  ;
   external  static    List < int >   a  ;
 }
-<<<
+<<< 3.7
 class C {
   external static final a, b;
   external static final Set<int> a, b;
@@ -30,7 +30,7 @@ class C {
   external   var   a  ;
   external   List < int >   a  ;
 }
-<<<
+<<< 3.7
 class C {
   external final a, b;
   external final Set<String> a, b;
@@ -41,7 +41,7 @@ class C {
 external  int  function();
 external  int  get getter;
 external  void  set setter(int value);
-<<<
+<<< 3.7
 external int function();
 external int get getter;
 external void set setter(int value);
@@ -51,7 +51,7 @@ class A {
   external  int  get getter;
   external  void  set setter(int value);
 }
-<<<
+<<< 3.7
 class A {
   external int function();
   external int get getter;
@@ -63,7 +63,7 @@ class A {
   external  static  int get getter;
   external  static  void set setter(int value);
 }
-<<<
+<<< 3.7
 class A {
   external static int function();
   external static int get getter;
@@ -78,7 +78,7 @@ class A {
   external factory A.fact();
   external const factory A.constantFact();
 }
-<<<
+<<< 3.7
 class A {
   external A();
   external const A.constant();
@@ -90,7 +90,7 @@ class Foo {
   external var soMuchSoVeryLongFieldNameHere;
   external SuperLongTypeAnnotation field;
 }
-<<<
+<<< 3.7
 class Foo {
   external var soMuchSoVeryLongFieldNameHere;
   external SuperLongTypeAnnotation

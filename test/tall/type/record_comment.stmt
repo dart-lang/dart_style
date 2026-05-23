@@ -2,7 +2,7 @@
 >>> Comment between the type and name of a field.
 (int  // comment
 value, String label) x;
-<<<
+<<< 3.7
 (
   int // comment
   value,
@@ -12,7 +12,7 @@ x;
 >>> Comment after field and comma.
 (int value, // comment
 String label) x;
-<<<
+<<< 3.7
 (
   int value, // comment
   String label,
@@ -21,7 +21,7 @@ x;
 >>> Comment before field and comma.
 (int value // comment
 ,String label) x;
-<<<
+<<< 3.7
 (
   int value, // comment
   String label,
@@ -31,7 +31,7 @@ x;
 (int value, // comment
 {String label})
 x;
-<<<
+<<< 3.7
 (
   int value, { // comment
   String label,
@@ -41,7 +41,7 @@ x;
 (int value, {  // comment
 String label})
 x;
-<<<
+<<< 3.7
 (
   int value, { // comment
   String label,
@@ -51,7 +51,7 @@ x;
 (int value, {String label}  // comment
 )
 x;
-<<<
+<<< 3.7
 (
   int value, {
   String label, // comment
@@ -60,13 +60,13 @@ x;
 >>> Comment between record type and nullable question mark.
 (int value  , ) // comment
 ? x;
-<<<
+<<< 3.7
 (int value,) // comment
 ?
 x;
 >>> Comment after record type.
 (int value,     String label) // comment
 x;
-<<<
+<<< 3.7
 (int value, String label) // comment
 x;

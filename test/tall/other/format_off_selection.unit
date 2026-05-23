@@ -7,7 +7,7 @@ main() {
   // dart format on
   but   +   here   +    does   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + format‹ted;
   // dart format off
@@ -23,7 +23,7 @@ main() {
   // dart format on
   but   +   here   +    do›es   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + formatted;
   // dart format off
@@ -39,7 +39,7 @@ main() {
   // dart format on
   but   +   here   +    does   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + formatted;
   // dart format off
@@ -55,7 +55,7 @@ main() {
   // dart format on
   but   +   here   +    do›es   ;
 }
-<<<
+<<< 3.7
 main() {
   here + gets + format‹ted;
   // dart format off

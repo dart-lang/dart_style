@@ -10,7 +10,7 @@ class C {
     node,
   );
 }
-<<<
+<<< 3.7
 class C {
   T visitVariableDeclarationList(VariableDeclarationList node) =>
       visitExpression(node);
@@ -26,7 +26,7 @@ class C {
     'visitLiteralStatement',
   );
 }
-<<<
+<<< 3.7
 class C {
   Instantiator visitLiteralStatement(LiteralStatement node) =>
       TODO('visitLiteralStatement');
@@ -36,6 +36,6 @@ ModifiableCssSupportsRule copyWithoutChildren() => ModifiableCssSupportsRule(
   condition,
   span,
 );
-<<<
+<<< 3.7
 ModifiableCssSupportsRule copyWithoutChildren() =>
     ModifiableCssSupportsRule(condition, span);

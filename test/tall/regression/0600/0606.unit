@@ -57,7 +57,7 @@ enum ErrorKind {
 
   Unspecified,
 }
-<<<
+<<< 3.7
 enum ErrorKind {
   AbstractNotSync,
   AsciiControlCharacter,

@@ -1,35 +1,35 @@
 40 columns                              |
 >>> Inline comment before name.
 library/* c */foo;
-<<<
+<<< 3.7
 library /* c */ foo;
 >>> Inline comment before ".".
 library a/* c */.b.c;
-<<<
+<<< 3.7
 library a /* c */ .b.c;
 >>> Inline comment after ".".
 library a./**/b.c;
-<<<
+<<< 3.7
 library a. /**/ b.c;
 >>> Line comment before name.
 library // c
 a.b.c;
-<<<
+<<< 3.7
 library // c
 a.b.c;
 >>> Line comment before ".".
 library a// c
 .b.c;
-<<<
+<<< 3.7
 library a // c
 .b.c;
 >>> line comment after ".".
 library a.// c
 b.c;
-<<<
+<<< 3.7
 library a. // c
 b.c;
 >>> Inline comment in unnamed library.
 library/* c */;
-<<<
+<<< 3.7
 library /* c */;

@@ -6,7 +6,7 @@ class RouteDefinition {
     @required String defaultTo,
   }) = ForkedRouteDefinition._;
 }
-<<<
+<<< 3.7
 class RouteDefinition {
   const factory RouteDefinition.fork(
     String path,
@@ -23,7 +23,7 @@ class RouteDefinition {
         String defaultTo,
   }) = ForkedRouteDefinition._;
 }
-<<<
+<<< 3.7
 class RouteDefinition {
   const factory RouteDefinition.fork(
     String path,
@@ -44,7 +44,7 @@ void fn1(
         String argument1}) {
   return;
 }
-<<<
+<<< 3.7
 void reallyLongFunctionName0(
   @Deprecated('This has been deprecated for many interesting reasons...') arg1,
 ) {
@@ -69,7 +69,7 @@ void fn1(
         String argument1}) {
   return;
 }
-<<<
+<<< 3.7
 void reallyLongFunctionName0(
   @Deprecated('This has been deprecated for many many interesting reasons...')
   arg1,

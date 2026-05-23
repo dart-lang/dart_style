@@ -1,7 +1,7 @@
 40 columns                              |
 >>> Empty body.
 mixin  M  {  }
-<<<
+<<< 3.7
 mixin M {}
 >>> Members.
 ### These are formatted the same as classes, so most of the member tests are
@@ -21,7 +21,7 @@ mixin M {
   int  me(int x) => x;
   int  operator+(int x) => x;
 }
-<<<
+<<< 3.7
 mixin M {
   static const int c = 1;
   static final int f = 1;
@@ -42,7 +42,7 @@ base  mixin  class  M2  {  }
 abstract  mixin  class  M3  {  }
 abstract  base  mixin  class  M4  {  }
 base  mixin  M5  {  }
-<<<
+<<< 3.7
 mixin class M1 {}
 
 base mixin class M2 {}
@@ -81,11 +81,11 @@ mixin M2 {}
 var z = 3;
 >>> (experiment primary-constructors) Empty body with semicolon.
 mixin A;
-<<<
+<<< 3.7
 mixin A;
 >>> (experiment primary-constructors) Empty body with semicolon and on clause.
 mixin B on C;
-<<<
+<<< 3.7
 mixin B on C;
 >>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
 var x = 1;
@@ -103,7 +103,7 @@ base  mixin  class  M2  ;
 abstract  mixin  class  M3  ;
 abstract  base  mixin  class  M4  ;
 base  mixin  M5  ;
-<<<
+<<< 3.7
 mixin class M1;
 base mixin class M2;
 abstract mixin class M3;

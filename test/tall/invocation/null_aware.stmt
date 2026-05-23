@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Unsplit.
 receiver ?.  method() ?. getter;
-<<<
+<<< 3.7
 receiver?.method()?.getter;
 >>> In split method chain.
 object?.method().method()?.method().method();
-<<<
+<<< 3.7
 object
     ?.method()
     .method()

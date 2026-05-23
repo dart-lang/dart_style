@@ -113,11 +113,8 @@ Future<void> _runTest(String path, int line) async {
   var formatter = testFile.formatterForTest(formatTest);
   var actual = formatter.formatSource(formatTest.input.code);
 
-  var output = switch (formatTest) {
-    UnversionedFormatTest(:var output) => output,
-    // Use the newest style for the expectation.
-    VersionedFormatTest(:var outputs) => outputs.values.last,
-  };
+  // Use the newest style for the expectation.
+  var output = formatTest.outputs.values.last;
 
   var isCorrect =
       actual.textWithSelectionMarkers == output.code.textWithSelectionMarkers;

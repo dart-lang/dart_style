@@ -36,7 +36,7 @@
       }
     }))
         .catchError(ut.fail);
-<<<
+<<< 3.7
     _trigger
         .then(
           ut.expectAsync((result) {

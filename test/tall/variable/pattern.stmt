@@ -9,7 +9,7 @@
   final  {  'k'  :  _  ,  ...  } = o;
   var  Foo  (  prop  :  value  ,  :  inferred  )  = o;
 }
-<<<
+<<< 3.7
 {
   var (a && b) = o;
   var (a as int, String? b) = o;
@@ -20,18 +20,18 @@
 }
 >>> Prefer to split at "=" instead of pattern.
 var (longIdentifier && anotherOne) = value;
-<<<
+<<< 3.7
 var (longIdentifier && anotherOne) =
     value;
 >>> Split in infix pattern.
 var (longIdentifier && anotherAlsoLongOne) = value;
-<<<
+<<< 3.7
 var (longIdentifier &&
         anotherAlsoLongOne) =
     value;
 >>> Split in list pattern.
 var [first, second, third, fourth, fifth] = value;
-<<<
+<<< 3.7
 var [
   first,
   second,
@@ -41,14 +41,14 @@ var [
 ] = value;
 >>> Split in initializer but not block-splittable pattern.
 var [first] = expression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 var [first] =
     expression +
     anotherOperand +
     aThirdOperand;
 >>> Split in map pattern.
 var {first: second, third: fourth, fifth: sixth} = value;
-<<<
+<<< 3.7
 var {
   first: second,
   third: fourth,
@@ -56,7 +56,7 @@ var {
 } = value;
 >>> Split in record pattern.
 var (first, second, third, fourth, fifth) = value;
-<<<
+<<< 3.7
 var (
   first,
   second,
@@ -66,7 +66,7 @@ var (
 ) = value;
 >>> Split in object pattern.
 var Foo(:first, :second, :third, :fourth, :fifth) = value;
-<<<
+<<< 3.7
 var Foo(
   :first,
   :second,
@@ -76,14 +76,14 @@ var Foo(
 ) = value;
 >>> Split in value.
 var (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 var (first, second, third) =
     longValueExpression +
     anotherOperand +
     aThirdOperand;
 >>> Expression split in both.
 var (longIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 var (longIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
@@ -91,7 +91,7 @@ var (longIdentifier &&
     aThirdOperand;
 >>> Block split in both.
 var (first, second, third, fourth, fifth) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.7
 var (
   first,
   second,
@@ -107,7 +107,7 @@ var (
 );
 >>> Expression split in pattern, block split in value.
 var (longIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.7
 var (longIdentifier &&
     anotherAlsoLongOne) = (
   first,
@@ -118,7 +118,7 @@ var (longIdentifier &&
 );
 >>> Block split in pattern, expression split in value.
 var (first, second, third, fourth, fifth) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.7
 var (
   first,
   second,

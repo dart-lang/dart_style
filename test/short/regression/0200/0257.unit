@@ -5,7 +5,7 @@ class FooConstructor {
           ? 'bar is null this is a very long string that causes a split'
           : bar.myField;
 }
-<<<
+<<< 3.6
 class FooConstructor {
   FooConstructor(Object bar)
       : foo = (bar == null)

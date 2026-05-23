@@ -2,7 +2,7 @@
 ### Test other behavior related to block arguments.
 >>> Don't block argument format if it fits better to not.
 function('a long leading argument', <String>[element, element]);
-<<<
+<<< 3.7
 function(
   'a long leading argument',
   <String>[element, element],
@@ -10,7 +10,7 @@ function(
 >>>
 function('a long leading argument',
 <String>[element, element, element, element]);
-<<<
+<<< 3.7
 function(
   'a long leading argument',
   <String>[
@@ -22,13 +22,13 @@ function(
 );
 >>>
 function(<AVeryLong<Nested, GenericType>>[e]);
-<<<
+<<< 3.7
 function(
   <AVeryLong<Nested, GenericType>>[e],
 );
 >>>
 function(<AVeryLong<Nested, GenericType>>[element]);
-<<<
+<<< 3.7
 function(
   <AVeryLong<Nested, GenericType>>[
     element,
@@ -36,13 +36,13 @@ function(
 );
 >>> A long argument name can prevent block formatting.
 veryLongFunctionName(veryLongArgumentName: [element]);
-<<<
+<<< 3.7
 veryLongFunctionName(
   veryLongArgumentName: [element],
 );
 >>> A long argument name can prevent block formatting.
 veryLongFunctionName(veryLongArgumentName: [element, element, element]);
-<<<
+<<< 3.7
 veryLongFunctionName(
   veryLongArgumentName: [
     element,
@@ -52,7 +52,7 @@ veryLongFunctionName(
 );
 >>> Multiple trailing arguments prevent block formatting.
 function([element, element, element], trailing, argument);
-<<<
+<<< 3.7
 function(
   [element, element, element],
   trailing,

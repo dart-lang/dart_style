@@ -2,7 +2,7 @@
 >>> trailing line comment after split
 someMethod(argument1, argument2, // comment
 argument3);
-<<<
+<<< 3.6
 someMethod(
     argument1,
     argument2, // comment
@@ -10,32 +10,32 @@ someMethod(
 >>> trailing line comment after non-split
 someMethod(argument1, argument2 // comment
 );
-<<<
+<<< 3.6
 someMethod(
     argument1, argument2 // comment
     );
 >>> inside list literal
 ['item' // comment
 ];
-<<<
+<<< 3.6
 [
   'item' // comment
 ];
 >>> inside argument list
 foo(1 /* bang */, 2);
-<<<
+<<< 3.6
 foo(1 /* bang */, 2);
 >>> no space between "(" and ")" and block comment
 foo(   /* */  ) {}
-<<<
+<<< 3.6
 foo(/* */) {}
 >>> space on left between block comment and ","
 foo(1,/* a */ 2 /* b */  , 3);
-<<<
+<<< 3.6
 foo(1, /* a */ 2 /* b */, 3);
 >>> block comment after comma follows later arg
 foo(arg, /* comment */ arg, /* comment */ arg, /* comment */ arg, /* comment */ arg);
-<<<
+<<< 3.6
 foo(
     arg,
     /* comment */ arg,
@@ -44,27 +44,27 @@ foo(
     /* comment */ arg);
 >>> space between block comment and other tokens
 var/**/a/**/=/**/1/**/+/**/2;
-<<<
+<<< 3.6
 var /**/ a /**/ = /**/ 1 /**/ + /**/ 2;
 >>> preserve space before comment in expression
 foo &&
 
   // comment
   bar;
-<<<
+<<< 3.6
 foo &&
 
     // comment
     bar;
 >>> preserve comments before a sequence of operators
 1 /* a */ && 2 /* b */ && 3;
-<<<
+<<< 3.6
 1 /* a */ && 2 /* b */ && 3;
 >>> no trailing space after operand preceding comment
 a
   // comment
   && b;
-<<<
+<<< 3.6
 a
     // comment
     &&
@@ -72,7 +72,7 @@ a
 >>> hard line caused by a comment before a nested line
 someFunction(//
 someExtremelyLongArgumentName).clamp();
-<<<
+<<< 3.6
 someFunction(//
         someExtremelyLongArgumentName)
     .clamp();
@@ -81,7 +81,7 @@ someFunction(//
   // comment
   1 + 2;
 }
-<<<
+<<< 3.6
 {
   // comment
   1 + 2;
@@ -89,7 +89,7 @@ someFunction(//
 >>> force named args to split on line comment in positional
 function(argument, //
     argument, named: argument, another: argument);
-<<<
+<<< 3.6
 function(
     argument, //
     argument,
@@ -98,13 +98,13 @@ function(
 >>> block comment with newline before
 someVeryLongFunctionName(argumentName: true
 /* comment */);
-<<<
+<<< 3.6
 someVeryLongFunctionName(
     argumentName: true /* comment */);
 >>> in delimited pattern in pattern assignment
 (x,// c
 y) = o;
-<<<
+<<< 3.6
 (
   x, // c
   y
@@ -112,6 +112,6 @@ y) = o;
 >>> in infix pattern in pattern assignment
 (x &&// c
 y) = o;
-<<<
+<<< 3.6
 (x && // c
     y) = o;

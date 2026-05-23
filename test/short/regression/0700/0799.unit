@@ -5,7 +5,7 @@
   configurations: ['default'],
 )
 class C {}
-<<<
+<<< 3.6
 @ShouldThrow(
   'Could not generate `toJson` code for `watch`.\n'
   'None of the provided `TypeHelper` instances support the defined type.',

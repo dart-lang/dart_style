@@ -8,7 +8,7 @@ someFunctionName(SomeType_parameter1 AnotherType_parameter2) {
         .then(________traverseDeps_depender__deps_);
   }
 }
-<<<
+<<< 3.7
 SomeVeryLongReturnType someFunctionName(
   SomeType_parameter1 AnotherType_parameter2,
 ) {
@@ -23,12 +23,12 @@ SomeVeryLongReturnType someFunctionName(
 >>> Function expression body in expression body member.
 ItemRenderer<Project> get projectRenderer => (HasUIDisplayName item) =>
   item.uiDisplayName;
-<<<
+<<< 3.7
 ItemRenderer<Project> get projectRenderer =>
     (HasUIDisplayName item) => item.uiDisplayName;
 >>> Call chain body after long member header.
 Future<String> executeShellCommand(String command) async =>
     _api.executeShellCommand(command);
-<<<
+<<< 3.7
 Future<String> executeShellCommand(String command) async =>
     _api.executeShellCommand(command);

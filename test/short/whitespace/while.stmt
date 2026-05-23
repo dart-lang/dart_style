@@ -1,5 +1,5 @@
 40 columns                              |
 >>> empty body
 while (true);
-<<<
+<<< 3.6
 while (true);

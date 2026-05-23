@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Long single-line.
 "this string is longer than forty characters";
-<<<
+<<< 3.7
 "this string is longer than forty characters";
 >>> Empty multi-line.
 {""""""; '''''';}
-<<<
+<<< 3.7
 {
   """""";
   '''''';
@@ -23,7 +23,7 @@ two
 
 
 ''';
-<<<
+<<< 3.7
 '''
 
 
@@ -38,14 +38,14 @@ two
 ''';
 >>> Short one line multi-line.
 """not too long""";
-<<<
+<<< 3.7
 """not too long""";
 >>> Multi-line with short lines.
 """
 not too long
 or this one
 """;
-<<<
+<<< 3.7
 """
 not too long
 or this one
@@ -55,7 +55,7 @@ or this one
 this string is longer than forty characters
 this one is also is longer than forty characters
 """;
-<<<
+<<< 3.7
 """
 this string is longer than forty characters
 this one is also is longer than forty characters
@@ -66,7 +66,7 @@ this one is also is longer than forty characters
 multiline
 """;
 }
-<<<
+<<< 3.7
 {
   """
 multiline
@@ -79,7 +79,7 @@ main() {
 string""");
   }
 }
-<<<
+<<< 3.7
 main() {
   inner() {
     function("""

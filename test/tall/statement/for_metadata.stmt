@@ -3,7 +3,7 @@
 main() {
   for (   @a    var i in list) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a var i in list) {
     ;
@@ -13,7 +13,7 @@ main() {
 main() {
   for (   @a  @b    var i in list) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a @b var i in list) {
     ;
@@ -23,7 +23,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -37,7 +37,7 @@ main() {
 main() {
   for (   @a    var i = x;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a var i = x; ;) {
     ;
@@ -47,7 +47,7 @@ main() {
 main() {
   for (   @a  @b    var i = x;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a @b var i = x; ;) {
     ;
@@ -57,7 +57,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i = veryLong.iterator + expression;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (
     @Annotation
@@ -73,7 +73,7 @@ main() {
 main() {
   for (   @a    var [i] in list) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a var [i] in list) {
     ;
@@ -83,7 +83,7 @@ main() {
 main() {
   for (   @a  @b    var [i] in list) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a @b var [i] in list) {
     ;
@@ -93,7 +93,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] in veryLong.iterator + expression) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -107,7 +107,7 @@ main() {
 main() {
   for (   @a    var [i] = x;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a var [i] = x; ;) {
     ;
@@ -117,7 +117,7 @@ main() {
 main() {
   for (   @a  @b    var [i] = x;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a @b var [i] = x; ;) {
     ;
@@ -127,7 +127,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] = veryLong.iterator + expression;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (
     @Annotation
@@ -145,7 +145,7 @@ main() {
 // c
 var i in list) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a
       // c
@@ -159,7 +159,7 @@ main() {
 // c
 var i = x;;) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (
     @a
@@ -176,7 +176,7 @@ main() {
 // c
 var [i] in x) {;}
 }
-<<<
+<<< 3.7
 main() {
   for (@a
       // c

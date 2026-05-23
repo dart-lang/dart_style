@@ -6,7 +6,7 @@ foo() {
       'Hello'
   ];
 }
-<<<
+<<< 3.6
 foo() {
   final bar = [
     if (longVariableName == 'do nothing but be long')

@@ -6,7 +6,7 @@ class JsonCodec {
       : _reviver = reviver,
         _toEncodable = toEncodable;
 }
-<<<
+<<< 3.7
 class JsonCodec {
   const JsonCodec({
     Object? reviver(Object? key, Object? value)?,
@@ -22,7 +22,7 @@ class JsonUtf8Encoder {
         _toEncodable = toEncodable,
         _bufferSize = bufferSize ?? _defaultBufferSize;
 }
-<<<
+<<< 3.7
 class JsonUtf8Encoder {
   JsonUtf8Encoder([
     String? indent,
@@ -36,7 +36,7 @@ class JsonUtf8Encoder {
 mandatory(f()?,i) {}
 optional([f()?,i]) {}
 named({f()?,i}) {}
-<<<
+<<< 3.7
 mandatory(f()?, i) {}
 optional([f()?, i]) {}
 named({f()?, i}) {}
@@ -44,7 +44,7 @@ named({f()?, i}) {}
 mandatory(f()?,) {}
 optional([f()?,]) {}
 named({f()?,}) {}
-<<<
+<<< 3.7
 mandatory(f()?) {}
 optional([f()?]) {}
 named({f()?}) {}
@@ -52,7 +52,7 @@ named({f()?}) {}
 class C {
   C(f()?,) : field = 3;
 }
-<<<
+<<< 3.7
 class C {
   C(f()?) : field = 3;
 }

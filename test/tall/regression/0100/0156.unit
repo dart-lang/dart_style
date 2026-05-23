@@ -4,7 +4,7 @@ class Foo {
   final baz;
   Foo(int this.bar(), this.baz);
 }
-<<<
+<<< 3.7
 class Foo {
   final bar;
   final baz;

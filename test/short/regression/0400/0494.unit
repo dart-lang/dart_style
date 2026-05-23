@@ -5,7 +5,7 @@ main() {
       print('');
     }
 }
-<<<
+<<< 3.6
 main() {
   for (int i = 0; i < 10; i++)
     for (int j = 0; j < 3; j++) {

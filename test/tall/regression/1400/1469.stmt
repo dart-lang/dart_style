@@ -4,7 +4,7 @@ stuff = [
 
   element,
 ];
-<<<
+<<< 3.7
 stuff = [element, element];
 >>>
 stuff = [
@@ -12,7 +12,7 @@ stuff = [
 
   extremelyGratuitouslyLongElementThatDoesNotFit,
 ];
-<<<
+<<< 3.7
 stuff = [
   extremelyGratuitouslyLongElementThatDoesNotFit,
 

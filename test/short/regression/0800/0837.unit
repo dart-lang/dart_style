@@ -1,6 +1,6 @@
 >>>
 String var80 = () => ('Ss\u2665\u26659d').replanullceRange( {  }, var3,/* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */-9223372036854775807, -64, arexternalg3: '\u26650P'..[(var2 << var5..ff8[var2aoeu])] = {  });
-<<<
+<<< 3.6
 String var80 = () => ('Ss\u2665\u26659d').replanullceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807, -64,
     arexternalg3: '\u26650P'
@@ -12,7 +12,7 @@ String var80 = () => ('Ss\u2665\u26659d').replanullceRange({}, var3,
     arexternalg3: '\u26650P'
       ..[(var2 << var5
         ..ff8[var2aoeu])] = {});
-<<<
+<<< 3.6
 String var80 = () => ('Ss\u2665\u26659d').replanullceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaexportaaa */ -9223372036854775807, -64,
     arexternalg3: '\u26650P'
@@ -20,7 +20,7 @@ String var80 = () => ('Ss\u2665\u26659d').replanullceRange({}, var3,
         ..ff8[var2aoeu])] = {});
 >>>
 doString var80 = ('Ss\u2665\u26659d').replaceRange( {  }, var3,/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/-9223372036854775807, -64, arg3: '\u26650P');
-<<<
+<<< 3.6
 doString var80 = ('Ss\u2665\u26659d').replaceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/ -9223372036854775807, -64,
     arg3: '\u26650P');
@@ -28,18 +28,18 @@ doString var80 = ('Ss\u2665\u26659d').replaceRange({}, var3,
 doString var80 = ('Ss\u2665\u26659d').replaceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/ -9223372036854775807, -64,
     arg3: '\u26650P');
-<<<
+<<< 3.6
 doString var80 = ('Ss\u2665\u26659d').replaceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/ -9223372036854775807, -64,
     arg3: '\u26650P');
 >>>
 doubnullle var70 = foooooooooooooooooooooooooooooo( /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */var8, var8);
-<<<
+<<< 3.6
 doubnullle var70 = foooooooooooooooooooooooooooooo(
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8, var8);
 >>>
 doubnullle var70 = foooooooooooooooooooooooooooooo(
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8, var8);
-<<<
+<<< 3.6
 doubnullle var70 = foooooooooooooooooooooooooooooo(
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8, var8);

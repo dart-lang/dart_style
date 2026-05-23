@@ -1,7 +1,7 @@
 40 columns                              |
 >>> indentation
 if(true){return 42;}else{return 13;}
-<<<
+<<< 3.6
 if (true) {
   return 42;
 } else {
@@ -19,7 +19,7 @@ return false;
 }else{
 return false;
 }
-<<<
+<<< 3.6
 if (true) {
   if (true) {
     if (true) {
@@ -33,17 +33,17 @@ if (true) {
 }
 >>> single-expression then body
 if(true)print("true!");
-<<<
+<<< 3.6
 if (true) print("true!");
 >>> block then body
 if(true){print("true!");}
-<<<
+<<< 3.6
 if (true) {
   print("true!");
 }
 >>> single-expression else body
 if(true)print(1);else print(0);
-<<<
+<<< 3.6
 if (true)
   print(1);
 else
@@ -56,7 +56,7 @@ if (0 == 0) {
 } else if (0 == 2) {
   zero = 2;
 }
-<<<
+<<< 3.6
 if (0 == 0) {
   zero = 0;
 } else if (0 == 1) {
@@ -66,7 +66,7 @@ if (0 == 0) {
 }
 >>> long if without curlies
 if (condition) someLong(argument, another);
-<<<
+<<< 3.6
 if (condition)
   someLong(argument, another);
 >>> long if else without curlies
@@ -74,7 +74,7 @@ if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another);
-<<<
+<<< 3.6
 if (condition)
   someLong(argument, another);
 else
@@ -84,12 +84,12 @@ if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another, arg);
-<<<
+<<< 3.6
 if (condition)
   someLong(argument, another);
 else
   anotherLong(argument, another, arg);
 >>> if-case
 if (   obj   case   123   ||   constant   ) {}
-<<<
+<<< 3.6
 if (obj case 123 || constant) {}

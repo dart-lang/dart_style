@@ -5,7 +5,7 @@
          overridden != null;
          overridden = overridden.satisfy(mark));
   }
-<<<
+<<< 3.7
   void incrementalAdd(Constraint c) {
     int mark = newMark();
     for (

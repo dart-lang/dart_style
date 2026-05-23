@@ -1,26 +1,26 @@
 40 columns                              |
 >>> all fit on one line
 class Foo<A,B,C,D> {}
-<<<
+<<< 3.6
 class Foo<A, B, C, D> {}
 >>> prefer to split between params even when they all fit on next line
 class LongClassName<First, Second, Third> {}
-<<<
+<<< 3.6
 class LongClassName<First, Second,
     Third> {}
 >>> split before first if needed
 class LongClassName<FirstTypeParameterIsLong, Second> {}
-<<<
+<<< 3.6
 class LongClassName<
     FirstTypeParameterIsLong, Second> {}
 >>> split in middle if fit in two lines
 class LongClassName<First, Second, Third, Fourth, Fifth, Sixth> {}
-<<<
+<<< 3.6
 class LongClassName<First, Second,
     Third, Fourth, Fifth, Sixth> {}
 >>> split one per line if they don't fit in two lines
 class LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh> {}
-<<<
+<<< 3.6
 class LongClassName<
     First,
     Second,
@@ -32,29 +32,29 @@ class LongClassName<
 >>> prefers to not split at type arguments
 class SomeClass<
     TypeArgument> extends Base {}
-<<<
+<<< 3.6
 class SomeClass<TypeArgument>
     extends Base {}
 >>> generic function declaration
 foo<A,B,C,D>() {}
-<<<
+<<< 3.6
 foo<A, B, C, D>() {}
 >>> generic method on class
 class Foo {
   foo<A,B,C,D>() {}
 }
-<<<
+<<< 3.6
 class Foo {
   foo<A, B, C, D>() {}
 }
 >>> split type parameters
 class Foo extends GenericBaseClass<TypeParameter> {}
-<<<
+<<< 3.6
 class Foo extends GenericBaseClass<
     TypeParameter> {}
 >>> (experiment primary-constructors) Split type parameters with primary constructor and empty body
 class LongClassName<FirstTypeParameterIsLong, Second>(int x);
-<<<
+<<< 3.6
 class LongClassName<
     FirstTypeParameterIsLong,
     Second>(int x);

@@ -17,7 +17,7 @@ void main() {
     });
   });
 }
-<<<
+<<< 3.7
 void main() {
   test("synchronized files are up-to-date", () {
     ({

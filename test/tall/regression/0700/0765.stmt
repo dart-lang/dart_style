@@ -18,7 +18,7 @@
 
         return <Widget>[header].followedBy(jobsInChronologicalGroup.map((job) => _JobView(job)));
       }).toList();
-<<<
+<<< 3.7
       final listViewChildren =
           <ChronologicalGroup>[
                 ChronologicalGroup.today,
@@ -58,7 +58,7 @@ Stream<dynamic> refreshEpic(
     },
   );
 }
-<<<
+<<< 3.7
 Stream<dynamic> refreshEpic(
   Stream<dynamic> actions,
   EpicStore<AppState> store,

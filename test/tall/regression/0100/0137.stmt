@@ -11,7 +11,7 @@
       if (a is ClassMirror && b is MethodMirror) return 1;
       return 0;
     });
-<<<
+<<< 3.7
   Iterable<DeclarationMirror> _sortedLibraryDeclarations(LibraryMirror lib) =>
       lib.declarations.values
           .where((d) => d is ClassMirror || d is MethodMirror)

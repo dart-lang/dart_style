@@ -5,7 +5,7 @@ if (obj case Foo(
   a:1,b:2,c:3,
   d:4,e:5,f:6,
 )) {;}
-<<<
+<<< 3.7
 if (obj case Foo(
   // yeah
   a: 1,
@@ -19,14 +19,14 @@ if (obj case Foo(
 }
 >>> Empty object pattern with block comment.
 if (obj case Foo(  /* comment */  )) {;}
-<<<
+<<< 3.7
 if (obj case Foo(/* comment */)) {
   ;
 }
 >>> Empty object pattern with line comment.
 if (obj case Foo(  // comment
 )) {;}
-<<<
+<<< 3.7
 ### Weird, but users rarely write this.
 if (obj case Foo(
   // comment
@@ -36,7 +36,7 @@ if (obj case Foo(
 >>> Line comment between arguments in object.
 if (obj case Foo( first , // comment
 second)){;}
-<<<
+<<< 3.7
 if (obj case Foo(
   first, // comment
   second,

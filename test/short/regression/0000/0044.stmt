@@ -2,7 +2,7 @@
 foo() {
   assert(argument != argument && (argument.isDynamic || argument.isSubTypeOf(argument, argument)));
 }
-<<<
+<<< 3.6
 foo() {
   assert(argument != argument &&
       (argument.isDynamic || argument.isSubTypeOf(argument, argument)));
@@ -22,7 +22,7 @@ foo() {
     }
   }
 }
-<<<
+<<< 3.6
 foo() {
   if (xxx) {
     if (zzzzzzzzzzzzz != aaaaaaaa.bbbbbbbb &&
@@ -44,7 +44,7 @@ foo() {
 >>>
 assert(say('Bob', 'Howdy', 'smoke signal') ==
 'Bob says Howdy with a smoke signal');
-<<<
+<<< 3.6
 assert(say('Bob', 'Howdy', 'smoke signal') ==
     'Bob says Howdy with a smoke signal');
 >>>
@@ -53,7 +53,7 @@ void main() {
       ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)
       : CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm(arg1111111111111);
 }
-<<<
+<<< 3.6
 void main() {
   var xxxxxxxYyyyyyyy = aaaabbb
       ? CCCCCCCCCCCC.mmmmmmmmmmmmmmmmmm1(arg00000000000)

@@ -55,7 +55,7 @@ final ArgParser argParser = StrongModeOptions.addArguments(new ArgParser()
       abbr: 'f',
       help: 'Dump info json file (requires dump-info)',
       defaultsTo: null));
-<<<
+<<< 3.7
 final ArgParser argParser = StrongModeOptions.addArguments(
   new ArgParser()
     ..addFlag(

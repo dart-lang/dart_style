@@ -1,7 +1,7 @@
 >>> (indent 2)
   bool theMethodNameGoesHere(ParameterTyp result) => reallyLongIdentifier
       .any((MyClass myParam) => myParam.id == result.myParam.id);
-<<<
+<<< 3.7
   bool theMethodNameGoesHere(ParameterTyp result) => reallyLongIdentifier.any(
     (MyClass myParam) => myParam.id == result.myParam.id,
   );

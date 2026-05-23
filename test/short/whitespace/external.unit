@@ -3,14 +3,14 @@
  external
 void
 printToConsole(line);
-<<<
+<<< 3.6
 external void printToConsole(line);
 >>> top-level variable
   external   final   a ,  b  ;
   external   final    Set < int  >  a ,  b  ;
   external   var   a  ;
   external   List < int >   a  ;
-<<<
+<<< 3.6
 external final a, b;
 external final Set<int> a, b;
 external var a;
@@ -22,7 +22,7 @@ external    static  final    Set < int  >  a ,  b  ;
    external   static   var   a  ;
   external  static    List < int >   a  ;
 }
-<<<
+<<< 3.6
 class C {
   external static final a, b;
   external static final Set<int> a, b;
@@ -36,7 +36,7 @@ class C {
   external   var   a  ;
   external   List < int >   a  ;
 }
-<<<
+<<< 3.6
 class C {
   external final a, b;
   external final Set<String> a, b;

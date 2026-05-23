@@ -4,7 +4,7 @@ class Foo extends Bar {
   final int b;
   Foo(int a, this.b) : super(a);
 }
-<<<
+<<< 3.6
 class Foo extends Bar {
   final int b;
   Foo(int a, this.b) : super(a);
@@ -14,7 +14,7 @@ class Foo extends Bar {
   final int b;
   Foo(int a, this.b): super(aLongIdentifier);
 }
-<<<
+<<< 3.6
 class Foo extends Bar {
   final int b;
   Foo(int a, this.b)
@@ -25,7 +25,7 @@ class Foo extends Bar {
   final int b;
   Foo(int a, int b) : super(a), this.b = b == null ? 0 : b;
 }
-<<<
+<<< 3.6
 class Foo extends Bar {
   final int b;
   Foo(int a, int b)
@@ -35,14 +35,14 @@ class Foo extends Bar {
 >>> try to keep constructor call together
 var longIdentifier = new Thing(
     argument, argument);
-<<<
+<<< 3.6
 var longIdentifier =
     new Thing(argument, argument);
 >>> splits before ":" if the parameter list does not fit on one line
 class Foo {
   Foo(int longArg1, int longArg2, int longArg3) : this._(longArg1);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(int longArg1, int longArg2,
       int longArg3)
@@ -52,7 +52,7 @@ class Foo {
 class Foo {
   Foo(firstArgument, secondArgument, third) => "very long body that must wrap";
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(firstArgument, secondArgument,
           third) =>
@@ -64,7 +64,7 @@ class Foo {
       : initializer = function(argument, argument),
         initializer2 = function(argument, argument);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(parameter)
       : initializer = function(
@@ -76,7 +76,7 @@ class Foo {
 class Foo {
   Foo() : initializer =function(argument, arg);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo()
       : initializer =
@@ -86,7 +86,7 @@ class Foo {
 class Foo {
   Foo() : assert(1), assert(2);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo()
       : assert(1),
@@ -96,7 +96,7 @@ class Foo {
 class Foo {
   Foo() : assert(function(argument, argument, argument)), assert(function(argument, function(argument, argument, argument), argument));
 }
-<<<
+<<< 3.6
 class Foo {
   Foo()
       : assert(function(argument,
@@ -111,7 +111,7 @@ class Foo {
 class Foo {
   Foo() : assert(condition,);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo()
       : assert(
@@ -122,7 +122,7 @@ class Foo {
 class Foo {
   Foo() : assert(condition, "some message",);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo()
       : assert(
@@ -134,7 +134,7 @@ class Foo {
 class A {
   A(a,):super();
 }
-<<<
+<<< 3.6
 class A {
   A(
     a,
@@ -144,7 +144,7 @@ class A {
 class A {
   A({a,}):super();
 }
-<<<
+<<< 3.6
 class A {
   A({
     a,
@@ -154,7 +154,7 @@ class A {
 class A {
   A(a,):b=1,super();
 }
-<<<
+<<< 3.6
 class A {
   A(
     a,
@@ -165,7 +165,7 @@ class A {
 class A {
   A({a,}):b=1,super(){;}
 }
-<<<
+<<< 3.6
 class A {
   A({
     a,
@@ -178,7 +178,7 @@ class A {
 class A {
   A(a,):parameter = "some very very long param";
 }
-<<<
+<<< 3.6
 class A {
   A(
     a,
@@ -189,7 +189,7 @@ class A {
 main() {
   new VeryLongClassName.veryLongNamedConstructor();
 }
-<<<
+<<< 3.6
 main() {
   new VeryLongClassName
       .veryLongNamedConstructor();

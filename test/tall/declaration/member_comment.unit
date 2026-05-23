@@ -7,7 +7,7 @@ var b = 2;
 void c() => body; /// Doc d.
 void d() {;}
 }
-<<<
+<<< 3.7
 class Foo {
   var a = 1;
 
@@ -28,7 +28,7 @@ class C {
   external /* c */ int f();
   external /* c */ int get g;
 }
-<<<
+<<< 3.7
 class C {
   external /* c */ int x;
   external /* c */ int f();
@@ -38,7 +38,7 @@ class C {
 class C {
   method(covariant /* c */ int Function() f) {}
 }
-<<<
+<<< 3.7
 class C {
   method(
     covariant /* c */ int Function() f,
@@ -48,7 +48,7 @@ class C {
 class C {
   static /* c */ int method() {}
 }
-<<<
+<<< 3.7
 class C {
   static /* c */ int method() {}
 }

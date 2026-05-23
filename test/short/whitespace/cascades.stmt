@@ -1,11 +1,11 @@
 40 columns                              |
 >>> single cascades on same line
 "foo"..toString();
-<<<
+<<< 3.6
 "foo"..toString();
 >>> long single cascade forces multi-line
 "foo"..toString(argument, argument, argument);
-<<<
+<<< 3.6
 "foo"
   ..toString(
       argument, argument, argument);
@@ -13,25 +13,25 @@
 list
   ..add("baz")
   ..add("bar");
-<<<
+<<< 3.6
 list
   ..add("baz")
   ..add("bar");
 >>> cascades indent contained blocks (and force multi-line) multiple cascades get their own line when method names are different
 foo..fooBar()..toString();
-<<<
+<<< 3.6
 foo
   ..fooBar()
   ..toString();
 >>> cascaded setters are always multi-line even with the same name
 foo..baz = 3..baz=5;
-<<<
+<<< 3.6
 foo
   ..baz = 3
   ..baz = 5;
 >>> cascades indent contained blocks (and force multi-line)
 "foo"..toString(() {body;});
-<<<
+<<< 3.6
 "foo"
   ..toString(() {
     body;
@@ -59,7 +59,7 @@ main() async {
   --a..b();
   await a..b();
 }
-<<<
+<<< 3.6
 main() async {
   // These are OK.
   a = b..c();
@@ -98,55 +98,55 @@ main() async {
 }
 >>> omit split if single section on list literal
 [1,]..addAll(more);
-<<<
+<<< 3.6
 [
   1,
 ]..addAll(more);
 >>> omit split if single section on map literal
 var map = {1:2,}..addAll(more);
-<<<
+<<< 3.6
 var map = {
   1: 2,
 }..addAll(more);
 >>> omit split if single section on record literal
 (1,2,)..addAll(more);
-<<<
+<<< 3.6
 (
   1,
   2,
 )..addAll(more);
 >>> omit split if single section on trailing comma call
 foo(1,)..addAll(more);
-<<<
+<<< 3.6
 foo(
   1,
 )..addAll(more);
 >>> omit split if single section on trailing comma constructor
 new Foo(1,)..addAll(more);
-<<<
+<<< 3.6
 new Foo(
   1,
 )..addAll(more);
 >>> omit split if single section on trailing comma expression call
 (foo)(1,)..addAll(more);
-<<<
+<<< 3.6
 (foo)(
   1,
 )..addAll(more);
 >>> allow keeping collection on one line and splitting cascade
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]..cascade();
-<<<
+<<< 3.6
 [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
   ..cascade();
 >>> don't force cascade to split on collection target if arg splits
 [1, 2, 3, 4]..cascade(() {;});
-<<<
+<<< 3.6
 [1, 2, 3, 4]..cascade(() {
     ;
   });
 >>> don't force cascade to split on collection target if target and arg split
 [1,]..cascade(() {;});
-<<<
+<<< 3.6
 [
   1,
 ]..cascade(() {
@@ -156,26 +156,26 @@ new Foo(
 list
   ?..add("baz")
   ..add("bar");
-<<<
+<<< 3.6
 list
   ?..add("baz")
   ..add("bar");
 >>> mixed
 foo?..a()..b()..c();
-<<<
+<<< 3.6
 foo
   ?..a()
   ..b()
   ..c();
 >>> null-aware getter
 foo?..baz..baz;
-<<<
+<<< 3.6
 foo
   ?..baz
   ..baz;
 >>> null-aware setter
 foo?..baz = 3..baz=5;
-<<<
+<<< 3.6
 foo
   ?..baz = 3
   ..baz = 5;

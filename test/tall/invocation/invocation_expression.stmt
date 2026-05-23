@@ -3,17 +3,17 @@
 ### an expression like `(x + y)(arg)` and not a simple name like `foo(arg)`.
 >>> With type arguments, unsplit.
 (fn)<T, S>(1, 2);
-<<<
+<<< 3.7
 (fn)<T, S>(1, 2);
 >>> Prefer to split value arguments instead of type arguments.
 (longFunction)<TypeArgument>(valueArgument);
-<<<
+<<< 3.7
 (longFunction)<TypeArgument>(
   valueArgument,
 );
 >>> Split both type and value arguments.
 (longFunction)<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
-<<<
+<<< 3.7
 (longFunction)<
   First,
   Second,

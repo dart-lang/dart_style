@@ -1,7 +1,7 @@
 40 columns                              |
 >>> multiple lines
 enum Primate{BONOBO,CHIMP,GORILLA,ORANGUTAN}
-<<<
+<<< 3.6
 enum Primate {
   BONOBO,
   CHIMP,
@@ -10,7 +10,7 @@ enum Primate {
 }
 >>> multiple lines trailing comma
 enum Primate{BONOBO,CHIMP,GORILLA,ORANGUTAN,}
-<<<
+<<< 3.6
 enum Primate {
   BONOBO,
   CHIMP,
@@ -25,7 +25,7 @@ thirdGenericOne<FirstTypeArgument,
 SecondTypeArgument<NestedTypeArgument,AnotherNestedTypeArgument>,
 LastTypeArgument>(namedArgument: firstValue,anotherNamed:argumentValue)
 }
-<<<
+<<< 3.6
 enum Args {
   firstEnumValue(
       longArgument, anotherArgument),

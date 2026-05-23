@@ -1,7 +1,7 @@
 40 columns                              |
 >>> require at least one newline between statements
 {a();b();c();}
-<<<
+<<< 3.6
 {
   a();
   b();
@@ -14,7 +14,7 @@
   b();
   c();
 }
-<<<
+<<< 3.6
 {
   a();
 
@@ -37,7 +37,7 @@
 
 
 }
-<<<
+<<< 3.6
 {
   a();
 
@@ -49,7 +49,7 @@
 {
   var a;;;
 }
-<<<
+<<< 3.6
 {
   var a;
   ;
@@ -65,7 +65,7 @@
 
 
 }
-<<<
+<<< 3.6
 {
   a() {
     ;
@@ -83,14 +83,14 @@
 }
 >>> do not force blank line after empty local function
 { a() {} b() {} }
-<<<
+<<< 3.6
 {
   a() {}
   b() {}
 }
 >>> do not force blank line after => body local function
 { a() => null; b() => null; }
-<<<
+<<< 3.6
 {
   a() => null;
   b() => null;

@@ -1,6 +1,6 @@
 >>>
 final JsFunction _setDartInstance = context['Polymer']['PolymerInterop']
     ['setDartInstance'];
-<<<
+<<< 3.7
 final JsFunction _setDartInstance =
     context['Polymer']['PolymerInterop']['setDartInstance'];

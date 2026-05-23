@@ -2,6 +2,6 @@
 when(mockLoader.loadData(expectedRequestMetricInitialDateCTR))
     .thenReturn(
          _buildMinimalResponseFuture(MetricType.CTR, metricRequest));
-<<<
+<<< 3.6
 when(mockLoader.loadData(expectedRequestMetricInitialDateCTR))
     .thenReturn(_buildMinimalResponseFuture(MetricType.CTR, metricRequest));

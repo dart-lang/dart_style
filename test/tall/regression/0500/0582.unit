@@ -6,7 +6,7 @@ void fn() {
     return max(memo, s.length);
   });
 }
-<<<
+<<< 3.7
 void fn() {
   List<String> a;
   // NOTICE THE TYPE PARAMETER

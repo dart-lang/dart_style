@@ -17,7 +17,7 @@ class C {
     });
   }
 }
-<<<
+<<< 3.7
 class C {
   Result<Res> chain<Res>(Res Function(T value) cb) {
     return when(
@@ -53,7 +53,7 @@ main() {
     tags: ['hi'],
   );
 }
-<<<
+<<< 3.7
 main() {
   test('Test stuff', () {
     // Oof, too much indentation...
@@ -71,7 +71,7 @@ main() {
       }, tooltip: 'Increment Digit', child: const Icon(Icons.add)),
     );
   }
-<<<
+<<< 3.7
   main() {
     return Scaffold(
       body: Center(child: AnimatedDigit(value: value % 10)),
@@ -97,7 +97,7 @@ final CatmullRomSpline path = CatmullRomSpline(const <Offset>[
   Offset(0.93, 0.93),
   Offset(0.05, 0.75),
 ], startHandle: const Offset(0.93, 0.93), endHandle: const Offset(0.18, 0.23));
-<<<
+<<< 3.7
 final CatmullRomSpline path = CatmullRomSpline(
   const <Offset>[
     Offset(0.05, 0.75),

@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Unsplit.
 condition  ?  thenBranch  :  elseBranch  ;
-<<<
+<<< 3.7
 condition ? thenBranch : elseBranch;
 >>> Split because condition splits.
 veryLongElement != otherReallyLongElement ? longArgument : arg;
-<<<
+<<< 3.7
 veryLongElement !=
         otherReallyLongElement
     ? longArgument
@@ -69,7 +69,7 @@ var kind = a
     : e;
 >>> Don't force split conditionals when indirectly nested.
 var kind = a ? b : (c ? d : e);
-<<<
+<<< 3.7
 var kind = a ? b : (c ? d : e);
 >>> Flatten a chain of else-if conditionals.
 var kind = c1 ? e1 : c2 ? e2 : c3 ? e3 : c4 ? e4 : e5;

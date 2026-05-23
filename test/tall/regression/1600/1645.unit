@@ -1,6 +1,6 @@
 >>>
 Future<String> fetchUserOrder() => Future.delayed(const Duration(seconds: 2), () => 'Large Latte');
-<<<
+<<< 3.7
 Future<String> fetchUserOrder() =>
     Future.delayed(const Duration(seconds: 2), () => 'Large Latte');
 >>>

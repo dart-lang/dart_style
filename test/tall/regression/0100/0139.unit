@@ -20,7 +20,7 @@ class Foo {
       ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA, ALPHA,       // qrstuvwx
       ALPHA, ALPHA, LBRACE, SYMBOL, RBRACE, SYMBOL];                // yz{|}~
 }
-<<<
+<<< 3.7
 class Foo {
   static const CATEGORIES = const <int>[
     OTHER, OTHER, OTHER, OTHER, OTHER, OTHER, OTHER, OTHER, // 0-7

@@ -1,21 +1,21 @@
 40 columns                              |
 >>> Inline.
 class   SomeClass  =  Base  with  Mixin  ;
-<<<
+<<< 3.7
 class SomeClass = Base with Mixin;
 >>> Split at `with`.
 class SomeClass = Base with VeryLongMixin;
-<<<
+<<< 3.7
 class SomeClass = Base
     with VeryLongMixin;
 >>> Split at `with` but not between mixins.
 class SomeClass = Base with Mixin, AnotherOne;
-<<<
+<<< 3.7
 class SomeClass = Base
     with Mixin, AnotherOne;
 >>> Split at `with` and mixins.
 class SomeClass = Base with Mixin, Another, Third, FourthOne;
-<<<
+<<< 3.7
 class SomeClass = Base
     with
         Mixin,
@@ -24,16 +24,16 @@ class SomeClass = Base
         FourthOne;
 >>> Unsplit generic mixin.
 class C = Object with M<int>;
-<<<
+<<< 3.7
 class C = Object with M<int>;
 >>> Split before `with` on generic mixin.
 class C = Object with Mixin<SomeLongClass>;
-<<<
+<<< 3.7
 class C = Object
     with Mixin<SomeLongClass>;
 >>> Split in generic mixin.
 class C = Object with Mixin<VeryLongType, AnotherLongType>;
-<<<
+<<< 3.7
 class C = Object
     with
         Mixin<
@@ -42,7 +42,7 @@ class C = Object
         >;
 >>> Split within `with` but not `implements`.
 class C = Object with Mixin, Another, Third, Fourth, Fifth implements Interface;
-<<<
+<<< 3.7
 class C = Object
     with
         Mixin,
@@ -53,7 +53,7 @@ class C = Object
     implements Interface;
 >>> Split within `implements` but not `with`.
 class C = Object with Mixin implements Interface, Another, Third;
-<<<
+<<< 3.7
 class C = Object
     with Mixin
     implements
@@ -62,7 +62,7 @@ class C = Object
         Third;
 >>> Split within both `with` and `implements`.
 class C = Object with Mixin, Another, Third, Fourth, Fifth implements Interface, Another, Third;
-<<<
+<<< 3.7
 class C = Object
     with
         Mixin,
@@ -88,7 +88,7 @@ mixin  class C10 = Object with Mixin;
 base  mixin  class C11 = Object with Mixin;
 abstract  mixin  class C12 = Object with Mixin;
 abstract  base  mixin  class C13 = Object with Mixin;
-<<<
+<<< 3.7
 class C1 = Object with Mixin;
 base class C2 = Object with Mixin;
 interface class C3 = Object with Mixin;

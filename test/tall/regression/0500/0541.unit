@@ -1,4 +1,4 @@
 >>>
 String A() native ;
-<<<
+<<< 3.7
 String A() native;

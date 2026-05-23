@@ -11,7 +11,7 @@ return log.progress("Loading asset environment", () async {
   await environment._load(entrypoints: entrypoints, useDart2JS: useDart2JS);
   return environment;
 }, fine: true);
-<<<
+<<< 3.7
 return log.progress("Loading asset environment", () async {
   var graph = await entrypoint.loadPackageGraph();
   graph = _adjustPackageGraph(graph, mode, packages);

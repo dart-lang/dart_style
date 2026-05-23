@@ -3,11 +3,11 @@
 
 
 
-<<<
+<<< 3.7
 
 >>> Force at least one newline between directives.
 import 'a.dart';import 'b.dart';export 'c.dart';
-<<<
+<<< 3.7
 import 'a.dart';
 import 'b.dart';
 export 'c.dart';
@@ -19,7 +19,7 @@ import 'a.dart';
 
 
 
-<<<
+<<< 3.7
 import 'a.dart';
 >>> Preserve up to one blank line between directives.
 import 'a.dart';
@@ -30,7 +30,7 @@ export 'c.dart';
 
 
 export 'd.dart';
-<<<
+<<< 3.7
 import 'a.dart';
 import 'b.dart';
 

@@ -1,4 +1,4 @@
 >>>
 List<int> l0 = /*info:InferredTypeLiteral*/[];
-<<<
+<<< 3.6
 List<int> l0 = /*info:InferredTypeLiteral*/ [];

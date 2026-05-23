@@ -3,7 +3,7 @@
 class Foo {
   Foo() : assert(1), assert(2);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo() : assert(1), assert(2);
 }
@@ -13,7 +13,7 @@ class Foo {
   assert(cond),
   assert(anotherCondition, 'another message');
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(parameter, another)
     : assert(
@@ -31,7 +31,7 @@ class Foo {
   Foo() : assert(
       veryLongConditionExpression);
 }
-<<<
+<<< 3.7
 class Foo {
   Foo()
     : assert(
@@ -44,7 +44,7 @@ class Foo {
   : assert(condition, 'some long assert message'),
     assert(anotherLongCondition, 'a message');
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1,
@@ -65,7 +65,7 @@ class Foo {
   : assert(condition, 'some long assert message'),
     assert(anotherLongCondition, 'a message');
 }
-<<<
+<<< 3.7
 class Foo {
   Foo(
     parameter1, [
@@ -89,7 +89,7 @@ class Foo {
         }(),
       );
 }
-<<<
+<<< 3.7
 class Foo {
   Foo()
     : assert(() {

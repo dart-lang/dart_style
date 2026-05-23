@@ -11,7 +11,7 @@ class MyElement extends PolymerElement {
             '${(new PolymerDom(child).getDestinationInsertionPoints()[0] as Element).outerHtml}'));
   }
 }
-<<<
+<<< 3.6
 class MyElement extends PolymerElement {
   MyElement.created() : super.created();
 

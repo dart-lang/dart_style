@@ -1,18 +1,18 @@
 40 columns                              |
 >>> Empty.
 e = switch(y) {};
-<<<
+<<< 3.7
 e = switch (y) {};
 >>> Always split cases even if they would fit.
 e = switch (c) { 0 => a, 1 => b };
-<<<
+<<< 3.7
 e = switch (c) {
   0 => a,
   1 => b,
 };
 >>> One case per line.
 e = switch (c) { 0 => first, 1 => second };
-<<<
+<<< 3.7
 e = switch (c) {
   0 => first,
   1 => second,
@@ -23,7 +23,7 @@ e = switch (c) {
   second => veryLongExpression + thatSplits,
   third => c
 };
-<<<
+<<< 3.7
 e = switch (c) {
   first => a,
   second =>
@@ -45,7 +45,7 @@ e = switch (obj) {
 
 
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   0 => a,
 
@@ -57,7 +57,7 @@ e = switch (obj) {
 e = switch ("a long string that must wrap") {
   0 => "ok"
 };
-<<<
+<<< 3.7
 e = switch ("a long string that must wrap") {
   0 => "ok",
 };
@@ -65,7 +65,7 @@ e = switch ("a long string that must wrap") {
 e = switch ([veryLongElement,veryLongElement,veryLongElement,]) {
   0 => "ok"
 };
-<<<
+<<< 3.7
 e = switch ([
   veryLongElement,
   veryLongElement,
@@ -77,7 +77,7 @@ e = switch ([
 e = switch (obj) {
   1 => veryLongExpression + thatStillMustSplit
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   1 =>
     veryLongExpression +
@@ -87,7 +87,7 @@ e = switch (obj) {
 e = switch (obj) {
   longConstant => longExpression + thatMustSplit
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   longConstant =>
     longExpression + thatMustSplit,
@@ -96,7 +96,7 @@ e = switch (obj) {
 e = switch (obj) {
   longConstant => veryLongLongExpression + thatMustSplit
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   longConstant =>
     veryLongLongExpression +
@@ -106,7 +106,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryVeryLongPattern && reallyMustSplit => body
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   veryVeryLongPattern &&
       reallyMustSplit =>
@@ -116,7 +116,7 @@ e = switch (obj) {
 e = switch (obj) {
   oneConstant || twoConstant || threeConstant => body
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   oneConstant ||
   twoConstant ||
@@ -126,7 +126,7 @@ e = switch (obj) {
 e = switch (obj) {
   [oneConstant || twoConstant || threeConstant] => body
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   [
     oneConstant ||
@@ -139,7 +139,7 @@ e = switch (obj) {
 e = switch (obj) {
   [veryLongElement,veryLongElement,veryLongElement,] => body
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   [
     veryLongElement,
@@ -152,7 +152,7 @@ e = switch (obj) {
 e = switch (obj) {
   pattern => function(veryLongElement,veryLongElement,veryLongElement)
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   pattern => function(
     veryLongElement,
@@ -164,7 +164,7 @@ e = switch (obj) {
 e = switch (obj) {
   pattern && anotherPattern && aThirdOne => function(veryLongElement,veryLongElement,veryLongElement)
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   pattern &&
       anotherPattern &&
@@ -181,7 +181,7 @@ e = switch (obj) {
     argument,
   ),
 };
-<<<
+<<< 3.7
 e = switch (obj) {
   pattern ||
   another => function(argument),

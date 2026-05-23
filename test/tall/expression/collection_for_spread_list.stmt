@@ -2,13 +2,13 @@
 ### Tests for spread (and unspread) lists inside for elements.
 >>> Spread list inside for stays on one line if it fits.
 var list = [for (;;) ...[1, 2]];
-<<<
+<<< 3.7
 var list = [
   for (;;) ...[1, 2],
 ];
 >>> Spread list inside for formats like block if it splits.
 var list = [for (;;) ...[element1, element2, element3]];
-<<<
+<<< 3.7
 var list = [
   for (;;) ...[
     element1,
@@ -18,14 +18,14 @@ var list = [
 ];
 >>> A split collection that isn't spread wraps and indents.
 var list = [for (;;) [element1, element2, element3]];
-<<<
+<<< 3.7
 var list = [
   for (;;)
     [element1, element2, element3],
 ];
 >>> A split collection that isn't spread wraps and indents.
 var list = [for (;;) [element1, element2, element3, element4]];
-<<<
+<<< 3.7
 var list = [
   for (;;)
     [
@@ -37,7 +37,7 @@ var list = [
 ];
 >>> Force split if loop body is for element.
 var l = [for (;;) for (c in d) t];
-<<<
+<<< 3.7
 var l = [
   for (;;)
     for (c in d) t,
@@ -46,7 +46,7 @@ var l = [
 var list = [
   for (;;) if (c) d
 ];
-<<<
+<<< 3.7
 var list = [
   for (;;)
     if (c) d,

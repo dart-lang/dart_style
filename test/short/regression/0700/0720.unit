@@ -3,12 +3,12 @@
 >>>
 @meta(const Foo(const []))
 library foo;
-<<<
+<<< 3.6
 @meta(const Foo(const []))
 library foo;
 >>>
 @meta(const Foo(const []))
 import 'foo.dart';
-<<<
+<<< 3.6
 @meta(const Foo(const []))
 import 'foo.dart';

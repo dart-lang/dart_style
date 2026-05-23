@@ -3,7 +3,7 @@ main() {
   someReallyLongFunctionName('a really really really really long argument',
                              'a really really really really long argument');
 }
-<<<
+<<< 3.7
 main() {
   someReallyLongFunctionName(
     'a really really really really long argument',

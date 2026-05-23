@@ -12,7 +12,7 @@ const _urlAttributes = const [
   'src', '_src',                // in audio, embed, iframe, img, input, script,
                                 //    source, track,video
 ];
-<<<
+<<< 3.7
 const _urlAttributes = const [
   'action', '_action', // in form
   'background', '_background', // in body

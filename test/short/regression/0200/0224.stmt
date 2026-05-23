@@ -20,7 +20,7 @@
         .then((_) {
           _logger.info("Let's eat!");
         });
-<<<
+<<< 3.6
     return doughnutFryer
         .start()
         .then((_) => _frostingGlazer.start())
@@ -49,7 +49,7 @@
                       }).catchError((e) {
                         doAnotherThing;
                       }, test: someTestWithSoManyConditions(e) && itHasToWrap(e));
-<<<
+<<< 3.6
                       someVeryLongFutureWithManyChars().then((foo) {
                         doAThing();
                       }).catchError((e) {

@@ -1,14 +1,14 @@
 >>>
 clientParams.forEach((k, v) => log.info(() =>
     "&${k}${(v != null) ? '=${v}' : ''}"));
-<<<
+<<< 3.7
 clientParams.forEach(
   (k, v) => log.info(() => "&${k}${(v != null) ? '=${v}' : ''}"),
 );
 >>> (indent 4)
     clientParams.forEach((k, v) => log.info(() =>
         "&${k}${(v != null) ? '=${v}' : ''}"));
-<<<
+<<< 3.7
     clientParams.forEach(
       (k, v) => log.info(() => "&${k}${(v != null) ? '=${v}' : ''}"),
     );

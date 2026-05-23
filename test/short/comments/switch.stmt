@@ -20,7 +20,7 @@ switch (n) {
 
 
 }
-<<<
+<<< 3.6
 switch (n) {
   // comment
   case 0:
@@ -38,7 +38,7 @@ switch (n) {
   // comment
   case 1: one;
 }
-<<<
+<<< 3.6
 switch (n) {
   case 0:
     zero;
@@ -52,7 +52,7 @@ switch (n) {
   case 1: one; // comment
   case 2: two; // comment
 }
-<<<
+<<< 3.6
 switch (n) {
   case 0:
     zero; // comment
@@ -69,7 +69,7 @@ switch (n) {
   case 1: one;
   // after last
 }
-<<<
+<<< 3.6
 switch (n) {
   // before first
   case 0:
@@ -87,7 +87,7 @@ switch (n) {
   case 2:
     // comment 2
 }
-<<<
+<<< 3.6
 switch (n) {
   case 0: // comment 0
   case 1:
@@ -111,7 +111,7 @@ e = switch (n) {
 
 
 };
-<<<
+<<< 3.6
 e = switch (n) {
   // comment
   0 => a,
@@ -127,7 +127,7 @@ e = switch (n) {
   // comment
   1 => one
 };
-<<<
+<<< 3.6
 e = switch (n) {
   0 => zero,
   // comment
@@ -139,7 +139,7 @@ e = switch (n) {
   1 => one, // comment
   2 => two // comment
 };
-<<<
+<<< 3.6
 e = switch (n) {
   0 => zero, // comment
   1 => one, // comment
@@ -151,7 +151,7 @@ e = switch (n) {
   // comment
   1 when true => one,
 };
-<<<
+<<< 3.6
 e = switch (n) {
   0 => zero,
   // comment
@@ -161,14 +161,14 @@ e = switch (n) {
 switch (e) {
   // comment
 }
-<<<
+<<< 3.6
 switch (e) {
   // comment
 }
 >>> line comment on opening line
 switch (e) { // comment
 }
-<<<
+<<< 3.6
 switch (e) {
   // comment
 }
@@ -176,40 +176,40 @@ switch (e) {
 switch (e) {
   /* comment */
 }
-<<<
+<<< 3.6
 switch (e) {
   /* comment */
 }
 >>> block comment with trailing newline
 switch (e) {/* comment */
 }
-<<<
+<<< 3.6
 switch (e) {
   /* comment */
 }
 >>> block comment with leading newline
 switch (e) {
   /* comment */}
-<<<
+<<< 3.6
 switch (e) {
   /* comment */
 }
 >>> inline block comment
 switch (e) {  /* comment */  }
-<<<
+<<< 3.6
 switch (e) {/* comment */}
 >>> line comment
 e = switch (n) {
   // comment
 };
-<<<
+<<< 3.6
 e = switch (n) {
   // comment
 };
 >>> line comment on opening line
 e = switch (n) { // comment
 };
-<<<
+<<< 3.6
 e = switch (n) {
   // comment
 };
@@ -217,25 +217,25 @@ e = switch (n) {
 e = switch (n) {
   /* comment */
 };
-<<<
+<<< 3.6
 e = switch (n) {
   /* comment */
 };
 >>> block comment with trailing newline
 e = switch (n) {/* comment */
 };
-<<<
+<<< 3.6
 e = switch (n) {
   /* comment */
 };
 >>> block comment with leading newline
 e = switch (n) {
   /* comment */};
-<<<
+<<< 3.6
 e = switch (n) {
   /* comment */
 };
 >>> inline block comment
 e = switch (n) {  /* comment */  };
-<<<
+<<< 3.6
 e = switch (n) {/* comment */};

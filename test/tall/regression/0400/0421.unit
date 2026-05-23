@@ -9,7 +9,7 @@
 class MyAmazingComponent {
   var a = [[[1]]];
 }
-<<<
+<<< 3.7
 @Component(
   selector: 'my-selector',
   properties: const [
@@ -54,7 +54,7 @@ class MyAmazingComponent {
 class MyAmazingComponent {
   var a = [[[1]]];
 }
-<<<
+<<< 3.7
 @Component(
   selector: 'my-selector',
   properties: const [

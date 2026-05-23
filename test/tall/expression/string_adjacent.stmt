@@ -1,20 +1,20 @@
 40 columns                              |
 >>> Always split even if there is no existing newline and they fit.
 var name = 'a'     'b''c';
-<<<
+<<< 3.7
 var name =
     'a'
     'b'
     'c';
 >>> Split when they don't fit too, of course.
 var name = "the first very long string" "the second very longstring";
-<<<
+<<< 3.7
 var name =
     "the first very long string"
     "the second very longstring";
 >>> All adjacent strings split or don't split together.
 var text = "first" "second" "third" "fourth" "fifth";
-<<<
+<<< 3.7
 var text =
     "first"
     "second"
@@ -28,20 +28,20 @@ var name = "the first string"
 
 
 "the third string";
-<<<
+<<< 3.7
 var name =
     "the first string"
     "the second string"
     "the third string";
 >>> Adjacent strings inside interpolation.
 var x = '${  "a"   "b"   }';
-<<<
+<<< 3.7
 var x =
     '${"a"
         "b"}';
 >>> Don't indent in argument list if other arguments are not strings.
 function(notString, "adjacent" "string");
-<<<
+<<< 3.7
 function(
   notString,
   "adjacent"
@@ -49,7 +49,7 @@ function(
 );
 >>> Do indent if another argument is a string.
 function("string",notString,"adjacent" "string");
-<<<
+<<< 3.7
 function(
   "string",
   notString,
@@ -58,7 +58,7 @@ function(
 );
 >>> Do indent if another argument is a string interpolation.
 function("${str}${ing}",notString,"adjacent" "string");
-<<<
+<<< 3.7
 function(
   "${str}${ing}",
   notString,
@@ -67,7 +67,7 @@ function(
 );
 >>> Do indent if another argument is an adjacent string.
 function("adjacent" "string",notString,"adjacent" "string");
-<<<
+<<< 3.7
 function(
   "adjacent"
       "string",
@@ -80,7 +80,7 @@ assert(
     condition,
     "adjacent"
     "string");
-<<<
+<<< 3.7
 assert(
   condition,
   "adjacent"
@@ -88,7 +88,7 @@ assert(
 );
 >>> Do indent in assert if other argument is a string.
 assert("condition","adjacent" "string");
-<<<
+<<< 3.7
 assert(
   "condition",
   "adjacent"
@@ -96,7 +96,7 @@ assert(
 );
 >>> Do indent adjacent strings in lists.
 var list = ["adjacent""string"];
-<<<
+<<< 3.7
 var list = [
   "adjacent"
       "string",
@@ -109,7 +109,7 @@ var list = [
   "adjacent"
   "string"
 ];
-<<<
+<<< 3.7
 var list = [
   "adjacent"
       "string",
@@ -119,7 +119,7 @@ var list = [
 ];
 >>> Do indent in map keys.
 var map = {"adjacent" "string": value};
-<<<
+<<< 3.7
 var map = {
   "adjacent"
           "string":
@@ -127,7 +127,7 @@ var map = {
 };
 >>> Don't indent in map values.
 var map = {key: "adjacent" "string"};
-<<<
+<<< 3.7
 var map = {
   key:
       "adjacent"
@@ -135,21 +135,21 @@ var map = {
 };
 >>> Do indent in sets.
 var set = {"adjacent" "string"};
-<<<
+<<< 3.7
 var set = {
   "adjacent"
       "string",
 };
 >>> Do indent positional record fields.
 var record = ("adjacent" "string",);
-<<<
+<<< 3.7
 var record = (
   "adjacent"
       "string",
 );
 >>> Don't indent in named record fields.
 var record = (field: "adjacent" "string",);
-<<<
+<<< 3.7
 var record = (
   field:
       "adjacent"
@@ -157,7 +157,7 @@ var record = (
 );
 >>> Indent only positional fields in a mixed record.
 var record = ("adjacent" "string", field: "another" "one", "third" "field");
-<<<
+<<< 3.7
 var record = (
   "adjacent"
       "string",
@@ -171,7 +171,7 @@ var record = (
 main() => "adjacent"
 "string"
 "another";
-<<<
+<<< 3.7
 main() =>
     "adjacent"
     "string"
@@ -180,7 +180,7 @@ main() =>
 main() => "very very very very long adjacent"
 "string"
 "another";
-<<<
+<<< 3.7
 main() =>
     "very very very very long adjacent"
     "string"
@@ -190,7 +190,7 @@ function(
 (parameter) => "string" "adjacent",
 (parameter) => "long long long long string" "adjacent",
 another);
-<<<
+<<< 3.7
 function(
   (parameter) =>
       "string"
@@ -231,21 +231,21 @@ var string = condition
 >>> Don't indent in initializer.
 var longVariableName = "very long adjacent"
 "string";
-<<<
+<<< 3.7
 var longVariableName =
     "very long adjacent"
     "string";
 >>> Don't indent in assignment.
 long.receiver.expression = "very long adjacent"
 "string";
-<<<
+<<< 3.7
 long.receiver.expression =
     "very long adjacent"
     "string";
 >>>
 function(variable = "very long adjacent"
 "string");
-<<<
+<<< 3.7
 function(
   variable =
       "very long adjacent"
@@ -257,7 +257,7 @@ function(named: "adjacent"
 another: "adjacent"
 "string"
 "more");
-<<<
+<<< 3.7
 function(
   named:
       "adjacent"
@@ -270,7 +270,7 @@ function(
 >>> Indent inside `throw` inside assignment.
 variable = throw 'Some very long message '
 'that continues.';
-<<<
+<<< 3.7
 variable =
     throw 'Some very long message '
         'that continues.';
@@ -279,7 +279,7 @@ f() async {
 variable = await 'Some very long message '
 'that continues.';
 }
-<<<
+<<< 3.7
 f() async {
   variable =
       await 'Some very long message '
@@ -288,7 +288,7 @@ f() async {
 >>> Indent inside `!` inside assignment.
 variable = !'Some very long message '
 'that continues.';
-<<<
+<<< 3.7
 variable =
     !'Some very long message '
         'that continues.';

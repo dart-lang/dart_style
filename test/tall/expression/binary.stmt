@@ -1,66 +1,66 @@
 40 columns                              |
 >>> Multiplicative operators.
 1*2/3~/4%5;
-<<<
+<<< 3.7
 1 * 2 / 3 ~/ 4 % 5;
 >>> Additive operators.
 1+2-3;
-<<<
+<<< 3.7
 1 + 2 - 3;
 >>> Shift operators.
 1<<2>>3>>>4;
-<<<
+<<< 3.7
 1 << 2 >> 3 >>> 4;
 >>> Bitwise operators.
 1&2^3|4;
-<<<
+<<< 3.7
 1 & 2 ^ 3 | 4;
 >>> Relation operators (which are not associative in Dart).
 1<2;
-<<<
+<<< 3.7
 1 < 2;
 >>>
 1>2;
-<<<
+<<< 3.7
 1 > 2;
 >>>
 1<=2;
-<<<
+<<< 3.7
 1 <= 2;
 >>>
 1>=2;
-<<<
+<<< 3.7
 1 >= 2;
 >>> Equality operators (which are not associative in Dart).
 1==2;
-<<<
+<<< 3.7
 1 == 2;
 >>> Equality operators.
 1!=2;
-<<<
+<<< 3.7
 1 != 2;
 >>> Logical operators.
 1&&2||3;
-<<<
+<<< 3.7
 1 && 2 || 3;
 >>> If-null operator.
 foo??bar;
-<<<
+<<< 3.7
 foo ?? bar;
 >>> Unsplit operators with mixed precedence.
 1+2/3-4*5%6<<7;
-<<<
+<<< 3.7
 1 + 2 / 3 - 4 * 5 % 6 << 7;
 >>> If any operator splits, they all do.
 operand1 + operand2 + operand3 + operand4;
-<<<
+<<< 3.7
 operand1 +
     operand2 +
     operand3 +
     operand4;
 >>> Mixed multiplicative operators split together.
 longName * longName / longName % longName ~/ longName;
-<<<
+<<< 3.7
 longName *
     longName /
     longName %
@@ -68,7 +68,7 @@ longName *
     longName;
 >>> Mixed additive operators split together.
 longName + longName - longName + longName - longName;
-<<<
+<<< 3.7
 longName +
     longName -
     longName +
@@ -76,7 +76,7 @@ longName +
     longName;
 >>> Mixed shift operators split together.
 longName >> longName << longName >> longName >>> longName;
-<<<
+<<< 3.7
 longName >>
     longName <<
     longName >>
@@ -85,7 +85,7 @@ longName >>
 >>> Mixed ascending precedence.
 b___________________ || a______________ && a______________ == a______________ >
 a______________ + a______________;
-<<<
+<<< 3.7
 b___________________ ||
     a______________ &&
         a______________ ==
@@ -95,7 +95,7 @@ b___________________ ||
 >>> Mixed descending precedence.
 b___________________ + a_______________ > a______________ == a______________ &&
 a______________ || a______________;
-<<<
+<<< 3.7
 b___________________ +
                     a_______________ >
                 a______________ ==
@@ -106,7 +106,7 @@ b___________________ +
 veryLongIdentifier + veryLongIdentifier / veryLongIdentifier *
 veryLongIdentifier - veryLongIdentifier * veryLongIdentifier +
 veryLongIdentifier / veryLongIdentifier - veryLongIdentifier;
-<<<
+<<< 3.7
 veryLongIdentifier +
     veryLongIdentifier /
         veryLongIdentifier *
@@ -118,42 +118,42 @@ veryLongIdentifier +
     veryLongIdentifier;
 >>> Don't indent subsequent operands when split inside a variable declaration.
 var variable = longOperand2 + longOperand2 + longOperand3;
-<<<
+<<< 3.7
 var variable =
     longOperand2 +
     longOperand2 +
     longOperand3;
 >>> Don't indent subsequent operands when split inside a pattern variable declaration.
 var (x, y) = longOperand2 + longOperand2 + longOperand3;
-<<<
+<<< 3.7
 var (x, y) =
     longOperand2 +
     longOperand2 +
     longOperand3;
 >>> Don't indent subsequent operands when split inside an assignment.
 variable = longOperand2 + longOperand2 + longOperand3;
-<<<
+<<< 3.7
 variable =
     longOperand2 +
     longOperand2 +
     longOperand3;
 >>> Don't indent subsequent operands when split inside a pattern assignment.
 (x, y) = longOperand2 + longOperand2 + longOperand3;
-<<<
+<<< 3.7
 (x, y) =
     longOperand2 +
     longOperand2 +
     longOperand3;
 >>> Don't indent subsequent operands when split inside a `=>` body.
 function() => longOperand2 + longOperand2 + longOperand3;
-<<<
+<<< 3.7
 function() =>
     longOperand2 +
     longOperand2 +
     longOperand3;
 >>> Don't indent subsequent operands when split inside a named argument.
 function(name: longOperand2 + longOperand2 + longOperand3);
-<<<
+<<< 3.7
 function(
   name:
       longOperand2 +
@@ -162,7 +162,7 @@ function(
 );
 >>> Don't indent subsequent operands when split inside a map key.
 map = {key: longOperand2 + longOperand2 + longOperand3};
-<<<
+<<< 3.7
 map = {
   key:
       longOperand2 +
@@ -171,7 +171,7 @@ map = {
 };
 >>> Don't indent subsequent operands when split inside a named record field.
 record = (key: longOperand2 + longOperand2 + longOperand3);
-<<<
+<<< 3.7
 record = (
   key:
       longOperand2 +

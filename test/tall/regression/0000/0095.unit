@@ -3,7 +3,7 @@
       String message_str, [final String desc = '', final Map examples = const {
   }, String locale, String name, List<String> args, String meaning]) =>
       message_str;
-<<<
+<<< 3.7
   String lookupMessage(
     String message_str, [
     final String desc = '',
@@ -19,7 +19,7 @@
       String message_str, [String desc = '', Map examples = const {
   }, String locale, String name, List<String> args, String meaning]) =>
       message_str;
-<<<
+<<< 3.7
   String lookupMessage(
     String message_str, [
     String desc = '',

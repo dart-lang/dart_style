@@ -3,24 +3,24 @@
 
 
 // comment
-<<<
+<<< 3.6
 // comment
 >>>
 //comment one
 
 //comment two
 
-<<<
+<<< 3.6
 //comment one
 
 //comment two
 >>>
   /* foo */   /* bar */
-<<<
+<<< 3.6
 /* foo */ /* bar */
 >>>
 var x;   //x
-<<<
+<<< 3.6
 var x; //x
 >>>
 library foo;
@@ -35,7 +35,7 @@ class A {
 
 /// Dangling ones too
 int x;
-<<<
+<<< 3.6
 library foo;
 
 /// Docs
@@ -54,7 +54,7 @@ library foo;
 
 class C {
 }
-<<<
+<<< 3.6
 library foo;
 
 //comment one
@@ -69,7 +69,7 @@ library foo;
 
 class C {
 }
-<<<
+<<< 3.6
 library foo;
 
 //comment one
@@ -80,7 +80,7 @@ class C {}
 >>>
 import 'a.dart'; // a comment
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart'; // a comment
 
 class Foo {}
@@ -88,7 +88,7 @@ class Foo {}
 import 'a.dart'; // a comment
                  // comment
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart'; // a comment
 
 // comment
@@ -97,7 +97,7 @@ class Foo {}
 import 'a.dart'; /* a */ // b
 /* c */ // d
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart'; /* a */ // b
 
 /* c */ // d
@@ -106,7 +106,7 @@ class Foo {}
 import 'a.dart';
 // a comment
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart';
 
 // a comment
@@ -115,7 +115,7 @@ class Foo {}
 import 'a.dart';
 // import 'b.dart';
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart';
 
 // import 'b.dart';
@@ -125,7 +125,7 @@ import 'a.dart';
 
 // a comment
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart';
 
 // a comment
@@ -135,7 +135,7 @@ import 'a.dart';
 // a comment
 
 class Foo {}
-<<<
+<<< 3.6
 import 'a.dart';
 // a comment
 
@@ -143,80 +143,80 @@ class Foo {}
 >>> two lines between library and import
 library foo;
 import 'a.dart';
-<<<
+<<< 3.6
 library foo;
 
 import 'a.dart';
 >>> two lines between library and export
 library foo;
 export 'a.dart';
-<<<
+<<< 3.6
 library foo;
 
 export 'a.dart';
 >>> two lines between library and part
 library foo;
 part 'a.dart';
-<<<
+<<< 3.6
 library foo;
 
 part 'a.dart';
 >>> before library name
 library/* c */foo;
-<<<
+<<< 3.6
 library /* c */ foo;
 >>> block comment before "." in library
 library a/**/.b.c;
-<<<
+<<< 3.6
 library a /**/ .b.c;
 >>> block comment after "." in library
 library a./**/b.c;
-<<<
+<<< 3.6
 library a. /**/ b.c;
 >>> line comment before "." in library
 library a//
 .b.c;
-<<<
+<<< 3.6
 library a //
     .b.c;
 >>> line comment after "." in library
 library a.//
 b.c;
-<<<
+<<< 3.6
 library a. //
     b.c;
 >>> comment within unnamed library
 library/* c */;
-<<<
+<<< 3.6
 library /* c */;
 >>> inline block comment between different kinds of directives
 library a; /* comment */ import 'b.dart';
-<<<
+<<< 3.6
 library a;
 
 /* comment */ import 'b.dart';
 >>> inline block comment between directives
 import 'a.dart'; /* comment */ import 'b.dart';
-<<<
+<<< 3.6
 import 'a.dart';
 /* comment */ import 'b.dart';
 >>> block comment between directives
 import 'a.dart'; /* comment */
 import 'b.dart';
-<<<
+<<< 3.6
 import 'a.dart'; /* comment */
 import 'b.dart';
 >>> ensure blank line above doc comments
 var a = 1;
 /// doc
 var b = 2;
-<<<
+<<< 3.6
 var a = 1;
 
 /// doc
 var b = 2;
 >>> in dotted name
 import 'a' if (/**/a/**/./**/b/**/) 'c';
-<<<
+<<< 3.6
 import 'a'
     if (/**/ a /**/ . /**/ b /**/) 'c';

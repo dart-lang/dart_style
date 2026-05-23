@@ -5,7 +5,7 @@ pluralThatFailsParsing(noOfThings) => Intl.plural(noOfThings,
     name: "pluralThatFailsParsing",
     args: [noOfThings],
     desc: "How many things are there?");
-<<<
+<<< 3.7
 pluralThatFailsParsing(noOfThings) => Intl.plural(
   noOfThings,
   one: "1 thing:",
@@ -17,7 +17,7 @@ pluralThatFailsParsing(noOfThings) => Intl.plural(
 >>> (indent 2)
   parser.addOption("output-dir", defaultsTo: '.',
       callback: (value) => targetDir = value);
-<<<
+<<< 3.7
   parser.addOption(
     "output-dir",
     defaultsTo: '.',

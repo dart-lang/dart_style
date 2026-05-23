@@ -1,34 +1,34 @@
 40 columns                              |
 >>> Unnamed call.
 super  (  arg1  ,  arg2  );
-<<<
+<<< 3.7
 super(arg1, arg2);
 >>> Unnamed call with type arguments.
 super  <  int  ,  double  >  (  arg1  ,  arg2  );
-<<<
+<<< 3.7
 super<int, double>(arg1, arg2);
 >>> Named call.
 super  .  name  (  arg1  ,  arg2  );
-<<<
+<<< 3.7
 super.name(arg1, arg2);
 >>> Named call with type arguments.
 super  .  name  <  int  ,  double  >  (  arg1  ,  arg2  );
-<<<
+<<< 3.7
 super.name<int, double>(arg1, arg2);
 >>> Getter.
 super  .  name;
-<<<
+<<< 3.7
 super.name;
 >>> Setter.
 super  .  name  =  value;
-<<<
+<<< 3.7
 super.name = value;
 >>> Equality operators.
 {
   super  ==  other;
   super  !=  other;
 }
-<<<
+<<< 3.7
 {
   super == other;
   super != other;
@@ -40,7 +40,7 @@ super.name = value;
   super  >  other;
   super  >=  other;
 }
-<<<
+<<< 3.7
 {
   super < other;
   super <= other;
@@ -53,7 +53,7 @@ super.name = value;
   super  ^  other;
   super  |  other;
 }
-<<<
+<<< 3.7
 {
   super & other;
   super ^ other;
@@ -65,7 +65,7 @@ super.name = value;
   super  >>  other;
   super  >>>  other;
 }
-<<<
+<<< 3.7
 {
   super << other;
   super >> other;
@@ -76,7 +76,7 @@ super.name = value;
   super  +  other;
   super  -  other;
 }
-<<<
+<<< 3.7
 {
   super + other;
   super - other;
@@ -88,7 +88,7 @@ super.name = value;
   super  %  other;
   super  ~/  other;
 }
-<<<
+<<< 3.7
 {
   super * other;
   super / other;
@@ -100,12 +100,12 @@ super.name = value;
   -  super;
   ~  super;
 }
-<<<
+<<< 3.7
 {
   -super;
   ~super;
 }
 >>> Don't remove all spaces between multiple unary minuses.
 -  -  -  super;
-<<<
+<<< 3.7
 - - -super;

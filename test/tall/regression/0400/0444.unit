@@ -10,7 +10,7 @@ class MyComponent {
       this.superDuperLongNamedArgument, // LOOK AT ME
       @Inject(const MySecondArgument()) this.secondArgument);
 }
-<<<
+<<< 3.7
 class MyComponent {
   Object firstArgument;
   Object superDuperLongNamedArgument;

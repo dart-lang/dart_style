@@ -6,7 +6,7 @@
               key: 'Content',
               style: _content_style,
               children: appChildren)]);
-<<<
+<<< 3.6
     return new Container(key: 'ChatApp', children: [
       new Container(
           key: 'Content', style: _content_style, children: appChildren)
@@ -19,7 +19,7 @@
                     key: 'Content',
                     style: _content_style,
                     children: appChildren)]);
-<<<
+<<< 3.6
           return new Container(key: 'ChatApp', children: [
             new Container(
                 key: 'Content', style: _content_style, children: appChildren)

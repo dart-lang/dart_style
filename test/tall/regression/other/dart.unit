@@ -13,7 +13,7 @@ class C {
         ensureCleanBuild: ensureCleanBuild,
       );
 }
-<<<
+<<< 3.7
 class C {
   Future<void> startServer({bool? ensureCleanBuild, List<String>? buildArgs}) =>
       _startServer('dart', [
@@ -53,7 +53,7 @@ class Benchmark {
   double
   measure() => (2000 + Random().nextDouble() - 0.5) * 1000;
 }
-<<<
+<<< 3.7
 class Benchmark {
   @override
   // A rate of one run per 2s, with a millisecond of noise.  Some variation is
@@ -65,7 +65,7 @@ class Uint8ClampedList {
   @patch
   factory Uint8ClampedList.fromList(List<int> elements) = NativeUint8ClampedList.fromList;
 }
-<<<
+<<< 3.7
 class Uint8ClampedList {
   @patch
   factory Uint8ClampedList.fromList(List<int> elements) =

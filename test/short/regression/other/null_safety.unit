@@ -1,12 +1,12 @@
 >>> issues found when migrating to null safety
 void main() => print('first: ${first<int>([1, 2, 3])}');
-<<<
+<<< 3.6
 void main() => print('first: ${first<int>([1, 2, 3])}');
 >>>
 var x = '${jsonEncode([
   1,
 ])}';
-<<<
+<<< 3.6
 var x = '${jsonEncode([
       1,
     ])}';
@@ -14,7 +14,7 @@ var x = '${jsonEncode([
 main() {
   patch..[entityId].removeWhere();
 }
-<<<
+<<< 3.6
 main() {
   patch..[entityId].removeWhere();
 }

@@ -8,7 +8,7 @@ class C {
         state.copy(active: action.route, history: state.history),
       );
 }
-<<<
+<<< 3.7
 class C {
   static HandlerResponse<RouteState> handleRouteReplaced(
     ReplaceRoute action,
@@ -26,7 +26,7 @@ class C {
   }) =>
       Future.value(null);
 }
-<<<
+<<< 3.7
 class C {
   @override
   Future<void> report({

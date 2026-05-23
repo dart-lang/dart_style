@@ -1,22 +1,22 @@
 40 columns                              |
 >>> Simple named type.
 int  x  ;
-<<<
+<<< 3.7
 int x;
 >>> Nullable type.
 String  ?  s  ;
-<<<
+<<< 3.7
 String? s;
 >>> Prefixed type.
 library_prefix  .  TypeName  x  ;
-<<<
+<<< 3.7
 library_prefix.TypeName x;
 >>> Don't split on prefix.
 very_long_library_prefix  .  VeryLongTypeName  x  ;
-<<<
+<<< 3.7
 very_long_library_prefix.VeryLongTypeName
 x;
 >>> Prefixed nullable type.
 prefix  .  TypeName  ?  x  ;
-<<<
+<<< 3.7
 prefix.TypeName? x;

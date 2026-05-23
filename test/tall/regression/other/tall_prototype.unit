@@ -9,7 +9,7 @@ Future<void> startServer({
   '--verbose',
   if (buildArgs != null) ...buildArgs,
 ], ensureCleanBuild: ensureCleanBuild);
-<<<
+<<< 3.7
 Future<void> startServer({bool? ensureCleanBuild, List<String>? buildArgs}) =>
     _startServer('dart', [
       '--packages=.dart_tool/package_config.json',
@@ -38,14 +38,14 @@ var keyLen = sortedEntries.map((e) => e.key).fold(
   0,
   (int len, String key) => max(len, key.length),
 );
-<<<
+<<< 3.7
 var keyLen = sortedEntries
     .map((e) => e.key)
     .fold(0, (int len, String key) => max(len, key.length));
 >>> Prefer to split at outer nested function.
 Instantiator visitEmptyStatement(EmptyStatement node) => (arguments) =>
       EmptyStatement();
-<<<
+<<< 3.7
 Instantiator visitEmptyStatement(EmptyStatement node) =>
     (arguments) => EmptyStatement();
 >>> Incorrect comment indentation.
@@ -58,7 +58,7 @@ main() {
       // we cannot simply return 0xFFFFFFFF.
       : JS('JSUInt32', r'(# >> #) >>> 0', this, other > 31 ? 31 : other);
 }
-<<<
+<<< 3.7
 main() {
   return this > 0
       ? _shrBothPositive(other)
@@ -72,7 +72,7 @@ main() {
 Future<void> invalidateCache(
   pb.SettingId settingId,
 ) async => invalidatedSettingIds.add(settingId);
-<<<
+<<< 3.7
 Future<void> invalidateCache(pb.SettingId settingId) async =>
     invalidatedSettingIds.add(settingId);
 >>> Split type parameters like argument lists.
@@ -84,7 +84,7 @@ main() {
     });
   }
 }
-<<<
+<<< 3.7
 main() {
   {
     tearDown(() {
@@ -100,7 +100,7 @@ final service = FakeInsightsService(features)..detailsList = [
     anomaly_test_util.earnings2,
     anomaly_test_util.earnings3,
   ];
-<<<
+<<< 3.7
 final service = FakeInsightsService(features)
   ..detailsList = [
     anomaly_test_util.earnings,

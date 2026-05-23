@@ -3,7 +3,7 @@ class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers]) : publishers = publishers !=
           null ? publishers : defaultPublishers.add(unittestPublisher);
 }
-<<<
+<<< 3.6
 class MummyMatchers {
   MummyMatchers([List<ResultPublisher> publishers])
       : publishers = publishers != null

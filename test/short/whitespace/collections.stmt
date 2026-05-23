@@ -1,95 +1,95 @@
 40 columns                              |
 >>> empty map literal (dartbug.com/16382)
 var m = { };
-<<<
+<<< 3.6
 var m = {};
 >>>
 var m = {};
-<<<
+<<< 3.6
 var m = {};
 >>> generic map literal
 <   int,int  >{   };
-<<<
+<<< 3.6
 <int, int>{};
 >>> generic set literal
 <   int  >{   };
-<<<
+<<< 3.6
 <int>{};
 >>> list spread
 var list = [  ...  a,...b,  ...
 c];
-<<<
+<<< 3.6
 var list = [...a, ...b, ...c];
 >>> map spread
 var map = {  ...  a,...b,1:2,  ...
 c};
-<<<
+<<< 3.6
 var map = {...a, ...b, 1: 2, ...c};
 >>> set spread
 var set = {  ...  a,...b, 1,   ...
 c};
-<<<
+<<< 3.6
 var set = {...a, ...b, 1, ...c};
 >>> list null aware spread
 var list = [  ...?  a,...?b,  ...?
 c];
-<<<
+<<< 3.6
 var list = [...?a, ...?b, ...?c];
 >>> map null aware spread
 var map = {  ...?  a,...?b,1:2,  ...?
 c};
-<<<
+<<< 3.6
 var map = {...?a, ...?b, 1: 2, ...?c};
 >>> set null aware spread
 var set = {  ...?  a,...?b, 1,   ...?
 c};
-<<<
+<<< 3.6
 var set = {...?a, ...?b, 1, ...?c};
 >>> if
 var list = [   if   ( c    )   1    ,];
-<<<
+<<< 3.6
 var list = [
   if (c) 1,
 ];
 >>> if else
 var list = [   if   ( c    )   1    else    2   ,];
-<<<
+<<< 3.6
 var list = [
   if (c) 1 else 2,
 ];
 >>> c-style for
 var l = [for   (  var  i  =  0  ;  i  <  1  ;  i++  )  i];
-<<<
+<<< 3.6
 var l = [for (var i = 0; i < 1; i++) i];
 >>> empty clauses
 var l = [for(  ;  ;  ) 1];
-<<<
+<<< 3.6
 var l = [for (;;) 1];
 >>> empty initializer clause
 var l = [for (  ;   f; bar) 1];
-<<<
+<<< 3.6
 var l = [for (; f; bar) 1];
 >>> for-in
 var l = [for (var    i  in  i   )   i];
-<<<
+<<< 3.6
 var l = [for (var i in i) i];
 >>> for-in with type
 var l = [for (Foo f in foos) f];
-<<<
+<<< 3.6
 var l = [for (Foo f in foos) f];
 >>> for-in with final and type
 var l = [for (final Foo f in foos) f];
-<<<
+<<< 3.6
 var l = [for (final Foo f in foos) f];
 >>> for-in with just final
 var l = [for (final f in foos) f];
-<<<
+<<< 3.6
 var l = [for (final f in foos) f];
 >>> await for
 f() async {
   var l = [await    for(x in y)    x];
 }
-<<<
+<<< 3.6
 f() async {
   var l = [await for (x in y) x];
 }

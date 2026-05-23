@@ -8,7 +8,7 @@ main() {
       return merged;
     });
 }
-<<<
+<<< 3.7
     main() {
       return maps
           .where((map) => map != null)
@@ -30,7 +30,7 @@ class C {
     ;
   }
 }
-<<<
+<<< 3.7
 class C {
   static List<V> spaceBetween<V>(
     List<V> collection,

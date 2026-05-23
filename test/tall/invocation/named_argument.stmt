@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Unsplit.
 function ( first : 123 , second : 345 ) ;
-<<<
+<<< 3.7
 function(first: 123, second: 345);
 >>> Split arguments and add trailing comma.
 function ( one: "value" , two: "data" , three: "more stuff" ) ;
-<<<
+<<< 3.7
 function(
   one: "value",
   two: "data",
@@ -13,11 +13,11 @@ function(
 );
 >>> Mixed named and positional.
 f(one: 1, "pos", two: 2, "itional");
-<<<
+<<< 3.7
 f(one: 1, "pos", two: 2, "itional");
 >>> Mixed named and positional split.
 function(one: 1, "pos", two: 2, "itional");
-<<<
+<<< 3.7
 function(
   one: 1,
   "pos",
@@ -26,7 +26,7 @@ function(
 );
 >>> Split after argument name.
 function(veryLongParameterName: veryLong + argument + expression);
-<<<
+<<< 3.7
 function(
   veryLongParameterName:
       veryLong + argument + expression,
@@ -35,7 +35,7 @@ function(
 function(list: [element1, element2, element3, element4],
 map: {entry1: valueOne, entry2: valueTwo},
 call: function(argument1, argument2, argument3));
-<<<
+<<< 3.7
 function(
   list: [
     element1,
@@ -55,7 +55,7 @@ function(
 );
 >>> Block-like formatting for a block-bodied function with unsplit parameters.
 function(name: (param, another) { body; });
-<<<
+<<< 3.7
 function(
   name: (param, another) {
     body;

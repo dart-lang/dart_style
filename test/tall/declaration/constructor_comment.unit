@@ -4,7 +4,7 @@ class A {
   A() // comment
   : this();
 }
-<<<
+<<< 3.7
 class A {
   A() // comment
     : this();
@@ -14,7 +14,7 @@ class A {
   A() : // comment
   this();
 }
-<<<
+<<< 3.7
 class A {
   A()
     : // comment
@@ -25,7 +25,7 @@ class A {
   factory A() // comment
   = B;
 }
-<<<
+<<< 3.7
 class A {
   factory A() // comment
   = B;
@@ -35,7 +35,7 @@ class A {
   factory A() = // comment
   B;
 }
-<<<
+<<< 3.7
 class A {
   factory A() = // comment
       B;
@@ -45,7 +45,7 @@ class A {
   A(param, // comment
   param2) : b = 1, c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(
     param, // comment
@@ -58,7 +58,7 @@ class A {
   A(param) // comment
   : b = 1, c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param) // comment
     : b = 1,
@@ -69,7 +69,7 @@ class A {
   A(param) :// comment
   b = 1, c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : // comment
@@ -82,7 +82,7 @@ class A {
   // comment
   b = 1, c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : // comment
@@ -94,7 +94,7 @@ class A {
   A(param) : b = 1 // comment
   , c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : b = 1, // comment
@@ -105,7 +105,7 @@ class A {
   A(param) : b = 1, // comment
   c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : b = 1, // comment
@@ -117,7 +117,7 @@ class A {
   // comment
   c = 2;
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : b = 1,
@@ -129,7 +129,7 @@ class A {
   A(param) : b = 1, c = 2 // comment
   ;
 }
-<<<
+<<< 3.7
 ### It's weird to force the `=` to split, but a comment here is unusual.
 class A {
   A(param)
@@ -142,7 +142,7 @@ class A {
 class A {
   A(param) : b = 1, c = 2; // comment
 }
-<<<
+<<< 3.7
 class A {
   A(param) : b = 1, c = 2; // comment
 }
@@ -150,7 +150,7 @@ class A {
 class A {
   A(param) : b = 1, c = 2; // longer comment
 }
-<<<
+<<< 3.7
 class A {
   A(param)
     : b = 1,
@@ -161,7 +161,7 @@ class A {
   A(param) : b = 1, c = 2 // comment
   { body; }
 }
-<<<
+<<< 3.7
 ### Weird, but users rarely write this.
 class A {
   A(param)
@@ -176,7 +176,7 @@ class A {
 class A {
   A(param) : b = 1, c = 2 { body; } // comment
 }
-<<<
+<<< 3.7
 class A {
   A(param) : b = 1, c = 2 {
     body;

@@ -1,12 +1,12 @@
 40 columns                              |
 >>> empty
 do {} while (true);
-<<<
+<<< 3.6
 do {} while (true);
 >>> indented body
 do
 {;} while (true);
-<<<
+<<< 3.6
 do {
   ;
 } while (true);

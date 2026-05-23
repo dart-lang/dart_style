@@ -5,7 +5,7 @@
         value = end;
       else
         value = lerp(t);
-<<<
+<<< 3.6
       if (t == 0.0)
         value = begin;
       else if (t == 1.0)
@@ -15,7 +15,7 @@
 >>> (indent 4)
     if (direction == AnimationDirection.forward ||
         reverseCurve == null) return curve;
-<<<
+<<< 3.6
     if (direction == AnimationDirection.forward || reverseCurve == null)
       return curve;
 >>> (indent 6)
@@ -23,7 +23,7 @@
         destinationSize = new Size(sourceSize.width * outputSize.height / sourceSize.height, outputSize.height);
       else
         destinationSize = new Size(outputSize.width, sourceSize.height * outputSize.width / sourceSize.width);
-<<<
+<<< 3.6
       if (outputSize.width / outputSize.height >
           sourceSize.width / sourceSize.height)
         destinationSize = new Size(

@@ -1,11 +1,11 @@
 40 columns                              |
 >>> Remove after line comment.
 // trailing spaces after here:×20×20×20×20
-<<<
+<<< 3.7
 // trailing spaces after here:
 >>> Remove from empty line comment.
 //×20×20×20
-<<<
+<<< 3.7
 //
 >>> Preserve inside block comment lines.
 /* one×20×20
@@ -13,7 +13,7 @@
 ×20×20×20
    three×20×20×20×20
 */×20×20
-<<<
+<<< 3.7
 /* one×20×20
    two×20
 ×20×20×20
@@ -25,7 +25,7 @@ main() {×20×20
   veryLongExpression    +×20×20×20
   veryLongStatement;×20×20
 }×20×20×20×20
-<<<
+<<< 3.7
 main() {
   veryLongExpression +
       veryLongStatement;

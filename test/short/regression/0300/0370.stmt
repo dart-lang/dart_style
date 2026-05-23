@@ -35,7 +35,7 @@ return environment.barback.getAssetById(id).then((result) {
   addResult(new BarbackServerResult._failure(request.url, id, error));
   return notFound(request, asset: id);
 });
-<<<
+<<< 3.6
 return environment.barback
     .getAssetById(id)
     .then((result) {

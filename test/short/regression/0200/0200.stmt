@@ -5,7 +5,7 @@ final confirmationFuture = _dialogService.showConfirmationDialog(
   ..primaryButton = DialogSettings.BUTTON_CANCEL
   ..okButtonText = 'OK'
   ..cancelButtonText = 'Kittens');
-<<<
+<<< 3.6
 final confirmationFuture = _dialogService.showConfirmationDialog(
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit',
     new DialogSettings()

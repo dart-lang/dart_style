@@ -14,7 +14,7 @@ library foo;
 class C /* is cool */ {
   /* int */ foo() => 42;
 }
-<<<
+<<< 3.6
 library foo;
 /* A long
  * Comment
@@ -37,7 +37,7 @@ library foo;
 //TODO: implement
 class C {
 }
-<<<
+<<< 3.6
 /// Copyright info
 
 library foo;
@@ -57,7 +57,7 @@ library foo;
 
 
 class C {}
-<<<
+<<< 3.6
 library foo;
 
 /* Comment 1 */
@@ -74,7 +74,7 @@ main() {
 comment */argument);
   }
 }
-<<<
+<<< 3.6
 main() {
   inner() {
     function(/*
@@ -87,7 +87,7 @@ class C {
 /// doc
   method() {}
 }
-<<<
+<<< 3.6
 class C {
   /// doc
   method() {}
@@ -98,7 +98,7 @@ class C {
 //commentedOut() {}
   method() {}
 }
-<<<
+<<< 3.6
 class C {
 //// not a doc comment
 //commentedOut() {}

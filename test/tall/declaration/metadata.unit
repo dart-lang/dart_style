@@ -11,7 +11,7 @@
 
 
 class A {}
-<<<
+<<< 3.7
 @a
 @b
 @c
@@ -22,7 +22,7 @@ class A {}
 @a @b class A {}
 
 @meta class Y = X with Z;
-<<<
+<<< 3.7
 @meta
 class X {}
 
@@ -36,7 +36,7 @@ class Y = X with Z;
 @meta   mixin M {}
 
 @meta  base   mixin N {}
-<<<
+<<< 3.7
 @meta
 mixin M {}
 
@@ -44,31 +44,31 @@ mixin M {}
 base mixin N {}
 >>> On extension.
 @meta extension A on B {}
-<<<
+<<< 3.7
 @meta
 extension A on B {}
 >>> On extension type.
 @meta extension type A(int x) {}
-<<<
+<<< 3.7
 @meta
 extension type A(int x) {}
 >>> On extension type representation parameter.
 extension type A(@a @b int x) {}
-<<<
+<<< 3.7
 extension type A(@a @b int x) {}
 >>> On old style typedef.
 @meta typedef void X(y);
-<<<
+<<< 3.7
 @meta
 typedef void X(y);
 >>> On function typedef.
 @foo typedef Fn = Function();
-<<<
+<<< 3.7
 @foo
 typedef Fn = Function();
 >>> On non-function typedef.
 @foo typedef Hash< @a  K, @b(  1  )  V  >  =  Map < K ,  V >   ;
-<<<
+<<< 3.7
 @foo
 typedef Hash<@a K, @b(1) V> = Map<K, V>;
 >>> On type parameter.
@@ -79,5 +79,5 @@ class Foo<
 @b
 
 T> {}
-<<<
+<<< 3.7
 class Foo<@a @b T> {}

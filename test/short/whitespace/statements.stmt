@@ -7,7 +7,7 @@ a: b:c:d:
 e:
 
 foo();
-<<<
+<<< 3.6
 a:
 b:
 c:
@@ -16,7 +16,7 @@ e:
 foo();
 >>> label in block
 {a:foo();}
-<<<
+<<< 3.6
 {
   a:
   foo();

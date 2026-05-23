@@ -2,7 +2,7 @@
 >>> one line between script and library
 #!script
 library foo;
-<<<
+<<< 3.6
 #!script
 
 library foo;
@@ -12,14 +12,14 @@ library foo;
 
 
 library foo;
-<<<
+<<< 3.6
 #!script
 
 library foo;
 >>> one line between script and import
 #!script
 import 'foo';
-<<<
+<<< 3.6
 #!script
 
 import 'foo';
@@ -29,14 +29,14 @@ import 'foo';
 
 
 import 'foo';
-<<<
+<<< 3.6
 #!script
 
 import 'foo';
 >>> one line between script and line comment
 #!script
 // comment
-<<<
+<<< 3.6
 #!script
 
 // comment
@@ -46,14 +46,14 @@ import 'foo';
 
 
 // comment
-<<<
+<<< 3.6
 #!script
 
 // comment
 >>> one line between script and block comment
 #!script
 /* comment */
-<<<
+<<< 3.6
 #!script
 
 /* comment */
@@ -63,14 +63,14 @@ import 'foo';
 
 
 /* comment */
-<<<
+<<< 3.6
 #!script
 
 /* comment */
 >>> one line between script and class
 #!script
 class C {}
-<<<
+<<< 3.6
 #!script
 
 class C {}
@@ -80,14 +80,14 @@ class C {}
 
 
 class C {}
-<<<
+<<< 3.6
 #!script
 
 class C {}
 >>> one line between script and variable
 #!script
 var x;
-<<<
+<<< 3.6
 #!script
 
 var x;
@@ -97,7 +97,7 @@ var x;
 
 
 var x;
-<<<
+<<< 3.6
 #!script
 
 var x;

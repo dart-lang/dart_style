@@ -1,7 +1,7 @@
 >>>
 return _parseHtml(content, id.path, logger,
   checkDocType: options.isHtmlEntryPoint(id));
-<<<
+<<< 3.7
 return _parseHtml(
   content,
   id.path,
@@ -11,7 +11,7 @@ return _parseHtml(
 >>> (indent 8)
         return _parseHtml(content, id.path, logger,
           checkDocType: options.isHtmlEntryPoint(id));
-<<<
+<<< 3.7
         return _parseHtml(
           content,
           id.path,
@@ -21,7 +21,7 @@ return _parseHtml(
 >>> (indent 8)
         logger.warning(HTML5_WARNING.create({'message': e.message}),
             span: e.span);
-<<<
+<<< 3.7
         logger.warning(
           HTML5_WARNING.create({'message': e.message}),
           span: e.span,
@@ -29,7 +29,7 @@ return _parseHtml(
 >>> (indent 2)
   return builder.relative(builder.join('/', id.path),
       from: builder.join('/', builder.dirname(sourceId.path)));
-<<<
+<<< 3.7
   return builder.relative(
     builder.join('/', id.path),
     from: builder.join('/', builder.dirname(sourceId.path)),

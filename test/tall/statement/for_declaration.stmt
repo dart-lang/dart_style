@@ -2,13 +2,13 @@
 ### Tests for loops where the initializer clause is a variable declaration.
 >>> Unsplit.
 for (var x = 1; condition; increment) { body; }
-<<<
+<<< 3.7
 for (var x = 1; condition; increment) {
   body;
 }
 >>> Split between clauses.
 for (var x = longFirstClause; veryLongSecondClause; third) {}
-<<<
+<<< 3.7
 for (
   var x = longFirstClause;
   veryLongSecondClause;
@@ -16,7 +16,7 @@ for (
 ) {}
 >>>
 for (var x = init; longSecondClause; third) {}
-<<<
+<<< 3.7
 for (
   var x = init;
   longSecondClause;
@@ -24,7 +24,7 @@ for (
 ) {}
 >>> Split with empty second clause.
 for (var x = initialize;; longIncrement) { body; }
-<<<
+<<< 3.7
 for (
   var x = initialize;
   ;
@@ -34,7 +34,7 @@ for (
 }
 >>> Split with empty third clause.
 for (var x = initialize; longCondition; ) { body; }
-<<<
+<<< 3.7
 for (
   var x = initialize;
   longCondition;
@@ -43,7 +43,7 @@ for (
 }
 >>> Split in increments splits clauses.
 for (var x = 1; bar; first = 1, second = 2, third = 3, fourth = 4) {}
-<<<
+<<< 3.7
 for (
   var x = 1;
   bar;
@@ -54,7 +54,7 @@ for (
 ) {}
 >>> Indent a wrapped initializer expression.
 for (var x = very + long + initialization + expression; a; b) {}
-<<<
+<<< 3.7
 for (
   var x =
       very +
@@ -66,11 +66,11 @@ for (
 ) {}
 >>> Unsplit multiple variable declarations.
 for (var a = 1, b = 2; 3; 4) {}
-<<<
+<<< 3.7
 for (var a = 1, b = 2; 3; 4) {}
 >>> Split clauses and not variable declarations.
 for (var first = 1, second = 2, third = 3; 1; 2) {}
-<<<
+<<< 3.7
 for (
   var first = 1, second = 2, third = 3;
   1;
@@ -78,7 +78,7 @@ for (
 ) {}
 >>> Split variable declarations.
 for (var first = 1, second = 2, third = 333; 1; 2) {}
-<<<
+<<< 3.7
 for (
   var first = 1,
       second = 2,
@@ -90,7 +90,7 @@ for (
 for (var a = 1, b = 2; longCondition(expression); a += b) {
   ;
 }
-<<<
+<<< 3.7
 for (
   var a = 1, b = 2;
   longCondition(expression);
@@ -101,7 +101,7 @@ for (
 >>> Split between type and variable name.
 for (SomeReallyLongTypeName someLongVariable; someLongVariable < 100;
 someLongVariable++) {;}
-<<<
+<<< 3.7
 for (
   SomeReallyLongTypeName
   someLongVariable;

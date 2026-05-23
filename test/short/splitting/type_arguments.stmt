@@ -1,26 +1,26 @@
 40 columns                              |
 >>> all fit on one line
 new Foo<A,B,C,D>();
-<<<
+<<< 3.6
 new Foo<A, B, C, D>();
 >>> prefer to split between args even when they all fit on next line
 new LongClassName<First, Second, Third>();
-<<<
+<<< 3.6
 new LongClassName<First, Second,
     Third>();
 >>> split before first if needed
 new LongClassName<FirstTypeArgumentIsLong, Second>();
-<<<
+<<< 3.6
 new LongClassName<
     FirstTypeArgumentIsLong, Second>();
 >>> split in middle if fit in two lines
 new LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh>();
-<<<
+<<< 3.6
 new LongClassName<First, Second, Third,
     Fourth, Fifth, Sixth, Seventh>();
 >>> split one per line if they don't fit in two lines
 new LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>();
-<<<
+<<< 3.6
 new LongClassName<
     First,
     Second,
@@ -33,12 +33,12 @@ new LongClassName<
 >>> prefers to not split at type arguments
 new SomeClass<
     TypeArgument>(valueArgument);
-<<<
+<<< 3.6
 new SomeClass<TypeArgument>(
     valueArgument);
 >>> split both type and value arguments
 new SomeClass<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
-<<<
+<<< 3.6
 new SomeClass<
         First,
         Second,
@@ -61,23 +61,23 @@ new SomeClass<
   <int>[];
   <int>[];
 }
-<<<
+<<< 3.6
 {
   <int>[];
   <int>[];
 }
 >>> type arguments on invocation expressions, all on one line
 (fn)<T, S>(1, 2);
-<<<
+<<< 3.6
 (fn)<T, S>(1, 2);
 >>> type arguments on invocation, prefer to not split at type args
 (longFunction)<TypeArgument>(valueArgument);
-<<<
+<<< 3.6
 (longFunction)<TypeArgument>(
     valueArgument);
 >>> type arguments on invocation expressions split both type and value arguments
 (longFunction)<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>(first, second, third, fourth, fifth, sixth, seventh, eighth);
-<<<
+<<< 3.6
 (longFunction)<
         First,
         Second,
@@ -97,26 +97,26 @@ new SomeClass<
     eighth);
 >>> generic instantiation all fit on one line
 Foo<A,B,C,D>;
-<<<
+<<< 3.6
 Foo<A, B, C, D>;
 >>> generic instantiation split between args
 LongClassName<First, Second, Third, Fourth>;
-<<<
+<<< 3.6
 LongClassName<First, Second, Third,
     Fourth>;
 >>> generic instantiation split before first if needed
 LongClassName<FirstTypeArgumentIsTooLong, Second>;
-<<<
+<<< 3.6
 LongClassName<
     FirstTypeArgumentIsTooLong, Second>;
 >>> generic instantiation split in middle if fit in two lines
 LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh>;
-<<<
+<<< 3.6
 LongClassName<First, Second, Third,
     Fourth, Fifth, Sixth, Seventh>;
 >>> generic instantiation split one per line if they don't fit in two lines
 LongClassName<First, Second, Third, Fourth, Fifth, Sixth, Seventh, Eighth>;
-<<<
+<<< 3.6
 LongClassName<
     First,
     Second,
@@ -128,7 +128,7 @@ LongClassName<
     Eighth>;
 >>> generic instantiation indent nested type arguments
 LongClassName<First, Inner<Second, Third, Fourth, Fifth, Sixth, Seventh>, Eighth>;
-<<<
+<<< 3.6
 LongClassName<
     First,
     Inner<Second, Third, Fourth, Fifth,
@@ -137,26 +137,26 @@ LongClassName<
 >>> split in inner type argument list forces outer to split
 LongClassName<First, Inner<
     Second, Third, Fourth, Fifth>>;
-<<<
+<<< 3.6
 LongClassName<
     First,
     Inner<Second, Third, Fourth,
         Fifth>>;
 >>> don't split after "<" in list literal
 var list = <Inner<First, Second, Third, Fourth, Fifth>, Sixth>[];
-<<<
+<<< 3.6
 var list = <Inner<First, Second, Third,
         Fourth, Fifth>,
     Sixth>[];
 >>> don't split after "<" in set literal
 var set = <Inner<First, Second, Third, Fourth, Fifth>, Sixth>{};
-<<<
+<<< 3.6
 var set = <Inner<First, Second, Third,
         Fourth, Fifth>,
     Sixth>{};
 >>> don't split after "<" in map literal
 var map = <First, Inner<Second, Third, Fourth, Fifth, Sixth>>{};
-<<<
+<<< 3.6
 var map = <First,
     Inner<Second, Third, Fourth, Fifth,
         Sixth>>{};

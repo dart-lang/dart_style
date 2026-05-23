@@ -5,7 +5,7 @@ doSomething();
 } catch (e) {
 print(e);
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } catch (e) {
@@ -17,7 +17,7 @@ doSomething();
 }on Exception catch (e){
 print(e);
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } on Exception catch (e) {
@@ -29,7 +29,7 @@ doSomething();
 }on Exception catch (e,   s){
 print(e);
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } on Exception catch (e, s) {
@@ -37,7 +37,7 @@ try {
 }
 >>> Split empty catch if there is a finally.
 try {;} catch (err) {} finally {;}
-<<<
+<<< 3.7
 try {
   ;
 } catch (err) {
@@ -46,7 +46,7 @@ try {
 }
 >>> Split empty on if there is a finally.
 try {;} on Exception {} finally {;}
-<<<
+<<< 3.7
 try {
   ;
 } on Exception {
@@ -55,7 +55,7 @@ try {
 }
 >>> Split all empty catches if there is a finally.
 try {;} catch (err1) {} catch (err2) {} catch (err3) {} finally {;}
-<<<
+<<< 3.7
 try {
   ;
 } catch (err1) {
@@ -66,7 +66,7 @@ try {
 }
 >>> Split leading empty catches if there are multiple.
 try {;} catch (err1) {} catch (err2) {} catch (err3) {}
-<<<
+<<< 3.7
 try {
   ;
 } catch (err1) {
@@ -78,7 +78,7 @@ try {
 } on Exception catch (e) {} finally {
   cleanupSomething();
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } on Exception catch (e) {
@@ -91,7 +91,7 @@ try {
 } on FooException {} on BarException {
   doSomething();
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } on FooException {
@@ -104,7 +104,7 @@ try {
 } on FooException {} on BarException {
   doSomething();
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } on FooException {
@@ -117,7 +117,7 @@ try {
 } catch (someSurprisinglyLongVariableName) {
   doSomething();
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } catch (
@@ -131,7 +131,7 @@ try {
 } catch (longErrorVariable, longStackTrace) {
   doSomething();
 }
-<<<
+<<< 3.7
 try {
   doSomething();
 } catch (

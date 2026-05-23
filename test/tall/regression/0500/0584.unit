@@ -1,6 +1,6 @@
 >>>
 bool
     listEquals<T>(List<T> a, List<T> b) => const ListEquality<T>().equals(a, b);
-<<<
+<<< 3.7
 bool listEquals<T>(List<T> a, List<T> b) =>
     const ListEquality<T>().equals(a, b);

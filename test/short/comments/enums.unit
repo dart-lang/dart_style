@@ -9,7 +9,7 @@ enum A {
 
   // comment
 }
-<<<
+<<< 3.6
 enum A {
   // comment
   B,
@@ -29,7 +29,7 @@ enum A {
 
   /* comment */
 }
-<<<
+<<< 3.6
 enum A {
   /* comment */
   B,
@@ -47,7 +47,7 @@ enum A {
   // comment
   B
 }
-<<<
+<<< 3.6
 enum A {
   // comment
   B
@@ -60,7 +60,7 @@ enum A {
 
 
 }
-<<<
+<<< 3.6
 enum A {
   B
   // comment
@@ -72,7 +72,7 @@ b;/// doc
 var x = 1;
 /// doc
 void y() {}}
-<<<
+<<< 3.6
 enum Foo {
   /// doc
   a,
@@ -91,7 +91,7 @@ enum Foo {
   a,
   b // comment
 }
-<<<
+<<< 3.6
 enum Foo {
   a,
   b // comment
@@ -101,7 +101,7 @@ enum Foo {
   a,  // comment
   b
 }
-<<<
+<<< 3.6
 enum Foo {
   a, // comment
   b
@@ -111,7 +111,7 @@ enum Foo {
   a(// c
   ),b()
 }
-<<<
+<<< 3.6
 enum Foo {
   a(// c
       ),

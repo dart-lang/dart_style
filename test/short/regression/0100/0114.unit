@@ -46,7 +46,7 @@ operatorNameToIdentifier(String name) {
     return name;
   }
 }
-<<<
+<<< 3.6
 operatorNameToIdentifier(String name) {
   if (name == null) {
     return name;

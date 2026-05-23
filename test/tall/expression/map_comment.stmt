@@ -5,17 +5,17 @@
 var map = {
 // comment
 };
-<<<
+<<< 3.7
 var map = {
   // comment
 };
 >>> Inline block comment in empty map.
 var map = {  /* comment */  };
-<<<
+<<< 3.7
 var map = {/* comment */};
 >>> Inline block comment after entry.
 var map = {first: one /* bang */, second: two};
-<<<
+<<< 3.7
 var map = {
   first: one /* bang */,
   second: two,
@@ -23,7 +23,7 @@ var map = {
 >>> After entry.
 ({key: value // comment
 });
-<<<
+<<< 3.7
 ({
   key: value, // comment
 });
@@ -48,7 +48,7 @@ var map = {
 
 
 });
-<<<
+<<< 3.7
 ({
   // comment
   element: 1,
@@ -63,7 +63,7 @@ var map = {
 >>> Comment after key.
 ({key // comment
 : value});
-<<<
+<<< 3.7
 ### This looks weird, but users don't usually put comments here.
 ({
   key // comment
@@ -73,7 +73,7 @@ var map = {
 >>> Comment after `:`.
 ({key : // comment
 value});
-<<<
+<<< 3.7
 ({
   key: // comment
       value,

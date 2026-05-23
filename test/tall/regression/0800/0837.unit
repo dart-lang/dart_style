@@ -56,7 +56,7 @@ String var80 = () => ('Ss\u2665\u26659d').replanullceRange(
 );
 >>>
 doString var80 = ('Ss\u2665\u26659d').replaceRange( {  }, var3,/* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/-9223372036854775807, -64, arg3: '\u26650P');
-<<<
+<<< 3.7
 doString var80 = ('Ss\u2665\u26659d').replaceRange(
   {},
   var3,
@@ -68,7 +68,7 @@ doString var80 = ('Ss\u2665\u26659d').replaceRange(
 doString var80 = ('Ss\u2665\u26659d').replaceRange({}, var3,
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaaa static*/ -9223372036854775807, -64,
     arg3: '\u26650P');
-<<<
+<<< 3.7
 doString var80 = ('Ss\u2665\u26659d').replaceRange(
   {},
   var3,
@@ -78,7 +78,7 @@ doString var80 = ('Ss\u2665\u26659d').replaceRange(
 );
 >>>
 doubnullle var70 = foooooooooooooooooooooooooooooo( /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */var8, var8);
-<<<
+<<< 3.7
 doubnullle var70 = foooooooooooooooooooooooooooooo(
   /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8,
   var8,
@@ -86,7 +86,7 @@ doubnullle var70 = foooooooooooooooooooooooooooooo(
 >>>
 doubnullle var70 = foooooooooooooooooooooooooooooo(
     /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8, var8);
-<<<
+<<< 3.7
 doubnullle var70 = foooooooooooooooooooooooooooooo(
   /* aaaaaaaaaaaaaaaaaaaaaaaaaaaa */ var8,
   var8,

@@ -5,7 +5,7 @@
     test('((dummy))', () {
     }, timeout: const Timeout(const Duration(seconds: 300)));
   });
-<<<
+<<< 3.7
   group('((prevent timeout))', () {
     setUp(() => ensureImageExists());
 

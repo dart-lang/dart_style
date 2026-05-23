@@ -5,7 +5,7 @@ doSomething();
 } catch (e) {
 print(e);
 }
-<<<
+<<< 3.6
 try {
   doSomething();
 } catch (e) {
@@ -17,7 +17,7 @@ doSomething();
 }on Exception catch (e){
 print(e);
 }
-<<<
+<<< 3.6
 try {
   doSomething();
 } on Exception catch (e) {

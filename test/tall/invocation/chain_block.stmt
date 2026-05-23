@@ -3,7 +3,7 @@
 ### "." while still allowing newlines in some argument lists.
 >>> Block format single call with split regular arguments.
 target.method(argument1, argument2, argument3);
-<<<
+<<< 3.7
 target.method(
   argument1,
   argument2,
@@ -11,7 +11,7 @@ target.method(
 );
 >>> Block format single call with collection argument.
 target.method([element1, element2, element3]);
-<<<
+<<< 3.7
 target.method([
   element1,
   element2,
@@ -19,33 +19,33 @@ target.method([
 ]);
 >>> Block format single call with function argument.
 target.method(() { body; });
-<<<
+<<< 3.7
 target.method(() {
   body;
 });
 >>> Block format single call with line comment in argument list.
 target.method(// comment
 );
-<<<
+<<< 3.7
 target.method(
   // comment
 );
 >>> Block format single call with block comment in argument list.
 target.method(/* a very long comment */);
-<<<
+<<< 3.7
 target.method(
   /* a very long comment */
 );
 >>> Allow block format chain with leading properties.
 target.property1.property2.method(argument1, argument2);
-<<<
+<<< 3.7
 target.property1.property2.method(
   argument1,
   argument2,
 );
 >>> If leading properties split, then don't block format chain.
 target.property1.property2.property3.method(argument1, argument2, argument3);
-<<<
+<<< 3.7
 target.property1.property2.property3
     .method(
       argument1,
@@ -54,13 +54,13 @@ target.property1.property2.property3
     );
 >>> Block format chain on trailing split argument list with leading unsplittable calls.
 target.zero().one().two().method(argument);
-<<<
+<<< 3.7
 target.zero().one().two().method(
   argument,
 );
 >>> No block format chain on split argument list with leading splittable calls.
 target.zero().one(1).two(1, 2).method(argument1, argument2, argument3);
-<<<
+<<< 3.7
 target
     .zero()
     .one(1)
@@ -76,7 +76,7 @@ compiler
     .then((_) {
       body;
     });
-<<<
+<<< 3.7
 compiler.run(script).then((_) {
   body;
 });
@@ -88,7 +88,7 @@ compiler
       element2,
       element3,
     ]);
-<<<
+<<< 3.7
 compiler.run(script).then([
   element1,
   element2,
@@ -100,7 +100,7 @@ compiler
     .then((_) {
       body;
     });
-<<<
+<<< 3.7
 compiler
     .run(longerScriptArgumentHere)
     .then((_) {
@@ -108,57 +108,57 @@ compiler
     });
 >>> Split after properties.
 target.property1.property2.property3.method(argument);
-<<<
+<<< 3.7
 target.property1.property2.property3
     .method(argument);
 >>> Allow a trailing property after a block-formatted call.
 target.method([element1, element2]).property;
-<<<
+<<< 3.7
 target.method([
   element1,
   element2,
 ]).property;
 >>> Allow a trailing empty call after a block-formatted call.
 target.method([element1, element2]).another();
-<<<
+<<< 3.7
 target.method([
   element1,
   element2,
 ]).another();
 >>> Don't allow a trailing property after a regular splittable call.
 target.method(argument1, argument2).property;
-<<<
+<<< 3.7
 target
     .method(argument1, argument2)
     .property;
 >>> Don't allow a trailing empty call after a regular splittable call.
 target.method(argument1, argument2).another();
-<<<
+<<< 3.7
 target
     .method(argument1, argument2)
     .another();
 >>> Don't allow a trailing non-empty call after a block-formatted call.
 target.method([element1, element2]).another(1);
-<<<
+<<< 3.7
 target
     .method([element1, element2])
     .another(1);
 >>> Don't allow a trailing non-empty call after a block-formatted call.
 target.method([element1, element2]).another(/* c */);
-<<<
+<<< 3.7
 target
     .method([element1, element2])
     .another(/* c */);
 >>> Allow postfix before block-formatted call.
 target.prop!.other[1]().method(argument1, argument2);
-<<<
+<<< 3.7
 target.prop!.other[1]().method(
   argument1,
   argument2,
 );
 >>> Allow postfix `!` on block call.
 target.method(argument1, argument2, argument3)!;
-<<<
+<<< 3.7
 target.method(
   argument1,
   argument2,
@@ -166,7 +166,7 @@ target.method(
 )!;
 >>> Postfix index on block call.
 target.method(argument1, argument2, argument3)[index];
-<<<
+<<< 3.7
 target.method(
   argument1,
   argument2,
@@ -174,7 +174,7 @@ target.method(
 )[index];
 >>> Postfix call on block call.
 target.method(argument1, argument2, argument3)(argument4);
-<<<
+<<< 3.7
 target.method(
   argument1,
   argument2,
@@ -183,7 +183,7 @@ target.method(
 >>> Postfix call on block call.
 target.method(argument1, argument2, argument3)
 (argument4, argument5, argument6, argument7);
-<<<
+<<< 3.7
 target.method(
   argument1,
   argument2,

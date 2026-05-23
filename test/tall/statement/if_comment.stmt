@@ -2,7 +2,7 @@
 >>> Line comment after `if`.
 if // comment
 (c) { body; }
-<<<
+<<< 3.7
 if // comment
 (c) {
   body;
@@ -10,7 +10,7 @@ if // comment
 >>> Line comment before condition.
 if (// comment
 c) { body; }
-<<<
+<<< 3.7
 if ( // comment
 c) {
   body;
@@ -18,7 +18,7 @@ c) {
 >>> Line comment after condition.
 if (c // comment
 ){ body; }
-<<<
+<<< 3.7
 if (c // comment
 ) {
   body;
@@ -26,25 +26,25 @@ if (c // comment
 >>> Line comment after `)`.
 if (c) // comment
 { body; }
-<<<
+<<< 3.7
 if (c) // comment
 {
   body;
 }
 >>> Line comment after non-block then body.
 if (true) body; // comment
-<<<
+<<< 3.7
 if (true) body; // comment
 >>> Line comment after block then body.
 if (true) {body;} // comment
-<<<
+<<< 3.7
 if (true) {
   body;
 } // comment
 >>> Line comment after non-block then body with else.
 if (true) body; // comment
 else other;
-<<<
+<<< 3.7
 if (true)
   body; // comment
 else
@@ -52,7 +52,7 @@ else
 >>> Line comment after block then body with else.
 if (true) {body;} // comment
 else {other;}
-<<<
+<<< 3.7
 if (true) {
   body;
 } // comment
@@ -62,7 +62,7 @@ else {
 >>> Line comment after `else` with block body.
 if (true) {body;} else // comment
 {other;}
-<<<
+<<< 3.7
 if (true) {
   body;
 } else // comment
@@ -72,21 +72,21 @@ if (true) {
 >>> Line comment after `else` with non-block body.
 if (true) body; else // comment
 other;
-<<<
+<<< 3.7
 if (true)
   body;
 else // comment
   other;
 >>> Line comment after non-block else body.
 if (true) body; else other; // comment
-<<<
+<<< 3.7
 if (true)
   body;
 else
   other; // comment
 >>> Line comment after block else body.
 if (true) {body;} else {other;} // comment
-<<<
+<<< 3.7
 if (true) {
   body;
 } else {
@@ -95,7 +95,7 @@ if (true) {
 >>> Hanging line comment before infix condition.
 if (// comment
 a && b) { body; }
-<<<
+<<< 3.7
 ### The indentation is odd here because it's an odd place for a comment.
 if ( // comment
 a && b) {
@@ -105,7 +105,7 @@ a && b) {
 if (
   // comment
 a && b) { body; }
-<<<
+<<< 3.7
 ### The indentation is odd here because it's an odd place for a comment.
 if (
 // comment
@@ -115,7 +115,7 @@ a && b) {
 >>> Hanging line comment before infix chain condition.
 if (// comment
 a && b && c) { body; }
-<<<
+<<< 3.7
 ### The indentation is odd here because it's an odd place for a comment.
 if ( // comment
 a && b && c) {
@@ -125,7 +125,7 @@ a && b && c) {
 if (
 // comment
 a && b && c) { body; }
-<<<
+<<< 3.7
 ### The indentation is odd here because it's an odd place for a comment.
 if (
 // comment

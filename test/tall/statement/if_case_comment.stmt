@@ -2,7 +2,7 @@
 >>> Line comment before case keyword.
 if (obj // comment
 case true) {;}
-<<<
+<<< 3.7
 if (obj // comment
     case true) {
   ;
@@ -10,7 +10,7 @@ if (obj // comment
 >>> Line comment after case keyword.
 if (obj case // comment
 true) {;}
-<<<
+<<< 3.7
 if (obj
     case // comment
         true) {
@@ -19,7 +19,7 @@ if (obj
 >>> Line comment after case clause.
 if (obj case true // comment
 ) {;}
-<<<
+<<< 3.7
 if (obj
     case true // comment
         ) {

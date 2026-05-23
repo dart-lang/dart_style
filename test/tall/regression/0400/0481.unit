@@ -3,7 +3,7 @@ class Car extends Vehicle with Doors, Windows, Wheels, Tires,
     Motor, Hood, Trunk, Roof, Pedals, Gas, Seats, LotsOfFun {
   // ...
 }
-<<<
+<<< 3.7
 class Car extends Vehicle
     with
         Doors,

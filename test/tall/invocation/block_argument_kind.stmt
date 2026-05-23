@@ -2,44 +2,44 @@
 ### Test which kinds of expressions are candidates to be block-formatted.
 >>> Non-empty block-bodied function expression.
 function(() { body; });
-<<<
+<<< 3.7
 function(() {
   body;
 });
 >>> Empty block-bodied function expression with a block comment.
 function(() { /* fairly long comment */ });
-<<<
+<<< 3.7
 function(() {
   /* fairly long comment */
 });
 >>> Empty block-bodied function expression with a line comment.
 function(() { // comment
 });
-<<<
+<<< 3.7
 function(() {
   // comment
 });
 >>> Block-bodied function expression with parameters.
 function((parameter) { body; });
-<<<
+<<< 3.7
 function((parameter) {
   body;
 });
 >>> Empty block-bodied function expression with parameters is not a block argument.
 function((parameter, anotherParameter) {});
-<<<
+<<< 3.7
 function(
   (parameter, anotherParameter) {},
 );
 >>> Expression-bodied function expression with parameters is not a block argument.
 function((parameter, anotherParameter) => body);
-<<<
+<<< 3.7
 function(
   (parameter, anotherParameter) => body,
 );
 >>> Expression-bodied function expression with many parameters is not a block argument.
 function((parameter, anotherParameter, thirdParameter) => body);
-<<<
+<<< 3.7
 function(
   (
     parameter,
@@ -49,19 +49,19 @@ function(
 );
 >>> An empty block-bodied function expression is not a block argument.
 function_________________________(() {});
-<<<
+<<< 3.7
 function_________________________(
   () {},
 );
 >>> A zero-parameter expression-bodied function is not a block argument.
 function_______________________(() => null);
-<<<
+<<< 3.7
 function_______________________(
   () => null,
 );
 >>> Function call is not a block argument.
 function(innerFunction(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   innerFunction(
     veryLongArgumentExpression,
@@ -69,14 +69,14 @@ function(
 );
 >>> A zero-argument function call with block comment is not a block argument.
 function(innerFunction(/* long comment */));
-<<<
+<<< 3.7
 function(
   innerFunction(/* long comment */),
 );
 >>> Zero-argument function call with line comment is not a block argument.
 function(innerFunction(// comment
 ));
-<<<
+<<< 3.7
 function(
   innerFunction(
     // comment
@@ -84,13 +84,13 @@ function(
 );
 >>> A zero-argument function call is not a block argument.
 function_______________________(inner());
-<<<
+<<< 3.7
 function_______________________(
   inner(),
 );
 >>> A method call is not a block argument.
 function(target.inner(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   target.inner(
     veryLongArgumentExpression,
@@ -98,14 +98,14 @@ function(
 );
 >>> A zero-argument method call with block comment is not a block argument.
 function(target.inner(/* long comment */));
-<<<
+<<< 3.7
 function(
   target.inner(/* long comment */),
 );
 >>> A zero-argument method call with line comment is not a block argument.
 function(target.inner(// comment
 ));
-<<<
+<<< 3.7
 function(
   target.inner(
     // comment
@@ -113,13 +113,13 @@ function(
 );
 >>> A zero-argument method call is not a block argument.
 function________________(target.inner());
-<<<
+<<< 3.7
 function________________(
   target.inner(),
 );
 >>> An instance creation expression is not a block argument.
 function(new SomeClass(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   new SomeClass(
     veryLongArgumentExpression,
@@ -127,14 +127,14 @@ function(
 );
 >>> A zero-argument instance creation expression with block comment is not a block argument.
 function(new SomeClass(/* long comment */));
-<<<
+<<< 3.7
 function(
   new SomeClass(/* long comment */),
 );
 >>> A zero-argument instance creation expression with line comment is not a block argument.
 function(new SomeClass(// comment
 ));
-<<<
+<<< 3.7
 function(
   new SomeClass(
     // comment
@@ -142,50 +142,50 @@ function(
 );
 >>> A zero-argument instance creation expression is not a block argument.
 function________________(new SomeClass());
-<<<
+<<< 3.7
 function________________(
   new SomeClass(),
 );
 >>> Immediately invoked function.
 function(() { body; }());
-<<<
+<<< 3.7
 function(() {
   body;
 }());
 >>> Empty immediately invoked function with a block comment.
 function(() { /* fairly long comment */ }());
-<<<
+<<< 3.7
 function(() {
   /* fairly long comment */
 }());
 >>> Empty immediately invoked function with a line comment.
 function(() { // comment
 }());
-<<<
+<<< 3.7
 function(() {
   // comment
 }());
 >>> Immediately invoked function with parameters and arguments.
 function((p, r) { body; }(a, b));
-<<<
+<<< 3.7
 function((p, r) {
   body;
 }(a, b));
 >>> Immediately invoked empty function with parameters is not a block argument.
 function((parameter, anotherParameter) {}());
-<<<
+<<< 3.7
 function(
   (parameter, anotherParameter) {}(),
 );
 >>> An empty immediately invoked function is not a block argument.
 function_________________________(() {}());
-<<<
+<<< 3.7
 function_________________________(
   () {}(),
 );
 >>> A function expression call is not a block argument.
 function((expression)(veryLongArgumentExpression));
-<<<
+<<< 3.7
 function(
   (expression)(
     veryLongArgumentExpression,
@@ -193,14 +193,14 @@ function(
 );
 >>> A zero-argument function expression call with block comment is not a block argument.
 function((expression)(/* long comment */));
-<<<
+<<< 3.7
 function(
   (expression)(/* long comment */),
 );
 >>> A zero-argument function expression call with line comment is not a block argument.
 function((expression)(// comment
 ));
-<<<
+<<< 3.7
 function(
   (expression)(
     // comment
@@ -208,13 +208,13 @@ function(
 );
 >>> A zero-argument function expression call is not a block argument.
 function_______________________((expr)());
-<<<
+<<< 3.7
 function_______________________(
   (expr)(),
 );
 >>> A parenthesized expression where inner expression is a block argument.
 function(([element1, element2, element3]));
-<<<
+<<< 3.7
 function(([
   element1,
   element2,
@@ -222,112 +222,112 @@ function(([
 ]));
 >>> List literal.
 function([veryLongElement, anotherLongElement]);
-<<<
+<<< 3.7
 function([
   veryLongElement,
   anotherLongElement,
 ]);
 >>> Empty list literal with block comment.
 function([/* a very long block comment */]);
-<<<
+<<< 3.7
 function([
   /* a very long block comment */
 ]);
 >>> Empty list literal with line comment.
 function([// comment
 ]);
-<<<
+<<< 3.7
 function([
   // comment
 ]);
 >>> An empty list is not a block argument.
 function_____________________________([]);
-<<<
+<<< 3.7
 function_____________________________(
   [],
 );
 >>> Map literal.
 function({1: veryLongElement, 2: anotherLongElement});
-<<<
+<<< 3.7
 function({
   1: veryLongElement,
   2: anotherLongElement,
 });
 >>> Set literal.
 function({veryLongElement, anotherLongElement});
-<<<
+<<< 3.7
 function({
   veryLongElement,
   anotherLongElement,
 });
 >>> Empty set/map literal with block comment.
 function({/* a very long block comment */});
-<<<
+<<< 3.7
 function({
   /* a very long block comment */
 });
 >>> Empty set/map literal with line comment.
 function({// comment
 });
-<<<
+<<< 3.7
 function({
   // comment
 });
 >>> An empty map/set is not a block argument.
 function_____________________________({});
-<<<
+<<< 3.7
 function_____________________________(
   {},
 );
 >>> Record literal.
 function((veryLongElement, anotherLongElement));
-<<<
+<<< 3.7
 function((
   veryLongElement,
   anotherLongElement,
 ));
 >>> Empty record literal with block comment.
 function((/* a very long block comment */));
-<<<
+<<< 3.7
 function((
   /* a very long block comment */
 ));
 >>> Empty record literal with line comment.
 function((// comment
 ));
-<<<
+<<< 3.7
 function((
   // comment
 ));
 >>> An empty record is not a block argument.
 function_____________________________(());
-<<<
+<<< 3.7
 function_____________________________(
   (),
 );
 >>> Switch expression.
 function(switch (n) {1 => veryLongElement, 2 => anotherLongElement});
-<<<
+<<< 3.7
 function(switch (n) {
   1 => veryLongElement,
   2 => anotherLongElement,
 });
 >>> Empty switch expression with block comment.
 function(switch (n) {/* long comment */});
-<<<
+<<< 3.7
 function(switch (n) {
   /* long comment */
 });
 >>> Empty switch expression with line comment.
 function(switch (n) {// comment
 });
-<<<
+<<< 3.7
 function(switch (n) {
   // comment
 });
 >>> An empty switch expression is not a block argument.
 function___________________(switch (n) {});
-<<<
+<<< 3.7
 function___________________(
   switch (n) {},
 );

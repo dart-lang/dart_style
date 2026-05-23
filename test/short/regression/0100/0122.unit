@@ -4,7 +4,7 @@ var xsrfValue = _urlIsSameOrigin(url) ?
     xsrfCookieName :
     defaults.xsrfCookieName] :
     null;
-<<<
+<<< 3.6
 var xsrfValue = _urlIsSameOrigin(url)
     ? _cookies[
         xsrfCookieName != null ? xsrfCookieName : defaults.xsrfCookieName]
@@ -16,7 +16,7 @@ class _Streams {
       new HashMap<String, int>() :
       new HashMap.from(inheritStreams._typeCounts);
 }
-<<<
+<<< 3.6
 class _Streams {
   _Streams(this._scope, this._exceptionHandler, _Streams inheritStreams)
       : _typeCounts = inheritStreams == null

@@ -13,7 +13,7 @@
               HintCode.UNDEFINED_METHOD,
               operator, [methodName, propagatedType.displayName]);
         }
-<<<
+<<< 3.6
         if (_shouldReportMissingMember(staticType, staticMethod)) {
           _recordUndefinedToken(
               staticType.element,

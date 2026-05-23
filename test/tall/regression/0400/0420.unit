@@ -13,7 +13,7 @@ main() {
     }
   }
 }
-<<<
+<<< 3.7
 createSomeObject(
   String s,
   Int64 id, {

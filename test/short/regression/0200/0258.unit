@@ -10,7 +10,7 @@ class FakeFFFFFFFConfigurationStore {
             ._getDefaultFFFFFFFConfig(
                 GGGGGGGGConfigFactory, HHHHHHHHHHHHHConfigFactory);
 }
-<<<
+<<< 3.6
 class FakeFFFFFFFConfigurationStore {
   FakeFFFFFFFConfigurationStore(GGGGGGGGConfigFactory GGGGGGGGConfigFactory,
       HHHHHHHHHHHHHConfigFactory HHHHHHHHHHHHHConfigFactory)

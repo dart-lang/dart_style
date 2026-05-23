@@ -4,7 +4,7 @@ void main() {
     return Future.wait(operationSet.map((operation) => operation.cancel()));
   });
 }
-<<<
+<<< 3.7
 void main() {
   var controller = new StreamController<T>(
     sync: true,

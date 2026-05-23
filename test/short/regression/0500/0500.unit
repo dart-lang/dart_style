@@ -18,7 +18,7 @@
                   ek("NoSuchMethodError: method not found: '${names[i]}='"));
         }
       };
-<<<
+<<< 3.6
   Decl immutableVariableDeclaration(
           List<String> names, List<Expr> initializers) =>
       (Environment env) {

@@ -10,7 +10,7 @@ class Foo {
     });
   }
 }
-<<<
+<<< 3.7
 class Foo {
   void init(String entityType) {
     _schemaUtils

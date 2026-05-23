@@ -11,7 +11,7 @@
     'd': 'd', // DAY
   }
 };
-<<<
+<<< 3.6
 /**
  * Returns a Map from locale names to another Map that goes from skeletons
  * to the locale-specific formatting patterns.

@@ -28,7 +28,7 @@ class Foo {
           ? doneSearch(err)
           : null;
     }
-<<<
+<<< 3.7
     main() {
       this.changes.exec();
       Valids.exist(doneSearch) ? doneSearch(err) : null;
@@ -84,7 +84,7 @@ class Foo {
           null, // get/set
           null); // async modifier
     }
-<<<
+<<< 3.7
     main() {
       tree.Node definition = new tree.FunctionExpression(
         makeIdentifier(param.name),
@@ -106,7 +106,7 @@ class Foo {
         ? coreTypes.typeType
         : type);
   }
-<<<
+<<< 3.7
   main() {
     ConstantExpression constant = new TypeConstantExpression(
       // TODO(johnniwinther): Use [type] when evaluation of constants is done

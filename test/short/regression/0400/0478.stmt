@@ -11,7 +11,7 @@
                       padding: style.Spacing.smallPadding,
                       child: new Text("Take Cards",
                           style: style.Text.largeStyle)))));
-<<<
+<<< 3.6
           statusBarWidgets.add(new Flexible(
               flex: 0,
               child: new GestureDetector(
@@ -32,7 +32,7 @@
             _showSplitView = !_showSplitView;
           });
         }));
-<<<
+<<< 3.6
         statusBarWidgets.add(new IconButton(
             icon: "action/swap_vert",
             onPressed: () {

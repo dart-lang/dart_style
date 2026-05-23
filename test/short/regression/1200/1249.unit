@@ -5,7 +5,7 @@ class C {
           .NativeFunction<ffi_Pointer_ffi_Void_ Function(ffi_Size__ffi_Size)>>(
       'calloc');
 }
-<<<
+<<< 3.6
 class C {
   late final _callocPtr = _lookup<
       ffi.NativeFunction<

@@ -10,7 +10,7 @@ f() {
     t: '', // comment to force split
   );
 }
-<<<
+<<< 3.7
 f() {
   a.b().m(
     t: '', // comment to force split

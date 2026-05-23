@@ -12,7 +12,7 @@ test0b() => func1(() {
       print('foo');
       print('bar');
     });
-<<<
+<<< 3.7
 //GOOD: block body
 test0a() {
   func1(() {
@@ -54,7 +54,7 @@ test1c() {
     }),
   );
 }
-<<<
+<<< 3.7
 test1a() {
   //GOOD: block body
   func1(() {
@@ -124,7 +124,7 @@ test2d() {
     }),
   );
 }
-<<<
+<<< 3.7
 test2a() {
   //GOOD: block body
   func2(1, () {

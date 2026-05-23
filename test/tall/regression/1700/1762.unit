@@ -4,7 +4,7 @@ var variable =
     condition
         ? thenBranch // Comment to force split.
         : elseBranch;
-<<<
+<<< 3.7
 // @dart=3.7
 var variable =
     condition

@@ -31,7 +31,7 @@ class Foo {
     0x25A0      // 7F:         "Black Square" (NB: 2588 = Full Block)
   ];
 }
-<<<
+<<< 3.7
 class Foo {
   /**
    * Basic one-byte 608 CC char set, mostly ASCII.

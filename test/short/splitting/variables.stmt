@@ -1,97 +1,97 @@
 40 columns                              |
 >>> long name with no initializer
 var thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.6
 var thisIsReallyQuiteAVeryLongVariableName;
 >>> initializer doesn't fit one line, wrap inside, keep name
 var result = myFunction(argument * argument, argument * argument);
-<<<
+<<< 3.6
 var result = myFunction(
     argument * argument,
     argument * argument);
 >>> initializer doesn't fit one line, wrap inside, keep name
 var result = myFunction(argument, argument, argument, argument);
-<<<
+<<< 3.6
 var result = myFunction(argument,
     argument, argument, argument);
 >>> initializer fits one line
 var variableName = veryLongInitializerName;
-<<<
+<<< 3.6
 var variableName =
     veryLongInitializerName;
 >>> initializer doesn't fit one line, cannot be split
 var variableName = thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.6
 var variableName =
     thisIsReallyQuiteAVeryLongVariableName;
 >>> long function call initializer
 var variableName = functionName(first, second);
-<<<
+<<< 3.6
 var variableName =
     functionName(first, second);
 >>> long binary expression initializer
 int variableName = argument * argument + argument;
-<<<
+<<< 3.6
 int variableName =
     argument * argument + argument;
 >>> lots of variables with no initializers
 var variableA, variableB, variableC, variableD;
-<<<
+<<< 3.6
 var variableA,
     variableB,
     variableC,
     variableD;
 >>> multiple variables stay on one line if they fit
 var x = 3, y = 4;
-<<<
+<<< 3.6
 var x = 3, y = 4;
 >>>
 var x = 2, y;
-<<<
+<<< 3.6
 var x = 2, y;
 >>> multiple variables can stay on one line if there are no initializers
 var x, y, z;
-<<<
+<<< 3.6
 var x, y, z;
 >>> multiple variables all split if they don't fit on one line
 var x = initializer, y = initializer, z = initializer;
-<<<
+<<< 3.6
 var x = initializer,
     y = initializer,
     z = initializer;
 >>> initializers get extra indentation if there are multiple variables
 var xVeryLongVariable = longishInitializer,
     xVeryLongVariable = longishInitializer;
-<<<
+<<< 3.6
 var xVeryLongVariable =
         longishInitializer,
     xVeryLongVariable =
         longishInitializer;
 >>> dartbug.com/16379
 var x = new XXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
-<<<
+<<< 3.6
 var x =
     new XXXXXXXXXXXXXXXXXXXXXXXXXXXXX();
 >>> nest blocks when variables split
 SomeType a = () {;}, b;
-<<<
+<<< 3.6
 SomeType a = () {
       ;
     },
     b;
 >>> prefer to split at "=" instead of pattern
 var (longIdentifier && anotherOne) = value;
-<<<
+<<< 3.6
 var (longIdentifier && anotherOne) =
     value;
 >>> split in infix pattern
 var (longIdentifier && anotherAlsoLongOne) = value;
-<<<
+<<< 3.6
 var (longIdentifier &&
     anotherAlsoLongOne) = value;
 >>> split in list pattern
 var [first, second, third, fourth, fifth] = value;
-<<<
+<<< 3.6
 var [
   first,
   second,
@@ -101,7 +101,7 @@ var [
 ] = value;
 >>> split in map pattern
 var {first: second, third: fourth, fifth: sixth} = value;
-<<<
+<<< 3.6
 var {
   first: second,
   third: fourth,
@@ -109,7 +109,7 @@ var {
 } = value;
 >>> split in record pattern
 var (first, second, third, fourth, fifth) = value;
-<<<
+<<< 3.6
 var (
   first,
   second,
@@ -119,7 +119,7 @@ var (
 ) = value;
 >>> split in object pattern
 var Foo(:first, :second, :third, :fourth, :fifth) = value;
-<<<
+<<< 3.6
 var Foo(
   :first,
   :second,
@@ -129,14 +129,14 @@ var Foo(
 ) = value;
 >>> split in value
 var (first, second, third) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.6
 var (first, second, third) =
     longValueExpression +
         anotherOperand +
         aThirdOperand;
 >>> expression split in both
 var (longIdentifier && anotherAlsoLongOne) = longValueExpression + anotherOperand + aThirdOperand;
-<<<
+<<< 3.6
 var (longIdentifier &&
         anotherAlsoLongOne) =
     longValueExpression +
@@ -144,7 +144,7 @@ var (longIdentifier &&
         aThirdOperand;
 >>> collection-like split in both
 var (first, second, third, fourth, fifth) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 var (
   first,
   second,
@@ -160,7 +160,7 @@ var (
 );
 >>> expression split in pattern, collection-like in value
 var (longIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 var (longIdentifier &&
     anotherAlsoLongOne) = (
   first,
@@ -171,7 +171,7 @@ var (longIdentifier &&
 );
 >>> expression split in pattern, collection-like in value
 var (longIdentifier && anotherAlsoLongOne) = (first, second, third, fourth, fifth);
-<<<
+<<< 3.6
 var (longIdentifier &&
     anotherAlsoLongOne) = (
   first,

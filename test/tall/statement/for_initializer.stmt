@@ -2,13 +2,13 @@
 ### Tests for loops where the initializer clause is an expression.
 >>> Unsplit.
 for (initialize; condition; increment) { body; }
-<<<
+<<< 3.7
 for (initialize; condition; increment) {
   body;
 }
 >>> Split between clauses.
 for (veryLongFirstClause; veryLongSecondClause; third) {}
-<<<
+<<< 3.7
 for (
   veryLongFirstClause;
   veryLongSecondClause;
@@ -16,7 +16,7 @@ for (
 ) {}
 >>>
 for (longFirstClause; longSecondClause; third) {}
-<<<
+<<< 3.7
 for (
   longFirstClause;
   longSecondClause;
@@ -24,13 +24,13 @@ for (
 ) {}
 >>> Unsplit only initializer clause.
 for  ( initialize  ;  ;  )  { body; }
-<<<
+<<< 3.7
 for (initialize; ;) {
   body;
 }
 >>> Split only initializer clause.
 for  (  extremelyLong + veryLongInitializerClause  ;  ;  )  { body; }
-<<<
+<<< 3.7
 for (
   extremelyLong +
       veryLongInitializerClause;
@@ -40,13 +40,13 @@ for (
 }
 >>> Unsplit only condition clause.
 for  (   ;  condition  ;  )  { body; }
-<<<
+<<< 3.7
 for (; condition;) {
   body;
 }
 >>> Split only condition clause.
 for  (  ;  extremelyLong + veryLongConditionClause  ;  )  { body; }
-<<<
+<<< 3.7
 for (
   ;
   extremelyLong +
@@ -56,13 +56,13 @@ for (
 }
 >>> Unsplit only increment clause.
 for  (   ;  ;  increment  )  { body; }
-<<<
+<<< 3.7
 for (; ; increment) {
   body;
 }
 >>> Split only increment clause.
 for  (  ;  ;  extremelyLong + veryLongIncrementClause  )  { body; }
-<<<
+<<< 3.7
 for (
   ;
   ;
@@ -73,13 +73,13 @@ for (
 }
 >>> Unsplit no initializer clause.
 for  (  ;  cond  ;  incr )  { body; }
-<<<
+<<< 3.7
 for (; cond; incr) {
   body;
 }
 >>> Split no initializer clause.
 for  (  ;  longConditionClause  ;  longIncrementClause  )  { body; }
-<<<
+<<< 3.7
 for (
   ;
   longConditionClause;
@@ -89,13 +89,13 @@ for (
 }
 >>> Unsplit no condition clause.
 for  (  init  ;  ;  incr  )  { body; }
-<<<
+<<< 3.7
 for (init; ; incr) {
   body;
 }
 >>> Split no condition clause.
 for  (  longInitializerClause  ;  ;  longIncrementClause  )  { body; }
-<<<
+<<< 3.7
 for (
   longInitializerClause;
   ;
@@ -105,13 +105,13 @@ for (
 }
 >>> Unsplit no increment clause.
 for  (  init  ;  cond  ;  )  { body; }
-<<<
+<<< 3.7
 for (init; cond;) {
   body;
 }
 >>> Split no increment clause.
 for  (  longInitializerClause  ;  longConditionClause  ;  )  { body; }
-<<<
+<<< 3.7
 for (
   longInitializerClause;
   longConditionClause;
@@ -120,7 +120,7 @@ for (
 }
 >>> Indent a wrapped initializer.
 for (very + long + initialization + expression; a; b) {}
-<<<
+<<< 3.7
 for (
   very +
       long +
@@ -131,13 +131,13 @@ for (
 ) {}
 >>> Unsplit increments.
 for (foo; bar; a += 1, b += 1) {}
-<<<
+<<< 3.7
 for (foo; bar; a += 1, b += 1) {}
 >>> Split clauses but not increments.
 for (a = 0; longCondition(expression); a += 1, b += 1) {
   ;
 }
-<<<
+<<< 3.7
 for (
   a = 0;
   longCondition(expression);
@@ -147,7 +147,7 @@ for (
 }
 >>> Split in increments splits clauses.
 for (foo; bar; first = 1, second = 2, third = 3, fourth = 4) {}
-<<<
+<<< 3.7
 for (
   foo;
   bar;
@@ -158,11 +158,11 @@ for (
 ) {}
 >>> Discard trailing comma in unsplit increments.
 for (foo; bar; first = 1, second = 2,) {}
-<<<
+<<< 3.7
 for (foo; bar; first = 1, second = 2) {}
 >>> Discard trailing comma in split increments.
 for (foo; bar; first = 1, second = 2, third = 3, fourth = 4,) {}
-<<<
+<<< 3.7
 for (
   foo;
   bar;

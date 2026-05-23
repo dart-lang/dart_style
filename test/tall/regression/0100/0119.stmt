@@ -2,7 +2,7 @@
     boardData
       ..drawPixels(op.getBitmapData('game_board_side_top'), tbr, new Point(
           112 + i * 80, 0));
-<<<
+<<< 3.7
     boardData..drawPixels(
       op.getBitmapData('game_board_side_top'),
       tbr,
@@ -11,7 +11,7 @@
 >>> (indent 6)
       var initialOffset = new Vector(
           SquareElement.SIZE * c.x, SquareElement.SIZE * c.y);
-<<<
+<<< 3.7
       var initialOffset = new Vector(
         SquareElement.SIZE * c.x,
         SquareElement.SIZE * c.y,

@@ -8,7 +8,7 @@
           password.isEmpty ||
           newPassword == null ||
           newPassword.isEmpty;
-<<<
+<<< 3.7
   @eventHandler
   bool computeChangePasswordDisabled(
     String email,

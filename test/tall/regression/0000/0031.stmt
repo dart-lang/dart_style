@@ -49,7 +49,7 @@ var German = const {
   "HOUR_MINUTE_SECOND + ABBR_GENERIC_TZ": "20:58:59 Vereinigte Staaten Zeit (Los Angeles)",
   "HOUR_MINUTE + ABBR_SPECIFIC_TZ": "20:58 GMT-08:00"
 };
-<<<
+<<< 3.7
 var German = const {
   "DAY": "27",
   "ABBR_WEEKDAY": "Fr.",

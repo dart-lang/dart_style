@@ -1,33 +1,33 @@
 40 columns                              |
 >>>
 extension SomeExtension on SomeLongClass {}
-<<<
+<<< 3.6
 extension SomeExtension
     on SomeLongClass {}
 >>>
 extension Extension<VeryLongTypeParameterName> on C {}
-<<<
+<<< 3.6
 extension Extension<
     VeryLongTypeParameterName> on C {}
 >>>
 extension Extension<VeryLongTypeParameterName> on BaseClass {}
-<<<
+<<< 3.6
 extension Extension<
         VeryLongTypeParameterName>
     on BaseClass {}
 >>>
 extension Extension on C<VeryLongTypeArgumentName> {}
-<<<
+<<< 3.6
 extension Extension
     on C<VeryLongTypeArgumentName> {}
 >>>
 extension Extension on BaseClass<VeryLongTypeArgumentName> {}
-<<<
+<<< 3.6
 extension Extension on BaseClass<
     VeryLongTypeArgumentName> {}
 >>>
 extension Extension on VeryLongBaseClass<VeryLongTypeArgumentName> {}
-<<<
+<<< 3.6
 extension Extension
     on VeryLongBaseClass<
         VeryLongTypeArgumentName> {}

@@ -4,7 +4,7 @@ void main() {
     // My test code
   }, testOn: 'vm');
 }
-<<<
+<<< 3.7
 void main() {
   test('------------------ my long test name ------------------', () async {
     // My test code
@@ -16,7 +16,7 @@ void main() {
     // My test code
   }, testOn: 'vm && linux');
 }
-<<<
+<<< 3.7
 void main() {
   test('------------------ my long test name ------------------', () async {
     // My test code

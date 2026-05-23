@@ -10,7 +10,7 @@
         });
         return null;
       }
-<<<
+<<< 3.7
       if (!firstArgument.isString) {
         DartType type = defaultValue.getType(compiler.coreTypes);
         compiler.reportFatalError(

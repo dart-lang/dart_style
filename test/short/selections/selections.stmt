@@ -1,36 +1,36 @@
 40 columns                              |
 >>> start at beginning
 ‹123›45;
-<<<
+<<< 3.6
 ‹123›45;
 >>> start at end
 12345;‹›
-<<<
+<<< 3.6
 12345;‹›
 >>> zero length
 123‹›45;
-<<<
+<<< 3.6
 123‹›45;
 >>> length at end
 12‹345;›
-<<<
+<<< 3.6
 12‹345;›
 >>> unchanged
 f‹oo(a, b›, c);
-<<<
+<<< 3.6
 f‹oo(a, b›, c);
 >>> includes added whitespace
 a+f‹irst+se›cond;
-<<<
+<<< 3.6
 a + f‹irst + se›cond;
 >>> inside comment
 foo(   /* ‹ */  bar/*›*/);
-<<<
+<<< 3.6
 foo(/* ‹ */ bar /*›*/);
 >>> in beginning of multi-line string literal
   """f‹irs›t
 second""";
-<<<
+<<< 3.6
 """f‹irs›t
 second""";
 >>> in middle of multi-line string literal
@@ -38,7 +38,7 @@ second""";
 se‹cond
 thi›rd
 fourth""";
-<<<
+<<< 3.6
 """first
 se‹cond
 thi›rd
@@ -46,36 +46,36 @@ fourth""";
 >>> in end of multi-line string literal
   """first
 sec‹ond"""  ;›
-<<<
+<<< 3.6
 """first
 sec‹ond""";›
 >>> in string interpolation
 foo(  "$fi‹rst",  "$sec›ond" );
-<<<
+<<< 3.6
 foo("$fi‹rst", "$sec›ond");
 >>> in moved comment
 someMethod(argument /* long com‹ment that wraps */, other /* last com›ment */);
-<<<
+<<< 3.6
 someMethod(
     argument /* long com‹ment that wraps */,
     other /* last com›ment */);
 >>> before comments
 1  ‹  /* */ +  ›  /* */ 2;
-<<<
+<<< 3.6
 1 ‹/* */ +› /* */ 2;
 >>> after comments
 1/* */  ‹  +/* */  ›   2;
-<<<
+<<< 3.6
 1 /* */ ‹+ /* */› 2;
 >>> between adjacent comments
 1/* */  ‹  /* */ › /* */ +  2;
-<<<
+<<< 3.6
 1 /* */ ‹/* */› /* */ + 2;
 >>> only whitespace in zero space selected
 foo(  ‹  ›  argument);
-<<<
+<<< 3.6
 foo(‹›argument);
 >>> only whitespace in space selected
 foo(argument,  ‹  ›  argument);
-<<<
+<<< 3.6
 foo(argument, ‹›argument);

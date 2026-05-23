@@ -21,7 +21,7 @@ void main() {
     if (debugger != null) debugger.close();
   });
 }
-<<<
+<<< 3.6
 void main() {
   return new CancelableOperation.fromFuture(() async {
     // Make the underlying suite null so that the engine doesn't start running

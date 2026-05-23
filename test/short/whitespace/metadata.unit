@@ -5,7 +5,7 @@
 @deprecated import 'dart:io';
 
 @deprecated export 'dart:io';
-<<<
+<<< 3.6
 @deprecated
 library foo;
 
@@ -16,12 +16,12 @@ import 'dart:io';
 export 'dart:io';
 >>> metadata on part
 @foo part "part.dart";
-<<<
+<<< 3.6
 @foo
 part "part.dart";
 >>> metadata on part of
 @foo part of bar;
-<<<
+<<< 3.6
 @foo
 part of bar;
 >>> preserve a blank line before the first directive
@@ -32,7 +32,7 @@ import 'foo.dart';
 @bar
 
 import 'bar.dart';
-<<<
+<<< 3.6
 @foo
 
 import 'foo.dart';
@@ -45,7 +45,7 @@ import 'bar.dart';
 @meta class Y = X with Z;
 
 @meta typedef void X(y);
-<<<
+<<< 3.6
 @meta
 class X {}
 
@@ -66,7 +66,7 @@ foo() {
 
   var c;
 }
-<<<
+<<< 3.6
 foo() {
   @meta
   var a;
@@ -80,12 +80,12 @@ foo() {
 }
 >>> force newline before function
 @meta foo() {}
-<<<
+<<< 3.6
 @meta
 foo() {}
 >>> multiple annotations before function get their own line
 @meta @another foo() {}
-<<<
+<<< 3.6
 @meta
 @another
 foo() {}
@@ -96,7 +96,7 @@ class X {
   @meta   factory X(x) => null;
   @meta  int x() => null;
 }
-<<<
+<<< 3.6
 class X {
   @meta
   var _x;
@@ -114,7 +114,7 @@ class X {
   @meta @another  factory X(x) => null;
   @meta @another  int x() => null;
 }
-<<<
+<<< 3.6
 class X {
   @meta
   @another
@@ -141,14 +141,14 @@ class X {
 
 
 class A {}
-<<<
+<<< 3.6
 @a
 @b
 @c
 class A {}
 >>> multiple top-level annotations always get their own line
 @a @b class A {}
-<<<
+<<< 3.6
 @a
 @b
 class A {}
@@ -160,7 +160,7 @@ foo(
 @b
 
 param) {}
-<<<
+<<< 3.6
 foo(@a @b param) {}
 >>> type parameter annotations are inline
 class Foo<
@@ -170,13 +170,13 @@ class Foo<
 @b
 
 T> {}
-<<<
+<<< 3.6
 class Foo<@a @b T> {}
 >>> comment after metadata
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
 typedef void DatabaseCallback(database);
-<<<
+<<< 3.6
 @DomName('DatabaseCallback')
 @Experimental() // deprecated
 typedef void DatabaseCallback(database);
@@ -184,7 +184,7 @@ typedef void DatabaseCallback(database);
 @DomName('DatabaseCallback') // deprecated
   @Experimental()
       typedef void DatabaseCallback(database);
-<<<
+<<< 3.6
 @DomName(
     'DatabaseCallback') // deprecated
 @Experimental()
@@ -193,19 +193,19 @@ typedef void DatabaseCallback(database);
 @DomName('DatabaseCallback')
 @Experimental()
 var variable;
-<<<
+<<< 3.6
 @DomName('DatabaseCallback')
 @Experimental()
 var variable;
 >>> metadata on parameters
 main(@foo @bar param) {}
-<<<
+<<< 3.6
 main(@foo @bar param) {}
 >>> metadata on initializing formal
 class Foo {
   Foo(@bar this.field);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(@bar this.field);
 }
@@ -213,7 +213,7 @@ class Foo {
 class Foo {
   Foo(@bar super.field, [  @foo()   @baz   super.another  ]);
 }
-<<<
+<<< 3.6
 class Foo {
   Foo(@bar super.field,
       [@foo() @baz super.another]);
@@ -221,7 +221,7 @@ class Foo {
 >>> metadata on function-typed formal parameter
 withReturnType(@foo @bar int fn(@foo param)) {}
 withoutReturnType(@foo @bar fn(@foo param)) {}
-<<<
+<<< 3.6
 withReturnType(
     @foo @bar int fn(@foo param)) {}
 withoutReturnType(
@@ -229,26 +229,26 @@ withoutReturnType(
 >>> metadata on default formal parameter
 positional([@foo bar]) {}
 named({@foo bar}) {}
-<<<
+<<< 3.6
 positional([@foo bar]) {}
 named({@foo bar}) {}
 >>> split between metadata and parameter indents
 function(@Annotation @VeryLongMetadataAnnotation longParameter) {}
-<<<
+<<< 3.6
 function(
     @Annotation
     @VeryLongMetadataAnnotation
     longParameter) {}
 >>> unsplit with trailing commas
 function(@Annotation longParameter,@Annotation @Other longParameter2,) {}
-<<<
+<<< 3.6
 function(
   @Annotation longParameter,
   @Annotation @Other longParameter2,
 ) {}
 >>> split with trailing commas
 function(@Annotation longParameter,@Annotation @Other @Third longParameter2,) {}
-<<<
+<<< 3.6
 function(
   @Annotation longParameter,
   @Annotation
@@ -258,7 +258,7 @@ function(
 ) {}
 >>> keep "covariant" with parameter
 class A { function(@Annotation @VeryLongMetadataAnnotation covariant longParameter) {} }
-<<<
+<<< 3.6
 class A {
   function(
       @Annotation
@@ -267,7 +267,7 @@ class A {
 }
 >>> keep "required" with parameter
 class A { function({@Annotation @VeryLongMetadataAnnotation required longParameter}) {} }
-<<<
+<<< 3.6
 class A {
   function(
       {@Annotation
@@ -276,19 +276,19 @@ class A {
 }
 >>> metadata on function typedef
 @foo typedef Fn = Function();
-<<<
+<<< 3.6
 @foo
 typedef Fn = Function();
 >>> metadata on non-function typedef
 @foo typedef Hash< @a  K, @b(  1  )  V  >  =  Map < K ,  V >   ;
-<<<
+<<< 3.6
 @foo
 typedef Hash<@a K, @b(1) V> = Map<K, V>;
 >>> single metadata on for-in loop variable
 main() {
   for (   @a    var i in list) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a var i in list) {
     ;
@@ -298,7 +298,7 @@ main() {
 main() {
   for (   @a  @b    var i in list) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a @b var i in list) {
     ;
@@ -308,7 +308,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i in veryLong.iterator + expression) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -321,7 +321,7 @@ main() {
 main() {
   for (   @a    var i = x;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a var i = x;;) {
     ;
@@ -331,7 +331,7 @@ main() {
 main() {
   for (   @a  @b    var i = x;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a @b var i = x;;) {
     ;
@@ -341,7 +341,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var i = veryLong.iterator + expression;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -354,7 +354,7 @@ main() {
 main() {
   for (   @a    var [i] in list) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a var [i] in list) {
     ;
@@ -364,7 +364,7 @@ main() {
 main() {
   for (   @a  @b    var [i] in list) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a @b var [i] in list) {
     ;
@@ -374,7 +374,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] in veryLong.iterator + expression) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -387,7 +387,7 @@ main() {
 main() {
   for (   @a    var [i] = x;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a var [i] = x;;) {
     ;
@@ -397,7 +397,7 @@ main() {
 main() {
   for (   @a  @b    var [i] = x;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@a @b var [i] = x;;) {
     ;
@@ -407,7 +407,7 @@ main() {
 main() {
   for (@Annotation @VeryLongMetadataAnnotation(1, 2) var [i] = veryLong.iterator + expression;;) {;}
 }
-<<<
+<<< 3.6
 main() {
   for (@Annotation
       @VeryLongMetadataAnnotation(1, 2)
@@ -418,7 +418,7 @@ main() {
 }
 >>> metadata on enum cases
 enum Foo { a, @meta b, @meta1 @meta2 c}
-<<<
+<<< 3.6
 enum Foo {
   a,
   @meta
@@ -431,7 +431,7 @@ enum Foo {
 enum Foo { a,
 
 @meta b}
-<<<
+<<< 3.6
 enum Foo {
   a,
 
@@ -440,17 +440,17 @@ enum Foo {
 }
 >>> metadata on mixin
 @meta   mixin M {}
-<<<
+<<< 3.6
 @meta
 mixin M {}
 >>> metadata on mixin
 @meta  base   mixin M {}
-<<<
+<<< 3.6
 @meta
 base mixin M {}
 >>> metadata on extension
 @meta extension A on B {}
-<<<
+<<< 3.6
 @meta
 extension A on B {}
 >>> metadata on late declarations
@@ -461,7 +461,7 @@ class B {
     @meta late int d;
   }
 }
-<<<
+<<< 3.6
 @meta
 late int a;
 
@@ -475,7 +475,7 @@ class B {
 }
 >>> on external variable
 @meta  external var x;
-<<<
+<<< 3.6
 @meta
 external var x;
 >>> on external field
@@ -483,7 +483,7 @@ class C {
   @meta  external static   var  x;
   @meta  external var x;
 }
-<<<
+<<< 3.6
 class C {
   @meta
   external static var x;
@@ -494,28 +494,28 @@ class C {
 class C {
   @meta  abstract var x;
 }
-<<<
+<<< 3.6
 class C {
   @meta
   abstract var x;
 }
 >>> annotation with type arguments
 @A<int,String>()int x;
-<<<
+<<< 3.6
 @A<int, String>()
 int x;
 >>>
 @prefix.A<int,String>()int x;
-<<<
+<<< 3.6
 @prefix.A<int, String>()
 int x;
 >>>
 @A<int,String>.constructor()int x;
-<<<
+<<< 3.6
 @A<int, String>.constructor()
 int x;
 >>>
 @prefix.A<int,String>.constructor()int x;
-<<<
+<<< 3.6
 @prefix.A<int, String>.constructor()
 int x;

@@ -37,7 +37,7 @@ void main(List argv) {
           outputDir, uri, results.libraries, results.infoMap, results.rules);
 
 }
-<<<
+<<< 3.6
 void main(List argv) {
   // This is ok (it moves the ? and : to the ends of the previous lines)
   var cg = outputDart

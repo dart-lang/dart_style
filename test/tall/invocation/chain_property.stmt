@@ -2,21 +2,21 @@
 ### Tests special (or not) handling of properties in call chains.
 >>> Don't split leading properties in a chain.
 compiler.property.property.method().method().method();
-<<<
+<<< 3.7
 compiler.property.property
     .method()
     .method()
     .method();
 >>> Don't split leading properties even if other properties split.
 compiler.property.method().property.method();
-<<<
+<<< 3.7
 compiler.property
     .method()
     .property
     .method();
 >>> Split properties after a method chain.
 compiler.method().method().method().property.property;
-<<<
+<<< 3.7
 compiler
     .method()
     .method()
@@ -25,7 +25,7 @@ compiler
     .property;
 >>> Split properties inside a method chain.
 compiler.method().property.method().property.method();
-<<<
+<<< 3.7
 compiler
     .method()
     .property
@@ -34,7 +34,7 @@ compiler
     .method();
 >>> Split all properties if any split.
 avian.bovine.canine.equine.feline.piscine;
-<<<
+<<< 3.7
 avian
     .bovine
     .canine
@@ -43,7 +43,7 @@ avian
     .piscine;
 >>> Split all leading properties if any split.
 avian.bovine.canine.equine.feline.piscine.method();
-<<<
+<<< 3.7
 avian
     .bovine
     .canine
@@ -53,7 +53,7 @@ avian
     .method();
 >>> Prefer splitting an assignment over splitting a pure property chain.
 variable = avian.bovine.canine.equine.feline;
-<<<
+<<< 3.7
 variable =
     avian.bovine.canine.equine.feline;
 >>> Split the property chain if moving it to the next line still doesn't fit.

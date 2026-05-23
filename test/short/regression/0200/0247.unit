@@ -7,7 +7,7 @@
       help: 'Skips the checkout of the develop branch',
       abbr: 's') bool skipCheckout: false}) async {
       }
-<<<
+<<< 3.6
   init(
       {@Option(help: 'The git Uri containing the jefe.yaml.', abbr: 'g')
       String gitUri,

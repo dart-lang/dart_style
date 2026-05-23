@@ -1,7 +1,7 @@
 >>> (indent 4)
     (scubaMatchers.publishers[
         ErrorCollectingPublisher] as ErrorCollectingPublisher).verify();
-<<<
+<<< 3.7
     (scubaMatchers.publishers[ErrorCollectingPublisher]
             as ErrorCollectingPublisher)
         .verify();

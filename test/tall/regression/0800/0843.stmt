@@ -1,7 +1,7 @@
 >>>
 assert(
     someLongCondition, 'Some long assert message that is a longish sentence.');
-<<<
+<<< 3.7
 assert(
   someLongCondition,
   'Some long assert message that is a longish sentence.',

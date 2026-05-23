@@ -2,7 +2,7 @@
 >>> Line comment before "var".
 if (obj case // c
 var x) {;}
-<<<
+<<< 3.7
 if (obj
     case // c
         var x) {
@@ -25,7 +25,7 @@ if (obj
 >>> Line comment after variable (looks weird, but user should move comment).
 if (obj case var x // c
 ) {;}
-<<<
+<<< 3.7
 if (obj
     case var x // c
         ) {
@@ -34,7 +34,7 @@ if (obj
 >>> Line comment after type.
 if (obj case List<int> // c
 x) {;}
-<<<
+<<< 3.7
 if (obj
     case List<int> // c
         x) {

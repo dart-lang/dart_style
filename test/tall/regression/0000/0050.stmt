@@ -8,7 +8,7 @@
       },
       onDone: () { print('file is now closed'); },
       onError: (e) { print(e.toString()); });
-<<<
+<<< 3.7
   inputStream
       .transform(utf8.decoder)
       .transform(new LineSplitter())

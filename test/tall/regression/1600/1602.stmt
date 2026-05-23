@@ -4,7 +4,7 @@
         _previous.value!,
       ),
     };
-<<<
+<<< 3.7
     return switch (_advance().type) {
       TokenType.float ||
       TokenType.int ||

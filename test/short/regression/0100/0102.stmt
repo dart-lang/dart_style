@@ -3,7 +3,7 @@
           tag == 'input' && (name == 'value' || name =='checked') ||
           tag == 'select' && (name == 'selectedindex' || name == 'value') ||
           tag == 'textarea' && name == 'value');
-<<<
+<<< 3.6
       isTwoWay = !isEvent &&
           bindings.isWhole &&
           (isCustomTag ||

@@ -2,7 +2,7 @@
 String type = status == 'OK'
     ? 'notices'
     : status == 'NO' ? 'warnings' : status == 'BAD' ? 'errors' : '';
-<<<
+<<< 3.6
 String type = status == 'OK'
     ? 'notices'
     : status == 'NO'

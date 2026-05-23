@@ -6,7 +6,7 @@ var set = {
   a,b,c,d,
   e,f,g,h
 };
-<<<
+<<< 3.7
 var set = {
   // yeah
   a, b, c, d,
@@ -19,7 +19,7 @@ var set = {
     arg // c
   ),
 };
-<<<
+<<< 3.7
 var set = {
   1,
   2,
@@ -37,7 +37,7 @@ var set = {
   // comment
   element8, element9, element10, element11,
 };
-<<<
+<<< 3.7
 var set = {
   element1,
   element2,

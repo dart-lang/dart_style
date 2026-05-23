@@ -1,6 +1,6 @@
 >>> (indent 4)
     TreeNode lookupEntity(Iterable<TreeNode> iterable, int entity) => iterable
         .firstWhere((node) => (node.entity == entity), orElse: () => null);
-<<<
+<<< 3.6
     TreeNode lookupEntity(Iterable<TreeNode> iterable, int entity) => iterable
         .firstWhere((node) => (node.entity == entity), orElse: () => null);

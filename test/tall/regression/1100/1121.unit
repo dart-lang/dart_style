@@ -35,7 +35,7 @@ Future<void> a() {
     print('');
   });
 }
-<<<
+<<< 3.7
 Future<void> a() {
   dynamic foo;
   return foo.aaaaaaaaaa
@@ -62,7 +62,7 @@ class x {
     });
   }
 }
-<<<
+<<< 3.7
 class x {
   static void y() {
     http
@@ -103,7 +103,7 @@ main() {
       return values;
     });
 }
-<<<
+<<< 3.7
 main() {
   return getIt
       .getAsync<DbDao>()

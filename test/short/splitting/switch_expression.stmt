@@ -1,11 +1,11 @@
 40 columns                              |
 >>> all one line
 e = switch (c) { 0 => a, 1 => b };
-<<<
+<<< 3.6
 e = switch (c) { 0 => a, 1 => b };
 >>> one case per line
 e = switch (c) { 0 => first, 1 => second };
-<<<
+<<< 3.6
 e = switch (c) {
   0 => first,
   1 => second
@@ -16,7 +16,7 @@ e = switch (c) {
   second => veryLongExpression + thatSplits,
   third => c
 };
-<<<
+<<< 3.6
 e = switch (c) {
   first => a,
   second =>
@@ -25,7 +25,7 @@ e = switch (c) {
 };
 >>> trailing comma forces split
 e = switch (c) { 0 => a, 1 => b, };
-<<<
+<<< 3.6
 e = switch (c) {
   0 => a,
   1 => b,
@@ -45,7 +45,7 @@ e = switch (obj) {
 
 
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   0 => a,
   1 => b,
@@ -55,7 +55,7 @@ e = switch (obj) {
 e = switch ("a long string that must wrap") {
   0 => "ok"
 };
-<<<
+<<< 3.6
 e = switch (
     "a long string that must wrap") {
   0 => "ok"
@@ -64,7 +64,7 @@ e = switch (
 e = switch ([1,]) {
   0 => "ok"
 };
-<<<
+<<< 3.6
 e = switch ([
   1,
 ]) {
@@ -74,7 +74,7 @@ e = switch ([
 e = switch (obj) {
   1 => veryLongExpression + thatStillMustSplit
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   1 => veryLongExpression +
       thatStillMustSplit
@@ -83,7 +83,7 @@ e = switch (obj) {
 e = switch (obj) {
   longConstant => longExpression + thatMustSplit
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   longConstant =>
     longExpression + thatMustSplit
@@ -92,7 +92,7 @@ e = switch (obj) {
 e = switch (obj) {
   longConstant => veryLongLongExpression + thatMustSplit
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   longConstant =>
     veryLongLongExpression +
@@ -102,7 +102,7 @@ e = switch (obj) {
 e = switch (obj) {
   constant when condition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   constant when condition => body
 };
@@ -110,7 +110,7 @@ e = switch (obj) {
 e = switch (obj) {
   constant when condition => veryLongBody
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   constant when condition =>
     veryLongBody
@@ -119,7 +119,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryLongConstant when longCondition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryLongConstant when longCondition =>
     body
@@ -128,7 +128,7 @@ e = switch (obj) {
 e = switch (obj) {
   longConstant when veryLongCondition || anotherCondition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   longConstant
       when veryLongCondition ||
@@ -139,7 +139,7 @@ e = switch (obj) {
 e = switch (obj) {
   constant when [element,] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   constant
       when [
@@ -151,7 +151,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryVeryLongPattern && reallyMustSplit => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern &&
         reallyMustSplit =>
@@ -161,7 +161,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryVeryLongPattern && reallyMustSplitHere when true => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern &&
           reallyMustSplitHere
@@ -173,7 +173,7 @@ e = switch (obj) {
   veryVeryLongPattern && reallyMustSplitToo when veryLongCondition
   || anotherLongCondition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern &&
           reallyMustSplitToo
@@ -185,7 +185,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryLongPattern && reallyMustSplitAgain when [element,] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryLongPattern &&
           reallyMustSplitAgain
@@ -198,7 +198,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryVeryLongPattern || reallyMustSplit => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern ||
   reallyMustSplit =>
@@ -208,7 +208,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryVeryLongPattern || reallyMustSplitHere when true => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern ||
   reallyMustSplitHere when true =>
@@ -219,7 +219,7 @@ e = switch (obj) {
   veryVeryLongPattern || reallyMustSplitToo when veryLongCondition
   || anotherLongCondition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryVeryLongPattern ||
   reallyMustSplitToo
@@ -231,7 +231,7 @@ e = switch (obj) {
 e = switch (obj) {
   veryLongPattern || reallyMustSplitAgain when [element,] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   veryLongPattern ||
   reallyMustSplitAgain
@@ -244,7 +244,7 @@ e = switch (obj) {
 e = switch (obj) {
   Foo(veryVeryLongPattern || reallyMustSplit) => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   Foo(
     veryVeryLongPattern ||
@@ -256,7 +256,7 @@ e = switch (obj) {
 e = switch (obj) {
   [element,] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   [
     element,
@@ -267,7 +267,7 @@ e = switch (obj) {
 e = switch (obj) {
   [element,] when true => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   [
     element,
@@ -279,7 +279,7 @@ e = switch (obj) {
 e = switch (obj) {
   [element,] when longCondition || anotherLongCondition => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   [
     element,
@@ -292,7 +292,7 @@ e = switch (obj) {
 e = switch (obj) {
   [element,] when [element,] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   [
     element,
@@ -306,7 +306,7 @@ e = switch (obj) {
 e = switch (obj) {
   pattern => function(argument, argument,)
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   pattern => function(
       argument,
@@ -317,7 +317,7 @@ e = switch (obj) {
 e = switch (obj) {
   oneConstant || twoConstant || threeConstant => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   oneConstant ||
   twoConstant ||
@@ -328,7 +328,7 @@ e = switch (obj) {
 e = switch (obj) {
   [oneConstant || twoConstant || threeConstant] => body
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   [
     oneConstant ||
@@ -341,7 +341,7 @@ e = switch (obj) {
 e = switch (obj) {
   pattern || anotherPattern || aThirdOne => function(argument, argument,)
 };
-<<<
+<<< 3.6
 e = switch (obj) {
   pattern ||
   anotherPattern ||
@@ -355,7 +355,7 @@ e = switch (obj) {
 longFunctionName(veryLongParameter) => switch (obj) {
   oneConstant || twoConstant || threeConstant => function(argument, argument,)
 };
-<<<
+<<< 3.6
 longFunctionName(veryLongParameter) =>
     switch (obj) {
       oneConstant ||

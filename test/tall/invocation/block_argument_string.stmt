@@ -4,7 +4,7 @@
 someMethod("""first line fits in here
 more stuff down here too that is long
 """);
-<<<
+<<< 3.7
 someMethod("""first line fits in here
 more stuff down here too that is long
 """);
@@ -12,7 +12,7 @@ more stuff down here too that is long
 someMethod('''first line fits in here
 more stuff down here too that is long
 ''');
-<<<
+<<< 3.7
 someMethod('''first line fits in here
 more stuff down here too that is long
 ''');
@@ -20,7 +20,7 @@ more stuff down here too that is long
 someMethod("""first line fits in here
 more stuff $down here too that is long
 """);
-<<<
+<<< 3.7
 someMethod("""first line fits in here
 more stuff $down here too that is long
 """);
@@ -28,14 +28,14 @@ more stuff $down here too that is long
 someMethod('''first line fits in here
 more stuff ${down + here} that is long
 ''');
-<<<
+<<< 3.7
 someMethod('''first line fits in here
 more stuff ${down + here} that is long
 ''');
 >>> Don't block format if first line doesn't fit.
 someMethod("""first line does not fit here
 """);
-<<<
+<<< 3.7
 someMethod(
   """first line does not fit here
 """,
@@ -45,7 +45,7 @@ someMethod("foo", "bar", """
 some
 text
 """);
-<<<
+<<< 3.7
 someMethod("foo", "bar", """
 some
 text
@@ -55,7 +55,7 @@ someMethod("""
 some
 text
 """, "foo");
-<<<
+<<< 3.7
 someMethod("""
 some
 text
@@ -65,7 +65,7 @@ someMethod("""
 some
 text
 """, "foo", "bar");
-<<<
+<<< 3.7
 someMethod(
   """
 some
@@ -80,7 +80,7 @@ some
 text
 """,
 "bar");
-<<<
+<<< 3.7
 someMethod("foo", """
 some
 text
@@ -95,7 +95,7 @@ more
 """, """
 even more
 """);
-<<<
+<<< 3.7
 someMethod(
   """
 some

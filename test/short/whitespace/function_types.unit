@@ -1,25 +1,25 @@
 40 columns                              |
 >>>
 Function ( )  f;
-<<<
+<<< 3.6
 Function() f;
 >>>
 void  Function(  int  i,  String   s)   f;
-<<<
+<<< 3.6
 void Function(int i, String s) f;
 >>>
 Function(  int i,  [  String   s,  bool   b   ]  )   f;
-<<<
+<<< 3.6
 Function(int i, [String s, bool b]) f;
 >>>
 Function(  int i,  {   String  s,  bool   b   }  )   f;
-<<<
+<<< 3.6
 Function(int i, {String s, bool b}) f;
 >>>
 Function  <  T  extends S   >   () f;
-<<<
+<<< 3.6
 Function<T extends S>() f;
 >>>
 int  ?  Function(int  ?  i, {String  ?  s})  ? f;
-<<<
+<<< 3.6
 int? Function(int? i, {String? s})? f;

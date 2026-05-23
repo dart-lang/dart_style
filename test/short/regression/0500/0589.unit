@@ -13,7 +13,7 @@ List<dynamic> _generateUsedComponentReferences(
           ]..addAll(_generateUsedComponentReferences(globals, c));
         }).toList();
 }
-<<<
+<<< 3.6
 List<dynamic> _generateUsedComponentReferences(
     Globals globals, FormComponent component) {
   return component.children == null

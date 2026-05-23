@@ -6,7 +6,7 @@ void fn81() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn81() {
   // The number of characters in the `four` line is ...........................81
   var list = (one.two().three()
@@ -23,7 +23,7 @@ void fn80() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn80() {
   // The number of characters in the `four` line is ..........................80
   var list =
@@ -41,7 +41,7 @@ void fn79() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn79() {
   // The number of characters in the `four` line is .........................79
   var list =
@@ -59,7 +59,7 @@ void fn78() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn78() {
   // The number of characters in the `four` line is ........................78
   var list =
@@ -77,7 +77,7 @@ void fn77() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn77() {
   // The number of characters in the `four` line is .......................77
   var list =
@@ -95,7 +95,7 @@ void fn76() {
     ..six('zzzzzzzzzzzzzzzzzzzzzzzzzzzz');
   ;
 }
-<<<
+<<< 3.6
 void fn76() {
   // The number of characters in the `four` line is ......................76
   var list =

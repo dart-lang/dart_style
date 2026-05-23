@@ -15,7 +15,7 @@ child: project.locked
                 ),
               ),
 );
-<<<
+<<< 3.6
 Widget(
   child: project.locked
       ? Icon(Icons.lock)

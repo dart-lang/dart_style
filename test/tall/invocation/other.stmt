@@ -1,7 +1,7 @@
 40 columns                              |
 >>> Force all arguments to split if an argument splits.
 foo(a, b, veryLongOperand + extremelyLongOperand, c);
-<<<
+<<< 3.7
 foo(
   a,
   b,
@@ -12,7 +12,7 @@ foo(
 >>> Multiple nested collections inside a block argument.
 method({[veryLongElement, veryLongElement],
 [veryLongElement, veryLongElement, veryLongElement]});
-<<<
+<<< 3.7
 method({
   [veryLongElement, veryLongElement],
   [
@@ -25,7 +25,7 @@ method({
 function(argument, a: argument, argument, b: argument,
 [element, element, element, element],
 c: {'key': value, 'other key': value, 'third key': value});
-<<<
+<<< 3.7
 function(
   argument,
   a: argument,

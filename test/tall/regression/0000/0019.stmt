@@ -2,7 +2,7 @@
 return new _Concat(
       (left != null) ? left : this.left,
       (right != null) ? right : this.right);
-<<<
+<<< 3.7
 return new _Concat(
   (left != null) ? left : this.left,
   (right != null) ? right : this.right,
@@ -11,7 +11,7 @@ return new _Concat(
     return new _Concat(
           (left != null) ? left : this.left,
           (right != null) ? right : this.right);
-<<<
+<<< 3.7
     return new _Concat(
       (left != null) ? left : this.left,
       (right != null) ? right : this.right,

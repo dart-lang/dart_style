@@ -4,7 +4,7 @@ foo() {
     // comment!
     return 0;
 }
-<<<
+<<< 3.6
 foo() {
   if (true)
     // comment!

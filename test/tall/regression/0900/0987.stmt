@@ -8,7 +8,7 @@
                     'aaaaaaaaaaaaaa aaaa aa aaaaaaaa aa Aaaa-aaaaa.',
                 aaaaaaaAaAaaaaaaAaa: true),
           ]);
-<<<
+<<< 3.7
           print([
             Class(
               aaaaaaaaaaaaaaaaaaaaaaaaaaa,

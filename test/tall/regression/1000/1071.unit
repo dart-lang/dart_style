@@ -3,7 +3,7 @@ class C {
   external Pointer/*<SAFEARRAY>*/ parray;
   external Pointer<Pointer/*<SAFEARRAY>*/ > pparray;
 }
-<<<
+<<< 3.7
 class C {
   external Pointer /*<SAFEARRAY>*/ parray;
   external Pointer<Pointer /*<SAFEARRAY>*/> pparray;

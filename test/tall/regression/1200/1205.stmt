@@ -5,5 +5,5 @@ error(
       code: 'unclosed-block',
       message: 'Block was left open',
     ));
-<<<
+<<< 3.7
 error(offset: 10, (code: 'unclosed-block', message: 'Block was left open'));

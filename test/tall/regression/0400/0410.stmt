@@ -7,7 +7,7 @@ test(
             ApExperimentName.SOME_VERY_LONG_ENUMS_THAT_LEADS_TO_MANY_PROBLEMS),
             isFalse);
     }));
-<<<
+<<< 3.7
 test(
   'some test that has a very long description so the params need two lines',
   async(() {
@@ -28,7 +28,7 @@ test(
           ApExperimentName.SOME_VERY_LONG_ENUMS_THAT_LEADS_TO_MANY_PROBLEMS),
         isFalse);
 }));
-<<<
+<<< 3.7
   test(
     'some test that has a very long description so the params need two lines',
     async(() {
@@ -49,7 +49,7 @@ test(
             ApExperimentName.SOME_VERY_LONG_ENUMS_THAT_LEADS_TO_MANY_PROBLEMS),
             isFalse);
     }));
-<<<
+<<< 3.7
     test(
       'some test that has a very long description so the params need two lines',
       async(() {

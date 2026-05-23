@@ -2,7 +2,7 @@
 >>> Line comment before pattern.
 if (obj case // c
 constant as Type) {;}
-<<<
+<<< 3.7
 if (obj
     case // c
         constant as Type) {
@@ -11,7 +11,7 @@ if (obj
 >>> Line comment before 'as'.
 if (obj case constant // c
 as Type) {;}
-<<<
+<<< 3.7
 if (obj
     case constant // c
         as Type) {
@@ -20,7 +20,7 @@ if (obj
 >>> Line comment after 'as'.
 if (obj case constant as // c
 Type) {;}
-<<<
+<<< 3.7
 if (obj
     case constant
         as // c
@@ -31,7 +31,7 @@ if (obj
 if (obj case
   // comment
   constant as Type) {;}
-<<<
+<<< 3.7
 if (obj
     case
         // comment

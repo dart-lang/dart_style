@@ -2,22 +2,22 @@
 ### Test for loop formatting that isn't affected by the for loop parts.
 >>> No clauses.
 for  (  ;  ;  )  {  body;  }
-<<<
+<<< 3.7
 for (;;) {
   body;
 }
 >>> Single line for body without braces.
 for (i = 0; i < 10; i) something(i);
-<<<
+<<< 3.7
 for (i = 0; i < 10; i) something(i);
 >>> Split for body without braces.
 for (i = 0; i < 10; i) somethingLonger(i);
-<<<
+<<< 3.7
 for (i = 0; i < 10; i)
   somethingLonger(i);
 >>> Expression split in pattern.
 for (var (longIdentifier && anotherLongOne) = obj; cond; inc) {;}
-<<<
+<<< 3.7
 for (
   var (longIdentifier &&
           anotherLongOne) =
@@ -29,7 +29,7 @@ for (
 }
 >>> Block split in pattern.
 for (var [longIdentifier, anotherReallyLongOne] = obj; cond; inc) {;}
-<<<
+<<< 3.7
 for (
   var [
     longIdentifier,
@@ -43,7 +43,7 @@ for (
 >>> With pattern, split in initializer.
 for (var (first, second, third) = longValueExpression + anotherOperand +
 aThirdOperand; cond; inc) {;}
-<<<
+<<< 3.7
 for (
   var (first, second, third) =
       longValueExpression +
@@ -57,7 +57,7 @@ for (
 >>> Split in pattern and initializer.
 for (var (longIdentifier && anotherAlsoLongOne) = longValueExpression +
 anotherOperand + aThirdOperand; cond; inc) {;}
-<<<
+<<< 3.7
 for (
   var (longIdentifier &&
           anotherAlsoLongOne) =

@@ -1,54 +1,54 @@
 40 columns                              |
 >>> empty
 (   )  x;
-<<<
+<<< 3.6
 () x;
 >>> single positional field
 (  int  , ) x;
-<<<
+<<< 3.6
 (int,) x;
 >>> single named field
 ( { int  n  }  )  x;
-<<<
+<<< 3.6
 ({int n}) x;
 >>> named positional fields
 ( int  value  ,  String  label) x;
-<<<
+<<< 3.6
 (int value, String label) x;
 >>> unnamed positional fields
 ( int    ,  String   ) x;
-<<<
+<<< 3.6
 (int, String) x;
 >>> named fields
 (  {  int  value  ,  String  label  } ) x;
-<<<
+<<< 3.6
 ({int value, String label}) x;
 >>> named positional field trailing comma
 ( int  value  ,  String  label  , ) x;
-<<<
+<<< 3.6
 (
   int value,
   String label,
 ) x;
 >>> unnamed positional fields trailing comma
 ( int    ,  String   ,  ) x;
-<<<
+<<< 3.6
 (
   int,
   String,
 ) x;
 >>> named fields trailing comma
 (  {  int  value  ,  String  label  ,  } ) x;
-<<<
+<<< 3.6
 ({
   int value,
   String label,
 }) x;
 >>> nullable record type
 (  int  ,   bool  )   ?  x;
-<<<
+<<< 3.6
 (int, bool)? x;
 >>> empty nullable record type
 (  )  ?   x;
-<<<
+<<< 3.6
 ()? x;

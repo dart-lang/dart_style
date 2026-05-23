@@ -1,13 +1,13 @@
 40 columns                              |
 >>> no spaces around braces
 class Foo<  T > {}
-<<<
+<<< 3.6
 class Foo<T> {}
 >>> space between names
 class Foo<  A,B,   C,D> {}
-<<<
+<<< 3.6
 class Foo<A, B, C, D> {}
 >>> nullable in bounds
 class A<T extends   int   ?  > {}
-<<<
+<<< 3.6
 class A<T extends int?> {}

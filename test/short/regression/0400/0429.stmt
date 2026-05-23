@@ -4,7 +4,7 @@
       new Map.fromIterable(SummaryTabDataRequest_CampaignSkinSubtype.values,
           key: (campaignSkinSubtype) => campaignSkinSubtype.name,
           value: (campaignSkinSubtype) => campaignSkinSubtype);
-<<<
+<<< 3.6
   final Map<String, SummaryTabDataRequest_CampaignSkinSubtype>
       _campaignSkinSubtypes = new Map.fromIterable(
           SummaryTabDataRequest_CampaignSkinSubtype.values,

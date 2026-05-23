@@ -8,7 +8,7 @@ main() {
     });
   });
 }
-<<<
+<<< 3.6
 main() {
   test('some string here', () {
     return aVeryLongFunctionThatNeedsToWrap(

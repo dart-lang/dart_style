@@ -2,7 +2,7 @@
 Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
     .firstWhere((annotation) => _isAnnotationType(annotation, name),
         orElse: () => null);
-<<<
+<<< 3.6
 Annotation _getAnnotation(AnnotatedNode node, String name) =>
     nodeMetadata.firstWhere((annotation) => _isAnnotationType(annotation, name),
         orElse: () => null);
@@ -10,7 +10,7 @@ Annotation _getAnnotation(AnnotatedNode node, String name) =>
   Annotation _getAnnotation(AnnotatedNode node, String name) => nodeMetadata
       .firstWhere((annotation) => _isAnnotationType(annotation, name),
           orElse: () => null);
-<<<
+<<< 3.6
   Annotation _getAnnotation(AnnotatedNode node, String name) =>
       nodeMetadata.firstWhere(
           (annotation) => _isAnnotationType(annotation, name),

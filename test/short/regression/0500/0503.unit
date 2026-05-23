@@ -7,7 +7,7 @@ class Foo {
     ;
   }
 }
-<<<
+<<< 3.6
 class Foo {
   Stream<api.ReallySuperExtremelyLooooooongTypeName>
       veryExtremelyLoooongMethodName(

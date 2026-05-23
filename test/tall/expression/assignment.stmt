@@ -1,41 +1,41 @@
 40 columns                              |
 >>> Chained assignment.
 a=b=c;
-<<<
+<<< 3.7
 a = b = c;
 >>> Compound assignment operators.
 a*=b/=c~/=d%=e;
-<<<
+<<< 3.7
 a *= b /= c ~/= d %= e;
 >>>
 a+=b-=c;
-<<<
+<<< 3.7
 a += b -= c;
 >>>
 a<<=b>>>=c>>=d;
-<<<
+<<< 3.7
 a <<= b >>>= c >>= d;
 >>>
 a&=b^=c|=d;
-<<<
+<<< 3.7
 a &= b ^= c |= d;
 >>>
 a??=b;
-<<<
+<<< 3.7
 a ??= b;
 >>> Split after `=`.
 variableName = thisIsReallyQuiteAVeryLongVariableName;
-<<<
+<<< 3.7
 variableName =
     thisIsReallyQuiteAVeryLongVariableName;
 >>> Prefer to split at "=" over infix operator.
 variableName = argument * argument + argument;
-<<<
+<<< 3.7
 variableName =
     argument * argument + argument;
 >>> Prefer block-like splitting for collections.
 variableName = [element, element, element];
-<<<
+<<< 3.7
 variableName = [
   element,
   element,
@@ -43,24 +43,24 @@ variableName = [
 ];
 >>> Prefer block-like splitting for function calls.
 variableName = function(argument, argument);
-<<<
+<<< 3.7
 variableName = function(
   argument,
   argument,
 );
 >>> No block-like splitting for empty argument lists.
 variableNameExactLength____ = function();
-<<<
+<<< 3.7
 variableNameExactLength____ =
     function();
 >>> No block-like splitting if function name doesn't fit.
 longVariableName = veryLongFunctionName_(argument);
-<<<
+<<< 3.7
 longVariableName =
     veryLongFunctionName_(argument);
 >>> Indent block if function name doesn't fit and arguments split.
 longVariableName = veryLongFunctionName_(argument, another);
-<<<
+<<< 3.7
 longVariableName =
     veryLongFunctionName_(
       argument,
@@ -68,12 +68,12 @@ longVariableName =
     );
 >>> Prefer to split at `=` over property chain.
 target.property.another = reallyLongValue;
-<<<
+<<< 3.7
 target.property.another =
     reallyLongValue;
 >>> Split property chain on left.
 target.property.another.lastOneReallyLong = reallyLongValue;
-<<<
+<<< 3.7
 target
         .property
         .another
@@ -111,7 +111,7 @@ variable = (tar + get)
     .third();
 >>> Don't headline format target of call chain if target splits.
 variable = (veryLongTarget + expressionThatSplits).method().another().third();
-<<<
+<<< 3.7
 variable =
     (veryLongTarget +
             expressionThatSplits)

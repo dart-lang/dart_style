@@ -84,7 +84,7 @@
                       }).catchError((e) {
                         doAnotherThing;
                       }, test: someTestWithSoManyConditions(e) && itHasToWrap(e));
-<<<
+<<< 3.7
                       someVeryLongFutureWithManyChars()
                           .then((foo) {
                             doAThing();

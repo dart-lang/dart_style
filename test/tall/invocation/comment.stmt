@@ -1,18 +1,18 @@
 40 columns                              |
 >>> Unsplit empty argument list with inline block comment.
 function ( /* comment */ ) ;
-<<<
+<<< 3.7
 function(/* comment */);
 >>> Split empty argument list with inline block comment.
 veryLongFunction ( /* very long comment */ ) ;
-<<<
+<<< 3.7
 veryLongFunction(
   /* very long comment */
 );
 >>> Split empty argument list with line comment.
 function ( // comment
 ) ;
-<<<
+<<< 3.7
 function(
   // comment
 );
@@ -20,7 +20,7 @@ function(
 function ( /* multi
 line
 comment */) ;
-<<<
+<<< 3.7
 function(
   /* multi
 line
@@ -35,7 +35,7 @@ function(argument,
 
 another,
 );
-<<<
+<<< 3.7
 function(
   argument,
 
@@ -57,7 +57,7 @@ function(argument,
   // five
 another,
 );
-<<<
+<<< 3.7
 function(
   argument,
   // one
@@ -78,7 +78,7 @@ function(// yeah
 first, second, third,
 fourth, fifth,
 sixth);
-<<<
+<<< 3.7
 function(
   // yeah
   first,

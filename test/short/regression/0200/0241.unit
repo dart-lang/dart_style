@@ -29,7 +29,7 @@ class JitChangeDetection extends ChangeDetection {
     return new JitProtoChangeDetector(this.registry, changeControlStrategy);
   }
 }
-<<<
+<<< 3.6
 var defaultPipes = {
   "iterableDiff": [new IterableChangesFactory(), new NullPipeFactory()],
   "keyValDiff": [new KeyValueChangesFactory(), new NullPipeFactory()]

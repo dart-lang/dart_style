@@ -1,7 +1,7 @@
 40 columns                              |
 >>> do not split after "("
 doSomethingWithFn((argument) => functionBodyTooLong());
-<<<
+<<< 3.6
 doSomethingWithFn((argument) =>
     functionBodyTooLong());
 >>> newline before fn expression should not force => to split
@@ -9,7 +9,7 @@ doSomethingWithFn((argument) =>
   () => one;
   () => two;
 }
-<<<
+<<< 3.6
 {
   () => one;
   () => two;
@@ -21,7 +21,7 @@ SomeLongFunctionName(
     longListElement,
   ],
 );
-<<<
+<<< 3.6
 SomeLongFunctionName(
   (longParameterName______) =>
       <LongTypeArgument>[
@@ -35,7 +35,7 @@ SomeLongFunctionName(
     constant => body,
   },
 );
-<<<
+<<< 3.6
 SomeLongFunctionName(
   (longParameterName______) =>
       switch (value) {

@@ -3,7 +3,7 @@
         new Flex([avatar, username],
             justifyContent: FlexJustifyContent.center,
             direction: FlexDirection.vertical)]));
-<<<
+<<< 3.7
     children.add(
       new DrawerHeader(
         children: [

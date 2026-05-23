@@ -5,13 +5,13 @@
 ### inside a type, like `covariant`.
 >>> Empty block body.
 class A {void x(){}}
-<<<
+<<< 3.7
 class A {
   void x() {}
 }
 >>> Non-empty block body.
 class A {void x(){body;}}
-<<<
+<<< 3.7
 class A {
   void x() {
     body;
@@ -19,13 +19,13 @@ class A {
 }
 >>> Expression body.
 class A{int x()=>42+3;}
-<<<
+<<< 3.7
 class A {
   int x() => 42 + 3;
 }
 >>> Static method.
 class A{static bool x(){return true;}}
-<<<
+<<< 3.7
 class A {
   static bool x() {
     return true;
@@ -38,7 +38,7 @@ class A {
   named({ covariant int a,covariant    b  });
   fn(     covariant  int f(bool b));
 }
-<<<
+<<< 3.7
 class A {
   pos(covariant int a, covariant b);
   opt([covariant int a, covariant b]);
@@ -49,7 +49,7 @@ class A {
 class A {
   longMethod(covariant parameterNameHere) {}
 }
-<<<
+<<< 3.7
 class A {
   longMethod(
     covariant parameterNameHere,
@@ -59,7 +59,7 @@ class A {
 class A {
   longMethod(covariant first, second, covariant int third(parameter), fourth) {}
 }
-<<<
+<<< 3.7
 class A {
   longMethod(
     covariant first,
@@ -72,7 +72,7 @@ class A {
 class A {
   longMethod(covariant int veryLongParameterNameWow) {}
 }
-<<<
+<<< 3.7
 class A {
   longMethod(
     covariant int
@@ -83,7 +83,7 @@ class A {
 class A {
 f({   required    covariant   int a}) {}
 }
-<<<
+<<< 3.7
 class A {
   f({required covariant int a}) {}
 }
@@ -91,7 +91,7 @@ class A {
 class A {
   longMethod({required covariant int veryLongParameterNameWow}) {}
 }
-<<<
+<<< 3.7
 class A {
   longMethod({
     required covariant int
@@ -103,7 +103,7 @@ class A {
   int get instanceProperty => 1;
   static String get classProperty => "value";
 }
-<<<
+<<< 3.7
 class A {
   int get instanceProperty => 1;
   static String get classProperty =>
@@ -114,7 +114,7 @@ class A {
   set instanceProperty(int value) {}
   static set classProperty(String value) {}
 }
-<<<
+<<< 3.7
 class A {
   set instanceProperty(int value) {}
   static set classProperty(

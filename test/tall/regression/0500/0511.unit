@@ -4,7 +4,7 @@ class Foo {
       'FINAL_NOT_INITIALIZED',
       "The final variable '{0}' must be initialized", /*correction:*/ null, /*strongModeError:*/ false);
 }
-<<<
+<<< 3.7
 class Foo {
   static const StaticWarningCode FINAL_NOT_INITIALIZED =
       const StaticWarningCode(

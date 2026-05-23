@@ -11,7 +11,7 @@ test() {
           .then((item) => results.add(item.name.value)))
       .toList();
 }
-<<<
+<<< 3.6
 test() {
   var fooService, ids, objectName, results;
 

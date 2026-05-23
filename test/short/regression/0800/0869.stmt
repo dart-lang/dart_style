@@ -2,7 +2,7 @@
 var failed = [
   for (var e in _restResultEvents) if (!e.isSuccess) e.message,
 ];
-<<<
+<<< 3.6
 var failed = [
   for (var e in _restResultEvents)
     if (!e.isSuccess) e.message,

@@ -8,7 +8,7 @@ case  final  name  :
 case  final  (  int  ,  String  )  name  :
   ok;
 }
-<<<
+<<< 3.7
 switch (obj) {
   case int? _:
   case List<String> name:
@@ -19,21 +19,21 @@ switch (obj) {
 }
 >>> No split after "var".
 if (obj case var thisIsReallyQuiteAVeryLongVariableName) {;}
-<<<
+<<< 3.7
 if (obj
     case var thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }
 >>> No split after "final".
 if (obj case final thisIsReallyQuiteAVeryLongVariableName) {;}
-<<<
+<<< 3.7
 if (obj
     case final thisIsReallyQuiteAVeryLongVariableName) {
   ;
 }
 >>> No split between "final" and type.
 if (obj case final ThisIsReallyQuiteAVeryLongTypeName variable) {;}
-<<<
+<<< 3.7
 if (obj
     case final ThisIsReallyQuiteAVeryLongTypeName
         variable) {
@@ -43,7 +43,7 @@ if (obj
 if (obj case SomeLongTypeName longVariableName) {
   ;
 }
-<<<
+<<< 3.7
 if (obj
     case SomeLongTypeName
         longVariableName) {

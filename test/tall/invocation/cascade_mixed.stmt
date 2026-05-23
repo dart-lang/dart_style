@@ -1,17 +1,17 @@
 40 columns                              |
 >>> Inline with method chain.
 object.method().method()..c();
-<<<
+<<< 3.7
 object.method().method()..c();
 >>> Split cascade, unsplit chain.
 object.method().method()..cascade()..cascade();
-<<<
+<<< 3.7
 object.method().method()
   ..cascade()
   ..cascade();
 >>> Split cascade and chain.
 object.method().method().method().method()..cascade()..cascade()..cascade();
-<<<
+<<< 3.7
 object
     .method()
     .method()
@@ -22,7 +22,7 @@ object
   ..cascade();
 >>> Cascade setters on chain.
 object.method().method().method().method()..x=1..y=2;
-<<<
+<<< 3.7
 object
     .method()
     .method()
@@ -32,14 +32,14 @@ object
   ..y = 2;
 >>> Postfix on cascade calls.
 object..cascade()!..cascade()[index]..cascade()(arg);
-<<<
+<<< 3.7
 object
   ..cascade()!
   ..cascade()[index]
   ..cascade()(arg);
 >>> Chain with index target.
 object..[index].method();
-<<<
+<<< 3.7
 object..[index].method();
 >>> Don't treat cascade as block-shaped in assignment.
 variable = target..method(argument1, argument2);

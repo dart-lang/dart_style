@@ -42,7 +42,7 @@ main() {
   print(args);
   print(args2);
 }
-<<<
+<<< 3.7
 main() {
   final args = [
     if (_configuration.useBlobs) ...[

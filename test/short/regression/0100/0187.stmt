@@ -10,7 +10,7 @@
       'timeUnitDropdownPlaceholder': 'per light-year'
     },
         desc: 'Some very long descriptive text that actually isn\'t obeying the...');
-<<<
+<<< 3.6
   String someComplicatedHelpMessage(String numberInputFieldPlaceholder,
           String timeUnitDropdownPlaceholder) =>
       Intl.message(
