@@ -65,7 +65,11 @@ final class ChainBuilder {
   ///       argument,
   ///     )
   ///         .method();
-  late final bool _allowSplitInTarget;
+  bool _allowSplitInTarget = false;
+
+  /// Whether the target of the chain is a call or collection with a single
+  /// argument or element (and we are in a style that treats that specially).
+  bool _isSingleElementTarget = false;
 
   /// The dotted property accesses and method calls following the target.
   final List<ChainCall> _calls = [];
@@ -132,6 +136,7 @@ final class ChainBuilder {
       indent: Indent.cascade,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
+      singleElementTarget: _isSingleElementTarget,
       is3Dot7: _visitor.style.is3Dot7,
     );
 
@@ -234,21 +239,18 @@ final class ChainBuilder {
       leadingProperties: leadingProperties,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
+      singleElementTarget: _isSingleElementTarget,
       is3Dot7: _visitor.style.is3Dot7,
     );
   }
 
   /// Given [expression], which is the expression for some call chain, traverses
-  /// the selectors to fill in the list of [_calls].
-  ///
-  /// Otherwise, it's a method chain, and this recursively calls itself for the
-  /// targets to unzip and flatten the nested selector expressions. Then it
-  /// initializes [_target] with the innermost subexpression that isn't a part
-  /// of the call chain. For example, given:
+  /// the selectors to fill in the list of [_calls] and initialize [_target].
+  /// For example, given:
   ///
   ///     foo.bar()!.baz[0][1].bang()
   ///
-  /// This returns `foo` and fills [_calls] with:
+  /// This initializes [_target] to `foo` and fills [_calls] with:
   ///
   ///     .bar()!
   ///     .baz[0][1]
@@ -314,8 +316,8 @@ final class ChainBuilder {
         _calls.add(ChainCall(piece, CallType.property));
 
       // Postfix expressions.
-      case FunctionExpressionInvocation():
-        _unwrapPostfix(expression.function, (target) {
+      case FunctionExpressionInvocation(:var function):
+        _unwrapPostfix(expression, function, (target) {
           return _visitor.pieces.build(() {
             _visitor.pieces.add(target);
             _visitor.pieces.visit(expression.typeArguments);
@@ -329,7 +331,7 @@ final class ChainBuilder {
         // with an index expression like:
         //
         //     object..[index].chain();
-        _unwrapPostfix(target, (target) {
+        _unwrapPostfix(expression, target, (target) {
           return _visitor.pieces.build(() {
             _visitor.pieces.add(target);
             _visitor.writeIndexExpression(expression);
@@ -337,7 +339,7 @@ final class ChainBuilder {
         });
 
       case PostfixExpression() when expression.operator.type == TokenType.BANG:
-        _unwrapPostfix(expression.operand, (target) {
+        _unwrapPostfix(expression, expression.operand, (target) {
           return _visitor.pieces.build(() {
             _visitor.pieces.add(target);
             _visitor.pieces.token(expression.operator);
@@ -356,27 +358,56 @@ final class ChainBuilder {
   /// If [cascadeTarget] is `true`, then this is the target of a cascade
   /// expression. Otherwise, it's the target of a call chain.
   void _visitTarget(Expression target, {bool cascadeTarget = false}) {
-    _allowSplitInTarget = target.canBlockSplit;
+    _initializeTargetProperties(target);
     _target = _visitor.nodePiece(
       target,
       context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none,
     );
   }
 
+  /// When [expression] is some kind of postfix expression containing
+  /// [postfixPart], attempts to apply the postfix expression to the preceding
+  /// call in the call chain contained by [expression].
+  ///
+  /// If [expression] doesn't have any more call chain selectors preceding
+  /// [postfixPart], then [expression] and [postfixPart] all become the
+  /// [_target] of the call chain. Otherwise, [postfixPart] is added as a
+  /// postfix operation to the preceding call in the call chain and we recurse
+  /// in to find the inner target.
   void _unwrapPostfix(
-    Expression operand,
+    Expression expression,
+    Expression postfixPart,
     Piece Function(Piece target) createPostfix,
   ) {
-    _unwrapCall(operand);
+    _unwrapCall(postfixPart);
 
     // If we don't have a preceding call to hang the postfix expression off of,
     // make it part of the target expression. For example:
     //
     //     (list + another)!
     if (_calls.isEmpty) {
+      // Prior to 3.13, ChainBuilder didn't recalculate [_allowSplitInTarget]
+      // when unwrapping a postfix expression that ends up being part of the
+      // target. Because of this, a function expression invocation would have
+      // [_allowSplitInTarget] set to `false` (because the inner function
+      // expression itself can't block split) even when the argument list ends
+      // up part of the target. For compatibility, this if statement preserves
+      // that behavior on older versions.
+      if (_visitor.style.avoidSplittingSingleElementCallChainTargets) {
+        _initializeTargetProperties(expression);
+      }
+
       _target = createPostfix(_target);
     } else {
       _calls.last.wrapPostfix(createPostfix);
     }
+  }
+
+  void _initializeTargetProperties(Expression target) {
+    _allowSplitInTarget = target.canBlockSplit;
+
+    _isSingleElementTarget =
+        _visitor.style.avoidSplittingSingleElementCallChainTargets &&
+        target.hasSingleElement;
   }
 }

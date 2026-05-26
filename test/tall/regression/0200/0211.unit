@@ -97,3 +97,8 @@ void defineProperty(obj, String property, value) {
       _class._jsConstructor,
     ].addAll(typeArguments.map((t) => t._asRuntimeType()));
   }
+<<< 3.13
+  _asRuntimeType() {
+    return [_class._jsConstructor]
+        .addAll(typeArguments.map((t) => t._asRuntimeType()));
+  }
