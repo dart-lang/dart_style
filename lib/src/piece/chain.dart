@@ -132,7 +132,7 @@ abstract base class ChainPiece extends Piece {
     int blockCallIndex = -1,
     Indent indent = Indent.expression,
     required bool allowSplitInTarget,
-    required bool singleElementTarget,
+    required bool hasSingleElementTarget,
     required bool is3Dot7,
   }) {
     if (is3Dot7) {
@@ -152,7 +152,7 @@ abstract base class ChainPiece extends Piece {
         cascade: cascade,
         leadingProperties: leadingProperties,
         blockCallIndex: blockCallIndex,
-        singleElementTarget: singleElementTarget,
+        hasSingleElementTarget: hasSingleElementTarget,
         indent: indent,
       );
     }
@@ -298,9 +298,9 @@ final class _ChainPiece extends ChainPiece {
     required super.cascade,
     super.leadingProperties,
     super.blockCallIndex,
-    required bool singleElementTarget,
+    required bool hasSingleElementTarget,
     super.indent,
-  }) : _hasSingleElementTarget = singleElementTarget,
+  }) : _hasSingleElementTarget = hasSingleElementTarget,
        super._();
 
   @override

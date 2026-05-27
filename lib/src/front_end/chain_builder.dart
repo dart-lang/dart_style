@@ -69,7 +69,7 @@ final class ChainBuilder {
 
   /// Whether the target of the chain is a call or collection with a single
   /// argument or element (and we are in a style that treats that specially).
-  bool _isSingleElementTarget = false;
+  bool _hasSingleElementTarget = false;
 
   /// The dotted property accesses and method calls following the target.
   final List<ChainCall> _calls = [];
@@ -136,7 +136,7 @@ final class ChainBuilder {
       indent: Indent.cascade,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
-      singleElementTarget: _isSingleElementTarget,
+      hasSingleElementTarget: _hasSingleElementTarget,
       is3Dot7: _visitor.style.is3Dot7,
     );
 
@@ -239,7 +239,7 @@ final class ChainBuilder {
       leadingProperties: leadingProperties,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
-      singleElementTarget: _isSingleElementTarget,
+      hasSingleElementTarget: _hasSingleElementTarget,
       is3Dot7: _visitor.style.is3Dot7,
     );
   }
@@ -406,7 +406,7 @@ final class ChainBuilder {
   void _initializeTargetProperties(Expression target) {
     _allowSplitInTarget = target.canBlockSplit;
 
-    _isSingleElementTarget =
+    _hasSingleElementTarget =
         _visitor.style.avoidSplittingSingleElementCallChainTargets &&
         target.hasSingleElement;
   }
