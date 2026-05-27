@@ -19,12 +19,15 @@ void main(List<String> args) {
   debug.traceSolverDequeing = true;
   debug.traceSolverShowCode = true;
 
-  _formatStmt('''
-  1 + 2;
-  ''');
+  // _formatStmt('''
+  // 1 + 2;
+  // ''');
 
   _formatUnit('''
-  class C {}
+  import 'dart:io';
+  // import 'dart:math';
+
+  import 'foo.dart';
   ''');
 }
 

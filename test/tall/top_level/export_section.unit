@@ -1,0 +1,83 @@
+40 columns                              |
+>>> Don't force a blank line between adjacent "dart:" exports.
+export 'dart:io'; export "dart:math";
+<<< 3.7
+export 'dart:io';
+export "dart:math";
+>>> Preserve one blank line between adjacent "dart:" exports.
+export 'dart:io';
+
+
+
+export "dart:math";
+<<< 3.7
+export 'dart:io';
+
+export "dart:math";
+>>> Don't force a blank line between adjacent "package:" exports.
+export "package:foo/foo.dart"; export 'package:bar/bar.dart';
+<<< 3.7
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+>>> Preserve one blank line between adjacent "package:" exports.
+export "package:foo/foo.dart";
+
+
+
+export 'package:bar/bar.dart';
+<<< 3.7
+export "package:foo/foo.dart";
+
+export 'package:bar/bar.dart';
+>>> Don't force a blank line between adjacent relative exports.
+export 'foo.dart'; export "bar.dart";
+<<< 3.7
+export 'foo.dart';
+export "bar.dart";
+>>> Preserve one blank line between adjacent relative exports.
+export 'foo.dart';
+
+
+
+export "bar.dart";
+<<< 3.7
+export 'foo.dart';
+
+export "bar.dart";
+>>> Force a blank line between exports of different categories.
+export 'dart:io';
+export "dart:math";
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+export 'foo.dart';
+export "bar.dart";
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+export 'dart:io';
+export "dart:math";
+<<< 3.7
+export 'dart:io';
+export "dart:math";
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+export 'foo.dart';
+export "bar.dart";
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+export 'dart:io';
+export "dart:math";
+<<< 3.13
+export 'dart:io';
+export "dart:math";
+
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+
+export 'foo.dart';
+export "bar.dart";
+
+export "package:foo/foo.dart";
+export 'package:bar/bar.dart';
+
+export 'dart:io';
+export "dart:math";

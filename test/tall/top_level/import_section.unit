@@ -1,0 +1,103 @@
+40 columns                              |
+>>> Don't force a blank line between adjacent "dart:" imports.
+import 'dart:io'; import "dart:math";
+<<< 3.7
+import 'dart:io';
+import "dart:math";
+>>> Preserve one blank line between adjacent "dart:" imports.
+import 'dart:io';
+
+
+
+import "dart:math";
+<<< 3.7
+import 'dart:io';
+
+import "dart:math";
+>>> Don't force a blank line between adjacent "package:" imports.
+import "package:foo/foo.dart"; import 'package:bar/bar.dart';
+<<< 3.7
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+>>> Preserve one blank line between adjacent "package:" imports.
+import "package:foo/foo.dart";
+
+
+
+import 'package:bar/bar.dart';
+<<< 3.7
+import "package:foo/foo.dart";
+
+import 'package:bar/bar.dart';
+>>> Don't force a blank line between adjacent relative imports.
+import 'foo.dart'; import "bar.dart";
+<<< 3.7
+import 'foo.dart';
+import "bar.dart";
+>>> Preserve one blank line between adjacent relative imports.
+import 'foo.dart';
+
+
+
+import "bar.dart";
+<<< 3.7
+import 'foo.dart';
+
+import "bar.dart";
+>>> Force a blank line between imports of different categories.
+import 'dart:io';
+import "dart:math";
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+import 'foo.dart';
+import "bar.dart";
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+import 'dart:io';
+import "dart:math";
+<<< 3.7
+import 'dart:io';
+import "dart:math";
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+import 'foo.dart';
+import "bar.dart";
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+import 'dart:io';
+import "dart:math";
+<<< 3.13
+import 'dart:io';
+import "dart:math";
+
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+
+import 'foo.dart';
+import "bar.dart";
+
+import "package:foo/foo.dart";
+import 'package:bar/bar.dart';
+
+import 'dart:io';
+import "dart:math";
+>>> Don't force blank line before trailing commented out import.
+import 'dart:io';
+// import 'dart:math';
+
+import 'foo.dart';
+<<< 3.7
+import 'dart:io';
+// import 'dart:math';
+
+import 'foo.dart';
+>>> Don't force blank line after leading commented out import.
+import 'dart:io';
+
+// import 'foo.dart';
+import 'bar.dart';
+<<< 3.7
+import 'dart:io';
+
+// import 'foo.dart';
+import 'bar.dart';

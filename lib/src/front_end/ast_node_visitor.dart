@@ -100,8 +100,22 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         directives = directives.skip(1);
       }
 
+      var precedingSection = _DirectiveSection.none;
       for (var directive in directives) {
-        sequence.visit(directive);
+        // Separate sections of different import categories with blank lines.
+        var needsBlank = false;
+        if (style.separateDirectiveSections) {
+          var section = _DirectiveSection.parse(directive);
+          if (section != _DirectiveSection.none &&
+              precedingSection != _DirectiveSection.none &&
+              section != precedingSection) {
+            needsBlank = true;
+          }
+
+          precedingSection = section;
+        }
+
+        sequence.visit(directive, blankBefore: needsBlank);
       }
 
       // Add a blank line between directives and declarations.
@@ -2307,5 +2321,41 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     }
 
     _parentContext = previousContext;
+  }
+}
+
+/// The sections of imports and exports that should have blank lines between
+/// them.
+///
+/// "Effective Dart" says that "dart:", "package:", and other imports and
+/// exports should be grouped into their own sections with blank lines between
+/// them. The formatter doesn't reorder directives, but it can enforce a blank
+/// line between sections.
+///
+/// See: https://dart.dev/effective-dart/style#ordering
+enum _DirectiveSection {
+  /// A "dart:" URI.
+  dart,
+
+  /// A "package:" URI.
+  package,
+
+  /// A relative or other kind of URI.
+  other,
+
+  /// A directive that doesn't have a URI.
+  none;
+
+  /// Returns the section that [directive] belongs to, for the purpose of
+  /// [separateImportSections].
+  static _DirectiveSection parse(Directive directive) {
+    if (directive is! NamespaceDirective) return _DirectiveSection.none;
+
+    var uri = directive.uri.stringValue;
+    if (uri == null) return _DirectiveSection.none;
+
+    if (uri.startsWith('dart:')) return _DirectiveSection.dart;
+    if (uri.startsWith('package:')) return _DirectiveSection.package;
+    return _DirectiveSection.other;
   }
 }

@@ -76,7 +76,33 @@
 
   This change is language versioned and only affects code at 3.13 or higher.
 
-*  In if-case pieces, split the guard if the pattern block-splits (#1596).
+* Separate imports into sections (#1120). Following the guidelines in
+  ["Effective Dart"][sections], the formatter inserts a blank line between
+  "dart:", "package:", and other imports:
+
+  ```dart
+  // Before:
+  import 'dart:io';
+  import 'dart:math';
+  import 'package:args/args.dart';
+  import 'package:test/test.dart';
+  import 'my_library.dart';
+
+  // After:
+  import 'dart:io';
+  import 'dart:math';
+
+  import 'package:args/args.dart';
+  import 'package:test/test.dart';
+
+  import 'my_library.dart';
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
+
+[sections]: https://dart.dev/effective-dart/style#ordering
+
+* In if-case pieces, split the guard if the pattern block-splits (#1596).
 
   This tends to lead to code where the pattern is kept on one line and the
   guard splits:
