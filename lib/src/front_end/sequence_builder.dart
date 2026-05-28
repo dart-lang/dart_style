@@ -99,8 +99,22 @@ final class SequenceBuilder {
 
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
-  void visit(AstNode node, {Indent? indent, bool allowBlankAfter = true}) {
-    addCommentsBefore(node.firstNonCommentToken, indent: indent);
+  ///
+  /// If [blankBefore] is `true`, then writes a blank line before [node], but
+  /// after any comments that may precede [node].
+  void visit(
+    AstNode node, {
+    Indent? indent,
+    bool blankBefore = false,
+    bool allowBlankAfter = true,
+  }) {
+    var wroteBlank = addCommentsBefore(
+      node.firstNonCommentToken,
+      indent: indent,
+    );
+
+    if (blankBefore && !wroteBlank) addBlank();
+
     add(
       _visitor.nodePiece(node),
       indent: indent,
@@ -122,9 +136,13 @@ final class SequenceBuilder {
   ///
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
-  void addCommentsBefore(Token token, {Indent? indent}) {
+  ///
+  /// Returns `true` if processing the comments ended up writing any blank
+  /// lines.
+  bool addCommentsBefore(Token token, {Indent? indent}) {
     indent ??= Indent.none;
 
+    var wroteBlank = false;
     var comments = _visitor.comments.takeCommentsBefore(token);
     for (var i = 0; i < comments.length; i++) {
       var comment = _visitor.pieces.commentPiece(comments[i]);
@@ -137,6 +155,7 @@ final class SequenceBuilder {
           // Always preserve a blank line above sequence-level comments.
           _allowBlank = true;
           addBlank();
+          wroteBlank = true;
         }
 
         // Write the comment as its own sequence piece.
@@ -151,6 +170,9 @@ final class SequenceBuilder {
       if (comments.isNotEmpty) _allowBlank = true;
 
       addBlank();
+      wroteBlank = true;
     }
+
+    return wroteBlank;
   }
 }
