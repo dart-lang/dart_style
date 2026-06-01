@@ -81,6 +81,10 @@ final class FormattingStyle {
   /// clause as well.
   bool get blockFormatIfCaseWithGuard => _languageVersion < _version3Dot13;
 
+  /// Whether to force a blank line between imports and exports whose URIs are
+  /// different categories: `dart:`, `package:`, or relative.
+  bool get separateDirectiveSections => _languageVersion >= _version3Dot13;
+
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>
