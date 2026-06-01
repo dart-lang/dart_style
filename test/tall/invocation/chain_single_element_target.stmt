@@ -171,3 +171,19 @@ function(
   argument,
   second,
 ).veryLongProperty;
+>>> Apply the single-argument rule to call chains with unsplit properties.
+function(veryLongArgument).prop.erty.someCall();
+<<< 3.7
+function(
+  veryLongArgument,
+).prop.erty.someCall();
+<<< 3.13
+function(veryLongArgument).prop.erty
+    .someCall();
+>>> The single-argument rule applies when the chain is all properties.
+function(argument, second).prop.erty.someCall();
+<<< 3.7
+function(
+  argument,
+  second,
+).prop.erty.someCall();

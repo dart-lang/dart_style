@@ -305,31 +305,36 @@ final class _ChainPiece extends ChainPiece {
 
   @override
   int stateCost(State state) {
-    if (state == State.split) {
-      // When the target is a single-element argument list or collection, try
-      // to avoid splitting it. Prefers:
-      //
-      //     function(argument)
-      //         .method();
-      //
-      // Over:
-      //
-      //     function(
-      //       argument,
-      //     ).method();
-      if (_hasSingleElementTarget) return 0;
+    // When the target is a single-element argument list or collection, try
+    // to avoid splitting it. Prefers:
+    //
+    //     function(argument)
+    //         .method();
+    //
+    // Over:
+    //
+    //     function(
+    //       argument,
+    //     ).method();
+    if (_hasSingleElementTarget &&
+        (state == ChainPiece._splitAfterProperties || state == State.split)) {
+      return 0;
+    }
 
-      // If the chain is only properties, try to keep them together. Prefers:
-      //
-      //     variable =
-      //         target.property.another;
-      //
-      // Over:
-      //
-      //     variable = target
-      //         .property
-      //         .another;
-      if (!_isCascade && _leadingProperties == _calls.length) return 2;
+    // If the chain is only properties, try to keep them together. Prefers:
+    //
+    //     variable =
+    //         target.property.another;
+    //
+    // Over:
+    //
+    //     variable = target
+    //         .property
+    //         .another;
+    if (!_isCascade &&
+        _leadingProperties == _calls.length &&
+        state == State.split) {
+      return 2;
     }
 
     return super.stateCost(state);
