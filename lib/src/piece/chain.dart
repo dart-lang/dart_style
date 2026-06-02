@@ -132,6 +132,7 @@ abstract base class ChainPiece extends Piece {
     int blockCallIndex = -1,
     Indent indent = Indent.expression,
     required bool allowSplitInTarget,
+    required bool hasSingleElementTarget,
     required bool is3Dot7,
   }) {
     if (is3Dot7) {
@@ -151,6 +152,7 @@ abstract base class ChainPiece extends Piece {
         cascade: cascade,
         leadingProperties: leadingProperties,
         blockCallIndex: blockCallIndex,
+        hasSingleElementTarget: hasSingleElementTarget,
         indent: indent,
       );
     }
@@ -194,7 +196,7 @@ abstract base class ChainPiece extends Piece {
     //       element1,
     //       element2,
     //     ]..cascade();
-    if (state == State.split) return _isCascade ? 0 : 1;
+    if (state == State.split && _isCascade) return 0;
 
     return super.stateCost(state);
   }
@@ -282,6 +284,11 @@ abstract base class ChainPiece extends Piece {
 
 /// A [ChainPiece] subclass for 3.8 and later style.
 final class _ChainPiece extends ChainPiece {
+  /// Whether the target of the chain is a call or collection with a single
+  /// argument or element and we're at a version where those should be formatted
+  /// specially.
+  final bool _hasSingleElementTarget;
+
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
@@ -291,11 +298,29 @@ final class _ChainPiece extends ChainPiece {
     required super.cascade,
     super.leadingProperties,
     super.blockCallIndex,
+    required bool hasSingleElementTarget,
     super.indent,
-  }) : super._();
+  }) : _hasSingleElementTarget = hasSingleElementTarget,
+       super._();
 
   @override
   int stateCost(State state) {
+    // When the target is a single-element argument list or collection, try
+    // to avoid splitting it. Prefers:
+    //
+    //     function(argument)
+    //         .method();
+    //
+    // Over:
+    //
+    //     function(
+    //       argument,
+    //     ).method();
+    if (_hasSingleElementTarget &&
+        (state == ChainPiece._splitAfterProperties || state == State.split)) {
+      return 0;
+    }
+
     // If the chain is only properties, try to keep them together. Prefers:
     //
     //     variable =
@@ -306,9 +331,9 @@ final class _ChainPiece extends ChainPiece {
     //     variable = target
     //         .property
     //         .another;
-    if (state == State.split &&
-        !_isCascade &&
-        _leadingProperties == _calls.length) {
+    if (!_isCascade &&
+        _leadingProperties == _calls.length &&
+        state == State.split) {
       return 2;
     }
 

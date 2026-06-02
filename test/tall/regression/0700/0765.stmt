@@ -69,3 +69,15 @@ Stream<dynamic> refreshEpic(
     return Observable.just(RefreshSuccessAction()).delay(Duration(seconds: 2));
   });
 }
+<<< 3.13
+Stream<dynamic> refreshEpic(
+  Stream<dynamic> actions,
+  EpicStore<AppState> store,
+) {
+  return Observable(actions)
+      .ofType(TypeToken<RefreshAction>())
+      .switchMap((action) {
+        return Observable.just(RefreshSuccessAction())
+            .delay(Duration(seconds: 2));
+      });
+}

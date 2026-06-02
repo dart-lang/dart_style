@@ -56,6 +56,12 @@ final class FormattingStyle {
       _formatter.trailingCommas == TrailingCommas.preserve &&
       _languageVersion >= _version3Dot10;
 
+  /// Whether the formatter should penalize splitting in the target of a call
+  /// chain if the target is an argument list with only one argument or a
+  /// collection literal with only one element.
+  bool get avoidSplittingSingleElementCallChainTargets =>
+      _languageVersion >= _version3Dot13;
+
   /// Whether mixin declarations and extension types with brace bodies should
   /// always get a blank line above and below them.
   ///

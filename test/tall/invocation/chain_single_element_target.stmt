@@ -1,0 +1,189 @@
+40 columns                              |
+### Prefer splitting the chain over a single-element target.
+>>> Function call with one argument splits the chain.
+function(veryLongArgument).veryLongMethod();
+<<< 3.7
+function(
+  veryLongArgument,
+).veryLongMethod();
+<<< 3.13
+function(veryLongArgument)
+    .veryLongMethod();
+>>> Function call with two arguments splits the target.
+function(argument, second).veryLongMethod();
+<<< 3.7
+function(
+  argument,
+  second,
+).veryLongMethod();
+>>> Instance creation with one argument splits the chain.
+new Thing(veryLongArgument).veryLongMethod();
+<<< 3.7
+new Thing(
+  veryLongArgument,
+).veryLongMethod();
+<<< 3.13
+new Thing(veryLongArgument)
+    .veryLongMethod();
+>>> Instance creation with two arguments splits the target.
+new Thing(argument, second).veryLongMethod();
+<<< 3.7
+new Thing(
+  argument,
+  second,
+).veryLongMethod();
+>>> Function expression call with one argument splits the chain.
+(function)(veryLongArgument).veryLongMethod();
+<<< 3.7
+(function)(veryLongArgument)
+    .veryLongMethod();
+<<< 3.8
+(function)(
+  veryLongArgument,
+).veryLongMethod();
+<<< 3.13
+(function)(veryLongArgument)
+    .veryLongMethod();
+>>> Function expression call with two arguments splits the target.
+(function)(argument, second).veryLongMethod();
+<<< 3.7
+(function)(argument, second)
+    .veryLongMethod();
+<<< 3.8
+(function)(
+  argument,
+  second,
+).veryLongMethod();
+>>> List literal with one element splits the chain.
+<TypeArgument>[veryLongArgument].veryLongMethod();
+<<< 3.7
+<TypeArgument>[
+  veryLongArgument,
+].veryLongMethod();
+<<< 3.13
+<TypeArgument>[veryLongArgument]
+    .veryLongMethod();
+>>> List literal with two elements splits the target.
+<TypeArgument>[argument, second].veryLongMethod();
+<<< 3.7
+<TypeArgument>[
+  argument,
+  second,
+].veryLongMethod();
+>>> Map literal with one entry splits the chain.
+<int, String>{longKey: veryLongValue}.veryLongMethod();
+<<< 3.7
+<int, String>{
+  longKey: veryLongValue,
+}.veryLongMethod();
+<<< 3.13
+<int, String>{longKey: veryLongValue}
+    .veryLongMethod();
+>>> Map literal with two entries splits the target.
+<int, String>{key: value, another: another}.veryLongMethod();
+<<< 3.7
+<int, String>{
+  key: value,
+  another: another,
+}.veryLongMethod();
+>>> Set literal with one element splits the chain.
+<TypeArgument>{veryLongArgument}.veryLongMethod();
+<<< 3.7
+<TypeArgument>{
+  veryLongArgument,
+}.veryLongMethod();
+<<< 3.13
+<TypeArgument>{veryLongArgument}
+    .veryLongMethod();
+>>> Set literal with two elements splits the target.
+<TypeArgument>{argument, second}.veryLongMethod();
+<<< 3.7
+<TypeArgument>{
+  argument,
+  second,
+}.veryLongMethod();
+>>> Record literal with one field splits the chain.
+(longField: veryLongArgument).veryLongMethod();
+<<< 3.7
+(
+  longField: veryLongArgument,
+).veryLongMethod();
+<<< 3.13
+(longField: veryLongArgument)
+    .veryLongMethod();
+>>> Record literal with two fields splits the target.
+(field: argument, second).veryLongMethod();
+<<< 3.7
+(
+  field: argument,
+  second,
+).veryLongMethod();
+>>> Wrapping the target in parentheses still applies the single-argument rule.
+(((function(veryLongArgument)))).veryLongMethod();
+<<< 3.7
+(((function(
+  veryLongArgument,
+)))).veryLongMethod();
+<<< 3.13
+(((function(veryLongArgument))))
+    .veryLongMethod();
+>>> Wrapping the target in await still applies the single-argument rule.
+(await function(veryLongArgument)).veryLongMethod();
+<<< 3.7
+(await function(
+  veryLongArgument,
+)).veryLongMethod();
+<<< 3.13
+(await function(veryLongArgument))
+    .veryLongMethod();
+>>> A target with a postfix `!` still applies the single-argument rule.
+function(veryLongArgument)!.veryLongMethod();
+<<< 3.7
+function(
+  veryLongArgument,
+)!.veryLongMethod();
+<<< 3.13
+function(veryLongArgument)!
+    .veryLongMethod();
+>>> Cascades prefer to split regardless of arity.
+function(veryLongArgument)..veryLongMethod();
+<<< 3.7
+function(veryLongArgument)
+  ..veryLongMethod();
+>>> Function call with two arguments splits the target.
+function(argument, second)..veryLongMethod();
+<<< 3.7
+function(argument, second)
+  ..veryLongMethod();
+>>> The single-argument rule applies when the chain is all properties.
+function(veryLongArgument).veryLongProperty;
+<<< 3.7
+function(
+  veryLongArgument,
+).veryLongProperty;
+<<< 3.13
+function(veryLongArgument)
+    .veryLongProperty;
+>>> The single-argument rule applies when the chain is all properties.
+function(argument, second).veryLongProperty;
+<<< 3.7
+function(
+  argument,
+  second,
+).veryLongProperty;
+>>> Apply the single-argument rule to call chains with unsplit properties.
+function(veryLongArgument).prop.erty.someCall();
+<<< 3.7
+function(
+  veryLongArgument,
+).prop.erty.someCall();
+<<< 3.13
+function(veryLongArgument).prop.erty
+    .someCall();
+>>> The single-argument rule applies when the chain is all properties.
+function(argument, second).prop.erty.someCall();
+<<< 3.7
+function(
+  argument,
+  second,
+).prop.erty.someCall();

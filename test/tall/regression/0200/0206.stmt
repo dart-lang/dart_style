@@ -3,7 +3,9 @@ when(mockLoader.loadData(expectedRequestMetricInitialDateCTR))
     .thenReturn(
          _buildMinimalResponseFuture(MetricType.CTR, metricRequest));
 <<< 3.7
-### TODO(rnystrom): I think it would look better to split the method chain.
 when(
   mockLoader.loadData(expectedRequestMetricInitialDateCTR),
 ).thenReturn(_buildMinimalResponseFuture(MetricType.CTR, metricRequest));
+<<< 3.13
+when(mockLoader.loadData(expectedRequestMetricInitialDateCTR))
+    .thenReturn(_buildMinimalResponseFuture(MetricType.CTR, metricRequest));

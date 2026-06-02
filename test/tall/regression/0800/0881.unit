@@ -108,6 +108,46 @@ void main() async {
     });
   });
 }
+<<< 3.13
+void main() async {
+  group('my group', () {
+    setUp(() async {
+      final requestHandler = FakeRequestHandler()
+        ..when(withServiceName(Ng2ProtoFooBarBazService.serviceName))
+            .thenRespond(
+              FooBarBazListResponse()
+                ..entities.add(
+                  FooBarBaz()
+                    ..fooBarBazEntityId = entityId
+                    ..name = 'Test entity'
+                    ..baseFooBarBazId = baseFooBarBazId
+                    ..entityFooBarBazId = entityFooBarBazId,
+                ),
+            )
+        ..when(
+          allOf(
+            withServiceName(Ng2ProtoFooBarBazService.serviceName),
+            hasFooBarBazId(baseFooBarBazId),
+          ),
+        ).thenRespond(FooBarBazListResponse()..entities.add(baseFooBarBaz))
+        ..when(
+          allOf(
+            withServiceName(Ng2ProtoFooBarBazService.serviceName),
+            hasFooBarBazId(entityFooBarBazId),
+          ),
+        ).thenRespond(FooBarBazListResponse()..entities.add(entityFooBarBaz))
+        ..when(
+          allOf(
+            withServiceName(Ng2ProtoFooBarBazService.serviceName),
+            hasFooBarBazIds(Set.from([baseFooBarBazId, entityFooBarBazId])),
+          ),
+        ).thenRespond(
+          FooBarBazListResponse()
+            ..entities.addAll([baseFooBarBaz, entityFooBarBaz]),
+        );
+    });
+  });
+}
 >>>
 aaaa() {
   {

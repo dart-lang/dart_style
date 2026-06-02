@@ -269,6 +269,35 @@ extension ExpressionExtensions on Expression {
     };
   }
 
+  /// Whether this expression is a call or collection literal with a single
+  /// argument or element.
+  bool get hasSingleElement {
+    var expression = this;
+    while (true) {
+      if (expression is ParenthesizedExpression) {
+        expression = expression.expression;
+      } else if (expression is AwaitExpression) {
+        expression = expression.expression;
+      } else if (expression is PostfixExpression) {
+        expression = expression.operand;
+      } else {
+        break;
+      }
+    }
+
+    return switch (expression) {
+      MethodInvocation(:var argumentList) ||
+      InstanceCreationExpression(:var argumentList) ||
+      FunctionExpressionInvocation(
+        :var argumentList,
+      ) => argumentList.arguments.length == 1,
+      ListLiteral(:var elements) ||
+      SetOrMapLiteral(:var elements) => elements.length == 1,
+      RecordLiteral(:var fields) => fields.length == 1,
+      _ => false,
+    };
+  }
+
   /// Whether this is an argument in an argument list with a trailing comma.
   bool get isTrailingCommaArgument {
     var parent = this.parent;

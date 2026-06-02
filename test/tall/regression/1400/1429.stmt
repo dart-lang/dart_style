@@ -69,6 +69,11 @@ main() {
     PdfDocumentHelper.getHelper(
       _helper.crossTable!.document!,
     ).catalog.beginSaveList ??= <SavePdfPrimitiveCallback>[];
+<<< 3.13
+    PdfDocumentHelper.getHelper(_helper.crossTable!.document!)
+            .catalog
+            .beginSaveList ??=
+        <SavePdfPrimitiveCallback>[];
 >>> (indent 12)
             PdfSecurityHelper.getHelper(
                   _helper._security!,
@@ -82,6 +87,11 @@ main() {
             PdfSecurityHelper.getHelper(
               _helper._security!,
             ).encryptor.encryptOnlyAttachment = false;
+<<< 3.13
+            PdfSecurityHelper.getHelper(_helper._security!)
+                    .encryptor
+                    .encryptOnlyAttachment =
+                false;
 >>> (indent 6)
       PdfGridHelper.getHelper(
             PdfGridRowHelper.getHelper(_helper.row!).grid,
@@ -94,6 +104,10 @@ main() {
       PdfGridHelper.getHelper(
         PdfGridRowHelper.getHelper(_helper.row!).grid,
       ).hasColumnSpan = true;
+<<< 3.13
+      PdfGridHelper.getHelper(PdfGridRowHelper.getHelper(_helper.row!).grid)
+              .hasColumnSpan =
+          true;
 >>> (indent 2)
   Widget build(BuildContext context) => CompositionRoot(
     configureOverrides: configureOverrides,

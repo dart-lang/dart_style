@@ -8,6 +8,31 @@
 
 ### Style changes
 
+* Prefer to split call chains for single-element targets (#1732).
+
+  When formatting a method call chain whose target can also split, the formatter
+  must decide whether to split the target or the call chain (or both). For
+  example:
+
+  ```dart
+  // Split target:
+  function(
+    argument,
+  ).method().another();
+
+  // Or split chain:
+  function(argument)
+    .method()
+    .another();
+  ```
+
+  We've tried various heuristics for this over the years but most make some code
+  look better while making other code look worse. This version introduces a
+  relatively simple rule that seems to work well in practice: If the call chain
+  target has only one element or argument, then prefer to split the call chain
+  and keep the target together. So in the above example, if prefers the second
+  output.
+
 * Support block-formatting parameter lists (#1693). The formatter supports
   "block-formatting" for most bracket-delimited constructs in the language. This
   is what enables a multi-line list literal in an assignment to look like this:

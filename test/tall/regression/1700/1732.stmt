@@ -1,0 +1,22 @@
+>>> (indent 24)
+                        GoRouter.of(
+                          context,
+                        ).go('/play/session/${level.number}');
+<<< 3.8
+                        GoRouter.of(
+                          context,
+                        ).go('/play/session/${level.number}');
+<<< 3.13
+                        GoRouter.of(context)
+                            .go('/play/session/${level.number}');
+>>> (indent 2)
+  when(
+    mockApi.fetchUser(id: '123', includeMetadata: true),
+  ).thenAnswer((_) async => 'Test User');
+<<< 3.8
+  when(
+    mockApi.fetchUser(id: '123', includeMetadata: true),
+  ).thenAnswer((_) async => 'Test User');
+<<< 3.13
+  when(mockApi.fetchUser(id: '123', includeMetadata: true))
+      .thenAnswer((_) async => 'Test User');
