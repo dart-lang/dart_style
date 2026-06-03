@@ -82,7 +82,7 @@ sealed class TextPiece extends Piece {
     }
   }
 
-  void _formatLines(CodeWriter writer) {
+  void _formatLines(CodeWriter writer, {required bool soft}) {
     /// Allow a multiline string or comment to be treated like a headline when
     /// the right-hand side of an assignment or named argument, like:
     ///
@@ -91,13 +91,13 @@ sealed class TextPiece extends Piece {
     ///         """;
     if (_lines.length > 1) writer.setShapeMode(ShapeMode.beforeHeadline);
 
-    writer.write(_lines[0]);
+    writer.write(_lines[0], soft: soft);
 
     if (_lines.length > 1) writer.setShapeMode(ShapeMode.afterHeadline);
 
     for (var i = 1; i < _lines.length; i++) {
       writer.newline(flushLeft: true);
-      writer.write(_lines[i]);
+      writer.write(_lines[i], soft: soft);
     }
   }
 
@@ -128,7 +128,12 @@ final class CodePiece extends TextPiece {
   /// Pieces for any comments that hang off the same line as this code.
   final List<Piece> _hangingComments = [];
 
-  CodePiece([this._leadingComments = const []]);
+  /// Whether the code in this piece is considered to be "soft" code.
+  ///
+  /// See [FormattingStyle.useSoftOverflow] for more details.
+  final bool isSoft;
+
+  CodePiece(this._leadingComments, this.isSoft);
 
   void addHangingComment(Piece comment) {
     _hangingComments.add(comment);
@@ -147,12 +152,23 @@ final class CodePiece extends TextPiece {
       }
     }
 
-    _formatLines(writer);
+    _formatLines(writer, soft: isSoft);
 
     for (var comment in _hangingComments) {
       writer.space();
       writer.format(comment);
     }
+  }
+
+  @override
+  int calculateTotalCharacters() {
+    // Since soft text might not force an overflowing piece to split, we don't
+    // include it in the calculation to preemptively split pieces. Otherwise,
+    // the optimization might conseratively split more than the solver would
+    // for a solution that does overflow.
+    if (isSoft) return 0;
+
+    return super.calculateTotalCharacters();
   }
 
   @override
@@ -172,9 +188,16 @@ final class CommentPiece extends TextPiece {
   @override
   void format(CodeWriter writer, State state) {
     _formatSelection(writer);
-    _formatLines(writer);
+    _formatLines(writer, soft: true);
     writer.whitespace(_trailingWhitespace);
   }
+
+  /// Since soft text might not force an overflowing piece to split, we don't
+  /// include it in the calculation to pre-emptively split pieces. Otherwise,
+  /// the optimization might conseratively split more than the solver would
+  /// for a solution that does overflow.
+  @override
+  int calculateTotalCharacters() => 0;
 
   @override
   bool calculateContainsHardNewline() =>

@@ -1,0 +1,204 @@
+40 columns                              |
+>>> Doesn't split if doing so only reduces trailing line comment overflow.
+longOperand + anotherOperand; // Some long comment.
+<<< 3.7
+longOperand +
+    anotherOperand; // Some long comment.
+<<< 3.13
+longOperand + anotherOperand; // Some long comment.
+>>> Does split if doing so eliminates trailing line comment overflow.
+longOperand + anotherOperand; // The long comment.
+<<< 3.7
+longOperand +
+    anotherOperand; // The long comment.
+>>> Doesn't split if doing so only reduces trailing block comment overflow.
+longOperand + anotherOperand; /* Some long comment. */
+<<< 3.7
+longOperand +
+    anotherOperand; /* Some long comment. */
+<<< 3.13
+longOperand + anotherOperand; /* Some long comment. */
+>>> Does split if doing so eliminates trailing line comment overflow.
+longOperand + anotherOperand; /* Loong comment. */
+<<< 3.7
+longOperand +
+    anotherOperand; /* Loong comment. */
+>>> Doesn't split if doing so only reduces trailing string overflow.
+veryLongOperand + "some extremely long operand string";
+<<< 3.7
+veryLongOperand +
+    "some extremely long operand string";
+<<< 3.13
+veryLongOperand + "some extremely long operand string";
+>>> Does split if doing so eliminates trailing string overflow.
+veryLongOperand + "some loooooooooong operand string";
+<<< 3.7
+veryLongOperand +
+    "some loooooooooong operand string";
+>>> Doesn't split if doing so only reduces trailing string overflow.
+veryLongOperand + '''some extremely long operand string''';
+<<< 3.7
+veryLongOperand +
+    '''some extremely long operand string''';
+<<< 3.13
+veryLongOperand + '''some extremely long operand string''';
+>>> Does split if doing so eliminates trailing string overflow.
+veryLongOperand + '''some loooooong operand string''';
+<<< 3.7
+veryLongOperand +
+    '''some loooooong operand string''';
+>>> Treats parameter list comma at end of line as part of soft overflow.
+function([
+  parameter = 'extremely loooooong default value',
+]) {}
+<<< 3.7
+function([
+  parameter =
+      'extremely loooooong default value',
+]) {}
+<<< 3.13
+function([
+  parameter = 'extremely loooooong default value',
+]) {}
+>>> Treats argument list comma at end of line as part of soft overflow.
+function(
+  longOperand + 'extremely looooooooooong operand',
+);
+<<< 3.7
+function(
+  longOperand +
+      'extremely looooooooooong operand',
+);
+<<< 3.13
+function(
+  longOperand + 'extremely looooooooooong operand',
+);
+>>> Treats list literal comma at end of line as part of soft overflow.
+[
+  longOperand + 'extremely looooooooooong operand',
+];
+<<< 3.7
+[
+  longOperand +
+      'extremely looooooooooong operand',
+];
+<<< 3.13
+[
+  longOperand + 'extremely looooooooooong operand',
+];
+>>> Treats map literal comma at end of line as part of soft overflow.
+<int, int>{
+  longOperand: 'extremely looooooooooong operand',
+};
+<<< 3.7
+<int, int>{
+  longOperand:
+      'extremely looooooooooong operand',
+};
+<<< 3.13
+<int, int>{
+  longOperand: 'extremely looooooooooong operand',
+};
+>>> Treats set literal comma at end of line as part of soft overflow.
+<int>{
+  longOperand + 'extremely looooooooooong operand',
+};
+<<< 3.7
+<int>{
+  longOperand +
+      'extremely looooooooooong operand',
+};
+<<< 3.13
+<int>{
+  longOperand + 'extremely looooooooooong operand',
+};
+>>> Treats record literal comma at end of line as part of soft overflow.
+(
+  longOperand: 'extremely looooooooooong operand',
+);
+<<< 3.7
+(
+  longOperand:
+      'extremely looooooooooong operand',
+);
+<<< 3.13
+(
+  longOperand: 'extremely looooooooooong operand',
+);
+>>> Code after string prevents soft overflow.
+longOperand +
+    'extremely loooooong string literal'.more;
+<<< 3.7
+longOperand +
+    'extremely loooooong string literal'
+        .more;
+>>> Code after block comment prevents soft overflow.
+longOperand +
+    /* Extremely loooooong block comment */ code;
+<<< 3.7
+longOperand +
+    /* Extremely loooooong block comment */ code;
+>>> Lambda header is included in soft overflow.
+test('some very loooooong test description', () {;});
+<<< 3.7
+test(
+  'some very loooooong test description',
+  () {
+    ;
+  },
+);
+<<< 3.13
+test('some very loooooong test description', () {
+  ;
+});
+>>> Async lambda header is included in soft overflow.
+test('some very loooooong test description', () async {;});
+<<< 3.7
+test(
+  'some very loooooong test description',
+  () async {
+    ;
+  },
+);
+<<< 3.13
+test('some very loooooong test description', () async {
+  ;
+});
+>>> Sync* lambda header is included in soft overflow.
+test('some very loooooong test description', () sync* {;});
+<<< 3.7
+test(
+  'some very loooooong test description',
+  () sync* {
+    ;
+  },
+);
+<<< 3.13
+test('some very loooooong test description', () sync* {
+  ;
+});
+>>> Async* lambda header is included in soft overflow.
+test('some very loooooong test description', () async* {;});
+<<< 3.7
+test(
+  'some very loooooong test description',
+  () async* {
+    ;
+  },
+);
+<<< 3.13
+test('some very loooooong test description', () async* {
+  ;
+});
+>>> Still prefers to split argument list with string and lambda if it fits.
+### TODO(rnystrom): It would be nice if it was smart enough to not split here
+### too, but I don't know how to distinguish "found a solution that fits so is
+### good" from "found a solution that fits, but in a bad way".
+test('some very looooong test description', () {;});
+<<< 3.7
+test(
+  'some very looooong test description',
+  () {
+    ;
+  },
+);

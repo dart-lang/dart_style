@@ -2,6 +2,7 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import '../front_end/formatting_style.dart';
 import '../piece/piece.dart';
 import 'solution.dart';
 import 'solver.dart';
@@ -23,12 +24,11 @@ import 'solver.dart';
 /// indentation. When that happens, sharing this cache allows us to reuse that
 /// cached subtree Solution.
 final class SolutionCache {
-  /// Whether this cache and all solutions in it use the 3.7 style solver.
-  final bool is3Dot7;
+  final FormattingStyle style;
 
   final _cache = <_Key, Solution>{};
 
-  SolutionCache({required this.is3Dot7});
+  SolutionCache(this.style);
 
   /// Returns a previously cached solution for formatting [root] with leading
   /// [indent] (and [subsequentIndent] for lines after the first) or produces a

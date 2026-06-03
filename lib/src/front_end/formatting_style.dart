@@ -81,6 +81,42 @@ final class FormattingStyle {
   /// clause as well.
   bool get blockFormatIfCaseWithGuard => _languageVersion < _version3Dot13;
 
+  /// Whether the formatter should prefer overflow from "soft" characters versus
+  /// others when no solution fits the page width and an overflowing solution
+  /// must be chosen.
+  ///
+  /// Sometimes the formatter does it's best, but no solution fits in the page
+  /// width. Usually, this is because the code has some long string literals or
+  /// comments that the user should split manually. If the formatter treats all
+  /// overflowing characters uniformly, then it will try to pick a solution that
+  /// minimizes those overhanging strings and comments at the expense of
+  /// choosing weird formatting for other code. In particularly bad cases, the
+  /// strings or comments end up completely fitting and some other code runs
+  /// over. When that happens, it's confusing to the user because it looks like
+  /// the formatter just picked a weird solution for no reason. They don't see
+  /// that the strings or comments were the problem.
+  ///
+  /// What we want is for the formatter to leave those strings or comments
+  /// hanging past the page width so it's clear to the user where they need to
+  /// split things to get everything to fit. Also, this minimizes the format
+  /// churn when they do fix those strings or comments.
+  ///
+  /// To do that, the formatter distinguishes "soft" characters from other
+  /// kinds of code. "Soft" code is string literals, comments, or a few other
+  /// things that often follow a string literal or comment: `,`, `;`, or `() {`
+  /// for a trailing block-formatted lambda. When an overflowing line of code
+  /// ends in soft characters, the overflow cost of all of those characters is
+  /// collapsed to a single point of penalty instead of one per character.
+  ///
+  /// That leads the formatter to prefer solutions where the overflow is mostly
+  /// strings or comments, which is likely where the user needs to take action.
+  /// This feature is only a heuristic and doesn't always highlight the reason
+  /// no solution fits, but it's fairly simple one and does the right thing in
+  /// common cases.
+  ///
+  /// This feature has no effect on code that does fit in the page width.
+  bool get useSoftOverflow => _languageVersion >= _version3Dot13;
+
   /// Whether to force a blank line between imports and exports whose URIs are
   /// different categories: `dart:`, `package:`, or relative.
   bool get separateDirectiveSections => _languageVersion >= _version3Dot13;

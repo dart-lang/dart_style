@@ -1,0 +1,134 @@
+>>>
+base mixin DartAnalyzerSupport
+    on ToolsSupport, LoggingSupport, RootsTrackingSupport, FileSystemSupport
+    implements SdkSupport, ProcessManagerSupport {
+  @visibleForTesting
+  static final resolveWorkspaceSymbolTool = Tool(
+    name: 'resolve_workspace_symbol',
+    description:
+        'Look up a symbol or symbols in all workspaces by name. Can be used '
+        'to validate that a symbol exists or discover small spelling '
+        'mistakes, since the search is fuzzy.',
+    inputSchema: Schema.object(
+      properties: {
+        ParameterNames.query: Schema.string(
+          description:
+              'Queries are matched based on a case-insensitive partial name '
+              'match, and do not support complex pattern matching, regexes, '
+              'or scoped lookups.',
+        ),
+      },
+      description:
+          'Returns all close matches to the query, with their names '
+          'and locations. Be sure to check the name of the responses to ensure '
+          'it looks like the thing you were searching for.',
+      required: [ParameterNames.query],
+      additionalProperties: false,
+    ),
+    annotations: ToolAnnotations(title: 'Project search', readOnlyHint: true),
+  )..categories = [FeatureCategory.dart, FeatureCategory.flutter, FeatureCategory.lsp];
+}
+<<< 3.7
+base mixin DartAnalyzerSupport
+    on ToolsSupport, LoggingSupport, RootsTrackingSupport, FileSystemSupport
+    implements SdkSupport, ProcessManagerSupport {
+  @visibleForTesting
+  static final resolveWorkspaceSymbolTool = Tool(
+      name: 'resolve_workspace_symbol',
+      description:
+          'Look up a symbol or symbols in all workspaces by name. Can be used '
+          'to validate that a symbol exists or discover small spelling '
+          'mistakes, since the search is fuzzy.',
+      inputSchema: Schema.object(
+        properties: {
+          ParameterNames.query: Schema.string(
+            description:
+                'Queries are matched based on a case-insensitive partial name '
+                'match, and do not support complex pattern matching, regexes, '
+                'or scoped lookups.',
+          ),
+        },
+        description:
+            'Returns all close matches to the query, with their names '
+            'and locations. Be sure to check the name of the responses to ensure '
+            'it looks like the thing you were searching for.',
+        required: [ParameterNames.query],
+        additionalProperties: false,
+      ),
+      annotations: ToolAnnotations(title: 'Project search', readOnlyHint: true),
+    )
+    ..categories = [
+      FeatureCategory.dart,
+      FeatureCategory.flutter,
+      FeatureCategory.lsp,
+    ];
+}
+<<< 3.8
+base mixin DartAnalyzerSupport
+    on ToolsSupport, LoggingSupport, RootsTrackingSupport, FileSystemSupport
+    implements SdkSupport, ProcessManagerSupport {
+  @visibleForTesting
+  static final resolveWorkspaceSymbolTool = Tool(
+    name: 'resolve_workspace_symbol',
+    description:
+        'Look up a symbol or symbols in all workspaces by name. Can be used '
+        'to validate that a symbol exists or discover small spelling '
+        'mistakes, since the search is fuzzy.',
+    inputSchema: Schema.object(
+      properties: {
+        ParameterNames.query: Schema.string(
+          description:
+              'Queries are matched based on a case-insensitive partial name '
+              'match, and do not support complex pattern matching, regexes, '
+              'or scoped lookups.',
+        ),
+      },
+      description:
+          'Returns all close matches to the query, with their names '
+          'and locations. Be sure to check the name of the responses to ensure '
+          'it looks like the thing you were searching for.',
+      required: [ParameterNames.query],
+      additionalProperties: false,
+    ),
+    annotations: ToolAnnotations(title: 'Project search', readOnlyHint: true),
+  )..categories = [FeatureCategory.dart, FeatureCategory.flutter, FeatureCategory.lsp];
+}
+<<< 3.13
+base mixin DartAnalyzerSupport
+    on ToolsSupport, LoggingSupport, RootsTrackingSupport, FileSystemSupport
+    implements SdkSupport, ProcessManagerSupport {
+  @visibleForTesting
+  static final resolveWorkspaceSymbolTool =
+      Tool(
+          name: 'resolve_workspace_symbol',
+          description:
+              'Look up a symbol or symbols in all workspaces by name. Can be used '
+              'to validate that a symbol exists or discover small spelling '
+              'mistakes, since the search is fuzzy.',
+          inputSchema: Schema.object(
+            properties: {
+              ParameterNames.query: Schema.string(
+                description:
+                    'Queries are matched based on a case-insensitive partial name '
+                    'match, and do not support complex pattern matching, regexes, '
+                    'or scoped lookups.',
+              ),
+            },
+            description:
+                'Returns all close matches to the query, with their names '
+                'and locations. Be sure to check the name of the responses to ensure '
+                'it looks like the thing you were searching for.',
+            required: [ParameterNames.query],
+            additionalProperties: false,
+          ),
+          annotations: ToolAnnotations(
+            title: 'Project search',
+            readOnlyHint: true,
+          ),
+        )
+        ..categories = [
+          FeatureCategory.dart,
+          FeatureCategory.flutter,
+          FeatureCategory.lsp,
+        ];
+}

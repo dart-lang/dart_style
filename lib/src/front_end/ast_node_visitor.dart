@@ -721,7 +721,10 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitExpressionStatement(ExpressionStatement node) {
     pieces.visit(node.expression);
-    pieces.token(node.semicolon);
+
+    // Treat the ";" as soft so that a long expression containing soft code at
+    // the end isn't split unnecessarily.
+    pieces.token(node.semicolon, soft: true);
   }
 
   @override
@@ -806,8 +809,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     // If the parameter list is completely empty, write the brackets inline so
     // that we generate fewer separate pieces.
     if (!node.parameters.canSplit(node.rightParenthesis)) {
-      pieces.token(node.leftParenthesis);
-      pieces.token(node.rightParenthesis);
+      // Treat the "()" as soft so that if a function expression follows a long
+      // string literal (typically after the description in  a `test()` call),
+      // then we allow soft overflow for the string and the rest of the line.
+      pieces.token(node.leftParenthesis, soft: true);
+      pieces.token(node.rightParenthesis, soft: true);
       return;
     }
 
@@ -1895,9 +1901,9 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   @override
   void visitSimpleStringLiteral(SimpleStringLiteral node) {
     if (node.isMultiline) {
-      pieces.multilineToken(node.literal);
+      pieces.multilineToken(node.literal, soft: true);
     } else {
-      pieces.token(node.literal);
+      pieces.token(node.literal, soft: true);
     }
   }
 
