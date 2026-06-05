@@ -1,6 +1,7 @@
 ## 3.1.10-wip
 
 * Show the supported language versions in `dart format --version --verbose`.
+* Require `analyzer: ^13.1.0`.
 
 ### Bug fixes
 
