@@ -8,6 +8,36 @@
 
 ### Style changes
 
+* Fix a bug in an eager splitting optimization that would led the formatter to
+  prefer less desirable solutions (#1847).
+
+  Typically, the code affected by this bug is a call chain that contains an
+  argument list with a large collection literal, as in:
+
+  ```dart
+  // Before:
+  await MethodChannelContainer()
+      .onMethodChannelInvoke("reportCrash", <String, dynamic>{
+        "time": nowTime,
+        "errorValue": errorName,
+        "reason": reason,
+        "stacktrace": stacktrace,
+      });
+
+  // After:
+  await MethodChannelContainer().onMethodChannelInvoke(
+    "reportCrash",
+    <String, dynamic>{
+      "time": nowTime,
+      "errorValue": errorName,
+      "reason": reason,
+      "stacktrace": stacktrace,
+    },
+  );
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
+
 * Prefer to split call chains for single-element targets (#1732).
 
   When formatting a method call chain whose target can also split, the formatter
