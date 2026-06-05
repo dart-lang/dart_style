@@ -4,6 +4,9 @@
 
 ### Bug fixes
 
+* Don't crash if an `analysis_options.yaml` file has an `include` that points to
+  a non-existent or unreadable file (#1840).
+
 * Fix bug where some collections or arguments might split unnecessarily (#1809).
 
 ### Style changes
