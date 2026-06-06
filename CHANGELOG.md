@@ -193,6 +193,10 @@
   Note how a blank line was added above `// Comment 2.` but not `// Comment 1.`.
   Now, it won't add a blank line before the last comment.
 
+### Internal changes
+
+* Require `analyzer: ^13.1.0`.
+
 ## 3.1.9
 
 * Require `analyzer: ^13.0.0`.

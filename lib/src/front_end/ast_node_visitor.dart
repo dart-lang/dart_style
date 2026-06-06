@@ -750,7 +750,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       this,
       node.metadata,
       [node.extensionKeyword, node.typeKeyword],
-      namePart: node.primaryConstructor,
+      namePart: node.namePart,
       implementsClause: node.implementsClause,
     );
     builder.buildClassBody(node.body);
