@@ -159,10 +159,13 @@ void main() {
       var fs = IOFileSystem();
       var path = await fs.makePath(p.join(d.sandbox, 'dir', 'options.yaml'));
 
-      Future<String?> failingResolver(Uri uri) async => null;
-
       expect(
-        readAnalysisOptions(fs, path, resolvePackageUri: failingResolver),
+        readAnalysisOptions(
+          fs,
+          path,
+          reportFailedRead: (path) => fail('Unexpected read failure.'),
+          resolvePackageUri: (uri) async => null,
+        ),
         throwsA(
           isA<PackageResolutionException>().having(
             (error) => error.toString(),
