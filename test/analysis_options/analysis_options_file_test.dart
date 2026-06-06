@@ -15,6 +15,7 @@ void main() {
       var options = await findAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|sub'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(options, isEmpty);
     });
@@ -27,6 +28,7 @@ void main() {
       var options = await findAnalysisOptions(
         testFS,
         TestFileSystemPath('dir'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(_pageWidth(options), equals(100));
     });
@@ -40,6 +42,7 @@ void main() {
       var options = await findAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|sub'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(_pageWidth(options), equals(100));
     });
@@ -56,12 +59,13 @@ void main() {
       var options = await findAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|sub'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(_pageWidth(options), isNull);
     });
   });
 
-  group('readAnalysisOptionsOptions()', () {
+  group('readAnalysisOptions()', () {
     test('reads an analysis options file', () async {
       var testFS = TestFileSystem({
         'file.yaml': analysisOptions(pageWidth: 120),
@@ -70,6 +74,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('file.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(_pageWidth(options), 120);
     });
@@ -79,6 +84,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('file.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(options, isA<Map>());
       expect(options, isEmpty);
@@ -123,6 +129,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|a.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(options['a'], 'from a');
       expect(options['ab'], 'from a');
@@ -145,6 +152,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|main.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(options['include'], isNull);
     });
@@ -165,6 +173,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|a.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
       );
       expect(options['a'], 'from a');
       expect(options['b'], 'from b');
@@ -191,6 +200,7 @@ void main() {
       var options = await readAnalysisOptions(
         testFS,
         TestFileSystemPath('dir|a.yaml'),
+        reportFailedRead: _unexpectedReadFailure,
         resolvePackageUri: resolve,
       );
       expect(options['a'], 'from a');
@@ -204,7 +214,11 @@ void main() {
       });
 
       expect(
-        readAnalysisOptions(testFS, TestFileSystemPath('options.yaml')),
+        readAnalysisOptions(
+          testFS,
+          TestFileSystemPath('options.yaml'),
+          reportFailedRead: _unexpectedReadFailure,
+        ),
         throwsA(isA<PackageResolutionException>()),
       );
     });
@@ -221,6 +235,7 @@ void main() {
         readAnalysisOptions(
           testFS,
           TestFileSystemPath('options.yaml'),
+          reportFailedRead: _unexpectedReadFailure,
           resolvePackageUri: failingResolver,
         ),
         throwsA(
@@ -235,6 +250,45 @@ void main() {
         ),
       );
     });
+
+    test('returns an empty map if reading the file fails', () async {
+      var testFS = TestFileSystem();
+
+      var gotFailedRead = false;
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('unknown_options.yaml'),
+        reportFailedRead: (path) {
+          expect(path, 'unknown_options.yaml');
+          gotFailedRead = true;
+        },
+      );
+      expect(gotFailedRead, isTrue);
+      expect(options, isA<Map>());
+      expect(options, isEmpty);
+    });
+
+    test('ignores missing includes', () async {
+      var testFS = TestFileSystem({
+        'dir|analysis_options.yaml': analysisOptions(
+          include: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
+        ),
+        'dir|known.yaml': analysisOptions(pageWidth: 100),
+      });
+
+      var failedReads = <String>[];
+      var options = await readAnalysisOptions(
+        testFS,
+        TestFileSystemPath('dir|analysis_options.yaml'),
+        reportFailedRead: failedReads.add,
+      );
+
+      expect(
+        failedReads,
+        orderedEquals(['dir|unknown1.yaml', 'dir|unknown2.yaml']),
+      );
+      expect(_pageWidth(options), equals(100));
+    });
   });
 }
 
@@ -242,3 +296,7 @@ void main() {
 /// it or `null` if not found.
 Object? _pageWidth(AnalysisOptions options) =>
     (options['formatter'] as Map<Object?, Object?>?)?['page_width'];
+
+void _unexpectedReadFailure(String path) {
+  fail('Unexpected read failure.');
+}

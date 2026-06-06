@@ -47,6 +47,11 @@ final class ConfigCache {
 
   final IOFileSystem _fileSystem = IOFileSystem();
 
+  /// Paths to files that we have failed to read.
+  ///
+  /// These are cached so that the warning is only printed once per file.
+  final Set<String> _failedReadPaths = {};
+
   /// Looks for a package surrounding [file] and, if found, returns the default
   /// language version specified by that package.
   Future<Version?> findLanguageVersion(File file, String displayPath) async {
@@ -122,6 +127,7 @@ final class ConfigCache {
       var optionsFile = await findAnalysisOptions(
         _fileSystem,
         await _fileSystem.makePath(file.path),
+        reportFailedRead: _reportFailedRead,
         resolvePackageUri: (uri) => _resolvePackageUri(file, uri),
       );
 
@@ -213,6 +219,12 @@ final class ConfigCache {
     if (config == null) return null;
 
     return config.resolve(packageUri)?.toFilePath();
+  }
+
+  void _reportFailedRead(String path) {
+    if (_failedReadPaths.add(path)) {
+      stderr.writeln('Warning: Couldn\'t read file "$path".');
+    }
   }
 }
 
