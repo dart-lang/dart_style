@@ -1171,7 +1171,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     space();
     token(node.typeKeyword);
 
-    visit(node.primaryConstructor, before: space);
+    visit(node.namePart, before: space);
 
     builder.startRule(CombinatorRule());
     visit(node.implementsClause);
