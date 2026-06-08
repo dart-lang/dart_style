@@ -69,8 +69,6 @@ Future<AnalysisOptions> findAnalysisOptions(
 /// If there any "package:" includes, then they are resolved to file paths
 /// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
 /// is thrown if any "package:" includes are found.
-///
-/// If reading the file fails, an [AnalysisOptionsReadException] is thrown.
 Future<AnalysisOptions> readAnalysisOptions(
   FileSystem fileSystem,
   FileSystemPath optionsPath, {
