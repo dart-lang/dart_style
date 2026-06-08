@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import '../analysis_options/file_system.dart';
 
 /// A simulated file system for tests.
@@ -44,7 +46,7 @@ final class TestFileSystem implements FileSystem {
   @override
   Future<String> readFile(covariant TestFileSystemPath path) async {
     if (_files[path._path] case var contents?) return contents;
-    throw Exception('No file at "$path".');
+    throw TestIOException(path._path);
   }
 }
 
@@ -52,6 +54,15 @@ final class TestFileSystemPath implements FileSystemPath {
   final String _path;
 
   TestFileSystemPath(this._path);
+
+  @override
+  String toString() => _path;
+}
+
+final class TestIOException implements IOException {
+  final String _path;
+
+  TestIOException(this._path);
 
   @override
   String toString() => _path;

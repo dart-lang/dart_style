@@ -1,6 +1,8 @@
 // Copyright (c) 2024, the Dart project authors. Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
+import 'dart:io';
+
 import 'package:yaml/yaml.dart';
 
 import 'file_system.dart';
@@ -29,12 +31,17 @@ typedef ResolvePackageUri = Future<String?> Function(Uri packageUri);
 /// reads any of the other referenced YAML files and merges them into this one.
 /// Returns the resulting map with the `include` key removed.
 ///
+/// If an [IOException] occurs when reading a file, then [reportFailedRead] is
+/// called with the file path, an empty YAML file is used instead, and the
+/// process continues.
+///
 /// If there any "package:" includes, then they are resolved to file paths
 /// using [resolvePackageUri]. If [resolvePackageUri] is omitted, an exception
 /// is thrown if any "package:" includes are found.
 Future<AnalysisOptions> findAnalysisOptions(
   FileSystem fileSystem,
   FileSystemPath directory, {
+  required void Function(String path) reportFailedRead,
   ResolvePackageUri? resolvePackageUri,
 }) async {
   while (true) {
@@ -43,6 +50,7 @@ Future<AnalysisOptions> findAnalysisOptions(
       return readAnalysisOptions(
         fileSystem,
         optionsPath,
+        reportFailedRead: reportFailedRead,
         resolvePackageUri: resolvePackageUri,
       );
     }
@@ -64,9 +72,18 @@ Future<AnalysisOptions> findAnalysisOptions(
 Future<AnalysisOptions> readAnalysisOptions(
   FileSystem fileSystem,
   FileSystemPath optionsPath, {
+  required void Function(String path) reportFailedRead,
   ResolvePackageUri? resolvePackageUri,
 }) async {
-  var yaml = loadYamlNode(await fileSystem.readFile(optionsPath));
+  YamlNode yaml;
+  try {
+    yaml = loadYamlNode(await fileSystem.readFile(optionsPath));
+  } on IOException {
+    // Don't crash on failed reads, just report and continue as if the file was
+    // empty.
+    reportFailedRead(optionsPath.toString());
+    yaml = YamlMap();
+  }
 
   // If for some reason the YAML isn't a map, consider it malformed and yield
   // a default empty map.
@@ -103,9 +120,11 @@ Future<AnalysisOptions> readAnalysisOptions(
       (await fileSystem.parentDirectory(optionsPath))!,
       include,
     );
-    return await readAnalysisOptions(
+
+    return readAnalysisOptions(
       fileSystem,
       includePath,
+      reportFailedRead: reportFailedRead,
       resolvePackageUri: resolvePackageUri,
     );
   }

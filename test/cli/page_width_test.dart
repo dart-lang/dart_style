@@ -158,6 +158,57 @@ void main() {
     ]).validate();
   });
 
+  test('ignore missing includes', () async {
+    await d.dir('dir', [
+      analysisOptionsFile(
+        include: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
+      ),
+      analysisOptionsFile(name: 'known.yaml', pageWidth: 30),
+      d.file('main.dart', _unformatted),
+    ]).create();
+
+    var process = await runFormatterOnDir();
+
+    var unknown1Path = p.join(d.sandbox, 'dir', 'unknown1.yaml');
+    expect(
+      await process.stderr.next,
+      'Warning: Couldn\'t read file "$unknown1Path".',
+    );
+
+    var unknown2Path = p.join(d.sandbox, 'dir', 'unknown2.yaml');
+    expect(
+      await process.stderr.next,
+      'Warning: Couldn\'t read file "$unknown2Path".',
+    );
+
+    await process.shouldExit(0);
+
+    // Should format the file at 30 from the successful include.
+    await d.dir('dir', [d.file('main.dart', _formatted30)]).validate();
+  });
+  test('only warn on a missing include once', () async {
+    await d.dir('dir', [
+      analysisOptionsFile(
+        include: ['unknown.yaml', 'unknown.yaml', 'unknown.yaml'],
+      ),
+      d.file('main.dart', _unformatted),
+    ]).create();
+
+    var process = await runFormatterOnDir();
+
+    var unknownPath = p.join(d.sandbox, 'dir', 'unknown.yaml');
+    expect(
+      await process.stderr.next,
+      'Warning: Couldn\'t read file "$unknownPath".',
+    );
+
+    expect(await process.stderr.hasNext, isFalse);
+    await process.shouldExit(0);
+
+    // Should format the file at the default width.
+    await d.dir('dir', [d.file('main.dart', _formatted80)]).validate();
+  });
+
   group('stdin', () {
     test('use page width from surrounding package', () async {
       await d.dir('foo', [analysisOptionsFile(pageWidth: 30)]).create();
