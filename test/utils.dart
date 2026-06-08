@@ -403,7 +403,7 @@ d.FileDescriptor analysisOptionsFile({
   String name = 'analysis_options.yaml',
   int? pageWidth,
   TrailingCommas? trailingCommas,
-  String? include,
+  Object? include,
 }) {
   var yaml = analysisOptions(
     pageWidth: pageWidth,

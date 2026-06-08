@@ -1,3 +1,14 @@
+## Unpublished
+
+This change is landing in a branch of dart_style that isn't the main dev line
+and won't be published. It exists only to be rolled into the Dart SDK as a
+cherry-pick.
+
+### Bug fixes
+
+* Don't crash if an `analysis_options.yaml` file has an `include` that points to
+  a non-existent or unreadable file (#1840).
+
 ## 3.1.8-wip
 
 ### Style changes
