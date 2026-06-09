@@ -162,7 +162,12 @@ void main() {
       Future<String?> failingResolver(Uri uri) async => null;
 
       expect(
-        readAnalysisOptions(fs, path, resolvePackageUri: failingResolver),
+        readAnalysisOptions(
+          fs,
+          path,
+          reportFailedRead: (path) => fail('Unexpected read failure.'),
+          resolvePackageUri: failingResolver,
+        ),
         throwsA(
           isA<PackageResolutionException>().having(
             (error) => error.toString(),
