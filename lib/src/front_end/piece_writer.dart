@@ -112,7 +112,9 @@ final class PieceWriter {
       // Don't append to the previous token if there is a comment after it.
       _beginCodeToken(token, soft);
     } else if (_currentCode case var code? when code.isSoft == soft) {
-      // Append to the current code piece.
+      // Append to the current code piece. Each piece must be uniformly all
+      // soft or all hard text, so if this token doesn't match the existing
+      // piece's softness, then start a new piece.
       if (_pendingSpace) {
         code.append(' ');
         _pendingSpace = false;

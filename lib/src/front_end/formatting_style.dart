@@ -104,9 +104,12 @@ final class FormattingStyle {
   /// To do that, the formatter distinguishes "soft" characters from other
   /// kinds of code. "Soft" code is string literals, comments, or a few other
   /// things that often follow a string literal or comment: `,`, `;`, or `() {`
-  /// for a trailing block-formatted lambda. When an overflowing line of code
-  /// ends in soft characters, the overflow cost of all of those characters is
-  /// collapsed to a single point of penalty instead of one per character.
+  /// (including `async` or other modifiers that can appear in a function
+  /// header) for a trailing block-formatted lambda. When an overflowing line of
+  /// code ends in soft characters, the overflow cost of all of those characters
+  /// is collapsed to a single point of penalty instead of one per character.
+  /// (We don't go all the way to zero because it is still overflow and we still
+  /// want to avoid it completely if possible.)
   ///
   /// That leads the formatter to prefer solutions where the overflow is mostly
   /// strings or comments, which is likely where the user needs to take action.
