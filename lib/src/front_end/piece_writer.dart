@@ -487,12 +487,31 @@ final class PieceWriter {
       leadingIndent: style.leadingIndent,
     );
 
+    if (style.pinStateByPageWidthBeforeSolving) {
+      _pinPiecesByPageWidth(rootPiece, style.pageWidth - style.leadingIndent);
+    }
+
     var solution = solver.format(rootPiece);
     var output = solution.code.build(source, style.lineEnding);
 
     Profile.end('PieceWriter.finish() format piece tree');
 
     return output;
+  }
+
+  /// Traverse the piece tree at [rootPiece] and attempt to pin pieces to states
+  /// if the [pageWidth] and the contents of the pieces are enough to
+  /// determine what state the piece will end up in.
+  void _pinPiecesByPageWidth(Piece rootPiece, int pageWidth) {
+    void traverse(Piece piece) {
+      if (piece.fixedStateForPageWidth(pageWidth) case var state?) {
+        piece.pin(state);
+      }
+
+      piece.forEachChild(traverse);
+    }
+
+    traverse(rootPiece);
   }
 
   /// Returns the number of characters past [position] in the source where the

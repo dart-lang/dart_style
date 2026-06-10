@@ -1,0 +1,333 @@
+>>>
+main() async {
+  {
+    await MethodChannelContainer()
+        .onMethodChannelInvoke("reportCrash", <String, dynamic>{
+          "time": nowTime,
+          "errorValue": errorName,
+          "reason": reason,
+          "stacktrace": stacktrace,
+        });
+  }
+}
+<<< 3.7
+main() async {
+  {
+    await MethodChannelContainer()
+        .onMethodChannelInvoke("reportCrash", <String, dynamic>{
+          "time": nowTime,
+          "errorValue": errorName,
+          "reason": reason,
+          "stacktrace": stacktrace,
+        });
+  }
+}
+<<< 3.13
+main() async {
+  {
+    await MethodChannelContainer().onMethodChannelInvoke(
+      "reportCrash",
+      <String, dynamic>{
+        "time": nowTime,
+        "errorValue": errorName,
+        "reason": reason,
+        "stacktrace": stacktrace,
+      },
+    );
+  }
+}
+>>> (indent 4) abrevva-3.0.4/lib/abrevva_method_channel.dart
+    final result = await _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>?>('read', {
+          'deviceId': deviceId,
+          'service': service,
+          'characteristic': characteristic,
+          'timeout': timeout,
+        });
+<<< 3.7
+    final result = await _methodChannel
+        .invokeMethod<Map<dynamic, dynamic>?>('read', {
+          'deviceId': deviceId,
+          'service': service,
+          'characteristic': characteristic,
+          'timeout': timeout,
+        });
+<<< 3.13
+    final result = await _methodChannel.invokeMethod<Map<dynamic, dynamic>?>(
+      'read',
+      {
+        'deviceId': deviceId,
+        'service': service,
+        'characteristic': characteristic,
+        'timeout': timeout,
+      },
+    );
+>>> amplify_auth_cognito_dart-0.11.20/lib/src/model/hosted_ui/oauth_parameters.g.dart
+final BuiltSet<OAuthErrorCode> _$values =
+    BuiltSet<OAuthErrorCode>(const <OAuthErrorCode>[
+      _$invalidRequest,
+      _$unauthorizedClient,
+      _$accessDenied,
+      _$unsupportedResponseType,
+      _$invalidScope,
+      _$serverError,
+      _$temporarilyUnavailable,
+      _$interactionRequired,
+      _$loginRequired,
+      _$accountSelectionRequired,
+      _$consentRequired,
+      _$invalidRequestUri,
+      _$invalidRequestObject,
+      _$requestNotSupported,
+      _$requestUriNotSupported,
+      _$registrationUriNotSupported,
+    ]);
+<<< 3.7
+final BuiltSet<OAuthErrorCode> _$values =
+    BuiltSet<OAuthErrorCode>(const <OAuthErrorCode>[
+      _$invalidRequest,
+      _$unauthorizedClient,
+      _$accessDenied,
+      _$unsupportedResponseType,
+      _$invalidScope,
+      _$serverError,
+      _$temporarilyUnavailable,
+      _$interactionRequired,
+      _$loginRequired,
+      _$accountSelectionRequired,
+      _$consentRequired,
+      _$invalidRequestUri,
+      _$invalidRequestObject,
+      _$requestNotSupported,
+      _$requestUriNotSupported,
+      _$registrationUriNotSupported,
+    ]);
+<<< 3.13
+final BuiltSet<OAuthErrorCode> _$values = BuiltSet<OAuthErrorCode>(
+  const <OAuthErrorCode>[
+    _$invalidRequest,
+    _$unauthorizedClient,
+    _$accessDenied,
+    _$unsupportedResponseType,
+    _$invalidScope,
+    _$serverError,
+    _$temporarilyUnavailable,
+    _$interactionRequired,
+    _$loginRequired,
+    _$accountSelectionRequired,
+    _$consentRequired,
+    _$invalidRequestUri,
+    _$invalidRequestObject,
+    _$requestNotSupported,
+    _$requestUriNotSupported,
+    _$registrationUriNotSupported,
+  ],
+);
+>>> amplify_datastore-2.11.0/example/integration_test/utils/test_cloud_synced_model_operation.dart
+Future<List<SubscriptionEvent<T>>> createObservedEventsGetter<T extends Model>(
+  ModelType<T> modelType, {
+  required int take,
+  required EventType eventType,
+}) => Amplify.DataStore.observe(modelType)
+    .where((event) => event.eventType == eventType)
+    .distinct(
+      (prev, next) =>
+          prev.eventType == next.eventType &&
+          prev.item.modelIdentifier == next.item.modelIdentifier,
+    )
+    .take(take)
+    .toList();
+<<< 3.7
+Future<List<SubscriptionEvent<T>>> createObservedEventsGetter<T extends Model>(
+  ModelType<T> modelType, {
+  required int take,
+  required EventType eventType,
+}) =>
+    Amplify.DataStore.observe(modelType)
+        .where((event) => event.eventType == eventType)
+        .distinct(
+          (prev, next) =>
+              prev.eventType == next.eventType &&
+              prev.item.modelIdentifier == next.item.modelIdentifier,
+        )
+        .take(take)
+        .toList();
+<<< 3.8
+Future<List<SubscriptionEvent<T>>> createObservedEventsGetter<T extends Model>(
+  ModelType<T> modelType, {
+  required int take,
+  required EventType eventType,
+}) => Amplify.DataStore.observe(modelType)
+    .where((event) => event.eventType == eventType)
+    .distinct(
+      (prev, next) =>
+          prev.eventType == next.eventType &&
+          prev.item.modelIdentifier == next.item.modelIdentifier,
+    )
+    .take(take)
+    .toList();
+<<< 3.13
+### TODO(rnystrom): It shouldn't split after `=>`, but there is some subtle bug
+### around how overflow is used to order solutions. If we don't take overflow
+### into account when comparing solutions, this is fixed, but lots of other
+### things break. An unfortunately load-bearing bug.
+Future<List<SubscriptionEvent<T>>> createObservedEventsGetter<T extends Model>(
+  ModelType<T> modelType, {
+  required int take,
+  required EventType eventType,
+}) =>
+    Amplify.DataStore.observe(modelType)
+        .where((event) => event.eventType == eventType)
+        .distinct(
+          (prev, next) =>
+              prev.eventType == next.eventType &&
+              prev.item.modelIdentifier == next.item.modelIdentifier,
+        )
+        .take(take)
+        .toList();
+>>> analyzer_plugin-0.14.9/test/integration/support/protocol_matchers.dart
+final Matcher isCompletionSuggestionKind =
+    MatchesEnum('CompletionSuggestionKind', [
+      'ARGUMENT_LIST',
+      'IMPORT',
+      'IDENTIFIER',
+      'INVOCATION',
+      'KEYWORD',
+      'NAMED_ARGUMENT',
+      'OPTIONAL_ARGUMENT',
+      'OVERRIDE',
+      'PARAMETER',
+      'PACKAGE_NAME',
+    ]);
+<<< 3.7
+final Matcher isCompletionSuggestionKind =
+    MatchesEnum('CompletionSuggestionKind', [
+      'ARGUMENT_LIST',
+      'IMPORT',
+      'IDENTIFIER',
+      'INVOCATION',
+      'KEYWORD',
+      'NAMED_ARGUMENT',
+      'OPTIONAL_ARGUMENT',
+      'OVERRIDE',
+      'PARAMETER',
+      'PACKAGE_NAME',
+    ]);
+<<< 3.13
+final Matcher isCompletionSuggestionKind = MatchesEnum(
+  'CompletionSuggestionKind',
+  [
+    'ARGUMENT_LIST',
+    'IMPORT',
+    'IDENTIFIER',
+    'INVOCATION',
+    'KEYWORD',
+    'NAMED_ARGUMENT',
+    'OPTIONAL_ARGUMENT',
+    'OVERRIDE',
+    'PARAMETER',
+    'PACKAGE_NAME',
+  ],
+);
+>>> animations-2.2.0/lib/src/fade_through_transition.dart
+class C {
+  static final TweenSequence<double> _fadeOutOpacity =
+      TweenSequence<double>(<TweenSequenceItem<double>>[
+        TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 1.0, end: 0.0).chain(_outCurve),
+          weight: 6 / 20,
+        ),
+        TweenSequenceItem<double>(
+          tween: ConstantTween<double>(0.0),
+          weight: 14 / 20,
+        ),
+      ]);
+}
+<<< 3.7
+class C {
+  static final TweenSequence<double> _fadeOutOpacity =
+      TweenSequence<double>(<TweenSequenceItem<double>>[
+        TweenSequenceItem<double>(
+          tween: Tween<double>(begin: 1.0, end: 0.0).chain(_outCurve),
+          weight: 6 / 20,
+        ),
+        TweenSequenceItem<double>(
+          tween: ConstantTween<double>(0.0),
+          weight: 14 / 20,
+        ),
+      ]);
+}
+<<< 3.13
+class C {
+  static final TweenSequence<double> _fadeOutOpacity = TweenSequence<double>(
+    <TweenSequenceItem<double>>[
+      TweenSequenceItem<double>(
+        tween: Tween<double>(begin: 1.0, end: 0.0).chain(_outCurve),
+        weight: 6 / 20,
+      ),
+      TweenSequenceItem<double>(
+        tween: ConstantTween<double>(0.0),
+        weight: 14 / 20,
+      ),
+    ],
+  );
+}
+>>> (indent 2) dart_desk_client-0.2.1/lib/src/protocol/client.dart
+  _i2.Future<_i8.Document> submitEdit(
+    _i1.UuidValue documentId,
+    String sessionId,
+    String fieldUpdatesJson,
+  ) => caller.callServerEndpoint<_i8.Document>(
+    'documentCollaboration',
+    'submitEdit',
+    {
+      'documentId': documentId,
+      'sessionId': sessionId,
+      'fieldUpdatesJson': fieldUpdatesJson,
+    },
+  );
+<<< 3.7
+  _i2.Future<_i8.Document> submitEdit(
+    _i1.UuidValue documentId,
+    String sessionId,
+    String fieldUpdatesJson,
+  ) => caller
+      .callServerEndpoint<_i8.Document>('documentCollaboration', 'submitEdit', {
+        'documentId': documentId,
+        'sessionId': sessionId,
+        'fieldUpdatesJson': fieldUpdatesJson,
+      });
+<<< 3.13
+  _i2.Future<_i8.Document> submitEdit(
+    _i1.UuidValue documentId,
+    String sessionId,
+    String fieldUpdatesJson,
+  ) => caller.callServerEndpoint<_i8.Document>(
+    'documentCollaboration',
+    'submitEdit',
+    {
+      'documentId': documentId,
+      'sessionId': sessionId,
+      'fieldUpdatesJson': fieldUpdatesJson,
+    },
+  );
+>>> (indent 6) ffastdb-0.2.6/example_flutter/lib/stress_test_page.dart
+      final updated = await widget.db
+          .updateWhere((q) => q.where('type').equals('post').findIds(), {
+            'massivelyUpdated': true,
+            'lastUpdateTs': DateTime.now().millisecondsSinceEpoch,
+          });
+<<< 3.7
+      final updated = await widget.db
+          .updateWhere((q) => q.where('type').equals('post').findIds(), {
+            'massivelyUpdated': true,
+            'lastUpdateTs': DateTime.now().millisecondsSinceEpoch,
+          });
+<<< 3.13
+      final updated = await widget.db.updateWhere(
+        (q) => q.where('type').equals('post').findIds(),
+        {
+          'massivelyUpdated': true,
+          'lastUpdateTs': DateTime.now().millisecondsSinceEpoch,
+        },
+      );

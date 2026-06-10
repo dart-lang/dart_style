@@ -378,7 +378,7 @@ final class CodeWriter {
 
     // See if we can immediately bind it based on the page width and the piece's
     // contents.
-    if (isUnsolved) {
+    if (isUnsolved && !_cache.style.pinStateByPageWidthBeforeSolving) {
       // If the solution doesn't bind the piece already, we may be able to
       // eagerly bind it to a state knowing just the page width (minus any
       // leading indentation). If so, do that now. We do that here instead of

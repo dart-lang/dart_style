@@ -4,9 +4,42 @@
 
 ### Bug fixes
 
+* Don't crash if an `analysis_options.yaml` file has an `include` that points to
+  a non-existent or unreadable file (#1840).
+
 * Fix bug where some collections or arguments might split unnecessarily (#1809).
 
 ### Style changes
+
+* Fix a bug in an eager splitting optimization that would led the formatter to
+  prefer less desirable solutions (#1847).
+
+  Typically, the code affected by this bug is a call chain that contains an
+  argument list with a large collection literal, as in:
+
+  ```dart
+  // Before:
+  await MethodChannelContainer()
+      .onMethodChannelInvoke("reportCrash", <String, dynamic>{
+        "time": nowTime,
+        "errorValue": errorName,
+        "reason": reason,
+        "stacktrace": stacktrace,
+      });
+
+  // After:
+  await MethodChannelContainer().onMethodChannelInvoke(
+    "reportCrash",
+    <String, dynamic>{
+      "time": nowTime,
+      "errorValue": errorName,
+      "reason": reason,
+      "stacktrace": stacktrace,
+    },
+  );
+  ```
+
+  This change is language versioned and only affects code at 3.13 or higher.
 
 * Prefer to split call chains for single-element targets (#1732).
 
@@ -227,6 +260,10 @@
 
   Note how a blank line was added above `// Comment 2.` but not `// Comment 1.`.
   Now, it won't add a blank line before the last comment.
+
+### Internal changes
+
+* Require `analyzer: ^13.1.0`.
 
 ## 3.1.9
 
