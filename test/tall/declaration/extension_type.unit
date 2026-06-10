@@ -18,6 +18,10 @@ extension type A<T extends int, R>(int a) {}
 extension type A<T extends int, R>(
   int a
 ) {}
+<<< 3.13
+extension type A<T extends int, R>(
+  int a,
+) {}
 >>> Indentation in body.
 extension type A(int a) {
 inc(int x) => ++x;
@@ -45,6 +49,10 @@ extension type LongExtensionType(LongTypeName a) {}
 extension type LongExtensionType(
   LongTypeName a
 ) {}
+<<< 3.13
+extension type LongExtensionType(
+  LongTypeName a,
+) {}
 >>> Split in representation with implements clause.
 extension type LongExtensionType(LongTypeName a) implements Something {
   method() {;}
@@ -68,7 +76,7 @@ extension type LongExtensionType(
 }
 <<< 3.13
 extension type LongExtensionType(
-  LongTypeName a
+  LongTypeName a,
 ) implements Something {
   method() {
     ;
