@@ -154,7 +154,7 @@ final class CodeWriter {
   /// Increases the indentation by [indent] relative to the current amount of
   /// indentation.
   void pushIndent(Indent indent) {
-    if (_cache.is3Dot7) {
+    if (_cache.style.is3Dot7) {
       _pushIndent3Dot7(indent);
     } else {
       var parent = _indentStack.last;
@@ -191,7 +191,7 @@ final class CodeWriter {
   /// This is only used in a couple of corners of if-case and for-in headers
   /// where the indentation is unusual.
   void pushCollapsibleIndent() {
-    if (_cache.is3Dot7) {
+    if (_cache.style.is3Dot7) {
       _pushIndent3Dot7(Indent.expression, canCollapse: true);
     } else {
       pushIndent(Indent.controlFlowClause);
@@ -362,7 +362,7 @@ final class CodeWriter {
 
     // See if we can immediately bind it based on the page width and the piece's
     // contents.
-    if (isUnsolved) {
+    if (isUnsolved && !_cache.style.pinStateByPageWidthBeforeSolving) {
       // If the solution doesn't bind the piece already, we may be able to
       // eagerly bind it to a state knowing just the page width (minus any
       // leading indentation). If so, do that now. We do that here instead of
@@ -398,7 +398,7 @@ final class CodeWriter {
       );
 
       bool invalid;
-      if (_cache.is3Dot7) {
+      if (_cache.style.is3Dot7) {
         // If the child must be inline, then invalidate because we know it
         // contains some kind of newline.
         // TODO(rnystrom): It would be better if this logic wasn't different for

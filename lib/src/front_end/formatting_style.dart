@@ -85,6 +85,18 @@ final class FormattingStyle {
   /// different categories: `dart:`, `package:`, or relative.
   bool get separateDirectiveSections => _languageVersion >= _version3Dot13;
 
+  /// Whether to try to figure out a piece's state based on the page width
+  /// before running the solver or during.
+  ///
+  /// Initially, this ran during solving but that leads to some subtle bugs in
+  /// the solver. Performing it before solving is less effective for performance
+  /// but avoids those bugs.
+  ///
+  /// We language version this even though the old logic was never correct to
+  /// minimize unexpected churn.
+  bool get pinStateByPageWidthBeforeSolving =>
+      _languageVersion >= _version3Dot13;
+
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>

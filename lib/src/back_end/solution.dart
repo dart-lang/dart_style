@@ -146,6 +146,11 @@ final class Solution implements Comparable<Solution> {
   ///
   /// If it can, binds the piece to that state in this solution and returns
   /// `true`. Otherwise returns `false`.
+  ///
+  /// This code has a bug, but is kept for older language versions to avoid
+  /// unexpected formatting changes.
+  ///
+  /// See: https://github.com/dart-lang/dart_style/issues/1847
   bool tryBindByPageWidth(Piece piece, int pageWidth) {
     if (piece.fixedStateForPageWidth(pageWidth) case var state?) {
       _bind(piece, state);
