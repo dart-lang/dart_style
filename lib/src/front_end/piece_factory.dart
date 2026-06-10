@@ -213,7 +213,12 @@ mixin PieceFactory {
     }
 
     var sequence = SequenceBuilder(this);
-    sequence.leftBracket(leftBracket);
+
+    // Treat the `{` as soft so that if a function expression follows a long
+    // string literal (like the lambda after a description in a `test()` call),
+    // then the function header doesn't interfere with the soft overflow of the
+    // string.
+    sequence.leftBracket(leftBracket, soft: true);
 
     var needsBlank = false;
     for (var node in contents) {
@@ -1464,8 +1469,13 @@ mixin PieceFactory {
   /// Handles the `async`, `sync*`, or `async*` modifiers on a function body.
   void writeFunctionBodyModifiers(FunctionBody body) {
     // The `async` or `sync` keyword.
-    pieces.token(body.keyword);
-    pieces.token(body.star);
+    pieces.token(body.keyword, soft: true);
+    pieces.token(body.star, soft: true);
+
+    // We treat these keywords as soft so that overly long test descriptions in
+    // `test()` calls don't force the test call to split and make it easier for
+    // the user to see they need to split the string.
+
     if (body.keyword != null) pieces.space();
   }
 
@@ -1822,7 +1832,10 @@ mixin PieceFactory {
   ///
   /// If [commaAfter] is `true`, will look for and write a comma following the
   /// token if there is one.
-  Piece tokenPiece(Token token, {bool commaAfter = false}) {
-    return pieces.tokenPiece(token, commaAfter: commaAfter);
+  ///
+  /// If [soft] is `true`, then the token is considered to be "soft" code. See
+  /// [FormattingStyle.useSoftOverflow] for more details.
+  Piece tokenPiece(Token token, {bool commaAfter = false, bool soft = false}) {
+    return pieces.tokenPiece(token, commaAfter: commaAfter, soft: soft);
   }
 }

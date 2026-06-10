@@ -89,12 +89,17 @@ final class PieceWriter {
   ///
   /// Does nothing if [token] is `null`. If [spaceBefore] is `true`, writes a
   /// space before the token, likewise with [spaceAfter].
+  ///
+  /// If [soft] is `true`, then the token is considered to be "soft" code. See
+  /// [FormattingStyle.useSoftOverflow] for more details.
   void token(
     Token? token, {
     bool spaceBefore = false,
     bool spaceAfter = false,
+    bool soft = false,
   }) {
     if (token == null) return;
+    if (!_visitor.style.useSoftOverflow) soft = false;
 
     if (spaceBefore) space();
 
@@ -106,9 +111,11 @@ final class PieceWriter {
 
     if (token.precedingComments != null) {
       // Don't append to the previous token if there is a comment after it.
-      _beginCodeToken(token);
-    } else if (_currentCode case var code?) {
-      // Append to the current code piece.
+      _beginCodeToken(token, soft);
+    } else if (_currentCode case var code? when code.isSoft == soft) {
+      // Append to the current code piece. Each piece must be uniformly all
+      // soft or all hard text, so if this token doesn't match the existing
+      // piece's softness, then start a new piece.
       if (_pendingSpace) {
         code.append(' ');
         _pendingSpace = false;
@@ -116,17 +123,20 @@ final class PieceWriter {
 
       _write(code, token.lexeme, token.offset);
     } else {
-      _beginCodeToken(token);
+      _beginCodeToken(token, soft);
     }
 
     if (spaceAfter) space();
   }
 
   /// Writes [token], which may contain internal newlines.
-  void multilineToken(Token token) {
+  void multilineToken(Token token, {bool soft = false}) {
     var comments = _comments.commentsBefore(token);
 
-    var piece = CodePiece(_splitComments(comments, token));
+    var piece = CodePiece(
+      _splitComments(comments, token),
+      soft: _visitor.style.useSoftOverflow && soft,
+    );
     _write(piece, token.lexeme, token.offset, multiline: true);
 
     // Remember it so we can attach hanging comments later.
@@ -249,17 +259,28 @@ final class PieceWriter {
   ///
   /// If [commaAfter] is `true`, looks for and writes a comma following the
   /// token if there is one.
+  ///
+  /// If [soft] is `true`, then the token is considered to be "soft" code. See
+  /// [FormattingStyle.useSoftOverflow] for more details.
   Piece tokenPiece(
     Token token, {
     Token? discardedToken,
     bool commaAfter = false,
+    bool soft = false,
   }) {
-    var tokenPiece = _makeCodePiece(discardedToken: discardedToken, token);
+    var tokenPiece = _makeCodePiece(
+      token,
+      discardedToken: discardedToken,
+      soft: soft,
+    );
 
     if (commaAfter) {
       var nextToken = token.next!;
       if (nextToken.lexeme == ',') {
-        return AdjacentPiece([tokenPiece, _makeCodePiece(nextToken)]);
+        return AdjacentPiece([
+          tokenPiece,
+          _makeCodePiece(nextToken, soft: soft),
+        ]);
       }
     }
 
@@ -302,13 +323,18 @@ final class PieceWriter {
         enable: false,
         comment.offset + comment.text.length,
         trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
       ),
       '// dart format on' => EnableFormattingCommentPiece(
         enable: true,
         comment.offset + comment.text.length,
         trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
       ),
-      _ => CommentPiece(trailingWhitespace),
+      _ => CommentPiece(
+        trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
+      ),
     };
 
     _write(
@@ -350,9 +376,9 @@ final class PieceWriter {
 
   /// Begins a new [CodeToken] that can potentially have more code written to
   /// it.
-  void _beginCodeToken(Token token) {
+  void _beginCodeToken(Token token, bool soft) {
     _flushSpace();
-    var code = _makeCodePiece(token);
+    var code = _makeCodePiece(token, soft: soft);
     _pieces.last.add(code);
     _currentCode = code;
   }
@@ -373,7 +399,14 @@ final class PieceWriter {
   /// If [discardedToken] is given, it is a token immediately before [token]
   /// that is going to be discarded. Passing it in here ensures any comments
   /// before it are preserved.
-  CodePiece _makeCodePiece(Token token, {Token? discardedToken}) {
+  ///
+  /// If [soft] is `true`, then the token is considered to be "soft" code. See
+  /// [FormattingStyle.useSoftOverflow] for more details.
+  CodePiece _makeCodePiece(
+    Token token, {
+    Token? discardedToken,
+    required bool soft,
+  }) {
     var comments = _comments.commentsBefore(token);
 
     // Include any comments on the preceding discarded token, if there is one.
@@ -381,7 +414,10 @@ final class PieceWriter {
       comments = _comments.commentsBefore(discardedToken).concatenate(comments);
     }
 
-    var piece = CodePiece(_splitComments(comments, token));
+    var piece = CodePiece(
+      _splitComments(comments, token),
+      soft: _visitor.style.useSoftOverflow && soft,
+    );
     _write(piece, token.lexeme, token.offset);
 
     // Remember it so we can attach hanging comments later.

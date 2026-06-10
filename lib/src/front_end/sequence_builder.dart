@@ -75,8 +75,8 @@ final class SequenceBuilder {
   }
 
   /// Adds the opening [bracket] to the built sequence.
-  void leftBracket(Token bracket) {
-    _leftBracket = _visitor.tokenPiece(bracket);
+  void leftBracket(Token bracket, {bool soft = false}) {
+    _leftBracket = _visitor.tokenPiece(bracket, soft: soft);
   }
 
   /// Adds the closing [bracket] to the built sequence along with any comments

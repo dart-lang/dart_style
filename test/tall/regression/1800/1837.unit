@@ -1,0 +1,43 @@
+>>>
+void main() {
+  final knownCrossImports = [];
+
+  test(
+    skip: knownCrossImports.isEmpty, // [intended]: No message is needed when there are no known cross imports.
+  );
+}
+
+void test({required bool skip}) {}
+<<< 3.7
+void main() {
+  final knownCrossImports = [];
+
+  test(
+    skip:
+        knownCrossImports
+            .isEmpty, // [intended]: No message is needed when there are no known cross imports.
+  );
+}
+
+void test({required bool skip}) {}
+<<< 3.8
+void main() {
+  final knownCrossImports = [];
+
+  test(
+    skip: knownCrossImports
+        .isEmpty, // [intended]: No message is needed when there are no known cross imports.
+  );
+}
+
+void test({required bool skip}) {}
+<<< 3.13
+void main() {
+  final knownCrossImports = [];
+
+  test(
+    skip: knownCrossImports.isEmpty, // [intended]: No message is needed when there are no known cross imports.
+  );
+}
+
+void test({required bool skip}) {}

@@ -400,7 +400,7 @@ final class ListElementPiece extends Piece {
         writer.format(_hangingComments[i]);
       }
 
-      if (state == _appendComma) writer.write(',');
+      if (state == _appendComma) writer.write(',', soft: true);
 
       if (_delimiter.isNotEmpty) {
         writer.space();

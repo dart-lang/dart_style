@@ -1,0 +1,316 @@
+70 columns                                                            |
+### These are regression tests from looking at the diff of the overflow changes
+### run on a large corpus of pub packages. For that, I used a page width of 70
+### to deliberately trigger more overflows.
+###
+### The input for these examples is the code as it was formatted before the
+### overflow changes. The interesting thing to note here is that unlike the
+### input code, the expected code has formatting closer to what you would get
+### once you split the overflowing strings or comments.
+>>> _fe_analyzer_shared-100.0.0/test/flow_analysis/assigned_variables_test.dart
+main() {
+  test(
+    'readCapturedAnywhere does not record variables local to a closure',
+    () {
+      var assignedVariables =
+          AssignedVariablesForTesting<_Node, _Variable>();
+      var v1 = _Variable('v1');
+      var v2 = _Variable('v2');
+      assignedVariables.declare(v1);
+      assignedVariables.beginNode();
+      assignedVariables.declare(v2);
+      assignedVariables.read(v1);
+      assignedVariables.read(v2);
+      assignedVariables.endNode(
+        _Node(),
+        isClosureOrLateVariableInitializer: true,
+      );
+      assignedVariables.finish();
+      expect(assignedVariables.readCapturedAnywhere, {
+        assignedVariables.keyForVariable(v1),
+      });
+    },
+  );
+}
+<<< 3.7
+main() {
+  test(
+    'readCapturedAnywhere does not record variables local to a closure',
+    () {
+      var assignedVariables =
+          AssignedVariablesForTesting<_Node, _Variable>();
+      var v1 = _Variable('v1');
+      var v2 = _Variable('v2');
+      assignedVariables.declare(v1);
+      assignedVariables.beginNode();
+      assignedVariables.declare(v2);
+      assignedVariables.read(v1);
+      assignedVariables.read(v2);
+      assignedVariables.endNode(
+        _Node(),
+        isClosureOrLateVariableInitializer: true,
+      );
+      assignedVariables.finish();
+      expect(assignedVariables.readCapturedAnywhere, {
+        assignedVariables.keyForVariable(v1),
+      });
+    },
+  );
+}
+<<< 3.13
+main() {
+  test('readCapturedAnywhere does not record variables local to a closure', () {
+    var assignedVariables =
+        AssignedVariablesForTesting<_Node, _Variable>();
+    var v1 = _Variable('v1');
+    var v2 = _Variable('v2');
+    assignedVariables.declare(v1);
+    assignedVariables.beginNode();
+    assignedVariables.declare(v2);
+    assignedVariables.read(v1);
+    assignedVariables.read(v2);
+    assignedVariables.endNode(
+      _Node(),
+      isClosureOrLateVariableInitializer: true,
+    );
+    assignedVariables.finish();
+    expect(assignedVariables.readCapturedAnywhere, {
+      assignedVariables.keyForVariable(v1),
+    });
+  });
+}
+>>> a2ui_core-0.0.1-dev002/lib/src/primitives/data_path.dart
+class C {
+  /// Whether the path starts with a slash (is absolute).
+  bool get isAbsolute =>
+      true; // All parsed paths are treated as absolute for now in our context
+}
+<<< 3.7
+class C {
+  /// Whether the path starts with a slash (is absolute).
+  bool get isAbsolute =>
+      true; // All parsed paths are treated as absolute for now in our context
+}
+<<< 3.13
+class C {
+  /// Whether the path starts with a slash (is absolute).
+  bool get isAbsolute => true; // All parsed paths are treated as absolute for now in our context
+}
+>>> dymatrix_flutter-1.0.0/example/lib/main.dart
+class _MyAppState extends State<MyApp> {
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            body: ListView(
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final newSettings = await showDialog<PrivacySettings>(
+                      builder: (context) => SimpleDialog(
+                        title: Text('Select Privacy Settings'),
+                        children: PrivacySettings.values.map((
+                          option,
+                        ) {
+                          return SimpleDialogOption(
+                            onPressed: () {
+                              Navigator.pop(context, option);
+
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Selected privacy settings: ${option.label}',
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+<<< 3.7
+class _MyAppState extends State<MyApp> {
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            body: ListView(
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final newSettings = await showDialog<
+                      PrivacySettings
+                    >(
+                      builder:
+                          (context) => SimpleDialog(
+                            title: Text('Select Privacy Settings'),
+                            children:
+                                PrivacySettings.values.map((option) {
+                                  return SimpleDialogOption(
+                                    onPressed: () {
+                                      Navigator.pop(context, option);
+
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            'Selected privacy settings: ${option.label}',
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                }).toList(),
+                          ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+<<< 3.8
+class _MyAppState extends State<MyApp> {
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      home: Builder(
+        builder: (context) {
+          return Scaffold(
+            body: ListView(
+              children: [
+                TextButton(
+                  onPressed: () async {
+                    final newSettings = await showDialog<PrivacySettings>(
+                      builder: (context) => SimpleDialog(
+                        title: Text('Select Privacy Settings'),
+                        children: PrivacySettings.values.map((
+                          option,
+                        ) {
+                          return SimpleDialogOption(
+                            onPressed: () {
+                              Navigator.pop(context, option);
+
+                              ScaffoldMessenger.of(
+                                context,
+                              ).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Selected privacy settings: ${option.label}',
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        }).toList(),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+}
+>>> (indent 4) flutter_gemma-0.14.0/example/lib/integration_test_screen.dart
+    f() async* {
+      await for (final progress in SmartDownloader.downloadWithProgress(
+        url:
+            'https://raw.githubusercontent.com/github/gitignore/main/Global/Linux.gitignore',
+        targetPath: file2,
+        maxRetries: 3,
+      )) {;}
+    }
+<<< 3.7
+    f() async* {
+      await for (final progress in SmartDownloader.downloadWithProgress(
+        url:
+            'https://raw.githubusercontent.com/github/gitignore/main/Global/Linux.gitignore',
+        targetPath: file2,
+        maxRetries: 3,
+      )) {
+        ;
+      }
+    }
+<<< 3.13
+    f() async* {
+      await for (final progress
+          in SmartDownloader.downloadWithProgress(
+            url: 'https://raw.githubusercontent.com/github/gitignore/main/Global/Linux.gitignore',
+            targetPath: file2,
+            maxRetries: 3,
+          )) {
+        ;
+      }
+    }
+>>> _fe_analyzer_shared-100.0.0/lib/src/type_inference/nullability_suffix.dart
+@AnalyzerPublicApi(
+  message:
+      'exported by package:analyzer/dart/element/nullability_suffix.dart',
+)
+enum NullabilitySuffix { e }
+<<< 3.7
+@AnalyzerPublicApi(
+  message:
+      'exported by package:analyzer/dart/element/nullability_suffix.dart',
+)
+enum NullabilitySuffix { e }
+<<< 3.13
+@AnalyzerPublicApi(
+  message: 'exported by package:analyzer/dart/element/nullability_suffix.dart',
+)
+enum NullabilitySuffix { e }
+>>> acme_client-2.0.0/test/certificate_credentials_test.dart
+main() {
+  test(
+    'CertificateCredentials.generate rejects an empty identifier list',
+    () {
+      expect(
+        () => CertificateCredentials.generate(identifiers: const []),
+        throwsArgumentError,
+      );
+    },
+  );
+}
+<<< 3.7
+main() {
+  test(
+    'CertificateCredentials.generate rejects an empty identifier list',
+    () {
+      expect(
+        () => CertificateCredentials.generate(identifiers: const []),
+        throwsArgumentError,
+      );
+    },
+  );
+}
+<<< 3.13
+main() {
+  test('CertificateCredentials.generate rejects an empty identifier list', () {
+    expect(
+      () => CertificateCredentials.generate(identifiers: const []),
+      throwsArgumentError,
+    );
+  });
+}

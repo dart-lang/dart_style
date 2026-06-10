@@ -52,6 +52,11 @@ final class CodeWriter {
   /// The number of characters in the line currently being written.
   int _column = 0;
 
+  /// The number of characters at the end of the current line that are "soft".
+  ///
+  /// See [FormattingStyle.useSoftOverflow] for more details.
+  int _softCharacters = 0;
+
   /// The stack of indentation levels.
   ///
   /// Each entry in the stack is the absolute number of spaces of leading
@@ -139,10 +144,21 @@ final class CodeWriter {
   /// When possible, avoid calling this directly. Instead, any input code
   /// lexemes should be written to TextPieces which then call this. That way,
   /// selections inside lexemes are correctly updated.
-  void write(String text) {
+  ///
+  /// If [soft] is `true`, then [text] is considered to be "soft" code. See
+  /// [FormattingStyle.useSoftOverflow] for more details.
+  void write(String text, {bool soft = false}) {
     _flushWhitespace();
     _code.write(text);
     _column += text.length;
+
+    if (soft) {
+      _softCharacters += text.length;
+    } else {
+      // We only count trailing soft characters at the end of the line, so
+      // writing any non-soft code resets the count.
+      _softCharacters = 0;
+    }
 
     // If we haven't found an overflowing line yet, then this line might be one
     // so keep track of the unsolved pieces we've encountered on it.
@@ -452,6 +468,7 @@ final class CodeWriter {
       case Whitespace.blankLine:
         _finishLine();
         _column = _pendingIndent;
+        _softCharacters = 0;
         _code.newline(
           blank: _pendingWhitespace == Whitespace.blankLine,
           indent: _column,
@@ -460,6 +477,7 @@ final class CodeWriter {
       case Whitespace.space:
         _code.write(' ');
         _column++;
+        _softCharacters++;
     }
 
     _pendingWhitespace = Whitespace.none;
@@ -467,8 +485,24 @@ final class CodeWriter {
 
   void _finishLine() {
     // If the completed line is too long, track the overflow.
-    if (_column >= _pageWidth) {
-      _solution.addOverflow(_column - _pageWidth);
+    if (_column > _pageWidth) {
+      var overflow = _column - _pageWidth;
+
+      // If soft overflow is enabled, then collapse any trailing soft characters
+      // to a single point of overflow.
+      if (_cache.style.useSoftOverflow && _softCharacters > 0) {
+        if (_softCharacters >= overflow) {
+          // All of the overflowing characters are soft.
+          overflow = 1;
+        } else {
+          // The overflow contains both hard and soft overflow. Count each
+          // character of hard overflow and collapse the soft overflow.
+          var hardOverflow = overflow - _softCharacters;
+          overflow = hardOverflow + 1;
+        }
+      }
+
+      _solution.addOverflow(overflow);
     }
 
     // If we found a problematic line, and there is are pieces on the line that
