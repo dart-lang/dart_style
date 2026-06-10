@@ -7,9 +7,23 @@
 * Don't crash if an `analysis_options.yaml` file has an `include` that points to
   a non-existent or unreadable file (#1840).
 
-* Fix bug where some collections or arguments might split unnecessarily (#1809).
-
 ### Style changes
+
+The following minor style bug fixes are not language versioned and apply to all
+formatted code:
+
+* Fix a bug in eager splitting optimization that in rare cases would lead to a
+  collection or argument list splitting unnecessarily (#1809).
+
+* Don't add a blank line before a comment at the end of a compilation unit or
+  braced body (#1644).
+
+  If you have already formatted code using dart_style that encounters this bug,
+  then reformatting it even after this fix will have no effect since the
+  unneeded blank line was already added.
+
+The following changes only apply when formatting code at language version 3.13
+or higher:
 
 * Fix a bug in an eager splitting optimization that would led the formatter to
   prefer less desirable solutions (#1847).
@@ -39,8 +53,6 @@
   );
   ```
 
-  This change is language versioned and only affects code at 3.13 or higher.
-
 * Prefer to split call chains for single-element targets (#1732).
 
   When formatting a method call chain whose target can also split, the formatter
@@ -55,8 +67,8 @@
 
   // Or split chain:
   function(argument)
-    .method()
-    .another();
+      .method()
+      .another();
   ```
 
   We've tried various heuristics for this over the years but most make some code
@@ -66,8 +78,8 @@
   and keep the target together. So in the above example, if prefers the second
   output.
 
-* Support block-formatting parameter lists (#1693). The formatter supports
-  "block-formatting" for most bracket-delimited constructs in the language. This
+* Allow block formatting parameter lists (#1693). The formatter supports
+  "block formatting" for most bracket-delimited constructs in the language. This
   is what enables a multi-line list literal in an assignment to look like this:
 
   ```dart
@@ -91,7 +103,7 @@
 
   This style applies to most language constructs, but function parameter lists
   were omitted. Now they are not. This rarely shows up in real code, except for
-  typedefs for large function types:
+  typedefs of large function types:
 
   ```dart
   // Before:
@@ -109,8 +121,6 @@
     NextPageCallback fetchNextPage,
   );
   ```
-
-  This change is language versioned and only affects code at 3.13 or higher.
 
 * Allow `as`, `is`, and `is!` expressions to be block formatted (#1542).
 
@@ -131,8 +141,6 @@
     argument,
   ) as Type;
   ```
-
-  This change is language versioned and only affects code at 3.13 or higher.
 
 * Separate imports into sections (#1120). Following the guidelines in
   ["Effective Dart"][sections], the formatter inserts a blank line between
@@ -156,8 +164,6 @@
   import 'my_library.dart';
   ```
 
-  This change is language versioned and only affects code at 3.13 or higher.
-
 [sections]: https://dart.dev/effective-dart/style#ordering
 
 * In if-case pieces, split the guard if the pattern block-splits (#1596).
@@ -180,89 +186,33 @@
   }
   ```
 
-  This change is language versioned and only affects code at 3.13 or higher.
-
 * When no solution fits the page width, prefer solutions where the overflowing
   lines have trailing string literals or comments (#1802, #1803, #1837).
 
-  Sometimes the formatter does it's best, but no solution fits in the page
-  width. Usually, this is because the code has some long string literals or
-  comments that the user should split manually. If the formatter treats all
-  overflowing characters uniformly, then it will try to pick a solution that
-  minimizes those overhanging strings and comments at the expense of choosing
-  weird formatting for other code. In particularly bad cases, the strings or
-  comments end up completely fitting and some other code runs over. When that
-  happens, it's confusing to the user because it looks like the formatter just
-  picked a weird solution for no reason. They don't see that the strings or
-  comments were the problem.
+  Sometimes the formatter is unable to split the code in a way that fits it all
+  within the page width. When this happens, the formatter prefers whatever
+  solution has the fewest overflowing characters.
 
-  What we want is for the formatter to leave those strings or comments hanging
-  past the page width so it's clear to the user where they need to split things
-  to get everything to fit. Also, this minimizes the format churn when they do
-  fix those strings or comments.
+  In practice, overflowing solutions are usually caused by long string literals
+  or comments that the user should split manually. To help the user do that, the
+  formatter now treats overflowing characters caused by trailing string
+  literals, comments, and a few other things that often follow a string literal
+  like `,`, `;`, `() {`, or `() async {`, as "less bad" when comparing the
+  amount of overflow between two solutions.
 
-  To do that, the formatter distinguishes "soft" characters from other kinds of
-  code. "Soft" code is string literals, comments, or a few other things that
-  often follow a string literal or comment: `,`, `;`, or `() {` for a trailing
-  block-formatted lambda. When an overflowing line of code ends in soft
-  characters, the overflow cost of all of those characters is collapsed to a
-  single point of penalty instead of one per character.
+  The effect is that when no solution fits, the formatter tends to prefer a
+  solution with hanging strings or comments, which makes it clearer to the user
+  which code they need to go back and manually split.
 
-  That leads the formatter to prefer solutions where the overflow is mostly
-  strings or comments, which is likely where the user needs to take action. This
-  feature is only a heuristic and doesn't always highlight the reason no
-  solution fits, but it's fairly simple one and does the right thing in common
-  cases.
-
-  This change is language versioned and only affects code at 3.13 or higher. It
-  has no effect on code that does fit in the page width.
-
-* Don't add a blank line before a comment at the end of a compilation unit or
-  braced body (#1644).
-
-  In rare cases where you have a declaration with a braced body at the end of a
-  block or file and there is a comment immediately after it, the formatter would
-  place a blank line before the comment. It wouldn't do that if there was any
-  other code after the comment.
-
-  For example, prior to this change, if you ran the formatter on:
-
-  ```dart
-  main() {
-    a() {
-      ;
-    }
-    // Comment 1.
-
-    b() {
-      ;
-    }
-    // Comment 2.
-  }
-  ```
-
-  It would produce:
-
-  ```dart
-  main() {
-    a() {
-      ;
-    }
-    // Comment 1.
-
-    b() {
-      ;
-    }
-
-    // Comment 2.
-  }
-  ```
-
-  Note how a blank line was added above `// Comment 2.` but not `// Comment 1.`.
-  Now, it won't add a blank line before the last comment.
+  This change has no effect on code that does fit in the page width.
 
 * Write a trailing comma in split extension type representation clauses when in
   a library whose language version allows it (#1845).
+
+  Prior to Dart 3.13, extension type representation clauses didn't allow
+  trailing commas even though they syntactically appear like formal parameter
+  lists. In Dart 3.13, that was fixed, so now the formatter formats them the
+  same way as other parameter lists in primary constructors.
 
 ### Internal changes
 
