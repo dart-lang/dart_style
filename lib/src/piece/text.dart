@@ -22,6 +22,11 @@ sealed class TextPiece extends Piece {
   /// splitting calculates each line in the piece separately.
   final List<String> _lines = [''];
 
+  /// Whether the code in this piece is considered to be "soft" code.
+  ///
+  /// See [FormattingStyle.useSoftOverflow] for more details.
+  final bool isSoft;
+
   /// The offset from the beginning of [text] where the selection starts, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionStart;
@@ -29,6 +34,8 @@ sealed class TextPiece extends Piece {
   /// The offset from the beginning of [text] where the selection ends, or
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
+
+  TextPiece({required bool soft}) : isSoft = soft;
 
   /// Append [text] to the end of this piece.
   ///
@@ -106,6 +113,12 @@ sealed class TextPiece extends Piece {
 
   @override
   int calculateTotalCharacters() {
+    // Since soft text might not force an overflowing piece to split, we don't
+    // include it in the calculation to preemptively split pieces. Otherwise,
+    // the optimization might conseratively split more than the solver would
+    // for a solution that does overflow.
+    if (isSoft) return 0;
+
     var total = 0;
 
     for (var line in _lines) {
@@ -128,12 +141,7 @@ final class CodePiece extends TextPiece {
   /// Pieces for any comments that hang off the same line as this code.
   final List<Piece> _hangingComments = [];
 
-  /// Whether the code in this piece is considered to be "soft" code.
-  ///
-  /// See [FormattingStyle.useSoftOverflow] for more details.
-  final bool isSoft;
-
-  CodePiece(this._leadingComments, this.isSoft);
+  CodePiece(this._leadingComments, {required super.soft});
 
   void addHangingComment(Piece comment) {
     _hangingComments.add(comment);
@@ -161,17 +169,6 @@ final class CodePiece extends TextPiece {
   }
 
   @override
-  int calculateTotalCharacters() {
-    // Since soft text might not force an overflowing piece to split, we don't
-    // include it in the calculation to preemptively split pieces. Otherwise,
-    // the optimization might conseratively split more than the solver would
-    // for a solution that does overflow.
-    if (isSoft) return 0;
-
-    return super.calculateTotalCharacters();
-  }
-
-  @override
   void forEachChild(void Function(Piece piece) callback) {
     _leadingComments.forEach(callback);
     _hangingComments.forEach(callback);
@@ -183,7 +180,7 @@ final class CommentPiece extends TextPiece {
   /// Whitespace at the end of the comment.
   final Whitespace _trailingWhitespace;
 
-  CommentPiece(this._trailingWhitespace);
+  CommentPiece(this._trailingWhitespace, {required super.soft});
 
   @override
   void format(CodeWriter writer, State state) {
@@ -191,13 +188,6 @@ final class CommentPiece extends TextPiece {
     _formatLines(writer, soft: true);
     writer.whitespace(_trailingWhitespace);
   }
-
-  /// Since soft text might not force an overflowing piece to split, we don't
-  /// include it in the calculation to pre-emptively split pieces. Otherwise,
-  /// the optimization might conseratively split more than the solver would
-  /// for a solution that does overflow.
-  @override
-  int calculateTotalCharacters() => 0;
 
   @override
   bool calculateContainsHardNewline() =>
@@ -225,6 +215,7 @@ final class EnableFormattingCommentPiece extends CommentPiece {
   EnableFormattingCommentPiece(
     this._sourceOffset,
     super._trailingWhitespace, {
+    required super.soft,
     required bool enable,
   }) : _enabled = enable;
 

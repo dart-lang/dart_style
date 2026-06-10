@@ -99,6 +99,7 @@ final class PieceWriter {
     bool soft = false,
   }) {
     if (token == null) return;
+    if (!_visitor.style.useSoftOverflow) soft = false;
 
     if (spaceBefore) space();
 
@@ -132,7 +133,10 @@ final class PieceWriter {
   void multilineToken(Token token, {bool soft = false}) {
     var comments = _comments.commentsBefore(token);
 
-    var piece = CodePiece(_splitComments(comments, token), soft);
+    var piece = CodePiece(
+      _splitComments(comments, token),
+      soft: _visitor.style.useSoftOverflow && soft,
+    );
     _write(piece, token.lexeme, token.offset, multiline: true);
 
     // Remember it so we can attach hanging comments later.
@@ -319,13 +323,18 @@ final class PieceWriter {
         enable: false,
         comment.offset + comment.text.length,
         trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
       ),
       '// dart format on' => EnableFormattingCommentPiece(
         enable: true,
         comment.offset + comment.text.length,
         trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
       ),
-      _ => CommentPiece(trailingWhitespace),
+      _ => CommentPiece(
+        trailingWhitespace,
+        soft: _visitor.style.useSoftOverflow,
+      ),
     };
 
     _write(
@@ -405,7 +414,10 @@ final class PieceWriter {
       comments = _comments.commentsBefore(discardedToken).concatenate(comments);
     }
 
-    var piece = CodePiece(_splitComments(comments, token), soft);
+    var piece = CodePiece(
+      _splitComments(comments, token),
+      soft: _visitor.style.useSoftOverflow && soft,
+    );
     _write(piece, token.lexeme, token.offset);
 
     // Remember it so we can attach hanging comments later.
