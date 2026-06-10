@@ -226,6 +226,9 @@
   Note how a blank line was added above `// Comment 2.` but not `// Comment 1.`.
   Now, it won't add a blank line before the last comment.
 
+* Write a trailing comma in split extension type representation clauses when in
+  a library whose language version allows it (#1845).
+
 ### Internal changes
 
 * Require `analyzer: ^13.1.0`.

@@ -97,6 +97,15 @@ final class FormattingStyle {
   bool get pinStateByPageWidthBeforeSolving =>
       _languageVersion >= _version3Dot13;
 
+  /// Whether an extension type's representation clause allows a trailing
+  /// comma.
+  ///
+  /// When primary constructors were added in Dart 3.13, the grammar was
+  /// adjusted to define extension types in terms of them which also means that
+  /// a trailing comma is now permitted.
+  bool get allowTrailingCommaInRepresentationClause =>
+      _languageVersion >= _version3Dot13;
+
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>

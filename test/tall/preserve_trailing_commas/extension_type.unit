@@ -1,0 +1,24 @@
+40 columns                              |
+(trailing_commas preserve)
+>>> Representation clause splits with trailing comma.
+extension type Foo(int x,) {}
+<<< 3.13
+### Trailing commas aren't allowed prior to 3.13.
+extension type Foo(
+  int x,
+) {}
+>>> Doesn't force split representation clause without trailing comma.
+extension type Foo(int x) {}
+<<< 3.7
+extension type Foo(int x) {}
+>>> May still split without trailing comma if doesn't fit.
+extension type Foo(LongType parameter) {}
+<<< 3.7
+### Trailing commas aren't allowed prior to 3.13.
+extension type Foo(
+  LongType parameter
+) {}
+<<< 3.13
+extension type Foo(
+  LongType parameter,
+) {}

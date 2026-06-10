@@ -811,9 +811,11 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       return;
     }
 
-    // If all parameters are optional, put the `[` or `{` right after `(`.
+    // Extension type representation clauses prior to Dart 3.13 don't allow a
+    // trailing comma.
     var listStyle = const ListStyle();
-    if (node.parent?.parent is ExtensionTypeDeclaration) {
+    if (!style.allowTrailingCommaInRepresentationClause &&
+        node.parent?.parent is ExtensionTypeDeclaration) {
       listStyle = const ListStyle(commas: Commas.nonTrailing);
     }
 
@@ -822,6 +824,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     builder.addLeftBracket(
       pieces.build(() {
         pieces.token(node.leftParenthesis);
+        // If all parameters are optional, put the `[` or `{` right after `(`.
         if (node.parameters.isNotEmpty && firstOptional == 0) {
           pieces.token(node.leftDelimiter);
         }

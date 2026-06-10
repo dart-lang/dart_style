@@ -26,6 +26,18 @@ extension /*b*/ type /*c*/ A
         I2 /*n*/ {
   /*o*/
 } /*p*/
+<<< 3.13
+/*a*/
+extension /*b*/ type /*c*/ A
+/*d*/ (
+  /*e*/ @ /*f*/ override /*g*/
+  int /*h*/ a /*i*/,
+) /*j*/
+    implements /*k*/
+        I1 /*l*/, /*m*/
+        I2 /*n*/ {
+  /*o*/
+} /*p*/
 >>> Line comments everywhere.
 // 0
 @patch // a
@@ -92,6 +104,31 @@ name // j
   required // m
   int // n
   a // o
+) // p
+    implements // q
+        I // r
+        {
+  // s
+} // t
+<<< 3.13
+// 0
+@patch // a
+extension // b
+type // c
+const // d
+A // e
+<
+  // f
+  T // g
+> // h
+. // i
+name // j
+(
+  // k
+  @ // l
+  required // m
+  int // n
+  a, // o
 ) // p
     implements // q
         I // r
