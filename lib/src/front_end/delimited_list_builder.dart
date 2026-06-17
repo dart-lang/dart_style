@@ -290,9 +290,13 @@ final class DelimitedListBuilder {
       }
     }
 
-    // Preserve one blank line between successive elements.
-    if (_elements.isNotEmpty && comments.linesBeforeNextToken > 1) {
+    // Preserve one blank line between the last element and a trailing comment.
+    var wroteBlank = false;
+    if (!hasElementAfter &&
+        _elements.isNotEmpty &&
+        comments.linesBeforeNextToken > 1) {
       _blanksAfter.add(_elements.last);
+      wroteBlank = true;
     }
 
     // Comments that are neither hanging nor leading are treated like their own
@@ -301,10 +305,19 @@ final class DelimitedListBuilder {
       var comment = separateComments[i];
       if (separateComments.linesBefore(i) > 1 && _elements.isNotEmpty) {
         _blanksAfter.add(_elements.last);
+        wroteBlank = true;
       }
 
       var commentPiece = _visitor.pieces.commentPiece(comment);
       _elements.add(ListElementPiece.comment(commentPiece));
+    }
+
+    // Preserve a blank line after the last comment before the next element,
+    // unless we've already written one before one of the comments.
+    if (!wroteBlank &&
+        _elements.isNotEmpty &&
+        comments.linesBeforeNextToken > 1) {
+      _blanksAfter.add(_elements.last);
     }
 
     // Leading comments are written before the next element.

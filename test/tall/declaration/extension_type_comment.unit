@@ -141,3 +141,26 @@ extension type I(int i) // Comment.
 <<< 3.13
 extension type I(int i) // Comment.
 ;
+>>> Ensure blank line between declarations with comment between.
+extension type C(int i) {}
+// comment
+extension type D(int i) {}
+<<< 3.7
+extension type C(int i) {}
+// comment
+extension type D(int i) {}
+<<< 3.13
+extension type C(int i) {}
+
+// comment
+extension type D(int i) {}
+>>> Allow line after comment as the blank line.
+extension type C(int i) {}
+// comment
+
+extension type D(int i) {}
+<<< 3.7
+extension type C(int i) {}
+// comment
+
+extension type D(int i) {}

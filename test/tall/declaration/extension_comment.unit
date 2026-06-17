@@ -1,0 +1,20 @@
+40 columns                              |
+>>> Ensure blank line between declarations with comment between.
+extension on int {}
+// comment
+extension on bool {}
+<<< 3.7
+extension on int {}
+
+// comment
+extension on bool {}
+>>> Allow line after comment as the blank line.
+extension on int {}
+// comment
+
+extension on bool {}
+<<< 3.7
+extension on int {}
+// comment
+
+extension on bool {}

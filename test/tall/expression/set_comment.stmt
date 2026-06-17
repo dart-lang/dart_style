@@ -20,3 +20,23 @@ var set = {/* comment */};
 ({
   element, // comment
 });
+>>> Don't move blank line around comment.
+({
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
+});
+<<< 3.7
+({
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
+});

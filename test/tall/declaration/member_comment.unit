@@ -52,3 +52,17 @@ class C {
 class C {
   static /* c */ int method() {}
 }
+>>> Don't move blank line around comment.
+class C {
+  m() {}
+  // comment
+
+  n() {}
+}
+<<< 3.7
+class C {
+  m() {}
+  // comment
+
+  n() {}
+}

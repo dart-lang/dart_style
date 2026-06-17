@@ -100,26 +100,22 @@ final class SequenceBuilder {
   /// Visits [node] and adds the resulting [Piece] to this sequence, handling
   /// any comments or blank lines that appear before it.
   ///
-  /// If [blankBefore] is `true`, then writes a blank line before [node], but
-  /// after any comments that may precede [node].
-  void visit(
-    AstNode node, {
-    Indent? indent,
-    bool blankBefore = false,
-    bool allowBlankAfter = true,
-  }) {
+  /// If [blankBefore] is `true`, then ensures there is a blank line before
+  /// [token]. If there any blank lines around the comments, then the first one
+  /// will be preserved. Otherwise, writes a blank line before the first
+  /// comment.
+  void visit(AstNode node, {Indent? indent, bool blankBefore = false}) {
+    var token = node.firstNonCommentToken;
+
     var wroteBlank = addCommentsBefore(
-      node.firstNonCommentToken,
+      token,
       indent: indent,
+      blankBefore: blankBefore,
     );
 
     if (blankBefore && !wroteBlank) addBlank();
 
-    add(
-      _visitor.nodePiece(node),
-      indent: indent,
-      allowBlankAfter: allowBlankAfter,
-    );
+    add(_visitor.nodePiece(node), indent: indent);
   }
 
   /// Appends a blank line before the next piece in the sequence.
@@ -137,13 +133,30 @@ final class SequenceBuilder {
   /// Comments between sequence elements get special handling where comments
   /// on their own line become standalone sequence elements.
   ///
+  /// If [blankBefore] is `true`, then ensures there is a blank line before
+  /// [token]. If there any blank lines around the comments, then the first one
+  /// will be preserved. Otherwise, writes a blank line before the first
+  /// comment.
+  ///
   /// Returns `true` if processing the comments ended up writing any blank
   /// lines.
-  bool addCommentsBefore(Token token, {Indent? indent}) {
+  bool addCommentsBefore(
+    Token token, {
+    Indent? indent,
+    bool blankBefore = false,
+  }) {
     indent ??= Indent.none;
 
     var wroteBlank = false;
     var comments = _visitor.comments.takeCommentsBefore(token);
+
+    // Default to putting the blank line before all comments unless there are
+    // blank lines inside or after them.
+    if (blankBefore && !comments.containsBlankLine) {
+      addBlank();
+      wroteBlank = true;
+    }
+
     for (var i = 0; i < comments.length; i++) {
       var comment = _visitor.pieces.commentPiece(comments[i]);
 

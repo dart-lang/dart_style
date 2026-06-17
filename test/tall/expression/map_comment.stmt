@@ -78,3 +78,23 @@ value});
   key: // comment
       value,
 });
+>>> Don't move blank line around comment.
+({
+  a: first,
+  // comment
+
+  b: second,
+
+  // comment
+  c: third,
+});
+<<< 3.7
+({
+  a: first,
+  // comment
+
+  b: second,
+
+  // comment
+  c: third,
+});

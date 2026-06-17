@@ -138,10 +138,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           _ => false,
         };
 
-        // Add a blank line before and after types with bodies.
-        if (needsBlank || addBlankLines) sequence.addBlank();
-
-        sequence.visit(declaration);
+        sequence.visit(declaration, blankBefore: needsBlank || addBlankLines);
 
         // Add a blank line after type or function declarations with bodies.
         needsBlank = addBlankLines || declaration.hasNonEmptyBody;
