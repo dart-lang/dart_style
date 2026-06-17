@@ -222,9 +222,7 @@ mixin PieceFactory {
 
     var needsBlank = false;
     for (var node in contents) {
-      if (needsBlank) sequence.addBlank();
-
-      sequence.visit(node);
+      sequence.visit(node, blankBefore: needsBlank);
 
       // If the node has a non-empty braced body, then require a blank line
       // between it and the next node.

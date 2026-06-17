@@ -206,3 +206,22 @@ enum E {
   // 2
   // 3
 }
+>>> Ensure blank line between declarations with comment between.
+enum C { a }
+// comment
+enum D { b }
+<<< 3.7
+enum C { a }
+
+// comment
+enum D { b }
+>>> Allow line after comment as the blank line.
+enum C { a }
+// comment
+
+enum D { b}
+<<< 3.7
+enum C { a }
+// comment
+
+enum D { b }

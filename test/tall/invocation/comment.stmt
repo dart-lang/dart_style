@@ -26,6 +26,19 @@ function(
 line
 comment */
 );
+>>> Don't force blank lines around comments.
+function(argument,
+  // comment
+another,
+// comment
+);
+<<< 3.7
+function(
+  argument,
+  // comment
+  another,
+  // comment
+);
 >>> Remove extra leading and all trailing empty lines.
 function(argument,
 
@@ -70,6 +83,20 @@ function(
   // five
   another,
 );
+>>> Preserve one blank line before trailing comment.
+function(argument,
+
+
+// comment
+
+
+);
+<<< 3.7
+function(
+  argument,
+
+  // comment
+);
 >>> Don't preserve newlines in argument lists with line comment.
 ### For collection literals, a line comment is a signal to preserve the user's
 ### original newlines. This test is just to validate that we *don't* do that
@@ -87,4 +114,24 @@ function(
   fourth,
   fifth,
   sixth,
+);
+>>> Don't move blank line around comment.
+function(
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
+);
+<<< 3.7
+function(
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
 );

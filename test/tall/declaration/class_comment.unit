@@ -105,3 +105,22 @@ class C {
   }
   // comment
 }
+>>> Ensure blank line between declarations with comment between.
+class C {}
+// comment
+class D {}
+<<< 3.7
+class C {}
+
+// comment
+class D {}
+>>> Allow line after comment as the blank line.
+class C {}
+// comment
+
+class D {}
+<<< 3.7
+class C {}
+// comment
+
+class D {}

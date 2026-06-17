@@ -275,6 +275,16 @@ final class CommentSequence extends ListBase<SourceComment> {
   /// token and the preceding one.
   int get linesBeforeNextToken => _linesBetween.last;
 
+  /// Whether there are any blank lines before or after any of the comments in
+  /// this sequence in the original source code.
+  bool get containsBlankLine {
+    for (var i = 0; i < length; i++) {
+      if (linesBefore(i) > 1) return true;
+    }
+
+    return linesBeforeNextToken > 1;
+  }
+
   /// The number of comments in the sequence.
   @override
   int get length => _comments.length;

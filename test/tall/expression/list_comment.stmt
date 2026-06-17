@@ -166,3 +166,23 @@ var x = [
   1, // Comment 1.
   // Comment 2.
 ];
+>>> Don't move blank line around comment.
+var x = [
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
+];
+<<< 3.7
+var x = [
+  first,
+  // comment
+
+  second,
+
+  // comment
+  third,
+];
