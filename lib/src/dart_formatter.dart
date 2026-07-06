@@ -4,11 +4,13 @@
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/error.dart';
+import 'package:analyzer/source/line_info.dart';
 import 'package:analyzer/source/source.dart';
 import 'package:analyzer/source/timestamped_data.dart';
 import 'package:path/path.dart' as p;
@@ -148,40 +150,16 @@ final class DartFormatter {
       );
     }
 
-    var featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: languageVersion,
-      flags: experimentFlags,
-    );
-
     // Parse it.
     var parseResult = parseString(
       content: text,
-      featureSet: featureSet,
+      featureSet: FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: languageVersion,
+        flags: experimentFlags,
+      ),
       path: source.uri,
       throwIfDiagnostics: false,
     );
-
-    // Infer the line ending if not given one. Do it here since now we know
-    // where the lines start.
-    if (lineEnding == null) {
-      // If the first newline is "\r\n", use that. Otherwise, use "\n".
-      var lineStarts = parseResult.lineInfo.lineStarts;
-      if (lineStarts.length > 1 &&
-          lineStarts[1] >= 2 &&
-          text[lineStarts[1] - 2] == '\r') {
-        lineEnding = '\r\n';
-      } else {
-        lineEnding = '\n';
-      }
-    }
-
-    // Throw if there are syntactic errors.
-    var syntacticErrors = parseResult.errors.where((error) {
-      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
-    }).toList();
-    if (syntacticErrors.isNotEmpty) {
-      throw FormatterException(syntacticErrors);
-    }
 
     AstNode node;
     if (source.isCompilationUnit) {
@@ -209,55 +187,106 @@ final class DartFormatter {
       }
     }
 
-    // Format it.
-    var lineInfo = parseResult.lineInfo;
+    _throwErrors(parseResult.errors);
 
+    var output = _runFormatter(
+      unitSourceCode,
+      parseResult.lineInfo,
+      parseResult.unit,
+      node,
+    );
+
+    _sanityCheck(source.text, output.text);
+
+    return output;
+  }
+
+  SourceCode formatUnit(ParsedUnitResult parsedUnit) {
+    _throwErrors(parsedUnit.diagnostics);
+    var output = _runFormatter(
+      SourceCode(parsedUnit.content),
+      parsedUnit.lineInfo,
+      parsedUnit.unit,
+      parsedUnit.unit,
+    );
+    _sanityCheck(parsedUnit.content, output.text);
+    return output;
+  }
+
+  // Throw if there are syntactic errors.
+  void _throwErrors(List<Diagnostic> diagnostics) {
+    var syntacticErrors = diagnostics.where((error) {
+      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
+    }).toList();
+    if (syntacticErrors.isNotEmpty) {
+      throw FormatterException(syntacticErrors);
+    }
+  }
+
+  SourceCode _runFormatter(
+    SourceCode input,
+    LineInfo lineInfo,
+    CompilationUnit unit,
+    AstNode node,
+  ) {
     // If the code has an `@dart=` comment, use that to determine the style.
     var sourceLanguageVersion = languageVersion;
-    if (parseResult.unit.languageVersionToken case var token?) {
+    if (unit.languageVersionToken case var token?) {
       sourceLanguageVersion = Version(token.major, token.minor, 0);
     }
 
-    // Use language version to determine what formatting style to apply.
-    SourceCode output;
-    if (sourceLanguageVersion > latestShortStyleLanguageVersion) {
-      // Look for a page width comment before the code.
-      int? pageWidthFromComment;
-      for (
-        Token? comment = node.beginToken.precedingComments;
-        comment != null;
-        comment = comment.next
-      ) {
-        if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
-          // If integer parsing fails for some reason, the returned `null`
-          // means we correctly ignore the comment.
-          pageWidthFromComment = int.tryParse(match[1]!);
-          break;
-        }
+    // Infer the line ending if not given one. Do it here since now we know
+    // where the lines start.
+    if (lineEnding == null) {
+      // If the first newline is "\r\n", use that. Otherwise, use "\n".
+      var lineStarts = lineInfo.lineStarts;
+      if (lineStarts.length > 1 &&
+          lineStarts[1] >= 2 &&
+          input.text[lineStarts[1] - 2] == '\r') {
+        lineEnding = '\r\n';
+      } else {
+        lineEnding = '\n';
       }
-
-      var visitor = AstNodeVisitor(
-        FormattingStyle(
-          this,
-          languageVersion: sourceLanguageVersion,
-          pageWidth: pageWidthFromComment,
-        ),
-        lineInfo,
-        unitSourceCode,
-      );
-      output = visitor.run(unitSourceCode, node);
-    } else {
-      // Use the old style.
-      var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node);
     }
 
-    // Sanity check that only whitespace was changed if that's all we expect.
-    if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw UnexpectedOutputException(source.text, output.text);
+    // Use the old formatter if on an old enough language version.
+    if (sourceLanguageVersion <= latestShortStyleLanguageVersion) {
+      return SourceVisitor(this, lineInfo, input).run(node);
     }
 
-    return output;
+    // Look for a page width comment before the code.
+    int? pageWidthFromComment;
+    for (
+      Token? comment = node.beginToken.precedingComments;
+      comment != null;
+      comment = comment.next
+    ) {
+      if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
+        // If integer parsing fails for some reason, the returned `null`
+        // means we correctly ignore the comment.
+        pageWidthFromComment = int.tryParse(match[1]!);
+        break;
+      }
+    }
+
+    var visitor = AstNodeVisitor(
+      FormattingStyle(
+        this,
+        languageVersion: sourceLanguageVersion,
+        pageWidth: pageWidthFromComment,
+      ),
+      lineInfo,
+      input,
+    );
+
+    return visitor.run(input, node);
+  }
+
+  /// Sanity check that only whitespace was changed if that's all we expect.
+  void _sanityCheck(String input, String output) {
+    if (!string_compare.equalIgnoringWhitespace(input, output)) {
+      throw UnexpectedOutputException(input, output);
+    }
   }
 }
 

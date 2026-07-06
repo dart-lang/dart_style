@@ -54,6 +54,8 @@ final class FormatterOptions {
   /// See dart.dev/go/experiments for details.
   final List<String> experimentFlags;
 
+  final bool useAnalyzerApi;
+
   FormatterOptions({
     this.languageVersion,
     this.indent = 0,
@@ -65,12 +67,13 @@ final class FormatterOptions {
     this.summary = Summary.none,
     this.setExitIfChanged = false,
     List<String>? experimentFlags,
+    this.useAnalyzerApi = false,
   }) : experimentFlags = [...?experimentFlags];
 
   /// Called when [file] is about to be formatted.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  void beforeFile(File? file, String label) {
+  void beforeFile(String? file, String label) {
     summary.beforeFile(file, label);
   }
 
@@ -81,7 +84,8 @@ final class FormatterOptions {
   ///
   /// If stdin is being formatted, then [file] is `null`.
   void afterFile(
-    File? file,
+    String? file,
+    DartFormatter formatter,
     String displayPath,
     SourceCode result, {
     required bool changed,

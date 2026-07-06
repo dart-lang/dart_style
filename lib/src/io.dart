@@ -7,6 +7,7 @@ import 'dart:io';
 
 import 'package:path/path.dart' as p;
 
+import 'analyzer.dart' as analyzer;
 import 'cli/formatter_options.dart';
 import 'config_cache.dart';
 import 'dart_formatter.dart';
@@ -80,6 +81,7 @@ Future<void> formatStdin(
       var output = formatter.formatSource(source);
       options.afterFile(
         null,
+        formatter,
         name,
         output,
         changed: source.text != output.text,
@@ -105,6 +107,11 @@ $stack''');
 
 /// Formats all of the files and directories given by [paths].
 Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
+  if (options.useAnalyzerApi) {
+    print('### Using analyzer API ###');
+    return analyzer.formatPaths(options, paths);
+  }
+
   // If the user didn't specify a language version, then look for surrounding
   // package configs so we know what language versions to use for the files.
   var cache = ConfigCache();
@@ -208,10 +215,11 @@ Future<bool> _processFile(
 
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);
-    options.beforeFile(file, displayPath);
+    options.beforeFile(file.path, displayPath);
     var output = formatter.formatSource(source);
     options.afterFile(
-      file,
+      file.path,
+      formatter,
       displayPath,
       output,
       changed: source.text != output.text,

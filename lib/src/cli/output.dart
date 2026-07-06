@@ -24,11 +24,11 @@ enum Output {
   /// Write the file to disc.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  bool writeFile(File? file, String displayPath, SourceCode result) {
+  bool writeFile(String? file, String displayPath, SourceCode result) {
     if (this != Output.write) return false;
 
     try {
-      file!.writeAsStringSync(result.text);
+      File(file!).writeAsStringSync(result.text);
     } on FileSystemException catch (err) {
       stderr.writeln(
         'Could not overwrite $displayPath: '

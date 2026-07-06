@@ -1,8 +1,6 @@
 // Copyright (c) 2020, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import 'dart:io';
-
 import '../profile.dart';
 import '../source_code.dart';
 import 'formatter_options.dart';
@@ -25,7 +23,7 @@ final class Summary {
   /// Called when [file] is about to be formatted.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  void beforeFile(File? file, String displayPath) {}
+  void beforeFile(String? file, String displayPath) {}
 
   /// Describe the processed file at [path] whose formatted result is [output].
   ///
@@ -35,7 +33,7 @@ final class Summary {
   /// If stdin is being formatted, then [file] is `null`.
   void afterFile(
     FormatterOptions options,
-    File? file,
+    String? file,
     String displayPath,
     SourceCode output, {
     required bool changed,
@@ -63,7 +61,7 @@ final class _LineSummary extends Summary {
   @override
   void afterFile(
     FormatterOptions options,
-    File? file,
+    String? file,
     String displayPath,
     SourceCode output, {
     required bool changed,
@@ -125,7 +123,7 @@ final class _ProfileSummary implements Summary {
 
   /// Called when [file] is about to be formatted.
   @override
-  void beforeFile(File? file, String displayPath) {
+  void beforeFile(String? file, String displayPath) {
     _ongoing[displayPath] = DateTime.now();
   }
 
@@ -136,7 +134,7 @@ final class _ProfileSummary implements Summary {
   @override
   void afterFile(
     FormatterOptions options,
-    File? file,
+    String? file,
     String displayPath,
     SourceCode output, {
     required bool changed,
