@@ -24,27 +24,28 @@ Future<void> main() async {
 
   var version = readPubspecVersion();
 
-  // Remove "-wip" from the version if present.
-  switch (version.preRelease) {
-    case []:
-      // Still update the version in case the formatter_options.dart is out of
-      // sync with the pubspec.
-      updateVersion(version);
-      print('No change needed since version is already $version.');
-    case ['wip']:
-      version = Version(version.major, version.minor, version.patch);
-      updateVersion(version);
-      print('Updated version to $version.');
-    default:
-      print('Unexpected pre-release version $version. Don\'t ship!');
-      exit(1);
+  // Must be a "-wip" version.
+  if (version.preRelease.join('.') != 'wip') {
+    print(
+      'Can only ship from a "-wip" version, but was $version. Don\'t ship!',
+    );
+    exit(1);
   }
 
-  // Check the CHANGELOG.
-  var changelog = File('CHANGELOG.md').readAsLinesSync();
-  if (!changelog.contains('## $version')) {
+  var shippedVersion = Version(version.major, version.minor, version.patch);
+  updateVersion(shippedVersion);
+  print('Updated version to $version.');
+
+  // Check and update the CHANGELOG.
+  var changelogFile = File('CHANGELOG.md');
+  var changelog = changelogFile.readAsStringSync();
+  if (!changelog.contains('## $version\n')) {
     print('Missing entry in CHANGELOG.md for $version. Don\'t ship!');
     exit(1);
+  } else {
+    changelogFile.writeAsStringSync(
+      changelog.replaceAll('## $version\n', '## $shippedVersion\n'),
+    );
   }
 
   print('        _    _');
