@@ -1,4 +1,4 @@
-## 3.1.10-wip
+## 3.1.10
 
 * Show the supported language versions in `dart format --version --verbose`.
 
@@ -25,7 +25,7 @@ formatted code:
 The following changes only apply when formatting code at language version 3.13
 or higher:
 
-* Fix a bug in an eager splitting optimization that would led the formatter to
+* Fix a bug in an eager splitting optimization that would lead the formatter to
   prefer less desirable solutions (#1847).
 
   Typically, the code affected by this bug is a call chain that contains an
@@ -166,7 +166,8 @@ or higher:
 
 [sections]: https://dart.dev/effective-dart/style#ordering
 
-* In if-case pieces, split the guard if the pattern block-splits (#1596).
+* In if-case statements and elements, split the guard if the pattern
+  block-splits (#1596).
 
   This tends to lead to code where the pattern is kept on one line and the
   guard splits:
