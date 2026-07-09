@@ -65,15 +65,9 @@ Future<void> _run(
   String? message,
 ]) async {
   if (message != null) print(message);
-  var process = await Process.start(executable, arguments);
 
-  // Pipe output so the user can see progress.
-  var stdoutFuture = stdout.addStream(process.stdout);
-  var stderrFuture = stderr.addStream(process.stderr);
-
+  var process = await Process.start(executable, arguments, mode: .inheritStdio);
   var exitCode = await process.exitCode;
-  await stdoutFuture;
-  await stderrFuture;
 
   if (exitCode != 0) exit(exitCode);
   print('');
