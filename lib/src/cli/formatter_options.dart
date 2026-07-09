@@ -12,8 +12,8 @@ import 'output.dart';
 import 'show.dart';
 import 'summary.dart';
 
-// Note: The following line of code is modified by tool/grind.dart.
-const dartStyleVersion = '3.1.10';
+// Do not edit directly. Use tool/bump_version.dart.
+const dartStyleVersion = '3.1.11';
 
 /// Global options parsed from the command line that affect how the formatter
 /// produces and uses its outputs.
