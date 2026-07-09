@@ -4,8 +4,9 @@
 
 import 'dart:io';
 
-import 'package:dart_style/src/tool_utils.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import 'src/utils.dart';
 
 void main(List<String> args) {
   if (args.length != 1 ||

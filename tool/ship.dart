@@ -4,8 +4,9 @@
 
 import 'dart:io';
 
-import 'package:dart_style/src/tool_utils.dart';
 import 'package:pub_semver/pub_semver.dart';
+
+import 'src/utils.dart';
 
 /// Runs the release process for dart_style.
 ///
