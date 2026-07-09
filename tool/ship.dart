@@ -35,7 +35,6 @@ Future<void> main() async {
 
   var shippedVersion = Version(version.major, version.minor, version.patch);
   updateVersion(shippedVersion);
-  print('Updated version to $version.');
 
   // Check and update the CHANGELOG.
   var changelogFile = File('CHANGELOG.md');

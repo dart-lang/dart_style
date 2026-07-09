@@ -1,4 +1,4 @@
-## 3.1.11-wip
+## 3.1.11
 
 ### Internal changes
 
