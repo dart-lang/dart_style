@@ -6,6 +6,8 @@
 
 ## 3.1.10
 
+* Allow analyzer version 14.
+
 * Show the supported language versions in `dart format --version --verbose`.
 
 ### Bug fixes
