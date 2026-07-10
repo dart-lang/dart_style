@@ -1,6 +1,6 @@
 name: dart_style
 # Do not edit directly. Use tool/bump_version.dart.
-version: 3.1.11
+version: 3.1.12
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
@@ -12,7 +12,7 @@ dependencies:
   analyzer: '>=13.1.0 <15.0.0'
   args: ^2.5.0
   collection: ^1.19.0
-  package_config: ^2.1.0
+  package_config: '>=2.1.0 <4.0.0'
   path: ^1.9.0
   pub_semver: ^2.1.4
   source_span: ^1.8.0
