@@ -13,7 +13,7 @@ import 'show.dart';
 import 'summary.dart';
 
 // Do not edit directly. Use tool/bump_version.dart.
-const dartStyleVersion = '3.1.11';
+const dartStyleVersion = '3.1.12';
 
 /// Global options parsed from the command line that affect how the formatter
 /// produces and uses its outputs.

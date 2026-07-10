@@ -1,3 +1,9 @@
+## 3.1.12
+
+### Internal changes
+
+* Allow package_config version 3 (#1876).
+
 ## 3.1.11
 
 ### Internal changes
