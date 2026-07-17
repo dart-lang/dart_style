@@ -1,3 +1,21 @@
+## 3.1.13-wip
+
+### API changes
+
+* `DartFormatter.lineEnding` is no longer mutable. If no line ending is
+  provided, then a line ending is inferred from the source as usual, but the
+  result is not stored back in the `lineEnding` field. Instead, accessing
+  `lineEnding` always returns the value you passed in the constructor.
+
+  This means you can use the same `DartFormatter` instance to format code with
+  different line endings and the first `format()` call won't affect the results
+  of later calls (#1337).
+
+  The setter for `lineEnding` is still available but is marked deprecated and
+  does nothing. This is technically a **breaking change**, but I believe no code
+  in the wild actually reads the `lineEnding` field so it is harmless. In a
+  future major version release, the setter will be removed.
+
 ## 3.1.12
 
 ### Internal changes
