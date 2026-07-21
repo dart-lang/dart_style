@@ -10,6 +10,7 @@ import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:args/args.dart';
 import 'package:dart_style/dart_style.dart';
+import 'package:dart_style/src/dart_formatter.dart';
 import 'package:dart_style/src/debug.dart' as debug;
 import 'package:dart_style/src/front_end/ast_node_visitor.dart';
 import 'package:dart_style/src/front_end/formatting_style.dart';
@@ -163,6 +164,10 @@ double _runTrial(
   SourceCode source,
   String expected,
 ) {
+  var lineEnding =
+      formatter.lineEnding ??
+      inferLineEnding(parseResult.lineInfo, source.text);
+
   var stopwatch = Stopwatch()..start();
 
   // For a single benchmark, format the source multiple times.
@@ -170,10 +175,10 @@ double _runTrial(
   for (var j = 0; j < _formatsPerTrial; j++) {
     if (_isShort) {
       var visitor = SourceVisitor(formatter, parseResult.lineInfo, source);
-      result = visitor.run(parseResult.unit).text;
+      result = visitor.run(parseResult.unit, lineEnding).text;
     } else {
       var visitor = AstNodeVisitor(
-        FormattingStyle(formatter),
+        FormattingStyle(formatter, lineEnding: lineEnding),
         parseResult.lineInfo,
         source,
       );

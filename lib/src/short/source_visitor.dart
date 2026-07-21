@@ -103,7 +103,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
   ///
   /// This is the only method that should be called externally. Everything else
   /// is effectively private.
-  SourceCode run(AstNode node) {
+  SourceCode run(AstNode node, String lineEnding) {
     Profile.begin('SourceVisitor create Chunks');
 
     visit(node);
@@ -114,7 +114,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
     Profile.end('SourceVisitor create Chunks');
 
     // Finish writing and return the complete result.
-    return builder.end();
+    return builder.end(lineEnding);
   }
 
   @override

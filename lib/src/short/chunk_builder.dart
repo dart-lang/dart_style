@@ -567,7 +567,7 @@ final class ChunkBuilder {
 
   /// Finishes writing and returns a [SourceCode] containing the final output
   /// and updated selection, if any.
-  SourceCode end() {
+  SourceCode end(String lineEnding) {
     assert(_rules.isEmpty);
 
     _divideChunks();
@@ -580,7 +580,7 @@ final class ChunkBuilder {
 
     Profile.begin('ChunkBuilder run line splitter');
 
-    var writer = LineWriter(_formatter, _chunks);
+    var writer = LineWriter(_formatter, lineEnding, _chunks);
     var result = writer.writeLines(
       isCompilationUnit: _source.isCompilationUnit,
     );

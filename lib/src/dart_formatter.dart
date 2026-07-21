@@ -9,6 +9,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/error.dart';
+import 'package:analyzer/source/line_info.dart' show LineInfo;
 import 'package:analyzer/source/source.dart';
 import 'package:analyzer/source/timestamped_data.dart';
 import 'package:path/path.dart' as p;
@@ -60,7 +61,14 @@ final class DartFormatter {
   /// If not explicitly provided, this is inferred from the source text. If the
   /// first newline is `\r\n` (Windows), it will use that. Otherwise, it uses
   /// Unix-style line endings (`\n`).
-  String? lineEnding;
+  String? get lineEnding => _lineEnding;
+  final String? _lineEnding;
+
+  /// Setting after creating a [DartFormatter] is no longer supported and does
+  /// nothing.
+  // TODO(rnystrom): Remove this when we're ready to move to 4.0.0.
+  @Deprecated('To change the line ending, create a new DartFormatter.')
+  set lineEnding(String? value) {}
 
   /// The number of characters allowed in a single line.
   final int pageWidth;
@@ -83,19 +91,20 @@ final class DartFormatter {
   /// Creates a new formatter for Dart code at [languageVersion].
   ///
   /// If [lineEnding] is given, that will be used for any newlines in the
-  /// output. Otherwise, the line separator will be inferred from the line
-  /// endings in the source file.
+  /// output. Otherwise, the line separator is inferred from the first line
+  /// ending in the source code on each format.
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
   DartFormatter({
     required this.languageVersion,
-    this.lineEnding,
+    String? lineEnding,
     int? pageWidth,
     int? indent,
     TrailingCommas? trailingCommas,
     List<String>? experimentFlags,
-  }) : pageWidth = pageWidth ?? defaultPageWidth,
+  }) : _lineEnding = lineEnding,
+       pageWidth = pageWidth ?? defaultPageWidth,
        indent = indent ?? 0,
        trailingCommas = trailingCommas ?? TrailingCommas.automate,
        experimentFlags = [...?experimentFlags];
@@ -163,17 +172,8 @@ final class DartFormatter {
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.
-    if (lineEnding == null) {
-      // If the first newline is "\r\n", use that. Otherwise, use "\n".
-      var lineStarts = parseResult.lineInfo.lineStarts;
-      if (lineStarts.length > 1 &&
-          lineStarts[1] >= 2 &&
-          text[lineStarts[1] - 2] == '\r') {
-        lineEnding = '\r\n';
-      } else {
-        lineEnding = '\n';
-      }
-    }
+    var inferredLineEnding =
+        _lineEnding ?? inferLineEnding(parseResult.lineInfo, text);
 
     // Throw if there are syntactic errors.
     var syntacticErrors = parseResult.errors.where((error) {
@@ -239,6 +239,7 @@ final class DartFormatter {
       var visitor = AstNodeVisitor(
         FormattingStyle(
           this,
+          lineEnding: inferredLineEnding,
           languageVersion: sourceLanguageVersion,
           pageWidth: pageWidthFromComment,
         ),
@@ -249,7 +250,7 @@ final class DartFormatter {
     } else {
       // Use the old style.
       var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node);
+      output = visitor.run(node, inferredLineEnding);
     }
 
     // Sanity check that only whitespace was changed if that's all we expect.
@@ -259,6 +260,19 @@ final class DartFormatter {
 
     return output;
   }
+}
+
+/// Infers the line endings in [source] from the ending of the first newline.
+String inferLineEnding(LineInfo lineInfo, String source) {
+  // If the first newline is "\r\n", use that. Otherwise, use "\n".
+  var lineStarts = lineInfo.lineStarts;
+  if (lineStarts.length > 1 &&
+      lineStarts[1] >= 2 &&
+      source[lineStarts[1] - 2] == '\r') {
+    return '\r\n';
+  }
+
+  return '\n';
 }
 
 /// Configuration for how trailing commas should be handled by the formatter.

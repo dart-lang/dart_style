@@ -309,6 +309,25 @@ var variable =
         ),
       );
     });
+
+    test('DartFormat.lineEnding getter is not mutated by inferred ending', () {
+      var formatter = makeFormatter();
+      expect(formatter.lineEnding, isNull);
+
+      formatter.format('var\r\ni\n=\n1;\n');
+      expect(formatter.lineEnding, isNull);
+
+      formatter.format('var\ni\n=\n1;\n');
+      expect(formatter.lineEnding, isNull);
+    });
+
+    test('DartFormat.lineEnding setter does nothing', () {
+      var formatter = makeFormatter(lineEnding: 'before');
+      expect(formatter.lineEnding, 'before');
+
+      formatter.lineEnding = 'after';
+      expect(formatter.lineEnding, 'before');
+    });
   });
 
   test('throws an UnexpectedOutputException on non-whitespace changes', () {
