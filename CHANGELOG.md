@@ -8,13 +8,17 @@
   `lineEnding` always returns the value you passed in the constructor.
 
   This means you can use the same `DartFormatter` instance to format code with
-  different line endings and the first `format()` call won't affect the results
-  of later calls (#1337).
+  different line endings by not providing an explicit line ending. Each call
+  to `format()` will infer a separate line ending for only that call's code
+  (#1337).
 
   The setter for `lineEnding` is still available but is marked deprecated and
   does nothing. This is technically a **breaking change**, but I believe no code
-  in the wild actually reads the `lineEnding` field so it is harmless. In a
-  future major version release, the setter will be removed.
+  in the wild is affected by it. To be affected by the setter doing nothing,
+  code would have to call the setter and then call `format()`, or call the
+  `lineEnding` getter. I haven't found any code on pub that sets or gets
+  `lineEnding`, so I suspect this change is harmless. In a future major version
+  release, the setter will be removed.
 
 ## 3.1.12
 
