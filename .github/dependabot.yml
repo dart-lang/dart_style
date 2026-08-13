@@ -7,6 +7,8 @@ updates:
     directory: /
     schedule:
       interval: monthly
+    cooldown:
+      default-days: 7
     labels:
       - autosubmit
       - infrastructure
@@ -21,6 +23,8 @@ updates:
     directory: "/"
     schedule:
       interval: daily
+    cooldown:
+      default-days: 7
     labels:
       - infrastructure
     versioning-strategy: increase-if-necessary
