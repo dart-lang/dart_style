@@ -83,7 +83,23 @@ enum const C(int x) { a, b, c }
 enum const C(int x) {
   a,
   b,
-  c
+  c,
+}
+>>> Preserve trailing comma after the last value.
+enum const C(int x) { a, b, c, }
+<<< 3.13
+enum const C(int x) {
+  a,
+  b,
+  c,
+}
+>>> Remove semicolon after the last value if there are no members.
+enum const C(int x) { a, b, c; }
+<<< 3.13
+enum const C(int x) {
+  a,
+  b,
+  c,
 }
 >>> With optional parameters.
 class Foo(int a, int b, [int? c, int? d]);
