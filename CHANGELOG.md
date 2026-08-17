@@ -1,5 +1,12 @@
 ## 3.1.13-wip
 
+### Bug fixes
+
+* Add a trailing comma after the last value of an enum with a primary
+  constructor and no members. Previously, the trailing comma was dropped, which
+  was inconsistent with how enums without primary constructors are formatted
+  (#1888).
+
 ### API changes
 
 * `DartFormatter.lineEnding` is no longer mutable. If no line ending is
