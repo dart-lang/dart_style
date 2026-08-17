@@ -94,9 +94,11 @@ final class TypeBuilder {
       // So always force the body to split if there is a primary constructor.
       switch (node.body) {
         case BlockEnumBody body:
-          if (body.members.isEmpty &&
-              node.namePart is! PrimaryConstructorDeclaration) {
-            return _buildNormalBlockEnumBody(body);
+          if (body.members.isEmpty) {
+            return _buildNormalBlockEnumBody(
+              body,
+              forceSplit: node.namePart is PrimaryConstructorDeclaration,
+            );
           } else {
             return _buildEnhancedBlockEnumBody(body);
           }
@@ -211,8 +213,11 @@ final class TypeBuilder {
   /// members.
   ///
   /// Formats the constants like a list. This keeps the enum declaration on one
-  /// line if it fits.
-  Piece _buildNormalBlockEnumBody(BlockEnumBody body) {
+  /// line if it fits, unless [forceSplit] is `true`.
+  Piece _buildNormalBlockEnumBody(
+    BlockEnumBody body, {
+    bool forceSplit = false,
+  }) {
     var builder = DelimitedListBuilder(
       _visitor,
       const ListStyle(spaceWhenUnsplit: true),
@@ -222,9 +227,11 @@ final class TypeBuilder {
     body.constants.forEach(builder.visit);
     builder.rightBracket(semicolon: body.semicolon, body.rightBracket);
     return builder.build(
-      forceSplit: _visitor.style.preserveTrailingCommaBefore(
-        body.semicolon ?? body.rightBracket,
-      ),
+      forceSplit:
+          forceSplit ||
+          _visitor.style.preserveTrailingCommaBefore(
+            body.semicolon ?? body.rightBracket,
+          ),
     );
   }
 
