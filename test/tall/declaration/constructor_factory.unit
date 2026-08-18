@@ -1,5 +1,4 @@
 40 columns                              |
-(experiment primary-constructors)
 ### Tests for using `factory` to define a constructor.
 >>> Factory.
 class C {

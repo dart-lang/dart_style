@@ -1,5 +1,4 @@
 40 columns                              |
-(experiment primary-constructors)
 ### Tests for primary constructors in the class header.
 >>> Unsplit.
 class  const  C  <  T  >  .  named  (  int  x  ,  int  y  )  {  }
@@ -19,11 +18,11 @@ class B(int x) with M1, M2;
 class C(int x) implements I1, I2;
 >>> Don't split after const.
 class const ExtremelyLongClassNameHere();
-<<< 3.7
+<<< 3.13
 class const ExtremelyLongClassNameHere();
 >>> Don't split on class name.
 class LongClassName.longConstructorName();
-<<< 3.7
+<<< 3.13
 class LongClassName.longConstructorName();
 >>> With everything split.
 class const C<T1 extends TypeBound, T2 extends TypeBound>.named

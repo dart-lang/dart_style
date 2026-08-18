@@ -79,15 +79,15 @@ var y = 2;
 mixin M2 {}
 
 var z = 3;
->>> (experiment primary-constructors) Empty body with semicolon.
+>>> Empty body with semicolon.
 mixin A;
-<<< 3.7
+<<< 3.13
 mixin A;
->>> (experiment primary-constructors) Empty body with semicolon and on clause.
+>>> Empty body with semicolon and on clause.
 mixin B on C;
-<<< 3.7
+<<< 3.13
 mixin B on C;
->>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
+>>> Don't force blank lines around `;` bodies.
 var x = 1;
 mixin A;
 mixin B on C;
@@ -97,13 +97,13 @@ var x = 1;
 mixin A;
 mixin B on C;
 var y = 2;
->>> (experiment primary-constructors) Modifiers with empty body.
+>>> Modifiers with empty body.
 mixin  class  M1  ;
 base  mixin  class  M2  ;
 abstract  mixin  class  M3  ;
 abstract  base  mixin  class  M4  ;
 base  mixin  M5  ;
-<<< 3.7
+<<< 3.13
 mixin class M1;
 base mixin class M2;
 abstract mixin class M3;
