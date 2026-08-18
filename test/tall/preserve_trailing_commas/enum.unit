@@ -69,3 +69,38 @@ enum Args {
     named: 1,
   ),
 }
+>>> Splits even without trailing comma because of the primary constructor.
+enum E() {e,f,g}
+<<< 3.13
+enum E() {
+  e,
+  f,
+  g,
+}
+>>> Preserve trailing comma but remove semicolon if primary constructor and no members.
+enum E() {e,;}
+<<< 3.13
+enum E() {
+  e,
+}
+>>> No trailing comma with primary constructor and members keeps semicolon on same line.
+enum E() { a, b, c; int x; }
+<<< 3.13
+enum E() {
+  a,
+  b,
+  c;
+
+  int x;
+}
+>>> Trailing comma with primary constructor and members.
+enum E() { a, b, c,; int x; }
+<<< 3.13
+enum E() {
+  a,
+  b,
+  c,
+  ;
+
+  int x;
+}

@@ -1,0 +1,34 @@
+>>>
+enum A() {one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve}
+
+enum B {one,two,three,four,five,six,seven,eight,nine,ten,eleven,twelve}
+<<< 3.13
+enum A() {
+  one,
+  two,
+  three,
+  four,
+  five,
+  six,
+  seven,
+  eight,
+  nine,
+  ten,
+  eleven,
+  twelve,
+}
+
+enum B {
+  one,
+  two,
+  three,
+  four,
+  five,
+  six,
+  seven,
+  eight,
+  nine,
+  ten,
+  eleven,
+  twelve,
+}

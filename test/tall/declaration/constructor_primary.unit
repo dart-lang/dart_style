@@ -83,7 +83,7 @@ enum const C(int x) { a, b, c }
 enum const C(int x) {
   a,
   b,
-  c
+  c,
 }
 >>> With optional parameters.
 class Foo(int a, int b, [int? c, int? d]);

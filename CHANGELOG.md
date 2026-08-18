@@ -1,5 +1,40 @@
 ## 3.1.13-wip
 
+### Bug fixes
+
+* Don't crash when formatting an enum with a primary constructor when preserve
+  trailing commas is enabled (#1885).
+
+### Style changes
+
+* Insert a trailing comma after the last enum value when an enum has a primary
+  constructor (#1888). When enum values are split, they should always have a
+  trailing comma after the last value (unless there is a semicolon instead):
+
+  ```dart
+  enum Color {
+    red,
+    yellow,
+    blue,
+  }
+  ```
+
+  The formatter would erroneously *not* add one if the enum had a primary
+  constructor:
+
+  ```dart
+  enum Color() {
+    red,
+    yellow,
+    blue,
+  }
+  ```
+
+  This is now fixed. This change is *not* language versioned. (The previous
+  style was wrong, primary constructors are new and not yet common in the wild,
+  and we want to ship the style fix in a patch release of the Dart SDK instead
+  of waiting until 3.14.)
+
 ### API changes
 
 * `DartFormatter.lineEnding` is no longer mutable. If no line ending is

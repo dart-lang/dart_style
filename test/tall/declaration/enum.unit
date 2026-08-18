@@ -51,6 +51,14 @@ enum E { a, b }
 enum E {a,b,c,;}
 <<< 3.7
 enum E { a, b, c }
+>>> Remove semicolon but split if a primary constructor.
+enum E() {a,b,c,;}
+<<< 3.13
+enum E() {
+  a,
+  b,
+  c,
+}
 >>> Split values and add trailing comma but remove semicolon if no members.
 enum Primate{bonobo,chimp,gorilla,organutan;}
 <<< 3.7
