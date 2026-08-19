@@ -6,7 +6,7 @@ class   A   {
 }
 <<< 3.7
 class A {}
->>> (experiment primary-constructors) Empty semicolon body.
+>>> Empty semicolon body.
 class   A   ;
 <<< 3.13
 class A;
@@ -78,7 +78,7 @@ class SomeClass native "Zapp" {
 }
 <<< 3.7
 class SomeClass native "Zapp" {}
->>> (experiment primary-constructors) Don't force blank lines around `;` bodies.
+>>> Don't force blank lines around `;` bodies.
 class   A   ;
 class   B(int x)   ;
 class   C   ;

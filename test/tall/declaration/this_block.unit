@@ -1,5 +1,4 @@
 40 columns                              |
-(experiment primary-constructors)
 ### Tests for a primary constructor `this` block in the class body.
 >>> Unsplit.
 class C(int x) {
