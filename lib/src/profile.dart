@@ -21,7 +21,7 @@ final class Profile {
   /// When this is `false`, hopefully the compiler is able to completely
   /// tree-shake calls to these methods. This should always be `false` in the
   /// committed version of this file.
-  static const enabled = false;
+  static const enabled = true;
 
   /// Tracks counts of labelled occurrences.
   static final Map<String, int> _counts = {};
@@ -60,6 +60,7 @@ final class Profile {
 
     // Indent to show nesting of profiled regions.
     label = '${'  ' * _running.length}$label';
+    // print('begin $label');
 
     _running.add((label, Timeline.now));
 
@@ -68,10 +69,13 @@ final class Profile {
     _accumulatedTimes.putIfAbsent(label, () => 0);
   }
 
-  static void end(String _) {
+  static void end(String label2) {
     if (!enabled) return;
 
     var (label, start) = _running.removeLast();
+    // print('end   $label');
+
+    if (label.trim() != label2.trim()) throw '$label != $label2';
     var elapsed = Timeline.now - start;
     _accumulatedTimes.update(label, (accumulated) => accumulated + elapsed);
   }

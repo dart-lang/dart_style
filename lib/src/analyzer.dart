@@ -11,6 +11,7 @@ import 'package:path/path.dart' as p;
 import 'cli/formatter_options.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
+import 'profile.dart';
 import 'source_code.dart';
 
 // TODO: Allow this to be configured.
@@ -18,8 +19,10 @@ final analyzer.ResourceProvider resourceProvider =
     analyzer.PhysicalResourceProvider.INSTANCE;
 
 Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
-  var filesToFormat = <(String, String)>[];
+  Profile.begin('formatPaths()');
 
+  Profile.begin('list files');
+  var filesToFormat = <(String, String)>[];
   for (var path in paths) {
     var directory = io.Directory(path);
     if (directory.existsSync()) {
@@ -48,18 +51,21 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
       }
     }
   }
+  Profile.end('list files');
 
+  Profile.begin('analyzer create context collection');
   var collection = analyzer.AnalysisContextCollection(
     includedPaths: filesToFormat.map((r) => r.$1).toList(),
   );
-
-  print('Should format ${filesToFormat.length}');
+  Profile.end('analyzer create context collection');
 
   for (var (path, displayPath) in filesToFormat) {
     await _processFile(collection, options, path, displayPath: displayPath);
   }
 
   await collection.dispose();
+
+  Profile.end('formatPaths()');
 }
 
 /// Runs the formatter on [file].
@@ -71,13 +77,17 @@ Future<bool> _processFile(
   String path, {
   String? displayPath,
 }) async {
+  Profile.begin('analyzer _processFile()');
   displayPath ??= path;
 
+  Profile.begin('analyzer get analysis options');
   var context = collection.contextFor(path);
   var analysisOptions = context.getAnalysisOptionsForFile(
     resourceProvider.getFile(path),
   );
+  Profile.end('analyzer get analysis options');
 
+  Profile.begin('analyzer get parsed unit');
   var session = context.currentSession;
   var parsedResult = session.getParsedUnit(path);
 
@@ -86,12 +96,17 @@ Future<bool> _processFile(
     throw StateError('not parsed result');
   }
 
+  Profile.end('analyzer get parsed unit');
+
   // Determine what language version to use.
+  Profile.begin('analyzer get language version');
   // TODO: Use .effective?
   var languageVersion =
       options.languageVersion ?? parsedResult.unit.languageVersion.package;
+  Profile.end('analyzer get language version');
 
   // Determine the configuration options.
+  Profile.begin('analyzer get option values');
   var pageWidth =
       options.pageWidth ?? analysisOptions.formatterOptions.pageWidth;
   var trailingCommas =
@@ -105,6 +120,7 @@ Future<bool> _processFile(
   // Use a default page width if we don't have a specified one and couldn't
   // find a configured one.
   pageWidth ??= DartFormatter.defaultPageWidth;
+  Profile.end('analyzer get option values');
 
   var formatter = DartFormatter(
     languageVersion: languageVersion,
@@ -115,12 +131,18 @@ Future<bool> _processFile(
   );
 
   try {
-    var source = SourceCode(
-      resourceProvider.getFile(path).readAsStringSync(),
-      uri: path,
-    );
+    Profile.begin('analyzer get source string');
+    var sourceString = resourceProvider.getFile(path).readAsStringSync();
+    Profile.end('analyzer get source string');
+    var source = SourceCode(sourceString, uri: path);
     options.beforeFile(path, displayPath);
-    var output = formatter.formatUnit(parsedResult);
+    Profile.begin('format');
+    SourceCode output;
+    try {
+      output = formatter.formatUnit(parsedResult);
+    } finally {
+      Profile.end('format');
+    }
     options.afterFile(
       path,
       formatter,
@@ -148,6 +170,8 @@ Please report at github.com/dart-lang/dart_style/issues.
 $err
 $stack''',
     );
+  } finally {
+    Profile.end('analyzer _processFile()');
   }
 
   return false;

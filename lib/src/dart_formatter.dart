@@ -20,6 +20,7 @@ import 'dart_version_history.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'front_end/formatting_style.dart';
+import 'profile.dart';
 import 'short/source_visitor.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
@@ -151,6 +152,7 @@ final class DartFormatter {
     }
 
     // Parse it.
+    Profile.begin('parseString()');
     var parseResult = parseString(
       content: text,
       featureSet: FeatureSet.fromEnableFlags2(
@@ -186,9 +188,11 @@ final class DartFormatter {
         throw FormatterException([error]);
       }
     }
+    Profile.end('parseString()');
 
     _throwErrors(parseResult.errors);
 
+    Profile.begin('format');
     var output = _runFormatter(
       unitSourceCode,
       parseResult.lineInfo,
@@ -197,6 +201,7 @@ final class DartFormatter {
     );
 
     _sanityCheck(source.text, output.text);
+    Profile.end('format');
 
     return output;
   }

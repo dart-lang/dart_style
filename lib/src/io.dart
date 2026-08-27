@@ -12,6 +12,7 @@ import 'cli/formatter_options.dart';
 import 'config_cache.dart';
 import 'dart_formatter.dart';
 import 'exceptions.dart';
+import 'profile.dart';
 import 'source_code.dart';
 
 /// Reads and formats input from stdin until closed.
@@ -112,6 +113,8 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
     return analyzer.formatPaths(options, paths);
   }
 
+  Profile.begin('formatPaths()');
+
   // If the user didn't specify a language version, then look for surrounding
   // package configs so we know what language versions to use for the files.
   var cache = ConfigCache();
@@ -134,6 +137,8 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
       stderr.writeln('No file or directory found at "$path".');
     }
   }
+
+  Profile.end('formatPaths()');
 }
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
@@ -148,11 +153,13 @@ Future<bool> _processDirectory(
 ) async {
   var success = true;
 
+  Profile.begin('list files');
   var entries = directory.listSync(
     recursive: true,
     followLinks: options.followLinks,
   );
   entries.sort((a, b) => a.path.compareTo(b.path));
+  Profile.end('list files');
 
   for (var entry in entries) {
     if (entry is Link) continue;
@@ -185,9 +192,12 @@ Future<bool> _processFile(
   File file, {
   String? displayPath,
 }) async {
+  Profile.begin('_processFile()');
+
   displayPath ??= file.path;
 
   // Determine what language version to use.
+  Profile.begin('find language version');
   var languageVersion =
       options.languageVersion ??
       await cache.findLanguageVersion(file, displayPath);
@@ -195,8 +205,10 @@ Future<bool> _processFile(
   // If they didn't specify a version and we couldn't find a surrounding
   // package, then default to the latest version.
   languageVersion ??= DartFormatter.latestLanguageVersion;
+  Profile.end('find language version');
 
   // Determine the configuration options.
+  Profile.begin('get options settings');
   var pageWidth = options.pageWidth ?? await cache.findPageWidth(file);
   var trailingCommas =
       options.trailingCommas ?? await cache.findTrailingCommas(file);
@@ -204,6 +216,7 @@ Future<bool> _processFile(
   // Use a default page width if we don't have a specified one and couldn't
   // find a configured one.
   pageWidth ??= DartFormatter.defaultPageWidth;
+  Profile.end('get options settings');
 
   var formatter = DartFormatter(
     languageVersion: languageVersion,
@@ -214,9 +227,18 @@ Future<bool> _processFile(
   );
 
   try {
-    var source = SourceCode(file.readAsStringSync(), uri: file.path);
+    Profile.begin('read source');
+    var sourceString = file.readAsStringSync();
+    Profile.end('read source');
+    var source = SourceCode(sourceString, uri: file.path);
     options.beforeFile(file.path, displayPath);
-    var output = formatter.formatSource(source);
+    Profile.begin('parse and format');
+    SourceCode output;
+    try {
+      output = formatter.formatSource(source);
+    } finally {
+      Profile.end('parse and format');
+    }
     options.afterFile(
       file.path,
       formatter,
@@ -240,6 +262,8 @@ Please report at github.com/dart-lang/dart_style/issues.''');
 Please report at github.com/dart-lang/dart_style/issues.
 $err
 $stack''');
+  } finally {
+    Profile.end('_processFile()');
   }
 
   return false;
