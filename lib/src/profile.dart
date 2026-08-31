@@ -60,7 +60,6 @@ final class Profile {
 
     // Indent to show nesting of profiled regions.
     label = '${'  ' * _running.length}$label';
-    // print('begin $label');
 
     _running.add((label, Timeline.now));
 
@@ -73,9 +72,6 @@ final class Profile {
     if (!enabled) return;
 
     var (label, start) = _running.removeLast();
-    // print('end   $label');
-
-    if (label.trim() != label2.trim()) throw '$label != $label2';
     var elapsed = Timeline.now - start;
     _accumulatedTimes.update(label, (accumulated) => accumulated + elapsed);
   }
