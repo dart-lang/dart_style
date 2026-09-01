@@ -4,6 +4,7 @@
 import 'dart:math' as math;
 
 import 'package:analyzer/dart/analysis/features.dart';
+import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
@@ -19,6 +20,7 @@ import 'dart_version_history.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'front_end/formatting_style.dart';
+import 'profile.dart';
 import 'short/source_visitor.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
@@ -163,12 +165,18 @@ final class DartFormatter {
     );
 
     // Parse it.
-    var parseResult = parseString(
-      content: text,
-      featureSet: featureSet,
-      path: source.uri,
-      throwIfDiagnostics: false,
-    );
+    Profile.begin('parseString()');
+    ParseStringResult parseResult;
+    try {
+      parseResult = parseString(
+        content: text,
+        featureSet: featureSet,
+        path: source.uri,
+        throwIfDiagnostics: false,
+      );
+    } finally {
+      Profile.end('parseString()');
+    }
 
     // Infer the line ending if not given one. Do it here since now we know
     // where the lines start.

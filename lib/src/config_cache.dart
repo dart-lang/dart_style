@@ -55,30 +55,36 @@ final class ConfigCache {
   /// Looks for a package surrounding [file] and, if found, returns the default
   /// language version specified by that package.
   Future<Version?> findLanguageVersion(File file, String displayPath) async {
-    // Use the cached version (which may be `null`) if present.
-    var directory = file.parent.path;
-    if (_directoryVersions.containsKey(directory)) {
-      return _directoryVersions[directory];
+    try {
+      Profile.begin('ConfigCache.findLanguageVersion()');
+
+      // Use the cached version (which may be `null`) if present.
+      var directory = file.parent.path;
+      if (_directoryVersions.containsKey(directory)) {
+        return _directoryVersions[directory];
+      }
+
+      // Otherwise, walk the file system and look for it.
+      var config = await _findPackageConfig(
+        file,
+        displayPath,
+        forLanguageVersion: true,
+      );
+
+      if (config?.packageOf(file.absolute.uri)?.languageVersion
+          case var languageVersion?) {
+        // Store the version as pub_semver's [Version] type because that's
+        // what the analyzer parser uses, which is where the version
+        // ultimately gets used.
+        var version = Version(languageVersion.major, languageVersion.minor, 0);
+        return _directoryVersions[directory] = version;
+      }
+
+      // We weren't able to resolve this file's version, so don't try again.
+      return _directoryVersions[directory] = null;
+    } finally {
+      Profile.end('ConfigCache.findLanguageVersion()');
     }
-
-    // Otherwise, walk the file system and look for it.
-    var config = await _findPackageConfig(
-      file,
-      displayPath,
-      forLanguageVersion: true,
-    );
-
-    if (config?.packageOf(file.absolute.uri)?.languageVersion
-        case var languageVersion?) {
-      // Store the version as pub_semver's [Version] type because that's
-      // what the analyzer parser uses, which is where the version
-      // ultimately gets used.
-      var version = Version(languageVersion.major, languageVersion.minor, 0);
-      return _directoryVersions[directory] = version;
-    }
-
-    // We weren't able to resolve this file's version, so don't try again.
-    return _directoryVersions[directory] = null;
   }
 
   /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
@@ -91,7 +97,12 @@ final class ConfigCache {
   ///     formatter:
   ///       page_width: 123
   Future<int?> findPageWidth(File file) async {
-    return (await _findFormatterOptions(file)).pageWidth;
+    try {
+      Profile.begin('ConfigCache.findPageWidth()');
+      return (await _findFormatterOptions(file)).pageWidth;
+    } finally {
+      Profile.end('ConfigCache.findPageWidth()');
+    }
   }
 
   /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
@@ -105,7 +116,12 @@ final class ConfigCache {
   ///     formatter:
   ///       trailing_commas: preserve # Or "automate".
   Future<TrailingCommas?> findTrailingCommas(File file) async {
-    return (await _findFormatterOptions(file)).trailingCommas;
+    try {
+      Profile.begin('ConfigCache.findTrailingCommas()');
+      return (await _findFormatterOptions(file)).trailingCommas;
+    } finally {
+      Profile.end('ConfigCache.findTrailingCommas()');
+    }
   }
 
   /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
@@ -171,7 +187,6 @@ final class ConfigCache {
     String displayPath, {
     required bool forLanguageVersion,
   }) async {
-    Profile.begin('look up package config');
     try {
       // Use the cached one (which might be `null`) if we have it.
       var directory = file.parent.path;
@@ -181,9 +196,14 @@ final class ConfigCache {
 
       // Otherwise, walk the file system and look for it. If we fail to find it,
       // store `null` so that we don't look again in that same directory.
-      return _directoryConfigs[directory] = await findPackageConfig(
-        file.parent,
-      );
+      Profile.begin('package_config.findPackageConfig()');
+      try {
+        return _directoryConfigs[directory] = await findPackageConfig(
+          file.parent,
+        );
+      } finally {
+        Profile.end('package_config.findPackageConfig()');
+      }
     } catch (error) {
       // We need a language version, so report an error if we can't find one.
       // We don't need a page width because we happily use the default, so say
@@ -199,8 +219,6 @@ final class ConfigCache {
         );
       }
       return null;
-    } finally {
-      Profile.end('look up package config');
     }
   }
 
