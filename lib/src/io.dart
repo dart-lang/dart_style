@@ -108,7 +108,6 @@ $stack''');
 /// Formats all of the files and directories given by [paths].
 Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   if (options.useAnalyzerApi) {
-    print('### Using analyzer API ###');
     return analyzer.formatPaths(options, paths);
   }
 

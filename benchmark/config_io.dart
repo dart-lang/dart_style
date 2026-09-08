@@ -113,25 +113,38 @@ void main() async {
     }
 
     print('Warming up JIT...');
-    var options = FormatterOptions(
+    var optionsOld = FormatterOptions(output: Output.none, show: Show.none);
+
+    var optionsNew = FormatterOptions(
       output: Output.none,
       show: Show.none,
-      // Comment this out to use the current dart_style IO code:
       useAnalyzerApi: true,
     );
-    for (var i = 0; i < 20; i++) {
-      await formatPaths(options, [tempDir.path]);
+
+    for (var i = 0; i < 10; i++) {
+      await formatPaths(optionsOld, [tempDir.path]);
+      await formatPaths(optionsNew, [tempDir.path]);
     }
 
     Profile.reset();
 
     print('Running trials...');
-    for (var i = 0; i < 20; i++) {
-      Profile.begin('Benchmark trial');
-      var stopwatch = Stopwatch()..start();
-      await formatPaths(options, [tempDir.path]);
-      print('Run #$i: ${stopwatch.elapsedMilliseconds}ms');
-      Profile.end('Benchmark trial');
+    for (var i = 0; i < 10; i++) {
+      {
+        Profile.begin('Benchmark trial old');
+        var stopwatch = Stopwatch()..start();
+        await formatPaths(optionsOld, [tempDir.path]);
+        print('Run #$i current:  ${stopwatch.elapsedMilliseconds}ms');
+        Profile.end('Benchmark trial old');
+      }
+
+      {
+        Profile.begin('Benchmark trial new');
+        var stopwatch = Stopwatch()..start();
+        await formatPaths(optionsNew, [tempDir.path]);
+        print('Run #$i analyzer: ${stopwatch.elapsedMilliseconds}ms');
+        Profile.end('Benchmark trial new');
+      }
     }
 
     Profile.report();
