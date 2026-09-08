@@ -113,7 +113,12 @@ void main() async {
     }
 
     print('Warming up JIT...');
-    var options = FormatterOptions(output: Output.none, show: Show.none);
+    var options = FormatterOptions(
+      output: Output.none,
+      show: Show.none,
+      // Comment this out to use the current dart_style IO code:
+      useAnalyzerApi: true,
+    );
     for (var i = 0; i < 20; i++) {
       await formatPaths(options, [tempDir.path]);
     }

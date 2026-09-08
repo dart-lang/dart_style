@@ -21,7 +21,7 @@ final class Profile {
   /// When this is `false`, hopefully the compiler is able to completely
   /// tree-shake calls to these methods. This should always be `false` in the
   /// committed version of this file.
-  static const enabled = false;
+  static const enabled = true;
 
   /// Tracks counts of labelled occurrences.
   static final Map<String, int> _counts = {};

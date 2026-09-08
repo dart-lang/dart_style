@@ -156,6 +156,8 @@ final class FormatCommand extends Command<int> {
       hide: !verbose,
     );
 
+    argParser.addFlag('use-analyzer-api');
+
     if (verbose) argParser.addSeparator('Options when formatting from stdin:');
 
     argParser.addOption(
@@ -322,6 +324,8 @@ final class FormatCommand extends Command<int> {
     }
     var stdinName = argResults.option('stdin-name');
 
+    var useAnalyzerApi = argResults.flag('use-analyzer-api');
+
     var options = FormatterOptions(
       languageVersion: languageVersion,
       indent: indent,
@@ -333,6 +337,7 @@ final class FormatCommand extends Command<int> {
       summary: summary,
       setExitIfChanged: setExitIfChanged,
       experimentFlags: experimentFlags,
+      useAnalyzerApi: useAnalyzerApi,
     );
 
     if (argResults.rest.isEmpty) {
