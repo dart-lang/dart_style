@@ -21,7 +21,7 @@ void main() {
     // runner, then the working directory will be the root of the Dart SDK, and
     // not the root of the dart_style package. In that case, we need to get a
     // path from the Dart SDK root to dart_style's own package root.
-    var testPath = Platform.script.path;
+    var testPath = p.fromUri(Platform.script);
     var dartStylePathInSdk = p.join('third_party', 'pkg', 'dart_style');
     if (testPath.contains(dartStylePathInSdk)) {
       pubspecPath = p.join(dartStylePathInSdk, pubspecPath);
