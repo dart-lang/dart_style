@@ -162,7 +162,7 @@ final class CodeWriter {
 
     // If we haven't found an overflowing line yet, then this line might be one
     // so keep track of the unsolved pieces we've encountered on it.
-    if (!_foundExpandLine) {
+    if (!_foundExpandLine && _currentUnsolvedPieces.isNotEmpty) {
       _currentLinePieces.addAll(_currentUnsolvedPieces);
     }
   }
@@ -374,7 +374,7 @@ final class CodeWriter {
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
     var isUnsolved =
-        !_solution.isBound(piece) && piece.additionalStates.isNotEmpty;
+        piece.additionalStates.isNotEmpty && !_solution.isBound(piece);
 
     // See if we can immediately bind it based on the page width and the piece's
     // contents.
