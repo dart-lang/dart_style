@@ -162,6 +162,8 @@ final class CodeWriter {
 
     // If we haven't found an overflowing line yet, then this line might be one
     // so keep track of the unsolved pieces we've encountered on it.
+    // Note: The `isNotEmpty` check is redundant since `addAll()` will do
+    // nothing in that case, but checking it is measurably faster.
     if (!_foundExpandLine && _currentUnsolvedPieces.isNotEmpty) {
       _currentLinePieces.addAll(_currentUnsolvedPieces);
     }
