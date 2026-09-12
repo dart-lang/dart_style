@@ -59,12 +59,25 @@ sealed class TextPiece extends Piece {
       _selectionEnd = _adjustSelection(selectionEnd);
     }
 
+    // Note: This code is performance sensitive. When editing, use the
+    // benchmarks to avoid regressing performance.
+
     if (multiline) {
       var lines = text.split(_lineTerminatorPattern);
-      for (var i = 0; i < lines.length; i++) {
-        if (i > 0) _lines.add('');
-        _lines.last += lines[i];
+
+      // Append the first line to the end of the previous line, if any.
+      if (_lines.last.isEmpty) {
+        _lines.last = lines[0];
+      } else {
+        _lines.last += lines[0];
       }
+
+      // Add the remaining lines.
+      for (var i = 1; i < lines.length; i++) {
+        _lines.add(lines[i]);
+      }
+    } else if (_lines.last.isEmpty) {
+      _lines.last = text;
     } else {
       _lines.last += text;
     }
