@@ -1,6 +1,8 @@
 ## 3.1.14-wip
 
-No user-visible changes.
+### Performance
+
+* Optimize writing indentation.
 
 ## 3.1.13
 
