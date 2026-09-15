@@ -2,7 +2,7 @@
 
 ### Performance
 
-* Optimize writing indentation.
+* Various small-scale optimizations.
 
 ## 3.1.13
 
