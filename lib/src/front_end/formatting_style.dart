@@ -22,25 +22,48 @@ final class FormattingStyle {
   /// The [DartFormatter] the style was created from.
   final DartFormatter _formatter;
 
-  /// The language version of the style.
-  ///
-  /// Usually the same version as [formatter], but may be different if the file
-  /// being formatted has an `@dart=` comment.
-  final Version _languageVersion;
-
   /// The number of characters allowed in a single line.
   ///
   /// Usually the same as [formatter]'s but may be different if the file being
   /// formatted has a `// dart format width = ` comment.
   final int pageWidth;
 
-  FormattingStyle(
-    this._formatter, {
-    required this.lineEnding,
+  /// Whether the language version is at least 3.10.
+  ///
+  /// We cache this instead of storing the version directly for performance.
+  final bool _isVersion3Dot10OrHigher;
+
+  /// Whether the language version is at least 3.13.
+  ///
+  /// We cache this instead of storing the version directly for performance.
+  final bool _isVersion3Dot13OrHigher;
+
+  factory FormattingStyle(
+    DartFormatter formatter, {
+    required String lineEnding,
     Version? languageVersion,
     int? pageWidth,
-  }) : _languageVersion = languageVersion ?? _formatter.languageVersion,
-       pageWidth = pageWidth ?? _formatter.pageWidth;
+  }) {
+    languageVersion ??= formatter.languageVersion;
+    return FormattingStyle._(
+      formatter,
+      pageWidth: pageWidth ?? formatter.pageWidth,
+      lineEnding: lineEnding,
+      is3Dot7: languageVersion == _version3Dot7,
+      isVersion3Dot10OrHigher: languageVersion >= _version3Dot10,
+      isVersion3Dot13OrHigher: languageVersion >= _version3Dot13,
+    );
+  }
+
+  FormattingStyle._(
+    this._formatter, {
+    required this.pageWidth,
+    required this.lineEnding,
+    required this.is3Dot7,
+    required bool isVersion3Dot10OrHigher,
+    required bool isVersion3Dot13OrHigher,
+  }) : _isVersion3Dot10OrHigher = isVersion3Dot10OrHigher,
+       _isVersion3Dot13OrHigher = isVersion3Dot13OrHigher;
 
   final String? lineEnding;
 
@@ -49,7 +72,7 @@ final class FormattingStyle {
 
   /// Whether the code being formatted is at language version 3.7 and doesn't
   /// include the sweeping style changes in 3.8.
-  bool get is3Dot7 => _languageVersion == _version3Dot7;
+  final bool is3Dot7;
 
   /// Whether a trailing comma should be preserved after for-loop updaters.
   bool get preserveTrailingCommaAfterForUpdaters =>
@@ -57,33 +80,32 @@ final class FormattingStyle {
 
   /// Whether a trailing comma should be preserved after enum values.
   bool get preserveTrailingCommaAfterEnumValues =>
-      _formatter.trailingCommas == TrailingCommas.preserve &&
-      _languageVersion >= _version3Dot10;
+      _isVersion3Dot10OrHigher &&
+      _formatter.trailingCommas == TrailingCommas.preserve;
 
   /// Whether the formatter should penalize splitting in the target of a call
   /// chain if the target is an argument list with only one argument or a
   /// collection literal with only one element.
   bool get avoidSplittingSingleElementCallChainTargets =>
-      _languageVersion >= _version3Dot13;
+      _isVersion3Dot13OrHigher;
 
   /// Whether mixin declarations and extension types with brace bodies should
   /// always get a blank line above and below them.
   ///
   /// They always should have, but they were overlooked. We already do this for
   /// classes, enums, and extensions.
-  bool get blankLineAroundMixinAndExtensionTypes =>
-      _languageVersion >= _version3Dot13;
+  bool get blankLineAroundMixinAndExtensionTypes => _isVersion3Dot13OrHigher;
 
   /// Whether parameter lists should be block formatted in things like typedefs.
-  bool get blockFormatParameterLists => _languageVersion >= _version3Dot13;
+  bool get blockFormatParameterLists => _isVersion3Dot13OrHigher;
 
   /// Whether the LHS of an `as`, `is`, or `is!` expression can be block
   /// formatted.
-  bool get blockFormatTypeTest => _languageVersion >= _version3Dot13;
+  bool get blockFormatTypeTest => _isVersion3Dot13OrHigher;
 
   /// Whether an if-case pattern can be block-formatted when there is a guard
   /// clause as well.
-  bool get blockFormatIfCaseWithGuard => _languageVersion < _version3Dot13;
+  bool get blockFormatIfCaseWithGuard => !_isVersion3Dot13OrHigher;
 
   /// Whether the formatter should prefer overflow from "soft" characters versus
   /// others when no solution fits the page width and an overflowing solution
@@ -122,11 +144,11 @@ final class FormattingStyle {
   /// common cases.
   ///
   /// This feature has no effect on code that does fit in the page width.
-  bool get useSoftOverflow => _languageVersion >= _version3Dot13;
+  bool get useSoftOverflow => _isVersion3Dot13OrHigher;
 
   /// Whether to force a blank line between imports and exports whose URIs are
   /// different categories: `dart:`, `package:`, or relative.
-  bool get separateDirectiveSections => _languageVersion >= _version3Dot13;
+  bool get separateDirectiveSections => _isVersion3Dot13OrHigher;
 
   /// Whether to try to figure out a piece's state based on the page width
   /// before running the solver or during.
@@ -137,8 +159,7 @@ final class FormattingStyle {
   ///
   /// We language version this even though the old logic was never correct to
   /// minimize unexpected churn.
-  bool get pinStateByPageWidthBeforeSolving =>
-      _languageVersion >= _version3Dot13;
+  bool get pinStateByPageWidthBeforeSolving => _isVersion3Dot13OrHigher;
 
   /// Whether an extension type's representation clause allows a trailing
   /// comma.
@@ -146,8 +167,7 @@ final class FormattingStyle {
   /// When primary constructors were added in Dart 3.13, the grammar was
   /// adjusted to define extension types in terms of them which also means that
   /// a trailing comma is now permitted.
-  bool get allowTrailingCommaInRepresentationClause =>
-      _languageVersion >= _version3Dot13;
+  bool get allowTrailingCommaInRepresentationClause => _isVersion3Dot13OrHigher;
 
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
