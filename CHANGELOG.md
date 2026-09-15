@@ -2,7 +2,7 @@
 
 ### Performance
 
-* Optimize version checks.
+* Various small-scale optimizations.
 
 ## 3.1.13
 
