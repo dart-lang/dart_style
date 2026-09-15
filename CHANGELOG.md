@@ -2,7 +2,7 @@
 
 ### Performance
 
-* Optimize code writing.
+* Various small-scale optimizations.
 
 ## 3.1.13
 

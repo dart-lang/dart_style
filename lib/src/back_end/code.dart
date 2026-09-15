@@ -194,38 +194,7 @@ final class _StringBuilder {
   ///
   /// Generating these ahead of time is faster than concatenating multiple
   /// spaces at runtime.
-  static const _indents = {
-    2: '  ',
-    4: '    ',
-    6: '      ',
-    8: '        ',
-    10: '          ',
-    12: '            ',
-    14: '              ',
-    16: '                ',
-    18: '                  ',
-    20: '                    ',
-    22: '                      ',
-    24: '                        ',
-    26: '                          ',
-    28: '                            ',
-    30: '                              ',
-    32: '                                ',
-    34: '                                  ',
-    36: '                                    ',
-    38: '                                      ',
-    40: '                                        ',
-    42: '                                          ',
-    44: '                                            ',
-    46: '                                              ',
-    48: '                                                ',
-    50: '                                                  ',
-    52: '                                                    ',
-    54: '                                                      ',
-    56: '                                                        ',
-    58: '                                                          ',
-    60: '                                                            ',
-  };
+  static final _indents = List.generate(128, (i) => ' ' * i);
 
   final SourceCode _source;
   final String _lineEnding;
@@ -268,7 +237,11 @@ final class _StringBuilder {
         // re-enabled.
         if (_disableFormattingStart == -1) {
           // Write any pending indentation.
-          _buffer.write(_indents[_indent] ?? (' ' * _indent));
+          if (_indent > _indents.length) {
+            _buffer.write(' ' * _indent);
+          } else if (_indent > 0) {
+            _buffer.write(_indents[_indent]);
+          }
           _indent = 0;
 
           _buffer.write(code._text);
