@@ -375,33 +375,37 @@ final class CodeWriter {
 
   /// Format [piece] writing directly into this [CodeWriter].
   void _formatInline(Piece piece) {
-    var isUnsolved =
-        piece.additionalStates.isNotEmpty && !_solution.isBound(piece);
+    var boundState = _solution.pieceStateIfBound(piece);
+    var isUnsolved = boundState == null && piece.additionalStates.isNotEmpty;
+    var state = boundState ?? State.unsplit;
 
     // See if we can immediately bind it based on the page width and the piece's
     // contents.
     if (isUnsolved && !_cache.style.pinStateByPageWidthBeforeSolving) {
       // If the solution doesn't bind the piece already, we may be able to
-      // eagerly bind it to a state knowing just the page width (minus any
-      // leading indentation). If so, do that now. We do that here instead of
+      // eagerly bind it to a state knowing just the page width minus any
+      // leading indentation. If so, do that now. We do that here instead of
       // pinning the pieces because doing so here lets us take leading
-      // indication into account which may vary based on the surrounding pieces
+      // indentation into account which may vary based on the surrounding pieces
       // when we get here.
       Profile.begin('CodeWriter try to bind by page width');
-      isUnsolved = !_solution.tryBindByPageWidth(
+      if (_solution.tryBindByPageWidth(
         piece,
         _pageWidth - _indentStack.first.spaces,
-      );
+      )) {
+        isUnsolved = false;
+        state = _solution.pieceState(piece);
+      }
       Profile.end('CodeWriter try to bind by page width');
     }
 
     if (isUnsolved) _currentUnsolvedPieces.add(piece);
 
     // Begin a new formatting context for this child.
-    _pieceFormats.add(_FormatState(piece));
+    _pieceFormats.add(_FormatState(piece, state));
 
     // Format the child piece.
-    piece.format(this, _solution.pieceState(piece));
+    piece.format(this, state);
 
     var child = _pieceFormats.removeLast();
 
@@ -411,7 +415,7 @@ final class CodeWriter {
     // Now that we know the child's shape, see if the parent permits it.
     if (_pieceFormats.lastOrNull case var parent?) {
       var allowedShapes = parent.piece.allowedChildShapes(
-        _solution.pieceState(parent.piece),
+        parent.state,
         child.piece,
       );
 
@@ -624,6 +628,9 @@ class _FormatState {
   /// The piece being formatted.
   final Piece piece;
 
+  /// The state this piece is being formatted in.
+  final State state;
+
   /// The piece's shape.
   ///
   /// This changes based on the newlines the piece writes.
@@ -632,7 +639,7 @@ class _FormatState {
   /// How a newline affects the shape of this piece.
   ShapeMode mode = ShapeMode.merge;
 
-  _FormatState(this.piece);
+  _FormatState(this.piece, this.state);
 }
 
 /// Determines how a newline inside a piece or a child piece affects the shape

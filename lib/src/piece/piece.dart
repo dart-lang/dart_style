@@ -39,6 +39,9 @@ abstract base class Piece with FastHash {
   State? get pinnedState => _pinnedState;
   State? _pinnedState;
 
+  /// Whether this piece has ever been bound to a state in any solution.
+  bool boundInAnySolution = false;
+
   /// Whether this piece or any of its children contain an explicit mandatory
   /// newline.
   ///

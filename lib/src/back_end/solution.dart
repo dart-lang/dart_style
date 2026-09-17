@@ -163,13 +163,18 @@ final class Solution implements Comparable<Solution> {
   /// The state that [piece] is pinned to or that this solution selects.
   ///
   /// If no state has been selected, defaults to the first state.
-  State pieceState(Piece piece) => pieceStateIfBound(piece) ?? State.unsplit;
+  State pieceState(Piece piece) {
+    if (piece.pinnedState case var pinned?) return pinned;
+    if (!piece.boundInAnySolution) return State.unsplit;
+    return pieceStateIfBound(piece) ?? State.unsplit;
+  }
 
   /// The state that [piece] is pinned to or that this solution selects.
   ///
   /// If no state has been selected, returns `null`.
   State? pieceStateIfBound(Piece piece) {
     if (piece.pinnedState case var pinned?) return pinned;
+    if (!piece.boundInAnySolution) return null;
 
     var node = _pieceStates;
     while (node != null) {
@@ -180,8 +185,12 @@ final class Solution implements Comparable<Solution> {
     return null;
   }
 
-  /// Whether [piece] has been bound to a state in this set (or is pinned).
-  bool isBound(Piece piece) => pieceStateIfBound(piece) != null;
+  /// Whether [piece] has been bound to a state in this set or is pinned.
+  bool isBound(Piece piece) {
+    if (piece.pinnedState != null) return true;
+    if (!piece.boundInAnySolution) return false;
+    return pieceStateIfBound(piece) != null;
+  }
 
   /// Increases the total overflow for this solution by [overflow].
   ///
@@ -400,7 +409,8 @@ final class Solution implements Comparable<Solution> {
     // Apply the new binding if it doesn't conflict with an existing one.
     switch (pieceStateIfBound(piece)) {
       case null:
-        // Binding a unbound piece to a state.
+        // Binding an unbound piece to a state.
+        piece.boundInAnySolution = true;
         _cost += piece.stateCost(state);
         _pieceStates = _StateNode(piece, state, _pieceStates);
 
