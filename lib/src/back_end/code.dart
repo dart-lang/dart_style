@@ -237,7 +237,7 @@ final class _StringBuilder {
         // re-enabled.
         if (_disableFormattingStart == -1) {
           // Write any pending indentation.
-          if (_indent > _indents.length) {
+          if (_indent >= _indents.length) {
             _buffer.write(' ' * _indent);
           } else if (_indent > 0) {
             _buffer.write(_indents[_indent]);

@@ -1,5 +1,10 @@
 ## 3.1.14-wip
 
+### Bug fixes
+
+* Fix crash when attempting to write a line with exactly 128 spaces of
+  indentation.
+
 ### Performance
 
 * Various small-scale optimizations.
