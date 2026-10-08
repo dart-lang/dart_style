@@ -103,7 +103,7 @@ void main() {
           },
         ),
         'dir|b.yaml': analysisOptions(
-          include: ['c.yaml', 'd.yaml'],
+          includes: ['c.yaml', 'd.yaml'],
           other: {
             'ab': 'from b',
             'abc': 'from b',
@@ -271,7 +271,7 @@ void main() {
     test('ignores missing includes', () async {
       var testFS = TestFileSystem({
         'dir|analysis_options.yaml': analysisOptions(
-          include: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
+          includes: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
         ),
         'dir|known.yaml': analysisOptions(pageWidth: 100),
       });

@@ -214,37 +214,24 @@ void main() {
       await expectLater(process.stdout, emits(json));
       await process.shouldExit();
     });
-  });
 
-  group('--enable-experiment', () {
-    test('passes experiment flags to parser', () async {
+    test('works with --stdin-name', () async {
       var process = await runFormatter([
-        '--enable-experiment=test-experiment,variance',
+        '--output=json',
+        '--selection=6:10',
+        '--stdin-name=foo',
       ]);
-      process.stdin.writeln('class Writer<in T> {}');
+      process.stdin.writeln(unformattedSource);
       await process.stdin.close();
 
-      // The formatter doesn't actually support formatting variance annotations,
-      // but we want to test that the experiment flags are passed all the way
-      // to the parser, so just test that it parses the variance annotation
-      // without errors and then fails to format.
-      expect(
-        await process.stderr.next,
-        'Hit a bug in the formatter when formatting stdin.',
-      );
-      expect(
-        await process.stderr.next,
-        'Please report at: github.com/dart-lang/dart_style/issues',
-      );
-      expect(
-        await process.stderr.next,
-        'The formatter produced unexpected output. Input was:',
-      );
-      expect(await process.stderr.next, 'class Writer<in T> {}');
-      expect(await process.stderr.next, '');
-      expect(await process.stderr.next, 'Which formatted to:');
-      expect(await process.stderr.next, 'class Writer<T> {}');
-      await process.shouldExit(70);
+      var json = jsonEncode({
+        'path': 'foo',
+        'source': formattedSource,
+        'selection': {'offset': 5, 'length': 9},
+      });
+
+      await expectLater(process.stdout, emits(json));
+      await process.shouldExit();
     });
   });
 }

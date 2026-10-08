@@ -8,62 +8,64 @@ import 'package:test_descriptor/test_descriptor.dart' as d;
 
 import '../utils.dart';
 
-void main() {
-  compileFormatter();
-
-  group('--language-version', () {
-    // It's hard to validate that the formatter uses the *exact* latest
-    // language version supported by the formatter, but at least test that a
-    // new-ish language feature can be parsed.
-    const extensionTypeBefore = '''
+const _extensionTypeBefore = '''
 extension type Meters(int value) {
   Meters operator+(Meters other) => Meters(value+other.value);
 }''';
 
-    const extensionTypeAfter = '''
+const _extensionTypeAfter = '''
 extension type Meters(int value) {
   Meters operator +(Meters other) => Meters(value + other.value);
 }
 ''';
 
-    test('uses latest language version if no surrounding package', () async {
-      await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
+/// A switch statement using syntax that is valid in 2.19 but not 3.0.
+const _oldSwitchBefore = '''
+main() { switch (o) { case 1+2: break; } }
+''';
 
-      var process = await runFormatterOnDir();
-      await process.shouldExit(0);
-
-      await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
-    });
-
-    test('uses the given language version', () async {
-      const before = 'main() { switch (o) { case 1+2: break; } }';
-
-      const after = '''
+const _oldSwitchAfter = '''
 main() {
   switch (o) {
     case 1 + 2:
       break;
   }
-}
-''';
+}''';
 
-      await d.dir('code', [d.file('a.dart', before)]).create();
+void main() {
+  compileFormatter();
+
+  group('--language-version', () {
+    test('uses latest language version if no surrounding package', () async {
+      // It's hard to validate that the formatter uses the *exact* latest
+      // language version supported by the formatter, but at least test that a
+      // new-ish language feature can be parsed.
+      await d.dir('code', [d.file('a.dart', _extensionTypeBefore)]).create();
+
+      var process = await runFormatterOnDir();
+      await process.shouldExit(0);
+
+      await d.dir('code', [d.file('a.dart', _extensionTypeAfter)]).validate();
+    });
+
+    test('uses the given language version', () async {
+      await d.dir('code', [d.file('a.dart', _oldSwitchBefore)]).create();
 
       // Use an older language version where `1 + 2` was still a valid switch
       // case.
       var process = await runFormatterOnDir(['--language-version=2.19']);
       await process.shouldExit(0);
 
-      await d.dir('code', [d.file('a.dart', after)]).validate();
+      await d.dir('code', [d.file('a.dart', '$_oldSwitchAfter\n')]).validate();
     });
 
     test('uses the latest language version if "latest"', () async {
-      await d.dir('code', [d.file('a.dart', extensionTypeBefore)]).create();
+      await d.dir('code', [d.file('a.dart', _extensionTypeBefore)]).create();
 
       var process = await runFormatterOnDir(['--language-version=latest']);
       await process.shouldExit(0);
 
-      await d.dir('code', [d.file('a.dart', extensionTypeAfter)]).validate();
+      await d.dir('code', [d.file('a.dart', _extensionTypeAfter)]).validate();
     });
 
     test("errors if the language version can't be parsed", () async {
@@ -73,23 +75,6 @@ main() {
   });
 
   group('package config', () {
-    test('no package search if language version is specified', () async {
-      // Put the file in a directory with a malformed package config. If we
-      // search for it, we should get an error.
-      await d.dir('foo', [
-        d.dir('.dart_tool', [
-          d.file('package_config.json', 'this no good json is bad json'),
-        ]),
-        d.file('main.dart', 'main(){    }'),
-      ]).create();
-
-      var process = await runFormatterOnDir(['--language-version=latest']);
-      await process.shouldExit(0);
-
-      // Should format the file without any error reading the package config.
-      await d.dir('foo', [d.file('main.dart', 'main() {}\n')]).validate();
-    });
-
     test('default to language version of surrounding package', () async {
       // The package config sets the language version to 2.19, but pattern
       // variables are only available in 3.0 and later. Verify that the error
@@ -120,8 +105,7 @@ main() {
         packageConfig('foo', version: '3.1'),
         d.file('main.dart', '''
           // @dart=2.19
-          main() { switch (obj) { case 1 + 2: // Error in 3.1.
-            } }
+          $_oldSwitchBefore
           '''),
       ]).create();
 
@@ -132,11 +116,7 @@ main() {
       await d.dir('foo', [
         d.file('main.dart', '''
 // @dart=2.19
-main() {
-  switch (obj) {
-    case 1 + 2: // Error in 3.1.
-  }
-}
+$_oldSwitchAfter
 '''),
       ]).validate();
     });
@@ -161,6 +141,26 @@ main() {
 '''),
       ]).validate();
     });
+
+    test(
+      'use the given language version if the package config is malformed',
+      () async {
+        await d.dir('foo', [
+          d.dir('.dart_tool', [
+            d.file('package_config.json', 'this no good json is bad json'),
+          ]),
+          d.file('main.dart', _oldSwitchBefore),
+        ]).create();
+
+        var process = await runFormatterOnDir(['--language-version=2.19']);
+        await process.shouldExit(0);
+
+        // Should format the file successfully.
+        await d.dir('foo', [
+          d.file('main.dart', '$_oldSwitchAfter\n'),
+        ]).validate();
+      },
+    );
   });
 
   group('stdin', () {
@@ -173,19 +173,12 @@ main() {
       var process = await runFormatter(['--stdin-name=foo/main.dart']);
       // Write a switch whose syntax is valid in 2.19, but an error in later
       // versions.
-      process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
+      process.stdin.writeln(_oldSwitchBefore);
       await process.stdin.close();
 
       await expectLater(
         process.stdout,
-        emitsInOrder([
-          'main() {',
-          '  switch (o) {',
-          '    case 1 + 2:',
-          '      break;',
-          '  }',
-          '}',
-        ]),
+        emitsInOrder(_oldSwitchAfter.split('\n')),
       );
       await process.shouldExit(0);
     });
@@ -207,19 +200,12 @@ main() {
 
       // Write a switch whose syntax is valid in 2.19, but an error in later
       // versions.
-      process.stdin.writeln('main() { switch (o) { case 1 + 2: break; } }');
+      process.stdin.writeln(_oldSwitchBefore);
       await process.stdin.close();
 
       await expectLater(
         process.stdout,
-        emitsInOrder([
-          'main() {',
-          '  switch (o) {',
-          '    case 1 + 2:',
-          '      break;',
-          '  }',
-          '}',
-        ]),
+        emitsInOrder(_oldSwitchAfter.split('\n')),
       );
       await process.shouldExit(0);
     });

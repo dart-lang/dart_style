@@ -125,11 +125,30 @@ final class ConfigCache {
   }
 
   /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
+  /// found and valid, returns the experiment flags specified by that
+  /// config file.
+  ///
+  /// Otherwise returns an empty list.
+  ///
+  /// The schema looks like:
+  ///
+  ///     analyzer:
+  ///       enable-experiment:
+  ///         - variance # Or other experiment names.
+  Future<List<String>> findExperimentFlags(File file) async {
+    try {
+      Profile.begin('ConfigCache.findExperimentFlags()');
+      return (await _findFormatterOptions(file)).experimentFlags;
+    } finally {
+      Profile.end('ConfigCache.findExperimentFlags()');
+    }
+  }
+
+  /// Looks for an "analysis_options.yaml" file surrounding [file] and, if
   /// found and valid, returns the configured options.
   ///
-  /// If no options file could be found or it doesn't contain a "formatter" key
-  /// whose value is a map, returns a default set of options where all settings
-  /// are `null`.
+  /// If no options file could be found, returns a default set of options where
+  /// all settings are `null`.
   Future<_FormatterOptions> _findFormatterOptions(File file) async {
     // Use the cached version if present.
     var directory = file.parent.path;
@@ -137,6 +156,7 @@ final class ConfigCache {
 
     int? pageWidth;
     TrailingCommas? trailingCommas;
+    var experimentFlags = <String>[];
 
     try {
       // Look for a surrounding "analysis_options.yaml" file.
@@ -146,6 +166,32 @@ final class ConfigCache {
         reportFailedRead: _reportFailedRead,
         resolvePackageUri: (uri) => _resolvePackageUri(file, uri),
       );
+
+      if (optionsFile['analyzer'] case Map<Object?, Object?> analyzer) {
+        if (analyzer case {'enable-experiment': var experiment?}) {
+          switch (experiment) {
+            case String flag:
+              experimentFlags = [flag];
+            case List<Object?> flags:
+              for (var flag in flags) {
+                switch (flag) {
+                  case String flag:
+                    experimentFlags.add(flag);
+                  default:
+                    stderr.writeln(
+                      'Warning: "enable-experiment" option list should contain '
+                      'only strings, but contained "$flag".',
+                    );
+                }
+              }
+            default:
+              stderr.writeln(
+                'Warning: "enable-experiment" option should be a string or '
+                'list of strings, but was "$experiment".',
+              );
+          }
+        }
+      }
 
       if (optionsFile['formatter'] case Map<Object?, Object?> formatter) {
         if (formatter case {'page_width': int width}) {
@@ -178,6 +224,7 @@ final class ConfigCache {
     return _directoryOptions[directory] = _FormatterOptions(
       pageWidth,
       trailingCommas,
+      experimentFlags,
     );
   }
 
@@ -257,5 +304,7 @@ final class _FormatterOptions {
   /// the options file doesn't specify it.
   final TrailingCommas? trailingCommas;
 
-  _FormatterOptions(this.pageWidth, this.trailingCommas);
+  final List<String> experimentFlags;
+
+  _FormatterOptions(this.pageWidth, this.trailingCommas, this.experimentFlags);
 }

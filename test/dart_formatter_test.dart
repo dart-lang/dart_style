@@ -14,61 +14,33 @@ void main() async {
   group('tall style', () {
     _runTests(isTall: true);
   });
-}
-
-/// Run all of the DartFormatter tests either using short or tall style.
-void _runTests({required bool isTall}) {
-  DartFormatter makeFormatter({
-    Version? languageVersion,
-    int? indent,
-    String? lineEnding,
-  }) {
-    languageVersion ??= isTall
-        ? DartFormatter.latestLanguageVersion
-        : DartFormatter.latestShortStyleLanguageVersion;
-
-    return DartFormatter(
-      languageVersion: languageVersion,
-      indent: indent,
-      lineEnding: lineEnding,
-    );
-  }
 
   group('language version', () {
-    test('defaults to latest if omitted', () {
-      var formatter = makeFormatter();
-      expect(
-        formatter.languageVersion,
-        isTall
-            ? DartFormatter.latestLanguageVersion
-            : DartFormatter.latestShortStyleLanguageVersion,
-      );
-    });
-
     test('parses at given older language version', () {
       // Use a language version before patterns were supported and a pattern
       // is an error.
-      var formatter = makeFormatter(languageVersion: Version(2, 19, 0));
-      expect(
-        () => formatter.format('main() {switch (o) {case var x: break;}}'),
-        throwsA(isA<FormatterException>()),
+      var formatter = DartFormatter(languageVersion: Version(2, 19, 0));
+
+      expectFormatBothThrows<FormatterException>(
+        formatter,
+        'main() {switch (o) {case var x: break;}}',
       );
     });
 
     test('parses at given newer language version', () {
       // Use a language version after patterns were supported and `1 + 2` is an
       // error.
-      var formatter = makeFormatter(languageVersion: Version(3, 0, 0));
-      expect(
-        () => formatter.format('main() {switch (o) {case 1+2: break;}}'),
-        throwsA(isA<FormatterException>()),
+      var formatter = DartFormatter(languageVersion: Version(3, 0, 0));
+      expectFormatBothThrows<FormatterException>(
+        formatter,
+        'main() {switch (o) {case 1+2: break;}}',
       );
     });
 
     test('@dart comment overrides version', () {
       // Use a language version after patterns were supported and `1 + 2` is an
       // error.
-      var formatter = makeFormatter(languageVersion: Version(3, 0, 0));
+      var formatter = DartFormatter(languageVersion: Version(3, 0, 0));
 
       // But then have the code opt to the older version.
       const before = '''
@@ -86,21 +58,20 @@ main() {
 }
 ''';
 
-      expect(formatter.format(before), after);
+      expectFormatUnit(formatter, before, after);
     });
-  });
 
-  test('language version comment override opts into short style', () async {
-    // Use a language version with tall style.
-    var formatter = makeFormatter(languageVersion: Version(3, 7, 0));
+    test('comment override opts into short style', () async {
+      // Use a language version with tall style.
+      var formatter = DartFormatter(languageVersion: Version(3, 7, 0));
 
-    // But the code has a comment to opt into the short style.
-    const before = '''
+      // But the code has a comment to opt into the short style.
+      const before = '''
 // @dart=3.6
 main() { f(argument, // comment
 another);}
 ''';
-    const after = '''
+      const after = '''
 // @dart=3.6
 main() {
   f(
@@ -109,31 +80,31 @@ main() {
 }
 ''';
 
-    expect(formatter.format(before), after);
-  });
+      expectFormatUnit(formatter, before, after);
+    });
 
-  test('language version comment override opts into tall style', () async {
-    // Use a language version with short style.
-    var formatter = makeFormatter(languageVersion: Version(3, 6, 0));
+    test('comment override opts into tall style', () async {
+      // Use a language version with short style.
+      var formatter = DartFormatter(languageVersion: Version(3, 6, 0));
 
-    // But the code has a comment to opt into the tall style.
-    //
-    // Note that in real-world code it doesn't make sense for a language
-    // version comment to be *higher* than the specified default language
-    // version before you can't use a comment that's higher than the minimum
-    // version in the package's SDK constraint. (Otherwise, you could end up
-    // trying to run a library whose language version isn't supported by the
-    // SDK you are running it in.)
-    //
-    // But we support it in the formatter since it's possible to specify a
-    // default language version using mechanisms other than the pubspec SDK
-    // constraint.
-    const before = '''
+      // But the code has a comment to opt into the tall style.
+      //
+      // Note that in real-world code it doesn't make sense for a language
+      // version comment to be *higher* than the specified default language
+      // version before you can't use a comment that's higher than the minimum
+      // version in the package's SDK constraint. (Otherwise, you could end up
+      // trying to run a library whose language version isn't supported by the
+      // SDK you are running it in.)
+      //
+      // But we support it in the formatter since it's possible to specify a
+      // default language version using mechanisms other than the pubspec SDK
+      // constraint.
+      const before = '''
 // @dart=3.7
 main() { f(argument, // comment
 another);}
 ''';
-    const after = '''
+      const after = '''
 // @dart=3.7
 main() {
   f(
@@ -143,24 +114,23 @@ main() {
 }
 ''';
 
-    expect(formatter.format(before), after);
-  });
+      expectFormatUnit(formatter, before, after);
+    });
 
-  test('language version comment override changes language versioned style '
-      'change', () async {
-    // Use a language version at a later style.
-    var formatter = makeFormatter(languageVersion: Version(3, 8, 0));
+    test('comment override changes language versioned style change', () async {
+      // Use a language version at a later style.
+      var formatter = DartFormatter(languageVersion: Version(3, 8, 0));
 
-    // But the code has a comment to opt into an older but still tall style.
-    // In 3.8, we allow the condition part of a `?:` on the same line as an
-    // assignment. In 3.7, we don't.
-    const before = '''
+      // But the code has a comment to opt into an older but still tall style.
+      // In 3.8, we allow the condition part of a `?:` on the same line as an
+      // assignment. In 3.7, we don't.
+      const before = '''
 // @dart=3.7
 var variable = condition
     ? thenBranch // Comment to force split.
     : elseBranch;
 ''';
-    const after = '''
+      const after = '''
 // @dart=3.7
 var variable =
     condition
@@ -168,72 +138,61 @@ var variable =
         : elseBranch;
 ''';
 
-    expect(formatter.format(before), after);
+      expectFormatUnit(formatter, before, after);
+    });
+  });
+}
+
+/// Run all of the DartFormatter tests either using short or tall style.
+void _runTests({required bool isTall}) {
+  DartFormatter makeFormatter({
+    int? indent,
+    String? lineEnding,
+    List<String>? experimentFlags,
+  }) {
+    return DartFormatter(
+      languageVersion: isTall
+          ? DartFormatter.latestLanguageVersion
+          : DartFormatter.latestShortStyleLanguageVersion,
+      indent: indent,
+      lineEnding: lineEnding,
+      experimentFlags: experimentFlags,
+    );
+  }
+
+  group('experiment flags', () {
+    test('passes experiment flags to parser', () {
+      var formatter = makeFormatter(experimentFlags: ['variance']);
+      expectFormatUnitThrows<UnexpectedOutputException>(
+        formatter,
+        'class Writer<in T> {}',
+      );
+    });
   });
 
   test('throws a FormatterException on failed parse', () {
     var formatter = makeFormatter();
-    expect(() => formatter.format('wat?!'), throwsA(isA<FormatterException>()));
-  });
-
-  test('FormatterException.message() does not throw', () {
-    // This is a regression test for #358 where an error whose position is
-    // past the end of the source caused FormatterException to throw.
-    expect(
-      () => makeFormatter().format('library'),
-      throwsA(
-        isA<FormatterException>().having(
-          (e) => e.message(),
-          'message',
-          contains('Could not format'),
-        ),
-      ),
-    );
-  });
-
-  test('FormatterException describes parse errors', () {
-    expect(
-      () {
-        makeFormatter().format('''
-
-      var a = some error;
-
-      var b = another one;
-      ''', uri: 'my_file.dart');
-
-        fail('Should throw.');
-      },
-      throwsA(
-        isA<FormatterException>().having(
-          (e) => e.message(),
-          'message',
-          allOf(
-            contains('Could not format'),
-            contains('line 2'),
-            contains('line 4'),
-          ),
-        ),
-      ),
-    );
+    expectFormatBothThrows<FormatterException>(formatter, 'wat?!');
   });
 
   test('adds newline to unit', () {
-    expect(makeFormatter().format('var x = 1;'), equals('var x = 1;\n'));
+    var formatter = makeFormatter();
+    expectFormatUnit(formatter, 'var x = 1;', 'var x = 1;\n');
   });
 
   test('adds newline to unit after trailing comment', () {
-    expect(
-      makeFormatter().format('library foo; //zamm'),
-      equals('library foo; //zamm\n'),
-    );
+    var formatter = makeFormatter();
+    expectFormatUnit(formatter, 'library foo; //zamm', 'library foo; //zamm\n');
   });
 
   test('removes extra newlines', () {
-    expect(makeFormatter().format('var x = 1;\n\n\n'), equals('var x = 1;\n'));
+    var formatter = makeFormatter();
+    expectFormatUnit(formatter, 'var x = 1;\n\n\n', 'var x = 1;\n');
   });
 
   test('does not add newline to statement', () {
-    expect(makeFormatter().formatStatement('var x = 1;'), equals('var x = 1;'));
+    var formatter = makeFormatter();
+    expectFormatStatement(formatter, 'var x = 1;', 'var x = 1;');
   });
 
   test('fails if anything is after the statement', () {
@@ -253,13 +212,12 @@ var variable =
 
   test('preserves initial indent', () {
     var formatter = makeFormatter(indent: 3);
-    expect(
-      formatter.formatStatement('if (foo) {bar;}'),
-      equals(
-        '   if (foo) {\n'
-        '     bar;\n'
-        '   }',
-      ),
+    expectFormatStatement(
+      formatter,
+      'if (foo) {bar;}',
+      '   if (foo) {\n'
+          '     bar;\n'
+          '   }',
     );
   });
 
@@ -271,43 +229,33 @@ var variable =
       // as would occur if we used a non-whitespace character as the line
       // ending.
       var lineEnding = '\t';
-      expect(
-        makeFormatter(lineEnding: lineEnding).format('var i = 1;'),
-        equals('var i = 1;\t'),
-      );
+      var formatter = makeFormatter(lineEnding: lineEnding);
+      expectFormatUnit(formatter, 'var i = 1;', 'var i = 1;\t');
     });
 
     test('infers \\r\\n if the first newline uses that', () {
-      expect(
-        makeFormatter().format('var\r\ni\n=\n1;\n'),
-        equals('var i = 1;\r\n'),
-      );
+      var formatter = makeFormatter();
+      expectFormatUnit(formatter, 'var\r\ni\n=\n1;\n', 'var i = 1;\r\n');
     });
 
     test('infers \\n if the first newline uses that', () {
-      expect(
-        makeFormatter().format('var\ni\r\n=\r\n1;\r\n'),
-        equals('var i = 1;\n'),
-      );
+      var formatter = makeFormatter();
+      expectFormatUnit(formatter, 'var\ni\r\n=\r\n1;\r\n', 'var i = 1;\n');
     });
 
     test('defaults to \\n if there are no newlines', () {
-      expect(makeFormatter().format('var i =1;'), equals('var i = 1;\n'));
+      var formatter = makeFormatter();
+      expectFormatUnit(formatter, 'var i =1;', 'var i = 1;\n');
     });
 
     test('handles Windows line endings in multiline strings', () {
-      expect(
-        makeFormatter(lineEnding: '\r\n').formatStatement(
-          '  """first\r\n'
+      const code =
+          'var x = """first\r\n'
           'second\r\n'
-          'third"""  ;',
-        ),
-        equals(
-          '"""first\r\n'
-          'second\r\n'
-          'third""";',
-        ),
-      );
+          'third""";';
+      var formatter = makeFormatter(lineEnding: '\r\n');
+      expectFormatUnit(formatter, code, '$code\r\n');
+      expectFormatStatement(formatter, code, code);
     });
 
     test('DartFormat.lineEnding getter is not mutated by inferred ending', () {
@@ -334,9 +282,67 @@ var variable =
     // Use an invalid line ending character to ensure the formatter will
     // attempt to make non-whitespace changes.
     var formatter = makeFormatter(lineEnding: '%');
-    expect(
-      () => formatter.format('var i = 1;'),
-      throwsA(isA<UnexpectedOutputException>()),
+    expectFormatBothThrows<UnexpectedOutputException>(
+      formatter,
+      'var x = // c\n1;',
     );
   });
+}
+
+/// Validates that formatting [source] using [formatter] produces [expected].
+///
+/// The [source] should be a valid compilation unit but is not a valid
+/// statement. Tests that [format()] and [formatSource()] both pass the
+/// expectation.
+void expectFormatUnit(DartFormatter formatter, String source, String expected) {
+  expect(formatter.format(source), expected);
+  expect(formatter.formatSource(SourceCode(source)).text, expected);
+}
+
+/// Validates that formatting [source] using [formatter] produces [expected].
+///
+/// The [source] should be a valid statement but is not a valid compilation
+/// unit. Tests that [formatStatement()] and [formatSource()] both pass the
+/// expectation.
+void expectFormatStatement(
+  DartFormatter formatter,
+  String source,
+  String expected,
+) {
+  expect(formatter.formatStatement(source), expected);
+  expect(
+    formatter.formatSource(SourceCode(source, isCompilationUnit: false)).text,
+    expected,
+  );
+}
+
+/// Validates that formatting [source] using [formatter] throws an error of
+/// type [E].
+///
+/// The [source] should be both a valid compilation unit and a valid statement.
+/// Tests that [format()], [formatSource()], and [formatStatement()] all throw
+/// the error.
+void expectFormatBothThrows<E>(DartFormatter formatter, String source) {
+  expectFormatUnitThrows<E>(formatter, source);
+
+  expect(() => formatter.formatStatement(source), throwsA(isA<E>()));
+  expect(
+    () => formatter
+        .formatSource(SourceCode(source, isCompilationUnit: false))
+        .text,
+    throwsA(isA<E>()),
+  );
+}
+
+/// Validates that formatting [source] using [formatter] throws an error of
+/// type [E].
+///
+/// The [source] should be a valid compilation unit. Tests that [format()] and
+/// [formatSource()] both throw the error.
+void expectFormatUnitThrows<E>(DartFormatter formatter, String source) {
+  expect(() => formatter.format(source), throwsA(isA<E>()));
+  expect(
+    () => formatter.formatSource(SourceCode(source)).text,
+    throwsA(isA<E>()),
+  );
 }

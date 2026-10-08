@@ -99,7 +99,7 @@ final class FormatterOptions {
       output.showFile(displayPath, result);
     }
 
-    // Set the exit code.
-    if (setExitIfChanged && changed) exitCode = 1;
+    // Set the exit code (unless it was already set by another error).
+    if (setExitIfChanged && changed && exitCode == 0) exitCode = 1;
   }
 }
