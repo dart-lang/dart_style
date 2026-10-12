@@ -344,19 +344,36 @@ d.DirectoryDescriptor packageConfig(
 String analysisOptions({
   int? pageWidth,
   TrailingCommas? trailingCommas,
-  Object? /* String | List<String> */ include,
+  String? include,
+  List<String>? includes,
   Map<String, Object>? other,
+  List<String>? experimentFlags,
 }) {
+  if (include != null && includes != null) {
+    throw ArgumentError(
+      'Can\'t pass arguments for both "include" and "includes".',
+    );
+  }
+
   var yaml = StringBuffer();
 
-  switch (include) {
-    case String _:
-      yaml.writeln('include: $include');
-    case List<String> _:
-      yaml.writeln('include:');
-      for (var path in include) {
-        yaml.writeln('  - $path');
-      }
+  if (include != null) {
+    yaml.writeln('include: $include');
+  }
+
+  if (includes != null) {
+    yaml.writeln('include:');
+    for (var path in includes) {
+      yaml.writeln('  - $path');
+    }
+  }
+
+  if (experimentFlags != null) {
+    yaml.writeln('analyzer:');
+    yaml.writeln('  enable-experiment:');
+    for (var flag in experimentFlags) {
+      yaml.writeln('    - $flag');
+    }
   }
 
   if (pageWidth != null || trailingCommas != null) {
@@ -386,12 +403,16 @@ d.FileDescriptor analysisOptionsFile({
   String name = 'analysis_options.yaml',
   int? pageWidth,
   TrailingCommas? trailingCommas,
-  Object? include,
+  String? include,
+  List<String>? includes,
+  List<String>? experimentFlags,
 }) {
   var yaml = analysisOptions(
     pageWidth: pageWidth,
     trailingCommas: trailingCommas,
     include: include,
+    includes: includes,
+    experimentFlags: experimentFlags,
   );
   return d.FileDescriptor(name, yaml.toString());
 }

@@ -2,6 +2,9 @@
 
 ### Bug fixes
 
+* Enable experiments specified by surrounding `analysis_options.yaml` file when
+  parsing code (#1886).
+
 * Fix crash when attempting to write a line with exactly 128 spaces of
   indentation.
 

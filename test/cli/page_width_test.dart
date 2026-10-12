@@ -161,7 +161,7 @@ void main() {
   test('ignore missing includes', () async {
     await d.dir('dir', [
       analysisOptionsFile(
-        include: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
+        includes: ['unknown1.yaml', 'known.yaml', 'unknown2.yaml'],
       ),
       analysisOptionsFile(name: 'known.yaml', pageWidth: 30),
       d.file('main.dart', _unformatted),
@@ -189,7 +189,7 @@ void main() {
   test('only warn on a missing include once', () async {
     await d.dir('dir', [
       analysisOptionsFile(
-        include: ['unknown.yaml', 'unknown.yaml', 'unknown.yaml'],
+        includes: ['unknown.yaml', 'unknown.yaml', 'unknown.yaml'],
       ),
       d.file('main.dart', _unformatted),
     ]).create();

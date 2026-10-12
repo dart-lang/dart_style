@@ -27,34 +27,11 @@ Future<void> formatStdin(
     selectionLength = selection[1];
   }
 
-  var cache = ConfigCache();
-
-  var languageVersion = options.languageVersion;
-  if (languageVersion == null && path != null) {
-    // We have a stdin-name, so look for a surrounding package config.
-    languageVersion = await cache.findLanguageVersion(File(path), path);
-  }
-
-  // If they didn't specify a version or a path, or couldn't find a package
-  // surrounding the path, then default to the latest version.
-  languageVersion ??= DartFormatter.latestLanguageVersion;
-
-  // Determine the page width.
-  var pageWidth = options.pageWidth;
-  if (pageWidth == null && path != null) {
-    // We have a stdin-name, so look for a surrounding analyisis_options.yaml.
-    pageWidth = await cache.findPageWidth(File(path));
-  }
-
-  var trailingCommas = options.trailingCommas;
-  if (trailingCommas == null && path != null) {
-    // We have a stdin-name, so look for a surrounding analyisis_options.yaml.
-    trailingCommas = await cache.findTrailingCommas(File(path));
-  }
-
-  // Use a default page width if we don't have a specified one and couldn't
-  // find a configured one.
-  pageWidth ??= DartFormatter.defaultPageWidth;
+  var formatter = await _createFormatter(
+    options,
+    ConfigCache(),
+    path != null ? File(path) : null,
+  );
 
   var name = path ?? 'stdin';
 
@@ -62,13 +39,6 @@ Future<void> formatStdin(
   var input = StringBuffer();
 
   void onDone() {
-    var formatter = DartFormatter(
-      languageVersion: languageVersion!,
-      indent: options.indent,
-      pageWidth: pageWidth,
-      trailingCommas: trailingCommas,
-      experimentFlags: options.experimentFlags,
-    );
     try {
       options.beforeFile(null, name);
       var source = SourceCode(
@@ -84,15 +54,10 @@ Future<void> formatStdin(
         output,
         changed: source.text != output.text,
       );
-    } on FormatterException catch (err) {
-      stderr.writeln(err.message());
-      exitCode = 65; // sysexits.h: EX_DATAERR
-    } catch (err, stack) {
-      stderr.writeln('''Hit a bug in the formatter when formatting stdin.
-Please report at: github.com/dart-lang/dart_style/issues
-$err
-$stack''');
-      exitCode = 70; // sysexits.h: EX_SOFTWARE
+    } on FormatterException catch (error) {
+      _reportParseError(error);
+    } catch (error, stack) {
+      _reportInternalError('stdin', error, stack);
     }
 
     completer.complete();
@@ -110,19 +75,10 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   var cache = ConfigCache();
 
   for (var path in paths) {
-    var directory = Directory(path);
-    if (directory.existsSync()) {
-      if (!await _processDirectory(cache, options, directory)) {
-        exitCode = 65;
-      }
-      continue;
-    }
-
-    var file = File(path);
-    if (file.existsSync()) {
-      if (!await _processFile(cache, options, file)) {
-        exitCode = 65;
-      }
+    if (Directory(path) case var directory when directory.existsSync()) {
+      await _processDirectory(cache, options, directory);
+    } else if (File(path) case var file when file.existsSync()) {
+      await _processFile(cache, options, file);
     } else {
       stderr.writeln('No file or directory found at "$path".');
     }
@@ -131,16 +87,11 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
 
 /// Runs the formatter on every .dart file in [path] (and its subdirectories),
 /// and replaces them with their formatted output.
-///
-/// Returns `true` if successful or `false` if an error occurred in any of the
-/// files.
-Future<bool> _processDirectory(
+Future<void> _processDirectory(
   ConfigCache cache,
   FormatterOptions options,
   Directory directory,
 ) async {
-  var success = true;
-
   var entries = directory.listSync(
     recursive: true,
     followLinks: options.followLinks,
@@ -156,55 +107,19 @@ Future<bool> _processDirectory(
     var parts = p.split(p.relative(entry.path, from: directory.path));
     if (parts.any((part) => part.startsWith('.'))) continue;
 
-    if (!await _processFile(
-      cache,
-      options,
-      entry,
-      displayPath: p.normalize(entry.path),
-    )) {
-      success = false;
-    }
+    await _processFile(cache, options, entry, p.normalize(entry.path));
   }
-
-  return success;
 }
 
 /// Runs the formatter on [file].
-///
-/// Returns `true` if successful or `false` if an error occurred.
-Future<bool> _processFile(
+Future<void> _processFile(
   ConfigCache cache,
   FormatterOptions options,
-  File file, {
+  File file, [
   String? displayPath,
-}) async {
+]) async {
   displayPath ??= file.path;
-
-  // Determine what language version to use.
-  var languageVersion =
-      options.languageVersion ??
-      await cache.findLanguageVersion(file, displayPath);
-
-  // If they didn't specify a version and we couldn't find a surrounding
-  // package, then default to the latest version.
-  languageVersion ??= DartFormatter.latestLanguageVersion;
-
-  // Determine the configuration options.
-  var pageWidth = options.pageWidth ?? await cache.findPageWidth(file);
-  var trailingCommas =
-      options.trailingCommas ?? await cache.findTrailingCommas(file);
-
-  // Use a default page width if we don't have a specified one and couldn't
-  // find a configured one.
-  pageWidth ??= DartFormatter.defaultPageWidth;
-
-  var formatter = DartFormatter(
-    languageVersion: languageVersion,
-    indent: options.indent,
-    pageWidth: pageWidth,
-    trailingCommas: trailingCommas,
-    experimentFlags: options.experimentFlags,
-  );
+  var formatter = await _createFormatter(options, cache, file, displayPath);
 
   try {
     var source = SourceCode(file.readAsStringSync(), uri: file.path);
@@ -216,23 +131,77 @@ Future<bool> _processFile(
       output,
       changed: source.text != output.text,
     );
-    return true;
-  } on FormatterException catch (err) {
-    var color =
-        Platform.operatingSystem != 'windows' &&
-        stdioType(stderr) == StdioType.terminal;
+  } on FormatterException catch (error) {
+    _reportParseError(error);
+  } catch (error, stack) {
+    _reportInternalError(displayPath, error, stack);
+  }
+}
 
-    stderr.writeln(err.message(color: color));
-  } on UnexpectedOutputException catch (err) {
-    stderr.writeln('''Hit a bug in the formatter when formatting $displayPath.
-$err
-Please report at github.com/dart-lang/dart_style/issues.''');
-  } catch (err, stack) {
-    stderr.writeln('''Hit a bug in the formatter when formatting $displayPath.
-Please report at github.com/dart-lang/dart_style/issues.
-$err
-$stack''');
+/// Creates a [DartFormatter] configured using the given explicit options and
+/// any surrounding `analysis_options.yaml` file (if [file] is given).
+Future<DartFormatter> _createFormatter(
+  FormatterOptions options,
+  ConfigCache cache,
+  File? file, [
+  String? displayPath,
+]) async {
+  // Explicitly passed arguments take precedence.
+  var languageVersion = options.languageVersion;
+  var pageWidth = options.pageWidth;
+  var trailingCommas = options.trailingCommas;
+  var experimentFlags = options.experimentFlags;
+
+  // If we have a file path, look for options from a surrounding
+  // analysis_options.yaml file.
+  if (file != null) {
+    languageVersion ??= await cache.findLanguageVersion(
+      file,
+      displayPath ?? file.path,
+    );
+    pageWidth ??= await cache.findPageWidth(file);
+    trailingCommas ??= await cache.findTrailingCommas(file);
+
+    if (experimentFlags.isEmpty) {
+      experimentFlags = await cache.findExperimentFlags(file);
+    }
   }
 
-  return false;
+  // Fill in the defaults if we weren't otherwise given values.
+  languageVersion ??= DartFormatter.latestLanguageVersion;
+  pageWidth ??= DartFormatter.defaultPageWidth;
+
+  return DartFormatter(
+    languageVersion: languageVersion,
+    indent: options.indent,
+    pageWidth: pageWidth,
+    trailingCommas: trailingCommas,
+    experimentFlags: experimentFlags,
+  );
+}
+
+void _reportParseError(FormatterException exception) {
+  var color =
+      Platform.operatingSystem != 'windows' &&
+      stdioType(stderr) == StdioType.terminal;
+
+  stderr.writeln(exception.message(color: color));
+
+  // An internal error is more severe than the user giving the formatter bad
+  // Dart syntax, so only set the exit code here if we haven't had an internal
+  // error.
+  if (exitCode != 70) exitCode = 65; // sysexits.h: EX_DATAERR
+}
+
+void _reportInternalError(
+  String displayPath,
+  Object error,
+  StackTrace stackTrace,
+) {
+  stderr.writeln('Hit a bug in the formatter when formatting $displayPath.');
+  stderr.writeln(error);
+  if (error is! UnexpectedOutputException) stderr.writeln(stackTrace);
+  stderr.writeln('Please report at github.com/dart-lang/dart_style/issues.');
+
+  exitCode = 70; // sysexits.h: EX_SOFTWARE
 }
