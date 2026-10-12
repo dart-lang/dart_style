@@ -24,7 +24,7 @@ class DartVersionHistory {
   /// the formatter.
   ///
   /// This should be incremented when a new stable Dart SDK is released.
-  static const int _highest3xMinorVersion = 13;
+  static const int _highest3xMinorVersion = 14;
 
   /// All supported language versions.
   static List<Version> get all => _initialize();
