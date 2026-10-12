@@ -1,5 +1,7 @@
 ## 3.1.14-wip
 
+* Update latest supported language version to 3.14.
+
 ### Bug fixes
 
 * Enable experiments specified by surrounding `analysis_options.yaml` file when
