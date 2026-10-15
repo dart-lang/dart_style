@@ -1,4 +1,4 @@
-## 3.1.14-wip
+## 3.1.14
 
 * Update latest supported language version to 3.14.
 
