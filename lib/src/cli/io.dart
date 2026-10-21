@@ -5,6 +5,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:analyzer/dart/analysis/formatter_options.dart' as a;
 import 'package:path/path.dart' as p;
 
 import '../dart_formatter.dart';
@@ -84,7 +85,8 @@ Future<SourceCode> _formatStdinWithPath(
   );
 
   try {
-    var (output, changed: _) = analyzer.format(
+    var (output, changed: _) = _formatFromAnalyzer(
+      analyzer,
       options,
       absolutePath,
       selectionStart: selectionStart,
@@ -174,7 +176,11 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
       try {
         options.beforeFile(absolutePath, displayPath);
 
-        var (output, :changed) = analyzer.format(options, absolutePath);
+        var (output, :changed) = _formatFromAnalyzer(
+          analyzer,
+          options,
+          absolutePath,
+        );
         options.afterFile(absolutePath, displayPath, output, changed: changed);
       } on FormatterException catch (error) {
         _reportParseError(error);
@@ -187,10 +193,58 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
   }
 }
 
+/// Uses [analyzer] to read [path] and any surrounding options and then formats
+/// the result using any provided [options].
+///
+/// Returns the resulting formatted output and `true` if the output is
+/// different from the original input.
+(SourceCode, {bool changed}) _formatFromAnalyzer(
+  Analyzer analyzer,
+  FormatterOptions options,
+  String path, {
+  int? selectionStart,
+  int? selectionLength,
+}) {
+  var (parsedResult, analysisOptions) = analyzer.read(options, path);
+
+  var formatter = DartFormatter(
+    languageVersion:
+        options.languageVersion ?? parsedResult.unit.languageVersion.package,
+    indent: options.indent,
+    pageWidth:
+        options.pageWidth ??
+        analysisOptions.formatterOptions.pageWidth ??
+        DartFormatter.defaultPageWidth,
+    trailingCommas:
+        options.trailingCommas ??
+        switch (analysisOptions.formatterOptions.trailingCommas) {
+          null => TrailingCommas.automate,
+          a.TrailingCommas.automate => TrailingCommas.automate,
+          a.TrailingCommas.preserve => TrailingCommas.preserve,
+        },
+    // TODO(rnystrom): Should get any experiment flags enabled in
+    // [analysisOptions] and pass them in here if [options.experimentFlags] is
+    // empty. But it doesn't seem like the [AnalysisOptions] class exposes
+    // the list of experiment flags directly, and the formatter doesn't
+    // actually use them anyway, so don't bother trying to send them along.
+    // (Only the parser uses experiment flags, and the
+    // AnalysisContextCollection will send them to the parser.)
+    experimentFlags: options.experimentFlags,
+  );
+
+  var output = formatUnitResult(
+    formatter,
+    parsedResult,
+    selectionStart: selectionStart,
+    selectionLength: selectionLength,
+  );
+
+  return (output, changed: parsedResult.content != output.text);
+}
+
 void _reportParseError(FormatterException exception) {
   var color =
-      Platform.operatingSystem != 'windows' &&
-      stdioType(stderr) == StdioType.terminal;
+      Platform.operatingSystem != 'windows' && stdioType(stderr) == .terminal;
 
   stderr.writeln(exception.message(color: color));
 

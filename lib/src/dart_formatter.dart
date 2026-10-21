@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:math' as math;
 
-import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:analyzer/dart/ast/ast.dart';
@@ -161,7 +160,7 @@ final class DartFormatter {
     // Parse it.
     var parseResult = parseString(
       content: text,
-      featureSet: FeatureSet.fromEnableFlags2(
+      featureSet: .fromEnableFlags2(
         sdkLanguageVersion: languageVersion,
         flags: experimentFlags,
       ),
@@ -204,7 +203,7 @@ final class DartFormatter {
       node,
     );
 
-    _sanityCheck(source.text, output.text);
+    _checkUnexpectedOutput(source.text, output.text);
 
     return output;
   }
@@ -230,7 +229,7 @@ final class DartFormatter {
       parsedUnit.unit,
       parsedUnit.unit,
     );
-    _sanityCheck(parsedUnit.content, output.text);
+    _checkUnexpectedOutput(parsedUnit.content, output.text);
     return output;
   }
 
@@ -241,9 +240,9 @@ final class DartFormatter {
   /// reported during parsing that the formatter ignores so that syntactically
   /// valid but incorrect code can still be formatted.
   void _throwErrors(List<Diagnostic> diagnostics) {
-    var syntacticErrors = diagnostics.where((error) {
-      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
-    }).toList();
+    var syntacticErrors = diagnostics
+        .where((error) => error.diagnosticCode.type == .SYNTACTIC_ERROR)
+        .toList();
     if (syntacticErrors.isNotEmpty) {
       throw FormatterException(syntacticErrors);
     }
@@ -296,8 +295,8 @@ final class DartFormatter {
     return AstNodeVisitor(style, lineInfo, input).run(input, node);
   }
 
-  /// Sanity check that only whitespace was changed.
-  void _sanityCheck(String input, String output) {
+  /// Check that only whitespace and non-semantic characters were changed.
+  void _checkUnexpectedOutput(String input, String output) {
     if (!string_compare.equalIgnoringWhitespace(input, output)) {
       throw UnexpectedOutputException(input, output);
     }
