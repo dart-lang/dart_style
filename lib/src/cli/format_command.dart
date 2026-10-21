@@ -9,8 +9,8 @@ import 'package:pub_semver/pub_semver.dart';
 
 import '../dart_formatter.dart';
 import '../dart_version_history.dart';
-import '../io.dart';
 import 'formatter_options.dart';
+import 'io.dart';
 import 'output.dart';
 import 'show.dart';
 import 'summary.dart';
@@ -169,7 +169,7 @@ final class FormatCommand extends Command<int> {
           'The path that code read from stdin is treated as coming from.\n\n'
           'This path is used in error messages and also to locate a\n'
           'surrounding package to infer the code\'s language version.\n'
-          'To avoid searching for a surrounding package config, pass\n'
+          'The inferred language version can be overridden by passing\n'
           'in a language version using --language-version.',
       hide: !verbose,
     );

@@ -1,6 +1,6 @@
 name: dart_style
 # Do not edit directly. Use tool/bump_version.dart.
-version: 3.1.14
+version: 3.1.15-wip
 description: >-
   Opinionated, automatic Dart source code formatter.
   Provides an API and a CLI tool.
@@ -9,17 +9,16 @@ environment:
   sdk: ^3.11.0
 
 dependencies:
-  analyzer: '>=13.1.0 <15.0.0'
+  analyzer: '^14.6.0'
   args: ^2.5.0
   collection: ^1.19.0
-  package_config: '>=2.1.0 <4.0.0'
   path: ^1.9.0
   pub_semver: ^2.1.4
   source_span: ^1.8.0
-  yaml: ^3.1.2
 
 dev_dependencies:
   dart_flutter_team_lints: ^3.1.0
   test: ^1.26.3
   test_descriptor: ^2.0.0
   test_process: ^2.0.0
+  yaml: ^3.1.2

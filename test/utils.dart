@@ -333,20 +333,15 @@ d.DirectoryDescriptor packageConfig(
   ]);
 }
 
-/// Creates the YAML string contents of an analysis options file.
-///
-/// If [pageWidth] is given, then the result has a "formatter" section to
-/// specify the page width. If [trailingCommas] is given, then the result has a
-/// "formatter" section specifying the trailing commas mode. If [include] is
-/// given, then adds an "include" key to include another analysis options file.
-/// If [other] is given, then those are added as other top-level keys in the
-/// YAML.
-String analysisOptions({
+/// Creates a file named "analysis_options.yaml" containing the given YAML
+/// options to configure the [pageWidth], [trailingCommas] and [include] file
+/// (or [includes] files), if any.
+d.FileDescriptor analysisOptionsFile({
+  String name = 'analysis_options.yaml',
   int? pageWidth,
   TrailingCommas? trailingCommas,
   String? include,
   List<String>? includes,
-  Map<String, Object>? other,
   List<String>? experimentFlags,
 }) {
   if (include != null && includes != null) {
@@ -387,32 +382,5 @@ String analysisOptions({
     }
   }
 
-  if (other != null) {
-    other.forEach((key, value) {
-      yaml.writeln('$key:');
-      yaml.writeln('  $value');
-    });
-  }
-
-  return yaml.toString();
-}
-
-/// Creates a file named "analysis_options.yaml" containing the given YAML
-/// options to configure the [pageWidth] and [include] file, if any.
-d.FileDescriptor analysisOptionsFile({
-  String name = 'analysis_options.yaml',
-  int? pageWidth,
-  TrailingCommas? trailingCommas,
-  String? include,
-  List<String>? includes,
-  List<String>? experimentFlags,
-}) {
-  var yaml = analysisOptions(
-    pageWidth: pageWidth,
-    trailingCommas: trailingCommas,
-    include: include,
-    includes: includes,
-    experimentFlags: experimentFlags,
-  );
   return d.FileDescriptor(name, yaml.toString());
 }

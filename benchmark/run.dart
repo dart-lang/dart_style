@@ -5,7 +5,6 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:analyzer/dart/analysis/features.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
 import 'package:args/args.dart';
@@ -129,7 +128,7 @@ List<double> _runTrials(String verb, Benchmark benchmark, int trials) {
   // parse time (which we don't control) isn't part of the benchmark.
   var parseResult = parseString(
     content: source.text,
-    featureSet: FeatureSet.fromEnableFlags2(
+    featureSet: .fromEnableFlags2(
       sdkLanguageVersion: DartFormatter.latestLanguageVersion,
       flags: const [],
     ),

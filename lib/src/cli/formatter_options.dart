@@ -13,7 +13,7 @@ import 'show.dart';
 import 'summary.dart';
 
 // Do not edit directly. Use tool/bump_version.dart.
-const dartStyleVersion = '3.1.14';
+const dartStyleVersion = '3.1.15';
 
 /// Global options parsed from the command line that affect how the formatter
 /// produces and uses its outputs.
@@ -70,7 +70,7 @@ final class FormatterOptions {
   /// Called when [file] is about to be formatted.
   ///
   /// If stdin is being formatted, then [file] is `null`.
-  void beforeFile(File? file, String label) {
+  void beforeFile(String? file, String label) {
     summary.beforeFile(file, label);
   }
 
@@ -81,7 +81,7 @@ final class FormatterOptions {
   ///
   /// If stdin is being formatted, then [file] is `null`.
   void afterFile(
-    File? file,
+    String? file,
     String displayPath,
     SourceCode result, {
     required bool changed,
