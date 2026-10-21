@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:path/path.dart' as p;
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -135,21 +134,6 @@ void main() {
     ]).create();
 
     var process = await runFormatterOnDir();
-
-    var expectedPath = p.join('.', 'dir', 'foo', 'main.dart');
-    expect(
-      await process.stderr.next,
-      'Warning: Package resolution error when reading '
-      '"analysis_options.yaml" file for "$expectedPath":',
-    );
-
-    var path = p.join(d.sandbox, 'dir', 'foo', 'analysis_options.yaml');
-    expect(
-      await process.stderr.next,
-      'Failed to resolve package URI "package:not_bar/analysis_options.yaml" '
-      'in include at "$path".',
-    );
-
     await process.shouldExit(0);
 
     // Should format the file at 80.
@@ -168,45 +152,10 @@ void main() {
     ]).create();
 
     var process = await runFormatterOnDir();
-
-    var unknown1Path = p.join(d.sandbox, 'dir', 'unknown1.yaml');
-    expect(
-      await process.stderr.next,
-      'Warning: Couldn\'t read file "$unknown1Path".',
-    );
-
-    var unknown2Path = p.join(d.sandbox, 'dir', 'unknown2.yaml');
-    expect(
-      await process.stderr.next,
-      'Warning: Couldn\'t read file "$unknown2Path".',
-    );
-
     await process.shouldExit(0);
 
     // Should format the file at 30 from the successful include.
     await d.dir('dir', [d.file('main.dart', _formatted30)]).validate();
-  });
-  test('only warn on a missing include once', () async {
-    await d.dir('dir', [
-      analysisOptionsFile(
-        includes: ['unknown.yaml', 'unknown.yaml', 'unknown.yaml'],
-      ),
-      d.file('main.dart', _unformatted),
-    ]).create();
-
-    var process = await runFormatterOnDir();
-
-    var unknownPath = p.join(d.sandbox, 'dir', 'unknown.yaml');
-    expect(
-      await process.stderr.next,
-      'Warning: Couldn\'t read file "$unknownPath".',
-    );
-
-    expect(await process.stderr.hasNext, isFalse);
-    await process.shouldExit(0);
-
-    // Should format the file at the default width.
-    await d.dir('dir', [d.file('main.dart', _formatted80)]).validate();
   });
 
   group('stdin', () {

@@ -3,9 +3,9 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:dart_style/src/cli/formatter_options.dart';
+import 'package:dart_style/src/cli/io.dart';
 import 'package:dart_style/src/cli/output.dart';
 import 'package:dart_style/src/cli/show.dart';
-import 'package:dart_style/src/io.dart';
 import 'package:dart_style/src/profile.dart';
 import 'package:path/path.dart' as p;
 

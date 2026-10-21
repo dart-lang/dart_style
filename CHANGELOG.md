@@ -1,3 +1,20 @@
+## 3.1.15-wip
+
+### Internal changes
+
+* Use analyzer's [AnalysisContextCollection] for all IO when running
+  `dart format` as a CLI. There should be no user-visible behavior difference
+  with this change except for:
+
+  * Some error messages may show absolute paths where they used to be relative.
+
+  * Performance is overall somewhat slower but will not affect the performance
+    of formatting the current file in an IDE.
+
+  This change is to remove redundant code between the `dart_style` and
+  `analyzer` packages for calculating language version and reading configuration
+  from `analysis_options.yaml` files.
+
 ## 3.1.14
 
 * Update latest supported language version to 3.14.

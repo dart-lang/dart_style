@@ -10,7 +10,7 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
 import 'package:analyzer/error/error.dart';
-import 'package:analyzer/source/line_info.dart' show LineInfo;
+import 'package:analyzer/source/line_info.dart';
 import 'package:analyzer/source/source.dart';
 import 'package:analyzer/source/timestamped_data.dart';
 import 'package:path/path.dart' as p;
@@ -20,7 +20,6 @@ import 'dart_version_history.dart';
 import 'exceptions.dart';
 import 'front_end/ast_node_visitor.dart';
 import 'front_end/formatting_style.dart';
-import 'profile.dart';
 import 'short/source_visitor.dart';
 import 'source_code.dart';
 import 'string_compare.dart' as string_compare;
@@ -159,37 +158,16 @@ final class DartFormatter {
       );
     }
 
-    var featureSet = FeatureSet.fromEnableFlags2(
-      sdkLanguageVersion: languageVersion,
-      flags: experimentFlags,
-    );
-
     // Parse it.
-    Profile.begin('parseString()');
-    ParseStringResult parseResult;
-    try {
-      parseResult = parseString(
-        content: text,
-        featureSet: featureSet,
-        path: source.uri,
-        throwIfDiagnostics: false,
-      );
-    } finally {
-      Profile.end('parseString()');
-    }
-
-    // Infer the line ending if not given one. Do it here since now we know
-    // where the lines start.
-    var inferredLineEnding =
-        _lineEnding ?? inferLineEnding(parseResult.lineInfo, text);
-
-    // Throw if there are syntactic errors.
-    var syntacticErrors = parseResult.errors.where((error) {
-      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
-    }).toList();
-    if (syntacticErrors.isNotEmpty) {
-      throw FormatterException(syntacticErrors);
-    }
+    var parseResult = parseString(
+      content: text,
+      featureSet: FeatureSet.fromEnableFlags2(
+        sdkLanguageVersion: languageVersion,
+        flags: experimentFlags,
+      ),
+      path: source.uri,
+      throwIfDiagnostics: false,
+    );
 
     AstNode node;
     if (source.isCompilationUnit) {
@@ -217,56 +195,112 @@ final class DartFormatter {
       }
     }
 
-    // Format it.
-    var lineInfo = parseResult.lineInfo;
+    _throwErrors(parseResult.errors);
 
+    var output = _runFormatter(
+      unitSourceCode,
+      parseResult.lineInfo,
+      parseResult.unit,
+      node,
+    );
+
+    _sanityCheck(source.text, output.text);
+
+    return output;
+  }
+
+  /// Format the already parsed [parsedUnit].
+  ///
+  /// This is only used by the dart_style CLI which uses the analyzer
+  /// AnalysisContextCollection API to load and parse files. It's not supported
+  /// as part of dart_style's public API.
+  SourceCode _formatUnitResult(
+    ParsedUnitResult parsedUnit, {
+    int? selectionStart,
+    int? selectionLength,
+  }) {
+    _throwErrors(parsedUnit.diagnostics);
+    var output = _runFormatter(
+      SourceCode(
+        parsedUnit.content,
+        selectionStart: selectionStart,
+        selectionLength: selectionLength,
+      ),
+      parsedUnit.lineInfo,
+      parsedUnit.unit,
+      parsedUnit.unit,
+    );
+    _sanityCheck(parsedUnit.content, output.text);
+    return output;
+  }
+
+  /// Throws if [diagnostics] contains any syntax errors.
+  ///
+  /// The parser rarely reports other more semantic errors since no resolution
+  /// or type-checking is performed, but there are some non-syntactic errors
+  /// reported during parsing that the formatter ignores so that syntactically
+  /// valid but incorrect code can still be formatted.
+  void _throwErrors(List<Diagnostic> diagnostics) {
+    var syntacticErrors = diagnostics.where((error) {
+      return error.diagnosticCode.type == DiagnosticType.SYNTACTIC_ERROR;
+    }).toList();
+    if (syntacticErrors.isNotEmpty) {
+      throw FormatterException(syntacticErrors);
+    }
+  }
+
+  SourceCode _runFormatter(
+    SourceCode input,
+    LineInfo lineInfo,
+    CompilationUnit unit,
+    AstNode node,
+  ) {
     // If the code has an `@dart=` comment, use that to determine the style.
     var sourceLanguageVersion = languageVersion;
-    if (parseResult.unit.languageVersionToken case var token?) {
+    if (unit.languageVersionToken case var token?) {
       sourceLanguageVersion = Version(token.major, token.minor, 0);
     }
 
-    // Use language version to determine what formatting style to apply.
-    SourceCode output;
-    if (sourceLanguageVersion > latestShortStyleLanguageVersion) {
-      // Look for a page width comment before the code.
-      int? pageWidthFromComment;
-      for (
-        Token? comment = node.beginToken.precedingComments;
-        comment != null;
-        comment = comment.next
-      ) {
-        if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
-          // If integer parsing fails for some reason, the returned `null`
-          // means we correctly ignore the comment.
-          pageWidthFromComment = int.tryParse(match[1]!);
-          break;
-        }
+    // Infer the line ending if not given one. Do it here since now we know
+    // where the lines start.
+    var inferredLineEnding =
+        _lineEnding ?? inferLineEnding(lineInfo, input.text);
+
+    // Use the old formatter if on an old enough language version.
+    if (sourceLanguageVersion <= latestShortStyleLanguageVersion) {
+      return SourceVisitor(this, lineInfo, input).run(node, inferredLineEnding);
+    }
+
+    // Look for a page width comment before the code.
+    int? pageWidthFromComment;
+    for (
+      Token? comment = node.beginToken.precedingComments;
+      comment != null;
+      comment = comment.next
+    ) {
+      if (_widthCommentPattern.firstMatch(comment.lexeme) case var match?) {
+        // If integer parsing fails for some reason, the returned `null`
+        // means we correctly ignore the comment.
+        pageWidthFromComment = int.tryParse(match[1]!);
+        break;
       }
-
-      var visitor = AstNodeVisitor(
-        FormattingStyle(
-          this,
-          lineEnding: inferredLineEnding,
-          languageVersion: sourceLanguageVersion,
-          pageWidth: pageWidthFromComment,
-        ),
-        lineInfo,
-        unitSourceCode,
-      );
-      output = visitor.run(unitSourceCode, node);
-    } else {
-      // Use the old style.
-      var visitor = SourceVisitor(this, lineInfo, unitSourceCode);
-      output = visitor.run(node, inferredLineEnding);
     }
 
-    // Sanity check that only whitespace was changed if that's all we expect.
-    if (!string_compare.equalIgnoringWhitespace(source.text, output.text)) {
-      throw UnexpectedOutputException(source.text, output.text);
-    }
+    var style = FormattingStyle(
+      this,
+      lineEnding: inferredLineEnding,
+      languageVersion: sourceLanguageVersion,
+      pageWidth: pageWidthFromComment,
+    );
 
-    return output;
+    return AstNodeVisitor(style, lineInfo, input).run(input, node);
+  }
+
+  /// Sanity check that only whitespace was changed.
+  void _sanityCheck(String input, String output) {
+    if (!string_compare.equalIgnoringWhitespace(input, output)) {
+      throw UnexpectedOutputException(input, output);
+    }
   }
 }
 
@@ -281,6 +315,22 @@ String inferLineEnding(LineInfo lineInfo, String source) {
   }
 
   return '\n';
+}
+
+/// Allows other libraries in dart_style to access
+/// [DartFormatter._formatUnitResult()] which is private to avoid making it
+/// part of the external public API.
+SourceCode formatUnitResult(
+  DartFormatter formatter,
+  ParsedUnitResult parsedUnit, {
+  int? selectionStart,
+  int? selectionLength,
+}) {
+  return formatter._formatUnitResult(
+    parsedUnit,
+    selectionStart: selectionStart,
+    selectionLength: selectionLength,
+  );
 }
 
 /// Configuration for how trailing commas should be handled by the formatter.
