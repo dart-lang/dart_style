@@ -2,6 +2,8 @@
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
 
+import 'dart:io';
+
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 import 'package:test_process/test_process.dart';
@@ -18,6 +20,8 @@ void main() {
 
   group('reads flags from analysis_options.yaml file', () {
     test('when reading from paths', () async {
+      if (_isDart3_13()) return;
+
       await d.dir('foo', [
         analysisOptionsFile(experimentFlags: ['variance']),
         d.file('main.dart', 'class Writer<in T> {}\n'),
@@ -29,6 +33,8 @@ void main() {
     });
 
     test('when reading from stdin with --stdin-name', () async {
+      if (_isDart3_13()) return;
+
       await d.dir('foo', [
         analysisOptionsFile(experimentFlags: ['variance']),
       ]).create();
@@ -118,4 +124,15 @@ Future<void> _expectParseButNotFormat(TestProcess process) async {
     ]),
   );
   await process.shouldExit(70);
+}
+
+// TODO(rnystrom): Remove this and re-enable the tests when #64693 is fixed and
+// dart_style depends on a version of analyzer that has the fix.
+/// If the current SDK is 3.13, prints a warning and returns `true`.
+bool _isDart3_13() {
+  if (!Platform.version.startsWith('3.13.')) return false;
+
+  print('Warning: Skipping test on 3.13 SDK to work around:');
+  print('https://github.com/dart-lang/sdk/issues/64693');
+  return true;
 }
