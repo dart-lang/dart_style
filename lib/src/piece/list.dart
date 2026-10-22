@@ -74,16 +74,15 @@ final class ListPiece extends Piece {
   ///
   /// [_elements] must not be empty. (If there are no elements, just concatenate
   /// the brackets directly.)
-  ListPiece(
+  new(
     this._before,
     this._elements,
     this._blanksAfter,
     this._after,
     this._style, {
-    required int lastNonCommentElement,
+    required this._lastNonCommentElement,
     required bool blockShaped,
   }) : assert(_elements.isNotEmpty),
-       _lastNonCommentElement = lastNonCommentElement,
        _isBlockShaped = blockShaped {
     // For most elements, we know whether or not it will have a comma based
     // only on the comma style and its position in the list, so pin those here.
@@ -357,13 +356,11 @@ final class ListElementPiece extends Piece {
   /// delimiter (here `,` and 2).
   int _commentsBeforeDelimiter = 0;
 
-  ListElementPiece(List<Piece> leadingComments, Piece element)
+  new(List<Piece> leadingComments, Piece element)
     : _leadingComments = [...leadingComments],
       _content = element;
 
-  ListElementPiece.comment(Piece comment)
-    : _leadingComments = const [],
-      _content = null {
+  new comment(Piece comment) : _leadingComments = const [], _content = null {
     _hangingComments.add(comment);
   }
 
@@ -511,7 +508,7 @@ final class ListStyle {
   ///     //              ^                      ^
   final bool spaceWhenUnsplit;
 
-  const ListStyle({
+  const new({
     this.commas = Commas.trailing,
     this.splitCost = Cost.normal,
     this.spaceWhenUnsplit = false,

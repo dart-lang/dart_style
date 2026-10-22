@@ -107,7 +107,7 @@ final class CodeWriter {
   /// beginning of the first line and [subsequentIndent] is the indentation of
   /// each line after that, independent of indentation created by pieces being
   /// written.
-  CodeWriter(
+  new(
     this._pageWidth,
     int leadingIndent,
     int subsequentIndent,
@@ -615,7 +615,7 @@ enum Indent {
   /// The number of spaces this type of indentation applies.
   final int spaces;
 
-  const Indent(this.spaces);
+  const new(this.spaces);
 }
 
 /// Information for each piece currently being formatted while [CodeWriter]
@@ -632,7 +632,7 @@ class _FormatState {
   /// How a newline affects the shape of this piece.
   ShapeMode mode = ShapeMode.merge;
 
-  _FormatState(this.piece);
+  new(this.piece);
 }
 
 /// Determines how a newline inside a piece or a child piece affects the shape
@@ -675,9 +675,9 @@ final class _IndentLevel {
   /// Only used for 3.7 style.
   final int collapsible;
 
-  _IndentLevel.v3Dot7(this.spaces, this.collapsible) : type = Indent.none;
+  new v3Dot7(this.spaces, this.collapsible) : type = Indent.none;
 
-  _IndentLevel(this.type, this.spaces) : collapsible = 0;
+  new(this.type, this.spaces) : collapsible = 0;
 
   @override
   String toString() => '${type.name}:$spaces';

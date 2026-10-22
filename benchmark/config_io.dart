@@ -150,9 +150,8 @@ void _inDirectory(String path, void Function() callback) {
 void _buildFile(String path, void Function(StringBuffer) builder) {
   var buffer = StringBuffer();
   builder(buffer);
-  File(
-    p.join(_directoryStack.last.path, path),
-  ).writeAsStringSync(buffer.toString());
+  File(p.join(_directoryStack.last.path, path))
+      .writeAsStringSync(buffer.toString());
 }
 
 /// Writes a random nested function call to [buffer].

@@ -50,9 +50,8 @@ final class TestFile {
   /// `test/` directory.
   static Future<List<TestFile>> listDirectory(String name) async {
     var testDir = await findTestDirectory();
-    var entries = Directory(
-      p.join(testDir, name),
-    ).listSync(recursive: true, followLinks: false);
+    var entries = Directory(p.join(testDir, name))
+        .listSync(recursive: true, followLinks: false);
     entries.sort((a, b) => a.path.compareTo(b.path));
 
     return [
@@ -72,7 +71,7 @@ final class TestFile {
   }
 
   /// Reads the test file from [file].
-  factory TestFile._load(File file, String relativePath) {
+  factory _load(File file, String relativePath) {
     var lines = file.readAsLinesSync();
 
     var isCompilationUnit = file.path.endsWith('.unit');
@@ -251,13 +250,7 @@ final class TestFile {
     return (TestOptions(leadingIndent, trailingCommas, experiments), line);
   }
 
-  TestFile._(
-    this.path,
-    this.pageWidth,
-    this.options,
-    this.comments,
-    this.tests,
-  );
+  new _(this.path, this.pageWidth, this.options, this.comments, this.tests);
 
   /// The path to the test file, relative to the `test/` directory.
   final String path;
@@ -335,7 +328,7 @@ final class FormatTest {
   /// `null` if the test has no upper bound for language support.
   final Version? unsupportedVersion;
 
-  FormatTest(
+  new(
     this.line,
     this.options,
     this.input,
@@ -360,7 +353,7 @@ final class TestEntry {
 
   final SourceCode code;
 
-  TestEntry(this.description, this.comments, this.code);
+  new(this.description, this.comments, this.code);
 }
 
 /// Options for configuring all tests in a file or an individual test.
@@ -375,7 +368,7 @@ final class TestOptions {
   /// Experiments that should be enabled when running this test.
   final List<String> experimentFlags;
 
-  TestOptions(this.leadingIndent, this.trailingCommas, this.experimentFlags);
+  new(this.leadingIndent, this.trailingCommas, this.experimentFlags);
 }
 
 extension SourceCodeExtensions on SourceCode {

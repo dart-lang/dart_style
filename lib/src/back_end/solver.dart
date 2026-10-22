@@ -55,18 +55,17 @@ final class Solver {
 
   final PriorityQueue<Solution> _queue = PriorityQueue();
 
-  /// Creates a solver that fits code into the given [pageWidth].
+  /// Creates a solver that fits code into the given [_pageWidth].
   ///
   /// The first line is indented by [leadingIndent] spaces and all lines after
   /// that are indented by [subsequentIndent]. If [subsequentIndent] is omitted,
   /// defaults to [leadingIndent].
-  Solver(
+  new(
     this._cache, {
-    required int pageWidth,
+    required this._pageWidth,
     int leadingIndent = 0,
     int? subsequentIndent,
-  }) : _pageWidth = pageWidth,
-       _leadingIndent = leadingIndent,
+  }) : _leadingIndent = leadingIndent,
        _subsequentIndent = subsequentIndent ?? leadingIndent;
 
   /// Finds the best set of line splits for [root] piece and returns the

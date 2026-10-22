@@ -47,7 +47,7 @@ final class SourceCode {
     return text.substring(selectionStart! + selectionLength!);
   }
 
-  SourceCode(
+  new(
     this.text, {
     this.uri,
     this.isCompilationUnit = true,

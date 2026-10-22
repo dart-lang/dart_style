@@ -30,23 +30,20 @@ final class TypeBuilder {
   /// the other clauses split.
   final bool _allowLeadingClause;
 
-  TypeBuilder(
+  new(
     this._visitor,
     this._metadata,
     this._keywords, {
-    Token? name,
-    TypeParameterList? typeParameters,
-    ClassNamePart? namePart,
+    this._name,
+    this._typeParameters,
+    this._namePart,
     ExtendsClause? extendsClause,
     WithClause? withClause,
     ImplementsClause? implementsClause,
     MixinOnClause? mixinOnClause,
     ExtensionOnClause? extensionOnClause,
     NativeClause? nativeClause,
-  }) : _name = name,
-       _typeParameters = typeParameters,
-       _namePart = namePart,
-       _clauses = [
+  }) : _clauses = [
          if (extendsClause case var clause?)
            _Clause(clause.extendsKeyword, [clause.superclass]),
          if (mixinOnClause case var clause?)
@@ -60,10 +57,9 @@ final class TypeBuilder {
          if (nativeClause case var clause?)
            _Clause(clause.nativeKeyword, [?clause.name]),
        ],
-       _allowLeadingClause = extendsClause != null || mixinOnClause != null {
-    // Can have a name part or explicit name and type parameters, but not both.
-    assert(_name == null && _typeParameters == null || _namePart == null);
-  }
+       _allowLeadingClause = extendsClause != null || mixinOnClause != null,
+       // Can have a name or explicit name and type parameters, but not both.
+       assert(_name == null && _typeParameters == null || _namePart == null);
 
   /// Builds a type whose [body] is a [ClassBody].
   void buildClassBody(ClassBody body) {
@@ -296,7 +292,7 @@ final class _Clause {
   final Token keyword;
   final List<AstNode> types;
 
-  _Clause(this.keyword, this.types);
+  new(this.keyword, this.types);
 
   Piece build(PieceFactory visitor) => InfixPiece([
     visitor.tokenPiece(keyword),

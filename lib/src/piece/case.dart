@@ -50,17 +50,15 @@ final class CaseExpressionPiece extends Piece {
   /// Whether the body expression can be block formatted.
   final bool _canBlockSplitBody;
 
-  CaseExpressionPiece(
+  new(
     this._pattern,
     this._guard,
     this._arrow,
     this._body, {
-    required bool canBlockSplitPattern,
-    required bool patternIsLogicalOr,
-    bool canBlockSplitBody = true,
-  }) : _canBlockSplitPattern = canBlockSplitPattern,
-       _patternIsLogicalOr = patternIsLogicalOr,
-       _canBlockSplitBody = canBlockSplitBody;
+    required this._canBlockSplitPattern,
+    required this._patternIsLogicalOr,
+    this._canBlockSplitBody = true,
+  });
 
   @override
   List<State> get additionalStates => [

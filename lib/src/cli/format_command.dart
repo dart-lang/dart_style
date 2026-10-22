@@ -29,7 +29,7 @@ final class FormatCommand extends Command<int> {
   @override
   final String category;
 
-  FormatCommand({bool verbose = false, this.category = ''}) {
+  new({bool verbose = false, this.category = ''}) {
     argParser.addFlag(
       'verbose',
       abbr: 'v',

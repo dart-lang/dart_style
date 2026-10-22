@@ -55,17 +55,13 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   NodeContext _parentContext = NodeContext.none;
 
   /// Create a new visitor that will be called to visit the code in [source].
-  factory AstNodeVisitor(
-    FormattingStyle style,
-    LineInfo lineInfo,
-    SourceCode source,
-  ) {
+  factory(FormattingStyle style, LineInfo lineInfo, SourceCode source) {
     var comments = CommentWriter(lineInfo);
     var pieces = PieceWriter(source, comments);
     return AstNodeVisitor._(style, pieces, comments);
   }
 
-  AstNodeVisitor._(this.style, this.pieces, this.comments) {
+  new _(this.style, this.pieces, this.comments) {
     pieces.bindVisitor(this);
   }
 

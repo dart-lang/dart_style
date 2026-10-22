@@ -83,33 +83,27 @@ final class ConstructorPiece extends Piece {
   /// The constructor body.
   final Piece _body;
 
-  ConstructorPiece(
+  new(
     this._header,
     this._parameters,
     this._body, {
-    required bool canSplitParameters,
-    required bool hasOptionalParameter,
-    Piece? redirect,
-    Piece? initializerSeparator,
-    Piece? initializers,
-  }) : _canSplitParameters = canSplitParameters,
-       _hasOptionalParameter = hasOptionalParameter,
-       _redirect = redirect,
-       _initializerSeparator = initializerSeparator,
-       _initializers = initializers;
+    required this._canSplitParameters,
+    required this._hasOptionalParameter,
+    this._redirect,
+    this._initializerSeparator,
+    this._initializers,
+  });
 
   /// Creates a constructor piece for a primary constructor initializer body.
-  ConstructorPiece.thisBlock(
+  new thisBlock(
     this._header,
     this._body, {
-    Piece? initializerSeparator,
-    Piece? initializers,
+    this._initializerSeparator,
+    this._initializers,
   }) : _parameters = null,
        _canSplitParameters = false,
        _hasOptionalParameter = false,
-       _redirect = null,
-       _initializerSeparator = initializerSeparator,
-       _initializers = initializers;
+       _redirect = null;
 
   @override
   List<State> get additionalStates => [

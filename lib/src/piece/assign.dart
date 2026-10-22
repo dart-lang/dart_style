@@ -92,8 +92,7 @@ final class AssignPiece extends Piece {
   ///       thingToDo(argument, argument);
   final bool _avoidSplit;
 
-  AssignPiece(this._left, this._right, {bool avoidSplit = true})
-    : _avoidSplit = avoidSplit;
+  new(this._left, this._right, {this._avoidSplit = true});
 
   @override
   List<State> get additionalStates => [

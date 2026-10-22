@@ -77,7 +77,7 @@ final class GroupCode extends Code {
   /// The child [Code] objects contained in this group.
   final List<Code> _children = [];
 
-  GroupCode(this._indent);
+  new(this._indent);
 
   /// Appends [text] to this code.
   void write(String text) {
@@ -141,16 +141,14 @@ final class _NewlineCode extends Code {
   /// The number of spaces of indentation after this newline.
   final int _indent;
 
-  _NewlineCode({required bool blank, required int indent})
-    : _indent = indent,
-      _blank = blank;
+  new({required this._blank, required this._indent});
 }
 
 /// A [Code] object for literal source text.
 final class _TextCode extends Code {
   final String _text;
 
-  _TextCode(this._text);
+  new(this._text);
 }
 
 /// Marks the location of the beginning or end of a selection as occurring
@@ -164,7 +162,7 @@ final class _MarkerCode extends Code {
   /// should appear in the resulting output.
   final int _offset;
 
-  _MarkerCode(this._marker, this._offset);
+  new(this._marker, this._offset);
 }
 
 final class _EnableFormattingCode extends Code {
@@ -180,7 +178,7 @@ final class _EnableFormattingCode extends Code {
   /// before `//`.
   final int _sourceOffset;
 
-  _EnableFormattingCode(this._enabled, this._sourceOffset);
+  new(this._enabled, this._sourceOffset);
 }
 
 /// Which selection marker is pointed to by a [_MarkerCode].
@@ -217,7 +215,7 @@ final class _StringBuilder {
   /// Otherwise, -1 to indicate that formatting is enabled.
   int _disableFormattingStart = -1;
 
-  _StringBuilder(this._source, this._lineEnding);
+  new(this._source, this._lineEnding);
 
   void traverse(Code code) {
     switch (code) {

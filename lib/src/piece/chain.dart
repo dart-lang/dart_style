@@ -124,7 +124,7 @@ abstract base class ChainPiece extends Piece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  factory ChainPiece(
+  factory(
     Piece target,
     List<ChainCall> calls, {
     required bool cascade,
@@ -161,17 +161,14 @@ abstract base class ChainPiece extends Piece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  ChainPiece._(
+  new _(
     this._target,
     this._calls, {
     required bool cascade,
-    int leadingProperties = 0,
-    int blockCallIndex = -1,
-    Indent indent = Indent.expression,
-  }) : _leadingProperties = leadingProperties,
-       _blockCallIndex = blockCallIndex,
-       _indent = indent,
-       _isCascade = cascade,
+    this._leadingProperties = 0,
+    this._blockCallIndex = -1,
+    this._indent = Indent.expression,
+  }) : _isCascade = cascade,
        // If there are no calls, we shouldn't have created a chain.
        assert(_calls.isNotEmpty);
 
@@ -292,16 +289,15 @@ final class _ChainPiece extends ChainPiece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  _ChainPiece(
+  new(
     super.target,
     super.calls, {
     required super.cascade,
     super.leadingProperties,
     super.blockCallIndex,
-    required bool hasSingleElementTarget,
+    required this._hasSingleElementTarget,
     super.indent,
-  }) : _hasSingleElementTarget = hasSingleElementTarget,
-       super._();
+  }) : super._();
 
   @override
   int stateCost(State state) {
@@ -388,16 +384,15 @@ final class _ChainPiece3Dot7 extends ChainPiece {
   /// Creates a new ChainPiece.
   ///
   /// Instead of calling this directly, prefer using [ChainBuilder].
-  _ChainPiece3Dot7(
+  new(
     super.target,
     super.calls, {
     required super.cascade,
     super.leadingProperties,
     super.blockCallIndex,
     super.indent,
-    required bool allowSplitInTarget,
-  }) : _allowSplitInTarget = allowSplitInTarget,
-       super._();
+    required this._allowSplitInTarget,
+  }) : super._();
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {
@@ -429,7 +424,7 @@ final class ChainCall {
 
   final CallType type;
 
-  ChainCall(this._call, this.type);
+  new(this._call, this.type);
 
   bool get canSplit =>
       type == CallType.splittableCall || type == CallType.blockFormatCall;

@@ -108,7 +108,7 @@ final class SolveState {
   late final Set<Rule> _boundRulesInUnboundLines =
       _initBoundRulesInUnboundLines();
 
-  SolveState(this._splitter, this._ruleValues) {
+  new(this._splitter, this._ruleValues) {
     Profile.count('Create SolveState');
 
     _calculateSplits();

@@ -48,7 +48,7 @@ final class CommentWriter {
   /// [takeCommentsBefore()].
   final Set<Token> _takenTokens = {};
 
-  CommentWriter(this._lineInfo);
+  new(this._lineInfo);
 
   /// Returns the comments that appear before [token].
   ///
@@ -172,12 +172,7 @@ final class SourceComment {
   /// Used to track selection markers within the comment.
   final int offset;
 
-  SourceComment(
-    this.text,
-    this.type, {
-    required this.flushLeft,
-    required this.offset,
-  });
+  new(this.text, this.type, {required this.flushLeft, required this.offset});
 
   /// Whether this comment ends with a mandatory newline, because it's a line
   /// comment or a block comment that should be on its own line.
@@ -231,7 +226,7 @@ final class CommentSequence extends ListBase<SourceComment> {
 
   final List<SourceComment> _comments;
 
-  const CommentSequence._(this._linesBetween, this._comments);
+  const new _(this._linesBetween, this._comments);
 
   /// Whether this sequence contains any comments that require a newline.
   bool get requiresNewline =>

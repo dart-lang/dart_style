@@ -96,16 +96,14 @@ final class Chunk extends Selection {
   final spans = <Span>[];
 
   /// Creates a new empty chunk with the given split properties.
-  Chunk(
+  new(
     this.rule,
     this.indent,
     this.nesting, {
     required bool space,
-    required bool flushLeft,
-    required bool isDouble,
+    required this._flushLeft,
+    required this._isDouble,
   }) : _text = '',
-       _flushLeft = flushLeft,
-       _isDouble = isDouble,
        _spaceWhenUnsplit = space {
     Profile.count('Create Chunk');
   }
@@ -114,7 +112,7 @@ final class Chunk extends Selection {
   ///
   /// This is returned in some places by [ChunkBuilder] when there is no useful
   /// chunk to yield and it will not end up being used by the caller anyway.
-  Chunk.dummy()
+  new dummy()
     : _text = '(dummy)',
       rule = Rule.dummy,
       indent = 0,
@@ -211,7 +209,7 @@ final class BlockChunk extends Chunk {
   /// The child chunks in this block.
   final List<Chunk> children = [];
 
-  BlockChunk(
+  new(
     this.argument,
     super.rule,
     super.indent,
@@ -259,7 +257,7 @@ final class OpenSpan {
   /// if the span is for a multisplit.
   final int cost;
 
-  OpenSpan(this.start, this.cost);
+  new(this.start, this.cost);
 
   @override
   String toString() => 'OpenSpan($start, \$$cost)';
@@ -283,7 +281,7 @@ final class Span with FastHash, Markable {
   /// if the span is for a multisplit.
   final int cost;
 
-  Span(this.cost);
+  new(this.cost);
 
   @override
   String toString() => '$id\$$cost';

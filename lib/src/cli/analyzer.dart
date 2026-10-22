@@ -20,7 +20,7 @@ class Analyzer {
   final AnalysisContextCollection _collection;
 
   /// Creates an analyzer for parsing and formatting [paths].
-  Analyzer.forFiles(
+  new forFiles(
     List<String> paths, {
     required Version? languageVersion,
     required List<String> experimentFlags,
@@ -28,7 +28,7 @@ class Analyzer {
 
   /// Creates an analyzer for parsing [stdin] input with a given [path] which
   /// is treated as if a synthetic file at [path] exists containing [stdin].
-  factory Analyzer.forStdinPath({
+  factory forStdinPath({
     required String stdin,
     required String path,
     required Version? languageVersion,
@@ -41,7 +41,7 @@ class Analyzer {
     return Analyzer._([path], languageVersion, experimentFlags, provider);
   }
 
-  Analyzer._(
+  new _(
     List<String> paths,
     Version? languageVersion,
     List<String> experimentFlags, [

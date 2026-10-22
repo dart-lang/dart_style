@@ -83,7 +83,7 @@ final class ClausePiece extends Piece {
   ///     }
   final bool _allowLeadingClause;
 
-  ClausePiece(this._header, this._clauses, {bool allowLeadingClause = false})
+  new(this._header, this._clauses, {bool allowLeadingClause = false})
     : _allowLeadingClause = allowLeadingClause && _clauses.length > 1;
 
   @override

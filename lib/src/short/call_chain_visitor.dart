@@ -112,7 +112,7 @@ final class CallChainVisitor {
   /// The [node] is the outermost expression containing the chained "."
   /// operators and must be a [MethodInvocation], [PropertyAccess] or
   /// [PrefixedIdentifier].
-  factory CallChainVisitor(SourceVisitor visitor, Expression node) {
+  factory(SourceVisitor visitor, Expression node) {
     // Flatten the call chain tree to a list of selectors with postfix
     // expressions.
     var calls = <_Selector>[];
@@ -176,7 +176,7 @@ final class CallChainVisitor {
     );
   }
 
-  CallChainVisitor._(
+  new _(
     this._visitor,
     this._target,
     this._properties,
@@ -465,7 +465,7 @@ sealed class _Selector {
 final class _MethodSelector extends _Selector {
   final MethodInvocation _node;
 
-  _MethodSelector(this._node);
+  new(this._node);
 
   @override
   bool get isProperty => false;
@@ -494,7 +494,7 @@ final class _MethodSelector extends _Selector {
 final class _PrefixedSelector extends _Selector {
   final PrefixedIdentifier _node;
 
-  _PrefixedSelector(this._node);
+  new(this._node);
 
   @override
   void writeSelector(CallChainVisitor visitor) {
@@ -506,7 +506,7 @@ final class _PrefixedSelector extends _Selector {
 final class _PropertySelector extends _Selector {
   final PropertyAccess _node;
 
-  _PropertySelector(this._node);
+  new(this._node);
 
   @override
   void writeSelector(CallChainVisitor visitor) {

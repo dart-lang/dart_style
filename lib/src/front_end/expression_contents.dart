@@ -193,7 +193,7 @@ class _Contents {
   /// operation, but not including the call's own named arguments.
   int nestedNamedArguments = 0;
 
-  _Contents(this.type, {this.namedArguments = 0});
+  new(this.type, {this.namedArguments = 0});
 
   /// The total number of non-trivial named arguments in this operation's own
   /// argument list and all of transitive contents.

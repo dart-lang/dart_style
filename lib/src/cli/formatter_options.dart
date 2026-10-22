@@ -54,7 +54,7 @@ final class FormatterOptions {
   /// See dart.dev/go/experiments for details.
   final List<String> experimentFlags;
 
-  FormatterOptions({
+  new({
     this.languageVersion,
     this.indent = 0,
     this.pageWidth,

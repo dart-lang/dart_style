@@ -18,8 +18,7 @@ final class TypePiece extends Piece {
   /// What kind of body the type has.
   final TypeBodyType _bodyType;
 
-  TypePiece(this._header, this._body, {required TypeBodyType bodyType})
-    : _bodyType = bodyType;
+  new(this._header, this._body, {required this._bodyType});
 
   @override
   List<State> get additionalStates => [
@@ -139,7 +138,7 @@ final class PrimaryTypePiece extends Piece {
   /// What kind of body the type has.
   final TypeBodyType _bodyType;
 
-  PrimaryTypePiece(
+  new(
     this._header,
     this._parameters,
     this._clauses,

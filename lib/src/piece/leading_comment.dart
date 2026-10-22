@@ -27,7 +27,7 @@ final class LeadingCommentPiece extends Piece {
   final List<Piece> _comments;
   final Piece _piece;
 
-  LeadingCommentPiece(this._comments, this._piece);
+  new(this._comments, this._piece);
 
   @override
   void format(CodeWriter writer, State state) {

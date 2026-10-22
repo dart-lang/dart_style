@@ -38,7 +38,7 @@ final class FormattingStyle {
   /// We cache this instead of storing the version directly for performance.
   final bool _isVersion3Dot13OrHigher;
 
-  factory FormattingStyle(
+  factory(
     DartFormatter formatter, {
     required String lineEnding,
     Version? languageVersion,
@@ -55,15 +55,14 @@ final class FormattingStyle {
     );
   }
 
-  FormattingStyle._(
+  new _(
     this._formatter, {
     required this.pageWidth,
     required this.lineEnding,
     required this.is3Dot7,
-    required bool isVersion3Dot10OrHigher,
-    required bool isVersion3Dot13OrHigher,
-  }) : _isVersion3Dot10OrHigher = isVersion3Dot10OrHigher,
-       _isVersion3Dot13OrHigher = isVersion3Dot13OrHigher;
+    required this._isVersion3Dot10OrHigher,
+    required this._isVersion3Dot13OrHigher,
+  });
 
   final String? lineEnding;
 
