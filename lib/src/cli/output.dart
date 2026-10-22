@@ -45,7 +45,6 @@ enum Output {
       case .show:
         // Don't add an extra newline.
         stdout.write(result.text);
-        break;
 
       case .json:
         // TODO(rnystrom): Put an empty selection in here to remain compatible
@@ -63,7 +62,6 @@ enum Output {
             },
           }),
         );
-        break;
 
       case .write:
       case .none:
