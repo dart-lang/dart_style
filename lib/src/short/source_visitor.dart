@@ -4266,11 +4266,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        type = CommentType.doc;
+        type = .doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
-        type = CommentType.line;
+        type = .line;
       } else if (commentLine == previousLine || commentLine == tokenLine) {
-        type = CommentType.inlineBlock;
+        type = .inlineBlock;
       }
 
       var sourceComment = SourceComment(

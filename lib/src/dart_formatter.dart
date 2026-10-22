@@ -105,7 +105,7 @@ final class DartFormatter {
     List<String>? experimentFlags,
   }) : pageWidth = pageWidth ?? defaultPageWidth,
        indent = indent ?? 0,
-       trailingCommas = trailingCommas ?? TrailingCommas.automate,
+       trailingCommas = trailingCommas ?? .automate,
        experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation

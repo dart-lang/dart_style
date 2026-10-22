@@ -92,7 +92,7 @@ final class SequenceBuilder {
   /// The caller should have already called [addCommentsBefore()] with the
   /// first token in [piece].
   void add(Piece piece, {Indent? indent, bool allowBlankAfter = true}) {
-    _elements.add(SequenceElementPiece(indent ?? Indent.none, piece));
+    _elements.add(SequenceElementPiece(indent ?? .none, piece));
 
     _allowBlank = allowBlankAfter;
   }
@@ -145,7 +145,7 @@ final class SequenceBuilder {
     Indent? indent,
     bool blankBefore = false,
   }) {
-    indent ??= Indent.none;
+    indent ??= .none;
 
     var wroteBlank = false;
     var comments = _visitor.comments.takeCommentsBefore(token);

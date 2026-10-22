@@ -56,7 +56,7 @@ class ExpressionContents {
     var namedArguments = 0;
     for (var argument in arguments) {
       if (argument is NamedArgument) {
-        type = _Type.callWithNamedArgument;
+        type = .callWithNamedArgument;
         if (!_isTrivial(argument.argumentExpression)) namedArguments++;
       }
     }
@@ -133,7 +133,7 @@ class ExpressionContents {
     // are multiple elements, so we don't eagerly split collections with just a
     // single element.
     return elements.length > 1 &&
-        contents.type == _Type.namedCollection &&
+        contents.type == .namedCollection &&
         contents.totalNamedArguments > 0;
   }
 

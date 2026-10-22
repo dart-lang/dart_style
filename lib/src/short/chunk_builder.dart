@@ -1,7 +1,6 @@
 // Copyright (c) 2014, the Dart project authors.  Please see the AUTHORS file
 // for details. All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-import '../comment_type.dart';
 import '../constants.dart';
 import '../dart_formatter.dart';
 import '../debug.dart' as debug;
@@ -246,7 +245,7 @@ final class ChunkBuilder {
     //     /* a */ /* b */ import 'a.dart';
     if (linesBeforeToken == 0 &&
         _pendingNewlines > comments.first.linesBefore &&
-        comments.every((comment) => comment.type == CommentType.inlineBlock)) {
+        comments.every((comment) => comment.type == .inlineBlock)) {
       comments.first.linesBefore = _pendingNewlines;
     }
 
@@ -269,7 +268,7 @@ final class ChunkBuilder {
         // Split before the comment if it starts a line.
         if (_pendingNewlines == 0) {
           if (comment.linesBefore > 0 &&
-              (_afterComment || comment.type != CommentType.inlineBlock)) {
+              (_afterComment || comment.type != .inlineBlock)) {
             writeNewline(
               isDouble: _needsBlankLineBeforeComment(comment),
               flushLeft: comment.flushLeft,
@@ -650,8 +649,8 @@ final class ChunkBuilder {
     if (comment.linesBefore != 0) return null;
 
     // Multi-line comments are always pushed to the next line.
-    if (comment.type == CommentType.doc) return null;
-    if (comment.type == CommentType.block) return null;
+    if (comment.type == .doc) return null;
+    if (comment.type == .block) return null;
 
     var chunk = _chunks.last;
 
@@ -667,7 +666,7 @@ final class ChunkBuilder {
 
     // A block comment following a comma probably refers to the following item.
     var text = chunk.text;
-    if (text.endsWith(',') && comment.type == CommentType.inlineBlock) {
+    if (text.endsWith(',') && comment.type == .inlineBlock) {
       return null;
     }
 
@@ -709,7 +708,7 @@ final class ChunkBuilder {
     if (text.isEmpty) return false;
 
     // Always put a space before line comments.
-    if (comment.type == CommentType.line) return true;
+    if (comment.type == .line) return true;
 
     // Magic generic method comments like "Foo/*<T>*/" don't get spaces.
     if (_isGenericMethodComment(comment) &&

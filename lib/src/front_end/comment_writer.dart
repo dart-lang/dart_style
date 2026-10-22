@@ -111,13 +111,13 @@ final class CommentWriter {
       CommentType type;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        type = CommentType.doc;
+        type = .doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
-        type = CommentType.line;
+        type = .line;
       } else if (commentLine == previousLine || commentLine == tokenLine) {
-        type = CommentType.inlineBlock;
+        type = .inlineBlock;
       } else {
-        type = CommentType.block;
+        type = .block;
       }
 
       var sourceComment = SourceComment(
@@ -176,7 +176,7 @@ final class SourceComment {
 
   /// Whether this comment ends with a mandatory newline, because it's a line
   /// comment or a block comment that should be on its own line.
-  bool get requiresNewline => type != CommentType.inlineBlock;
+  bool get requiresNewline => type != .inlineBlock;
 
   @override
   String toString() =>
@@ -250,7 +250,7 @@ final class CommentSequence extends ListBase<SourceComment> {
     // the next line. Only inline block comments and line comments are allowed
     // to hang at the end of a line.
     var type = _comments[commentIndex].type;
-    return type == CommentType.inlineBlock || type == CommentType.line;
+    return type == .inlineBlock || type == .line;
   }
 
   /// Whether the comment at [commentIndex] should be attached to the following
@@ -261,7 +261,7 @@ final class CommentSequence extends ListBase<SourceComment> {
 
     // Doc comments and non-inline `/* ... */` comments are always pushed to
     // the next line.
-    return _comments[commentIndex].type == CommentType.inlineBlock;
+    return _comments[commentIndex].type == .inlineBlock;
   }
 
   /// The number of newlines between the last comment and the next token.

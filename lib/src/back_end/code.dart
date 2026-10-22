@@ -261,9 +261,9 @@ final class _StringBuilder {
           // write.
           var absolutePosition = _buffer.length + _indent + code._offset;
           switch (code._marker) {
-            case _Marker.start:
+            case .start:
               _selectionStart = absolutePosition;
-            case _Marker.end:
+            case .end:
               _selectionEnd = absolutePosition;
           }
         } else {
@@ -294,14 +294,14 @@ final class _StringBuilder {
           // we know the selection marker should end up 6 code points after the
           // beginning of the unformatted region in the resulting output.
           switch (code._marker) {
-            case _Marker.start:
+            case .start:
               // Calculate how far into the unformatted code where the marker
               // should appear.
               var markerOffsetInUnformatted =
                   _source.selectionStart! - _disableFormattingStart;
               _selectionStart = _buffer.length + markerOffsetInUnformatted;
 
-            case _Marker.end:
+            case .end:
               var end = _source.selectionStart! + _source.selectionLength!;
 
               // Calculate how far into the unformatted code where the marker

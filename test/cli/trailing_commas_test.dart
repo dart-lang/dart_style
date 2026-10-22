@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:dart_style/src/dart_formatter.dart';
 import 'package:test/test.dart';
 import 'package:test_descriptor/test_descriptor.dart' as d;
 
@@ -40,7 +39,7 @@ void main() {
 
   test('ignore options file if trailing commas specified on the CLI', () async {
     await d.dir('foo', [
-      analysisOptionsFile(trailingCommas: TrailingCommas.preserve),
+      analysisOptionsFile(trailingCommas: .preserve),
       d.file('main.dart', _unformatted),
     ]).create();
 
@@ -72,10 +71,7 @@ void main() {
       analysisOptionsFile(include: 'other.yaml'),
       analysisOptionsFile(name: 'other.yaml', include: 'sub/third.yaml'),
       d.dir('sub', [
-        analysisOptionsFile(
-          name: 'third.yaml',
-          trailingCommas: TrailingCommas.preserve,
-        ),
+        analysisOptionsFile(name: 'third.yaml', trailingCommas: .preserve),
       ]),
       d.file('main.dart', _unformatted),
     ]).create();
@@ -90,7 +86,7 @@ void main() {
   group('stdin', () {
     test('use mode from surrounding package', () async {
       await d.dir('foo', [
-        analysisOptionsFile(trailingCommas: TrailingCommas.preserve),
+        analysisOptionsFile(trailingCommas: .preserve),
       ]).create();
 
       var process = await runFormatter(['--stdin-name=foo/main.dart']);
@@ -107,7 +103,7 @@ void main() {
 
     test('ignore options file if mode is specified', () async {
       await d.dir('foo', [
-        analysisOptionsFile(trailingCommas: TrailingCommas.preserve),
+        analysisOptionsFile(trailingCommas: .preserve),
         d.file('main.dart', _unformatted),
       ]).create();
 

@@ -60,9 +60,9 @@ final class FormatterOptions {
     this.pageWidth,
     this.trailingCommas,
     this.followLinks = false,
-    this.show = Show.changed,
-    this.output = Output.write,
-    this.summary = Summary.none,
+    this.show = .changed,
+    this.output = .write,
+    this.summary = .none,
     this.setExitIfChanged = false,
     List<String>? experimentFlags,
   }) : experimentFlags = [...?experimentFlags];

@@ -243,7 +243,7 @@ final class TestFile {
 
     TrailingCommas? trailingCommas;
     line = line.replaceAllMapped(_preserveTrailingCommasPattern, (match) {
-      trailingCommas = TrailingCommas.preserve;
+      trailingCommas = .preserve;
       return '';
     });
 
@@ -293,9 +293,7 @@ final class TestFile {
         ...test.options.experimentFlags,
       ],
       trailingCommas:
-          test.options.trailingCommas ??
-          options.trailingCommas ??
-          TrailingCommas.automate,
+          test.options.trailingCommas ?? options.trailingCommas ?? .automate,
     );
   }
 }

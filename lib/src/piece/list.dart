@@ -90,11 +90,11 @@ final class ListPiece extends Piece {
       var element = _elements[i];
 
       switch (_style.commas) {
-        case Commas.alwaysTrailing:
+        case .alwaysTrailing:
           // Has a comma after every element.
           element.pin(ListElementPiece._appendComma);
 
-        case Commas.trailing:
+        case .trailing:
           // Always has a comma after every element except the last. The last
           // will be constrained to have one or not depending on whether the
           // list splits. See applyConstraints().
@@ -102,7 +102,7 @@ final class ListPiece extends Piece {
             element.pin(ListElementPiece._appendComma);
           }
 
-        case Commas.nonTrailing:
+        case .nonTrailing:
           // Never a trailing comma after the last element.
           element.pin(
             i < _lastNonCommentElement
@@ -110,7 +110,7 @@ final class ListPiece extends Piece {
                 : State.unsplit,
           );
 
-        case Commas.none:
+        case .none:
           // No comma after any element.
           element.pin(State.unsplit);
       }
@@ -123,7 +123,7 @@ final class ListPiece extends Piece {
   @override
   void applyConstraints(State state, Constrain constrain) {
     // Give the last element a trailing comma only if the list is split.
-    if (_style.commas == Commas.trailing && _lastNonCommentElement != -1) {
+    if (_style.commas == .trailing && _lastNonCommentElement != -1) {
       constrain(
         _elements[_lastNonCommentElement],
         state == State.split ? ListElementPiece._appendComma : State.unsplit,
@@ -509,7 +509,7 @@ final class ListStyle {
   final bool spaceWhenUnsplit;
 
   const new({
-    this.commas = Commas.trailing,
+    this.commas = .trailing,
     this.splitCost = Cost.normal,
     this.spaceWhenUnsplit = false,
   });

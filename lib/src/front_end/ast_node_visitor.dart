@@ -7,7 +7,6 @@ import 'package:analyzer/dart/ast/visitor.dart';
 import 'package:analyzer/source/line_info.dart';
 
 import '../ast_extensions.dart';
-import '../back_end/code_writer.dart';
 import '../piece/assign.dart';
 import '../piece/assign_3_dot_7.dart';
 import '../piece/case.dart';
@@ -52,7 +51,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   /// [NodeContext.none] if the parent node doesn't set a context.
   @override
   NodeContext get parentContext => _parentContext;
-  NodeContext _parentContext = NodeContext.none;
+  NodeContext _parentContext = .none;
 
   /// Create a new visitor that will be called to visit the code in [source].
   factory(FormattingStyle style, LineInfo lineInfo, SourceCode source) {
@@ -102,8 +101,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         var needsBlank = false;
         if (style.separateDirectiveSections) {
           var section = _DirectiveSection.parse(directive);
-          if (section != _DirectiveSection.none &&
-              precedingSection != _DirectiveSection.none &&
+          if (section != .none &&
+              precedingSection != .none &&
               section != precedingSection) {
             needsBlank = true;
           }
@@ -164,7 +163,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var indent = style.is3Dot7 ? node.indentStrings3Dot7 : node.indentStrings;
     var piece = InfixPiece(
       node.strings.map(nodePiece).toList(),
-      indent: indent ? Indent.infix : Indent.none,
+      indent: indent ? .infix : .none,
       is3Dot7: style.is3Dot7,
     );
 
@@ -232,7 +231,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
   void visitBinaryExpression(BinaryExpression node) {
     // In 3.7 style, flatten binary operands in assignment contexts. (In 3.8
     // and later, indentation merging accomplishes the same thing.)
-    var indent = !style.is3Dot7 || _parentContext != NodeContext.assignment;
+    var indent = !style.is3Dot7 || _parentContext != .assignment;
 
     writeInfixChain<BinaryExpression>(
       node,
@@ -405,7 +404,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
     // If conditional expressions are directly nested, force them all to split,
     // both parents and children.
-    if (_parentContext == NodeContext.conditionalBranch ||
+    if (_parentContext == .conditionalBranch ||
         node.thenExpression is ConditionalExpression ||
         node.elseExpression is ConditionalExpression) {
       piece.pin(State.split);
@@ -678,8 +677,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
           operatorPiece,
           expression,
           canBlockSplitRight: node.expression.canBlockSplit,
-          avoidBlockSplitRight:
-              node.expression.blockFormatType == BlockFormat.invocation,
+          avoidBlockSplitRight: node.expression.blockFormatType == .invocation,
         ),
       );
     } else {
@@ -815,7 +813,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     var listStyle = const ListStyle();
     if (!style.allowTrailingCommaInRepresentationClause &&
         node.parent?.parent is ExtensionTypeDeclaration) {
-      listStyle = const ListStyle(commas: Commas.nonTrailing);
+      listStyle = const ListStyle(commas: .nonTrailing);
     }
 
     var builder = DelimitedListBuilder(this, listStyle);
@@ -1253,7 +1251,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitInterpolationString(InterpolationString node) {
-    if (_parentContext == NodeContext.multilineStringInterpolation) {
+    if (_parentContext == .multilineStringInterpolation) {
       pieces.multilineToken(node.contents);
     } else {
       pieces.token(node.contents);
@@ -1336,7 +1334,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       //         operand1 &&
       //         operand2,
       //     } = value;
-      indent = _parentContext != NodeContext.assignment;
+      indent = _parentContext != .assignment;
     }
 
     writeInfixChain<LogicalAndPattern>(
@@ -1360,7 +1358,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
     //       operand1 ||
     //       operand2 => value,
     //     };
-    var indent = _parentContext != NodeContext.switchExpressionCase;
+    var indent = _parentContext != .switchExpressionCase;
 
     if (style.is3Dot7) {
       // If a logical or pattern occurs inside a map pattern entry, we want to
@@ -1371,7 +1369,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       //         operand1 ||
       //         operand2,
       //     } = value;
-      if (_parentContext == NodeContext.assignment) indent = false;
+      if (_parentContext == .assignment) indent = false;
     }
 
     writeInfixChain<LogicalOrPattern>(
@@ -1628,7 +1626,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       // metadata to split since it's in a sort of expression-ish location:
       //
       //     for (@meta var (x, y) in pairs) ...
-      inlineMetadata: _parentContext == NodeContext.forLoopVariable,
+      inlineMetadata: _parentContext == .forLoopVariable,
       () {
         pieces.token(node.keyword);
         pieces.space();
@@ -1743,7 +1741,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       node.name,
       node.colon,
       node.fieldExpression,
-      rightHandSideContext: NodeContext.namedExpression,
+      rightHandSideContext: .namedExpression,
     );
   }
 
@@ -1763,8 +1761,8 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
         positionalFields.length == 1 && namedFields == null;
 
     var listStyle = isSinglePositional
-        ? const ListStyle(commas: Commas.alwaysTrailing)
-        : const ListStyle(commas: Commas.trailing);
+        ? const ListStyle(commas: .alwaysTrailing)
+        : const ListStyle(commas: .trailing);
     var builder = DelimitedListBuilder(this, listStyle);
 
     // If all parameters are optional, put the `{` right after `(`.
@@ -2065,10 +2063,10 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
       // Don't allow any blank lines between the `case` line and the first
       // statement in the case (or the next case if this case has no body).
-      sequence.add(casePiece, indent: Indent.none, allowBlankAfter: false);
+      sequence.add(casePiece, indent: .none, allowBlankAfter: false);
 
       for (var statement in member.statements) {
-        sequence.visit(statement, indent: Indent.block);
+        sequence.visit(statement, indent: .block);
       }
     }
 
@@ -2159,7 +2157,7 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       // metadata to split since it's in a sort of expression-ish location:
       //
       //     for (@meta var x in list) ...
-      inlineMetadata: _parentContext == NodeContext.forLoopVariable,
+      inlineMetadata: _parentContext == .forLoopVariable,
       () {
         var header = pieces.build(() {
           pieces.modifier(node.lateKeyword);

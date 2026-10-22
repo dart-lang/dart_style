@@ -32,7 +32,7 @@ void _formatStmt(
   String source, {
   Version? version,
   int pageWidth = 40,
-  TrailingCommas trailingCommas = TrailingCommas.automate,
+  TrailingCommas trailingCommas = .automate,
 }) {
   _runFormatter(
     source,
@@ -47,7 +47,7 @@ void _formatUnit(
   String source, {
   Version? version,
   int pageWidth = 40,
-  TrailingCommas trailingCommas = TrailingCommas.automate,
+  TrailingCommas trailingCommas = .automate,
 }) {
   _runFormatter(
     source,
@@ -63,7 +63,7 @@ void _runFormatter(
   int pageWidth, {
   required Version version,
   required bool isCompilationUnit,
-  TrailingCommas trailingCommas = TrailingCommas.automate,
+  TrailingCommas trailingCommas = .automate,
 }) {
   try {
     var formatter = DartFormatter(

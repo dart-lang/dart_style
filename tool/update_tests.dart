@@ -3,7 +3,6 @@
 // BSD-style license that can be found in the LICENSE file.
 import 'dart:io';
 
-import 'package:dart_style/dart_style.dart';
 import 'package:dart_style/src/dart_version_history.dart';
 import 'package:dart_style/src/testing/test_file.dart';
 import 'package:path/path.dart' as p;
@@ -182,8 +181,7 @@ List<Version> _versionsToTest(TestFile testFile, FormatTest formatTest) {
 List<String> _optionStrings(TestOptions options) => [
   for (var experiment in options.experimentFlags) '(experiment $experiment)',
   if (options.leadingIndent case var indent?) '(indent $indent)',
-  if (options.trailingCommas == TrailingCommas.preserve)
-    '(trailing_commas preserve)',
+  if (options.trailingCommas == .preserve) '(trailing_commas preserve)',
 ];
 
 void _writeComments(StringBuffer buffer, List<String> comments) {

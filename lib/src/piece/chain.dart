@@ -130,7 +130,7 @@ abstract base class ChainPiece extends Piece {
     required bool cascade,
     int leadingProperties = 0,
     int blockCallIndex = -1,
-    Indent indent = Indent.expression,
+    Indent indent = .expression,
     required bool allowSplitInTarget,
     required bool hasSingleElementTarget,
     required bool is3Dot7,
@@ -167,7 +167,7 @@ abstract base class ChainPiece extends Piece {
     required bool cascade,
     this._leadingProperties = 0,
     this._blockCallIndex = -1,
-    this._indent = Indent.expression,
+    this._indent = .expression,
   }) : _isCascade = cascade,
        // If there are no calls, we shouldn't have created a chain.
        assert(_calls.isNotEmpty);
@@ -426,8 +426,7 @@ final class ChainCall {
 
   new(this._call, this.type);
 
-  bool get canSplit =>
-      type == CallType.splittableCall || type == CallType.blockFormatCall;
+  bool get canSplit => type == .splittableCall || type == .blockFormatCall;
 
   /// Applies a postfix operation to this call.
   ///

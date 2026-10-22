@@ -42,7 +42,7 @@ final class CodeWriter {
   ///
   /// Initially [Whitespace.newline] so that we write the leading indentation
   /// before the first token.
-  Whitespace _pendingWhitespace = Whitespace.none;
+  Whitespace _pendingWhitespace = .none;
 
   /// The number of spaces of indentation that should be begin the next line
   /// when [_pendingWhitespace] is [Whitespace.newline] or
@@ -185,12 +185,12 @@ final class CodeWriter {
         //     variable =
         //         operand +
         //         another;
-        (Indent.assignment, Indent.infix) => 0,
+        (.assignment, .infix) => 0,
 
         // We have already indented the control flow header, so collapse the
         // duplicate indentation.
-        (Indent.controlFlowClause, Indent.expression) => 0,
-        (Indent.controlFlowClause, Indent.infix) => 0,
+        (.controlFlowClause, .expression) => 0,
+        (.controlFlowClause, .infix) => 0,
 
         // If we get here, the parent context has no effect, so just apply the
         // indentation directly.
@@ -316,7 +316,7 @@ final class CodeWriter {
   /// any surrounding indentation. This is used for multi-line block comments
   /// and multi-line strings.
   void whitespace(Whitespace whitespace, {bool flushLeft = false}) {
-    if (whitespace case Whitespace.newline || Whitespace.blankLine) {
+    if (whitespace case .newline || .blankLine) {
       _applyNewlineToShape(_pieceFormats.last);
       _pendingIndent = flushLeft ? 0 : _indentStack.last.spaces;
     }
@@ -423,7 +423,7 @@ final class CodeWriter {
         // 3.7. The only place where the distinction between this code and the
         // logic in the else clause comes into play is with CaseExpressionPiece.
         invalid =
-            child.shape != Shape.inline &&
+            child.shape != .inline &&
             allowedShapes.length == 1 &&
             allowedShapes.contains(Shape.inline);
       } else {
@@ -433,7 +433,7 @@ final class CodeWriter {
       if (invalid) _solution.invalidate(parent.piece);
 
       // If the child had newlines, propagate that to the parent's shape.
-      if (child.shape != Shape.inline) {
+      if (child.shape != .inline) {
         _applyNewlineToShape(parent, child.shape);
       }
     }
@@ -463,26 +463,23 @@ final class CodeWriter {
   /// count of the written text, including whitespace.
   void _flushWhitespace() {
     switch (_pendingWhitespace) {
-      case Whitespace.none:
+      case .none:
         break; // Nothing to do.
 
-      case Whitespace.newline:
-      case Whitespace.blankLine:
+      case .newline:
+      case .blankLine:
         _finishLine();
         _column = _pendingIndent;
         _softCharacters = 0;
-        _code.newline(
-          blank: _pendingWhitespace == Whitespace.blankLine,
-          indent: _column,
-        );
+        _code.newline(blank: _pendingWhitespace == .blankLine, indent: _column);
 
-      case Whitespace.space:
+      case .space:
         _code.write(' ');
         _column++;
         _softCharacters++;
     }
 
-    _pendingWhitespace = Whitespace.none;
+    _pendingWhitespace = .none;
   }
 
   void _finishLine() {
@@ -522,18 +519,17 @@ final class CodeWriter {
   }
 
   /// Determine how a newline affects the current piece's shape.
-  void _applyNewlineToShape(_FormatState state, [Shape shape = Shape.other]) {
+  void _applyNewlineToShape(_FormatState state, [Shape shape = .other]) {
     state.shape = switch (state.mode) {
-      ShapeMode.merge => state.shape.merge(shape),
-      ShapeMode.block => Shape.block,
-      ShapeMode.beforeHeadline => Shape.other,
+      .merge => state.shape.merge(shape),
+      .block => Shape.block,
+      .beforeHeadline => Shape.other,
       // If there were no newlines inside the headline, now that there is one,
       // we have a headline shape.
-      ShapeMode.afterHeadline when state.shape == Shape.inline =>
-        Shape.headline,
+      .afterHeadline when state.shape == .inline => Shape.headline,
       // If there was already a newline in the headline, preserve that shape.
-      ShapeMode.afterHeadline => state.shape,
-      ShapeMode.other => Shape.other,
+      .afterHeadline => state.shape,
+      .other => Shape.other,
     };
   }
 }
@@ -627,10 +623,10 @@ class _FormatState {
   /// The piece's shape.
   ///
   /// This changes based on the newlines the piece writes.
-  Shape shape = Shape.inline;
+  Shape shape = .inline;
 
   /// How a newline affects the shape of this piece.
-  ShapeMode mode = ShapeMode.merge;
+  ShapeMode mode = .merge;
 
   new(this.piece);
 }
@@ -675,7 +671,7 @@ final class _IndentLevel {
   /// Only used for 3.7 style.
   final int collapsible;
 
-  new v3Dot7(this.spaces, this.collapsible) : type = Indent.none;
+  new v3Dot7(this.spaces, this.collapsible) : type = .none;
 
   new(this.type, this.spaces) : collapsible = 0;
 

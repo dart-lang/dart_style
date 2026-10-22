@@ -24,7 +24,7 @@ abstract base class InfixPiece extends Piece {
     List<Piece> operands, {
     required bool is3Dot7,
     bool conditional = false,
-    Indent indent = Indent.expression,
+    Indent indent = .expression,
   }) {
     if (is3Dot7) {
       return _InfixPiece3Dot7(operands, indent);

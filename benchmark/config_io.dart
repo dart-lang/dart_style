@@ -4,8 +4,6 @@ import 'dart:math';
 
 import 'package:dart_style/src/cli/formatter_options.dart';
 import 'package:dart_style/src/cli/io.dart';
-import 'package:dart_style/src/cli/output.dart';
-import 'package:dart_style/src/cli/show.dart';
 import 'package:dart_style/src/profile.dart';
 import 'package:path/path.dart' as p;
 
@@ -113,7 +111,7 @@ void main() async {
     }
 
     print('Warming up JIT...');
-    var options = FormatterOptions(output: Output.none, show: Show.none);
+    var options = FormatterOptions(output: .none, show: .none);
     for (var i = 0; i < 20; i++) {
       await formatPaths(options, [tempDir.path]);
     }

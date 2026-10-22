@@ -6,7 +6,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../back_end/code_writer.dart';
 import '../piece/chain.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';
@@ -133,7 +132,7 @@ final class ChainBuilder {
       _target,
       _calls,
       cascade: true,
-      indent: Indent.cascade,
+      indent: .cascade,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
       hasSingleElementTarget: _hasSingleElementTarget,
@@ -158,7 +157,7 @@ final class ChainBuilder {
     // Count the number of contiguous properties at the beginning of the chain.
     var leadingProperties = 0;
     while (leadingProperties < _calls.length &&
-        _calls[leadingProperties].type == CallType.property) {
+        _calls[leadingProperties].type == .property) {
       leadingProperties++;
     }
 
@@ -201,7 +200,7 @@ final class ChainBuilder {
     var lastCallIndex = _calls.length - 1;
     if (!_calls[lastCallIndex].canSplit &&
         _calls.length > 1 &&
-        _calls[lastCallIndex - 1].type == CallType.blockFormatCall) {
+        _calls[lastCallIndex - 1].type == .blockFormatCall) {
       lastCallIndex = _calls.length - 2;
     }
 
@@ -209,7 +208,7 @@ final class ChainBuilder {
     if (leadingUnsplittable == lastCallIndex &&
         _calls[lastCallIndex].canSplit) {
       blockCallIndex = lastCallIndex;
-    } else if (_calls[lastCallIndex].type == CallType.blockFormatCall) {
+    } else if (_calls[lastCallIndex].type == .blockFormatCall) {
       blockCallIndex = lastCallIndex;
     }
 
@@ -235,7 +234,7 @@ final class ChainBuilder {
       _target,
       _calls,
       cascade: false,
-      indent: isCascadeTarget ? Indent.cascade : Indent.expression,
+      indent: isCascadeTarget ? .cascade : .expression,
       leadingProperties: leadingProperties,
       blockCallIndex: blockCallIndex,
       allowSplitInTarget: _allowSplitInTarget,
@@ -272,7 +271,7 @@ final class ChainBuilder {
         if (expression.argumentList.arguments.canSplit(
           expression.argumentList.rightParenthesis,
         )) {
-          callType = CallType.splittableCall;
+          callType = .splittableCall;
         }
 
         var callPiece = _visitor.pieces.build(() {
@@ -287,7 +286,7 @@ final class ChainBuilder {
           });
 
           if (arguments is ListPiece && arguments.hasBlockElement) {
-            callType = CallType.blockFormatCall;
+            callType = .blockFormatCall;
           }
 
           _visitor.pieces.add(arguments);

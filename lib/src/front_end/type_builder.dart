@@ -106,11 +106,9 @@ final class TypeBuilder {
     TypeBodyType bodyType;
     switch (node.body) {
       case BlockEnumBody body:
-        bodyType = body.members.isEmpty
-            ? TypeBodyType.list
-            : TypeBodyType.block;
+        bodyType = body.members.isEmpty ? .list : .block;
       case EmptyEnumBody():
-        bodyType = TypeBodyType.semicolon;
+        bodyType = .semicolon;
     }
 
     _buildType(buildBody, bodyType);
@@ -137,11 +135,7 @@ final class TypeBuilder {
       header = _buildClauses(header);
 
       _visitor.pieces.add(
-        TypePiece(
-          header,
-          _visitor.tokenPiece(semicolon),
-          bodyType: TypeBodyType.semicolon,
-        ),
+        TypePiece(header, _visitor.tokenPiece(semicolon), bodyType: .semicolon),
       );
     });
   }
