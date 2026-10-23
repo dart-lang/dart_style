@@ -42,13 +42,13 @@ final class LineWriter {
   /// The number of characters that have been written to the output.
   int get length => _buffer.length;
 
-  LineWriter(DartFormatter formatter, this._lineEnding, this._chunks)
+  new(DartFormatter formatter, this._lineEnding, this._chunks)
     : pageWidth = formatter.pageWidth,
       _blockIndentation = 0,
       _blockCache = {};
 
   /// Creates a line writer for a block.
-  LineWriter._(
+  new _(
     this._chunks,
     this._lineEnding,
     this.pageWidth,
@@ -229,7 +229,7 @@ final class _BlockKey {
   /// The absolute zero-based column number where the block starts.
   final int column;
 
-  _BlockKey(this.chunk, this.column);
+  new(this.chunk, this.column);
 
   @override
   bool operator ==(Object other) {
@@ -262,5 +262,5 @@ final class FormatResult {
   /// Otherwise, this is `null`.
   final int? selectionEnd;
 
-  FormatResult(this.text, this.cost, this.selectionStart, this.selectionEnd);
+  new(this.text, this.cost, this.selectionStart, this.selectionEnd);
 }

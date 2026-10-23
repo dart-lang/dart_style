@@ -50,15 +50,14 @@ final class VariablePiece extends Piece {
 
   /// Creates a [VariablePiece].
   ///
-  /// The [hasType] parameter should be `true` if the variable declaration has
+  /// The [_hasType] parameter should be `true` if the variable declaration has
   /// a type annotation.
-  VariablePiece(
+  new(
     this._header,
     this._variables, {
-    required bool hasType,
-    required bool is3Dot7,
-  }) : _hasType = hasType,
-       _is3Dot7 = is3Dot7;
+    required this._hasType,
+    required this._is3Dot7,
+  });
 
   @override
   List<State> get additionalStates => [

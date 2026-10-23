@@ -35,7 +35,7 @@ sealed class TextPiece extends Piece {
   /// `null` if the selection does not start within this chunk.
   int? _selectionEnd;
 
-  TextPiece({required bool soft}) : isSoft = soft;
+  new({required bool soft}) : isSoft = soft;
 
   /// Append [text] to the end of this piece.
   ///
@@ -154,7 +154,7 @@ final class CodePiece extends TextPiece {
   /// Pieces for any comments that hang off the same line as this code.
   final List<Piece> _hangingComments = [];
 
-  CodePiece(this._leadingComments, {required super.soft});
+  new(this._leadingComments, {required super.soft});
 
   void addHangingComment(Piece comment) {
     _hangingComments.add(comment);
@@ -193,7 +193,7 @@ final class CommentPiece extends TextPiece {
   /// Whitespace at the end of the comment.
   final Whitespace _trailingWhitespace;
 
-  CommentPiece(this._trailingWhitespace, {required super.soft});
+  new(this._trailingWhitespace, {required super.soft});
 
   @override
   void format(CodeWriter writer, State state) {
@@ -225,7 +225,7 @@ final class EnableFormattingCommentPiece extends CommentPiece {
   /// before `//`.
   final int _sourceOffset;
 
-  EnableFormattingCommentPiece(
+  new(
     this._sourceOffset,
     super._trailingWhitespace, {
     required super.soft,

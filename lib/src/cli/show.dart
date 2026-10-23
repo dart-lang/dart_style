@@ -18,7 +18,7 @@ enum Show {
   /// Returns whether or not this file should be displayed.
   bool file(String path, {required bool changed, required bool overwritten}) {
     switch (this) {
-      case Show.all:
+      case .all:
         if (changed) {
           _showFileChange(path, overwritten: overwritten);
         } else {
@@ -26,7 +26,7 @@ enum Show {
         }
         return true;
 
-      case Show.changed:
+      case .changed:
         if (changed) _showFileChange(path, overwritten: overwritten);
         return changed;
 

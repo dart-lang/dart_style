@@ -75,7 +75,7 @@ final class PieceWriter {
   /// previous code or adding a [SpacePiece] yet.
   bool _pendingSpace = false;
 
-  PieceWriter(this._source, this._comments);
+  new(this._source, this._comments);
 
   /// Wires the [PieceWriter] to the [AstNodeVisitor] (which implements
   /// [PieceFactory]) so that [PieceWriter] can visit nodes.
@@ -151,7 +151,7 @@ final class PieceWriter {
     AstNode? node, {
     bool spaceBefore = false,
     bool spaceAfter = false,
-    NodeContext context = NodeContext.none,
+    NodeContext context = .none,
   }) {
     if (node == null) return;
 
@@ -229,7 +229,7 @@ final class PieceWriter {
       // Wrap the metadata and content in a splittable list.
       var list = DelimitedListBuilder(
         _visitor,
-        const ListStyle(commas: Commas.none, spaceWhenUnsplit: true),
+        const ListStyle(commas: .none, spaceWhenUnsplit: true),
       );
 
       for (var piece in leadingPieces) {
@@ -316,7 +316,7 @@ final class PieceWriter {
   /// Creates a new [Piece] for [comment] and returns it.
   Piece commentPiece(
     SourceComment comment, [
-    Whitespace trailingWhitespace = Whitespace.none,
+    Whitespace trailingWhitespace = .none,
   ]) {
     var piece = switch (comment.text) {
       '// dart format off' => EnableFormattingCommentPiece(

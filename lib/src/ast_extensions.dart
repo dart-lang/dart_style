@@ -204,7 +204,7 @@ extension ExpressionExtensions on Expression {
   ///
   /// Completely empty delimited constructs like `[]` and `foo()` don't allow
   /// splitting inside them, so are not considered block-like.
-  bool get canBlockSplit => blockFormatType != BlockFormat.none;
+  bool get canBlockSplit => blockFormatType != .none;
 
   // TODO(rnystrom): We're moving towards using child piece shape to determine
   // how a parent is formatted and how it indents its children. Once all pieces
@@ -227,7 +227,7 @@ extension ExpressionExtensions on Expression {
       // An immediately invoked function expression is formatted like a
       // function expression.
       FunctionExpressionInvocation(:FunctionExpression function)
-          when function.blockFormatType == BlockFormat.function =>
+          when function.blockFormatType == .function =>
         BlockFormat.function,
 
       // Non-empty collection literals can block split.

@@ -20,7 +20,7 @@ import 'piece.dart';
 final class PrefixPiece extends Piece {
   final Piece _content;
 
-  PrefixPiece(this._content);
+  new(this._content);
 
   @override
   void format(CodeWriter writer, State state) {

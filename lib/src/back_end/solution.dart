@@ -113,7 +113,7 @@ final class Solution implements Comparable<Solution> {
   /// Creates a new [Solution] with no pieces set to any state (which
   /// implicitly means they have state [State.unsplit] unless they're pinned to
   /// another state).
-  factory Solution(
+  factory(
     SolutionCache cache,
     Piece root, {
     required int pageWidth,
@@ -126,7 +126,7 @@ final class Solution implements Comparable<Solution> {
     return solution;
   }
 
-  Solution._(
+  new _(
     Piece root,
     this._cost,
     this._pieceStates,
@@ -490,5 +490,5 @@ final class _StateNode {
   final State state;
   final _StateNode? parent;
 
-  _StateNode(this.piece, this.state, this.parent);
+  new(this.piece, this.state, this.parent);
 }

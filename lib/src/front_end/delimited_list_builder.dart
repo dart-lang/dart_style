@@ -5,7 +5,6 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
-import '../comment_type.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
 import 'comment_writer.dart';
@@ -47,7 +46,7 @@ final class DelimitedListBuilder {
 
   /// Creates a new [DelimitedListBuilder] for an argument list, collection
   /// literal, etc.
-  DelimitedListBuilder(this._visitor, [this._style = const ListStyle()]);
+  new(this._visitor, [this._style = const ListStyle()]);
 
   /// Creates the final [ListPiece] out of the added brackets, delimiters,
   /// elements, and style.
@@ -376,7 +375,7 @@ final class DelimitedListBuilder {
     // Edge case: A line comment on the same line as the preceding element
     // but after the comma is treated as hanging.
     if (commentsBeforeElement.isNotEmpty &&
-        commentsBeforeElement[0].type == CommentType.line &&
+        commentsBeforeElement[0].type == .line &&
         commentsBeforeElement.linesBefore(0) == 0) {
       var (hanging, remaining) = commentsBeforeElement.splitAt(1);
       _commentsBeforeComma = _commentsBeforeComma.concatenate(hanging);
@@ -395,8 +394,7 @@ final class DelimitedListBuilder {
       while (inlineCommentCount < _commentsBeforeComma.length) {
         // Once we hit a single non-inline comment, the rest won't be either.
         if (!_commentsBeforeComma.isHanging(inlineCommentCount) ||
-            _commentsBeforeComma[inlineCommentCount].type !=
-                CommentType.inlineBlock) {
+            _commentsBeforeComma[inlineCommentCount].type != .inlineBlock) {
           break;
         }
 
@@ -526,15 +524,14 @@ final class DelimitedListBuilder {
     //       expect(1 + 2, 3);
     //     });
     if (candidateIndex == 1 &&
-        arguments[1].blockFormatType == BlockFormat.function &&
+        arguments[1].blockFormatType == .function &&
         arguments[0] is! NamedArgument) {
       var firstArgumentFormatType = arguments[0].blockFormatType;
       if (firstArgumentFormatType
-          case BlockFormat.unindentedAdjacentStrings ||
-              BlockFormat.indentedAdjacentStrings) {
+          case .unindentedAdjacentStrings || .indentedAdjacentStrings) {
         // The adjacent strings.
         _elements[0].allowNewlinesWhenUnsplit = true;
-        if (firstArgumentFormatType == BlockFormat.unindentedAdjacentStrings) {
+        if (firstArgumentFormatType == .unindentedAdjacentStrings) {
           _elements[0].indentWhenBlockFormatted = true;
         }
 
@@ -567,24 +564,24 @@ final class DelimitedListBuilder {
     for (var i = 0; i < arguments.length; i++) {
       // See if it's an expression that supports block formatting.
       switch (arguments[i].blockFormatType) {
-        case BlockFormat.function:
+        case .function:
           if (functionIndex >= 0) {
             functionIndex = -2;
           } else {
             functionIndex = i;
           }
 
-        case BlockFormat.collection:
+        case .collection:
           if (collectionIndex >= 0) {
             collectionIndex = -2;
           } else {
             collectionIndex = i;
           }
 
-        case BlockFormat.invocation:
-        case BlockFormat.indentedAdjacentStrings:
-        case BlockFormat.unindentedAdjacentStrings:
-        case BlockFormat.none:
+        case .invocation:
+        case .indentedAdjacentStrings:
+        case .unindentedAdjacentStrings:
+        case .none:
           break; // Normal argument.
       }
     }

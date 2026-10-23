@@ -129,17 +129,14 @@ final class AssignPiece3Dot7 extends Piece {
   ///     );
   final bool _avoidBlockSplitRight;
 
-  AssignPiece3Dot7(
+  new(
     this._operator,
     this._right, {
-    Piece? left,
-    bool canBlockSplitLeft = false,
-    bool canBlockSplitRight = false,
-    bool avoidBlockSplitRight = false,
-  }) : _left = left,
-       _canBlockSplitLeft = canBlockSplitLeft,
-       _canBlockSplitRight = canBlockSplitRight,
-       _avoidBlockSplitRight = avoidBlockSplitRight;
+    this._left,
+    this._canBlockSplitLeft = false,
+    this._canBlockSplitRight = false,
+    this._avoidBlockSplitRight = false,
+  });
 
   @override
   List<State> get additionalStates => [
@@ -175,7 +172,7 @@ final class AssignPiece3Dot7 extends Piece {
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) =>
-      Shape.anyIf(state != State.unsplit);
+      Shape.anyIf(state != .unsplit);
 
   @override
   void format(CodeWriter writer, State state) {

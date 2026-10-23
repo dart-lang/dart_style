@@ -19,7 +19,7 @@ final class Summary {
   /// Mostly for internal use.
   static Summary profile() => _ProfileSummary();
 
-  const Summary._();
+  const new _();
 
   /// Called when [file] is about to be formatted.
   ///
@@ -53,7 +53,7 @@ final class _LineSummary extends Summary {
   /// The number of changed files.
   int _changed = 0;
 
-  _LineSummary() : super._();
+  new() : super._();
 
   /// Describe the processed file at [path] whose formatted result is [output].
   ///

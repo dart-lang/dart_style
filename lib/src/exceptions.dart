@@ -12,7 +12,7 @@ final class FormatterException implements Exception {
   final List<Diagnostic> errors;
 
   /// Creates a new FormatterException with an optional error [message].
-  const FormatterException(this.errors);
+  const new(this.errors);
 
   /// Creates a human-friendly representation of the analysis errors.
   String message({bool? color}) {
@@ -60,7 +60,7 @@ final class UnexpectedOutputException implements Exception {
   /// The resulting output.
   final String _output;
 
-  UnexpectedOutputException(this._input, this._output);
+  new(this._input, this._output);
 
   @override
   String toString() {

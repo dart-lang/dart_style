@@ -18,13 +18,10 @@ final class TypePiece extends Piece {
   /// What kind of body the type has.
   final TypeBodyType _bodyType;
 
-  TypePiece(this._header, this._body, {required TypeBodyType bodyType})
-    : _bodyType = bodyType;
+  new(this._header, this._body, {required this._bodyType});
 
   @override
-  List<State> get additionalStates => [
-    if (_bodyType == TypeBodyType.list) State.split,
-  ];
+  List<State> get additionalStates => [if (_bodyType == .list) State.split];
 
   @override
   void applyConstraints(State state, Constrain constrain) {
@@ -38,13 +35,13 @@ final class TypePiece extends Piece {
 
     // If the body may or may not split, then a newline in the header or
     // clauses forces the body to split.
-    return Shape.anyIf(_bodyType != TypeBodyType.list || state == State.split);
+    return Shape.anyIf(_bodyType != .list || state == State.split);
   }
 
   @override
   void format(CodeWriter writer, State state) {
     writer.format(_header);
-    if (_bodyType != TypeBodyType.semicolon) writer.space();
+    if (_bodyType != .semicolon) writer.space();
     writer.format(_body);
   }
 
@@ -139,7 +136,7 @@ final class PrimaryTypePiece extends Piece {
   /// What kind of body the type has.
   final TypeBodyType _bodyType;
 
-  PrimaryTypePiece(
+  new(
     this._header,
     this._parameters,
     this._clauses,
@@ -203,7 +200,7 @@ final class PrimaryTypePiece extends Piece {
 
     if (indent) writer.popIndent();
 
-    if (_bodyType != TypeBodyType.semicolon) writer.space();
+    if (_bodyType != .semicolon) writer.space();
     writer.format(_body);
   }
 

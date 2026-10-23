@@ -39,9 +39,8 @@ final class Benchmark {
 
     var input = inputLines.join('\n');
 
-    var shortOutput = File(
-      p.setExtension(path, '.expect_short'),
-    ).readAsStringSync();
+    var shortOutput = File(p.setExtension(path, '.expect_short'))
+        .readAsStringSync();
     var tallOutput = File(p.setExtension(path, '.expect')).readAsStringSync();
 
     return Benchmark(
@@ -72,7 +71,7 @@ final class Benchmark {
   /// The expected formatted output using tall style.
   final String tallOutput;
 
-  Benchmark({
+  new({
     required this.name,
     required this.input,
     required this.pageWidth,

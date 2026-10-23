@@ -262,7 +262,7 @@ mixin PieceFactory {
       ChainBuilder(
         this,
         node,
-      ).build(isCascadeTarget: parentContext == NodeContext.cascadeTarget),
+      ).build(isCascadeTarget: parentContext == .cascadeTarget),
     );
   }
 
@@ -328,9 +328,7 @@ mixin PieceFactory {
 
     // Add this collection to the stack.
     if (splitEagerly) {
-      _contents.beginCollection(
-        isNamed: parentContext == NodeContext.namedExpression,
-      );
+      _contents.beginCollection(isNamed: parentContext == .namedExpression);
     }
 
     var collection = pieces.build(() {
@@ -354,7 +352,7 @@ mixin PieceFactory {
   Piece createCommaSeparated(Iterable<AstNode> nodes) {
     var builder = DelimitedListBuilder(
       this,
-      const ListStyle(commas: Commas.nonTrailing),
+      const ListStyle(commas: .nonTrailing),
     );
     nodes.forEach(builder.visit);
     return builder.build();
@@ -462,7 +460,7 @@ mixin PieceFactory {
         //     }
         var partsList = DelimitedListBuilder(
           this,
-          const ListStyle(commas: Commas.none),
+          const ListStyle(commas: .none),
         );
         partsList.leftBracket(leftParenthesis);
 
@@ -503,10 +501,10 @@ mixin PieceFactory {
           // don't want to add a trailing comma. But if the user has preserve
           // trailing commas on, we should preserve the comma if there is one
           // but not add one if there isn't and it splits.
-          var listStyle = const ListStyle(commas: Commas.nonTrailing);
+          var listStyle = const ListStyle(commas: .nonTrailing);
           if (style.preserveTrailingCommaAfterForUpdaters &&
               rightParenthesis.hasCommaBefore) {
-            listStyle = const ListStyle(commas: Commas.trailing);
+            listStyle = const ListStyle(commas: .trailing);
           }
 
           // Create a nested list builder for the updaters so that they can
@@ -944,7 +942,7 @@ mixin PieceFactory {
 
         var parameters = DelimitedListBuilder(
           this,
-          const ListStyle(commas: Commas.nonTrailing),
+          const ListStyle(commas: .nonTrailing),
         );
         parameters.leftBracket(catchClause.leftParenthesis!);
         if (catchClause.exceptionParameter case var exceptionParameter?) {
@@ -1090,7 +1088,7 @@ mixin PieceFactory {
     AstNode right, {
     bool hanging = false,
     Token? operator2,
-    Indent indent = Indent.infix,
+    Indent indent = .infix,
   }) {
     var leftPiece = pieces.build(() {
       pieces.visit(left);
@@ -1175,7 +1173,7 @@ mixin PieceFactory {
     pieces.add(
       InfixPiece(
         operands,
-        indent: indent ? Indent.infix : Indent.none,
+        indent: indent ? .infix : .none,
         is3Dot7: style.is3Dot7,
       ),
     );
@@ -1226,7 +1224,7 @@ mixin PieceFactory {
         // If we are always writing a trailing comma (because it's a
         // single-element record), then the comma shouldn't force a split.
         forceSplit:
-            style.commas != Commas.alwaysTrailing &&
+            style.commas != .alwaysTrailing &&
             this.style.preserveTrailingCommaBefore(rightBracket),
         blockShaped: blockShaped,
       ),
@@ -1262,7 +1260,7 @@ mixin PieceFactory {
     // this too because even though we prefer to keep all elements that are on
     // a single line in the input also on a single line in the output, we will
     // split them if they don't fit.
-    var lineStyle = const ListStyle(commas: Commas.nonTrailing);
+    var lineStyle = const ListStyle(commas: .nonTrailing);
     var lineBuilder = DelimitedListBuilder(this, lineStyle);
     var atLineStart = true;
 
@@ -1382,8 +1380,8 @@ mixin PieceFactory {
       //     if (obj case (name: value)) {
       //       ;
       //     }
-      [PatternField(name: _?)] => const ListStyle(commas: Commas.trailing),
-      [RecordLiteralNamedField()] => const ListStyle(commas: Commas.trailing),
+      [PatternField(name: _?)] => const ListStyle(commas: .trailing),
+      [RecordLiteralNamedField()] => const ListStyle(commas: .trailing),
 
       // Record types or patterns with a single positional field always have a
       // trailing comma to disambiguate from parenthesized expressions or
@@ -1396,11 +1394,11 @@ mixin PieceFactory {
       //     if (obj case (pattern,)) {
       //       ;
       //     }
-      [_] => const ListStyle(commas: Commas.alwaysTrailing),
+      [_] => const ListStyle(commas: .alwaysTrailing),
 
       // Record types or patterns with multiple fields have regular trailing
       // commas when split.
-      _ => const ListStyle(commas: Commas.trailing),
+      _ => const ListStyle(commas: .trailing),
     };
 
     writeCollection(
@@ -1423,7 +1421,7 @@ mixin PieceFactory {
       leftBracket: leftBracket,
       elements,
       rightBracket: rightBracket,
-      style: const ListStyle(commas: Commas.nonTrailing, splitCost: 3),
+      style: const ListStyle(commas: .nonTrailing, splitCost: 3),
       blockShaped: false,
     );
   }
@@ -1459,7 +1457,7 @@ mixin PieceFactory {
         type,
         // Don't use Indent.infix after 3.7 because it will flatten the
         // indentation if the expression occurs in an assignment.
-        indent: style.is3Dot7 ? Indent.infix : Indent.expression,
+        indent: style.is3Dot7 ? .infix : .expression,
       );
     }
   }
@@ -1494,8 +1492,8 @@ mixin PieceFactory {
     Token operator,
     AstNode rightHandSide, {
     bool includeComma = false,
-    NodeContext leftHandSideContext = NodeContext.none,
-    NodeContext rightHandSideContext = NodeContext.none,
+    NodeContext leftHandSideContext = .none,
+    NodeContext rightHandSideContext = .none,
   }) {
     if (style.is3Dot7) {
       _writeAssignment3Dot7(
@@ -1533,7 +1531,7 @@ mixin PieceFactory {
     Token operator,
     AstNode rightHandSide, {
     bool includeComma = false,
-    NodeContext rightHandSideContext = NodeContext.none,
+    NodeContext rightHandSideContext = .none,
   }) {
     if (style.is3Dot7) {
       var canBlockSplitRight = switch (rightHandSide) {
@@ -1657,7 +1655,7 @@ mixin PieceFactory {
     Token operator,
     AstNode rightHandSide, {
     bool includeComma = false,
-    NodeContext leftHandSideContext = NodeContext.none,
+    NodeContext leftHandSideContext = .none,
   }) {
     // If an operand can have block formatting, then a newline in it doesn't
     // force the operator to split, as in:
@@ -1801,7 +1799,7 @@ mixin PieceFactory {
   Piece nodePiece(
     AstNode node, {
     bool commaAfter = false,
-    NodeContext context = NodeContext.none,
+    NodeContext context = .none,
   }) {
     var result = pieces.build(() {
       visitNode(node, context);

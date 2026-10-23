@@ -54,15 +54,15 @@ final class FormatterOptions {
   /// See dart.dev/go/experiments for details.
   final List<String> experimentFlags;
 
-  FormatterOptions({
+  new({
     this.languageVersion,
     this.indent = 0,
     this.pageWidth,
     this.trailingCommas,
     this.followLinks = false,
-    this.show = Show.changed,
-    this.output = Output.write,
-    this.summary = Summary.none,
+    this.show = .changed,
+    this.output = .write,
+    this.summary = .none,
     this.setExitIfChanged = false,
     List<String>? experimentFlags,
   }) : experimentFlags = [...?experimentFlags];

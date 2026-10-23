@@ -27,8 +27,7 @@ final class ForPiece extends Piece {
   ///         var element in list) { ... }
   final bool _indent;
 
-  ForPiece(this._forKeyword, this._parts, {required bool indent})
-    : _indent = indent;
+  new(this._forKeyword, this._parts, {required this._indent});
 
   @override
   void format(CodeWriter writer, State state) {
@@ -79,7 +78,7 @@ abstract base class ForInPiece extends Piece {
   /// The `in` keyword followed by the sequence expression.
   final Piece _sequence;
 
-  factory ForInPiece(
+  factory(
     Piece variable,
     Piece sequence, {
     bool canBlockSplitSequence = false,
@@ -96,7 +95,7 @@ abstract base class ForInPiece extends Piece {
     }
   }
 
-  ForInPiece._(this._variable, this._sequence);
+  new _(this._variable, this._sequence);
 
   @override
   List<State> get additionalStates => const [State.split];
@@ -123,7 +122,7 @@ abstract base class ForInPiece extends Piece {
 
 /// A [ForInPiece] subclass for 3.8 and later style.
 final class _ForInPiece extends ForInPiece {
-  _ForInPiece(super._variable, super._sequence) : super._();
+  new(super._variable, super._sequence) : super._();
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) => switch (state) {
@@ -147,12 +146,8 @@ final class _ForInPiece3Dot7 extends ForInPiece {
   ///     }
   final bool _canBlockSplitSequence;
 
-  _ForInPiece3Dot7(
-    super._variable,
-    super._sequence, {
-    bool canBlockSplitSequence = false,
-  }) : _canBlockSplitSequence = canBlockSplitSequence,
-       super._();
+  new(super._variable, super._sequence, {this._canBlockSplitSequence = false})
+    : super._();
 
   @override
   Set<Shape> allowedChildShapes(State state, Piece child) {

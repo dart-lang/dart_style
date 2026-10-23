@@ -57,7 +57,7 @@ final class IfCasePiece extends Piece {
   /// Whether the pattern can be block formatted.
   final bool _canBlockSplitPattern;
 
-  factory IfCasePiece(
+  factory(
     Piece value,
     Piece pattern,
     Piece? guard, {
@@ -81,12 +81,12 @@ final class IfCasePiece extends Piece {
     }
   }
 
-  IfCasePiece._(
+  new _(
     this._value,
     this._pattern,
     this._guard, {
-    required bool canBlockSplitPattern,
-  }) : _canBlockSplitPattern = canBlockSplitPattern;
+    required this._canBlockSplitPattern,
+  });
 
   @override
   List<State> get additionalStates => [
@@ -199,7 +199,7 @@ final class IfCasePiece extends Piece {
 /// The change is language-versioned and this class implements the previous
 /// behavior.
 final class _IfCasePieceBlockFormatWithGuard extends IfCasePiece {
-  _IfCasePieceBlockFormatWithGuard(
+  new(
     super.value,
     super.pattern,
     super.guard, {

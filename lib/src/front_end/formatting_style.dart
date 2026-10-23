@@ -38,7 +38,7 @@ final class FormattingStyle {
   /// We cache this instead of storing the version directly for performance.
   final bool _isVersion3Dot13OrHigher;
 
-  factory FormattingStyle(
+  factory(
     DartFormatter formatter, {
     required String lineEnding,
     Version? languageVersion,
@@ -55,15 +55,14 @@ final class FormattingStyle {
     );
   }
 
-  FormattingStyle._(
+  new _(
     this._formatter, {
     required this.pageWidth,
     required this.lineEnding,
     required this.is3Dot7,
-    required bool isVersion3Dot10OrHigher,
-    required bool isVersion3Dot13OrHigher,
-  }) : _isVersion3Dot10OrHigher = isVersion3Dot10OrHigher,
-       _isVersion3Dot13OrHigher = isVersion3Dot13OrHigher;
+    required this._isVersion3Dot10OrHigher,
+    required this._isVersion3Dot13OrHigher,
+  });
 
   final String? lineEnding;
 
@@ -76,12 +75,11 @@ final class FormattingStyle {
 
   /// Whether a trailing comma should be preserved after for-loop updaters.
   bool get preserveTrailingCommaAfterForUpdaters =>
-      _formatter.trailingCommas == TrailingCommas.preserve;
+      _formatter.trailingCommas == .preserve;
 
   /// Whether a trailing comma should be preserved after enum values.
   bool get preserveTrailingCommaAfterEnumValues =>
-      _isVersion3Dot10OrHigher &&
-      _formatter.trailingCommas == TrailingCommas.preserve;
+      _isVersion3Dot10OrHigher && _formatter.trailingCommas == .preserve;
 
   /// Whether the formatter should penalize splitting in the target of a call
   /// chain if the target is an argument list with only one argument or a
@@ -172,6 +170,5 @@ final class FormattingStyle {
   /// Whether there is a trailing comma at the end of the list delimited by
   /// [rightBracket] which should be preserved by this style.
   bool preserveTrailingCommaBefore(Token rightBracket) =>
-      _formatter.trailingCommas == TrailingCommas.preserve &&
-      rightBracket.hasCommaBefore;
+      _formatter.trailingCommas == .preserve && rightBracket.hasCommaBefore;
 }

@@ -93,7 +93,7 @@ final class SourceVisitor extends ThrowingAstVisitor {
 
   /// Initialize a newly created visitor to write source code representing
   /// the visited nodes to the given [writer].
-  SourceVisitor(DartFormatter formatter, this._lineInfo, this._source)
+  new(DartFormatter formatter, this._lineInfo, this._source)
     : builder = ChunkBuilder(formatter, _source);
 
   /// Runs the visitor on [node], formatting its contents.
@@ -4266,11 +4266,11 @@ final class SourceVisitor extends ThrowingAstVisitor {
       var type = CommentType.block;
       if (text.startsWith('///') && !text.startsWith('////') ||
           text.startsWith('/**') && text != '/**/') {
-        type = CommentType.doc;
+        type = .doc;
       } else if (comment.type == TokenType.SINGLE_LINE_COMMENT) {
-        type = CommentType.line;
+        type = .line;
       } else if (commentLine == previousLine || commentLine == tokenLine) {
-        type = CommentType.inlineBlock;
+        type = .inlineBlock;
       }
 
       var sourceComment = SourceComment(
@@ -4450,5 +4450,5 @@ final class BinaryNode {
   final Token operator;
   final AstNode right;
 
-  BinaryNode(this.left, this.operator, this.right);
+  new(this.left, this.operator, this.right);
 }

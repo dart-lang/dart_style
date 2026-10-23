@@ -29,4 +29,6 @@ linter:
     #
     # Also, making local variables non-final is consistent with parameters,
     # which are also non-final.
+    - unnecessary_breaks
     - unnecessary_final
+    - unnecessary_type_name_in_constructor

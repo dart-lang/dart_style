@@ -25,7 +25,7 @@ enum Output {
   ///
   /// If stdin is being formatted, then [file] is `null`.
   bool writeFile(String? file, String displayPath, SourceCode result) {
-    if (this != Output.write) return false;
+    if (this != .write) return false;
 
     try {
       File(file!).writeAsStringSync(result.text);
@@ -42,12 +42,11 @@ enum Output {
   /// Print the file to the terminal in some way.
   void showFile(String path, SourceCode result) {
     switch (this) {
-      case Output.show:
+      case .show:
         // Don't add an extra newline.
         stdout.write(result.text);
-        break;
 
-      case Output.json:
+      case .json:
         // TODO(rnystrom): Put an empty selection in here to remain compatible
         // with the old formatter. Since there's no way to pass a selection on
         // the command line, this will never be used, which is why it's
@@ -63,10 +62,9 @@ enum Output {
             },
           }),
         );
-        break;
 
-      case Output.write:
-      case Output.none:
+      case .write:
+      case .none:
         // Do nothing.
         break;
     }

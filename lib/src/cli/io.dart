@@ -218,6 +218,8 @@ Future<void> formatPaths(FormatterOptions options, List<String> paths) async {
     trailingCommas:
         options.trailingCommas ??
         switch (analysisOptions.formatterOptions.trailingCommas) {
+          // Note: Not using dot shorthands here because this switch converts
+          // between two confusing classes with the same names and members.
           null => TrailingCommas.automate,
           a.TrailingCommas.automate => TrailingCommas.automate,
           a.TrailingCommas.preserve => TrailingCommas.preserve,

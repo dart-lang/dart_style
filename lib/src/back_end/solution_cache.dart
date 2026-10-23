@@ -28,7 +28,7 @@ final class SolutionCache {
 
   final _cache = <_Key, Solution>{};
 
-  SolutionCache(this.style);
+  new(this.style);
 
   /// Returns a previously cached solution for formatting [root] with leading
   /// [indent] (and [subsequentIndent] for lines after the first) or produces a

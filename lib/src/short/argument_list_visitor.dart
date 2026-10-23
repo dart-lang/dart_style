@@ -55,7 +55,7 @@ final class ArgumentListVisitor {
   bool get hasBlockArguments =>
       _arguments._blocks.isNotEmpty || _functions != null;
 
-  factory ArgumentListVisitor(SourceVisitor visitor, ArgumentList node) {
+  factory(SourceVisitor visitor, ArgumentList node) {
     return ArgumentListVisitor.forArguments(
       visitor,
       node.leftParenthesis,
@@ -64,7 +64,7 @@ final class ArgumentListVisitor {
     );
   }
 
-  factory ArgumentListVisitor.forArguments(
+  factory forArguments(
     SourceVisitor visitor,
     Token leftParenthesis,
     Token rightParenthesis,
@@ -102,7 +102,7 @@ final class ArgumentListVisitor {
     );
   }
 
-  ArgumentListVisitor._(
+  new _(
     this._visitor,
     this._leftParenthesis,
     this._rightParenthesis,
@@ -343,10 +343,7 @@ final class ArgumentSublist {
   Chunk? get previousSplit => _previousSplit;
   Chunk? _previousSplit;
 
-  factory ArgumentSublist(
-    List<Argument> allArguments,
-    List<Argument> arguments,
-  ) {
+  factory(List<Argument> allArguments, List<Argument> arguments) {
     var argumentLists = _splitArgumentLists(arguments);
     var positional = argumentLists[0];
     var named = argumentLists[1];
@@ -391,7 +388,7 @@ final class ArgumentSublist {
     );
   }
 
-  ArgumentSublist._(
+  new _(
     this._allArguments,
     this._positional,
     this._named,

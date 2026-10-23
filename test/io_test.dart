@@ -76,9 +76,8 @@ void main() {
     await d.dir('target_dir', [d.file('b.dart', unformattedSource)]).create();
 
     // Create a link to the target directory in the code directory.
-    Link(
-      p.join(d.sandbox, 'code', 'linked_dir'),
-    ).createSync(p.join(d.sandbox, 'target_dir'));
+    Link(p.join(d.sandbox, 'code', 'linked_dir'))
+        .createSync(p.join(d.sandbox, 'target_dir'));
 
     await formatPaths(overwriteOptions, [p.join(d.sandbox, 'code')]);
 
@@ -94,9 +93,8 @@ void main() {
     await d.dir('target_dir', [d.file('b.dart', unformattedSource)]).create();
 
     // Create a link to the target directory in the code directory.
-    Link(
-      p.join(d.sandbox, 'code', 'linked_dir'),
-    ).createSync(p.join(d.sandbox, 'target_dir'));
+    Link(p.join(d.sandbox, 'code', 'linked_dir'))
+        .createSync(p.join(d.sandbox, 'target_dir'));
 
     await formatPaths(followOptions, [p.join(d.sandbox, 'code')]);
 
@@ -125,9 +123,8 @@ void main() {
       await d.file('target_file.dart', unformattedSource).create();
 
       // Create a link to the target file in the code directory.
-      Link(
-        p.join(d.sandbox, 'code', 'linked_file.dart'),
-      ).createSync(p.join(d.sandbox, 'target_file.dart'));
+      Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+          .createSync(p.join(d.sandbox, 'target_file.dart'));
 
       await formatPaths(overwriteOptions, [p.join(d.sandbox, 'code')]);
 
@@ -141,9 +138,8 @@ void main() {
       await d.file('target_file.dart', unformattedSource).create();
 
       // Create a link to the target file in the code directory.
-      Link(
-        p.join(d.sandbox, 'code', 'linked_file.dart'),
-      ).createSync(p.join(d.sandbox, 'target_file.dart'));
+      Link(p.join(d.sandbox, 'code', 'linked_file.dart'))
+          .createSync(p.join(d.sandbox, 'target_file.dart'));
 
       await formatPaths(followOptions, [p.join(d.sandbox, 'code')]);
 

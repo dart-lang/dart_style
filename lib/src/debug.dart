@@ -298,7 +298,7 @@ final class _PieceDebugTree {
   final String label;
   final List<_PieceDebugTree> children = [];
 
-  _PieceDebugTree(Piece piece) : label = piece.toString() {
+  new(Piece piece) : label = piece.toString() {
     piece.forEachChild((child) {
       children.add(_PieceDebugTree(child));
     });

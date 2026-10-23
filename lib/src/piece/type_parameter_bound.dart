@@ -34,7 +34,7 @@ final class TypeParameterBoundPiece extends Piece {
   /// The bound with the preceding `extends` keyword.
   final Piece _bound;
 
-  TypeParameterBoundPiece(this._typeParameter, this._bound);
+  new(this._typeParameter, this._bound);
 
   @override
   List<State> get additionalStates => const [_insideBound, _beforeExtends];

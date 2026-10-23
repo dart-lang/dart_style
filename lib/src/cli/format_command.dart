@@ -29,7 +29,7 @@ final class FormatCommand extends Command<int> {
   @override
   final String category;
 
-  FormatCommand({bool verbose = false, this.category = ''}) {
+  new({bool verbose = false, this.category = ''}) {
     argParser.addFlag(
       'verbose',
       abbr: 'v',
@@ -204,19 +204,18 @@ final class FormatCommand extends Command<int> {
 
     // If the user is sending code through stdin, default the output to stdout.
     if (!argResults.wasParsed('output') && argResults.rest.isEmpty) {
-      output = Output.show;
+      output = .show;
     }
 
     // If the user wants to print the code and didn't indicate how the files
     // should be printed, default to only showing the code.
-    if (!argResults.wasParsed('show') &&
-        (output == Output.show || output == Output.json)) {
-      show = Show.none;
+    if (!argResults.wasParsed('show') && (output == .show || output == .json)) {
+      show = .none;
     }
 
     // If the user wants JSON output, default to no summary.
-    if (!argResults.wasParsed('summary') && output == Output.json) {
-      summary = Summary.none;
+    if (!argResults.wasParsed('summary') && output == .json) {
+      summary = .none;
     }
 
     // Can't use --verbose with anything but --help.
@@ -225,7 +224,7 @@ final class FormatCommand extends Command<int> {
     }
 
     // Can't use any summary with JSON output.
-    if (output == Output.json && summary != Summary.none) {
+    if (output == .json && summary != .none) {
       usageException('Cannot print a summary with JSON output.');
     }
 
@@ -273,8 +272,8 @@ final class FormatCommand extends Command<int> {
       // We check the values explicitly here instead of using `allowedValues`
       // from [ArgParser] because this provides a better error message.
       trailingCommas = switch (argResults.option('trailing-commas')) {
-        'automate' => TrailingCommas.automate,
-        'preserve' => TrailingCommas.preserve,
+        'automate' => .automate,
+        'preserve' => .preserve,
         var mode => usageException(
           '--trailing-commas must be "automate" or "preserve", was "$mode".',
         ),
@@ -313,7 +312,7 @@ final class FormatCommand extends Command<int> {
       usageException('Missing paths to code to format.');
     }
 
-    if (argResults.rest.isEmpty && output == Output.write) {
+    if (argResults.rest.isEmpty && output == .write) {
       usageException('Cannot use --output=write when reading from stdin.');
     }
 

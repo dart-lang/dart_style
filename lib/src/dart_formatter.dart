@@ -90,23 +90,22 @@ final class DartFormatter {
 
   /// Creates a new formatter for Dart code at [languageVersion].
   ///
-  /// If [lineEnding] is given, that will be used for any newlines in the
+  /// If [_lineEnding] is given, that will be used for any newlines in the
   /// output. Otherwise, the line separator is inferred from the first line
   /// ending in the source code on each format.
   ///
   /// If [indent] is given, that many levels of indentation will be prefixed
   /// before each resulting line in the output.
-  DartFormatter({
+  new({
     required this.languageVersion,
-    String? lineEnding,
+    this._lineEnding,
     int? pageWidth,
     int? indent,
     TrailingCommas? trailingCommas,
     List<String>? experimentFlags,
-  }) : _lineEnding = lineEnding,
-       pageWidth = pageWidth ?? defaultPageWidth,
+  }) : pageWidth = pageWidth ?? defaultPageWidth,
        indent = indent ?? 0,
-       trailingCommas = trailingCommas ?? TrailingCommas.automate,
+       trailingCommas = trailingCommas ?? .automate,
        experimentFlags = [...?experimentFlags];
 
   /// Formats the given [source] string containing an entire Dart compilation
@@ -352,7 +351,7 @@ enum TrailingCommas {
 /// A custom [DiagnosticCode] implementation to avoid depending on internal
 /// analyzer implementation.
 class _FormatterDiagnosticCode extends DiagnosticCode {
-  _FormatterDiagnosticCode({
+  new({
     required super.name,
     required super.problemMessage,
     required super.uniqueName,
@@ -379,7 +378,7 @@ class _StringSource extends Source {
   @override
   Uri get uri => p.toUri(fullName);
 
-  _StringSource(this._contents, this.fullName);
+  new(this._contents, this.fullName);
 
   @override
   TimestampedData<String> get contents => TimestampedData(0, _contents);

@@ -28,12 +28,12 @@ final class TypeTestPiece extends Piece {
   /// Whether the expression can be block formatted.
   final bool _canBlockSplit;
 
-  TypeTestPiece(
+  new(
     this._expression,
     this._operator,
     this._type, {
-    bool canBlockSplit = false,
-  }) : _canBlockSplit = canBlockSplit;
+    this._canBlockSplit = false,
+  });
 
   @override
   List<State> get additionalStates => [

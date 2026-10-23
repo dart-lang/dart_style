@@ -37,7 +37,7 @@ final class SequenceBuilder {
   /// Whether a blank line should be allowed after the current element.
   bool _allowBlank = false;
 
-  SequenceBuilder(this._visitor);
+  new(this._visitor);
 
   Piece build({bool forceSplit = false}) {
     // If the sequence only contains a single piece, just return it directly
@@ -92,7 +92,7 @@ final class SequenceBuilder {
   /// The caller should have already called [addCommentsBefore()] with the
   /// first token in [piece].
   void add(Piece piece, {Indent? indent, bool allowBlankAfter = true}) {
-    _elements.add(SequenceElementPiece(indent ?? Indent.none, piece));
+    _elements.add(SequenceElementPiece(indent ?? .none, piece));
 
     _allowBlank = allowBlankAfter;
   }
@@ -145,7 +145,7 @@ final class SequenceBuilder {
     Indent? indent,
     bool blankBefore = false,
   }) {
-    indent ??= Indent.none;
+    indent ??= .none;
 
     var wroteBlank = false;
     var comments = _visitor.comments.takeCommentsBefore(token);

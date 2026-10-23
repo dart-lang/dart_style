@@ -21,7 +21,7 @@ import 'piece.dart';
 final class GroupingPiece extends Piece {
   final Piece _content;
 
-  GroupingPiece(this._content);
+  new(this._content);
 
   @override
   void format(CodeWriter writer, State state) {
