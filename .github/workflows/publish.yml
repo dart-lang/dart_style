@@ -1,19 +1,20 @@
 # A CI configuration to auto-publish pub packages.
+#
+# Publish checks on pull requests run in the Health workflow.
 
 name: Publish
 permissions:
   contents: read
 
 on:
-  pull_request:
-    branches: [ main ]
-    types: [opened, synchronize, reopened, labeled, unlabeled]
   push:
-    tags: [ 'v[0-9]+.[0-9]+.[0-9]+' ]
+    tags: [ 'v[0-9]+.[0-9]+.[0-9]+*' ]
 
 jobs:
   publish:
-    uses: dart-lang/ecosystem/.github/workflows/publish.yaml@27c2fc841818cce349e1f424af51cca9ea381f47
+    if: ${{ github.repository_owner == 'dart-lang' }}
     permissions:
       id-token: write
-      pull-requests: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@a1d8526c926344e01ba48a7368788c05ac98cb29 # main
+    with:
+      use-flutter: false
