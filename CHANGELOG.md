@@ -1,5 +1,11 @@
 ## 3.1.15-wip
 
+### Bug fixes
+
+* Don't remove the space between a nullable type and a cascade, as in
+  `x is int? ..hashCode`. Removing it turned the cascade into a null-aware
+  cascade (`?..`) and changed the meaning of the code (#1921).
+
 ### Internal changes
 
 * Use analyzer's [AnalysisContextCollection] for all IO when running
