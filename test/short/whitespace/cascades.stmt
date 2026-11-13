@@ -179,3 +179,15 @@ foo?..baz = 3..baz=5;
 foo
   ?..baz = 3
   ..baz = 5;
+>>> keep space between nullable type and cascade (#1921)
+x is int? ..hashCode;
+<<< 3.6
+x is int? ..hashCode;
+>>> null-aware cascade after type test is unchanged
+x is int?..hashCode;
+<<< 3.6
+x is int?..hashCode;
+>>> keep space after other nullable types
+x as Function()? ..hashCode;
+<<< 3.6
+x as Function()? ..hashCode;
