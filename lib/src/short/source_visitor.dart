@@ -507,7 +507,14 @@ final class SourceVisitor extends ThrowingAstVisitor {
       builder.startRule(node.allowInline ? Rule() : Rule.hard());
     }
 
-    zeroSplit();
+    // If the target ends in a nullable type, as in `x is int? ..foo`, keep a
+    // space before the `..` so that it isn't written as `?..`, which is a
+    // null-aware cascade and changes the meaning of the code.
+    if (target.endToken.type == TokenType.QUESTION) {
+      split();
+    } else {
+      zeroSplit();
+    }
 
     if (!splitIfTargetSplits) builder.endRule();
 

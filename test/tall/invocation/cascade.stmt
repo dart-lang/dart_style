@@ -247,3 +247,31 @@ object
 object..a.b = value;
 <<< 3.7
 object..a.b = value;
+>>> Keep space between nullable type and cascade (#1921).
+x is int? ..hashCode;
+<<< 3.7
+x is int? ..hashCode;
+>>> Null-aware cascade after type test is unchanged.
+x is int?..hashCode;
+<<< 3.7
+x is int?..hashCode;
+>>> Keep space after other nullable types.
+{
+  x is! int? ..hashCode;
+  x as Function()? ..hashCode;
+  x as (int,)? ..hashCode;
+  x as List<int>? ..hashCode;
+}
+<<< 3.7
+{
+  x is! int? ..hashCode;
+  x as Function()? ..hashCode;
+  x as (int,)? ..hashCode;
+  x as List<int>? ..hashCode;
+}
+>>> Split cascade after nullable type has no trailing space.
+x as Function()? ..hashCode..toString();
+<<< 3.7
+x as Function()?
+  ..hashCode
+  ..toString();

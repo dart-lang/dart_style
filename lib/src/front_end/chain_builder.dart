@@ -6,10 +6,12 @@ import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer/dart/ast/token.dart';
 
 import '../ast_extensions.dart';
+import '../piece/adjacent.dart';
 import '../piece/chain.dart';
 import '../piece/leading_comment.dart';
 import '../piece/list.dart';
 import '../piece/piece.dart';
+import '../piece/text.dart';
 import 'piece_factory.dart';
 
 /// Creates [Chain] pieces from method calls and property accesses, along with
@@ -362,6 +364,15 @@ final class ChainBuilder {
       target,
       context: cascadeTarget ? NodeContext.cascadeTarget : NodeContext.none,
     );
+
+    // If a cascade target ends in a nullable type, as in `x is int? ..foo`,
+    // keep a space before the `..`. Otherwise, the `?` and `..` would be
+    // written as `?..`, which is a null-aware cascade and changes the meaning
+    // of the code. If the cascade splits, the space is discarded by the
+    // newline.
+    if (cascadeTarget && target.endToken.type == TokenType.QUESTION) {
+      _target = AdjacentPiece([_target, SpacePiece()]);
+    }
   }
 
   /// When [expression] is some kind of postfix expression containing
