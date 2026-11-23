@@ -5,6 +5,9 @@
 * Don't remove the space between a nullable type and a cascade, as in
   `x is int? ..hashCode`. Removing it turned the cascade into a null-aware
   cascade (`?..`) and changed the meaning of the code (#1921).
+* Don't move the `;` of a local variable declaration with metadata into a line
+  comment that comes before it. Formatting `@meta var x = 1 // c` followed by
+  `;` on the next line produced `1 // c;`, which no longer compiles (#1920).
 
 ### Internal changes
 
