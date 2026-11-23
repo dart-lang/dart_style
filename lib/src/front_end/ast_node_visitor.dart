@@ -2158,74 +2158,83 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       //
       //     for (@meta var x in list) ...
       inlineMetadata: _parentContext == .forLoopVariable,
-      () {
-        var header = pieces.build(() {
-          pieces.modifier(node.lateKeyword);
-          pieces.modifier(node.keyword);
-          pieces.visit(node.type);
-        });
+      () => _writeVariableDeclarationList(node),
+    );
+  }
 
-        var variables = <Piece>[];
+  /// Writes the modifiers, type, and variables of [node] without its metadata.
+  void _writeVariableDeclarationList(VariableDeclarationList node) {
+    var header = pieces.build(() {
+      pieces.modifier(node.lateKeyword);
+      pieces.modifier(node.keyword);
+      pieces.visit(node.type);
+    });
 
-        for (var variable in node.variables) {
-          if ((variable.equals, variable.initializer) case (
-            var equals?,
-            var initializer?,
-          )) {
-            if (style.is3Dot7) {
-              var variablePiece = tokenPiece(variable.name);
+    var variables = <Piece>[];
 
-              var equalsPiece = pieces.build(() {
-                pieces.space();
-                pieces.token(equals);
-              });
+    for (var variable in node.variables) {
+      if ((variable.equals, variable.initializer) case (
+        var equals?,
+        var initializer?,
+      )) {
+        if (style.is3Dot7) {
+          var variablePiece = tokenPiece(variable.name);
 
-              var initializerPiece = nodePiece(
-                initializer,
-                commaAfter: true,
-                context: NodeContext.assignment,
-              );
+          var equalsPiece = pieces.build(() {
+            pieces.space();
+            pieces.token(equals);
+          });
 
-              variables.add(
-                AssignPiece3Dot7(
-                  left: variablePiece,
-                  equalsPiece,
-                  initializerPiece,
-                  canBlockSplitRight: initializer.canBlockSplit,
-                ),
-              );
-            } else {
-              var variablePiece = pieces.build(() {
-                pieces.token(variable.name);
-                pieces.space();
-                pieces.token(equals);
-              });
+          var initializerPiece = nodePiece(
+            initializer,
+            commaAfter: true,
+            context: NodeContext.assignment,
+          );
 
-              var initializerPiece = nodePiece(initializer, commaAfter: true);
+          variables.add(
+            AssignPiece3Dot7(
+              left: variablePiece,
+              equalsPiece,
+              initializerPiece,
+              canBlockSplitRight: initializer.canBlockSplit,
+            ),
+          );
+        } else {
+          var variablePiece = pieces.build(() {
+            pieces.token(variable.name);
+            pieces.space();
+            pieces.token(equals);
+          });
 
-              variables.add(AssignPiece(variablePiece, initializerPiece));
-            }
-          } else {
-            variables.add(tokenPiece(variable.name, commaAfter: true));
-          }
+          var initializerPiece = nodePiece(initializer, commaAfter: true);
+
+          variables.add(AssignPiece(variablePiece, initializerPiece));
         }
+      } else {
+        variables.add(tokenPiece(variable.name, commaAfter: true));
+      }
+    }
 
-        pieces.add(
-          VariablePiece(
-            header,
-            variables,
-            hasType: node.type != null,
-            is3Dot7: style.is3Dot7,
-          ),
-        );
-      },
+    pieces.add(
+      VariablePiece(
+        header,
+        variables,
+        hasType: node.type != null,
+        is3Dot7: style.is3Dot7,
+      ),
     );
   }
 
   @override
   void visitVariableDeclarationStatement(VariableDeclarationStatement node) {
-    pieces.visit(node.variables);
-    pieces.token(node.semicolon);
+    // Write the `;` inside the piece that holds the metadata, like field and
+    // top-level variable declarations do. Otherwise, a line comment before the
+    // `;` ends up at the end of the metadata piece and the `;` is written
+    // right after it, on the same line, inside the comment.
+    pieces.withMetadata(node.variables.metadata, () {
+      _writeVariableDeclarationList(node.variables);
+      pieces.token(node.semicolon);
+    });
   }
 
   @override

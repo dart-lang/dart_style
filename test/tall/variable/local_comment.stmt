@@ -46,6 +46,23 @@ var variable = value // comment
 var variable =
     value // comment
     ;
+>>> Line comment after value with metadata (#1920).
+@meta
+var variable = value // comment
+;
+<<< 3.7
+@meta
+var variable =
+    value // comment
+    ;
+>>> Line comment after declaration without initializer with metadata.
+@meta
+int variable // comment
+;
+<<< 3.7
+@meta
+int variable // comment
+;
 >>> Line comment after semicolon.
 var variable = value; // comment
 <<< 3.7
