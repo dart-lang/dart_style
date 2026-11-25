@@ -1,0 +1,26 @@
+>>> Doc comment before the variable in a for loop initializer.
+void f(List<int> xs) {
+  for (int /** d */ i = 0; ;) {}
+}
+<<< 3.7
+void f(List<int> xs) {
+  for (
+    int
+        /** d */
+        i =
+        0;
+    ;
+  ) {}
+}
+>>> Doc comment before the variable in a for-in loop.
+void g(List<int> xs) {
+  for (int /// d
+      i in xs) {}
+}
+<<< 3.7
+void g(List<int> xs) {
+  for (int
+      /// d
+      i
+      in xs) {}
+}
