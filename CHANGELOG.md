@@ -5,6 +5,8 @@
 * Don't remove the space between a nullable type and a cascade, as in
   `x is int? ..hashCode`. Removing it turned the cascade into a null-aware
   cascade (`?..`) and changed the meaning of the code (#1921).
+* Don't crash on a doc comment before the variable in a `for` loop header, as
+  in `for (int /** c */ i = 0; ;) {}` (#1919).
 
 ### Internal changes
 

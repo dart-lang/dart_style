@@ -466,7 +466,7 @@ mixin PieceFactory {
 
         // The initializer clause.
         if (initializer != null) {
-          partsList.addCommentsBefore(initializer.beginToken);
+          partsList.addCommentsBefore(initializer.firstNonCommentToken);
           partsList.add(
             pieces.build(() {
               pieces.visit(initializer, context: NodeContext.forLoopVariable);
@@ -1610,7 +1610,7 @@ mixin PieceFactory {
   ) {
     // Hoist any leading comments so they don't force the for-in clauses
     // to split.
-    pieces.hoistLeadingComments(identifier.beginToken, () {
+    pieces.hoistLeadingComments(identifier.firstNonCommentToken, () {
       // Use a nested piece so that the metadata precedes the keyword and
       // not the `(`.
       return pieces.build(
