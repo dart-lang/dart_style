@@ -19,6 +19,18 @@ var map = {key: ?value};
 var map = {  ?  key  :  ?  value  };
 <<< 3.8
 var map = {?key: ?value};
+>>> List element starting with a leading-dot double.
+var list = [  ?  .5  ,  ?  0.5  ];
+<<< 3.8
+var list = [? .5, ?0.5];
+>>> Set element starting with a leading-dot double.
+var set = {  ?  .5  +  1  };
+<<< 3.8
+var set = {? .5 + 1};
+>>> Map key and value starting with a leading-dot double.
+var map = {  ?  .5  :  ?  .25  };
+<<< 3.8
+var map = {? .5: ? .25};
 >>> Split inside element.
 var list = [?(veryLongExpression +thatIsForcedToSplit)];
 <<< 3.8

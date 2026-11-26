@@ -1390,13 +1390,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
       writeAssignment(node.key, node.separator, node.value);
     } else {
       var leftPiece = pieces.build(() {
-        pieces.token(node.keyQuestion);
+        pieces.token(
+          node.keyQuestion,
+          spaceAfter: _spaceAfterQuestion(node.keyQuestion),
+        );
         pieces.visit(node.key);
         pieces.token(node.separator);
       });
 
       var rightPiece = pieces.build(() {
-        pieces.token(node.valueQuestion);
+        pieces.token(
+          node.valueQuestion,
+          spaceAfter: _spaceAfterQuestion(node.valueQuestion),
+        );
         pieces.visit(node.value);
       });
 
@@ -1514,7 +1520,19 @@ final class AstNodeVisitor extends ThrowingAstVisitor<void> with PieceFactory {
 
   @override
   void visitNullAwareElement(NullAwareElement node) {
-    writePrefix(node.question, node.value);
+    writePrefix(
+      node.question,
+      node.value,
+      space: _spaceAfterQuestion(node.question),
+    );
+  }
+
+  /// Keep `?` and a leading-dot double like `.5` from becoming a `?.` token.
+  bool _spaceAfterQuestion(Token? question) {
+    var next = question?.next;
+    return next != null &&
+        next.type == TokenType.DOUBLE &&
+        next.lexeme.startsWith('.');
   }
 
   @override
